@@ -36,6 +36,13 @@ reserved for migrations and role provisioning; application readiness fails until
 restricted runtime roles have been provisioned. See `db/provision-runtime-roles.sql`
 for the explicit grants required by this release.
 
+To enable the Work event delivery Worker, set
+`STRATAAI_WORKER_ORGANIZATION_IDS` to a comma-separated list of Organization UUIDs
+(maximum 100) and recreate the Worker. Empty scope disables Organization jobs.
+The Worker marks persisted events ready; realtime client transport is still pending.
+Automatic Organization discovery is not implemented. Review this scope when adding
+Organizations. Identity mail delivery uses its separate configuration and role.
+
 ## Stop
 
 ```bash

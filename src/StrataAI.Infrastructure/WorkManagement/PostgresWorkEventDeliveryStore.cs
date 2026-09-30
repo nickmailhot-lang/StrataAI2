@@ -46,7 +46,10 @@ public sealed class PostgresWorkEventDeliveryStore(PostgresConnectionFactory con
                 AND lease_expires_at>clock_timestamp());
             """))
             exists = (bool)(await verify.ExecuteScalarAsync(cancellationToken))!;
+        // A lease may expire while the readiness statement runs. Dispose without
+        // commit so any tentative effect is rolled back when the final fence fails.
+        if (!exists) return false;
         await session.CommitAsync(cancellationToken);
-        return exists;
+        return true;
     }
 }

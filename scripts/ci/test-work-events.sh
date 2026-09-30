@@ -5,7 +5,7 @@ BASE_URL="${1:-http://localhost:8080}"
 scratch="$(mktemp -d)"
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 restore() {
-  admin 'GRANT INSERT ON work_events,background_jobs TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON work_events,background_jobs TO strataai_api_runtime; DROP TRIGGER IF EXISTS ci_event_expire_claim ON work_events; DROP FUNCTION IF EXISTS public.ci_event_expire_claim();' >/dev/null
   docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
   rm -rf "$scratch"
 }
@@ -103,4 +103,23 @@ done
 test "$denied" = 3
 test "$(admin "SELECT ready_at IS NULL FROM work_events WHERE tenant_id='$organization' AND event_id='$held_event';")" = t
 test "$(admin "SELECT ready_at IS NULL FROM work_events WHERE tenant_id='$other_org' AND event_id='$bad_event';")" = t
+# Force lease expiry after the readiness write, before its final transaction fence.
+# The event must remain pending even though the UPDATE itself succeeded.
+docker compose -f compose.release.yml stop worker >/dev/null
+admin "UPDATE background_jobs SET available_at=clock_timestamp()+interval '1 day' WHERE tenant_id='$organization' AND idempotency_key LIKE 'ci-negative-%'; CREATE FUNCTION public.ci_event_expire_claim() RETURNS trigger LANGUAGE plpgsql AS \$\$ BEGIN IF NEW.event_id='$held_event'::uuid THEN UPDATE background_jobs SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE tenant_id=NEW.tenant_id AND safe_metadata->>'eventId'=NEW.event_id::text AND state='RUNNING'; END IF; RETURN NEW; END; \$\$; CREATE TRIGGER ci_event_expire_claim AFTER UPDATE OF ready_at ON work_events FOR EACH ROW EXECUTE FUNCTION public.ci_event_expire_claim(); UPDATE background_jobs SET available_at=clock_timestamp() WHERE tenant_id='$organization' AND safe_metadata->>'eventId'='$held_event' AND idempotency_key NOT LIKE 'ci-negative-%';" >/dev/null
+docker compose -f compose.release.yml -f scripts/ci/compose.work-event-test.yml up -d --wait --wait-timeout 180 worker >/dev/null
+for attempt in $(seq 1 30); do
+  fenced="$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$organization' AND safe_metadata->>'eventId'='$held_event' AND idempotency_key NOT LIKE 'ci-negative-%' AND last_error_code='job_handler_failed';")"
+  if test "$fenced" = 1; then break; fi
+  sleep 1
+done
+test "$fenced" = 1
+test "$(admin "SELECT ready_at IS NULL FROM work_events WHERE tenant_id='$organization' AND event_id='$held_event';")" = t
+admin "DROP TRIGGER ci_event_expire_claim ON work_events; DROP FUNCTION public.ci_event_expire_claim(); UPDATE background_jobs SET available_at=clock_timestamp() WHERE tenant_id='$organization' AND safe_metadata->>'eventId'='$held_event' AND idempotency_key NOT LIKE 'ci-negative-%';" >/dev/null
+for attempt in $(seq 1 30); do
+  recovered="$(admin "SELECT ready_at IS NOT NULL FROM work_events WHERE tenant_id='$organization' AND event_id='$held_event';")"
+  if test "$recovered" = t; then break; fi
+  sleep 1
+done
+test "$recovered" = t
 echo 'Exact API/Worker images prove atomic content-free events, contiguous concurrent sequences, duplicate retry, tenant isolation and idempotent delivery readiness.'
