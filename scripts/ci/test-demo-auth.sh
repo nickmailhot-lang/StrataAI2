@@ -35,6 +35,7 @@ grep -q '"email":"council@example.test"' /tmp/me.json
 
 "$(dirname "$0")/test-demo-organizations.sh" "$BASE_URL" "$COOKIE_JAR"
 "$(dirname "$0")/test-demo-onboarding.sh" "$BASE_URL" "$COOKIE_JAR"
+"$(dirname "$0")/test-demo-work-management.sh" "$BASE_URL" "$COOKIE_JAR"
 
 forgot_response="$(
   curl --fail --silent     -H 'Content-Type: application/json'     -d '{"email":"council@example.test"}'     "$BASE_URL/auth/password/forgot"
