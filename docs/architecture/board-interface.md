@@ -28,6 +28,21 @@ sending a mutation; name/title controls also enforce the server's length limits.
 Failed saves and save announcements are scoped to the card ID, so navigating to
 another card cannot inherit its conflict or confirmation state.
 
+Card fields are controlled drafts keyed by card identity. Each draft retains the
+version it began editing; a newer snapshot preserves dirty fields and focus,
+announces a conflict, and blocks both button and form submission until explicit
+recovery. An untouched editor adopts newer data. A local save acknowledgment
+updates its baseline before the refreshed snapshot arrives; an older snapshot
+cannot roll it back. `Refresh card` can fetch newer data while preserving drafts.
+Explicit discard loads authoritative data first and replaces the draft only on
+success. Transient refresh failures retain the editor and its draft; 401/403/404
+refresh or mutation failures clear the scoped board and editor. Superseded reads
+and scope changes abort earlier reads, including conflict recovery.
+
+These transitions prepare the editor for realtime invalidation. SignalR and
+durable event delivery are still outstanding; this screen does not yet refresh
+automatically in response to another client's mutations.
+
 `BoardScreen.test.tsx` checks authoritative/read-only rendering, scope mismatch,
 scope transitions, acknowledged creation, input validation and conflict recovery
 between and within card editors. The browser test

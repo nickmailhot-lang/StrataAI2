@@ -21,7 +21,9 @@ import {
   WorkRequestError,
   WorkInputError,
   type BoardSnapshot,
+  type WorkCard,
 } from "../../api/workManagement";
+import { CardDetailEditor } from "./CardDetailEditor";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
 type Creation = { kind: "list" | "card"; listId?: string };
 // PRD-01/04/07/08/09: scoped authoritative data and persisted creation/edits.
@@ -37,7 +39,9 @@ function BoardContent() {
   const [creation, setCreation] = useState<Creation>();
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
+  const activeRead = useRef<AbortController | undefined>(undefined);
   const [failure, setFailure] = useState<{ cardId?: string; error: Error }>();
+  const [acknowledged, setAcknowledged] = useState<WorkCard>();
   const [savedFor, setSavedFor] = useState<{ cardId?: string }>();
   const error = failure?.cardId === cardId ? failure?.error : undefined;
   const saved = Boolean(savedFor) && savedFor?.cardId === cardId;
@@ -49,21 +53,30 @@ function BoardContent() {
   }
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => () => activeRead.current?.abort(), []);
   useEffect(() => {
+    activeRead.current?.abort();
     const controller = new AbortController();
+    activeRead.current = controller;
     void loadBoard(organizationId, boardId, controller.signal)
       .then((snapshot) => {
         if (!controller.signal.aborted) setLoaded({ key, snapshot });
       })
       .catch((reason: unknown) => {
-        if (!controller.signal.aborted)
-          setLoaded({
-            key,
-            error:
-              reason instanceof Error
-                ? reason
-                : new Error("Unable to load this board."),
-          });
+        if (controller.signal.aborted) return;
+        const failure =
+          reason instanceof Error
+            ? reason
+            : new Error("Unable to load this board.");
+        const denied =
+          failure instanceof WorkRequestError &&
+          [401, 403, 404].includes(failure.status);
+        setLoaded((previous) => ({
+          key,
+          error: failure,
+          snapshot:
+            !denied && previous?.key === key ? previous.snapshot : undefined,
+        }));
       });
     return () => controller.abort();
   }, [organizationId, boardId, key, reload]);
@@ -79,7 +92,11 @@ function BoardContent() {
     if (location.state?.cardOverlay) navigate(-1);
     else navigate(boardPath, { replace: true });
   }
-  async function submit(event: React.FormEvent<HTMLFormElement>, edit = false) {
+  async function submit(
+    event: React.FormEvent<HTMLFormElement>,
+    edit = false,
+    expectedVersion?: number,
+  ) {
     event.preventDefault();
     if (busy || !editable) return;
     const form = new FormData(event.currentTarget);
@@ -98,13 +115,19 @@ function BoardContent() {
     setError(undefined);
     setSaved(false);
     try {
-      if (edit && card)
-        await mutation.current.send(`/cards/${card.id}`, "PATCH", {
-          title,
-          description: String(form.get("description") ?? ""),
-          version: card.version,
-        });
-      else if (creation?.kind === "list")
+      if (edit && card) {
+        const updated = await mutation.current.send<WorkCard>(
+          `/cards/${card.id}`,
+          "PATCH",
+          {
+            title,
+            description: String(form.get("description") ?? ""),
+            version: expectedVersion ?? card.version,
+          },
+        );
+        if (updated.id === card.id && Number.isSafeInteger(updated.version))
+          setAcknowledged(updated);
+      } else if (creation?.kind === "list")
         await mutation.current.send(`/boards/${boardId}/lists`, "POST", {
           name: title,
         });
@@ -116,11 +139,53 @@ function BoardContent() {
       setSaved(true);
       setReload((value) => value + 1);
     } catch (reason) {
+      if (
+        reason instanceof WorkRequestError &&
+        [401, 403, 404].includes(reason.status)
+      ) {
+        activeRead.current?.abort();
+        setLoaded({ key, error: reason });
+      }
       setError(
         reason instanceof WorkRequestError
           ? reason
           : new Error("Unable to save."),
       );
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function discardAndLoad(): Promise<WorkCard | undefined> {
+    setBusy(true);
+    activeRead.current?.abort();
+    const controller = new AbortController();
+    activeRead.current = controller;
+    try {
+      const latest = await loadBoard(
+        organizationId,
+        boardId,
+        controller.signal,
+      );
+      if (controller.signal.aborted) return undefined;
+      setLoaded({ key, snapshot: latest });
+      setError(undefined);
+      setSaved(false);
+      return latest.lists
+        .flatMap((column) => column.cards)
+        .find((item) => item.id === cardId);
+    } catch (reason) {
+      if (controller.signal.aborted) return undefined;
+      const failure =
+        reason instanceof Error
+          ? reason
+          : new Error("Unable to load this board.");
+      setError(failure);
+      if (
+        failure instanceof WorkRequestError &&
+        [401, 403, 404].includes(failure.status)
+      )
+        setLoaded({ key, error: failure });
+      throw failure;
     } finally {
       setBusy(false);
     }
@@ -135,7 +200,7 @@ function BoardContent() {
         ` Reference: ${failure.correlationId}`}
     </Alert>
   );
-  if (loadError)
+  if (loadError && !snapshot)
     return (
       <Stack spacing={2}>
         {message(loadError)}
@@ -150,6 +215,7 @@ function BoardContent() {
   if (!snapshot) return <CircularProgress aria-label="Loading board" />;
   return (
     <Stack spacing={2}>
+      {loadError && message(loadError)}
       <Stack
         direction="row"
         sx={{ justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}
@@ -294,58 +360,19 @@ function BoardContent() {
               This card is unavailable in this board.
             </Alert>
           ) : (
-            <Box
-              component="form"
-              key={`${card.id}/${card.version}`}
-              onSubmit={(event) => void submit(event, true)}
-            >
-              {saved && <Typography role="status">Changes saved.</Typography>}
-              {error && message(error)}
-              {error instanceof WorkRequestError && error.status === 409 && (
-                <Button
-                  disabled={busy}
-                  onClick={() => {
-                    setError(undefined);
-                    setLoaded(undefined);
-                    setReload((value) => value + 1);
-                  }}
-                >
-                  Discard edits and load latest card
-                </Button>
-              )}
-              <TextField
-                autoFocus
-                name="title"
-                label="Card title"
-                slotProps={{ htmlInput: { maxLength: 500 } }}
-                required
-                fullWidth
-                margin="normal"
-                defaultValue={card.title}
-                disabled={!editable || busy}
-              />
-              <TextField
-                name="description"
-                label="Description"
-                multiline
-                minRows={3}
-                fullWidth
-                margin="normal"
-                defaultValue={card.description ?? ""}
-                disabled={!editable || busy}
-              />
-              {editable && (
-                <Button
-                  type="submit"
-                  disabled={
-                    busy ||
-                    (error instanceof WorkRequestError && error.status === 409)
-                  }
-                >
-                  Save card
-                </Button>
-              )}
-            </Box>
+            <CardDetailEditor
+              key={card.id}
+              card={card}
+              acknowledged={acknowledged}
+              editable={Boolean(editable)}
+              busy={busy}
+              saved={saved}
+              error={error ?? loadError}
+              renderError={message}
+              onSubmit={(event, version) => void submit(event, true, version)}
+              onDiscard={discardAndLoad}
+              onRefresh={() => setReload((value) => value + 1)}
+            />
           )}
         </DialogContent>
         <DialogActions>

@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { BoardScreen } from "./BoardScreen";
 import type { BoardSnapshot } from "../../api/workManagement";
@@ -218,6 +224,106 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save card" })).toBeEnabled();
+  });
+  it("preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot", async () => {
+    const latest = {
+      ...fixture,
+      lists: [
+        {
+          ...fixture.lists[0],
+          cards: [
+            { ...fixture.lists[0].cards[0], title: "Remote title", version: 4 },
+          ],
+        },
+      ],
+    };
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response(fixture))
+      .mockResolvedValueOnce(response({ detail: "private SQL" }, 503))
+      .mockResolvedValueOnce(response(latest))
+      .mockResolvedValueOnce(response(latest));
+    vi.stubGlobal("fetch", fetcher);
+    mount("/app/org-1/boards/board-1/cards/card-1");
+    fireEvent.change(await screen.findByLabelText(/Card title/), {
+      target: { value: "My preserved draft" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Refresh card" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Service temporarily unavailable",
+    );
+    expect(screen.getByLabelText(/Card title/)).toHaveValue(
+      "My preserved draft",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh card" }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Your draft is preserved",
+      ),
+    );
+    expect(screen.getByLabelText(/Card title/)).toHaveValue(
+      "My preserved draft",
+    );
+    expect(screen.getByRole("button", { name: "Save card" })).toBeDisabled();
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Discard edits and load latest card",
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Card title/)).toHaveValue("Remote title"),
+    );
+    expect(screen.getByRole("button", { name: "Save card" })).toBeEnabled();
+  });
+  it.each([401, 403, 404])(
+    "clears the scoped board and its draft on a %s refresh denial",
+    async (status) => {
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockResolvedValueOnce(response(fixture))
+          .mockResolvedValueOnce(response({}, status)),
+      );
+      mount("/app/org-1/boards/board-1/cards/card-1");
+      fireEvent.change(await screen.findByLabelText(/Card title/), {
+        target: { value: "Protected draft" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Refresh card" }));
+      await screen.findByRole("button", { name: "Retry" });
+      expect(screen.queryByLabelText(/Card title/)).not.toBeInTheDocument();
+      expect(screen.queryByText("Persisted board")).not.toBeInTheDocument();
+      expect(
+        screen.queryByDisplayValue("Protected draft"),
+      ).not.toBeInTheDocument();
+    },
+  );
+  it("cannot restore scoped data from an older read after a denied save", async () => {
+    let finishRead!: (value: Response) => void;
+    let reads = 0;
+    let readSignal: AbortSignal | undefined;
+    const fetcher = vi.fn((_path: string, options?: RequestInit) => {
+      if (options?.method === "PATCH")
+        return Promise.resolve(response({}, 403));
+      if (++reads === 1) return Promise.resolve(response(fixture));
+      readSignal = options?.signal as AbortSignal;
+      return new Promise<Response>((resolve) => {
+        finishRead = resolve;
+      });
+    });
+    vi.stubGlobal("fetch", fetcher);
+    mount("/app/org-1/boards/board-1/cards/card-1");
+    await screen.findByLabelText(/Card title/);
+    fireEvent.click(screen.getByRole("button", { name: "Refresh card" }));
+    await waitFor(() => expect(reads).toBe(2));
+    fireEvent.click(screen.getByRole("button", { name: "Save card" }));
+    await screen.findByRole("button", { name: "Retry" });
+    expect(readSignal?.aborted).toBe(true);
+    await act(async () => {
+      finishRead(response(fixture));
+    });
+    expect(screen.queryByLabelText(/Card title/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Persisted board")).not.toBeInTheDocument();
   });
   it("clears the previous board while a new organization is loading", async () => {
     const fetcher = vi

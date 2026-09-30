@@ -125,7 +125,10 @@ for (const viewport of [
       .getByLabel("Card title", { exact: false })
       .fill("Conflicting draft");
     await second
-      .getByRole("button", { name: "Save card", exact: true })
+      .getByRole("button", {
+        name: viewport.name === "mobile" ? "Refresh card" : "Save card",
+        exact: true,
+      })
       .click();
     await expect(second.getByRole("alert")).toContainText("changed elsewhere");
     await expect(second.getByLabel("Card title", { exact: false })).toHaveValue(
