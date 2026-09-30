@@ -83,7 +83,41 @@ The release browser fixture connects two sockets through the real Nginx edge,
 consumes PostgreSQL events made ready by the actual Worker, reconnects from a cursor,
 and verifies copied-session logout revocation. Its protocol probe is test-only.
 
-This is not full PRD-22 completion. The Board UI client, deduplication/reconnect/snapshot recovery,
-automatic fallback, optimistic movement reconciliation, performance/accessibility
-and complete telemetry/acceptance coverage remain to implement. The current Board
-screen still uses explicit refresh and its existing dirty-draft protections.
+The Board screen now uses `@microsoft/signalr` 10.0.11, restricted to same-origin
+WebSockets with cookie credentials and the CSRF intent header for negotiation.
+SDK logging is disabled; server/provider error bodies are never shown. The SDK
+owns framing/heartbeats and reconnects at 0, 2, 10 and 30 seconds. Failed initial
+starts or exhausted reconnects retry at 1, 2, 5, 10 and then 30 seconds; the attempt
+counter resets only after a valid replay page. Every reconnect subscribes from the
+last accepted string cursor. Scope changes/unmount cancel timers, streams and the
+connection, and stale callbacks cannot affect another scope.
+
+Client cursor advancement validates scope, contiguous sequence, decimal bigint
+range, page size and flags before committing any part of a batch. A bounded cache
+retains 1,024 event IDs/sequences to deduplicate repeats without rewinding. Invalid
+pages retain the old cursor and trigger sanitized fallback/reconnect. History reset
+clears the cursor/cache and requests a fresh authorized snapshot. Repeated resets
+do not cause a refresh storm. Snapshot invalidations coalesce over 100 ms; reads
+already in flight complete before one queued refresh rather than being repeatedly
+aborted by incoming events.
+
+The screen automatically checks snapshots every 10 seconds while disconnected,
+delivery is pending or history reset remains unresolved. Transport failures and
+reconnects also request an immediate coalesced refresh. A transport initialization
+failure retains snapshot polling. Normal live delivery refreshes authoritative
+state only for new events; an unsuccessful snapshot read also retries automatically
+after 10 seconds, so advancing the event cursor cannot leave failed refreshes stale
+indefinitely. Explicit refresh is always available. Dirty card fields,
+base version and focus are preserved on incoming newer snapshots; edits cannot
+silently overwrite them. A denied snapshot clears protected state and tears down
+the subscription. The UI announces connection/recovery/fallback status politely.
+
+Unit tests cover deduplication, atomic invalid/gapped/cross-scope rejection, bigint
+precision, reconnect cursors/backoff, polling, repeated resets and disposal. The
+desktop/phone browser fixture exercises the production SDK and actual Board UI,
+two-client pushed updates, dirty fields/focus, outage fallback, reconnection and
+copied-session logout revocation. CI uses the exact images and real Worker-ready
+PostgreSQL events; local Demo validates the same client against immediate readiness.
+
+This is not full PRD-22 completion. Optimistic movement reconciliation, large-board
+performance, complete accessibility/telemetry and all acceptance coverage remain.

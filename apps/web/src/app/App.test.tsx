@@ -44,3 +44,4 @@ describe("StrataAI2 application shell", () => {
     expect(screen.queryByText("Council Operations")).not.toBeInTheDocument();
   });
 });
+vi.mock("../api/boardLive", () => ({ watchBoard: vi.fn(() => () => {}) }));

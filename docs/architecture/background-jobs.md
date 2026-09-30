@@ -59,8 +59,8 @@ Sequences are scoped per board and rollback without gaps; keyed command replay
 does not append again. Demo retains envelopes in memory without durable delivery.
 The [replay API](work-synchronization.md) freshly authorizes Board access and
 advances only through contiguous ready sequences; a later ready event cannot skip
-an earlier pending one. The SignalR server streams these authorized pages; Board UI
-client integration/recovery remains pending.
+an earlier pending one. The SignalR server streams these authorized pages, and the
+Board client recovers cursors and refreshes authorized snapshots automatically.
 Global identity verification/reset delivery now has its own scoped queue and
 Resend provider under [identity-email.md](identity-email.md); it does not invent
 an Organization or bypass this queue's RLS. Outbound effects still need provider

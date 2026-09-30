@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -24,6 +24,7 @@ import {
   type WorkCard,
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
+import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
 type Creation = { kind: "list" | "card"; listId?: string };
 // PRD-01/04/07/08/09: scoped authoritative data and persisted creation/edits.
@@ -40,6 +41,9 @@ function BoardContent() {
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
+  const reading = useRef(false);
+  const queuedRefresh = useRef(false);
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>("connecting");
   const accessEpoch = useRef(0);
   const [failure, setFailure] = useState<{ cardId?: string; error: Error }>();
   const [acknowledged, setAcknowledged] = useState<WorkCard>();
@@ -55,6 +59,7 @@ function BoardContent() {
   function clearDeniedScope(failure: Error) {
     accessEpoch.current += 1;
     activeRead.current?.abort();
+    queuedRefresh.current = false;
     mutation.current = new WorkMutationIntent();
     setAcknowledged(undefined);
     setSavedFor(undefined);
@@ -64,11 +69,20 @@ function BoardContent() {
   }
   const navigate = useNavigate();
   const location = useLocation();
+  function finishRead(controller: AbortController) {
+    if (activeRead.current !== controller) return;
+    reading.current = false;
+    if (queuedRefresh.current && !controller.signal.aborted) {
+      queuedRefresh.current = false;
+      setReload((value) => value + 1);
+    }
+  }
   useEffect(() => () => activeRead.current?.abort(), []);
   useEffect(() => {
     activeRead.current?.abort();
     const controller = new AbortController();
     activeRead.current = controller;
+    reading.current = true;
     void loadBoard(organizationId, boardId, controller.signal)
       .then((snapshot) => {
         if (!controller.signal.aborted) setLoaded({ key, snapshot });
@@ -92,11 +106,32 @@ function BoardContent() {
           snapshot:
             !denied && previous?.key === key ? previous.snapshot : undefined,
         }));
-      });
+      })
+      .finally(() => finishRead(controller));
     return () => controller.abort();
   }, [organizationId, boardId, key, reload]);
   const snapshot = loaded?.key === key ? loaded.snapshot : undefined;
   const loadError = loaded?.key === key ? loaded.error : undefined;
+  const subscribed = Boolean(snapshot);
+  const invalidate = useEffectEvent(() => {
+    if (reading.current) queuedRefresh.current = true;
+    else setReload((value) => value + 1);
+  });
+  useEffect(() => {
+    if (!subscribed) return;
+    return watchBoard({
+      organizationId,
+      boardId,
+      invalidate: () => invalidate(),
+      status: setLiveStatus,
+    });
+  }, [organizationId, boardId, subscribed]);
+  const retrySnapshot = Boolean(snapshot && loadError);
+  useEffect(() => {
+    if (!retrySnapshot) return;
+    const retry = setTimeout(() => invalidate(), 10_000);
+    return () => clearTimeout(retry);
+  }, [retrySnapshot, reload]);
   const card = snapshot?.lists
     .flatMap((column) => column.cards)
     .find((item) => item.id === cardId);
@@ -178,6 +213,7 @@ function BoardContent() {
     activeRead.current?.abort();
     const controller = new AbortController();
     activeRead.current = controller;
+    reading.current = true;
     try {
       const latest = await loadBoard(
         organizationId,
@@ -205,6 +241,7 @@ function BoardContent() {
         clearDeniedScope(failure);
       throw failure;
     } finally {
+      finishRead(controller);
       setBusy(false);
     }
   }
@@ -234,6 +271,15 @@ function BoardContent() {
   return (
     <Stack spacing={2}>
       {loadError && message(loadError)}
+      <Typography role="status" aria-live="polite" variant="body2">
+        {liveStatus === "live"
+          ? "Live updates connected."
+          : liveStatus === "connecting"
+            ? "Connecting live updates."
+            : liveStatus === "recovering"
+              ? "Recovering board updates."
+              : "Live updates unavailable. Checking for changes automatically."}
+      </Typography>
       <Stack
         direction="row"
         sx={{ justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}

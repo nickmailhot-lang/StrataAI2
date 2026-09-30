@@ -41,11 +41,15 @@ and scope changes abort earlier reads, including conflict recovery.
 Access loss also clears retained acknowledgments, retry intents and save status;
 responses from mutations begun before that loss cannot repopulate those states.
 
-These transitions prepare the editor for realtime invalidation. Durable events,
-Worker readiness and the [authorized replay API](work-synchronization.md) are now
-available, and the SignalR server now streams authorized replay pages. Board UI
-client integration is still outstanding; this screen does not yet refresh
-automatically in response to another client's mutations.
+The screen now consumes the [authorized SignalR stream](work-synchronization.md)
+using Microsoft's pinned JavaScript SDK. Durable Worker-ready changes invalidate
+the scoped snapshot automatically. Duplicate events do not trigger another read;
+bursts coalesce, and an in-flight read finishes before one queued live refresh.
+Reconnect resumes the accepted cursor. Pending delivery, transport failure and
+history reset use automatic snapshot checks, while explicit refresh remains usable.
+Live refreshes use the existing dirty-draft and access-loss protections above.
+Connection/recovery/fallback status uses a polite accessible status announcement.
+Changing scope, losing access or unmounting cancels the subscription and timers.
 
 `BoardScreen.test.tsx` checks authoritative/read-only rendering, scope mismatch,
 scope transitions, acknowledged creation, input validation and conflict recovery
@@ -60,6 +64,6 @@ and anonymous public read-only access. The normal CI
 browser stage runs this test against the already-built release image archives.
 
 This increment does not complete those tickets. List/card movement, lifecycle
-controls, copy, Markdown, attachments, realtime updates and the remaining ticket
+controls, copy, Markdown, attachments, optimistic movement reconciliation and the remaining ticket
 acceptance criteria still require implementation. Organization/board discovery
 and creation are documented in `organization-discovery.md`.

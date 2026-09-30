@@ -40,7 +40,7 @@ To enable the Work event delivery Worker, set
 `STRATAAI_WORKER_ORGANIZATION_IDS` to a comma-separated list of Organization UUIDs
 (maximum 100) and recreate the Worker. Empty scope disables Organization jobs.
 The Worker marks persisted events ready for authorized replay and SignalR streams;
-Board UI client integration is still pending. Configure `STRATAAI_REALTIME_PUBLIC_ORIGIN`
+The Board UI consumes these streams with reconnect and snapshot fallback. Configure `STRATAAI_REALTIME_PUBLIC_ORIGIN`
 with the exact public browser origin (scheme, hostname and port). If it is empty,
 the API uses `STRATAAI_PUBLIC_ORIGIN`; if both are empty, live transport is disabled
 while normal read/write APIs remain available. Invalid configured origins reject

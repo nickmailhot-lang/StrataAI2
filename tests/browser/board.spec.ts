@@ -113,6 +113,9 @@ for (const viewport of [
     await expect(second.getByLabel("Card title", { exact: false })).toHaveValue(
       "Inspect roof",
     );
+    await second
+      .getByLabel("Card title", { exact: false })
+      .fill("Conflicting draft");
     await page
       .getByLabel("Card title", { exact: false })
       .fill("Inspect roof and gutters");
@@ -120,13 +123,12 @@ for (const viewport of [
       .getByLabel("Description", { exact: true })
       .fill("Persistent edit");
     await activate("Save card");
-    await expect(page.getByRole("status")).toHaveText("Changes saved.");
-    await second
-      .getByLabel("Card title", { exact: false })
-      .fill("Conflicting draft");
+    await expect(
+      page.getByRole("status").filter({ hasText: "Changes saved." }),
+    ).toHaveText("Changes saved.");
     await second
       .getByRole("button", {
-        name: viewport.name === "mobile" ? "Refresh card" : "Save card",
+        name: "Refresh card",
         exact: true,
       })
       .click();

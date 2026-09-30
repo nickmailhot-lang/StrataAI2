@@ -8,6 +8,8 @@ import {
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { BoardScreen } from "./BoardScreen";
 import type { BoardSnapshot } from "../../api/workManagement";
+import { watchBoard } from "../../api/boardLive";
+vi.mock("../../api/boardLive", () => ({ watchBoard: vi.fn(() => () => {}) }));
 
 const fixture: BoardSnapshot = {
   board: {
@@ -61,6 +63,77 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it("retries a failed live snapshot without requiring another event", async () => {
+    let invalidate = () => {};
+    vi.mocked(watchBoard).mockImplementationOnce((options) => {
+      invalidate = options.invalidate;
+      return () => {};
+    });
+    const newer = structuredClone(fixture);
+    newer.lists[0].cards[0].title = "Automatically recovered title";
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response(fixture))
+      .mockResolvedValueOnce(response({}, 503))
+      .mockResolvedValueOnce(response(newer));
+    vi.stubGlobal("fetch", fetcher);
+    mount();
+    await screen.findByRole("link", { name: "Inspect roof" });
+    vi.useFakeTimers();
+    try {
+      await act(async () => invalidate());
+      expect(fetcher).toHaveBeenCalledTimes(2);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10_000);
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(
+      await screen.findByRole("link", {
+        name: "Automatically recovered title",
+      }),
+    ).toBeVisible();
+  });
+  it("preserves dirty fields and focus on a live update, then clears protected state on revoked access", async () => {
+    let invalidate = () => {};
+    const dispose = vi.fn();
+    vi.mocked(watchBoard).mockImplementationOnce((options) => {
+      invalidate = options.invalidate;
+      return dispose;
+    });
+    const newer = structuredClone(fixture);
+    newer.lists[0].cards[0] = {
+      ...newer.lists[0].cards[0],
+      title: "Other client edit",
+      version: 4,
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(response(fixture))
+        .mockResolvedValueOnce(response(newer))
+        .mockResolvedValueOnce(response({}, 403)),
+    );
+    mount("/app/org-1/boards/board-1/cards/card-1");
+    const title = await screen.findByRole("textbox", { name: /Card title/ });
+    title.focus();
+    fireEvent.change(title, { target: { value: "My unsaved draft" } });
+    act(() => invalidate());
+    await screen.findByText(/This card changed elsewhere/);
+    expect(title).toHaveValue("My unsaved draft");
+    expect(title).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Save card" })).toBeDisabled();
+    act(() => invalidate());
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("textbox", { name: /Card title/ }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(screen.queryByText("Persisted board")).not.toBeInTheDocument();
+    expect(dispose).toHaveBeenCalledTimes(1);
+  });
   it("loads authoritative data and hides write actions for read-only access", async () => {
     const fetcher = vi
       .fn()
