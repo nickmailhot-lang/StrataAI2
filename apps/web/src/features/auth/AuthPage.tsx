@@ -1,3 +1,4 @@
+import { apiFetch } from '../../api/apiFetch';
 import { useState } from 'react';
 import {
   Alert,
@@ -35,7 +36,7 @@ export function AuthPage() {
     setError(undefined);
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         mode === 'login' ? '/auth/login' : '/auth/register',
         {
           method: 'POST',

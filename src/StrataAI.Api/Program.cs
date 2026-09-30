@@ -47,6 +47,8 @@ builder.Services.AddStrataAiWorkManagement(runtime);
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseRouting();
+app.UseMiddleware<CsrfProtectionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

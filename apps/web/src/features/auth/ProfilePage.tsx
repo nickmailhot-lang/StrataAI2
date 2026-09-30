@@ -1,3 +1,4 @@
+import { apiFetch } from '../../api/apiFetch';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -36,7 +37,7 @@ export function ProfilePage() {
   useEffect(() => {
     let active = true;
 
-    void fetch('/me', { credentials: 'include' })
+    void apiFetch('/me', { credentials: 'include' })
       .then(async (response) => {
         if (response.status === 401) {
           navigate('/login', { replace: true });
@@ -72,7 +73,7 @@ export function ProfilePage() {
     setError(undefined);
     setSaved(false);
     try {
-      const response = await fetch('/me', {
+      const response = await apiFetch('/me', {
         method: 'PATCH', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ displayName: draft.displayName, avatarUrl: draft.avatarUrl ?? '', locale: draft.locale, timezone: draft.timezone, version: draft.version }),
@@ -102,7 +103,7 @@ export function ProfilePage() {
     setBusy(true);
     setError(undefined);
     try {
-      const response = await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+      const response = await apiFetch('/auth/logout', { method: 'POST', credentials: 'include' });
       if (!response.ok && response.status !== 401) throw new Error('Sign out failed');
       navigate('/login', { replace: true });
     } catch {

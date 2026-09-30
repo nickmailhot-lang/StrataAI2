@@ -7,10 +7,10 @@ scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT
 trap 'echo "Profile concurrency failed at line $LINENO" >&2' ERR
 
-curl --fail --silent --show-error -b "$COOKIE_JAR" "$BASE_URL/me" > "$scratch/before.json"
+curl -H 'X-StrataAI-Request: 1' --fail --silent --show-error -b "$COOKIE_JAR" "$BASE_URL/me" > "$scratch/before.json"
 version="$(jq -r '.version' "$scratch/before.json")"
 for invalid in '{}' '{"version":0}' '{"version":-1}'; do
-  status="$(curl --silent --show-error -o "$scratch/error.json" -w '%{http_code}' \
+  status="$(curl -H 'X-StrataAI-Request: 1' --silent --show-error -o "$scratch/error.json" -w '%{http_code}' \
     -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' -d "$invalid" "$BASE_URL/me")"
   test "$status" = "400"
   jq -e '.code == "invalid_version"' "$scratch/error.json" >/dev/null
@@ -18,7 +18,7 @@ done
 
 patch() {
   local name="$1"
-  curl --silent --show-error -o "$scratch/$name.json" -w '%{http_code}' \
+  curl -H 'X-StrataAI-Request: 1' --silent --show-error -o "$scratch/$name.json" -w '%{http_code}' \
     -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
     -d "$(jq -nc --arg name "$name" --argjson version "$version" '{displayName:$name,version:$version}')" \
     "$BASE_URL/me" > "$scratch/$name.status"
@@ -37,15 +37,15 @@ for name in 'First browser' 'Second browser'; do
     jq -e '.code == "version_conflict"' "$scratch/$name.json" >/dev/null
   fi
 done
-curl --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" > "$scratch/after.json"
+curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" > "$scratch/after.json"
 jq -e --arg winner "$winner" --argjson version "$((version + 1))" \
   '.displayName == $winner and .version == $version' "$scratch/after.json" >/dev/null
 # Retrying a completed save with its old version must never overwrite the winner.
 patch 'Stale retry'
 test "$(cat "$scratch/Stale retry.status")" = "409"
-curl --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" | jq -e --arg winner "$winner" '.displayName == $winner' >/dev/null
+curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" | jq -e --arg winner "$winner" '.displayName == $winner' >/dev/null
 # Reload and intentionally merge, using the new version.
-curl --fail --silent --show-error -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
+curl -H 'X-StrataAI-Request: 1' --fail --silent --show-error -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
   -d "$(jq -nc --argjson version "$((version + 1))" '{displayName:"Merged profile",version:$version}')" \
   "$BASE_URL/me" | jq -e --argjson version "$((version + 2))" '.displayName == "Merged profile" and .version == $version' >/dev/null
 echo 'Profile version, simultaneous update, stale retry and recovery checks passed.'

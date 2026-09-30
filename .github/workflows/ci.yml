@@ -233,7 +233,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          status="$(curl --silent --output /dev/null --write-out '%{http_code}'             -X POST http://127.0.0.1:8080/api/demo/reset)"
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}'             -H 'X-StrataAI-Request: 1' -X POST http://127.0.0.1:8080/api/demo/reset)"
           test "$status" = "404"
 
       - name: Demo API runs without PostgreSQL
@@ -250,7 +250,7 @@ jobs:
           done
 
           curl --fail --silent http://127.0.0.1:18080/api/demo/state >/dev/null
-          curl --fail --silent -X POST http://127.0.0.1:18080/api/demo/reset >/dev/null
+          curl --fail --silent -H 'X-StrataAI-Request: 1' -X POST http://127.0.0.1:18080/api/demo/reset >/dev/null
           scripts/ci/test-demo-auth.sh http://127.0.0.1:18080
           docker stop strataai-demo-api
 

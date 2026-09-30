@@ -6,7 +6,7 @@ COOKIE_JAR="$(mktemp)"
 trap 'rm -f "$COOKIE_JAR"' EXIT
 
 register_status="$(
-  curl --silent --output /tmp/register.json --write-out '%{http_code}'     -H 'Content-Type: application/json'     -d '{"email":"council@example.test","password":"correct-horse-battery-staple","displayName":"Council Test","locale":"en-CA","timezone":"America/Vancouver"}'     "$BASE_URL/auth/register"
+  curl -H 'X-StrataAI-Request: 1' --silent --output /tmp/register.json --write-out '%{http_code}'     -H 'Content-Type: application/json'     -d '{"email":"council@example.test","password":"correct-horse-battery-staple","displayName":"Council Test","locale":"en-CA","timezone":"America/Vancouver"}'     "$BASE_URL/auth/register"
 )"
 if [ "$register_status" != "201" ]; then
   echo "Registration failed with HTTP $register_status" >&2
@@ -15,7 +15,7 @@ if [ "$register_status" != "201" ]; then
 fi
 
 login_status="$(
-  curl --silent --output /tmp/login.json --write-out '%{http_code}'     -c "$COOKIE_JAR"     -H 'Content-Type: application/json'     -d '{"email":"COUNCIL@example.test","password":"correct-horse-battery-staple"}'     "$BASE_URL/auth/login"
+  curl -H 'X-StrataAI-Request: 1' --silent --output /tmp/login.json --write-out '%{http_code}'     -c "$COOKIE_JAR"     -H 'Content-Type: application/json'     -d '{"email":"COUNCIL@example.test","password":"correct-horse-battery-staple"}'     "$BASE_URL/auth/login"
 )"
 if [ "$login_status" != "200" ]; then
   echo "Login failed with HTTP $login_status" >&2
@@ -24,7 +24,7 @@ if [ "$login_status" != "200" ]; then
 fi
 
 me_status="$(
-  curl --silent --output /tmp/me.json --write-out '%{http_code}'     -b "$COOKIE_JAR"     "$BASE_URL/me"
+  curl -H 'X-StrataAI-Request: 1' --silent --output /tmp/me.json --write-out '%{http_code}'     -b "$COOKIE_JAR"     "$BASE_URL/me"
 )"
 if [ "$me_status" != "200" ]; then
   echo "/me failed with HTTP $me_status" >&2
@@ -32,26 +32,27 @@ if [ "$me_status" != "200" ]; then
   exit 1
 fi
 grep -q '"email":"council@example.test"' /tmp/me.json
+"$(dirname "$0")/test-csrf.sh" "$BASE_URL" "$COOKIE_JAR"
 
 # PRD-02-TC-01/03/04/06: persisted profile changes, validation and authorization.
 profile_version="$(jq -r '.version' /tmp/me.json)"
-profile="$(curl --fail --silent --show-error -X PATCH -b "$COOKIE_JAR" \
+profile="$(curl -H 'X-StrataAI-Request: 1' --fail --silent --show-error -X PATCH -b "$COOKIE_JAR" \
   -H 'Content-Type: application/json' \
   -d "$(jq -nc --argjson version "$profile_version" '{displayName:"Updated Council",avatarUrl:"https://example.test/avatar.png",locale:"fr-CA",timezone:"UTC",version:$version}')" \
   "$BASE_URL/me")"
 test "$(printf '%s' "$profile" | jq -r '.displayName')" = "Updated Council"
 test "$(printf '%s' "$profile" | jq -r '.timezone')" = "UTC"
 profile_version="$(printf '%s' "$profile" | jq -r '.version')"
-curl --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" | jq -e '.locale == "fr-CA" and .timezone == "UTC"' >/dev/null
+curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" | jq -e '.locale == "fr-CA" and .timezone == "UTC"' >/dev/null
 for invalid in '{"displayName":" "}' '{"avatarUrl":"javascript:alert(1)"}' '{"timezone":"Not/AZone"}' '{"locale":""}'; do
-  status="$(curl --silent --output /tmp/invalid-profile.json --write-out '%{http_code}' \
+  status="$(curl -H 'X-StrataAI-Request: 1' --silent --output /tmp/invalid-profile.json --write-out '%{http_code}' \
     -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' -d "$(printf '%s' "$invalid" | jq --argjson version "$profile_version" '. + {version:$version}')" "$BASE_URL/me")"
   test "$status" = "400"
 done
-curl --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" | jq -e '.displayName == "Updated Council" and .timezone == "UTC"' >/dev/null
-curl --fail --silent -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
+curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" | jq -e '.displayName == "Updated Council" and .timezone == "UTC"' >/dev/null
+curl -H 'X-StrataAI-Request: 1' --fail --silent -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
   -d "$(jq -nc --argjson version "$profile_version" '{avatarUrl:"",version:$version}')" "$BASE_URL/me" | jq -e '.avatarUrl == null' >/dev/null
-unauthorized_profile="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+unauthorized_profile="$(curl -H 'X-StrataAI-Request: 1' --silent --output /dev/null --write-out '%{http_code}' \
   -X PATCH -H 'Content-Type: application/json' -d '{"displayName":"Intruder"}' "$BASE_URL/me")"
 test "$unauthorized_profile" = "401"
 "$(dirname "$0")/test-profile-concurrency.sh" "$BASE_URL" "$COOKIE_JAR"
@@ -61,28 +62,28 @@ test "$unauthorized_profile" = "401"
 "$(dirname "$0")/test-demo-work-management.sh" "$BASE_URL" "$COOKIE_JAR"
 
 forgot_response="$(
-  curl --fail --silent     -H 'Content-Type: application/json'     -d '{"email":"council@example.test"}'     "$BASE_URL/auth/password/forgot"
+  curl -H 'X-StrataAI-Request: 1' --fail --silent     -H 'Content-Type: application/json'     -d '{"email":"council@example.test"}'     "$BASE_URL/auth/password/forgot"
 )"
 reset_token="$(printf '%s' "$forgot_response" | jq -r '.resetToken')"
 test -n "$reset_token"
 test "$reset_token" != "null"
 
-curl --fail --silent   -H 'Content-Type: application/json'   -d "$(jq -nc --arg token "$reset_token"     '{token:$token,newPassword:"new-correct-horse-battery-staple"}')"   "$BASE_URL/auth/password/reset" >/dev/null
+curl -H 'X-StrataAI-Request: 1' --fail --silent   -H 'Content-Type: application/json'   -d "$(jq -nc --arg token "$reset_token"     '{token:$token,newPassword:"new-correct-horse-battery-staple"}')"   "$BASE_URL/auth/password/reset" >/dev/null
 
 revoked_status="$(
-  curl --silent --output /dev/null --write-out '%{http_code}'     -b "$COOKIE_JAR"     "$BASE_URL/me"
+  curl -H 'X-StrataAI-Request: 1' --silent --output /dev/null --write-out '%{http_code}'     -b "$COOKIE_JAR"     "$BASE_URL/me"
 )"
 if [ "$revoked_status" != "401" ]; then
   echo "Password reset did not revoke the old session; /me returned $revoked_status" >&2
   exit 1
 fi
 
-curl --fail --silent   -c "$COOKIE_JAR"   -H 'Content-Type: application/json'   -d '{"email":"council@example.test","password":"new-correct-horse-battery-staple"}'   "$BASE_URL/auth/login" >/dev/null
+curl -H 'X-StrataAI-Request: 1' --fail --silent   -c "$COOKIE_JAR"   -H 'Content-Type: application/json'   -d '{"email":"council@example.test","password":"new-correct-horse-battery-staple"}'   "$BASE_URL/auth/login" >/dev/null
 
-curl --fail --silent   -b "$COOKIE_JAR"   -X POST   "$BASE_URL/me/deactivate" >/dev/null
+curl -H 'X-StrataAI-Request: 1' --fail --silent   -b "$COOKIE_JAR"   -X POST   "$BASE_URL/me/deactivate" >/dev/null
 
 post_deactivate_login="$(
-  curl --silent --output /dev/null --write-out '%{http_code}'     -H 'Content-Type: application/json'     -d '{"email":"council@example.test","password":"new-correct-horse-battery-staple"}'     "$BASE_URL/auth/login"
+  curl -H 'X-StrataAI-Request: 1' --silent --output /dev/null --write-out '%{http_code}'     -H 'Content-Type: application/json'     -d '{"email":"council@example.test","password":"new-correct-horse-battery-staple"}'     "$BASE_URL/auth/login"
 )"
 if [ "$post_deactivate_login" != "401" ]; then
   echo "Deactivated account login returned $post_deactivate_login instead of 401" >&2
