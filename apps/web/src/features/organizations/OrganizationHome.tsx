@@ -15,7 +15,11 @@ import {
   Typography,
 } from "@mui/material";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { workRequest, WorkRequestError } from "../../api/workManagement";
+import {
+  workRequest,
+  WorkRequestError,
+  WorkInputError,
+} from "../../api/workManagement";
 
 type OrganizationSummary = {
   organization: {
@@ -93,7 +97,10 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
     if (busy) return;
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") ?? "").trim();
-    if (!name) return;
+    if (!name) {
+      setError(new WorkInputError("Enter a name."));
+      return;
+    }
     setBusy(true);
     setError(undefined);
     try {
@@ -140,7 +147,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   function failure(reason: Error) {
     return (
       <Alert severity="error">
-        {reason instanceof WorkRequestError
+        {reason instanceof WorkRequestError || reason instanceof WorkInputError
           ? reason.message
           : "Unable to contact StrataAI2. Please try again."}
         {reason instanceof WorkRequestError &&

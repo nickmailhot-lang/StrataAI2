@@ -37,10 +37,14 @@ export class WorkRequestError extends Error {
           ? "Sign in to continue."
           : status === 403 || status === 404
             ? "This board or action is unavailable."
-            : "Unable to complete the request. Please try again.",
+            : status === 400
+              ? "Check the fields and try again."
+              : "Unable to complete the request. Please try again.",
     );
   }
 }
+// Only local, fixed validation messages use this type; never API response text.
+export class WorkInputError extends Error {}
 export async function workRequest<T>(
   path: string,
   options: RequestInit = {},

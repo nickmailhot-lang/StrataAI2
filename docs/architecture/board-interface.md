@@ -21,11 +21,18 @@ that unsaved data persisted. Conflicts preserve the draft, disable resubmission
 and provide an explicit discard-and-load-latest action. Descriptions are rendered
 as text. Card links, dialogs, form labels, focus outlines, progress and save status
 use the existing MUI components.
+Whitespace-only names/titles produce a fixed local validation message without
+sending a mutation; name/title controls also enforce the server's length limits.
+Failed saves and save announcements are scoped to the card ID, so navigating to
+another card cannot inherit its conflict or confirmation state.
 
 `BoardScreen.test.tsx` checks authoritative/read-only rendering, scope mismatch,
-scope transitions, acknowledged creation and conflict recovery. The browser test
-`tests/browser/board.spec.ts` creates an account, organization and board through
-the API, then creates lists/cards and edits through the UI. It verifies persisted
+scope transitions, acknowledged creation, input validation and conflict recovery
+between and within card editors. The browser test
+`tests/browser/board.spec.ts` creates a disposable account through the API, then
+creates organizations, boards, lists/cards and edits through the UI. The complete
+flow runs at desktop and phone sizes, with keyboard activation of primary
+creation/save controls on the phone. It verifies persisted
 reloads, two-browser conflicts, direct card URLs, back/close navigation, wrong
 organization rejection and anonymous public read-only access. The normal CI
 browser stage runs this test against the already-built release image archives.

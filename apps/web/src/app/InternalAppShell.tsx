@@ -61,9 +61,34 @@ export function InternalAppShell() {
           <Typography variant="h6" component="h1" sx={{ flexGrow: 1 }}>
             StrataAI2
           </Typography>
-          <Typography variant="body2" sx={{ mr: 1 }}>
+          <Typography
+            variant="body2"
+            sx={{ mr: 1, display: { xs: "none", sm: "block" } }}
+          >
             Organization: {organizationId ?? "Unknown"}
           </Typography>
+          <Tooltip title="Organizations">
+            <IconButton
+              component={Link}
+              to="/app"
+              color="inherit"
+              aria-label="Open organizations"
+              sx={{ display: { xs: "inline-flex", sm: "none" } }}
+            >
+              <GroupsOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Boards">
+            <IconButton
+              component={Link}
+              to={`/app/${organizationId}`}
+              color="inherit"
+              aria-label="Open boards"
+              sx={{ display: { xs: "inline-flex", sm: "none" } }}
+            >
+              <ViewKanbanOutlinedIcon />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Profile">
             <IconButton
               component={Link}
@@ -80,7 +105,8 @@ export function InternalAppShell() {
       <Drawer
         variant="permanent"
         sx={{
-          width: drawerWidth,
+          display: { xs: "none", sm: "block" },
+          width: { xs: 0, sm: drawerWidth },
           flexShrink: 0,
           "& .MuiDrawer-paper": {
             width: drawerWidth,

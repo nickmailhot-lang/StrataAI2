@@ -108,6 +108,12 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     mount();
     fireEvent.click(await screen.findByRole("button", { name: "Add list" }));
     fireEvent.change(screen.getByLabelText(/List name/), {
+      target: { value: "   " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter a list name.");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    fireEvent.change(screen.getByLabelText(/List name/), {
       target: { value: "Completed" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
@@ -169,6 +175,49 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     await waitFor(() =>
       expect(screen.getByLabelText(/Card title/)).toHaveValue("Latest roof"),
     );
+  });
+  it("does not carry one card conflict into another card editor", async () => {
+    const snapshot = {
+      ...fixture,
+      lists: [
+        {
+          ...fixture.lists[0],
+          cards: [
+            ...fixture.lists[0].cards,
+            {
+              ...fixture.lists[0].cards[0],
+              id: "card-2",
+              title: "Second card",
+            },
+          ],
+        },
+      ],
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockImplementation((_path: string, options?: RequestInit) =>
+          Promise.resolve(
+            response(
+              options?.method === "PATCH" ? {} : snapshot,
+              options?.method === "PATCH" ? 409 : 200,
+            ),
+          ),
+        ),
+    );
+    const router = mount("/app/org-1/boards/board-1/cards/card-1");
+    await screen.findByLabelText(/Card title/);
+    fireEvent.click(screen.getByRole("button", { name: "Save card" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "changed elsewhere",
+    );
+    await router.navigate("/app/org-1/boards/board-1/cards/card-2");
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Card title/)).toHaveValue("Second card"),
+    );
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save card" })).toBeEnabled();
   });
   it("clears the previous board while a new organization is loading", async () => {
     const fetcher = vi

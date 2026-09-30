@@ -19,6 +19,7 @@ import {
   loadBoard,
   mutateWork,
   WorkRequestError,
+  WorkInputError,
   type BoardSnapshot,
 } from "../../api/workManagement";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
@@ -35,8 +36,16 @@ function BoardContent() {
   const [reload, setReload] = useState(0);
   const [creation, setCreation] = useState<Creation>();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<Error>();
-  const [saved, setSaved] = useState(false);
+  const [failure, setFailure] = useState<{ cardId?: string; error: Error }>();
+  const [savedFor, setSavedFor] = useState<{ cardId?: string }>();
+  const error = failure?.cardId === cardId ? failure?.error : undefined;
+  const saved = Boolean(savedFor) && savedFor?.cardId === cardId;
+  function setError(next?: Error) {
+    setFailure(next ? { cardId, error: next } : undefined);
+  }
+  function setSaved(next: boolean) {
+    setSavedFor(next ? { cardId } : undefined);
+  }
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
@@ -74,7 +83,16 @@ function BoardContent() {
     if (busy || !editable) return;
     const form = new FormData(event.currentTarget);
     const title = String(form.get("title") ?? "").trim();
-    if (!title) return;
+    if (!title) {
+      setError(
+        new WorkInputError(
+          creation?.kind === "list"
+            ? "Enter a list name."
+            : "Enter a card title.",
+        ),
+      );
+      return;
+    }
     setBusy(true);
     setError(undefined);
     setSaved(false);
@@ -104,7 +122,7 @@ function BoardContent() {
   }
   const message = (failure: Error) => (
     <Alert severity="error">
-      {failure instanceof WorkRequestError
+      {failure instanceof WorkRequestError || failure instanceof WorkInputError
         ? failure.message
         : "Unable to load or save this board. Please try again."}
       {failure instanceof WorkRequestError &&
@@ -241,6 +259,9 @@ function BoardContent() {
               margin="normal"
               name="title"
               label={creation?.kind === "list" ? "List name" : "Card title"}
+              slotProps={{
+                htmlInput: { maxLength: creation?.kind === "list" ? 160 : 500 },
+              }}
             />
           </DialogContent>
           <DialogActions>
@@ -291,6 +312,7 @@ function BoardContent() {
                 autoFocus
                 name="title"
                 label="Card title"
+                slotProps={{ htmlInput: { maxLength: 500 } }}
                 required
                 fullWidth
                 margin="normal"

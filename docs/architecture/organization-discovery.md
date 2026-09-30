@@ -10,6 +10,8 @@ server acknowledges creation. A profile link is available before joining an
 organization at `/app/profile`; existing scoped profile URLs remain supported.
 The shell links Organizations and Boards to these routes. Unimplemented module
 navigation is disabled rather than exposing nonfunctional actions.
+At phone widths, compact organization/board navigation replaces the permanent
+sidebar, retaining the full width for forms and the horizontally scrollable board.
 
 Scopes remount discovery state, abort in-flight reads and clear data/drafts from
 the previous organization. The requested organization must appear in the user's
@@ -33,7 +35,8 @@ creation, default private visibility, expired sessions and scope transitions.
 API-host tests cover private/organization/public discovery, outsiders, explicit
 board membership, its removal and deleted boards. The browser board workflow
 creates both organization and board through the UI before exercising persisted
-list/card operations. `scripts/ci/test-board-discovery.sh` tests the restricted
+list/card operations at desktop and phone viewport sizes.
+`scripts/ci/test-board-discovery.sh` tests the restricted
 PostgreSQL API against disposable membership fixtures, including admin access and
 membership revocation. That script refuses to run outside CI and is excluded
 from release provisioning; it never weakens runtime roles or the authorization
