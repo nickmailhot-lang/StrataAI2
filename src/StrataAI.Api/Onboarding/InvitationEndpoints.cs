@@ -61,7 +61,7 @@ public static class InvitationEndpoints
                                 ? result.Value.RawToken
                                 : null));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().RequireRateLimiting("invitation");
 
         app.MapGet(
                 "/me/invitations",
@@ -81,7 +81,7 @@ public static class InvitationEndpoints
                             userId.Value,
                             cancellationToken));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().RequireRateLimiting("invitation");
 
         app.MapPost(
                 "/invitations/{token}/accept",
@@ -115,7 +115,7 @@ public static class InvitationEndpoints
                             result.Value.Surface.ToString().ToUpperInvariant(),
                             result.Value.TargetRole));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().RequireRateLimiting("invitation");
 
         app.MapDelete(
                 "/organizations/{organizationId:guid}/invitations/{invitationId:guid}",
@@ -143,7 +143,7 @@ public static class InvitationEndpoints
                         ? Results.NoContent()
                         : ErrorFor(result.ErrorCode);
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().RequireRateLimiting("invitation");
     }
 
     private static Guid? GetUserId(HttpContext context)

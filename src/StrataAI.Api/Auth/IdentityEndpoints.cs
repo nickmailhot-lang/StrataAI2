@@ -11,7 +11,7 @@ public static class IdentityEndpoints
         RuntimeDescriptor runtime,
         IdentityPolicy policy)
     {
-        var auth = app.MapGroup("/auth");
+        var auth = app.MapGroup("/auth").RequireRateLimiting("auth");
 
         auth.MapPost(
             "/register",

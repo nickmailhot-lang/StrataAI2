@@ -37,6 +37,7 @@ builder.Services
         SessionAuthenticationDefaults.Scheme,
         _ => { });
 builder.Services.AddAuthorization();
+builder.Services.AddSecurityRateLimits(builder.Configuration);
 
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration);
 builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
@@ -50,6 +51,7 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseRouting();
 app.UseMiddleware<CsrfProtectionMiddleware>();
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapGet("/healthz", () => Results.Ok(new

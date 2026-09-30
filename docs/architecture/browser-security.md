@@ -24,6 +24,24 @@ state. It runs against both Demo and PostgreSQL release-image APIs. Normal accou
 and mutation flows plus Chromium E2E prove legitimate requests still succeed.
 Rejection logs contain a correlation ID and no request body, email or token.
 
-This implements SEC-FR-005 for current API routes. It does not complete PRD-24:
-rate limits, file security, public response review and broader threat/authorization
-coverage remain separate requirements.
+Authentication endpoints share an ASP.NET fixed-window budget of 60 requests per
+minute per socket peer; invitation routes have a separate 60/minute budget per
+authenticated user (or socket peer when anonymous). No requests are queued.
+`STRATAAI_AUTH_REQUESTS_PER_MINUTE` and
+`STRATAAI_INVITATION_REQUESTS_PER_MINUTE` accept 10–1000; invalid settings fail
+startup. HTTP 429 returns `rate_limit_exceeded` and a numeric `Retry-After`.
+Logs record `RATE_LIMIT_TRIGGERED` with a correlation ID, without credentials.
+
+Nginx independently limits sensitive paths by its actual socket peer to 60/minute
+with a burst allowance of 20. Arbitrary X-Forwarded-For/X-Real-IP headers never
+change the limiter key. API peers behind Nginx share the API authentication budget;
+operators must size it for expected aggregate traffic. Additional trusted proxies
+or multi-replica deployment require an explicit proxy/distributed-limit design.
+These are process/edge-local limits, without Redis or a new broker.
+
+`test-rate-limits.sh` exercises both direct API and edge endpoints after legitimate
+browser tests, checking invalid requests, spoofed forwarding headers, HTTP 429,
+retry metadata and unaffected health routes. This increment implements SEC-FR-005
+and authentication/invitation coverage for SEC-FR-010. PRD-24 remains incomplete:
+future upload/mention/public-share limits, file security, public response review
+and broader threat/authorization coverage remain required.
