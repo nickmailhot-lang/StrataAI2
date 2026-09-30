@@ -3,4 +3,8 @@
     <ProjectReference Include="../StrataAI.Application/StrataAI.Application.csproj" />
     <ProjectReference Include="../StrataAI.Domain/StrataAI.Domain.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
 </Project>

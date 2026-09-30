@@ -6,4 +6,7 @@
     <Project Path="src/StrataAI.Api/StrataAI.Api.csproj" />
     <Project Path="src/StrataAI.Worker/StrataAI.Worker.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj" />
+  </Folder>
 </Solution>
