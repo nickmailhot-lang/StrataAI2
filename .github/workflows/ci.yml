@@ -275,6 +275,30 @@ jobs:
           docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api
           scripts/ci/test-postgres-profile.sh http://localhost:8080
 
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install browser test dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Authenticated browser E2E against exact release images
+        run: npx playwright test
+
+      - name: Retain browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-diagnostics-${{ github.sha }}
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Capture container state and logs
         if: failure()
         shell: bash

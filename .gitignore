@@ -30,6 +30,7 @@ Thumbs.db
 
 # Test / tooling
 TestResults/
+test-results/
 playwright-report/
 blob-report/
 artifacts/

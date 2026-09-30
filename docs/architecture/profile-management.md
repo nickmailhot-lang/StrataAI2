@@ -35,5 +35,12 @@ after checking secure production defaults. It is excluded from release bundles.
 No schema change is needed: the existing user version column is used.
 
 This increment does not complete PRD-02. Production email delivery,
-realtime update/reconnect recovery, broader accessibility
-and browser E2E evidence remain to be implemented and verified before closure.
+realtime update/reconnect recovery and broader accessibility evidence remain
+to be implemented and verified before closure.
+
+`tests/browser/account.spec.ts` runs Chromium against the actual web/API release
+images and PostgreSQL. It checks registration, sign-in through Nginx, profile
+persistence, two-page stale-save recovery and logout/session revocation. Browser
+traces and screenshots are retained on failure. Nginx and the Vite development
+proxy forward the API's top-level routes as well as `/api`; `/app`, `/login` and
+`/portal` remain SPA routes.
