@@ -215,6 +215,9 @@ jobs:
       - name: Start release topology
         run: docker compose -f compose.release.yml up -d --wait --wait-timeout 180
 
+      - name: Apply release-database migrations
+        run: scripts/apply-compose-migrations.sh
+
       - name: Health, readiness and SPA deep-link smoke tests
         shell: bash
         run: |
@@ -248,6 +251,7 @@ jobs:
 
           curl --fail --silent http://127.0.0.1:18080/api/demo/state >/dev/null
           curl --fail --silent -X POST http://127.0.0.1:18080/api/demo/reset >/dev/null
+          scripts/ci/test-demo-auth.sh http://127.0.0.1:18080
           docker stop strataai-demo-api
 
       - name: Production fails closed without database configuration
@@ -410,6 +414,8 @@ jobs:
           cp compose.release.yml bundle/
           cp .env.release.example bundle/
           cp scripts/health-check.sh bundle/health-check.sh
+          cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh
+          cp -R db bundle/db
           cp docs/release/README.md bundle/README.md
 
           cat > bundle/build-metadata.json <<EOF

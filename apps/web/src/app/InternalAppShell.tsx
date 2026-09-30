@@ -20,7 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 import type { ReactNode } from 'react';
-import { Outlet, useParams } from 'react-router-dom';
+import { Link, Outlet, useParams } from 'react-router-dom';
 
 const drawerWidth = 248;
 
@@ -55,8 +55,13 @@ export function InternalAppShell() {
           <Typography variant="body2" sx={{ mr: 1 }}>
             Organization: {organizationId ?? 'Unknown'}
           </Typography>
-          <Tooltip title="Settings">
-            <IconButton color="inherit" aria-label="Open settings">
+          <Tooltip title="Profile">
+            <IconButton
+              component={Link}
+              to={`/app/${organizationId}/profile`}
+              color="inherit"
+              aria-label="Open profile"
+            >
               <SettingsOutlinedIcon />
             </IconButton>
           </Tooltip>

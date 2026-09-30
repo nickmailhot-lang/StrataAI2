@@ -6,20 +6,30 @@ import {
   createBrowserRouter,
 } from 'react-router-dom';
 
-import { appTheme } from '../theme/appTheme';
+import { InternalAppShell } from './InternalAppShell';
+import { AuthPage } from '../features/auth/AuthPage';
+import { ProfilePage } from '../features/auth/ProfilePage';
 import { BoardScreen } from '../features/kanban/BoardScreen';
 import { PortalShell } from '../portal/PortalShell';
-import { InternalAppShell } from './InternalAppShell';
+import { appTheme } from '../theme/appTheme';
 
 const routes = [
   {
     path: '/',
-    element: <Navigate to="/app/demo/boards/demo-board" replace />,
+    element: <Navigate to="/login" replace />,
+  },
+  {
+    path: '/login',
+    element: <AuthPage />,
   },
   {
     path: '/app/:organizationId',
     element: <InternalAppShell />,
     children: [
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+      },
       {
         path: 'boards/:boardId',
         element: <BoardScreen />,
