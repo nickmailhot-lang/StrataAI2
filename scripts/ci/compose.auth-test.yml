@@ -5,3 +5,4 @@ services:
     environment:
       STRATAAI_AUTH_ALLOW_SELF_REGISTRATION: 'true'
       STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL: 'false'
+      STRATAAI_REALTIME_PUBLIC_ORIGIN: http://localhost:8088

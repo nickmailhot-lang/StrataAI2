@@ -43,7 +43,8 @@ responses from mutations begun before that loss cannot repopulate those states.
 
 These transitions prepare the editor for realtime invalidation. Durable events,
 Worker readiness and the [authorized replay API](work-synchronization.md) are now
-available. SignalR client delivery is still outstanding; this screen does not yet refresh
+available, and the SignalR server now streams authorized replay pages. Board UI
+client integration is still outstanding; this screen does not yet refresh
 automatically in response to another client's mutations.
 
 `BoardScreen.test.tsx` checks authoritative/read-only rendering, scope mismatch,

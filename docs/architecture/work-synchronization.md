@@ -52,8 +52,38 @@ historical hidden-entity filtering and revocation after an awaited read. CI exer
 the exact release API with real PostgreSQL/RLS, including a blocked event SELECT
 followed by membership suspension and a denied response with no partial batch.
 
-This is the replay boundary, not full PRD-22 completion. SignalR transport, live
-session revalidation/revocation, client deduplication/reconnect/snapshot recovery,
+`/boards/live` now exposes the SignalR `Watch(boardId,cursor)` server stream using
+these same bounded replay pages. Configure `STRATAAI_REALTIME_PUBLIC_ORIGIN` to the
+exact browser scheme/host/port; otherwise it uses `STRATAAI_PUBLIC_ORIGIN`. Missing
+origin configuration disables live transport with sanitized 503; invalid configured
+origins reject startup. Every negotiate/transport request requires the exact trusted
+Origin, including direct WebSocket upgrades. No wildcard origins are accepted.
+
+One connection may hold one Board stream. Cancelling/disconnecting releases its
+scope. Each pass revalidates the active cookie session and Board access; session
+validation is repeated after awaited reads. A permission revision change discards
+the tentative page and rereads/redacts it. Logout, session expiration/reset and lost
+Board access abort the connection. Anonymous subscriptions can read only currently
+public Boards. Invalid/revoked supplied cookies cannot silently retain an authenticated
+subscription. Receive messages are bounded to 4 KiB, event pages to 100, streaming
+buffer capacity to one and output buffers to 128 KiB. Detailed server errors are off;
+read failures log only a stable warning and request correlation ID.
+
+The server checks persisted readiness once per second and sends changes, pending
+status transitions and a heartbeat approximately every 20 seconds. PostgreSQL/RLS
+is still the source; no in-memory cross-process event broker or extra service was
+added. Nginx forwards WebSocket upgrades for this route with buffering disabled.
+Consumers must still deduplicate, recover cursors and refresh authorized state.
+The transport follows [Microsoft's streaming contract](https://learn.microsoft.com/en-us/aspnet/core/signalr/streaming?view=aspnetcore-10.0)
+and [Origin/security guidance](https://learn.microsoft.com/en-us/aspnet/core/signalr/security?view=aspnetcore-10.0).
+
+API host tests exercise actual SignalR JSON/WebSocket framing, wrong origins,
+protected scope denial, logout/membership revocation, subscription caps and cancellation.
+The release browser fixture connects two sockets through the real Nginx edge,
+consumes PostgreSQL events made ready by the actual Worker, reconnects from a cursor,
+and verifies copied-session logout revocation. Its protocol probe is test-only.
+
+This is not full PRD-22 completion. The Board UI client, deduplication/reconnect/snapshot recovery,
 automatic fallback, optimistic movement reconciliation, performance/accessibility
 and complete telemetry/acceptance coverage remain to implement. The current Board
 screen still uses explicit refresh and its existing dirty-draft protections.

@@ -331,6 +331,7 @@ internal sealed class ApiFactory(string mode = "demo", Action<IServiceCollection
             ["STRATAAI_BUILD_REVISION"] = "api-host-test",
             ["STRATAAI_BUILD_VERSION"] = "runtime-spoof",
             ["STRATAAI_IDENTITY_EMAIL_ENABLED"] = "false",
+            ["STRATAAI_REALTIME_PUBLIC_ORIGIN"] = "http://localhost",
             ["ConnectionStrings:Postgres"] = "",
             ["Logging:LogLevel:Default"] = "Warning",
         }));

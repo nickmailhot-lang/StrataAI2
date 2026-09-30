@@ -13,6 +13,9 @@ using StrataAI.Infrastructure.Runtime;
 using StrataAI.Infrastructure.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
+// Transport connection tokens appear in request query strings. Retain warnings
+// without logging request-start URLs at the default Information level.
+builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -46,12 +49,21 @@ builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
 builder.Services.AddStrataAiOrganizations(runtime);
 builder.Services.AddStrataAiOnboarding(runtime);
 builder.Services.AddStrataAiWorkManagement(runtime);
+builder.Services.AddSingleton(new WorkRealtimeOrigin(builder.Configuration));
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = false;
+    options.MaximumReceiveMessageSize = 4096;
+    options.StreamBufferCapacity = 1;
+    options.MaximumParallelInvocationsPerClient = 1;
+});
 
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<RuntimeDatabaseSecurityMiddleware>();
 app.UseRouting();
+app.UseMiddleware<WorkRealtimeOriginMiddleware>();
 app.UseMiddleware<CsrfProtectionMiddleware>();
 app.UseAuthentication();
 app.UseRateLimiter();
@@ -117,6 +129,11 @@ app.MapOrganizationEndpoints();
 app.MapInvitationEndpoints(runtime);
 app.MapWorkManagementEndpoints();
 app.MapWorkSynchronizationEndpoints();
+app.MapHub<WorkRealtimeHub>("/boards/live", options =>
+{
+    options.ApplicationMaxBufferSize = 131072;
+    options.TransportMaxBufferSize = 4096;
+});
 
 app.Run();
 
