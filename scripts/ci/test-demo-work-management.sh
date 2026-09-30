@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'echo "Work-management check failed at line $LINENO" >&2' ERR
 
 BASE_URL="${1:-http://127.0.0.1:18080}"
 COOKIE_JAR="${2:?Pass the authenticated cookie jar path}"
@@ -15,6 +16,8 @@ board="$(
 board_id="$(printf '%s' "$board" | jq -r '.id')"
 board_version="$(printf '%s' "$board" | jq -r '.version')"
 test "$board_version" = "1"
+test "$(printf '%s' "$board" | jq -r '.visibility')" = "PRIVATE"
+test "$(printf '%s' "$board" | jq -r '.lifecycleState')" = "active"
 
 private_status="$(
   curl --silent --output /dev/null --write-out '%{http_code}'     "$BASE_URL/boards/$board_id"

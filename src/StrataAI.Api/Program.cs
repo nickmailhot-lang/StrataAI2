@@ -14,6 +14,22 @@ using StrataAI.Infrastructure.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter<StrataAI.Application.WorkManagement.BoardVisibility>(
+            System.Text.Json.JsonNamingPolicy.SnakeCaseUpper, allowIntegerValues: false));
+    options.SerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter<StrataAI.Application.WorkManagement.BoardRole>(
+            System.Text.Json.JsonNamingPolicy.SnakeCaseUpper, allowIntegerValues: false));
+    options.SerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter<StrataAI.Application.WorkManagement.BoardLifecycleState>(
+            System.Text.Json.JsonNamingPolicy.CamelCase, allowIntegerValues: false));
+    options.SerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter<StrataAI.Application.WorkManagement.WorkItemLifecycleState>(
+            System.Text.Json.JsonNamingPolicy.CamelCase, allowIntegerValues: false));
+});
+
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services
     .AddAuthentication(SessionAuthenticationDefaults.Scheme)
