@@ -8,5 +8,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj" />
+    <Project Path="tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj" />
   </Folder>
 </Solution>

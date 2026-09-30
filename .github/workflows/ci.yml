@@ -72,6 +72,9 @@ jobs:
       - name: Domain tests
         run: dotnet test tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj --configuration Release --no-build
 
+      - name: API host tests
+        run: dotnet test tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj --configuration Release --no-build
+
 
   postgres-integration:
     name: postgres-integration

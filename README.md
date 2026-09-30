@@ -52,4 +52,25 @@ Work is processed in dependency order from the GitHub PRD and architecture issue
 - Node.js 24 for web tooling
 - Docker/Compose for the deployable runtime
 
+From a clean checkout, run the local source checks at the repository root:
+
+```sh
+npm ci
+npm run typecheck
+npm run lint
+npm test
+npm run build
+dotnet restore StrataAI2.slnx --locked-mode
+dotnet build StrataAI2.slnx --configuration Release --no-restore
+dotnet test tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj --configuration Release --no-build
+dotnet test tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj --configuration Release --no-build
+```
+
+The API host tests select an isolated Demo runtime automatically; they do not
+require database or provider credentials. See
+[API host testing](docs/architecture/api-host-testing.md) and
+[dependency locking](docs/architecture/dependency-locking.md). CI additionally
+requires real PostgreSQL isolation tests, exact-release-image integration,
+browser workflows and security scans before producing the tested Docker bundle.
+
 See GitHub issues `ARCH-01` through `ARCH-12` and `PRD-01` through `PRD-80` for the authoritative implementation requirements.
