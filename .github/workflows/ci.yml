@@ -69,6 +69,11 @@ jobs:
       - name: Restore
         run: dotnet restore StrataAI2.slnx --locked-mode
 
+      - name: Validate release and event fixture configuration before image builds
+        run: |
+          docker compose --env-file .env.release.example -f compose.release.yml config --quiet
+          STRATAAI_TEST_EVENT_ORGANIZATION_ID=11111111-1111-1111-1111-111111111111 docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.work-event-test.yml config --quiet
+
       - name: Reject dependency lock drift
         run: scripts/ci/test-dependency-locks.sh
 
