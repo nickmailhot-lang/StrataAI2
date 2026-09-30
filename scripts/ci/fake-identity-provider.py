@@ -31,10 +31,39 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         global reject_next
-        size = int(self.headers.get("Content-Length", "0"))
-        if size > 65536:
-            return self.respond(413, {})
-        data = json.loads(self.rfile.read(size))
+        # JsonContent streams HTTP/1.1 requests using chunked transfer. Decode
+        # that framing as well as fixed-length requests, with the same bound.
+        try:
+            if self.headers.get("Transfer-Encoding", "").lower() == "chunked":
+                body = bytearray()
+                while True:
+                    size = int(self.rfile.readline(128).split(b";", 1)[0].strip(), 16)
+                    if size == 0:
+                        for _ in range(32):
+                            trailer = self.rfile.readline(8192)
+                            if trailer == b"\r\n":
+                                break
+                            if not trailer:
+                                return self.respond(400, {})
+                        else:
+                            return self.respond(400, {})
+                        break
+                    if size < 0 or len(body) + size > 65536:
+                        return self.respond(413, {})
+                    chunk = self.rfile.read(size)
+                    if len(chunk) != size or self.rfile.read(2) != b"\r\n":
+                        return self.respond(400, {})
+                    body.extend(chunk)
+            else:
+                size = int(self.headers.get("Content-Length", "0"))
+                if size < 0 or size > 65536:
+                    return self.respond(413, {})
+                body = self.rfile.read(size)
+            data = json.loads(body)
+            if not isinstance(data, dict):
+                return self.respond(400, {})
+        except (ValueError, EOFError):
+            return self.respond(400, {})
         if self.path == "/control":
             with lock:
                 reject_next = bool(data.get("reject_next"))
