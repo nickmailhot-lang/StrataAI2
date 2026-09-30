@@ -698,6 +698,10 @@ public static class WorkManagementEndpoints
                 StatusCodes.Status400BadRequest,
                 errorCode,
                 "The requested rank is invalid."),
+            "rank_space_exhausted" => Problem(
+                StatusCodes.Status409Conflict,
+                errorCode,
+                "No ordering space remains at this position."),
             "idempotency_key_reused" => Problem(
                 StatusCodes.Status409Conflict, errorCode, "This retry key belongs to a different request."),
             "idempotency_key_expired" => Problem(

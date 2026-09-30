@@ -89,7 +89,7 @@ public interface IWorkManagementStore
         Guid boardId,
         Guid listId,
         string name,
-        string rank,
+        string? rank,
         DateTimeOffset createdAt,
         CancellationToken cancellationToken = default);
 
@@ -118,7 +118,7 @@ public interface IWorkManagementStore
         Guid cardId,
         string title,
         string? description,
-        string rank,
+        string? rank,
         DateTimeOffset createdAt,
         CancellationToken cancellationToken = default);
 

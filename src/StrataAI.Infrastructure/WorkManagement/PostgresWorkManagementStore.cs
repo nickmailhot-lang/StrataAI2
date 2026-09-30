@@ -8,6 +8,33 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed class PostgresWorkManagementStore(
     PostgresConnectionFactory connectionFactory) : IWorkManagementStore
 {
+    private static async Task<string> AllocateAppendRankAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction,
+        Guid tenantId, Guid boardId, Guid? listId, CancellationToken cancellationToken)
+    {
+        // Separate statements are intentional: after a concurrent creator releases
+        // the parent lock, READ COMMITTED must obtain a fresh sibling snapshot.
+        await using (var parent = new NpgsqlCommand(listId is null
+            ? "SELECT id FROM boards WHERE tenant_id=@tenant AND id=@parent FOR UPDATE;"
+            : "SELECT id FROM board_lists WHERE tenant_id=@tenant AND id=@parent FOR UPDATE;",
+            connection, transaction))
+        {
+            parent.Parameters.AddWithValue("tenant", tenantId);
+            parent.Parameters.AddWithValue("parent", listId ?? boardId);
+            if (await parent.ExecuteScalarAsync(cancellationToken) is null)
+                throw new InvalidOperationException("Rank parent was not found.");
+        }
+
+        await using var last = new NpgsqlCommand(listId is null
+            ? "SELECT rank FROM board_lists WHERE tenant_id=@tenant AND board_id=@board AND lifecycle_state='ACTIVE' ORDER BY rank DESC LIMIT 1;"
+            : "SELECT rank FROM cards WHERE tenant_id=@tenant AND board_id=@board AND list_id=@list AND lifecycle_state='ACTIVE' ORDER BY rank DESC LIMIT 1;",
+            connection, transaction);
+        last.Parameters.AddWithValue("tenant", tenantId);
+        last.Parameters.AddWithValue("board", boardId);
+        if (listId is not null) last.Parameters.AddWithValue("list", listId.Value);
+        return RankToken.After(await last.ExecuteScalarAsync(cancellationToken) as string);
+    }
+
     public async Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsAsync(
         Guid organizationId,
         Guid userId,
@@ -631,7 +658,7 @@ internal sealed class PostgresWorkManagementStore(
         Guid boardId,
         Guid listId,
         string name,
-        string rank,
+        string? rank,
         DateTimeOffset createdAt,
         CancellationToken cancellationToken = default)
     {
@@ -644,6 +671,8 @@ internal sealed class PostgresWorkManagementStore(
             await connectionFactory.OpenTenantSessionAsync(
                 tenantId,
                 cancellationToken);
+        rank ??= await AllocateAppendRankAsync(session.Connection, session.Transaction,
+            tenantId, boardId, null, cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO board_lists(
@@ -842,7 +871,7 @@ internal sealed class PostgresWorkManagementStore(
         Guid cardId,
         string title,
         string? description,
-        string rank,
+        string? rank,
         DateTimeOffset createdAt,
         CancellationToken cancellationToken = default)
     {
@@ -855,6 +884,8 @@ internal sealed class PostgresWorkManagementStore(
             await connectionFactory.OpenTenantSessionAsync(
                 route.TenantId,
                 cancellationToken);
+        rank ??= await AllocateAppendRankAsync(session.Connection, session.Transaction,
+            route.TenantId, route.BoardId, listId, cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO cards(

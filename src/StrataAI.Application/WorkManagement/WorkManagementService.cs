@@ -434,36 +434,27 @@ public sealed class WorkManagementService(
             return WorkOperation<BoardListRecord>.Failure("invalid_list_name");
         }
 
-        string? normalizedRank;
-        if (rank is null)
-        {
-            var snapshot = await store.GetSnapshotAsync(
-                boardId,
-                actorUserId,
-                resolved.Value.Access,
-                cancellationToken);
-            var lastRank = snapshot?.Lists.LastOrDefault()?.List.Rank;
-            normalizedRank = lastRank is null
-                ? RankToken.Initial()
-                : RankToken.After(lastRank);
-        }
-        else
-        {
-            normalizedRank = NormalizeRank(rank);
-        }
-
-        if (normalizedRank is null)
+        var normalizedRank = rank is null ? null : NormalizeRank(rank);
+        if (rank is not null && normalizedRank is null)
         {
             return WorkOperation<BoardListRecord>.Failure("invalid_rank");
         }
 
-        var list = await store.CreateListAsync(
-            boardId,
-            Guid.NewGuid(),
-            normalizedName,
-            normalizedRank,
-            clock.UtcNow,
-            cancellationToken);
+        BoardListRecord list;
+        try
+        {
+            list = await store.CreateListAsync(
+                boardId,
+                Guid.NewGuid(),
+                normalizedName,
+                normalizedRank,
+                clock.UtcNow,
+                cancellationToken);
+        }
+        catch (RankSpaceExhaustedException)
+        {
+            return WorkOperation<BoardListRecord>.Failure("rank_space_exhausted");
+        }
 
         await RecordChangeAsync(list.OrganizationId, list.BoardId, actorUserId, "LIST_CREATED", "List", list.Id, list.Version, correlationId, cancellationToken);
 
@@ -607,41 +598,28 @@ public sealed class WorkManagementService(
             return WorkOperation<CardRecord>.Failure("invalid_card_title");
         }
 
-        string? normalizedRank;
-        if (rank is null)
-        {
-            var snapshot = await store.GetSnapshotAsync(
-                list.BoardId,
-                actorUserId,
-                resolved.Value.Access,
-                cancellationToken);
-            var lastRank = snapshot?.Lists
-                .FirstOrDefault(item => item.List.Id == listId)?
-                .Cards
-                .LastOrDefault()?
-                .Rank;
-            normalizedRank = lastRank is null
-                ? RankToken.Initial()
-                : RankToken.After(lastRank);
-        }
-        else
-        {
-            normalizedRank = NormalizeRank(rank);
-        }
-
-        if (normalizedRank is null)
+        var normalizedRank = rank is null ? null : NormalizeRank(rank);
+        if (rank is not null && normalizedRank is null)
         {
             return WorkOperation<CardRecord>.Failure("invalid_rank");
         }
 
-        var card = await store.CreateCardAsync(
-            listId,
-            Guid.NewGuid(),
-            normalizedTitle,
-            NormalizeOptional(description),
-            normalizedRank,
-            clock.UtcNow,
-            cancellationToken);
+        CardRecord card;
+        try
+        {
+            card = await store.CreateCardAsync(
+                listId,
+                Guid.NewGuid(),
+                normalizedTitle,
+                NormalizeOptional(description),
+                normalizedRank,
+                clock.UtcNow,
+                cancellationToken);
+        }
+        catch (RankSpaceExhaustedException)
+        {
+            return WorkOperation<CardRecord>.Failure("rank_space_exhausted");
+        }
 
         await RecordChangeAsync(card.OrganizationId, card.BoardId, actorUserId, "CARD_CREATED", "Card", card.Id, card.Version, correlationId, cancellationToken);
 

@@ -324,7 +324,7 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
         Guid boardId,
         Guid listId,
         string name,
-        string rank,
+        string? rank,
         DateTimeOffset createdAt,
         CancellationToken cancellationToken = default)
     {
@@ -334,6 +334,10 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
             {
                 throw new InvalidOperationException("Board was not found.");
             }
+
+            rank ??= RankToken.After(_lists.Values
+                .Where(item => item.BoardId == boardId && item.LifecycleState == WorkItemLifecycleState.Active)
+                .Select(item => item.Rank).Order(StringComparer.Ordinal).LastOrDefault());
 
             var list = new BoardListRecord(
                 listId,
@@ -424,7 +428,7 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
         Guid cardId,
         string title,
         string? description,
-        string rank,
+        string? rank,
         DateTimeOffset createdAt,
         CancellationToken cancellationToken = default)
     {
@@ -434,6 +438,10 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
             {
                 throw new InvalidOperationException("List was not found.");
             }
+
+            rank ??= RankToken.After(_cards.Values
+                .Where(item => item.ListId == listId && item.LifecycleState == WorkItemLifecycleState.Active)
+                .Select(item => item.Rank).Order(StringComparer.Ordinal).LastOrDefault());
 
             var card = new CardRecord(
                 cardId,

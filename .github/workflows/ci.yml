@@ -332,6 +332,8 @@ jobs:
 
       - name: Authorized contiguous event replay and mid-read revocation against exact release API
         run: scripts/ci/test-work-sync.sh
+      - name: Check concurrent and large-board rank allocation
+        run: scripts/ci/test-work-ranks.sh
 
       - name: Prepare isolated identity mail transport and ephemeral signing keys
         run: |
