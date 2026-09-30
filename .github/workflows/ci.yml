@@ -114,6 +114,9 @@ jobs:
       - name: Verify append-only audit storage
         run: scripts/ci/test-audit-append-only.sh
 
+      - name: Verify tenant-scoped durable jobs and retry/crash behavior
+        run: scripts/ci/test-background-jobs.sh
+
   source-quality-gate:
     name: source-quality-gate
     if: always()

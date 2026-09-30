@@ -51,7 +51,7 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 organizationId.ToString());
             await command.ExecuteScalarAsync(cancellationToken);
 
-            return new TenantDbSession(connection, transaction);
+            return new TenantDbSession(connection, transaction, organizationId);
         }
         catch
         {

@@ -6,15 +6,19 @@ public sealed class TenantDbSession : IAsyncDisposable
 {
     internal TenantDbSession(
         NpgsqlConnection connection,
-        NpgsqlTransaction transaction)
+        NpgsqlTransaction transaction,
+        Guid organizationId)
     {
         Connection = connection;
         Transaction = transaction;
+        OrganizationId = organizationId;
     }
 
     public NpgsqlConnection Connection { get; }
 
     public NpgsqlTransaction Transaction { get; }
+
+    public Guid OrganizationId { get; }
 
     public Task CommitAsync(CancellationToken cancellationToken = default) =>
         Transaction.CommitAsync(cancellationToken);
