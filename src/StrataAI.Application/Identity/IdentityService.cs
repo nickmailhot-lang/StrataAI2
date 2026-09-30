@@ -371,6 +371,7 @@ public sealed class IdentityService(
         string? avatarUrl,
         string? locale,
         string? timezone,
+        long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default)
     {
@@ -381,6 +382,14 @@ public sealed class IdentityService(
         }
 
         var nextDisplayName = displayName?.Trim() ?? existing.DisplayName;
+        if (expectedVersion < 1)
+        {
+            return IdentityOperation<UserProfile>.Failure("invalid_version");
+        }
+        if (existing.Version != expectedVersion)
+        {
+            return IdentityOperation<UserProfile>.Failure("version_conflict");
+        }
         if (string.IsNullOrWhiteSpace(nextDisplayName) || nextDisplayName.Length > 120)
         {
             return IdentityOperation<UserProfile>.Failure("invalid_display_name");
@@ -425,12 +434,13 @@ public sealed class IdentityService(
             string.IsNullOrEmpty(nextAvatarUrl) ? null : nextAvatarUrl,
             nextLocale,
             nextTimezone,
+            expectedVersion,
             clock.UtcNow,
             cancellationToken);
 
         if (updated is null)
         {
-            return IdentityOperation<UserProfile>.Failure("account_unavailable");
+            return IdentityOperation<UserProfile>.Failure("version_conflict");
         }
 
         await store.AppendAuditAsync(

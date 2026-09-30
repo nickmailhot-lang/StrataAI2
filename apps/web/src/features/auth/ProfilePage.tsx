@@ -20,6 +20,7 @@ type UserProfile = {
   timezone: string;
   status: string;
   emailVerified: boolean;
+  version: number;
 };
 
 export function ProfilePage() {
@@ -29,6 +30,7 @@ export function ProfilePage() {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [reload, setReload] = useState(0);
+  const [conflict, setConflict] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,6 +51,7 @@ export function ProfilePage() {
         if (active) {
           setProfile(user);
           setDraft(user);
+          setConflict(false);
         }
       })
       .catch(() => {
@@ -64,7 +67,7 @@ export function ProfilePage() {
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft) return;
+    if (!draft || busy || conflict) return;
     setBusy(true);
     setError(undefined);
     setSaved(false);
@@ -72,13 +75,14 @@ export function ProfilePage() {
       const response = await fetch('/me', {
         method: 'PATCH', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName: draft.displayName, avatarUrl: draft.avatarUrl ?? '', locale: draft.locale, timezone: draft.timezone }),
+        body: JSON.stringify({ displayName: draft.displayName, avatarUrl: draft.avatarUrl ?? '', locale: draft.locale, timezone: draft.timezone, version: draft.version }),
       });
       if (response.status === 401) {
         navigate('/login', { replace: true });
         return;
       }
       if (!response.ok) {
+        setConflict(response.status === 409);
         const problem = await response.json().catch(() => ({})) as { title?: string };
         setError(problem.title ?? 'Unable to save your profile. Please retry.');
         return;
@@ -135,13 +139,14 @@ export function ProfilePage() {
           {profile.emailVerified ? ' · email verified' : ''}
         </Typography>
         {error ? <Alert severity="error">{error}</Alert> : null}
+        {conflict ? <Button type="button" disabled={busy} onClick={() => { setError(undefined); setSaved(false); setProfile(undefined); setDraft(undefined); setReload(value => value + 1); }}>Discard edits and load latest profile</Button> : null}
         {saved ? <Alert severity="success" role="status">Profile saved.</Alert> : null}
         <TextField label="Display name" required value={draft.displayName} disabled={busy} onChange={event => { setDraft({ ...draft, displayName: event.target.value }); setSaved(false); }} slotProps={{ htmlInput: { maxLength: 120 } }} autoComplete="nickname" />
         <TextField label="Avatar URL" type="url" value={draft.avatarUrl ?? ''} disabled={busy} onChange={event => { setDraft({ ...draft, avatarUrl: event.target.value }); setSaved(false); }} helperText="Use an HTTPS image URL, or leave blank to remove it." />
         <TextField label="Locale" required value={draft.locale} disabled={busy} onChange={event => { setDraft({ ...draft, locale: event.target.value }); setSaved(false); }} helperText="For example, en-CA." />
         <TextField label="Timezone" required value={draft.timezone} disabled={busy} onChange={event => { setDraft({ ...draft, timezone: event.target.value }); setSaved(false); }} helperText="For example, America/Vancouver." />
-        <Button type="submit" variant="contained" disabled={busy}>{busy ? 'Please wait…' : 'Save profile'}</Button>
-        <Button type="button" disabled={busy} onClick={() => { setDraft(profile); setError(undefined); setSaved(false); }}>Discard changes</Button>
+        <Button type="submit" variant="contained" disabled={busy || conflict}>{busy ? 'Please wait…' : 'Save profile'}</Button>
+        <Button type="button" disabled={busy || conflict} onClick={() => { setDraft(profile); setError(undefined); setSaved(false); }}>Discard changes</Button>
         <Button type="button" disabled={busy} onClick={logout} variant="outlined" sx={{ alignSelf: 'flex-start' }}>
           Sign out
         </Button>

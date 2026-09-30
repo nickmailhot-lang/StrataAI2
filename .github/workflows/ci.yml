@@ -267,6 +267,14 @@ jobs:
             exit 1
           fi
 
+      - name: Verify production account defaults then test PostgreSQL profile concurrency
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent http://localhost:8080/api/auth/policy | jq -e '.allowSelfRegistration == false and .requireVerifiedEmail == true' >/dev/null
+          docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api
+          scripts/ci/test-postgres-profile.sh http://localhost:8080
+
       - name: Capture container state and logs
         if: failure()
         shell: bash

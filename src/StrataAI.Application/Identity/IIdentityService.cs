@@ -49,6 +49,7 @@ public interface IIdentityService
         string? avatarUrl,
         string? locale,
         string? timezone,
+        long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default);
 

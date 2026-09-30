@@ -20,6 +20,20 @@ failure. `scripts/ci/test-demo-auth.sh` covers persisted preferences, invalid
 input rejection without mutation, avatar removal, and unauthenticated updates
 (PRD-02-TC-01/03/04/06). CI runs the account lifecycle against the exact API image.
 
-This increment does not complete PRD-02. Production email delivery, profile
-concurrency control, realtime update/reconnect recovery, broader accessibility
+Profile writes require the positive `version` returned by `GET /me`. Missing or
+invalid versions return HTTP 400 (`invalid_version`); stale versions return HTTP
+409 (`version_conflict`). Both stores compare the version atomically while
+writing, increment it only on success, and reject writes to deactivated accounts.
+The UI preserves conflicted edits and offers an explicit discard-and-reload
+action. Clients must reload and reconcile before resubmitting with a new version.
+
+`test-profile-concurrency.sh` checks simultaneous saves (exactly one succeeds),
+stale retries without overwrite, and recovery using the latest version. It runs
+against both Demo and the PostgreSQL provider using the exact CI API image.
+The CI-only Compose overlay enables disposable registration without verification
+after checking secure production defaults. It is excluded from release bundles.
+No schema change is needed: the existing user version column is used.
+
+This increment does not complete PRD-02. Production email delivery,
+realtime update/reconnect recovery, broader accessibility
 and browser E2E evidence remain to be implemented and verified before closure.

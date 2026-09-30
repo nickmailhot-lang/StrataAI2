@@ -350,6 +350,7 @@ internal sealed class PostgresIdentityStore(
         string? avatarUrl,
         string locale,
         string timezone,
+        long expectedVersion,
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default)
     {
@@ -366,6 +367,7 @@ internal sealed class PostgresIdentityStore(
                 version = version + 1
             WHERE id = @id
               AND status <> 'DEACTIVATED'
+              AND version = @expected_version
             RETURNING {UserColumns};
             """,
             connection);
@@ -376,6 +378,7 @@ internal sealed class PostgresIdentityStore(
             avatarUrl is null ? DBNull.Value : avatarUrl);
         command.Parameters.AddWithValue("locale", locale);
         command.Parameters.AddWithValue("timezone", timezone);
+        command.Parameters.AddWithValue("expected_version", expectedVersion);
         command.Parameters.AddWithValue("updated_at", updatedAt);
 
         await using var reader =

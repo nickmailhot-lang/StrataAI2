@@ -200,6 +200,7 @@ public static class IdentityEndpoints
                     request.AvatarUrl,
                     request.Locale,
                     request.Timezone,
+                    request.Version,
                     context.TraceIdentifier,
                     cancellationToken);
 
@@ -292,6 +293,14 @@ public static class IdentityEndpoints
                 StatusCodes.Status400BadRequest,
                 errorCode,
                 "A valid display name is required."),
+            "invalid_version" => Problem(
+                StatusCodes.Status400BadRequest,
+                errorCode,
+                "The current profile version is required."),
+            "version_conflict" => Problem(
+                StatusCodes.Status409Conflict,
+                errorCode,
+                "Your profile changed elsewhere. Load the latest profile before saving again."),
             "invalid_avatar_url" => Problem(
                 StatusCodes.Status400BadRequest,
                 errorCode,

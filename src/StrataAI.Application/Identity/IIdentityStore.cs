@@ -69,6 +69,7 @@ public interface IIdentityStore
         string? avatarUrl,
         string locale,
         string timezone,
+        long expectedVersion,
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default);
 

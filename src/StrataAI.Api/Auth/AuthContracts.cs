@@ -27,7 +27,8 @@ public sealed record UpdateProfileRequest(
     string? DisplayName,
     string? AvatarUrl,
     string? Locale,
-    string? Timezone);
+    string? Timezone,
+    long Version);
 
 public sealed record RegistrationResponse(
     UserProfile User,

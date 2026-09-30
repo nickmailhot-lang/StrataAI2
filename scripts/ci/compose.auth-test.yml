@@ -1,0 +1,7 @@
+# Isolated CI fixture only; never included in the release bundle.
+# Exercise the real PostgreSQL provider with disposable accounts.
+services:
+  api:
+    environment:
+      STRATAAI_AUTH_ALLOW_SELF_REGISTRATION: 'true'
+      STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL: 'false'

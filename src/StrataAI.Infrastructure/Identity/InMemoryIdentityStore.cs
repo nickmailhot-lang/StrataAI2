@@ -247,12 +247,14 @@ internal sealed class InMemoryIdentityStore : IIdentityStore
         string? avatarUrl,
         string locale,
         string timezone,
+        long expectedVersion,
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default)
     {
         lock (_sync)
         {
-            if (!_users.TryGetValue(userId, out var user))
+            if (!_users.TryGetValue(userId, out var user) ||
+                user.Version != expectedVersion || user.Status == AccountStatus.Deactivated)
             {
                 return Task.FromResult<UserIdentity?>(null);
             }

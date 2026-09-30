@@ -2,13 +2,33 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProfilePage } from './ProfilePage';
 
-const profile = { id: 'user-1', email: 'council@example.test', displayName: 'Council', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'active', emailVerified: true };
+const profile = { id: 'user-1', email: 'council@example.test', displayName: 'Council', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'active', emailVerified: true, version: 1 };
 function renderProfile() {
   render(<MemoryRouter initialEntries={['/profile']}><Routes><Route path="/profile" element={<ProfilePage />} /><Route path="/login" element={<p>Sign in again</p>} /></Routes></MemoryRouter>);
 }
 afterEach(() => vi.unstubAllGlobals());
 
 describe('PRD-02 profile management', () => {
+  it('PRD-02-TC-08 preserves conflicted edits until explicit reload and saves with the latest version', async () => {
+    const latest = { ...profile, displayName: 'Other browser', timezone: 'UTC', version: 2 };
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Your profile changed elsewhere.' }), { status: 409 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(latest)))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...latest, displayName: 'Merged', version: 3 })));
+    vi.stubGlobal('fetch', fetchMock);
+    renderProfile();
+    fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: 'My edits' } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+    await screen.findByText('Your profile changed elsewhere.');
+    expect(screen.getByLabelText(/Display name/)).toHaveValue('My edits');
+    expect(screen.getByRole('button', { name: 'Save profile' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Discard edits and load latest profile' }));
+    await screen.findByRole('heading', { name: 'Other browser' });
+    fireEvent.change(screen.getByLabelText(/Display name/), { target: { value: 'Merged' } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+    await screen.findByText('Profile saved.');
+    expect(JSON.parse(fetchMock.mock.calls[3][1].body).version).toBe(2);
+  });
   it('saves editable preferences and displays the authoritative response', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Updated council', timezone: 'UTC' })));
@@ -22,7 +42,7 @@ describe('PRD-02 profile management', () => {
     expect(screen.getByLabelText(/Display name/)).toHaveValue('Updated council');
     expect(fetchMock.mock.calls[1][0]).toBe('/me');
     expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'PATCH', credentials: 'include' });
-    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ timezone: 'UTC', avatarUrl: '' });
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ timezone: 'UTC', avatarUrl: '', version: 1 });
   });
 
   it('preserves changes after a network error and allows retry', async () => {

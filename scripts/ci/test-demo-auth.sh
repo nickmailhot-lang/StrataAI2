@@ -34,24 +34,27 @@ fi
 grep -q '"email":"council@example.test"' /tmp/me.json
 
 # PRD-02-TC-01/03/04/06: persisted profile changes, validation and authorization.
+profile_version="$(jq -r '.version' /tmp/me.json)"
 profile="$(curl --fail --silent --show-error -X PATCH -b "$COOKIE_JAR" \
   -H 'Content-Type: application/json' \
-  -d '{"displayName":"Updated Council","avatarUrl":"https://example.test/avatar.png","locale":"fr-CA","timezone":"UTC"}' \
+  -d "$(jq -nc --argjson version "$profile_version" '{displayName:"Updated Council",avatarUrl:"https://example.test/avatar.png",locale:"fr-CA",timezone:"UTC",version:$version}')" \
   "$BASE_URL/me")"
 test "$(printf '%s' "$profile" | jq -r '.displayName')" = "Updated Council"
 test "$(printf '%s' "$profile" | jq -r '.timezone')" = "UTC"
+profile_version="$(printf '%s' "$profile" | jq -r '.version')"
 curl --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" | jq -e '.locale == "fr-CA" and .timezone == "UTC"' >/dev/null
 for invalid in '{"displayName":" "}' '{"avatarUrl":"javascript:alert(1)"}' '{"timezone":"Not/AZone"}' '{"locale":""}'; do
   status="$(curl --silent --output /tmp/invalid-profile.json --write-out '%{http_code}' \
-    -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' -d "$invalid" "$BASE_URL/me")"
+    -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' -d "$(printf '%s' "$invalid" | jq --argjson version "$profile_version" '. + {version:$version}')" "$BASE_URL/me")"
   test "$status" = "400"
 done
 curl --fail --silent -b "$COOKIE_JAR" "$BASE_URL/me" | jq -e '.displayName == "Updated Council" and .timezone == "UTC"' >/dev/null
 curl --fail --silent -X PATCH -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
-  -d '{"avatarUrl":""}' "$BASE_URL/me" | jq -e '.avatarUrl == null' >/dev/null
+  -d "$(jq -nc --argjson version "$profile_version" '{avatarUrl:"",version:$version}')" "$BASE_URL/me" | jq -e '.avatarUrl == null' >/dev/null
 unauthorized_profile="$(curl --silent --output /dev/null --write-out '%{http_code}' \
   -X PATCH -H 'Content-Type: application/json' -d '{"displayName":"Intruder"}' "$BASE_URL/me")"
 test "$unauthorized_profile" = "401"
+"$(dirname "$0")/test-profile-concurrency.sh" "$BASE_URL" "$COOKIE_JAR"
 
 "$(dirname "$0")/test-demo-organizations.sh" "$BASE_URL" "$COOKIE_JAR"
 "$(dirname "$0")/test-demo-onboarding.sh" "$BASE_URL" "$COOKIE_JAR"
