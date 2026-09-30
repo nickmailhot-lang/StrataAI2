@@ -169,7 +169,7 @@ public static class IdentityEndpoints
         var me = app.MapGroup("/me").RequireAuthorization();
 
         me.MapGet(
-            "/",
+            "",
             (HttpContext context) =>
             {
                 return context.Items.TryGetValue(
@@ -181,7 +181,7 @@ public static class IdentityEndpoints
             });
 
         me.MapPatch(
-            "/",
+            "",
             async (
                 UpdateProfileRequest request,
                 HttpContext context,
