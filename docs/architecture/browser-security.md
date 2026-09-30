@@ -45,3 +45,28 @@ retry metadata and unaffected health routes. This increment implements SEC-FR-00
 and authentication/invitation coverage for SEC-FR-010. PRD-24 remains incomplete:
 future upload/mention/public-share limits, file security, public response review
 and broader threat/authorization coverage remain required.
+
+# Release response headers
+
+The web image supplies CSP on HTML, proxied API responses and edge errors, plus
+`nosniff`, `DENY` frame protection, `no-referrer`, and disabled camera/microphone/
+geolocation permissions. Scripts and network connections are same-origin;
+inline scripts, remote scripts, embedded objects, base overrides and framing are
+blocked. HTTPS avatar images and data images remain supported.
+
+MUI/Emotion currently needs inline styles, so only `style-src` permits
+`unsafe-inline`. Script policy never permits it or `unsafe-eval`. Moving styles
+to request-specific nonces requires a nonce-aware HTML/Emotion delivery design;
+do not insert a static reusable nonce. See [MUI CSP guidance](https://mui.com/material-ui/guides/content-security-policy/).
+
+The shared include is repeated in the rate-limit error location because its
+Retry-After directive replaces inherited Nginx header directives; see
+[Nginx header inheritance](https://nginx.org/en/docs/http/ngx_http_headers_module.html).
+Exact-image browser tests verify 200/401/403/404 headers and observe both inline
+and external script injection being blocked. Rate-limit tests verify 429 headers.
+The existing account/recovery browser flows run under this CSP. Vite development
+mode does not represent the release header boundary.
+
+TLS termination must enforce HTTPS and HSTS at the deployment's trusted edge;
+the internal HTTP Nginx container does not infer TLS from arbitrary forwarded
+headers. Secure production session cookies remain enforced by the API.

@@ -16,6 +16,12 @@ for path in /auth/login /organizations/00000000-0000-0000-0000-000000000001/invi
     if [ "$status" = '429' ]; then
       jq -e '.code == "rate_limit_exceeded"' "$scratch/problem.json" >/dev/null
       grep -Eiq '^retry-after: [1-9][0-9]*' "$scratch/headers"
+      if [ "${2:-}" = 'security-headers' ]; then
+        grep -Eiq '^content-security-policy: .*script-src .self.' "$scratch/headers"
+        grep -Eiq '^x-content-type-options: nosniff' "$scratch/headers"
+        grep -Eiq '^x-frame-options: DENY' "$scratch/headers"
+        grep -Eiq '^referrer-policy: no-referrer' "$scratch/headers"
+      fi
       limited=true
       break
     fi

@@ -286,12 +286,14 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Authenticated browser E2E against exact release images
+        env:
+          STRATAAI_E2E_RELEASE_HEADERS: '1'
         run: npx playwright test
 
       - name: Authentication and invitation abuse limits on API and edge
         run: |
           scripts/ci/test-rate-limits.sh http://localhost:8080
-          scripts/ci/test-rate-limits.sh http://localhost:8088
+          scripts/ci/test-rate-limits.sh http://localhost:8088 security-headers
 
       - name: Retain browser failure evidence
         if: failure()
