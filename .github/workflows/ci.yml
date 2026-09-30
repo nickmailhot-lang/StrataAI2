@@ -106,10 +106,13 @@ jobs:
           fi
 
       - name: Apply ordered migrations
-        run: psql -v ON_ERROR_STOP=1 -f db/migrations/001_foundation.sql
+        run: scripts/ci/apply-migrations.sh
 
       - name: Verify pgvector and forced tenant RLS
         run: scripts/ci/test-rls.sh
+
+      - name: Verify append-only audit storage
+        run: scripts/ci/test-audit-append-only.sh
 
   source-quality-gate:
     name: source-quality-gate
@@ -212,14 +215,53 @@ jobs:
       - name: Start release topology
         run: docker compose -f compose.release.yml up -d --wait --wait-timeout 180
 
-      - name: Health and SPA deep-link smoke tests
+      - name: Health, readiness and SPA deep-link smoke tests
         shell: bash
         run: |
           set -euo pipefail
           scripts/health-check.sh
+          curl --fail --silent --show-error http://127.0.0.1:8080/readyz >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8081/readyz >/dev/null
           curl --fail --silent --show-error http://127.0.0.1:8088/app/demo/boards/demo-board >/dev/null
           curl --fail --silent --show-error http://127.0.0.1:8088/app/demo/boards/demo-board/cards/demo-card >/dev/null
           curl --fail --silent --show-error http://127.0.0.1:8088/portal/demo >/dev/null
+
+      - name: Production does not expose demo reset
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}'             -X POST http://127.0.0.1:8080/api/demo/reset)"
+          test "$status" = "404"
+
+      - name: Demo API runs without PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --rm             --name strataai-demo-api             -e STRATAAI_RUNTIME_MODE=demo             -p 18080:8080             "strataai-api:${GITHUB_SHA}"
+
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/readyz >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent http://127.0.0.1:18080/api/demo/state >/dev/null
+          curl --fail --silent -X POST http://127.0.0.1:18080/api/demo/reset >/dev/null
+          docker stop strataai-demo-api
+
+      - name: Production fails closed without database configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          docker run --rm             -e STRATAAI_RUNTIME_MODE=production             "strataai-api:${GITHUB_SHA}" >/tmp/production-missing-db.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "Production API unexpectedly started without PostgreSQL configuration." >&2
+            exit 1
+          fi
 
       - name: Capture container state and logs
         if: failure()
