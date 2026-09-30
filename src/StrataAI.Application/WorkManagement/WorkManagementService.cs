@@ -909,6 +909,19 @@ public sealed class WorkManagementService(
                 canEdit));
     }
 
+    // Retry authorization reads only permissions, not a potentially large board snapshot.
+    internal async Task<bool> CheckCommandAccessAsync(Guid boardId, Guid actorId, string permission, CancellationToken cancellationToken)
+    {
+        var current = await ResolveAccessAsync(boardId, actorId, cancellationToken);
+        if (current is null) return false;
+        return permission switch
+        {
+            "admin" => current.Value.Access.CanAdminister,
+            "view" => current.Value.Access.CanView,
+            _ => current.Value.Access.CanEdit,
+        };
+    }
+
     private async Task<WorkOperation<BoardRecord>> ChangeBoardLifecycleAsync(
         Guid boardId,
         Guid actorUserId,

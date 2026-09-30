@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -17,6 +17,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   workRequest,
+  WorkMutationIntent,
   WorkRequestError,
   WorkInputError,
 } from "../../api/workManagement";
@@ -52,6 +53,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const [reload, setReload] = useState(0);
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
+  const mutation = useRef(new WorkMutationIntent());
   const [error, setError] = useState<Error>();
   const navigate = useNavigate();
   useEffect(() => {
@@ -105,18 +107,18 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
     setError(undefined);
     try {
       if (organizationId) {
-        const board = await workRequest<{ id: string }>("/boards", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const board = await mutation.current.send<{ id: string }>(
+          "/boards",
+          "POST",
+          {
             organizationId,
             name,
             description: String(form.get("description") ?? ""),
             visibility: String(form.get("visibility") ?? "PRIVATE"),
             backgroundType: "COLOR",
             backgroundValue: "#0f4c81",
-          }),
-        });
+          },
+        );
         navigate(`/app/${organizationId}/boards/${board.id}`);
       } else {
         const created = await workRequest<OrganizationSummary>(

@@ -319,6 +319,9 @@ jobs:
       - name: Work command and audit rollback against exact release API
         run: scripts/ci/test-work-command-transactions.sh
 
+      - name: Durable work retry keys against exact release API
+        run: scripts/ci/test-work-idempotency.sh
+
       - name: Prepare isolated identity mail transport and ephemeral signing keys
         run: |
           set -euo pipefail

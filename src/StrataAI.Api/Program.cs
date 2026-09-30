@@ -31,6 +31,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 builder.Services.AddSingleton<IClock, SystemClock>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<StrataAI.Application.WorkManagement.IWorkCommandContext, HttpWorkCommandContext>();
 builder.Services
     .AddAuthentication(SessionAuthenticationDefaults.Scheme)
     .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, SessionAuthenticationHandler>(
@@ -54,6 +56,7 @@ app.UseMiddleware<CsrfProtectionMiddleware>();
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
+app.UseMiddleware<WorkIdempotencyMiddleware>();
 
 app.MapGet("/healthz", () => Results.Ok(new
 {

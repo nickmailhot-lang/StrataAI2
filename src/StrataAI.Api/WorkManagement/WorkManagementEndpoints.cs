@@ -698,6 +698,10 @@ public static class WorkManagementEndpoints
                 StatusCodes.Status400BadRequest,
                 errorCode,
                 "The requested rank is invalid."),
+            "idempotency_key_reused" => Problem(
+                StatusCodes.Status409Conflict, errorCode, "This retry key belongs to a different request."),
+            "idempotency_key_expired" => Problem(
+                StatusCodes.Status409Conflict, errorCode, "This retry key expired. Check the latest state before starting a new change."),
             "version_conflict" => Problem(
                 StatusCodes.Status409Conflict,
                 errorCode,

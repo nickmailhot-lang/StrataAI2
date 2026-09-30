@@ -78,10 +78,37 @@ export async function loadBoard(
     throw new WorkRequestError(404, null);
   return data;
 }
-export function mutateWork(path: string, method: string, body: unknown) {
-  return workRequest<unknown>(path, {
+export function mutateWork<T = unknown>(
+  path: string,
+  method: string,
+  body: unknown,
+  retryKey: string = crypto.randomUUID(),
+) {
+  return workRequest<T>(path, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": retryKey,
+    },
     body: JSON.stringify(body),
   });
+}
+
+// Keep the key while an unchanged intent has an uncertain outcome. Changed
+// input, another resource, or a completed operation starts a new intent.
+export class WorkMutationIntent {
+  private pending?: { signature: string; key: string };
+  async send<T = unknown>(
+    path: string,
+    method: string,
+    body: unknown,
+  ): Promise<T> {
+    const signature = JSON.stringify({ path, method, body });
+    if (this.pending?.signature !== signature)
+      this.pending = { signature, key: crypto.randomUUID() };
+    const intent = this.pending;
+    const result = await mutateWork<T>(path, method, body, intent.key);
+    if (this.pending === intent) this.pending = undefined;
+    return result;
+  }
 }

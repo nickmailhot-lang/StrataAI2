@@ -21,6 +21,7 @@ GRANT SELECT ON schema_migrations TO strataai_api_runtime,strataai_worker_runtim
 GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe() TO strataai_api_runtime,strataai_worker_runtime;
 GRANT SELECT,INSERT,UPDATE ON users,sessions,password_reset_tokens,email_verification_tokens TO strataai_api_runtime;
 GRANT INSERT ON audit_events,identity_delivery_jobs TO strataai_api_runtime;
+GRANT SELECT,INSERT,UPDATE ON work_command_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON background_jobs TO strataai_api_runtime;
 GRANT SELECT,UPDATE ON background_jobs TO strataai_worker_runtime;
 GRANT SELECT,INSERT,UPDATE,DELETE ON organizations,boards,board_lists,cards,organization_members,invitations,portal_access,

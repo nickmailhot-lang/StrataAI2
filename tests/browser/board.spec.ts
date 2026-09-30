@@ -75,7 +75,34 @@ for (const viewport of [
     ).toBeVisible();
     await activate("Add card to Planning");
     await page.getByLabel("Card title", { exact: false }).fill("Inspect roof");
+    // The server commits, but the first response is lost. An unchanged UI retry
+    // must use the same intent key and recover exactly one persisted card.
+    const retryKeys: (string | undefined)[] = [];
+    await page.route("**/lists/*/cards", async (route) => {
+      if (route.request().method() !== "POST") return route.continue();
+      retryKeys.push(route.request().headers()["idempotency-key"]);
+      const committed = await route.fetch();
+      expect(committed.status()).toBe(201);
+      if (retryKeys.length === 1) await route.abort("failed");
+      else await route.fulfill({ response: committed });
+    });
     await activate("Create");
+    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.getByLabel("Card title", { exact: false })).toHaveValue(
+      "Inspect roof",
+    );
+    await activate("Create");
+    await expect(
+      page.getByRole("link", { name: "Inspect roof", exact: true }),
+    ).toBeVisible();
+    expect(retryKeys).toHaveLength(2);
+    expect(retryKeys[0]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(retryKeys[1]).toBe(retryKeys[0]);
+    await page.unroute("**/lists/*/cards");
+    const afterRetry = await (
+      await context.request.get(`/boards/${boardId}`)
+    ).json();
+    expect(afterRetry.lists[0].cards).toHaveLength(1);
     await page.getByRole("link", { name: "Inspect roof", exact: true }).click();
     await expect(page.getByLabel("Card title", { exact: false })).toHaveValue(
       "Inspect roof",

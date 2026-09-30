@@ -13,6 +13,7 @@ public static class WorkManagementRegistration
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<IWorkManagementStore, InMemoryWorkManagementStore>();
+            services.AddSingleton<IWorkManagementUnitOfWork, InMemoryWorkManagementUnitOfWork>();
         }
         else
         {
@@ -21,9 +22,8 @@ public static class WorkManagementRegistration
         }
 
         services.AddSingleton<WorkManagementService>();
-        services.AddSingleton<IWorkManagementService>(provider => runtime.Mode == RuntimeMode.Demo
-            ? provider.GetRequiredService<WorkManagementService>()
-            : new TransactionalWorkManagementService(provider.GetRequiredService<WorkManagementService>(),
-                provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<IWorkManagementUnitOfWork>()));
+        services.AddSingleton<IWorkManagementService>(provider => new TransactionalWorkManagementService(provider.GetRequiredService<WorkManagementService>(),
+                provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<IWorkManagementUnitOfWork>(),
+                provider.GetRequiredService<StrataAI.Application.Organizations.IOrganizationStore>(), provider.GetRequiredService<IWorkCommandContext>()));
     }
 }

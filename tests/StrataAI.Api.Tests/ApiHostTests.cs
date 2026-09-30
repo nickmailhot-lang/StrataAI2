@@ -16,6 +16,86 @@ namespace StrataAI.Api.Tests;
 // PRD-24-TC-04: real endpoint binding, middleware and session authorization.
 public sealed class ApiHostTests
 {
+    // PRD-07/08-TC-07, PRD-24-TC-05: repeated intent and revoked replay.
+    [Fact]
+    public async Task Work_retry_keys_deduplicate_concurrent_creation_and_versioned_updates_without_disclosing_revoked_results()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory();
+        using var owner = app.CreateClient();
+        using var member = app.CreateClient();
+        await RegisterAndLogin(owner);
+        await RegisterAndLogin(member);
+        var userId = (await member.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        using var organizationResponse = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Retry organization" });
+        var organizationId = (await organizationResponse.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var organizations = app.Services.GetRequiredService<IOrganizationStore>();
+        await organizations.AddOrRestoreMemberAsync(organizationId, userId, OrganizationRole.Member, DateTimeOffset.UtcNow, ct);
+        var boardKey = Guid.NewGuid().ToString();
+        var boardBody = new { organizationId, name = "Protected retry board" };
+        using var createdBoard = await Mutate(member, HttpMethod.Post, "/boards", boardBody, boardKey);
+        Assert.Equal(HttpStatusCode.Created, createdBoard.StatusCode);
+        var board = await createdBoard.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct);
+        var boardId = board.GetProperty("id").GetGuid();
+        var listKey = Guid.NewGuid().ToString();
+        var listRoute = $"/boards/{boardId}/lists";
+        var duplicates = await Task.WhenAll(Enumerable.Range(0, 3).Select(_ => Mutate(member, HttpMethod.Post, listRoute, new { name = "One list" }, listKey)));
+        Guid? listId = null;
+        foreach (var response in duplicates)
+        {
+            using (response)
+            {
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                var id = (await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct)).GetProperty("id").GetGuid();
+                listId ??= id;
+                Assert.Equal(listId, id);
+            }
+        }
+        using var collision = await Mutate(member, HttpMethod.Post, listRoute, new { name = "Different list" }, listKey);
+        Assert.Equal(HttpStatusCode.Conflict, collision.StatusCode);
+        Assert.Equal("idempotency_key_reused", (await collision.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct)).GetProperty("code").GetString());
+        // Another actor has a separate key namespace.
+        using var ownerList = await Mutate(owner, HttpMethod.Post, listRoute, new { name = "Owner list" }, listKey);
+        Assert.Equal(HttpStatusCode.Created, ownerList.StatusCode);
+        using var cardResponse = await Mutate(member, HttpMethod.Post, $"/lists/{listId}/cards", new { title = "Private original" }, Guid.NewGuid().ToString());
+        var cardId = (await cardResponse.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct)).GetProperty("id").GetGuid();
+        var editKey = Guid.NewGuid().ToString();
+        var edit = new { title = "Saved exactly once", version = 1 };
+        using var saved = await Mutate(member, HttpMethod.Patch, $"/cards/{cardId}", edit, editKey);
+        Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
+        using var replayed = await Mutate(member, HttpMethod.Patch, $"/cards/{cardId}", edit, editKey);
+        Assert.Equal(HttpStatusCode.OK, replayed.StatusCode);
+        Assert.Equal(2, (await replayed.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct)).GetProperty("version").GetInt64());
+        using var stale = await Mutate(member, HttpMethod.Patch, $"/cards/{cardId}", edit, Guid.NewGuid().ToString());
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        var snapshot = await member.GetFromJsonAsync<JsonElement>($"/boards/{boardId}", ct);
+        Assert.Equal(2, snapshot.GetProperty("lists").GetArrayLength());
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        await work.RemoveBoardMemberAsync(boardId, userId, DateTimeOffset.UtcNow, ct);
+        // Still an organization member: creation replay must check the created board.
+        using var revokedCreation = await Mutate(member, HttpMethod.Post, "/boards", boardBody, boardKey);
+        Assert.Equal(HttpStatusCode.NotFound, revokedCreation.StatusCode);
+        Assert.DoesNotContain("Protected retry board", await revokedCreation.Content.ReadAsStringAsync(ct));
+        await organizations.RemoveMemberAsync(organizationId, userId, DateTimeOffset.UtcNow, ct);
+        using var revokedEdit = await Mutate(member, HttpMethod.Patch, $"/cards/{cardId}", edit, editKey);
+        Assert.Equal(HttpStatusCode.NotFound, revokedEdit.StatusCode);
+        Assert.DoesNotContain("Saved exactly once", await revokedEdit.Content.ReadAsStringAsync(ct));
+    }
+
+    [Theory]
+    [InlineData("invalid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    [InlineData("11111111-1111-1111-1111-111111111111,22222222-2222-2222-2222-222222222222")]
+    public async Task Work_mutations_reject_invalid_retry_keys_before_domain_changes(string key)
+    {
+        await using var app = new ApiFactory();
+        using var client = app.CreateClient();
+        await RegisterAndLogin(client);
+        using var response = await Mutate(client, HttpMethod.Post, "/boards", new { organizationId = Guid.NewGuid(), name = "Rejected" }, key);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("invalid_idempotency_key", (await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken)).GetProperty("code").GetString());
+    }
+
     [Fact]
     public async Task Correlation_ids_preserve_safe_values_and_replace_unbounded_or_unsafe_headers()
     {
@@ -224,10 +304,11 @@ public sealed class ApiHostTests
         return cookie.Split(';')[0];
     }
 
-    private static async Task<HttpResponseMessage> Mutate(HttpClient client, HttpMethod method, string route, object body)
+    private static async Task<HttpResponseMessage> Mutate(HttpClient client, HttpMethod method, string route, object body, string? retryKey = null)
     {
         using var request = new HttpRequestMessage(method, route) { Content = JsonContent.Create(body) };
         request.Headers.Add("X-StrataAI-Request", "1");
+        if (retryKey is not null) request.Headers.TryAddWithoutValidation("Idempotency-Key", retryKey);
         return await client.SendAsync(request, TestContext.Current.CancellationToken);
     }
 }

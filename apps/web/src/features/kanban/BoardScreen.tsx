@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -17,7 +17,7 @@ import {
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   loadBoard,
-  mutateWork,
+  WorkMutationIntent,
   WorkRequestError,
   WorkInputError,
   type BoardSnapshot,
@@ -36,6 +36,7 @@ function BoardContent() {
   const [reload, setReload] = useState(0);
   const [creation, setCreation] = useState<Creation>();
   const [busy, setBusy] = useState(false);
+  const mutation = useRef(new WorkMutationIntent());
   const [failure, setFailure] = useState<{ cardId?: string; error: Error }>();
   const [savedFor, setSavedFor] = useState<{ cardId?: string }>();
   const error = failure?.cardId === cardId ? failure?.error : undefined;
@@ -98,15 +99,19 @@ function BoardContent() {
     setSaved(false);
     try {
       if (edit && card)
-        await mutateWork(`/cards/${card.id}`, "PATCH", {
+        await mutation.current.send(`/cards/${card.id}`, "PATCH", {
           title,
           description: String(form.get("description") ?? ""),
           version: card.version,
         });
       else if (creation?.kind === "list")
-        await mutateWork(`/boards/${boardId}/lists`, "POST", { name: title });
+        await mutation.current.send(`/boards/${boardId}/lists`, "POST", {
+          name: title,
+        });
       else if (creation?.listId)
-        await mutateWork(`/lists/${creation.listId}/cards`, "POST", { title });
+        await mutation.current.send(`/lists/${creation.listId}/cards`, "POST", {
+          title,
+        });
       setCreation(undefined);
       setSaved(true);
       setReload((value) => value + 1);
