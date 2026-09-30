@@ -1,0 +1,17 @@
+{
+  "name": "strataai2",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "build": "npm --workspace @strataai/web run build",
+    "test": "npm --workspace @strataai/web run test",
+    "typecheck": "npm --workspace @strataai/web run typecheck",
+    "lint": "npm --workspace @strataai/web run lint"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
