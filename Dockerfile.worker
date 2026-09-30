@@ -7,8 +7,12 @@ COPY src/StrataAI.Domain/StrataAI.Domain.csproj src/StrataAI.Domain/
 COPY src/StrataAI.Application/StrataAI.Application.csproj src/StrataAI.Application/
 COPY src/StrataAI.Infrastructure/StrataAI.Infrastructure.csproj src/StrataAI.Infrastructure/
 COPY src/StrataAI.Worker/StrataAI.Worker.csproj src/StrataAI.Worker/
+COPY src/StrataAI.Domain/packages.lock.json src/StrataAI.Domain/
+COPY src/StrataAI.Application/packages.lock.json src/StrataAI.Application/
+COPY src/StrataAI.Infrastructure/packages.lock.json src/StrataAI.Infrastructure/
+COPY src/StrataAI.Worker/packages.lock.json src/StrataAI.Worker/
 
-RUN dotnet restore src/StrataAI.Worker/StrataAI.Worker.csproj
+RUN dotnet restore src/StrataAI.Worker/StrataAI.Worker.csproj --locked-mode
 
 COPY src src
 

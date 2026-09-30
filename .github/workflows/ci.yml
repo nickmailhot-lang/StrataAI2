@@ -61,7 +61,10 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore
-        run: dotnet restore StrataAI2.slnx
+        run: dotnet restore StrataAI2.slnx --locked-mode
+
+      - name: Reject dependency lock drift
+        run: scripts/ci/test-dependency-locks.sh
 
       - name: Build with warnings as errors
         run: dotnet build StrataAI2.slnx --configuration Release --no-restore
@@ -387,7 +390,7 @@ jobs:
         run: npm audit --audit-level=high
 
       - name: Restore .NET packages
-        run: dotnet restore StrataAI2.slnx
+        run: dotnet restore StrataAI2.slnx --locked-mode
 
       - name: .NET vulnerable dependency audit
         run: dotnet list StrataAI2.slnx package --vulnerable --include-transitive
