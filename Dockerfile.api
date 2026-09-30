@@ -1,0 +1,40 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+WORKDIR /src
+
+COPY global.json Directory.Build.props ./
+COPY src/StrataAI.Domain/StrataAI.Domain.csproj src/StrataAI.Domain/
+COPY src/StrataAI.Application/StrataAI.Application.csproj src/StrataAI.Application/
+COPY src/StrataAI.Infrastructure/StrataAI.Infrastructure.csproj src/StrataAI.Infrastructure/
+COPY src/StrataAI.Api/StrataAI.Api.csproj src/StrataAI.Api/
+
+RUN dotnet restore src/StrataAI.Api/StrataAI.Api.csproj
+
+COPY src src
+
+ARG STRATAAI_BUILD_REVISION=development
+ARG STRATAAI_BUILD_VERSION=0.0.0-dev
+
+RUN dotnet publish src/StrataAI.Api/StrataAI.Api.csproj \
+    --configuration Release \
+    --no-restore \
+    --output /app/publish \
+    -p:SourceRevisionId=$STRATAAI_BUILD_REVISION \
+    -p:Version=$STRATAAI_BUILD_VERSION
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=5 \
+  CMD curl --fail --silent --show-error http://127.0.0.1:8080/api/health || exit 1
+
+ENTRYPOINT ["dotnet", "StrataAI.Api.dll"]

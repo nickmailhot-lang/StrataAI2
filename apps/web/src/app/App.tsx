@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import {
   Navigate,
@@ -7,10 +8,10 @@ import {
 
 import { appTheme } from '../theme/appTheme';
 import { BoardScreen } from '../features/kanban/BoardScreen';
-import { InternalAppShell } from './InternalAppShell';
 import { PortalShell } from '../portal/PortalShell';
+import { InternalAppShell } from './InternalAppShell';
 
-const router = createBrowserRouter([
+const routes = [
   {
     path: '/',
     element: <Navigate to="/app/demo/boards/demo-board" replace />,
@@ -33,9 +34,11 @@ const router = createBrowserRouter([
     path: '/portal/:organizationId',
     element: <PortalShell />,
   },
-]);
+];
 
 export function App() {
+  const router = useMemo(() => createBrowserRouter(routes), []);
+
   return (
     <ThemeProvider theme={appTheme}>
       <CssBaseline />

@@ -1,13 +1,37 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using StrataAI.Application.Common;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
+builder.Services.AddHealthChecks();
 builder.Services.AddHostedService<WorkerHeartbeat>();
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+app.MapGet("/healthz", (IClock clock) => Results.Ok(new
+{
+    status = "ok",
+    service = "strataai-worker",
+    timestamp = clock.UtcNow,
+}));
+
+app.MapGet("/runtime", (IHostEnvironment environment, IConfiguration configuration) =>
+{
+    var revision = configuration["STRATAAI_BUILD_REVISION"] ?? "development";
+    var version = configuration["STRATAAI_BUILD_VERSION"] ?? "0.0.0-dev";
+
+    return Results.Ok(new
+    {
+        service = "strataai-worker",
+        environment = environment.EnvironmentName,
+        revision,
+        version,
+    });
+});
+
+app.MapHealthChecks("/health");
+
+await app.RunAsync();
 
 internal sealed class WorkerHeartbeat(
     ILogger<WorkerHeartbeat> logger,
