@@ -4,6 +4,27 @@ BASE_URL="${1:?Pass API or edge URL}"
 scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT
 trap 'echo "Rate-limit check failed at line $LINENO" >&2' ERR
+# An unmapped sensitive path has no API rate policy, so its 429 proves that the
+# Nginx limit/error location itself executes, independently of API exhaustion.
+if [ "${2:-}" = 'security-headers' ]; then
+  edge_limited=false
+  for attempt in $(seq 1 200); do
+    status="$(curl --silent --show-error -o "$scratch/problem.json" -D "$scratch/headers" -w '%{http_code}' \
+      -H "X-Forwarded-For: 198.51.100.$attempt" "$BASE_URL/auth/not-a-route")"
+    if [ "$status" = '429' ]; then
+      jq -e '.code == "rate_limit_exceeded"' "$scratch/problem.json" >/dev/null
+      grep -Eiq '^retry-after: 60' "$scratch/headers"
+      grep -Eiq '^content-security-policy: .*script-src .self.' "$scratch/headers"
+      grep -Eiq '^x-content-type-options: nosniff' "$scratch/headers"
+      grep -Eiq '^x-frame-options: DENY' "$scratch/headers"
+      grep -Eiq '^referrer-policy: no-referrer' "$scratch/headers"
+      edge_limited=true
+      break
+    fi
+    test "$status" = '404'
+  done
+  test "$edge_limited" = true
+fi
 # PRD-24 SEC-FR-010: invalid inputs still consume capacity; spoofed forwarding
 # headers cannot obtain fresh capacity. No passwords or real accounts are used.
 for path in /auth/login /organizations/00000000-0000-0000-0000-000000000001/invitations; do
