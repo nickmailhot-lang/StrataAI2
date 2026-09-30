@@ -38,6 +38,8 @@ Explicit discard loads authoritative data first and replaces the draft only on
 success. Transient refresh failures retain the editor and its draft; 401/403/404
 refresh or mutation failures clear the scoped board and editor. Superseded reads
 and scope changes abort earlier reads, including conflict recovery.
+Access loss also clears retained acknowledgments, retry intents and save status;
+responses from mutations begun before that loss cannot repopulate those states.
 
 These transitions prepare the editor for realtime invalidation. SignalR and
 durable event delivery are still outstanding; this screen does not yet refresh

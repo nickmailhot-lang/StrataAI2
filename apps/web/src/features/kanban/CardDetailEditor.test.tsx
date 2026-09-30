@@ -28,7 +28,7 @@ function props() {
     onRefresh: vi.fn(),
   };
 }
-describe("PRD-09/17 drafts across incoming versions", () => {
+describe("PRD-09/22 drafts across incoming versions", () => {
   it("preserves dirty text, focus and baseline on refresh, and blocks an unsafe save", () => {
     const initial = props();
     const { rerender } = render(<CardDetailEditor {...initial} />);

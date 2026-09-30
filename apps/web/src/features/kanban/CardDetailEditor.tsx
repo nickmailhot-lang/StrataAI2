@@ -23,7 +23,7 @@ const initial = (card: WorkCard) => ({
   description: card.description ?? "",
 });
 
-// PRD-09 / PRD-17: incoming versions never silently replace a dirty draft.
+// PRD-09 / PRD-22: incoming versions never silently replace a dirty draft.
 // The parent keys this editor by card identity, not by its mutable revision.
 export function CardDetailEditor({
   card,

@@ -40,6 +40,7 @@ function BoardContent() {
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
+  const accessEpoch = useRef(0);
   const [failure, setFailure] = useState<{ cardId?: string; error: Error }>();
   const [acknowledged, setAcknowledged] = useState<WorkCard>();
   const [savedFor, setSavedFor] = useState<{ cardId?: string }>();
@@ -50,6 +51,16 @@ function BoardContent() {
   }
   function setSaved(next: boolean) {
     setSavedFor(next ? { cardId } : undefined);
+  }
+  function clearDeniedScope(failure: Error) {
+    accessEpoch.current += 1;
+    activeRead.current?.abort();
+    mutation.current = new WorkMutationIntent();
+    setAcknowledged(undefined);
+    setSavedFor(undefined);
+    setCreation(undefined);
+    setFailure(undefined);
+    setLoaded({ key, error: failure });
   }
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,6 +82,10 @@ function BoardContent() {
         const denied =
           failure instanceof WorkRequestError &&
           [401, 403, 404].includes(failure.status);
+        if (denied) {
+          clearDeniedScope(failure);
+          return;
+        }
         setLoaded((previous) => ({
           key,
           error: failure,
@@ -112,6 +127,7 @@ function BoardContent() {
       return;
     }
     setBusy(true);
+    const epoch = accessEpoch.current;
     setError(undefined);
     setSaved(false);
     try {
@@ -125,6 +141,7 @@ function BoardContent() {
             version: expectedVersion ?? card.version,
           },
         );
+        if (epoch !== accessEpoch.current) return;
         if (updated.id === card.id && Number.isSafeInteger(updated.version))
           setAcknowledged(updated);
       } else if (creation?.kind === "list")
@@ -135,16 +152,17 @@ function BoardContent() {
         await mutation.current.send(`/lists/${creation.listId}/cards`, "POST", {
           title,
         });
+      if (epoch !== accessEpoch.current) return;
       setCreation(undefined);
       setSaved(true);
       setReload((value) => value + 1);
     } catch (reason) {
+      if (epoch !== accessEpoch.current) return;
       if (
         reason instanceof WorkRequestError &&
         [401, 403, 404].includes(reason.status)
       ) {
-        activeRead.current?.abort();
-        setLoaded({ key, error: reason });
+        clearDeniedScope(reason);
       }
       setError(
         reason instanceof WorkRequestError
@@ -184,7 +202,7 @@ function BoardContent() {
         failure instanceof WorkRequestError &&
         [401, 403, 404].includes(failure.status)
       )
-        setLoaded({ key, error: failure });
+        clearDeniedScope(failure);
       throw failure;
     } finally {
       setBusy(false);

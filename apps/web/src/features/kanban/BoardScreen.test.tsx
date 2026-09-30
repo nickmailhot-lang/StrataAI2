@@ -325,6 +325,86 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(screen.queryByLabelText(/Card title/)).not.toBeInTheDocument();
     expect(screen.queryByText("Persisted board")).not.toBeInTheDocument();
   });
+  it("does not resurrect an old save confirmation after access loss and a fresh authorized load", async () => {
+    const savedCard = {
+      ...fixture.lists[0].cards[0],
+      title: "Saved title",
+      version: 4,
+    };
+    const latest = {
+      ...fixture,
+      lists: [{ ...fixture.lists[0], cards: [savedCard] }],
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(response(fixture))
+        .mockResolvedValueOnce(response(savedCard))
+        .mockResolvedValueOnce(response(latest))
+        .mockResolvedValueOnce(response({}, 403))
+        .mockResolvedValueOnce(response(latest)),
+    );
+    mount("/app/org-1/boards/board-1/cards/card-1");
+    fireEvent.change(await screen.findByLabelText(/Card title/), {
+      target: { value: "Saved title" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save card" }));
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Changes saved",
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Card title/)).toHaveValue("Saved title"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Refresh card" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+    expect(await screen.findByLabelText(/Card title/)).toHaveValue(
+      "Saved title",
+    );
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+  it("ignores an in-flight save acknowledgment after a read revokes access", async () => {
+    let finishRead!: (value: Response) => void;
+    let finishSave!: (value: Response) => void;
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response(fixture))
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((resolve) => {
+            finishRead = resolve;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((resolve) => {
+            finishSave = resolve;
+          }),
+      );
+    vi.stubGlobal("fetch", fetcher);
+    mount("/app/org-1/boards/board-1/cards/card-1");
+    await screen.findByLabelText(/Card title/);
+    fireEvent.click(screen.getByRole("button", { name: "Refresh card" }));
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+    fireEvent.click(screen.getByRole("button", { name: "Save card" }));
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      finishRead(response({}, 403));
+    });
+    await screen.findByRole("button", { name: "Retry" });
+    await act(async () => {
+      finishSave(
+        response({
+          ...fixture.lists[0].cards[0],
+          title: "Old acknowledgment",
+          version: 4,
+        }),
+      );
+    });
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(screen.queryByLabelText(/Card title/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
   it("clears the previous board while a new organization is loading", async () => {
     const fetcher = vi
       .fn()
