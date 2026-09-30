@@ -1,4 +1,4 @@
-name: Auto-add issues to StrataAI Project
+name: Auto-add StrataAI2 issues to Project 3
 
 on:
   issues:
@@ -6,14 +6,16 @@ on:
       - opened
       - reopened
       - transferred
+  workflow_dispatch:
 
 permissions:
   contents: read
   issues: read
 
 jobs:
-  add-to-project:
-    name: Add issue to Project 3
+  add-current-issue:
+    name: Add current issue to Project 3
+    if: ${{ github.event_name == 'issues' }}
     runs-on: ubuntu-latest
     steps:
       - name: Add issue to StrataAI project
@@ -21,3 +23,63 @@ jobs:
         with:
           project-url: https://github.com/users/nickmailhot-lang/projects/3
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+
+  backfill-open-issues:
+    name: Backfill all open StrataAI2 issues
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+      PROJECT_OWNER: nickmailhot-lang
+      PROJECT_NUMBER: "3"
+      REPOSITORY: nickmailhot-lang/StrataAI2
+    steps:
+      - name: Verify project token is configured
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Repository secret ADD_TO_PROJECT_PAT is not configured."
+            exit 1
+          fi
+
+      - name: Resolve Project 3 node ID
+        id: project
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROJECT_ID="$(gh api graphql \
+            -f query='query($login:String!,$number:Int!){user(login:$login){projectV2(number:$number){id}}}' \
+            -F login="$PROJECT_OWNER" \
+            -F number="$PROJECT_NUMBER" \
+            --jq '.data.user.projectV2.id')"
+
+          if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "null" ]; then
+            echo "::error::Could not resolve GitHub Project $PROJECT_NUMBER for $PROJECT_OWNER."
+            exit 1
+          fi
+
+          echo "project_id=$PROJECT_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Add every open repository issue to Project 3
+        shell: bash
+        env:
+          PROJECT_ID: ${{ steps.project.outputs.project_id }}
+        run: |
+          set -euo pipefail
+
+          gh issue list \
+            --repo "$REPOSITORY" \
+            --state open \
+            --limit 1000 \
+            --json id,number,title \
+            --jq '.[] | [.id, (.number|tostring), .title] | @tsv' |
+          while IFS=$'\t' read -r ISSUE_ID ISSUE_NUMBER ISSUE_TITLE; do
+            ITEM_ID="$(gh api graphql \
+              -f query='mutation($projectId:ID!,$contentId:ID!){addProjectV2ItemById(input:{projectId:$projectId,contentId:$contentId}){item{id}}}' \
+              -f projectId="$PROJECT_ID" \
+              -f contentId="$ISSUE_ID" \
+              --jq '.data.addProjectV2ItemById.item.id')"
+
+            echo "Project item $ITEM_ID <- #$ISSUE_NUMBER $ISSUE_TITLE"
+          done
