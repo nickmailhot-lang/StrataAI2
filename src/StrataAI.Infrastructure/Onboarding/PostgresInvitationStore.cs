@@ -1,0 +1,406 @@
+using Npgsql;
+using StrataAI.Application.Onboarding;
+using StrataAI.Infrastructure.Persistence;
+
+namespace StrataAI.Infrastructure.Onboarding;
+
+internal sealed class PostgresInvitationStore(
+    PostgresConnectionFactory connectionFactory) : IInvitationStore
+{
+    public async Task CreateAsync(
+        InvitationRecord invitation,
+        CancellationToken cancellationToken = default)
+    {
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                invitation.OrganizationId,
+                cancellationToken);
+
+        await using var command = new NpgsqlCommand(
+            """
+            INSERT INTO invitations(
+                id, tenant_id, invited_email, email_normalized,
+                token_hash, target_surface, target_role,
+                created_by_user_id, created_at, expires_at)
+            VALUES (
+                @id, @tenant_id, @invited_email, @email_normalized,
+                @token_hash, @target_surface, @target_role,
+                @created_by_user_id, @created_at, @expires_at);
+            """,
+            session.Connection,
+            session.Transaction);
+
+        command.Parameters.AddWithValue("id", invitation.Id);
+        command.Parameters.AddWithValue(
+            "tenant_id",
+            invitation.OrganizationId);
+        command.Parameters.AddWithValue(
+            "invited_email",
+            invitation.InvitedEmail);
+        command.Parameters.AddWithValue(
+            "email_normalized",
+            invitation.EmailNormalized);
+        command.Parameters.AddWithValue("token_hash", invitation.TokenHash);
+        command.Parameters.AddWithValue(
+            "target_surface",
+            ToDatabaseSurface(invitation.Surface));
+        command.Parameters.AddWithValue(
+            "target_role",
+            invitation.TargetRole);
+        command.Parameters.AddWithValue(
+            "created_by_user_id",
+            invitation.CreatedByUserId);
+        command.Parameters.AddWithValue("created_at", invitation.CreatedAt);
+        command.Parameters.AddWithValue("expires_at", invitation.ExpiresAt);
+
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        await session.CommitAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<PendingInvitation>> ListPendingForEmailAsync(
+        string emailNormalized,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection =
+            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT
+                invitation_id,
+                tenant_id,
+                target_surface,
+                target_role,
+                expires_at
+            FROM invitation_routes
+            WHERE email_normalized = @email_normalized
+              AND accepted_at IS NULL
+              AND revoked_at IS NULL
+              AND expires_at > @now
+            ORDER BY expires_at, invitation_id;
+            """,
+            connection);
+
+        command.Parameters.AddWithValue(
+            "email_normalized",
+            emailNormalized);
+        command.Parameters.AddWithValue("now", now);
+
+        var result = new List<PendingInvitation>();
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            result.Add(
+                new PendingInvitation(
+                    reader.GetGuid(0),
+                    reader.GetGuid(1),
+                    ParseSurface(reader.GetString(2)),
+                    reader.GetString(3),
+                    reader.GetFieldValue<DateTimeOffset>(4)));
+        }
+
+        return result;
+    }
+
+    public async Task<InvitationRecord?> FindActiveByTokenHashAsync(
+        string tokenHash,
+        DateTimeOffset now,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await FindTenantRouteAsync(
+            tokenHash,
+            now,
+            cancellationToken);
+
+        if (tenantId is null)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT
+                id, tenant_id, invited_email, email_normalized,
+                token_hash, target_surface, target_role,
+                created_by_user_id, created_at, expires_at,
+                accepted_at, revoked_at
+            FROM invitations
+            WHERE token_hash = @token_hash
+              AND accepted_at IS NULL
+              AND revoked_at IS NULL
+              AND expires_at > @now;
+            """,
+            session.Connection,
+            session.Transaction);
+
+        command.Parameters.AddWithValue("token_hash", tokenHash);
+        command.Parameters.AddWithValue("now", now);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+
+        return await reader.ReadAsync(cancellationToken)
+            ? ReadInvitation(reader)
+            : null;
+    }
+
+    public async Task<InvitationAcceptStoreResult> AcceptAsync(
+        string tokenHash,
+        Guid userId,
+        string emailNormalized,
+        DateTimeOffset acceptedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await FindTenantRouteAsync(
+            tokenHash,
+            acceptedAt,
+            cancellationToken);
+
+        if (tenantId is null)
+        {
+            return new InvitationAcceptStoreResult(
+                false,
+                "invalid_or_expired_invitation",
+                null);
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+
+        InvitationRecord? invitation;
+        await using (var lookup = new NpgsqlCommand(
+            """
+            SELECT
+                id, tenant_id, invited_email, email_normalized,
+                token_hash, target_surface, target_role,
+                created_by_user_id, created_at, expires_at,
+                accepted_at, revoked_at
+            FROM invitations
+            WHERE token_hash = @token_hash
+              AND accepted_at IS NULL
+              AND revoked_at IS NULL
+              AND expires_at > @accepted_at
+            FOR UPDATE;
+            """,
+            session.Connection,
+            session.Transaction))
+        {
+            lookup.Parameters.AddWithValue("token_hash", tokenHash);
+            lookup.Parameters.AddWithValue("accepted_at", acceptedAt);
+
+            await using var reader =
+                await lookup.ExecuteReaderAsync(cancellationToken);
+
+            invitation = await reader.ReadAsync(cancellationToken)
+                ? ReadInvitation(reader)
+                : null;
+        }
+
+        if (invitation is null ||
+            invitation.EmailNormalized != emailNormalized)
+        {
+            return new InvitationAcceptStoreResult(
+                false,
+                "invalid_or_expired_invitation",
+                null);
+        }
+
+        if (invitation.Surface == InvitationSurface.Internal)
+        {
+            await using var membership = new NpgsqlCommand(
+                """
+                INSERT INTO organization_members(
+                    id, tenant_id, user_id, role, status,
+                    created_at, updated_at, version)
+                VALUES (
+                    @id, @tenant_id, @user_id, @role, 'ACTIVE',
+                    @accepted_at, @accepted_at, 1)
+                ON CONFLICT (tenant_id, user_id)
+                DO UPDATE SET
+                    role = EXCLUDED.role,
+                    status = 'ACTIVE',
+                    updated_at = EXCLUDED.updated_at,
+                    version = organization_members.version + 1;
+                """,
+                session.Connection,
+                session.Transaction);
+
+            membership.Parameters.AddWithValue("id", Guid.NewGuid());
+            membership.Parameters.AddWithValue(
+                "tenant_id",
+                invitation.OrganizationId);
+            membership.Parameters.AddWithValue("user_id", userId);
+            membership.Parameters.AddWithValue(
+                "role",
+                invitation.TargetRole);
+            membership.Parameters.AddWithValue("accepted_at", acceptedAt);
+            await membership.ExecuteNonQueryAsync(cancellationToken);
+        }
+        else
+        {
+            await using var portal = new NpgsqlCommand(
+                """
+                INSERT INTO portal_access(
+                    id, tenant_id, user_id, status, relationship_type,
+                    created_at, updated_at, version)
+                VALUES (
+                    @id, @tenant_id, @user_id, 'ACTIVE', @relationship_type,
+                    @accepted_at, @accepted_at, 1)
+                ON CONFLICT (tenant_id, user_id, relationship_type)
+                DO UPDATE SET
+                    status = 'ACTIVE',
+                    updated_at = EXCLUDED.updated_at,
+                    version = portal_access.version + 1;
+                """,
+                session.Connection,
+                session.Transaction);
+
+            portal.Parameters.AddWithValue("id", Guid.NewGuid());
+            portal.Parameters.AddWithValue(
+                "tenant_id",
+                invitation.OrganizationId);
+            portal.Parameters.AddWithValue("user_id", userId);
+            portal.Parameters.AddWithValue(
+                "relationship_type",
+                invitation.TargetRole);
+            portal.Parameters.AddWithValue("accepted_at", acceptedAt);
+            await portal.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await using (var consume = new NpgsqlCommand(
+            """
+            UPDATE invitations
+            SET accepted_at = @accepted_at
+            WHERE id = @id
+              AND accepted_at IS NULL
+              AND revoked_at IS NULL;
+            """,
+            session.Connection,
+            session.Transaction))
+        {
+            consume.Parameters.AddWithValue(
+                "accepted_at",
+                acceptedAt);
+            consume.Parameters.AddWithValue("id", invitation.Id);
+            if (await consume.ExecuteNonQueryAsync(cancellationToken) != 1)
+            {
+                return new InvitationAcceptStoreResult(
+                    false,
+                    "invalid_or_expired_invitation",
+                    null);
+            }
+        }
+
+        await session.CommitAsync(cancellationToken);
+
+        return new InvitationAcceptStoreResult(
+            true,
+            null,
+            invitation with { AcceptedAt = acceptedAt });
+    }
+
+    public async Task<bool> RevokeAsync(
+        Guid organizationId,
+        Guid invitationId,
+        DateTimeOffset revokedAt,
+        CancellationToken cancellationToken = default)
+    {
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                organizationId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            UPDATE invitations
+            SET revoked_at = @revoked_at
+            WHERE id = @id
+              AND tenant_id = @tenant_id
+              AND accepted_at IS NULL
+              AND revoked_at IS NULL;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("revoked_at", revokedAt);
+        command.Parameters.AddWithValue("id", invitationId);
+        command.Parameters.AddWithValue("tenant_id", organizationId);
+
+        var changed =
+            await command.ExecuteNonQueryAsync(cancellationToken) == 1;
+
+        if (changed)
+        {
+            await session.CommitAsync(cancellationToken);
+        }
+
+        return changed;
+    }
+
+    private async Task<Guid?> FindTenantRouteAsync(
+        string tokenHash,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        await using var connection =
+            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT tenant_id
+            FROM invitation_routes
+            WHERE token_hash = @token_hash
+              AND accepted_at IS NULL
+              AND revoked_at IS NULL
+              AND expires_at > @now;
+            """,
+            connection);
+        command.Parameters.AddWithValue("token_hash", tokenHash);
+        command.Parameters.AddWithValue("now", now);
+
+        var value = await command.ExecuteScalarAsync(cancellationToken);
+        return value is Guid tenantId ? tenantId : null;
+    }
+
+    private static InvitationRecord ReadInvitation(
+        NpgsqlDataReader reader) =>
+        new(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            reader.GetString(2),
+            reader.GetString(3),
+            reader.GetString(4),
+            ParseSurface(reader.GetString(5)),
+            reader.GetString(6),
+            reader.GetGuid(7),
+            reader.GetFieldValue<DateTimeOffset>(8),
+            reader.GetFieldValue<DateTimeOffset>(9),
+            reader.IsDBNull(10)
+                ? null
+                : reader.GetFieldValue<DateTimeOffset>(10),
+            reader.IsDBNull(11)
+                ? null
+                : reader.GetFieldValue<DateTimeOffset>(11));
+
+    private static InvitationSurface ParseSurface(string surface) =>
+        surface switch
+        {
+            "INTERNAL" => InvitationSurface.Internal,
+            "PORTAL" => InvitationSurface.Portal,
+            _ => throw new InvalidOperationException(
+                $"Unknown invitation surface '{surface}'."),
+        };
+
+    private static string ToDatabaseSurface(InvitationSurface surface) =>
+        surface switch
+        {
+            InvitationSurface.Internal => "INTERNAL",
+            InvitationSurface.Portal => "PORTAL",
+            _ => throw new ArgumentOutOfRangeException(nameof(surface)),
+        };
+}
