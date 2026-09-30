@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 WORKDIR /src
 
-COPY global.json Directory.Build.props ./
+COPY global.json Directory.Build.props Directory.Packages.props ./
 COPY src/StrataAI.Domain/StrataAI.Domain.csproj src/StrataAI.Domain/
 COPY src/StrataAI.Application/StrataAI.Application.csproj src/StrataAI.Application/
 COPY src/StrataAI.Infrastructure/StrataAI.Infrastructure.csproj src/StrataAI.Infrastructure/
