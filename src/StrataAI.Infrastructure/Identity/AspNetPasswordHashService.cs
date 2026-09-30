@@ -5,10 +5,12 @@ namespace StrataAI.Infrastructure.Identity;
 
 internal sealed class AspNetPasswordHashService : IPasswordHashService
 {
-    private readonly PasswordHasher<Guid> _hasher = new();
+    private sealed record PasswordHashSubject(Guid Id);
+
+    private readonly PasswordHasher<PasswordHashSubject> _hasher = new();
 
     public string Hash(Guid userId, string password) =>
-        _hasher.HashPassword(userId, password);
+        _hasher.HashPassword(new PasswordHashSubject(userId), password);
 
     public PasswordVerification Verify(
         Guid userId,
@@ -16,7 +18,7 @@ internal sealed class AspNetPasswordHashService : IPasswordHashService
         string providedPassword)
     {
         var result = _hasher.VerifyHashedPassword(
-            userId,
+            new PasswordHashSubject(userId),
             passwordHash,
             providedPassword);
 
