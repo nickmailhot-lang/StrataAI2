@@ -12,8 +12,10 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next)
     {
         var correlationId =
             context.Request.Headers.TryGetValue(HeaderName, out StringValues supplied)
-            && !StringValues.IsNullOrEmpty(supplied)
-                ? supplied.ToString()
+            && supplied.Count == 1
+            && supplied[0] is { Length: > 0 and <= 64 } value
+            && value.All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.')
+                ? value
                 : Guid.NewGuid().ToString("N");
 
         context.TraceIdentifier = correlationId;

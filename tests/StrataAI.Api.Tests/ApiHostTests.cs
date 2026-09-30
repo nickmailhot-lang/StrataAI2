@@ -16,6 +16,23 @@ namespace StrataAI.Api.Tests;
 // PRD-24-TC-04: real endpoint binding, middleware and session authorization.
 public sealed class ApiHostTests
 {
+    [Fact]
+    public async Task Correlation_ids_preserve_safe_values_and_replace_unbounded_or_unsafe_headers()
+    {
+        await using var app = new ApiFactory();
+        using var client = app.CreateClient();
+        foreach (var supplied in new[] { new[] { "safe-correlation_01" }, new[] { "contains spaces" }, new[] { new string('a', 128) }, new[] { "secret/audit=detail" }, new[] { "one", "two" } })
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/runtime");
+            request.Headers.TryAddWithoutValidation("X-Correlation-ID", supplied);
+            using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var correlationId = Assert.Single(response.Headers.GetValues("X-Correlation-ID"));
+            if (supplied[0] == "safe-correlation_01") Assert.Equal(supplied[0], correlationId);
+            else Assert.True(Guid.TryParseExact(correlationId, "N", out _));
+        }
+    }
+
     [Theory]
     [InlineData("PRIVATE", false)]
     [InlineData("ORGANIZATION", true)]

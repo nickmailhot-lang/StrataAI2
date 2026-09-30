@@ -30,6 +30,12 @@ star command has no audit append; this wrapper does not invent an activity event
 Demo mode retains its memory-only implementation and is not a production
 transactional durability proof.
 
+Caller correlation IDs are accepted only as one 1–64-character ASCII value
+containing letters, digits, dots, underscores or hyphens. Invalid, oversized or
+multiple values are replaced with a generated ID before entering the log scope
+or audit. The web transport's unavailable-service message asks the user to load
+the latest state before retrying, without claiming that an uncertain save failed.
+
 Build-once CI runs `scripts/ci/test-work-command-transactions.sh` against the exact
 release API image and restricted PostgreSQL role. Denying audit INSERT forces
 failures after card edit/create, list create, board create/archive, card move,

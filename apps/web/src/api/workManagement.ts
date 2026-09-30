@@ -39,7 +39,9 @@ export class WorkRequestError extends Error {
             ? "This board or action is unavailable."
             : status === 400
               ? "Check the fields and try again."
-              : "Unable to complete the request. Please try again.",
+              : status === 503
+                ? "Service temporarily unavailable. Reload to check the latest state before retrying."
+                : "Unable to complete the request. Please try again.",
     );
   }
 }
