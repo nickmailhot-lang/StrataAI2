@@ -88,9 +88,12 @@ export async function loadBoard(
   boardId: string,
   signal: AbortSignal,
 ) {
-  const data = await workRequest<BoardSnapshot>(
-    `/boards/${encodeURIComponent(boardId)}`,
-    { signal },
+  const data = await boundedBoardRead(
+    (bounded) =>
+      workRequest<BoardSnapshot>(`/boards/${encodeURIComponent(boardId)}`, {
+        signal: bounded,
+      }),
+    signal,
   );
   if (
     data.board.id !== boardId ||
@@ -99,6 +102,36 @@ export async function loadBoard(
   )
     throw new WorkRequestError(404, null);
   return data;
+}
+async function boundedBoardRead<T>(
+  read: (signal: AbortSignal) => Promise<T>,
+  signal: AbortSignal,
+): Promise<T> {
+  if (signal.aborted)
+    throw new DOMException("Board read cancelled.", "AbortError");
+  const controller = new AbortController();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  let cancel = () => {};
+  const stopped = new Promise<never>((_, reject) => {
+    cancel = () => {
+      reject(new DOMException("Board read cancelled.", "AbortError"));
+      controller.abort();
+    };
+    signal.addEventListener("abort", cancel, { once: true });
+    timeout = setTimeout(() => {
+      reject(new WorkRequestError(503, null));
+      controller.abort();
+    }, 15_000);
+  });
+  try {
+    return await Promise.race([
+      Promise.resolve().then(() => read(controller.signal)),
+      stopped,
+    ]);
+  } finally {
+    clearTimeout(timeout);
+    signal.removeEventListener("abort", cancel);
+  }
 }
 export function mutateWork<T = unknown>(
   path: string,

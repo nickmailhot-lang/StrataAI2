@@ -1,6 +1,63 @@
-import { WorkMutationIntent, workRequest } from "./workManagement";
+import {
+  WorkMutationIntent,
+  WorkRequestError,
+  loadBoard,
+  workRequest,
+} from "./workManagement";
 
 afterEach(() => vi.unstubAllGlobals());
+describe("PRD-22 bounded board snapshot reads", () => {
+  afterEach(() => vi.useRealTimers());
+  it("times out a hung fetch even when it ignores cancellation", async () => {
+    vi.useFakeTimers();
+    let transportSignal: AbortSignal | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_path, options: RequestInit) => {
+        transportSignal = options.signal!;
+        return new Promise(() => {});
+      }),
+    );
+    const result = loadBoard(
+      "org",
+      "board",
+      new AbortController().signal,
+    ).catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(14_999);
+    expect(transportSignal?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    const failure = await result;
+    expect(failure).toBeInstanceOf(WorkRequestError);
+    expect((failure as WorkRequestError).status).toBe(503);
+    expect(transportSignal?.aborted).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it("cancels scope immediately and clears the deadline instead of reporting a timeout", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => {})),
+    );
+    const controller = new AbortController();
+    const result = loadBoard("org", "board", controller.signal).catch(
+      (error: unknown) => error,
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    controller.abort();
+    expect(((await result) as DOMException).name).toBe("AbortError");
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it("does not start a read in an already cancelled scope", async () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      loadBoard("org", "board", controller.signal),
+    ).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+});
 
 describe("PRD-07/08-TC-07 retry intent", () => {
   it.each(["network", "unavailable"])(

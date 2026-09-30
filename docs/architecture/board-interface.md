@@ -34,12 +34,19 @@ announces a conflict, and blocks both button and form submission until explicit
 recovery. An untouched editor adopts newer data. A local save acknowledgment
 updates its baseline before the refreshed snapshot arrives; an older snapshot
 cannot roll it back. `Refresh card` can fetch newer data while preserving drafts.
+The same validated acknowledgment immediately updates an existing card face in
+its original active list. Older refreshes cannot downgrade it; missing cards,
+different lists and archived lists are never repopulated from the acknowledgment.
 Explicit discard loads authoritative data first and replaces the draft only on
 success. Transient refresh failures retain the editor and its draft; 401/403/404
 refresh or mutation failures clear the scoped board and editor. Superseded reads
 and scope changes abort earlier reads, including conflict recovery.
 Access loss also clears retained acknowledgments, retry intents and save status;
 responses from mutations begun before that loss cannot repopulate those states.
+Board reads, including explicit discard/recovery, have a 15-second deadline that
+aborts the transport and produces a sanitized transient failure. Scope cancellation
+remains distinct from timeout. A hung refresh retains the snapshot/draft and retries
+automatically; its late response cannot replace recovered state.
 
 The screen now consumes the [authorized SignalR stream](work-synchronization.md)
 using Microsoft's pinned JavaScript SDK. Durable Worker-ready changes invalidate

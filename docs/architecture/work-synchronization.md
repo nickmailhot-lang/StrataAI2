@@ -91,6 +91,10 @@ starts or exhausted reconnects retry at 1, 2, 5, 10 and then 30 seconds; the att
 counter resets only after a valid replay page. Every reconnect subscribes from the
 last accepted string cursor. Scope changes/unmount cancel timers, streams and the
 connection, and stale callbacks cannot affect another scope.
+Stream-error handling defers to the next microtask: transport cancellation can
+enter the SDK reconnect lifecycle first, rather than being interrupted by an
+application stop/start. An application stream error or malformed page still
+restarts safely. Resubscription cancels any leftover custom start timer.
 
 Client cursor advancement validates scope, contiguous sequence, decimal bigint
 range, page size and flags before committing any part of a batch. A bounded cache
@@ -107,8 +111,12 @@ reconnects also request an immediate coalesced refresh. A transport initializati
 failure retains snapshot polling. Normal live delivery refreshes authoritative
 state only for new events; an unsuccessful snapshot read also retries automatically
 after 10 seconds, so advancing the event cursor cannot leave failed refreshes stale
-indefinitely. Explicit refresh is always available. Dirty card fields,
-base version and focus are preserved on incoming newer snapshots; edits cannot
+indefinitely. Explicit refresh is always available.
+Board reads have a 15-second deadline, cancel the underlying transport and settle
+even if it ignores cancellation. This includes explicit card recovery. Timeouts
+preserve scoped data/drafts for retry; supersession/unmount cancels silently and
+removes the deadline. Late timed-out responses cannot apply after recovery.
+Dirty card fields, base version and focus are preserved on incoming newer snapshots; edits cannot
 silently overwrite them. A denied snapshot clears protected state and tears down
 the subscription. The UI announces connection/recovery/fallback status politely.
 
@@ -118,6 +126,8 @@ desktop/phone browser fixture exercises the production SDK and actual Board UI,
 two-client pushed updates, dirty fields/focus, outage fallback, reconnection and
 copied-session logout revocation. CI uses the exact images and real Worker-ready
 PostgreSQL events; local Demo validates the same client against immediate readiness.
+The browser fixture also holds a real phone GET beyond the deadline, verifies its
+abort and subsequent authoritative recovery, and preserves the draft throughout.
 
 This is not full PRD-22 completion. Optimistic movement reconciliation, large-board
 performance, complete accessibility/telemetry and all acceptance coverage remain.

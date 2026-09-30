@@ -175,6 +175,8 @@ export function watchBoard(options: {
   }
   function subscribe() {
     if (disposed) return;
+    clearTimeout(retry);
+    retry = undefined;
     const active = ++generation;
     subscription?.dispose();
     connected = true;
@@ -209,12 +211,17 @@ export function watchBoard(options: {
       });
     function failStream() {
       if (disposed || active !== generation) return;
-      ++generation;
-      failed();
-      void connection
-        .stop()
-        .catch(() => {})
-        .finally(schedule);
+      // The SDK cancels streams before entering its reconnect lifecycle. Let
+      // onreconnecting invalidate this generation before deciding to restart.
+      queueMicrotask(() => {
+        if (disposed || active !== generation) return;
+        ++generation;
+        failed();
+        void connection
+          .stop()
+          .catch(() => {})
+          .finally(schedule);
+      });
     }
   }
   async function start() {

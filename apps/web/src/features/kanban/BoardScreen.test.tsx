@@ -63,6 +63,82 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it("updates the card face on acknowledgement and ignores an older refresh without resurrecting a removed card", async () => {
+    let finishRead!: (value: Response) => void;
+    const savedCard = {
+      ...fixture.lists[0].cards[0],
+      title: "Acknowledged title",
+      version: 4,
+    };
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response(fixture))
+      .mockResolvedValueOnce(response(savedCard))
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((resolve) => {
+            finishRead = resolve;
+          }),
+      )
+      .mockResolvedValueOnce(
+        response({ ...fixture, lists: [{ ...fixture.lists[0], cards: [] }] }),
+      );
+    vi.stubGlobal("fetch", fetcher);
+    mount("/app/org-1/boards/board-1/cards/card-1");
+    fireEvent.change(await screen.findByLabelText(/Card title/), {
+      target: { value: "Acknowledged title" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save card" }));
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
+    expect(
+      screen.getByRole("link", { name: "Acknowledged title", hidden: true }),
+    ).toBeInTheDocument();
+    await act(async () => finishRead(response(fixture)));
+    expect(
+      screen.getByRole("link", { name: "Acknowledged title", hidden: true }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Refresh card" }));
+    await waitFor(() =>
+      expect(screen.queryByLabelText(/Card title/)).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByRole("link", { name: "Acknowledged title", hidden: true }),
+    ).not.toBeInTheDocument();
+  });
+  it("preserves a dirty draft through a hung live read and retries after its deadline", async () => {
+    let invalidate = () => {};
+    vi.mocked(watchBoard).mockImplementationOnce((options) => {
+      invalidate = options.invalidate;
+      return () => {};
+    });
+    const newer = structuredClone(fixture);
+    newer.lists[0].cards[0].version = 4;
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response(fixture))
+      .mockImplementationOnce(() => new Promise(() => {}))
+      .mockResolvedValueOnce(response(newer));
+    vi.stubGlobal("fetch", fetcher);
+    mount("/app/org-1/boards/board-1/cards/card-1");
+    const title = await screen.findByLabelText(/Card title/);
+    fireEvent.change(title, { target: { value: "Keep this draft" } });
+    vi.useFakeTimers();
+    try {
+      await act(async () => invalidate());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15_000);
+      });
+      expect(title).toHaveValue("Keep this draft");
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10_000);
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(title).toHaveValue("Keep this draft");
+    expect(screen.getByRole("button", { name: "Save card" })).toBeDisabled();
+  });
   it("retries a failed live snapshot without requiring another event", async () => {
     let invalidate = () => {};
     vi.mocked(watchBoard).mockImplementationOnce((options) => {

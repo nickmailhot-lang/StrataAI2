@@ -150,13 +150,56 @@ test("PRD-22: desktop and phone boards consume live changes, preserve drafts, re
       .getByRole("button", { name: "Discard edits and load latest card" })
       .click();
     await expect(title).toHaveValue("Another client edit");
+    // Hold one real browser GET beyond the read deadline. A later event queues
+    // recovery, while its dirty draft must remain pinned to the previous version.
+    await title.fill("Draft through a hung refresh");
+    await title.focus();
+    let heldRead = false,
+      readAborted = false;
+    other.on("requestfailed", (request) => {
+      if (
+        new URL(request.url()).pathname === `/boards/${board}` &&
+        request.failure()?.errorText.includes("ERR_ABORTED")
+      )
+        readAborted = true;
+    });
+    await other.route(`**/boards/${board}`, async (route) => {
+      if (heldRead) {
+        await route.continue();
+        return;
+      }
+      heldRead = true;
+      await new Promise((resolve) => setTimeout(resolve, 20_000));
+      await route.abort().catch(() => {});
+    });
+    await other
+      .getByRole("button", { name: "Refresh card", exact: true })
+      .click();
+    expect(
+      (
+        await context.request.patch(`/cards/${card}`, {
+          headers,
+          data: { title: "Recovered after read timeout", version: 3 },
+        })
+      ).ok(),
+    ).toBeTruthy();
+    await expect.poll(() => readAborted, { timeout: 25_000 }).toBe(true);
+    await expect(other.getByText(/This card changed elsewhere/)).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(title).toHaveValue("Draft through a hung refresh");
+    await other.unroute(`**/boards/${board}`);
+    await other
+      .getByRole("button", { name: "Discard edits and load latest card" })
+      .click();
+    await expect(title).toHaveValue("Recovered after read timeout");
     unavailable = true;
     await socket!.close({ code: 1012 });
     expect(
       (
         await context.request.patch(`/cards/${card}`, {
           headers,
-          data: { title: "Recovered during outage", version: 3 },
+          data: { title: "Recovered during outage", version: 4 },
         })
       ).ok(),
     ).toBeTruthy();
@@ -171,7 +214,7 @@ test("PRD-22: desktop and phone boards consume live changes, preserve drafts, re
       (
         await context.request.patch(`/cards/${card}`, {
           headers,
-          data: { title: "Reconnected pushed title", version: 4 },
+          data: { title: "Reconnected pushed title", version: 5 },
         })
       ).ok(),
     ).toBeTruthy();

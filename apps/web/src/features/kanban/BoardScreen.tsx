@@ -27,6 +27,30 @@ import { CardDetailEditor } from "./CardDetailEditor";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
 type Creation = { kind: "list" | "card"; listId?: string };
+type AcknowledgedCard = { listId: string; card: WorkCard };
+function preserveAcknowledged(
+  snapshot: BoardSnapshot,
+  acknowledged?: AcknowledgedCard,
+): BoardSnapshot {
+  if (!acknowledged) return snapshot;
+  return {
+    ...snapshot,
+    lists: snapshot.lists.map((column) =>
+      column.list.id !== acknowledged.listId ||
+      column.list.lifecycleState !== "active"
+        ? column
+        : {
+            ...column,
+            cards: column.cards.map((card) =>
+              card.id === acknowledged.card.id &&
+              card.version < acknowledged.card.version
+                ? acknowledged.card
+                : card,
+            ),
+          },
+    ),
+  };
+}
 // PRD-01/04/07/08/09: scoped authoritative data and persisted creation/edits.
 export function BoardScreen() {
   const { organizationId, boardId } = useParams();
@@ -47,6 +71,7 @@ function BoardContent() {
   const accessEpoch = useRef(0);
   const [failure, setFailure] = useState<{ cardId?: string; error: Error }>();
   const [acknowledged, setAcknowledged] = useState<WorkCard>();
+  const acknowledgedCard = useRef<AcknowledgedCard | undefined>(undefined);
   const [savedFor, setSavedFor] = useState<{ cardId?: string }>();
   const error = failure?.cardId === cardId ? failure?.error : undefined;
   const saved = Boolean(savedFor) && savedFor?.cardId === cardId;
@@ -62,6 +87,7 @@ function BoardContent() {
     queuedRefresh.current = false;
     mutation.current = new WorkMutationIntent();
     setAcknowledged(undefined);
+    acknowledgedCard.current = undefined;
     setSavedFor(undefined);
     setCreation(undefined);
     setFailure(undefined);
@@ -85,7 +111,11 @@ function BoardContent() {
     reading.current = true;
     void loadBoard(organizationId, boardId, controller.signal)
       .then((snapshot) => {
-        if (!controller.signal.aborted) setLoaded({ key, snapshot });
+        if (!controller.signal.aborted)
+          setLoaded({
+            key,
+            snapshot: preserveAcknowledged(snapshot, acknowledgedCard.current),
+          });
       })
       .catch((reason: unknown) => {
         if (controller.signal.aborted) return;
@@ -177,8 +207,36 @@ function BoardContent() {
           },
         );
         if (epoch !== accessEpoch.current) return;
-        if (updated.id === card.id && Number.isSafeInteger(updated.version))
-          setAcknowledged(updated);
+        if (
+          updated.id !== card.id ||
+          !Number.isSafeInteger(updated.version) ||
+          updated.version <= (expectedVersion ?? card.version) ||
+          typeof updated.title !== "string" ||
+          typeof updated.rank !== "string" ||
+          (updated.description !== null &&
+            typeof updated.description !== "string")
+        )
+          throw new WorkRequestError(503, null);
+        const listId = snapshot?.lists.find((column) =>
+          column.cards.some((item) => item.id === card.id),
+        )?.list.id;
+        if (listId) {
+          acknowledgedCard.current = { listId, card: updated };
+          activeRead.current?.abort();
+          queuedRefresh.current = false;
+          setLoaded((previous) =>
+            previous?.key === key && previous.snapshot
+              ? {
+                  ...previous,
+                  snapshot: preserveAcknowledged(
+                    previous.snapshot,
+                    acknowledgedCard.current,
+                  ),
+                }
+              : previous,
+          );
+        }
+        setAcknowledged(updated);
       } else if (creation?.kind === "list")
         await mutation.current.send(`/boards/${boardId}/lists`, "POST", {
           name: title,
@@ -221,10 +279,11 @@ function BoardContent() {
         controller.signal,
       );
       if (controller.signal.aborted) return undefined;
-      setLoaded({ key, snapshot: latest });
+      const reconciled = preserveAcknowledged(latest, acknowledgedCard.current);
+      setLoaded({ key, snapshot: reconciled });
       setError(undefined);
       setSaved(false);
-      return latest.lists
+      return reconciled.lists
         .flatMap((column) => column.cards)
         .find((item) => item.id === cardId);
     } catch (reason) {

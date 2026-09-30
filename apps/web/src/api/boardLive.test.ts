@@ -115,6 +115,7 @@ function fakeConnection() {
   return {
     connection,
     next: (value: unknown) => observer!.next(value),
+    error: () => observer!.error(new Error("transport closed")),
     reconnecting: () => reconnecting(),
     reconnected: () => reconnected(),
     close: () => closed(),
@@ -175,6 +176,25 @@ describe("PRD-22 browser stream recovery", () => {
       board,
       "1",
     );
+    live.stop();
+  });
+  it("lets the SDK own transport reconnect after it cancels stream callbacks", async () => {
+    const live = mount();
+    await vi.advanceTimersByTimeAsync(0);
+    live.next(page("1"));
+    live.error();
+    live.reconnecting();
+    await vi.advanceTimersByTimeAsync(100);
+    expect(live.connection.stop).not.toHaveBeenCalled();
+    expect(live.connection.start).toHaveBeenCalledTimes(1);
+    live.reconnected();
+    expect(live.connection.stream).toHaveBeenLastCalledWith(
+      "Watch",
+      board,
+      "1",
+    );
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(live.connection.start).toHaveBeenCalledTimes(1);
     live.stop();
   });
   it("retries failed initial starts with backoff and polls degraded snapshots", async () => {
