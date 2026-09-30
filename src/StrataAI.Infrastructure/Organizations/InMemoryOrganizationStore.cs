@@ -111,6 +111,42 @@ internal sealed class InMemoryOrganizationStore : IOrganizationStore
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<OrganizationBoardSummary>>([]);
 
+    public Task AddOrRestoreMemberAsync(
+        Guid organizationId,
+        Guid userId,
+        OrganizationRole role,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            if (_members.TryGetValue((organizationId, userId), out var existing))
+            {
+                _members[(organizationId, userId)] = existing with
+                {
+                    Role = role,
+                    Active = true,
+                    UpdatedAt = updatedAt,
+                    Version = existing.Version + 1,
+                };
+            }
+            else
+            {
+                _members[(organizationId, userId)] = new OrganizationMembership(
+                    Guid.NewGuid(),
+                    organizationId,
+                    userId,
+                    role,
+                    true,
+                    updatedAt,
+                    updatedAt,
+                    1);
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
     public Task<OrganizationRemoveMemberResult> RemoveMemberAsync(
         Guid organizationId,
         Guid userId,

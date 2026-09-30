@@ -32,6 +32,13 @@ public interface IOrganizationStore
         Guid organizationId,
         CancellationToken cancellationToken = default);
 
+    Task AddOrRestoreMemberAsync(
+        Guid organizationId,
+        Guid userId,
+        OrganizationRole role,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default);
+
     Task<OrganizationRemoveMemberResult> RemoveMemberAsync(
         Guid organizationId,
         Guid userId,

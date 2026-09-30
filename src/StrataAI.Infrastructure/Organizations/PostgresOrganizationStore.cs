@@ -259,6 +259,50 @@ internal sealed class PostgresOrganizationStore(
         return result;
     }
 
+    public async Task AddOrRestoreMemberAsync(
+        Guid organizationId,
+        Guid userId,
+        OrganizationRole role,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                organizationId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            INSERT INTO organization_members(
+                id, tenant_id, user_id, role, status,
+                created_at, updated_at, version)
+            VALUES (
+                @id, @tenant_id, @user_id, @role, 'ACTIVE',
+                @updated_at, @updated_at, 1)
+            ON CONFLICT (tenant_id, user_id)
+            DO UPDATE SET
+                role = EXCLUDED.role,
+                status = 'ACTIVE',
+                updated_at = EXCLUDED.updated_at,
+                version = organization_members.version + 1;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("id", Guid.NewGuid());
+        command.Parameters.AddWithValue("tenant_id", organizationId);
+        command.Parameters.AddWithValue("user_id", userId);
+        command.Parameters.AddWithValue(
+            "role",
+            role switch
+            {
+                OrganizationRole.Owner => "OWNER",
+                OrganizationRole.Admin => "ADMIN",
+                _ => "MEMBER",
+            });
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        await session.CommitAsync(cancellationToken);
+    }
+
     public async Task<OrganizationRemoveMemberResult> RemoveMemberAsync(
         Guid organizationId,
         Guid userId,
