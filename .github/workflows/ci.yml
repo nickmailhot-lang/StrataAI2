@@ -316,6 +316,9 @@ jobs:
       - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
         run: scripts/ci/test-board-discovery.sh
 
+      - name: Work command and audit rollback against exact release API
+        run: scripts/ci/test-work-command-transactions.sh
+
       - name: Prepare isolated identity mail transport and ephemeral signing keys
         run: |
           set -euo pipefail

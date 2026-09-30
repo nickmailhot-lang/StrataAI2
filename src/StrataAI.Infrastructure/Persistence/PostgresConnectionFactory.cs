@@ -10,6 +10,7 @@ namespace StrataAI.Infrastructure.Persistence;
 public sealed class PostgresConnectionFactory : IAsyncDisposable
 {
     private readonly NpgsqlDataSource _dataSource;
+    private readonly AsyncLocal<TenantDbSession?> _commandSession = new();
 
     public PostgresConnectionFactory(string connectionString)
     {
@@ -67,6 +68,13 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 nameof(organizationId));
         }
 
+        if (_commandSession.Value is { } commandSession)
+        {
+            if (commandSession.OrganizationId != organizationId)
+                throw new InvalidOperationException("A command cannot change its Organization transaction scope.");
+            return commandSession.Borrow();
+        }
+
         var connection = await OpenConnectionAsync(cancellationToken);
         NpgsqlTransaction? transaction = null;
 
@@ -93,4 +101,32 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
     }
 
     public ValueTask DisposeAsync() => _dataSource.DisposeAsync();
+
+    internal async Task<RoutingDbSession> OpenRoutingSessionAsync(CancellationToken cancellationToken)
+    {
+        if (_commandSession.Value is { } session)
+            return new RoutingDbSession(session.Connection, session.Transaction, ownsConnection: false);
+        return new RoutingDbSession(await OpenConnectionAsync(cancellationToken), null, ownsConnection: true);
+    }
+
+    internal async Task<T> ExecuteTenantCommandAsync<T>(
+        Guid organizationId,
+        Func<Task<T>> operation,
+        Func<T, bool> succeeded,
+        CancellationToken cancellationToken)
+    {
+        if (_commandSession.Value is not null)
+            throw new InvalidOperationException("Nested command transactions are not supported.");
+        await using var session = await OpenTenantSessionAsync(organizationId, cancellationToken);
+        // Set within the owning async scope so descendants share this transaction;
+        // independent concurrent requests retain distinct AsyncLocal values.
+        _commandSession.Value = session;
+        try
+        {
+            var result = await operation();
+            if (succeeded(result)) await session.CommitAsync(cancellationToken);
+            return result;
+        }
+        finally { _commandSession.Value = null; }
+    }
 }

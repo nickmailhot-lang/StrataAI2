@@ -674,6 +674,10 @@ public static class WorkManagementEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "work_storage_unavailable" => Problem(
+                StatusCodes.Status503ServiceUnavailable,
+                errorCode,
+                "Unable to confirm the change. Refresh before retrying."),
             "invalid_board_name" => Problem(
                 StatusCodes.Status400BadRequest,
                 errorCode,

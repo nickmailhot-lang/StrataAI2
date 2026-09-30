@@ -17,8 +17,13 @@ public static class WorkManagementRegistration
         else
         {
             services.AddSingleton<IWorkManagementStore, PostgresWorkManagementStore>();
+            services.AddSingleton<IWorkManagementUnitOfWork, PostgresWorkManagementUnitOfWork>();
         }
 
-        services.AddSingleton<IWorkManagementService, WorkManagementService>();
+        services.AddSingleton<WorkManagementService>();
+        services.AddSingleton<IWorkManagementService>(provider => runtime.Mode == RuntimeMode.Demo
+            ? provider.GetRequiredService<WorkManagementService>()
+            : new TransactionalWorkManagementService(provider.GetRequiredService<WorkManagementService>(),
+                provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<IWorkManagementUnitOfWork>()));
     }
 }

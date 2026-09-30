@@ -4,14 +4,17 @@ namespace StrataAI.Infrastructure.Persistence;
 
 public sealed class TenantDbSession : IAsyncDisposable
 {
+    private readonly bool _ownsResources;
     internal TenantDbSession(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
-        Guid organizationId)
+        Guid organizationId,
+        bool ownsResources = true)
     {
         Connection = connection;
         Transaction = transaction;
         OrganizationId = organizationId;
+        _ownsResources = ownsResources;
     }
 
     public NpgsqlConnection Connection { get; }
@@ -21,10 +24,13 @@ public sealed class TenantDbSession : IAsyncDisposable
     public Guid OrganizationId { get; }
 
     public Task CommitAsync(CancellationToken cancellationToken = default) =>
-        Transaction.CommitAsync(cancellationToken);
+        _ownsResources ? Transaction.CommitAsync(cancellationToken) : Task.CompletedTask;
+
+    internal TenantDbSession Borrow() => new(Connection, Transaction, OrganizationId, ownsResources: false);
 
     public async ValueTask DisposeAsync()
     {
+        if (!_ownsResources) return;
         await Transaction.DisposeAsync();
         await Connection.DisposeAsync();
     }

@@ -1234,8 +1234,8 @@ internal sealed class PostgresWorkManagementStore(
         Guid boardId,
         CancellationToken cancellationToken)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id
@@ -1243,7 +1243,7 @@ internal sealed class PostgresWorkManagementStore(
             WHERE board_id = @board_id
               AND lifecycle_state <> 'DELETED';
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("board_id", boardId);
 
         var value = await command.ExecuteScalarAsync(cancellationToken);
@@ -1254,8 +1254,8 @@ internal sealed class PostgresWorkManagementStore(
         Guid listId,
         CancellationToken cancellationToken)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id, board_id
@@ -1263,7 +1263,7 @@ internal sealed class PostgresWorkManagementStore(
             WHERE list_id = @list_id
               AND lifecycle_state <> 'DELETED';
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("list_id", listId);
 
         await using var reader =
@@ -1278,8 +1278,8 @@ internal sealed class PostgresWorkManagementStore(
         Guid cardId,
         CancellationToken cancellationToken)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id, board_id, list_id
@@ -1287,7 +1287,7 @@ internal sealed class PostgresWorkManagementStore(
             WHERE card_id = @card_id
               AND lifecycle_state <> 'DELETED';
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("card_id", cardId);
 
         await using var reader =
