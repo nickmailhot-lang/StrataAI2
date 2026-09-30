@@ -1,0 +1,1010 @@
+using StrataAI.Application.Common;
+using StrataAI.Application.Organizations;
+
+namespace StrataAI.Application.WorkManagement;
+
+public sealed class WorkManagementService(
+    IWorkManagementStore store,
+    IOrganizationStore organizationStore,
+    IClock clock) : IWorkManagementService
+{
+    public async Task<WorkOperation<BoardRecord>> CreateBoardAsync(
+        Guid organizationId,
+        Guid actorUserId,
+        string name,
+        string? description,
+        BoardVisibility visibility,
+        string? backgroundType,
+        string? backgroundValue,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var membership = await organizationStore.FindMembershipAsync(
+            organizationId,
+            actorUserId,
+            cancellationToken);
+
+        if (membership is null || !membership.Active)
+        {
+            return WorkOperation<BoardRecord>.Failure("organization_not_found");
+        }
+
+        if (!TryNormalizeName(name, out var normalizedName))
+        {
+            return WorkOperation<BoardRecord>.Failure("invalid_board_name");
+        }
+
+        if (!TryNormalizeBackground(
+                backgroundType,
+                backgroundValue,
+                out var normalizedType,
+                out var normalizedValue))
+        {
+            return WorkOperation<BoardRecord>.Failure("invalid_background");
+        }
+
+        var now = clock.UtcNow;
+        var board = await store.CreateBoardAsync(
+            organizationId,
+            actorUserId,
+            Guid.NewGuid(),
+            normalizedName,
+            NormalizeOptional(description),
+            visibility,
+            normalizedType,
+            normalizedValue,
+            now,
+            cancellationToken);
+
+        await AuditAsync(
+            board,
+            actorUserId,
+            "BOARD_CREATED",
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<BoardRecord>.Success(board);
+    }
+
+    public async Task<WorkOperation<BoardSnapshot>> GetBoardAsync(
+        Guid boardId,
+        Guid? actorUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var access = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (access is null || !access.Value.Access.CanView)
+        {
+            return WorkOperation<BoardSnapshot>.Failure("board_not_found");
+        }
+
+        var snapshot = await store.GetSnapshotAsync(
+            boardId,
+            actorUserId,
+            access.Value.Access,
+            cancellationToken);
+
+        return snapshot is null
+            ? WorkOperation<BoardSnapshot>.Failure("board_not_found")
+            : WorkOperation<BoardSnapshot>.Success(snapshot);
+    }
+
+    public async Task<WorkOperation<BoardRecord>> UpdateBoardAsync(
+        Guid boardId,
+        Guid actorUserId,
+        string name,
+        string? description,
+        string? backgroundType,
+        string? backgroundValue,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null ||
+            !resolved.Value.Access.CanEdit ||
+            resolved.Value.Board.LifecycleState != BoardLifecycleState.Active)
+        {
+            return WorkOperation<BoardRecord>.Failure("board_not_found");
+        }
+
+        if (!TryNormalizeName(name, out var normalizedName))
+        {
+            return WorkOperation<BoardRecord>.Failure("invalid_board_name");
+        }
+
+        if (!TryNormalizeBackground(
+                backgroundType ?? resolved.Value.Board.BackgroundType,
+                backgroundValue,
+                out var normalizedType,
+                out var normalizedValue))
+        {
+            return WorkOperation<BoardRecord>.Failure("invalid_background");
+        }
+
+        var updated = await store.UpdateBoardAsync(
+            boardId,
+            normalizedName,
+            NormalizeOptional(description),
+            normalizedType,
+            normalizedValue,
+            expectedVersion,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return WorkOperation<BoardRecord>.Failure("version_conflict");
+        }
+
+        await AuditAsync(
+            updated,
+            actorUserId,
+            "BOARD_UPDATED",
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<BoardRecord>.Success(updated);
+    }
+
+    public async Task<WorkOperation<BoardRecord>> SetBoardVisibilityAsync(
+        Guid boardId,
+        Guid actorUserId,
+        BoardVisibility visibility,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null || !resolved.Value.Access.CanAdminister)
+        {
+            return WorkOperation<BoardRecord>.Failure("board_not_found");
+        }
+
+        var updated = await store.SetBoardVisibilityAsync(
+            boardId,
+            visibility,
+            expectedVersion,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return WorkOperation<BoardRecord>.Failure("version_conflict");
+        }
+
+        await AuditAsync(
+            updated,
+            actorUserId,
+            "BOARD_VISIBILITY_CHANGED",
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<BoardRecord>.Success(updated);
+    }
+
+    public Task<WorkOperation<BoardRecord>> ArchiveBoardAsync(
+        Guid boardId,
+        Guid actorUserId,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default) =>
+        ChangeBoardLifecycleAsync(
+            boardId,
+            actorUserId,
+            BoardLifecycleState.Active,
+            BoardLifecycleState.Archived,
+            expectedVersion,
+            "BOARD_ARCHIVED",
+            correlationId,
+            cancellationToken);
+
+    public Task<WorkOperation<BoardRecord>> RestoreBoardAsync(
+        Guid boardId,
+        Guid actorUserId,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default) =>
+        ChangeBoardLifecycleAsync(
+            boardId,
+            actorUserId,
+            BoardLifecycleState.Archived,
+            BoardLifecycleState.Active,
+            expectedVersion,
+            "BOARD_RESTORED",
+            correlationId,
+            cancellationToken);
+
+    public Task<WorkOperation<BoardRecord>> DeleteBoardAsync(
+        Guid boardId,
+        Guid actorUserId,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default) =>
+        ChangeBoardLifecycleAsync(
+            boardId,
+            actorUserId,
+            BoardLifecycleState.Archived,
+            BoardLifecycleState.Deleted,
+            expectedVersion,
+            "BOARD_DELETED",
+            correlationId,
+            cancellationToken);
+
+    public async Task<WorkOperation<bool>> SetStarAsync(
+        Guid boardId,
+        Guid actorUserId,
+        bool starred,
+        CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null || !resolved.Value.Access.CanView)
+        {
+            return WorkOperation<bool>.Failure("board_not_found");
+        }
+
+        await store.SetStarAsync(
+            boardId,
+            actorUserId,
+            starred,
+            clock.UtcNow,
+            cancellationToken);
+
+        return WorkOperation<bool>.Success(starred);
+    }
+
+    public async Task<WorkOperation<IReadOnlyList<BoardMemberRecord>>> ListBoardMembersAsync(
+        Guid boardId,
+        Guid actorUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null || !resolved.Value.Access.CanAdminister)
+        {
+            return WorkOperation<IReadOnlyList<BoardMemberRecord>>.Failure(
+                "board_not_found");
+        }
+
+        return WorkOperation<IReadOnlyList<BoardMemberRecord>>.Success(
+            await store.ListBoardMembersAsync(
+                boardId,
+                cancellationToken));
+    }
+
+    public async Task<WorkOperation<BoardMemberRecord>> SetBoardMemberAsync(
+        Guid boardId,
+        Guid actorUserId,
+        Guid targetUserId,
+        BoardRole role,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null || !resolved.Value.Access.CanAdminister)
+        {
+            return WorkOperation<BoardMemberRecord>.Failure("board_not_found");
+        }
+
+        var targetOrganizationMembership =
+            await organizationStore.FindMembershipAsync(
+                resolved.Value.Board.OrganizationId,
+                targetUserId,
+                cancellationToken);
+
+        if (targetOrganizationMembership is null ||
+            !targetOrganizationMembership.Active)
+        {
+            return WorkOperation<BoardMemberRecord>.Failure(
+                "member_not_eligible");
+        }
+
+        var member = await store.UpsertBoardMemberAsync(
+            boardId,
+            targetUserId,
+            role,
+            clock.UtcNow,
+            cancellationToken);
+
+        await AuditAsync(
+            resolved.Value.Board,
+            actorUserId,
+            "BOARD_MEMBER_UPDATED",
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<BoardMemberRecord>.Success(member);
+    }
+
+    public async Task<WorkOperation<bool>> RemoveBoardMemberAsync(
+        Guid boardId,
+        Guid actorUserId,
+        Guid targetUserId,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null || !resolved.Value.Access.CanAdminister)
+        {
+            return WorkOperation<bool>.Failure("board_not_found");
+        }
+
+        var members = await store.ListBoardMembersAsync(
+            boardId,
+            cancellationToken);
+
+        var target = members.FirstOrDefault(
+            member => member.UserId == targetUserId && member.Active);
+
+        if (target is null)
+        {
+            return WorkOperation<bool>.Failure("member_not_found");
+        }
+
+        if (target.Role == BoardRole.Admin &&
+            members.Count(member => member.Active && member.Role == BoardRole.Admin) <= 1 &&
+            !IsOrganizationAdmin(resolved.Value.OrganizationMembership))
+        {
+            return WorkOperation<bool>.Failure("sole_board_admin");
+        }
+
+        if (!await store.RemoveBoardMemberAsync(
+                boardId,
+                targetUserId,
+                clock.UtcNow,
+                cancellationToken))
+        {
+            return WorkOperation<bool>.Failure("member_not_found");
+        }
+
+        await AuditAsync(
+            resolved.Value.Board,
+            actorUserId,
+            "BOARD_MEMBER_REMOVED",
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<bool>.Success(true);
+    }
+
+    public async Task<WorkOperation<BoardListRecord>> CreateListAsync(
+        Guid boardId,
+        Guid actorUserId,
+        string name,
+        string? rank,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null ||
+            !resolved.Value.Access.CanEdit ||
+            resolved.Value.Board.LifecycleState != BoardLifecycleState.Active)
+        {
+            return WorkOperation<BoardListRecord>.Failure("board_not_found");
+        }
+
+        if (!TryNormalizeListName(name, out var normalizedName))
+        {
+            return WorkOperation<BoardListRecord>.Failure("invalid_list_name");
+        }
+
+        var normalizedRank = NormalizeRank(rank);
+        if (normalizedRank is null)
+        {
+            return WorkOperation<BoardListRecord>.Failure("invalid_rank");
+        }
+
+        var list = await store.CreateListAsync(
+            boardId,
+            Guid.NewGuid(),
+            normalizedName,
+            normalizedRank,
+            clock.UtcNow,
+            cancellationToken);
+
+        await store.AppendAuditAsync(
+            list.OrganizationId,
+            actorUserId,
+            "LIST_CREATED",
+            "List",
+            list.Id,
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<BoardListRecord>.Success(list);
+    }
+
+    public async Task<WorkOperation<BoardListRecord>> UpdateListAsync(
+        Guid listId,
+        Guid actorUserId,
+        string name,
+        string? rank,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await store.FindListAsync(listId, cancellationToken);
+        if (list is null)
+        {
+            return WorkOperation<BoardListRecord>.Failure("list_not_found");
+        }
+
+        var resolved = await ResolveAccessAsync(
+            list.BoardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null ||
+            !resolved.Value.Access.CanMove ||
+            resolved.Value.Board.LifecycleState != BoardLifecycleState.Active ||
+            list.LifecycleState != WorkItemLifecycleState.Active)
+        {
+            return WorkOperation<BoardListRecord>.Failure("list_not_found");
+        }
+
+        if (!TryNormalizeListName(name, out var normalizedName))
+        {
+            return WorkOperation<BoardListRecord>.Failure("invalid_list_name");
+        }
+
+        var normalizedRank = rank is null ? list.Rank : NormalizeRank(rank);
+        if (normalizedRank is null)
+        {
+            return WorkOperation<BoardListRecord>.Failure("invalid_rank");
+        }
+
+        var updated = await store.UpdateListAsync(
+            listId,
+            normalizedName,
+            normalizedRank,
+            expectedVersion,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return WorkOperation<BoardListRecord>.Failure("version_conflict");
+        }
+
+        await store.AppendAuditAsync(
+            updated.OrganizationId,
+            actorUserId,
+            rank is null ? "LIST_UPDATED" : "LIST_MOVED",
+            "List",
+            updated.Id,
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<BoardListRecord>.Success(updated);
+    }
+
+    public async Task<WorkOperation<BoardListRecord>> SetListLifecycleAsync(
+        Guid listId,
+        Guid actorUserId,
+        WorkItemLifecycleState nextState,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await store.FindListAsync(listId, cancellationToken);
+        if (list is null)
+        {
+            return WorkOperation<BoardListRecord>.Failure("list_not_found");
+        }
+
+        var resolved = await ResolveAccessAsync(
+            list.BoardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null || !resolved.Value.Access.CanAdminister)
+        {
+            return WorkOperation<BoardListRecord>.Failure("list_not_found");
+        }
+
+        if (!IsValidLifecycleTransition(list.LifecycleState, nextState))
+        {
+            return WorkOperation<BoardListRecord>.Failure(
+                "invalid_lifecycle_transition");
+        }
+
+        var updated = await store.SetListLifecycleAsync(
+            listId,
+            list.LifecycleState,
+            nextState,
+            expectedVersion,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return WorkOperation<BoardListRecord>.Failure("version_conflict");
+        }
+
+        await store.AppendAuditAsync(
+            updated.OrganizationId,
+            actorUserId,
+            EventForLifecycle("LIST", nextState),
+            "List",
+            updated.Id,
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<BoardListRecord>.Success(updated);
+    }
+
+    public async Task<WorkOperation<CardRecord>> CreateCardAsync(
+        Guid listId,
+        Guid actorUserId,
+        string title,
+        string? description,
+        string? rank,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var list = await store.FindListAsync(listId, cancellationToken);
+        if (list is null || list.LifecycleState != WorkItemLifecycleState.Active)
+        {
+            return WorkOperation<CardRecord>.Failure("list_not_found");
+        }
+
+        var resolved = await ResolveAccessAsync(
+            list.BoardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null ||
+            !resolved.Value.Access.CanEdit ||
+            resolved.Value.Board.LifecycleState != BoardLifecycleState.Active)
+        {
+            return WorkOperation<CardRecord>.Failure("list_not_found");
+        }
+
+        if (!TryNormalizeCardTitle(title, out var normalizedTitle))
+        {
+            return WorkOperation<CardRecord>.Failure("invalid_card_title");
+        }
+
+        var normalizedRank = NormalizeRank(rank);
+        if (normalizedRank is null)
+        {
+            return WorkOperation<CardRecord>.Failure("invalid_rank");
+        }
+
+        var card = await store.CreateCardAsync(
+            listId,
+            Guid.NewGuid(),
+            normalizedTitle,
+            NormalizeOptional(description),
+            normalizedRank,
+            clock.UtcNow,
+            cancellationToken);
+
+        await store.AppendAuditAsync(
+            card.OrganizationId,
+            actorUserId,
+            "CARD_CREATED",
+            "Card",
+            card.Id,
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<CardRecord>.Success(card);
+    }
+
+    public async Task<WorkOperation<CardRecord>> UpdateCardAsync(
+        Guid cardId,
+        Guid actorUserId,
+        string title,
+        string? description,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var card = await store.FindCardAsync(cardId, cancellationToken);
+        if (card is null)
+        {
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+        }
+
+        var resolved = await ResolveAccessAsync(
+            card.BoardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null ||
+            !resolved.Value.Access.CanEdit ||
+            card.LifecycleState != WorkItemLifecycleState.Active)
+        {
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+        }
+
+        if (!TryNormalizeCardTitle(title, out var normalizedTitle))
+        {
+            return WorkOperation<CardRecord>.Failure("invalid_card_title");
+        }
+
+        var updated = await store.UpdateCardAsync(
+            cardId,
+            normalizedTitle,
+            NormalizeOptional(description),
+            expectedVersion,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return WorkOperation<CardRecord>.Failure("version_conflict");
+        }
+
+        await store.AppendAuditAsync(
+            updated.OrganizationId,
+            actorUserId,
+            "CARD_UPDATED",
+            "Card",
+            updated.Id,
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<CardRecord>.Success(updated);
+    }
+
+    public async Task<WorkOperation<CardRecord>> MoveCardAsync(
+        Guid cardId,
+        Guid actorUserId,
+        Guid destinationListId,
+        string rank,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var card = await store.FindCardAsync(cardId, cancellationToken);
+        var destination = await store.FindListAsync(
+            destinationListId,
+            cancellationToken);
+
+        if (card is null ||
+            destination is null ||
+            destination.BoardId != card.BoardId ||
+            card.LifecycleState != WorkItemLifecycleState.Active ||
+            destination.LifecycleState != WorkItemLifecycleState.Active ||
+            !RankToken.IsValid(rank))
+        {
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+        }
+
+        var resolved = await ResolveAccessAsync(
+            card.BoardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null ||
+            !resolved.Value.Access.CanMove ||
+            resolved.Value.Board.LifecycleState != BoardLifecycleState.Active)
+        {
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+        }
+
+        var updated = await store.MoveCardAsync(
+            cardId,
+            destinationListId,
+            rank,
+            expectedVersion,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return WorkOperation<CardRecord>.Failure("version_conflict");
+        }
+
+        await store.AppendAuditAsync(
+            updated.OrganizationId,
+            actorUserId,
+            "CARD_MOVED",
+            "Card",
+            updated.Id,
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<CardRecord>.Success(updated);
+    }
+
+    public async Task<WorkOperation<CardRecord>> SetCardLifecycleAsync(
+        Guid cardId,
+        Guid actorUserId,
+        WorkItemLifecycleState nextState,
+        long expectedVersion,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var card = await store.FindCardAsync(cardId, cancellationToken);
+        if (card is null)
+        {
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+        }
+
+        var resolved = await ResolveAccessAsync(
+            card.BoardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null || !resolved.Value.Access.CanEdit)
+        {
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+        }
+
+        if (!IsValidLifecycleTransition(card.LifecycleState, nextState))
+        {
+            return WorkOperation<CardRecord>.Failure(
+                "invalid_lifecycle_transition");
+        }
+
+        var updated = await store.SetCardLifecycleAsync(
+            cardId,
+            card.LifecycleState,
+            nextState,
+            expectedVersion,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return WorkOperation<CardRecord>.Failure("version_conflict");
+        }
+
+        await store.AppendAuditAsync(
+            updated.OrganizationId,
+            actorUserId,
+            EventForLifecycle("CARD", nextState),
+            "Card",
+            updated.Id,
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<CardRecord>.Success(updated);
+    }
+
+    private async Task<(
+        BoardRecord Board,
+        OrganizationMembership? OrganizationMembership,
+        BoardMemberRecord? BoardMember,
+        BoardAccess Access)?> ResolveAccessAsync(
+        Guid boardId,
+        Guid? actorUserId,
+        CancellationToken cancellationToken)
+    {
+        var board = await store.FindBoardAsync(boardId, cancellationToken);
+        if (board is null || board.LifecycleState == BoardLifecycleState.Deleted)
+        {
+            return null;
+        }
+
+        OrganizationMembership? organizationMembership = null;
+        BoardMemberRecord? boardMember = null;
+
+        if (actorUserId.HasValue)
+        {
+            organizationMembership =
+                await organizationStore.FindMembershipAsync(
+                    board.OrganizationId,
+                    actorUserId.Value,
+                    cancellationToken);
+
+            boardMember = await store.FindBoardMemberAsync(
+                boardId,
+                actorUserId.Value,
+                cancellationToken);
+        }
+
+        var orgMember = organizationMembership is { Active: true };
+        var orgAdmin = IsOrganizationAdmin(organizationMembership);
+        var explicitBoardMember = boardMember is { Active: true };
+        var boardAdmin = boardMember is
+        {
+            Active: true,
+            Role: BoardRole.Admin,
+        };
+
+        var active = board.LifecycleState == BoardLifecycleState.Active;
+        var canView = board.Visibility switch
+        {
+            BoardVisibility.Public => active || orgMember || explicitBoardMember || orgAdmin,
+            BoardVisibility.Organization => orgMember || explicitBoardMember || orgAdmin,
+            BoardVisibility.Private => explicitBoardMember || orgAdmin,
+            _ => false,
+        };
+
+        var canEdit =
+            active &&
+            (orgAdmin || explicitBoardMember);
+
+        var canAdminister = orgAdmin || boardAdmin;
+
+        return (
+            board,
+            organizationMembership,
+            boardMember,
+            new BoardAccess(
+                canView,
+                canEdit,
+                canAdminister,
+                canEdit));
+    }
+
+    private async Task<WorkOperation<BoardRecord>> ChangeBoardLifecycleAsync(
+        Guid boardId,
+        Guid actorUserId,
+        BoardLifecycleState expectedState,
+        BoardLifecycleState nextState,
+        long expectedVersion,
+        string eventType,
+        string correlationId,
+        CancellationToken cancellationToken)
+    {
+        var resolved = await ResolveAccessAsync(
+            boardId,
+            actorUserId,
+            cancellationToken);
+
+        if (resolved is null ||
+            !resolved.Value.Access.CanAdminister ||
+            resolved.Value.Board.LifecycleState != expectedState)
+        {
+            return WorkOperation<BoardRecord>.Failure("board_not_found");
+        }
+
+        var updated = await store.SetBoardLifecycleAsync(
+            boardId,
+            expectedState,
+            nextState,
+            expectedVersion,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return WorkOperation<BoardRecord>.Failure("version_conflict");
+        }
+
+        await AuditAsync(
+            updated,
+            actorUserId,
+            eventType,
+            correlationId,
+            cancellationToken);
+
+        return WorkOperation<BoardRecord>.Success(updated);
+    }
+
+    private Task AuditAsync(
+        BoardRecord board,
+        Guid actorUserId,
+        string eventType,
+        string correlationId,
+        CancellationToken cancellationToken) =>
+        store.AppendAuditAsync(
+            board.OrganizationId,
+            actorUserId,
+            eventType,
+            "Board",
+            board.Id,
+            correlationId,
+            cancellationToken);
+
+    private static bool IsOrganizationAdmin(
+        OrganizationMembership? membership) =>
+        membership is
+        {
+            Active: true,
+            Role: OrganizationRole.Owner or OrganizationRole.Admin,
+        };
+
+    private static bool TryNormalizeName(
+        string value,
+        out string normalized) =>
+        TryNormalizeRequired(value, 160, out normalized);
+
+    private static bool TryNormalizeListName(
+        string value,
+        out string normalized) =>
+        TryNormalizeRequired(value, 160, out normalized);
+
+    private static bool TryNormalizeCardTitle(
+        string value,
+        out string normalized) =>
+        TryNormalizeRequired(value, 500, out normalized);
+
+    private static bool TryNormalizeRequired(
+        string value,
+        int maximumLength,
+        out string normalized)
+    {
+        normalized = value?.Trim() ?? string.Empty;
+        return normalized.Length is > 0 &&
+            normalized.Length <= maximumLength;
+    }
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? NormalizeRank(string? rank)
+    {
+        if (string.IsNullOrWhiteSpace(rank))
+        {
+            return RankToken.Initial();
+        }
+
+        return RankToken.IsValid(rank) ? rank : null;
+    }
+
+    private static bool TryNormalizeBackground(
+        string? backgroundType,
+        string? backgroundValue,
+        out string normalizedType,
+        out string? normalizedValue)
+    {
+        normalizedType = (backgroundType ?? "COLOR")
+            .Trim()
+            .ToUpperInvariant();
+        normalizedValue = NormalizeOptional(backgroundValue);
+
+        return normalizedType switch
+        {
+            "COLOR" => normalizedValue is null ||
+                normalizedValue.Length <= 64,
+            "IMAGE" => normalizedValue is not null &&
+                normalizedValue.Length <= 2048,
+            _ => false,
+        };
+    }
+
+    private static bool IsValidLifecycleTransition(
+        WorkItemLifecycleState current,
+        WorkItemLifecycleState next) =>
+        (current, next) is
+            (WorkItemLifecycleState.Active, WorkItemLifecycleState.Archived)
+            or (WorkItemLifecycleState.Archived, WorkItemLifecycleState.Active)
+            or (WorkItemLifecycleState.Archived, WorkItemLifecycleState.Deleted);
+
+    private static string EventForLifecycle(
+        string entity,
+        WorkItemLifecycleState next) =>
+        next switch
+        {
+            WorkItemLifecycleState.Active => $"{entity}_RESTORED",
+            WorkItemLifecycleState.Archived => $"{entity}_ARCHIVED",
+            WorkItemLifecycleState.Deleted => $"{entity}_DELETED",
+            _ => $"{entity}_UPDATED",
+        };
+}
