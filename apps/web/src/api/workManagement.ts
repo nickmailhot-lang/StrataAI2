@@ -29,19 +29,24 @@ export class WorkRequestError extends Error {
   constructor(
     public status: number,
     public correlationId: string | null,
+    public code?: string,
   ) {
     super(
-      status === 409
-        ? "This item changed elsewhere. Refresh the board before trying again."
-        : status === 401
-          ? "Sign in to continue."
-          : status === 403 || status === 404
-            ? "This board or action is unavailable."
-            : status === 400
-              ? "Check the fields and try again."
-              : status === 503
-                ? "Service temporarily unavailable. Reload to check the latest state before retrying."
-                : "Unable to complete the request. Please try again.",
+      status === 409 && code === "idempotency_key_expired"
+        ? "This submission expired. Reload to check the latest state before starting another change."
+        : status === 409 && code === "idempotency_key_reused"
+          ? "This submission cannot be reused for different input. Reload to check the latest state."
+          : status === 409
+            ? "This item changed elsewhere. Refresh the board before trying again."
+            : status === 401
+              ? "Sign in to continue."
+              : status === 403 || status === 404
+                ? "This board or action is unavailable."
+                : status === 400
+                  ? "Check the fields and try again."
+                  : status === 503
+                    ? "Service temporarily unavailable. Reload to check the latest state before retrying."
+                    : "Unable to complete the request. Please try again.",
     );
   }
 }
@@ -52,11 +57,28 @@ export async function workRequest<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const response = await apiFetch(path, options);
-  if (!response.ok)
+  if (!response.ok) {
+    // Use only known stable codes; never display server titles/details or SQL.
+    let code: string | undefined;
+    try {
+      const problem: unknown = await response.json();
+      if (
+        problem &&
+        typeof problem === "object" &&
+        "code" in problem &&
+        (problem.code === "idempotency_key_expired" ||
+          problem.code === "idempotency_key_reused")
+      )
+        code = problem.code;
+    } catch {
+      /* An edge/proxy error may have no JSON problem response. */
+    }
     throw new WorkRequestError(
       response.status,
       response.headers.get("X-Correlation-ID"),
+      code,
     );
+  }
   return response.status === 204
     ? (undefined as T)
     : ((await response.json()) as T);
@@ -107,8 +129,19 @@ export class WorkMutationIntent {
     if (this.pending?.signature !== signature)
       this.pending = { signature, key: crypto.randomUUID() };
     const intent = this.pending;
-    const result = await mutateWork<T>(path, method, body, intent.key);
-    if (this.pending === intent) this.pending = undefined;
-    return result;
+    try {
+      const result = await mutateWork<T>(path, method, body, intent.key);
+      if (this.pending === intent) this.pending = undefined;
+      return result;
+    } catch (reason) {
+      const failure =
+        reason instanceof WorkRequestError
+          ? reason
+          : new WorkRequestError(0, null);
+      if (failure.status === 0 || failure.status >= 500)
+        failure.message =
+          "Unable to confirm the save. Keep these fields unchanged and try again to recover this submission.";
+      throw failure;
+    }
   }
 }

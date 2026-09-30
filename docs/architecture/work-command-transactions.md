@@ -24,8 +24,9 @@ and making its own uncommitted routing writes visible to subsequent queries.
 Database failures return a sanitized `work_storage_unavailable` 503 with the
 existing correlation header. Logs record only organization and database error
 code, never SQL or entity content. A lost commit acknowledgment can have an
-unknown outcome: refresh before retrying. This increment does not yet provide
-mutation idempotency or durable domain-event publication. The existing personal
+unknown outcome. Keyed retries can recover the original result as documented in
+`work-command-retries.md`; clients that lose their key must inspect current state
+before starting a new intent. Durable domain-event publication is still missing. The existing personal
 star command has no audit append; this wrapper does not invent an activity event.
 Demo mode retains its memory-only implementation and is not a production
 transactional durability proof.
@@ -51,7 +52,7 @@ and removes temporary trigger/function fixtures even on failure, and refuses to
 run outside CI. No fixture is included in release provisioning.
 
 Still required: applying atomic command boundaries to organization/onboarding and
-other modules, idempotency, audit/event envelopes and transactional outbox
+other modules, retry contracts outside Work Management, audit/event envelopes and transactional outbox
 publication, parent-state locking, realtime delivery/recovery, and the other
 ticket acceptance criteria. These tests prove this transaction boundary, not full
 completion of the dependent PRDs.

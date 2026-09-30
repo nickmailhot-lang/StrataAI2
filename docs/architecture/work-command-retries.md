@@ -7,9 +7,12 @@ Authenticated mutations under `/boards`, `/lists`, and `/cards` accept an option
 `Idempotency-Key` containing one nonempty UUID in standard hyphenated form.
 Existing clients without a key retain the existing behavior. The board/list/card
 creation and card edit UI sends a fresh key per intent and retains it when an
-unchanged submission has an uncertain network or service outcome. Changed input
-or resource starts another intent; success clears the pending intent. Keys are
-held in component memory, so navigation, closing the app, or a page reload does
+unchanged submission has an uncertain network or service outcome.
+The recovery message asks the user to keep those fields unchanged and retry that
+submission. Expired or reused keys have fixed recovery messages; raw API problem
+titles, details, and unknown codes are never rendered.
+Changed input or resource starts another intent; success clears the pending
+intent. Keys are held in component memory, so navigation, closing the app, or a page reload does
 not promise recovery of a pending key. Clients should inspect current state
 before recreating an intent after losing that key.
 

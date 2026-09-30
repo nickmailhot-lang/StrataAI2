@@ -1,4 +1,4 @@
-import { WorkMutationIntent } from "./workManagement";
+import { WorkMutationIntent, workRequest } from "./workManagement";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -17,7 +17,7 @@ describe("PRD-07/08-TC-07 retry intent", () => {
       const intent = new WorkMutationIntent();
       await expect(
         intent.send("/lists/one/cards", "POST", { title: "One card" }),
-      ).rejects.toThrow();
+      ).rejects.toThrow("Keep these fields unchanged");
       await expect(
         intent.send("/lists/one/cards", "POST", { title: "One card" }),
       ).resolves.toEqual({ id: "one-card" });
@@ -53,4 +53,38 @@ describe("PRD-07/08-TC-07 retry intent", () => {
       ).size,
     ).toBe(3);
   });
+
+  it.each([
+    ["idempotency_key_expired", "This submission expired"],
+    ["idempotency_key_reused", "This submission cannot be reused"],
+    ["unknown-provider-secret", "This item changed elsewhere"],
+  ])(
+    "uses a fixed recovery message for code %s without exposing raw details",
+    async (code, expected) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              code,
+              title: "Sensitive SQL details",
+              detail: "Provider secret body",
+            }),
+            { status: 409 },
+          ),
+        ),
+      );
+      try {
+        await workRequest("/cards/one", { method: "PATCH" });
+        throw new Error("Expected rejection");
+      } catch (reason) {
+        expect(reason).toBeInstanceOf(Error);
+        const message = (reason as Error).message;
+        expect(message).toContain(expected);
+        expect(message).not.toContain("Sensitive SQL");
+        expect(message).not.toContain("Provider secret");
+        expect(message).not.toContain("unknown-provider-secret");
+      }
+    },
+  );
 });

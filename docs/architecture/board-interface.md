@@ -16,6 +16,8 @@ Active boards with `canEdit` expose list creation, card creation and title and
 description editing. Public/read-only and archived boards omit those actions.
 Server authorization remains decisive for every mutation. Requests retain the
 same-origin cookie/CSRF transport, and edits submit the current card version.
+Work mutations also retain a key for an unchanged submission after an uncertain
+outcome, as documented in `work-command-retries.md`.
 The UI refreshes authoritative state after acknowledgment rather than claiming
 that unsaved data persisted. Conflicts preserve the draft, disable resubmission
 and provide an explicit discard-and-load-latest action. Descriptions are rendered
@@ -34,7 +36,8 @@ creates organizations, boards, lists/cards and edits through the UI. The complet
 flow runs at desktop and phone sizes, with keyboard activation of primary
 creation/save controls on the phone. It verifies persisted
 reloads, two-browser conflicts, direct card URLs, back/close navigation, wrong
-organization rejection and anonymous public read-only access. The normal CI
+organization rejection, lost-success-response creation with exactly one card,
+and anonymous public read-only access. The normal CI
 browser stage runs this test against the already-built release image archives.
 
 This increment does not complete those tickets. List/card movement, lifecycle
