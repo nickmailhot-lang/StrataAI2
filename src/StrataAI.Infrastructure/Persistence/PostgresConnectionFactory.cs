@@ -37,6 +37,20 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
             {
                 throw new RuntimeDatabaseRoleException();
             }
+            await using var schema = new NpgsqlCommand("""
+                SELECT count(*) = 9 FROM public.schema_migrations WHERE version = ANY(ARRAY[
+                  '001_foundation','002_audit_runtime','003_identity','004_organization_access_routing',
+                  '005_invitation_routing','006_work_management','007_background_jobs',
+                  '008_identity_delivery','009_runtime_role_guard']);
+                """, connection);
+            try
+            {
+                if (await schema.ExecuteScalarAsync(cancellationToken) is not true) throw new RuntimeDatabaseSchemaException();
+            }
+            catch (PostgresException exception) when (exception.SqlState is PostgresErrorCodes.UndefinedTable or PostgresErrorCodes.UndefinedColumn or PostgresErrorCodes.InsufficientPrivilege)
+            {
+                throw new RuntimeDatabaseSchemaException();
+            }
             return connection;
         }
         catch { await connection.DisposeAsync(); throw; }

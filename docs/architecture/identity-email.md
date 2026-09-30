@@ -63,7 +63,8 @@ settings to the already-built images:
 - `STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING`: separate restricted Worker
   PostgreSQL credential, mapped to `ConnectionStrings:IdentityDeliveryPostgres`.
 
-The identity Worker role needs schema usage; SELECT/UPDATE on
+The identity Worker role needs schema usage; EXECUTE on
+`public.runtime_database_role_is_safe()`; SELECT on `schema_migrations`; SELECT/UPDATE on
 `identity_delivery_jobs`; SELECT on users' `id,email,status,email_verified`; and
 SELECT on token tables' `id,user_id,token_hash,used_at,revoked_at,expires_at`. It
 must not have password-hash or Organization/Board grants, SUPERUSER/BYPASSRLS,

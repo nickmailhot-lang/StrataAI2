@@ -120,6 +120,9 @@ jobs:
       - name: Apply ordered migrations
         run: scripts/ci/apply-migrations.sh
 
+      - name: Verify migration repeat, upgrade, failure rollback and serialization
+        run: scripts/ci/test-migration-runner.sh
+
       - name: Verify pgvector and forced tenant RLS
         run: scripts/ci/test-rls.sh
 
@@ -515,6 +518,7 @@ jobs:
           cp .env.release.example bundle/
           cp scripts/health-check.sh bundle/health-check.sh
           cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh
+          cp scripts/migration-stream.sh bundle/migration-stream.sh
           cp scripts/provision-compose-runtime-roles.sh bundle/provision-runtime-roles.sh
           cp -R db bundle/db
           cp docs/release/README.md bundle/README.md

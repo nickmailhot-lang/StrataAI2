@@ -3,6 +3,7 @@
 CREATE ROLE strataai_identity_mail_ci LOGIN PASSWORD 'identity-ci-password';
 GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe() TO strataai_identity_mail_ci;
 GRANT USAGE ON SCHEMA public TO strataai_identity_mail_ci;
+GRANT SELECT ON schema_migrations TO strataai_identity_mail_ci;
 GRANT SELECT,UPDATE ON identity_delivery_jobs TO strataai_identity_mail_ci;
 GRANT SELECT(id,email,status,email_verified) ON users TO strataai_identity_mail_ci;
 GRANT SELECT(id,user_id,token_hash,used_at,revoked_at,expires_at)
