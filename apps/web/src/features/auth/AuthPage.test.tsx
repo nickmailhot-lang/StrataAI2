@@ -12,13 +12,17 @@ describe('PRD-02 authentication UI', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
-    expect(screen.queryByLabelText('Display name')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Create account' }),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('tab', { name: 'Register' }));
 
-    expect(screen.getByLabelText('Display name')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Create account' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Use at least 12 characters/i),
     ).toBeInTheDocument();
   });
 });
