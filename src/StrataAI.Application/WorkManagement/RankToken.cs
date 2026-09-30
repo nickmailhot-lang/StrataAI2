@@ -14,6 +14,10 @@ public static class RankToken
     private static readonly BigInteger Maximum =
         BigInteger.Pow(10, Width) - BigInteger.One;
 
+    // Leave ample space for midpoint moves without consuming half the remaining
+    // address space on every append. Persisted tokens keep their existing format.
+    private static readonly BigInteger EdgeStep = BigInteger.Pow(10, 18);
+
     public static string Initial() => Format(Maximum / 2);
 
     public static string After(string? current)
@@ -23,7 +27,8 @@ public static class RankToken
             return Initial();
         }
 
-        return Between(current, null);
+        var next = Parse(current) + EdgeStep;
+        return next < Maximum ? Format(next) : Between(current, null);
     }
 
     public static string Before(string? current)
@@ -33,7 +38,8 @@ public static class RankToken
             return Initial();
         }
 
-        return Between(null, current);
+        var previous = Parse(current) - EdgeStep;
+        return previous > BigInteger.Zero ? Format(previous) : Between(null, current);
     }
 
     public static string Between(string? before, string? after)
