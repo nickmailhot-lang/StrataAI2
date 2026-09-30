@@ -24,7 +24,10 @@ public sealed class ApiHostTests
         Assert.Equal("demo", body.GetProperty("mode").GetString());
         using var runtime = await client.GetAsync("/api/runtime", TestContext.Current.CancellationToken);
         var descriptor = await runtime.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Equal("api-host-test", descriptor.GetProperty("revision").GetString());
+        var embedded = StrataAI.Infrastructure.Runtime.BuildIdentityReader.Read(typeof(Program).Assembly);
+        Assert.Equal(embedded.Revision, descriptor.GetProperty("revision").GetString());
+        Assert.Equal(embedded.Version, descriptor.GetProperty("version").GetString());
+        Assert.NotEqual("api-host-test", descriptor.GetProperty("revision").GetString());
         Assert.True(runtime.Headers.Contains("X-Correlation-ID"));
     }
 
@@ -168,6 +171,7 @@ internal sealed class ApiFactory(string mode = "demo") : WebApplicationFactory<P
         {
             ["STRATAAI_RUNTIME_MODE"] = mode,
             ["STRATAAI_BUILD_REVISION"] = "api-host-test",
+            ["STRATAAI_BUILD_VERSION"] = "runtime-spoof",
             ["STRATAAI_IDENTITY_EMAIL_ENABLED"] = "false",
             ["ConnectionStrings:Postgres"] = "",
             ["Logging:LogLevel:Default"] = "Warning",

@@ -5,7 +5,7 @@ set -euo pipefail
 scratch="$(mktemp -d /tmp/strataai-lock-check.XXXXXXXX)"
 case "$scratch" in /tmp/strataai-lock-check.*) ;; *) exit 1 ;; esac
 trap 'rm -rf -- "$scratch"' EXIT
-cp global.json Directory.Build.props Directory.Packages.props StrataAI2.slnx "$scratch/"
+cp global.json Directory.Build.props Directory.Build.targets Directory.Packages.props StrataAI2.slnx "$scratch/"
 while IFS= read -r path; do
   mkdir -p "$scratch/$(dirname "$path")"
   cp "$path" "$scratch/$path"

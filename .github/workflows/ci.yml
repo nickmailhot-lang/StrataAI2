@@ -48,7 +48,13 @@ jobs:
         run: npm test
 
       - name: Production web build
+        env:
+          VITE_STRATAAI_BUILD_REVISION: ${{ github.sha }}
+          VITE_STRATAAI_BUILD_VERSION: 0.1.0-${{ github.run_number }}
         run: npm run build
+
+      - name: Verify generated web build identity
+        run: jq -e --arg revision "$GITHUB_SHA" --arg version "0.1.0-$GITHUB_RUN_NUMBER" '.revision == $revision and .version == $version' apps/web/dist/build-metadata.json
 
   dotnet-quality:
     name: dotnet-quality
@@ -240,6 +246,9 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:8088/app/demo/boards/demo-board >/dev/null
           curl --fail --silent --show-error http://127.0.0.1:8088/app/demo/boards/demo-board/cards/demo-card >/dev/null
           curl --fail --silent --show-error http://127.0.0.1:8088/portal/demo >/dev/null
+
+      - name: Verify embedded build identity and override resistance
+        run: scripts/ci/test-build-identity.sh
 
       - name: Production does not expose demo reset
         shell: bash

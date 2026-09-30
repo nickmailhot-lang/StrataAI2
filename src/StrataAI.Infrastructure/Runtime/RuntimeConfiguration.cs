@@ -11,12 +11,12 @@ public static class RuntimeConfiguration
 {
     public static RuntimeDescriptor AddStrataAiRuntime(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        System.Reflection.Assembly hostAssembly)
     {
         var mode = ParseMode(configuration["STRATAAI_RUNTIME_MODE"]);
-        var revision = configuration["STRATAAI_BUILD_REVISION"] ?? "development";
-        var version = configuration["STRATAAI_BUILD_VERSION"] ?? "0.0.0-dev";
-        var descriptor = new RuntimeDescriptor(mode, revision, version);
+        var identity = BuildIdentityReader.Read(hostAssembly);
+        var descriptor = new RuntimeDescriptor(mode, identity.Revision, identity.Version);
 
         services.AddSingleton(descriptor);
 

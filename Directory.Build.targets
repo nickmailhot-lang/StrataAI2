@@ -1,0 +1,13 @@
+<Project>
+  <Target Name="EmbedStrataAiBuildIdentity" BeforeTargets="GetAssemblyAttributes"
+          DependsOnTargets="GetAssemblyVersion;InitializeSourceControlInformation">
+    <PropertyGroup>
+      <StrataAiEmbeddedRevision Condition="'$(SourceRevisionId)' != ''">$(SourceRevisionId)</StrataAiEmbeddedRevision>
+      <StrataAiEmbeddedRevision Condition="'$(StrataAiEmbeddedRevision)' == ''">development</StrataAiEmbeddedRevision>
+    </PropertyGroup>
+    <ItemGroup>
+      <AssemblyMetadata Include="StrataAI.BuildRevision" Value="$(StrataAiEmbeddedRevision)" />
+      <AssemblyMetadata Include="StrataAI.BuildVersion" Value="$(Version)" />
+    </ItemGroup>
+  </Target>
+</Project>

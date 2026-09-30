@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 WORKDIR /src
 
-COPY global.json Directory.Build.props Directory.Packages.props ./
+COPY global.json Directory.Build.props Directory.Build.targets Directory.Packages.props ./
 COPY src/StrataAI.Domain/StrataAI.Domain.csproj src/StrataAI.Domain/
 COPY src/StrataAI.Application/StrataAI.Application.csproj src/StrataAI.Application/
 COPY src/StrataAI.Infrastructure/StrataAI.Infrastructure.csproj src/StrataAI.Infrastructure/
@@ -27,6 +27,11 @@ RUN dotnet publish src/StrataAI.Api/StrataAI.Api.csproj \
     -p:Version=$STRATAAI_BUILD_VERSION
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+
+ARG STRATAAI_BUILD_REVISION=development
+ARG STRATAAI_BUILD_VERSION=0.0.0-dev
+LABEL org.opencontainers.image.revision=$STRATAAI_BUILD_REVISION \
+      org.opencontainers.image.version=$STRATAAI_BUILD_VERSION
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \

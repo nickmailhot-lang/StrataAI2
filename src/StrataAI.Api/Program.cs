@@ -39,7 +39,7 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddSecurityRateLimits(builder.Configuration);
 
-var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration);
+var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
 builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
 builder.Services.AddStrataAiOrganizations(runtime);
 builder.Services.AddStrataAiOnboarding(runtime);

@@ -6,8 +6,11 @@ Required baseline production configuration:
 
 - `STRATAAI_RUNTIME_MODE=production`
 - `ConnectionStrings__Postgres`
-- `STRATAAI_BUILD_REVISION`
-- `STRATAAI_BUILD_VERSION`
+
+Build revision/version are embedded in the image at build time and cannot be
+set by runtime environment variables. The web's `/build-metadata.json`, API's
+`/api/runtime` and Worker's `/runtime` report the identifiers of their actual
+image assemblies/assets. See [build identity](build-identity.md).
 
 Additional provider credentials are introduced only with the corresponding PRD and must be
 provided by deployment secret management/environment variables. Real secrets are never

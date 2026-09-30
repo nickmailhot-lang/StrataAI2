@@ -9,7 +9,7 @@ using StrataAI.Infrastructure.Identity;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
-var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration);
+var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
 builder.Services.AddHostedService<WorkerHeartbeat>();
 
 if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))

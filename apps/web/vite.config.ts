@@ -1,8 +1,19 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import { loadEnv } from 'vite';
+import { createBuildIdentity } from './src/app/buildIdentity.ts';
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, '.', 'VITE_');
+  const buildIdentity = createBuildIdentity(env.VITE_STRATAAI_BUILD_REVISION, env.VITE_STRATAAI_BUILD_VERSION);
+  return {
+  plugins: [react(), {
+    name: 'strataai-build-identity',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'build-metadata.json', source: JSON.stringify(buildIdentity) });
+    },
+  }],
   server: {
     port: 5173,
     proxy: {
@@ -23,4 +34,5 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: true,
   },
+  };
 });

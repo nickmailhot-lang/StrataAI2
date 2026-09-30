@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
+      args:
+        STRATAAI_BUILD_REVISION: ${STRATAAI_BUILD_REVISION:-development}
+        STRATAAI_BUILD_VERSION: ${STRATAAI_BUILD_VERSION:-0.0.0-dev}
     environment:
       STRATAAI_RUNTIME_MODE: demo
       ASPNETCORE_ENVIRONMENT: Development
@@ -13,6 +16,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.worker
+      args:
+        STRATAAI_BUILD_REVISION: ${STRATAAI_BUILD_REVISION:-development}
+        STRATAAI_BUILD_VERSION: ${STRATAAI_BUILD_VERSION:-0.0.0-dev}
     environment:
       STRATAAI_RUNTIME_MODE: demo
       ASPNETCORE_ENVIRONMENT: Development
@@ -23,6 +29,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
+      args:
+        STRATAAI_BUILD_REVISION: ${STRATAAI_BUILD_REVISION:-development}
+        STRATAAI_BUILD_VERSION: ${STRATAAI_BUILD_VERSION:-0.0.0-dev}
     depends_on:
       api:
         condition: service_healthy
