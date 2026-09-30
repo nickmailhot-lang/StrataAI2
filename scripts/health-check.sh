@@ -7,6 +7,8 @@ WORKER_URL="${STRATAAI_WORKER_URL:-http://127.0.0.1:8081}"
 
 curl --fail --silent --show-error "$API_URL/api/health" >/dev/null
 curl --fail --silent --show-error "$WORKER_URL/healthz" >/dev/null
+curl --fail --silent --show-error "$API_URL/readyz" >/dev/null
+curl --fail --silent --show-error "$WORKER_URL/readyz" >/dev/null
 curl --fail --silent --show-error "$WEB_URL/" >/dev/null
 curl --fail --silent --show-error "$WEB_URL/api/health" >/dev/null
 

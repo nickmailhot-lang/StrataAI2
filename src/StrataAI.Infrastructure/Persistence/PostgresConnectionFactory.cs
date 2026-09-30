@@ -1,4 +1,5 @@
 using Npgsql;
+using StrataAI.Application.Runtime;
 
 namespace StrataAI.Infrastructure.Persistence;
 
@@ -22,9 +23,24 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
         _dataSource = NpgsqlDataSource.Create(connectionString);
     }
 
-    public ValueTask<NpgsqlConnection> OpenConnectionAsync(
-        CancellationToken cancellationToken = default) =>
-        _dataSource.OpenConnectionAsync(cancellationToken);
+    public async ValueTask<NpgsqlConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
+    {
+        var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        try
+        {
+            await using var command = new NpgsqlCommand("SELECT public.runtime_database_role_is_safe();", connection);
+            try
+            {
+                if (await command.ExecuteScalarAsync(cancellationToken) is not true) throw new RuntimeDatabaseRoleException();
+            }
+            catch (PostgresException exception) when (exception.SqlState is PostgresErrorCodes.UndefinedFunction or PostgresErrorCodes.InsufficientPrivilege)
+            {
+                throw new RuntimeDatabaseRoleException();
+            }
+            return connection;
+        }
+        catch { await connection.DisposeAsync(); throw; }
+    }
 
     public async Task<TenantDbSession> OpenTenantSessionAsync(
         Guid organizationId,
@@ -37,11 +53,12 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 nameof(organizationId));
         }
 
-        var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
-        var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        var connection = await OpenConnectionAsync(cancellationToken);
+        NpgsqlTransaction? transaction = null;
 
         try
         {
+            transaction = await connection.BeginTransactionAsync(cancellationToken);
             await using var command = new NpgsqlCommand(
                 "SELECT set_config('app.tenant_id', @tenant_id, true);",
                 connection,
@@ -55,7 +72,7 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
         }
         catch
         {
-            await transaction.DisposeAsync();
+            if (transaction is not null) await transaction.DisposeAsync();
             await connection.DisposeAsync();
             throw;
         }

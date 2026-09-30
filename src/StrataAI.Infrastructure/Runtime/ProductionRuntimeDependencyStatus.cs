@@ -19,7 +19,7 @@ internal sealed class ProductionRuntimeDependencyStatus(
             var result = await command.ExecuteScalarAsync(cancellationToken);
             return Convert.ToInt32(result) == 1;
         }
-        catch (NpgsqlException)
+        catch (Exception exception) when (exception is NpgsqlException or RuntimeDatabaseRoleException)
         {
             return false;
         }

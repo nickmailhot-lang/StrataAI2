@@ -30,8 +30,18 @@ public static class RuntimeConfiguration
         var connectionString = configuration.GetConnectionString("Postgres");
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new InvalidOperationException(
-                "Production mode requires ConnectionStrings:Postgres.");
+            var host = configuration["STRATAAI_DATABASE_HOST"];
+            var database = configuration["STRATAAI_DATABASE_NAME"];
+            var username = configuration["STRATAAI_DATABASE_USERNAME"];
+            var password = configuration["STRATAAI_DATABASE_PASSWORD"];
+            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(database) || string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
+                throw new InvalidOperationException("Production mode requires a database connection string or complete runtime credentials.");
+            var portText = configuration["STRATAAI_DATABASE_PORT"];
+            var port = 5432;
+            if (portText is not null && (!int.TryParse(portText, out port) || port is < 1 or > 65535))
+                throw new InvalidOperationException("Runtime database port is invalid.");
+            connectionString = new Npgsql.NpgsqlConnectionStringBuilder
+            { Host=host,Port=port,Database=database,Username=username,Password=password }.ConnectionString;
         }
 
         services.AddSingleton(new PostgresConnectionFactory(connectionString));

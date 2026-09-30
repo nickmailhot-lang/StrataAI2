@@ -132,6 +132,9 @@ jobs:
       - name: Verify global identity delivery capability and token integrity
         run: scripts/ci/test-identity-delivery-scope.sh
 
+      - name: Verify real restricted runtime logins and elevation rejection
+        run: scripts/ci/test-runtime-roles.sh
+
   source-quality-gate:
     name: source-quality-gate
     if: always()
@@ -205,6 +208,8 @@ jobs:
       POSTGRES_DB: strataai
       POSTGRES_USER: strataai
       POSTGRES_PASSWORD: strataai-ci-password
+      STRATAAI_API_DB_PASSWORD: ci-api-runtime-password
+      STRATAAI_WORKER_DB_PASSWORD: ci-worker-runtime-password
       STRATAAI_BUILD_REVISION: ${{ github.sha }}
       STRATAAI_BUILD_VERSION: 0.1.0-${{ github.run_number }}
       STRATAAI_WEB_IMAGE: strataai-web:${{ github.sha }}
@@ -235,6 +240,12 @@ jobs:
 
       - name: Apply release-database migrations
         run: scripts/apply-compose-migrations.sh
+
+      - name: Provision least-privilege runtime database roles
+        run: scripts/provision-compose-runtime-roles.sh
+
+      - name: Reject unsafe runtime database roles in exact images
+        run: scripts/ci/test-runtime-database-security.sh
 
       - name: Health, readiness and SPA deep-link smoke tests
         shell: bash
@@ -504,6 +515,7 @@ jobs:
           cp .env.release.example bundle/
           cp scripts/health-check.sh bundle/health-check.sh
           cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh
+          cp scripts/provision-compose-runtime-roles.sh bundle/provision-runtime-roles.sh
           cp -R db bundle/db
           cp docs/release/README.md bundle/README.md
 

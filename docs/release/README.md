@@ -25,11 +25,16 @@ the three image variables point at the image tags recorded in `build-metadata.js
 ```bash
 docker compose --env-file .env -f compose.release.yml up -d --wait
 COMPOSE_FILE=compose.release.yml ./apply-migrations.sh
+COMPOSE_FILE=compose.release.yml ./provision-runtime-roles.sh
 ./health-check.sh
 ```
 
 Migrations are applied from the versioned `db/migrations` directory included in the same
 release bundle. Review migration/rollback notes before production promotion.
+Use distinct API and Worker database passwords. The initialization account is
+reserved for migrations and role provisioning; application readiness fails until
+restricted runtime roles have been provisioned. See `db/provision-runtime-roles.sql`
+for the explicit grants required by this release.
 
 ## Stop
 

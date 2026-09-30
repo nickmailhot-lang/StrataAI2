@@ -133,7 +133,7 @@ public sealed class ApiHostTests
     {
         using var app = new ApiFactory("production");
         var failure = Assert.ThrowsAny<Exception>(() => app.CreateClient());
-        Assert.Contains("Production mode requires ConnectionStrings:Postgres.", failure.ToString());
+        Assert.Contains("Production mode requires a database connection string or complete runtime credentials.", failure.ToString());
     }
 
     private static async Task<string> RegisterAndLogin(HttpClient client)
