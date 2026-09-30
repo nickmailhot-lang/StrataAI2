@@ -386,12 +386,45 @@ public sealed class IdentityService(
             return IdentityOperation<UserProfile>.Failure("invalid_display_name");
         }
 
+        var nextAvatarUrl = avatarUrl is null ? existing.AvatarUrl : avatarUrl.Trim();
+        if (!string.IsNullOrEmpty(nextAvatarUrl) &&
+            (nextAvatarUrl.Length > 2048 ||
+             !Uri.TryCreate(nextAvatarUrl, UriKind.Absolute, out var avatarUri) ||
+             avatarUri.Scheme != Uri.UriSchemeHttps ||
+             !string.IsNullOrEmpty(avatarUri.UserInfo)))
+        {
+            return IdentityOperation<UserProfile>.Failure("invalid_avatar_url");
+        }
+
+        var nextLocale = (locale ?? existing.Locale).Trim();
+        var nextTimezone = (timezone ?? existing.Timezone).Trim();
+        if (string.IsNullOrWhiteSpace(nextLocale) || nextLocale.Length > 64)
+        {
+            return IdentityOperation<UserProfile>.Failure("invalid_locale");
+        }
+        try
+        {
+            if (System.Globalization.CultureInfo.GetCultureInfo(nextLocale).IsNeutralCulture)
+            {
+                return IdentityOperation<UserProfile>.Failure("invalid_locale");
+            }
+        }
+        catch (System.Globalization.CultureNotFoundException)
+        {
+            return IdentityOperation<UserProfile>.Failure("invalid_locale");
+        }
+        if (nextTimezone.Length > 128 ||
+            !TimeZoneInfo.TryFindSystemTimeZoneById(nextTimezone, out _))
+        {
+            return IdentityOperation<UserProfile>.Failure("invalid_timezone");
+        }
+
         var updated = await store.UpdateProfileAsync(
             userId,
             nextDisplayName,
-            avatarUrl ?? existing.AvatarUrl,
-            NormalizeLocale(locale ?? existing.Locale),
-            NormalizeTimezone(timezone ?? existing.Timezone),
+            string.IsNullOrEmpty(nextAvatarUrl) ? null : nextAvatarUrl,
+            nextLocale,
+            nextTimezone,
             clock.UtcNow,
             cancellationToken);
 

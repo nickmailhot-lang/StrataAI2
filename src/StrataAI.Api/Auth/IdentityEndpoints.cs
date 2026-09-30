@@ -292,6 +292,18 @@ public static class IdentityEndpoints
                 StatusCodes.Status400BadRequest,
                 errorCode,
                 "A valid display name is required."),
+            "invalid_avatar_url" => Problem(
+                StatusCodes.Status400BadRequest,
+                errorCode,
+                "Avatar must be an HTTPS image URL without credentials."),
+            "invalid_locale" => Problem(
+                StatusCodes.Status400BadRequest,
+                errorCode,
+                "A valid regional locale is required."),
+            "invalid_timezone" => Problem(
+                StatusCodes.Status400BadRequest,
+                errorCode,
+                "A valid timezone is required."),
             "email_unavailable" => Problem(
                 StatusCodes.Status409Conflict,
                 errorCode,
