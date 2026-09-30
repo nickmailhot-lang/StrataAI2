@@ -1,5 +1,22 @@
 import { expect, test } from '@playwright/test';
 
+test('PRD-02-TC-03/04: recovery confirmation is generic and invalid reset links recover safely', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByRole('link', { name: 'Forgot password?' }).click();
+  await page.getByLabel(/^Email/).fill(`unknown-${Date.now()}@example.test`);
+  await page.getByRole('button', { name: 'Request reset', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Request received.');
+  await page.goto('/reset-password#token=invalid-browser-token');
+  await expect(page).toHaveURL(/\/reset-password$/);
+  await page.getByLabel(/^New password/).fill('new-correct-horse-battery');
+  await page.getByLabel(/^Confirm new password/).fill('new-correct-horse-battery');
+  await page.getByRole('button', { name: 'Reset password', exact: true }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'The token is invalid or expired.' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reset password', exact: true })).toHaveCount(0);
+  await page.getByRole('link', { name: 'Request a new link' }).click();
+  await expect(page).toHaveURL(/\/forgot-password$/);
+});
+
 test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two-browser conflict recovery', async ({ page, context }) => {
   const email = `browser-${Date.now()}@example.test`;
   const password = 'browser-correct-horse-battery';

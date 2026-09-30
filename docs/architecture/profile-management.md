@@ -34,6 +34,17 @@ The CI-only Compose overlay enables disposable registration without verification
 after checking secure production defaults. It is excluded from release bundles.
 No schema change is needed: the existing user version column is used.
 
+Password recovery screens are available at `/forgot-password` and
+`/reset-password#token=...`. The request screen uses identical confirmation for
+known/unknown accounts and never displays the Demo API's returned token. The
+reset screen consumes a fragment token, immediately removes the fragment from
+history, checks password confirmation, handles expired/single-use tokens, and
+clears the token/passwords after success. Tokens in query strings are not accepted.
+The API enforces password policy and revokes prior sessions on successful reset.
+Component tests verify confirmation privacy, rate/network errors, token handling,
+success and rejection; container browser tests cover the request and invalid-link
+recovery. Demo API tests prove reset token reuse is rejected.
+
 This increment does not complete PRD-02. Production email delivery,
 realtime update/reconnect recovery and broader accessibility evidence remain
 to be implemented and verified before closure.

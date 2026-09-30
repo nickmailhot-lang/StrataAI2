@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 type AuthMode = 'login' | 'register';
 
@@ -88,6 +88,7 @@ export function AuthPage() {
               Sign in to council and property operations.
             </Typography>
           </Box>
+          <Button component={Link} to="/forgot-password">Forgot password?</Button>
 
           <Tabs
             value={mode}

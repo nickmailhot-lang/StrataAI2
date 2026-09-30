@@ -69,6 +69,11 @@ test -n "$reset_token"
 test "$reset_token" != "null"
 
 curl -H 'X-StrataAI-Request: 1' --fail --silent   -H 'Content-Type: application/json'   -d "$(jq -nc --arg token "$reset_token"     '{token:$token,newPassword:"new-correct-horse-battery-staple"}')"   "$BASE_URL/auth/password/reset" >/dev/null
+replay_status="$(curl -H 'X-StrataAI-Request: 1' --silent --output /tmp/reset-replay.json --write-out '%{http_code}' \
+  -H 'Content-Type: application/json' -d "$(jq -nc --arg token "$reset_token" '{token:$token,newPassword:"another-correct-horse-battery"}')" \
+  "$BASE_URL/auth/password/reset")"
+test "$replay_status" = '400'
+jq -e '.code == "invalid_or_expired_token"' /tmp/reset-replay.json >/dev/null
 
 revoked_status="$(
   curl -H 'X-StrataAI-Request: 1' --silent --output /dev/null --write-out '%{http_code}'     -b "$COOKIE_JAR"     "$BASE_URL/me"
