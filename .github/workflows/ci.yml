@@ -313,6 +313,9 @@ jobs:
           docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api
           scripts/ci/test-postgres-profile.sh http://localhost:8080
 
+      - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
+        run: scripts/ci/test-board-discovery.sh
+
       - name: Prepare isolated identity mail transport and ephemeral signing keys
         run: |
           set -euo pipefail

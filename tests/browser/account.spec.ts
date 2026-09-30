@@ -29,7 +29,7 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await page.getByLabel(/^Password/).fill(password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(/\/app\/demo\/boards\/demo-board$/);
+  await expect(page).toHaveURL(/\/app$/);
   await page.getByRole('link', { name: 'Open profile' }).click();
   await expect(page.getByLabel(/^Display name/)).toHaveValue('Browser Council');
   const second = await context.newPage();

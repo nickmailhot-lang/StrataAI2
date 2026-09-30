@@ -106,11 +106,6 @@ internal sealed class InMemoryOrganizationStore : IOrganizationStore
         }
     }
 
-    public Task<IReadOnlyList<OrganizationBoardSummary>> ListBoardsAsync(
-        Guid organizationId,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<OrganizationBoardSummary>>([]);
-
     public Task AddOrRestoreMemberAsync(
         Guid organizationId,
         Guid userId,

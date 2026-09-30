@@ -1,9 +1,11 @@
 using StrataAI.Application.Common;
+using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Application.Organizations;
 
 public sealed class OrganizationService(
     IOrganizationStore store,
+    IWorkManagementStore workStore,
     IClock clock) : IOrganizationService
 {
     public async Task<OrganizationOperation<OrganizationSummary>> CreateAsync(
@@ -117,8 +119,10 @@ public sealed class OrganizationService(
                 "organization_not_found");
         }
 
-        var boards = await store.ListBoardsAsync(
+        var boards = await workStore.ListVisibleBoardsAsync(
             organizationId,
+            actorUserId,
+            membership.Role is OrganizationRole.Owner or OrganizationRole.Admin,
             cancellationToken);
 
         return OrganizationOperation<IReadOnlyList<OrganizationBoardSummary>>.Success(

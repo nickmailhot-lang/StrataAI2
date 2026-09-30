@@ -28,10 +28,6 @@ public interface IOrganizationStore
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<OrganizationBoardSummary>> ListBoardsAsync(
-        Guid organizationId,
-        CancellationToken cancellationToken = default);
-
     Task AddOrRestoreMemberAsync(
         Guid organizationId,
         Guid userId,

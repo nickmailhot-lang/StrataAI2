@@ -18,27 +18,34 @@ test("PRD-01/04/07/08/09: persisted board creation, deep links, conflict recover
     data: { email, password },
   });
   expect(login.ok()).toBeTruthy();
-  const organizationResponse = await context.request.post("/organizations", {
-    headers,
-    data: { name: "Browser organization", description: "Board workflow" },
-  });
-  expect(organizationResponse.ok()).toBeTruthy();
-  const organizationId = (await organizationResponse.json()).organization.id;
-  const boardResponse = await context.request.post("/boards", {
-    headers,
-    data: {
-      organizationId,
-      name: "Browser board",
-      description: "Persisted description",
-      visibility: "PRIVATE",
-      backgroundType: "COLOR",
-      backgroundValue: "#0f4c81",
-    },
-  });
-  expect(boardResponse.ok()).toBeTruthy();
-  const board = await boardResponse.json();
-  const path = `/app/${organizationId}/boards/${board.id}`;
-  await page.goto(path);
+  await page.goto("/app");
+  await expect(
+    page.getByText("You have no organizations yet. Create one to begin."),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Create organization", exact: true })
+    .click();
+  await page.getByLabel("Name", { exact: false }).fill("Browser organization");
+  await page.getByLabel("Description", { exact: true }).fill("Board workflow");
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Browser organization", exact: true }),
+  ).toBeVisible();
+  const organizationId = new URL(page.url()).pathname.split("/")[2];
+  await page.getByRole("button", { name: "Create board", exact: true }).click();
+  await page.getByLabel("Name", { exact: false }).fill("Browser board");
+  await page
+    .getByLabel("Description", { exact: true })
+    .fill("Persisted description");
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Browser board", exact: true }),
+  ).toBeVisible();
+  const path = new URL(page.url()).pathname;
+  const boardId = path.split("/")[4];
+  const snapshot = await context.request.get(`/boards/${boardId}`);
+  expect(snapshot.ok()).toBeTruthy();
+  const board = (await snapshot.json()).board;
   await expect(
     page.getByRole("heading", { name: "Browser board", exact: true }),
   ).toBeVisible();

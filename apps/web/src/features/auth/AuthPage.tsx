@@ -76,7 +76,7 @@ export function AuthPage() {
         return;
       }
 
-      navigate('/app/demo/boards/demo-board');
+      navigate('/app');
     } catch {
       setError('Unable to contact StrataAI2.');
     } finally {

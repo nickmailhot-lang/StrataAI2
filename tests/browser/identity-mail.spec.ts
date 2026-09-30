@@ -36,7 +36,7 @@ test('PRD-02-TC-01/07/11/12: mobile verification and recovery consume Worker-del
   await page.getByLabel(/^Email/).fill(email);
   await page.getByLabel(/^Password/).fill(password);
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/app\/demo\/boards\/demo-board$/);
+  await expect(page).toHaveURL(/\/app$/);
   await page.goto('/forgot-password');
   await page.getByLabel(/^Email/).fill(email);
   await page.keyboard.press('Enter');
@@ -53,5 +53,5 @@ test('PRD-02-TC-01/07/11/12: mobile verification and recovery consume Worker-del
   await page.getByLabel(/^Email/).fill(email);
   await page.getByLabel(/^Password/).fill('mobile-new-correct-horse');
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/app\/demo\/boards\/demo-board$/);
+  await expect(page).toHaveURL(/\/app$/);
 });

@@ -224,41 +224,6 @@ internal sealed class PostgresOrganizationStore(
         return result;
     }
 
-    public async Task<IReadOnlyList<OrganizationBoardSummary>> ListBoardsAsync(
-        Guid organizationId,
-        CancellationToken cancellationToken = default)
-    {
-        await using var session =
-            await connectionFactory.OpenTenantSessionAsync(
-                organizationId,
-                cancellationToken);
-        await using var command = new NpgsqlCommand(
-            """
-            SELECT id, name, version
-            FROM boards
-            WHERE tenant_id = @tenant_id
-            ORDER BY name, id;
-            """,
-            session.Connection,
-            session.Transaction);
-        command.Parameters.AddWithValue("tenant_id", organizationId);
-
-        var result = new List<OrganizationBoardSummary>();
-        await using var reader =
-            await command.ExecuteReaderAsync(cancellationToken);
-
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            result.Add(
-                new OrganizationBoardSummary(
-                    reader.GetGuid(0),
-                    reader.GetString(1),
-                    reader.GetInt64(2)));
-        }
-
-        return result;
-    }
-
     public async Task AddOrRestoreMemberAsync(
         Guid organizationId,
         Guid userId,

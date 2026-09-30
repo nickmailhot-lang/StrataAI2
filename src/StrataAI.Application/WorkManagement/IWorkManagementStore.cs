@@ -2,6 +2,13 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementStore
 {
+    // Caller must first verify active organization membership.
+    Task<IReadOnlyList<StrataAI.Application.Organizations.OrganizationBoardSummary>> ListVisibleBoardsAsync(
+        Guid organizationId,
+        Guid userId,
+        bool organizationAdministrator,
+        CancellationToken cancellationToken = default);
+
     Task<BoardRecord> CreateBoardAsync(
         Guid organizationId,
         Guid actorUserId,

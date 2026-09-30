@@ -1,4 +1,5 @@
 using StrataAI.Application.WorkManagement;
+using StrataAI.Application.Organizations;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
@@ -10,6 +11,25 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
     private readonly Dictionary<Guid, CardRecord> _cards = [];
     private readonly Dictionary<(Guid BoardId, Guid UserId), BoardMemberRecord> _members = [];
     private readonly HashSet<(Guid BoardId, Guid UserId)> _starred = [];
+
+    public Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsAsync(
+        Guid organizationId,
+        Guid userId,
+        bool organizationAdministrator,
+        CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            return Task.FromResult<IReadOnlyList<OrganizationBoardSummary>>(
+                _boards.Values.Where(board => board.OrganizationId == organizationId &&
+                    board.LifecycleState != BoardLifecycleState.Deleted &&
+                    (board.Visibility != BoardVisibility.Private || organizationAdministrator ||
+                        (_members.TryGetValue((board.Id, userId), out var member) && member.Active)))
+                    .OrderBy(board => board.Name).ThenBy(board => board.Id)
+                    .Select(board => new OrganizationBoardSummary(board.Id, board.Name, board.Version))
+                    .ToArray());
+        }
+    }
 
     public Task<BoardRecord> CreateBoardAsync(
         Guid organizationId,

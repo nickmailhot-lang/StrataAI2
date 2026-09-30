@@ -1,10 +1,10 @@
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
-import MeetingRoomOutlinedIcon from '@mui/icons-material/MeetingRoomOutlined';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined';
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import MeetingRoomOutlinedIcon from "@mui/icons-material/MeetingRoomOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import ViewKanbanOutlinedIcon from "@mui/icons-material/ViewKanbanOutlined";
 import {
   AppBar,
   Box,
@@ -18,31 +18,40 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-} from '@mui/material';
-import type { ReactNode } from 'react';
-import { Link, Outlet, useParams } from 'react-router-dom';
+} from "@mui/material";
+import type { ReactNode } from "react";
+import { Link, Outlet, useParams } from "react-router-dom";
 
 const drawerWidth = 248;
 
 type NavigationItem = {
   label: string;
   icon: ReactNode;
+  destination?: "home" | "organization";
 };
 
 const navigation: NavigationItem[] = [
-  { label: 'Dashboard', icon: <DashboardOutlinedIcon /> },
-  { label: 'Board', icon: <ViewKanbanOutlinedIcon /> },
-  { label: 'Meetings', icon: <MeetingRoomOutlinedIcon /> },
-  { label: 'Correspondence', icon: <EmailOutlinedIcon /> },
-  { label: 'Documents', icon: <DescriptionOutlinedIcon /> },
-  { label: 'Owners & Units', icon: <GroupsOutlinedIcon /> },
+  {
+    label: "Organizations",
+    icon: <DashboardOutlinedIcon />,
+    destination: "home",
+  },
+  {
+    label: "Boards",
+    icon: <ViewKanbanOutlinedIcon />,
+    destination: "organization",
+  },
+  { label: "Meetings", icon: <MeetingRoomOutlinedIcon /> },
+  { label: "Correspondence", icon: <EmailOutlinedIcon /> },
+  { label: "Documents", icon: <DescriptionOutlinedIcon /> },
+  { label: "Owners & Units", icon: <GroupsOutlinedIcon /> },
 ];
 
 export function InternalAppShell() {
   const { organizationId } = useParams();
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <AppBar
         position="fixed"
         elevation={0}
@@ -53,7 +62,7 @@ export function InternalAppShell() {
             StrataAI2
           </Typography>
           <Typography variant="body2" sx={{ mr: 1 }}>
-            Organization: {organizationId ?? 'Unknown'}
+            Organization: {organizationId ?? "Unknown"}
           </Typography>
           <Tooltip title="Profile">
             <IconButton
@@ -73,16 +82,23 @@ export function InternalAppShell() {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
+          "& .MuiDrawer-paper": {
             width: drawerWidth,
-            boxSizing: 'border-box',
+            boxSizing: "border-box",
           },
         }}
       >
         <Toolbar />
         <List aria-label="Internal application navigation">
           {navigation.map((item) => (
-            <ListItemButton key={item.label}>
+            <ListItemButton
+              key={item.label}
+              component={Link}
+              to={
+                item.destination === "home" ? "/app" : `/app/${organizationId}`
+              }
+              disabled={!item.destination}
+            >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.label} />
             </ListItemButton>
@@ -96,7 +112,7 @@ export function InternalAppShell() {
         sx={{
           flexGrow: 1,
           minWidth: 0,
-          bgcolor: 'background.default',
+          bgcolor: "background.default",
           p: { xs: 2, md: 3 },
         }}
       >

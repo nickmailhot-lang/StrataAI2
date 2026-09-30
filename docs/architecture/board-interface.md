@@ -30,8 +30,7 @@ reloads, two-browser conflicts, direct card URLs, back/close navigation, wrong
 organization rejection and anonymous public read-only access. The normal CI
 browser stage runs this test against the already-built release image archives.
 
-This increment does not complete those tickets. Organization/board discovery and
-creation UI, list/card movement, lifecycle controls, copy, Markdown, attachments,
-realtime updates and the remaining ticket acceptance criteria still require
-implementation. In particular the old login destination and placeholder shell
-navigation still need replacement by organization discovery.
+This increment does not complete those tickets. List/card movement, lifecycle
+controls, copy, Markdown, attachments, realtime updates and the remaining ticket
+acceptance criteria still require implementation. Organization/board discovery
+and creation are documented in `organization-discovery.md`.

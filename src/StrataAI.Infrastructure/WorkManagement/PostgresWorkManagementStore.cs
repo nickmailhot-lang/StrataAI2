@@ -1,5 +1,6 @@
 using Npgsql;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Application.Organizations;
 using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.WorkManagement;
@@ -7,6 +8,35 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed class PostgresWorkManagementStore(
     PostgresConnectionFactory connectionFactory) : IWorkManagementStore
 {
+    public async Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsAsync(
+        Guid organizationId,
+        Guid userId,
+        bool organizationAdministrator,
+        CancellationToken cancellationToken = default)
+    {
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT b.id, b.name, b.version
+            FROM boards b
+            WHERE b.tenant_id = @tenant_id
+              AND b.lifecycle_state <> 'DELETED'
+              AND (b.visibility <> 'PRIVATE' OR @organization_admin OR EXISTS (
+                  SELECT 1 FROM board_members m
+                  WHERE m.tenant_id = b.tenant_id AND m.board_id = b.id
+                    AND m.user_id = @user_id AND m.status = 'ACTIVE'))
+            ORDER BY b.name, b.id;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant_id", organizationId);
+        command.Parameters.AddWithValue("user_id", userId);
+        command.Parameters.AddWithValue("organization_admin", organizationAdministrator);
+        var result = new List<OrganizationBoardSummary>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+            result.Add(new OrganizationBoardSummary(reader.GetGuid(0), reader.GetString(1), reader.GetInt64(2)));
+        return result;
+    }
+
     public async Task<BoardRecord> CreateBoardAsync(
         Guid organizationId,
         Guid actorUserId,

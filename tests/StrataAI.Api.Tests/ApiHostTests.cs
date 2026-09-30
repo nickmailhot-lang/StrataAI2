@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using StrataAI.Application.Organizations;
+using StrataAI.Application.WorkManagement;
 using Xunit;
 
 namespace StrataAI.Api.Tests;
@@ -13,6 +16,46 @@ namespace StrataAI.Api.Tests;
 // PRD-24-TC-04: real endpoint binding, middleware and session authorization.
 public sealed class ApiHostTests
 {
+    [Theory]
+    [InlineData("PRIVATE", false)]
+    [InlineData("ORGANIZATION", true)]
+    [InlineData("PUBLIC", true)]
+    public async Task Organization_board_discovery_obeys_board_visibility_and_membership(string visibility, bool initiallyVisible)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory();
+        using var owner = app.CreateClient();
+        using var member = app.CreateClient();
+        using var outsider = app.CreateClient();
+        await RegisterAndLogin(owner);
+        await RegisterAndLogin(member);
+        await RegisterAndLogin(outsider);
+        var memberProfile = await member.GetFromJsonAsync<JsonElement>("/me", cancellationToken);
+        var userId = memberProfile.GetProperty("id").GetGuid();
+        using var organizationResponse = await Mutate(owner, HttpMethod.Post, "/organizations/", new { name = "Discovery organization" });
+        var organization = await organizationResponse.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
+        var organizationId = organization.GetProperty("organization").GetProperty("id").GetGuid();
+        await app.Services.GetRequiredService<IOrganizationStore>().AddOrRestoreMemberAsync(organizationId, userId, OrganizationRole.Member, DateTimeOffset.UtcNow, cancellationToken);
+        using var boardResponse = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId, name = "Confidential discovery name", visibility });
+        var board = await boardResponse.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
+        var boardId = board.GetProperty("id").GetGuid();
+        var route = $"/organizations/{organizationId}/boards";
+        var ownerBoards = await owner.GetFromJsonAsync<JsonElement>(route, cancellationToken);
+        Assert.Single(ownerBoards.EnumerateArray());
+        var memberBoards = await member.GetFromJsonAsync<JsonElement>(route, cancellationToken);
+        Assert.Equal(initiallyVisible ? 1 : 0, memberBoards.GetArrayLength());
+        using var denied = await outsider.GetAsync(route, cancellationToken);
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        Assert.DoesNotContain("Confidential discovery name", await denied.Content.ReadAsStringAsync(cancellationToken));
+        var workStore = app.Services.GetRequiredService<IWorkManagementStore>();
+        await workStore.UpsertBoardMemberAsync(boardId, userId, BoardRole.Member, DateTimeOffset.UtcNow, cancellationToken);
+        Assert.Single((await member.GetFromJsonAsync<JsonElement>(route, cancellationToken)).EnumerateArray());
+        await workStore.RemoveBoardMemberAsync(boardId, userId, DateTimeOffset.UtcNow, cancellationToken);
+        Assert.Equal(initiallyVisible ? 1 : 0, (await member.GetFromJsonAsync<JsonElement>(route, cancellationToken)).GetArrayLength());
+        await workStore.SetBoardLifecycleAsync(boardId, BoardLifecycleState.Active, BoardLifecycleState.Deleted, 1, DateTimeOffset.UtcNow, cancellationToken);
+        Assert.Empty((await owner.GetFromJsonAsync<JsonElement>(route, cancellationToken)).EnumerateArray());
+    }
+
     [Fact]
     public async Task Host_isolated_demo_health_and_build_identity_are_explicit()
     {
