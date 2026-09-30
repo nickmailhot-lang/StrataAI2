@@ -13,6 +13,11 @@ using StrataAI.Infrastructure.Runtime;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
+builder.Services
+    .AddAuthentication(SessionAuthenticationDefaults.Scheme)
+    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, SessionAuthenticationHandler>(
+        SessionAuthenticationDefaults.Scheme,
+        _ => { });
 builder.Services.AddAuthorization();
 
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration);
@@ -23,7 +28,7 @@ builder.Services.AddStrataAiOnboarding(runtime);
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
-app.UseMiddleware<SessionAuthenticationMiddleware>();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/healthz", () => Results.Ok(new

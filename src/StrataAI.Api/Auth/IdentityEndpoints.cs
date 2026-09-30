@@ -150,7 +150,7 @@ public static class IdentityEndpoints
                     }
 
                     context.Request.Cookies.TryGetValue(
-                        SessionAuthenticationMiddleware.CookieName,
+                        SessionAuthenticationDefaults.CookieName,
                         out var rawToken);
 
                     await identityService.LogoutAsync(
@@ -160,7 +160,7 @@ public static class IdentityEndpoints
                         cancellationToken);
 
                     context.Response.Cookies.Delete(
-                        SessionAuthenticationMiddleware.CookieName);
+                        SessionAuthenticationDefaults.CookieName);
 
                     return Results.NoContent();
                 })
@@ -173,7 +173,7 @@ public static class IdentityEndpoints
             (HttpContext context) =>
             {
                 return context.Items.TryGetValue(
-                        SessionAuthenticationMiddleware.ProfileItemKey,
+                        SessionAuthenticationDefaults.ProfileItemKey,
                         out var profile) &&
                     profile is UserProfile user
                         ? Results.Ok(user)
@@ -232,7 +232,7 @@ public static class IdentityEndpoints
                 }
 
                 context.Response.Cookies.Delete(
-                    SessionAuthenticationMiddleware.CookieName);
+                    SessionAuthenticationDefaults.CookieName);
 
                 return Results.NoContent();
             });
@@ -260,7 +260,7 @@ public static class IdentityEndpoints
         bool secure)
     {
         context.Response.Cookies.Append(
-            SessionAuthenticationMiddleware.CookieName,
+            SessionAuthenticationDefaults.CookieName,
             rawToken,
             new CookieOptions
             {
