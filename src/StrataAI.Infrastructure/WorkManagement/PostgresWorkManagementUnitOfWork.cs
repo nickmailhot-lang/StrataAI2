@@ -19,9 +19,9 @@ internal sealed class PostgresWorkManagementUnitOfWork(
         {
             return await connections.ExecuteTenantCommandAsync(organizationId, async () =>
             {
-                if (command.Key is null) return await operation();
                 // Never disclose a previously authorized response to a revoked actor.
                 if (!await authorizeReplay(default)) return WorkOperation<T>.Failure(command.ScopeFailureCode);
+                if (command.Key is null) return await operation();
                 await using var session = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);
                 NpgsqlCommand Query(string sql)
                 {

@@ -2,6 +2,9 @@ namespace StrataAI.Application.Organizations;
 
 public interface IOrganizationStore
 {
+    Task<OrganizationRecord?> FindOrganizationAsync(
+        Guid organizationId, CancellationToken cancellationToken = default);
+
     Task<OrganizationRecord> CreateOrganizationAsync(
         Guid actorUserId,
         Guid organizationId,

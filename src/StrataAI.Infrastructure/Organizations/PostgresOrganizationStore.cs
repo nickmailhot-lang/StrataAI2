@@ -417,7 +417,7 @@ internal sealed class PostgresOrganizationStore(
         await session.CommitAsync(cancellationToken);
     }
 
-    private async Task<OrganizationRecord?> FindOrganizationAsync(
+    public async Task<OrganizationRecord?> FindOrganizationAsync(
         Guid organizationId,
         CancellationToken cancellationToken)
     {

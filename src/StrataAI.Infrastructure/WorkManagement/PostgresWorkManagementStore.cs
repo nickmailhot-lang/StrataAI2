@@ -8,6 +8,34 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed class PostgresWorkManagementStore(
     PostgresConnectionFactory connectionFactory) : IWorkManagementStore
 {
+    public async Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,
+        Guid? boardId, CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId))
+            throw new InvalidOperationException("Write authorization requires the owning command transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        async Task<object?> Lock(string sql)
+        {
+            await using var command = new NpgsqlCommand(sql, session.Connection, session.Transaction);
+            command.Parameters.AddWithValue("tenant", organizationId);
+            command.Parameters.AddWithValue("actor", actorId);
+            if (boardId is not null) command.Parameters.AddWithValue("board", boardId.Value);
+            return await command.ExecuteScalarAsync(cancellationToken);
+        }
+        // SHARE (rather than KEY SHARE) prevents status/role updates too. The
+        // board gate serializes its commands before any child or event-stream lock.
+        if (await Lock("SELECT id FROM organizations WHERE id=@tenant AND status='ACTIVE' FOR SHARE;") is null)
+            return false;
+        await Lock("SELECT id FROM organization_members WHERE tenant_id=@tenant AND user_id=@actor FOR SHARE;");
+        if (boardId is not null)
+        {
+            if (await Lock("SELECT id FROM boards WHERE tenant_id=@tenant AND id=@board FOR UPDATE;") is null)
+                return false;
+            await Lock("SELECT user_id FROM board_members WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor FOR SHARE;");
+        }
+        return true;
+    }
+
     private static async Task<string> AllocateAppendRankAsync(
         NpgsqlConnection connection, NpgsqlTransaction transaction,
         Guid tenantId, Guid boardId, Guid? listId, CancellationToken cancellationToken)

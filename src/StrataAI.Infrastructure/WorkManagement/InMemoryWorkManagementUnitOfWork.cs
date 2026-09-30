@@ -14,11 +14,11 @@ internal sealed class InMemoryWorkManagementUnitOfWork(IClock clock) : IWorkMana
         Func<T?, Task<bool>> authorizeReplay, Func<Task<WorkOperation<T>>> operation,
         CancellationToken cancellationToken = default)
     {
-        if (command.Key is null) return await operation();
         await _gate.WaitAsync(cancellationToken);
         try
         {
             if (!await authorizeReplay(default)) return WorkOperation<T>.Failure(command.ScopeFailureCode);
+            if (command.Key is null) return await operation();
             var key = (organizationId, command.ActorId, command.Key.Value);
             if (_results.TryGetValue(key, out var previous))
             {

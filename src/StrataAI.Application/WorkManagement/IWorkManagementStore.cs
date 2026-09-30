@@ -2,6 +2,11 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementStore
 {
+    // Production holds these locks in the owning command transaction. Re-read
+    // authorization and lifecycle after this method, before changing any entity.
+    Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,
+        Guid? boardId, CancellationToken cancellationToken = default);
+
     // Caller must first verify active organization membership.
     Task<IReadOnlyList<StrataAI.Application.Organizations.OrganizationBoardSummary>> ListVisibleBoardsAsync(
         Guid organizationId,

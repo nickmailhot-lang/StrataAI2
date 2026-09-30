@@ -12,6 +12,16 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
     private readonly Dictionary<(Guid BoardId, Guid UserId), BoardMemberRecord> _members = [];
     private readonly HashSet<(Guid BoardId, Guid UserId)> _starred = [];
 
+    public Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,
+        Guid? boardId, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            return Task.FromResult(boardId is null ||
+                _boards.TryGetValue(boardId.Value, out var board) && board.OrganizationId == organizationId);
+        }
+    }
+
     public Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsAsync(
         Guid organizationId,
         Guid userId,

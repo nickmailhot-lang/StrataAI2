@@ -537,7 +537,8 @@ public sealed class WorkManagementService(
             actorUserId,
             cancellationToken);
 
-        if (resolved is null || !resolved.Value.Access.CanAdminister)
+        if (resolved is null || !resolved.Value.Access.CanAdminister ||
+            resolved.Value.Board.LifecycleState != BoardLifecycleState.Active)
         {
             return WorkOperation<BoardListRecord>.Failure("list_not_found");
         }
@@ -641,6 +642,10 @@ public sealed class WorkManagementService(
             return WorkOperation<CardRecord>.Failure("card_not_found");
         }
 
+        var parent = await store.FindListAsync(card.ListId, cancellationToken);
+        if (parent is null || parent.LifecycleState != WorkItemLifecycleState.Active)
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+
         var resolved = await ResolveAccessAsync(
             card.BoardId,
             actorUserId,
@@ -686,11 +691,13 @@ public sealed class WorkManagementService(
         CancellationToken cancellationToken = default)
     {
         var card = await store.FindCardAsync(cardId, cancellationToken);
+        var source = card is null ? null : await store.FindListAsync(card.ListId, cancellationToken);
         var destination = await store.FindListAsync(
             destinationListId,
             cancellationToken);
 
         if (card is null ||
+            source is null || source.LifecycleState != WorkItemLifecycleState.Active ||
             destination is null ||
             destination.BoardId != card.BoardId ||
             card.LifecycleState != WorkItemLifecycleState.Active ||
@@ -744,12 +751,18 @@ public sealed class WorkManagementService(
             return WorkOperation<CardRecord>.Failure("card_not_found");
         }
 
+        var parent = await store.FindListAsync(card.ListId, cancellationToken);
+        if (parent is null || parent.LifecycleState == WorkItemLifecycleState.Deleted ||
+            nextState != WorkItemLifecycleState.Deleted && parent.LifecycleState != WorkItemLifecycleState.Active)
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+
         var resolved = await ResolveAccessAsync(
             card.BoardId,
             actorUserId,
             cancellationToken);
 
-        if (resolved is null || !resolved.Value.Access.CanEdit)
+        if (resolved is null || !resolved.Value.Access.CanEdit ||
+            nextState == WorkItemLifecycleState.Deleted && !resolved.Value.Access.CanAdminister)
         {
             return WorkOperation<CardRecord>.Failure("card_not_found");
         }
@@ -793,6 +806,13 @@ public sealed class WorkManagementService(
             return null;
         }
 
+        var organization = await organizationStore.FindOrganizationAsync(board.OrganizationId, cancellationToken);
+        if (organization is null || organization.Status == OrganizationStatus.Deleting)
+        {
+            return null;
+        }
+        var organizationActive = organization.Status == OrganizationStatus.Active;
+
         OrganizationMembership? organizationMembership = null;
         BoardMemberRecord? boardMember = null;
 
@@ -831,10 +851,11 @@ public sealed class WorkManagementService(
         };
 
         var canEdit =
+            organizationActive &&
             active &&
             (orgAdmin || explicitBoardMember);
 
-        var canAdminister = orgAdmin || boardAdmin;
+        var canAdminister = organizationActive && (orgAdmin || boardAdmin);
 
         return (
             board,

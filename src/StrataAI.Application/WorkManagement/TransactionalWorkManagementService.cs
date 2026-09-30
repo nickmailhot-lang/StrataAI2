@@ -175,7 +175,7 @@ public sealed class TransactionalWorkManagementService(
         long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        CardCommand(cardId, actorUserId, "edit", WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetCardLifecycleAsync", cardId, new { nextState, expectedVersion }, "card_not_found"), () => inner.SetCardLifecycleAsync(cardId, actorUserId, nextState, expectedVersion, correlationId, cancellationToken), cancellationToken);
+        CardCommand(cardId, actorUserId, nextState == WorkItemLifecycleState.Deleted ? "admin" : "edit", WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetCardLifecycleAsync", cardId, new { nextState, expectedVersion }, "card_not_found"), () => inner.SetCardLifecycleAsync(cardId, actorUserId, nextState, expectedVersion, correlationId, cancellationToken), cancellationToken);
 
     private async Task<WorkOperation<T>> BoardCommand<T>(Guid id, Guid actorId, string permission, WorkCommand command, Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken)
     {
@@ -199,9 +199,17 @@ public sealed class TransactionalWorkManagementService(
     }
 
     private async Task<bool> AuthorizeOrganization(Guid organizationId, Guid actorId, CancellationToken cancellationToken) =>
+        await store.AcquireCommandScopeAsync(organizationId, actorId, null, cancellationToken) &&
+        await organizations.FindOrganizationAsync(organizationId, cancellationToken) is { Status: OrganizationStatus.Active } &&
         await organizations.FindMembershipAsync(organizationId, actorId, cancellationToken) is { Active: true };
 
-    private Task<bool> AuthorizeBoard(Guid boardId, Guid actorId, string permission, CancellationToken cancellationToken) =>
-        inner.CheckCommandAccessAsync(boardId, actorId, permission, cancellationToken);
+    private async Task<bool> AuthorizeBoard(Guid boardId, Guid actorId, string permission, CancellationToken cancellationToken)
+    {
+        var board = await store.FindBoardAsync(boardId, cancellationToken);
+        return board is not null &&
+            await store.AcquireCommandScopeAsync(board.OrganizationId, actorId, boardId, cancellationToken) &&
+            await organizations.FindOrganizationAsync(board.OrganizationId, cancellationToken) is { Status: OrganizationStatus.Active } &&
+            await inner.CheckCommandAccessAsync(boardId, actorId, permission, cancellationToken);
+    }
 
 }

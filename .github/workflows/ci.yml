@@ -335,6 +335,9 @@ jobs:
       - name: Check concurrent and large-board rank allocation
         run: scripts/ci/test-work-ranks.sh
 
+      - name: Check write authorization and lifecycle during live database lock waits
+        run: scripts/ci/test-work-command-scopes.sh
+
       - name: Prepare isolated identity mail transport and ephemeral signing keys
         run: |
           set -euo pipefail

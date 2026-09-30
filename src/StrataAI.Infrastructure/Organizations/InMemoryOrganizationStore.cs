@@ -8,6 +8,16 @@ internal sealed class InMemoryOrganizationStore : IOrganizationStore
     private readonly Dictionary<Guid, OrganizationRecord> _organizations = [];
     private readonly Dictionary<(Guid OrganizationId, Guid UserId), OrganizationMembership> _members = [];
 
+    public Task<OrganizationRecord?> FindOrganizationAsync(
+        Guid organizationId, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            _organizations.TryGetValue(organizationId, out var organization);
+            return Task.FromResult(organization);
+        }
+    }
+
     public Task<OrganizationRecord> CreateOrganizationAsync(
         Guid actorUserId,
         Guid organizationId,
