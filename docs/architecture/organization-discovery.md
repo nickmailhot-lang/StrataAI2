@@ -43,6 +43,14 @@ from release provisioning; it never weakens runtime roles or the authorization
 configuration shipped to users. Build-once CI runs the browser and PostgreSQL
 checks against the same image archives used for the release bundle.
 
+Board grants currently require active organization membership when assigned;
+the same requirement now applies when using stored board grants. Removed or
+suspended organization members cannot retain board edit/admin/move rights through
+an old board role. Public active boards retain anonymous read-only access. The
+tests attempt protected reads and writes with persisted board-admin rows after
+organization revocation. Future board-only guest invitations require their own
+explicit eligibility contract rather than bypassing revocation of internal members.
+
 These features remain partial ticket progress. Invitations and member management
 UI, organization settings/lifecycle, board settings/lifecycle/copy, pagination and
 the remaining PRD acceptance criteria are still outstanding. Live permission

@@ -52,6 +52,22 @@ public sealed class ApiHostTests
         Assert.Single((await member.GetFromJsonAsync<JsonElement>(route, cancellationToken)).EnumerateArray());
         await workStore.RemoveBoardMemberAsync(boardId, userId, DateTimeOffset.UtcNow, cancellationToken);
         Assert.Equal(initiallyVisible ? 1 : 0, (await member.GetFromJsonAsync<JsonElement>(route, cancellationToken)).GetArrayLength());
+        await workStore.UpsertBoardMemberAsync(boardId, userId, BoardRole.Admin, DateTimeOffset.UtcNow, cancellationToken);
+        await app.Services.GetRequiredService<IOrganizationStore>().RemoveMemberAsync(organizationId, userId, DateTimeOffset.UtcNow, cancellationToken);
+        using var revokedList = await member.GetAsync(route, cancellationToken);
+        Assert.Equal(HttpStatusCode.NotFound, revokedList.StatusCode);
+        using var revokedRead = await member.GetAsync($"/boards/{boardId}", cancellationToken);
+        Assert.Equal(visibility == "PUBLIC" ? HttpStatusCode.OK : HttpStatusCode.NotFound, revokedRead.StatusCode);
+        if (visibility == "PUBLIC")
+        {
+            var snapshot = await revokedRead.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
+            Assert.False(snapshot.GetProperty("access").GetProperty("canEdit").GetBoolean());
+            Assert.False(snapshot.GetProperty("access").GetProperty("canAdminister").GetBoolean());
+        }
+        using var revokedWrite = await Mutate(member, HttpMethod.Post, $"/boards/{boardId}/lists", new { name = "Revoked contributor write" });
+        Assert.Equal(HttpStatusCode.NotFound, revokedWrite.StatusCode);
+        var unchanged = await owner.GetFromJsonAsync<JsonElement>($"/boards/{boardId}", cancellationToken);
+        Assert.Empty(unchanged.GetProperty("lists").EnumerateArray());
         await workStore.SetBoardLifecycleAsync(boardId, BoardLifecycleState.Active, BoardLifecycleState.Deleted, 1, DateTimeOffset.UtcNow, cancellationToken);
         Assert.Empty((await owner.GetFromJsonAsync<JsonElement>(route, cancellationToken)).EnumerateArray());
     }

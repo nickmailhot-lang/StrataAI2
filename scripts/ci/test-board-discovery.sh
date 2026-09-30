@@ -40,7 +40,18 @@ list member | jq -e 'length == 3' >/dev/null
 admin "UPDATE boards SET lifecycle_state='DELETED' WHERE id='$private_id';"
 list owner | jq -e 'length == 2' >/dev/null
 list member | jq -e 'length == 2' >/dev/null
-admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$organization_id' AND user_id='$member_id';"
+organization_board_id="$(jq -r '.id' "$scratch/ORGANIZATION.json")"
+public_board_id="$(jq -r '.id' "$scratch/PUBLIC.json")"
+for id in "$organization_board_id" "$public_board_id"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
+admin "INSERT INTO board_members(id,tenant_id,board_id,user_id,role,created_at,updated_at) VALUES (gen_random_uuid(),'$organization_id','$organization_board_id','$member_id','ADMIN',now(),now()), (gen_random_uuid(),'$organization_id','$public_board_id','$member_id','ADMIN',now(),now());"
+for membership_status in SUSPENDED REMOVED; do
+admin "UPDATE organization_members SET status='$membership_status' WHERE tenant_id='$organization_id' AND user_id='$member_id';"
 status="$(curl --silent --show-error -b "$scratch/member.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/organizations/$organization_id/boards")"
 test "$status" = 404
+status="$(curl --silent --show-error -b "$scratch/member.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$organization_board_id")"
+test "$status" = 404
+curl --fail --silent --show-error -b "$scratch/member.cookies" "$BASE_URL/boards/$public_board_id" | jq -e '.access.canEdit == false and .access.canAdminister == false and .access.canMove == false' >/dev/null
+status="$(curl --silent --show-error -b "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"name":"Revoked contributor write"}' -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$public_board_id/lists")"
+test "$status" = 404
+done
 echo 'Exact release API filters private/deleted board discovery and membership revocation using restricted PostgreSQL credentials.'

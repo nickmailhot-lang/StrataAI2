@@ -874,8 +874,10 @@ public sealed class WorkManagementService(
 
         var orgMember = organizationMembership is { Active: true };
         var orgAdmin = IsOrganizationAdmin(organizationMembership);
-        var explicitBoardMember = boardMember is { Active: true };
-        var boardAdmin = boardMember is
+        // Board membership currently requires active Organization membership at
+        // creation. Revocation must also invalidate persisted board grants at use.
+        var explicitBoardMember = orgMember && boardMember is { Active: true };
+        var boardAdmin = orgMember && boardMember is
         {
             Active: true,
             Role: BoardRole.Admin,
