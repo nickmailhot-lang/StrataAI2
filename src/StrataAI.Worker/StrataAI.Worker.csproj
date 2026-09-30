@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../StrataAI.Application/StrataAI.Application.csproj" />
+    <ProjectReference Include="../StrataAI.Infrastructure/StrataAI.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../StrataAI.Application/StrataAI.Application.csproj" />
+    <ProjectReference Include="../StrataAI.Infrastructure/StrataAI.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

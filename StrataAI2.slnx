@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/StrataAI.Domain/StrataAI.Domain.csproj" />
+    <Project Path="src/StrataAI.Application/StrataAI.Application.csproj" />
+    <Project Path="src/StrataAI.Infrastructure/StrataAI.Infrastructure.csproj" />
+    <Project Path="src/StrataAI.Api/StrataAI.Api.csproj" />
+    <Project Path="src/StrataAI.Worker/StrataAI.Worker.csproj" />
+  </Folder>
+</Solution>

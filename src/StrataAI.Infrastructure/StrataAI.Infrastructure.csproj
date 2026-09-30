@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../StrataAI.Application/StrataAI.Application.csproj" />
+    <ProjectReference Include="../StrataAI.Domain/StrataAI.Domain.csproj" />
+  </ItemGroup>
+</Project>
