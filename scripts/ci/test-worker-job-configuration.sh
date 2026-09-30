@@ -19,7 +19,6 @@ expect_failure demo '11111111-1111-1111-1111-111111111111' 'Organization job exe
 expect_failure production 'not-an-id' 'Worker Organization scope contains an invalid ID.'
 expect_failure production '00000000-0000-0000-0000-000000000000' 'Worker Organization scope contains an invalid ID.'
 expect_failure production '11111111-1111-1111-1111-111111111111,' 'Worker Organization scope contains an invalid ID.'
-expect_failure production '11111111-1111-1111-1111-111111111111' 'Scoped job execution requires registered handlers.'
 large_scope="$(printf '%08d-0000-0000-0000-000000000001,' $(seq 1 101))"
 expect_failure production "${large_scope%,}" 'Worker Organization scope exceeds 100 IDs.'
-echo 'Exact Worker image rejects invalid, unbounded, Demo and handlerless job execution.'
+echo 'Exact Worker image rejects invalid, unbounded, Demo job execution. The built-in Work event handler is exercised with real PostgreSQL by the event delivery fixture.'

@@ -38,6 +38,12 @@ if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))
     builder.Services.AddHostedService<IdentityEmailWorker>();
 }
 
+if (runtime.Mode == RuntimeMode.Production)
+{
+    builder.Services.AddSingleton<StrataAI.Application.WorkManagement.IWorkEventDeliveryStore, StrataAI.Infrastructure.WorkManagement.PostgresWorkEventDeliveryStore>();
+    builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.WorkManagement.WorkEventDeliveryHandler>();
+}
+
 var jobScope = builder.Configuration["STRATAAI_WORKER_ORGANIZATION_IDS"];
 if (!string.IsNullOrWhiteSpace(jobScope))
 {

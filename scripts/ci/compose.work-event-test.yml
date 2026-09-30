@@ -1,0 +1,5 @@
+# Disposable event fixture; the Worker image is the release image already built.
+services:
+  worker:
+    environment:
+      STRATAAI_WORKER_ORGANIZATION_IDS: ${STRATAAI_TEST_EVENT_ORGANIZATION_ID:?Set the isolated event fixture Organization}

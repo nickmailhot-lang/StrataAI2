@@ -46,8 +46,20 @@ provider idempotency; cancellation cannot undo an already completed external sen
 Worker outcome logs include job/Organization/actor/service/worker IDs, type,
 attempt and correlation ID, without metadata, token, message or exception bodies.
 
-This is a foundation, not complete ARCH-07 acceptance: no Organization production
-handler is registered yet, and mailbox/AI/object-storage adapters remain pending.
+The production Worker registers `WORK_EVENT_READY` under `work-event-delivery`.
+Its handler locks and checks the current unexpired queue lease before marking a
+content-free Work event ready. Replay preserves the original readiness timestamp.
+Migration 011 gives API append access and Worker access only to event references
+and readiness; the Worker cannot read event type, version or domain content.
+Mailbox/AI/object-storage adapters remain pending, so ARCH-07 is incomplete.
+
+Work mutations publish their audit, event, board sequence and queue job inside the
+owning command transaction. The publisher refuses standalone transactions.
+Sequences are scoped per board and rollback without gaps; keyed command replay
+does not append again. Demo retains envelopes in memory without durable delivery.
+This readiness step does not yet expose a replay API or SignalR transport.
+Future consumers must freshly authorize Board access and advance only through
+contiguous ready sequences; a later ready event cannot skip an earlier pending one.
 Global identity verification/reset delivery now has its own scoped queue and
 Resend provider under [identity-email.md](identity-email.md); it does not invent
 an Organization or bypass this queue's RLS. Outbound effects still need provider

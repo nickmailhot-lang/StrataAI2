@@ -6,7 +6,7 @@ namespace StrataAI.Application.WorkManagement;
 public sealed class WorkManagementService(
     IWorkManagementStore store,
     IOrganizationStore organizationStore,
-    IClock clock) : IWorkManagementService
+    IClock clock, IWorkEventStore events) : IWorkManagementService
 {
     public async Task<WorkOperation<BoardRecord>> CreateBoardAsync(
         Guid organizationId,
@@ -456,14 +456,7 @@ public sealed class WorkManagementService(
             clock.UtcNow,
             cancellationToken);
 
-        await store.AppendAuditAsync(
-            list.OrganizationId,
-            actorUserId,
-            "LIST_CREATED",
-            "List",
-            list.Id,
-            correlationId,
-            cancellationToken);
+        await RecordChangeAsync(list.OrganizationId, list.BoardId, actorUserId, "LIST_CREATED", "List", list.Id, list.Version, correlationId, cancellationToken);
 
         return WorkOperation<BoardListRecord>.Success(list);
     }
@@ -520,14 +513,7 @@ public sealed class WorkManagementService(
             return WorkOperation<BoardListRecord>.Failure("version_conflict");
         }
 
-        await store.AppendAuditAsync(
-            updated.OrganizationId,
-            actorUserId,
-            rank is null ? "LIST_UPDATED" : "LIST_MOVED",
-            "List",
-            updated.Id,
-            correlationId,
-            cancellationToken);
+        await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, rank is null ? "LIST_RENAMED" : "LIST_MOVED", "List", updated.Id, updated.Version, correlationId, cancellationToken);
 
         return WorkOperation<BoardListRecord>.Success(updated);
     }
@@ -575,14 +561,7 @@ public sealed class WorkManagementService(
             return WorkOperation<BoardListRecord>.Failure("version_conflict");
         }
 
-        await store.AppendAuditAsync(
-            updated.OrganizationId,
-            actorUserId,
-            EventForLifecycle("LIST", nextState),
-            "List",
-            updated.Id,
-            correlationId,
-            cancellationToken);
+        await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, EventForLifecycle("LIST", nextState), "List", updated.Id, updated.Version, correlationId, cancellationToken);
 
         return WorkOperation<BoardListRecord>.Success(updated);
     }
@@ -655,14 +634,7 @@ public sealed class WorkManagementService(
             clock.UtcNow,
             cancellationToken);
 
-        await store.AppendAuditAsync(
-            card.OrganizationId,
-            actorUserId,
-            "CARD_CREATED",
-            "Card",
-            card.Id,
-            correlationId,
-            cancellationToken);
+        await RecordChangeAsync(card.OrganizationId, card.BoardId, actorUserId, "CARD_CREATED", "Card", card.Id, card.Version, correlationId, cancellationToken);
 
         return WorkOperation<CardRecord>.Success(card);
     }
@@ -712,14 +684,7 @@ public sealed class WorkManagementService(
             return WorkOperation<CardRecord>.Failure("version_conflict");
         }
 
-        await store.AppendAuditAsync(
-            updated.OrganizationId,
-            actorUserId,
-            "CARD_UPDATED",
-            "Card",
-            updated.Id,
-            correlationId,
-            cancellationToken);
+        await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, "CARD_UPDATED", "Card", updated.Id, updated.Version, correlationId, cancellationToken);
 
         return WorkOperation<CardRecord>.Success(updated);
     }
@@ -773,14 +738,7 @@ public sealed class WorkManagementService(
             return WorkOperation<CardRecord>.Failure("version_conflict");
         }
 
-        await store.AppendAuditAsync(
-            updated.OrganizationId,
-            actorUserId,
-            "CARD_MOVED",
-            "Card",
-            updated.Id,
-            correlationId,
-            cancellationToken);
+        await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, "CARD_MOVED", "Card", updated.Id, updated.Version, correlationId, cancellationToken);
 
         return WorkOperation<CardRecord>.Success(updated);
     }
@@ -828,14 +786,7 @@ public sealed class WorkManagementService(
             return WorkOperation<CardRecord>.Failure("version_conflict");
         }
 
-        await store.AppendAuditAsync(
-            updated.OrganizationId,
-            actorUserId,
-            EventForLifecycle("CARD", nextState),
-            "Card",
-            updated.Id,
-            correlationId,
-            cancellationToken);
+        await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, EventForLifecycle("CARD", nextState), "Card", updated.Id, updated.Version, correlationId, cancellationToken);
 
         return WorkOperation<CardRecord>.Success(updated);
     }
@@ -967,20 +918,18 @@ public sealed class WorkManagementService(
         return WorkOperation<BoardRecord>.Success(updated);
     }
 
-    private Task AuditAsync(
-        BoardRecord board,
-        Guid actorUserId,
-        string eventType,
-        string correlationId,
-        CancellationToken cancellationToken) =>
-        store.AppendAuditAsync(
-            board.OrganizationId,
-            actorUserId,
-            eventType,
-            "Board",
-            board.Id,
-            correlationId,
-            cancellationToken);
+    private Task AuditAsync(BoardRecord board, Guid actorUserId, string eventType,
+        string correlationId, CancellationToken cancellationToken) =>
+        RecordChangeAsync(board.OrganizationId, board.Id, actorUserId, eventType, "Board", board.Id, board.Version, correlationId, cancellationToken);
+
+    private async Task RecordChangeAsync(Guid organizationId, Guid boardId, Guid actorUserId,
+        string eventType, string entityType, Guid entityId, long version, string correlationId,
+        CancellationToken cancellationToken)
+    {
+        await store.AppendAuditAsync(organizationId, actorUserId, eventType, entityType, entityId, correlationId, cancellationToken);
+        await events.AppendAsync(new WorkEvent(Guid.NewGuid(), organizationId, boardId, actorUserId,
+            eventType, entityType, entityId, version, correlationId, clock.UtcNow), cancellationToken);
+    }
 
     private static bool IsOrganizationAdmin(
         OrganizationMembership? membership) =>
