@@ -3,8 +3,8 @@ using Npgsql;
 namespace StrataAI.Infrastructure.Persistence;
 
 /// <summary>
-/// Owns the production PostgreSQL data source. Higher-level repositories must
-/// establish Organization/tenant context before executing tenant-owned queries.
+/// Owns the production PostgreSQL data source. Tenant-owned operations should use
+/// OpenTenantSessionAsync so PostgreSQL RLS receives the Organization context.
 /// </summary>
 public sealed class PostgresConnectionFactory : IAsyncDisposable
 {
@@ -25,6 +25,41 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
     public ValueTask<NpgsqlConnection> OpenConnectionAsync(
         CancellationToken cancellationToken = default) =>
         _dataSource.OpenConnectionAsync(cancellationToken);
+
+    public async Task<TenantDbSession> OpenTenantSessionAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken = default)
+    {
+        if (organizationId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Organization ID cannot be empty.",
+                nameof(organizationId));
+        }
+
+        var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        var transaction = await connection.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            await using var command = new NpgsqlCommand(
+                "SELECT set_config('app.tenant_id', @tenant_id, true);",
+                connection,
+                transaction);
+            command.Parameters.AddWithValue(
+                "tenant_id",
+                organizationId.ToString());
+            await command.ExecuteScalarAsync(cancellationToken);
+
+            return new TenantDbSession(connection, transaction);
+        }
+        catch
+        {
+            await transaction.DisposeAsync();
+            await connection.DisposeAsync();
+            throw;
+        }
+    }
 
     public ValueTask DisposeAsync() => _dataSource.DisposeAsync();
 }
