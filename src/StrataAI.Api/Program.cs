@@ -2,6 +2,7 @@ using StrataAI.Api;
 using StrataAI.Api.Auth;
 using StrataAI.Api.Organizations;
 using StrataAI.Api.Onboarding;
+using StrataAI.Api.WorkManagement;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Runtime;
@@ -90,6 +91,7 @@ app.MapIdentityEndpoints(
     app.Services.GetRequiredService<IdentityPolicy>());
 app.MapOrganizationEndpoints();
 app.MapInvitationEndpoints(runtime);
+app.MapWorkManagementEndpoints();
 
 app.Run();
 

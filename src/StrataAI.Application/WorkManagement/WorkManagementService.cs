@@ -120,9 +120,16 @@ public sealed class WorkManagementService(
             return WorkOperation<BoardRecord>.Failure("invalid_board_name");
         }
 
+        var requestedBackgroundType =
+            backgroundType ?? resolved.Value.Board.BackgroundType;
+        var requestedBackgroundValue =
+            backgroundType is null && backgroundValue is null
+                ? resolved.Value.Board.BackgroundValue
+                : backgroundValue;
+
         if (!TryNormalizeBackground(
-                backgroundType ?? resolved.Value.Board.BackgroundType,
-                backgroundValue,
+                requestedBackgroundType,
+                requestedBackgroundValue,
                 out var normalizedType,
                 out var normalizedValue))
         {
@@ -418,7 +425,24 @@ public sealed class WorkManagementService(
             return WorkOperation<BoardListRecord>.Failure("invalid_list_name");
         }
 
-        var normalizedRank = NormalizeRank(rank);
+        string? normalizedRank;
+        if (rank is null)
+        {
+            var snapshot = await store.GetSnapshotAsync(
+                boardId,
+                actorUserId,
+                resolved.Value.Access,
+                cancellationToken);
+            var lastRank = snapshot?.Lists.LastOrDefault()?.List.Rank;
+            normalizedRank = lastRank is null
+                ? RankToken.Initial()
+                : RankToken.After(lastRank);
+        }
+        else
+        {
+            normalizedRank = NormalizeRank(rank);
+        }
+
         if (normalizedRank is null)
         {
             return WorkOperation<BoardListRecord>.Failure("invalid_rank");
@@ -595,7 +619,28 @@ public sealed class WorkManagementService(
             return WorkOperation<CardRecord>.Failure("invalid_card_title");
         }
 
-        var normalizedRank = NormalizeRank(rank);
+        string? normalizedRank;
+        if (rank is null)
+        {
+            var snapshot = await store.GetSnapshotAsync(
+                list.BoardId,
+                actorUserId,
+                resolved.Value.Access,
+                cancellationToken);
+            var lastRank = snapshot?.Lists
+                .FirstOrDefault(item => item.List.Id == listId)?
+                .Cards
+                .LastOrDefault()?
+                .Rank;
+            normalizedRank = lastRank is null
+                ? RankToken.Initial()
+                : RankToken.After(lastRank);
+        }
+        else
+        {
+            normalizedRank = NormalizeRank(rank);
+        }
+
         if (normalizedRank is null)
         {
             return WorkOperation<CardRecord>.Failure("invalid_rank");
