@@ -70,9 +70,11 @@ release() {
   gate_pid=''
 }
 blocked() {
-  local condition="$1"
+  local condition="$1" count
   for ((attempt=0; attempt<100; attempt++)); do
-    if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' AND $condition;")" != 0; then return; fi
+    count="$(admin "SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' AND $condition;")" || return 1
+    [[ "$count" =~ ^[0-9]+$ ]] || return 1
+    if ((count > 0)); then return; fi
     sleep 0.05
   done
   echo 'Expected live database lock wait was not observed.' >&2
@@ -93,7 +95,10 @@ case_denied() {
   request_pid=''
   test "$(cat "$scratch/status")" = 404
   jq -e --arg code "$code" '.code==$code' "$scratch/failure.json" >/dev/null
-  ! grep -Eq 'Protected|Npgsql|SELECT|FOR SHARE|FOR UPDATE' "$scratch/failure.json"
+  if grep -Eq 'Protected|Npgsql|SELECT|FOR SHARE|FOR UPDATE' "$scratch/failure.json"; then
+    echo 'Denied write exposed protected content or storage details.' >&2
+    return 1
+  fi
   test "$before" = "$(protected_state)"
 }
 board_lock="SELECT id FROM boards WHERE id='$board' FOR UPDATE;"
