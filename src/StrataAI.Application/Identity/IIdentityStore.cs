@@ -4,6 +4,8 @@ public interface IIdentityStore
 {
     Task<bool> TryCreateUserAsync(
         UserIdentity user,
+        SecurityTokenRecord? verificationToken,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default);
 
     Task<UserIdentity?> FindUserByNormalizedEmailAsync(
@@ -36,6 +38,7 @@ public interface IIdentityStore
 
     Task CreatePasswordResetTokenAsync(
         SecurityTokenRecord token,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default);
 
     Task<Guid?> GetPasswordResetUserIdAsync(
@@ -51,6 +54,7 @@ public interface IIdentityStore
 
     Task CreateEmailVerificationTokenAsync(
         SecurityTokenRecord token,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default);
 
     Task<Guid?> GetEmailVerificationUserIdAsync(

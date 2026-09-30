@@ -16,6 +16,8 @@ internal sealed class InMemoryIdentityStore : IIdentityStore
 
     public Task<bool> TryCreateUserAsync(
         UserIdentity user,
+        SecurityTokenRecord? verificationToken,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default)
     {
         lock (_sync)
@@ -27,6 +29,8 @@ internal sealed class InMemoryIdentityStore : IIdentityStore
 
             _users[user.Id] = user;
             _usersByEmail[user.EmailNormalized] = user.Id;
+            if (verificationToken is not null)
+                _emailVerificationTokens[verificationToken.TokenHash] = new TokenState(verificationToken);
             return Task.FromResult(true);
         }
     }
@@ -126,6 +130,7 @@ internal sealed class InMemoryIdentityStore : IIdentityStore
 
     public Task CreatePasswordResetTokenAsync(
         SecurityTokenRecord token,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default)
     {
         lock (_sync)
@@ -184,6 +189,7 @@ internal sealed class InMemoryIdentityStore : IIdentityStore
 
     public Task CreateEmailVerificationTokenAsync(
         SecurityTokenRecord token,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default)
     {
         lock (_sync)

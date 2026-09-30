@@ -60,7 +60,8 @@ public sealed record IdentityPolicy(
     bool RequireVerifiedEmail,
     int MinimumPasswordLength,
     TimeSpan SessionLifetime,
-    TimeSpan SecurityTokenLifetime);
+    TimeSpan SecurityTokenLifetime,
+    bool EmailDeliveryEnabled = false);
 
 public sealed record RegistrationOutcome(
     UserProfile User,

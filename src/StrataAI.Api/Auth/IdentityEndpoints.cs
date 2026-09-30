@@ -21,6 +21,8 @@ public static class IdentityEndpoints
                 IIdentityService identityService,
                 CancellationToken cancellationToken) =>
             {
+                if (runtime.Mode==RuntimeMode.Production && policy.AllowSelfRegistration && policy.RequireVerifiedEmail && !policy.EmailDeliveryEnabled)
+                    return DeliveryUnavailable();
                 var result = await identityService.RegisterAsync(
                     request.Email,
                     request.Password,
@@ -86,6 +88,8 @@ public static class IdentityEndpoints
                 IIdentityService identityService,
                 CancellationToken cancellationToken) =>
             {
+                if (runtime.Mode==RuntimeMode.Production && !policy.EmailDeliveryEnabled)
+                    return DeliveryUnavailable();
                 var outcome = await identityService.RequestPasswordResetAsync(
                     request.Email,
                     context.TraceIdentifier,
@@ -117,6 +121,13 @@ public static class IdentityEndpoints
                     ? Results.Ok(result.Value)
                     : ErrorFor(result.ErrorCode);
             });
+
+        auth.MapPost("/verification/resend",async (ForgotPasswordRequest request,HttpContext context,IIdentityService identityService,CancellationToken cancellationToken)=>
+        {
+            if (runtime.Mode==RuntimeMode.Production && !policy.EmailDeliveryEnabled) return DeliveryUnavailable();
+            var token=await identityService.RequestEmailVerificationAsync(request.Email,context.TraceIdentifier,cancellationToken);
+            return Results.Accepted(value:new { accepted=true,verificationToken=runtime.Mode==RuntimeMode.Demo ? token : null });
+        });
 
         auth.MapPost(
             "/verify-email",
@@ -273,6 +284,10 @@ public static class IdentityEndpoints
                 IsEssential = true,
             });
     }
+
+    private static IResult DeliveryUnavailable() => Results.Problem(
+        statusCode:503,title:"Password recovery and verification email are temporarily unavailable.",
+        extensions:new Dictionary<string,object?> { ["code"]="identity_delivery_unavailable" });
 
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch

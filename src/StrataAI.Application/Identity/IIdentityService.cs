@@ -32,6 +32,8 @@ public interface IIdentityService
         string correlationId,
         CancellationToken cancellationToken = default);
 
+    Task<string?> RequestEmailVerificationAsync(string email,string correlationId,CancellationToken cancellationToken=default);
+
     Task<IdentityOperation<UserProfile>> ResetPasswordAsync(
         string rawResetToken,
         string newPassword,

@@ -63,23 +63,25 @@ public sealed class IdentityService(
             now,
             1);
 
-        if (!await store.TryCreateUserAsync(user, cancellationToken))
-        {
-            return IdentityOperation<RegistrationOutcome>.Failure("email_unavailable");
-        }
-
         string? verificationToken = null;
+        SecurityTokenRecord? verificationRecord = null;
+        IdentityTokenDelivery? verificationDelivery = null;
         if (policy.RequireVerifiedEmail)
         {
-            verificationToken = tokens.Generate();
-            await store.CreateEmailVerificationTokenAsync(
-                new SecurityTokenRecord(
-                    Guid.NewGuid(),
+            var tokenId = Guid.NewGuid();
+            var generated = tokens.GenerateForDelivery(tokenId, IdentityTokenPurpose.VerifyEmail, correlationId);
+            verificationToken = generated.RawToken;
+            verificationDelivery = generated.Delivery;
+            verificationRecord = new SecurityTokenRecord(
+                    tokenId,
                     userId,
                     tokens.Hash(verificationToken),
                     now,
-                    now.Add(policy.SecurityTokenLifetime)),
-                cancellationToken);
+                    now.Add(policy.SecurityTokenLifetime));
+        }
+        if (!await store.TryCreateUserAsync(user, verificationRecord, verificationDelivery, cancellationToken))
+        {
+            return IdentityOperation<RegistrationOutcome>.Failure("email_unavailable");
         }
 
         await store.AppendAuditAsync(
@@ -237,16 +239,19 @@ public sealed class IdentityService(
             return new PasswordResetRequestOutcome(null);
         }
 
-        var rawToken = tokens.Generate();
+        var tokenId = Guid.NewGuid();
+        var generated = tokens.GenerateForDelivery(tokenId, IdentityTokenPurpose.ResetPassword, correlationId);
+        var rawToken = generated.RawToken;
         var now = clock.UtcNow;
 
         await store.CreatePasswordResetTokenAsync(
             new SecurityTokenRecord(
-                Guid.NewGuid(),
+                tokenId,
                 user.Id,
                 tokens.Hash(rawToken),
                 now,
                 now.Add(policy.SecurityTokenLifetime)),
+            generated.Delivery,
             cancellationToken);
 
         await store.AppendAuditAsync(
@@ -258,6 +263,20 @@ public sealed class IdentityService(
             cancellationToken);
 
         return new PasswordResetRequestOutcome(rawToken);
+    }
+
+    public async Task<string?> RequestEmailVerificationAsync(string email,string correlationId,CancellationToken cancellationToken=default)
+    {
+        var normalized=NormalizeEmail(email);
+        if (normalized is null) return null;
+        var user=await store.FindUserByNormalizedEmailAsync(normalized,cancellationToken);
+        if (user is null || user.Status!=AccountStatus.PendingVerification || user.EmailVerified) return null;
+        var id=Guid.NewGuid(); var now=clock.UtcNow;
+        var generated=tokens.GenerateForDelivery(id,IdentityTokenPurpose.VerifyEmail,correlationId);
+        await store.CreateEmailVerificationTokenAsync(new SecurityTokenRecord(id,user.Id,tokens.Hash(generated.RawToken),now,
+            now.Add(policy.SecurityTokenLifetime)),generated.Delivery,cancellationToken);
+        await store.AppendAuditAsync(user.Id,"EMAIL_VERIFICATION_REQUESTED","User",user.Id,correlationId,cancellationToken);
+        return generated.RawToken;
     }
 
     public async Task<IdentityOperation<UserProfile>> ResetPasswordAsync(

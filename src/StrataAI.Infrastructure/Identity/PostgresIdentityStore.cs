@@ -14,10 +14,13 @@ internal sealed class PostgresIdentityStore(
 
     public async Task<bool> TryCreateUserAsync(
         UserIdentity user,
+        SecurityTokenRecord? verificationToken,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default)
     {
         await using var connection =
             await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO users(
@@ -30,10 +33,24 @@ internal sealed class PostgresIdentityStore(
                 @created_at, @updated_at, @version)
             ON CONFLICT (email_normalized) DO NOTHING;
             """,
-            connection);
+            connection, transaction);
 
         AddUserParameters(command, user);
-        return await command.ExecuteNonQueryAsync(cancellationToken) == 1;
+        if (await command.ExecuteNonQueryAsync(cancellationToken) != 1)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return false;
+        }
+        if (verificationToken is not null)
+        {
+            if (verificationToken.UserId != user.Id) throw new ArgumentException("Verification subject must match the new user.");
+            await InsertSecurityTokenAsync("email_verification_tokens", verificationToken, connection, transaction, cancellationToken);
+            if (delivery is not null)
+                await PublishIdentityDeliveryAsync(verificationToken, delivery, IdentityTokenPurpose.VerifyEmail, connection, transaction, cancellationToken);
+        }
+        else if (delivery is not null) throw new ArgumentException("Delivery requires a verification token.");
+        await transaction.CommitAsync(cancellationToken);
+        return true;
     }
 
     public Task<UserIdentity?> FindUserByNormalizedEmailAsync(
@@ -163,10 +180,13 @@ internal sealed class PostgresIdentityStore(
 
     public Task CreatePasswordResetTokenAsync(
         SecurityTokenRecord token,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default) =>
         CreateSecurityTokenAsync(
             "password_reset_tokens",
             token,
+            delivery,
+            IdentityTokenPurpose.ResetPassword,
             cancellationToken);
 
     public Task<Guid?> GetPasswordResetUserIdAsync(
@@ -259,10 +279,13 @@ internal sealed class PostgresIdentityStore(
 
     public Task CreateEmailVerificationTokenAsync(
         SecurityTokenRecord token,
+        IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default) =>
         CreateSecurityTokenAsync(
             "email_verification_tokens",
             token,
+            delivery,
+            IdentityTokenPurpose.VerifyEmail,
             cancellationToken);
 
     public Task<Guid?> GetEmailVerificationUserIdAsync(
@@ -484,10 +507,22 @@ internal sealed class PostgresIdentityStore(
     private async Task CreateSecurityTokenAsync(
         string tableName,
         SecurityTokenRecord token,
+        IdentityTokenDelivery? delivery,
+        IdentityTokenPurpose purpose,
         CancellationToken cancellationToken)
     {
         await using var connection =
             await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        await InsertSecurityTokenAsync(tableName, token, connection, transaction, cancellationToken);
+        if (delivery is not null)
+            await PublishIdentityDeliveryAsync(token, delivery, purpose, connection, transaction, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    private static async Task InsertSecurityTokenAsync(string tableName, SecurityTokenRecord token,
+        NpgsqlConnection connection, NpgsqlTransaction transaction, CancellationToken cancellationToken)
+    {
         await using var command = new NpgsqlCommand(
             $"""
             INSERT INTO {tableName}(
@@ -495,12 +530,38 @@ internal sealed class PostgresIdentityStore(
             VALUES (
                 @id, @user_id, @token_hash, @created_at, @expires_at);
             """,
-            connection);
+            connection, transaction);
         command.Parameters.AddWithValue("id", token.Id);
         command.Parameters.AddWithValue("user_id", token.UserId);
         command.Parameters.AddWithValue("token_hash", token.TokenHash);
         command.Parameters.AddWithValue("created_at", token.CreatedAt);
         command.Parameters.AddWithValue("expires_at", token.ExpiresAt);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static async Task PublishIdentityDeliveryAsync(SecurityTokenRecord token, IdentityTokenDelivery delivery,
+        IdentityTokenPurpose expectedPurpose, NpgsqlConnection connection, NpgsqlTransaction transaction, CancellationToken cancellationToken)
+    {
+        if (delivery.Purpose != expectedPurpose) throw new ArgumentException("Identity delivery purpose does not match the token.");
+        await using var command = new NpgsqlCommand("""
+            SELECT set_config('app.service_scope','GLOBAL_IDENTITY_MAIL',true);
+            WITH publication AS (SELECT clock_timestamp() AS queued_at)
+            INSERT INTO identity_delivery_jobs(id,user_id,purpose,password_reset_token_id,verification_token_id,
+                key_id,correlation_id,recipient_email,sender_address,public_origin,provider_account,created_at,expires_at)
+            SELECT @id,@user,@purpose,@reset,@verification,@key,@correlation,email,@sender,@origin,@account,queued_at,
+                LEAST(@expires,queued_at + interval '23 hours') FROM users CROSS JOIN publication WHERE id=@user;
+            """, connection, transaction);
+        command.Parameters.AddWithValue("id", token.Id);
+        command.Parameters.AddWithValue("user", token.UserId);
+        command.Parameters.AddWithValue("purpose", expectedPurpose == IdentityTokenPurpose.VerifyEmail ? "VERIFY_EMAIL" : "RESET_PASSWORD");
+        command.Parameters.AddWithValue("reset", NpgsqlTypes.NpgsqlDbType.Uuid, expectedPurpose == IdentityTokenPurpose.ResetPassword ? token.Id : DBNull.Value);
+        command.Parameters.AddWithValue("verification", NpgsqlTypes.NpgsqlDbType.Uuid, expectedPurpose == IdentityTokenPurpose.VerifyEmail ? token.Id : DBNull.Value);
+        command.Parameters.AddWithValue("key", delivery.KeyId);
+        command.Parameters.AddWithValue("correlation", delivery.CorrelationId);
+        command.Parameters.AddWithValue("sender", delivery.SenderAddress);
+        command.Parameters.AddWithValue("origin", delivery.PublicOrigin);
+        command.Parameters.AddWithValue("account", delivery.ProviderAccount);
+        command.Parameters.AddWithValue("expires", token.ExpiresAt);
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 

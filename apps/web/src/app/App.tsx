@@ -11,11 +11,13 @@ import { AuthPage } from '../features/auth/AuthPage';
 import { ProfilePage } from '../features/auth/ProfilePage';
 import { PasswordRecoveryPage } from '../features/auth/PasswordRecoveryPage';
 import { ResetPasswordPage } from '../features/auth/ResetPasswordPage';
+import { VerifyEmailPage } from '../features/auth/VerifyEmailPage';
 import { BoardScreen } from '../features/kanban/BoardScreen';
 import { PortalShell } from '../portal/PortalShell';
 import { appTheme } from '../theme/appTheme';
 
 const routes = [
+  { path: '/verify-email', element: <VerifyEmailPage /> },
   { path: '/forgot-password', element: <PasswordRecoveryPage /> },
   { path: '/reset-password', element: <ResetPasswordPage /> },
   {

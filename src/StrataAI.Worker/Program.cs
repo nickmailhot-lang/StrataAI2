@@ -3,12 +3,40 @@ using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Runtime;
 using StrataAI.Application.BackgroundJobs;
 using StrataAI.Worker;
+using StrataAI.Application.Identity;
+using StrataAI.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration);
 builder.Services.AddHostedService<WorkerHeartbeat>();
+
+if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))
+{
+    var apiKey=builder.Configuration["STRATAAI_IDENTITY_EMAIL_API_KEY"];
+    if (string.IsNullOrWhiteSpace(apiKey)) throw new InvalidOperationException("Identity email Worker requires a provider API key.");
+    var identityDb=builder.Configuration.GetConnectionString("IdentityDeliveryPostgres");
+    if (string.IsNullOrWhiteSpace(identityDb)) throw new InvalidOperationException("Identity email Worker requires its restricted IdentityDeliveryPostgres connection.");
+    Uri? endpoint=null;
+    var testEndpoint=builder.Configuration["STRATAAI_IDENTITY_EMAIL_TEST_ENDPOINT"];
+    if (!string.IsNullOrWhiteSpace(testEndpoint))
+    {
+        if (!builder.Environment.IsEnvironment("IntegrationTest") || !Uri.TryCreate(testEndpoint,UriKind.Absolute,out endpoint) ||
+            endpoint.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(endpoint.UserInfo) || !string.IsNullOrEmpty(endpoint.Query) || !string.IsNullOrEmpty(endpoint.Fragment))
+            throw new InvalidOperationException("Identity provider test endpoint requires the isolated IntegrationTest environment.");
+    }
+    builder.Services.AddHttpClient("identity-email",client=>
+    { client.Timeout=TimeSpan.FromSeconds(30); client.MaxResponseContentBufferSize=65536; })
+        .ConfigurePrimaryHttpMessageHandler(()=>new HttpClientHandler { AllowAutoRedirect=false })
+        .RedactLoggedHeaders(_=>true);
+    builder.Services.AddSingleton<IIdentityEmailProvider>(provider=>new ResendIdentityEmailProvider(
+        provider.GetRequiredService<IHttpClientFactory>().CreateClient("identity-email"),apiKey,endpoint));
+    builder.Services.AddSingleton<IIdentityDeliveryStore>(_=>new PostgresIdentityDeliveryStore(identityDb));
+    builder.Services.AddSingleton<IdentityDeliveryProcessor>();
+    builder.Services.AddSingleton<IIdentityDeliveryDiagnostics,IdentityDeliveryDiagnostics>();
+    builder.Services.AddHostedService<IdentityEmailWorker>();
+}
 
 var jobScope = builder.Configuration["STRATAAI_WORKER_ORGANIZATION_IDS"];
 if (!string.IsNullOrWhiteSpace(jobScope))

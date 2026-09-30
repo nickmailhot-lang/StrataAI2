@@ -27,13 +27,17 @@ export function AuthPage() {
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string>();
+  const [notice, setNotice] = useState<string>();
+  const [verificationNeeded, setVerificationNeeded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
     setError(undefined);
+    setNotice(undefined);
 
     try {
       const response = await apiFetch(
@@ -59,10 +63,14 @@ export function AuthPage() {
       if (!response.ok) {
         const problem = (await response.json().catch(() => ({}))) as ApiProblem;
         setError(problem.title ?? 'Authentication failed.');
+        setVerificationNeeded(problem.code === 'email_verification_required');
         return;
       }
 
       if (mode === 'register') {
+        const result = await response.json().catch(() => ({})) as { user?: { emailVerified?: boolean } };
+        setVerificationNeeded(result.user?.emailVerified === false);
+        setNotice(result.user?.emailVerified === false ? 'Account created. Use your verification email to activate it before signing in.' : 'Account created. Sign in to continue.');
         setMode('login');
         setPassword('');
         return;
@@ -100,6 +108,8 @@ export function AuthPage() {
           </Tabs>
 
           {error ? <Alert severity="error">{error}</Alert> : null}
+          {notice ? <Alert severity="success" role="status">{notice}</Alert> : null}
+          {verificationNeeded ? <Button component={Link} to="/verify-email">Request a verification link</Button> : null}
 
           <Box component="form" onSubmit={submit}>
             <Stack spacing={2.5}>

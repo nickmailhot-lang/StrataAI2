@@ -13,6 +13,7 @@ public static class IdentityRegistration
         IConfiguration configuration,
         RuntimeDescriptor runtime)
     {
+        var emailEnabled=services.AddIdentityDeliveryTokens(configuration,runtime);
         var allowSelfRegistration = GetBoolean(
             configuration["STRATAAI_AUTH_ALLOW_SELF_REGISTRATION"],
             runtime.Mode == RuntimeMode.Demo);
@@ -45,7 +46,7 @@ public static class IdentityRegistration
                 requireVerifiedEmail,
                 minimumPasswordLength,
                 TimeSpan.FromHours(sessionHours),
-                TimeSpan.FromMinutes(tokenMinutes)));
+                TimeSpan.FromMinutes(tokenMinutes),emailEnabled));
 
         services.AddSingleton<IPasswordHashService, AspNetPasswordHashService>();
         services.AddSingleton<ISecureTokenService, SecureTokenService>();

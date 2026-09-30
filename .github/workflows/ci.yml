@@ -117,6 +117,9 @@ jobs:
       - name: Verify tenant-scoped durable jobs and retry/crash behavior
         run: scripts/ci/test-background-jobs.sh
 
+      - name: Verify global identity delivery capability and token integrity
+        run: scripts/ci/test-identity-delivery-scope.sh
+
   source-quality-gate:
     name: source-quality-gate
     if: always()
@@ -281,6 +284,24 @@ jobs:
           docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api
           scripts/ci/test-postgres-profile.sh http://localhost:8080
 
+      - name: Prepare isolated identity mail transport and ephemeral signing keys
+        run: |
+          set -euo pipefail
+          key1="$(openssl rand -base64 32)"
+          key2="$(openssl rand -base64 32)"
+          printf '::add-mask::%s\n' "$key1" "$key2"
+          keys="$(jq -nc --arg k1 "$key1" --arg k2 "$key2" '{k1:$k1,k2:$k2}')"
+          printf 'STRATAAI_TEST_TOKEN_KEYS=%s\n' "$keys" >> "$GITHUB_ENV"
+          python3 scripts/ci/fake-identity-provider.py > /tmp/identity-provider.log 2>&1 &
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://localhost:19090/health >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://localhost:19090/health >/dev/null
+
+      - name: Identity mail against exact API/Worker images and restricted database role
+        run: scripts/ci/test-identity-email.sh
+
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -290,6 +311,14 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
+
+      - name: Mobile keyboard verification/recovery through Worker delivery
+        env:
+          STRATAAI_E2E_IDENTITY_MAIL: '1'
+        run: npx playwright test tests/browser/identity-mail.spec.ts
+
+      - name: Restore isolated unverified-email account fixture for profile browser tests
+        run: STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL=false docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml up -d --wait --wait-timeout 180 api
 
       - name: Authenticated browser E2E against exact release images
         env:

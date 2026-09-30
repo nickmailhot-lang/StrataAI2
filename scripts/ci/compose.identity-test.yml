@@ -1,0 +1,25 @@
+# Isolated fake-provider fixture. Never packaged as a release configuration.
+services:
+  api:
+    environment:
+      STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL: ${STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL:-true}
+      STRATAAI_IDENTITY_EMAIL_ENABLED: 'true'
+      STRATAAI_IDENTITY_EMAIL_FROM: sender@example.test
+      STRATAAI_PUBLIC_ORIGIN: https://app.example.test
+      STRATAAI_IDENTITY_EMAIL_ACCOUNT: ci-account
+      STRATAAI_IDENTITY_TOKEN_CURRENT_KEY: ${STRATAAI_TEST_CURRENT_KEY:-k1}
+      STRATAAI_IDENTITY_TOKEN_KEYS: ${STRATAAI_TEST_TOKEN_KEYS:?Set ephemeral CI token keys}
+  worker:
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      ASPNETCORE_ENVIRONMENT: IntegrationTest
+      STRATAAI_IDENTITY_EMAIL_ENABLED: 'true'
+      STRATAAI_IDENTITY_EMAIL_FROM: sender@example.test
+      STRATAAI_PUBLIC_ORIGIN: https://app.example.test
+      STRATAAI_IDENTITY_EMAIL_ACCOUNT: ci-account
+      STRATAAI_IDENTITY_TOKEN_CURRENT_KEY: ${STRATAAI_TEST_CURRENT_KEY:-k1}
+      STRATAAI_IDENTITY_TOKEN_KEYS: ${STRATAAI_TEST_TOKEN_KEYS:?Set ephemeral CI token keys}
+      STRATAAI_IDENTITY_EMAIL_API_KEY: ci-test-provider-key
+      STRATAAI_IDENTITY_EMAIL_TEST_ENDPOINT: http://host.docker.internal:19090/emails
+      ConnectionStrings__IdentityDeliveryPostgres: Host=postgres;Port=5432;Database=${POSTGRES_DB:-strataai};Username=strataai_identity_mail_ci;Password=identity-ci-password

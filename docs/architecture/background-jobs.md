@@ -46,11 +46,12 @@ provider idempotency; cancellation cannot undo an already completed external sen
 Worker outcome logs include job/Organization/actor/service/worker IDs, type,
 attempt and correlation ID, without metadata, token, message or exception bodies.
 
-This is a foundation, not complete ARCH-07 acceptance: no production handler is
-registered yet, and there are no mailbox/AI/object-storage adapters or provider sends. Global
-identity verification/reset delivery needs its own explicit identity scope and
-safe token delivery design; it must not invent an Organization or bypass this
-queue's RLS. Outbound effects still need provider idempotency because a lease
+This is a foundation, not complete ARCH-07 acceptance: no Organization production
+handler is registered yet, and mailbox/AI/object-storage adapters remain pending.
+Global identity verification/reset delivery now has its own scoped queue and
+Resend provider under [identity-email.md](identity-email.md); it does not invent
+an Organization or bypass this queue's RLS. Outbound effects still need provider
+idempotency because a lease
 cannot prevent a provider send followed by a worker crash. Long jobs require
 future bounded lease renewal or smaller steps before being enabled.
 

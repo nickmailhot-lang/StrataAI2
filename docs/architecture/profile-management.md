@@ -45,8 +45,14 @@ Component tests verify confirmation privacy, rate/network errors, token handling
 success and rejection; container browser tests cover the request and invalid-link
 recovery. Demo API tests prove reset token reuse is rejected.
 
-This increment does not complete PRD-02. Production email delivery,
-realtime update/reconnect recovery and broader accessibility evidence remain
+Production email delivery now uses the separate Worker, durable global identity
+outbox and provider idempotency described in [identity-email.md](identity-email.md).
+Verification/resend screens and a mobile keyboard test consume real queued fixture
+links, including successful reset and old-session revocation. Deployment still
+requires runtime keys, restricted database credentials and provider configuration.
+
+This increment does not complete PRD-02. Realtime update/reconnect recovery,
+date/time consumers and broader accessibility evidence remain
 to be implemented and verified before closure.
 
 `tests/browser/account.spec.ts` runs Chromium against the actual web/API release
