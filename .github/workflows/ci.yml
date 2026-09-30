@@ -1,0 +1,406 @@
+name: StrataAI2 CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  STRATAAI_IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  web-quality:
+    name: web-quality
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit and component tests
+        run: npm test
+
+      - name: Production web build
+        run: npm run build
+
+  dotnet-quality:
+    name: dotnet-quality
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore StrataAI2.slnx
+
+      - name: Build with warnings as errors
+        run: dotnet build StrataAI2.slnx --configuration Release --no-restore
+
+      - name: Domain tests
+        run: dotnet test tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=domain.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dotnet-test-results-${{ github.sha }}
+          path: tests/**/TestResults/**/*.trx
+          if-no-files-found: ignore
+          retention-days: 14
+
+  postgres-integration:
+    name: postgres-integration
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: strataai_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d strataai_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: strataai_ci
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Ensure PostgreSQL client is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
+          fi
+
+      - name: Apply ordered migrations
+        run: psql -v ON_ERROR_STOP=1 -f db/migrations/001_foundation.sql
+
+      - name: Verify pgvector and forced tenant RLS
+        run: scripts/ci/test-rls.sh
+
+  source-quality-gate:
+    name: source-quality-gate
+    if: always()
+    runs-on: ubuntu-24.04
+    needs:
+      - web-quality
+      - dotnet-quality
+      - postgres-integration
+    steps:
+      - name: Require all source quality jobs
+        env:
+          WEB_RESULT: ${{ needs.web-quality.result }}
+          DOTNET_RESULT: ${{ needs.dotnet-quality.result }}
+          POSTGRES_RESULT: ${{ needs.postgres-integration.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for result in "$WEB_RESULT" "$DOTNET_RESULT" "$POSTGRES_RESULT"; do
+            if [ "$result" != "success" ]; then
+              echo "Mandatory source quality job did not succeed: $result" >&2
+              exit 1
+            fi
+          done
+
+  build-images-once:
+    name: build-images-once
+    runs-on: ubuntu-24.04
+    needs:
+      - source-quality-gate
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build web image
+        run: |
+          docker build             --file Dockerfile.web             --build-arg STRATAAI_BUILD_REVISION="${GITHUB_SHA}"             --build-arg STRATAAI_BUILD_VERSION="0.1.0-${GITHUB_RUN_NUMBER}"             --tag "strataai-web:${GITHUB_SHA}"             .
+
+      - name: Build API image
+        run: |
+          docker build             --file Dockerfile.api             --build-arg STRATAAI_BUILD_REVISION="${GITHUB_SHA}"             --build-arg STRATAAI_BUILD_VERSION="0.1.0-${GITHUB_RUN_NUMBER}"             --tag "strataai-api:${GITHUB_SHA}"             .
+
+      - name: Build Worker image
+        run: |
+          docker build             --file Dockerfile.worker             --build-arg STRATAAI_BUILD_REVISION="${GITHUB_SHA}"             --build-arg STRATAAI_BUILD_VERSION="0.1.0-${GITHUB_RUN_NUMBER}"             --tag "strataai-worker:${GITHUB_SHA}"             .
+
+      - name: Export exact built images
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p image-artifacts
+          docker save "strataai-web:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-web.tar.gz
+          docker save "strataai-api:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-api.tar.gz
+          docker save "strataai-worker:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-worker.tar.gz
+          (
+            cd image-artifacts
+            sha256sum strataai-web.tar.gz strataai-api.tar.gz strataai-worker.tar.gz > SHA256SUMS
+          )
+
+      - name: Upload immutable image artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: strataai-images-${{ github.sha }}
+          path: image-artifacts/
+          retention-days: 14
+
+  container-integration:
+    name: container-integration
+    runs-on: ubuntu-24.04
+    needs:
+      - build-images-once
+    env:
+      POSTGRES_DB: strataai
+      POSTGRES_USER: strataai
+      POSTGRES_PASSWORD: strataai-ci-password
+      STRATAAI_BUILD_REVISION: ${{ github.sha }}
+      STRATAAI_BUILD_VERSION: 0.1.0-${{ github.run_number }}
+      STRATAAI_WEB_IMAGE: strataai-web:${{ github.sha }}
+      STRATAAI_API_IMAGE: strataai-api:${{ github.sha }}
+      STRATAAI_WORKER_IMAGE: strataai-worker:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download exact built images
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-images-${{ github.sha }}
+          path: image-artifacts
+
+      - name: Verify image archive checksums
+        run: cd image-artifacts && sha256sum --check SHA256SUMS
+
+      - name: Load exact built images
+        shell: bash
+        run: |
+          set -euo pipefail
+          gunzip -c image-artifacts/strataai-web.tar.gz | docker load
+          gunzip -c image-artifacts/strataai-api.tar.gz | docker load
+          gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
+
+      - name: Start release topology
+        run: docker compose -f compose.release.yml up -d --wait --wait-timeout 180
+
+      - name: Health and SPA deep-link smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/health-check.sh
+          curl --fail --silent --show-error http://127.0.0.1:8088/app/demo/boards/demo-board >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8088/app/demo/boards/demo-board/cards/demo-card >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8088/portal/demo >/dev/null
+
+      - name: Capture container state and logs
+        if: failure()
+        shell: bash
+        run: |
+          docker compose -f compose.release.yml ps > compose-ps.txt || true
+          docker compose -f compose.release.yml logs --no-color > compose.log || true
+
+      - name: Upload integration diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: container-integration-diagnostics-${{ github.sha }}
+          path: |
+            compose-ps.txt
+            compose.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Stop release topology
+        if: always()
+        run: docker compose -f compose.release.yml down -v --remove-orphans
+
+  security:
+    name: security
+    runs-on: ubuntu-24.04
+    needs:
+      - build-images-once
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install locked web dependencies
+        run: npm ci
+
+      - name: Node dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Restore .NET packages
+        run: dotnet restore StrataAI2.slnx
+
+      - name: .NET vulnerable dependency audit
+        run: dotnet list StrataAI2.slnx package --vulnerable --include-transitive
+
+      - name: Download exact built images
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-images-${{ github.sha }}
+          path: image-artifacts
+
+      - name: Load exact built images
+        shell: bash
+        run: |
+          set -euo pipefail
+          gunzip -c image-artifacts/strataai-web.tar.gz | docker load
+          gunzip -c image-artifacts/strataai-api.tar.gz | docker load
+          gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
+
+      - name: Generate SBOMs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p security-artifacts
+          for image in web api worker; do
+            docker run --rm               -v /var/run/docker.sock:/var/run/docker.sock               -v "${PWD}/security-artifacts:/output"               aquasec/trivy:0.74.0               image --format cyclonedx               --output "/output/strataai-${image}.cdx.json"               "strataai-${image}:${GITHUB_SHA}"
+          done
+
+      - name: Secret scan
+        run: |
+          docker run --rm             -v "${PWD}:/workspace"             aquasec/trivy:0.74.0             fs --scanners secret --exit-code 1 /workspace
+
+      - name: Block fixed Critical container vulnerabilities
+        shell: bash
+        run: |
+          set -euo pipefail
+          for image in web api worker; do
+            docker run --rm               -v /var/run/docker.sock:/var/run/docker.sock               aquasec/trivy:0.74.0               image --exit-code 1 --ignore-unfixed --severity CRITICAL               "strataai-${image}:${GITHUB_SHA}"
+          done
+
+      - name: Upload SBOMs and security evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: security-evidence-${{ github.sha }}
+          path: security-artifacts/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  required-ci:
+    name: required-ci
+    if: always()
+    runs-on: ubuntu-24.04
+    needs:
+      - source-quality-gate
+      - build-images-once
+      - container-integration
+      - security
+    steps:
+      - name: Require every mandatory CI stage
+        env:
+          SOURCE_RESULT: ${{ needs.source-quality-gate.result }}
+          BUILD_RESULT: ${{ needs.build-images-once.result }}
+          CONTAINER_RESULT: ${{ needs.container-integration.result }}
+          SECURITY_RESULT: ${{ needs.security.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for result in "$SOURCE_RESULT" "$BUILD_RESULT" "$CONTAINER_RESULT" "$SECURITY_RESULT"; do
+            if [ "$result" != "success" ]; then
+              echo "Mandatory CI stage did not succeed: $result" >&2
+              exit 1
+            fi
+          done
+
+  release-bundle:
+    name: release-bundle
+    runs-on: ubuntu-24.04
+    needs:
+      - required-ci
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download exact tested images
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-images-${{ github.sha }}
+          path: image-artifacts
+
+      - name: Assemble release bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "bundle/images" "bundle/sbom"
+
+          cp image-artifacts/strataai-web.tar.gz bundle/images/
+          cp image-artifacts/strataai-api.tar.gz bundle/images/
+          cp image-artifacts/strataai-worker.tar.gz bundle/images/
+          cp compose.release.yml bundle/
+          cp .env.release.example bundle/
+          cp scripts/health-check.sh bundle/health-check.sh
+          cp docs/release/README.md bundle/README.md
+
+          cat > bundle/build-metadata.json <<EOF
+          {
+            "repository": "${GITHUB_REPOSITORY}",
+            "commitSha": "${GITHUB_SHA}",
+            "workflowRunId": "${GITHUB_RUN_ID}",
+            "workflowRunNumber": "${GITHUB_RUN_NUMBER}",
+            "version": "0.1.0-${GITHUB_RUN_NUMBER}",
+            "images": {
+              "web": "strataai-web:${GITHUB_SHA}",
+              "api": "strataai-api:${GITHUB_SHA}",
+              "worker": "strataai-worker:${GITHUB_SHA}"
+            }
+          }
+          EOF
+
+          (
+            cd bundle
+            find . -type f ! -name SHA256SUMS -print0               | sort -z               | xargs -0 sha256sum > SHA256SUMS
+          )
+
+      - name: Upload runnable release bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: strataai2-docker-bundle-${{ github.sha }}
+          path: bundle/
+          retention-days: ${{ github.event_name == 'pull_request' && 14 || 90 }}
