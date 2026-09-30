@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.Runtime;
+using StrataAI.Application.BackgroundJobs;
+using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Runtime;
@@ -33,6 +35,8 @@ public static class RuntimeConfiguration
         }
 
         services.AddSingleton(new PostgresConnectionFactory(connectionString));
+        services.AddSingleton<PostgresBackgroundJobStore>();
+        services.AddSingleton<IBackgroundJobStore>(provider => provider.GetRequiredService<PostgresBackgroundJobStore>());
         services.AddSingleton<IRuntimeDependencyStatus, ProductionRuntimeDependencyStatus>();
 
         return descriptor;

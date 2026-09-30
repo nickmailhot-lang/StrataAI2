@@ -27,8 +27,27 @@ in object storage. Passwords, provider credentials, plaintext reset/invite token
 and message bodies must never be placed in this metadata. Provider error bodies
 must not be persisted; failure accepts a bounded stable error code only.
 
-This is a foundation, not complete ARCH-07 acceptance: no handler is scheduled
-yet, and there are no mailbox/AI/object-storage adapters or provider sends. Global
+The separate Worker now hosts the application dispatcher when explicitly scoped
+with `STRATAAI_WORKER_ORGANIZATION_IDS` (comma-separated, nonempty UUIDs, maximum
+100 unique Organizations). Missing scope disables Organization job processing;
+invalid IDs, Demo execution or enabled scope without handlers fail startup.
+Database grants must restrict this service identity; configuration is not a
+replacement for database authorization. No Organization discovery or bypass of
+RLS occurs. Production runtime registers the PostgreSQL job store.
+
+Handlers declare their job type and service identity. Dispatch verifies the
+claimed Organization, worker and actor, then matches the handler's service
+identity. Duplicate handler registrations fail. Execution receives cancellation
+five seconds before the lease deadline. Provider failures store only stable error
+codes; shutdown leaves the lease to be recovered. An acknowledgement rejected by
+PostgreSQL is reported as lost, never successful. Unknown handlers/services retry
+within the existing attempt limit. Handlers must honor cancellation and use
+provider idempotency; cancellation cannot undo an already completed external send.
+Worker outcome logs include job/Organization/actor/service/worker IDs, type,
+attempt and correlation ID, without metadata, token, message or exception bodies.
+
+This is a foundation, not complete ARCH-07 acceptance: no production handler is
+registered yet, and there are no mailbox/AI/object-storage adapters or provider sends. Global
 identity verification/reset delivery needs its own explicit identity scope and
 safe token delivery design; it must not invent an Organization or bypass this
 queue's RLS. Outbound effects still need provider idempotency because a lease
@@ -38,3 +57,5 @@ future bounded lease renewal or smaller steps before being enabled.
 CI executes the actual queue functions with a non-bypass role: cross-tenant and
 missing-scope denial, atomic rollback, duplicate publication, lease fencing,
 delayed retry, terminal failure, successful completion, and crash recovery.
+Application tests additionally cover dispatcher scope/service rejection, leased
+completion, shutdown, deadline cancellation, safe provider errors and lost leases.

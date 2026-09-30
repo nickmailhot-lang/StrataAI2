@@ -1,14 +1,36 @@
 using StrataAI.Application.Common;
 using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Runtime;
+using StrataAI.Application.BackgroundJobs;
+using StrataAI.Worker;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
-builder.Services.AddStrataAiRuntime(builder.Configuration);
+var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration);
 builder.Services.AddHostedService<WorkerHeartbeat>();
 
+var jobScope = builder.Configuration["STRATAAI_WORKER_ORGANIZATION_IDS"];
+if (!string.IsNullOrWhiteSpace(jobScope))
+{
+    if (runtime.Mode != RuntimeMode.Production)
+        throw new InvalidOperationException("Organization job execution requires Production mode.");
+    var organizationIds = jobScope.Split(',', StringSplitOptions.TrimEntries)
+        .Select(value => Guid.TryParse(value, out var id) && id != Guid.Empty
+            ? id : throw new InvalidOperationException("Worker Organization scope contains an invalid ID."))
+        .Distinct().ToArray();
+    if (organizationIds.Length > 100)
+        throw new InvalidOperationException("Worker Organization scope exceeds 100 IDs.");
+    builder.Services.AddSingleton(new OrganizationJobScope(organizationIds));
+    builder.Services.AddSingleton<BackgroundJobProcessor>();
+    builder.Services.AddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
+    builder.Services.AddHostedService<OrganizationJobWorker>();
+}
+
 var app = builder.Build();
+
+if (!string.IsNullOrWhiteSpace(jobScope) && !app.Services.GetServices<IBackgroundJobHandler>().Any())
+    throw new InvalidOperationException("Scoped job execution requires registered handlers.");
 
 app.MapGet("/healthz", (IClock clock) => Results.Ok(new
 {

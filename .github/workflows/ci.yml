@@ -270,6 +270,9 @@ jobs:
             exit 1
           fi
 
+      - name: Verify explicit Worker job scope and handler configuration
+        run: scripts/ci/test-worker-job-configuration.sh "strataai-worker:${GITHUB_SHA}"
+
       - name: Verify production account defaults then test PostgreSQL profile concurrency
         shell: bash
         run: |
