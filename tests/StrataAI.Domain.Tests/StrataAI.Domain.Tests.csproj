@@ -11,5 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/StrataAI.Domain/StrataAI.Domain.csproj" />
+    <ProjectReference Include="../../src/StrataAI.Application/StrataAI.Application.csproj" />
   </ItemGroup>
 </Project>
