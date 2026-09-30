@@ -9,6 +9,7 @@ using StrataAI.Infrastructure.Identity;
 using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.Onboarding;
 using StrataAI.Infrastructure.Runtime;
+using StrataAI.Infrastructure.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration);
 builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
 builder.Services.AddStrataAiOrganizations(runtime);
 builder.Services.AddStrataAiOnboarding(runtime);
+builder.Services.AddStrataAiWorkManagement(runtime);
 
 var app = builder.Build();
 

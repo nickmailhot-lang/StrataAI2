@@ -1,0 +1,1402 @@
+using Npgsql;
+using StrataAI.Application.WorkManagement;
+using StrataAI.Infrastructure.Persistence;
+
+namespace StrataAI.Infrastructure.WorkManagement;
+
+internal sealed class PostgresWorkManagementStore(
+    PostgresConnectionFactory connectionFactory) : IWorkManagementStore
+{
+    public async Task<BoardRecord> CreateBoardAsync(
+        Guid organizationId,
+        Guid actorUserId,
+        Guid boardId,
+        string name,
+        string? description,
+        BoardVisibility visibility,
+        string backgroundType,
+        string? backgroundValue,
+        DateTimeOffset createdAt,
+        CancellationToken cancellationToken = default)
+    {
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                organizationId,
+                cancellationToken);
+
+        await using (var boardCommand = new NpgsqlCommand(
+            """
+            INSERT INTO boards(
+                id, tenant_id, name, description, visibility,
+                background_type, background_value, lifecycle_state,
+                created_at, updated_at, version)
+            VALUES (
+                @id, @tenant_id, @name, @description, @visibility,
+                @background_type, @background_value, 'ACTIVE',
+                @created_at, @updated_at, 1);
+            """,
+            session.Connection,
+            session.Transaction))
+        {
+            boardCommand.Parameters.AddWithValue("id", boardId);
+            boardCommand.Parameters.AddWithValue("tenant_id", organizationId);
+            boardCommand.Parameters.AddWithValue("name", name);
+            boardCommand.Parameters.AddWithValue(
+                "description",
+                description is null ? DBNull.Value : description);
+            boardCommand.Parameters.AddWithValue(
+                "visibility",
+                ToDatabaseVisibility(visibility));
+            boardCommand.Parameters.AddWithValue(
+                "background_type",
+                backgroundType);
+            boardCommand.Parameters.AddWithValue(
+                "background_value",
+                backgroundValue is null ? DBNull.Value : backgroundValue);
+            boardCommand.Parameters.AddWithValue("created_at", createdAt);
+            boardCommand.Parameters.AddWithValue("updated_at", createdAt);
+            await boardCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await using (var memberCommand = new NpgsqlCommand(
+            """
+            INSERT INTO board_members(
+                id, tenant_id, board_id, user_id, role, status,
+                created_at, updated_at, version)
+            VALUES (
+                @id, @tenant_id, @board_id, @user_id, 'ADMIN', 'ACTIVE',
+                @created_at, @updated_at, 1);
+            """,
+            session.Connection,
+            session.Transaction))
+        {
+            memberCommand.Parameters.AddWithValue("id", Guid.NewGuid());
+            memberCommand.Parameters.AddWithValue("tenant_id", organizationId);
+            memberCommand.Parameters.AddWithValue("board_id", boardId);
+            memberCommand.Parameters.AddWithValue("user_id", actorUserId);
+            memberCommand.Parameters.AddWithValue("created_at", createdAt);
+            memberCommand.Parameters.AddWithValue("updated_at", createdAt);
+            await memberCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await session.CommitAsync(cancellationToken);
+
+        return new BoardRecord(
+            boardId,
+            organizationId,
+            name,
+            description,
+            visibility,
+            backgroundType,
+            backgroundValue,
+            BoardLifecycleState.Active,
+            createdAt,
+            createdAt,
+            1);
+    }
+
+    public async Task<BoardRecord?> FindBoardAsync(
+        Guid boardId,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken);
+
+        return tenantId.HasValue
+            ? await FindBoardInTenantAsync(
+                tenantId.Value,
+                boardId,
+                cancellationToken)
+            : null;
+    }
+
+    public async Task<BoardMemberRecord?> FindBoardMemberAsync(
+        Guid boardId,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken);
+
+        if (!tenantId.HasValue)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT
+                board_id, user_id, role, status,
+                created_at, updated_at, version
+            FROM board_members
+            WHERE board_id = @board_id
+              AND user_id = @user_id;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("board_id", boardId);
+        command.Parameters.AddWithValue("user_id", userId);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+
+        return await reader.ReadAsync(cancellationToken)
+            ? ReadBoardMember(reader)
+            : null;
+    }
+
+    public async Task<BoardSnapshot?> GetSnapshotAsync(
+        Guid boardId,
+        Guid? userId,
+        BoardAccess access,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken);
+
+        if (!tenantId.HasValue)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+
+        BoardRecord? board;
+        await using (var boardCommand = new NpgsqlCommand(
+            BoardSelect + " WHERE id = @board_id;",
+            session.Connection,
+            session.Transaction))
+        {
+            boardCommand.Parameters.AddWithValue("board_id", boardId);
+            await using var reader =
+                await boardCommand.ExecuteReaderAsync(cancellationToken);
+            board = await reader.ReadAsync(cancellationToken)
+                ? ReadBoard(reader)
+                : null;
+        }
+
+        if (board is null)
+        {
+            return null;
+        }
+
+        var lists = new List<BoardListRecord>();
+        await using (var listCommand = new NpgsqlCommand(
+            """
+            SELECT
+                id, tenant_id, board_id, name, rank, lifecycle_state,
+                created_at, updated_at, version
+            FROM board_lists
+            WHERE board_id = @board_id
+              AND lifecycle_state = 'ACTIVE'
+            ORDER BY rank, id;
+            """,
+            session.Connection,
+            session.Transaction))
+        {
+            listCommand.Parameters.AddWithValue("board_id", boardId);
+            await using var reader =
+                await listCommand.ExecuteReaderAsync(cancellationToken);
+
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                lists.Add(ReadList(reader));
+            }
+        }
+
+        var cardsByList = lists.ToDictionary(
+            list => list.Id,
+            _ => new List<CardRecord>());
+
+        if (lists.Count > 0)
+        {
+            await using var cardCommand = new NpgsqlCommand(
+                """
+                SELECT
+                    id, tenant_id, board_id, list_id, title, description,
+                    rank, lifecycle_state, created_at, updated_at, version
+                FROM cards
+                WHERE board_id = @board_id
+                  AND lifecycle_state = 'ACTIVE'
+                ORDER BY list_id, rank, id;
+                """,
+                session.Connection,
+                session.Transaction);
+            cardCommand.Parameters.AddWithValue("board_id", boardId);
+
+            await using var reader =
+                await cardCommand.ExecuteReaderAsync(cancellationToken);
+
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                var card = ReadCard(reader);
+                if (cardsByList.TryGetValue(card.ListId, out var bucket))
+                {
+                    bucket.Add(card);
+                }
+            }
+        }
+
+        var starred = false;
+        if (userId.HasValue)
+        {
+            await using var starCommand = new NpgsqlCommand(
+                """
+                SELECT starred
+                FROM user_board_preferences
+                WHERE board_id = @board_id
+                  AND user_id = @user_id;
+                """,
+                session.Connection,
+                session.Transaction);
+            starCommand.Parameters.AddWithValue("board_id", boardId);
+            starCommand.Parameters.AddWithValue("user_id", userId.Value);
+            starred =
+                await starCommand.ExecuteScalarAsync(cancellationToken) as bool?
+                ?? false;
+        }
+
+        return new BoardSnapshot(
+            board,
+            lists.Select(
+                    list =>
+                        new BoardListSnapshot(
+                            list,
+                            cardsByList[list.Id]))
+                .ToArray(),
+            starred,
+            access);
+    }
+
+    public Task<BoardRecord?> UpdateBoardAsync(
+        Guid boardId,
+        string name,
+        string? description,
+        string backgroundType,
+        string? backgroundValue,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default) =>
+        UpdateBoardInternalAsync(
+            boardId,
+            """
+            name = @name,
+            description = @description,
+            background_type = @background_type,
+            background_value = @background_value,
+            """,
+            command =>
+            {
+                command.Parameters.AddWithValue("name", name);
+                command.Parameters.AddWithValue(
+                    "description",
+                    description is null ? DBNull.Value : description);
+                command.Parameters.AddWithValue(
+                    "background_type",
+                    backgroundType);
+                command.Parameters.AddWithValue(
+                    "background_value",
+                    backgroundValue is null ? DBNull.Value : backgroundValue);
+            },
+            expectedVersion,
+            updatedAt,
+            cancellationToken);
+
+    public Task<BoardRecord?> SetBoardVisibilityAsync(
+        Guid boardId,
+        BoardVisibility visibility,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default) =>
+        UpdateBoardInternalAsync(
+            boardId,
+            "visibility = @visibility,",
+            command =>
+                command.Parameters.AddWithValue(
+                    "visibility",
+                    ToDatabaseVisibility(visibility)),
+            expectedVersion,
+            updatedAt,
+            cancellationToken);
+
+    public async Task<BoardRecord?> SetBoardLifecycleAsync(
+        Guid boardId,
+        BoardLifecycleState expectedState,
+        BoardLifecycleState nextState,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken);
+
+        if (!tenantId.HasValue)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            $"""
+            UPDATE boards
+            SET lifecycle_state = @next_state,
+                archived_at = CASE
+                    WHEN @next_state = 'ARCHIVED' THEN @updated_at
+                    WHEN @next_state = 'ACTIVE' THEN NULL
+                    ELSE archived_at
+                END,
+                deleted_at = CASE
+                    WHEN @next_state = 'DELETED' THEN @updated_at
+                    ELSE deleted_at
+                END,
+                updated_at = @updated_at,
+                version = version + 1
+            WHERE id = @board_id
+              AND lifecycle_state = @expected_state
+              AND version = @expected_version
+            RETURNING {BoardColumns};
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("board_id", boardId);
+        command.Parameters.AddWithValue(
+            "expected_state",
+            ToDatabaseBoardLifecycle(expectedState));
+        command.Parameters.AddWithValue(
+            "next_state",
+            ToDatabaseBoardLifecycle(nextState));
+        command.Parameters.AddWithValue(
+            "expected_version",
+            expectedVersion);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var board = ReadBoard(reader);
+        await reader.DisposeAsync();
+        await session.CommitAsync(cancellationToken);
+        return board;
+    }
+
+    public async Task SetStarAsync(
+        Guid boardId,
+        Guid userId,
+        bool starred,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken);
+
+        if (!tenantId.HasValue)
+        {
+            return;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+
+        if (starred)
+        {
+            await using var command = new NpgsqlCommand(
+                """
+                INSERT INTO user_board_preferences(
+                    tenant_id, board_id, user_id, starred, updated_at)
+                VALUES (
+                    @tenant_id, @board_id, @user_id, true, @updated_at)
+                ON CONFLICT (board_id, user_id)
+                DO UPDATE SET
+                    starred = true,
+                    updated_at = EXCLUDED.updated_at;
+                """,
+                session.Connection,
+                session.Transaction);
+            command.Parameters.AddWithValue("tenant_id", tenantId.Value);
+            command.Parameters.AddWithValue("board_id", boardId);
+            command.Parameters.AddWithValue("user_id", userId);
+            command.Parameters.AddWithValue("updated_at", updatedAt);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        else
+        {
+            await using var command = new NpgsqlCommand(
+                """
+                DELETE FROM user_board_preferences
+                WHERE board_id = @board_id
+                  AND user_id = @user_id;
+                """,
+                session.Connection,
+                session.Transaction);
+            command.Parameters.AddWithValue("board_id", boardId);
+            command.Parameters.AddWithValue("user_id", userId);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await session.CommitAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<BoardMemberRecord>> ListBoardMembersAsync(
+        Guid boardId,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken);
+
+        if (!tenantId.HasValue)
+        {
+            return [];
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT
+                board_id, user_id, role, status,
+                created_at, updated_at, version
+            FROM board_members
+            WHERE board_id = @board_id
+              AND status = 'ACTIVE'
+            ORDER BY user_id;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("board_id", boardId);
+
+        var result = new List<BoardMemberRecord>();
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            result.Add(ReadBoardMember(reader));
+        }
+
+        return result;
+    }
+
+    public async Task<BoardMemberRecord> UpsertBoardMemberAsync(
+        Guid boardId,
+        Guid userId,
+        BoardRole role,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken)
+            ?? throw new InvalidOperationException("Board was not found.");
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            INSERT INTO board_members(
+                id, tenant_id, board_id, user_id, role, status,
+                created_at, updated_at, version)
+            VALUES (
+                @id, @tenant_id, @board_id, @user_id, @role, 'ACTIVE',
+                @updated_at, @updated_at, 1)
+            ON CONFLICT (board_id, user_id)
+            DO UPDATE SET
+                role = EXCLUDED.role,
+                status = 'ACTIVE',
+                updated_at = EXCLUDED.updated_at,
+                version = board_members.version + 1
+            RETURNING
+                board_id, user_id, role, status,
+                created_at, updated_at, version;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("id", Guid.NewGuid());
+        command.Parameters.AddWithValue("tenant_id", tenantId);
+        command.Parameters.AddWithValue("board_id", boardId);
+        command.Parameters.AddWithValue("user_id", userId);
+        command.Parameters.AddWithValue("role", ToDatabaseBoardRole(role));
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        await reader.ReadAsync(cancellationToken);
+        var result = ReadBoardMember(reader);
+        await reader.DisposeAsync();
+        await session.CommitAsync(cancellationToken);
+        return result;
+    }
+
+    public async Task<bool> RemoveBoardMemberAsync(
+        Guid boardId,
+        Guid userId,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken);
+
+        if (!tenantId.HasValue)
+        {
+            return false;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            UPDATE board_members
+            SET status = 'REMOVED',
+                updated_at = @updated_at,
+                version = version + 1
+            WHERE board_id = @board_id
+              AND user_id = @user_id
+              AND status = 'ACTIVE';
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+        command.Parameters.AddWithValue("board_id", boardId);
+        command.Parameters.AddWithValue("user_id", userId);
+
+        var changed =
+            await command.ExecuteNonQueryAsync(cancellationToken) == 1;
+        if (changed)
+        {
+            await session.CommitAsync(cancellationToken);
+        }
+
+        return changed;
+    }
+
+    public async Task<BoardListRecord> CreateListAsync(
+        Guid boardId,
+        Guid listId,
+        string name,
+        string rank,
+        DateTimeOffset createdAt,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken)
+            ?? throw new InvalidOperationException("Board was not found.");
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            INSERT INTO board_lists(
+                id, tenant_id, board_id, name, rank, lifecycle_state,
+                created_at, updated_at, version)
+            VALUES (
+                @id, @tenant_id, @board_id, @name, @rank, 'ACTIVE',
+                @created_at, @updated_at, 1);
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("id", listId);
+        command.Parameters.AddWithValue("tenant_id", tenantId);
+        command.Parameters.AddWithValue("board_id", boardId);
+        command.Parameters.AddWithValue("name", name);
+        command.Parameters.AddWithValue("rank", rank);
+        command.Parameters.AddWithValue("created_at", createdAt);
+        command.Parameters.AddWithValue("updated_at", createdAt);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        await session.CommitAsync(cancellationToken);
+
+        return new BoardListRecord(
+            listId,
+            tenantId,
+            boardId,
+            name,
+            rank,
+            WorkItemLifecycleState.Active,
+            createdAt,
+            createdAt,
+            1);
+    }
+
+    public async Task<BoardListRecord?> FindListAsync(
+        Guid listId,
+        CancellationToken cancellationToken = default)
+    {
+        var route = await ResolveListRouteAsync(
+            listId,
+            cancellationToken);
+
+        if (route is null)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                route.Value.TenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT
+                id, tenant_id, board_id, name, rank, lifecycle_state,
+                created_at, updated_at, version
+            FROM board_lists
+            WHERE id = @list_id;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("list_id", listId);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken)
+            ? ReadList(reader)
+            : null;
+    }
+
+    public async Task<BoardListRecord?> UpdateListAsync(
+        Guid listId,
+        string name,
+        string rank,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var route = await ResolveListRouteAsync(
+            listId,
+            cancellationToken);
+
+        if (route is null)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                route.Value.TenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            UPDATE board_lists
+            SET name = @name,
+                rank = @rank,
+                updated_at = @updated_at,
+                version = version + 1
+            WHERE id = @list_id
+              AND version = @expected_version
+              AND lifecycle_state = 'ACTIVE'
+            RETURNING
+                id, tenant_id, board_id, name, rank, lifecycle_state,
+                created_at, updated_at, version;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("name", name);
+        command.Parameters.AddWithValue("rank", rank);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+        command.Parameters.AddWithValue("list_id", listId);
+        command.Parameters.AddWithValue("expected_version", expectedVersion);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var result = ReadList(reader);
+        await reader.DisposeAsync();
+        await session.CommitAsync(cancellationToken);
+        return result;
+    }
+
+    public async Task<BoardListRecord?> SetListLifecycleAsync(
+        Guid listId,
+        WorkItemLifecycleState expectedState,
+        WorkItemLifecycleState nextState,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var route = await ResolveListRouteAsync(
+            listId,
+            cancellationToken);
+
+        if (route is null)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                route.Value.TenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            UPDATE board_lists
+            SET lifecycle_state = @next_state,
+                archived_at = CASE
+                    WHEN @next_state = 'ARCHIVED' THEN @updated_at
+                    WHEN @next_state = 'ACTIVE' THEN NULL
+                    ELSE archived_at
+                END,
+                deleted_at = CASE
+                    WHEN @next_state = 'DELETED' THEN @updated_at
+                    ELSE deleted_at
+                END,
+                updated_at = @updated_at,
+                version = version + 1
+            WHERE id = @list_id
+              AND lifecycle_state = @expected_state
+              AND version = @expected_version
+            RETURNING
+                id, tenant_id, board_id, name, rank, lifecycle_state,
+                created_at, updated_at, version;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("list_id", listId);
+        command.Parameters.AddWithValue(
+            "expected_state",
+            ToDatabaseWorkLifecycle(expectedState));
+        command.Parameters.AddWithValue(
+            "next_state",
+            ToDatabaseWorkLifecycle(nextState));
+        command.Parameters.AddWithValue("expected_version", expectedVersion);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var result = ReadList(reader);
+        await reader.DisposeAsync();
+        await session.CommitAsync(cancellationToken);
+        return result;
+    }
+
+    public async Task<CardRecord> CreateCardAsync(
+        Guid listId,
+        Guid cardId,
+        string title,
+        string? description,
+        string rank,
+        DateTimeOffset createdAt,
+        CancellationToken cancellationToken = default)
+    {
+        var route = await ResolveListRouteAsync(
+            listId,
+            cancellationToken)
+            ?? throw new InvalidOperationException("List was not found.");
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                route.TenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            INSERT INTO cards(
+                id, tenant_id, board_id, list_id, title, description,
+                rank, lifecycle_state, created_at, updated_at, version)
+            VALUES (
+                @id, @tenant_id, @board_id, @list_id, @title, @description,
+                @rank, 'ACTIVE', @created_at, @updated_at, 1);
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("id", cardId);
+        command.Parameters.AddWithValue("tenant_id", route.TenantId);
+        command.Parameters.AddWithValue("board_id", route.BoardId);
+        command.Parameters.AddWithValue("list_id", listId);
+        command.Parameters.AddWithValue("title", title);
+        command.Parameters.AddWithValue(
+            "description",
+            description is null ? DBNull.Value : description);
+        command.Parameters.AddWithValue("rank", rank);
+        command.Parameters.AddWithValue("created_at", createdAt);
+        command.Parameters.AddWithValue("updated_at", createdAt);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        await session.CommitAsync(cancellationToken);
+
+        return new CardRecord(
+            cardId,
+            route.TenantId,
+            route.BoardId,
+            listId,
+            title,
+            description,
+            rank,
+            WorkItemLifecycleState.Active,
+            createdAt,
+            createdAt,
+            1);
+    }
+
+    public async Task<CardRecord?> FindCardAsync(
+        Guid cardId,
+        CancellationToken cancellationToken = default)
+    {
+        var route = await ResolveCardRouteAsync(
+            cardId,
+            cancellationToken);
+
+        if (route is null)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                route.Value.TenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT
+                id, tenant_id, board_id, list_id, title, description,
+                rank, lifecycle_state, created_at, updated_at, version
+            FROM cards
+            WHERE id = @card_id;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("card_id", cardId);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken)
+            ? ReadCard(reader)
+            : null;
+    }
+
+    public async Task<CardRecord?> UpdateCardAsync(
+        Guid cardId,
+        string title,
+        string? description,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var route = await ResolveCardRouteAsync(
+            cardId,
+            cancellationToken);
+
+        if (route is null)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                route.Value.TenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            UPDATE cards
+            SET title = @title,
+                description = @description,
+                updated_at = @updated_at,
+                version = version + 1
+            WHERE id = @card_id
+              AND version = @expected_version
+              AND lifecycle_state = 'ACTIVE'
+            RETURNING
+                id, tenant_id, board_id, list_id, title, description,
+                rank, lifecycle_state, created_at, updated_at, version;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("title", title);
+        command.Parameters.AddWithValue(
+            "description",
+            description is null ? DBNull.Value : description);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+        command.Parameters.AddWithValue("card_id", cardId);
+        command.Parameters.AddWithValue("expected_version", expectedVersion);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var result = ReadCard(reader);
+        await reader.DisposeAsync();
+        await session.CommitAsync(cancellationToken);
+        return result;
+    }
+
+    public async Task<CardRecord?> MoveCardAsync(
+        Guid cardId,
+        Guid destinationListId,
+        string rank,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var cardRoute = await ResolveCardRouteAsync(
+            cardId,
+            cancellationToken);
+        var listRoute = await ResolveListRouteAsync(
+            destinationListId,
+            cancellationToken);
+
+        if (cardRoute is null ||
+            listRoute is null ||
+            cardRoute.Value.TenantId != listRoute.Value.TenantId ||
+            cardRoute.Value.BoardId != listRoute.Value.BoardId)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                cardRoute.Value.TenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            UPDATE cards
+            SET list_id = @destination_list_id,
+                rank = @rank,
+                updated_at = @updated_at,
+                version = version + 1
+            WHERE id = @card_id
+              AND version = @expected_version
+              AND lifecycle_state = 'ACTIVE'
+            RETURNING
+                id, tenant_id, board_id, list_id, title, description,
+                rank, lifecycle_state, created_at, updated_at, version;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue(
+            "destination_list_id",
+            destinationListId);
+        command.Parameters.AddWithValue("rank", rank);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+        command.Parameters.AddWithValue("card_id", cardId);
+        command.Parameters.AddWithValue("expected_version", expectedVersion);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var result = ReadCard(reader);
+        await reader.DisposeAsync();
+        await session.CommitAsync(cancellationToken);
+        return result;
+    }
+
+    public async Task<CardRecord?> SetCardLifecycleAsync(
+        Guid cardId,
+        WorkItemLifecycleState expectedState,
+        WorkItemLifecycleState nextState,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken = default)
+    {
+        var route = await ResolveCardRouteAsync(
+            cardId,
+            cancellationToken);
+
+        if (route is null)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                route.Value.TenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            UPDATE cards
+            SET lifecycle_state = @next_state,
+                archived_at = CASE
+                    WHEN @next_state = 'ARCHIVED' THEN @updated_at
+                    WHEN @next_state = 'ACTIVE' THEN NULL
+                    ELSE archived_at
+                END,
+                deleted_at = CASE
+                    WHEN @next_state = 'DELETED' THEN @updated_at
+                    ELSE deleted_at
+                END,
+                updated_at = @updated_at,
+                version = version + 1
+            WHERE id = @card_id
+              AND lifecycle_state = @expected_state
+              AND version = @expected_version
+            RETURNING
+                id, tenant_id, board_id, list_id, title, description,
+                rank, lifecycle_state, created_at, updated_at, version;
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("card_id", cardId);
+        command.Parameters.AddWithValue(
+            "expected_state",
+            ToDatabaseWorkLifecycle(expectedState));
+        command.Parameters.AddWithValue(
+            "next_state",
+            ToDatabaseWorkLifecycle(nextState));
+        command.Parameters.AddWithValue("expected_version", expectedVersion);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var result = ReadCard(reader);
+        await reader.DisposeAsync();
+        await session.CommitAsync(cancellationToken);
+        return result;
+    }
+
+    public async Task AppendAuditAsync(
+        Guid organizationId,
+        Guid actorUserId,
+        string eventType,
+        string entityType,
+        Guid entityId,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                organizationId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            INSERT INTO audit_events(
+                id, tenant_id, actor_id, event_type, entity_type,
+                entity_id, correlation_id, safe_metadata, created_at)
+            VALUES (
+                @id, @tenant_id, @actor_id, @event_type, @entity_type,
+                @entity_id, @correlation_id, '{}'::jsonb, now());
+            """,
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("id", Guid.NewGuid());
+        command.Parameters.AddWithValue("tenant_id", organizationId);
+        command.Parameters.AddWithValue("actor_id", actorUserId);
+        command.Parameters.AddWithValue("event_type", eventType);
+        command.Parameters.AddWithValue("entity_type", entityType);
+        command.Parameters.AddWithValue("entity_id", entityId);
+        command.Parameters.AddWithValue("correlation_id", correlationId);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        await session.CommitAsync(cancellationToken);
+    }
+
+    private async Task<BoardRecord?> UpdateBoardInternalAsync(
+        Guid boardId,
+        string assignments,
+        Action<NpgsqlCommand> addParameters,
+        long expectedVersion,
+        DateTimeOffset updatedAt,
+        CancellationToken cancellationToken)
+    {
+        var tenantId = await ResolveBoardTenantAsync(
+            boardId,
+            cancellationToken);
+
+        if (!tenantId.HasValue)
+        {
+            return null;
+        }
+
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId.Value,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            $"""
+            UPDATE boards
+            SET {assignments}
+                updated_at = @updated_at,
+                version = version + 1
+            WHERE id = @board_id
+              AND version = @expected_version
+              AND lifecycle_state <> 'DELETED'
+            RETURNING {BoardColumns};
+            """,
+            session.Connection,
+            session.Transaction);
+
+        addParameters(command);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+        command.Parameters.AddWithValue("board_id", boardId);
+        command.Parameters.AddWithValue("expected_version", expectedVersion);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        var result = ReadBoard(reader);
+        await reader.DisposeAsync();
+        await session.CommitAsync(cancellationToken);
+        return result;
+    }
+
+    private async Task<BoardRecord?> FindBoardInTenantAsync(
+        Guid tenantId,
+        Guid boardId,
+        CancellationToken cancellationToken)
+    {
+        await using var session =
+            await connectionFactory.OpenTenantSessionAsync(
+                tenantId,
+                cancellationToken);
+        await using var command = new NpgsqlCommand(
+            BoardSelect + " WHERE id = @board_id;",
+            session.Connection,
+            session.Transaction);
+        command.Parameters.AddWithValue("board_id", boardId);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken)
+            ? ReadBoard(reader)
+            : null;
+    }
+
+    private async Task<Guid?> ResolveBoardTenantAsync(
+        Guid boardId,
+        CancellationToken cancellationToken)
+    {
+        await using var connection =
+            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT tenant_id
+            FROM board_routes
+            WHERE board_id = @board_id
+              AND lifecycle_state <> 'DELETED';
+            """,
+            connection);
+        command.Parameters.AddWithValue("board_id", boardId);
+
+        var value = await command.ExecuteScalarAsync(cancellationToken);
+        return value is Guid tenantId ? tenantId : null;
+    }
+
+    private async Task<(Guid TenantId, Guid BoardId)?> ResolveListRouteAsync(
+        Guid listId,
+        CancellationToken cancellationToken)
+    {
+        await using var connection =
+            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT tenant_id, board_id
+            FROM list_routes
+            WHERE list_id = @list_id
+              AND lifecycle_state <> 'DELETED';
+            """,
+            connection);
+        command.Parameters.AddWithValue("list_id", listId);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+
+        return await reader.ReadAsync(cancellationToken)
+            ? (reader.GetGuid(0), reader.GetGuid(1))
+            : null;
+    }
+
+    private async Task<(Guid TenantId, Guid BoardId, Guid ListId)?> ResolveCardRouteAsync(
+        Guid cardId,
+        CancellationToken cancellationToken)
+    {
+        await using var connection =
+            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT tenant_id, board_id, list_id
+            FROM card_routes
+            WHERE card_id = @card_id
+              AND lifecycle_state <> 'DELETED';
+            """,
+            connection);
+        command.Parameters.AddWithValue("card_id", cardId);
+
+        await using var reader =
+            await command.ExecuteReaderAsync(cancellationToken);
+
+        return await reader.ReadAsync(cancellationToken)
+            ? (reader.GetGuid(0), reader.GetGuid(1), reader.GetGuid(2))
+            : null;
+    }
+
+    private const string BoardColumns = """
+        id, tenant_id, name, description, visibility,
+        background_type, background_value, lifecycle_state,
+        created_at, updated_at, version
+        """;
+
+    private const string BoardSelect = "SELECT " + BoardColumns + " FROM boards";
+
+    private static BoardRecord ReadBoard(NpgsqlDataReader reader) =>
+        new(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            reader.GetString(2),
+            reader.IsDBNull(3) ? null : reader.GetString(3),
+            ParseVisibility(reader.GetString(4)),
+            reader.GetString(5),
+            reader.IsDBNull(6) ? null : reader.GetString(6),
+            ParseBoardLifecycle(reader.GetString(7)),
+            reader.GetFieldValue<DateTimeOffset>(8),
+            reader.GetFieldValue<DateTimeOffset>(9),
+            reader.GetInt64(10));
+
+    private static BoardListRecord ReadList(NpgsqlDataReader reader) =>
+        new(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            reader.GetGuid(2),
+            reader.GetString(3),
+            reader.GetString(4),
+            ParseWorkLifecycle(reader.GetString(5)),
+            reader.GetFieldValue<DateTimeOffset>(6),
+            reader.GetFieldValue<DateTimeOffset>(7),
+            reader.GetInt64(8));
+
+    private static CardRecord ReadCard(NpgsqlDataReader reader) =>
+        new(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            reader.GetGuid(2),
+            reader.GetGuid(3),
+            reader.GetString(4),
+            reader.IsDBNull(5) ? null : reader.GetString(5),
+            reader.GetString(6),
+            ParseWorkLifecycle(reader.GetString(7)),
+            reader.GetFieldValue<DateTimeOffset>(8),
+            reader.GetFieldValue<DateTimeOffset>(9),
+            reader.GetInt64(10));
+
+    private static BoardMemberRecord ReadBoardMember(NpgsqlDataReader reader) =>
+        new(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            ParseBoardRole(reader.GetString(2)),
+            reader.GetString(3) == "ACTIVE",
+            reader.GetFieldValue<DateTimeOffset>(4),
+            reader.GetFieldValue<DateTimeOffset>(5),
+            reader.GetInt64(6));
+
+    private static string ToDatabaseVisibility(BoardVisibility visibility) =>
+        visibility switch
+        {
+            BoardVisibility.Private => "PRIVATE",
+            BoardVisibility.Organization => "ORGANIZATION",
+            BoardVisibility.Public => "PUBLIC",
+            _ => throw new ArgumentOutOfRangeException(nameof(visibility)),
+        };
+
+    private static BoardVisibility ParseVisibility(string visibility) =>
+        visibility switch
+        {
+            "PRIVATE" => BoardVisibility.Private,
+            "ORGANIZATION" => BoardVisibility.Organization,
+            "PUBLIC" => BoardVisibility.Public,
+            _ => throw new InvalidOperationException(
+                $"Unknown board visibility '{visibility}'."),
+        };
+
+    private static string ToDatabaseBoardLifecycle(BoardLifecycleState state) =>
+        state switch
+        {
+            BoardLifecycleState.Active => "ACTIVE",
+            BoardLifecycleState.Archived => "ARCHIVED",
+            BoardLifecycleState.Deleted => "DELETED",
+            _ => throw new ArgumentOutOfRangeException(nameof(state)),
+        };
+
+    private static BoardLifecycleState ParseBoardLifecycle(string state) =>
+        state switch
+        {
+            "ACTIVE" => BoardLifecycleState.Active,
+            "ARCHIVED" => BoardLifecycleState.Archived,
+            "DELETED" => BoardLifecycleState.Deleted,
+            _ => throw new InvalidOperationException(
+                $"Unknown board lifecycle '{state}'."),
+        };
+
+    private static string ToDatabaseWorkLifecycle(WorkItemLifecycleState state) =>
+        state switch
+        {
+            WorkItemLifecycleState.Active => "ACTIVE",
+            WorkItemLifecycleState.Archived => "ARCHIVED",
+            WorkItemLifecycleState.Deleted => "DELETED",
+            _ => throw new ArgumentOutOfRangeException(nameof(state)),
+        };
+
+    private static WorkItemLifecycleState ParseWorkLifecycle(string state) =>
+        state switch
+        {
+            "ACTIVE" => WorkItemLifecycleState.Active,
+            "ARCHIVED" => WorkItemLifecycleState.Archived,
+            "DELETED" => WorkItemLifecycleState.Deleted,
+            _ => throw new InvalidOperationException(
+                $"Unknown item lifecycle '{state}'."),
+        };
+
+    private static string ToDatabaseBoardRole(BoardRole role) =>
+        role switch
+        {
+            BoardRole.Admin => "ADMIN",
+            BoardRole.Member => "MEMBER",
+            _ => throw new ArgumentOutOfRangeException(nameof(role)),
+        };
+
+    private static BoardRole ParseBoardRole(string role) =>
+        role switch
+        {
+            "ADMIN" => BoardRole.Admin,
+            "MEMBER" => BoardRole.Member,
+            _ => throw new InvalidOperationException(
+                $"Unknown board role '{role}'."),
+        };
+}
