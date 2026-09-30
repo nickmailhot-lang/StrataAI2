@@ -1,9 +1,11 @@
 using StrataAI.Api;
 using StrataAI.Api.Auth;
+using StrataAI.Api.Organizations;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Identity;
+using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,7 @@ builder.Services.AddAuthorization();
 
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration);
 builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
+builder.Services.AddStrataAiOrganizations(runtime);
 
 var app = builder.Build();
 
@@ -75,6 +78,7 @@ if (runtime.Mode == RuntimeMode.Demo)
 app.MapIdentityEndpoints(
     runtime,
     app.Services.GetRequiredService<IdentityPolicy>());
+app.MapOrganizationEndpoints();
 
 app.Run();
 
