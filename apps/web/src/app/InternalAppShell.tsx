@@ -1,7 +1,7 @@
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
-import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MeetingRoomOutlinedIcon from '@mui/icons-material/MeetingRoomOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined';
@@ -19,17 +19,23 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import type { ReactNode } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 
 const drawerWidth = 248;
 
-const navigation = [
-  ['Dashboard', <DashboardOutlinedIcon key="dashboard" />],
-  ['Board', <ViewKanbanOutlinedIcon key="board" />],
-  ['Meetings', <MeetingRoomOutlinedIcon key="meetings" />],
-  ['Correspondence', <MailOutlineIcon key="mail" />],
-  ['Documents', <DescriptionOutlinedIcon key="documents" />],
-  ['Owners & Units', <GroupsOutlinedIcon key="owners" />],
+type NavigationItem = {
+  label: string;
+  icon: ReactNode;
+};
+
+const navigation: NavigationItem[] = [
+  { label: 'Dashboard', icon: <DashboardOutlinedIcon /> },
+  { label: 'Board', icon: <ViewKanbanOutlinedIcon /> },
+  { label: 'Meetings', icon: <MeetingRoomOutlinedIcon /> },
+  { label: 'Correspondence', icon: <EmailOutlinedIcon /> },
+  { label: 'Documents', icon: <DescriptionOutlinedIcon /> },
+  { label: 'Owners & Units', icon: <GroupsOutlinedIcon /> },
 ];
 
 export function InternalAppShell() {
@@ -70,10 +76,10 @@ export function InternalAppShell() {
       >
         <Toolbar />
         <List aria-label="Internal application navigation">
-          {navigation.map(([label, icon]) => (
-            <ListItemButton key={label as string}>
-              <ListItemIcon>{icon}</ListItemIcon>
-              <ListItemText primary={label as string} />
+          {navigation.map((item) => (
+            <ListItemButton key={item.label}>
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.label} />
             </ListItemButton>
           ))}
         </List>

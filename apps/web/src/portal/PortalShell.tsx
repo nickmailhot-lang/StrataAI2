@@ -36,10 +36,14 @@ export function PortalShell() {
             </Typography>
           </Box>
           <Paper variant="outlined" sx={{ p: 3 }}>
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ alignItems: 'center' }}
+            >
               <FolderOutlinedIcon color="primary" />
               <Box sx={{ flexGrow: 1 }}>
-                <Typography fontWeight={700}>Published documents</Typography>
+                <Typography sx={{ fontWeight: 700 }}>Published documents</Typography>
                 <Typography variant="body2" color="text.secondary">
                   Folder/document publication behavior is implemented under PRD-80.
                 </Typography>

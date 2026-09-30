@@ -29,21 +29,26 @@ VALUES
   ('$BOARD_B', '$ORG_B', 'B Board', now(), now());
 
 GRANT USAGE ON SCHEMA public TO strataai_ci_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON organizations, boards, board_lists, cards TO strataai_ci_app;
+GRANT SELECT, INSERT, UPDATE, DELETE
+  ON organizations, boards, board_lists, cards
+  TO strataai_ci_app;
 SQL
 
-count_a="$(
-  PGPASSWORD="strataai-ci-app" psql     --username=strataai_ci_app     --tuples-only --no-align     --command="SET app.tenant_id='$ORG_A'; SELECT count(*) FROM boards;"
-)"
+tenant_query() {
+  local tenant_id="$1"
+  local sql="$2"
+
+  PGOPTIONS="-c app.tenant_id=$tenant_id"   PGPASSWORD="strataai-ci-app"     psql       --username=strataai_ci_app       --tuples-only       --no-align       --quiet       --command="$sql"
+}
+
+count_a="$(tenant_query "$ORG_A" "SELECT count(*) FROM boards;")"
 
 if [ "$count_a" != "1" ]; then
   echo "Expected Organization A to see exactly one board; got '$count_a'." >&2
   exit 1
 fi
 
-count_b="$(
-  PGPASSWORD="strataai-ci-app" psql     --username=strataai_ci_app     --tuples-only --no-align     --command="SET app.tenant_id='$ORG_A'; SELECT count(*) FROM boards WHERE id='$BOARD_B';"
-)"
+count_b="$(tenant_query "$ORG_A" "SELECT count(*) FROM boards WHERE id='$BOARD_B';")"
 
 if [ "$count_b" != "0" ]; then
   echo "Cross-tenant board leaked through RLS." >&2
@@ -51,7 +56,7 @@ if [ "$count_b" != "0" ]; then
 fi
 
 set +e
-PGPASSWORD="strataai-ci-app" psql   --username=strataai_ci_app   --command="SET app.tenant_id='$ORG_A'; INSERT INTO boards(id, tenant_id, name, created_at, updated_at) VALUES (gen_random_uuid(), '$ORG_B', 'Forbidden', now(), now());"   >/tmp/strataai-rls-write.log 2>&1
+PGOPTIONS="-c app.tenant_id=$ORG_A" PGPASSWORD="strataai-ci-app"   psql     --username=strataai_ci_app     --quiet     --command="INSERT INTO boards(id, tenant_id, name, created_at, updated_at) VALUES (gen_random_uuid(), '$ORG_B', 'Forbidden', now(), now());"     >/tmp/strataai-rls-write.log 2>&1
 write_status=$?
 set -e
 
@@ -62,7 +67,7 @@ if [ "$write_status" -eq 0 ]; then
 fi
 
 missing_context_count="$(
-  PGPASSWORD="strataai-ci-app" psql     --username=strataai_ci_app     --tuples-only --no-align     --command="RESET app.tenant_id; SELECT count(*) FROM boards;"
+  PGPASSWORD="strataai-ci-app"     psql       --username=strataai_ci_app       --tuples-only       --no-align       --quiet       --command="SELECT count(*) FROM boards;"
 )"
 
 if [ "$missing_context_count" != "0" ]; then
@@ -70,7 +75,9 @@ if [ "$missing_context_count" != "0" ]; then
   exit 1
 fi
 
-vector_check="$(psql --tuples-only --no-align --command="SELECT extversion FROM pg_extension WHERE extname='vector';")"
+vector_check="$(
+  psql     --tuples-only     --no-align     --quiet     --command="SELECT extversion FROM pg_extension WHERE extname='vector';"
+)"
 
 if [ -z "$vector_check" ]; then
   echo "pgvector extension is not installed." >&2

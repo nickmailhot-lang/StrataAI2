@@ -44,9 +44,11 @@ export function BoardScreen() {
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
-        alignItems={{ sm: 'center' }}
-        justifyContent="space-between"
-        sx={{ mb: 3 }}
+        sx={{
+          mb: 3,
+          alignItems: { sm: 'center' },
+          justifyContent: 'space-between',
+        }}
       >
         <Box>
           <Typography variant="h4" component="h2">
@@ -82,7 +84,10 @@ export function BoardScreen() {
               minHeight: 360,
             }}
           >
-            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1.5 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ mb: 1.5, fontWeight: 700 }}
+            >
               {column.title}
             </Typography>
             <Stack spacing={1.25}>
@@ -102,7 +107,7 @@ export function BoardScreen() {
                   }}
                 >
                   <CardContent>
-                    <Typography fontWeight={600}>{card.title}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{card.title}</Typography>
                     <Chip
                       size="small"
                       label={card.priority}
@@ -120,8 +125,12 @@ export function BoardScreen() {
       <Drawer
         anchor="right"
         open={Boolean(cardId)}
-        component="aside"
-        PaperProps={{ sx: { width: { xs: '100%', sm: 440 }, p: 3 } }}
+        slotProps={{
+          paper: {
+            component: 'aside',
+            sx: { width: { xs: '100%', sm: 440 }, p: 3 },
+          },
+        }}
       >
         <Typography variant="h5" component="h2" sx={{ mt: 2 }}>
           Card details
