@@ -116,6 +116,7 @@ app.MapIdentityEndpoints(
 app.MapOrganizationEndpoints();
 app.MapInvitationEndpoints(runtime);
 app.MapWorkManagementEndpoints();
+app.MapWorkSynchronizationEndpoints();
 
 app.Run();
 

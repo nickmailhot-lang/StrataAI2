@@ -330,6 +330,9 @@ jobs:
       - name: Atomic Work events and leased Worker readiness against exact release images
         run: scripts/ci/test-work-events.sh
 
+      - name: Authorized contiguous event replay and mid-read revocation against exact release API
+        run: scripts/ci/test-work-sync.sh
+
       - name: Prepare isolated identity mail transport and ephemeral signing keys
         run: |
           set -euo pipefail

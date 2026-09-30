@@ -15,6 +15,9 @@ trap 'rm -f "$body"; restore' EXIT
 code=$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'X-StrataAI-Request: 1' -d '{"email":"guard-check@example.test","password":"not-a-real-password"}' http://127.0.0.1:8080/auth/login)
 test "$code" = 503
 jq -e '.code == "runtime_database_role_unsafe" and .status == 503' "$body" >/dev/null
+code=$(curl --silent --show-error --output "$body" --write-out '%{http_code}' http://127.0.0.1:8080/boards/11111111-1111-1111-1111-111111111111/sync)
+test "$code" = 503
+jq -e '.code == "runtime_database_role_unsafe"' "$body" >/dev/null
 restore
 test "$(status http://127.0.0.1:8080/readyz)" = 200
 test "$(status http://127.0.0.1:8081/readyz)" = 200
@@ -27,6 +30,9 @@ admin "DELETE FROM schema_migrations WHERE version='$version';"
 test "$(status http://127.0.0.1:8080/readyz)" = 503
 test "$(status http://127.0.0.1:8081/readyz)" = 503
 code=$(curl --silent --show-error --output "$body" --write-out '%{http_code}' -H 'Content-Type: application/json' -H 'X-StrataAI-Request: 1' -d '{"email":"schema-check@example.test","password":"not-a-real-password"}' http://127.0.0.1:8080/auth/login)
+test "$code" = 503
+jq -e '.code == "runtime_database_schema_incompatible"' "$body" >/dev/null
+code=$(curl --silent --show-error --output "$body" --write-out '%{http_code}' http://127.0.0.1:8080/boards/11111111-1111-1111-1111-111111111111/sync)
 test "$code" = 503
 jq -e '.code == "runtime_database_schema_incompatible"' "$body" >/dev/null
 restore

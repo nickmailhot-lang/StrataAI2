@@ -14,7 +14,7 @@ namespace StrataAI.Api.Tests;
 
 // ARCH-01-AC-001/003, ARCH-09-FR-002, PRD-02-TC-01/03/04/07,
 // PRD-24-TC-04: real endpoint binding, middleware and session authorization.
-public sealed class ApiHostTests
+public sealed partial class ApiHostTests
 {
     // PRD-07/08-TC-07, PRD-24-TC-05: repeated intent and revoked replay.
     [Fact]
@@ -313,11 +313,12 @@ public sealed class ApiHostTests
     }
 }
 
-internal sealed class ApiFactory(string mode = "demo") : WebApplicationFactory<Program>
+internal sealed class ApiFactory(string mode = "demo", Action<IServiceCollection>? configureServices = null) : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        if (configureServices is not null) builder.ConfigureServices(configureServices);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

@@ -57,9 +57,9 @@ Work mutations publish their audit, event, board sequence and queue job inside t
 owning command transaction. The publisher refuses standalone transactions.
 Sequences are scoped per board and rollback without gaps; keyed command replay
 does not append again. Demo retains envelopes in memory without durable delivery.
-This readiness step does not yet expose a replay API or SignalR transport.
-Future consumers must freshly authorize Board access and advance only through
-contiguous ready sequences; a later ready event cannot skip an earlier pending one.
+The [replay API](work-synchronization.md) freshly authorizes Board access and
+advances only through contiguous ready sequences; a later ready event cannot skip
+an earlier pending one. SignalR client transport remains pending.
 Global identity verification/reset delivery now has its own scoped queue and
 Resend provider under [identity-email.md](identity-email.md); it does not invent
 an Organization or bypass this queue's RLS. Outbound effects still need provider

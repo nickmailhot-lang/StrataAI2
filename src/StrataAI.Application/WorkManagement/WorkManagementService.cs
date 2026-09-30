@@ -6,8 +6,17 @@ namespace StrataAI.Application.WorkManagement;
 public sealed class WorkManagementService(
     IWorkManagementStore store,
     IOrganizationStore organizationStore,
-    IClock clock, IWorkEventStore events) : IWorkManagementService
+    IClock clock, IWorkEventStore events) : IWorkManagementService, IWorkBoardAuthorization
 {
+    public async Task<WorkOperation<BoardSyncScope>> GetSyncScopeAsync(Guid boardId, Guid? actorId,
+        CancellationToken cancellationToken = default)
+    {
+        var current = await ResolveAccessAsync(boardId, actorId, cancellationToken);
+        return current is { Access.CanView: true }
+            ? WorkOperation<BoardSyncScope>.Success(new(current.Value.Board, current.Value.Access))
+            : WorkOperation<BoardSyncScope>.Failure("board_not_found");
+    }
+
     public async Task<WorkOperation<BoardRecord>> CreateBoardAsync(
         Guid organizationId,
         Guid actorUserId,
