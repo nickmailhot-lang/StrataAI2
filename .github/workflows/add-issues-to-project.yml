@@ -1,0 +1,23 @@
+name: Auto-add issues to StrataAI Project
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+      - transferred
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  add-to-project:
+    name: Add issue to Project 3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to StrataAI project
+        uses: actions/add-to-project@v2
+        with:
+          project-url: https://github.com/users/nickmailhot-lang/projects/3
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
