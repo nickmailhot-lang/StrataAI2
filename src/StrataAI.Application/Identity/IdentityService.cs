@@ -1,0 +1,474 @@
+using System.Net.Mail;
+using StrataAI.Application.Common;
+
+namespace StrataAI.Application.Identity;
+
+public sealed class IdentityService(
+    IIdentityStore store,
+    IPasswordHashService passwordHashes,
+    ISecureTokenService tokens,
+    IClock clock,
+    IdentityPolicy policy) : IIdentityService
+{
+    public async Task<IdentityOperation<RegistrationOutcome>> RegisterAsync(
+        string email,
+        string password,
+        string displayName,
+        string? locale,
+        string? timezone,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!policy.AllowSelfRegistration)
+        {
+            return IdentityOperation<RegistrationOutcome>.Failure(
+                "self_registration_disabled");
+        }
+
+        var normalized = NormalizeEmail(email);
+        if (normalized is null)
+        {
+            return IdentityOperation<RegistrationOutcome>.Failure("invalid_email");
+        }
+
+        if (!IsValidPassword(password))
+        {
+            return IdentityOperation<RegistrationOutcome>.Failure("invalid_password");
+        }
+
+        var cleanDisplayName = displayName?.Trim();
+        if (string.IsNullOrWhiteSpace(cleanDisplayName) || cleanDisplayName.Length > 120)
+        {
+            return IdentityOperation<RegistrationOutcome>.Failure("invalid_display_name");
+        }
+
+        var now = clock.UtcNow;
+        var userId = Guid.NewGuid();
+        var status = policy.RequireVerifiedEmail
+            ? AccountStatus.PendingVerification
+            : AccountStatus.Active;
+
+        var user = new UserIdentity(
+            userId,
+            email.Trim(),
+            normalized,
+            cleanDisplayName,
+            null,
+            NormalizeLocale(locale),
+            NormalizeTimezone(timezone),
+            status,
+            !policy.RequireVerifiedEmail,
+            passwordHashes.Hash(userId, password),
+            now,
+            now,
+            1);
+
+        if (!await store.TryCreateUserAsync(user, cancellationToken))
+        {
+            return IdentityOperation<RegistrationOutcome>.Failure("email_unavailable");
+        }
+
+        string? verificationToken = null;
+        if (policy.RequireVerifiedEmail)
+        {
+            verificationToken = tokens.Generate();
+            await store.CreateEmailVerificationTokenAsync(
+                new SecurityTokenRecord(
+                    Guid.NewGuid(),
+                    userId,
+                    tokens.Hash(verificationToken),
+                    now,
+                    now.Add(policy.SecurityTokenLifetime)),
+                cancellationToken);
+        }
+
+        await store.AppendAuditAsync(
+            userId,
+            "USER_REGISTERED",
+            "User",
+            userId,
+            correlationId,
+            cancellationToken);
+
+        return IdentityOperation<RegistrationOutcome>.Success(
+            new RegistrationOutcome(ToProfile(user), verificationToken));
+    }
+
+    public async Task<IdentityOperation<LoginOutcome>> LoginAsync(
+        string email,
+        string password,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var normalized = NormalizeEmail(email);
+        if (normalized is null)
+        {
+            return IdentityOperation<LoginOutcome>.Failure("invalid_credentials");
+        }
+
+        var user = await store.FindUserByNormalizedEmailAsync(
+            normalized,
+            cancellationToken);
+
+        if (user is null)
+        {
+            return IdentityOperation<LoginOutcome>.Failure("invalid_credentials");
+        }
+
+        var verification = passwordHashes.Verify(
+            user.Id,
+            user.PasswordHash,
+            password);
+
+        if (!verification.IsValid)
+        {
+            return IdentityOperation<LoginOutcome>.Failure("invalid_credentials");
+        }
+
+        if (user.Status == AccountStatus.PendingVerification)
+        {
+            return IdentityOperation<LoginOutcome>.Failure(
+                "email_verification_required");
+        }
+
+        if (user.Status != AccountStatus.Active)
+        {
+            return IdentityOperation<LoginOutcome>.Failure("account_unavailable");
+        }
+
+        if (verification.NeedsRehash)
+        {
+            var upgradedHash = passwordHashes.Hash(user.Id, password);
+            await store.UpdatePasswordHashAsync(
+                user.Id,
+                upgradedHash,
+                clock.UtcNow,
+                cancellationToken);
+
+            user = user with
+            {
+                PasswordHash = upgradedHash,
+                UpdatedAt = clock.UtcNow,
+                Version = user.Version + 1,
+            };
+        }
+
+        var rawSessionToken = tokens.Generate();
+        var now = clock.UtcNow;
+        var session = new SessionRecord(
+            Guid.NewGuid(),
+            user.Id,
+            tokens.Hash(rawSessionToken),
+            now,
+            now.Add(policy.SessionLifetime));
+
+        await store.CreateSessionAsync(session, cancellationToken);
+        await store.AppendAuditAsync(
+            user.Id,
+            "SESSION_CREATED",
+            "Session",
+            session.Id,
+            correlationId,
+            cancellationToken);
+
+        return IdentityOperation<LoginOutcome>.Success(
+            new LoginOutcome(
+                ToProfile(user),
+                rawSessionToken,
+                session.ExpiresAt));
+    }
+
+    public Task<AuthenticatedSession?> AuthenticateSessionAsync(
+        string rawSessionToken,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(rawSessionToken))
+        {
+            return Task.FromResult<AuthenticatedSession?>(null);
+        }
+
+        return store.FindActiveSessionAsync(
+            tokens.Hash(rawSessionToken),
+            clock.UtcNow,
+            cancellationToken);
+    }
+
+    public async Task LogoutAsync(
+        string rawSessionToken,
+        Guid actorId,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!string.IsNullOrWhiteSpace(rawSessionToken))
+        {
+            await store.RevokeSessionAsync(
+                tokens.Hash(rawSessionToken),
+                clock.UtcNow,
+                cancellationToken);
+        }
+
+        await store.AppendAuditAsync(
+            actorId,
+            "SESSION_REVOKED",
+            "User",
+            actorId,
+            correlationId,
+            cancellationToken);
+    }
+
+    public async Task<PasswordResetRequestOutcome> RequestPasswordResetAsync(
+        string email,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var normalized = NormalizeEmail(email);
+        if (normalized is null)
+        {
+            return new PasswordResetRequestOutcome(null);
+        }
+
+        var user = await store.FindUserByNormalizedEmailAsync(
+            normalized,
+            cancellationToken);
+
+        if (user is null ||
+            user.Status is AccountStatus.Deactivated or AccountStatus.Suspended)
+        {
+            return new PasswordResetRequestOutcome(null);
+        }
+
+        var rawToken = tokens.Generate();
+        var now = clock.UtcNow;
+
+        await store.CreatePasswordResetTokenAsync(
+            new SecurityTokenRecord(
+                Guid.NewGuid(),
+                user.Id,
+                tokens.Hash(rawToken),
+                now,
+                now.Add(policy.SecurityTokenLifetime)),
+            cancellationToken);
+
+        await store.AppendAuditAsync(
+            user.Id,
+            "PASSWORD_RESET_REQUESTED",
+            "User",
+            user.Id,
+            correlationId,
+            cancellationToken);
+
+        return new PasswordResetRequestOutcome(rawToken);
+    }
+
+    public async Task<IdentityOperation<UserProfile>> ResetPasswordAsync(
+        string rawResetToken,
+        string newPassword,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsValidPassword(newPassword))
+        {
+            return IdentityOperation<UserProfile>.Failure("invalid_password");
+        }
+
+        if (string.IsNullOrWhiteSpace(rawResetToken))
+        {
+            return IdentityOperation<UserProfile>.Failure(
+                "invalid_or_expired_token");
+        }
+
+        var tokenHash = tokens.Hash(rawResetToken);
+        var placeholderUserId = Guid.Empty;
+        var newHash = passwordHashes.Hash(placeholderUserId, newPassword);
+
+        var userId = await store.GetPasswordResetUserIdAsync(
+            tokenHash,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (userId is null)
+        {
+            return IdentityOperation<UserProfile>.Failure(
+                "invalid_or_expired_token");
+        }
+
+        newHash = passwordHashes.Hash(userId.Value, newPassword);
+
+        if (!await store.CompletePasswordResetAsync(
+                tokenHash,
+                newHash,
+                clock.UtcNow,
+                cancellationToken))
+        {
+            return IdentityOperation<UserProfile>.Failure(
+                "invalid_or_expired_token");
+        }
+
+        var user = await store.FindUserByIdAsync(userId.Value, cancellationToken);
+        if (user is null)
+        {
+            return IdentityOperation<UserProfile>.Failure("account_unavailable");
+        }
+
+        await store.AppendAuditAsync(
+            user.Id,
+            "PASSWORD_RESET_COMPLETED",
+            "User",
+            user.Id,
+            correlationId,
+            cancellationToken);
+
+        return IdentityOperation<UserProfile>.Success(ToProfile(user));
+    }
+
+    public async Task<IdentityOperation<UserProfile>> VerifyEmailAsync(
+        string rawVerificationToken,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(rawVerificationToken))
+        {
+            return IdentityOperation<UserProfile>.Failure(
+                "invalid_or_expired_token");
+        }
+
+        var tokenHash = tokens.Hash(rawVerificationToken);
+        var userId = await store.GetEmailVerificationUserIdAsync(
+            tokenHash,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (userId is null ||
+            !await store.VerifyEmailAsync(
+                tokenHash,
+                clock.UtcNow,
+                cancellationToken))
+        {
+            return IdentityOperation<UserProfile>.Failure(
+                "invalid_or_expired_token");
+        }
+
+        var user = await store.FindUserByIdAsync(userId.Value, cancellationToken);
+        if (user is null)
+        {
+            return IdentityOperation<UserProfile>.Failure("account_unavailable");
+        }
+
+        await store.AppendAuditAsync(
+            user.Id,
+            "EMAIL_VERIFIED",
+            "User",
+            user.Id,
+            correlationId,
+            cancellationToken);
+
+        return IdentityOperation<UserProfile>.Success(ToProfile(user));
+    }
+
+    public async Task<IdentityOperation<UserProfile>> UpdateProfileAsync(
+        Guid userId,
+        string? displayName,
+        string? avatarUrl,
+        string? locale,
+        string? timezone,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var existing = await store.FindUserByIdAsync(userId, cancellationToken);
+        if (existing is null || existing.Status == AccountStatus.Deactivated)
+        {
+            return IdentityOperation<UserProfile>.Failure("account_unavailable");
+        }
+
+        var nextDisplayName = displayName?.Trim() ?? existing.DisplayName;
+        if (string.IsNullOrWhiteSpace(nextDisplayName) || nextDisplayName.Length > 120)
+        {
+            return IdentityOperation<UserProfile>.Failure("invalid_display_name");
+        }
+
+        var updated = await store.UpdateProfileAsync(
+            userId,
+            nextDisplayName,
+            avatarUrl ?? existing.AvatarUrl,
+            NormalizeLocale(locale ?? existing.Locale),
+            NormalizeTimezone(timezone ?? existing.Timezone),
+            clock.UtcNow,
+            cancellationToken);
+
+        if (updated is null)
+        {
+            return IdentityOperation<UserProfile>.Failure("account_unavailable");
+        }
+
+        await store.AppendAuditAsync(
+            userId,
+            "USER_PROFILE_UPDATED",
+            "User",
+            userId,
+            correlationId,
+            cancellationToken);
+
+        return IdentityOperation<UserProfile>.Success(ToProfile(updated));
+    }
+
+    public async Task<bool> DeactivateAsync(
+        Guid userId,
+        string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var deactivated = await store.DeactivateUserAsync(
+            userId,
+            clock.UtcNow,
+            cancellationToken);
+
+        if (deactivated)
+        {
+            await store.AppendAuditAsync(
+                userId,
+                "USER_DEACTIVATED",
+                "User",
+                userId,
+                correlationId,
+                cancellationToken);
+        }
+
+        return deactivated;
+    }
+
+    private bool IsValidPassword(string password) =>
+        !string.IsNullOrEmpty(password) &&
+        password.Length >= policy.MinimumPasswordLength;
+
+    private static string? NormalizeEmail(string email)
+    {
+        var trimmed = email?.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed) ||
+            !MailAddress.TryCreate(trimmed, out var parsed) ||
+            !string.Equals(parsed.Address, trimmed, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return trimmed.ToUpperInvariant();
+    }
+
+    private static string NormalizeLocale(string? locale) =>
+        string.IsNullOrWhiteSpace(locale) ? "en-CA" : locale.Trim();
+
+    private static string NormalizeTimezone(string? timezone) =>
+        string.IsNullOrWhiteSpace(timezone) ? "America/Vancouver" : timezone.Trim();
+
+    private static UserProfile ToProfile(UserIdentity user) =>
+        new(
+            user.Id,
+            user.Email,
+            user.DisplayName,
+            user.AvatarUrl,
+            user.Locale,
+            user.Timezone,
+            user.Status,
+            user.EmailVerified,
+            user.CreatedAt,
+            user.UpdatedAt,
+            user.Version);
+}
