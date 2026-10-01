@@ -196,3 +196,24 @@ remain administrative test setup and are not actual Worker mail delivery evidenc
 Existing Organization/Portal fixture preparation remains separate. Build and script
 syntax pass locally; new route host and exact-image execution await CI. Actual
 mail-enabled publication rollback/transport and sender MUI remain outstanding.
+
+The required real-mail integration script now also covers BOARD_ADMIN and
+BOARD_MEMBER while retaining ordinary INTERNAL and PORTAL cases. It creates a
+private Board and uses the actual signed public endpoint. For both Board roles,
+denied insert permissions on invitations, protected mail intents, background jobs,
+audit, work events or creation receipts must roll back every sibling row and stream
+change. Successful keyed creation must publish once and persist the exact target
+snapshot. The real scoped Worker must deliver through the provider fixture, survive
+lost provider acknowledgment without duplicate mail, and recover SENT job completion
+without resending. The email contains no private Board name/ID; protected details
+remain on recipient review.
+
+The delivered proof drives closed signup with an identical retry acknowledgment,
+pending account/no grants, actual separate Worker verification, authorized Board
+review/discovery and explicit acceptance of the intended role. Neither signup nor
+verification alone grants Board membership. Tests also assert no stored/returned
+bearer and denial of recipient access to sender history. Organization history still
+excludes Board-target invitations and is not claimed complete. This increment adds
+required execution coverage; only syntax/diff checks were run locally because the
+release PostgreSQL/Docker topology is unavailable here. Actual transport success
+must be proven by CI logs, not by these assertions' presence.

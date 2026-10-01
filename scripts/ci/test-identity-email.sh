@@ -16,7 +16,7 @@ cleanup() {
   query 'GRANT INSERT ON email_verification_tokens,identity_delivery_jobs,identity_registration_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON password_reset_tokens,identity_recovery_request_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON identity_token_consumption_replays TO strataai_api_runtime;' >/dev/null
-  query 'GRANT INSERT ON invitation_mail_intents,background_jobs,invitation_creation_replays TO strataai_api_runtime;' >/dev/null
+  query 'GRANT INSERT ON invitations,work_events,invitation_mail_intents,background_jobs,invitation_creation_replays TO strataai_api_runtime;' >/dev/null
   if test "${signup_closed:-false}" = true; then "${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null || true; fi
   rm -rf "$scratch"
 }
@@ -488,12 +488,14 @@ invitation_atomic_state() {
     'mail',(SELECT count(*) FROM invitation_mail_intents WHERE tenant_id='$signup_org'),
     'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$signup_org'),
     'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$signup_org'),
-    'receipts',(SELECT count(*) FROM invitation_creation_replays WHERE tenant_id='$signup_org'))::text;"
+    'receipts',(SELECT count(*) FROM invitation_creation_replays WHERE tenant_id='$signup_org'),
+    'events',(SELECT count(*) FROM work_events WHERE tenant_id='$signup_org'),
+    'stream',(SELECT jsonb_agg(to_jsonb(w) ORDER BY board_id) FROM work_event_streams w WHERE tenant_id='$signup_org'))::text;"
 }
 invitation_key="$(cat /proc/sys/kernel/random/uuid)"
 invitation_payload='{"email":"atomic-mail-recipient@example.test","surface":"INTERNAL","targetRole":"MEMBER"}'
 invitation_create() {
-  curl --max-time 60 --silent --show-error -b "$scratch/signup-owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $invitation_key" -d "$invitation_payload" -o "$scratch/response" -w '%{http_code}' "$base/organizations/$signup_org/invitations"
+  curl --max-time 60 --silent --show-error -b "$scratch/signup-owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $invitation_key" -d "$invitation_payload" -o "$scratch/response" -w '%{http_code}' "$base${invitation_path:-/organizations/$signup_org/invitations}"
 }
 invitation_before="$(invitation_atomic_state)"
 for table in invitation_mail_intents background_jobs audit_events invitation_creation_replays; do
@@ -503,11 +505,27 @@ for table in invitation_mail_intents background_jobs audit_events invitation_cre
   test "$invitation_before" = "$(invitation_atomic_state)"
   query "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
  done
-for surface in INTERNAL PORTAL; do
-  role=MEMBER; if test "$surface" = PORTAL; then role=OWNER; fi
-  email="signup-mail-recipient-${surface,,}-${RANDOM}-${RANDOM}@example.test"
+test "$(signup_owner_post /boards "$(jq -nc --arg org "$signup_org" '{organizationId:$org,name:"Delivered Board invitation",visibility:"PRIVATE"}')")" = 201
+mail_board="$(jq -r '.id' "$scratch/response")"
+for target in INTERNAL PORTAL BOARD_ADMIN BOARD_MEMBER; do
+  surface="$target"; role=MEMBER; board_role=''
+  invitation_path="/organizations/$signup_org/invitations"
+  if test "$target" = PORTAL; then role=OWNER; fi
+  if [[ "$target" = BOARD_* ]]; then surface=INTERNAL; board_role="${target#BOARD_}"; invitation_path="/boards/$mail_board/invitations"; fi
+  email="signup-mail-recipient-${target,,}-${RANDOM}-${RANDOM}@example.test"
   invitation_key="$(cat /proc/sys/kernel/random/uuid)"
   invitation_payload="$(jq -nc --arg email "$email" --arg surface "$surface" --arg role "$role" '{email:$email,surface:$surface,targetRole:$role}')"
+  if test -n "$board_role"; then
+    invitation_payload="$(jq -nc --arg email "$email" --arg role "$board_role" '{email:$email,role:$role}')"
+    invitation_before="$(invitation_atomic_state)"
+    for table in invitations invitation_mail_intents background_jobs audit_events work_events invitation_creation_replays; do
+      query "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+      test "$(invitation_create)" = 503
+      jq -e '.code=="invitation_storage_unavailable"' "$scratch/response" >/dev/null
+      test "$invitation_before" = "$(invitation_atomic_state)"
+      query "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+    done
+  fi
   test "$(invitation_create)" = 201
   cp "$scratch/response" "$scratch/invitation-ack"
   test "$(invitation_create)" = 201
@@ -516,6 +534,10 @@ for surface in INTERNAL PORTAL; do
   scripts/ci/assert-file-excludes.sh 'invitationToken":"[A-Za-z0-9_-]+|tokenHash' "$scratch/response"
   invitation_job="$(query "SELECT job_id FROM invitation_mail_intents WHERE invitation_id='$signup_invitation' AND tenant_id='$signup_org';")"
   test -n "$invitation_job"
+  if test -n "$board_role"; then
+    jq -e --arg board "$mail_board" --arg role "$board_role" '.boardTarget.boardId==$board and .boardTarget.role==$role and .invitationToken==null' "$scratch/response" >/dev/null
+    test "$(query "SELECT count(*) FROM invitation_mail_intents WHERE job_id='$invitation_job' AND target_board_id='$mail_board' AND target_board_role='$board_role';")" = 1
+  fi
   for attempt in $(seq 1 90); do
     if test "$(query "SELECT state FROM invitation_mail_intents WHERE job_id='$invitation_job';")" = SENT; then break; fi
     sleep 1
@@ -526,6 +548,10 @@ for surface in INTERNAL PORTAL; do
   signup_token="$(jq -r --arg key "$invitation_provider_key" '.[]|select(.key==$key)|.payload.text|capture("/invitation#token=(?<token>[A-Za-z0-9_-]+)").token' "$scratch/invitation-messages")"
   test -n "$signup_token"
   jq -e --arg key "$invitation_provider_key" --arg email "$email" '[.[]|select(.key==$key)]|length==1 and .[0].attempts>=2 and .[0].payload.to==[$email]' "$scratch/invitation-messages" >/dev/null
+  if test -n "$board_role"; then
+    jq --arg key "$invitation_provider_key" '.[]|select(.key==$key)|.payload' "$scratch/invitation-messages" > "$scratch/board-mail-body"
+    scripts/ci/assert-file-excludes.sh "Delivered Board invitation|$mail_board" "$scratch/board-mail-body"
+  fi
   signup_hash="$(printf '%s' "$signup_token" | sha256sum | cut -d ' ' -f 1)"
   test "$(query "SELECT count(*) FROM invitations WHERE id='$signup_invitation' AND token_hash='$signup_hash';")" = 1
   test "$(query "SELECT count(*) FROM background_jobs WHERE id='$invitation_job' AND job_type='INVITATION_EMAIL' AND service_identity='invitation-email-delivery' AND actor_id='$mail_owner_id' AND safe_metadata=jsonb_build_object('invitationId','$signup_invitation'::uuid);")" = 1
@@ -542,7 +568,12 @@ for surface in INTERNAL PORTAL; do
   query "SELECT to_jsonb(m)::text FROM invitation_mail_intents m WHERE job_id='$invitation_job';" > "$scratch/invitation-ledger"
   scripts/ci/assert-file-excludes.sh "$signup_token" "$scratch/invitation-ledger"
   curl --fail --silent --show-error -b "$scratch/signup-owner.cookies" "$base/organizations/$signup_org/invitations" > "$scratch/invitation-history"
+  if test -n "$board_role"; then
+    # Organization history currently excludes Board invitations; no false history completion claim.
+    jq -e --arg id "$signup_invitation" '.items|map(select(.id==$id))|length==0' "$scratch/invitation-history" >/dev/null
+  else
   jq -e --arg id "$signup_invitation" --arg email "$email" '.items|map(select(.id==$id))|length==1 and .[0].email==$email and .[0].deliveryState=="SENT"' "$scratch/invitation-history" >/dev/null
+  fi
   scripts/ci/assert-file-excludes.sh "$signup_token|tokenHash|providerReceipt|safeMetadata|providerAccount" "$scratch/invitation-history"
   signup_body="$(jq -nc --arg email "$email" --arg token "$signup_token" '{email:$email,password:"signup-mail-correct-horse",displayName:"Invited mail recipient",invitationToken:$token}')"
   test "$(post /auth/register "$(jq 'del(.invitationToken)' <<< "$signup_body")")" = 403
@@ -556,22 +587,38 @@ for surface in INTERNAL PORTAL; do
   test "$(query "SELECT count(*) FROM organization_members WHERE tenant_id='$signup_org' AND user_id='$signup_user';")" = 0
   test "$(query "SELECT count(*) FROM portal_access WHERE tenant_id='$signup_org' AND user_id='$signup_user';")" = 0
   test "$(query "SELECT count(*) FROM invitations WHERE id='$signup_invitation' AND accepted_at IS NULL;")" = 1
+  if test -n "$board_role"; then
+    test "$(query "SELECT count(*) FROM board_members WHERE board_id='$mail_board' AND user_id='$signup_user';")" = 0
+  fi
   test "$(post /auth/login "$signup_body")" = 403
   signup_job="$(latest_job VERIFY_EMAIL)"; test -n "$signup_job"; wait_state "$signup_job" SENT
   mail_proof="$(mail_token verify "${signup_job//-/}")"; test -n "$mail_proof"
   test "$(post /auth/verify-email "$(jq -nc --arg token "$mail_proof" '{token:$token}')")" = 200
   test "$(query "SELECT count(*) FROM organization_members WHERE tenant_id='$signup_org' AND user_id='$signup_user';")" = 0
   curl --fail --silent --show-error -c "$scratch/signup-recipient.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$signup_body" "$base/auth/login" >/dev/null
+  if test -n "$board_role"; then
+    test "$(query "SELECT count(*) FROM board_members WHERE board_id='$mail_board' AND user_id='$signup_user';")" = 0
+    test "$(curl --max-time 60 --silent --show-error -b "$scratch/signup-recipient.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(jq -nc --arg token "$signup_token" '{token:$token}')" -o "$scratch/response" -w '%{http_code}' "$base/invitations/review")" = 200
+    jq -e --arg board "$mail_board" --arg role "$board_role" '.boardTarget.boardId==$board and .boardTarget.role==$role and .boardName=="Delivered Board invitation"' "$scratch/response" >/dev/null
+    curl --fail --silent --show-error -b "$scratch/signup-recipient.cookies" "$base/me/invitations" > "$scratch/board-discovery"
+    jq -e --arg id "$signup_invitation" --arg board "$mail_board" '.items|any(.id==$id and .boardTarget.boardId==$board)' "$scratch/board-discovery" >/dev/null
+    scripts/ci/assert-file-excludes.sh "$signup_token|tokenHash|acceptedByUserId" "$scratch/board-discovery"
+  fi
   test "$(curl --max-time 60 --silent --show-error -b "$scratch/signup-recipient.cookies" -H 'X-StrataAI-Request: 1' -X POST -o "$scratch/response" -w '%{http_code}' "$base/me/invitations/$signup_invitation/accept")" = 200
   jq -e --arg id "$signup_invitation" --arg surface "$surface" '.invitationId==$id and .surface==$surface' "$scratch/response" >/dev/null
   count=0; if test "$surface" = INTERNAL; then count=1; fi
   test "$(query "SELECT count(*) FROM organization_members WHERE tenant_id='$signup_org' AND user_id='$signup_user' AND role='MEMBER' AND status='ACTIVE';")" = "$count"
+  if test -n "$board_role"; then
+    jq -e --arg board "$mail_board" --arg role "$board_role" '.boardTarget.boardId==$board and .boardTarget.role==$role' "$scratch/response" >/dev/null
+    test "$(query "SELECT count(*) FROM board_members WHERE board_id='$mail_board' AND user_id='$signup_user' AND role='$board_role' AND status='ACTIVE';")" = 1
+  fi
   scripts/ci/assert-file-excludes.sh "$signup_token|$mail_proof|invitationToken|tokenHash" "$scratch/response"
   test "$(curl --max-time 60 --silent --show-error -b "$scratch/signup-recipient.cookies" -o "$scratch/invitation-history-denied" -w '%{http_code}' "$base/organizations/$signup_org/invitations")" = 404
   scripts/ci/assert-file-excludes.sh "$email|$signup_invitation|$signup_token|deliveryState" "$scratch/invitation-history-denied"
 done
 unset signup_token signup_hash mail_proof signup_body
 "${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null; signup_closed=false
+echo 'Exact-image Board invitation mail: both roles, public signed issuance, sibling publication rollback, actual scoped Worker/provider delivery, verified proof review/discovery and explicit grants passed.'
 echo 'Exact-image invitation mail: atomic invitation/job/snapshot/audit/receipt rollback, keyed single publication, reference-only metadata, separate scoped Worker delivery, provider lost-acknowledgment idempotency, SENT completion recovery and no stored bearer passed.'
 echo 'Exact-image closed invitation signup: pending verification, retry acknowledgment, separate Worker verification and explicit Internal/Portal acceptance without premature grants passed.'
 echo 'Keyed production recovery: neutral atomic rollback, concurrent one-token/one-delivery publication, restart, single-use proof and actual Worker receipt retention passed.'
