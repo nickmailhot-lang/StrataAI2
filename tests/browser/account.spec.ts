@@ -83,7 +83,13 @@ test('PRD-60-TC-07/11/15: verified email discovers an invitation and retries los
     const accept = page.getByRole('button', { name: 'Accept invitation to Browser invitation council' });
     await expect(accept).toBeVisible(); await accept.focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('Unable to confirm acceptance. You can retry this invitation safely.')).toBeVisible();
-    await accept.focus(); await page.keyboard.press('Enter');
+    const refresh = page.waitForResponse(response => new URL(response.url()).pathname === '/me/invitations' && response.request().method() === 'GET');
+    await page.getByRole('button', { name: 'Refresh invitations' }).focus(); await page.keyboard.press('Enter');
+    expect((await (await refresh).json()).items).toHaveLength(0);
+    await expect(page.getByRole('heading', { name: 'Browser invitation council', exact: true })).toHaveCount(0);
+    await expect(accept).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Retry invitation acceptance' })).toBeEnabled();
+    await page.getByRole('button', { name: 'Retry invitation acceptance' }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByRole('link', { name: 'Open organization', exact: true })).toBeVisible();
     expect(paths).toHaveLength(2); expect(paths[1]).toBe(paths[0]);
     await page.getByRole('link', { name: 'Open organization', exact: true }).click();

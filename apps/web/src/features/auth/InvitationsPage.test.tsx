@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { InvitationsPage } from './InvitationsPage';
 
@@ -11,6 +11,45 @@ function mount() {
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 describe('PRD-60 verified email invitation discovery', () => {
+  it('preserves an unconfirmed acceptance after refresh removes the committed invitation', async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [invitation], nextCursor: null }))
+      .mockRejectedValueOnce(new Error('Lost committed response'))
+      .mockResolvedValueOnce(reply({ items: [], nextCursor: null }))
+      .mockResolvedValueOnce(reply({ invitationId: invitation.id, organizationId: invitation.organizationId, surface: invitation.surface, targetRole: invitation.targetRole }));
+    vi.stubGlobal('fetch', fetcher); mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Accept invitation to Council' }));
+    await screen.findByRole('button', { name: 'Retry invitation acceptance' });
+    expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Retry invitation acceptance' })).toBeEnabled());
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry invitation acceptance' }));
+    expect(await screen.findByRole('link', { name: 'Open Owner Portal' })).toHaveAttribute('href', `/portal/${invitation.organizationId}`);
+    expect(fetcher.mock.calls[3][0]).toBe(fetcher.mock.calls[1][0]);
+    expect(screen.queryByRole('button', { name: 'Retry invitation acceptance' })).not.toBeInTheDocument();
+  });
+  it('clears an unconfirmed intent when current authorization denies its retry', async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [invitation], nextCursor: null }))
+      .mockRejectedValueOnce(new Error('Uncertain acceptance')).mockResolvedValueOnce(reply({}, 403));
+    vi.stubGlobal('fetch', fetcher); mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Accept invitation to Council' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry invitation acceptance' }));
+    await screen.findByText('This invitation is no longer available to your account. Refresh to check current invitations.');
+    expect(screen.queryByRole('button', { name: 'Retry invitation acceptance' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Open Owner Portal' })).not.toBeInTheDocument();
+  });
+  it('drops pending acceptance details when a refreshed session is revoked', async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [invitation], nextCursor: null }))
+      .mockRejectedValueOnce(new Error('Uncertain acceptance')).mockResolvedValueOnce(reply({}, 401));
+    vi.stubGlobal('fetch', fetcher); mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Accept invitation to Council' }));
+    await screen.findByRole('button', { name: 'Retry invitation acceptance' });
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+    await screen.findByRole('heading', { name: 'Sign in destination' });
+    expect(screen.queryByRole('button', { name: 'Retry invitation acceptance' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Council')).not.toBeInTheDocument();
+  });
   it('shows an empty state and explicit refresh', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply({ items: [], nextCursor: null })));
     mount();
@@ -33,11 +72,11 @@ describe('PRD-60 verified email invitation discovery', () => {
     vi.stubGlobal('fetch', fetcher); mount();
     fireEvent.click(await screen.findByRole('button', { name: 'Accept invitation to Council' }));
     await screen.findByText('Unable to confirm acceptance. You can retry this invitation safely.');
-    fireEvent.click(screen.getByRole('button', { name: 'Accept invitation to Council' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retry invitation acceptance' }));
     await act(async () => { await Promise.resolve(); });
     expect(fetcher.mock.calls[2][0]).toBe(fetcher.mock.calls[1][0]);
     expect(screen.queryByRole('link', { name: 'Open Owner Portal' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Accept invitation to Council' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Retry invitation acceptance' })).toBeEnabled();
   });
   it('bounds a stalled read and fences completion after unmount', async () => {
     vi.useFakeTimers(); let complete: ((response: Response) => void) | undefined;
