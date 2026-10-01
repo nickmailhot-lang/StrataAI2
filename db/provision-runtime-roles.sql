@@ -38,6 +38,9 @@ GRANT EXECUTE ON FUNCTION public.purge_expired_identity_login_replays() TO strat
 GRANT SELECT,INSERT ON identity_registration_replays TO strataai_api_runtime;
 GRANT SELECT(user_id,key_id,expires_at),DELETE ON identity_registration_replays TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.purge_expired_identity_registration_replays() TO strataai_worker_runtime;
+GRANT SELECT,INSERT ON identity_recovery_request_replays TO strataai_api_runtime;
+GRANT SELECT(user_id,key_id,operation,expires_at),DELETE ON identity_recovery_request_replays TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.purge_expired_identity_recovery_request_replays() TO strataai_worker_runtime;
 GRANT SELECT(tenant_id,event_id,board_id,actor_id,ready_at),UPDATE(ready_at) ON work_events TO strataai_worker_runtime;
 GRANT SELECT,INSERT ON background_jobs TO strataai_api_runtime;
 GRANT SELECT,UPDATE ON background_jobs TO strataai_worker_runtime;

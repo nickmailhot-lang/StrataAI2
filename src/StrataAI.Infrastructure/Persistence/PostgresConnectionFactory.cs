@@ -40,11 +40,11 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 throw new RuntimeDatabaseRoleException();
             }
             await using var schema = new NpgsqlCommand("""
-                SELECT count(*) = 18 FROM public.schema_migrations WHERE version = ANY(ARRAY[
+                SELECT count(*) = 19 FROM public.schema_migrations WHERE version = ANY(ARRAY[
                   '001_foundation','002_audit_runtime','003_identity','004_organization_access_routing',
                   '005_invitation_routing','006_work_management','007_background_jobs',
                   '008_identity_delivery','009_runtime_role_guard','010_work_command_replays','011_work_events','012_identity_events',
-                  '013_identity_profile_replays','014_identity_retry_retention','015_identity_revocation_replays','016_invitation_discovery','017_identity_login_replays','018_identity_registration_replays']);
+                  '013_identity_profile_replays','014_identity_retry_retention','015_identity_revocation_replays','016_invitation_discovery','017_identity_login_replays','018_identity_registration_replays','019_identity_recovery_request_replays']);
                 """, connection);
             try
             {

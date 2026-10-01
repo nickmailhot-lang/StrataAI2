@@ -6,12 +6,15 @@ compose=(docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.y
 scratch="$(mktemp -d)"
 gate_pid=''
 request_pid=''
+recovery_pids=()
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
+  for pid in "${recovery_pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
   query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON identity_events TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON email_verification_tokens,identity_delivery_jobs,identity_registration_replays TO strataai_api_runtime;' >/dev/null
+  query 'GRANT INSERT ON password_reset_tokens,identity_recovery_request_replays TO strataai_api_runtime;' >/dev/null
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -286,4 +289,76 @@ test "$(register_retry)" = 201
 jq -e '.verificationToken==null and .user.emailVerified==true' "$scratch/response" >/dev/null
 test "$(query "SELECT count(*) FROM identity_delivery_jobs WHERE user_id='$registration_user';")" = 1
 echo 'Keyed production registration: token/delivery/receipt rollback, duplicate proof, one verification email and post-verification acknowledgment passed.'
+
+# Recovery acknowledgments remain neutral while durable intents prevent duplicate publication.
+"${compose[@]}" stop worker >/dev/null
+recovery_request() {
+  curl --max-time 60 --silent --show-error -o "$scratch/response" -w '%{http_code}' -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -H "Idempotency-Key: $recovery_key" -d "$recovery_body" "$base$recovery_route"
+}
+recovery_state() {
+  query "SELECT jsonb_build_object('tokens',(SELECT count(*) FROM $recovery_table WHERE user_id='$recovery_user'),
+    'jobs',(SELECT count(*) FROM identity_delivery_jobs WHERE user_id='$recovery_user'),
+    'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$recovery_user'),
+    'receipts',(SELECT count(*) FROM identity_recovery_request_replays WHERE user_id='$recovery_user'))::text;"
+}
+for purpose in RESET_PASSWORD VERIFY_EMAIL; do
+  email="keyed-recovery-${purpose}-${RANDOM}-${RANDOM}@example.test"
+  test "$(post /auth/register "$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery",displayName:"Recovery retry"}')")" = 201
+  recovery_user="$(jq -r '.user.id' "$scratch/response")"
+  recovery_key="$(cat /proc/sys/kernel/random/uuid)"
+  recovery_body="$(jq -nc --arg email "$email" '{email:$email}')"
+  if test "$purpose" = RESET_PASSWORD; then recovery_route=/auth/password/forgot; recovery_table=password_reset_tokens; else recovery_route=/auth/verification/resend; recovery_table=email_verification_tokens; fi
+  before="$(recovery_state)"
+  for table in "$recovery_table" identity_delivery_jobs audit_events identity_recovery_request_replays; do
+    query "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+    test "$(recovery_request)" = 202
+    jq -e '.accepted==true and (.resetToken // null)==null and (.verificationToken // null)==null' "$scratch/response" >/dev/null
+    test "$before" = "$(recovery_state)"
+    query "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+  done
+  for n in 1 2 3; do
+    curl --max-time 60 --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+      -H "Idempotency-Key: $recovery_key" -d "$recovery_body" -o "$scratch/recovery-$n.body" -w '%{http_code}' "$base$recovery_route" > "$scratch/recovery-$n.status" &
+    recovery_pids+=($!)
+  done
+  for pid in "${recovery_pids[@]}"; do wait "$pid"; done
+  recovery_pids=()
+  for n in 1 2 3; do test "$(cat "$scratch/recovery-$n.status")" = 202; cmp "$scratch/recovery-1.body" "$scratch/recovery-$n.body"; done
+  test "$(query "SELECT count(*) FROM identity_recovery_request_replays WHERE user_id='$recovery_user' AND operation='$purpose';")" = 1
+  test "$(query "SELECT count(*) FROM identity_delivery_jobs WHERE user_id='$recovery_user';")" = 2
+  saved="$(recovery_state)"
+  "${compose[@]}" restart api >/dev/null
+  for attempt in $(seq 1 90); do if curl --fail --silent "$base/readyz" >/dev/null; then break; fi; sleep 1; done
+  test "$(recovery_request)" = 202
+  cmp "$scratch/recovery-1.body" "$scratch/response"
+  test "$saved" = "$(recovery_state)"
+  recovery_job="$(latest_job "$purpose")"
+  "${compose[@]}" up -d --wait --wait-timeout 180 worker >/dev/null
+  wait_state "$recovery_job" SENT
+  if test "$purpose" = RESET_PASSWORD; then
+    token="$(mail_token reset "${recovery_job//-/}")"
+    test "$(post /auth/password/reset "$(jq -nc --arg token "$token" '{token:$token,newPassword:"replacement-recovery-horse"}')")" = 200
+  else
+    token="$(mail_token verify "${recovery_job//-/}")"
+    test "$(post /auth/verify-email "$(jq -nc --arg token "$token" '{token:$token}')")" = 200
+  fi
+  saved="$(recovery_state)"
+  test "$(recovery_request)" = 202
+  cmp "$scratch/recovery-1.body" "$scratch/response"
+  test "$saved" = "$(recovery_state)"
+  query "INSERT INTO identity_recovery_request_replays(user_id,key_id,operation,key_version,fingerprint,password_reset_token_id,verification_token_id,token_source,token_key_version,created_at,expires_at)
+    SELECT user_id,gen_random_uuid(),operation,key_version,fingerprint,password_reset_token_id,verification_token_id,token_source,token_key_version,
+      clock_timestamp()-interval '2 days',clock_timestamp()-interval '25 hours' FROM identity_recovery_request_replays CROSS JOIN generate_series(1,101)
+      WHERE user_id='$recovery_user' AND key_id='$recovery_key' AND operation='$purpose';" >/dev/null
+  for attempt in $(seq 1 90); do
+    if test "$(query "SELECT count(*) FROM identity_recovery_request_replays WHERE user_id='$recovery_user' AND expires_at<=clock_timestamp();")" = 0; then break; fi
+    sleep 1
+  done
+  test "$(query "SELECT count(*) FROM identity_recovery_request_replays WHERE user_id='$recovery_user';")" = 1
+  test "$saved" = "$(recovery_state)"
+  "${compose[@]}" stop worker >/dev/null
+done
+"${compose[@]}" up -d --wait --wait-timeout 180 worker >/dev/null
+echo 'Keyed production recovery: neutral atomic rollback, concurrent one-token/one-delivery publication, restart, single-use proof and actual Worker receipt retention passed.'
 echo 'Exact-image identity email, atomic publication, restart/rotation, provider retry/idempotency, verification/reset/replay/revocation, cancellation and resend checks passed.'

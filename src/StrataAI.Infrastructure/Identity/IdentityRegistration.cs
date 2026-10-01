@@ -62,6 +62,7 @@ public static class IdentityRegistration
             services.AddSingleton<IIdentityRevocationReplayStore, InMemoryIdentityRevocationReplayStore>();
             services.AddSingleton<IIdentityLoginReplayStore, InMemoryIdentityLoginReplayStore>();
             services.AddSingleton<IIdentityRegistrationReplayStore, InMemoryIdentityRegistrationReplayStore>();
+            services.AddSingleton<IIdentityRecoveryRequestReplayStore, InMemoryIdentityRecoveryRequestReplayStore>();
         }
         else
         {
@@ -71,6 +72,7 @@ public static class IdentityRegistration
             services.AddSingleton<IIdentityRevocationReplayStore, PostgresIdentityRevocationReplayStore>();
             services.AddSingleton<IIdentityLoginReplayStore, PostgresIdentityLoginReplayStore>();
             services.AddSingleton<IIdentityRegistrationReplayStore, PostgresIdentityRegistrationReplayStore>();
+            services.AddSingleton<IIdentityRecoveryRequestReplayStore, PostgresIdentityRecoveryRequestReplayStore>();
         }
 
         services.AddSingleton<IdentityService>();
@@ -84,6 +86,7 @@ public static class IdentityRegistration
     private static void AddLoginRetrySecrets(IServiceCollection services, IConfiguration configuration, RuntimeDescriptor runtime)
     {
         services.AddSingleton<IIdentityRegistrationRetrySecrets>(provider => provider.GetRequiredService<IdentityLoginRetrySecrets>());
+        services.AddSingleton<IIdentityRecoveryRetrySecrets>(provider => provider.GetRequiredService<IdentityLoginRetrySecrets>());
         services.AddSingleton<IIdentityLoginRetrySecrets>(provider => provider.GetRequiredService<IdentityLoginRetrySecrets>());
         if (runtime.Mode == RuntimeMode.Demo)
         {

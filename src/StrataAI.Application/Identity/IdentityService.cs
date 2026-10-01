@@ -13,7 +13,8 @@ public sealed class IdentityService(
     IdentityPolicy policy, IIdentityCommandContext? context = null,
     IIdentityLoginReplayStore? loginReplays = null, IIdentityLoginRetrySecrets? loginSecrets = null,
     IIdentityRegistrationReplayStore? registrationReplays = null, IIdentityRegistrationRetrySecrets? registrationSecrets = null,
-    IIdentityDeliveryTokenSigner? deliverySigner = null) : IIdentityService
+    IIdentityDeliveryTokenSigner? deliverySigner = null,
+    IIdentityRecoveryRequestReplayStore? recoveryReplays = null, IIdentityRecoveryRetrySecrets? recoverySecrets = null) : IIdentityService
 {
     public async Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default)
@@ -366,60 +367,70 @@ public sealed class IdentityService(
         string correlationId,
         CancellationToken cancellationToken = default)
     {
-        var normalized = NormalizeEmail(email);
-        if (normalized is null)
-        {
-            return new PasswordResetRequestOutcome(null);
-        }
-
-        var user = await store.FindUserByNormalizedEmailAsync(
-            normalized,
-            cancellationToken);
-
-        if (user is null ||
-            user.Status is AccountStatus.Deactivated or AccountStatus.Suspended)
-        {
-            return new PasswordResetRequestOutcome(null);
-        }
-
-        var tokenId = Guid.NewGuid();
-        var generated = tokens.GenerateForDelivery(tokenId, IdentityTokenPurpose.ResetPassword, correlationId);
-        var rawToken = generated.RawToken;
-        var now = clock.UtcNow;
-
-        await store.CreatePasswordResetTokenAsync(
-            new SecurityTokenRecord(
-                tokenId,
-                user.Id,
-                tokens.Hash(rawToken),
-                now,
-                now.Add(policy.SecurityTokenLifetime)),
-            generated.Delivery,
-            cancellationToken);
-
-        await store.AppendAuditAsync(
-            user.Id,
-            "PASSWORD_RESET_REQUESTED",
-            "User",
-            user.Id,
-            correlationId,
-            cancellationToken);
-
-        return new PasswordResetRequestOutcome(rawToken);
+        return new PasswordResetRequestOutcome(await RequestRecoveryAsync(email, IdentityTokenPurpose.ResetPassword, correlationId, cancellationToken));
     }
 
     public async Task<string?> RequestEmailVerificationAsync(string email,string correlationId,CancellationToken cancellationToken=default)
     {
-        var normalized=NormalizeEmail(email);
+        return await RequestRecoveryAsync(email, IdentityTokenPurpose.VerifyEmail, correlationId, cancellationToken);
+    }
+
+    private async Task<string?> RequestRecoveryAsync(string email, IdentityTokenPurpose purpose, string correlationId, CancellationToken cancellationToken)
+    {
+        var normalized = NormalizeEmail(email);
         if (normalized is null) return null;
-        var user=await store.FindUserByNormalizedEmailAsync(normalized,cancellationToken);
-        if (user is null || user.Status!=AccountStatus.PendingVerification || user.EmailVerified) return null;
-        var id=Guid.NewGuid(); var now=clock.UtcNow;
-        var generated=tokens.GenerateForDelivery(id,IdentityTokenPurpose.VerifyEmail,correlationId);
-        await store.CreateEmailVerificationTokenAsync(new SecurityTokenRecord(id,user.Id,tokens.Hash(generated.RawToken),now,
-            now.Add(policy.SecurityTokenLifetime)),generated.Delivery,cancellationToken);
-        await store.AppendAuditAsync(user.Id,"EMAIL_VERIFICATION_REQUESTED","User",user.Id,correlationId,cancellationToken);
-        return generated.RawToken;
+        var user = await store.FindUserByNormalizedEmailAsync(normalized, cancellationToken);
+        if (user is null || user.Status is AccountStatus.Deactivated or AccountStatus.Suspended
+            || (purpose == IdentityTokenPurpose.VerifyEmail && (user.Status != AccountStatus.PendingVerification || user.EmailVerified))) return null;
+        var key = context?.IdempotencyKey;
+        if (key is not null)
+        {
+            if (recoveryReplays is null || recoverySecrets is null) throw new InvalidOperationException("Recovery retry storage is unavailable.");
+            var prior = await recoveryReplays.ReadAsync(user.Id, key.Value, purpose, cancellationToken);
+            if (prior is not null)
+            {
+                // Every denial remains the same accepted response as an unknown email.
+                // A used, expired or unverifiable intent never publishes a replacement.
+                if (prior.ExpiresAt <= clock.UtcNow
+                    || !recoverySecrets.TryRecoveryFingerprint(user.Id, key.Value, purpose, normalized, prior.KeyVersion, out var candidate)
+                    || !CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(candidate), Encoding.ASCII.GetBytes(prior.Fingerprint))) return null;
+                string? original;
+                if (prior.TokenSource == RecoveryTokenSource.ApiRequest)
+                {
+                    if (!recoverySecrets.TryDeriveRecovery(user.Id, prior.TokenId, purpose, prior.TokenKeyVersion, out original)) return null;
+                }
+                else if (prior.TokenSource == RecoveryTokenSource.EmailDelivery && deliverySigner is not null)
+                {
+                    try { original = deliverySigner.Derive(prior.TokenId, purpose, prior.TokenKeyVersion); }
+                    catch (InvalidOperationException) { return null; }
+                }
+                else return null;
+                var subject = purpose == IdentityTokenPurpose.ResetPassword
+                    ? await store.GetPasswordResetUserIdAsync(tokens.Hash(original), clock.UtcNow, cancellationToken)
+                    : await store.GetEmailVerificationUserIdAsync(tokens.Hash(original), clock.UtcNow, cancellationToken);
+                return subject == user.Id && prior.ExpiresAt > clock.UtcNow ? original : null;
+            }
+        }
+        var tokenId = Guid.NewGuid();
+        var now = new DateTimeOffset(clock.UtcNow.UtcTicks / 10 * 10, TimeSpan.Zero);
+        var generated = tokens.GenerateForDelivery(tokenId, purpose, correlationId);
+        var rawToken = generated.RawToken;
+        var version = key is null ? null : recoverySecrets!.CurrentKeyVersion;
+        if (key is not null && generated.Delivery is null
+            && !recoverySecrets!.TryDeriveRecovery(user.Id, tokenId, purpose, version!, out rawToken)) return null;
+        var record = new SecurityTokenRecord(tokenId, user.Id, tokens.Hash(rawToken), now, now.Add(policy.SecurityTokenLifetime));
+        if (purpose == IdentityTokenPurpose.ResetPassword) await store.CreatePasswordResetTokenAsync(record, generated.Delivery, cancellationToken);
+        else await store.CreateEmailVerificationTokenAsync(record, generated.Delivery, cancellationToken);
+        await store.AppendAuditAsync(user.Id, purpose == IdentityTokenPurpose.ResetPassword ? "PASSWORD_RESET_REQUESTED" : "EMAIL_VERIFICATION_REQUESTED", "User", user.Id, correlationId, cancellationToken);
+        if (key is not null)
+        {
+            if (!recoverySecrets!.TryRecoveryFingerprint(user.Id, key.Value, purpose, normalized, version!, out var fingerprint))
+                throw new InvalidOperationException("Recovery retry signing is unavailable.");
+            await recoveryReplays!.SaveAsync(user.Id, key.Value, purpose, new IdentityRecoveryRequestReplay(version!, fingerprint, tokenId,
+                generated.Delivery is null ? RecoveryTokenSource.ApiRequest : RecoveryTokenSource.EmailDelivery,
+                generated.Delivery?.KeyId ?? version!, now.AddHours(24)), cancellationToken);
+        }
+        return rawToken;
     }
 
     public async Task<IdentityOperation<UserProfile>> ResetPasswordAsync(

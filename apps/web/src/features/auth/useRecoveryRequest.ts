@@ -5,19 +5,27 @@ import { apiFetch } from '../../api/apiFetch';
 export function useRecoveryRequest() {
   const [busy, setBusy] = useState(false);
   const pending = useRef<AbortController | undefined>(undefined);
-  useEffect(() => () => { pending.current?.abort(); pending.current = undefined; }, []);
+  const attempt = useRef<{ path: string; body: string; key: string } | undefined>(undefined);
+  useEffect(() => () => { pending.current?.abort(); pending.current = undefined; attempt.current = undefined; }, []);
   async function request(path: string, body: object) {
     if (pending.current) return undefined;
     const controller = new AbortController();
     pending.current = controller;
     setBusy(true);
+    const serialized = JSON.stringify(body);
+    const issuance = path === '/auth/password/forgot' || path === '/auth/verification/resend';
+    if (issuance && (attempt.current?.path !== path || attempt.current.body !== serialized)) {
+      attempt.current = { path, body: serialized, key: crypto.randomUUID() };
+    }
     let deadline: ReturnType<typeof setTimeout> | undefined;
     let cancelled: (() => void) | undefined;
     try {
       const result = await Promise.race([
         (async () => {
-          const response = await apiFetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body), signal: controller.signal });
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (issuance) headers['Idempotency-Key'] = attempt.current!.key;
+          const response = await apiFetch(path, { method: 'POST', headers,
+            body: serialized, signal: controller.signal });
           const value: unknown = await response.json();
           return { status: response.status, value };
         })(),
@@ -27,7 +35,9 @@ export function useRecoveryRequest() {
           deadline = setTimeout(() => controller.abort(), 15_000);
         }),
       ]);
-      return pending.current === controller && !controller.signal.aborted ? result : undefined;
+      if (pending.current !== controller || controller.signal.aborted) return undefined;
+      if (issuance && result.status === 202 && recoveryObject(result.value).accepted === true) attempt.current = undefined;
+      return result;
     } catch {
       return pending.current === controller ? { status: 0, value: null } : undefined;
     } finally {

@@ -38,6 +38,11 @@ describe('PRD-02-TC-06/PRD-60-TC-07 recovery acknowledgment safety', () => {
     testCase.fields.forEach((field, i) => expect(screen.getByLabelText(new RegExp(`^${field}`))).toHaveValue(testCase.values[i]));
     fireEvent.submit(screen.getByRole('form', { name: testCase.form }));
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    if (testCase.status === 202) {
+      const firstKey = fetchMock.mock.calls[0][1].headers.get('Idempotency-Key');
+      expect(firstKey).toMatch(/^[0-9a-f-]{36}$/);
+      expect(fetchMock.mock.calls[1][1].headers.get('Idempotency-Key')).toBe(firstKey);
+    }
   });
   it.each(cases)('$name cancels its transport when the screen closes', async testCase => {
     const fetchMock = vi.fn().mockImplementation(() => new Promise(() => {}));
