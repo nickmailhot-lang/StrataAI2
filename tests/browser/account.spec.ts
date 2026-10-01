@@ -1,5 +1,38 @@
 import { expect, test } from '@playwright/test';
 
+test('PRD-02/60-TC-06: lost logout acknowledgment retries the original session receipt', async ({ page, context }) => {
+  const headers = { 'X-StrataAI-Request': '1' };
+  const credentials = { email: `logout-ack-${Date.now()}@example.test`, password: 'browser-logout-correct-horse', displayName: 'Logout retry account' };
+  expect((await context.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
+  expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+  const originalCookies = await context.cookies();
+  let suspendRecovery = false;
+  await page.route('**/me/sync**', route => suspendRecovery ? route.abort() : route.continue());
+  const keys: string[] = [];
+  await page.route('**/auth/logout', async route => {
+    keys.push(route.request().headers()['idempotency-key']);
+    if (keys.length === 1) {
+      const result = await route.fetch();
+      expect(result.status()).toBe(204);
+      // route.fetch applies cookies itself; restore the cookie to simulate losing all response headers.
+      await context.addCookies(originalCookies);
+      await route.abort('timedout');
+    } else await route.continue();
+  });
+  await page.goto('/app/demo/profile');
+  await expect(page.getByLabel(/^Display name/)).toHaveValue('Logout retry account');
+  suspendRecovery = true;
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.getByText('Unable to sign out. Please retry.')).toBeVisible();
+  expect((await context.request.get('/me')).status()).toBe(401);
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(keys[1]).toBe(keys[0]);
+  expect((await context.cookies()).some(cookie => cookie.name === 'strataai_session')).toBe(false);
+});
+
 test('PRD-02/60-TC-06/07: lost acknowledgment retries the committed profile intent once', async ({ page, context }) => {
   const headers = { 'X-StrataAI-Request': '1' };
   const credentials = { email: `lost-ack-${Date.now()}@example.test`, password: 'browser-retry-correct-horse', displayName: 'Retry account' };

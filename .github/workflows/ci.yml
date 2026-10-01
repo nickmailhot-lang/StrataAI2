@@ -324,6 +324,9 @@ jobs:
       - name: Identity audit rollback, logout waits and one-connection commands
         run: scripts/ci/test-identity-command-transactions.sh
 
+      - name: Session-bound logout and deactivation receipts against exact release API
+        run: bash scripts/ci/test-identity-revocation-retries.sh
+
       - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
         run: scripts/ci/test-board-discovery.sh
 

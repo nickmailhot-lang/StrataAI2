@@ -96,6 +96,11 @@ describe('PRD-02 profile management', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     await act(async () => { await Promise.resolve(); });
     await act(async () => { finish?.(new Response(null, { status: 204 })); });
+    const attempts = fetchMock.mock.calls.filter(call => call[0] === '/auth/logout');
+    expect(attempts).toHaveLength(2);
+    const firstKey = new Headers(attempts[0][1].headers).get('Idempotency-Key');
+    expect(firstKey).toMatch(/^[0-9a-f-]{36}$/);
+    expect(new Headers(attempts[1][1].headers).get('Idempotency-Key')).toBe(firstKey);
     expect(screen.queryByText('Sign in again')).not.toBeInTheDocument();
     expect(screen.getByText(profile.email)).toBeInTheDocument();
   });

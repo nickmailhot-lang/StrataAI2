@@ -6,8 +6,24 @@ using StrataAI.Infrastructure.Persistence;
 namespace StrataAI.Infrastructure.Identity;
 
 internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory connections,
-    ICommandActorAuthorization actors, ILogger<PostgresIdentityUnitOfWork> logger) : IIdentityUnitOfWork
+    ICommandActorAuthorization actors, ILogger<PostgresIdentityUnitOfWork> logger, IdentityRevocationReplayExecutor revocations) : IIdentityUnitOfWork
 {
+    public async Task<IdentityOperation<bool>> ExecuteRevocationAsync(Guid expectedActor, string sessionHash, Guid key,
+        IdentityRevocationKind kind, string correlationId, Func<Guid, Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await connections.ExecuteIdentityCommandAsync(
+                () => revocations.ExecuteAsync(expectedActor, sessionHash, key, kind, operation, cancellationToken),
+                result => result.Succeeded, cancellationToken);
+        }
+        catch (NpgsqlException exception)
+        {
+            logger.LogWarning("Revocation command lacked a database acknowledgment. CorrelationId {CorrelationId}; code {DatabaseCode}.",
+                correlationId, exception is PostgresException postgres ? postgres.SqlState : "connection_error");
+            return IdentityOperation<bool>.Failure("identity_storage_unavailable");
+        }
+    }
     public async Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,
         CancellationToken cancellationToken = default)
     {

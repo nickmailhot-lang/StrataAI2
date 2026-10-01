@@ -2,6 +2,9 @@ namespace StrataAI.Application.Identity;
 
 public interface IIdentityUnitOfWork
 {
+    Task<IdentityOperation<bool>> ExecuteRevocationAsync(Guid expectedActor, string sessionHash, Guid key,
+        IdentityRevocationKind kind, string correlationId, Func<Guid, Task<IdentityOperation<bool>>> operation,
+        CancellationToken cancellationToken = default);
     // Public recovery acknowledgments must remain indistinguishable for unknown accounts and failed storage.
     Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,
         CancellationToken cancellationToken = default);

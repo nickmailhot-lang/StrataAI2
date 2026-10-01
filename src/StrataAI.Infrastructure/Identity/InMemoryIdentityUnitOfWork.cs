@@ -2,9 +2,16 @@ using StrataAI.Application.Identity;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization actors) : IIdentityUnitOfWork
+internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization actors, IdentityRevocationReplayExecutor revocations) : IIdentityUnitOfWork
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
+    public async Task<IdentityOperation<bool>> ExecuteRevocationAsync(Guid expectedActor, string sessionHash, Guid key,
+        IdentityRevocationKind kind, string correlationId, Func<Guid, Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try { return await revocations.ExecuteAsync(expectedActor, sessionHash, key, kind, operation, cancellationToken); }
+        finally { _gate.Release(); }
+    }
     public async Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,
         CancellationToken cancellationToken = default)
     {

@@ -7,6 +7,28 @@ namespace StrataAI.Infrastructure.Identity;
 internal sealed class PostgresIdentityStore(
     PostgresConnectionFactory connectionFactory) : IIdentityStore
 {
+    public async Task<RevocationSessionProof?> FindRevocationSessionProofAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasIdentityCommandScope) throw new InvalidOperationException("Revocation proof requires an identity transaction.");
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var lookup = new NpgsqlCommand("SELECT user_id FROM sessions WHERE token_hash=@hash;", routing.Connection, routing.Transaction);
+        lookup.Parameters.AddWithValue("hash", tokenHash);
+        if (await lookup.ExecuteScalarAsync(cancellationToken) is not Guid userId) return null;
+        await using var gate = new NpgsqlCommand("SELECT id FROM users WHERE id=@user FOR UPDATE;", routing.Connection, routing.Transaction);
+        gate.Parameters.AddWithValue("user", userId);
+        if (await gate.ExecuteScalarAsync(cancellationToken) is null) return null;
+        await using var command = new NpgsqlCommand($"""
+            SELECT s.id,s.expires_at,s.revoked_at IS NOT NULL,
+                {string.Join(", ", UserColumns.Split(", ").Select(c => "u." + c.Trim()))}
+            FROM sessions s JOIN users u ON u.id=s.user_id
+            WHERE s.token_hash=@hash AND s.user_id=@user FOR UPDATE OF s;
+            """, routing.Connection, routing.Transaction);
+        command.Parameters.AddWithValue("hash", tokenHash); command.Parameters.AddWithValue("user", userId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken)) return null;
+        var user = ReadUser(reader, 3);
+        return new(user.Id, reader.GetGuid(0), reader.GetFieldValue<DateTimeOffset>(1), reader.GetBoolean(2), user.Status, user.EmailVerified);
+    }
     private const string UserColumns = """
         id, email, email_normalized, display_name, avatar_url, locale, timezone,
         status, email_verified, password_hash, created_at, updated_at, version

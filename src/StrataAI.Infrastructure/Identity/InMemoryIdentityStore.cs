@@ -12,6 +12,18 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
     private readonly Dictionary<Guid, UserIdentity> _users = [];
     private readonly Dictionary<string, Guid> _usersByEmail = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SessionRecord> _sessions = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SessionRecord> _revokedSessions = new(StringComparer.Ordinal);
+
+    public Task<RevocationSessionProof?> FindRevocationSessionProofAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            var revoked = !_sessions.TryGetValue(tokenHash, out var session);
+            if (revoked && !_revokedSessions.TryGetValue(tokenHash, out session)) return Task.FromResult<RevocationSessionProof?>(null);
+            if (!_users.TryGetValue(session!.UserId, out var user)) return Task.FromResult<RevocationSessionProof?>(null);
+            return Task.FromResult<RevocationSessionProof?>(new(user.Id, session.Id, session.ExpiresAt, revoked, user.Status, user.EmailVerified));
+        }
+    }
     private readonly Dictionary<string, TokenState> _passwordResetTokens = new(StringComparer.Ordinal);
     private readonly Dictionary<string, TokenState> _emailVerificationTokens = new(StringComparer.Ordinal);
 
@@ -123,7 +135,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
     {
         lock (_sync)
         {
-            _sessions.Remove(tokenHash);
+            if (_sessions.Remove(tokenHash, out var session)) _revokedSessions[tokenHash] = session;
         }
 
         return Task.CompletedTask;
@@ -351,7 +363,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
 
         foreach (var hash in hashes)
         {
-            _sessions.Remove(hash);
+            if (_sessions.Remove(hash, out var session)) _revokedSessions[hash] = session;
         }
     }
 }

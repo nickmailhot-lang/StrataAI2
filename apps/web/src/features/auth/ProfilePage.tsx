@@ -73,6 +73,7 @@ export function ProfilePage() {
   const mutationEpoch = useRef(0);
   const mutation = useRef<AbortController | undefined>(undefined);
   const profileRetry = useRef<{ body: string; key: string } | undefined>(undefined);
+  const logoutRetry = useRef<string | undefined>(undefined);
   const mounted = useRef(true);
   const navigate = useNavigate();
   useEffect(() => {
@@ -227,7 +228,10 @@ export function ProfilePage() {
     setBusy(true);
     setError(undefined);
     try {
-      const response = await profileCommand('/auth/logout', { method: 'POST', credentials: 'include' }, controller, false);
+      logoutRetry.current ??= crypto.randomUUID();
+      const response = await profileCommand('/auth/logout', {
+        method: 'POST', credentials: 'include', headers: { 'Idempotency-Key': logoutRetry.current },
+      }, controller, false);
       if (!current()) return;
       if (!response.ok && response.status !== 401) throw new Error('Sign out failed');
       setProfile(undefined); setDraft(undefined);

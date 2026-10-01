@@ -61,6 +61,35 @@ test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANU
 test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_profile_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 50
 test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_profile_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 0
 test "$(psql -X -At -c 'SELECT count(*) FROM identity_profile_replays')" = 2
+# Revocation receipts have immutable session binding and an expired-only maintenance capability.
+psql -X -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
+INSERT INTO sessions(id,user_id,token_hash,created_at,expires_at,revoked_at)
+SELECT id,id,encode(sha256(id::text::bytea),'hex'),now(),now()+interval '1 day',now()
+FROM users WHERE id IN ('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
+INSERT INTO identity_revocation_replays(user_id,key_id,session_id,operation,expires_at)
+SELECT id,id,id,'LOGOUT',now()+interval '1 hour' FROM sessions
+WHERE id IN ('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
+INSERT INTO identity_revocation_replays(user_id,key_id,session_id,operation,created_at,expires_at)
+SELECT '01200000-0000-0000-0000-000000000001',gen_random_uuid(),'01200000-0000-0000-0000-000000000001',
+ 'LOGOUT',now()-interval '2 days',now()-interval '1 day' FROM generate_series(1,150);
+SQL
+test "$(api 'SELECT count(*) FROM identity_revocation_replays')" = 0
+test "$(api "SELECT has_table_privilege(current_user,'identity_revocation_replays','UPDATE')")" = f
+if worker 'SELECT session_id FROM identity_revocation_replays'; then echo 'Maintenance read original session binding'; exit 1; fi
+if worker 'SELECT operation FROM identity_revocation_replays'; then echo 'Maintenance read receipt operation'; exit 1; fi
+if api 'SELECT public.purge_expired_identity_revocation_replays()'; then echo 'API invoked global receipt purge'; exit 1; fi
+test "$(api "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT count(*) FROM identity_revocation_replays; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; WITH d AS (DELETE FROM identity_revocation_replays WHERE expires_at>clock_timestamp() RETURNING user_id) SELECT count(*) FROM d; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+if api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; INSERT INTO identity_revocation_replays(user_id,key_id,session_id,operation,expires_at) VALUES ('01200000-0000-0000-0000-000000000001',gen_random_uuid(),'01200000-0000-0000-0000-000000000002','LOGOUT',now()+interval '1 hour'); ROLLBACK;"; then echo 'Receipt bound a different subject session'; exit 1; fi
+test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(user_id) FROM identity_revocation_replays; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+test "$(worker 'SELECT public.purge_expired_identity_revocation_replays()')" = 0
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_revocation_replays(); ROLLBACK;" | grep -E '^[0-9]+$')" = 100
+test "$(psql -X -At -c 'SELECT count(*) FROM identity_revocation_replays WHERE expires_at<=clock_timestamp()')" = 150
+test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_revocation_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 100
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_revocation_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 50
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_revocation_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 0
+test "$(psql -X -At -c 'SELECT count(*) FROM identity_revocation_replays')" = 2
+test "$(psql -X -At -c 'SELECT count(*) FROM sessions WHERE id IN (SELECT session_id FROM identity_revocation_replays)')" = 2
 test "$(psql -X -At -c "SELECT count(*) FROM identity_events WHERE correlation_id='role-fixture'")" = 2
 test "$(api 'SELECT count(*) FROM identity_events')" = 0
 test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events; ROLLBACK;" | grep -E '^[0-9]+$')" = 1

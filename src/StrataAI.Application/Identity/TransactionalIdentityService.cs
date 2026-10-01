@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace StrataAI.Application.Identity;
 
 public sealed class TransactionalIdentityService(IIdentityService inner, IIdentityUnitOfWork commands,
-    IIdentityCommandContext context, IIdentityProfileReplayStore profileReplays) : IIdentityService
+    IIdentityCommandContext context, IIdentityProfileReplayStore profileReplays, ISecureTokenService tokens) : IIdentityService
 {
     public Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default) =>
@@ -36,7 +36,12 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
         Guid actorId,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        commands.ExecuteAsync(actorId, () => inner.LogoutAsync(rawSessionToken, actorId, correlationId, cancellationToken), cancellationToken);
+        context.IdempotencyKey is Guid key
+            ? context.RevocationSessionTokenHash is string hash && hash == tokens.Hash(rawSessionToken)
+                ? commands.ExecuteRevocationAsync(actorId, hash, key, IdentityRevocationKind.Logout, correlationId,
+                    actor => inner.LogoutAsync(rawSessionToken, actor, correlationId, cancellationToken), cancellationToken)
+                : Task.FromResult(IdentityOperation<bool>.Failure("session_unavailable"))
+            : commands.ExecuteAsync(actorId, () => inner.LogoutAsync(rawSessionToken, actorId, correlationId, cancellationToken), cancellationToken);
 
     public Task<PasswordResetRequestOutcome> RequestPasswordResetAsync(
         string email,
@@ -92,6 +97,11 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
         Guid userId,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        commands.ExecuteAsync(userId, () => inner.DeactivateAsync(userId, correlationId, cancellationToken), cancellationToken);
+        context.IdempotencyKey is Guid key
+            ? context.RevocationSessionTokenHash is string hash
+                ? commands.ExecuteRevocationAsync(userId, hash, key, IdentityRevocationKind.Deactivate, correlationId,
+                    actor => inner.DeactivateAsync(actor, correlationId, cancellationToken), cancellationToken)
+                : Task.FromResult(IdentityOperation<bool>.Failure("session_unavailable"))
+            : commands.ExecuteAsync(userId, () => inner.DeactivateAsync(userId, correlationId, cancellationToken), cancellationToken);
 
 }

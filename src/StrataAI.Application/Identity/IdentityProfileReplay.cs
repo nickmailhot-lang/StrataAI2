@@ -3,6 +3,7 @@ namespace StrataAI.Application.Identity;
 public interface IIdentityCommandContext
 {
     Guid? IdempotencyKey { get; }
+    string? RevocationSessionTokenHash { get; }
 }
 
 // This typed store cannot accept credential-bearing login/registration/token outcomes.

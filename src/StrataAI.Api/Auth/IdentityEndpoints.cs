@@ -152,10 +152,11 @@ public static class IdentityEndpoints
                 async (
                     HttpContext context,
                     IIdentityService identityService,
+                    IIdentityCommandContext commandContext,
                     CancellationToken cancellationToken) =>
                 {
                     var userId = GetUserId(context);
-                    if (userId is null)
+                    if (userId is null && commandContext.IdempotencyKey is null)
                     {
                         return Results.Unauthorized();
                     }
@@ -166,7 +167,7 @@ public static class IdentityEndpoints
 
                     var result = await identityService.LogoutAsync(
                         rawToken ?? string.Empty,
-                        userId.Value,
+                        userId ?? Guid.Empty,
                         context.TraceIdentifier,
                         cancellationToken);
 
@@ -177,7 +178,7 @@ public static class IdentityEndpoints
 
                     return Results.NoContent();
                 })
-            .RequireAuthorization();
+            .AllowAnonymous(); // Only the receipt capability can admit a revoked proof; ordinary calls still require the user above.
 
         var me = app.MapGroup("/me").RequireAuthorization();
 
@@ -236,16 +237,17 @@ public static class IdentityEndpoints
             async (
                 HttpContext context,
                 IIdentityService identityService,
+                IIdentityCommandContext commandContext,
                 CancellationToken cancellationToken) =>
             {
                 var userId = GetUserId(context);
-                if (userId is null)
+                if (userId is null && commandContext.IdempotencyKey is null)
                 {
                     return Results.Unauthorized();
                 }
 
                 var deactivated = await identityService.DeactivateAsync(
-                    userId.Value,
+                    userId ?? Guid.Empty,
                     context.TraceIdentifier,
                     cancellationToken);
 
@@ -258,7 +260,7 @@ public static class IdentityEndpoints
                     SessionAuthenticationDefaults.CookieName);
 
                 return Results.NoContent();
-            });
+            }).AllowAnonymous(); // GET/PATCH /me retain the group's normal authorization.
 
         app.MapGet(
             "/api/auth/policy",
