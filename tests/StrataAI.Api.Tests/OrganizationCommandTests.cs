@@ -9,6 +9,30 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    // PRD-03-TC-03/04: metadata validation follows authoritative permission admission.
+    [Theory]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("http://example.test/logo.png")]
+    [InlineData("https://user:password@example.test/logo.png")]
+    [InlineData("not-a-url")]
+    public async Task Organization_logo_validation_preserves_metadata_and_masks_unauthorized_input(string logo)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var other = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(other);
+        using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Metadata validation" });
+        var org = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var store = app.Services.GetRequiredService<IOrganizationStore>(); var before = await store.FindOrganizationAsync(org, ct);
+        using var denied = await Mutate(other, HttpMethod.Patch, $"/organizations/{org}", new { name = "Denied", logoUrl = logo, version = 1 });
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        using var invalid = await Mutate(owner, HttpMethod.Patch, $"/organizations/{org}", new { name = "Invalid", logoUrl = logo, version = 1 });
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("invalid_organization_logo_url", (await invalid.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        Assert.Equal(before, await store.FindOrganizationAsync(org, ct));
+        using var valid = await Mutate(owner, HttpMethod.Patch, $"/organizations/{org}", new { name = "Validated", logoUrl = "https://example.test/logo.png", version = 1 });
+        Assert.Equal(HttpStatusCode.OK, valid.StatusCode);
+        Assert.Equal("https://example.test/logo.png", (await store.FindOrganizationAsync(org, ct))!.LogoUrl);
+    }
     // PRD-03-TC-08 / WS-FR-005/006: the last active owner cannot depart.
     [Fact]
     public async Task Concurrent_owner_departures_preserve_one_active_owner()

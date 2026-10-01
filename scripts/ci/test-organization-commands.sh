@@ -58,6 +58,15 @@ state() {
     'owned',(SELECT count(*) FROM organizations WHERE owner_user_id='$owner'))::text;"
 }
 before="$(state)"
+# PRD-03-TC-03/04: URL validation never mutates metadata/audit and does not
+# reveal its validation rule to an account without internal membership.
+for logo in 'javascript:alert(1)' 'http://example.test/logo.png' 'https://user:password@example.test/logo.png' 'not-a-url' "https://example.test/$(printf '%02050d' 0)"; do
+  body="$(jq -nc --arg logo "$logo" '{name:"Invalid metadata",logoUrl:$logo,version:1}')"
+  test "$(request PATCH "/organizations/$organization" "$body" portal)" = 404
+  test "$(request PATCH "/organizations/$organization" "$body")" = 400
+  jq -e '.code=="invalid_organization_logo_url" and .status==400' "$scratch/response.json" >/dev/null
+  test "$before" = "$(state)"
+done
 admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
 rejected() {
   test "$(request "$1" "$2" "$3" "${4:-owner}")" = 503

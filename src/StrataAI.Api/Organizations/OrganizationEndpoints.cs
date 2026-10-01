@@ -212,6 +212,10 @@ public static class OrganizationEndpoints
                 StatusCodes.Status400BadRequest,
                 errorCode,
                 "A valid Organization name is required."),
+            "invalid_organization_logo_url" => Problem(
+                StatusCodes.Status400BadRequest,
+                errorCode,
+                "A secure HTTPS logo URL without embedded credentials is required."),
             "version_conflict" => Problem(
                 StatusCodes.Status409Conflict,
                 errorCode,

@@ -14,6 +14,7 @@ import { ResetPasswordPage } from "../features/auth/ResetPasswordPage";
 import { VerifyEmailPage } from "../features/auth/VerifyEmailPage";
 import { BoardScreen } from "../features/kanban/BoardScreen";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
+import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
 import { InvitationsPage } from "../features/auth/InvitationsPage";
 import { PortalShell } from "../portal/PortalShell";
 import { appTheme } from "../theme/appTheme";
@@ -38,6 +39,7 @@ const routes = [
     element: <InternalAppShell />,
     children: [
       { index: true, element: <OrganizationHome /> },
+      { path: "settings", element: <OrganizationSettingsPage /> },
       {
         path: "profile",
         element: <ProfilePage />,

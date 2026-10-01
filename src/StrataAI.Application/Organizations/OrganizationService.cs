@@ -111,11 +111,17 @@ public sealed class OrganizationService(
                 "invalid_organization_name");
         }
 
+        var cleanLogoUrl = NormalizeOptional(logoUrl);
+        if (cleanLogoUrl is not null && (cleanLogoUrl.Length > 2048 ||
+            !Uri.TryCreate(cleanLogoUrl, UriKind.Absolute, out var logoUri) ||
+            logoUri.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(logoUri.UserInfo)))
+            return OrganizationOperation<OrganizationRecord>.Failure("invalid_organization_logo_url");
+
         var updated = await store.UpdateOrganizationAsync(
             organizationId,
             normalizedName,
             NormalizeOptional(description),
-            NormalizeOptional(logoUrl),
+            cleanLogoUrl,
             expectedVersion,
             clock.UtcNow,
             cancellationToken);

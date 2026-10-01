@@ -94,6 +94,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const organization = data?.organizations.find(
     (item) => item.organization.id === organizationId,
   )?.organization;
+  const ownRole = data?.organizations.find(item => item.organization.id === organizationId)?.role;
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -190,6 +191,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               <Typography>{organization.description}</Typography>
             )}
             <Stack direction="row" spacing={2}>
+              {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
+                <Button component={Link} to={`/app/${organizationId}/settings`}>Organization settings</Button>
+              )}
               <Button
                 onClick={() => {
                   setData(undefined);
