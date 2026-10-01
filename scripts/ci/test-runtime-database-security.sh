@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1" >/dev/null; }
-restore() { admin "ALTER ROLE strataai_api_runtime NOBYPASSRLS; ALTER ROLE strataai_worker_runtime NOBYPASSRLS; GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe() TO strataai_api_runtime; INSERT INTO schema_migrations(version) VALUES ('009_runtime_role_guard'),('010_work_command_replays'),('011_work_events'),('012_identity_events'),('013_identity_profile_replays'),('014_identity_retry_retention'),('015_identity_revocation_replays'),('016_invitation_discovery'),('017_identity_login_replays'),('018_identity_registration_replays'),('019_identity_recovery_request_replays'),('020_identity_token_consumption_replays'),('021_organization_access_integrity') ON CONFLICT DO NOTHING;"; }
+restore() { admin "ALTER ROLE strataai_api_runtime NOBYPASSRLS; ALTER ROLE strataai_worker_runtime NOBYPASSRLS; GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe() TO strataai_api_runtime; INSERT INTO schema_migrations(version) VALUES ('009_runtime_role_guard'),('010_work_command_replays'),('011_work_events'),('012_identity_events'),('013_identity_profile_replays'),('014_identity_retry_retention'),('015_identity_revocation_replays'),('016_invitation_discovery'),('017_identity_login_replays'),('018_identity_registration_replays'),('019_identity_recovery_request_replays'),('020_identity_token_consumption_replays'),('021_organization_access_integrity'),('022_invitation_creation_replays'),('023_invitation_mail_intents') ON CONFLICT DO NOTHING;"; }
 trap restore EXIT
 status() { curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$1"; }
 test "$(status http://127.0.0.1:8080/readyz)" = 200
@@ -25,7 +25,7 @@ admin 'REVOKE EXECUTE ON FUNCTION public.runtime_database_role_is_safe() FROM st
 test "$(status http://127.0.0.1:8080/readyz)" = 503
 restore
 test "$(status http://127.0.0.1:8080/readyz)" = 200
-for version in 009_runtime_role_guard 010_work_command_replays 011_work_events 012_identity_events 013_identity_profile_replays 014_identity_retry_retention 015_identity_revocation_replays 016_invitation_discovery 017_identity_login_replays 018_identity_registration_replays 019_identity_recovery_request_replays 020_identity_token_consumption_replays 021_organization_access_integrity; do
+for version in 009_runtime_role_guard 010_work_command_replays 011_work_events 012_identity_events 013_identity_profile_replays 014_identity_retry_retention 015_identity_revocation_replays 016_invitation_discovery 017_identity_login_replays 018_identity_registration_replays 019_identity_recovery_request_replays 020_identity_token_consumption_replays 021_organization_access_integrity 022_invitation_creation_replays 023_invitation_mail_intents; do
 admin "DELETE FROM schema_migrations WHERE version='$version';"
 test "$(status http://127.0.0.1:8080/readyz)" = 503
 test "$(status http://127.0.0.1:8081/readyz)" = 503

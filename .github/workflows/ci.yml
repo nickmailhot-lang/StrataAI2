@@ -150,6 +150,9 @@ jobs:
       - name: Verify real restricted runtime logins and elevation rejection
         run: scripts/ci/test-runtime-roles.sh
 
+      - name: Verify lease-bound invitation mail capabilities
+        run: scripts/ci/test-invitation-mail-scope.sh
+
       - name: Verify canonical Organization membership and routing integrity
         run: scripts/ci/test-organization-access-integrity.sh
 
