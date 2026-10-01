@@ -721,7 +721,7 @@ public static class WorkManagementEndpoints
             "sole_board_admin" => Problem(
                 StatusCodes.Status409Conflict,
                 errorCode,
-                "The last Board administrator cannot be removed by this actor."),
+                "The last Board administrator cannot be removed or demoted by this actor."),
             "member_not_eligible" => Problem(
                 StatusCodes.Status400BadRequest,
                 errorCode,

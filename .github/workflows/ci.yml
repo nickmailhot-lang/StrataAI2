@@ -363,6 +363,9 @@ jobs:
       - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
         run: scripts/ci/test-board-discovery.sh
 
+      - name: Board administrator demotion continuity and atomic recovery
+        run: scripts/ci/test-board-admin-continuity.sh
+
       - name: Work command and audit rollback against exact release API
         run: scripts/ci/test-work-command-transactions.sh
 

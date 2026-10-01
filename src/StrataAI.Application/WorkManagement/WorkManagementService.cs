@@ -337,6 +337,16 @@ public sealed class WorkManagementService(
                 "member_not_eligible");
         }
 
+        // PERM-FR-005/006: changing the role must retain the same safeguard as
+        // removal. The existing Organization-admin override remains explicit.
+        if (role != BoardRole.Admin && !IsOrganizationAdmin(resolved.Value.OrganizationMembership))
+        {
+            var members = await store.ListBoardMembersAsync(boardId, cancellationToken);
+            if (members.Any(member => member.UserId == targetUserId && member.Active && member.Role == BoardRole.Admin)
+                && members.Count(member => member.Active && member.Role == BoardRole.Admin) <= 1)
+                return WorkOperation<BoardMemberRecord>.Failure("sole_board_admin");
+        }
+
         var member = await store.UpsertBoardMemberAsync(
             boardId,
             targetUserId,
