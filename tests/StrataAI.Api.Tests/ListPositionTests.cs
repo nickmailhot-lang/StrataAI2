@@ -8,6 +8,50 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task List_prepend_and_exhausted_boundary_preserve_other_lists()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        var board = await TelemetryBoard(owner, ct);
+        async Task<JsonElement> Create(string name, string? rank = null)
+        {
+            using var result = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/lists", new { name, rank });
+            Assert.Equal(HttpStatusCode.Created, result.StatusCode);
+            return await result.Content.ReadFromJsonAsync<JsonElement>(ct);
+        }
+        var first = await Create("First"); var moving = await Create("Moving");
+        var id = moving.GetProperty("id").GetGuid();
+        using var prepend = await Mutate(owner, HttpMethod.Patch, $"/lists/{id}",
+            new { name = "Moving", beforeListId = first.GetProperty("id").GetGuid(), version = 1 });
+        Assert.Equal(HttpStatusCode.OK, prepend.StatusCode);
+        var placed = await prepend.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.True(string.CompareOrdinal(placed.GetProperty("rank").GetString(), first.GetProperty("rank").GetString()) < 0);
+        var edge = await Create("Lowest rank", "000000000000000000000000000001");
+        var key = Guid.NewGuid().ToString();
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            using var exhausted = await Mutate(owner, HttpMethod.Patch, $"/lists/{id}",
+                new { name = "Moving", beforeListId = edge.GetProperty("id").GetGuid(), version = 2 }, key);
+            Assert.Equal(HttpStatusCode.Conflict, exhausted.StatusCode);
+            Assert.Equal("rank_space_exhausted", (await exhausted.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        }
+        using var mixed = await Mutate(owner, HttpMethod.Patch, $"/lists/{id}",
+            new { name = "Moving", rank = placed.GetProperty("rank").GetString(), moveToEnd = true, version = 2 });
+        Assert.Equal(HttpStatusCode.BadRequest, mixed.StatusCode);
+        using var empty = await Mutate(owner, HttpMethod.Patch, $"/lists/{id}",
+            new { name = "Moving", beforeListId = Guid.Empty, version = 2 });
+        Assert.Equal(HttpStatusCode.BadRequest, empty.StatusCode);
+        var current = await owner.GetFromJsonAsync<JsonElement>($"/boards/{board}", ct);
+        var lists = current.GetProperty("lists").EnumerateArray().Select(column => column.GetProperty("list")).ToArray();
+        foreach (var expected in new[] { first, placed, edge })
+        {
+            var actual = lists.Single(list => list.GetProperty("id").GetGuid() == expected.GetProperty("id").GetGuid());
+            Assert.Equal(expected.GetProperty("rank").GetString(), actual.GetProperty("rank").GetString());
+            Assert.Equal(expected.GetProperty("version").GetInt64(), actual.GetProperty("version").GetInt64());
+        }
+    }
+
+    [Fact]
     public async Task List_positions_use_current_neighbors_and_do_not_reapply_historical_receipts()
     {
         var ct = TestContext.Current.CancellationToken;
