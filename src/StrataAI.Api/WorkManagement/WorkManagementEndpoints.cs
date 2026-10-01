@@ -674,6 +674,10 @@ public static class WorkManagementEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "session_unavailable" => Problem(
+                StatusCodes.Status401Unauthorized,
+                errorCode,
+                "Your session is no longer available. Sign in again."),
             "work_storage_unavailable" => Problem(
                 StatusCodes.Status503ServiceUnavailable,
                 errorCode,

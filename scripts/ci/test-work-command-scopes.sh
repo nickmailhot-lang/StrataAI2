@@ -125,6 +125,43 @@ case_denied "$org_lock" "UPDATE organizations SET status='DELETING',version=vers
 test "$(curl --silent --show-error -b "$scratch/owner.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$board/sync")" = 404
 admin "UPDATE organizations SET status='ACTIVE' WHERE id='$organization';" >/dev/null
 
+login_member() {
+  local body
+  body="$(jq -nc --arg email "$(jq -r '.user.email' "$scratch/member.json")" '{email:$email,password:"scope-correct-horse-battery"}')"
+  curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$body" "$BASE_URL/auth/login" >/dev/null
+}
+member_hash() {
+  awk '$6=="strataai_session" {print $7}' "$scratch/member.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1
+}
+session_denied() {
+  local change="$1" method="$2" route="$3" body="$4" key="${5:-}" before
+  before="$(protected_state)"
+  hold "$org_lock"
+  local headers=()
+  if test -n "$key"; then headers=(-H "Idempotency-Key: $key"); fi
+  curl --max-time 60 --silent --show-error -b "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' "${headers[@]}" -X "$method" -d "$body" -o "$scratch/failure.json" -w '%{http_code}' "$BASE_URL$route" > "$scratch/status" &
+  request_pid=$!
+  blocked "usename='strataai_api_runtime' AND query LIKE '$org_query'"
+  release "$change"
+  wait "$request_pid"
+  request_pid=''
+  test "$(cat "$scratch/status")" = 401
+  jq -e '.code=="session_unavailable"' "$scratch/failure.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh 'Protected|Npgsql|SELECT|token_hash|strataai_session' "$scratch/failure.json"
+  test "$before" = "$(protected_state)"
+}
+session_denied "UPDATE sessions SET revoked_at=clock_timestamp() WHERE token_hash='$(member_hash)';" POST "/boards/$board/lists" '{"name":"Logged out write"}'
+login_member
+cached_key="$(cat /proc/sys/kernel/random/uuid)"
+curl --fail --silent --show-error -b "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H "Idempotency-Key: $cached_key" -H 'Content-Type: application/json' -d '{"name":"Session replay"}' "$BASE_URL/boards/$board/lists" | jq -e '.name=="Session replay"' >/dev/null
+session_denied "UPDATE sessions SET revoked_at=clock_timestamp() WHERE token_hash='$(member_hash)';" POST "/boards/$board/lists" '{"name":"Session replay"}' "$cached_key"
+login_member
+session_denied "UPDATE sessions SET expires_at=clock_timestamp()-interval '1 second' WHERE token_hash='$(member_hash)';" PATCH "/cards/$card" '{"title":"Expired write","version":1}'
+login_member
+session_denied "UPDATE users SET status='DEACTIVATED' WHERE id='$member'; UPDATE sessions SET revoked_at=clock_timestamp() WHERE user_id='$member';" PATCH "/cards/$card" '{"title":"Deactivated write","version":1}'
+admin "UPDATE users SET status='ACTIVE' WHERE id='$member';" >/dev/null
+login_member
+
 # Once authorization is locked, a revocation must wait for the accepted command's
 # commit. Pause audit insertion to observe that ordering in the opposite direction.
 advisory="$((1000000000 + RANDOM))"
@@ -136,13 +173,19 @@ blocked "usename='strataai_api_runtime' AND wait_event='advisory' AND query LIKE
 admin "SET application_name='ci-scope-revoker'; UPDATE organization_members SET status='SUSPENDED',version=version+1 WHERE tenant_id='$organization' AND user_id='$member';" > "$scratch/revoked" &
 revoker_pid=$!
 blocked "application_name='ci-scope-revoker' AND query LIKE '%UPDATE organization_members%'"
+accepted_hash="$(member_hash)"
+admin "SET application_name='ci-session-revoker'; UPDATE sessions SET revoked_at=clock_timestamp() WHERE token_hash='$accepted_hash';" > "$scratch/session-revoked" &
+session_revoker_pid=$!
+blocked "application_name='ci-session-revoker' AND query LIKE '%UPDATE sessions%'"
 test "$(admin "SELECT status FROM organization_members WHERE tenant_id='$organization' AND user_id='$member';")" = ACTIVE
 release ''
 wait "$request_pid"
 request_pid=''
 wait "$revoker_pid"
+wait "$session_revoker_pid"
 test "$(cat "$scratch/accepted.status")" = 200
 jq -e '.version==2 and .title=="Accepted before revocation"' "$scratch/accepted.json" >/dev/null
 test "$(admin "SELECT status FROM organization_members WHERE tenant_id='$organization' AND user_id='$member';")" = SUSPENDED
-test "$(curl --silent --show-error -b "$scratch/member.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$board")" = 404
+test "$(admin "SELECT revoked_at IS NOT NULL FROM sessions WHERE token_hash='$accepted_hash';")" = t
+test "$(curl --silent --show-error -b "$scratch/member.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$board")" = 401
 echo 'Fresh write authorization after live lock waits, inactive parents, and commit-before-revocation ordering passed.'

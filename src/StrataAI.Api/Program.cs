@@ -35,6 +35,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<ICommandActorContext, HttpCommandActorContext>();
+builder.Services.AddSingleton<ICommandActorAuthorization, CommandActorAuthorization>();
 builder.Services.AddSingleton<StrataAI.Application.WorkManagement.IWorkCommandContext, HttpWorkCommandContext>();
 builder.Services
     .AddAuthentication(SessionAuthenticationDefaults.Scheme)

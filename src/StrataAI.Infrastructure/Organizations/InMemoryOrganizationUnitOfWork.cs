@@ -1,8 +1,9 @@
 using StrataAI.Application.Organizations;
+using StrataAI.Application.Identity;
 
 namespace StrataAI.Infrastructure.Organizations;
 
-internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store) : IOrganizationUnitOfWork
+internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, ICommandActorAuthorization actors) : IOrganizationUnitOfWork
 {
     private readonly SemaphoreSlim _commands = new(1, 1);
 
@@ -16,6 +17,8 @@ internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store) :
         {
             if (!creating && (await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
                 return OrganizationOperation<T>.Failure("organization_not_found");
+            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                return OrganizationOperation<T>.Failure("session_unavailable");
             return await operation();
         }
         finally { _commands.Release(); }

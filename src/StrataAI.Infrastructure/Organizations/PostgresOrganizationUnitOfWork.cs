@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
 using StrataAI.Infrastructure.Persistence;
 
@@ -7,6 +8,7 @@ namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed class PostgresOrganizationUnitOfWork(
     PostgresConnectionFactory connections,
+    ICommandActorAuthorization actors,
     ILogger<PostgresOrganizationUnitOfWork> logger) : IOrganizationUnitOfWork
 {
     public async Task<OrganizationOperation<T>> ExecuteAsync<T>(
@@ -42,6 +44,8 @@ internal sealed class PostgresOrganizationUnitOfWork(
                     await using var reader = await members.ExecuteReaderAsync(cancellationToken);
                     while (await reader.ReadAsync(cancellationToken)) { }
                 }
+                if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                    return OrganizationOperation<T>.Failure("session_unavailable");
                 return await operation();
             }, result => result.Succeeded, cancellationToken);
         }

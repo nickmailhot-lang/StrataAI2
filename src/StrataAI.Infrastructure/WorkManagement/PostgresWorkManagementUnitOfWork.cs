@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using NpgsqlTypes;
+using StrataAI.Application.Identity;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Infrastructure.Persistence;
 
@@ -9,6 +10,7 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed class PostgresWorkManagementUnitOfWork(
     PostgresConnectionFactory connections,
+    ICommandActorAuthorization actors,
     ILogger<PostgresWorkManagementUnitOfWork> logger) : IWorkManagementUnitOfWork
 {
     public async Task<WorkOperation<T>> ExecuteAsync<T>(Guid organizationId, WorkCommand command,
@@ -21,6 +23,7 @@ internal sealed class PostgresWorkManagementUnitOfWork(
             {
                 // Never disclose a previously authorized response to a revoked actor.
                 if (!await authorizeReplay(default)) return WorkOperation<T>.Failure(command.ScopeFailureCode);
+                if (!await actors.VerifyAsync(command.ActorId, cancellationToken)) return WorkOperation<T>.Failure("session_unavailable");
                 if (command.Key is null) return await operation();
                 await using var session = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);
                 NpgsqlCommand Query(string sql)
@@ -56,6 +59,7 @@ internal sealed class PostgresWorkManagementUnitOfWork(
                 // Authorization was checked before waiting; recheck after a potentially
                 // long duplicate wait, so revocation during that wait is respected.
                 if (!await authorizeReplay(default)) return WorkOperation<T>.Failure(command.ScopeFailureCode);
+                if (!await actors.VerifyAsync(command.ActorId, cancellationToken)) return WorkOperation<T>.Failure("session_unavailable");
                 if (resultJson is not null)
                 {
                     var previous = JsonSerializer.Deserialize<WorkOperation<T>>(resultJson)

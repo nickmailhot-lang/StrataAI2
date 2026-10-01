@@ -127,8 +127,8 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset now,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             $"""
             SELECT
@@ -140,9 +140,10 @@ internal sealed class PostgresIdentityStore(
             WHERE s.token_hash = @token_hash
               AND s.revoked_at IS NULL
               AND s.expires_at > @now
-              AND u.status = 'ACTIVE';
-            """,
-            connection);
+              AND s.expires_at > clock_timestamp()
+              AND u.status = 'ACTIVE'
+            """ + (routing.Transaction is null ? ";" : " FOR SHARE OF s;"),
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("token_hash", tokenHash);
         command.Parameters.AddWithValue("now", now);
 

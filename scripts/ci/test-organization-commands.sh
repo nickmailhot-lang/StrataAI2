@@ -144,8 +144,8 @@ blocked '%FROM users WHERE id =%FOR SHARE%'
 release "UPDATE users SET status='DEACTIVATED' WHERE id='$guest';"
 wait "$request_pid"
 request_pid=''
-test "$(cat "$scratch/status")" = 403
-jq -e '.code=="account_unavailable"' "$scratch/response.json" >/dev/null
+test "$(cat "$scratch/status")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/response.json" >/dev/null
 test "$(admin "SELECT accepted_at IS NULL FROM invitations WHERE token_hash='$waiting_hash';")" = t
 test "$(admin "SELECT version FROM organization_members WHERE tenant_id='$organization' AND user_id='$guest';")" = "$guest_version"
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")" = "$waiting_audits"
@@ -180,6 +180,34 @@ test "$(admin "SELECT name||':'||version FROM organizations WHERE id='$organizat
 test "$(request POST "/invitations/$owner_downgrade/accept" '{}')" = 400
 jq -e '.code=="invalid_or_expired_invitation"' "$scratch/response.json" >/dev/null
 admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$organization' AND user_id='$owner';" >/dev/null
+owner_hash() {
+  awk '$6=="strataai_session" {print $7}' "$scratch/owner.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1
+}
+login_owner() {
+  local body
+  body="$(jq -nc --arg email "$(jq -r '.user.email' "$scratch/owner.json")" '{email:$email,password:"organization-correct-horse-battery"}')"
+  curl --fail --silent --show-error -c "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$body" "$BASE_URL/auth/login" >/dev/null
+}
+logout_during_wait() {
+  local lock="$1" query="$2" method="$3" route="$4" body="$5" before hash
+  before="$(state)"
+  hash="$(owner_hash)"
+  hold "$lock"
+  request "$method" "$route" "$body" > "$scratch/status" &
+  request_pid=$!
+  blocked "$query"
+  release "UPDATE sessions SET revoked_at=clock_timestamp() WHERE token_hash='$hash';"
+  wait "$request_pid"
+  request_pid=''
+  test "$(cat "$scratch/status")" = 401
+  jq -e '.code=="session_unavailable"' "$scratch/response.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh 'Atomic organization|Npgsql|SELECT|token_hash|strataai_session' "$scratch/response.json"
+  test "$before" = "$(state)"
+  login_owner
+}
+logout_during_wait "SELECT id FROM users WHERE id='$owner' FOR UPDATE;" '%FROM users WHERE id =%FOR SHARE%' POST /organizations '{"name":"Logged out creation"}'
+logout_during_wait "SELECT id FROM organizations WHERE id='$organization' FOR UPDATE;" '%SELECT id FROM organizations%FOR UPDATE%' PATCH "/organizations/$organization" '{"name":"Logged out edit","version":1}'
+logout_during_wait "SELECT id FROM organizations WHERE id='$organization' FOR UPDATE;" '%SELECT id FROM organizations%FOR UPDATE%' POST "/organizations/$organization/invitations" '{"email":"logged-out@example.test","surface":"INTERNAL","targetRole":"MEMBER"}'
 # Force both departure requests to wait on the same organization gate. After release,
 # exactly one commits; the second reads the committed owner count and rejects departure.
 audit_before="$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")"

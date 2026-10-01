@@ -1,11 +1,12 @@
 using System.Collections.Concurrent;
 using StrataAI.Application.Common;
+using StrataAI.Application.Identity;
 using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
 // Demo has no PostgreSQL dependency. Results live only for this host lifetime.
-internal sealed class InMemoryWorkManagementUnitOfWork(IClock clock) : IWorkManagementUnitOfWork
+internal sealed class InMemoryWorkManagementUnitOfWork(IClock clock, ICommandActorAuthorization actors) : IWorkManagementUnitOfWork
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly ConcurrentDictionary<(Guid Organization, Guid Actor, Guid Key), (string Fingerprint, DateTimeOffset Expires, object Result)> _results = new();
@@ -18,6 +19,7 @@ internal sealed class InMemoryWorkManagementUnitOfWork(IClock clock) : IWorkMana
         try
         {
             if (!await authorizeReplay(default)) return WorkOperation<T>.Failure(command.ScopeFailureCode);
+            if (!await actors.VerifyAsync(command.ActorId, cancellationToken)) return WorkOperation<T>.Failure("session_unavailable");
             if (command.Key is null) return await operation();
             var key = (organizationId, command.ActorId, command.Key.Value);
             if (_results.TryGetValue(key, out var previous))

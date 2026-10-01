@@ -17,7 +17,8 @@ public sealed class SessionAuthenticationHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
     UrlEncoder encoder,
-    IIdentityService identityService)
+    IIdentityService identityService,
+    ISecureTokenService tokens)
     : AuthenticationHandler<AuthenticationSchemeOptions>(
         options,
         logger,
@@ -43,6 +44,7 @@ public sealed class SessionAuthenticationHandler(
         }
 
         var user = session.User;
+        Context.Items[typeof(ICommandActorContext)] = tokens.Hash(rawSessionToken);
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
