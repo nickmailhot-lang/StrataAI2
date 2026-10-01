@@ -23,7 +23,8 @@ function validPage(value: unknown): value is Page {
       || typeof item.expiresAt !== 'string' || !Number.isFinite(Date.parse(item.expiresAt)) || seen.has(item.id)) return false;
     seen.add(item.id);
   }
-  return page.nextCursor === null || (page.items.length === 50 && page.nextCursor === page.items.at(-1)?.id);
+  // Authorization filtering can leave a short or empty page with a cursor for the last scanned candidate.
+  return page.nextCursor === null || page.items.every(item => item.id.toLowerCase() <= page.nextCursor!.toLowerCase());
 }
 async function request(path: string, controller: AbortController, method = 'GET') {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -61,7 +62,7 @@ export function InvitationsPage() {
       if (!mounted.current || current.current !== controller) return;
       if (response.status === 401) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); navigate('/login', { replace: true }); return; }
       if (response.status === 403) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); setError('Verify your email before viewing invitations.'); return; }
-      if (response.status !== 200 || !validPage(response.body) || response.body.nextCursor === after) throw new Error('Invalid invitation page');
+      if (response.status !== 200 || !validPage(response.body) || (after && response.body.nextCursor !== null && response.body.nextCursor.toLowerCase() <= after.toLowerCase())) throw new Error('Invalid invitation page');
       setPage(response.body);
     } catch {
       if (mounted.current && current.current === controller) setError('Unable to load invitations. Please refresh and try again.');

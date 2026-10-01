@@ -64,7 +64,7 @@ internal sealed class InMemoryInvitationStore(
             var result = _byToken.Values
                 .Where(
                     invitation =>
-                        invitation.BoardTarget is null && invitation.EmailNormalized == emailNormalized &&
+                        invitation.EmailNormalized == emailNormalized &&
                         invitation.AcceptedAt is null &&
                         invitation.RevokedAt is null &&
                         invitation.ExpiresAt > now && (after is null || invitation.Id.CompareTo(after.Value) > 0))
@@ -77,7 +77,7 @@ internal sealed class InMemoryInvitationStore(
                             invitation.OrganizationId,
                             invitation.Surface,
                             invitation.TargetRole,
-                            invitation.ExpiresAt, invitation.OrganizationName ?? "Organization"))
+                            invitation.ExpiresAt, invitation.OrganizationName ?? "Organization", invitation.BoardTarget))
                 .ToArray();
 
             return Task.FromResult<IReadOnlyList<PendingInvitation>>(result);

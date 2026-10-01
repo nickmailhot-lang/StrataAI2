@@ -131,6 +131,10 @@ for board_role in ADMIN MEMBER; do
  test "$(curl --max-time 60 --silent --show-error -b "$scratch/board.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -X POST -d "$(jq -nc --arg token "$token" '{token:$token}')" -o "$scratch/response" -w '%{http_code}' "$base/invitations/review")" = 200
  jq -e --arg board "$signup_board" --arg role "$board_role" '.boardTarget.boardId==$board and .boardTarget.role==$role and (.boardName|length)>0' "$scratch/response" >/dev/null
  test "$before_review" = "$(board_accept_state)"
+ curl --fail --silent --show-error -b "$scratch/board.cookies" "$base/me/invitations" > "$scratch/board-discovery"
+ jq -e --arg id "$invitation_id" --arg board "$signup_board" --arg role "$board_role" '.items|any(.id==$id and .boardTarget.boardId==$board and .boardTarget.role==$role and (.boardName|length)>0)' "$scratch/board-discovery" >/dev/null
+ scripts/ci/assert-file-excludes.sh "$token|tokenHash|acceptedByUserId" "$scratch/board-discovery"
+ test "$before_review" = "$(board_accept_state)"
  before_accept="$(board_accept_state)"
  for denied in board_members audit_events work_events background_jobs; do
   admin "REVOKE INSERT ON $denied FROM strataai_api_runtime;" >/dev/null
@@ -206,4 +210,22 @@ for width in 1280 390; do
  cat "$scratch/board-link-next" > "$board_link_fixtures"
 done
 printf 'STRATAAI_E2E_BOARD_INVITATION_LINK_FIXTURES=%s\n' "$board_link_fixtures" >> "$GITHUB_ENV"
+# Canonical Board disclosure waits under Organization/account/Board scope; archive
+# committed during the actual Board wait must hide the candidate without a grant.
+curl --fail --silent --show-error -c "$scratch/board-link.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(jq '{email,password}' <<< "$body")" "$base/auth/login" >/dev/null
+before_discovery="$(state)"; rm "$scratch/gate.in"; mkfifo "$scratch/gate.in"; exec 3<>"$scratch/gate.in"
+docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.out" &
+gate_pid=$!; printf "BEGIN; SELECT id FROM boards WHERE id='%s' FOR UPDATE; SELECT 'discovery-ready';\n" "$signup_board" >&3
+for attempt in $(seq 1 100); do if grep -q '^discovery-ready$' "$scratch/gate.out"; then break; fi; sleep 0.1; done
+grep -q '^discovery-ready$' "$scratch/gate.out"
+curl --max-time 60 --silent --show-error -b "$scratch/board-link.cookies" -o "$scratch/discovery-wait" -w '%{http_code}' "$base/me/invitations" > "$scratch/discovery-wait-status" & pending=$!; pids+=($pending)
+for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%FROM boards%FOR UPDATE%';")" -ge 1; then break; fi; sleep 0.1; done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%FROM boards%FOR UPDATE%';")" -ge 1
+printf "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='%s'; COMMIT;\n\\q\n" "$signup_board" >&3
+exec 3>&-; wait "$gate_pid"; gate_pid=''; wait "$pending"; pids=()
+test "$(cat "$scratch/discovery-wait-status")" = 200
+jq -e '.items|length==0' "$scratch/discovery-wait" >/dev/null
+test "$before_discovery" = "$(state)"
+admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$signup_board';" >/dev/null
+
 echo 'Exact-image invitation signup: closed policy, both surfaces, one connection, identical concurrent receipts, atomic rollback, no premature access and fresh post-wait issuer/expiry admission passed.'

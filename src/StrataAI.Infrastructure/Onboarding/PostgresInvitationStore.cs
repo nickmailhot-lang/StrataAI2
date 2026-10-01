@@ -143,10 +143,9 @@ internal sealed class PostgresInvitationStore(
                 tenant_id,
                 target_surface,
                 target_role,
-                expires_at, organization_name
+                expires_at, organization_name, target_board_id, target_board_role
             FROM invitation_routes
             WHERE email_normalized = @email_normalized
-              AND target_board_id IS NULL
               AND accepted_at IS NULL
               AND revoked_at IS NULL
               AND expires_at > clock_timestamp()
@@ -172,7 +171,10 @@ internal sealed class PostgresInvitationStore(
                     reader.GetGuid(1),
                     ParseSurface(reader.GetString(2)),
                     reader.GetString(3),
-                    reader.GetFieldValue<DateTimeOffset>(4), reader.GetString(5)));
+                    reader.GetFieldValue<DateTimeOffset>(4), reader.GetString(5),
+                    reader.IsDBNull(6) ? null : new BoardInvitationTarget(reader.GetGuid(6),
+                        reader.GetString(7) == "ADMIN" ? StrataAI.Application.WorkManagement.BoardRole.Admin
+                            : StrataAI.Application.WorkManagement.BoardRole.Member)));
         }
 
         return result;

@@ -45,6 +45,12 @@ public sealed class InvitationService(
         var route = await invitationStore.FindActiveByTokenHashAsync(hash, clock.UtcNow, cancellationToken);
         if (route is null || route.EmailNormalized != user.EmailNormalized)
             return InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation");
+        return await ReviewCanonicalAsync(actorUserId, route, hash, cancellationToken);
+    }
+
+    private async Task<InvitationOperation<PendingInvitation>> ReviewCanonicalAsync(Guid actorUserId,
+        InvitationRecord route, string? hash, CancellationToken cancellationToken)
+    {
         var result = await ExecuteAsync(route.OrganizationId, actorUserId, route.CreatedByUserId, async () =>
         {
             if (route.BoardTarget is { } routedTarget
@@ -53,7 +59,9 @@ public sealed class InvitationService(
             var currentUser = await identityStore.FindUserByIdAsync(actorUserId, cancellationToken);
             if (currentUser is not { Status: AccountStatus.Active, EmailVerified: true })
                 return InvitationOperation<PendingInvitation>.Failure("account_unavailable");
-            var invitation = await invitationStore.FindActiveByTokenHashAsync(hash, clock.UtcNow, cancellationToken);
+            var invitation = hash is null
+                ? await invitationStore.FindActiveByIdForEmailAsync(route.Id, actorUserId, currentUser.EmailNormalized, clock.UtcNow, cancellationToken)
+                : await invitationStore.FindActiveByTokenHashAsync(hash, clock.UtcNow, cancellationToken);
             if (invitation is null || invitation.BoardTarget != route.BoardTarget || invitation.OrganizationId != route.OrganizationId
                 || invitation.CreatedByUserId != route.CreatedByUserId || invitation.EmailNormalized != currentUser.EmailNormalized
                 || invitation.AcceptedAt is not null || invitation.RevokedAt is not null)
@@ -235,19 +243,48 @@ public sealed class InvitationService(
         Guid actorUserId, Guid? after = null, CancellationToken cancellationToken = default)
     {
         if (after == Guid.Empty) return InvitationOperation<PendingInvitationPage>.Failure("invalid_invitation_cursor");
+        string? discoveredEmail = null;
         var result = await identityCommands.ExecuteAsync(actorUserId, async () =>
         {
             var user = await identityStore.FindUserByIdAsync(actorUserId, cancellationToken);
             if (user is not { Status: AccountStatus.Active, EmailVerified: true })
                 return IdentityOperation<PendingInvitationPage>.Failure("account_unavailable");
+            discoveredEmail = user.EmailNormalized;
             var rows = await invitationStore.ListPendingForEmailAsync(user.EmailNormalized, clock.UtcNow, after, cancellationToken);
             if (!await actors.VerifyAsync(actorUserId, cancellationToken))
                 return IdentityOperation<PendingInvitationPage>.Failure("session_unavailable");
             var items = rows.Take(50).ToArray();
             return IdentityOperation<PendingInvitationPage>.Success(new PendingInvitationPage(items, rows.Count > 50 ? items[^1].Id : null));
         }, cancellationToken);
-        return new InvitationOperation<PendingInvitationPage>(result.Succeeded, result.Value,
-            result.ErrorCode == "identity_storage_unavailable" ? "invitation_storage_unavailable" : result.ErrorCode);
+        if (!result.Succeeded)
+            return InvitationOperation<PendingInvitationPage>.Failure(result.ErrorCode == "identity_storage_unavailable"
+                ? "invitation_storage_unavailable" : result.ErrorCode!);
+        // Account scope is now closed. Each Board disclosure obtains Organization -> account -> Board locks.
+        // Scan at most 50 candidates; denied candidates still advance the opaque seek cursor.
+        var visible = new List<PendingInvitation>();
+        foreach (var candidate in result.Value!.Items)
+        {
+            if (candidate.BoardTarget is null) { visible.Add(candidate); continue; }
+            var route = await invitationStore.FindActiveByIdForEmailAsync(candidate.Id, actorUserId,
+                discoveredEmail!, clock.UtcNow, cancellationToken);
+            if (route is null || route.OrganizationId != candidate.OrganizationId || route.BoardTarget != candidate.BoardTarget) continue;
+            var reviewed = await ReviewCanonicalAsync(actorUserId, route, null, cancellationToken);
+            if (reviewed.Succeeded) visible.Add(reviewed.Value!);
+            else if (reviewed.ErrorCode is not "invalid_or_expired_invitation")
+                return InvitationOperation<PendingInvitationPage>.Failure(reviewed.ErrorCode!);
+        }
+        // Reauthorize after all tenant reads; no tenant lock is held across this account command.
+        var final = await identityCommands.ExecuteAsync(actorUserId, async () =>
+        {
+            var current = await identityStore.FindUserByIdAsync(actorUserId, cancellationToken);
+            if (current is not { Status: AccountStatus.Active, EmailVerified: true } || current.EmailNormalized != discoveredEmail)
+                return IdentityOperation<PendingInvitationPage>.Failure("account_unavailable");
+            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                return IdentityOperation<PendingInvitationPage>.Failure("session_unavailable");
+            return IdentityOperation<PendingInvitationPage>.Success(new(visible, result.Value.NextCursor));
+        }, cancellationToken);
+        return new InvitationOperation<PendingInvitationPage>(final.Succeeded, final.Value,
+            final.ErrorCode == "identity_storage_unavailable" ? "invitation_storage_unavailable" : final.ErrorCode);
     }
 
     private async Task<InvitationOperation<AcceptedInvitation>> AcceptCoreAsync(

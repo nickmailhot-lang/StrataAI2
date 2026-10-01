@@ -141,3 +141,21 @@ it.each([
   expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
   expect(screen.queryByRole('heading', { name: 'Maintenance' })).not.toBeInTheDocument();
 });
+
+it('advances a filtered empty candidate page by its scan cursor', async () => {
+  const cursor = '44444444-4444-4444-8444-444444444444';
+  const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [], nextCursor: cursor }))
+    .mockResolvedValueOnce(reply({ items: [], nextCursor: null }));
+  vi.stubGlobal('fetch', fetcher); mount();
+  fireEvent.click(await screen.findByRole('button', { name: 'More invitations' }));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+  expect(fetcher.mock.calls[1][0]).toBe(`/me/invitations?after=${cursor}`);
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'More invitations' })).not.toBeInTheDocument());
+});
+it('rejects a cursor that goes backward after an authorization-filtered page', async () => {
+  const cursor = '44444444-4444-4444-8444-444444444444';
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply({ items: [], nextCursor: cursor }))
+    .mockResolvedValueOnce(reply({ items: [], nextCursor: invitation.id })));
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'More invitations' }));
+  await screen.findByText('Unable to load invitations. Please refresh and try again.');
+});

@@ -41,6 +41,14 @@ public sealed partial class ApiHostTests
         Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct));
         Assert.Null((await app.Services.GetRequiredService<IInvitationStore>().FindActiveByTokenHashAsync(
             app.Services.GetRequiredService<ISecureTokenService>().Hash(issued.RawToken), DateTimeOffset.UtcNow, ct))!.AcceptedAt);
+        using var discovered = await client.GetAsync("/me/invitations", ct);
+        Assert.Equal(HttpStatusCode.OK, discovered.StatusCode);
+        var pending = await discovered.Content.ReadFromJsonAsync<JsonElement>(ct);
+        var boardItem = Assert.Single(pending.GetProperty("items").EnumerateArray());
+        Assert.Equal(fixture.Board.Name, boardItem.GetProperty("boardName").GetString());
+        Assert.Equal(fixture.Board.Id, boardItem.GetProperty("boardTarget").GetProperty("boardId").GetGuid());
+        Assert.DoesNotContain(issued.RawToken, pending.GetRawText(), StringComparison.Ordinal);
+        Assert.DoesNotContain("tokenHash", pending.GetRawText(), StringComparison.Ordinal);
         using var accepted = await Mutate(client, HttpMethod.Post, "/invitations/accept", new { token = issued.RawToken });
         Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
         var ack = await accepted.Content.ReadFromJsonAsync<JsonElement>(ct);
@@ -132,8 +140,35 @@ public sealed partial class ApiHostTests
             fixture.Recipient.Id, issued.RawToken, ct)).ErrorCode);
         Assert.Equal("invalid_or_expired_invitation", (await app.Services.GetRequiredService<IInvitationService>().AcceptAsync(
             fixture.Recipient.Id, issued.RawToken, "fixture", ct)).ErrorCode);
+        var discovered = await app.Services.GetRequiredService<IInvitationService>().ListPendingAsync(fixture.Recipient.Id, null, ct);
+        Assert.True(discovered.Succeeded);
+        Assert.Empty(discovered.Value!.Items);
         Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct));
         Assert.Null((await app.Services.GetRequiredService<IInvitationStore>().FindActiveByTokenHashAsync(
             app.Services.GetRequiredService<ISecureTokenService>().Hash(issued.RawToken), DateTimeOffset.UtcNow, ct))!.AcceptedAt);
     }
+    [Fact]
+    public async Task Board_discovery_advances_filtered_candidates_without_skipping_the_next_visible_invitation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory();
+        var fixture = await BoardInvitationFixtureAsync(app, ct);
+        var store = app.Services.GetRequiredService<IInvitationStore>();
+        var now = DateTimeOffset.UtcNow;
+        Guid Id(int number) => Guid.Parse($"{number:x8}-0000-4000-8000-000000000000");
+        for (var index = 1; index <= 51; index++)
+            await store.CreateAsync(new(Id(index), fixture.Board.OrganizationId, fixture.Recipient.Email,
+                fixture.Recipient.EmailNormalized, $"discovery-fixture-{index}", InvitationSurface.Internal, "MEMBER",
+                index == 51 ? fixture.Owner.Id : fixture.Inviter.Id, now, now.AddDays(1), null, null,
+                OrganizationName: "Board command fixture", BoardTarget: index == 51 ? null : new(fixture.Board.Id, BoardRole.Member)), ct);
+        Assert.True((await app.Services.GetRequiredService<IWorkManagementService>().ArchiveBoardAsync(fixture.Board.Id,
+            fixture.Owner.Id, fixture.Board.Version, "fixture", ct)).Succeeded);
+        var service = app.Services.GetRequiredService<IInvitationService>();
+        var first = await service.ListPendingAsync(fixture.Recipient.Id, null, ct);
+        Assert.True(first.Succeeded); Assert.Empty(first.Value!.Items); Assert.Equal(Id(50), first.Value.NextCursor);
+        var next = await service.ListPendingAsync(fixture.Recipient.Id, first.Value.NextCursor, ct);
+        Assert.True(next.Succeeded); Assert.Equal(Id(51), Assert.Single(next.Value!.Items).Id); Assert.Null(next.Value.NextCursor);
+        Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct));
+    }
+
 }

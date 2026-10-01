@@ -137,3 +137,28 @@ browser scenarios remain present. Shell syntax and collection of both scenarios
 were verified locally; actual execution requires CI release images/PostgreSQL and
 remains pending. Administrative verification/target attachment is not evidence of
 public issuance or actual Board mail delivery.
+
+Board discovery is now integrated. A freshly authorized verified-account command
+reads at most 51 route candidates and closes its identity transaction. The service
+examines only the first 50 candidates. For each Board candidate it rereads the
+canonical invitation and invokes the same Organization/account/Board-locked review
+policy as proof review, replacing provisional metadata with current authorized
+Organization/Board names and bound role. Invalid, accepted, revoked, archived or
+ineligible targets are filtered without grants. A final independent account command
+rechecks current account, normalized email and session before returning any page.
+No identity transaction encloses tenant commands; no cross-tenant RLS capability or
+Worker identity access is added. Per-Board authorization is checked at that Board's
+read, not claimed as one atomic snapshot across all Organizations.
+
+The seek cursor describes the last scanned candidate, so filtering can produce a
+short or empty page with a next cursor. Reads remain bounded instead of scanning
+unbounded hidden invitations to fill a display page. The client supports that
+contract and rejects backward/non-advancing seek responses. Existing Organization
+and Portal discovery retains its prior semantics. New host coverage verifies an
+all-filtered 50-candidate page advances to the next visible invitation; existing
+both-role and archive/issuer/recipient revocation cases now check discovery too.
+Required PostgreSQL fixtures check both Board roles and no early mutations, then
+commit an archive during a real Board disclosure lock wait and require an empty
+page with unchanged signup/grant/consume state. Actual host/container execution of
+this discovery increment awaits CI. Public Board issuance and actual Board mail
+publication/delivery remain disabled and outstanding.
