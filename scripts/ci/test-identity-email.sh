@@ -574,13 +574,19 @@ for target in INTERNAL PORTAL BOARD_ADMIN BOARD_MEMBER; do
   test "$(query "SELECT count(*) FROM background_jobs WHERE id='$invitation_job' AND job_type='INVITATION_EMAIL' AND service_identity='invitation-email-delivery' AND actor_id='$mail_owner_id' AND safe_metadata=jsonb_build_object('invitationId','$signup_invitation'::uuid);")" = 1
   delivery_attempts="$(jq -r --arg key "$invitation_provider_key" '.[]|select(.key==$key)|.attempts' "$scratch/invitation-messages")"
   # Recover the gap between persisted SENT and generic job completion without a send.
-  query "UPDATE background_jobs SET state='PENDING',attempt_count=0,available_at=clock_timestamp(),worker_id=NULL,lease_id=NULL,lease_expires_at=NULL WHERE id='$invitation_job';" >/dev/null
-  "${compose[@]}" -f scripts/ci/compose.invitation-signup-test.yml -f scripts/ci/compose.invitation-mail-test.yml restart worker >/dev/null
+  # Freeze execution before setting the crash boundary. Otherwise the live
+  # Worker can claim PENDING just before restart and leave a new two-minute
+  # lease, making this ninety-second recovery check depend on scheduling.
+  "${compose[@]}" -f scripts/ci/compose.invitation-signup-test.yml -f scripts/ci/compose.invitation-mail-test.yml stop worker >/dev/null
+  query "UPDATE background_jobs SET state='RUNNING',attempt_count=1,available_at=clock_timestamp(),worker_id=gen_random_uuid(),lease_id=gen_random_uuid(),lease_expires_at=clock_timestamp()-interval '1 second' WHERE id='$invitation_job';" >/dev/null
+  test "$(query "SELECT count(*) FROM background_jobs j JOIN invitation_mail_intents i ON i.job_id=j.id AND i.tenant_id=j.tenant_id WHERE j.id='$invitation_job' AND j.state='RUNNING' AND j.lease_expires_at<clock_timestamp() AND i.state='SENT';")" = 1
+  "${compose[@]}" -f scripts/ci/compose.invitation-signup-test.yml -f scripts/ci/compose.invitation-mail-test.yml up -d --wait --wait-timeout 180 worker >/dev/null
   for attempt in $(seq 1 90); do
     if test "$(query "SELECT state FROM background_jobs WHERE id='$invitation_job';")" = SUCCEEDED; then break; fi
     sleep 1
   done
   test "$(query "SELECT state FROM background_jobs WHERE id='$invitation_job';")" = SUCCEEDED
+  test "$(query "SELECT count(*) FROM background_jobs WHERE id='$invitation_job' AND attempt_count=2 AND worker_id IS NULL AND lease_id IS NULL AND lease_expires_at IS NULL;")" = 1
   test "$(curl --fail --silent "$fixture/messages" | jq -r --arg key "$invitation_provider_key" '.[]|select(.key==$key)|.attempts')" = "$delivery_attempts"
   query "SELECT to_jsonb(m)::text FROM invitation_mail_intents m WHERE job_id='$invitation_job';" > "$scratch/invitation-ledger"
   scripts/ci/assert-file-excludes.sh "$signup_token" "$scratch/invitation-ledger"
