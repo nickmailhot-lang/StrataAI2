@@ -85,7 +85,24 @@ fi
 
 curl -H 'X-StrataAI-Request: 1' --fail --silent   -c "$COOKIE_JAR"   -H 'Content-Type: application/json'   -d '{"email":"council@example.test","password":"new-correct-horse-battery-staple"}'   "$BASE_URL/auth/login" >/dev/null
 
-curl -H 'X-StrataAI-Request: 1' --fail --silent   -b "$COOKIE_JAR"   -X POST   "$BASE_URL/me/deactivate" >/dev/null
+# These earlier fixtures leave active Organizations owned by this account.
+# Deactivation must refuse continuity loss, then succeed after real Owner grants.
+test "$(curl -H 'X-StrataAI-Request: 1' --silent -o /tmp/demo-owner-denied.json -w '%{http_code}' -b "$COOKIE_JAR" -X POST "$BASE_URL/me/deactivate")" = 409
+jq -e '.code=="organization_owner_required"' /tmp/demo-owner-denied.json >/dev/null
+CONTINUITY_COOKIE="$(mktemp)"
+trap 'rm -f "$COOKIE_JAR" "$CONTINUITY_COOKIE"' EXIT
+replacement='{"email":"continuity-owner@example.test","password":"continuity-correct-horse-battery","displayName":"Continuity Owner"}'
+curl -H 'X-StrataAI-Request: 1' --fail --silent -H 'Content-Type: application/json' -d "$replacement" "$BASE_URL/auth/register" >/dev/null
+curl -H 'X-StrataAI-Request: 1' --fail --silent -c "$CONTINUITY_COOKIE" -H 'Content-Type: application/json' -d "$replacement" "$BASE_URL/auth/login" >/dev/null
+owned="$(curl --fail --silent -b "$COOKIE_JAR" "$BASE_URL/organizations" | jq -r '.[] | select(.role==0 and .organization.status!=2) | .organization.id')"
+test -n "$owned"
+while IFS= read -r organization_id; do
+  invitation="$(curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$COOKIE_JAR" -H 'Content-Type: application/json' \
+    -d '{"email":"continuity-owner@example.test","surface":"INTERNAL","targetRole":"OWNER"}' "$BASE_URL/organizations/$organization_id/invitations" | jq -r '.invitationToken')"
+  test "$invitation" != null
+  curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$CONTINUITY_COOKIE" -X POST "$BASE_URL/invitations/$invitation/accept" >/dev/null
+done <<< "$owned"
+curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$COOKIE_JAR" -X POST "$BASE_URL/me/deactivate" >/dev/null
 
 post_deactivate_login="$(
   curl -H 'X-StrataAI-Request: 1' --silent --output /dev/null --write-out '%{http_code}'     -H 'Content-Type: application/json'     -d '{"email":"council@example.test","password":"new-correct-horse-battery-staple"}'     "$BASE_URL/auth/login"

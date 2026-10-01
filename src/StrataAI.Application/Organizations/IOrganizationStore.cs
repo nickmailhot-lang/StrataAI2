@@ -2,6 +2,7 @@ namespace StrataAI.Application.Organizations;
 
 public interface IOrganizationStore
 {
+    Task<IReadOnlyList<Guid>> ListActiveOwnerUserIdsAsync(Guid organizationId, CancellationToken cancellationToken = default);
     Task<OrganizationRecord?> FindOrganizationAsync(
         Guid organizationId, CancellationToken cancellationToken = default);
 

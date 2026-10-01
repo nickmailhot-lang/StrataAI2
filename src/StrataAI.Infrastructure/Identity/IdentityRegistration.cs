@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Persistence;
@@ -56,6 +57,8 @@ public static class IdentityRegistration
 
         if (runtime.Mode == RuntimeMode.Demo)
         {
+            services.TryAddSingleton<InMemoryAccountOrganizationGate>();
+            services.AddSingleton<IAccountDeactivationOwnership, InMemoryAccountDeactivationOwnership>();
             services.AddSingleton<IIdentityStore, InMemoryIdentityStore>();
             services.AddSingleton<IIdentityUnitOfWork, InMemoryIdentityUnitOfWork>();
             services.AddSingleton<IIdentityProfileReplayStore, InMemoryIdentityProfileReplayStore>();
@@ -67,6 +70,7 @@ public static class IdentityRegistration
         }
         else
         {
+            services.AddSingleton<IAccountDeactivationOwnership, PostgresAccountDeactivationOwnership>();
             services.AddSingleton<IIdentityStore, PostgresIdentityStore>();
             services.AddSingleton<IIdentityUnitOfWork, PostgresIdentityUnitOfWork>();
             services.AddSingleton<IIdentityProfileReplayStore, PostgresIdentityProfileReplayStore>();

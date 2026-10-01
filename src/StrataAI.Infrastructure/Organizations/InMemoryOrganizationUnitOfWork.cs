@@ -1,11 +1,13 @@
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Identity;
+using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Organizations;
 
-internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, ICommandActorAuthorization actors) : IOrganizationUnitOfWork
+internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, ICommandActorAuthorization actors,
+    InMemoryAccountOrganizationGate gate) : IOrganizationUnitOfWork
 {
-    private readonly SemaphoreSlim _commands = new(1, 1);
+    private readonly SemaphoreSlim _commands = gate.Commands;
 
     public async Task<OrganizationOperation<T>> ExecuteAsync<T>(
         Guid organizationId, Guid actorUserId, Guid? targetUserId, bool creating,

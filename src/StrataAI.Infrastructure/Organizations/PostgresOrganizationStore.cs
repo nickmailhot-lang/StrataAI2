@@ -1,12 +1,23 @@
 using Npgsql;
 using StrataAI.Application.Organizations;
+using StrataAI.Application.Identity;
 using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed class PostgresOrganizationStore(
-    PostgresConnectionFactory connectionFactory) : IOrganizationStore
+    PostgresConnectionFactory connectionFactory, IdentityPolicy policy) : IOrganizationStore
 {
+    public async Task<IReadOnlyList<Guid>> ListActiveOwnerUserIdsAsync(Guid organizationId, CancellationToken cancellationToken = default)
+    {
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("SELECT user_id FROM organization_members WHERE tenant_id=@tenant AND role='OWNER' AND status='ACTIVE' ORDER BY user_id;", session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId);
+        var ids = new List<Guid>();
+        await using var rows = await command.ExecuteReaderAsync(cancellationToken);
+        while (await rows.ReadAsync(cancellationToken)) ids.Add(rows.GetGuid(0));
+        return ids;
+    }
     public async Task<OrganizationRecord> CreateOrganizationAsync(
         Guid actorUserId,
         Guid organizationId,
@@ -305,21 +316,21 @@ internal sealed class PostgresOrganizationStore(
 
         if (targetRole == "OWNER")
         {
-            await using var countOwners = new NpgsqlCommand(
+            await using var remainingOwners = new NpgsqlCommand(
                 """
-                SELECT count(*)
-                FROM organization_members
-                WHERE tenant_id = @tenant_id
-                  AND role = 'OWNER'
-                  AND status = 'ACTIVE';
+                SELECT u.id FROM organization_members m JOIN users u ON u.id=m.user_id
+                WHERE m.tenant_id=@tenant_id AND m.role='OWNER' AND m.status='ACTIVE'
+                  AND m.user_id<>@departing AND u.status='ACTIVE'
+                  AND (NOT @verified OR u.email_verified)
+                ORDER BY u.id FOR SHARE OF u;
                 """,
                 session.Connection,
                 session.Transaction);
-            countOwners.Parameters.AddWithValue("tenant_id", organizationId);
-            var count = Convert.ToInt32(
-                await countOwners.ExecuteScalarAsync(cancellationToken));
-
-            if (count <= 1)
+            remainingOwners.Parameters.AddWithValue("tenant_id", organizationId);
+            remainingOwners.Parameters.AddWithValue("departing", userId);
+            remainingOwners.Parameters.AddWithValue("verified", policy.RequireVerifiedEmail);
+            await using var remaining = await remainingOwners.ExecuteReaderAsync(cancellationToken);
+            if (!await remaining.ReadAsync(cancellationToken))
             {
                 return OrganizationRemoveMemberResult.SoleOwner;
             }

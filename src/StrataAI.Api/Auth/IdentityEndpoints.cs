@@ -359,6 +359,14 @@ public static class IdentityEndpoints
                 StatusCodes.Status400BadRequest,
                 errorCode,
                 "The token is invalid or expired."),
+            "organization_owner_required" => Problem(
+                StatusCodes.Status409Conflict,
+                errorCode,
+                "Another active owner is required before this account can be deactivated."),
+            "ownership_changed" => Problem(
+                StatusCodes.Status409Conflict,
+                errorCode,
+                "Organization ownership changed. Retry account deactivation after reviewing current access."),
             "account_unavailable" => Problem(
                 StatusCodes.Status401Unauthorized,
                 errorCode,

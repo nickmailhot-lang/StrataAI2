@@ -2,6 +2,8 @@ namespace StrataAI.Application.Identity;
 
 public interface IIdentityUnitOfWork
 {
+    Task<IdentityOperation<bool>> ExecuteDeactivationAsync(Guid actorId,
+        Func<Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default);
     Task<IdentityOperation<bool>> ExecuteRevocationAsync(Guid expectedActor, string sessionHash, Guid key,
         IdentityRevocationKind kind, string correlationId, Func<Guid, Task<IdentityOperation<bool>>> operation,
         CancellationToken cancellationToken = default);

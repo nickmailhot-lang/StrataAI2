@@ -1,0 +1,5 @@
+# Disposable CI fixture; test verified-owner admission with the exact API image.
+services:
+  api:
+    environment:
+      STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL: 'true'

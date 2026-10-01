@@ -1,15 +1,39 @@
 using StrataAI.Application.Identity;
+using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization actors, IdentityRevocationReplayExecutor revocations) : IIdentityUnitOfWork
+internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization actors, IdentityRevocationReplayExecutor revocations,
+    IAccountDeactivationOwnership ownership, InMemoryAccountOrganizationGate gate) : IIdentityUnitOfWork
 {
-    private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly SemaphoreSlim _gate = gate.Commands;
+    public async Task<IdentityOperation<bool>> ExecuteDeactivationAsync(Guid actorId,
+        Func<Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            if (!await actors.VerifyAsync(actorId, cancellationToken)) return IdentityOperation<bool>.Failure("session_unavailable");
+            var plan = await ownership.PrepareAsync(actorId, cancellationToken);
+            var error = await ownership.CheckAsync(plan, cancellationToken);
+            return error is null ? await operation() : IdentityOperation<bool>.Failure(error);
+        }
+        finally { _gate.Release(); }
+    }
     public async Task<IdentityOperation<bool>> ExecuteRevocationAsync(Guid expectedActor, string sessionHash, Guid key,
         IdentityRevocationKind kind, string correlationId, Func<Guid, Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken);
-        try { return await revocations.ExecuteAsync(expectedActor, sessionHash, key, kind, operation, cancellationToken); }
+        try
+        {
+            return await revocations.ExecuteAsync(expectedActor, sessionHash, key, kind, async actor =>
+            {
+                if (kind != IdentityRevocationKind.Deactivate) return await operation(actor);
+                var plan = await ownership.PrepareAsync(actor, cancellationToken);
+                var error = await ownership.CheckAsync(plan, cancellationToken);
+                return error is null ? await operation(actor) : IdentityOperation<bool>.Failure(error);
+            }, cancellationToken);
+        }
         finally { _gate.Release(); }
     }
     public async Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,

@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Runtime;
+using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Organizations;
 
@@ -12,6 +14,7 @@ public static class OrganizationRegistration
     {
         if (runtime.Mode == RuntimeMode.Demo)
         {
+            services.TryAddSingleton<InMemoryAccountOrganizationGate>();
             services.AddSingleton<IOrganizationStore, InMemoryOrganizationStore>();
             services.AddSingleton<IOrganizationUnitOfWork, InMemoryOrganizationUnitOfWork>();
         }

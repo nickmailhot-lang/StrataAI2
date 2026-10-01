@@ -1,12 +1,20 @@
 using StrataAI.Application.Organizations;
+using StrataAI.Application.Identity;
 
 namespace StrataAI.Infrastructure.Organizations;
 
-internal sealed class InMemoryOrganizationStore : IOrganizationStore
+internal sealed class InMemoryOrganizationStore(IIdentityStore identities, IdentityPolicy policy) : IOrganizationStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<Guid, OrganizationRecord> _organizations = [];
     private readonly Dictionary<(Guid OrganizationId, Guid UserId), OrganizationMembership> _members = [];
+
+    public Task<IReadOnlyList<Guid>> ListActiveOwnerUserIdsAsync(Guid organizationId, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+            return Task.FromResult<IReadOnlyList<Guid>>(_members.Values.Where(member => member.OrganizationId == organizationId
+                && member.Active && member.Role == OrganizationRole.Owner).Select(member => member.UserId).Order().ToArray());
+    }
 
     public Task<OrganizationRecord?> FindOrganizationAsync(
         Guid organizationId, CancellationToken cancellationToken = default)
@@ -152,34 +160,39 @@ internal sealed class InMemoryOrganizationStore : IOrganizationStore
         return Task.CompletedTask;
     }
 
-    public Task<OrganizationRemoveMemberResult> RemoveMemberAsync(
+    public async Task<OrganizationRemoveMemberResult> RemoveMemberAsync(
         Guid organizationId,
         Guid userId,
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default)
     {
+        OrganizationMembership membership;
+        Guid[] alternatives;
         lock (_sync)
         {
-            if (!_members.TryGetValue((organizationId, userId), out var membership) ||
-                !membership.Active)
+            if (!_members.TryGetValue((organizationId, userId), out var found) || !found.Active)
+                return OrganizationRemoveMemberResult.NotFound;
+            membership = found;
+            alternatives = _members.Values.Where(member => member.OrganizationId == organizationId && member.UserId != userId
+                && member.Active && member.Role == OrganizationRole.Owner).Select(member => member.UserId).ToArray();
+        }
+        // Organization service commands own the shared Demo account/Organization
+        // gate, so account deactivation cannot race this active-owner decision.
+        if (membership.Role == OrganizationRole.Owner)
+        {
+            var remaining = false;
+            foreach (var id in alternatives)
             {
-                return Task.FromResult(OrganizationRemoveMemberResult.NotFound);
+                var user = await identities.FindUserByIdAsync(id, cancellationToken);
+                if (user is { Status: AccountStatus.Active } && (!policy.RequireVerifiedEmail || user.EmailVerified))
+                { remaining = true; break; }
             }
-
-            if (membership.Role == OrganizationRole.Owner)
-            {
-                var ownerCount = _members.Values.Count(
-                    member =>
-                        member.OrganizationId == organizationId &&
-                        member.Active &&
-                        member.Role == OrganizationRole.Owner);
-
-                if (ownerCount <= 1)
-                {
-                    return Task.FromResult(OrganizationRemoveMemberResult.SoleOwner);
-                }
-            }
-
+            if (!remaining) return OrganizationRemoveMemberResult.SoleOwner;
+        }
+        lock (_sync)
+        {
+            if (!_members.TryGetValue((organizationId, userId), out var current) || !current.Active || current.Version != membership.Version)
+                return OrganizationRemoveMemberResult.NotFound;
             _members[(organizationId, userId)] = membership with
             {
                 Active = false,
@@ -187,7 +200,7 @@ internal sealed class InMemoryOrganizationStore : IOrganizationStore
                 Version = membership.Version + 1,
             };
 
-            return Task.FromResult(OrganizationRemoveMemberResult.Removed);
+            return OrganizationRemoveMemberResult.Removed;
         }
     }
 
