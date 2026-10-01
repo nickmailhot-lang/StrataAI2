@@ -7,6 +7,30 @@ namespace StrataAI.Infrastructure.Identity;
 internal sealed class PostgresIdentityStore(
     PostgresConnectionFactory connectionFactory) : IIdentityStore
 {
+    public async Task<IdentitySecurityTokenProof?> FindSecurityTokenRetryProofAsync(string tokenHash, IdentityTokenPurpose purpose,
+        DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasIdentityCommandScope) throw new InvalidOperationException("Token retry proof requires an owning identity transaction.");
+        var table = purpose switch { IdentityTokenPurpose.ResetPassword => "password_reset_tokens", IdentityTokenPurpose.VerifyEmail => "email_verification_tokens", _ => throw new ArgumentOutOfRangeException(nameof(purpose)) };
+        await using var session = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        // Freeze the current user first, then the original token. Reread wall-clock expiry after the token wait.
+        await using var route = new NpgsqlCommand($"SELECT u.id FROM users u JOIN {table} t ON t.user_id=u.id WHERE t.token_hash=@hash FOR UPDATE OF u;", session.Connection, session.Transaction);
+        route.Parameters.AddWithValue("hash", tokenHash);
+        if (await route.ExecuteScalarAsync(cancellationToken) is not Guid userId) return null;
+        await using var freeze = new NpgsqlCommand($"SELECT id FROM {table} WHERE user_id=@user AND token_hash=@hash FOR SHARE;", session.Connection, session.Transaction);
+        freeze.Parameters.AddWithValue("user", userId); freeze.Parameters.AddWithValue("hash", tokenHash);
+        if (await freeze.ExecuteScalarAsync(cancellationToken) is not Guid tokenId) return null;
+        await using var proof = new NpgsqlCommand($"SELECT expires_at,used_at FROM {table} WHERE id=@id AND user_id=@user AND revoked_at IS NULL AND expires_at>@now AND expires_at>clock_timestamp();", session.Connection, session.Transaction);
+        proof.Parameters.AddWithValue("id", tokenId); proof.Parameters.AddWithValue("user", userId); proof.Parameters.AddWithValue("now", now);
+        DateTimeOffset expiry; DateTimeOffset? used;
+        await using (var reader = await proof.ExecuteReaderAsync(cancellationToken))
+        {
+            if (!await reader.ReadAsync(cancellationToken)) return null;
+            expiry = reader.GetFieldValue<DateTimeOffset>(0); used = reader.IsDBNull(1) ? null : reader.GetFieldValue<DateTimeOffset>(1);
+        }
+        var user = await FindUserByIdAsync(userId, cancellationToken);
+        return user is null ? null : new(user, tokenId, expiry, used);
+    }
     public async Task<RevocationSessionProof?> FindRevocationSessionProofAsync(string tokenHash, CancellationToken cancellationToken = default)
     {
         if (!connectionFactory.HasIdentityCommandScope) throw new InvalidOperationException("Revocation proof requires an identity transaction.");

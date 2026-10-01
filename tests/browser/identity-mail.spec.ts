@@ -6,6 +6,17 @@ test('PRD-02-TC-01/07/11/12: mobile verification and recovery consume Worker-del
   await page.setViewportSize({ width: 390, height: 844 });
   const email = `mobile-identity-${Date.now()}@example.test`;
   const password = 'mobile-correct-horse-battery';
+  const verificationAttempts: { key: string; body: string }[] = [];
+  const resetAttempts: { key: string; body: string }[] = [];
+  for (const [path, attempts] of [['/auth/verify-email', verificationAttempts], ['/auth/password/reset', resetAttempts]] as const) {
+    await page.route(`**${path}`, async route => {
+      attempts.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData()! });
+      const committed = await route.fetch();
+      expect(committed.status()).toBe(200);
+      if (attempts.length === 1) await route.abort('failed');
+      else await route.fulfill({ response: committed });
+    });
+  }
   async function tokenFor(subject: string) {
     let token = '';
     await expect.poll(async () => {
@@ -30,7 +41,14 @@ test('PRD-02-TC-01/07/11/12: mobile verification and recovery consume Worker-del
   await expect(page).toHaveURL(/\/verify-email$/);
   await page.getByRole('button', { name: 'Verify email', exact: true }).focus();
   await page.keyboard.press('Enter');
+  await expect(page.getByRole('alert')).toContainText('could not be confirmed');
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Verify email', exact: true }).focus();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('status')).toContainText('Email verified.');
+  expect(verificationAttempts).toHaveLength(2);
+  expect(verificationAttempts[0].key).toMatch(/^[0-9a-f-]{36}$/);
+  expect(verificationAttempts[1]).toEqual(verificationAttempts[0]);
   await page.getByRole('link', { name: 'Back to sign in' }).focus();
   await page.keyboard.press('Enter');
   await page.getByLabel(/^Email/).fill(email);
@@ -47,7 +65,14 @@ test('PRD-02-TC-01/07/11/12: mobile verification and recovery consume Worker-del
   await page.getByLabel(/^New password/).fill('mobile-new-correct-horse');
   await page.getByLabel(/^Confirm new password/).fill('mobile-new-correct-horse');
   await page.keyboard.press('Enter');
+  await expect(page.getByRole('alert')).toContainText('could not be confirmed');
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByLabel(/^New password/)).toHaveValue('mobile-new-correct-horse');
+  await page.getByLabel(/^Confirm new password/).press('Enter');
   await expect(page.getByRole('status')).toContainText('Password reset.');
+  expect(resetAttempts).toHaveLength(2);
+  expect(resetAttempts[0].key).toMatch(/^[0-9a-f-]{36}$/);
+  expect(resetAttempts[1]).toEqual(resetAttempts[0]);
   await page.getByRole('link', { name: 'Back to sign in' }).focus();
   await page.keyboard.press('Enter');
   await page.getByLabel(/^Email/).fill(email);

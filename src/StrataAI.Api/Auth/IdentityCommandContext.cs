@@ -20,6 +20,8 @@ public sealed class IdentityProfileIdempotencyMiddleware(RequestDelegate next)
                 || string.Equals(path, "/auth/register", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(path, "/auth/password/forgot", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(path, "/auth/verification/resend", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(path, "/auth/password/reset", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(path, "/auth/verify-email", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(path, "/me/deactivate", StringComparison.OrdinalIgnoreCase)));
         if (supported
             && context.Request.Headers.TryGetValue("Idempotency-Key", out var values))

@@ -14,7 +14,8 @@ export function useRecoveryRequest() {
     setBusy(true);
     const serialized = JSON.stringify(body);
     const issuance = path === '/auth/password/forgot' || path === '/auth/verification/resend';
-    if (issuance && (attempt.current?.path !== path || attempt.current.body !== serialized)) {
+    const consumption = path === '/auth/password/reset' || path === '/auth/verify-email';
+    if ((issuance || consumption) && (attempt.current?.path !== path || attempt.current.body !== serialized)) {
       attempt.current = { path, body: serialized, key: crypto.randomUUID() };
     }
     let deadline: ReturnType<typeof setTimeout> | undefined;
@@ -23,7 +24,7 @@ export function useRecoveryRequest() {
       const result = await Promise.race([
         (async () => {
           const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-          if (issuance) headers['Idempotency-Key'] = attempt.current!.key;
+          if (issuance || consumption) headers['Idempotency-Key'] = attempt.current!.key;
           const response = await apiFetch(path, { method: 'POST', headers,
             body: serialized, signal: controller.signal });
           const value: unknown = await response.json();
@@ -37,6 +38,8 @@ export function useRecoveryRequest() {
       ]);
       if (pending.current !== controller || controller.signal.aborted) return undefined;
       if (issuance && result.status === 202 && recoveryObject(result.value).accepted === true) attempt.current = undefined;
+      if (consumption && result.status === 200 && recoveryProfileConfirmed(result.value)
+        && (path !== '/auth/verify-email' || recoveryObject(result.value).emailVerified === true)) attempt.current = undefined;
       return result;
     } catch {
       return pending.current === controller ? { status: 0, value: null } : undefined;
@@ -69,6 +72,7 @@ export function recoveryError(value: unknown, fallback: string) {
     invalid_password: 'Use a password that meets the stated requirements.',
     identity_delivery_unavailable: 'Email is temporarily unavailable. Please retry later.',
     identity_storage_unavailable: 'The request could not be confirmed. Please retry later.',
+    identity_retry_key_unavailable: 'This retry could not be confirmed. Contact support before starting another attempt.',
     rate_limit_exceeded: 'Too many requests. Please wait and retry.',
   };
   return typeof code === 'string' ? messages[code] ?? fallback : fallback;

@@ -2,6 +2,8 @@ namespace StrataAI.Application.Identity;
 
 public interface IIdentityStore
 {
+    Task<IdentitySecurityTokenProof?> FindSecurityTokenRetryProofAsync(string tokenHash, IdentityTokenPurpose purpose,
+        DateTimeOffset now, CancellationToken cancellationToken = default);
     Task<RevocationSessionProof?> FindRevocationSessionProofAsync(string tokenHash,
         CancellationToken cancellationToken = default);
     Task AppendDomainEventAsync(Guid userId, string eventType, string correlationId,

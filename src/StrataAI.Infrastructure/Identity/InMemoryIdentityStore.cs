@@ -6,7 +6,20 @@ namespace StrataAI.Infrastructure.Identity;
 internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
 {
     private sealed record TokenState(
-        SecurityTokenRecord Token);
+        SecurityTokenRecord Token, DateTimeOffset? UsedAt = null);
+
+    public Task<IdentitySecurityTokenProof?> FindSecurityTokenRetryProofAsync(string tokenHash, IdentityTokenPurpose purpose,
+        DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (_sync)
+        {
+            var tokens = purpose switch { IdentityTokenPurpose.ResetPassword => _passwordResetTokens, IdentityTokenPurpose.VerifyEmail => _emailVerificationTokens, _ => throw new ArgumentOutOfRangeException(nameof(purpose)) };
+            if (!tokens.TryGetValue(tokenHash, out var state) || state.Token.ExpiresAt <= now || !_users.TryGetValue(state.Token.UserId, out var user))
+                return Task.FromResult<IdentitySecurityTokenProof?>(null);
+            return Task.FromResult<IdentitySecurityTokenProof?>(new(user, state.Token.Id, state.Token.ExpiresAt, state.UsedAt));
+        }
+    }
 
     private readonly object _sync = new();
     private readonly Dictionary<Guid, UserIdentity> _users = [];
@@ -162,6 +175,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
         lock (_sync)
         {
             if (!_passwordResetTokens.TryGetValue(tokenHash, out var state) ||
+                state.UsedAt is not null ||
                 state.Token.ExpiresAt <= now)
             {
                 return Task.FromResult<Guid?>(null);
@@ -180,6 +194,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
         lock (_sync)
         {
             if (!_passwordResetTokens.TryGetValue(tokenHash, out var state) ||
+                state.UsedAt is not null ||
                 state.Token.ExpiresAt <= usedAt ||
                 !_users.TryGetValue(state.Token.UserId, out var user) ||
                 user.Status is AccountStatus.Suspended or AccountStatus.Deactivated)
@@ -187,7 +202,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
                 return Task.FromResult(false);
             }
 
-            _passwordResetTokens.Remove(tokenHash);
+            _passwordResetTokens[tokenHash] = state with { UsedAt = usedAt };
             _users[user.Id] = user with
             {
                 PasswordHash = newPasswordHash,
@@ -221,6 +236,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
         lock (_sync)
         {
             if (!_emailVerificationTokens.TryGetValue(tokenHash, out var state) ||
+                state.UsedAt is not null ||
                 state.Token.ExpiresAt <= now)
             {
                 return Task.FromResult<Guid?>(null);
@@ -238,6 +254,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
         lock (_sync)
         {
             if (!_emailVerificationTokens.TryGetValue(tokenHash, out var state) ||
+                state.UsedAt is not null ||
                 state.Token.ExpiresAt <= usedAt ||
                 !_users.TryGetValue(state.Token.UserId, out var user) ||
                 user.Status == AccountStatus.Deactivated)
@@ -245,7 +262,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
                 return Task.FromResult(false);
             }
 
-            _emailVerificationTokens.Remove(tokenHash);
+            _emailVerificationTokens[tokenHash] = state with { UsedAt = usedAt };
             _users[user.Id] = user with
             {
                 EmailVerified = true,

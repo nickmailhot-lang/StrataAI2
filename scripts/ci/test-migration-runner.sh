@@ -55,28 +55,32 @@ cp db/migrations/019_identity_recovery_request_replays.sql "$scratch/migrations/
 run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 19
-cat > "$scratch/migrations/020_serialization_fixture.sql" <<'SQL'
+cp db/migrations/020_identity_token_consumption_replays.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 20
+cat > "$scratch/migrations/021_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('020_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('021_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='020_serialization_fixture'")" = 1
-cat > "$scratch/migrations/021_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='021_serialization_fixture'")" = 1
+cat > "$scratch/migrations/022_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('021_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('022_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='021_failure_fixture'")" = 0
-rm "$scratch/migrations/021_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='022_failure_fixture'")" = 0
+rm "$scratch/migrations/022_failure_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

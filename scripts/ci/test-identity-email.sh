@@ -15,6 +15,7 @@ cleanup() {
   query 'GRANT INSERT ON identity_events TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON email_verification_tokens,identity_delivery_jobs,identity_registration_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON password_reset_tokens,identity_recovery_request_replays TO strataai_api_runtime;' >/dev/null
+  query 'GRANT INSERT ON identity_token_consumption_replays TO strataai_api_runtime;' >/dev/null
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -30,7 +31,8 @@ token_state() {
     'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$identity_user'),
     'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$identity_user'),
     'stream',(SELECT to_jsonb(s) FROM identity_event_streams s WHERE user_id='$identity_user'),
-    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM identity_events e WHERE user_id='$identity_user'))::text;"
+    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM identity_events e WHERE user_id='$identity_user'),
+    'consumption',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id,operation) FROM identity_token_consumption_replays r WHERE user_id='$identity_user'))::text;"
 }
 reject_token_event() {
   local before
@@ -302,6 +304,45 @@ recovery_state() {
     'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$recovery_user'),
     'receipts',(SELECT count(*) FROM identity_recovery_request_replays WHERE user_id='$recovery_user'))::text;"
 }
+consume_request() {
+  curl --max-time 60 --silent --show-error -o "$scratch/response" -w '%{http_code}' -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -H "Idempotency-Key: ${1:-$consumption_key}" -d "$consumption_body" "$base$consumption_route"
+}
+expire_consumption_during_wait() {
+  query "UPDATE $recovery_table SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$recovery_job';" >/dev/null
+  local before count
+  before="$(token_state)"
+  rm -f "$scratch/consume-gate.in" "$scratch/consume-gate.log"
+  mkfifo "$scratch/consume-gate.in"
+  docker compose -f compose.release.yml exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" < "$scratch/consume-gate.in" > "$scratch/consume-gate.log" 2>&1 &
+  gate_pid=$!
+  exec 3> "$scratch/consume-gate.in"
+  printf 'BEGIN;\nSELECT id FROM %s WHERE id=%s FOR UPDATE;\n\\echo token_locked\n' "$recovery_table" "'$recovery_job'" >&3
+  for ((attempt=0; attempt<100; attempt++)); do
+    if grep -q '^token_locked$' "$scratch/consume-gate.log"; then break; fi
+    kill -0 "$gate_pid" || return 1
+    sleep 0.05
+  done
+  grep -q '^token_locked$' "$scratch/consume-gate.log"
+  consume_request > "$scratch/consume-status" &
+  request_pid=$!
+  for ((attempt=0; attempt<100; attempt++)); do
+    count="$(query "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%FROM $recovery_table%FOR SHARE%';")"
+    if test "$count" = 1; then break; fi
+    sleep 0.05
+  done
+  test "$count" = 1
+  sleep 11
+  printf 'COMMIT;\n\\q\n' >&3
+  exec 3>&-
+  wait "$gate_pid"; gate_pid=''
+  wait "$request_pid"; request_pid=''
+  test "$(cat "$scratch/consume-status")" = 400
+  jq -e '.code=="invalid_or_expired_token"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$recovery_user" "$scratch/response"
+  test "$before" = "$(token_state)"
+  query "UPDATE $recovery_table SET expires_at=clock_timestamp()+interval '30 minutes' WHERE id='$recovery_job';" >/dev/null
+}
 for purpose in RESET_PASSWORD VERIFY_EMAIL; do
   email="keyed-recovery-${purpose}-${RANDOM}-${RANDOM}@example.test"
   test "$(post /auth/register "$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery",displayName:"Recovery retry"}')")" = 201
@@ -338,11 +379,65 @@ for purpose in RESET_PASSWORD VERIFY_EMAIL; do
   wait_state "$recovery_job" SENT
   if test "$purpose" = RESET_PASSWORD; then
     token="$(mail_token reset "${recovery_job//-/}")"
-    test "$(post /auth/password/reset "$(jq -nc --arg token "$token" '{token:$token,newPassword:"replacement-recovery-horse"}')")" = 200
+    original_verification="$(latest_job VERIFY_EMAIL)"
+    wait_state "$original_verification" SENT
+    original_token="$(mail_token verify "${original_verification//-/}")"
+    test "$(post /auth/verify-email "$(jq -nc --arg token "$original_token" '{token:$token}')")" = 200
+    curl --fail --silent -c "$scratch/consume-cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+      -d "$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery"}')" "$base/auth/login" >/dev/null
+    consumption_route=/auth/password/reset
+    consumption_body="$(jq -nc --arg token "$token" '{token:$token,newPassword:"replacement-recovery-horse"}')"
+    login_password=replacement-recovery-horse
   else
     token="$(mail_token verify "${recovery_job//-/}")"
-    test "$(post /auth/verify-email "$(jq -nc --arg token "$token" '{token:$token}')")" = 200
+    consumption_route=/auth/verify-email
+    consumption_body="$(jq -nc --arg token "$token" '{token:$token}')"
+    login_password=mail-correct-horse-battery
   fi
+  identity_user="$recovery_user"
+  consumption_key="$(cat /proc/sys/kernel/random/uuid)"
+  before_consumption="$(token_state)"
+  for table in audit_events identity_events identity_token_consumption_replays; do
+    query "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+    test "$(consume_request)" = 503
+    jq -e '.code=="identity_storage_unavailable"' "$scratch/response" >/dev/null
+    test "$before_consumption" = "$(token_state)"
+    query "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+  done
+  for n in 1 2 3; do
+    curl --max-time 60 --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+      -H "Idempotency-Key: $consumption_key" -d "$consumption_body" -o "$scratch/consume-$n.body" -w '%{http_code}' "$base$consumption_route" > "$scratch/consume-$n.status" &
+    recovery_pids+=($!)
+  done
+  for pid in "${recovery_pids[@]}"; do wait "$pid"; done
+  recovery_pids=()
+  for n in 1 2 3; do test "$(cat "$scratch/consume-$n.status")" = 200; cmp "$scratch/consume-1.body" "$scratch/consume-$n.body"; done
+  test "$(query "SELECT count(*) FROM identity_token_consumption_replays WHERE user_id='$recovery_user';")" = 1
+  if test "$purpose" = RESET_PASSWORD; then test "$(curl --silent -o /dev/null -w '%{http_code}' -b "$scratch/consume-cookies" "$base/me")" = 401; fi
+  consumed_state="$(token_state)"
+  test "$(consume_request "$(cat /proc/sys/kernel/random/uuid)")" = 400
+  test "$consumed_state" = "$(token_state)"
+  "${compose[@]}" restart api >/dev/null
+  for attempt in $(seq 1 90); do if curl --fail --silent "$base/readyz" >/dev/null; then break; fi; sleep 1; done
+  test "$(consume_request)" = 200
+  cmp "$scratch/consume-1.body" "$scratch/response"
+  test "$consumed_state" = "$(token_state)"
+  curl --fail --silent -c "$scratch/new-consume-cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -d "$(jq -nc --arg email "$email" --arg password "$login_password" '{email:$email,password:$password}')" "$base/auth/login" >/dev/null
+  consumed_state="$(token_state)"
+  test "$(consume_request)" = 200
+  test "$consumed_state" = "$(token_state)"
+  test "$(curl --silent -o /dev/null -w '%{http_code}' -b "$scratch/new-consume-cookies" "$base/me")" = 200
+  expire_consumption_during_wait
+  for status in SUSPENDED DEACTIVATED; do
+    query "UPDATE users SET status='$status' WHERE id='$recovery_user';" >/dev/null
+    inactive_state="$(token_state)"
+    test "$(consume_request)" = 400
+    scripts/ci/assert-file-excludes.sh "$recovery_user" "$scratch/response"
+    test "$inactive_state" = "$(token_state)"
+  done
+  query "UPDATE users SET status='ACTIVE' WHERE id='$recovery_user';" >/dev/null
+  consumed_state="$(token_state)"
   saved="$(recovery_state)"
   test "$(recovery_request)" = 202
   cmp "$scratch/recovery-1.body" "$scratch/response"
@@ -351,14 +446,24 @@ for purpose in RESET_PASSWORD VERIFY_EMAIL; do
     SELECT user_id,gen_random_uuid(),operation,key_version,fingerprint,password_reset_token_id,verification_token_id,token_source,token_key_version,
       clock_timestamp()-interval '2 days',clock_timestamp()-interval '25 hours' FROM identity_recovery_request_replays CROSS JOIN generate_series(1,101)
       WHERE user_id='$recovery_user' AND key_id='$recovery_key' AND operation='$purpose';" >/dev/null
+  query "INSERT INTO identity_token_consumption_replays(user_id,key_id,operation,key_version,fingerprint,password_reset_token_id,verification_token_id,consumed_at,created_at,expires_at)
+    SELECT user_id,gen_random_uuid(),operation,key_version,fingerprint,password_reset_token_id,verification_token_id,
+      clock_timestamp()-interval '3 days',clock_timestamp()-interval '2 days',clock_timestamp()-interval '25 hours'
+      FROM identity_token_consumption_replays CROSS JOIN generate_series(1,101) WHERE user_id='$recovery_user' AND key_id='$consumption_key' AND operation='$purpose';" >/dev/null
   for attempt in $(seq 1 90); do
     if test "$(query "SELECT count(*) FROM identity_recovery_request_replays WHERE user_id='$recovery_user' AND expires_at<=clock_timestamp();")" = 0; then break; fi
     sleep 1
   done
   test "$(query "SELECT count(*) FROM identity_recovery_request_replays WHERE user_id='$recovery_user';")" = 1
   test "$saved" = "$(recovery_state)"
+  for attempt in $(seq 1 90); do
+    if test "$(query "SELECT count(*) FROM identity_token_consumption_replays WHERE user_id='$recovery_user' AND expires_at<=clock_timestamp();")" = 0; then break; fi
+    sleep 1
+  done
+  test "$consumed_state" = "$(token_state)"
   "${compose[@]}" stop worker >/dev/null
 done
 "${compose[@]}" up -d --wait --wait-timeout 180 worker >/dev/null
 echo 'Keyed production recovery: neutral atomic rollback, concurrent one-token/one-delivery publication, restart, single-use proof and actual Worker receipt retention passed.'
+echo 'Keyed production token consumption: atomic user/token/session/audit/event/receipt rollback, concurrent acknowledgment, restart, newer-session preservation, post-wait expiry, lifecycle denial and Worker cleanup passed.'
 echo 'Exact-image identity email, atomic publication, restart/rotation, provider retry/idempotency, verification/reset/replay/revocation, cancellation and resend checks passed.'

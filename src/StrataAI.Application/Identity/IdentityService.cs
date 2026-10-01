@@ -14,7 +14,8 @@ public sealed class IdentityService(
     IIdentityLoginReplayStore? loginReplays = null, IIdentityLoginRetrySecrets? loginSecrets = null,
     IIdentityRegistrationReplayStore? registrationReplays = null, IIdentityRegistrationRetrySecrets? registrationSecrets = null,
     IIdentityDeliveryTokenSigner? deliverySigner = null,
-    IIdentityRecoveryRequestReplayStore? recoveryReplays = null, IIdentityRecoveryRetrySecrets? recoverySecrets = null) : IIdentityService
+    IIdentityRecoveryRequestReplayStore? recoveryReplays = null, IIdentityRecoveryRetrySecrets? recoverySecrets = null,
+    IIdentityTokenConsumptionReplayStore? consumptionReplays = null, IIdentityTokenConsumptionRetrySecrets? consumptionSecrets = null) : IIdentityService
 {
     public async Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default)
@@ -433,7 +434,13 @@ public sealed class IdentityService(
         return rawToken;
     }
 
-    public async Task<IdentityOperation<UserProfile>> ResetPasswordAsync(
+    public Task<IdentityOperation<UserProfile>> ResetPasswordAsync(string rawResetToken, string newPassword, string correlationId,
+        CancellationToken cancellationToken = default) => context?.IdempotencyKey is null
+        ? ResetPasswordCoreAsync(rawResetToken, newPassword, correlationId, cancellationToken)
+        : RetryTokenConsumptionAsync(rawResetToken, newPassword, IdentityTokenPurpose.ResetPassword,
+            () => ResetPasswordCoreAsync(rawResetToken, newPassword, correlationId, cancellationToken), cancellationToken);
+
+    private async Task<IdentityOperation<UserProfile>> ResetPasswordCoreAsync(
         string rawResetToken,
         string newPassword,
         string correlationId,
@@ -495,7 +502,13 @@ public sealed class IdentityService(
         return IdentityOperation<UserProfile>.Success(ToProfile(user));
     }
 
-    public async Task<IdentityOperation<UserProfile>> VerifyEmailAsync(
+    public Task<IdentityOperation<UserProfile>> VerifyEmailAsync(string rawVerificationToken, string correlationId,
+        CancellationToken cancellationToken = default) => context?.IdempotencyKey is null
+        ? VerifyEmailCoreAsync(rawVerificationToken, correlationId, cancellationToken)
+        : RetryTokenConsumptionAsync(rawVerificationToken, null, IdentityTokenPurpose.VerifyEmail,
+            () => VerifyEmailCoreAsync(rawVerificationToken, correlationId, cancellationToken), cancellationToken);
+
+    private async Task<IdentityOperation<UserProfile>> VerifyEmailCoreAsync(
         string rawVerificationToken,
         string correlationId,
         CancellationToken cancellationToken = default)
@@ -538,6 +551,51 @@ public sealed class IdentityService(
         await store.AppendDomainEventAsync(user.Id, "EMAIL_VERIFIED", correlationId, cancellationToken);
 
         return IdentityOperation<UserProfile>.Success(ToProfile(user));
+    }
+
+    private async Task<IdentityOperation<UserProfile>> RetryTokenConsumptionAsync(string rawToken, string? newPassword,
+        IdentityTokenPurpose purpose, Func<Task<IdentityOperation<UserProfile>>> consume, CancellationToken cancellationToken)
+    {
+        if (purpose == IdentityTokenPurpose.ResetPassword && !IsValidPassword(newPassword!))
+            return IdentityOperation<UserProfile>.Failure("invalid_password");
+        if (string.IsNullOrWhiteSpace(rawToken)) return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
+        if (consumptionReplays is null || consumptionSecrets is null) return IdentityOperation<UserProfile>.Failure("identity_storage_unavailable");
+        var hash = tokens.Hash(rawToken);
+        var proof = await store.FindSecurityTokenRetryProofAsync(hash, purpose, clock.UtcNow, cancellationToken);
+        if (proof is null || proof.ExpiresAt <= clock.UtcNow || proof.User.Status == AccountStatus.Deactivated
+            || (purpose == IdentityTokenPurpose.ResetPassword && proof.User.Status == AccountStatus.Suspended))
+            return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
+        if (proof.UsedAt is not null && (purpose == IdentityTokenPurpose.ResetPassword
+                ? !passwordHashes.Verify(proof.User.Id, proof.User.PasswordHash, newPassword!).IsValid
+                : proof.User.Status != AccountStatus.Active || !proof.User.EmailVerified))
+            return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
+        var key = context!.IdempotencyKey!.Value;
+        var prior = await consumptionReplays.ReadAsync(proof.User.Id, key, purpose, cancellationToken);
+        if (prior is not null)
+        {
+            if (proof.UsedAt is null || prior.TokenId != proof.TokenId || prior.ConsumedAt != proof.UsedAt
+                || prior.ExpiresAt <= clock.UtcNow) return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
+            if (!consumptionSecrets.TryConsumptionFingerprint(proof.User.Id, key, purpose, rawToken, newPassword, prior.KeyVersion, out var candidate))
+                return IdentityOperation<UserProfile>.Failure("identity_retry_key_unavailable");
+            if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(candidate), Encoding.ASCII.GetBytes(prior.Fingerprint)))
+                return IdentityOperation<UserProfile>.Failure("idempotency_key_reused");
+            if (proof.ExpiresAt <= clock.UtcNow || prior.ExpiresAt <= clock.UtcNow)
+                return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
+            // Acknowledgment only: never repeat token consumption or revoke newer sessions.
+            return IdentityOperation<UserProfile>.Success(ToProfile(proof.User));
+        }
+        if (proof.UsedAt is not null) return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
+        var version = consumptionSecrets.CurrentKeyVersion;
+        if (!consumptionSecrets.TryConsumptionFingerprint(proof.User.Id, key, purpose, rawToken, newPassword, version, out var fingerprint))
+            return IdentityOperation<UserProfile>.Failure("identity_retry_key_unavailable");
+        var result = await consume();
+        if (!result.Succeeded || result.Value is null) return result;
+        var consumed = await store.FindSecurityTokenRetryProofAsync(hash, purpose, clock.UtcNow, cancellationToken);
+        if (consumed?.UsedAt is not DateTimeOffset consumedAt || consumed.TokenId != proof.TokenId || consumed.ExpiresAt <= clock.UtcNow)
+            return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
+        var expiry = consumed.ExpiresAt < clock.UtcNow.AddHours(24) ? consumed.ExpiresAt : clock.UtcNow.AddHours(24);
+        await consumptionReplays.SaveAsync(proof.User.Id, key, purpose, new(proof.TokenId, version, fingerprint, consumedAt, expiry), cancellationToken);
+        return result;
     }
 
     public async Task<IdentityOperation<UserProfile>> UpdateProfileAsync(
