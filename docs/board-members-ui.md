@@ -114,3 +114,14 @@ for `Live member updates connected.` (run 36922832577, container job 11057429730
 This matches its missing per-Organization Worker scope. The scope/readiness/bootstrap
 fix is already on main in db3f477; its release execution remains in progress.
 The older run must not be described as green or retried as evidence for the fix.
+
+## Distinguishing member actions accessibly
+
+Each member article has its profile heading as its accessible name and the visible
+email (or former-member reference) and current Board role as its description.
+Both review actions reference that same description, allowing keyboard/screen-reader
+users to distinguish people who share a display name before opening consent.
+Only already-authorized visible data supplies the descriptions; former profiles
+remain unavailable. A component case checks two same-name profiles and a former
+member independently. The focused 14-case member suite, lint and production build
+pass locally. This does not establish complete accessibility acceptance.

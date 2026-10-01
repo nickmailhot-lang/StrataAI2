@@ -136,13 +136,13 @@ function Members({ org, id }: { org: string; id: string }) {
     {rows && <><Button component={Link} to={`/app/${org}/boards/${id}/invite`}>Invite to Board</Button>
       <Typography>Board roles and Organization roles grant separate access. Changes require current administrative permission.</Typography>
       {rows.length === 0 && <Typography>No active Board memberships on this page.</Typography>}
-      {rows.map(m => <Paper component="article" variant="outlined" key={m.userId} sx={{ p: 2, overflowWrap: 'anywhere' }}><Stack spacing={1}>
-        <Typography component="h3" variant="h6">{m.displayName ?? 'Former Organization member'}</Typography>
-        <Typography>{m.email ?? `Member reference: ${m.userId}`}</Typography><Typography>Board access: {m.role.toLowerCase()}</Typography>
+      {rows.map(m => <Paper component="article" variant="outlined" key={m.userId} aria-labelledby={`member-name-${m.userId}`} aria-describedby={`member-profile-${m.userId} member-role-${m.userId}`} sx={{ p: 2, overflowWrap: 'anywhere' }}><Stack spacing={1}>
+        <Typography id={`member-name-${m.userId}`} component="h3" variant="h6">{m.displayName ?? 'Former Organization member'}</Typography>
+        <Typography id={`member-profile-${m.userId}`}>{m.email ?? `Member reference: ${m.userId}`}</Typography><Typography id={`member-role-${m.userId}`}>Board access: {m.role.toLowerCase()}</Typography>
         {!m.organizationMemberActive && <Typography>Organization membership is inactive. Profile details are unavailable and this Board membership grants no edit access.</Typography>}
         <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
-          {m.organizationMemberActive && <Button disabled={busy} onClick={() => setSelected({ member: m, role: m.role === 'ADMIN' ? 'MEMBER' : 'ADMIN' })}>{m.role === 'ADMIN' ? 'Make member' : 'Make administrator'}: {m.displayName}</Button>}
-          <Button disabled={busy} onClick={() => setSelected({ member: m })}>Remove from Board: {m.displayName ?? m.userId}</Button>
+          {m.organizationMemberActive && <Button aria-describedby={`member-profile-${m.userId} member-role-${m.userId}`} disabled={busy} onClick={() => setSelected({ member: m, role: m.role === 'ADMIN' ? 'MEMBER' : 'ADMIN' })}>{m.role === 'ADMIN' ? 'Make member' : 'Make administrator'}: {m.displayName}</Button>}
+          <Button aria-describedby={`member-profile-${m.userId} member-role-${m.userId}`} disabled={busy} onClick={() => setSelected({ member: m })}>Remove from Board: {m.displayName ?? m.userId}</Button>
         </Stack></Stack></Paper>)}
       <Stack direction="row" spacing={1}><Button disabled={busy || previous.length === 0} onClick={() => void load(previous.at(-1) ?? null, previous.slice(0, -1))}>Previous members</Button>
         <Button disabled={busy || !next} onClick={() => void load(next, [...previous, cursor])}>Next members</Button></Stack></>}

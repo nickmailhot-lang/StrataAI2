@@ -20,6 +20,20 @@ function mount(...responses: (Response | Error)[]) {
     { initialEntries: [`/app/${org}/boards/${board}/members`] })} />); return mock;
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+it('describes same-name member actions with the correct profile and role without exposing former profiles', async () => {
+  const second = { ...participant(1), displayName: row.displayName };
+  const former = { ...participant(2), displayName: null, email: null, organizationMemberActive: false };
+  mount(reply(scope), reply([row, second, former]));
+  const buttons = await screen.findAllByRole('button', { name: 'Make administrator: Jordan' });
+  expect(buttons[0]).toHaveAccessibleDescription('jordan@example.test Board access: member');
+  expect(buttons[1]).toHaveAccessibleDescription('participant-1@example.test Board access: member');
+  const articles = screen.getAllByRole('article', { name: 'Jordan' });
+  expect(articles[0]).toHaveAccessibleDescription('jordan@example.test Board access: member');
+  expect(articles[1]).toHaveAccessibleDescription('participant-1@example.test Board access: member');
+  expect(screen.getByRole('button', { name: `Remove from Board: ${former.userId}` }))
+    .toHaveAccessibleDescription(`Member reference: ${former.userId} Board access: member`);
+  expect(screen.queryByText('participant-2@example.test')).not.toBeInTheDocument();
+});
 it('retries the requested next page after a failed read instead of silently returning to the previous page', async () => {
   const mock = mount(reply(scope), reply(firstPage, 200, firstCursor), reply({}, 503), reply(scope), reply([participant(51)]));
   await screen.findByRole('heading', { name: 'Participant 1' });
