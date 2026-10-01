@@ -32,8 +32,23 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const order = (await result.json()).lists.map((column: { list: { id: string; rank: string; version: number } }) => column.list);
     expect(order.map((list: { id: string }) => list.id)).toEqual([lists[1].id, lists[0].id]);
     expect(order[0].version).toBe(2); expect(order[1].rank).toBe(lists[0].rank);
+    if (viewport.width === 1280) {
+      const source = await page.getByRole('button', { name: 'Drag First list', exact: true }).boundingBox();
+      const target = await page.getByRole('region', { name: 'Second', exact: true }).boundingBox();
+      expect(source).not.toBeNull(); expect(target).not.toBeNull();
+      await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 12 });
+      await page.mouse.up();
+      await expect(page.getByRole('region').first()).toHaveAccessibleName('First');
+      await expect(page.getByRole('button', { name: 'Move First list', exact: true })).toBeEnabled();
+      const current = await context.request.get(`/boards/${board}`); expect(current.status()).toBe(200);
+      const persisted = (await current.json()).lists.map((column: { list: { id: string; version: number } }) => column.list);
+      expect(persisted.map((list: { id: string }) => list.id)).toEqual([lists[0].id, lists[1].id]);
+      expect(persisted.map((list: { version: number }) => list.version)).toEqual([2, 2]);
+    }
     await page.reload();
-    await expect(page.getByRole('region').first()).toHaveAccessibleName('Second');
+    await expect(page.getByRole('region').first()).toHaveAccessibleName(viewport.width === 1280 ? 'First' : 'Second');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 }

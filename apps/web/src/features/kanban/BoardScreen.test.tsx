@@ -588,7 +588,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination list' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
     fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Placement is provisional');
+    expect(screen.getByText('Saving move. Placement is provisional until confirmed.')).toHaveAttribute('role', 'status');
     expect(screen.getByText('Complete', { selector: 'h3' }).closest('section')).toHaveTextContent('Inspect roof');
     expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
     await act(async () => { completeMove?.(response(moved)); });
@@ -620,6 +620,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
     expect(screen.getAllByRole('heading', { level: 3 }).map(heading => heading.textContent)).toEqual(['Planning', 'Complete']);
     expect(screen.getByRole('link', { name: 'Inspect roof' })).toBeVisible();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Drag Complete list' })).toBeDisabled());
     expect(fetcher.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(1);
   });
   it("clears the previous board while a new organization is loading", async () => {

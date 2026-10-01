@@ -1,17 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import type { BoardSnapshot } from '../../api/workManagement';
 import { apiFetch } from '../../api/apiFetch';
 import type { ListMovePreview } from './listMovePreview';
+import type { ListDropRequest } from './ListDragColumn';
 
 type List = BoardSnapshot['lists'][number]['list'];
 type Review = { name: string; version: number; before: string };
 type Intent = Review & { key: string };
-type Props = { list: List; snapshot: BoardSnapshot; disabled: boolean; onRefresh: () => void; onBusyChange: (value: boolean) => void; onPreview?: (value?: ListMovePreview) => void };
+type Props = { list: List; snapshot: BoardSnapshot; disabled: boolean; onRefresh: () => void; onBusyChange: (value: boolean) => void; onPreview?: (value?: ListMovePreview) => void; dropRequest?: ListDropRequest; onRecoveryChange?: (listId: string, unresolved: boolean) => void };
 
-export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBusyChange, onPreview }: Props) {
+export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBusyChange, onPreview, dropRequest, onRecoveryChange }: Props) {
   const [review, setReview] = useState<Review>(); const [intent, setIntent] = useState<Intent>();
   const [busy, setBusy] = useState(false); const [blocked, setBlocked] = useState(false); const [notice, setNotice] = useState<string>();
+  useEffect(() => { onRecoveryChange?.(list.id, !!intent || blocked); return () => onRecoveryChange?.(list.id, false); }, [list.id, intent, blocked, onRecoveryChange]);
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(true); const action = useRef<HTMLButtonElement>(null);
   const focusRequested = useRef(false);
   useEffect(() => { if (focusRequested.current && !disabled && !busy && !review) { action.current?.focus(); focusRequested.current = false; } }, [disabled, busy, review]);
@@ -23,10 +25,21 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
     && Number.isSafeInteger(list.version) && Number(list.version) > 0;
   const changed = !!review && !intent && (review.version !== list.version || review.name !== list.name);
   const positioned = !!review && (!review.before || neighbors.some(column => column.list.id === review.before));
+  const consumeDrop = useEffectEvent(() => {
+    if (!dropRequest || dropRequest.listId !== list.id || intent || blocked || busy) return;
+    if (dropRequest.version !== list.version || dropRequest.name !== list.name) {
+      setNotice('This list changed while dragging. Check current ordering before moving it.'); onRefresh(); return;
+    }
+    const selected = { name: dropRequest.name, version: dropRequest.version, before: dropRequest.before };
+    setReview(selected); void move(selected);
+  });
+  useEffect(() => { if (dropRequest) consumeDrop(); }, [dropRequest]);
   function close() { focusRequested.current = true; setReview(undefined); setBlocked(false); setNotice(undefined); }
-  async function move() {
-    if (pending.current || disabled || !admitted || blocked || changed || !review || (!intent && !positioned)) return;
-    const command = intent ?? { ...review, key: crypto.randomUUID() };
+  async function move(selected?: Review) {
+    const proposed = selected ?? review;
+    const available = !!proposed && (!proposed.before || neighbors.some(column => column.list.id === proposed.before));
+    if (pending.current || disabled || !admitted || blocked || (!selected && changed) || !proposed || (!intent && !available) || (selected && intent)) return;
+    const command = intent ?? { ...proposed, key: crypto.randomUUID() };
     const controller = new AbortController(); pending.current = controller; setBusy(true); onBusyChange(true); setNotice(undefined);
     if (!intent) onPreview?.({ listId: list.id, before: command.before });
     let abort: (() => void) | undefined; const timer = setTimeout(() => controller.abort(), 15_000);

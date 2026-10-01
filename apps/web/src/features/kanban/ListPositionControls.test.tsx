@@ -15,6 +15,19 @@ async function choose() {
   fireEvent.click(await screen.findByRole('option', { name: 'Before Complete' }));
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.clearAllMocks(); });
+it('persists an admitted drop directly through the same scoped move protocol', async () => {
+  const fetcher = vi.fn().mockResolvedValue(reply(ack)); vi.stubGlobal('fetch', fetcher);
+  render(<ListPositionControls {...props} dropRequest={{ listId: list.id, name: list.name, version: 1, before: 'anchor', nonce: 'drop-1' }} />);
+  await screen.findByText('List move acknowledged. Current ordering is being checked.');
+  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ name: 'Planning', version: 1, beforeListId: 'anchor' });
+  expect(fetcher).toHaveBeenCalledOnce();
+});
+it('does not persist a drop captured before a newer canonical revision', async () => {
+  const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
+  render(<ListPositionControls {...props} list={{ ...list, version: 2 }} dropRequest={{ listId: list.id, name: list.name, version: 1, before: 'anchor', nonce: 'drop-1' }} />);
+  await screen.findByText('This list changed while dragging. Check current ordering before moving it.');
+  expect(fetcher).not.toHaveBeenCalled(); expect(props.onRefresh).toHaveBeenCalledOnce();
+});
 it('submits a reviewed position with the current name/version and a bound key, then reads current order', async () => {
   const fetcher = vi.fn().mockResolvedValue(reply(ack)); vi.stubGlobal('fetch', fetcher);
   render(<ListPositionControls {...props} />); await choose();

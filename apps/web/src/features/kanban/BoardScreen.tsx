@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -27,6 +27,8 @@ import { CardDetailEditor } from "./CardDetailEditor";
 import { CardMoveControls } from "./CardMoveControls";
 import { ListPositionControls } from "./ListPositionControls";
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
+import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
@@ -69,6 +71,14 @@ function BoardContent() {
   const [busy, setBusy] = useState(false);
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
+  const [listDrop, setListDrop] = useState<ListDropRequest>();
+  const [listRecovery, setListRecovery] = useState(new Set<string>());
+  const updateListRecovery = useCallback((id: string, unresolved: boolean) => setListRecovery(previous => {
+    if (previous.has(id) === unresolved) return previous;
+    const next = new Set(previous); if (unresolved) next.add(id); else next.delete(id); return next;
+  }), []);
+  const dragList = useRef<{ listId: string; name: string; version: number } | undefined>(undefined);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor));
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
   const reading = useRef(false);
@@ -399,6 +409,14 @@ function BoardContent() {
           No lists yet.{editable && " Add a list to begin."}
         </Typography>
       )}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={event => {
+        const column = snapshot.lists.find(value => value.list.id === event.active.id);
+        if (column && Number.isSafeInteger(column.list.version)) dragList.current = { listId: column.list.id, name: column.list.name, version: column.list.version! };
+      }} onDragCancel={() => { dragList.current = undefined; }} onDragEnd={event => {
+        const source = dragList.current; dragList.current = undefined;
+        if (!source || !event.over || event.over.id === source.listId || busy || snapshotReading || loadError) return;
+        setListDrop({ ...source, before: event.over.id === 'list-end' ? '' : String(event.over.id), nonce: crypto.randomUUID() });
+      }}>
       <Box
         aria-label="Kanban board"
         sx={{
@@ -411,11 +429,11 @@ function BoardContent() {
         }}
       >
         {previewListMove(previewCardMove(snapshot, movePreview), listPreview).lists.map((column) => (
-          <Box
+          <ListDragColumn
             key={column.list.id}
-            component="section"
-            aria-labelledby={`list-name-${column.list.id}`}
-            sx={{ bgcolor: "grey.100", borderRadius: 2, p: 2, minHeight: 240 }}
+            id={column.list.id} name={column.list.name}
+            disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id)}
+            available={snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
           >
             <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3">
               {column.list.name}
@@ -423,6 +441,8 @@ function BoardContent() {
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active" && column.list.lifecycleState === "active" && <ListPositionControls
               list={column.list} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError} onBusyChange={setBusy}
               onPreview={setListPreview}
+              onRecoveryChange={updateListRecovery}
+              dropRequest={listDrop?.listId === column.list.id ? listDrop : undefined}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             <Stack spacing={1} sx={{ mt: 2 }}>
               {column.cards.map((item) => (
@@ -461,9 +481,11 @@ function BoardContent() {
                 Add card to {column.list.name}
               </Button>
             )}
-          </Box>
+          </ListDragColumn>
         ))}
+        {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && <ListEndTarget disabled={busy || snapshotReading || !!loadError} />}
       </Box>
+      </DndContext>
       <Dialog
         open={Boolean(creation)}
         onClose={() => {

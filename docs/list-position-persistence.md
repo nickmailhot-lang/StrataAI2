@@ -59,3 +59,27 @@ and Board-level ordering/rollback without an automatic second write. The full
 302-case web suite passes before the final Board integration case; final focused
 control/Board coverage and release CI provide the remaining verification. This
 does not prove measured sub-100ms feedback, drag/drop or complete acceptance.
+
+## List drag/drop
+
+The Board now uses the installed dnd-kit core context with pointer and keyboard
+sensors, dedicated list drag handles, sibling drop targets and an end target.
+Dragging uses a transform; only the handle disables touch scrolling. Dropping
+before a sibling or at the end submits through ListPositionControls, sharing its
+version checks, retry receipt, preview, deadline and canonical reconciliation.
+The drag-start name/version is captured; a newer canonical revision blocks the
+drop and requests current ordering. Cancel/outside/self drops do not write.
+Unavailable/archived scope has no handle, and a list awaiting acknowledgment or
+conflict recovery has its handle disabled. Card links remain separate targets.
+
+Source verification: the 305-test full web suite passes, with final focused
+control/Board tests checking direct admitted drop, stale drop rejection and
+recovery fencing. Production build/typecheck/lint pass. The desktop release
+browser case additionally drags a list before its sibling and checks actual
+persisted order/versions before reload; both desktop/phone cases collect.
+Runtime pointer/browser execution, boundary auto-scroll and full keyboard/screen
+reader/performance acceptance remain pending. Card drag/drop, rebalance and
+virtualization are unfinished. No PRD closure follows from source or collection.
+
+API usage follows the installed types and the official
+[dnd-kit draggable guidance](https://dndkit.com/legacy/api-documentation/draggable/).
