@@ -95,6 +95,29 @@ for count in 50 50 1; do
   cursor="$(jq -r '.nextCursor // empty' "$scratch/page")"
 done
 test -z "$cursor"; test "$(sort -u "$scratch/ids" | wc -l)" = 101
+# Isolated bearer fixture: production responses never disclose this proof. Supply it
+# in a JSON body, keeping it out of HTTP request paths and fixture output.
+test "$(post owner /organizations '{"name":"Body acceptance fixture"}')" = 201
+body_org="$(jq -r '.organization.id' "$scratch/response")"
+for surface in INTERNAL PORTAL; do
+  role=MEMBER; if test "$surface" = PORTAL; then role=OWNER; fi
+  test "$(post owner "/organizations/$body_org/invitations" "$(jq -nc --arg email "$email" --arg surface "$surface" --arg role "$role" '{email:$email,surface:$surface,targetRole:$role}')")" = 201
+  body_id="$(jq -r '.id' "$scratch/response")"
+  jq -e '.invitationToken == null' "$scratch/response" >/dev/null
+  body_token="$(openssl rand -hex 32)"
+  body_hash="$(printf '%s' "$body_token" | sha256sum | cut -d ' ' -f 1)"
+  admin "UPDATE invitations SET token_hash='$body_hash' WHERE id='$body_id' AND tenant_id='$body_org';" >/dev/null
+  body_json="$(jq -nc --arg token "$body_token" '{token:$token}')"
+  test "$(post wrong /invitations/accept "$body_json")" = 400
+  test "$(post recipient /invitations/accept "$body_json")" = 200
+  jq -e --arg id "$body_id" --arg org "$body_org" --arg surface "$surface" --arg role "$role" \
+    '.invitationId==$id and .organizationId==$org and .surface==$surface and .targetRole==$role' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$body_token|tokenHash|invitationToken" "$scratch/response"
+  test "$(post recipient /invitations/accept "$body_json")" = 400
+  test "$(admin "SELECT count(*) FROM audit_events WHERE event_type='INVITATION_ACCEPTED' AND entity_id='$body_id';")" = 1
+done
+unset body_token body_hash body_json
+echo 'Exact-image body invitation proof: recipient binding, both surfaces, token-free acknowledgment and one-use acceptance passed.'
 # Observe a real account-lock wait, then revoke the original session before disclosure.
 admin "BEGIN; SELECT id FROM users WHERE id='$user' FOR UPDATE; SELECT pg_sleep(10) /* invitation-read-gate */; COMMIT;" > "$scratch/gate" &
 gate=$!; pids+=($gate)

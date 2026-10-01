@@ -14,6 +14,8 @@ public sealed record CreateInvitationResponse(
     DateTimeOffset ExpiresAt,
     string? InvitationToken);
 
+public sealed record AcceptInvitationRequest(string? Token);
+
 public sealed record AcceptInvitationResponse(
     Guid InvitationId,
     Guid OrganizationId,

@@ -107,6 +107,21 @@ public static class InvitationEndpoints
             return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().RequireRateLimiting("invitation");
 
+        // Bearer tokens belong in the request body, never in new recipient link paths.
+        app.MapPost("/invitations/accept", async (AcceptInvitationRequest request, HttpContext context,
+            IInvitationService service, CancellationToken cancellationToken) =>
+        {
+            var userId = GetUserId(context);
+            if (userId is null) return Results.Unauthorized();
+            if (string.IsNullOrWhiteSpace(request.Token) || request.Token.Length > 512)
+                return ErrorFor("invalid_or_expired_invitation");
+            var result = await service.AcceptAsync(userId.Value, request.Token, context.TraceIdentifier, cancellationToken);
+            return result.Succeeded && result.Value is not null
+                ? Results.Ok(new AcceptInvitationResponse(result.Value.InvitationId, result.Value.OrganizationId,
+                    result.Value.Surface.ToString().ToUpperInvariant(), result.Value.TargetRole))
+                : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().RequireRateLimiting("invitation");
+
         app.MapPost(
                 "/invitations/{token}/accept",
                 async (
