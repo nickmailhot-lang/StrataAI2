@@ -107,6 +107,47 @@ public sealed partial class ApiHostTests
             fixture.Owner.Id, fixture.Recipient.Email, BoardRole.Member, "fixture", ct)).ErrorCode);
     }
 
+    [Theory]
+    [InlineData(BoardRole.Admin)]
+    [InlineData(BoardRole.Member)]
+    public async Task Board_creation_route_returns_bound_token_free_retry_ack_and_rechecks_revoked_issuer(BoardRole role)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory();
+        var fixture = await BoardInvitationFixtureAsync(app, ct);
+        const string password = "board-route-correct-horse";
+        await app.Services.GetRequiredService<IIdentityStore>().UpdatePasswordHashAsync(fixture.Inviter.Id,
+            app.Services.GetRequiredService<IPasswordHashService>().Hash(fixture.Inviter.Id, password), DateTimeOffset.UtcNow, ct);
+        using var client = app.CreateClient();
+        using var login = await Mutate(client, HttpMethod.Post, "/auth/login", new { email = fixture.Inviter.Email, password });
+        Assert.Equal(System.Net.HttpStatusCode.OK, login.StatusCode);
+        var key = Guid.NewGuid();
+        async Task<HttpResponseMessage> Create(string requestedRole)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"/boards/{fixture.Board.Id}/invitations") {
+                Content = System.Net.Http.Json.JsonContent.Create(new { email = fixture.Recipient.Email, role = requestedRole }) };
+            request.Headers.Add("X-StrataAI-Request", "1"); request.Headers.Add("Idempotency-Key", key.ToString());
+            return await client.SendAsync(request, ct);
+        }
+        using var created = await Create(role.ToString().ToUpperInvariant());
+        Assert.Equal(System.Net.HttpStatusCode.Created, created.StatusCode);
+        var body = await created.Content.ReadAsStringAsync(ct);
+        using var parsed = System.Text.Json.JsonDocument.Parse(body);
+        Assert.Equal(fixture.Board.Id, parsed.RootElement.GetProperty("boardTarget").GetProperty("boardId").GetGuid());
+        Assert.Equal(role.ToString().ToUpperInvariant(), parsed.RootElement.GetProperty("boardTarget").GetProperty("role").GetString());
+        Assert.Equal(System.Text.Json.JsonValueKind.Null, parsed.RootElement.GetProperty("invitationToken").ValueKind);
+        using var retry = await Create(role.ToString().ToUpperInvariant());
+        Assert.Equal(System.Net.HttpStatusCode.Created, retry.StatusCode); Assert.Equal(body, await retry.Content.ReadAsStringAsync(ct));
+        using var conflict = await Create(role == BoardRole.Admin ? "MEMBER" : "ADMIN");
+        Assert.Equal(System.Net.HttpStatusCode.Conflict, conflict.StatusCode);
+        using var invalid = await Create("OWNER"); Assert.Equal(System.Net.HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.True((await app.Services.GetRequiredService<IWorkManagementService>().RemoveBoardMemberAsync(fixture.Board.Id,
+            fixture.Owner.Id, fixture.Inviter.Id, "fixture", ct)).Succeeded);
+        using var revoked = await Create(role.ToString().ToUpperInvariant()); Assert.Equal(System.Net.HttpStatusCode.NotFound, revoked.StatusCode);
+        using var hidden = await Create("OWNER"); Assert.Equal(System.Net.HttpStatusCode.NotFound, hidden.StatusCode);
+        Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct));
+    }
+
     private static async Task<(UserIdentity Owner, UserIdentity Inviter, UserIdentity Recipient, BoardRecord Board)>
         BoardInvitationFixtureAsync(ApiFactory app, CancellationToken ct)
     {

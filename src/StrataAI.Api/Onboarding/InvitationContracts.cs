@@ -22,3 +22,5 @@ public sealed record AcceptInvitationResponse(
     string Surface,
     string TargetRole,
     StrataAI.Application.Onboarding.BoardInvitationTarget? BoardTarget = null);
+
+public sealed record CreateBoardInvitationRequest(string Email, string Role);

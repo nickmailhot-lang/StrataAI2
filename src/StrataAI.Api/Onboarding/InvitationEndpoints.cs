@@ -10,6 +10,37 @@ public static class InvitationEndpoints
         this WebApplication app,
         RuntimeDescriptor runtime)
     {
+        app.MapPost("/boards/{boardId:guid}/invitations", async (Guid boardId,
+            CreateBoardInvitationRequest request, HttpContext context, BoardInvitationService service,
+            CancellationToken cancellationToken) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            Guid? retryKey = null;
+            if (context.Request.Headers.TryGetValue("Idempotency-Key", out var values))
+            {
+                if (values.Count != 1 || values[0]?.Length != 36 || !Guid.TryParseExact(values[0], "D", out var key) || key == Guid.Empty)
+                    return ErrorFor("invalid_idempotency_key");
+                retryKey = key;
+            }
+            // Invalid roles reach the command so current Board authority is checked first.
+            var role = request.Role?.Trim().ToUpperInvariant() switch {
+                "ADMIN" => StrataAI.Application.WorkManagement.BoardRole.Admin,
+                "MEMBER" => StrataAI.Application.WorkManagement.BoardRole.Member,
+                _ => (StrataAI.Application.WorkManagement.BoardRole)(-1),
+            };
+            var result = await service.CreateAsync(boardId, actor.Value, request.Email, role,
+                context.TraceIdentifier, cancellationToken, retryKey);
+            if (!result.Succeeded || result.Value is null) return ErrorFor(result.ErrorCode);
+            var invitation = result.Value.Invitation;
+            return Results.Created($"/boards/{boardId}/invitations/{invitation.Id}", new {
+                invitation.Id, invitation.OrganizationId, Email = invitation.InvitedEmail,
+                Surface = "INTERNAL", invitation.TargetRole, invitation.BoardTarget, invitation.ExpiresAt,
+                InvitationToken = runtime.Mode == RuntimeMode.Demo && retryKey is null && !string.IsNullOrEmpty(result.Value.RawToken)
+                    ? result.Value.RawToken : null,
+            });
+        }).RequireAuthorization().RequireRateLimiting("invitation");
+
         app.MapGet("/organizations/{organizationId:guid}/invitations", async (
             Guid organizationId, string? after, HttpContext context, InvitationHistoryService service,
             CancellationToken cancellationToken) =>
@@ -274,6 +305,7 @@ public static class InvitationEndpoints
                 StatusCodes.Status403Forbidden,
                 errorCode,
                 "The account cannot accept this invitation."),
+            "board_not_found" => Problem(StatusCodes.Status404NotFound, errorCode, "The Board was not found or cannot be invited by this account."),
             "invitation_not_found" => Problem(
                 StatusCodes.Status404NotFound,
                 errorCode,

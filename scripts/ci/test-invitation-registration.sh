@@ -25,7 +25,12 @@ test "$(owner_post /organizations '{"name":"Closed invitation signup"}')" = 201
 org="$(jq -r '.organization.id' "$scratch/response")"
 "${compose[@]}" -f scripts/ci/compose.invitation-signup-test.yml up -d --wait --wait-timeout 180 api >/dev/null
 issue() {
+  if test "${board_issue:-false}" = true; then
+    test "$(owner_post "/boards/$signup_board/invitations" "$(jq -nc --arg email "$email" --arg role "$board_role" '{email:$email,role:$role}')")" = 201
+    jq -e --arg board "$signup_board" --arg role "$board_role" '.boardTarget.boardId==$board and .boardTarget.role==$role and .invitationToken==null' "$scratch/response" >/dev/null
+  else
   test "$(owner_post "/organizations/$org/invitations" "$(jq -nc --arg email "$email" --arg surface "${surface:-INTERNAL}" --arg role "${role:-MEMBER}" '{email:$email,surface:$surface,targetRole:$role}')")" = 201
+  fi
   invitation_id="$(jq -r '.id' "$scratch/response")"; token="$(openssl rand -hex 32)"
   token_hash="$(printf '%s' "$token" | sha256sum | cut -d ' ' -f 1)"
   admin "UPDATE invitations SET token_hash='$token_hash' WHERE tenant_id='$org' AND id='$invitation_id';" >/dev/null
@@ -92,8 +97,8 @@ test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api
 sleep 9; printf 'COMMIT;\n\\q\n' >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; wait "$pending"; pids=()
 test "$(cat "$scratch/expiry-status")" = 400; test "$before" = "$(state)"
 # PRD-60 ONBOARD-FR-001: explicit Board target signup against restricted
-# PostgreSQL. Administrative target attachment tests the proof consumer only;
-# the public Board invitation creation endpoint is a separate integration.
+# PostgreSQL. Public Board issuance creates each canonical target; isolated proof
+# replacement exercises consumers without claiming actual Worker mail delivery.
 test "$(owner_post /boards "$(jq -nc --arg org "$org" '{organizationId:$org,name:"Board signup",visibility:"PRIVATE"}')")" = 201
 signup_board="$(jq -r '.id' "$scratch/response")"
 board_accept() { curl --max-time 60 --silent --show-error -b "$scratch/board.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
@@ -106,9 +111,10 @@ board_accept_state() { admin "SELECT jsonb_build_object(
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org' AND board_id='$signup_board'),
  'stream',(SELECT last_sequence FROM work_event_streams WHERE tenant_id='$org' AND board_id='$signup_board'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text;"; }
+board_issue=true
 for board_role in ADMIN MEMBER; do
  surface=INTERNAL; role=MEMBER; email="board-signup-${board_role,,}-${RANDOM}-${RANDOM}@example.test"; issue
- admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='$board_role' WHERE id='$invitation_id' AND tenant_id='$org';" >/dev/null
+ test "$(admin "SELECT count(*) FROM invitations WHERE id='$invitation_id' AND tenant_id='$org' AND target_board_id='$signup_board' AND target_board_role='$board_role';")" = 1
  before="$(state)"
  admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
  test "$(register)" = 503; test "$before" = "$(state)"
@@ -151,7 +157,7 @@ for board_role in ADMIN MEMBER; do
   # A MEMBER invitation adds access; it cannot demote a current Organization
   # owner or active Board admin through the invitation acceptance path.
   admin "UPDATE organization_members SET role='OWNER' WHERE tenant_id='$org' AND user_id='$board_recipient';" >/dev/null
-  issue; admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='MEMBER' WHERE id='$invitation_id';" >/dev/null
+  board_role=MEMBER; issue
   test "$(board_accept)" = 200; cp "$scratch/response" "$scratch/board-accepted"
   test "$(admin "SELECT role FROM organization_members WHERE tenant_id='$org' AND user_id='$board_recipient';")" = OWNER
   test "$(admin "SELECT role FROM board_members WHERE board_id='$signup_board' AND user_id='$board_recipient';")" = ADMIN
@@ -168,8 +174,8 @@ for board_role in ADMIN MEMBER; do
 done
 # A Board archive committed during the real Board lock wait must reject signup
 # before any account/verification/receipt mutation, despite the earlier route hint.
-surface=INTERNAL; role=MEMBER; email="board-signup-wait-${RANDOM}-${RANDOM}@example.test"; issue
-admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='MEMBER' WHERE id='$invitation_id';" >/dev/null
+surface=INTERNAL; role=MEMBER; board_role=MEMBER; email="board-signup-wait-${RANDOM}-${RANDOM}@example.test"; issue
+test "$(admin "SELECT count(*) FROM invitations WHERE id='$invitation_id' AND target_board_id='$signup_board' AND target_board_role='MEMBER';")" = 1
 before="$(state)"; rm "$scratch/gate.in"; mkfifo "$scratch/gate.in"; exec 3<>"$scratch/gate.in"
 docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.out" &
 gate_pid=$!; printf "BEGIN; SELECT id FROM boards WHERE id='%s' FOR UPDATE; SELECT 'board-ready';\n" "$signup_board" >&3
@@ -186,6 +192,7 @@ echo 'Exact-image Board invitation consumers: both roles, signup/acceptance roll
 test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"
 signup_fixtures="$RUNNER_TEMP/invitation-signup-fixtures.json"
 printf '[]' > "$signup_fixtures"; chmod 600 "$signup_fixtures"
+board_issue=false
 for width in 1280 390; do
   surface=INTERNAL; role=MEMBER; if test "$width" = 390; then surface=PORTAL; role=OWNER; fi
   email="invitation-browser-signup-${width}-${RANDOM}-${RANDOM}@example.test"; issue
@@ -195,13 +202,14 @@ for width in 1280 390; do
 done
 printf 'STRATAAI_E2E_INVITATION_SIGNUP_FIXTURES=%s\n' "$signup_fixtures" >> "$GITHUB_ENV"
 # Verified matching recipients and pending Board proofs for mandatory browser review.
-# Administrative target attachment/verification proves consumers, not public issuance/mail.
+# Public creation prepares targets; administrative proof replacement/verification does not prove actual mail.
 board_link_fixtures="$RUNNER_TEMP/board-invitation-link-fixtures.json"
 printf '[]' > "$board_link_fixtures"; chmod 600 "$board_link_fixtures"
+board_issue=true
 for width in 1280 390; do
  surface=INTERNAL; role=MEMBER; board_role=ADMIN; if test "$width" = 390; then board_role=MEMBER; fi
  email="board-link-browser-${width}-${RANDOM}-${RANDOM}@example.test"; issue
- admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='$board_role' WHERE id='$invitation_id';" >/dev/null
+ test "$(admin "SELECT count(*) FROM invitations WHERE id='$invitation_id' AND target_board_id='$signup_board' AND target_board_role='$board_role';")" = 1
  test "$(register)" = 201
  board_link_user="$(jq -r '.user.id' "$scratch/response")"
  admin "UPDATE users SET email_verified=true WHERE id='$board_link_user';" >/dev/null

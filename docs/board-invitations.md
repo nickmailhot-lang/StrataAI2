@@ -179,3 +179,20 @@ PostgreSQL publication or transport. Public Board creation remains unwired; requ
 exact-image publication/rollback and actual Worker delivery coverage must accompany
 that endpoint integration. Local warning-as-error build passes; host execution and
 full release evidence for this producer increment await CI.
+
+Public creation is now wired at POST /boards/{boardId}/invitations with email and
+Board ADMIN/MEMBER role. The authenticated, rate-limited route uses the existing
+Board command, validates nonempty UUID retry headers, binds retries to the canonical
+scope/email/role, and returns Board target metadata with no production bearer.
+Invalid roles reach current-authority checking before validation, so unavailable
+Boards remain hidden. Two new authenticated host cases cover both roles, identical
+keyed acknowledgments, conflict, invalid role, no early grant and revoked issuer
+retry/invalid-role denial.
+
+The required signup/acceptance/discovery/browser fixture now creates Board targets
+through this actual endpoint and asserts canonical targets instead of attaching
+Board targets administratively. Isolated proof replacement and account verification
+remain administrative test setup and are not actual Worker mail delivery evidence.
+Existing Organization/Portal fixture preparation remains separate. Build and script
+syntax pass locally; new route host and exact-image execution await CI. Actual
+mail-enabled publication rollback/transport and sender MUI remain outstanding.
