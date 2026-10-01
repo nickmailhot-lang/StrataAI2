@@ -57,6 +57,7 @@ public static class IdentityRegistration
 
         if (runtime.Mode == RuntimeMode.Demo)
         {
+            services.AddSingleton<IInvitationRegistrationProofStore, InMemoryInvitationRegistrationProofStore>();
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();
             services.AddSingleton<IAccountDeactivationOwnership, InMemoryAccountDeactivationOwnership>();
             services.AddSingleton<IIdentityStore, InMemoryIdentityStore>();
@@ -70,6 +71,7 @@ public static class IdentityRegistration
         }
         else
         {
+            services.AddSingleton<IInvitationRegistrationProofStore, PostgresInvitationRegistrationProofStore>();
             services.AddSingleton<IAccountDeactivationOwnership, PostgresAccountDeactivationOwnership>();
             services.AddSingleton<IIdentityStore, PostgresIdentityStore>();
             services.AddSingleton<IIdentityUnitOfWork, PostgresIdentityUnitOfWork>();

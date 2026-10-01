@@ -7,7 +7,8 @@ public sealed record RegisterRequest(
     string Password,
     string DisplayName,
     string? Locale,
-    string? Timezone);
+    string? Timezone,
+    string? InvitationToken = null);
 
 public sealed record LoginRequest(
     string Email,

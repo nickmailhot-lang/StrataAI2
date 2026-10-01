@@ -16,6 +16,7 @@ cleanup() {
   query 'GRANT INSERT ON email_verification_tokens,identity_delivery_jobs,identity_registration_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON password_reset_tokens,identity_recovery_request_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON identity_token_consumption_replays TO strataai_api_runtime;' >/dev/null
+  if test "${signup_closed:-false}" = true; then "${compose[@]}" up -d --wait --wait-timeout 180 api >/dev/null || true; fi
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -464,6 +465,55 @@ for purpose in RESET_PASSWORD VERIFY_EMAIL; do
   "${compose[@]}" stop worker >/dev/null
 done
 "${compose[@]}" up -d --wait --wait-timeout 180 worker >/dev/null
+# Invitation signup with the default verified-email policy and actual separate Worker.
+# First create and verify the issuer through the same mail transport.
+email="signup-mail-owner-${RANDOM}-${RANDOM}@example.test"
+mail_owner_body="$(jq -nc --arg email "$email" '{email:$email,password:"signup-mail-correct-horse",displayName:"Signup mail owner"}')"
+test "$(post /auth/register "$mail_owner_body")" = 201
+mail_owner_id="$(jq -r '.user.id' "$scratch/response")"; mail_owner_job="$(latest_job VERIFY_EMAIL)"
+wait_state "$mail_owner_job" SENT
+mail_proof="$(mail_token verify "${mail_owner_job//-/}")"; test -n "$mail_proof"
+test "$(post /auth/verify-email "$(jq -nc --arg token "$mail_proof" '{token:$token}')")" = 200
+curl --fail --silent --show-error -c "$scratch/signup-owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$mail_owner_body" "$base/auth/login" >/dev/null
+signup_owner_post() { curl --max-time 60 --silent --show-error -b "$scratch/signup-owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$2" -o "$scratch/response" -w '%{http_code}' "$base$1"; }
+test "$(signup_owner_post /organizations '{"name":"Verified invitation signup"}')" = 201
+signup_org="$(jq -r '.organization.id' "$scratch/response")"
+signup_closed=true
+"${compose[@]}" -f scripts/ci/compose.invitation-signup-test.yml up -d --wait --wait-timeout 180 api >/dev/null
+for surface in INTERNAL PORTAL; do
+  role=MEMBER; if test "$surface" = PORTAL; then role=OWNER; fi
+  email="signup-mail-recipient-${surface,,}-${RANDOM}-${RANDOM}@example.test"
+  test "$(signup_owner_post "/organizations/$signup_org/invitations" "$(jq -nc --arg email "$email" --arg surface "$surface" --arg role "$role" '{email:$email,surface:$surface,targetRole:$role}')")" = 201
+  signup_invitation="$(jq -r '.id' "$scratch/response")"; signup_token="$(openssl rand -hex 32)"
+  signup_hash="$(printf '%s' "$signup_token" | sha256sum | cut -d ' ' -f 1)"
+  query "UPDATE invitations SET token_hash='$signup_hash' WHERE id='$signup_invitation' AND tenant_id='$signup_org';" >/dev/null
+  signup_body="$(jq -nc --arg email "$email" --arg token "$signup_token" '{email:$email,password:"signup-mail-correct-horse",displayName:"Invited mail recipient",invitationToken:$token}')"
+  test "$(post /auth/register "$(jq 'del(.invitationToken)' <<< "$signup_body")")" = 403
+  signup_key="$(cat /proc/sys/kernel/random/uuid)"
+  signup_register() { curl --max-time 60 --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $signup_key" -d "$signup_body" -o "$scratch/response" -w '%{http_code}' "$base/auth/register"; }
+  test "$(signup_register)" = 201
+  jq -e '.verificationToken==null and .user.emailVerified==false' "$scratch/response" >/dev/null
+  signup_user="$(jq -r '.user.id' "$scratch/response")"; cp "$scratch/response" "$scratch/signup-original"
+  test "$(signup_register)" = 201; cmp "$scratch/signup-original" "$scratch/response"
+  test "$(query "SELECT status FROM users WHERE id='$signup_user';")" = PENDING_VERIFICATION
+  test "$(query "SELECT count(*) FROM organization_members WHERE tenant_id='$signup_org' AND user_id='$signup_user';")" = 0
+  test "$(query "SELECT count(*) FROM portal_access WHERE tenant_id='$signup_org' AND user_id='$signup_user';")" = 0
+  test "$(query "SELECT count(*) FROM invitations WHERE id='$signup_invitation' AND accepted_at IS NULL;")" = 1
+  test "$(post /auth/login "$signup_body")" = 403
+  signup_job="$(latest_job VERIFY_EMAIL)"; test -n "$signup_job"; wait_state "$signup_job" SENT
+  mail_proof="$(mail_token verify "${signup_job//-/}")"; test -n "$mail_proof"
+  test "$(post /auth/verify-email "$(jq -nc --arg token "$mail_proof" '{token:$token}')")" = 200
+  test "$(query "SELECT count(*) FROM organization_members WHERE tenant_id='$signup_org' AND user_id='$signup_user';")" = 0
+  curl --fail --silent --show-error -c "$scratch/signup-recipient.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$signup_body" "$base/auth/login" >/dev/null
+  test "$(curl --max-time 60 --silent --show-error -b "$scratch/signup-recipient.cookies" -H 'X-StrataAI-Request: 1' -X POST -o "$scratch/response" -w '%{http_code}' "$base/me/invitations/$signup_invitation/accept")" = 200
+  jq -e --arg id "$signup_invitation" --arg surface "$surface" '.invitationId==$id and .surface==$surface' "$scratch/response" >/dev/null
+  count=0; if test "$surface" = INTERNAL; then count=1; fi
+  test "$(query "SELECT count(*) FROM organization_members WHERE tenant_id='$signup_org' AND user_id='$signup_user' AND role='MEMBER' AND status='ACTIVE';")" = "$count"
+  scripts/ci/assert-file-excludes.sh "$signup_token|$mail_proof|invitationToken|tokenHash" "$scratch/response"
+done
+unset signup_token signup_hash mail_proof signup_body
+"${compose[@]}" up -d --wait --wait-timeout 180 api >/dev/null; signup_closed=false
+echo 'Exact-image closed invitation signup: pending verification, retry acknowledgment, separate Worker verification and explicit Internal/Portal acceptance without premature grants passed.'
 echo 'Keyed production recovery: neutral atomic rollback, concurrent one-token/one-delivery publication, restart, single-use proof and actual Worker receipt retention passed.'
 echo 'Keyed production token consumption: atomic user/token/session/audit/event/receipt rollback, concurrent acknowledgment, restart, newer-session preservation, post-wait expiry, lifecycle denial and Worker cleanup passed.'
 echo 'Exact-image identity email, atomic publication, restart/rotation, provider retry/idempotency, verification/reset/replay/revocation, cancellation and resend checks passed.'

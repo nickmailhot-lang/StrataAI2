@@ -15,12 +15,16 @@ public sealed partial class IdentityLoginRetrySecrets : IIdentityRegistrationRet
     }
 
     public bool TryRegistrationFingerprint(Guid userId, Guid key, string emailNormalized, string password,
-        string displayName, string locale, string timezone, string keyVersion, out string fingerprint)
+        string displayName, string locale, string timezone, string keyVersion, out string fingerprint, string? invitationTokenHash = null)
     {
         if (userId == Guid.Empty || key == Guid.Empty) { fingerprint = ""; return false; }
-        var message = JsonSerializer.SerializeToUtf8Bytes(new {
+        // Preserve existing self-registration receipt bytes across upgrades.
+        var message = invitationTokenHash is null ? JsonSerializer.SerializeToUtf8Bytes(new {
             Purpose = "strataai:registration-retry:v1:INTENT", keyVersion, userId, key,
             emailNormalized, password, displayName, locale, timezone,
+        }) : JsonSerializer.SerializeToUtf8Bytes(new {
+            Purpose = "strataai:invitation-registration-retry:v1:INTENT", keyVersion, userId, key,
+            emailNormalized, password, displayName, locale, timezone, invitationTokenHash,
         });
         try { return TryMac(message, keyVersion, true, out fingerprint); }
         finally { CryptographicOperations.ZeroMemory(message); }

@@ -17,5 +17,5 @@ public interface IIdentityRegistrationRetrySecrets
     string CurrentKeyVersion { get; }
     bool TryDeriveVerification(Guid userId, Guid tokenId, string keyVersion, out string token);
     bool TryRegistrationFingerprint(Guid userId, Guid key, string emailNormalized, string password,
-        string displayName, string locale, string timezone, string keyVersion, out string fingerprint);
+        string displayName, string locale, string timezone, string keyVersion, out string fingerprint, string? invitationTokenHash = null);
 }

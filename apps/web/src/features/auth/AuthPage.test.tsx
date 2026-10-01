@@ -4,6 +4,28 @@ import { MemoryRouter } from 'react-router-dom';
 import { AuthPage } from './AuthPage';
 
 describe('PRD-02 authentication UI', () => {
+  it('binds invitation signup retries to the proof without storing or displaying it', async () => {
+    const invitationToken = 'private_invitation_proof_12345678901234567890';
+    const fetch = vi.fn().mockRejectedValueOnce(new Error('Lost registration acknowledgment')).mockResolvedValueOnce(new Response(JSON.stringify({
+      user: { id: '11111111-1111-4111-8111-111111111111', email: 'person@example.test', emailVerified: false },
+    }), { status: 201 })); vi.stubGlobal('fetch', fetch);
+    render(<MemoryRouter><AuthPage invitationToken={invitationToken} /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('tab', { name: 'Register' }));
+    fireEvent.change(screen.getByLabelText(/^Display name/), { target: { value: 'Person' } });
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await screen.findByText(/Retry with the same details/);
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await screen.findByText('Account created. Verify your email, then reopen your invitation to sign in and accept it.');
+    const first = fetch.mock.calls[0][1] as RequestInit; const second = fetch.mock.calls[1][1] as RequestInit;
+    expect(JSON.parse(first.body as string).invitationToken).toBe(invitationToken);
+    expect(second.body).toBe(first.body); expect(new Headers(second.headers).get('Idempotency-Key')).toBe(new Headers(first.headers).get('Idempotency-Key'));
+    expect(document.body.textContent).not.toContain(invitationToken);
+    expect(JSON.stringify({ ...localStorage, ...sessionStorage })).not.toContain(invitationToken);
+    expect(screen.getByLabelText(/^Password/)).toHaveValue('');
+  });
+
   afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
   it.each(['login', 'register'])('PRD-02/24: preserves %s intent after an abuse limit without falsely acknowledging success', async mode => {

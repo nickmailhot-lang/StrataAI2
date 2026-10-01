@@ -21,7 +21,7 @@ type ApiProblem = {
   code?: string;
 };
 
-export function AuthPage({ onAuthenticated }: { onAuthenticated?: () => void } = {}) {
+export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated?: () => void; invitationToken?: string } = {}) {
   const location = useLocation();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -45,6 +45,7 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated?: () => void } =
     pending.current = controller;
     const body = JSON.stringify(mode === 'login' ? { email, password } : {
       email, password, displayName, locale: 'en-CA', timezone: 'America/Vancouver',
+      ...(invitationToken ? { invitationToken } : {}),
     });
     if (attempt.current?.body !== body || attempt.current.mode !== mode) attempt.current = { mode, body, key: crypto.randomUUID() };
     const current = () => pending.current === controller && !controller.signal.aborted;
@@ -89,6 +90,8 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated?: () => void } =
           identity_retry_key_unavailable: 'This retry could not be confirmed. Contact support before starting another attempt.',
           email_unavailable: 'This email cannot be registered.',
           self_registration_disabled: 'Ask your administrator for an invitation.',
+          identity_delivery_unavailable: 'Verification email is temporarily unavailable. Please retry later.',
+          invalid_or_expired_invitation: 'This invitation is unavailable or does not match your email. Reopen the original invitation or sign in with an existing account.',
         };
         setError(messages[problem.code ?? ''] ?? 'Authentication could not be confirmed. Please try again.');
         setExpiredAttempt(problem.code === 'idempotency_key_expired' && mode === 'login');
@@ -104,7 +107,9 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated?: () => void } =
           || typeof registration.user.emailVerified !== 'boolean') throw new Error('Invalid registration acknowledgment');
         attempt.current = undefined;
         setVerificationNeeded(registration.user?.emailVerified === false);
-        setNotice(registration.user?.emailVerified === false ? 'Account created. Use your verification email to activate it before signing in.' : 'Account created. Sign in to continue.');
+        setNotice(registration.user?.emailVerified === false
+          ? invitationToken ? 'Account created. Verify your email, then reopen your invitation to sign in and accept it.' : 'Account created. Use your verification email to activate it before signing in.'
+          : 'Account created. Sign in to continue.');
         setMode('login');
         setPassword('');
         return;

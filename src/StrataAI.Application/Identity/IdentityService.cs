@@ -15,7 +15,8 @@ public sealed class IdentityService(
     IIdentityRegistrationReplayStore? registrationReplays = null, IIdentityRegistrationRetrySecrets? registrationSecrets = null,
     IIdentityDeliveryTokenSigner? deliverySigner = null,
     IIdentityRecoveryRequestReplayStore? recoveryReplays = null, IIdentityRecoveryRetrySecrets? recoverySecrets = null,
-    IIdentityTokenConsumptionReplayStore? consumptionReplays = null, IIdentityTokenConsumptionRetrySecrets? consumptionSecrets = null) : IIdentityService
+    IIdentityTokenConsumptionReplayStore? consumptionReplays = null, IIdentityTokenConsumptionRetrySecrets? consumptionSecrets = null,
+    IInvitationRegistrationProofStore? invitationRegistrations = null) : IIdentityService
 {
     public async Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default)
@@ -38,9 +39,9 @@ public sealed class IdentityService(
         string? locale,
         string? timezone,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, string? invitationToken = null)
     {
-        if (!policy.AllowSelfRegistration)
+        if (!policy.AllowSelfRegistration && invitationToken is null)
         {
             return IdentityOperation<RegistrationOutcome>.Failure(
                 "self_registration_disabled");
@@ -69,6 +70,18 @@ public sealed class IdentityService(
         var profileTimezone = NormalizeTimezone(timezone);
         if (!TryNormalizeTimezone(profileTimezone, out profileTimezone))
             return IdentityOperation<RegistrationOutcome>.Failure("invalid_timezone");
+
+        InvitationRegistrationProof? invitationProof = null;
+        string? invitationHash = null;
+        if (invitationToken is not null)
+        {
+            if (string.IsNullOrWhiteSpace(invitationToken) || invitationToken.Length > 512 || invitationRegistrations is null)
+                return IdentityOperation<RegistrationOutcome>.Failure("invalid_or_expired_invitation");
+            invitationHash = tokens.Hash(invitationToken);
+            invitationProof = await invitationRegistrations.PrepareAsync(invitationHash, normalized, cancellationToken);
+            if (invitationProof is null)
+                return IdentityOperation<RegistrationOutcome>.Failure("invalid_or_expired_invitation");
+        }
 
         var registrationKey = context?.IdempotencyKey;
         if (registrationKey is not null)
@@ -156,13 +169,16 @@ public sealed class IdentityService(
         if (registrationKey is not null)
         {
             if (!registrationSecrets!.TryRegistrationFingerprint(userId, registrationKey.Value, normalized, password,
-                    cleanDisplayName, profileLocale, profileTimezone, registrationKeyVersion!, out var fingerprint))
+                    cleanDisplayName, profileLocale, profileTimezone, registrationKeyVersion!, out var fingerprint, invitationHash))
                 return IdentityOperation<RegistrationOutcome>.Failure("identity_retry_key_unavailable");
             await registrationReplays!.SaveAsync(userId, registrationKey.Value, new IdentityRegistrationReplay(
                 registrationKeyVersion!, fingerprint, verificationRecord?.Id, verificationSource, verificationKeyVersion,
                 now.AddHours(24)), cancellationToken);
         }
 
+        if (invitationProof is not null && invitationRegistrations!.RequiresFinalCheck
+            && !await invitationRegistrations.CheckAsync(invitationProof, normalized, cancellationToken))
+            return IdentityOperation<RegistrationOutcome>.Failure("invalid_or_expired_invitation");
         return IdentityOperation<RegistrationOutcome>.Success(
             new RegistrationOutcome(ToProfile(user), verificationToken));
 
@@ -176,7 +192,7 @@ public sealed class IdentityService(
             if (prior is null) return IdentityOperation<RegistrationOutcome>.Failure("email_unavailable");
             if (prior.ExpiresAt <= clock.UtcNow) return IdentityOperation<RegistrationOutcome>.Failure("idempotency_key_expired");
             if (!registrationSecrets!.TryRegistrationFingerprint(existing.Id, registrationKey.Value, normalized, password,
-                    cleanDisplayName, profileLocale, profileTimezone, prior.KeyVersion, out var candidate))
+                    cleanDisplayName, profileLocale, profileTimezone, prior.KeyVersion, out var candidate, invitationHash))
                 return IdentityOperation<RegistrationOutcome>.Failure("identity_retry_key_unavailable");
             if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(candidate), Encoding.ASCII.GetBytes(prior.Fingerprint)))
                 return IdentityOperation<RegistrationOutcome>.Failure("idempotency_key_reused");
@@ -198,6 +214,9 @@ public sealed class IdentityService(
                     return IdentityOperation<RegistrationOutcome>.Failure("idempotency_key_expired");
             }
             if (prior.ExpiresAt <= clock.UtcNow) return IdentityOperation<RegistrationOutcome>.Failure("idempotency_key_expired");
+            if (invitationProof is not null && invitationRegistrations!.RequiresFinalCheck
+                && !await invitationRegistrations.CheckAsync(invitationProof, normalized, cancellationToken))
+                return IdentityOperation<RegistrationOutcome>.Failure("invalid_or_expired_invitation");
             return IdentityOperation<RegistrationOutcome>.Success(new(ToProfile(existing), originalVerification));
         }
     }

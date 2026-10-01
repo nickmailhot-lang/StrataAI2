@@ -11,7 +11,8 @@ public interface IIdentityService
         string? locale,
         string? timezone,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? invitationToken = null);
 
     Task<IdentityOperation<LoginOutcome>> LoginAsync(
         string email,

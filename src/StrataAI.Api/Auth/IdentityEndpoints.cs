@@ -21,7 +21,7 @@ public static class IdentityEndpoints
                 IIdentityService identityService,
                 CancellationToken cancellationToken) =>
             {
-                if (runtime.Mode==RuntimeMode.Production && policy.AllowSelfRegistration && policy.RequireVerifiedEmail && !policy.EmailDeliveryEnabled)
+                if (runtime.Mode==RuntimeMode.Production && (policy.AllowSelfRegistration || request.InvitationToken is not null) && policy.RequireVerifiedEmail && !policy.EmailDeliveryEnabled)
                     return DeliveryUnavailable();
                 var result = await identityService.RegisterAsync(
                     request.Email,
@@ -30,7 +30,8 @@ public static class IdentityEndpoints
                     request.Locale,
                     request.Timezone,
                     context.TraceIdentifier,
-                    cancellationToken);
+                    cancellationToken,
+                    request.InvitationToken);
 
                 if (!result.Succeeded || result.Value is null)
                 {
@@ -311,6 +312,8 @@ public static class IdentityEndpoints
             "invalid_identity_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode, "A valid account event cursor is required."),
             "session_unavailable" => Problem(StatusCodes.Status401Unauthorized, errorCode, "Your session is no longer available. Sign in again."),
             "identity_storage_unavailable" => Problem(StatusCodes.Status503ServiceUnavailable, errorCode, "The account change could not be confirmed. Retry shortly."),
+            "invalid_or_expired_invitation" => Problem(StatusCodes.Status400BadRequest, errorCode,
+                "The invitation is invalid, expired, used, or does not match this registration."),
             "self_registration_disabled" => Problem(
                 StatusCodes.Status403Forbidden,
                 errorCode,

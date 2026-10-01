@@ -1,0 +1,5 @@
+# Isolated CI fixture only; inherits real runtime roles, rate limits and verification policy.
+services:
+  api:
+    environment:
+      STRATAAI_AUTH_ALLOW_SELF_REGISTRATION: 'false'

@@ -101,6 +101,6 @@ export function InvitationLinkPage() {
       <Button component={Link} to="/app/invitations">View your invitations</Button>
       <Button component={Link} to="/verify-email">Verify your email</Button>
     </Stack></Paper></Container>
-    {signIn && <AuthPage onAuthenticated={() => { setSignIn(false); setError(undefined); }} />}
+    {signIn && <AuthPage invitationToken={token || undefined} onAuthenticated={() => { setSignIn(false); setError(undefined); }} />}
   </>;
 }
