@@ -113,7 +113,7 @@ it('shows the Board role and recovers a lost acknowledgment for the exact review
   const fetch = vi.fn().mockResolvedValueOnce(reply(boardItem)).mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply(boardAck));
   vi.stubGlobal('fetch', fetch); mount(); fireEvent.click(screen.getByRole('button', { name: 'Review invitation' }));
   await screen.findByRole('heading', { name: boardItem.boardName });
-  expect(screen.getByText('Board access · admin')).toBeInTheDocument();
+  expect(screen.getByText('Board access Â· admin')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Accept reviewed invitation' }));
   fireEvent.click(await screen.findByRole('button', { name: 'Retry invitation acceptance' }));
   expect(await screen.findByRole('link', { name: 'Open Board' })).toHaveAttribute('href', `/app/${item.organizationId}/boards/${boardItem.boardTarget.boardId}`);

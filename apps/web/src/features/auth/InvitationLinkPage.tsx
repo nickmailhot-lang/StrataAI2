@@ -96,7 +96,7 @@ export function InvitationLinkPage() {
         : review ? <>
           <Typography variant="h6" component="h2">{review.organizationName}</Typography>
           {review.boardTarget && <Typography variant="h6" component="h3">{review.boardName}</Typography>}
-          <Typography>{review.boardTarget ? `Board access � ${review.boardTarget.role.toLowerCase()}` : <>{review.surface === 'PORTAL' ? 'Owner Portal' : 'Internal organization'} access · {review.targetRole.toLowerCase().replaceAll('_', ' ')}</>}</Typography>
+          <Typography>{review.boardTarget ? `Board access · ${review.boardTarget.role.toLowerCase()}` : <>{review.surface === 'PORTAL' ? 'Owner Portal' : 'Internal organization'} access · {review.targetRole.toLowerCase().replaceAll('_', ' ')}</>}</Typography>
           <Button disabled={busy || signIn} variant="contained" onClick={() => void submit(true)}>{uncertain ? 'Retry invitation acceptance' : 'Accept reviewed invitation'}</Button>
           <Typography>Acceptance checks current access again. Acknowledgment does not guarantee that access is still available later.</Typography>
         </> : uncertain ? <>
