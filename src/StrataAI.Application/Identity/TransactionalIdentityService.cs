@@ -35,11 +35,11 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
         string email,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        inner.RequestPasswordResetAsync(email, correlationId, cancellationToken);
+        commands.ExecuteRecoveryRequestAsync(() => inner.RequestPasswordResetAsync(email, correlationId, cancellationToken), new PasswordResetRequestOutcome(null), cancellationToken);
 
     public Task<string?> RequestEmailVerificationAsync(
         string email,string correlationId,CancellationToken cancellationToken=default) =>
-        inner.RequestEmailVerificationAsync(email, correlationId, cancellationToken);
+        commands.ExecuteRecoveryRequestAsync<string?>(() => inner.RequestEmailVerificationAsync(email, correlationId, cancellationToken), null, cancellationToken);
 
     public Task<IdentityOperation<UserProfile>> ResetPasswordAsync(
         string rawResetToken,

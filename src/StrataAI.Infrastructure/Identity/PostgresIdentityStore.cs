@@ -529,13 +529,15 @@ internal sealed class PostgresIdentityStore(
         IdentityTokenPurpose purpose,
         CancellationToken cancellationToken)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
-        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var ownedTransaction = routing.Transaction is null
+            ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
+        var connection = routing.Connection;
+        var transaction = routing.Transaction ?? ownedTransaction!;
         await InsertSecurityTokenAsync(tableName, token, connection, transaction, cancellationToken);
         if (delivery is not null)
             await PublishIdentityDeliveryAsync(token, delivery, purpose, connection, transaction, cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(cancellationToken);
     }
 
     private static async Task InsertSecurityTokenAsync(string tableName, SecurityTokenRecord token,

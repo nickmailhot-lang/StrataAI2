@@ -6,7 +6,7 @@ Identity account state is global. The factory uses a separate identity transacti
 
 The required exact-image fixture denies audit insertion during profile change and deactivation, compares the complete user/session state plus audit count, checks no cookie deletion on rejection, commits a valid profile edit, and rejects a stale version without changes. Controlled user locks observe logout committed during both profile and deactivation admission waits, then verify masked 401, unchanged profile/audit state and another session still working. With the API limited to one database connection, profile change and deactivation must finish; the final account remains in history, every session is revoked and exactly one deactivation audit exists. The API host test checks two independent sessions both lose access after deactivation.
 
-Recovery requests, durable retry keys, invitation delivery, identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
+Durable retry keys, invitation delivery, identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
 
 ## Sign-in and logout
 
@@ -14,7 +14,7 @@ Sign-in runs password verification, optional hash upgrade, session creation and 
 
 Logout uses the authenticated identity command boundary. Session revocation and its audit commit together, and the API clears the browser cookie only after confirmed success. Audit failure preserves both the session and cookie so the user can retry. Restricted release-image fixtures cover audit denial for login/logout, account deactivation while sign-in waits, and both commands with a one-connection pool.
 
-Recovery requests still need their audit writes incorporated into their command boundaries. The demo store serializes identity commands but does not claim durable rollback.
+The demo store serializes identity commands but does not claim durable rollback.
 
 ## Registration
 
@@ -28,4 +28,12 @@ These public commands prove possession of a hashed, expiring, single-use token i
 
 Token consumption, account changes, reset session revocation and the corresponding audit commit together. A failed audit or failed token consumption rolls everything back. Token lookup and consumption use `clock_timestamp()` so expiry during a wait cannot succeed using an earlier request timestamp. Direct store callers retain an owned transaction and the same account-before-token lock order.
 
-The one-connection exact-image mail fixture compares complete user/token/session state and audit counts after denying each command's audit. It also holds a token row, observes the API waiting on that row, allows the token to expire without changing its row, then releases the lock and expects `invalid_or_expired_token` with unchanged state. Successful retries and single-use checks follow. Recovery request publication/audit atomicity remains pending.
+The one-connection exact-image mail fixture compares complete user/token/session state and audit counts after denying each command's audit. It also holds a token row, observes the API waiting on that row, allows the token to expire without changing its row, then releases the lock and expects `invalid_or_expired_token` with unchanged state. Successful retries and single-use checks follow.
+
+## Recovery requests
+
+Password-forgotten and verification-resend requests lock a matching account before checking current eligibility. Their hashed token, durable delivery publication and audit share a global identity transaction. Direct store callers still own their token/publication transaction. A storage or audit failure rolls back all effects.
+
+Public requests retain the same generic acknowledgment for unknown, ineligible and failed-storage accounts, preventing an account-existence distinction caused by a conditional database failure. This acknowledgment confirms receipt of a request, never delivery. A failed transaction logs a masked database code without an email or token; operators must treat that warning as a failed publication. Transport-disabled mode still returns its uniform configuration error before lookup. Eligible clients can retry the request; durable deduplication of such retries remains outstanding.
+
+The one-connection release fixture denies audit insertion for both requests, tests known and unknown emails receive the same generic 202 with no tokens, and checks account/token/delivery/audit counts remain unchanged. Existing success checks then exercise Worker delivery.

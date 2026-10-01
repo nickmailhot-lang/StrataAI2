@@ -2,6 +2,10 @@ namespace StrataAI.Application.Identity;
 
 public interface IIdentityUnitOfWork
 {
+    // Public recovery acknowledgments must remain indistinguishable for unknown accounts and failed storage.
+    Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,
+        CancellationToken cancellationToken = default);
+
     // The operation verifies an expiring single-use token under the account lock.
     Task<IdentityOperation<UserProfile>> ExecuteTokenProofAsync(
         Func<Task<IdentityOperation<UserProfile>>> operation, CancellationToken cancellationToken = default);

@@ -35,6 +35,18 @@ reject_token_audit() {
   test "$before" = "$(token_state)"
   query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
 }
+reject_recovery_audit() {
+  local endpoint="$1" before target
+  before="$(registration_state)"
+  query 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+  for target in "$email" "unknown-recovery-${RANDOM}@example.test"; do
+    test "$(post "$endpoint" "$(jq -nc --arg email "$target" '{email:$email}')")" = 202
+    jq -e '.accepted==true and (.resetToken // null)==null and (.verificationToken // null)==null' "$scratch/response" >/dev/null
+    scripts/ci/assert-file-excludes.sh 'Npgsql|audit_events|permission denied|INSERT INTO' "$scratch/response"
+    test "$before" = "$(registration_state)"
+  done
+  query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+}
 expire_token_during_wait() {
   local table="$1" id="$2" endpoint="$3" payload="$4" before count
   query "UPDATE $table SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$id';" >/dev/null
@@ -102,7 +114,7 @@ STRATAAI_TEST_COMMAND_TIMEOUT=30 "${compose[@]}" -f scripts/ci/compose.atomic-te
 email="audit-rollback-${RANDOM}-${RANDOM}@example.test"
 registration="$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery",displayName:"Registration audit rollback"}')"
 registration_state() {
-  query "SELECT jsonb_build_object('users',(SELECT count(*) FROM users),'verification',(SELECT count(*) FROM email_verification_tokens),'delivery',(SELECT count(*) FROM identity_delivery_jobs),'audit',(SELECT count(*) FROM audit_events))::text;"
+  query "SELECT jsonb_build_object('users',(SELECT count(*) FROM users),'verification',(SELECT count(*) FROM email_verification_tokens),'reset',(SELECT count(*) FROM password_reset_tokens),'delivery',(SELECT count(*) FROM identity_delivery_jobs),'audit',(SELECT count(*) FROM audit_events))::text;"
 }
 before_registration="$(registration_state)"
 query 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
@@ -161,6 +173,7 @@ curl --fail --silent -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Conten
 
 test "$(post /auth/password/forgot '{"email":"unknown-identity@example.test"}')" = 202
 jq -e '.accepted==true and .resetToken==null' "$scratch/response" >/dev/null
+reject_recovery_audit /auth/password/forgot
 test "$(post /auth/password/forgot "$(jq -nc --arg email "$email" '{email:$email}')")" = 202
 jq -e '.accepted==true and .resetToken==null' "$scratch/response" >/dev/null
 reset_id="$(latest_job RESET_PASSWORD)"
@@ -202,6 +215,7 @@ curl --fail --silent "$fixture/messages" | jq -e --arg key "strataai-identity/re
 email="resend-${RANDOM}-${RANDOM}@example.test"
 test "$(post /auth/register "$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery",displayName:"Resend verification"}')")" = 201
 expired="$(latest_job VERIFY_EMAIL)"
+reject_recovery_audit /auth/verification/resend
 query "UPDATE email_verification_tokens SET expires_at=clock_timestamp()-interval '1 second' WHERE id='$expired';" >/dev/null
 test "$(post /auth/verification/resend '{"email":"unknown-verification@example.test"}')" = 202
 jq -e '.accepted==true and .verificationToken==null' "$scratch/response" >/dev/null

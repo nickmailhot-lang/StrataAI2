@@ -8,6 +8,21 @@ namespace StrataAI.Infrastructure.Identity;
 internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory connections,
     ICommandActorAuthorization actors, ILogger<PostgresIdentityUnitOfWork> logger) : IIdentityUnitOfWork
 {
+    public async Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await connections.ExecuteIdentityCommandAsync(operation, _ => true, cancellationToken);
+        }
+        catch (NpgsqlException exception)
+        {
+            logger.LogWarning("Recovery request rolled back; code {DatabaseCode}. No delivery acknowledgment is claimed.",
+                exception is PostgresException postgres ? postgres.SqlState : "connection_error");
+            return neutralResult;
+        }
+    }
+
     public async Task<IdentityOperation<UserProfile>> ExecuteTokenProofAsync(
         Func<Task<IdentityOperation<UserProfile>>> operation, CancellationToken cancellationToken = default)
     {

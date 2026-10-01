@@ -5,6 +5,14 @@ namespace StrataAI.Infrastructure.Identity;
 internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization actors) : IIdentityUnitOfWork
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
+    public async Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,
+        CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try { return await operation(); }
+        finally { _gate.Release(); }
+    }
+
     public async Task<IdentityOperation<UserProfile>> ExecuteTokenProofAsync(
         Func<Task<IdentityOperation<UserProfile>>> operation, CancellationToken cancellationToken = default)
     {
