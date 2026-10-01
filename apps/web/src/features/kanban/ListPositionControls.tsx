@@ -2,21 +2,22 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import type { BoardSnapshot } from '../../api/workManagement';
 import { apiFetch } from '../../api/apiFetch';
+import type { ListMovePreview } from './listMovePreview';
 
 type List = BoardSnapshot['lists'][number]['list'];
 type Review = { name: string; version: number; before: string };
 type Intent = Review & { key: string };
-type Props = { list: List; snapshot: BoardSnapshot; disabled: boolean; onRefresh: () => void; onBusyChange: (value: boolean) => void };
+type Props = { list: List; snapshot: BoardSnapshot; disabled: boolean; onRefresh: () => void; onBusyChange: (value: boolean) => void; onPreview?: (value?: ListMovePreview) => void };
 
-export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBusyChange }: Props) {
+export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBusyChange, onPreview }: Props) {
   const [review, setReview] = useState<Review>(); const [intent, setIntent] = useState<Intent>();
   const [busy, setBusy] = useState(false); const [blocked, setBlocked] = useState(false); const [notice, setNotice] = useState<string>();
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(true); const action = useRef<HTMLButtonElement>(null);
   const focusRequested = useRef(false);
   useEffect(() => { if (focusRequested.current && !disabled && !busy && !review) { action.current?.focus(); focusRequested.current = false; } }, [disabled, busy, review]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false;
-    if (pending.current) { pending.current.abort(); onBusyChange(false); }
-  }; }, [onBusyChange]);
+    if (pending.current) { pending.current.abort(); onBusyChange(false); onPreview?.(); }
+  }; }, [onBusyChange, onPreview]);
   const neighbors = snapshot.lists.filter(column => column.list.lifecycleState === 'active' && column.list.id !== list.id);
   const admitted = snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && list.lifecycleState === 'active'
     && Number.isSafeInteger(list.version) && Number(list.version) > 0;
@@ -27,6 +28,7 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
     if (pending.current || disabled || !admitted || blocked || changed || !review || (!intent && !positioned)) return;
     const command = intent ?? { ...review, key: crypto.randomUUID() };
     const controller = new AbortController(); pending.current = controller; setBusy(true); onBusyChange(true); setNotice(undefined);
+    if (!intent) onPreview?.({ listId: list.id, before: command.before });
     let abort: (() => void) | undefined; const timer = setTimeout(() => controller.abort(), 15_000);
     try {
       const result = await Promise.race([
@@ -52,7 +54,7 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
       if (mounted.current && pending.current === controller) { setIntent(command); setNotice('The list move could not be confirmed. Retry this same move to recover its acknowledgment.'); onRefresh(); }
     } finally {
       clearTimeout(timer); if (abort) controller.signal.removeEventListener('abort', abort);
-      if (pending.current === controller) { pending.current = undefined; if (mounted.current) { setBusy(false); onBusyChange(false); } }
+      if (pending.current === controller) { pending.current = undefined; if (mounted.current) { setBusy(false); onBusyChange(false); onPreview?.(); } }
     }
   }
   return <Stack spacing={1} sx={{ mt: 1 }}>
@@ -70,7 +72,7 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
         <Button disabled={disabled || busy || !admitted || blocked || changed || (!intent && !positioned)} onClick={() => void move()}>{intent ? 'Retry this list move' : 'Confirm list move'}</Button>
         {!intent && <Button disabled={busy} onClick={close}>Cancel list move</Button>}
         {(blocked || changed) && <Button disabled={busy} onClick={() => { close(); onRefresh(); }}>Check current ordering</Button>}
-        {busy && <Typography role="status">{intent ? 'Checking the original list acknowledgment.' : 'Saving list position.'}</Typography>}
+        {busy && <Typography role="status">{intent ? 'Checking the original list acknowledgment.' : 'Saving list position. Ordering is provisional until confirmed.'}</Typography>}
         {intent && <Typography>Keep this position unchanged until acknowledgment recovery. Later edits may have changed current ordering.</Typography>}
       </>}
   </Stack>;

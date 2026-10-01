@@ -28,14 +28,18 @@ it('submits a reviewed position with the current name/version and a bound key, t
 });
 it('preserves original name/position/version/key after uncertainty and a newer canonical rename', async () => {
   const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost')).mockResolvedValueOnce(reply(ack)); vi.stubGlobal('fetch', fetcher);
-  const view = render(<ListPositionControls {...props} />); await choose();
+  const preview = vi.fn();
+  const view = render(<ListPositionControls {...props} onPreview={preview} />); await choose();
   fireEvent.click(screen.getByRole('button', { name: 'Confirm list move' }));
   await screen.findByRole('button', { name: 'Retry this list move' });
-  view.rerender(<ListPositionControls {...props} list={{ ...list, name: 'Renamed', version: 8 }} />);
+  expect(preview.mock.calls.filter(call => call[0] !== undefined)).toHaveLength(1);
+  expect(preview).toHaveBeenLastCalledWith();
+  view.rerender(<ListPositionControls {...props} onPreview={preview} list={{ ...list, name: 'Renamed', version: 8 }} />);
   expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
   expect(screen.queryByRole('button', { name: 'Cancel list move' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Retry this list move' }));
   await screen.findByText('List move acknowledged. Current ordering is being checked.');
+  expect(preview.mock.calls.filter(call => call[0] !== undefined)).toHaveLength(1);
   expect(fetcher.mock.calls[1][1].body).toBe(fetcher.mock.calls[0][1].body);
   expect(fetcher.mock.calls[1][1].headers.get('Idempotency-Key')).toBe(fetcher.mock.calls[0][1].headers.get('Idempotency-Key'));
 });

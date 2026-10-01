@@ -26,6 +26,7 @@ import {
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardMoveControls } from "./CardMoveControls";
 import { ListPositionControls } from "./ListPositionControls";
+import { previewListMove, type ListMovePreview } from "./listMovePreview";
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
@@ -67,6 +68,7 @@ function BoardContent() {
   const [creation, setCreation] = useState<Creation>();
   const [busy, setBusy] = useState(false);
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
+  const [listPreview, setListPreview] = useState<ListMovePreview>();
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
   const reading = useRef(false);
@@ -408,7 +410,7 @@ function BoardContent() {
           pb: 2,
         }}
       >
-        {previewCardMove(snapshot, movePreview).lists.map((column) => (
+        {previewListMove(previewCardMove(snapshot, movePreview), listPreview).lists.map((column) => (
           <Box
             key={column.list.id}
             component="section"
@@ -420,6 +422,7 @@ function BoardContent() {
             </Typography>
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active" && column.list.lifecycleState === "active" && <ListPositionControls
               list={column.list} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError} onBusyChange={setBusy}
+              onPreview={setListPreview}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             <Stack spacing={1} sx={{ mt: 2 }}>
               {column.cards.map((item) => (

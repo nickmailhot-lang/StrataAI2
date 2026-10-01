@@ -601,6 +601,27 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     await waitFor(() => expect(screen.getByRole('link', { name: 'Inspect roof' })).toHaveFocus());
   });
+  it('shows provisional list order before persistence and restores canonical order after an uncertain result', async () => {
+    const initial = { ...fixture, lists: [{ ...fixture.lists[0], list: { ...fixture.lists[0].list, version: 1 } },
+      { list: { id: 'list-2', name: 'Complete', rank: 'b', lifecycleState: 'active', version: 1 }, cards: [] }] };
+    let failMove: ((reason: Error) => void) | undefined;
+    const fetcher = vi.fn().mockResolvedValueOnce(response(initial))
+      .mockImplementationOnce(() => new Promise<Response>((_, reject) => { failMove = reject; }))
+      .mockResolvedValueOnce(response(initial));
+    vi.stubGlobal('fetch', fetcher); mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Move Complete list' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Position for Complete' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Before Planning' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm list move' }));
+    expect(screen.getAllByRole('heading', { level: 3 }).map(heading => heading.textContent)).toEqual(['Complete', 'Planning']);
+    expect(screen.getByText('Saving list position. Ordering is provisional until confirmed.')).toHaveAttribute('role', 'status');
+    await act(async () => { failMove?.(new Error('Lost response')); });
+    await screen.findByRole('button', { name: 'Retry this list move' });
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
+    expect(screen.getAllByRole('heading', { level: 3 }).map(heading => heading.textContent)).toEqual(['Planning', 'Complete']);
+    expect(screen.getByRole('link', { name: 'Inspect roof' })).toBeVisible();
+    expect(fetcher.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(1);
+  });
   it("clears the previous board while a new organization is loading", async () => {
     const fetcher = vi
       .fn()

@@ -42,3 +42,20 @@ and phone keyboard placement, persisted rank/revision, preserved sibling rank,
 focus recovery and ordering after reload. Their execution remains pending Linux
 CI. Pointer/list drag/drop, provisional list feedback, virtualization, rebalance,
 measured performance and full accessibility acceptance are still incomplete.
+
+## Provisional ordering
+
+The first reviewed submission immediately projects the list into its selected
+position while saving. The projection preserves canonical list/card objects,
+ranks and revisions, and is discarded on completion or unmount. A saving status
+identifies ordering as provisional. Uncertain or rejected results return to
+canonical ordering and read current state; explicit acknowledgment recovery does
+not project a historical position over later edits. Missing/archived positions
+or unavailable movement permission produce no speculation.
+
+Source coverage checks immutable prepend/relative/end projections, denied and
+missing scope, clearing after uncertainty, no projection on historical recovery,
+and Board-level ordering/rollback without an automatic second write. The full
+302-case web suite passes before the final Board integration case; final focused
+control/Board coverage and release CI provide the remaining verification. This
+does not prove measured sub-100ms feedback, drag/drop or complete acceptance.
