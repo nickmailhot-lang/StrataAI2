@@ -2,7 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using StrataAI.Application.Common;
+using StrataAI.Application.Identity;
+using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Identity;
 using Xunit;
 
@@ -10,11 +13,86 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData("")]
+    [InlineData("[]")]
+    [InlineData("{\"key\":null}")]
+    [InlineData("{\"key\":123}")]
+    [InlineData("{\"key\":\"private-invalid-secret\"}")]
+    [InlineData("{\"key\":\"private-invalid-secret\",\"key\":\"duplicate-private-secret\"}")]
+    public void Login_retry_production_configuration_rejects_invalid_rings_without_disclosing_values(string ring)
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> {
+            ["STRATAAI_AUTH_RETRY_CURRENT_KEY"] = "key", ["STRATAAI_AUTH_RETRY_KEYS"] = ring,
+        }).Build();
+        var error = Assert.Throws<InvalidOperationException>(() => services.AddStrataAiIdentity(configuration, new RuntimeDescriptor(RuntimeMode.Production, "test", "test")));
+        Assert.Null(error.InnerException);
+        Assert.DoesNotContain("private-invalid-secret", error.ToString());
+        Assert.DoesNotContain("duplicate-private-secret", error.ToString());
+        Assert.Equal("Production sign-in retry keys require a valid current version and a unique JSON key ring of base64 32-byte secrets.", error.Message);
+    }
+
+    [Fact]
+    public async Task Login_retry_key_is_scoped_to_the_credential_proven_account()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var first = app.CreateClient(); using var second = app.CreateClient();
+        await RegisterAndLogin(first); await RegisterAndLogin(second);
+        var key = Guid.NewGuid().ToString();
+        var firstProfile = await first.GetFromJsonAsync<JsonElement>("/me", ct);
+        var secondProfile = await second.GetFromJsonAsync<JsonElement>("/me", ct);
+        using var one = await Mutate(first, HttpMethod.Post, "/auth/login", new { email = firstProfile.GetProperty("email").GetString(), password = "api-host-correct-horse" }, key);
+        using var two = await Mutate(second, HttpMethod.Post, "/auth/login", new { email = secondProfile.GetProperty("email").GetString(), password = "api-host-correct-horse" }, key);
+        Assert.Equal(HttpStatusCode.OK, one.StatusCode); Assert.Equal(HttpStatusCode.OK, two.StatusCode);
+        Assert.NotEqual(one.Headers.GetValues("Set-Cookie").Single().Split(';')[0], two.Headers.GetValues("Set-Cookie").Single().Split(';')[0]);
+        Assert.Equal(secondProfile.GetProperty("id").GetGuid(), (await two.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("user").GetProperty("id").GetGuid());
+        using var invalid = await Mutate(first, HttpMethod.Post, "/auth/login", new { email = firstProfile.GetProperty("email").GetString(), password = "api-host-correct-horse" }, Guid.Empty.ToString());
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode); Assert.False(invalid.Headers.Contains("Set-Cookie"));
+    }
+
+    [Fact]
+    public async Task Login_retry_uses_retained_original_key_and_fails_closed_when_it_is_removed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        using var old = new IdentityLoginRetrySecrets("old", new Dictionary<string, string> { ["old"] = Convert.ToBase64String(new byte[32]) });
+        using var rotated = new IdentityLoginRetrySecrets("new", new Dictionary<string, string> {
+            ["old"] = Convert.ToBase64String(new byte[32]), ["new"] = Convert.ToBase64String(Enumerable.Repeat((byte)1, 32).ToArray()) });
+        using var removed = new IdentityLoginRetrySecrets("new", new Dictionary<string, string> { ["new"] = Convert.ToBase64String(Enumerable.Repeat((byte)1, 32).ToArray()) });
+        var secrets = new RotatingLoginSecrets(old);
+        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<IIdentityLoginRetrySecrets>(secrets));
+        using var client = app.CreateClient(); await RegisterAndLogin(client);
+        var user = await client.GetFromJsonAsync<JsonElement>("/me", ct);
+        var body = new { email = user.GetProperty("email").GetString(), password = "api-host-correct-horse" };
+        var key = Guid.NewGuid().ToString();
+        using var first = await Mutate(client, HttpMethod.Post, "/auth/login", body, key);
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        var cookie = first.Headers.GetValues("Set-Cookie").Single().Split(';')[0];
+        secrets.Current = rotated;
+        using var retained = await Mutate(client, HttpMethod.Post, "/auth/login", body, key);
+        Assert.Equal(HttpStatusCode.OK, retained.StatusCode);
+        Assert.Equal(cookie, retained.Headers.GetValues("Set-Cookie").Single().Split(';')[0]);
+        secrets.Current = removed;
+        using var denied = await Mutate(client, HttpMethod.Post, "/auth/login", body, key);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, denied.StatusCode);
+        Assert.False(denied.Headers.Contains("Set-Cookie"));
+        Assert.Equal("identity_retry_key_unavailable", (await denied.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+    }
+
+    private sealed class RotatingLoginSecrets(IIdentityLoginRetrySecrets initial) : IIdentityLoginRetrySecrets
+    {
+        public IIdentityLoginRetrySecrets Current { get; set; } = initial;
+        public string CurrentKeyVersion => Current.CurrentKeyVersion;
+        public bool TryDeriveSession(Guid userId, Guid sessionId, string keyVersion, out string token) => Current.TryDeriveSession(userId, sessionId, keyVersion, out token);
+        public bool TryFingerprint(Guid userId, Guid intentKey, string emailNormalized, string password, string keyVersion, out string fingerprint) => Current.TryFingerprint(userId, intentKey, emailNormalized, password, keyVersion, out fingerprint);
+    }
+
     [Fact]
     public async Task Login_retry_denies_an_expired_original_session_without_issuing_a_cookie()
     {
         var ct = TestContext.Current.CancellationToken;
         var clock = new ReceiptTestClock();
+        clock.UtcNow = new DateTimeOffset(clock.UtcNow.UtcTicks / 10 * 10 + 7, TimeSpan.Zero);
         await using var app = new ApiFactory(configureServices: services => services.AddSingleton<IClock>(clock));
         using var client = app.CreateClient();
         await RegisterAndLogin(client);
@@ -23,6 +101,8 @@ public sealed partial class ApiHostTests
         var key = Guid.NewGuid().ToString();
         using var first = await Mutate(client, HttpMethod.Post, "/auth/login", body, key);
         Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        var acknowledgment = await first.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal(0, acknowledgment.GetProperty("sessionExpiresAt").GetDateTimeOffset().UtcTicks % 10);
         clock.UtcNow = clock.UtcNow.AddHours(13);
         using var expired = await Mutate(client, HttpMethod.Post, "/auth/login", body, key);
         Assert.Equal(HttpStatusCode.Conflict, expired.StatusCode);

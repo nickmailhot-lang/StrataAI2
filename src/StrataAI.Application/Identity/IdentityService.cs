@@ -209,7 +209,9 @@ public sealed class IdentityService(
                 || !loginSecrets.TryFingerprint(user.Id, intentKey.Value, normalized, password, loginSecrets.CurrentKeyVersion, out intentFingerprint))
                 return IdentityOperation<LoginOutcome>.Failure("identity_retry_key_unavailable");
         }
-        var now = clock.UtcNow;
+        // PostgreSQL stores microseconds. The first acknowledgment must use the same
+        // expiry precision as durable replay, rather than losing a tick on persistence.
+        var now = new DateTimeOffset(clock.UtcNow.UtcTicks / 10 * 10, TimeSpan.Zero);
         var session = new SessionRecord(
             sessionId,
             user.Id,

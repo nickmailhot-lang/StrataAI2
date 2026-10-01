@@ -6,6 +6,34 @@ import { AuthPage } from './AuthPage';
 describe('PRD-02 authentication UI', () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
+  it('requires an explicit fresh attempt after an expired acknowledgment', async () => {
+    const fetch = vi.fn().mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ code: 'idempotency_key_expired' }), { status: 409 })));
+    vi.stubGlobal('fetch', fetch);
+    render(<MemoryRouter><AuthPage /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await screen.findByRole('button', { name: 'Start a new sign-in attempt' });
+    const first = new Headers((fetch.mock.calls[0][1] as RequestInit).headers).get('Idempotency-Key');
+    fireEvent.click(screen.getByRole('button', { name: 'Start a new sign-in attempt' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    expect(new Headers((fetch.mock.calls[1][1] as RequestInit).headers).get('Idempotency-Key')).not.toBe(first);
+  });
+
+  it('rejects a success acknowledgment for another email', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      user: { id: '11111111-1111-4111-8111-111111111111', email: 'other@example.test' },
+      sessionExpiresAt: new Date(Date.now() + 60_000).toISOString(),
+    }), { status: 200 })));
+    render(<MemoryRouter><AuthPage /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await screen.findByText(/Retry with the same details/);
+    expect(screen.getByRole('heading', { name: 'StrataAI2' })).toBeInTheDocument();
+  });
+
   it('bounds a stalled response body and preserves the same retry key', async () => {
     vi.useFakeTimers();
     const fetch = vi.fn().mockResolvedValue({ ok: true, json: () => new Promise(() => {}) });
