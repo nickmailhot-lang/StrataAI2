@@ -190,4 +190,20 @@ for width in 1280 390; do
   cat "$scratch/signup-next" > "$signup_fixtures"
 done
 printf 'STRATAAI_E2E_INVITATION_SIGNUP_FIXTURES=%s\n' "$signup_fixtures" >> "$GITHUB_ENV"
+# Verified matching recipients and pending Board proofs for mandatory browser review.
+# Administrative target attachment/verification proves consumers, not public issuance/mail.
+board_link_fixtures="$RUNNER_TEMP/board-invitation-link-fixtures.json"
+printf '[]' > "$board_link_fixtures"; chmod 600 "$board_link_fixtures"
+for width in 1280 390; do
+ surface=INTERNAL; role=MEMBER; board_role=ADMIN; if test "$width" = 390; then board_role=MEMBER; fi
+ email="board-link-browser-${width}-${RANDOM}-${RANDOM}@example.test"; issue
+ admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='$board_role' WHERE id='$invitation_id';" >/dev/null
+ test "$(register)" = 201
+ board_link_user="$(jq -r '.user.id' "$scratch/response")"
+ admin "UPDATE users SET email_verified=true WHERE id='$board_link_user';" >/dev/null
+ jq --argjson width "$width" --arg email "$email" --arg token "$token" --arg id "$invitation_id" --arg org "$org" --arg board "$signup_board" --arg role "$board_role" \
+  '. + [{width:$width,email:$email,password:"signup-correct-horse-battery",token:$token,id:$id,organizationId:$org,organizationName:"Closed invitation signup",boardId:$board,boardName:"Board signup",boardRole:$role}]' "$board_link_fixtures" > "$scratch/board-link-next"
+ cat "$scratch/board-link-next" > "$board_link_fixtures"
+done
+printf 'STRATAAI_E2E_BOARD_INVITATION_LINK_FIXTURES=%s\n' "$board_link_fixtures" >> "$GITHUB_ENV"
 echo 'Exact-image invitation signup: closed policy, both surfaces, one connection, identical concurrent receipts, atomic rollback, no premature access and fresh post-wait issuer/expiry admission passed.'

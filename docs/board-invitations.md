@@ -122,3 +122,18 @@ those paths. Server-side discovery still intentionally excludes Board targets;
 this UI integration does not prove recipient discovery or enable public issuance.
 The next backend discovery increment must authorize current canonical targets
 without reversing the Organization-before-account command lock order.
+
+Required release browser scenarios now include Board proof review at 1280px ADMIN
+and 390px MEMBER. The restricted-PostgreSQL signup step prepares isolated verified
+recipients and pending canonical Board targets in a mode-600 runner fixture file.
+Keyboard-only review shows Organization/Board/role before acceptance; an actual
+private Board read is denied before acceptance and allowed afterward. Dropping the
+first successful natural-ID acknowledgment exercises exact-target retry, and tests
+assert proof scrubbing, no persistent browser proof storage and no horizontal
+mobile overflow. Missing fixture preparation fails release CI. Local Demo runs
+without release fixtures skip only these two scenarios while public Board issuance
+is disabled; release CI never takes that skip branch. Existing Organization/Portal
+browser scenarios remain present. Shell syntax and collection of both scenarios
+were verified locally; actual execution requires CI release images/PostgreSQL and
+remains pending. Administrative verification/target attachment is not evidence of
+public issuance or actual Board mail delivery.
