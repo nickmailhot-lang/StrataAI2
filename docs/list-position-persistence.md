@@ -90,5 +90,13 @@ require zero writes/unchanged persisted lists, then complete a keyboard drop and
 check the moved revision, unchanged sibling rank and reload. These cases collect;
 their runtime execution and assistive-technology behavior remain unverified.
 
+Drag accessibility uses active list names for pickup, available before/end
+positions, cancellation and drop requests. Instructions identify Space/Enter,
+Left/Right and Escape. Drop announcements explicitly request confirmation from
+the move status; they do not claim server persistence. Unknown/archived targets
+are not named. Two source cases pass, and both release browser cases require
+pickup/cancellation announcement text to be attached. Actual screen-reader
+interaction and executed browser evidence remain pending.
+
 API usage follows the installed types and the official
 [dnd-kit draggable guidance](https://dndkit.com/legacy/api-documentation/draggable/).

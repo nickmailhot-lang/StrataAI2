@@ -52,7 +52,10 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const beforeKeyboard = await (await context.request.get(`/boards/${board}`)).json();
     let moveWrites = 0;
     page.on('request', request => { if (request.method() === 'PATCH' && request.url().includes('/lists/')) moveWrites++; });
-    await dragHandle.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Escape');
+    await dragHandle.focus(); await page.keyboard.press('Space');
+    await expect(page.getByText(`Dragging ${keyboardName} list. Use Left and Right to choose a position.`, { exact: true })).toBeAttached();
+    await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Escape');
+    await expect(page.getByText(`Drag cancelled. ${keyboardName} list was not moved.`, { exact: true })).toBeAttached();
     expect(moveWrites).toBe(0);
     expect((await (await context.request.get(`/boards/${board}`)).json()).lists).toEqual(beforeKeyboard.lists);
     await dragHandle.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Space');

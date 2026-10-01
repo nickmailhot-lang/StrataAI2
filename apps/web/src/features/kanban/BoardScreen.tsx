@@ -30,6 +30,7 @@ import { previewListMove, type ListMovePreview } from "./listMovePreview";
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
 import { listKeyboardCoordinates } from './listKeyboardCoordinates';
+import { listDragAnnouncements, listDragInstructions } from './listDragAccessibility';
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
@@ -410,7 +411,8 @@ function BoardContent() {
           No lists yet.{editable && " Add a list to begin."}
         </Typography>
       )}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={event => {
+      <DndContext sensors={sensors} collisionDetection={closestCenter}
+        accessibility={{ announcements: listDragAnnouncements(snapshot), screenReaderInstructions: listDragInstructions }} onDragStart={event => {
         const column = snapshot.lists.find(value => value.list.id === event.active.id);
         if (column && Number.isSafeInteger(column.list.version)) dragList.current = { listId: column.list.id, name: column.list.name, version: column.list.version! };
       }} onDragCancel={() => { dragList.current = undefined; }} onDragEnd={event => {
