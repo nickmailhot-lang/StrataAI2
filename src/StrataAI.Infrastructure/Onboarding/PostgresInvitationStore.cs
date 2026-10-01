@@ -186,7 +186,6 @@ internal sealed class PostgresInvitationStore(
         {
             await using var route = new NpgsqlCommand("""
                 SELECT tenant_id FROM invitation_routes WHERE invitation_id=@id AND email_normalized=@email
-                  AND target_board_id IS NULL
                   AND (accepted_at IS NULL OR accepted_by_user_id=@actor) AND revoked_at IS NULL AND expires_at>clock_timestamp();
                 """, routing.Connection, routing.Transaction);
             route.Parameters.AddWithValue("id", invitationId); route.Parameters.AddWithValue("email", emailNormalized);
@@ -199,7 +198,7 @@ internal sealed class PostgresInvitationStore(
             SELECT id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
               created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role FROM invitations
             WHERE id=@id AND email_normalized=@email AND (accepted_at IS NULL OR accepted_by_user_id=@actor) AND revoked_at IS NULL
-              AND expires_at>clock_timestamp();
+              AND expires_at>clock_timestamp() FOR SHARE;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("id", invitationId); command.Parameters.AddWithValue("email", emailNormalized);
         command.Parameters.AddWithValue("actor", actorUserId);
@@ -307,7 +306,7 @@ internal sealed class PostgresInvitationStore(
                 : null;
         }
 
-        if (invitation is null || invitation.BoardTarget is not null ||
+        if (invitation is null ||
             invitation.EmailNormalized != emailNormalized)
         {
             return new InvitationAcceptStoreResult(
@@ -316,6 +315,18 @@ internal sealed class PostgresInvitationStore(
                 null);
         }
 
+        var preserveBoardAdmin = false;
+        if (invitation.BoardTarget is { } target)
+        {
+            if (!connectionFactory.HasCommandScope(invitation.OrganizationId))
+                return new(false, "invalid_or_expired_invitation", null);
+            await using var board = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@tenant AND id=@board AND lifecycle_state='ACTIVE' FOR UPDATE;", session.Connection, session.Transaction);
+            board.Parameters.AddWithValue("tenant", invitation.OrganizationId); board.Parameters.AddWithValue("board", target.BoardId);
+            if (await board.ExecuteScalarAsync(cancellationToken) is null) return new(false, "invalid_or_expired_invitation", null);
+            await using var current = new NpgsqlCommand("SELECT status='ACTIVE' FROM organization_members WHERE tenant_id=@tenant AND user_id=@user FOR SHARE;", session.Connection, session.Transaction);
+            current.Parameters.AddWithValue("tenant", invitation.OrganizationId); current.Parameters.AddWithValue("user", userId);
+            preserveBoardAdmin = await current.ExecuteScalarAsync(cancellationToken) is true;
+        }
         if (invitation.Surface == InvitationSurface.Internal)
         {
             await using var membership = new NpgsqlCommand(
@@ -328,7 +339,8 @@ internal sealed class PostgresInvitationStore(
                     @accepted_at, @accepted_at, 1)
                 ON CONFLICT (tenant_id, user_id)
                 DO UPDATE SET
-                    role = EXCLUDED.role,
+                    role = CASE WHEN @board_invitation AND organization_members.status='ACTIVE'
+                        THEN organization_members.role ELSE EXCLUDED.role END,
                     status = 'ACTIVE',
                     updated_at = EXCLUDED.updated_at,
                     version = organization_members.version + 1;
@@ -345,6 +357,7 @@ internal sealed class PostgresInvitationStore(
                 "role",
                 invitation.TargetRole);
             membership.Parameters.AddWithValue("accepted_at", acceptedAt);
+            membership.Parameters.AddWithValue("board_invitation", invitation.BoardTarget is not null);
             await membership.ExecuteNonQueryAsync(cancellationToken);
         }
         else
@@ -378,6 +391,22 @@ internal sealed class PostgresInvitationStore(
             await portal.ExecuteNonQueryAsync(cancellationToken);
         }
 
+        if (invitation.BoardTarget is { } boardTarget)
+        {
+            await using var grant = new NpgsqlCommand("""
+                INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at,version)
+                VALUES(@id,@tenant,@board,@user,@role,'ACTIVE',@now,@now,1)
+                ON CONFLICT(board_id,user_id) DO UPDATE SET
+                    role=CASE WHEN @preserve AND board_members.status='ACTIVE' AND board_members.role='ADMIN'
+                        THEN 'ADMIN' ELSE EXCLUDED.role END,
+                    status='ACTIVE',updated_at=EXCLUDED.updated_at,version=board_members.version+1;
+                """, session.Connection, session.Transaction);
+            grant.Parameters.AddWithValue("id", Guid.NewGuid()); grant.Parameters.AddWithValue("tenant", invitation.OrganizationId);
+            grant.Parameters.AddWithValue("board", boardTarget.BoardId); grant.Parameters.AddWithValue("user", userId);
+            grant.Parameters.AddWithValue("role", boardTarget.Role == StrataAI.Application.WorkManagement.BoardRole.Admin ? "ADMIN" : "MEMBER");
+            grant.Parameters.AddWithValue("preserve", preserveBoardAdmin); grant.Parameters.AddWithValue("now", acceptedAt);
+            await grant.ExecuteNonQueryAsync(cancellationToken);
+        }
         await using (var consume = new NpgsqlCommand(
             """
             UPDATE invitations
@@ -459,7 +488,6 @@ internal sealed class PostgresInvitationStore(
             SELECT tenant_id
             FROM invitation_routes
             WHERE token_hash = @token_hash
-              AND target_board_id IS NULL
               AND accepted_at IS NULL
               AND revoked_at IS NULL
               AND expires_at > clock_timestamp();

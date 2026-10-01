@@ -4,6 +4,7 @@ using System.Text.Json;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
+using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Application.Onboarding;
 
@@ -14,6 +15,7 @@ public sealed class InvitationService(
     ISecureTokenService tokens,
     IClock clock,
     IOrganizationUnitOfWork unitOfWork, IIdentityUnitOfWork identityCommands, ICommandActorAuthorization actors,
+    IWorkManagementStore work, IdentityPolicy policy, IWorkEventStore events,
     IInvitationMailPublisher? mail = null) : IInvitationService
 {
     private static readonly TimeSpan InvitationLifetime = TimeSpan.FromDays(7);
@@ -82,10 +84,10 @@ public sealed class InvitationService(
         if (user is null || user.Status != AccountStatus.Active || !user.EmailVerified)
             return InvitationOperation<AcceptedInvitation>.Failure("account_unavailable");
         var invitation = await invitationStore.FindActiveByTokenHashAsync(tokens.Hash(rawToken), clock.UtcNow, cancellationToken);
-        if (invitation is null || invitation.BoardTarget is not null || invitation.EmailNormalized != user.EmailNormalized)
+        if (invitation is null || invitation.EmailNormalized != user.EmailNormalized)
             return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
         var result = await ExecuteAsync(invitation.OrganizationId, actorUserId, invitation.CreatedByUserId,
-            () => AcceptCoreAsync(actorUserId, tokens.Hash(rawToken), null, correlationId, cancellationToken), cancellationToken);
+            () => AcceptCoreAsync(actorUserId, tokens.Hash(rawToken), null, invitation, correlationId, cancellationToken), cancellationToken);
         return result.ErrorCode == "organization_not_found"
             ? InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation") : result;
     }
@@ -99,9 +101,9 @@ public sealed class InvitationService(
             return InvitationOperation<AcceptedInvitation>.Failure("account_unavailable");
         // Routing is a hint only. Tenant admission and the exact verified email are checked again after locks.
         var invitation = await invitationStore.FindActiveByIdForEmailAsync(invitationId, actorUserId, user.EmailNormalized, clock.UtcNow, cancellationToken);
-        if (invitation is null || invitation.BoardTarget is not null) return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
+        if (invitation is null) return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
         var result = await ExecuteAsync(invitation.OrganizationId, actorUserId, invitation.CreatedByUserId,
-            () => AcceptCoreAsync(actorUserId, null, invitationId, correlationId, cancellationToken), cancellationToken);
+            () => AcceptCoreAsync(actorUserId, null, invitationId, invitation, correlationId, cancellationToken), cancellationToken);
         return result.ErrorCode == "organization_not_found"
             ? InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation") : result;
     }
@@ -237,6 +239,7 @@ public sealed class InvitationService(
         Guid actorUserId,
         string? tokenHash,
         Guid? invitationId,
+        InvitationRecord route,
         string correlationId,
         CancellationToken cancellationToken = default)
     {
@@ -246,6 +249,9 @@ public sealed class InvitationService(
                 "invalid_or_expired_invitation");
         }
 
+        if (route.BoardTarget is { } routedTarget
+            && !await work.AcquireCommandScopeAsync(route.OrganizationId, route.CreatedByUserId, routedTarget.BoardId, cancellationToken))
+            return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
         var user = await identityStore.FindUserByIdAsync(
             actorUserId,
             cancellationToken);
@@ -262,7 +268,8 @@ public sealed class InvitationService(
             ? await invitationStore.FindActiveByIdForEmailAsync(id, actorUserId, user.EmailNormalized, clock.UtcNow, cancellationToken)
             : await invitationStore.FindActiveByTokenHashAsync(tokenHash!, clock.UtcNow, cancellationToken);
 
-        if (invitation is null || invitation.BoardTarget is not null ||
+        if (invitation is null || invitation.Id != route.Id || invitation.OrganizationId != route.OrganizationId
+            || invitation.CreatedByUserId != route.CreatedByUserId || invitation.BoardTarget != route.BoardTarget ||
             !string.Equals(
                 invitation.EmailNormalized,
                 user.EmailNormalized,
@@ -274,7 +281,20 @@ public sealed class InvitationService(
 
         var issuerAccount = await identityStore.FindUserByIdAsync(invitation.CreatedByUserId, cancellationToken);
         var issuer = await organizationStore.FindMembershipAsync(invitation.OrganizationId, invitation.CreatedByUserId, cancellationToken);
-        if (issuerAccount is not { Status: AccountStatus.Active } ||
+        BoardRecord? targetBoard = null;
+        if (invitation.BoardTarget is { } target)
+        {
+            targetBoard = await work.FindBoardAsync(target.BoardId, cancellationToken);
+            var organization = await organizationStore.FindOrganizationAsync(invitation.OrganizationId, cancellationToken);
+            var boardIssuer = await work.FindBoardMemberAsync(target.BoardId, invitation.CreatedByUserId, cancellationToken);
+            var recipientMembership = await organizationStore.FindMembershipAsync(invitation.OrganizationId, actorUserId, cancellationToken);
+            if (targetBoard is null || organization is null || issuerAccount is null
+                || invitation.Surface != InvitationSurface.Internal || invitation.TargetRole != "MEMBER"
+                || !BoardInvitationPolicy.CanIssue(organization, targetBoard, issuerAccount, issuer, boardIssuer,
+                    user, recipientMembership, target.Role, policy.RequireVerifiedEmail))
+                return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
+        }
+        else if (issuerAccount is not { Status: AccountStatus.Active } ||
             issuer is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin } ||
             (invitation.Surface == InvitationSurface.Internal && invitation.TargetRole == "OWNER" && issuer.Role != OrganizationRole.Owner))
             return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
@@ -285,15 +305,17 @@ public sealed class InvitationService(
         if (invitation.AcceptedAt is not null)
             return invitationId is not null && invitation.AcceptedByUserId == actorUserId
                 ? InvitationOperation<AcceptedInvitation>.Success(new AcceptedInvitation(invitation.Id, invitation.OrganizationId,
-                    invitation.Surface, invitation.TargetRole))
+                    invitation.Surface, invitation.TargetRole, invitation.BoardTarget))
                 : InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
-        if (invitation.Surface == InvitationSurface.Internal && invitation.TargetRole != "OWNER")
+        if (invitation.BoardTarget is null && invitation.Surface == InvitationSurface.Internal && invitation.TargetRole != "OWNER")
         {
             var existing = await organizationStore.FindMembershipAsync(invitation.OrganizationId, actorUserId, cancellationToken);
             if (existing is { Active: true, Role: OrganizationRole.Owner })
                 return InvitationOperation<AcceptedInvitation>.Failure("ownership_change_requires_confirmation");
         }
 
+        var priorBoardMembership = invitation.BoardTarget is { } beforeTarget
+            ? await work.FindBoardMemberAsync(beforeTarget.BoardId, actorUserId, cancellationToken) : null;
         var result = await invitationStore.AcceptAsync(
             invitation.TokenHash,
             actorUserId,
@@ -319,12 +341,29 @@ public sealed class InvitationService(
             correlationId,
             cancellationToken);
 
+        if (targetBoard is not null)
+        {
+            var currentMembership = await work.FindBoardMemberAsync(targetBoard.Id, actorUserId, cancellationToken);
+            if (currentMembership is not { Active: true })
+                return InvitationOperation<AcceptedInvitation>.Failure("invitation_storage_unavailable");
+            var memberEvent = priorBoardMembership is not { Active: true } ? "BOARD_MEMBER_ADDED"
+                : priorBoardMembership.Role != currentMembership.Role ? "BOARD_MEMBER_ROLE_CHANGED" : null;
+            if (memberEvent is not null)
+            {
+                await organizationStore.AppendAuditAsync(invitation.OrganizationId, actorUserId, memberEvent,
+                    "Board", targetBoard.Id, correlationId, cancellationToken);
+                await events.AppendAsync(new(Guid.NewGuid(), invitation.OrganizationId, targetBoard.Id, actorUserId,
+                    memberEvent, "Board", targetBoard.Id, targetBoard.Version, correlationId, clock.UtcNow), cancellationToken);
+            }
+            await events.AppendAsync(new(Guid.NewGuid(), invitation.OrganizationId, targetBoard.Id, actorUserId,
+                "INVITATION_ACCEPTED", "Board", targetBoard.Id, targetBoard.Version, correlationId, clock.UtcNow), cancellationToken);
+        }
         return InvitationOperation<AcceptedInvitation>.Success(
             new AcceptedInvitation(
                 result.Invitation.Id,
                 result.Invitation.OrganizationId,
                 result.Invitation.Surface,
-                result.Invitation.TargetRole));
+                result.Invitation.TargetRole, result.Invitation.BoardTarget));
     }
 
     private async Task<InvitationOperation<bool>> RevokeCoreAsync(

@@ -10,9 +10,9 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     // PRD-05/60: upgrading target persistence must not silently turn Board
-    // invitations into Organization invitations while consumers are staged.
+    // invitations with missing Boards into Organization invitations.
     [Fact]
-    public async Task Unsupported_Board_target_never_grants_Organization_access_or_signup_proof()
+    public async Task Missing_Board_target_never_grants_Organization_access_or_signup_proof()
     {
         var ct = TestContext.Current.CancellationToken;
         await using var app = new ApiFactory();

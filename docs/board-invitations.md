@@ -25,7 +25,7 @@ invalid Board roles and Organization OWNER/ADMIN enrollment through this target.
 Routing copies both fields, and accepted target attribution is immutable. The
 PostgreSQL adapter round-trips the target, including creation retry receipts.
 
-Board-target publication, discovery, recipient proof review and acceptance remain
+Board-target publication, discovery and recipient proof review remain
 unavailable while consumers are upgraded; mail snapshots missing the exact
 canonical Board target are unusable instead of sending an ordinary Organization
 envelope. Migration 026 binds optional Board ID/role on protected mail snapshots
@@ -37,7 +37,7 @@ exact target-role equality without granting broad identity/membership reads.
 Required PostgreSQL fixtures verify target integrity,
 accepted-role immutability, snapshot mismatch, Board archive, issuer removal or
 demotion, and recipient suspension, verification or membership removal. A host case verifies that a
-staged Board target cannot produce an Organization grant or registration proof.
+missing Board target cannot produce an Organization grant or registration proof.
 
 `BoardInvitationService.CreateAsync` now consumes this policy and target storage
 inside the existing Organization command transaction. It re-reads the real Board
@@ -68,12 +68,33 @@ disposable administrative SQL to test this consumer; it does not prove public Bo
 invitation creation or actual Board invitation-mail delivery. Execution evidence
 for this increment is pending CI.
 
-These increments contain policy, persistence, creation and signup-proof support. They are not wired
+Explicit acceptance now supports a verified matching recipient through body proof
+or natural invitation ID. The Organization root locks current issuer membership and
+the actual Board before re-reading the unchanged canonical target. Current Board
+policy runs again before grants. PostgreSQL atomically consumes the invitation,
+enrolls Organization MEMBER where authorized, grants the target Board role, and
+writes audit/Board events/outbox. Existing active Organization roles and active Board
+ADMIN grants are preserved; privileges attached to a removed Organization membership
+are not revived. `BOARD_MEMBER_ADDED`/`BOARD_MEMBER_ROLE_CHANGED` fire only for the
+actual membership change, with a content-free `INVITATION_ACCEPTED` invalidation.
+
+The acceptance acknowledgment includes the bound Board ID/role and no bearer.
+Body proof is single use; natural-ID retry acknowledges the original acceptance
+without restoring later-removed Board membership or repeating events. Ten host
+cases exercise both roles, actual authenticated body/natural-ID routes, preservation,
+removed historical roles, archive and current issuer/recipient revocation. Required
+exact-image cases cover Board/Organization grant, consume, audit/event/outbox rollback,
+role preservation, single use and retry after membership removal. These consumer
+fixtures use administratively attached targets; public issuance, actual Board mail,
+recipient discovery/review and MUI remain separate integration requirements. Execution
+of the new acceptance cases is pending CI. Demo storage retains its documented lack
+of cross-store rollback; production atomicity evidence must come from PostgreSQL.
+
+These increments contain policy, persistence, creation, signup and acceptance support. They are not wired
 to a public Board invitation creation endpoint or recipient preview,
-acceptance, or Worker delivery. Existing Organization/Portal behavior is unchanged.
+or Board invitation Worker delivery. Existing Organization/Portal behavior is unchanged.
 The next integration must consume the tenant-bound Board target and add immutable mail
 snapshots; enforce the same current authority in creation, discovery, proof review,
-signup and acceptance; atomically grant Board membership with audit/events and retry
-receipts; and provide MUI review with desktop/mobile keyboard and exact-image CI
+signup and acceptance; complete recipient discovery/review; and provide MUI review with desktop/mobile keyboard and exact-image CI
 coverage. Board-target invitations must remain unavailable until these consumers
 agree. Neither PRD is complete or eligible for closure at this stage.

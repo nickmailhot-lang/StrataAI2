@@ -7,7 +7,7 @@ admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X 
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
-  admin 'GRANT INSERT ON users,audit_events,identity_events,identity_registration_replays TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON users,audit_events,identity_events,identity_registration_replays,board_members,work_events,background_jobs TO strataai_api_runtime;' >/dev/null
   if test -n "${org:-}"; then admin "UPDATE organization_members SET role='OWNER' WHERE tenant_id='$org' AND user_id='$owner_id';" >/dev/null; fi
   docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api >/dev/null
   rm -rf "$scratch"
@@ -96,6 +96,16 @@ test "$(cat "$scratch/expiry-status")" = 400; test "$before" = "$(state)"
 # the public Board invitation creation endpoint is a separate integration.
 test "$(owner_post /boards "$(jq -nc --arg org "$org" '{organizationId:$org,name:"Board signup",visibility:"PRIVATE"}')")" = 201
 signup_board="$(jq -r '.id' "$scratch/response")"
+board_accept() { curl --max-time 60 --silent --show-error -b "$scratch/board.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+ -d "$(jq -nc --arg token "$token" '{token:$token}')" -o "$scratch/response" -w '%{http_code}' "$base/invitations/accept"; }
+board_accept_state() { admin "SELECT jsonb_build_object(
+ 'organization',(SELECT to_jsonb(m) FROM organization_members m WHERE tenant_id='$org' AND user_id='$board_recipient'),
+ 'board',(SELECT to_jsonb(m) FROM board_members m WHERE board_id='$signup_board' AND user_id='$board_recipient'),
+ 'accepted',(SELECT jsonb_build_array(accepted_at,accepted_by_user_id) FROM invitations WHERE id='$invitation_id'),
+ 'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
+ 'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org' AND board_id='$signup_board'),
+ 'stream',(SELECT last_sequence FROM work_event_streams WHERE tenant_id='$org' AND board_id='$signup_board'),
+ 'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text;"; }
 for board_role in ADMIN MEMBER; do
  surface=INTERNAL; role=MEMBER; email="board-signup-${board_role,,}-${RANDOM}-${RANDOM}@example.test"; issue
  admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='$board_role' WHERE id='$invitation_id' AND tenant_id='$org';" >/dev/null
@@ -111,6 +121,42 @@ for board_role in ADMIN MEMBER; do
  admin "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='$signup_board';" >/dev/null
  test "$(register)" = 400
  admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$signup_board';" >/dev/null
+ # Verification is an explicit disposable administrative fixture here, not
+ # evidence of actual invitation/verification transport through the Worker.
+ board_recipient="$(jq -r '.user.id' "$scratch/board-ack")"
+ admin "UPDATE users SET email_verified=true WHERE id='$board_recipient';" >/dev/null
+ curl --fail --silent --show-error -c "$scratch/board.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -d "$(jq '{email,password}' <<< "$body")" "$base/auth/login" >/dev/null
+ before_accept="$(board_accept_state)"
+ for denied in board_members audit_events work_events background_jobs; do
+  admin "REVOKE INSERT ON $denied FROM strataai_api_runtime;" >/dev/null
+  test "$(board_accept)" = 503; test "$before_accept" = "$(board_accept_state)"
+  admin "GRANT INSERT ON $denied TO strataai_api_runtime;" >/dev/null
+ done
+ test "$(board_accept)" = 200
+ jq -e --arg board "$signup_board" --arg role "$board_role" '.boardTarget.boardId==$board and .boardTarget.role==$role' "$scratch/response" >/dev/null
+ scripts/ci/assert-file-excludes.sh "$token|invitationToken|tokenHash" "$scratch/response"
+ cp "$scratch/response" "$scratch/board-accepted"
+ test "$(admin "SELECT count(*) FROM board_members WHERE tenant_id='$org' AND board_id='$signup_board' AND user_id='$board_recipient' AND status='ACTIVE' AND role='$board_role';")" = 1
+ test "$(board_accept)" = 400
+ if test "$board_role" = ADMIN; then
+  # A MEMBER invitation adds access; it cannot demote a current Organization
+  # owner or active Board admin through the invitation acceptance path.
+  admin "UPDATE organization_members SET role='OWNER' WHERE tenant_id='$org' AND user_id='$board_recipient';" >/dev/null
+  issue; admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='MEMBER' WHERE id='$invitation_id';" >/dev/null
+  test "$(board_accept)" = 200; cp "$scratch/response" "$scratch/board-accepted"
+  test "$(admin "SELECT role FROM organization_members WHERE tenant_id='$org' AND user_id='$board_recipient';")" = OWNER
+  test "$(admin "SELECT role FROM board_members WHERE board_id='$signup_board' AND user_id='$board_recipient';")" = ADMIN
+ fi
+ status="$(curl --silent --show-error -b "$scratch/board.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{}' \
+  -o "$scratch/response" -w '%{http_code}' "$base/me/invitations/$invitation_id/accept")"
+ test "$status" = 200; cmp "$scratch/board-accepted" "$scratch/response"
+ test "$(curl --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -X DELETE \
+  -o "$scratch/response" -w '%{http_code}' "$base/boards/$signup_board/members/$board_recipient")" = 204
+ removed_state="$(board_accept_state)"
+ test "$(curl --silent --show-error -b "$scratch/board.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{}' \
+  -o "$scratch/response" -w '%{http_code}' "$base/me/invitations/$invitation_id/accept")" = 200
+ test "$removed_state" = "$(board_accept_state)"
 done
 # A Board archive committed during the real Board lock wait must reject signup
 # before any account/verification/receipt mutation, despite the earlier route hint.
@@ -128,7 +174,7 @@ printf "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='%s'; COMMIT;\n\\q
 exec 3>&-; wait "$gate_pid"; gate_pid=''; wait "$pending"; pids=()
 test "$(cat "$scratch/board-wait-status")" = 400; test "$before" = "$(state)"
 admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$signup_board';" >/dev/null
-echo 'Exact-image Board signup proof: both roles, audit rollback, repeat acknowledgment, no early grants, archive replay denial and fresh post-Board-wait admission passed.'
+echo 'Exact-image Board invitation consumers: both roles, signup/acceptance rollback, no early grants, role preservation, one-use proof, non-restoring retry and fresh post-Board-wait signup admission passed.'
 test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"
 signup_fixtures="$RUNNER_TEMP/invitation-signup-fixtures.json"
 printf '[]' > "$signup_fixtures"; chmod 600 "$signup_fixtures"

@@ -144,7 +144,7 @@ public static class InvitationEndpoints
             var result = await service.AcceptAsync(userId.Value, request.Token, context.TraceIdentifier, cancellationToken);
             return result.Succeeded && result.Value is not null
                 ? Results.Ok(new AcceptInvitationResponse(result.Value.InvitationId, result.Value.OrganizationId,
-                    result.Value.Surface.ToString().ToUpperInvariant(), result.Value.TargetRole))
+                    result.Value.Surface.ToString().ToUpperInvariant(), result.Value.TargetRole, result.Value.BoardTarget))
                 : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().RequireRateLimiting("invitation");
 
@@ -178,7 +178,7 @@ public static class InvitationEndpoints
                             result.Value.InvitationId,
                             result.Value.OrganizationId,
                             result.Value.Surface.ToString().ToUpperInvariant(),
-                            result.Value.TargetRole));
+                            result.Value.TargetRole, result.Value.BoardTarget));
                 })
             .RequireAuthorization().RequireRateLimiting("invitation");
 

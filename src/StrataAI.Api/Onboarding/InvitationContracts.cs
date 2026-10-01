@@ -20,4 +20,5 @@ public sealed record AcceptInvitationResponse(
     Guid InvitationId,
     Guid OrganizationId,
     string Surface,
-    string TargetRole);
+    string TargetRole,
+    StrataAI.Application.Onboarding.BoardInvitationTarget? BoardTarget = null);

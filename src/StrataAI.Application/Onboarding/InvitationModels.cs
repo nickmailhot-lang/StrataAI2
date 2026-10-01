@@ -45,7 +45,8 @@ public sealed record AcceptedInvitation(
     Guid InvitationId,
     Guid OrganizationId,
     InvitationSurface Surface,
-    string TargetRole);
+    string TargetRole,
+    BoardInvitationTarget? BoardTarget = null);
 
 public sealed record InvitationOperation<T>(
     bool Succeeded,

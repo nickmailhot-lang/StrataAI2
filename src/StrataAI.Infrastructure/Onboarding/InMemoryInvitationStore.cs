@@ -1,11 +1,12 @@
 using StrataAI.Application.Onboarding;
 using StrataAI.Application.Common;
 using StrataAI.Application.Organizations;
+using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.Onboarding;
 
 internal sealed class InMemoryInvitationStore(
-    IOrganizationStore organizationStore, IClock clock) : IInvitationStore, IInvitationHistoryStore
+    IOrganizationStore organizationStore, IClock clock, IWorkManagementStore work) : IInvitationStore, IInvitationHistoryStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<string, InvitationRecord> _byToken =
@@ -88,7 +89,7 @@ internal sealed class InMemoryInvitationStore(
     {
         lock (_sync)
         {
-            return Task.FromResult(_byToken.Values.FirstOrDefault(i => i.BoardTarget is null && i.Id == invitationId && i.EmailNormalized == emailNormalized
+            return Task.FromResult(_byToken.Values.FirstOrDefault(i => i.Id == invitationId && i.EmailNormalized == emailNormalized
                 && (i.AcceptedAt is null || i.AcceptedByUserId == actorUserId) && i.RevokedAt is null && i.ExpiresAt > clock.UtcNow));
         }
     }
@@ -120,11 +121,19 @@ internal sealed class InMemoryInvitationStore(
         CancellationToken cancellationToken = default)
     {
         InvitationRecord invitation;
+        var candidate = await FindActiveByTokenHashAsync(tokenHash, clock.UtcNow, cancellationToken);
+        if (candidate?.BoardTarget is { } target)
+        {
+            var board = await work.FindBoardAsync(target.BoardId, cancellationToken);
+            if (board is not { LifecycleState: BoardLifecycleState.Active } || board.OrganizationId != candidate.OrganizationId
+                || candidate.Surface != InvitationSurface.Internal || candidate.TargetRole != "MEMBER" || !Enum.IsDefined(target.Role))
+                return new(false, "invalid_or_expired_invitation", null);
+        }
 
         lock (_sync)
         {
             if (!_byToken.TryGetValue(tokenHash, out invitation!) ||
-                invitation.BoardTarget is not null || invitation.AcceptedAt is not null ||
+                invitation.AcceptedAt is not null ||
                 invitation.RevokedAt is not null ||
                 invitation.ExpiresAt <= clock.UtcNow ||
                 invitation.EmailNormalized != emailNormalized)
@@ -139,12 +148,14 @@ internal sealed class InMemoryInvitationStore(
             _byToken[tokenHash] = invitation;
         }
 
+        var existingMembership = invitation.BoardTarget is not null
+            ? await organizationStore.FindMembershipAsync(invitation.OrganizationId, userId, cancellationToken) : null;
         if (invitation.Surface == InvitationSurface.Internal)
         {
             await organizationStore.AddOrRestoreMemberAsync(
                 invitation.OrganizationId,
                 userId,
-                ParseRole(invitation.TargetRole),
+                existingMembership is { Active: true } ? existingMembership.Role : ParseRole(invitation.TargetRole),
                 acceptedAt,
                 cancellationToken);
         }
@@ -161,6 +172,13 @@ internal sealed class InMemoryInvitationStore(
             }
         }
 
+        if (invitation.BoardTarget is { } boardTarget)
+        {
+            var existingBoard = await work.FindBoardMemberAsync(boardTarget.BoardId, userId, cancellationToken);
+            var role = existingMembership is { Active: true } && existingBoard is { Active: true, Role: BoardRole.Admin }
+                ? BoardRole.Admin : boardTarget.Role;
+            await work.UpsertBoardMemberAsync(boardTarget.BoardId, userId, role, acceptedAt, cancellationToken);
+        }
         return new InvitationAcceptStoreResult(true, null, invitation);
     }
 
