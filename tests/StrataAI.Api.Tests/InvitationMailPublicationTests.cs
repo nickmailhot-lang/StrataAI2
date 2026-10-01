@@ -61,6 +61,39 @@ public sealed partial class ApiHostTests
         Assert.Single(publisher.Published);
     }
 
+    [Theory]
+    [InlineData(StrataAI.Application.WorkManagement.BoardRole.Admin)]
+    [InlineData(StrataAI.Application.WorkManagement.BoardRole.Member)]
+    public async Task Board_mail_publication_binds_target_and_reconstructable_proof_without_retry_republication(
+        StrataAI.Application.WorkManagement.BoardRole role)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        using var signer = new IdentityDeliveryTokenSigner("board-mail-test", new Dictionary<string, string> {
+            ["board-mail-test"] = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)) });
+        var publisher = new CapturingInvitationPublisher(signer);
+        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<IInvitationMailPublisher>(publisher));
+        var fixture = await BoardInvitationFixtureAsync(app, ct);
+        var service = app.Services.GetRequiredService<BoardInvitationService>();
+        var key = Guid.NewGuid();
+        var issued = await service.CreateAsync(fixture.Board.Id, fixture.Inviter.Id, fixture.Recipient.Email, role, "fixture", ct, key);
+        Assert.True(issued.Succeeded); Assert.Empty(issued.Value!.RawToken);
+        var retry = await service.CreateAsync(fixture.Board.Id, fixture.Inviter.Id, fixture.Recipient.Email, role, "fixture", ct, key);
+        Assert.True(retry.Succeeded); Assert.Equal(issued.Value, retry.Value);
+        Assert.Equal(1, publisher.TokenCalls);
+        var published = Assert.Single(publisher.Published);
+        Assert.Equal(new BoardInvitationTarget(fixture.Board.Id, role), published.Invitation.BoardTarget);
+        Assert.Equal("board-mail-test", published.KeyId);
+        var proof = signer.DeriveInvitation(fixture.Board.OrganizationId, published.Invitation.Id, published.KeyId);
+        Assert.Equal(app.Services.GetRequiredService<ISecureTokenService>().Hash(proof), published.Invitation.TokenHash);
+        Assert.True((await app.Services.GetRequiredService<IInvitationService>().ReviewTokenAsync(fixture.Recipient.Id, proof, ct)).Succeeded);
+        Assert.Null(await app.Services.GetRequiredService<StrataAI.Application.WorkManagement.IWorkManagementStore>()
+            .FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct));
+        Assert.True((await app.Services.GetRequiredService<StrataAI.Application.WorkManagement.IWorkManagementService>()
+            .RemoveBoardMemberAsync(fixture.Board.Id, fixture.Owner.Id, fixture.Inviter.Id, "fixture", ct)).Succeeded);
+        Assert.False((await service.CreateAsync(fixture.Board.Id, fixture.Inviter.Id, fixture.Recipient.Email, role, "fixture", ct, key)).Succeeded);
+        Assert.Single(publisher.Published); Assert.Equal(1, publisher.TokenCalls);
+    }
+
     private sealed class CapturingInvitationPublisher(IInvitationDeliveryTokenSigner signer) : IInvitationMailPublisher
     {
         public int TokenCalls { get; private set; }

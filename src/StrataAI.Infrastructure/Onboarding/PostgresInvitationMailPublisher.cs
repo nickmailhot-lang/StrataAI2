@@ -17,8 +17,6 @@ public sealed class PostgresInvitationMailPublisher(PostgresConnectionFactory co
 
     public async Task PublishAsync(InvitationRecord invitation, string keyId, string correlationId, CancellationToken cancellationToken)
     {
-        if (invitation.BoardTarget is not null)
-            throw new InvalidOperationException("Board invitation delivery is not yet enabled.");
         if (!connections.HasCommandScope(invitation.OrganizationId))
             throw new InvalidOperationException("Invitation mail publication requires the authorized Organization transaction.");
         await using var session = await connections.OpenTenantSessionAsync(invitation.OrganizationId, cancellationToken);
@@ -30,17 +28,26 @@ public sealed class PostgresInvitationMailPublisher(PostgresConnectionFactory co
             throw new InvalidOperationException("Invitation mail intent was already published.");
         await using var command = new NpgsqlCommand("""
             INSERT INTO invitation_mail_intents(job_id,tenant_id,invitation_id,issuer_id,recipient_email,
-                target_surface,target_role,expires_at,key_id,sender_address,public_origin,provider_account,template_version)
+                target_surface,target_role,expires_at,key_id,sender_address,public_origin,provider_account,template_version,target_board_id,target_board_role)
             SELECT @job,tenant_id,id,created_by_user_id,invited_email,target_surface,target_role,expires_at,
-                @key,@sender,@origin,@account,1 FROM invitations
+                @key,@sender,@origin,@account,1,target_board_id,target_board_role FROM invitations
             WHERE id=@invitation AND tenant_id=@tenant AND created_by_user_id=@issuer AND token_hash=@hash
-                AND target_board_id IS NULL AND accepted_at IS NULL AND revoked_at IS NULL AND expires_at>clock_timestamp();
+                AND target_board_id IS NOT DISTINCT FROM @board AND target_board_role IS NOT DISTINCT FROM @board_role
+                AND accepted_at IS NULL AND revoked_at IS NULL AND expires_at>clock_timestamp();
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("job", jobId);
         command.Parameters.AddWithValue("invitation", invitation.Id);
         command.Parameters.AddWithValue("tenant", invitation.OrganizationId);
         command.Parameters.AddWithValue("issuer", invitation.CreatedByUserId);
         command.Parameters.AddWithValue("hash", invitation.TokenHash);
+        command.Parameters.AddWithValue("board", NpgsqlTypes.NpgsqlDbType.Uuid,
+            (object?)invitation.BoardTarget?.BoardId ?? DBNull.Value);
+        command.Parameters.AddWithValue("board_role", NpgsqlTypes.NpgsqlDbType.Text,
+            invitation.BoardTarget is { } target ? target.Role switch {
+                StrataAI.Application.WorkManagement.BoardRole.Admin => "ADMIN",
+                StrataAI.Application.WorkManagement.BoardRole.Member => "MEMBER",
+                _ => throw new ArgumentOutOfRangeException(nameof(invitation)),
+            } : DBNull.Value);
         command.Parameters.AddWithValue("key", keyId);
         command.Parameters.AddWithValue("sender", options.SenderAddress);
         command.Parameters.AddWithValue("origin", options.PublicOrigin);

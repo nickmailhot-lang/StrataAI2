@@ -162,3 +162,20 @@ commit an archive during a real Board disclosure lock wait and require an empty
 page with unchanged signup/grant/consume state. Actual host/container execution of
 this discovery increment awaits CI. Public Board issuance and actual Board mail
 publication/delivery remain disabled and outstanding.
+
+The internal Board creation command now uses the dedicated invitation signer when
+mail publication is configured. It hashes the reconstructable proof, publishes the
+protected intent/job inside the existing Organization transaction, and suppresses
+the bearer in acknowledgments even without a retry key. PostgreSQL snapshots the
+canonical Board ID/role into the immutable mail intent only when the target tuple
+exactly matches the authorized invitation. Job metadata remains reference-only.
+The migration-026 Worker loader already validates that snapshot and current Board
+eligibility without exposing Board names or adding identity table access.
+
+Two additional host cases cover both roles using a capturing publisher: proof
+reconstruction, target binding, no early membership, one publication across keyed
+retry, and rejection after current issuer Board revocation. They do not prove actual
+PostgreSQL publication or transport. Public Board creation remains unwired; required
+exact-image publication/rollback and actual Worker delivery coverage must accompany
+that endpoint integration. Local warning-as-error build passes; host execution and
+full release evidence for this producer increment await CI.

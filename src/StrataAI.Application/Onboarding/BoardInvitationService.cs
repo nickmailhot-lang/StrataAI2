@@ -65,18 +65,16 @@ public sealed class BoardInvitationService(IInvitationStore invitations, IOrgani
                     return OrganizationOperation<CreatedInvitation>.Success(new(replay.Invitation, ""));
                 }
             }
-            // The Board mail snapshot consumer is the next integration step.
-            // Never write a Board invitation with an ordinary Organization envelope.
-            if (mail is not null)
-                return OrganizationOperation<CreatedInvitation>.Failure("board_invitations_unavailable");
-
             var now = clock.UtcNow;
             var invitationId = Guid.NewGuid();
-            var rawToken = tokens.Generate();
+            var deliveryToken = mail?.CreateToken(organization.Id, invitationId);
+            var rawToken = deliveryToken?.RawToken ?? tokens.Generate();
             var invitation = await invitations.CreateAsync(new(invitationId, organization.Id, invitedEmail.Trim(),
                 normalizedEmail, tokens.Hash(rawToken), InvitationSurface.Internal, "MEMBER", actorId,
                 now, now.AddDays(7), null, null, OrganizationName: organization.Name,
                 BoardTarget: new(boardId, role)), ct);
+            if (deliveryToken is not null)
+                await mail!.PublishAsync(invitation, deliveryToken.KeyId, correlationId, ct);
             await organizations.AppendAuditAsync(organization.Id, actorId, "BOARD_MEMBER_INVITED", "Invitation",
                 invitation.Id, correlationId, ct);
             // A content-free Board invalidation does not disclose recipient email,
@@ -87,7 +85,7 @@ public sealed class BoardInvitationService(IInvitationStore invitations, IOrgani
                 await invitations.SaveCreationReplayAsync(organization.Id, actorId, receiptKey, fingerprint, invitation.Id, ct);
             if (!await actors.VerifyAsync(actorId, ct))
                 return OrganizationOperation<CreatedInvitation>.Failure("session_unavailable");
-            return OrganizationOperation<CreatedInvitation>.Success(new(invitation, idempotencyKey is null ? rawToken : ""));
+            return OrganizationOperation<CreatedInvitation>.Success(new(invitation, idempotencyKey is null && mail is null ? rawToken : ""));
         }, ct);
         return new(result.Succeeded, result.Value, result.ErrorCode switch {
             "organization_not_found" => "board_not_found",
