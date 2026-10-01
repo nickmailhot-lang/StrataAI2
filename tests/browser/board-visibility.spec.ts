@@ -65,6 +65,17 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByText(/Unable to confirm current Board visibility/)).toBeVisible();
       await page.getByRole('button', { name: 'Check current visibility' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('combobox', { name: 'Board visibility' })).toHaveText('Public'); expect(writes).toBe(2);
+      const publicLink = page.getByRole('textbox', { name: 'Public Board link' });
+      await expect(publicLink).toHaveValue(new URL(`/app/${org}/boards/${board}`, test.info().project.use.baseURL).href);
+      await publicLink.focus(); await page.keyboard.press('ControlOrMeta+A');
+      const visitor = await anonymous.newPage(); await visitor.setViewportSize(viewport);
+      await visitor.goto(await publicLink.inputValue());
+      await expect(visitor.getByRole('heading', { name: 'Visibility review', exact: true })).toBeVisible();
+      await expect(visitor.getByRole('button', { name: 'Add list', exact: true })).toHaveCount(0);
+      await expect(visitor.getByRole('link', { name: 'Board visibility', exact: true })).toHaveCount(0);
+      await expect(visitor.getByRole('link', { name: 'Board members', exact: true })).toHaveCount(0);
+      expect(await visitor.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      await visitor.close();
       const publicRead = await anonymous.request.get(`/boards/${board}`); expect(publicRead.status()).toBe(200);
       expect((await publicRead.json()).access).toMatchObject({ canView: true, canEdit: false, canMove: false, canAdminister: false });
       expect((await anonymous.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'PRIVATE', version: nextVersion + 1 } })).status()).toBe(401);

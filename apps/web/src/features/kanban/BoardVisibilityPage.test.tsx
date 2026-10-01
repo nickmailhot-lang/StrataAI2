@@ -25,13 +25,27 @@ it('requires explicit confirmation and sends the current version with a retry ke
   const next = { ...board, visibility: 'PUBLIC', version: 5 };
   const mock = mount(response(scope), response(next), response({ ...scope, board: next }));
   await choose(); await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+  expect(screen.queryByRole('textbox', { name: 'Public Board link' })).not.toBeInTheDocument();
   expect(mock).toHaveBeenCalledTimes(1);
   fireEvent.click(screen.getByRole('button', { name: 'Confirm visibility change' }));
   await screen.findByText('Visibility change acknowledged. Current visibility loaded.');
+  expect(await screen.findByRole('textbox', { name: 'Public Board link' })).toHaveValue(`${window.location.origin}/app/o/boards/b`);
+  expect(screen.getByRole('textbox', { name: 'Public Board link' })).toHaveAttribute('readonly');
   expect(mock.mock.calls[1][0]).toBe('/boards/b/visibility');
   expect(JSON.parse(mock.mock.calls[1][1].body)).toEqual({ visibility: 'PUBLIC', version: 4 });
   expect(mock.mock.calls[1][1].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
   expect(mock.mock.calls[1][1].headers.get('X-StrataAI-Request')).toBe('1');
+});
+it('removes the public link when current visibility is narrowed or its read fails', async () => {
+  mount(response({ ...scope, board: { ...board, visibility: 'PUBLIC' } }), response(scope), response({}, 503));
+  await screen.findByRole('textbox', { name: 'Public Board link' });
+  act(() => live.invalidate!());
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Board visibility' })).toHaveTextContent('Private'));
+  expect(screen.queryByRole('textbox', { name: 'Public Board link' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Open public Board' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Check current visibility' }));
+  await screen.findByText(/Unable to confirm current Board visibility/);
+  expect(screen.queryByRole('textbox', { name: 'Public Board link' })).not.toBeInTheDocument();
 });
 it('rejects foreign scope before disclosing Board metadata', async () => {
   mount(response({ ...scope, board: { ...board, organizationId: 'other' } }));

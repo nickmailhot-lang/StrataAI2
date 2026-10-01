@@ -113,7 +113,12 @@ function Visibility({ org, id }: { org: string; id: string }) {
     {board && <><Typography>Private Boards require authorized access. Organization Boards can be discovered by eligible members. Public Boards can be read by anyone. Visibility never grants edit access.</Typography>
       <TextField select label="Board visibility" value={draft} disabled={busy} onChange={event => setDraft(event.target.value)}>
         {choices.map(value => <MenuItem key={value} value={value}>{value === 'PRIVATE' ? 'Private' : value === 'ORGANIZATION' ? 'Organization' : 'Public'}</MenuItem>)}
-      </TextField><Button ref={action} disabled={busy || draft === board.visibility} onClick={() => setReview(true)}>Review visibility change</Button></>}
+      </TextField><Button ref={action} disabled={busy || draft === board.visibility} onClick={() => setReview(true)}>Review visibility change</Button>
+      {board.visibility === 'PUBLIC' && <>
+        <TextField label="Public Board link" value={`${window.location.origin}/app/${encodeURIComponent(org)}/boards/${encodeURIComponent(id)}`}
+          slotProps={{ input: { readOnly: true } }} helperText="Anyone with this link can read the Board. Editing requires separate permission." />
+        <Button component="a" href={`/app/${encodeURIComponent(org)}/boards/${encodeURIComponent(id)}`} target="_blank" rel="noopener noreferrer">Open public Board</Button>
+      </>}</>}
     <Dialog open={review && !!board} onClose={() => { if (!busy) setReview(false); }} aria-labelledby="visibility-title"
       slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: restoreFocus } }}>
       <DialogTitle id="visibility-title">Change Board visibility?</DialogTitle>
