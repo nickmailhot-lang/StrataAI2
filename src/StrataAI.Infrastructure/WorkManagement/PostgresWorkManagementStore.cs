@@ -1120,6 +1120,9 @@ internal sealed class PostgresWorkManagementStore(
                 updated_at = @updated_at,
                 version = version + 1
             WHERE id = @card_id
+              AND tenant_id = @tenant_id
+              AND board_id = @board_id
+              AND list_id = @source_list_id
               AND version = @expected_version
               AND lifecycle_state = 'ACTIVE'
             RETURNING
@@ -1131,6 +1134,9 @@ internal sealed class PostgresWorkManagementStore(
         command.Parameters.AddWithValue(
             "destination_list_id",
             destinationListId);
+        command.Parameters.AddWithValue("tenant_id", cardRoute.Value.TenantId);
+        command.Parameters.AddWithValue("board_id", cardRoute.Value.BoardId);
+        command.Parameters.AddWithValue("source_list_id", cardRoute.Value.ListId);
         command.Parameters.AddWithValue("rank", rank);
         command.Parameters.AddWithValue("updated_at", updatedAt);
         command.Parameters.AddWithValue("card_id", cardId);
