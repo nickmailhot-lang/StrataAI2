@@ -10,11 +10,54 @@ public sealed class InvitationService(
     IOrganizationStore organizationStore,
     IIdentityStore identityStore,
     ISecureTokenService tokens,
-    IClock clock) : IInvitationService
+    IClock clock,
+    IOrganizationUnitOfWork unitOfWork) : IInvitationService
 {
     private static readonly TimeSpan InvitationLifetime = TimeSpan.FromDays(7);
 
-    public async Task<InvitationOperation<CreatedInvitation>> CreateAsync(
+    public Task<InvitationOperation<CreatedInvitation>> CreateAsync(
+        Guid organizationId, Guid actorUserId, string invitedEmail, InvitationSurface surface,
+        string targetRole, string correlationId, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(organizationId, actorUserId, null,
+            () => CreateCoreAsync(organizationId, actorUserId, invitedEmail, surface, targetRole, correlationId, cancellationToken), cancellationToken);
+
+    public Task<InvitationOperation<bool>> RevokeAsync(
+        Guid organizationId, Guid actorUserId, Guid invitationId, string correlationId,
+        CancellationToken cancellationToken = default) =>
+        ExecuteAsync(organizationId, actorUserId, null,
+            () => RevokeCoreAsync(organizationId, actorUserId, invitationId, correlationId, cancellationToken), cancellationToken);
+
+    public async Task<InvitationOperation<AcceptedInvitation>> AcceptAsync(
+        Guid actorUserId, string rawToken, string correlationId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(rawToken))
+            return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
+        var user = await identityStore.FindUserByIdAsync(actorUserId, cancellationToken);
+        if (user is null || user.Status != AccountStatus.Active || !user.EmailVerified)
+            return InvitationOperation<AcceptedInvitation>.Failure("account_unavailable");
+        var invitation = await invitationStore.FindActiveByTokenHashAsync(tokens.Hash(rawToken), clock.UtcNow, cancellationToken);
+        if (invitation is null || invitation.EmailNormalized != user.EmailNormalized)
+            return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
+        var result = await ExecuteAsync(invitation.OrganizationId, actorUserId, invitation.CreatedByUserId,
+            () => AcceptCoreAsync(actorUserId, rawToken, correlationId, cancellationToken), cancellationToken);
+        return result.ErrorCode == "organization_not_found"
+            ? InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation") : result;
+    }
+
+    private async Task<InvitationOperation<T>> ExecuteAsync<T>(
+        Guid organizationId, Guid actorUserId, Guid? targetUserId,
+        Func<Task<InvitationOperation<T>>> operation, CancellationToken cancellationToken)
+    {
+        var result = await unitOfWork.ExecuteAsync(organizationId, actorUserId, targetUserId, false, async () =>
+        {
+            var invitationResult = await operation();
+            return new OrganizationOperation<T>(invitationResult.Succeeded, invitationResult.Value, invitationResult.ErrorCode);
+        }, cancellationToken);
+        return new InvitationOperation<T>(result.Succeeded, result.Value,
+            result.ErrorCode == "organization_storage_unavailable" ? "invitation_storage_unavailable" : result.ErrorCode);
+    }
+
+    private async Task<InvitationOperation<CreatedInvitation>> CreateCoreAsync(
         Guid organizationId,
         Guid actorUserId,
         string invitedEmail,
@@ -48,6 +91,9 @@ public sealed class InvitationService(
             return InvitationOperation<CreatedInvitation>.Failure(
                 "invalid_invitation_role");
         }
+
+        if (surface == InvitationSurface.Internal && role == "OWNER" && membership.Role != OrganizationRole.Owner)
+            return InvitationOperation<CreatedInvitation>.Failure("insufficient_permission");
 
         var now = clock.UtcNow;
         var rawToken = tokens.Generate();
@@ -98,7 +144,7 @@ public sealed class InvitationService(
             cancellationToken);
     }
 
-    public async Task<InvitationOperation<AcceptedInvitation>> AcceptAsync(
+    private async Task<InvitationOperation<AcceptedInvitation>> AcceptCoreAsync(
         Guid actorUserId,
         string rawToken,
         string correlationId,
@@ -138,6 +184,17 @@ public sealed class InvitationService(
                 "invalid_or_expired_invitation");
         }
 
+        var issuer = await organizationStore.FindMembershipAsync(invitation.OrganizationId, invitation.CreatedByUserId, cancellationToken);
+        if (issuer is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin } ||
+            (invitation.Surface == InvitationSurface.Internal && invitation.TargetRole == "OWNER" && issuer.Role != OrganizationRole.Owner))
+            return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
+        if (invitation.Surface == InvitationSurface.Internal && invitation.TargetRole != "OWNER")
+        {
+            var existing = await organizationStore.FindMembershipAsync(invitation.OrganizationId, actorUserId, cancellationToken);
+            if (existing is { Active: true, Role: OrganizationRole.Owner })
+                return InvitationOperation<AcceptedInvitation>.Failure("ownership_change_requires_confirmation");
+        }
+
         var result = await invitationStore.AcceptAsync(
             tokenHash,
             actorUserId,
@@ -168,7 +225,7 @@ public sealed class InvitationService(
                 result.Invitation.TargetRole));
     }
 
-    public async Task<InvitationOperation<bool>> RevokeAsync(
+    private async Task<InvitationOperation<bool>> RevokeCoreAsync(
         Guid organizationId,
         Guid actorUserId,
         Guid invitationId,

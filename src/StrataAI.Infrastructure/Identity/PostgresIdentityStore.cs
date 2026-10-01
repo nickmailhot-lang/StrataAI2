@@ -65,11 +65,11 @@ internal sealed class PostgresIdentityStore(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
-            $"SELECT {UserColumns} FROM users WHERE id = @id;",
-            connection);
+            $"SELECT {UserColumns} FROM users WHERE id = @id" + (routing.Transaction is null ? ";" : " FOR SHARE;"),
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("id", userId);
 
         await using var reader =

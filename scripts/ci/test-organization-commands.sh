@@ -26,23 +26,42 @@ request() {
 }
 account owner
 account other
+account guest
+account portal
 owner="$(jq -r '.user.id' "$scratch/owner.json")"
 other="$(jq -r '.user.id' "$scratch/other.json")"
+guest="$(jq -r '.user.id' "$scratch/guest.json")"
+portal_user="$(jq -r '.user.id' "$scratch/portal.json")"
 test "$(request POST /organizations '{"name":"Atomic organization"}')" = 201
 organization="$(jq -r '.organization.id' "$scratch/response.json")"
-for id in "$owner" "$other" "$organization"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
+for id in "$owner" "$other" "$guest" "$portal_user" "$organization"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
 admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),'$organization','$other','OWNER','ACTIVE');" >/dev/null
+admin "UPDATE users SET email_verified=true,status='ACTIVE' WHERE id IN ('$owner','$other','$guest','$portal_user');" >/dev/null
+fixture_invite() {
+  local actor="$1" surface="$2" role="$3" token hash email
+  token="$(openssl rand -hex 32)"
+  hash="$(printf '%s' "$token" | sha256sum | cut -d ' ' -f 1)"
+  email="$(jq -r '.user.email' "$scratch/$actor.json")"
+  admin "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,created_by_user_id,created_at,expires_at)
+    VALUES(gen_random_uuid(),'$organization','$email',upper('$email'),'$hash','$surface','$role','$owner',now(),now()+interval '1 day');" >/dev/null
+  printf '%s' "$token"
+}
+internal_token="$(fixture_invite guest INTERNAL MEMBER)"
+portal_token="$(fixture_invite portal PORTAL OWNER)"
+revoke_id="$(admin "SELECT id FROM invitations WHERE tenant_id='$organization' AND target_surface='INTERNAL';")"
 state() {
   admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$organization'),
     'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$organization'),
     'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$organization'),
+    'invitations',(SELECT jsonb_agg(to_jsonb(i) ORDER BY id) FROM invitations i WHERE tenant_id='$organization'),
+    'portal',(SELECT count(*) FROM portal_access WHERE tenant_id='$organization'),
     'owned',(SELECT count(*) FROM organizations WHERE owner_user_id='$owner'))::text;"
 }
 before="$(state)"
 admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
 rejected() {
-  test "$(request "$1" "$2" "$3")" = 503
-  jq -e '.code=="organization_storage_unavailable" and .status==503' "$scratch/response.json" >/dev/null
+  test "$(request "$1" "$2" "$3" "${4:-owner}")" = 503
+  jq -e --arg code "${5:-organization_storage_unavailable}" '.code==$code and .status==503' "$scratch/response.json" >/dev/null
   scripts/ci/assert-file-excludes.sh 'audit_events|Npgsql|permission denied|INSERT INTO|Atomic organization' "$scratch/response.json"
   test "$before" = "$(state)"
 }
@@ -52,7 +71,21 @@ rejected PATCH "/organizations/$organization" '{"name":"Must roll back","version
 rejected DELETE "/organizations/$organization/members/$other" '{}'
 rejected POST "/organizations/$organization/leave" '{}'
 rejected DELETE "/organizations/$organization?version=1" '{}'
+rejected POST "/organizations/$organization/invitations" '{"email":"rollback@example.test","surface":"INTERNAL","targetRole":"MEMBER"}' owner invitation_storage_unavailable
+rejected DELETE "/organizations/$organization/invitations/$revoke_id" '{}' owner invitation_storage_unavailable
+rejected POST "/invitations/$internal_token/accept" '{}' guest invitation_storage_unavailable
+rejected POST "/invitations/$portal_token/accept" '{}' portal invitation_storage_unavailable
 admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$(request POST "/invitations/$internal_token/accept" '{}' guest)" = 200
+test "$(admin "SELECT role FROM organization_members WHERE tenant_id='$organization' AND user_id='$guest' AND status='ACTIVE';")" = MEMBER
+test "$(request POST "/invitations/$internal_token/accept" '{}' guest)" = 400
+test "$(request POST "/invitations/$portal_token/accept" '{}' portal)" = 200
+test "$(admin "SELECT count(*) FROM portal_access WHERE tenant_id='$organization' AND user_id='$portal_user' AND status='ACTIVE';")" = 1
+test "$(admin "SELECT count(*) FROM organization_members WHERE tenant_id='$organization' AND user_id='$portal_user';")" = 0
+owner_downgrade="$(fixture_invite owner INTERNAL MEMBER)"
+test "$(request POST "/invitations/$owner_downgrade/accept" '{}')" = 409
+jq -e '.code=="ownership_change_requires_confirmation"' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT role FROM organization_members WHERE tenant_id='$organization' AND user_id='$owner';")" = OWNER
 hold() {
   rm -f "$scratch/gate.in" "$scratch/gate.log"
   mkfifo "$scratch/gate.in"
@@ -84,6 +117,39 @@ blocked() {
   echo 'Expected organization lock wait was not observed.' >&2
   return 1
 }
+# Acceptance must recheck issuer role after its membership lock wait, leave the
+# token unconsumed and avoid rewriting an existing recipient membership.
+waiting_token="$(fixture_invite guest INTERNAL MEMBER)"
+waiting_hash="$(printf '%s' "$waiting_token" | sha256sum | cut -d ' ' -f 1)"
+guest_version="$(admin "SELECT version FROM organization_members WHERE tenant_id='$organization' AND user_id='$guest';")"
+waiting_audits="$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")"
+hold "SELECT user_id FROM organization_members WHERE tenant_id='$organization' AND user_id='$owner' FOR UPDATE;"
+request POST "/invitations/$waiting_token/accept" '{}' guest > "$scratch/status" &
+request_pid=$!
+blocked '%SELECT user_id FROM organization_members%FOR UPDATE%'
+release "UPDATE organization_members SET status='SUSPENDED' WHERE tenant_id='$organization' AND user_id='$owner';"
+wait "$request_pid"
+request_pid=''
+test "$(cat "$scratch/status")" = 400
+jq -e '.code=="invalid_or_expired_invitation"' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT accepted_at IS NULL FROM invitations WHERE token_hash='$waiting_hash';")" = t
+test "$(admin "SELECT version FROM organization_members WHERE tenant_id='$organization' AND user_id='$guest';")" = "$guest_version"
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")" = "$waiting_audits"
+admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$organization' AND user_id='$owner';" >/dev/null
+# The verified recipient's current account state is locked and checked too.
+hold "SELECT id FROM users WHERE id='$guest' FOR UPDATE;"
+request POST "/invitations/$waiting_token/accept" '{}' guest > "$scratch/status" &
+request_pid=$!
+blocked '%FROM users WHERE id =%FOR SHARE%'
+release "UPDATE users SET status='DEACTIVATED' WHERE id='$guest';"
+wait "$request_pid"
+request_pid=''
+test "$(cat "$scratch/status")" = 403
+jq -e '.code=="account_unavailable"' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT accepted_at IS NULL FROM invitations WHERE token_hash='$waiting_hash';")" = t
+test "$(admin "SELECT version FROM organization_members WHERE tenant_id='$organization' AND user_id='$guest';")" = "$guest_version"
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")" = "$waiting_audits"
+admin "UPDATE users SET status='ACTIVE' WHERE id='$guest';" >/dev/null
 # A membership revocation committed during the lock wait must invalidate the actor.
 hold "SELECT user_id FROM organization_members WHERE tenant_id='$organization' AND user_id='$owner' FOR UPDATE;"
 request PATCH "/organizations/$organization" '{"name":"Revoked edit","version":1}' > "$scratch/status" &
@@ -95,6 +161,9 @@ request_pid=''
 test "$(cat "$scratch/status")" = 404
 jq -e '.code=="organization_not_found"' "$scratch/response.json" >/dev/null
 test "$(admin "SELECT name||':'||version FROM organizations WHERE id='$organization';")" = 'Atomic organization:1'
+# The old creator's invitation cannot grant access after that creator loses permission.
+test "$(request POST "/invitations/$owner_downgrade/accept" '{}')" = 400
+jq -e '.code=="invalid_or_expired_invitation"' "$scratch/response.json" >/dev/null
 admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$organization' AND user_id='$owner';" >/dev/null
 # Force both departure requests to wait on the same organization gate. After release,
 # exactly one commits; the second reads the committed owner count and rejects departure.

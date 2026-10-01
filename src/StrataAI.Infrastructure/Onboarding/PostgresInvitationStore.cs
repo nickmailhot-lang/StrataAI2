@@ -348,8 +348,8 @@ internal sealed class PostgresInvitationStore(
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id
@@ -359,7 +359,7 @@ internal sealed class PostgresInvitationStore(
               AND revoked_at IS NULL
               AND expires_at > @now;
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("token_hash", tokenHash);
         command.Parameters.AddWithValue("now", now);
 

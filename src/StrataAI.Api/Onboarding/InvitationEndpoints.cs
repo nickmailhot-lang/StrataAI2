@@ -173,6 +173,18 @@ public static class InvitationEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invitation_storage_unavailable" => Problem(
+                StatusCodes.Status503ServiceUnavailable,
+                errorCode,
+                "The invitation change could not be confirmed. Retry shortly."),
+            "ownership_change_requires_confirmation" => Problem(
+                StatusCodes.Status409Conflict,
+                errorCode,
+                "An invitation cannot remove active organization ownership."),
+            "insufficient_permission" => Problem(
+                StatusCodes.Status403Forbidden,
+                errorCode,
+                "The invitation role cannot be granted by this account."),
             "invalid_email" => Problem(
                 StatusCodes.Status400BadRequest,
                 errorCode,
