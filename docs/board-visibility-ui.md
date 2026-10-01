@@ -25,3 +25,12 @@ denial before disclosure and conflict recovery without another write. Release
 browser, two-client realtime, accessibility and performance evidence are still
 required. This increment does not complete PRD-05; member management controls and
 other ticket acceptance criteria remain outstanding.
+
+`board-visibility.spec.ts` adds mandatory release-browser scenarios at 1280px and
+390px. They use public API setup and keyboard controls, verify cancellation and
+focus restoration, change visibility from a competing client after the form
+loaded, and require stale-version rejection before read-only recovery. They then
+drop a successful Public acknowledgment and recover the canonical state without
+another write. Anonymous reads must transition from private denial to public
+read-only access, while anonymous visibility mutation remains unauthorized.
+Local collection passes for both cases; exact-image execution is pending CI.

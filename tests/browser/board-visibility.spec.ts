@@ -1,0 +1,60 @@
+import { expect, test } from './releaseTest';
+
+for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+  test(`PRD-05: keyboard visibility consent, conflict and public read-only recovery at ${viewport.width}px`, async ({ page, context, browser }) => {
+    await page.setViewportSize(viewport);
+    const headers = { 'X-StrataAI-Request': '1' };
+    const data = { email: `visibility-owner-${viewport.width}-${Date.now()}@example.test`, password: 'browser-visibility-correct-horse', displayName: 'Visibility owner' };
+    expect((await context.request.post('/auth/register', { headers, data })).status()).toBe(201);
+    expect((await context.request.post('/auth/login', { headers, data })).status()).toBe(200);
+    const organization = await context.request.post('/organizations', { headers, data: { name: 'Visibility consent' } });
+    expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
+    const created = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Visibility review', visibility: 'PRIVATE' } });
+    expect(created.status()).toBe(201); const board = (await created.json()).id;
+    const initial = await context.request.get(`/boards/${board}`); expect(initial.status()).toBe(200);
+    const version = (await initial.json()).board.version;
+    const anonymous = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+    try {
+      expect((await anonymous.request.get(`/boards/${board}`)).status()).toBe(404);
+      await page.goto(`/app/${org}/boards/${board}`);
+      await page.getByRole('link', { name: 'Board visibility', exact: true }).focus(); await page.keyboard.press('Enter');
+      const choosePublic = async () => {
+        await page.getByRole('combobox', { name: 'Board visibility' }).focus(); await page.keyboard.press('ArrowDown');
+        await page.getByRole('option', { name: 'Public', exact: true }).focus(); await page.keyboard.press('Enter');
+        await page.getByRole('button', { name: 'Review visibility change' }).focus(); await page.keyboard.press('Enter');
+        await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+        await expect(page.getByText(/Anyone, including people who are not signed in/)).toBeVisible();
+      };
+      await choosePublic(); await page.keyboard.press('Enter');
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Review visibility change' })).toBeFocused();
+      expect((await anonymous.request.get(`/boards/${board}`)).status()).toBe(404);
+      // A different client changes the canonical version after the form loaded.
+      const competing = await context.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'ORGANIZATION', version } });
+      expect(competing.status()).toBe(200); const nextVersion = (await competing.json()).version;
+      let writes = 0;
+      await page.route(`**/boards/${board}/visibility`, async route => {
+        const input = route.request().postDataJSON(); writes++;
+        expect(input).toEqual({ visibility: 'PUBLIC', version: writes === 1 ? version : nextVersion });
+        expect(route.request().headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
+        const result = await route.fetch(); expect(result.status()).toBe(writes === 1 ? 409 : 200);
+        if (writes === 1) await route.fulfill({ response: result }); else await route.abort('timedout');
+      });
+      await page.getByRole('button', { name: 'Review visibility change' }).focus(); await page.keyboard.press('Enter');
+      await page.getByRole('button', { name: 'Confirm visibility change' }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByText(/The Board changed/)).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Visibility review' })).toHaveCount(0);
+      await page.getByRole('button', { name: 'Check current visibility' }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByRole('combobox', { name: 'Board visibility' })).toHaveText('Organization');
+      await choosePublic();
+      await page.getByRole('button', { name: 'Confirm visibility change' }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByText(/Unable to confirm current Board visibility/)).toBeVisible();
+      await page.getByRole('button', { name: 'Check current visibility' }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByRole('combobox', { name: 'Board visibility' })).toHaveText('Public'); expect(writes).toBe(2);
+      const publicRead = await anonymous.request.get(`/boards/${board}`); expect(publicRead.status()).toBe(200);
+      expect((await publicRead.json()).access).toMatchObject({ canView: true, canEdit: false, canMove: false, canAdminister: false });
+      expect((await anonymous.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'PRIVATE', version: nextVersion + 1 } })).status()).toBe(401);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    } finally { await anonymous.close(); }
+  });
+}
