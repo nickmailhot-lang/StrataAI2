@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { apiFetch } from '../../api/apiFetch';
+import { recoveryError, recoveryObject, recoveryProfileConfirmed, useRecoveryRequest } from './useRecoveryRequest';
 
 export function ResetPasswordPage() {
   const location = useLocation();
@@ -9,7 +9,7 @@ export function ResetPasswordPage() {
   const [token, setToken] = useState(() => new URLSearchParams(location.hash.slice(1)).get('token') ?? '');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
-  const [busy, setBusy] = useState(false);
+  const { busy, request } = useRecoveryRequest();
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string>();
   useEffect(() => {
@@ -21,25 +21,16 @@ export function ResetPasswordPage() {
     if (busy || !token) return;
     setError(undefined);
     if (password !== confirmation) { setError('Passwords must match.'); return; }
-    setBusy(true);
-    try {
-      const response = await apiFetch('/auth/password/reset', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, newPassword: password }),
-      });
-      if (!response.ok) {
-        const problem = await response.json().catch(() => ({})) as { title?: string; code?: string };
-        setError(problem.title ?? 'Unable to reset your password. Please retry.');
-        if (problem.code === 'invalid_or_expired_token') setToken('');
-        return;
-      }
+    const result = await request('/auth/password/reset', { token, newPassword: password });
+    if (!result) return;
+    if (result.status === 200 && recoveryProfileConfirmed(result.value)) {
       setCompleted(true);
       setToken('');
       setPassword('');
       setConfirmation('');
-    } catch {
-      setError('Unable to contact StrataAI2. Please retry.');
-    } finally {
-      setBusy(false);
+    } else {
+      setError(recoveryError(result.value, 'Password reset could not be confirmed. Your details are preserved. Retry or sign in with the new password if the earlier request completed.'));
+      if (result.status === 400 && recoveryObject(result.value).code === 'invalid_or_expired_token') setToken('');
     }
   }
   return <Container maxWidth="sm" sx={{ py: 6 }}><Paper variant="outlined" sx={{ p: 3 }}>

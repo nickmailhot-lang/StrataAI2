@@ -24,7 +24,7 @@ describe('PRD-02 password recovery', () => {
   });
   it('preserves the email after a rate rejection and permits retry', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Too many requests. Please wait and retry.' }), { status: 429 }))
-      .mockResolvedValueOnce(new Response('{}', { status: 202 })));
+      .mockResolvedValueOnce(new Response('{"accepted":true}', { status: 202 })));
     render(<MemoryRouter><PasswordRecoveryPage /></MemoryRouter>);
     fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'user@example.test' } });
     fireEvent.submit(screen.getByRole('form', { name: 'Request password reset' }));
@@ -34,7 +34,7 @@ describe('PRD-02 password recovery', () => {
     await screen.findByRole('status');
   });
   it('keeps the fragment token out of history/DOM and sends it only in the mutation body', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response('{}'));
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'a641aa83-4613-49ae-9f11-1138d91b1ac4', email: 'user@example.test', version: 2, emailVerified: true })));
     vi.stubGlobal('fetch', fetchMock);
     resetPage();
     await waitFor(() => expect(screen.getByLabelText('Location')).toHaveTextContent('/reset-password'));

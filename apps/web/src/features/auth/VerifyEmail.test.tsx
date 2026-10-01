@@ -8,7 +8,7 @@ function page(path = '/verify-email') { render(<MemoryRouter initialEntries={[pa
 
 describe('PRD-02 verification delivery', () => {
   it('scrubs the fragment and requires explicit confirmation before consuming it', async () => {
-    const request = vi.fn().mockResolvedValue(new Response('{}'));
+    const request = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'a641aa83-4613-49ae-9f11-1138d91b1ac4', email: 'user@example.test', version: 2, emailVerified: true })));
     vi.stubGlobal('fetch', request);
     page('/verify-email#token=verification-only-token');
     await waitFor(() => expect(screen.getByLabelText('Location')).not.toHaveTextContent('verification-only-token'));
@@ -30,13 +30,13 @@ describe('PRD-02 verification delivery', () => {
   });
   it('offers replacement after an expired token and preserves email on unavailable delivery', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Link expired.', code: 'invalid_or_expired_token' }), { status: 400 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Email temporarily unavailable.' }), { status: 503 })));
+      .mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Email temporarily unavailable.', code: 'identity_delivery_unavailable' }), { status: 503 })));
     page('/verify-email#token=expired');
     fireEvent.submit(screen.getByRole('form', { name: 'Verify email' }));
-    await screen.findByText('Link expired.');
+    await screen.findByText('The token is invalid or expired.');
     fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'user@example.test' } });
     fireEvent.submit(screen.getByRole('form', { name: 'Verify email' }));
-    await screen.findByText('Email temporarily unavailable.');
+    await screen.findByText('Email is temporarily unavailable. Please retry later.');
     expect(screen.getByLabelText(/^Email/)).toHaveValue('user@example.test');
   });
   it('does not accept a token in the URL query', async () => {

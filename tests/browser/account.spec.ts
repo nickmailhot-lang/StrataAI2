@@ -170,6 +170,29 @@ test('PRD-02/60-TC-06/07: lost acknowledgment retries the committed profile inte
   expect(replay.cursor).toBe(initial.cursor + 1);
 });
 
+test('PRD-02-TC-06/11/12: mobile keyboard recovery preserves email after an invalid acknowledgment', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const email = `unknown-recovery-ack-${Date.now()}@example.test`;
+  const attempts: string[] = [];
+  await page.route('**/auth/password/forgot', async route => {
+    attempts.push(route.request().postData()!);
+    const response = await route.fetch();
+    expect(response.status()).toBe(202);
+    if (attempts.length === 1) await route.fulfill({ response, body: '{}' });
+    else await route.fulfill({ response });
+  });
+  await page.goto('/forgot-password');
+  await page.getByLabel(/^Email/).fill(email);
+  await page.getByLabel(/^Email/).press('Enter');
+  await expect(page.getByRole('alert')).toContainText('could not be confirmed');
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByLabel(/^Email/)).toHaveValue(email);
+  await page.getByLabel(/^Email/).press('Enter');
+  await expect(page.getByRole('status')).toContainText('Request received.');
+  expect(attempts).toHaveLength(2);
+  expect(attempts[1]).toBe(attempts[0]);
+});
+
 test('PRD-02-TC-03/04: recovery confirmation is generic and invalid reset links recover safely', async ({ page }) => {
   await page.goto('/login');
   await page.getByRole('link', { name: 'Forgot password?' }).click();

@@ -1,33 +1,22 @@
 import { useState } from 'react';
 import { Alert, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { apiFetch } from '../../api/apiFetch';
+import { recoveryError, recoveryObject, useRecoveryRequest } from './useRecoveryRequest';
 
 export function PasswordRecoveryPage() {
   const [email, setEmail] = useState('');
-  const [busy, setBusy] = useState(false);
+  const { busy, request } = useRecoveryRequest();
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<string>();
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
-    setBusy(true);
     setError(undefined);
-    try {
-      const response = await apiFetch('/auth/password/forgot', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
-      });
-      if (!response.ok) {
-        const problem = await response.json().catch(() => ({})) as { title?: string };
-        setError(problem.title ?? 'Unable to request a reset. Please retry.');
-        return;
-      }
-      setAccepted(true);
-    } catch {
-      setError('Unable to contact StrataAI2. Your email is preserved; please retry.');
-    } finally {
-      setBusy(false);
-    }
+    const result = await request('/auth/password/forgot', { email });
+    if (!result) return;
+    if (result.status === 202 && recoveryObject(result.value).accepted === true) setAccepted(true);
+    else setError(result.status === 429 ? 'Too many requests. Please wait and retry.'
+      : recoveryError(result.value, 'The request could not be confirmed. Your email is preserved; please retry.'));
   }
   return <Container maxWidth="sm" sx={{ py: 6 }}><Paper variant="outlined" sx={{ p: 3 }}>
     <Stack component="form" onSubmit={submit} spacing={3} aria-label="Request password reset" aria-busy={busy}>
