@@ -327,6 +327,9 @@ jobs:
       - name: Work command and audit rollback against exact release API
         run: scripts/ci/test-work-command-transactions.sh
 
+      - name: Organization audit rollback, revoked actor waits and concurrent owner departures
+        run: scripts/ci/test-organization-commands.sh
+
       - name: Durable work retry keys against exact release API
         run: scripts/ci/test-work-idempotency.sh
 

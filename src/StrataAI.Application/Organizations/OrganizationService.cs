@@ -6,9 +6,44 @@ namespace StrataAI.Application.Organizations;
 public sealed class OrganizationService(
     IOrganizationStore store,
     IWorkManagementStore workStore,
-    IClock clock) : IOrganizationService
+    IClock clock,
+    IOrganizationUnitOfWork unitOfWork) : IOrganizationService
 {
-    public async Task<OrganizationOperation<OrganizationSummary>> CreateAsync(
+    public Task<OrganizationOperation<OrganizationSummary>> CreateAsync(
+        Guid actorUserId, string name, string? description, string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var organizationId = Guid.NewGuid();
+        return unitOfWork.ExecuteAsync(organizationId, actorUserId, null, true,
+            () => CreateCoreAsync(organizationId, actorUserId, name, description, correlationId, cancellationToken), cancellationToken);
+    }
+
+    public Task<OrganizationOperation<OrganizationRecord>> UpdateAsync(
+        Guid organizationId, Guid actorUserId, string name, string? description, string? logoUrl,
+        long expectedVersion, string correlationId, CancellationToken cancellationToken = default) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false,
+            () => UpdateCoreAsync(organizationId, actorUserId, name, description, logoUrl, expectedVersion, correlationId, cancellationToken), cancellationToken);
+
+    public Task<OrganizationOperation<bool>> RemoveMemberAsync(
+        Guid organizationId, Guid actorUserId, Guid targetUserId, string correlationId,
+        CancellationToken cancellationToken = default) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, targetUserId, false,
+            () => RemoveMemberCoreAsync(organizationId, actorUserId, targetUserId, correlationId, cancellationToken), cancellationToken);
+
+    public Task<OrganizationOperation<bool>> LeaveAsync(
+        Guid organizationId, Guid actorUserId, string correlationId,
+        CancellationToken cancellationToken = default) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false,
+            () => LeaveCoreAsync(organizationId, actorUserId, correlationId, cancellationToken), cancellationToken);
+
+    public Task<OrganizationOperation<bool>> MarkDeletingAsync(
+        Guid organizationId, Guid actorUserId, long expectedVersion, string correlationId,
+        CancellationToken cancellationToken = default) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false,
+            () => MarkDeletingCoreAsync(organizationId, actorUserId, expectedVersion, correlationId, cancellationToken), cancellationToken);
+
+    private async Task<OrganizationOperation<OrganizationSummary>> CreateCoreAsync(
+        Guid organizationId,
         Guid actorUserId,
         string name,
         string? description,
@@ -24,7 +59,7 @@ public sealed class OrganizationService(
 
         var organization = await store.CreateOrganizationAsync(
             actorUserId,
-            Guid.NewGuid(),
+            organizationId,
             normalizedName,
             NormalizeOptional(description),
             clock.UtcNow,
@@ -48,7 +83,7 @@ public sealed class OrganizationService(
         CancellationToken cancellationToken = default) =>
         store.ListOrganizationsForUserAsync(actorUserId, cancellationToken);
 
-    public async Task<OrganizationOperation<OrganizationRecord>> UpdateAsync(
+    private async Task<OrganizationOperation<OrganizationRecord>> UpdateCoreAsync(
         Guid organizationId,
         Guid actorUserId,
         string name,
@@ -129,7 +164,7 @@ public sealed class OrganizationService(
             boards);
     }
 
-    public async Task<OrganizationOperation<bool>> RemoveMemberAsync(
+    private async Task<OrganizationOperation<bool>> RemoveMemberCoreAsync(
         Guid organizationId,
         Guid actorUserId,
         Guid targetUserId,
@@ -190,7 +225,7 @@ public sealed class OrganizationService(
         return OrganizationOperation<bool>.Success(true);
     }
 
-    public async Task<OrganizationOperation<bool>> LeaveAsync(
+    private async Task<OrganizationOperation<bool>> LeaveCoreAsync(
         Guid organizationId,
         Guid actorUserId,
         string correlationId,
@@ -234,7 +269,7 @@ public sealed class OrganizationService(
         return OrganizationOperation<bool>.Success(true);
     }
 
-    public async Task<OrganizationOperation<bool>> MarkDeletingAsync(
+    private async Task<OrganizationOperation<bool>> MarkDeletingCoreAsync(
         Guid organizationId,
         Guid actorUserId,
         long expectedVersion,

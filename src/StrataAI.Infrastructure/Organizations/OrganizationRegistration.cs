@@ -13,10 +13,12 @@ public static class OrganizationRegistration
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<IOrganizationStore, InMemoryOrganizationStore>();
+            services.AddSingleton<IOrganizationUnitOfWork, InMemoryOrganizationUnitOfWork>();
         }
         else
         {
             services.AddSingleton<IOrganizationStore, PostgresOrganizationStore>();
+            services.AddSingleton<IOrganizationUnitOfWork, PostgresOrganizationUnitOfWork>();
         }
 
         services.AddSingleton<IOrganizationService, OrganizationService>();

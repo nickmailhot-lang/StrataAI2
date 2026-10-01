@@ -200,6 +200,10 @@ public static class OrganizationEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "organization_storage_unavailable" => Problem(
+                StatusCodes.Status503ServiceUnavailable,
+                errorCode,
+                "The Organization change could not be confirmed. Retry shortly."),
             "invalid_organization_name" => Problem(
                 StatusCodes.Status400BadRequest,
                 errorCode,
