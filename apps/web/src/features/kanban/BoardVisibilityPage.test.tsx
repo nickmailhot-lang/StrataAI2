@@ -55,6 +55,7 @@ it('cancels stale consent on live invalidation and loads the new canonical versi
   act(() => live.invalidate!());
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   await waitFor(() => expect(screen.getByRole('combobox', { name: 'Board visibility' })).toHaveTextContent('Organization'));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Check current visibility' })).toHaveFocus());
   expect(mock).toHaveBeenCalledTimes(2);
   expect(mock.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(0);
 });
@@ -65,4 +66,15 @@ it('clears private metadata and stops live updates when current administration i
   expect(screen.queryByText(board.name)).not.toBeInTheDocument();
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   await waitFor(() => expect(live.dispose).toHaveBeenCalledTimes(1));
+});
+it('retains conflict information when live recovery loads the current version without repeating a write', async () => {
+  const mock = mount(response(scope), response({ code: 'version_conflict' }, 409),
+    response({ ...scope, board: { ...board, visibility: 'ORGANIZATION', version: 5 } }));
+  await choose(); await waitFor(() => expect(live.invalidate).toBeDefined());
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm visibility change' }));
+  await screen.findByText('The Board changed. Check current visibility before making another change.');
+  act(() => live.invalidate!());
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Board visibility' })).toHaveTextContent('Organization'));
+  expect(screen.getByText('The Board changed. Check current visibility before making another change.')).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(1);
 });

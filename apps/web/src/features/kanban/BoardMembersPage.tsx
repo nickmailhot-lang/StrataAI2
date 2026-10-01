@@ -40,38 +40,51 @@ function Members({ org, id }: { org: string; id: string }) {
   const queued = useRef(false); const position = useRef<{ cursor: string | null; previous: (string | null)[] }>({ cursor: null, previous: [] });
   const [subscribed, setSubscribed] = useState(false); const [liveStatus, setLiveStatus] = useState<LiveStatus>('connecting');
   const [retryRead, setRetryRead] = useState(false);
+  const mutationWarning = useRef<string | undefined>(undefined);
   const cancel = useRef<HTMLButtonElement>(null); const refresh = useRef<HTMLButtonElement>(null);
+  const focusRequested = useRef(false);
+  const restoreFocus = () => {
+    focusRequested.current = !refresh.current || refresh.current.disabled;
+    if (refresh.current && !refresh.current.disabled) refresh.current.focus();
+  };
+  useEffect(() => { if (!busy && !selected && focusRequested.current) restoreFocus(); }, [busy, selected]);
   const root = `/boards/${encodeURIComponent(id)}`;
   const clear = () => { setName(undefined); setRows(undefined); setSelected(undefined); setNext(null); };
   const valid = (c: AbortController) => mounted.current && pending.current === c && !c.signal.aborted;
-  function begin() { if (pending.current) return; const c = new AbortController(); pending.current = c; setBusy(true); setError(undefined); return c; }
+  function begin(preserveError = false) {
+    if (pending.current) return;
+    const c = new AbortController(); pending.current = c; setBusy(true);
+    if (!preserveError) mutationWarning.current = undefined;
+    setError(mutationWarning.current); return c;
+  }
+  function warn(message: string) { mutationWarning.current = message; setError(message); }
   function finish(c: AbortController, drain = true) {
     if (mounted.current && pending.current === c) {
       pending.current = undefined; setBusy(false);
       const refreshQueued = queued.current; queued.current = false;
       if (drain && refreshQueued) queueMicrotask(() => {
-        if (mounted.current && !pending.current) void load(position.current.cursor, position.current.previous);
+        if (mounted.current && !pending.current) void load(position.current.cursor, position.current.previous, true);
       });
     }
   }
-  function deny() { clear(); setSubscribed(false); setRetryRead(false); setNotice(undefined); setError('Board member administration is unavailable.'); }
+  function deny() { clear(); mutationWarning.current = undefined; queued.current = false; setSubscribed(false); setRetryRead(false); setNotice(undefined); setError('Board member administration is unavailable.'); }
   const invalidate = useEffectEvent(() => {
     if (pending.current) { queued.current = true; return; }
     setNotice('Board membership changed. Current permissions and members are being checked.');
-    void load(position.current.cursor, position.current.previous);
+    void load(position.current.cursor, position.current.previous, true);
   });
   useEffect(() => {
     if (!subscribed) return;
     return watchBoard({ organizationId: org, boardId: id, invalidate: () => invalidate(), status: setLiveStatus });
   }, [org, id, subscribed]);
-  const retryLatest = useEffectEvent(() => { void load(position.current.cursor, position.current.previous); });
+  const retryLatest = useEffectEvent(() => { void load(position.current.cursor, position.current.previous, true); });
   useEffect(() => {
     if (!retryRead || busy) return;
     const timer = setTimeout(() => retryLatest(), 10_000);
     return () => clearTimeout(timer);
   }, [retryRead, busy]);
-  async function load(after: string | null, history: (string | null)[]) {
-    const c = begin(); if (!c) return; setRetryRead(false); position.current = { cursor: after, previous: history }; clear();
+  async function load(after: string | null, history: (string | null)[], preserveError = false) {
+    const c = begin(preserveError); if (!c) return; setRetryRead(false); position.current = { cursor: after, previous: history }; clear();
     try {
       if (!validInvitationKey(org) || !validInvitationKey(id)) { deny(); return; }
       const result = await request(root, {}, c); if (!valid(c)) return;
@@ -104,11 +117,11 @@ function Members({ org, id }: { org: string; id: string }) {
         setNotice('Member change acknowledged. Review the current directory.'); reload = true;
       } else {
         const code = (result.body as { code?: string } | undefined)?.code; clear();
-        setError(code === 'sole_board_admin' ? 'The last Board administrator cannot be removed or demoted by this account. Check current members.'
+        warn(code === 'sole_board_admin' ? 'The last Board administrator cannot be removed or demoted by this account. Check current members.'
           : code === 'version_conflict' ? 'This membership changed. Check current members and review a new action.'
           : 'The member change could not be confirmed. Check current members before another action.');
       }
-    } catch { if (mounted.current && pending.current === c) { clear(); setError('The member change could not be confirmed. Check current members before another action.'); } }
+    } catch { if (mounted.current && pending.current === c) { clear(); warn('The member change could not be confirmed. Check current members before another action.'); } }
     finally { if (mounted.current) setSelected(undefined); finish(c, false); }
     if (reload) await load(cursor, previous);
   }
@@ -134,7 +147,7 @@ function Members({ org, id }: { org: string; id: string }) {
       <Stack direction="row" spacing={1}><Button disabled={busy || previous.length === 0} onClick={() => void load(previous.at(-1) ?? null, previous.slice(0, -1))}>Previous members</Button>
         <Button disabled={busy || !next} onClick={() => void load(next, [...previous, cursor])}>Next members</Button></Stack></>}
     <Dialog open={!!selected} onClose={() => { if (!busy) setSelected(undefined); }} aria-labelledby="member-change-title"
-      slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: () => refresh.current?.focus() } }}>
+      slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: restoreFocus } }}>
       <DialogTitle id="member-change-title">{selected?.role ? 'Change Board role?' : 'Remove Board membership?'}</DialogTitle>
       <DialogContent><Typography>{name}</Typography><Typography>{selected?.member.displayName ?? selected?.member.userId}</Typography><Typography>{selected?.member.email}</Typography>
         <Typography>{selected?.role ? `Board access will change from ${selected.member.role.toLowerCase()} to ${selected.role.toLowerCase()}.` : 'This removes Board membership. Organization membership and read access through visibility are managed separately.'}</Typography></DialogContent>

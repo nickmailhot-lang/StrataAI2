@@ -1,8 +1,11 @@
 import { expect, test } from './releaseTest';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-05: keyboard member consent, conflict and removal recovery at ${viewport.width}px`, async ({ page, context, browser }) => {
+    test.setTimeout(90_000);
     await page.setViewportSize(viewport);
+    let restoreWorker = () => {};
     const recipient = await browser.newContext({ baseURL: test.info().project.use.baseURL });
     const headers = { 'X-StrataAI-Request': '1' };
     const email = `board-member-recipient-${viewport.width}-${Date.now()}@example.test`;
@@ -26,9 +29,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const grant = await context.request.patch(`/boards/${board}/members/${user}`, { headers, data: { role: 'MEMBER' } });
       expect(grant.status()).toBe(200); const version = (await grant.json()).version;
       expect((await recipient.request.get(`/boards/${board}/members`)).status()).toBe(404);
+      restoreWorker = scopedBoardWorker(org);
+      await waitForBoardDelivery(context.request, board);
       await page.goto(`/app/${org}/boards/${board}`);
+      let directoryReads = 0;
+      page.on('response', response => {
+        if (new URL(response.url()).pathname === `/boards/${board}/members` && response.request().method() === 'GET' && response.status() === 200) directoryReads++;
+      });
       await page.getByRole('link', { name: 'Board members', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Live member updates connected.')).toBeVisible();
+      await expect.poll(() => directoryReads).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('progressbar', { name: 'Loading Board members' })).toHaveCount(0);
       await page.getByRole('button', { name: 'Make administrator: Jordan participant' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused(); await page.keyboard.press('Enter');
@@ -80,6 +90,6 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const membershipAfter = await context.request.get(`/organizations/${org}/members/${user}`); expect(membershipAfter.status()).toBe(200);
       expect((await membershipAfter.json()).member).toEqual(organizationMember);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    } finally { await recipient.close(); }
+    } finally { try { restoreWorker(); } finally { await recipient.close(); } }
   });
 }

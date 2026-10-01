@@ -38,3 +38,11 @@ Local collection passes for both cases; exact-image execution is pending CI.
 Live visibility administration now uses the shared authorized Board stream and polling fallback. An invalidation cancels open consent, clears the old Board details, and reloads current administration and visibility. Invalidations during a read coalesce into a subsequent read. Current denial clears metadata and stops the subscription; transient read failures schedule a bounded, read-only retry. Uncertain writes are never automatically repeated. Dialog exit restores focus to the review action or the refresh button when the old action is gone.
 
 Component coverage adds live stale-consent cancellation and current-authority revocation. The release browser fixture now introduces its competing visibility change after the reviewed request is submitted, so it still exercises server version rejection with live updates enabled. Browser collection succeeds; execution against the exact release images remains pending. This increment does not complete PRD-05 or its full performance, accessibility, and realtime acceptance criteria.
+Automatic live recovery retains a prior conflict/uncertain-write warning until an
+explicit check or another reviewed command. Loading current visibility never
+creates a mutation acknowledgment. When live invalidation removes the old review
+action or makes it disabled, dialog closure restores focus to current visibility
+refresh, waiting for an outstanding read if necessary. Component tests cover
+conflict retention and focus restoration. Required release collaboration coverage
+now includes a separate desktop/mobile administration scenario and explicit
+per-Organization Worker scope; collection passes, exact-image execution pending.

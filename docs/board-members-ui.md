@@ -61,4 +61,29 @@ and invalidation of open consent followed by private-data clearing/disposal afte
 revoked authority. Local full web suite passes 262 cases. Release-browser tests
 now trigger their competing mutation after consent submission, since an earlier
 live event correctly cancels the old review. Actual two-client/reconnect browser
-evidence and visibility-screen realtime behavior remain outstanding.
+evidence and broader acceptance evidence remain outstanding.
+
+## Read recovery and release collaboration fixture
+
+Live refreshes retain unresolved mutation warnings: a canonical read can recover
+current rows without claiming that an uncertain write succeeded. Explicit refresh
+or a newly reviewed command clears the old warning. Denied reads discard queued
+invalidations, clear protected data and stop the subscription. Dialog closure
+restores keyboard focus after a pending read completes, including when its refresh
+button was disabled during the closing animation.
+
+Additional component cases cover coalesced pending invalidations, automatic
+read-only recovery without a new event, rejection of queued reads after denial,
+and persistent uncertain-write warnings without another mutation. The release
+fixture scopes the already-built Worker to each disposable Organization, restores
+its prior configuration in cleanup, waits for actual durable readiness through the
+public sync API, and observes the initial live snapshot refresh before consent.
+No production limiter, authorization policy, retry assertion or image is weakened.
+
+`board-admin-live.spec.ts` exercises separate desktop-owner and mobile-Board-admin
+sessions. Both must observe acknowledged member changes; the phone socket is
+closed and blocked, polling must recover a missed change, and a later update must
+arrive after reconnection. An open mobile visibility confirmation must cancel on
+an external visibility change without a phone write. Subsequent admin demotion
+must clear protected visibility details and deny administration reads/writes.
+Collection passes; exact-image execution and full PRD acceptance remain pending.

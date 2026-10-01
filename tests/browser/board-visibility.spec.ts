@@ -1,8 +1,11 @@
 import { expect, test } from './releaseTest';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-05: keyboard visibility consent, conflict and public read-only recovery at ${viewport.width}px`, async ({ page, context, browser }) => {
+    test.setTimeout(90_000);
     await page.setViewportSize(viewport);
+    let restoreWorker = () => {};
     const headers = { 'X-StrataAI-Request': '1' };
     const data = { email: `visibility-owner-${viewport.width}-${Date.now()}@example.test`, password: 'browser-visibility-correct-horse', displayName: 'Visibility owner' };
     expect((await context.request.post('/auth/register', { headers, data })).status()).toBe(201);
@@ -16,9 +19,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const anonymous = await browser.newContext({ baseURL: test.info().project.use.baseURL });
     try {
       expect((await anonymous.request.get(`/boards/${board}`)).status()).toBe(404);
+      restoreWorker = scopedBoardWorker(org);
+      await waitForBoardDelivery(context.request, board);
       await page.goto(`/app/${org}/boards/${board}`);
+      let visibilityReads = 0;
+      page.on('response', response => {
+        if (new URL(response.url()).pathname === `/boards/${board}` && response.request().method() === 'GET' && response.status() === 200) visibilityReads++;
+      });
       await page.getByRole('link', { name: 'Board visibility', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Live visibility updates connected.')).toBeVisible();
+      await expect.poll(() => visibilityReads).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('progressbar', { name: 'Checking Board visibility' })).toHaveCount(0);
       const choosePublic = async () => {
         await page.getByRole('combobox', { name: 'Board visibility' }).focus(); await page.keyboard.press('ArrowDown');
@@ -46,7 +56,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await page.getByRole('button', { name: 'Review visibility change' }).focus(); await page.keyboard.press('Enter');
       await page.getByRole('button', { name: 'Confirm visibility change' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText(/The Board changed/)).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Visibility review' })).toHaveCount(0);
+      // A live canonical read may already have restored authorized metadata.
+      await expect(page.getByRole('button', { name: 'Check current visibility' })).toBeEnabled();
       await page.getByRole('button', { name: 'Check current visibility' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('combobox', { name: 'Board visibility' })).toHaveText('Organization');
       await choosePublic();
@@ -58,6 +69,6 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await publicRead.json()).access).toMatchObject({ canView: true, canEdit: false, canMove: false, canAdminister: false });
       expect((await anonymous.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'PRIVATE', version: nextVersion + 1 } })).status()).toBe(401);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    } finally { await anonymous.close(); }
+    } finally { try { restoreWorker(); } finally { await anonymous.close(); } }
   });
 }
