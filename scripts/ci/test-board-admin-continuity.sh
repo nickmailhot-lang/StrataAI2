@@ -143,3 +143,17 @@ later_state=$(consent_state)
 test "$(request owner DELETE "/boards/$page_board/members/$consent_user" '{}' "$remove_key" "$reviewed_version")" = 204
 test "$later_state" = "$(consent_state)"
 echo 'Exact-image Board member consent: stale/malformed role and removal versions reject without writes, and keyed acknowledgments never reapply to later membership state.'
+
+# Ephemeral synthetic fixture for the required desktop/mobile directory consumer.
+# Export only its test credentials and expected stable UUID order; never attach
+# this file to release artifacts or diagnostics.
+test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"
+directory_fixture="$RUNNER_TEMP/board-member-directory-fixture.json"
+printf '{}' > "$directory_fixture"; chmod 600 "$directory_fixture"
+jq -n --arg organizationId "$org" --arg boardId "$page_board" \
+  --arg ownerEmail "$(jq -r '.user.email' "$scratch/owner.user")" \
+  --arg password 'board-admin-continuity-horse' --arg formerId "$former" \
+  --slurpfile first "$scratch/page.first" --slurpfile second "$scratch/page.second" \
+  '{organizationId:$organizationId,boardId:$boardId,ownerEmail:$ownerEmail,password:$password,formerId:$formerId,
+    firstPageIds:($first[0]|map(.userId)),secondPageIds:($second[0]|map(.userId))}' > "$directory_fixture"
+printf 'STRATAAI_E2E_BOARD_MEMBER_DIRECTORY_FIXTURE=%s\n' "$directory_fixture" >> "$GITHUB_ENV"

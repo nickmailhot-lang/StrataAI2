@@ -87,3 +87,24 @@ arrive after reconnection. An open mobile visibility confirmation must cancel on
 an external visibility change without a phone write. Subsequent admin demotion
 must clear protected visibility details and deny administration reads/writes.
 Collection passes; exact-image execution and full PRD acceptance remain pending.
+## Page recovery and bounded browser consumption
+
+Explicit read-only recovery now retains the last requested cursor and previous-page
+stack, including when moving to the next page failed before it could load. Live
+refresh stays on that same selected page. Navigating back uses the prior cursor;
+terminal pages disable the next action. Malformed response cursors are rejected
+before Board names or member profiles are rendered. Three component cases verify
+failed-page recovery, live refresh/back navigation and last-row cursor binding.
+
+The required PostgreSQL continuity fixture exports ephemeral synthetic test
+credentials and its stable 50/3 UUID pages to a mode-600 file under RUNNER_TEMP.
+The file is excluded from release and failure artifacts. Missing preparation fails
+release CI; the browser case skips only outside CI when the fixture is unavailable.
+`board-member-directory.spec.ts` uses the actual restricted release API and tested
+Worker image for desktop and phone keyboard pagination. It injects one failed Board
+read after Next, checks protected rows clear, recovers the requested three-member
+page without any Board mutation, compares current emails with the authorized
+Organization directory, navigates back, and checks former-member profile details
+remain hidden even though a different Organization membership is active. Both
+cases collect locally; exact-image execution remains pending. This is bounded
+paging evidence, not a large-Board latency/performance claim.

@@ -7,7 +7,12 @@ const org = '10000000-0000-4000-8000-000000000001', board = '20000000-0000-4000-
 const row = { boardId: board, userId: '30000000-0000-4000-8000-000000000003', role: 'MEMBER', active: true, version: 4,
   displayName: 'Jordan', email: 'jordan@example.test', organizationMemberActive: true };
 const scope = { board: { id: board, organizationId: org, name: 'Private repairs', lifecycleState: 'active' }, access: { canAdminister: true } };
-const reply = (value: unknown, status = 200) => new Response(status === 204 ? null : JSON.stringify(value), { status });
+const reply = (value: unknown, status = 200, cursor?: string) => new Response(status === 204 ? null : JSON.stringify(value),
+  { status, headers: cursor ? { 'X-StrataAI-Next-Cursor': cursor } : {} });
+const participant = (n: number) => ({ ...row, userId: `40000000-0000-4000-8000-${String(n).padStart(12, '0')}`,
+  displayName: `Participant ${n}`, email: `participant-${n}@example.test` });
+const firstPage = Array.from({ length: 50 }, (_, n) => participant(n + 1));
+const firstCursor = firstPage.at(-1)!.userId;
 function mount(...responses: (Response | Error)[]) {
   const mock = vi.fn(); for (const r of responses) { if (r instanceof Error) mock.mockRejectedValueOnce(r); else mock.mockResolvedValueOnce(r); }
   vi.stubGlobal('fetch', mock);
@@ -15,6 +20,45 @@ function mount(...responses: (Response | Error)[]) {
     { initialEntries: [`/app/${org}/boards/${board}/members`] })} />); return mock;
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+it('retries the requested next page after a failed read instead of silently returning to the previous page', async () => {
+  const mock = mount(reply(scope), reply(firstPage, 200, firstCursor), reply({}, 503), reply(scope), reply([participant(51)]));
+  await screen.findByRole('heading', { name: 'Participant 1' });
+  fireEvent.click(screen.getByRole('button', { name: 'Next members' }));
+  await screen.findByText(/Unable to confirm current Board members/);
+  expect(screen.queryByRole('heading', { name: 'Participant 1' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Check current members' }));
+  await screen.findByRole('heading', { name: 'Participant 51' });
+  expect(mock.mock.calls[4][0]).toBe(`/boards/${board}/members?after=${firstCursor}`);
+  expect(screen.getByRole('button', { name: 'Previous members' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Next members' })).toBeDisabled();
+}, 10_000);
+it('preserves the selected page through live refresh and uses the prior cursor when navigating back', async () => {
+  let invalidate: (() => void) | undefined;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  const mock = mount(reply(scope), reply(firstPage, 200, firstCursor), reply(scope), reply([participant(51)]),
+    reply(scope), reply([{ ...participant(51), role: 'ADMIN', version: 5 }]), reply(scope), reply(firstPage, 200, firstCursor));
+  await screen.findByRole('heading', { name: 'Participant 1' });
+  await waitFor(() => expect(invalidate).toBeDefined());
+  fireEvent.click(screen.getByRole('button', { name: 'Next members' }));
+  await screen.findByRole('heading', { name: 'Participant 51' }); act(() => invalidate!());
+  await screen.findByRole('button', { name: 'Make member: Participant 51' });
+  expect(mock.mock.calls[3][0]).toBe(`/boards/${board}/members?after=${firstCursor}`);
+  expect(mock.mock.calls[5][0]).toBe(`/boards/${board}/members?after=${firstCursor}`);
+  expect(watchBoard).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getByRole('button', { name: 'Previous members' }));
+  await screen.findByRole('heading', { name: 'Participant 1' });
+  expect(mock.mock.calls[7][0]).toBe(`/boards/${board}/members`);
+  expect(screen.getByRole('button', { name: 'Previous members' })).toBeDisabled();
+  expect(mock.mock.calls.filter(call => ['PATCH', 'DELETE'].includes(call[1]?.method))).toHaveLength(0);
+}, 10_000);
+it('rejects a cursor that does not bind to the last bounded row before disclosing any profiles', async () => {
+  mount(reply(scope), reply(firstPage, 200, firstPage[0].userId));
+  await screen.findByText(/Unable to confirm current Board members/);
+  expect(screen.queryByText('Private repairs')).not.toBeInTheDocument();
+  expect(screen.queryByText('participant-1@example.test')).not.toBeInTheDocument();
+  expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(watchBoard).not.toHaveBeenCalled();
+});
 it('coalesces events during a pending directory refresh into one follow-up read', async () => {
   let invalidate: (() => void) | undefined; let release: ((value: Response) => void) | undefined;
   vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });

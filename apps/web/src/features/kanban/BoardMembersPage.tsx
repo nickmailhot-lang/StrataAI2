@@ -132,7 +132,7 @@ function Members({ org, id }: { org: string; id: string }) {
     {error && <Alert severity="error">{error}</Alert>}{notice && <Alert severity="info">{notice}</Alert>}
     {subscribed && <Typography role="status">{liveStatus === 'live' ? 'Live member updates connected.' : 'Member updates are reconnecting or checking periodically.'}</Typography>}
     {busy && <CircularProgress aria-label="Loading Board members" />}
-    <Button ref={refresh} disabled={busy} onClick={() => { setNotice(undefined); void load(cursor, previous); }}>Check current members</Button>
+    <Button ref={refresh} disabled={busy} onClick={() => { setNotice(undefined); void load(position.current.cursor, position.current.previous); }}>Check current members</Button>
     {rows && <><Button component={Link} to={`/app/${org}/boards/${id}/invite`}>Invite to Board</Button>
       <Typography>Board roles and Organization roles grant separate access. Changes require current administrative permission.</Typography>
       {rows.length === 0 && <Typography>No active Board memberships on this page.</Typography>}

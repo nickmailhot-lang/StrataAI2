@@ -114,3 +114,9 @@ release baseline verified paging, current/former profiles and consent; it predat
 this batch query and the added cross-Organization fixture. Current warnings-as-
 errors build and shell syntax checks pass; Linux execution remains pending. This
 reduces profile round trips but does not establish a latency or large-data target.
+Linux source coverage for the batch-query increment f53da3f now passes in
+[CI run 36926874563](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36926874563):
+decoded .NET logs show 123 domain and 170 API host tests, zero failures/skips.
+This includes the sparse-Board profile/foreign-Organization case. Its exact-image
+PostgreSQL fixture is still running; source checks alone do not prove its release
+runtime behavior. The later paging-browser fixture needs its own CI execution.
