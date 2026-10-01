@@ -158,6 +158,12 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     vi.useFakeTimers();
     try {
       await act(async () => invalidate());
+      // The initial read's promise finalizer can still be queued when the
+      // rendered card appears. Flush that queued refresh and the 503 response
+      // before asserting request count or advancing the retry deadline.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
       expect(fetcher).toHaveBeenCalledTimes(2);
       await act(async () => {
         await vi.advanceTimersByTimeAsync(10_000);
@@ -165,6 +171,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     } finally {
       vi.useRealTimers();
     }
+    expect(fetcher).toHaveBeenCalledTimes(3);
     expect(
       await screen.findByRole("link", {
         name: "Automatically recovered title",

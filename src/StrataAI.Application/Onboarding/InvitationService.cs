@@ -184,8 +184,10 @@ public sealed class InvitationService(
                 "invalid_or_expired_invitation");
         }
 
+        var issuerAccount = await identityStore.FindUserByIdAsync(invitation.CreatedByUserId, cancellationToken);
         var issuer = await organizationStore.FindMembershipAsync(invitation.OrganizationId, invitation.CreatedByUserId, cancellationToken);
-        if (issuer is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin } ||
+        if (issuerAccount is not { Status: AccountStatus.Active } ||
+            issuer is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin } ||
             (invitation.Surface == InvitationSurface.Internal && invitation.TargetRole == "OWNER" && issuer.Role != OrganizationRole.Owner))
             return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
         if (invitation.Surface == InvitationSurface.Internal && invitation.TargetRole != "OWNER")

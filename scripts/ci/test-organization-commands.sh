@@ -150,6 +150,21 @@ test "$(admin "SELECT accepted_at IS NULL FROM invitations WHERE token_hash='$wa
 test "$(admin "SELECT version FROM organization_members WHERE tenant_id='$organization' AND user_id='$guest';")" = "$guest_version"
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")" = "$waiting_audits"
 admin "UPDATE users SET status='ACTIVE' WHERE id='$guest';" >/dev/null
+# Membership may remain active for historical attribution after account deactivation.
+# Such an issuer cannot authorize acceptance, including deactivation during its read wait.
+hold "SELECT id FROM users WHERE id='$owner' FOR UPDATE;"
+request POST "/invitations/$waiting_token/accept" '{}' guest > "$scratch/status" &
+request_pid=$!
+blocked '%FROM users WHERE id =%FOR SHARE%'
+release "UPDATE users SET status='DEACTIVATED' WHERE id='$owner';"
+wait "$request_pid"
+request_pid=''
+test "$(cat "$scratch/status")" = 400
+jq -e '.code=="invalid_or_expired_invitation"' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT accepted_at IS NULL FROM invitations WHERE token_hash='$waiting_hash';")" = t
+test "$(admin "SELECT version FROM organization_members WHERE tenant_id='$organization' AND user_id='$guest';")" = "$guest_version"
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")" = "$waiting_audits"
+admin "UPDATE users SET status='ACTIVE' WHERE id='$owner';" >/dev/null
 # A membership revocation committed during the lock wait must invalidate the actor.
 hold "SELECT user_id FROM organization_members WHERE tenant_id='$organization' AND user_id='$owner' FOR UPDATE;"
 request PATCH "/organizations/$organization" '{"name":"Revoked edit","version":1}' > "$scratch/status" &

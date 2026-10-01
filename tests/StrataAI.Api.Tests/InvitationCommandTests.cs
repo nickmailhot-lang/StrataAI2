@@ -47,5 +47,10 @@ public sealed partial class ApiHostTests
         Assert.True((await service.AcceptAsync(invited.Id, legitimate.Value!.RawToken, "fixture", ct)).Succeeded);
         Assert.Equal(OrganizationRole.Member, (await store.FindMembershipAsync(org, invited.Id, ct))!.Role);
         Assert.Equal("invalid_or_expired_invitation", (await service.AcceptAsync(invited.Id, legitimate.Value!.RawToken, "fixture", ct)).ErrorCode);
+        var inactiveIssuer = await service.CreateAsync(org, owner.Id, admin.Email, InvitationSurface.Internal, "MEMBER", "fixture", ct);
+        Assert.True(inactiveIssuer.Succeeded);
+        Assert.True(await identities.DeactivateUserAsync(owner.Id, DateTimeOffset.UtcNow, ct));
+        Assert.Equal("invalid_or_expired_invitation", (await service.AcceptAsync(admin.Id, inactiveIssuer.Value!.RawToken, "fixture", ct)).ErrorCode);
+        Assert.False((await store.FindMembershipAsync(org, admin.Id, ct))!.Active);
     }
 }
