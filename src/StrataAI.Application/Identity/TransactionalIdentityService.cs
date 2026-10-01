@@ -10,7 +10,7 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
         string? timezone,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        inner.RegisterAsync(email, password, displayName, locale, timezone, correlationId, cancellationToken);
+        commands.ExecuteRegistrationAsync(() => inner.RegisterAsync(email, password, displayName, locale, timezone, correlationId, cancellationToken), cancellationToken);
 
     public Task<IdentityOperation<LoginOutcome>> LoginAsync(
         string email,

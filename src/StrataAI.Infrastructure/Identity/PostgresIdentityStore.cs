@@ -18,9 +18,12 @@ internal sealed class PostgresIdentityStore(
         IdentityTokenDelivery? delivery,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
-        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var ownedTransaction = routing.Transaction is null
+            ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
+        var connection = routing.Connection;
+        var transaction = routing.Transaction ?? ownedTransaction!;
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO users(
@@ -38,7 +41,7 @@ internal sealed class PostgresIdentityStore(
         AddUserParameters(command, user);
         if (await command.ExecuteNonQueryAsync(cancellationToken) != 1)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            if (ownedTransaction is not null) await ownedTransaction.RollbackAsync(cancellationToken);
             return false;
         }
         if (verificationToken is not null)
@@ -49,7 +52,7 @@ internal sealed class PostgresIdentityStore(
                 await PublishIdentityDeliveryAsync(verificationToken, delivery, IdentityTokenPurpose.VerifyEmail, connection, transaction, cancellationToken);
         }
         else if (delivery is not null) throw new ArgumentException("Delivery requires a verification token.");
-        await transaction.CommitAsync(cancellationToken);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(cancellationToken);
         return true;
     }
 

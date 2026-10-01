@@ -6,7 +6,7 @@ Identity account state is global. The factory uses a separate identity transacti
 
 The required exact-image fixture denies audit insertion during profile change and deactivation, compares the complete user/session state plus audit count, checks no cookie deletion on rejection, commits a valid profile edit, and rejects a stale version without changes. Controlled user locks observe logout committed during both profile and deactivation admission waits, then verify masked 401, unchanged profile/audit state and another session still working. With the API limited to one database connection, profile change and deactivation must finish; the final account remains in history, every session is revoked and exactly one deactivation audit exists. The API host test checks two independent sessions both lose access after deactivation.
 
-Registration, verification/reset, recovery, durable retry keys, invitation delivery, identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
+Verification/reset, recovery, durable retry keys, invitation delivery, identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
 
 ## Sign-in and logout
 
@@ -14,4 +14,10 @@ Sign-in runs password verification, optional hash upgrade, session creation and 
 
 Logout uses the authenticated identity command boundary. Session revocation and its audit commit together, and the API clears the browser cookie only after confirmed success. Audit failure preserves both the session and cookie so the user can retry. Restricted release-image fixtures cover audit denial for login/logout, account deactivation while sign-in waits, and both commands with a one-connection pool.
 
-Registration, recovery and verification still need their audit writes incorporated into their command boundaries. The demo store serializes identity commands but does not claim durable rollback.
+Recovery and verification still need their audit writes incorporated into their command boundaries. The demo store serializes identity commands but does not claim durable rollback.
+
+## Registration
+
+Self-registration validates the configured onboarding policy inside its global identity command. Account creation, the hashed verification token, durable delivery publication and `USER_REGISTERED` audit commit together. The store borrows the root transaction and retains owning-transaction behavior for direct store callers. Case-insensitive uniqueness uses `ON CONFLICT DO NOTHING`; a rejected duplicate does not produce another token, delivery or audit. Registration database errors use the same masked 503 response.
+
+The exact-image mail fixture limits the API to one database connection, stops the Worker, denies audit insertion, verifies all four record counts remain unchanged, then retries and checks exactly one verification token, queued delivery and registration audit. An uppercase-email duplicate leaves those counts unchanged. Publication rejection also returns the masked storage error without committing an account.

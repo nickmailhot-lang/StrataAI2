@@ -4,7 +4,11 @@ base=http://localhost:8080
 fixture=http://localhost:19090
 compose=(docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml)
 scratch="$(mktemp -d)"
-trap 'rm -rf "$scratch"' EXIT
+cleanup() {
+  query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+  rm -rf "$scratch"
+}
+trap cleanup EXIT
 trap 'echo "Identity mail integration failed at line $LINENO" >&2' ERR
 query() { docker compose -f compose.release.yml exec -T postgres psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" --quiet --tuples-only --no-align --command="$1"; }
 post() {
@@ -33,12 +37,38 @@ for target in missing@example.test "$known"; do
 done
 docker compose -f compose.release.yml exec -T postgres psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" < scripts/ci/grant-identity-worker.sql
 "${compose[@]}" stop worker
-"${compose[@]}" up -d --wait --wait-timeout 180 api
+# Registration and its token/delivery/audit must borrow one connection.
+"${compose[@]}" -f scripts/ci/compose.atomic-test.yml up -d --wait --wait-timeout 180 api
+
+# PRD-02/60: audit rejection must roll back account, verification token and queued delivery.
+email="audit-rollback-${RANDOM}-${RANDOM}@example.test"
+registration="$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery",displayName:"Registration audit rollback"}')"
+registration_state() {
+  query "SELECT jsonb_build_object('users',(SELECT count(*) FROM users),'verification',(SELECT count(*) FROM email_verification_tokens),'delivery',(SELECT count(*) FROM identity_delivery_jobs),'audit',(SELECT count(*) FROM audit_events))::text;"
+}
+before_registration="$(registration_state)"
+query 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(post /auth/register "$registration")" = 503
+jq -e '.code=="identity_storage_unavailable" and .status==503' "$scratch/response" >/dev/null
+scripts/ci/assert-file-excludes.sh 'Registration audit rollback|Npgsql|audit_events|permission denied|INSERT INTO' "$scratch/response"
+test "$before_registration" = "$(registration_state)"
+test "$(query "SELECT count(*) FROM users WHERE email='$email';")" = 0
+query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$(post /auth/register "$registration")" = 201
+registration_user="$(jq -r '.user.id' "$scratch/response")"
+test "$(query "SELECT count(*) FROM email_verification_tokens WHERE user_id='$registration_user';")" = 1
+test "$(query "SELECT count(*) FROM identity_delivery_jobs WHERE user_id='$registration_user' AND purpose='VERIFY_EMAIL';")" = 1
+test "$(query "SELECT count(*) FROM audit_events WHERE actor_id='$registration_user' AND event_type='USER_REGISTERED';")" = 1
+before_registration="$(registration_state)"
+test "$(post /auth/register "$(jq '.email |= ascii_upcase' <<< "$registration")")" = 409
+jq -e '.code=="email_unavailable"' "$scratch/response" >/dev/null
+test "$before_registration" = "$(registration_state)"
 
 # A publication failure cannot leave a user or verification token committed.
 query "CREATE FUNCTION ci_reject_identity_publication() RETURNS trigger LANGUAGE plpgsql AS \$\$ BEGIN RAISE EXCEPTION 'fixture publication rejected'; END; \$\$; CREATE TRIGGER ci_reject_identity_publication BEFORE INSERT ON identity_delivery_jobs FOR EACH ROW EXECUTE FUNCTION ci_reject_identity_publication();" >/dev/null
 email="rollback-${RANDOM}-${RANDOM}@example.test"
-test "$(post /auth/register "$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery",displayName:"Mail rollback"}')")" = 500
+test "$(post /auth/register "$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery",displayName:"Mail rollback"}')")" = 503
+jq -e '.code=="identity_storage_unavailable"' "$scratch/response" >/dev/null
 test "$(query "SELECT count(*) FROM users WHERE email='$email';")" = 0
 query 'DROP TRIGGER ci_reject_identity_publication ON identity_delivery_jobs; DROP FUNCTION ci_reject_identity_publication();' >/dev/null
 
