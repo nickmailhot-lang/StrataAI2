@@ -73,6 +73,10 @@ public sealed record BoardMemberRecord(
     DateTimeOffset UpdatedAt,
     long Version);
 
+public sealed record BoardMemberDirectoryEntry(Guid BoardId, Guid UserId, BoardRole Role,
+    bool Active, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long Version,
+    string? DisplayName, string? Email, bool OrganizationMemberActive);
+
 public sealed record BoardSnapshot(
     BoardRecord Board,
     IReadOnlyList<BoardListSnapshot> Lists,

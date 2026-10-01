@@ -45,3 +45,22 @@ cursor, and compares audit/event/job/replay counts before and after reads. A UUI
 retry header on GET must not create a receipt. These are administrative fixtures,
 not evidence of signup, verification delivery or invitation acceptance. Shell
 syntax passes locally; execution remains pending exact-image CI.
+
+## Scoped member labels
+
+Directory rows now use a separate read model, retaining existing membership
+fields and adding `displayName`, `email` and `organizationMemberActive`. Each
+bounded row resolves its profile through the owning Organization's active-member
+query inside the authorized Board transaction. Board administrators can identify
+their Board's participants without access to an Organization-wide directory.
+Removed Organization membership yields null name/email and a false marker; the
+physical Board membership remains visible for cleanup without reviving access.
+Passwords, global account details, proof and session data are never projected.
+Membership mutation responses and persistence records remain unchanged.
+
+Host and mandatory PostgreSQL cases assert current scoped profile labels and
+null labels after Organization membership removal. Build and shell syntax checks
+pass locally; execution is pending Linux CI. Profile enrichment is bounded to the
+51-row seek window but currently performs per-row scoped queries. Performance
+evidence and any necessary batch-query optimization remain to be completed before
+the PRD performance target can be claimed.

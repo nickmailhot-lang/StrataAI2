@@ -83,7 +83,7 @@ public sealed class TransactionalWorkManagementService(
         CancellationToken cancellationToken = default) =>
         BoardCommand(boardId, actorUserId, "view", WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetStarAsync", boardId, new { starred }, "board_not_found"), () => inner.SetStarAsync(boardId, actorUserId, starred, cancellationToken), cancellationToken);
 
-    public Task<WorkOperation<IReadOnlyList<BoardMemberRecord>>> ListBoardMembersAsync(
+    public Task<WorkOperation<IReadOnlyList<BoardMemberDirectoryEntry>>> ListBoardMembersAsync(
         Guid boardId,
         Guid actorUserId,
         CancellationToken cancellationToken = default, Guid? after = null) =>
@@ -93,7 +93,7 @@ public sealed class TransactionalWorkManagementService(
                 var result = await inner.ListBoardMembersAsync(boardId, actorUserId, cancellationToken, after);
                 if (!result.Succeeded) return result;
                 if (!await actors.VerifyAsync(actorUserId, cancellationToken))
-                    return WorkOperation<IReadOnlyList<BoardMemberRecord>>.Failure("session_unavailable");
+                    return WorkOperation<IReadOnlyList<BoardMemberDirectoryEntry>>.Failure("session_unavailable");
                 return result;
             }, cancellationToken);
 

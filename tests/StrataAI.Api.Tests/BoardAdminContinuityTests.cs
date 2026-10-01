@@ -61,6 +61,11 @@ public sealed partial class ApiHostTests
         var original = await store.FindBoardMemberAsync(id, adminId, ct);
         using var directory = await admin.GetAsync($"/boards/{id}/members", ct);
         Assert.Equal(HttpStatusCode.OK, directory.StatusCode);
+        var directoryRow = (await directory.Content.ReadFromJsonAsync<JsonElement>(ct)).EnumerateArray().Single();
+        Assert.True(directoryRow.GetProperty("organizationMemberActive").GetBoolean());
+        Assert.False(string.IsNullOrWhiteSpace(directoryRow.GetProperty("displayName").GetString()));
+        Assert.False(string.IsNullOrWhiteSpace(directoryRow.GetProperty("email").GetString()));
+        Assert.False(directoryRow.TryGetProperty("passwordHash", out _));
         var key = Guid.NewGuid().ToString();
         for (var retry = 0; retry < 2; retry++)
         {
@@ -76,6 +81,13 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.NotFound, deniedDirectory.StatusCode);
         using var ownerDirectory = await owner.GetAsync($"/boards/{id}/members", ct);
         Assert.Equal(HttpStatusCode.OK, ownerDirectory.StatusCode);
+        await app.Services.GetRequiredService<IOrganizationStore>().RemoveMemberAsync(org, adminId, DateTimeOffset.UtcNow, ct);
+        using var formerDirectory = await owner.GetAsync($"/boards/{id}/members", ct);
+        Assert.Equal(HttpStatusCode.OK, formerDirectory.StatusCode);
+        var formerRow = (await formerDirectory.Content.ReadFromJsonAsync<JsonElement>(ct)).EnumerateArray().Single();
+        Assert.False(formerRow.GetProperty("organizationMemberActive").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, formerRow.GetProperty("displayName").ValueKind);
+        Assert.Equal(JsonValueKind.Null, formerRow.GetProperty("email").ValueKind);
     }
 
     [Fact]

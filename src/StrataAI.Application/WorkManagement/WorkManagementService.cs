@@ -284,7 +284,7 @@ public sealed class WorkManagementService(
         return WorkOperation<bool>.Success(starred);
     }
 
-    public async Task<WorkOperation<IReadOnlyList<BoardMemberRecord>>> ListBoardMembersAsync(
+    public async Task<WorkOperation<IReadOnlyList<BoardMemberDirectoryEntry>>> ListBoardMembersAsync(
         Guid boardId,
         Guid actorUserId,
         CancellationToken cancellationToken = default, Guid? after = null)
@@ -296,14 +296,21 @@ public sealed class WorkManagementService(
 
         if (resolved is null || !resolved.Value.Access.CanAdminister)
         {
-            return WorkOperation<IReadOnlyList<BoardMemberRecord>>.Failure(
+            return WorkOperation<IReadOnlyList<BoardMemberDirectoryEntry>>.Failure(
                 "board_not_found");
         }
 
-        return WorkOperation<IReadOnlyList<BoardMemberRecord>>.Success(
-            await store.ListBoardMembersAsync(
-                boardId,
-                cancellationToken, after, 51));
+        var members = await store.ListBoardMembersAsync(boardId, cancellationToken, after, 51);
+        var entries = new List<BoardMemberDirectoryEntry>();
+        foreach (var member in members)
+        {
+            var profiles = await organizationStore.ListActiveMembersAsync(resolved.Value.Board.OrganizationId,
+                null, cancellationToken, member.UserId);
+            var profile = profiles.SingleOrDefault();
+            entries.Add(new(member.BoardId, member.UserId, member.Role, member.Active, member.CreatedAt,
+                member.UpdatedAt, member.Version, profile?.DisplayName, profile?.Email, profile is not null));
+        }
+        return WorkOperation<IReadOnlyList<BoardMemberDirectoryEntry>>.Success(entries);
     }
 
     public async Task<WorkOperation<BoardMemberRecord>> SetBoardMemberAsync(

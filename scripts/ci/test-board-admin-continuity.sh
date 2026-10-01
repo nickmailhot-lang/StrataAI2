@@ -92,7 +92,14 @@ test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -D 
 jq -e 'length==3' "$scratch/page.second" >/dev/null
 ! grep -qi '^X-StrataAI-Next-Cursor:' "$scratch/page.headers"
 jq -s -e 'add | map(.userId) | length==53 and length==(unique|length) and .==sort' "$scratch/page.first" "$scratch/page.second" >/dev/null
+jq -s -e 'add | all(.organizationMemberActive==true and (.displayName|type)=="string" and (.email|type)=="string" and (has("passwordHash")|not))' "$scratch/page.first" "$scratch/page.second" >/dev/null
 test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/page.invalid" -w '%{http_code}' "$base/boards/$page_board/members?after=not-a-uuid")" = 400
 jq -e '.code=="invalid_board_member_cursor"' "$scratch/page.invalid" >/dev/null
+test "$before_page" = "$(state)"
+former=$(jq -r '[.[] | select(.displayName=="Directory fixture")][0].userId' "$scratch/page.first")
+test -n "$former"; test "$former" != null
+admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$former';" >/dev/null
+test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/page.former" -w '%{http_code}' "$base/boards/$page_board/members")" = 200
+jq -e --arg user "$former" 'map(select(.userId==$user)) | length==1 and .[0].organizationMemberActive==false and .[0].displayName==null and .[0].email==null' "$scratch/page.former" >/dev/null
 test "$before_page" = "$(state)"
 echo 'Exact-image Board member directory: real FK fixtures, bounded seek, complete ordered pages, terminal cursor absence, invalid cursor and no read audit/event/job/replay writes passed.'

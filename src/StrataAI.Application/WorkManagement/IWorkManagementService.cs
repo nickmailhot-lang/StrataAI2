@@ -64,7 +64,7 @@ public interface IWorkManagementService
         bool starred,
         CancellationToken cancellationToken = default);
 
-    Task<WorkOperation<IReadOnlyList<BoardMemberRecord>>> ListBoardMembersAsync(
+    Task<WorkOperation<IReadOnlyList<BoardMemberDirectoryEntry>>> ListBoardMembersAsync(
         Guid boardId,
         Guid actorUserId,
         CancellationToken cancellationToken = default, Guid? after = null);
