@@ -9,7 +9,11 @@ public interface IInvitationStore
     Task<IReadOnlyList<PendingInvitation>> ListPendingForEmailAsync(
         string emailNormalized,
         DateTimeOffset now,
+        Guid? after,
         CancellationToken cancellationToken = default);
+
+    Task<InvitationRecord?> FindActiveByIdForEmailAsync(Guid invitationId, Guid actorUserId, string emailNormalized,
+        DateTimeOffset now, CancellationToken cancellationToken = default);
 
     Task<InvitationRecord?> FindActiveByTokenHashAsync(
         string tokenHash,

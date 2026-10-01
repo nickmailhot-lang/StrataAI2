@@ -11,9 +11,13 @@ public interface IInvitationService
         string correlationId,
         CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<PendingInvitation>> ListPendingAsync(
+    Task<InvitationOperation<PendingInvitationPage>> ListPendingAsync(
         Guid actorUserId,
+        Guid? after = null,
         CancellationToken cancellationToken = default);
+
+    Task<InvitationOperation<AcceptedInvitation>> AcceptPendingAsync(Guid actorUserId, Guid invitationId,
+        string correlationId, CancellationToken cancellationToken = default);
 
     Task<InvitationOperation<AcceptedInvitation>> AcceptAsync(
         Guid actorUserId,

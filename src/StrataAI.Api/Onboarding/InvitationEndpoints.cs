@@ -66,6 +66,7 @@ public static class InvitationEndpoints
         app.MapGet(
                 "/me/invitations",
                 async (
+                    string? after,
                     HttpContext context,
                     IInvitationService service,
                     CancellationToken cancellationToken) =>
@@ -76,12 +77,26 @@ public static class InvitationEndpoints
                         return Results.Unauthorized();
                     }
 
-                    return Results.Ok(
-                        await service.ListPendingAsync(
-                            userId.Value,
-                            cancellationToken));
+                    Guid? cursor = null;
+                    if (after is not null)
+                    {
+                        if (after.Length != 36 || !Guid.TryParseExact(after, "D", out var parsed) || parsed == Guid.Empty)
+                            return ErrorFor("invalid_invitation_cursor");
+                        cursor = parsed;
+                    }
+                    var result = await service.ListPendingAsync(userId.Value, cursor, cancellationToken);
+                    return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
                 })
             .RequireAuthorization().RequireRateLimiting("invitation");
+
+        app.MapPost("/me/invitations/{invitationId:guid}/accept", async (Guid invitationId, HttpContext context,
+            IInvitationService service, CancellationToken cancellationToken) =>
+        {
+            var userId = GetUserId(context);
+            if (userId is null) return Results.Unauthorized();
+            var result = await service.AcceptPendingAsync(userId.Value, invitationId, context.TraceIdentifier, cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().RequireRateLimiting("invitation");
 
         app.MapPost(
                 "/invitations/{token}/accept",
@@ -173,6 +188,7 @@ public static class InvitationEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_invitation_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode, "A nonempty UUID invitation cursor is required."),
             "session_unavailable" => Problem(
                 StatusCodes.Status401Unauthorized,
                 errorCode,

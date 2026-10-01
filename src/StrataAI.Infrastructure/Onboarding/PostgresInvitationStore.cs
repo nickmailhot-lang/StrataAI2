@@ -60,10 +60,11 @@ internal sealed class PostgresInvitationStore(
     public async Task<IReadOnlyList<PendingInvitation>> ListPendingForEmailAsync(
         string emailNormalized,
         DateTimeOffset now,
+        Guid? after,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        if (!connectionFactory.HasIdentityCommandScope) throw new InvalidOperationException("Invitation discovery requires a freshly authorized identity transaction.");
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT
@@ -71,20 +72,21 @@ internal sealed class PostgresInvitationStore(
                 tenant_id,
                 target_surface,
                 target_role,
-                expires_at
+                expires_at, organization_name
             FROM invitation_routes
             WHERE email_normalized = @email_normalized
               AND accepted_at IS NULL
               AND revoked_at IS NULL
-              AND expires_at > @now
-            ORDER BY expires_at, invitation_id;
+              AND expires_at > clock_timestamp()
+              AND (@after IS NULL OR invitation_id > @after)
+            ORDER BY invitation_id LIMIT 51;
             """,
-            connection);
+            routing.Connection, routing.Transaction);
 
         command.Parameters.AddWithValue(
             "email_normalized",
             emailNormalized);
-        command.Parameters.AddWithValue("now", now);
+        command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
 
         var result = new List<PendingInvitation>();
         await using var reader =
@@ -98,10 +100,38 @@ internal sealed class PostgresInvitationStore(
                     reader.GetGuid(1),
                     ParseSurface(reader.GetString(2)),
                     reader.GetString(3),
-                    reader.GetFieldValue<DateTimeOffset>(4)));
+                    reader.GetFieldValue<DateTimeOffset>(4), reader.GetString(5)));
         }
 
         return result;
+    }
+
+    public async Task<InvitationRecord?> FindActiveByIdForEmailAsync(Guid invitationId, Guid actorUserId, string emailNormalized,
+        DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        Guid? tenantId;
+        await using (var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken))
+        {
+            await using var route = new NpgsqlCommand("""
+                SELECT tenant_id FROM invitation_routes WHERE invitation_id=@id AND email_normalized=@email
+                  AND (accepted_at IS NULL OR accepted_by_user_id=@actor) AND revoked_at IS NULL AND expires_at>clock_timestamp();
+                """, routing.Connection, routing.Transaction);
+            route.Parameters.AddWithValue("id", invitationId); route.Parameters.AddWithValue("email", emailNormalized);
+            route.Parameters.AddWithValue("actor", actorUserId);
+            tenantId = await route.ExecuteScalarAsync(cancellationToken) is Guid tenant ? tenant : null;
+        }
+        if (tenantId is null) return null;
+        await using var session = await connectionFactory.OpenTenantSessionAsync(tenantId.Value, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+              created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id FROM invitations
+            WHERE id=@id AND email_normalized=@email AND (accepted_at IS NULL OR accepted_by_user_id=@actor) AND revoked_at IS NULL
+              AND expires_at>clock_timestamp();
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("id", invitationId); command.Parameters.AddWithValue("email", emailNormalized);
+        command.Parameters.AddWithValue("actor", actorUserId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken) ? ReadInvitation(reader) : null;
     }
 
     public async Task<InvitationRecord?> FindActiveByTokenHashAsync(
@@ -129,12 +159,12 @@ internal sealed class PostgresInvitationStore(
                 id, tenant_id, invited_email, email_normalized,
                 token_hash, target_surface, target_role,
                 created_by_user_id, created_at, expires_at,
-                accepted_at, revoked_at
+                accepted_at, revoked_at, accepted_by_user_id
             FROM invitations
             WHERE token_hash = @token_hash
               AND accepted_at IS NULL
               AND revoked_at IS NULL
-              AND expires_at > @now;
+              AND expires_at > clock_timestamp();
             """,
             session.Connection,
             session.Transaction);
@@ -182,12 +212,12 @@ internal sealed class PostgresInvitationStore(
                 id, tenant_id, invited_email, email_normalized,
                 token_hash, target_surface, target_role,
                 created_by_user_id, created_at, expires_at,
-                accepted_at, revoked_at
+                accepted_at, revoked_at, accepted_by_user_id
             FROM invitations
             WHERE token_hash = @token_hash
               AND accepted_at IS NULL
               AND revoked_at IS NULL
-              AND expires_at > @accepted_at
+              AND expires_at > clock_timestamp()
             FOR UPDATE;
             """,
             session.Connection,
@@ -278,10 +308,10 @@ internal sealed class PostgresInvitationStore(
         await using (var consume = new NpgsqlCommand(
             """
             UPDATE invitations
-            SET accepted_at = @accepted_at
+            SET accepted_at = @accepted_at, accepted_by_user_id=@user_id
             WHERE id = @id
               AND accepted_at IS NULL
-              AND revoked_at IS NULL;
+              AND revoked_at IS NULL AND expires_at>clock_timestamp();
             """,
             session.Connection,
             session.Transaction))
@@ -290,6 +320,7 @@ internal sealed class PostgresInvitationStore(
                 "accepted_at",
                 acceptedAt);
             consume.Parameters.AddWithValue("id", invitation.Id);
+            consume.Parameters.AddWithValue("user_id", userId);
             if (await consume.ExecuteNonQueryAsync(cancellationToken) != 1)
             {
                 return new InvitationAcceptStoreResult(
@@ -304,7 +335,7 @@ internal sealed class PostgresInvitationStore(
         return new InvitationAcceptStoreResult(
             true,
             null,
-            invitation with { AcceptedAt = acceptedAt });
+            invitation with { AcceptedAt = acceptedAt, AcceptedByUserId = userId });
     }
 
     public async Task<bool> RevokeAsync(
@@ -357,7 +388,7 @@ internal sealed class PostgresInvitationStore(
             WHERE token_hash = @token_hash
               AND accepted_at IS NULL
               AND revoked_at IS NULL
-              AND expires_at > @now;
+              AND expires_at > clock_timestamp();
             """,
             routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("token_hash", tokenHash);
@@ -385,7 +416,8 @@ internal sealed class PostgresInvitationStore(
                 : reader.GetFieldValue<DateTimeOffset>(10),
             reader.IsDBNull(11)
                 ? null
-                : reader.GetFieldValue<DateTimeOffset>(11));
+                : reader.GetFieldValue<DateTimeOffset>(11),
+            reader.IsDBNull(12) ? null : reader.GetGuid(12));
 
     private static InvitationSurface ParseSurface(string surface) =>
         surface switch

@@ -14,12 +14,14 @@ import { ResetPasswordPage } from "../features/auth/ResetPasswordPage";
 import { VerifyEmailPage } from "../features/auth/VerifyEmailPage";
 import { BoardScreen } from "../features/kanban/BoardScreen";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
+import { InvitationsPage } from "../features/auth/InvitationsPage";
 import { PortalShell } from "../portal/PortalShell";
 import { appTheme } from "../theme/appTheme";
 
 const routes = [
   { path: "/app", element: <OrganizationHome /> },
   { path: "/app/profile", element: <ProfilePage /> },
+  { path: "/app/invitations", element: <InvitationsPage /> },
   { path: "/verify-email", element: <VerifyEmailPage /> },
   { path: "/forgot-password", element: <PasswordRecoveryPage /> },
   { path: "/reset-password", element: <ResetPasswordPage /> },

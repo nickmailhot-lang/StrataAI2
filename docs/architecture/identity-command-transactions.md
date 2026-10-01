@@ -6,7 +6,7 @@ Identity account state is global. The factory uses a separate identity transacti
 
 The required exact-image fixture denies audit insertion during profile change and deactivation, compares the complete user/session state plus audit count, checks no cookie deletion on rejection, commits a valid profile edit, and rejects a stale version without changes. Controlled user locks observe logout committed during both profile and deactivation admission waits, then verify masked 401, unchanged profile/audit state and another session still working. With the API limited to one database connection, profile change and deactivation must finish; the final account remains in history, every session is revoked and exactly one deactivation audit exists. The API host test checks two independent sessions both lose access after deactivation.
 
-Durable retry keys, invitation delivery, identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
+Profile and restricted logout/deactivation [durable retries](identity-command-retries.md) are implemented. Credential/token retry protocols, invitation delivery, remaining identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
 
 ## Sign-in and logout
 

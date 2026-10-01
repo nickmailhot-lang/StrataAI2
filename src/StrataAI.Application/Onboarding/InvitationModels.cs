@@ -18,18 +18,23 @@ public sealed record InvitationRecord(
     DateTimeOffset CreatedAt,
     DateTimeOffset ExpiresAt,
     DateTimeOffset? AcceptedAt,
-    DateTimeOffset? RevokedAt);
+    DateTimeOffset? RevokedAt,
+    Guid? AcceptedByUserId = null,
+    string? OrganizationName = null);
 
 public sealed record PendingInvitation(
     Guid Id,
     Guid OrganizationId,
     InvitationSurface Surface,
     string TargetRole,
-    DateTimeOffset ExpiresAt);
+    DateTimeOffset ExpiresAt,
+    string OrganizationName);
 
 public sealed record CreatedInvitation(
     InvitationRecord Invitation,
     string RawToken);
+
+public sealed record PendingInvitationPage(IReadOnlyList<PendingInvitation> Items, Guid? NextCursor);
 
 public sealed record AcceptedInvitation(
     Guid InvitationId,

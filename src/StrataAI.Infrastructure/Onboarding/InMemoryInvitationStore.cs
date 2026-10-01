@@ -1,10 +1,11 @@
 using StrataAI.Application.Onboarding;
+using StrataAI.Application.Common;
 using StrataAI.Application.Organizations;
 
 namespace StrataAI.Infrastructure.Onboarding;
 
 internal sealed class InMemoryInvitationStore(
-    IOrganizationStore organizationStore) : IInvitationStore
+    IOrganizationStore organizationStore, IClock clock) : IInvitationStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<string, InvitationRecord> _byToken =
@@ -26,6 +27,7 @@ internal sealed class InMemoryInvitationStore(
     public Task<IReadOnlyList<PendingInvitation>> ListPendingForEmailAsync(
         string emailNormalized,
         DateTimeOffset now,
+        Guid? after,
         CancellationToken cancellationToken = default)
     {
         lock (_sync)
@@ -36,8 +38,9 @@ internal sealed class InMemoryInvitationStore(
                         invitation.EmailNormalized == emailNormalized &&
                         invitation.AcceptedAt is null &&
                         invitation.RevokedAt is null &&
-                        invitation.ExpiresAt > now)
-                .OrderBy(invitation => invitation.ExpiresAt)
+                        invitation.ExpiresAt > now && (after is null || invitation.Id.CompareTo(after.Value) > 0))
+                .OrderBy(invitation => invitation.Id)
+                .Take(51)
                 .Select(
                     invitation =>
                         new PendingInvitation(
@@ -45,10 +48,20 @@ internal sealed class InMemoryInvitationStore(
                             invitation.OrganizationId,
                             invitation.Surface,
                             invitation.TargetRole,
-                            invitation.ExpiresAt))
+                            invitation.ExpiresAt, invitation.OrganizationName ?? "Organization"))
                 .ToArray();
 
             return Task.FromResult<IReadOnlyList<PendingInvitation>>(result);
+        }
+    }
+
+    public Task<InvitationRecord?> FindActiveByIdForEmailAsync(Guid invitationId, Guid actorUserId, string emailNormalized,
+        DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            return Task.FromResult(_byToken.Values.FirstOrDefault(i => i.Id == invitationId && i.EmailNormalized == emailNormalized
+                && (i.AcceptedAt is null || i.AcceptedByUserId == actorUserId) && i.RevokedAt is null && i.ExpiresAt > clock.UtcNow));
         }
     }
 
@@ -85,7 +98,7 @@ internal sealed class InMemoryInvitationStore(
             if (!_byToken.TryGetValue(tokenHash, out invitation!) ||
                 invitation.AcceptedAt is not null ||
                 invitation.RevokedAt is not null ||
-                invitation.ExpiresAt <= acceptedAt ||
+                invitation.ExpiresAt <= clock.UtcNow ||
                 invitation.EmailNormalized != emailNormalized)
             {
                 return new InvitationAcceptStoreResult(
@@ -94,7 +107,7 @@ internal sealed class InMemoryInvitationStore(
                     null);
             }
 
-            invitation = invitation with { AcceptedAt = acceptedAt };
+            invitation = invitation with { AcceptedAt = acceptedAt, AcceptedByUserId = userId };
             _byToken[tokenHash] = invitation;
         }
 

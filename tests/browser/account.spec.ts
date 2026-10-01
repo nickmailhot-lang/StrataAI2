@@ -1,5 +1,39 @@
 import { expect, test } from '@playwright/test';
 
+test('PRD-60-TC-07/11/15: verified email discovers an invitation and retries lost acceptance', async ({ page, context, browser }) => {
+  const issuer = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  try {
+    const headers = { 'X-StrataAI-Request': '1' };
+    const owner = { email: `invite-owner-${Date.now()}@example.test`, password: 'browser-invite-correct-horse', displayName: 'Issuer' };
+    const recipient = { ...owner, email: `invite-recipient-${Date.now()}@example.test`, displayName: 'Recipient' };
+    expect((await issuer.request.post('/auth/register', { headers, data: owner })).status()).toBe(201);
+    expect((await issuer.request.post('/auth/login', { headers, data: owner })).status()).toBe(200);
+    expect((await context.request.post('/auth/register', { headers, data: recipient })).status()).toBe(201);
+    expect((await context.request.post('/auth/login', { headers, data: recipient })).status()).toBe(200);
+    const created = await issuer.request.post('/organizations', { headers, data: { name: 'Browser invitation council' } });
+    expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+    expect((await issuer.request.post(`/organizations/${org}/invitations`, { headers, data: { email: recipient.email, surface: 'INTERNAL', targetRole: 'MEMBER' } })).status()).toBe(201);
+    let attempts = 0; const paths: string[] = [];
+    await page.route('**/me/invitations/*/accept', async route => {
+      paths.push(new URL(route.request().url()).pathname);
+      if (++attempts === 1) { expect((await route.fetch()).status()).toBe(200); await route.abort('timedout'); }
+      else await route.continue();
+    });
+    await page.goto('/app');
+    await page.getByRole('link', { name: 'Invitations', exact: true }).click();
+    const accept = page.getByRole('button', { name: 'Accept invitation to Browser invitation council' });
+    await expect(accept).toBeVisible(); await accept.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByText('Unable to confirm acceptance. You can retry this invitation safely.')).toBeVisible();
+    await accept.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('link', { name: 'Open organization', exact: true })).toBeVisible();
+    expect(paths).toHaveLength(2); expect(paths[1]).toBe(paths[0]);
+    await page.getByRole('link', { name: 'Open organization', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Browser invitation council', exact: true })).toBeVisible();
+    const organizations = await (await context.request.get('/organizations')).json();
+    expect(organizations.filter((item: { organization: { id: string } }) => item.organization.id === org)).toHaveLength(1);
+  } finally { await issuer.close(); }
+});
+
 test('PRD-02/60-TC-06: lost logout acknowledgment retries the original session receipt', async ({ page, context }) => {
   const headers = { 'X-StrataAI-Request': '1' };
   const credentials = { email: `logout-ack-${Date.now()}@example.test`, password: 'browser-logout-correct-horse', displayName: 'Logout retry account' };

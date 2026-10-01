@@ -168,6 +168,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
           <Button component={Link} to="/app/profile" aria-label="Open profile">
             Profile
           </Button>
+          <Button component={Link} to="/app/invitations">Invitations</Button>
         </Stack>
         <Typography variant="h4" component="h1">
           {organizationId

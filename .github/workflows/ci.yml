@@ -327,6 +327,9 @@ jobs:
       - name: Session-bound logout and deactivation receipts against exact release API
         run: bash scripts/ci/test-identity-revocation-retries.sh
 
+      - name: Verified-email invitation discovery and retry-safe acceptance
+        run: bash scripts/ci/test-invitation-discovery.sh
+
       - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
         run: scripts/ci/test-board-discovery.sh
 
