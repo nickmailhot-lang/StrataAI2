@@ -21,7 +21,24 @@ cleanup() {
   rm -rf "$scratch"
 }
 trap cleanup EXIT
-trap 'echo "Identity mail integration failed at line $LINENO" >&2' ERR
+mail_failure() {
+  local status="$1" line="$2" diagnostic
+  echo "Identity mail integration failed at line $line" >&2
+  # Capture only constrained state and booleans before EXIT restores the Worker.
+  # Never retain recipients, bearer proofs, provider receipts or job metadata.
+  if [[ "${invitation_job:-}" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+    diagnostic="${RUNNER_TEMP:-$scratch}/identity-mail-failure.json"
+    query "SELECT jsonb_build_object('state',j.state,'attemptCount',j.attempt_count,
+      'maxAttempts',j.max_attempts,'errorCode',j.last_error_code,
+      'due',j.available_at<=clock_timestamp(),'hasWorker',j.worker_id IS NOT NULL,
+      'hasLease',j.lease_id IS NOT NULL,'leaseActive',j.lease_expires_at>clock_timestamp(),
+      'deliveryState',(SELECT i.state FROM invitation_mail_intents i WHERE i.job_id=j.id AND i.tenant_id=j.tenant_id))::text
+      FROM background_jobs j WHERE j.id='$invitation_job';" > "$diagnostic" || true
+    cat "$diagnostic" >&2 || true
+  fi
+  return "$status"
+}
+trap 'mail_failure "$?" "$LINENO"' ERR
 query() { docker compose -f compose.release.yml exec -T postgres psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" --quiet --tuples-only --no-align --command="$1"; }
 post() {
   curl --max-time 60 --silent --show-error -o "$scratch/response" -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$2" "$base$1"

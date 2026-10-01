@@ -471,6 +471,7 @@ jobs:
           path: |
             compose-ps.txt
             compose.log
+            ${{ runner.temp }}/identity-mail-failure.json
           if-no-files-found: ignore
           retention-days: 14
 
