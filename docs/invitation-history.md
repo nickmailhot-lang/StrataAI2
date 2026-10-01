@@ -39,3 +39,22 @@ revocation acknowledgment recovery. Linux source evidence for the preceding
 backend commit confirms 114 domain and 138 API cases; full release evidence for
 the UI commit remains required. Board-specific invitations and other onboarding
 acceptance criteria remain open.
+
+## Board administration
+
+The Board history screen at `/app/{organizationId}/boards/{boardId}/invitations`
+uses the scoped Board history and revocation endpoints. It checks the current
+Board administration capability and exact Organization/Board identity before
+loading rows, then validates every row as an Internal Organization Member
+invitation bound to that Board with Admin or Member access. The Board name is
+shown only after the complete page has passed validation. Ordinary Organization
+history rejects Board targets.
+
+The confirmation dialog identifies the Board, recipient and intended role.
+Current access denial clears protected metadata. An uncertain revocation clears
+stale rows and can recover from canonical history without repeating the write;
+a missing or accepted invitation does not imply successful revocation. Sender
+and Board pages link to this history. Component coverage includes malformed
+bindings, admission denial, revoked authority and lost acknowledgment recovery.
+Desktop/mobile Board sender browser evidence and full exact-image CI remain
+required before the corresponding issues can close.

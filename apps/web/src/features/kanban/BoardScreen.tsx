@@ -357,7 +357,8 @@ function BoardContent() {
             Refresh board
           </Button>
           {snapshot.access.canAdminister && snapshot.board.lifecycleState === "active" && (
-            <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invite`}>Invite to Board</Button>
+            <><Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invite`}>Invite to Board</Button>
+            <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invitations`}>Board invitations</Button></>
           )}
           {editable && (
             <Button

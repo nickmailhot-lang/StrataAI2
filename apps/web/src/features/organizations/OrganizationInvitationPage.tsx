@@ -140,7 +140,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   const locked = busy || !!intent || blocked || !!ack;
   return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}` : `/app/${organizationId}/members`}>{boardId !== undefined ? 'Back to Board' : 'Organization members'}</Button>
-    {boardId === undefined && <Button component={Link} to={`/app/${organizationId}/invitations`}>Review issued invitations</Button>}
+    <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}/invitations` : `/app/${organizationId}/invitations`}>Review issued invitations</Button>
     <Typography component="h1" variant="h4">Create {boardId !== undefined ? 'Board' : 'Organization'} invitation</Typography>
     {boardName && <Typography component="h2" variant="h6">{boardName}</Typography>}
     {error && <Alert severity="error">{error}</Alert>}

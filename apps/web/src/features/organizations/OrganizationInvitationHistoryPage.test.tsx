@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
-import { OrganizationInvitationHistoryPage } from './OrganizationInvitationHistoryPage';
+import { OrganizationInvitationHistoryPage, BoardInvitationHistoryPage } from './OrganizationInvitationHistoryPage';
 
 const org = '10000000-0000-0000-0000-000000000001';
 const profile = { locale: 'en-CA', timezone: 'Pacific/Honolulu' };
@@ -77,4 +77,48 @@ describe('PRD-60 administrator invitation history and revocation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Previous invitations' })); await screen.findByText('issued-0@example.test');
     expect(mock.mock.calls[5][0]).not.toContain('?after=');
   });
+});
+
+const board = '30000000-0000-4000-8000-000000000003';
+const boardScope = { board: { id: board, organizationId: org, name: 'Private maintenance', lifecycleState: 'active' }, access: { canAdminister: true } };
+const boardRow = { ...row, boardTarget: { boardId: board, role: 'ADMIN' } };
+function boardMount() {
+  return render(<RouterProvider router={createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId/invitations', element: <BoardInvitationHistoryPage /> }],
+    { initialEntries: [`/app/${org}/boards/${board}/invitations`] })} />);
+}
+it('shows the exact Board role and recovers a lost revocation from canonical history', async () => {
+  const mock = fetcher(reply(profile), reply(boardScope), reply({ items: [boardRow], nextCursor: null }), new Error('Lost committed acknowledgment'),
+    reply(profile), reply(boardScope), reply({ items: [{ ...boardRow, revokedAt: '2034-01-02T00:00:00Z' }], nextCursor: null }));
+  boardMount(); await screen.findByRole('heading', { name: 'Private maintenance' });
+  expect(screen.getByText('Board access: admin')).toBeVisible();
+  await review(); fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+  await screen.findByText('Revocation could not be confirmed. Check the current invitation state before another action.');
+  expect(screen.queryByRole('heading', { name: 'Private maintenance' })).not.toBeInTheDocument();
+  fireEvent.click(await screen.findByRole('button', { name: 'Check revocation' }));
+  await screen.findByText('Invitation revocation confirmed.');
+  const writes = mock.mock.calls.filter(call => call[1]?.method === 'DELETE'); expect(writes).toHaveLength(1);
+  expect(writes[0][0]).toBe(`/boards/${board}/invitations/${row.id}`);
+  expect(screen.getByText('Revoked')).toBeVisible();
+});
+it.each([
+  { ...boardRow, boardTarget: null },
+  { ...boardRow, boardTarget: { boardId: org, role: 'ADMIN' } },
+  { ...boardRow, boardTarget: { boardId: board, role: 'OWNER' } },
+  { ...boardRow, surface: 'PORTAL', targetRole: 'OWNER' },
+])('rejects history metadata outside the exact Board contract: %j', async value => {
+  fetcher(reply(profile), reply(boardScope), reply({ items: [value], nextCursor: null })); boardMount();
+  await screen.findByText('Unable to confirm invitation history. Please retry.');
+  expect(screen.queryByText(row.email)).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Private maintenance' })).not.toBeInTheDocument();
+});
+it('purges private Board metadata when current authority denies revocation', async () => {
+  fetcher(reply(profile), reply(boardScope), reply({ items: [boardRow], nextCursor: null }), reply({ code: 'board_not_found' }, 404));
+  boardMount(); await review(); fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+  await screen.findByText('Board invitation administration is unavailable.');
+  expect(screen.queryByText(row.email)).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Private maintenance' })).not.toBeInTheDocument();
+});
+it('refuses a Board belonging to a different Organization before reading its history', async () => {
+  const mock = fetcher(reply(profile), reply({ ...boardScope, board: { ...boardScope.board, organizationId: board } }));
+  boardMount(); await screen.findByText('Board invitation administration is unavailable.'); expect(mock).toHaveBeenCalledTimes(2);
 });
