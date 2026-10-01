@@ -42,6 +42,26 @@ test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-0000
 if api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; INSERT INTO identity_profile_replays(user_id,key_id,fingerprint,result_json) SELECT user_id,'01300000-0000-0000-0000-000000000004',fingerprint,result_json||jsonb_build_object('SessionToken','forbidden-fixture') FROM identity_profile_replays WHERE user_id='01200000-0000-0000-0000-000000000001'; ROLLBACK;"; then echo 'Credential-bearing result escaped profile schema'; exit 1; fi
 test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_profile_replays WHERE user_id='01200000-0000-0000-0000-000000000002'; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
 if api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; INSERT INTO identity_profile_replays(user_id,key_id,fingerprint,result_json) SELECT '01200000-0000-0000-0000-000000000002','01300000-0000-0000-0000-000000000003',fingerprint,jsonb_set(result_json,'{Id}',to_jsonb('01200000-0000-0000-0000-000000000002'::text)) FROM identity_profile_replays WHERE user_id='01200000-0000-0000-0000-000000000001'; ROLLBACK;"; then echo 'Cross-subject profile retry write escaped RLS'; exit 1; fi
+# Maintenance gets only expired key metadata and deletion, with no cached profile/fingerprint reads.
+if worker 'SELECT fingerprint FROM identity_profile_replays'; then echo 'Maintenance read retry input fingerprints'; exit 1; fi
+if api 'SELECT public.purge_expired_identity_profile_replays()'; then echo 'API obtained global maintenance execution'; exit 1; fi
+test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(user_id) FROM identity_profile_replays; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; WITH d AS (DELETE FROM identity_profile_replays RETURNING user_id) SELECT count(*) FROM d; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+psql -X -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
+INSERT INTO identity_profile_replays(user_id,key_id,fingerprint,result_json,created_at,expires_at)
+SELECT r.user_id,gen_random_uuid(),r.fingerprint,r.result_json,clock_timestamp()-interval '2 days',clock_timestamp()-interval '1 day'
+FROM identity_profile_replays r CROSS JOIN generate_series(1,150)
+WHERE r.user_id='01200000-0000-0000-0000-000000000001';
+SQL
+test "$(api "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT count(*) FROM identity_profile_replays; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+test "$(worker 'SELECT public.purge_expired_identity_profile_replays()')" = 0
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_profile_replays(); ROLLBACK;" | grep -E '^[0-9]+$')" = 100
+test "$(psql -X -At -c 'SELECT count(*) FROM identity_profile_replays WHERE expires_at<=clock_timestamp()')" = 150
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_profile_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 100
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_profile_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 50
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_profile_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 0
+test "$(psql -X -At -c 'SELECT count(*) FROM identity_profile_replays')" = 2
+test "$(psql -X -At -c "SELECT count(*) FROM identity_events WHERE correlation_id='role-fixture'")" = 2
 test "$(api 'SELECT count(*) FROM identity_events')" = 0
 test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events; ROLLBACK;" | grep -E '^[0-9]+$')" = 1
 test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events WHERE user_id='01200000-0000-0000-0000-000000000002'; ROLLBACK;" | grep -E '^[0-9]+$')" = 0

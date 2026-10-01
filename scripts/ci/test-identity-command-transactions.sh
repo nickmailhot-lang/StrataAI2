@@ -226,4 +226,25 @@ test "$(admin "SELECT count(*) FROM identity_events WHERE user_id='$user' AND ev
 for cookie in primary other; do
   test "$(curl --silent --show-error -b "$scratch/$cookie.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me")" = 401
 done
+# The actual release Worker removes abandoned expired keys without touching live ACKs or history.
+cleanup_history() {
+  admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$user'),
+    'audit',(SELECT count(*) FROM audit_events WHERE actor_id='$user'),
+    'stream',(SELECT to_jsonb(s) FROM identity_event_streams s WHERE user_id='$user'),
+    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM identity_events e WHERE user_id='$user'))::text;"
+}
+cleanup_before="$(cleanup_history)"
+admin "INSERT INTO identity_profile_replays(user_id,key_id,fingerprint,result_json,created_at,expires_at)
+  SELECT r.user_id,gen_random_uuid(),r.fingerprint,r.result_json,clock_timestamp()-interval '2 days',clock_timestamp()-interval '1 day'
+  FROM identity_profile_replays r CROSS JOIN generate_series(1,101) WHERE r.user_id='$user' AND r.key_id='$retry_key';" >/dev/null
+expired=101
+for ((attempt=0; attempt<90; attempt++)); do
+  expired="$(admin "SELECT count(*) FROM identity_profile_replays WHERE user_id='$user' AND expires_at<=clock_timestamp();")"
+  if test "$expired" = 0; then break; fi
+  sleep 1
+done
+test "$expired" = 0
+test "$(admin "SELECT count(*) FROM identity_profile_replays WHERE user_id='$user' AND key_id='$retry_key' AND expires_at>clock_timestamp();")" = 1
+test "$cleanup_before" = "$(cleanup_history)"
+echo 'Release Worker bounded identity retry retention preserves live acknowledgments and account/audit/event history.'
 echo 'Identity sign-in/logout/profile/deactivation audits are atomic; post-wait checks and one-connection execution succeed.'

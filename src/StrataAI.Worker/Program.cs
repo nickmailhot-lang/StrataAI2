@@ -40,6 +40,8 @@ if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))
 
 if (runtime.Mode == RuntimeMode.Production)
 {
+    builder.Services.AddSingleton<IIdentityRetryCleanupStore, PostgresIdentityRetryCleanupStore>();
+    builder.Services.AddHostedService<IdentityRetryCleanupWorker>();
     builder.Services.AddSingleton<StrataAI.Application.WorkManagement.IWorkEventDeliveryStore, StrataAI.Infrastructure.WorkManagement.PostgresWorkEventDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.WorkManagement.WorkEventDeliveryHandler>();
 }
