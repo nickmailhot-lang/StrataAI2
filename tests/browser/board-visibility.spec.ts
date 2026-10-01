@@ -31,7 +31,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const choosePublic = async () => {
         const visibility = page.getByRole('combobox', { name: 'Board visibility' });
         await expect(visibility).toBeEnabled(); await visibility.press('ArrowDown');
-        await expect(visibility).toHaveAttribute('aria-expanded', 'true');
+        await expect(page.getByRole('listbox', { name: 'Board visibility' })).toBeVisible();
         await page.getByRole('option', { name: 'Public', exact: true }).focus(); await page.keyboard.press('Enter');
         await page.getByRole('button', { name: 'Review visibility change' }).focus(); await page.keyboard.press('Enter');
         await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();

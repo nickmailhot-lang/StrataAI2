@@ -30,3 +30,22 @@ reads do, while failed/aborted reads, another Board and mutation responses do no
 The regression passes locally, and all three browser cases collect. Exact-image
 execution of the corrected tests remains pending. No complete PRD-05 or current
 main release acceptance claim follows from this repair.
+
+Follow-up executed evidence: run 36933671696 failed four browser cases with 38
+passing and one separately covered mail scenario skipped in the general suite.
+The three visibility error snapshots contain the open named listbox and its
+Private/Organization/Public options. The failed assertion looked for the
+background combobox through the accessibility tree; MUI's open modal menu hides
+that background. The cases now assert the visible named listbox, retaining
+keyboard opening, option selection and consent assertions. The same correction
+applies to the destination/position menus in the card-movement browser cases.
+
+The recovery failure trace records no password-forgot POST, and the final snapshot
+shows an empty reset form. A navigation/fill race is the working inference: the
+login and recovery screens both expose an Email field. The test now waits for
+the Reset your password heading after following the link before filling and
+submitting. The generic acknowledgment and invalid-token assertions remain.
+
+All 17 affected browser cases collect locally. Execution of these corrections
+remains pending Linux CI; deadlines, retries, topology and acceptance gates remain
+unchanged. Neither diagnostic snapshots nor collection prove the repair passes.

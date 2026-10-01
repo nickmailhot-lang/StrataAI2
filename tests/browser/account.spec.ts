@@ -263,6 +263,7 @@ test('PRD-02-TC-06/11/12: mobile keyboard recovery preserves email after an inva
 test('PRD-02-TC-03/04: recovery confirmation is generic and invalid reset links recover safely', async ({ page }) => {
   await page.goto('/login');
   await page.getByRole('link', { name: 'Forgot password?' }).click();
+  await expect(page.getByRole('heading', { name: 'Reset your password', exact: true })).toBeVisible();
   await page.getByLabel(/^Email/).fill(`unknown-${Date.now()}@example.test`);
   await page.getByRole('button', { name: 'Request reset', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Request received.');

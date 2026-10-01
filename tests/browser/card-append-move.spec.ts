@@ -56,11 +56,11 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const move = page.getByRole('button', { name: 'Move card', exact: true }); await expect(move).toBeEnabled();
       await move.focus(); await page.keyboard.press('Enter');
       const destination = page.getByRole('combobox', { name: 'Destination list' }); await destination.press('ArrowDown');
-      await expect(destination).toHaveAttribute('aria-expanded', 'true');
+      await expect(page.getByRole('listbox', { name: 'Destination list' })).toBeVisible();
       await page.getByRole('option', { name: 'Complete', exact: true }).focus(); await page.keyboard.press('Enter');
       if (anchor) {
         const position = page.getByRole('combobox', { name: 'Card position' }); await position.press('ArrowDown');
-        await expect(position).toHaveAttribute('aria-expanded', 'true');
+        await expect(page.getByRole('listbox', { name: 'Card position' })).toBeVisible();
         await page.getByRole('option', { name: 'Before Position anchor', exact: true }).focus(); await page.keyboard.press('Enter');
       }
       await page.getByRole('button', { name: 'Confirm card move' }).focus(); await page.keyboard.press('Enter');

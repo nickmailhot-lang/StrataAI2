@@ -77,7 +77,7 @@ test('PRD-05 AC-PERM-05-03: two administrators recover member changes and cancel
     other.on('request', request => { if (request.method() === 'PATCH' && new URL(request.url()).pathname === `/boards/${board}/visibility`) phoneWrites++; });
     const visibility = other.getByRole('combobox', { name: 'Board visibility' });
     await expect(visibility).toBeEnabled(); await visibility.press('ArrowDown');
-    await expect(visibility).toHaveAttribute('aria-expanded', 'true');
+    await expect(other.getByRole('listbox', { name: 'Board visibility' })).toBeVisible();
     await other.getByRole('option', { name: 'Public', exact: true }).focus(); await other.keyboard.press('Enter');
     await other.getByRole('button', { name: 'Review visibility change' }).focus(); await other.keyboard.press('Enter');
     await expect(other.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
