@@ -31,3 +31,14 @@ rejection before disclosure, access loss during removal and lost-response recove
 without another write. Full web/source and exact-image browser evidence, broader
 pagination/concurrency/accessibility/realtime checks and performance/telemetry
 requirements remain necessary before PRD-05 can close.
+
+`board-members.spec.ts` adds required 1280px and 390px release-browser scenarios.
+Setup enrolls an existing account through Organization invitation acceptance,
+then grants Board membership through the public API. Keyboard cancellation must
+restore focus. A competing role change makes reviewed consent stale; the UI must
+send the old `If-Match` and receive conflict. Fresh consent then uses the current
+version. Successful role/removal responses are dropped and recovered by reads,
+with no repeated mutation or unsupported success notice. After removal, the
+recipient must lose private read/edit access while Organization membership remains
+identical. Local collection passes for both cases; execution is pending CI. These
+cases do not establish realtime delivery, inbox receipt or performance targets.
