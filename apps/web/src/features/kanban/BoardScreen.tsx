@@ -24,6 +24,7 @@ import {
   type WorkCard,
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
+import { CardMoveControls } from "./CardMoveControls";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
 type Creation = { kind: "list" | "card"; listId?: string };
@@ -66,6 +67,10 @@ function BoardContent() {
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
   const reading = useRef(false);
+  const [snapshotReading, setSnapshotReading] = useState(true);
+  const cardLinks = useRef(new Map<string, HTMLAnchorElement>());
+  const closeFocusCard = useRef<string | undefined>(undefined);
+  const boardRefresh = useRef<HTMLButtonElement>(null);
   const queuedRefresh = useRef(false);
   const [liveStatus, setLiveStatus] = useState<LiveStatus>("connecting");
   const accessEpoch = useRef(0);
@@ -98,6 +103,7 @@ function BoardContent() {
   function finishRead(controller: AbortController) {
     if (activeRead.current !== controller) return;
     reading.current = false;
+    setSnapshotReading(false);
     if (queuedRefresh.current && !controller.signal.aborted) {
       queuedRefresh.current = false;
       setReload((value) => value + 1);
@@ -109,6 +115,7 @@ function BoardContent() {
     const controller = new AbortController();
     activeRead.current = controller;
     reading.current = true;
+    setSnapshotReading(true);
     void loadBoard(organizationId, boardId, controller.signal)
       .then((snapshot) => {
         if (!controller.signal.aborted)
@@ -169,6 +176,7 @@ function BoardContent() {
     snapshot?.access.canEdit && snapshot.board.lifecycleState === "active";
   const boardPath = `/app/${organizationId}/boards/${boardId}`;
   function closeCard() {
+    closeFocusCard.current = cardId;
     if (location.state?.cardOverlay) navigate(-1);
     else navigate(boardPath, { replace: true });
   }
@@ -351,6 +359,7 @@ function BoardContent() {
         </Box>
         <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
           <Button
+            ref={boardRefresh}
             disabled={busy}
             onClick={() => setReload((value) => value + 1)}
           >
@@ -399,9 +408,11 @@ function BoardContent() {
         {snapshot.lists.map((column) => (
           <Box
             key={column.list.id}
+            component="section"
+            aria-labelledby={`list-name-${column.list.id}`}
             sx={{ bgcolor: "grey.100", borderRadius: 2, p: 2, minHeight: 240 }}
           >
-            <Typography variant="h6" component="h3">
+            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3">
               {column.list.name}
             </Typography>
             <Stack spacing={1} sx={{ mt: 2 }}>
@@ -409,6 +420,10 @@ function BoardContent() {
                 <Card
                   key={item.id}
                   component={Link}
+                  ref={(node: HTMLAnchorElement | null) => {
+                    if (node) cardLinks.current.set(item.id, node);
+                    else cardLinks.current.delete(item.id);
+                  }}
                   to={`${boardPath}/cards/${item.id}`}
                   state={{ cardOverlay: true }}
                   sx={{
@@ -476,6 +491,10 @@ function BoardContent() {
       </Dialog>
       <Dialog
         open={Boolean(cardId)}
+        slotProps={{ transition: { onExited: () => {
+          (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus();
+          closeFocusCard.current = undefined;
+        } } }}
         onClose={() => {
           if (!busy) closeCard();
         }}
@@ -489,7 +508,7 @@ function BoardContent() {
               This card is unavailable in this board.
             </Alert>
           ) : (
-            <CardDetailEditor
+            <><CardDetailEditor
               key={card.id}
               card={card}
               acknowledged={acknowledged}
@@ -502,6 +521,12 @@ function BoardContent() {
               onDiscard={discardAndLoad}
               onRefresh={() => setReload((value) => value + 1)}
             />
+            {snapshot.access.canMove && snapshot.board.lifecycleState === "active"
+              && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id)) && <CardMoveControls
+              key={`move-${card.id}`} card={card} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError}
+              onBusyChange={setBusy}
+              onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
           )}
         </DialogContent>
         <DialogActions>

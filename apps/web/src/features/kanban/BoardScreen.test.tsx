@@ -563,6 +563,37 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(screen.queryByLabelText(/Card title/)).not.toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
+  it.each(['permission', 'board', 'list'])('omits movement when current %s admission is unavailable', async reason => {
+    const value = { ...fixture, board: { ...fixture.board, lifecycleState: reason === 'board' ? 'archived' : 'active' },
+      access: { ...fixture.access, canMove: reason !== 'permission' },
+      lists: fixture.lists.map(column => ({ ...column, list: { ...column.list, lifecycleState: reason === 'list' ? 'archived' : 'active' } })) };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(value)));
+    mount('/app/org-1/boards/board-1/cards/card-1');
+    await screen.findByRole('heading', { name: 'Card details' });
+    await screen.findByText('Inspect roof');
+    expect(screen.queryByRole('button', { name: 'Move card' })).not.toBeInTheDocument();
+  });
+  it('reloads canonical placement after a bound append acknowledgment', async () => {
+    const destination = { list: { id: 'list-2', name: 'Complete', rank: 'b', lifecycleState: 'active' }, cards: [] };
+    const initial = { ...fixture, lists: [...fixture.lists, destination] };
+    const moved = { ...fixture.lists[0].cards[0], rank: '500000000000000000000000000000', version: 4,
+      organizationId: 'org-1', boardId: 'board-1', listId: 'list-2' };
+    const latest = { ...fixture, lists: [{ ...fixture.lists[0], cards: [] }, { ...destination, cards: [moved] }] };
+    const fetcher = vi.fn().mockResolvedValueOnce(response(initial)).mockResolvedValueOnce(response(moved)).mockResolvedValueOnce(response(latest));
+    vi.stubGlobal('fetch', fetcher); mount('/app/org-1/boards/board-1/cards/card-1');
+    fireEvent.click(await screen.findByRole('button', { name: 'Move card' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination list' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
+    await screen.findByText('Move acknowledged. Current placement is being checked.');
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Move card' })).toBeEnabled());
+    expect(fetcher.mock.calls[1][0]).toBe('/cards/card-1/move');
+    expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({ destinationListId: 'list-2', expectedVersion: 3 });
+    expect(fetcher.mock.calls[2][0]).toBe('/boards/board-1');
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Inspect roof' })).toHaveFocus());
+  });
   it("clears the previous board while a new organization is loading", async () => {
     const fetcher = vi
       .fn()

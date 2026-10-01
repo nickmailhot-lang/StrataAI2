@@ -1,0 +1,71 @@
+import { expect, test } from './releaseTest';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
+
+for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+  test(`PRD-06/08: keyboard append move recovers a lost acknowledgment and updates another client at ${viewport.width}px`, async ({ page, context, browser }) => {
+    test.setTimeout(120_000); await page.setViewportSize(viewport);
+    const headers = { 'X-StrataAI-Request': '1' };
+    const account = { email: `card-move-${viewport.width}-${Date.now()}@example.test`, password: 'card-move-correct-horse', displayName: 'Card mover' };
+    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
+    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    const orgResult = await context.request.post('/organizations', { headers, data: { name: 'Card move recovery' } });
+    expect(orgResult.status()).toBe(201); const org = (await orgResult.json()).organization.id;
+    const boardResult = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Move Board', visibility: 'PRIVATE' } });
+    expect(boardResult.status()).toBe(201); const board = (await boardResult.json()).id;
+    const lists: string[] = [];
+    for (const name of ['Planning', 'Complete']) {
+      const result = await context.request.post(`/boards/${board}/lists`, { headers, data: { name } });
+      expect(result.status()).toBe(201); lists.push((await result.json()).id);
+    }
+    const created = await context.request.post(`/lists/${lists[0]}/cards`, { headers, data: { title: 'Move this card' } });
+    expect(created.status()).toBe(201); const card = (await created.json()).id;
+    const otherContext = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport });
+    let restoreWorker = () => {};
+    try {
+      expect((await otherContext.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+      restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
+      const other = await otherContext.newPage();
+      for (const target of [page, other]) {
+        const reads = trackBoardReads(target, board, `/app/${org}/boards/${board}`);
+        await target.goto(`/app/${org}/boards/${board}`);
+        await expect(target.getByRole('region', { name: 'Planning', exact: true }).getByRole('link', { name: 'Move this card' })).toBeVisible();
+        await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      }
+      let writes = 0; let key = ''; let body = '';
+      await page.route(`**/cards/${card}/move`, async route => {
+        writes++;
+        expect(route.request().postDataJSON()).toEqual({ destinationListId: lists[1], expectedVersion: 1 });
+        if (writes === 1) {
+          key = route.request().headers()['idempotency-key']; body = route.request().postData()!;
+          expect(key).toMatch(/^[0-9a-f-]{36}$/);
+          const response = await route.fetch(); expect(response.status()).toBe(200);
+          expect((await response.json()).listId).toBe(lists[1]); await route.abort('timedout');
+        } else {
+          expect(writes).toBe(2); expect(route.request().headers()['idempotency-key']).toBe(key);
+          expect(route.request().postData()).toBe(body); await route.continue();
+        }
+      });
+      await page.getByRole('link', { name: 'Move this card', exact: true }).focus(); await page.keyboard.press('Enter');
+      const move = page.getByRole('button', { name: 'Move card', exact: true }); await expect(move).toBeEnabled();
+      await move.focus(); await page.keyboard.press('Enter');
+      const destination = page.getByRole('combobox', { name: 'Destination list' }); await destination.press('ArrowDown');
+      await expect(destination).toHaveAttribute('aria-expanded', 'true');
+      await page.getByRole('option', { name: 'Complete', exact: true }).focus(); await page.keyboard.press('Enter');
+      await page.getByRole('button', { name: 'Confirm card move' }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByText(/The move could not be confirmed/)).toBeVisible();
+      await expect(other.getByRole('region', { name: 'Complete', exact: true }).getByRole('link', { name: 'Move this card' })).toBeVisible({ timeout: 20_000 });
+      expect(writes).toBe(1);
+      const retry = page.getByRole('button', { name: 'Retry this move' }); await expect(retry).toBeEnabled();
+      await retry.focus(); await page.keyboard.press('Enter');
+      await expect(page.getByText('Move acknowledged. Current placement is being checked.')).toBeVisible();
+      expect(writes).toBe(2);
+      const current = await context.request.get(`/boards/${board}`); expect(current.status()).toBe(200);
+      const persisted = (await current.json()).lists.find((column: { list: { id: string } }) => column.list.id === lists[1]).cards;
+      expect(persisted).toHaveLength(1); expect(persisted[0]).toMatchObject({ id: card, version: 2 });
+      await page.getByRole('button', { name: 'Close', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByRole('region', { name: 'Complete', exact: true }).getByRole('link', { name: 'Move this card', exact: true })).toBeFocused();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    } finally { try { await otherContext.close(); } finally { restoreWorker(); } }
+  });
+}
