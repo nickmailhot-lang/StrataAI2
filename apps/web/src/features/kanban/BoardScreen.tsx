@@ -25,6 +25,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardMoveControls } from "./CardMoveControls";
+import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
 type Creation = { kind: "list" | "card"; listId?: string };
@@ -64,6 +65,7 @@ function BoardContent() {
   const [reload, setReload] = useState(0);
   const [creation, setCreation] = useState<Creation>();
   const [busy, setBusy] = useState(false);
+  const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
   const reading = useRef(false);
@@ -405,7 +407,7 @@ function BoardContent() {
           pb: 2,
         }}
       >
-        {snapshot.lists.map((column) => (
+        {previewCardMove(snapshot, movePreview).lists.map((column) => (
           <Box
             key={column.list.id}
             component="section"
@@ -525,6 +527,7 @@ function BoardContent() {
               && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id)) && <CardMoveControls
               key={`move-${card.id}`} card={card} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError}
               onBusyChange={setBusy}
+              onPreview={setMovePreview}
               onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
           )}

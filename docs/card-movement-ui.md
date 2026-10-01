@@ -69,3 +69,26 @@ retry; the desktop case retains append coverage. Browser collection passes;
 actual execution of this extension remains pending Linux release CI. These
 controls provide a keyboard-accessible position choice but do not establish full
 drag/drop equivalence, complete WCAG acceptance, virtualization or latency targets.
+
+## Provisional placement while saving
+
+Submitting a reviewed move immediately presents the card in the selected list
+and relative position while the request is pending. This projection does not
+change the canonical snapshot, rank, revision or request fingerprint. The card
+details remain bound to canonical data; a status explicitly identifies placement
+as provisional. Same-list moves do not duplicate the card, and inaccessible or
+vanished destinations/anchors produce no speculative placement.
+
+Completion removes the projection. Success reads current placement; a rejected
+or uncertain response also reads the current Board, while uncertainty retains
+the original request/key for explicit recovery. No read automatically retries a
+write. Existing denied-scope clearing and unmount fencing still apply. Source
+coverage checks projection immutability, same-list insertion, invalid scope,
+pending feedback, uncertainty cleanup/read recovery and Board-level placement
+before acknowledgment. This adds card feedback for reviewed moves; list feedback,
+drag/drop and measured sub-100ms acceptance remain unfinished.
+
+Local verification: all 295 web tests across 27 files pass. The final updated
+21-case Board suite also passes, including provisional placement before a
+deferred acknowledgment. Production build, typecheck and lint pass. Exact-image
+browser execution for this change remains pending CI.

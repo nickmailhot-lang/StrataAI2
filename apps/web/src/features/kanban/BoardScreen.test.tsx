@@ -579,12 +579,19 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const moved = { ...fixture.lists[0].cards[0], rank: '500000000000000000000000000000', version: 4,
       organizationId: 'org-1', boardId: 'board-1', listId: 'list-2' };
     const latest = { ...fixture, lists: [{ ...fixture.lists[0], cards: [] }, { ...destination, cards: [moved] }] };
-    const fetcher = vi.fn().mockResolvedValueOnce(response(initial)).mockResolvedValueOnce(response(moved)).mockResolvedValueOnce(response(latest));
+    let completeMove: ((value: Response) => void) | undefined;
+    const fetcher = vi.fn().mockResolvedValueOnce(response(initial))
+      .mockImplementationOnce(() => new Promise<Response>(resolve => { completeMove = resolve; }))
+      .mockResolvedValueOnce(response(latest));
     vi.stubGlobal('fetch', fetcher); mount('/app/org-1/boards/board-1/cards/card-1');
     fireEvent.click(await screen.findByRole('button', { name: 'Move card' }));
     fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination list' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
     fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Placement is provisional');
+    expect(screen.getByText('Complete', { selector: 'h3' }).closest('section')).toHaveTextContent('Inspect roof');
+    expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
+    await act(async () => { completeMove?.(response(moved)); });
     await screen.findByText('Move acknowledged. Current placement is being checked.');
     await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Move card' })).toBeEnabled());

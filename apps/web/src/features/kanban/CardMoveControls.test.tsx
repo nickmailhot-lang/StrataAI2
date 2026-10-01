@@ -17,6 +17,19 @@ async function choose() {
   fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it('publishes provisional placement only while saving, then clears it and reconciles an uncertain result', async () => {
+  let reject: ((reason: Error) => void) | undefined;
+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((_, failed) => { reject = failed; })));
+  const preview = vi.fn(); const refresh = vi.fn();
+  render(<CardMoveControls card={card} snapshot={snapshot} disabled={false} onAcknowledged={vi.fn()} onRefresh={refresh} onPreview={preview} />);
+  await choose(); fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
+  expect(screen.getByRole('status')).toHaveTextContent('Placement is provisional');
+  expect(preview).toHaveBeenLastCalledWith({ cardId: 'card', destination: 'dest', before: '' });
+  await act(async () => { reject?.(new Error('Unknown result')); });
+  await screen.findByRole('button', { name: 'Retry this move' });
+  expect(preview).toHaveBeenLastCalledWith(); expect(refresh).toHaveBeenCalledOnce();
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+});
 it('requires a selected active destination and checks a bound move acknowledgment before refreshing', async () => {
   const fetcher = vi.fn().mockResolvedValue(reply(ack)); vi.stubGlobal('fetch', fetcher); const refresh = vi.fn();
   render(<CardMoveControls card={card} snapshot={snapshot} disabled={false} onAcknowledged={refresh} onRefresh={vi.fn()} />);

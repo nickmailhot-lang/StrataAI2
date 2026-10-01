@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { apiFetch } from '../../api/apiFetch';
 import type { BoardSnapshot, WorkCard } from '../../api/workManagement';
+import type { CardMovePreview } from './cardMovePreview';
 
 type Intent = { destination: string; before: string; version: number; key: string };
-type Props = { card: WorkCard; snapshot: BoardSnapshot; disabled: boolean; onAcknowledged: () => void; onRefresh: () => void; onBusyChange?: (value: boolean) => void };
+type Props = { card: WorkCard; snapshot: BoardSnapshot; disabled: boolean; onAcknowledged: () => void; onRefresh: () => void; onBusyChange?: (value: boolean) => void; onPreview?: (value?: CardMovePreview) => void };
 const validRank = (rank: unknown): rank is string => typeof rank === 'string' && /^\d{30}$/.test(rank)
   && BigInt(rank) > 0n && BigInt(rank) < 10n ** 30n - 1n;
 
-export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onRefresh, onBusyChange }: Props) {
+export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onRefresh, onBusyChange, onPreview }: Props) {
   const [review, setReview] = useState<{ version: number; destination: string; before: string }>();
   const [intent, setIntent] = useState<Intent>();
   const [busy, setBusy] = useState(false);
@@ -18,8 +19,8 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
   const pending = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(true); const action = useRef<HTMLButtonElement>(null);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false;
-    if (pending.current) { pending.current.abort(); onBusyChange?.(false); }
-  }; }, [onBusyChange]);
+    if (pending.current) { pending.current.abort(); onBusyChange?.(false); onPreview?.(); }
+  }; }, [onBusyChange, onPreview]);
   const lists = snapshot.lists.filter(column => column.list.lifecycleState === 'active');
   const changed = !!review && review.version !== card.version && !intent;
   const destinationActive = !!review && lists.some(column => column.list.id === review.destination);
@@ -30,6 +31,7 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
     const command = intent ?? { destination: review.destination, before: review.before, version: review.version, key: crypto.randomUUID() };
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setAcknowledged(false);
     onBusyChange?.(true);
+    onPreview?.({ cardId: card.id, destination: command.destination, before: command.before });
     let abort: (() => void) | undefined;
     const timer = setTimeout(() => controller.abort(), 15_000);
     try {
@@ -58,14 +60,16 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
     } catch {
       if (mounted.current && pending.current === controller) {
         setIntent(command); setNotice('The move could not be confirmed. Retry this same move to recover its acknowledgment.');
+        onRefresh();
       }
     } finally {
       clearTimeout(timer); if (abort) controller.signal.removeEventListener('abort', abort);
-      if (pending.current === controller) { pending.current = undefined; if (mounted.current) { setBusy(false); onBusyChange?.(false); } }
+      if (pending.current === controller) { pending.current = undefined; if (mounted.current) { setBusy(false); onBusyChange?.(false); onPreview?.(); } }
     }
   }
   function closeReview() { setReview(undefined); setBlocked(false); setNotice(undefined); queueMicrotask(() => action.current?.focus()); }
   return <Stack spacing={1} sx={{ mt: 2 }}>
+    {busy && <Typography role="status">Saving move. Placement is provisional until confirmed.</Typography>}
     {notice && <Alert severity={acknowledged ? 'success' : 'info'}>{notice}</Alert>}
     {changed && <Alert severity="info">The card changed while reviewing this move. Check the current Board and review again.</Alert>}
     {review && !intent && destinationActive && !positionActive && <Alert severity="info">The selected card is no longer in this list. Choose a current position.</Alert>}
