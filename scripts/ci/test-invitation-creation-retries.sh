@@ -41,7 +41,12 @@ create "$key" first > "$scratch/first.status" & one=$!
 create "$key" second > "$scratch/second.status" & two=$!
 wait "$one"; wait "$two"
 test "$(cat "$scratch/first.status")" = 201; test "$(cat "$scratch/second.status")" = 201
-cmp "$scratch/first.json" "$scratch/second.json"
+if ! cmp "$scratch/first.json" "$scratch/second.json"; then
+  # Public fixture IDs and expiry are sufficient to diagnose precision drift;
+  # do not emit credentials, recipient addresses or bearer-token material.
+  jq '{id,expiresAt}' "$scratch/first.json" "$scratch/second.json" >&2
+  exit 1
+fi
 id="$(jq -r '.id' "$scratch/first.json")"; [[ "$id" =~ ^[0-9a-f-]{36}$ ]]
 jq -e --arg org "$org" '.organizationId==$org and .invitationToken==null and .targetRole=="ADMIN"' "$scratch/first.json" >/dev/null
 test "$(admin "SELECT count(*) FROM invitation_creation_replays WHERE tenant_id='$org' AND actor_id='$owner' AND key_id='$key' AND invitation_id='$id';")" = 1

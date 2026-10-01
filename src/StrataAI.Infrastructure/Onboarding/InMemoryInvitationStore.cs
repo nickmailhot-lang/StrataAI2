@@ -31,7 +31,7 @@ internal sealed class InMemoryInvitationStore(
         return Task.CompletedTask;
     }
 
-    public Task CreateAsync(
+    public Task<InvitationRecord> CreateAsync(
         InvitationRecord invitation,
         CancellationToken cancellationToken = default)
     {
@@ -40,7 +40,7 @@ internal sealed class InMemoryInvitationStore(
             _byToken[invitation.TokenHash] = invitation;
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(invitation);
     }
 
     public Task<IReadOnlyList<PendingInvitation>> ListPendingForEmailAsync(

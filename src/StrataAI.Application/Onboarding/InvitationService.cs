@@ -148,7 +148,7 @@ public sealed class InvitationService(
             null,
             null, OrganizationName: organization.Name);
 
-        await invitationStore.CreateAsync(invitation, cancellationToken);
+        invitation = await invitationStore.CreateAsync(invitation, cancellationToken);
         await organizationStore.AppendAuditAsync(
             organizationId,
             actorUserId,

@@ -6,7 +6,7 @@ public interface IInvitationStore
         CancellationToken cancellationToken = default);
     Task SaveCreationReplayAsync(Guid organizationId, Guid actorId, Guid key, string fingerprint,
         Guid invitationId, CancellationToken cancellationToken = default);
-    Task CreateAsync(
+    Task<InvitationRecord> CreateAsync(
         InvitationRecord invitation,
         CancellationToken cancellationToken = default);
 

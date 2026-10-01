@@ -38,7 +38,7 @@ internal sealed class PostgresInvitationStore(
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task CreateAsync(
+    public async Task<InvitationRecord> CreateAsync(
         InvitationRecord invitation,
         CancellationToken cancellationToken = default)
     {
@@ -56,7 +56,9 @@ internal sealed class PostgresInvitationStore(
             VALUES (
                 @id, @tenant_id, @invited_email, @email_normalized,
                 @token_hash, @target_surface, @target_role,
-                @created_by_user_id, @created_at, @expires_at);
+                @created_by_user_id, @created_at, @expires_at)
+            RETURNING id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id;
             """,
             session.Connection,
             session.Transaction);
@@ -84,8 +86,14 @@ internal sealed class PostgresInvitationStore(
         command.Parameters.AddWithValue("created_at", invitation.CreatedAt);
         command.Parameters.AddWithValue("expires_at", invitation.ExpiresAt);
 
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        InvitationRecord persisted;
+        await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+        {
+            if (!await reader.ReadAsync(cancellationToken)) throw new InvalidOperationException("Created invitation was unavailable.");
+            persisted = ReadInvitation(reader) with { OrganizationName = invitation.OrganizationName };
+        }
         await session.CommitAsync(cancellationToken);
+        return persisted;
     }
 
     public async Task<IReadOnlyList<PendingInvitation>> ListPendingForEmailAsync(
