@@ -21,3 +21,24 @@ concurrent list positions and durable replay without reapplying an old rank.
 Build and shell syntax are checked locally; runtime execution remains pending
 Linux CI. List UI/drag/drop, keyboard equivalents, provisional list feedback,
 rebalance, performance and complete PRD acceptance remain unfinished.
+
+## Reviewed list controls
+
+The Board now offers list-position review for active, currently movable lists
+with a valid canonical revision. Users choose End of Board or Before a current
+active sibling, then confirm. The captured name/version/position and retry key
+remain fixed after uncertainty, including a newer canonical rename. Historical
+acknowledgments are checked for list/Organization/Board scope and valid newer
+revision/rank before reading current ordering. Rejection blocks a new review;
+vanished unsubmitted positions require a current choice. Saving/body parsing has
+a 15-second deadline, and unmount aborts/fences pending work. No automatic read
+repeats a write. Cancellation and acknowledgment restore keyboard focus after
+current ordering is usable.
+
+Local verification: all 300 web tests across 28 files pass, with the final five
+list-control cases passing after focus handling was updated. Production build,
+typecheck and lint pass. Two required release-browser cases collect for desktop
+and phone keyboard placement, persisted rank/revision, preserved sibling rank,
+focus recovery and ordering after reload. Their execution remains pending Linux
+CI. Pointer/list drag/drop, provisional list feedback, virtualization, rebalance,
+measured performance and full accessibility acceptance are still incomplete.

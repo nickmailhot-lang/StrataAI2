@@ -15,7 +15,7 @@ export type BoardSnapshot = {
     lifecycleState: string;
   };
   lists: {
-    list: { id: string; name: string; rank: string; lifecycleState: string };
+    list: { id: string; name: string; rank: string; lifecycleState: string; version?: number };
     cards: WorkCard[];
   }[];
   access: {

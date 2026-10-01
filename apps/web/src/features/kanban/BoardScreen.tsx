@@ -25,6 +25,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardMoveControls } from "./CardMoveControls";
+import { ListPositionControls } from "./ListPositionControls";
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
@@ -417,6 +418,9 @@ function BoardContent() {
             <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3">
               {column.list.name}
             </Typography>
+            {snapshot.access.canMove && snapshot.board.lifecycleState === "active" && column.list.lifecycleState === "active" && <ListPositionControls
+              list={column.list} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError} onBusyChange={setBusy}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             <Stack spacing={1} sx={{ mt: 2 }}>
               {column.cards.map((item) => (
                 <Card
