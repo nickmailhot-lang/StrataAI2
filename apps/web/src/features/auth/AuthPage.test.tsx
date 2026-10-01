@@ -6,6 +6,28 @@ import { AuthPage } from './AuthPage';
 describe('PRD-02 authentication UI', () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
+  it.each(['login', 'register'])('PRD-02/24: preserves %s intent after an abuse limit without falsely acknowledging success', async mode => {
+    const fetch = vi.fn().mockImplementation(() => Promise.resolve(new Response('{}', { status: 429 })));
+    vi.stubGlobal('fetch', fetch);
+    render(<MemoryRouter><AuthPage /></MemoryRouter>);
+    if (mode === 'register') {
+      fireEvent.click(screen.getByRole('tab', { name: 'Register' }));
+      fireEvent.change(screen.getByLabelText(/^Display name/), { target: { value: 'Person' } });
+    }
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+    const button = screen.getByRole('button', { name: mode === 'register' ? 'Create account' : 'Sign in' });
+    fireEvent.click(button);
+    await screen.findByText('Too many attempts. Please wait before retrying with the same details.');
+    expect(screen.getByLabelText(/^Password/)).toHaveValue('correct-private-password');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    fireEvent.click(button);
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    const first = fetch.mock.calls[0][1] as RequestInit; const second = fetch.mock.calls[1][1] as RequestInit;
+    expect(new Headers(second.headers).get('Idempotency-Key')).toBe(new Headers(first.headers).get('Idempotency-Key'));
+    expect(second.body).toBe(first.body);
+  });
+
   it('retries an uncertain registration with the same key and clears details only after a valid acknowledgment', async () => {
     const fetch = vi.fn().mockRejectedValueOnce(new Error('lost creation response')).mockResolvedValueOnce(new Response(JSON.stringify({
       user: { id: '11111111-1111-4111-8111-111111111111', email: 'person@example.test', emailVerified: true },

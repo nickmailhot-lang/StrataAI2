@@ -77,6 +77,10 @@ export function AuthPage() {
 
       if (!response.ok) {
         const problem = result as ApiProblem;
+        if (response.status === 429) {
+          setError('Too many attempts. Please wait before retrying with the same details.');
+          return;
+        }
         const messages: Record<string, string> = {
           invalid_credentials: 'The email or password is incorrect.',
           email_verification_required: 'Verify your email before signing in.',
