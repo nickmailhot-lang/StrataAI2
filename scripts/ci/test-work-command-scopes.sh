@@ -187,5 +187,6 @@ test "$(cat "$scratch/accepted.status")" = 200
 jq -e '.version==2 and .title=="Accepted before revocation"' "$scratch/accepted.json" >/dev/null
 test "$(admin "SELECT status FROM organization_members WHERE tenant_id='$organization' AND user_id='$member';")" = SUSPENDED
 test "$(admin "SELECT revoked_at IS NOT NULL FROM sessions WHERE token_hash='$accepted_hash';")" = t
-test "$(curl --silent --show-error -b "$scratch/member.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$board")" = 401
+test "$(curl --silent --show-error -b "$scratch/member.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$board")" = 404
+test "$(curl --silent --show-error -b "$scratch/member.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me")" = 401
 echo 'Fresh write authorization after live lock waits, inactive parents, and commit-before-revocation ordering passed.'
