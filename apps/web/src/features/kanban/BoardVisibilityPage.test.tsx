@@ -1,0 +1,45 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import { BoardVisibilityPage } from './BoardVisibilityPage';
+const board = { id: 'b', organizationId: 'o', name: 'Private repairs', lifecycleState: 'active', visibility: 'PRIVATE', version: 4 };
+const scope = { board, access: { canAdminister: true } };
+const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+function mount(...responses: Response[]) {
+  const fetcher = vi.fn(); for (const r of responses) fetcher.mockResolvedValueOnce(r); vi.stubGlobal('fetch', fetcher);
+  render(<RouterProvider router={createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId/visibility', element: <BoardVisibilityPage /> }],
+    { initialEntries: ['/app/o/boards/b/visibility'] })} />); return fetcher;
+}
+async function choose() {
+  fireEvent.mouseDown(await screen.findByRole('combobox', { name: 'Board visibility' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Public' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Review visibility change' }));
+  await screen.findByRole('dialog');
+}
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+it('requires explicit confirmation and sends the current version with a retry key', async () => {
+  const next = { ...board, visibility: 'PUBLIC', version: 5 };
+  const mock = mount(response(scope), response(next), response({ ...scope, board: next }));
+  await choose(); await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+  expect(mock).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm visibility change' }));
+  await screen.findByText('Visibility change acknowledged. Current visibility loaded.');
+  expect(mock.mock.calls[1][0]).toBe('/boards/b/visibility');
+  expect(JSON.parse(mock.mock.calls[1][1].body)).toEqual({ visibility: 'PUBLIC', version: 4 });
+  expect(mock.mock.calls[1][1].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
+  expect(mock.mock.calls[1][1].headers.get('X-StrataAI-Request')).toBe('1');
+});
+it('rejects foreign scope before disclosing Board metadata', async () => {
+  mount(response({ ...scope, board: { ...board, organizationId: 'other' } }));
+  await screen.findByText('Board visibility administration is unavailable.');
+  expect(screen.queryByText(board.name)).not.toBeInTheDocument();
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+});
+it('clears stale state on conflict and checks the canonical state without another mutation', async () => {
+  const mock = mount(response(scope), response({ code: 'version_conflict' }, 409), response(scope));
+  await choose(); fireEvent.click(screen.getByRole('button', { name: 'Confirm visibility change' }));
+  await screen.findByText('The Board changed. Check current visibility before making another change.');
+  expect(screen.queryByRole('heading', { name: board.name })).not.toBeInTheDocument();
+  fireEvent.click(await screen.findByRole('button', { name: 'Check current visibility' }));
+  await screen.findByRole('combobox');
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(1);
+});

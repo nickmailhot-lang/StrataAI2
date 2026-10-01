@@ -37,10 +37,11 @@ waits. Its actual invitation-mail assertions cover ordinary Internal and Portal
 delivery, not the later Board Admin/Member transport scenarios. It must not be
 used to claim those later increments passed release CI.
 
-PRD-05 still requires complete user controls for visibility and Board member role
-changes/removal, together with current-authority, concurrency, retry, keyboard,
-mobile and realtime evidence for those controls. BoardScreen currently links to
-Board invitation creation/history; it does not expose those other administration
-controls. Their server APIs do not by themselves satisfy client acceptance.
+PRD-05 still requires Board member role changes/removal controls and release
+evidence for the new visibility screen, together with current-authority,
+concurrency, retry, keyboard, mobile and realtime evidence for those controls.
+BoardScreen links to Board invitation creation/history and visibility; member
+management controls remain outstanding. Server APIs alone do not satisfy client
+acceptance. See `board-visibility-ui.md` for the current visibility increment.
 Telemetry, performance and all other ticket-specific definition-of-done items
 also require scoped evidence. PRD-05 and PRD-60 remain open.
