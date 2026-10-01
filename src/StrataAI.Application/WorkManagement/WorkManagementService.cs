@@ -713,7 +713,7 @@ public sealed class WorkManagementService(
         Guid cardId,
         Guid actorUserId,
         Guid destinationListId,
-        string rank,
+        string? rank,
         long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default)
@@ -730,7 +730,7 @@ public sealed class WorkManagementService(
             destination.BoardId != card.BoardId ||
             card.LifecycleState != WorkItemLifecycleState.Active ||
             destination.LifecycleState != WorkItemLifecycleState.Active ||
-            !RankToken.IsValid(rank))
+            (rank is not null && !RankToken.IsValid(rank)))
         {
             return WorkOperation<CardRecord>.Failure("card_not_found");
         }
@@ -746,6 +746,11 @@ public sealed class WorkManagementService(
         {
             return WorkOperation<CardRecord>.Failure("card_not_found");
         }
+
+        // Check only after admission; the owning Board command lock keeps the
+        // production snapshot stable and avoids allocating for a known stale move.
+        if (card.Version != expectedVersion)
+            return WorkOperation<CardRecord>.Failure("version_conflict");
 
         var updated = await store.MoveCardAsync(
             cardId,

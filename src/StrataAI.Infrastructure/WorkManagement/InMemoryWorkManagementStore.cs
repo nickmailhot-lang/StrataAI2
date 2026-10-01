@@ -515,7 +515,7 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
     public Task<CardRecord?> MoveCardAsync(
         Guid cardId,
         Guid destinationListId,
-        string rank,
+        string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default)
@@ -533,7 +533,11 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
             var updated = card with
             {
                 ListId = destinationListId,
-                Rank = rank,
+                Rank = rank ?? RankToken.After(_cards.Values
+                    .Where(sibling => sibling.Id != cardId && sibling.ListId == destinationListId
+                        && sibling.LifecycleState == WorkItemLifecycleState.Active)
+                    .OrderByDescending(sibling => sibling.Rank, StringComparer.Ordinal)
+                    .Select(sibling => sibling.Rank).FirstOrDefault()),
                 UpdatedAt = updatedAt,
                 Version = card.Version + 1,
             };

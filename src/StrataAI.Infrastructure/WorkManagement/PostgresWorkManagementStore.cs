@@ -38,7 +38,7 @@ internal sealed class PostgresWorkManagementStore(
 
     private static async Task<string> AllocateAppendRankAsync(
         NpgsqlConnection connection, NpgsqlTransaction transaction,
-        Guid tenantId, Guid boardId, Guid? listId, CancellationToken cancellationToken)
+        Guid tenantId, Guid boardId, Guid? listId, CancellationToken cancellationToken, Guid? excludedCardId = null)
     {
         // Separate statements are intentional: after a concurrent creator releases
         // the parent lock, READ COMMITTED must obtain a fresh sibling snapshot.
@@ -55,11 +55,15 @@ internal sealed class PostgresWorkManagementStore(
 
         await using var last = new NpgsqlCommand(listId is null
             ? "SELECT rank FROM board_lists WHERE tenant_id=@tenant AND board_id=@board AND lifecycle_state='ACTIVE' ORDER BY rank DESC LIMIT 1;"
-            : "SELECT rank FROM cards WHERE tenant_id=@tenant AND board_id=@board AND list_id=@list AND lifecycle_state='ACTIVE' ORDER BY rank DESC LIMIT 1;",
+            : "SELECT rank FROM cards WHERE tenant_id=@tenant AND board_id=@board AND list_id=@list AND lifecycle_state='ACTIVE' AND (@excluded IS NULL OR id<>@excluded) ORDER BY rank DESC LIMIT 1;",
             connection, transaction);
         last.Parameters.AddWithValue("tenant", tenantId);
         last.Parameters.AddWithValue("board", boardId);
-        if (listId is not null) last.Parameters.AddWithValue("list", listId.Value);
+        if (listId is not null)
+        {
+            last.Parameters.AddWithValue("list", listId.Value);
+            last.Parameters.AddWithValue("excluded", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)excludedCardId ?? DBNull.Value);
+        }
         return RankToken.After(await last.ExecuteScalarAsync(cancellationToken) as string);
     }
 
@@ -1054,7 +1058,7 @@ internal sealed class PostgresWorkManagementStore(
     public async Task<CardRecord?> MoveCardAsync(
         Guid cardId,
         Guid destinationListId,
-        string rank,
+        string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default)
@@ -1078,6 +1082,8 @@ internal sealed class PostgresWorkManagementStore(
             await connectionFactory.OpenTenantSessionAsync(
                 cardRoute.Value.TenantId,
                 cancellationToken);
+        rank ??= await AllocateAppendRankAsync(session.Connection, session.Transaction,
+            cardRoute.Value.TenantId, cardRoute.Value.BoardId, destinationListId, cancellationToken, cardId);
         await using var command = new NpgsqlCommand(
             """
             UPDATE cards

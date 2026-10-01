@@ -170,7 +170,7 @@ public sealed class TransactionalWorkManagementService(
         Guid cardId,
         Guid actorUserId,
         Guid destinationListId,
-        string rank,
+        string? rank,
         long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default)

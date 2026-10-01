@@ -43,3 +43,29 @@ request "/lists/$list/cards" '{"title":"After five thousand"}' > "$scratch/last.
 test "$(jq -r '.rank' "$scratch/last.json")" = '500000005001000000000000000000'
 test "$(admin "SELECT count(*)=5001 AND count(DISTINCT rank)=5001 FROM cards WHERE tenant_id='$organization' AND list_id='$list';")" = t
 echo 'Concurrent default allocation and append on a 5,000-card PostgreSQL fixture passed.'
+# Rank-free moves allocate under the destination parent lock after a fresh read.
+source="$(jq -r '.id' "$scratch/list-0-1.json")"
+for ((index=0; index<16; index++)); do
+  request "/lists/$source/cards" '{"title":"Concurrent append move"}' > "$scratch/move-source-$index.json"
+done
+move_request() { curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $3" -X POST -d "$2" "$BASE_URL$1"; }
+pids=()
+for ((index=0; index<16; index++)); do
+  card="$(jq -r '.id' "$scratch/move-source-$index.json")"
+  cat /proc/sys/kernel/random/uuid > "$scratch/move-key-$index"
+  move_request "/cards/$card/move" "$(jq -nc --arg list "$list" '{destinationListId:$list,expectedVersion:1}')" "$(cat "$scratch/move-key-$index")" > "$scratch/move-result-$index.json" &
+  pids+=("$!")
+done
+for pid in "${pids[@]}"; do wait "$pid"; done
+jq -s -e --arg list "$list" 'length==16 and ([.[].rank]|unique|length)==16 and all(.[];.listId==$list and .version==2 and .rank>"500000005001000000000000000000")' "$scratch"/move-result-*.json >/dev/null
+test "$(admin "SELECT count(*)=5017 AND count(DISTINCT rank)=5017 AND max(rank)='500000005017000000000000000000' FROM cards WHERE tenant_id='$organization' AND list_id='$list';")" = t
+# A durable append receipt returns its first allocated rank after a later move,
+# without appending again or restoring its former destination.
+card="$(jq -r '.id' "$scratch/move-source-0.json")"
+request "/cards/$card/move" "$(jq -nc --arg list "$source" '{destinationListId:$list,expectedVersion:2}')" > "$scratch/later-move.json"
+jq -e --arg list "$source" '.listId==$list and .version==3' "$scratch/later-move.json" >/dev/null
+move_request "/cards/$card/move" "$(jq -nc --arg list "$list" '{destinationListId:$list,expectedVersion:1}')" "$(cat "$scratch/move-key-0")" > "$scratch/replayed-move.json"
+test "$(jq -r '.rank' "$scratch/replayed-move.json")" = "$(jq -r '.rank' "$scratch/move-result-0.json")"
+jq -e --arg list "$list" '.listId==$list and .version==2' "$scratch/replayed-move.json" >/dev/null
+test "$(admin "SELECT list_id='$source' AND version=3 FROM cards WHERE tenant_id='$organization' AND id='$card';")" = t
+echo 'Concurrent rank-free moves on a 5,000-card destination and non-reapplying durable replay passed.'

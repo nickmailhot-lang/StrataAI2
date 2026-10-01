@@ -131,7 +131,7 @@ public interface IWorkManagementService
         Guid cardId,
         Guid actorUserId,
         Guid destinationListId,
-        string rank,
+        string? rank,
         long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default);

@@ -143,7 +143,7 @@ public interface IWorkManagementStore
     Task<CardRecord?> MoveCardAsync(
         Guid cardId,
         Guid destinationListId,
-        string rank,
+        string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default);
