@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.Identity;
+using StrataAI.Application.Onboarding;
 using StrataAI.Application.Runtime;
 
 namespace StrataAI.Infrastructure.Identity;
@@ -38,6 +39,7 @@ public static partial class IdentityDeliveryRegistration
         try { signer = new IdentityDeliveryTokenSigner(current,keys); }
         catch (ArgumentException) { throw new InvalidOperationException("Identity token key ring configuration is invalid."); }
         services.AddSingleton<IIdentityDeliveryTokenSigner>(_ => signer);
+        services.AddSingleton<IInvitationDeliveryTokenSigner>(_ => signer);
         services.AddSingleton(new IdentityDeliveryOptions(sender,uri.GetLeftPart(UriPartial.Authority),account));
         return true;
     }

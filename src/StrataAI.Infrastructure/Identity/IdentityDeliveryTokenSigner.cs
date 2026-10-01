@@ -2,12 +2,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using StrataAI.Application.Identity;
+using StrataAI.Application.Onboarding;
 
 namespace StrataAI.Infrastructure.Identity;
 
 // Durable jobs store token ID, purpose and key version, never the bearer token.
 // API and Worker reconstruct the same token only with the runtime key ring.
-public sealed partial class IdentityDeliveryTokenSigner : IIdentityDeliveryTokenSigner, IDisposable
+public sealed partial class IdentityDeliveryTokenSigner : IIdentityDeliveryTokenSigner, IInvitationDeliveryTokenSigner, IDisposable
 {
     private readonly Dictionary<string, byte[]> _keys = new(StringComparer.Ordinal);
     private readonly object _sync = new();
@@ -57,6 +58,22 @@ public sealed partial class IdentityDeliveryTokenSigner : IIdentityDeliveryToken
             ObjectDisposedException.ThrowIf(_disposed, this);
             if (!_keys.TryGetValue(keyId, out var key)) throw new InvalidOperationException("Identity token key version is unavailable.");
             var context = Encoding.UTF8.GetBytes($"strataai:identity:v1\0{keyId}\0{purposeName}\0{tokenId:N}");
+            var token = HMACSHA256.HashData(key, context);
+            return Convert.ToBase64String(token).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        }
+    }
+
+    public string DeriveInvitation(Guid organizationId, Guid invitationId, string keyId)
+    {
+        if (organizationId == Guid.Empty) throw new ArgumentException("Organization ID cannot be empty.", nameof(organizationId));
+        if (invitationId == Guid.Empty) throw new ArgumentException("Invitation ID cannot be empty.", nameof(invitationId));
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (!_keys.TryGetValue(keyId, out var key)) throw new InvalidOperationException("Invitation token key version is unavailable.");
+            // Separate from global verification/reset purposes. Organization and
+            // invitation identities are cryptographically bound, including aliases.
+            var context = Encoding.UTF8.GetBytes($"strataai:invitation-delivery:v1\0{keyId}\0{organizationId:N}\0{invitationId:N}");
             var token = HMACSHA256.HashData(key, context);
             return Convert.ToBase64String(token).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         }
