@@ -360,6 +360,7 @@ public sealed class IdentityService(
             user.Id,
             correlationId,
             cancellationToken);
+        await store.AppendDomainEventAsync(user.Id, "SESSION_REVOKED", correlationId, cancellationToken);
 
         return IdentityOperation<UserProfile>.Success(ToProfile(user));
     }

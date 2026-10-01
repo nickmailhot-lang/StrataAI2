@@ -10,6 +10,7 @@ cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+  query 'GRANT INSERT ON identity_events TO strataai_api_runtime;' >/dev/null
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -23,7 +24,19 @@ token_state() {
     'verification',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM email_verification_tokens t WHERE user_id='$identity_user'),
     'reset',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM password_reset_tokens t WHERE user_id='$identity_user'),
     'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$identity_user'),
-    'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$identity_user'))::text;"
+    'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$identity_user'),
+    'stream',(SELECT to_jsonb(s) FROM identity_event_streams s WHERE user_id='$identity_user'),
+    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM identity_events e WHERE user_id='$identity_user'))::text;"
+}
+reject_token_event() {
+  local before
+  before="$(token_state)"
+  query 'REVOKE INSERT ON identity_events FROM strataai_api_runtime;' >/dev/null
+  test "$(post "$1" "$2")" = 503
+  jq -e '.code=="identity_storage_unavailable"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh 'Npgsql|identity_events|permission denied|UPDATE users|INSERT INTO' "$scratch/response"
+  test "$before" = "$(token_state)"
+  query 'GRANT INSERT ON identity_events TO strataai_api_runtime;' >/dev/null
 }
 reject_token_audit() {
   local before
@@ -165,6 +178,7 @@ if query "SELECT row_to_json(j)::text FROM identity_delivery_jobs j WHERE id='$v
 fi
 test "$(post /auth/password/reset "$(jq -nc --arg token "$verification" '{token:$token,newPassword:"replacement-correct-horse"}')")" = 400
 reject_token_audit /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')"
+reject_token_event /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')"
 expire_token_during_wait email_verification_tokens "$verification_id" /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')"
 test "$(post /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')")" = 200
 test "$(post /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')")" = 400
@@ -185,10 +199,15 @@ if query "SELECT row_to_json(j)::text FROM identity_delivery_jobs j WHERE id='$r
 fi
 test "$(post /auth/verify-email "$(jq -nc --arg token "$reset" '{token:$token}')")" = 400
 reject_token_audit /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"replacement-correct-horse"}')"
+reject_token_event /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"replacement-correct-horse"}')"
 expire_token_during_wait password_reset_tokens "$reset_id" /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"replacement-correct-horse"}')"
 test "$(curl --silent -o /dev/null -w '%{http_code}' -b "$scratch/cookies" "$base/me")" = 200
 test "$(post /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"replacement-correct-horse"}')")" = 200
+reset_version="$(jq -r '.version' "$scratch/response")"
+test "$(query "SELECT count(*) FROM identity_events WHERE user_id='$identity_user' AND event_type='SESSION_REVOKED' AND version=$reset_version AND actor_id=user_id AND entity_id=user_id AND entity_type='User' AND organization_id IS NULL AND board_id IS NULL AND metadata='{}'::jsonb;")" = 1
+reset_state="$(token_state)"
 test "$(post /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"another-replacement-horse"}')")" = 400
+test "$reset_state" = "$(token_state)"
 test "$(curl --silent -o /dev/null -w '%{http_code}' -b "$scratch/cookies" "$base/me")" = 401
 test "$(post /auth/login "$(jq -nc --arg email "$email" --arg password "$password" '{email:$email,password:$password}')")" = 401
 curl --fail --silent -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
