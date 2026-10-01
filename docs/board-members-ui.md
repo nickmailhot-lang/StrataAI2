@@ -42,3 +42,23 @@ with no repeated mutation or unsupported success notice. After removal, the
 recipient must lose private read/edit access while Organization membership remains
 identical. Local collection passes for both cases; execution is pending CI. These
 cases do not establish realtime delivery, inbox receipt or performance targets.
+
+## Live directory invalidation
+
+The screen subscribes through the existing Board live cursor only after an
+authorized directory read. The subscription remains stable across page refreshes,
+preserving event deduplication/recovery rather than resetting to cursor zero.
+Events cause a fresh scoped read and cancel open consent; they never supply member
+profile data. Events during a pending request coalesce into one follow-up read at
+the current page position. Mutation acknowledgments reload explicitly; failed or
+uncertain writes clear stale rows and retain the read-only recovery path. Transient
+read failures automatically retry after ten seconds without another event.
+Access denial stops the subscription and clears protected metadata. Connection
+status and refresh notices are accessible text announcements.
+
+Two additional component cases cover a role refresh with one stable subscription
+and invalidation of open consent followed by private-data clearing/disposal after
+revoked authority. Local full web suite passes 262 cases. Release-browser tests
+now trigger their competing mutation after consent submission, since an earlier
+live event correctly cancels the old review. Actual two-client/reconnect browser
+evidence and visibility-screen realtime behavior remain outstanding.

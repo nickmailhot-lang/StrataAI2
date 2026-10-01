@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { watchBoard, type LiveStatus } from '../../api/boardLive';
 import { validInvitationKey } from '../organizations/invitationIntent';
 
 type Member = { boardId: string; userId: string; role: 'ADMIN' | 'MEMBER'; active: boolean; version: number;
@@ -36,21 +37,48 @@ function Members({ org, id }: { org: string; id: string }) {
   const [previous, setPrevious] = useState<(string | null)[]>([]); const [selected, setSelected] = useState<Change>();
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
+  const queued = useRef(false); const position = useRef<{ cursor: string | null; previous: (string | null)[] }>({ cursor: null, previous: [] });
+  const [subscribed, setSubscribed] = useState(false); const [liveStatus, setLiveStatus] = useState<LiveStatus>('connecting');
+  const [retryRead, setRetryRead] = useState(false);
   const cancel = useRef<HTMLButtonElement>(null); const refresh = useRef<HTMLButtonElement>(null);
   const root = `/boards/${encodeURIComponent(id)}`;
   const clear = () => { setName(undefined); setRows(undefined); setSelected(undefined); setNext(null); };
   const valid = (c: AbortController) => mounted.current && pending.current === c && !c.signal.aborted;
   function begin() { if (pending.current) return; const c = new AbortController(); pending.current = c; setBusy(true); setError(undefined); return c; }
-  function finish(c: AbortController) { if (mounted.current && pending.current === c) { pending.current = undefined; setBusy(false); } }
-  function deny() { clear(); setNotice(undefined); setError('Board member administration is unavailable.'); }
+  function finish(c: AbortController, drain = true) {
+    if (mounted.current && pending.current === c) {
+      pending.current = undefined; setBusy(false);
+      const refreshQueued = queued.current; queued.current = false;
+      if (drain && refreshQueued) queueMicrotask(() => {
+        if (mounted.current && !pending.current) void load(position.current.cursor, position.current.previous);
+      });
+    }
+  }
+  function deny() { clear(); setSubscribed(false); setRetryRead(false); setNotice(undefined); setError('Board member administration is unavailable.'); }
+  const invalidate = useEffectEvent(() => {
+    if (pending.current) { queued.current = true; return; }
+    setNotice('Board membership changed. Current permissions and members are being checked.');
+    void load(position.current.cursor, position.current.previous);
+  });
+  useEffect(() => {
+    if (!subscribed) return;
+    return watchBoard({ organizationId: org, boardId: id, invalidate: () => invalidate(), status: setLiveStatus });
+  }, [org, id, subscribed]);
+  const retryLatest = useEffectEvent(() => { void load(position.current.cursor, position.current.previous); });
+  useEffect(() => {
+    if (!retryRead || busy) return;
+    const timer = setTimeout(() => retryLatest(), 10_000);
+    return () => clearTimeout(timer);
+  }, [retryRead, busy]);
   async function load(after: string | null, history: (string | null)[]) {
-    const c = begin(); if (!c) return; clear();
+    const c = begin(); if (!c) return; setRetryRead(false); position.current = { cursor: after, previous: history }; clear();
     try {
       if (!validInvitationKey(org) || !validInvitationKey(id)) { deny(); return; }
       const result = await request(root, {}, c); if (!valid(c)) return;
       const scope = result.body as { board?: { id: string; organizationId: string; name: string; lifecycleState: string }; access?: { canAdminister: boolean } } | undefined;
       if ([401, 403, 404].includes(result.status)) { deny(); return; }
-      if (result.status !== 200 || scope?.board?.id !== id || scope.board.organizationId !== org || scope.board.lifecycleState !== 'active'
+      if (result.status !== 200) throw new Error('Board unavailable');
+      if (scope?.board?.id !== id || scope.board.organizationId !== org || scope.board.lifecycleState !== 'active'
         || typeof scope.board.name !== 'string' || !scope.board.name.trim() || scope.access?.canAdminister !== true) { deny(); return; }
       const page = await request(`${root}/members${after ? `?after=${encodeURIComponent(after)}` : ''}`, {}, c); if (!valid(c)) return;
       if ([401, 403, 404].includes(page.status)) { deny(); return; }
@@ -58,8 +86,8 @@ function Members({ org, id }: { org: string; id: string }) {
         || !page.body.every((m, index, items) => member(m, id) && m.userId.toLowerCase() > (index ? items[index - 1].userId.toLowerCase() : after?.toLowerCase() ?? ''))
         || (page.cursor !== null && (!validInvitationKey(page.cursor) || page.body.length !== 50 || page.cursor !== page.body.at(-1)?.userId)))
         throw new Error('Invalid directory');
-      setName(scope.board.name); setRows(page.body); setCursor(after); setPrevious(history); setNext(page.cursor);
-    } catch { if (mounted.current && pending.current === c) { clear(); setError('Unable to confirm current Board members. Please check again.'); } }
+      setName(scope.board.name); setRows(page.body); setCursor(after); setPrevious(history); setNext(page.cursor); setSubscribed(true);
+    } catch { if (mounted.current && pending.current === c) { clear(); setRetryRead(true); setError('Unable to confirm current Board members. Please check again.'); } }
     finally { finish(c); }
   }
   async function change() {
@@ -81,7 +109,7 @@ function Members({ org, id }: { org: string; id: string }) {
           : 'The member change could not be confirmed. Check current members before another action.');
       }
     } catch { if (mounted.current && pending.current === c) { clear(); setError('The member change could not be confirmed. Check current members before another action.'); } }
-    finally { if (mounted.current) setSelected(undefined); finish(c); }
+    finally { if (mounted.current) setSelected(undefined); finish(c, false); }
     if (reload) await load(cursor, previous);
   }
   useEffect(() => { mounted.current = true; void load(null, []); return () => { mounted.current = false; pending.current?.abort(); }; }, []);
@@ -89,6 +117,7 @@ function Members({ org, id }: { org: string; id: string }) {
     <Button component={Link} to={`/app/${org}/boards/${id}`}>Back to Board</Button>
     <Typography component="h1" variant="h4">Board members</Typography>{name && <Typography component="h2" variant="h6">{name}</Typography>}
     {error && <Alert severity="error">{error}</Alert>}{notice && <Alert severity="info">{notice}</Alert>}
+    {subscribed && <Typography role="status">{liveStatus === 'live' ? 'Live member updates connected.' : 'Member updates are reconnecting or checking periodically.'}</Typography>}
     {busy && <CircularProgress aria-label="Loading Board members" />}
     <Button ref={refresh} disabled={busy} onClick={() => { setNotice(undefined); void load(cursor, previous); }}>Check current members</Button>
     {rows && <><Button component={Link} to={`/app/${org}/boards/${id}/invite`}>Invite to Board</Button>

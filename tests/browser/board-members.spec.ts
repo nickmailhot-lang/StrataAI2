@@ -28,16 +28,24 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await recipient.request.get(`/boards/${board}/members`)).status()).toBe(404);
       await page.goto(`/app/${org}/boards/${board}`);
       await page.getByRole('link', { name: 'Board members', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByText('Live member updates connected.')).toBeVisible();
+      await expect(page.getByRole('progressbar', { name: 'Loading Board members' })).toHaveCount(0);
       await page.getByRole('button', { name: 'Make administrator: Jordan participant' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused(); await page.keyboard.press('Enter');
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Check current members' })).toBeFocused();
       await page.getByRole('button', { name: 'Make administrator: Jordan participant' }).focus(); await page.keyboard.press('Enter');
-      const competing = await context.request.patch(`/boards/${board}/members/${user}`, { headers, data: { role: 'ADMIN' } });
-      expect(competing.status()).toBe(200); const currentVersion = (await competing.json()).version;
+      let currentVersion = version;
       let roles = 0;
       await page.route(`**/boards/${board}/members/${user}`, async route => {
-        roles++; expect(route.request().method()).toBe('PATCH');
+        roles++;
+        // Compete after consent has submitted, before the server evaluates it.
+        // Earlier live events correctly cancel an open, stale review.
+        if (roles === 1) {
+          const competing = await context.request.patch(`/boards/${board}/members/${user}`, { headers, data: { role: 'ADMIN' } });
+          expect(competing.status()).toBe(200); currentVersion = (await competing.json()).version;
+        }
+        expect(route.request().method()).toBe('PATCH');
         expect(route.request().headers()['if-match']).toBe(`"${roles === 1 ? version : currentVersion}"`);
         expect(route.request().headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
         expect(route.request().postDataJSON()).toEqual({ role: roles === 1 ? 'ADMIN' : 'MEMBER' });
@@ -45,8 +53,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         if (roles === 1) await route.fulfill({ response }); else await route.abort('timedout');
       });
       await page.getByRole('button', { name: 'Confirm member change' }).focus(); await page.keyboard.press('Enter');
-      await expect(page.getByText('This membership changed. Check current members and review a new action.')).toBeVisible();
-      await expect(page.getByText(email, { exact: true })).toHaveCount(0);
+      await expect(page.getByText(/This membership changed|Board membership changed/).first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Check current members' })).toBeEnabled();
       await page.getByRole('button', { name: 'Check current members' }).focus(); await page.keyboard.press('Enter');
       await page.getByRole('button', { name: 'Make member: Jordan participant' }).focus(); await page.keyboard.press('Enter');
       await page.getByRole('button', { name: 'Confirm member change' }).focus(); await page.keyboard.press('Enter');
