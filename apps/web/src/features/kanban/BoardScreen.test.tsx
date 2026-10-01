@@ -215,7 +215,8 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       ).not.toBeInTheDocument(),
     );
     expect(screen.queryByText("Persisted board")).not.toBeInTheDocument();
-    expect(dispose).toHaveBeenCalledTimes(1);
+    // React commits the denied view before the passive live-connection cleanup.
+    await waitFor(() => expect(dispose).toHaveBeenCalledTimes(1));
   });
   it("loads authoritative data and hides write actions for read-only access", async () => {
     const fetcher = vi
