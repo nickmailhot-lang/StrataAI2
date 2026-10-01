@@ -36,3 +36,12 @@ does not prove production FK eligibility or PostgreSQL paging execution. Local
 warnings-as-errors build passes; Linux host execution and exact PostgreSQL paging
 evidence remain pending. Member-management UI and complete PRD-05 acceptance
 evidence remain outstanding. The ticket remains open.
+
+The mandatory `test-board-admin-continuity.sh` release fixture now also creates a
+separate 53-member Board using disposable users and Organization memberships that
+satisfy real foreign keys. It reads 50 then three rows through the restricted API,
+checks complete ordering/uniqueness and terminal cursor absence, rejects an invalid
+cursor, and compares audit/event/job/replay counts before and after reads. A UUID
+retry header on GET must not create a receipt. These are administrative fixtures,
+not evidence of signup, verification delivery or invitation acceptance. Shell
+syntax passes locally; execution remains pending exact-image CI.

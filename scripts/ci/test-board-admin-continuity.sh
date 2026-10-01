@@ -65,3 +65,34 @@ test "$(request owner PATCH "/boards/$board/members/$survivor" '{"role":"MEMBER"
 test "$(admin "SELECT count(*) FROM board_members WHERE board_id='$board' AND status='ACTIVE' AND role='ADMIN'")" = 0
 test "$(request owner PATCH "/boards/$board/members/$survivor" '{"role":"ADMIN"}' "$(key)")" = 200
 echo 'Exact-image Board admin continuity: concurrent self-demotions leave one admin, keyed rejection retains state, audit failure rolls back override, and current Organization-admin recovery remains available.'
+
+# Separate disposable directory fixtures keep the continuity assertions above
+# independent of paging and use real user/Organization/Board foreign keys.
+test "$(request owner POST /boards "$(jq -nc --arg org "$org" '{organizationId:$org,name:"Paged member directory",visibility:"PRIVATE"}')" "$(key)")" = 201
+page_board=$(jq -r '.id' "$scratch/owner.response")
+admin "WITH fixture AS (
+ SELECT gen_random_uuid() AS id FROM generate_series(1,52)
+), inserted_users AS (
+ INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+ SELECT f.id,'board-page-'||f.id||'@example.test',upper('board-page-'||f.id||'@example.test'),
+ 'Directory fixture','ACTIVE',true,u.password_hash,now(),now() FROM fixture f CROSS JOIN users u WHERE u.id='$owner'
+ RETURNING id
+), inserted_members AS (
+ INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+ SELECT gen_random_uuid(),'$org',id,'MEMBER','ACTIVE' FROM inserted_users RETURNING user_id
+)
+INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+ SELECT gen_random_uuid(),'$org','$page_board',user_id,'MEMBER','ACTIVE',now(),now() FROM inserted_members;" >/dev/null
+before_page=$(state)
+test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -H "Idempotency-Key: $(key)" -D "$scratch/page.headers" -o "$scratch/page.first" -w '%{http_code}' "$base/boards/$page_board/members")" = 200
+jq -e 'length==50' "$scratch/page.first" >/dev/null
+cursor=$(awk 'tolower($1)=="x-strataai-next-cursor:" {gsub("\r", "", $2); print $2}' "$scratch/page.headers")
+test -n "$cursor"; test "$cursor" = "$(jq -r '.[49].userId' "$scratch/page.first")"
+test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -D "$scratch/page.headers" -o "$scratch/page.second" -w '%{http_code}' "$base/boards/$page_board/members?after=$cursor")" = 200
+jq -e 'length==3' "$scratch/page.second" >/dev/null
+! grep -qi '^X-StrataAI-Next-Cursor:' "$scratch/page.headers"
+jq -s -e 'add | map(.userId) | length==53 and length==(unique|length) and .==sort' "$scratch/page.first" "$scratch/page.second" >/dev/null
+test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/page.invalid" -w '%{http_code}' "$base/boards/$page_board/members?after=not-a-uuid")" = 400
+jq -e '.code=="invalid_board_member_cursor"' "$scratch/page.invalid" >/dev/null
+test "$before_page" = "$(state)"
+echo 'Exact-image Board member directory: real FK fixtures, bounded seek, complete ordered pages, terminal cursor absence, invalid cursor and no read audit/event/job/replay writes passed.'

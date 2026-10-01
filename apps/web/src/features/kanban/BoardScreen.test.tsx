@@ -140,7 +140,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(screen.getByRole("button", { name: "Save card" })).toBeDisabled();
   });
   it("retries a failed live snapshot without requiring another event", async () => {
-    let invalidate = () => {};
+    let invalidate: (() => void) | undefined;
     vi.mocked(watchBoard).mockImplementationOnce((options) => {
       invalidate = options.invalidate;
       return () => {};
@@ -155,9 +155,10 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     vi.stubGlobal("fetch", fetcher);
     mount();
     await screen.findByRole("link", { name: "Inspect roof" });
+    await waitFor(() => expect(invalidate).toBeDefined());
     vi.useFakeTimers();
     try {
-      await act(async () => invalidate());
+      await act(async () => invalidate!());
       // The initial read's promise finalizer can still be queued when the
       // rendered card appears. Flush that queued refresh and the 503 response
       // before asserting request count or advancing the retry deadline.
