@@ -199,6 +199,30 @@ revoke_board_state() { admin "SELECT jsonb_build_object(
  'stream',(SELECT jsonb_agg(to_jsonb(s) ORDER BY board_id) FROM work_event_streams s WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text;"; }
 before_revoke="$(revoke_board_state)"
+# Routing hints and an earlier administration check must not survive an archive
+# committed while the restricted API waits for the current Board command lock.
+for operation in revoke history; do
+ rm "$scratch/gate.in"; mkfifo "$scratch/gate.in"; exec 3<>"$scratch/gate.in"
+ docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.out" &
+ gate_pid=$!; printf "BEGIN; SELECT id FROM boards WHERE id='%s' FOR UPDATE; SELECT 'board-ready';\n" "$signup_board" >&3
+ for attempt in $(seq 1 100); do if grep -q '^board-ready$' "$scratch/gate.out"; then break; fi; sleep 0.1; done
+ grep -q '^board-ready$' "$scratch/gate.out"
+ if test "$operation" = revoke; then
+  revoke_board_invitation > "$scratch/board-admin-wait-status" & pending=$!
+ else
+  curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/response" -w '%{http_code}' "$base/boards/$signup_board/invitations" > "$scratch/board-admin-wait-status" & pending=$!
+ fi
+ pids+=($pending)
+ for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%FROM boards%';")" -ge 1; then break; fi; sleep 0.1; done
+ test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%FROM boards%';")" -ge 1
+ printf "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='%s'; COMMIT;\n\\q\n" "$signup_board" >&3
+ exec 3>&-; wait "$gate_pid"; gate_pid=''; wait "$pending"; pids=()
+ test "$(cat "$scratch/board-admin-wait-status")" = 404
+ jq -e '.code=="board_not_found"' "$scratch/response" >/dev/null
+ ! grep -Fq "$email" "$scratch/response"
+ test "$before_revoke" = "$(revoke_board_state)"
+ admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$signup_board';" >/dev/null
+done
 for table in audit_events work_events background_jobs; do
  admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
  test "$(revoke_board_invitation)" = 503; test "$before_revoke" = "$(revoke_board_state)"
@@ -209,7 +233,7 @@ revoked_state="$(revoke_board_state)"
 test "$(revoke_board_invitation)" = 204; test "$revoked_state" = "$(revoke_board_state)"
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$invitation_id' AND event_type='INVITATION_REVOKED';")" = 1
 test "$(register)" = 400; test "$revoked_state" = "$(revoke_board_state)"
-echo 'Exact-image Board invitation revocation: audit/event/outbox rollback, one audited natural-ID acknowledgment and signup denial after revocation passed.'
+echo 'Exact-image Board invitation administration: fresh history/revocation denial after Board lock waits, audit/event/outbox rollback, one audited natural-ID acknowledgment and signup denial after revocation passed.'
 
 test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"
 signup_fixtures="$RUNNER_TEMP/invitation-signup-fixtures.json"

@@ -69,3 +69,10 @@ with exactly one DELETE. The scenarios verify one bound invitation and no
 horizontal overflow. Local collection passes for both cases; execution is pending
 the exact-image container CI job. No local collection result proves browser
 acceptance or actual email delivery.
+
+The required invitation-registration release fixture now holds the real Board
+row lock while history and revocation requests wait. It commits an archive before
+releasing the lock, requires the stable `board_not_found` denial with no recipient
+email, and compares invitation/audit/event/stream/job state before and after each
+request. This supplements rollback and natural-ID retry assertions. Shell syntax
+and diff checks pass locally; restricted PostgreSQL execution remains pending CI.
