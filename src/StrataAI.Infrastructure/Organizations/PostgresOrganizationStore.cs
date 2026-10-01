@@ -9,10 +9,12 @@ internal sealed class PostgresOrganizationStore(
     PostgresConnectionFactory connectionFactory, IdentityPolicy policy) : IOrganizationStore
 {
     public async Task<IReadOnlyList<OrganizationMemberSummary>> ListActiveMembersAsync(Guid organizationId,
-        Guid? after, CancellationToken cancellationToken = default, Guid? userId = null)
+        Guid? after, CancellationToken cancellationToken = default, Guid? userId = null,
+        IReadOnlyCollection<Guid>? userIds = null)
     {
         if (!connectionFactory.HasCommandScope(organizationId))
             throw new InvalidOperationException("Member discovery requires the owning authorized Organization transaction.");
+        if (userIds is { Count: > 51 }) throw new ArgumentException("A profile batch may contain at most 51 users.", nameof(userIds));
         await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT m.id,m.user_id,u.display_name,u.email,m.role,u.status,u.email_verified,
@@ -20,11 +22,14 @@ internal sealed class PostgresOrganizationStore(
             FROM organization_members m JOIN users u ON u.id=m.user_id
             WHERE m.tenant_id=@tenant AND m.status='ACTIVE' AND (@after IS NULL OR m.user_id>@after)
                 AND (@user_id IS NULL OR m.user_id=@user_id)
+                AND (@user_ids IS NULL OR m.user_id=ANY(@user_ids))
             ORDER BY m.user_id LIMIT 51;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", organizationId);
         command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
         command.Parameters.AddWithValue("user_id", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)userId ?? DBNull.Value);
+        command.Parameters.AddWithValue("user_ids", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
+            (object?)userIds?.ToArray() ?? DBNull.Value);
         var result = new List<OrganizationMemberSummary>();
         await using var rows = await command.ExecuteReaderAsync(cancellationToken);
         while (await rows.ReadAsync(cancellationToken))

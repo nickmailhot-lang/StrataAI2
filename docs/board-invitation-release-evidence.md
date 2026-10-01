@@ -1,5 +1,39 @@
 # Board invitation release evidence
 
+## Verified directory, consent and visibility baseline
+
+Commit `94dbcbb8b5b62063e21c7ffb7c4add622be55ec4` passed all nine jobs in
+[CI run 36920524051](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36920524051).
+Decoded logs confirm 123 domain, 169 API host and 256 web tests, with no skipped
+.NET tests. PostgreSQL checks include migrations, forced RLS/pgvector, canonical
+routing, audit immutability and restricted runtime capabilities. The required
+gate records successful source, build, container and security inputs.
+
+Exact-image fixtures passed current history/revocation/member-directory denial
+after Board lock waits; both-role Board signup/acceptance and actual signed mail
+transport; bounded 53-person directory paging with real foreign keys and safe
+current/former profiles; stale/malformed membership consent with unchanged state;
+and keyed role/removal acknowledgments that do not reapply to later membership.
+The main browser batch executed 37 scenarios, including desktop/mobile Board
+issuance, lost revocation, bound proof acceptance and visibility consent/conflict/
+lost-response recovery. Its one skipped identity-mail scenario passed separately
+in the dedicated Worker-delivery browser step.
+
+Three non-expired exact-SHA artifacts were inspected:
+
+| Artifact | ID | SHA-256 digest |
+| --- | --- | --- |
+| Tested image archives | 11191623680 | `7eab4ffa569f782cdc907b4e483e70789a3e4c64aad1bf1e7b5276146db6faa4` |
+| Security evidence | 11192645165 | `c4d90785f261894777f667637937e196933318680ada3683485858c684243e50` |
+| Docker release bundle | 11193413515 | `33fc7ee74d53f48fb2112b7fddb47599a696a4160a736a223a57c07f129cb232` |
+
+The release job copied the three retained image archives; it did not rebuild.
+These are artifact archive digests. This verified baseline predates the member
+management UI/browser scenarios, live member/visibility administration,
+collaboration/outage fixture, focus/warning refinements and batched profile query.
+Those later increments need their own release evidence. PRD-05 and PRD-60 remain
+open; telemetry, performance and complete acceptance are not established here.
+
 ## Verified public issuance, mail and revocation baseline
 
 Commit `ec224acef39c5d494d6cb2be90391298c5aec52e` has a fully verified

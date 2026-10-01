@@ -94,3 +94,23 @@ superseded; replay must return the original acknowledgment without changing the
 newer role. A guarded removal followed by explicit re-addition similarly replays
 its 204 acknowledgment without removing the new membership. Local shell syntax
 and diff checks pass; actual fixture execution remains pending exact-image CI.
+
+## Batched current profiles
+
+The directory now supplies at most 51 selected Board-member UUIDs to one owning
+Organization profile query. Filtering occurs before the Organization directory's
+51-row limit, so Board members beyond its first page retain their current names
+and emails. The SQL stays in the already authorized tenant transaction with forced
+RLS, active membership and an explicit tenant predicate. Former membership still
+returns null profile details even if the user is active in another Organization.
+No read receipt/audit/event/job is introduced. Demo storage applies the same bounded
+filter but does not claim production transaction guarantees.
+
+A host case selects Board participants beyond the first 51 Organization members
+and verifies that unrelated active membership cannot supply a former profile.
+The required real-PostgreSQL fixture also gives its former member a membership in
+another Organization before checking null profile fields. The earlier 94dbcbb
+release baseline verified paging, current/former profiles and consent; it predates
+this batch query and the added cross-Organization fixture. Current warnings-as-
+errors build and shell syntax checks pass; Linux execution remains pending. This
+reduces profile round trips but does not establish a latency or large-data target.

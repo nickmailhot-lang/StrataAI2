@@ -4,12 +4,56 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Application.Identity;
 using Xunit;
 
 namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Fact]
+    public async Task Board_directory_profiles_are_selected_before_the_organization_limit_and_exclude_other_organization_membership()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Board profile batch" });
+        var org = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var organizations = app.Services.GetRequiredService<IOrganizationStore>();
+        var identities = app.Services.GetRequiredService<IIdentityStore>(); var now = DateTimeOffset.UtcNow;
+        var ids = new List<Guid>();
+        for (var n = 1; n <= 66; n++)
+        {
+            var user = Guid.Parse($"00000000-0000-0000-0000-{n:D12}"); var email = $"board-profile-{n}@example.test"; ids.Add(user);
+            Assert.True(await identities.TryCreateUserAsync(new(user, email, email.ToUpperInvariant(), $"Profile participant {n}",
+                null, "en-CA", "UTC", AccountStatus.Active, true, "unused-profile-fixture-hash", now, now, 1), null, null, ct));
+            await organizations.AddOrRestoreMemberAsync(org, user, OrganizationRole.Member, now, ct);
+        }
+        using var board = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = org, name = "Selected profiles", visibility = "PRIVATE" });
+        var id = (await board.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        foreach (var user in ids.TakeLast(2))
+        {
+            using var added = await Mutate(owner, HttpMethod.Patch, $"/boards/{id}/members/{user}", new { role = "MEMBER" });
+            Assert.Equal(HttpStatusCode.OK, added.StatusCode);
+        }
+        using var directory = await owner.GetAsync($"/boards/{id}/members", ct); Assert.Equal(HttpStatusCode.OK, directory.StatusCode);
+        var rows = (await directory.Content.ReadFromJsonAsync<JsonElement>(ct)).EnumerateArray().ToArray(); Assert.Equal(3, rows.Length);
+        foreach (var n in new[] { 65, 66 })
+        {
+            var row = Assert.Single(rows, row => row.GetProperty("userId").GetGuid() == ids[n - 1]);
+            Assert.Equal($"Profile participant {n}", row.GetProperty("displayName").GetString());
+            Assert.Equal($"board-profile-{n}@example.test", row.GetProperty("email").GetString());
+            Assert.True(row.GetProperty("organizationMemberActive").GetBoolean());
+        }
+        using var other = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Unrelated profile membership" });
+        var otherOrg = (await other.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        await organizations.AddOrRestoreMemberAsync(otherOrg, ids[^1], OrganizationRole.Member, now, ct);
+        Assert.Equal(OrganizationRemoveMemberResult.Removed, await organizations.RemoveMemberAsync(org, ids[^1], now, ct));
+        using var refreshed = await owner.GetAsync($"/boards/{id}/members", ct); Assert.Equal(HttpStatusCode.OK, refreshed.StatusCode);
+        var former = (await refreshed.Content.ReadFromJsonAsync<JsonElement>(ct)).EnumerateArray().Single(row => row.GetProperty("userId").GetGuid() == ids[^1]);
+        Assert.False(former.GetProperty("organizationMemberActive").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, former.GetProperty("displayName").ValueKind); Assert.Equal(JsonValueKind.Null, former.GetProperty("email").ValueKind);
+    }
+
     [Theory]
     [InlineData("PATCH")]
     [InlineData("DELETE")]

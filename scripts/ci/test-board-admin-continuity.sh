@@ -100,6 +100,11 @@ test "$before_page" = "$(state)"
 former=$(jq -r '[.[] | select(.displayName=="Directory fixture")][0].userId' "$scratch/page.first")
 test -n "$former"; test "$former" != null
 admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$former';" >/dev/null
+# An active membership elsewhere cannot supply a protected profile for this
+# Board's former Organization member when profile reads are batched.
+test "$(request owner POST /organizations '{"name":"Unrelated profile Organization"}' "$(key)")" = 201
+profile_org=$(jq -r '.organization.id' "$scratch/owner.response")
+admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),'$profile_org','$former','MEMBER','ACTIVE');" >/dev/null
 test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/page.former" -w '%{http_code}' "$base/boards/$page_board/members")" = 200
 jq -e --arg user "$former" 'map(select(.userId==$user)) | length==1 and .[0].organizationMemberActive==false and .[0].displayName==null and .[0].email==null' "$scratch/page.former" >/dev/null
 test "$before_page" = "$(state)"

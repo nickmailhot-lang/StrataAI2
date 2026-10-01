@@ -301,12 +301,14 @@ public sealed class WorkManagementService(
         }
 
         var members = await store.ListBoardMembersAsync(boardId, cancellationToken, after, 51);
+        var profiles = members.Count == 0 ? new Dictionary<Guid, OrganizationMemberSummary>()
+            : (await organizationStore.ListActiveMembersAsync(resolved.Value.Board.OrganizationId,
+                null, cancellationToken, userIds: members.Select(member => member.UserId).ToArray()))
+                .ToDictionary(profile => profile.UserId);
         var entries = new List<BoardMemberDirectoryEntry>();
         foreach (var member in members)
         {
-            var profiles = await organizationStore.ListActiveMembersAsync(resolved.Value.Board.OrganizationId,
-                null, cancellationToken, member.UserId);
-            var profile = profiles.SingleOrDefault();
+            profiles.TryGetValue(member.UserId, out var profile);
             entries.Add(new(member.BoardId, member.UserId, member.Role, member.Active, member.CreatedAt,
                 member.UpdatedAt, member.Version, profile?.DisplayName, profile?.Email, profile is not null));
         }
