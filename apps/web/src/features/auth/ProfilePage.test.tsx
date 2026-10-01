@@ -4,11 +4,80 @@ import { ProfilePage } from './ProfilePage';
 
 const profile = { id: 'user-1', email: 'council@example.test', displayName: 'Council', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'active', emailVerified: true, version: 1, createdAt: '2026-03-08T09:30:00Z', updatedAt: '2026-03-08T10:30:00Z' };
 function renderProfile() {
-  render(<MemoryRouter initialEntries={['/profile']}><Routes><Route path="/profile" element={<ProfilePage />} /><Route path="/login" element={<p>Sign in again</p>} /></Routes></MemoryRouter>);
+  return render(<MemoryRouter initialEntries={['/profile']}><Routes><Route path="/profile" element={<ProfilePage />} /><Route path="/login" element={<p>Sign in again</p>} /></Routes></MemoryRouter>);
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe('PRD-02 profile management', () => {
+  it.each(['transport', 'body'])('PRD-02-TC-06 bounds a stalled save %s and ignores its late acknowledgment', async phase => {
+    vi.useFakeTimers();
+    let finish: ((value: unknown) => void) | undefined;
+    const stalled = new Promise(resolve => { finish = resolve; });
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+      .mockImplementationOnce(() => phase === 'transport' ? stalled : Promise.resolve({ status: 200, ok: true, json: () => stalled }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Retry saved', version: 2 })));
+    vi.stubGlobal('fetch', fetchMock);
+    renderProfile();
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.change(screen.getByLabelText(/Display name/), { target: { value: 'My edits' } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+    await act(() => vi.advanceTimersByTimeAsync(15_000));
+    expect(fetchMock.mock.calls[1][1].signal.aborted).toBe(true);
+    expect(screen.getByText(/Unable to confirm your profile save/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Display name/)).toHaveValue('My edits');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByText('Profile saved.')).toBeInTheDocument();
+    const late = { ...profile, displayName: 'Late result', version: 9 };
+    await act(async () => { finish?.(phase === 'transport' ? new Response(JSON.stringify(late)) : late); });
+    expect(screen.getByLabelText(/Display name/)).toHaveValue('Retry saved');
+  });
+
+  it.each([{ ...profile, id: 'another-user', version: 2 }, { ...profile, version: 1 }, { version: 2 }])('PRD-02-TC-03 rejects an invalid or unrelated save acknowledgment %#', async invalid => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+      .mockResolvedValueOnce(new Response(JSON.stringify(invalid))));
+    renderProfile();
+    fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: 'My edits' } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+    await screen.findByText(/Unable to confirm your profile save/);
+    expect(screen.getByLabelText(/Display name/)).toHaveValue('My edits');
+    expect(screen.queryByText('Profile saved.')).not.toBeInTheDocument();
+  });
+
+  it('PRD-02-TC-06 bounds sign out and fences late success after retry', async () => {
+    vi.useFakeTimers();
+    let finish: ((response: Response) => void) | undefined;
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+      .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
+      .mockResolvedValueOnce(new Response(null, { status: 503 }));
+    vi.stubGlobal('fetch', fetchMock);
+    renderProfile();
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    await act(() => vi.advanceTimersByTimeAsync(15_000));
+    expect(screen.getByText('Unable to sign out. Please retry.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    await act(async () => { await Promise.resolve(); });
+    await act(async () => { finish?.(new Response(null, { status: 204 })); });
+    expect(screen.queryByText('Sign in again')).not.toBeInTheDocument();
+    expect(screen.getByText(profile.email)).toBeInTheDocument();
+  });
+
+  it('PRD-02-TC-06 aborts a pending mutation on unmount without navigating on late completion', async () => {
+    let finish: ((response: Response) => void) | undefined;
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+      .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+    vi.stubGlobal('fetch', fetchMock);
+    const view = renderProfile();
+    await screen.findByLabelText(/Display name/);
+    fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+    view.unmount();
+    expect(fetchMock.mock.calls[1][1].signal.aborted).toBe(true);
+    await act(async () => { finish?.(new Response(null, { status: 401 })); });
+    expect(screen.queryByText('Sign in again')).not.toBeInTheDocument();
+  });
   it('AC-AUTH-02-03 periodically recovers preferences without a focus event', async () => {
     vi.useFakeTimers();
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
@@ -116,7 +185,7 @@ describe('PRD-02 profile management', () => {
   });
   it('saves editable preferences and displays the authoritative response', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Updated council', timezone: 'UTC' })));
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Updated council', timezone: 'UTC', version: 2 })));
     vi.stubGlobal('fetch', fetchMock);
     renderProfile();
     fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: ' Updated council ' } });
@@ -133,7 +202,7 @@ describe('PRD-02 profile management', () => {
   it('preserves changes after a network error and allows retry', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
       .mockRejectedValueOnce(new Error('Offline'))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Edited' })));
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Edited', version: 2 })));
     vi.stubGlobal('fetch', fetchMock);
     renderProfile();
     fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: 'Edited' } });

@@ -38,6 +38,27 @@ function isProfile(value: unknown): value is UserProfile {
     && typeof user.updatedAt === 'string' && Number.isFinite(Date.parse(user.updatedAt));
 }
 
+async function profileCommand(path: string, options: RequestInit, controller: AbortController, readBody: boolean) {
+  let deadline: ReturnType<typeof setTimeout> | undefined;
+  let abort: (() => void) | undefined;
+  try {
+    return await Promise.race([
+      apiFetch(path, { ...options, signal: controller.signal }).then(async response => ({
+        status: response.status, ok: response.ok,
+        body: readBody && response.status !== 401 ? await response.json().catch(() => undefined) as unknown : undefined,
+      })),
+      new Promise<never>((_, reject) => {
+        abort = () => reject(new Error('Profile command interrupted'));
+        controller.signal.addEventListener('abort', abort, { once: true });
+        deadline = setTimeout(() => controller.abort(), 15_000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(deadline);
+    if (abort) controller.signal.removeEventListener('abort', abort);
+  }
+}
+
 export function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile>();
   const [error, setError] = useState<string>();
@@ -48,7 +69,18 @@ export function ProfilePage() {
   const [conflict, setConflict] = useState(false);
   const [refreshError, setRefreshError] = useState<string>();
   const mutationEpoch = useRef(0);
+  const mutation = useRef<AbortController | undefined>(undefined);
+  const mounted = useRef(true);
   const navigate = useNavigate();
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      mutationEpoch.current++;
+      mutation.current?.abort();
+      mutation.current = undefined;
+    };
+  }, []);
   const canRead = useEffectEvent(() => !busy);
   const deny = useEffectEvent(() => {
     setProfile(undefined); setDraft(undefined);
@@ -124,50 +156,65 @@ export function ProfilePage() {
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft || busy || conflict) return;
-    mutationEpoch.current++;
+    if (!draft || busy || conflict || mutation.current) return;
+    const submitted = draft;
+    const epoch = ++mutationEpoch.current;
+    const controller = new AbortController();
+    mutation.current = controller;
+    const current = () => mounted.current && epoch === mutationEpoch.current;
     setBusy(true);
     setError(undefined);
     setSaved(false);
     try {
-      const response = await apiFetch('/me', {
+      const response = await profileCommand('/me', {
         method: 'PATCH', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ displayName: draft.displayName, avatarUrl: draft.avatarUrl ?? '', locale: draft.locale, timezone: draft.timezone, version: draft.version }),
-      });
+      }, controller, true);
+      if (!current()) return;
       if (response.status === 401) {
+        setProfile(undefined); setDraft(undefined);
         navigate('/login', { replace: true });
         return;
       }
       if (!response.ok) {
         setConflict(response.status === 409);
-        const problem = await response.json().catch(() => ({})) as { title?: string };
-        setError(problem.title ?? 'Unable to save your profile. Please retry.');
+        const problem = response.body as { title?: unknown } | undefined;
+        setError(typeof problem?.title === 'string' ? problem.title : 'Unable to save your profile. Please retry.');
         return;
       }
-      const user = await response.json() as UserProfile;
+      const user = response.body;
+      if (!isProfile(user) || user.id !== submitted.id || user.version <= submitted.version) throw new Error('Invalid profile acknowledgment');
       setProfile(user);
       setDraft(user);
       setSaved(true);
     } catch {
-      setError('Unable to save your profile. Your changes are preserved; please retry.');
+      if (current()) setError('Unable to confirm your profile save. Your changes are preserved; refresh the latest profile or retry.');
     } finally {
-      setBusy(false);
+      if (mutation.current === controller) mutation.current = undefined;
+      if (current()) setBusy(false);
     }
   }
 
   async function logout() {
-    mutationEpoch.current++;
+    if (busy || mutation.current) return;
+    const epoch = ++mutationEpoch.current;
+    const controller = new AbortController();
+    mutation.current = controller;
+    const current = () => mounted.current && epoch === mutationEpoch.current;
     setBusy(true);
     setError(undefined);
     try {
-      const response = await apiFetch('/auth/logout', { method: 'POST', credentials: 'include' });
+      const response = await profileCommand('/auth/logout', { method: 'POST', credentials: 'include' }, controller, false);
+      if (!current()) return;
       if (!response.ok && response.status !== 401) throw new Error('Sign out failed');
+      setProfile(undefined); setDraft(undefined);
       navigate('/login', { replace: true });
     } catch {
-      setError('Unable to sign out. Please retry.');
+      if (current()) setError('Unable to sign out. Please retry.');
     } finally {
-      setBusy(false);
+      if (mutation.current === controller) mutation.current = undefined;
+      if (current()) setBusy(false);
     }
   }
 
