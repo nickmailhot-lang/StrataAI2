@@ -11,6 +11,41 @@ function mount() {
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 describe('PRD-60 verified email invitation discovery', () => {
+  it('clears old invitation labels during a refresh and after failure until a fresh read succeeds', async () => {
+    let finish: ((response: Response) => void) | undefined;
+    const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [boardInvitation], nextCursor: null }))
+      .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
+      .mockResolvedValueOnce(reply({ items: [boardInvitation], nextCursor: null }));
+    vi.stubGlobal('fetch', fetcher); mount();
+    await screen.findByRole('heading', { name: 'Maintenance' });
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+    expect(screen.queryByRole('heading', { name: 'Maintenance' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Accept invitation to/ })).not.toBeInTheDocument();
+    await act(async () => { finish!(reply({}, 503)); });
+    await screen.findByText('Unable to load invitations. Please refresh and try again.');
+    expect(screen.queryByRole('heading', { name: 'Maintenance' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Accept invitation to/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+    await screen.findByRole('heading', { name: 'Maintenance' });
+    expect(fetcher.mock.calls.every(call => call[1].method === 'GET')).toBe(true);
+  });
+  it('keeps only generic recovery after an uncertain acceptance and a failed discovery refresh', async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [boardInvitation], nextCursor: null }))
+      .mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply({}, 503))
+      .mockResolvedValueOnce(reply(boardAcknowledgment));
+    vi.stubGlobal('fetch', fetcher); mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Accept invitation to Council, Board Maintenance, admin' }));
+    await screen.findByRole('button', { name: 'Retry invitation acceptance' });
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+    await screen.findByText('Unable to load invitations. Please refresh and try again.');
+    expect(screen.queryByRole('heading', { name: 'Maintenance' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry invitation acceptance' }));
+    await screen.findByRole('link', { name: 'Open Board' });
+    expect(fetcher.mock.calls[3][0]).toBe(fetcher.mock.calls[1][0]);
+    expect(fetcher.mock.calls.filter(call => call[1].method === 'POST')).toHaveLength(2);
+  });
   it('preserves an unconfirmed acceptance after refresh removes the committed invitation', async () => {
     const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [invitation], nextCursor: null }))
       .mockRejectedValueOnce(new Error('Lost committed response'))

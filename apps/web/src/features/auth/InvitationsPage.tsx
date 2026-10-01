@@ -56,7 +56,7 @@ export function InvitationsPage() {
   async function load(after?: string) {
     if (current.current) return;
     const controller = new AbortController(); current.current = controller;
-    setBusy(true); setError(undefined);
+    setBusy(true); setError(undefined); setPage(undefined); setAccepted(undefined);
     try {
       const response = await request(after ? `/me/invitations?after=${encodeURIComponent(after)}` : '/me/invitations', controller);
       if (!mounted.current || current.current !== controller) return;

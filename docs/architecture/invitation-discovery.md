@@ -15,3 +15,20 @@ An unconfirmed acceptance is held separately from the live pending page. If a co
 Required exact-image CI covers one-connection reads/acceptance, audit failure rollback, concurrent duplicates, durable restart, bounded 101-row paging and revocation during an observed account-lock wait. API tests cover newly verified discovery, wrong account rejection, issuer revocation and Portal separation. Browser coverage loses a committed acceptance acknowledgment, retries the same ID using keyboard controls and verifies one authorized Organization entry. [Commit 8bd9586 CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36821144324) passed all nine jobs with three retained exact-SHA artifacts, including these release fixtures and the ten-test browser suite.
 
 Invitation mail delivery, create/revoke idempotency, invitation domain-event publication and broader onboarding lifecycle/ownership/telemetry requirements remain outstanding. This increment does not close PRD-60 or the architecture tickets.
+
+## Fresh discovery after refresh
+
+Starting a discovery refresh or next-page read clears the previously displayed
+invitation page and prior acceptance notice. A failed, stalled, malformed or denied
+read cannot leave cached Organization/Board labels and ordinary acceptance controls
+available as though they were current. Explicit Refresh starts from the first page,
+as before; successful validated discovery repopulates the view. No read retries
+acceptance or interprets a missing invitation as a successful acknowledgment.
+
+An uncertain acceptance remains separate, displaying only its generic recovery
+button. Its bound ID/Organization/surface/role/Board target are retained in memory
+for an explicit same-invitation retry, including after a failed discovery refresh.
+Current 401/403 discovery still clears that attempt. Two component cases verify
+in-flight/failing refresh disclosure clearing and generic retry recovering the
+matching Board acknowledgment. All 21 invitation discovery component cases pass
+locally; lint passes. Exact-image release regression remains pending.
