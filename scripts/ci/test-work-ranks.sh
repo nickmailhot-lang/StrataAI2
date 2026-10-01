@@ -69,3 +69,16 @@ test "$(jq -r '.rank' "$scratch/replayed-move.json")" = "$(jq -r '.rank' "$scrat
 jq -e --arg list "$list" '.listId==$list and .version==2' "$scratch/replayed-move.json" >/dev/null
 test "$(admin "SELECT list_id='$source' AND version=3 FROM cards WHERE tenant_id='$organization' AND id='$card';")" = t
 echo 'Concurrent rank-free moves on a 5,000-card destination and non-reapplying durable replay passed.'
+# Concurrent relative insertions resolve neighbors after the owning parent lock.
+anchor="$(jq -r '.id' "$scratch/last.json")"
+pids=()
+for ((index=0; index<16; index++)); do
+  card="$(jq -r '.id' "$scratch/move-source-$index.json")"
+  version=2; if ((index==0)); then version=3; fi
+  move_request "/cards/$card/move" "$(jq -nc --arg list "$list" --arg before "$anchor" --argjson version "$version" '{destinationListId:$list,beforeCardId:$before,expectedVersion:$version}')" "$(cat /proc/sys/kernel/random/uuid)" > "$scratch/relative-result-$index.json" &
+  pids+=("$!")
+done
+for pid in "${pids[@]}"; do wait "$pid"; done
+jq -s -e --arg list "$list" 'length==16 and ([.[].rank]|unique|length)==16 and all(.[];.listId==$list and .rank>"500000005000000000000000000000" and .rank<"500000005001000000000000000000")' "$scratch"/relative-result-*.json >/dev/null
+test "$(admin "SELECT count(*)=5017 AND count(DISTINCT rank)=5017 AND max(rank)='500000005001000000000000000000' FROM cards WHERE tenant_id='$organization' AND list_id='$list';")" = t
+echo 'Concurrent before-card insertion resolves current neighbors on a 5,000-card destination without sibling renumbering.'

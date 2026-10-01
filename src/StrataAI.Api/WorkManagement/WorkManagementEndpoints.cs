@@ -536,7 +536,7 @@ public static class WorkManagementEndpoints
                             request.Rank,
                             request.ExpectedVersion,
                             context.TraceIdentifier,
-                            cancellationToken));
+                            cancellationToken, request.BeforeCardId));
                 })
             .RequireAuthorization();
 
@@ -729,6 +729,8 @@ public static class WorkManagementEndpoints
                 StatusCodes.Status400BadRequest,
                 errorCode,
                 "The requested rank is invalid."),
+            "invalid_move_position" => Problem(
+                StatusCodes.Status400BadRequest, errorCode, "The requested card position is invalid."),
             "rank_space_exhausted" => Problem(
                 StatusCodes.Status409Conflict,
                 errorCode,

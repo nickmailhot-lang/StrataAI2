@@ -173,13 +173,16 @@ public sealed class TransactionalWorkManagementService(
         string? rank,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null)
     {
         var card = await store.FindCardAsync(cardId, cancellationToken);
         var destination = await store.FindListAsync(destinationListId, cancellationToken);
         if (card is null || destination is null || card.OrganizationId != destination.OrganizationId || card.BoardId != destination.BoardId)
             return WorkOperation<CardRecord>.Failure("card_not_found");
-        return await transactions.ExecuteAsync(card.OrganizationId, WorkCommand.Create(actorUserId, context.IdempotencyKey, "MoveCardAsync", cardId, new { destinationListId, rank, expectedVersion }, "card_not_found"), _ => AuthorizeBoard(card.BoardId, actorUserId, "edit", cancellationToken), () => inner.MoveCardAsync(cardId, actorUserId, destinationListId, rank, expectedVersion, correlationId, cancellationToken), cancellationToken);
+        // Preserve existing receipt fingerprints when no relative position was supplied.
+        object body = beforeCardId is null ? new { destinationListId, rank, expectedVersion }
+            : new { destinationListId, rank, expectedVersion, beforeCardId };
+        return await transactions.ExecuteAsync(card.OrganizationId, WorkCommand.Create(actorUserId, context.IdempotencyKey, "MoveCardAsync", cardId, body, "card_not_found"), _ => AuthorizeBoard(card.BoardId, actorUserId, "edit", cancellationToken), () => inner.MoveCardAsync(cardId, actorUserId, destinationListId, rank, expectedVersion, correlationId, cancellationToken, beforeCardId), cancellationToken);
     }
 
     public Task<WorkOperation<CardRecord>> SetCardLifecycleAsync(

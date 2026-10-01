@@ -45,4 +45,5 @@ public sealed record UpdateCardRequest(
 public sealed record MoveCardRequest(
     Guid DestinationListId,
     string? Rank,
-    long ExpectedVersion);
+    long ExpectedVersion,
+    Guid? BeforeCardId = null);

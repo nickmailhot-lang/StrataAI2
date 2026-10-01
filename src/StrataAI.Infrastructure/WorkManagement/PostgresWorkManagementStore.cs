@@ -67,6 +67,28 @@ internal sealed class PostgresWorkManagementStore(
         return RankToken.After(await last.ExecuteScalarAsync(cancellationToken) as string);
     }
 
+    private static async Task<string?> AllocateBeforeCardRankAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        Guid tenantId, Guid boardId, Guid listId, Guid movingId, Guid beforeId, CancellationToken cancellationToken)
+    {
+        await using (var parent = new NpgsqlCommand("SELECT id FROM board_lists WHERE tenant_id=@tenant AND board_id=@board AND id=@list AND lifecycle_state='ACTIVE' FOR UPDATE;", connection, transaction))
+        {
+            parent.Parameters.AddWithValue("tenant", tenantId); parent.Parameters.AddWithValue("board", boardId); parent.Parameters.AddWithValue("list", listId);
+            if (await parent.ExecuteScalarAsync(cancellationToken) is null) return null;
+        }
+        // Fresh statements after the lock ensure the anchor and predecessor are
+        // current. Both predicates bind to the admitted tenant/Board/destination.
+        await using var anchor = new NpgsqlCommand("SELECT rank FROM cards WHERE tenant_id=@tenant AND board_id=@board AND list_id=@list AND id=@before AND id<>@moving AND lifecycle_state='ACTIVE';", connection, transaction);
+        anchor.Parameters.AddWithValue("tenant", tenantId); anchor.Parameters.AddWithValue("board", boardId); anchor.Parameters.AddWithValue("list", listId);
+        anchor.Parameters.AddWithValue("before", beforeId); anchor.Parameters.AddWithValue("moving", movingId);
+        if (await anchor.ExecuteScalarAsync(cancellationToken) is not string upper) return null;
+        await using var previous = new NpgsqlCommand("SELECT rank FROM cards WHERE tenant_id=@tenant AND board_id=@board AND list_id=@list AND lifecycle_state='ACTIVE' AND id<>@moving AND (rank<@upper OR (rank=@upper AND id<@before)) ORDER BY rank DESC,id DESC LIMIT 1;", connection, transaction);
+        previous.Parameters.AddWithValue("tenant", tenantId); previous.Parameters.AddWithValue("board", boardId); previous.Parameters.AddWithValue("list", listId);
+        previous.Parameters.AddWithValue("moving", movingId); previous.Parameters.AddWithValue("upper", upper); previous.Parameters.AddWithValue("before", beforeId);
+        var lower = await previous.ExecuteScalarAsync(cancellationToken) as string;
+        if (lower == upper) throw new RankSpaceExhaustedException();
+        return RankToken.Between(lower, upper);
+    }
+
     public async Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsAsync(
         Guid organizationId,
         Guid userId,
@@ -1061,7 +1083,7 @@ internal sealed class PostgresWorkManagementStore(
         string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null)
     {
         var cardRoute = await ResolveCardRouteAsync(
             cardId,
@@ -1082,7 +1104,13 @@ internal sealed class PostgresWorkManagementStore(
             await connectionFactory.OpenTenantSessionAsync(
                 cardRoute.Value.TenantId,
                 cancellationToken);
-        rank ??= await AllocateAppendRankAsync(session.Connection, session.Transaction,
+        if (beforeCardId is not null)
+        {
+            rank = await AllocateBeforeCardRankAsync(session.Connection, session.Transaction,
+                cardRoute.Value.TenantId, cardRoute.Value.BoardId, destinationListId, cardId, beforeCardId.Value, cancellationToken);
+            if (rank is null) return null;
+        }
+        else rank ??= await AllocateAppendRankAsync(session.Connection, session.Transaction,
             cardRoute.Value.TenantId, cardRoute.Value.BoardId, destinationListId, cancellationToken, cardId);
         await using var command = new NpgsqlCommand(
             """

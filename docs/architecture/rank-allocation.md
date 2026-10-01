@@ -37,6 +37,34 @@ durable receipt does not restore a former destination after a later move. Build
 and shell syntax checks pass locally; Linux API-host and PostgreSQL execution are
 pending. This fixture is not a throughput or initial-render latency benchmark.
 
+## Relative card positions
+
+An optional `beforeCardId` on the move API inserts immediately before that current
+active destination card. It is mutually exclusive with an explicit rank and may
+not name the moving card or the empty UUID; admitted invalid combinations return
+`invalid_move_position` (400). The moving card's expected version remains required.
+Null/absent beforeCardId keeps existing append/explicit-rank behavior and retains
+its historical receipt fingerprint, allowing old successful requests to replay
+across this API extension. A non-null anchor is included in the fingerprint.
+
+After current admission and version checks, PostgreSQL locks the active destination
+list. Fresh scoped queries resolve the anchor and immediate predecessor, excluding
+the moving card, using bounded-result queries with tenant/parent/rank predicates
+rather than loading all sibling rows into the application.
+The midpoint rank, update, audit, event/job and receipt remain in the owning tenant
+command transaction. A missing/moved/archived or foreign-destination anchor returns
+the generic `version_conflict` without disclosing its metadata. Duplicate/exhausted
+local rank intervals return stable `rank_space_exhausted` (409), rather than an
+ambiguous storage failure. Demo performs equivalent allocation under its store lock.
+
+An API-host case checks relative insertion, prepend, self/mixed inputs, anchor-bound
+key rejection, non-reapplying replay and a wrong-list anchor. The required exact
+release PostgreSQL fixture adds sixteen concurrent relative moves before one
+anchor on its 5,000-card destination and checks bounded interval/unique ranks and
+unchanged sibling ordering. Build/shell syntax pass locally; Linux execution is
+pending. Client positional controls/drag/drop and exhausted-interval rebalance
+remain unfinished. No full ticket or latency acceptance claim is established.
+
 The exact-image CI check issues independent concurrent commands for 128 lists
 and 128 cards, checks rank uniqueness, and appends to a database fixture containing
 5,000 cards with descriptions. The latter checks allocation at the scale boundary;

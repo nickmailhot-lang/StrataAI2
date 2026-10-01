@@ -146,7 +146,7 @@ public interface IWorkManagementStore
         string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null);
 
     Task<CardRecord?> SetCardLifecycleAsync(
         Guid cardId,

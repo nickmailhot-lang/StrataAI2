@@ -518,7 +518,7 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
         string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null)
     {
         lock (_sync)
         {
@@ -530,14 +530,19 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
                 return Task.FromResult<CardRecord?>(null);
             }
 
+            var siblings = _cards.Values.Where(sibling => sibling.Id != cardId && sibling.ListId == destinationListId
+                && sibling.LifecycleState == WorkItemLifecycleState.Active).OrderBy(sibling => sibling.Rank, StringComparer.Ordinal).ThenBy(sibling => sibling.Id).ToArray();
+            if (beforeCardId is not null)
+            {
+                var position = Array.FindIndex(siblings, sibling => sibling.Id == beforeCardId);
+                if (position < 0) return Task.FromResult<CardRecord?>(null);
+                if (position > 0 && siblings[position - 1].Rank == siblings[position].Rank) throw new RankSpaceExhaustedException();
+                rank = RankToken.Between(position == 0 ? null : siblings[position - 1].Rank, siblings[position].Rank);
+            }
             var updated = card with
             {
                 ListId = destinationListId,
-                Rank = rank ?? RankToken.After(_cards.Values
-                    .Where(sibling => sibling.Id != cardId && sibling.ListId == destinationListId
-                        && sibling.LifecycleState == WorkItemLifecycleState.Active)
-                    .OrderByDescending(sibling => sibling.Rank, StringComparer.Ordinal)
-                    .Select(sibling => sibling.Rank).FirstOrDefault()),
+                Rank = rank ?? RankToken.After(siblings.LastOrDefault()?.Rank),
                 UpdatedAt = updatedAt,
                 Version = card.Version + 1,
             };

@@ -716,7 +716,7 @@ public sealed class WorkManagementService(
         string? rank,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null)
     {
         var card = await store.FindCardAsync(cardId, cancellationToken);
         var source = card is null ? null : await store.FindListAsync(card.ListId, cancellationToken);
@@ -751,14 +751,19 @@ public sealed class WorkManagementService(
         // production snapshot stable and avoids allocating for a known stale move.
         if (card.Version != expectedVersion)
             return WorkOperation<CardRecord>.Failure("version_conflict");
+        if (beforeCardId is not null && (beforeCardId == Guid.Empty || beforeCardId == cardId || rank is not null))
+            return WorkOperation<CardRecord>.Failure("invalid_move_position");
 
-        var updated = await store.MoveCardAsync(
-            cardId,
-            destinationListId,
-            rank,
-            expectedVersion,
-            clock.UtcNow,
-            cancellationToken);
+        CardRecord? updated;
+        try
+        {
+            updated = await store.MoveCardAsync(cardId, destinationListId, rank, expectedVersion,
+                clock.UtcNow, cancellationToken, beforeCardId);
+        }
+        catch (RankSpaceExhaustedException)
+        {
+            return WorkOperation<CardRecord>.Failure("rank_space_exhausted");
+        }
 
         if (updated is null)
         {
