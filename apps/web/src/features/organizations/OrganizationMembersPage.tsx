@@ -147,6 +147,7 @@ function Members({ organizationId }: { organizationId: string }) {
     {reviewId && !selected && !denied && <Button ref={recovery} disabled={busy} onClick={() => void review(reviewId, true)}>Review current membership</Button>}
     {page && <>
       <Button component={Link} to={`/app/${organizationId}/invite`}>Create Organization invitation</Button>
+      <Button component={Link} to={`/app/${organizationId}/invitations`}>Review issued invitations</Button>
       <Typography>Page {history.length + 1}. Membership may change while you browse.</Typography>
       {!page.items.length && <Typography>No internal members on this page.</Typography>}
       {page.items.map(row => <Paper variant="outlined" sx={{ p: 2, overflowWrap: 'anywhere' }} key={row.membershipId}><Stack spacing={1}>

@@ -19,9 +19,23 @@ provider acknowledged the message; it does not prove inbox receipt or grant
 access. A SENT invitation can subsequently be revoked or expire.
 
 The endpoint is read-only and paginates all lifecycle states, so historical
-revoked/accepted invitations remain reviewable. The administrator history UI and
-revocation controls still need to consume this endpoint. No issue is complete
-on the strength of this backend increment. Host tests cover paging, lifecycle,
+revoked/accepted invitations remain reviewable. The MUI history at
+`/app/{organizationId}/invitations` links from membership and invitation creation.
+It validates bounded ordered cursor pages, shows lifecycle separately from mail
+state, formats timestamps using account preferences, and requires an explicit
+keyboard-accessible revocation confirmation. Lost/ambiguous revocation responses
+hide stale rows and recover through read-only current history before another
+action. Only a 204 acknowledgment or the exact invitation's canonical revoked
+timestamp confirms revocation; absent rows are not assumed revoked. Permission
+loss clears protected data. Navigation/unmount aborts outstanding requests, and
+the deadline bounds response body parsing too. Pending recovery is memory-only;
+the page stores no recipient data or proof in browser storage.
+
+No issue is complete on the strength of this increment. Host tests cover paging, lifecycle,
 secret exclusion and current/removed administrative access; exact-image mail
-tests check actual SENT reads and denied recipient access. New CI evidence is
-required before claiming these tests passed.
+tests check actual SENT reads and denied recipient access. Local web checks include
+220 passing tests and desktop/mobile browser keyboard cancellation and lost
+revocation acknowledgment recovery. Linux source evidence for the preceding
+backend commit confirms 114 domain and 138 API cases; full release evidence for
+the UI commit remains required. Board-specific invitations and other onboarding
+acceptance criteria remain open.

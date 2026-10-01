@@ -17,6 +17,7 @@ import { OrganizationHome } from "../features/organizations/OrganizationHome";
 import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
 import { OrganizationInvitationPage } from "../features/organizations/OrganizationInvitationPage";
+import { OrganizationInvitationHistoryPage } from "../features/organizations/OrganizationInvitationHistoryPage";
 import { InvitationsPage } from "../features/auth/InvitationsPage";
 import { InvitationLinkPage } from "../features/auth/InvitationLinkPage";
 import { PortalShell } from "../portal/PortalShell";
@@ -46,6 +47,7 @@ const routes = [
       { path: "settings", element: <OrganizationSettingsPage /> },
       { path: "members", element: <OrganizationMembersPage /> },
       { path: "invite", element: <OrganizationInvitationPage /> },
+      { path: "invitations", element: <OrganizationInvitationHistoryPage /> },
       {
         path: "profile",
         element: <ProfilePage />,

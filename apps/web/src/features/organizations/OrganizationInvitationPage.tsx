@@ -118,6 +118,7 @@ function Invitation({ organizationId }: { organizationId: string }) {
   const locked = busy || !!intent || blocked || !!ack;
   return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={`/app/${organizationId}/members`}>Organization members</Button>
+    <Button component={Link} to={`/app/${organizationId}/invitations`}>Review issued invitations</Button>
     <Typography component="h1" variant="h4">Create Organization invitation</Typography>
     {error && <Alert severity="error">{error}</Alert>}
     {busy && <CircularProgress aria-label="Loading Organization invitation" />}
