@@ -127,6 +127,10 @@ for board_role in ADMIN MEMBER; do
  admin "UPDATE users SET email_verified=true WHERE id='$board_recipient';" >/dev/null
  curl --fail --silent --show-error -c "$scratch/board.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
   -d "$(jq '{email,password}' <<< "$body")" "$base/auth/login" >/dev/null
+ before_review="$(board_accept_state)"
+ test "$(curl --max-time 60 --silent --show-error -b "$scratch/board.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -X POST -d "$(jq -nc --arg token "$token" '{token:$token}')" -o "$scratch/response" -w '%{http_code}' "$base/invitations/review")" = 200
+ jq -e --arg board "$signup_board" --arg role "$board_role" '.boardTarget.boardId==$board and .boardTarget.role==$role and (.boardName|length)>0' "$scratch/response" >/dev/null
+ test "$before_review" = "$(board_accept_state)"
  before_accept="$(board_accept_state)"
  for denied in board_members audit_events work_events background_jobs; do
   admin "REVOKE INSERT ON $denied FROM strataai_api_runtime;" >/dev/null

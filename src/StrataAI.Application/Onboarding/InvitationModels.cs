@@ -31,7 +31,9 @@ public sealed record PendingInvitation(
     InvitationSurface Surface,
     string TargetRole,
     DateTimeOffset ExpiresAt,
-    string OrganizationName);
+    string OrganizationName,
+    BoardInvitationTarget? BoardTarget = null,
+    string? BoardName = null);
 
 public sealed record CreatedInvitation(
     InvitationRecord Invitation,

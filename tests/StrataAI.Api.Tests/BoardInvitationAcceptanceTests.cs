@@ -30,6 +30,17 @@ public sealed partial class ApiHostTests
         using var client = app.CreateClient();
         using var login = await Mutate(client, HttpMethod.Post, "/auth/login", new { email = fixture.Recipient.Email, password });
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        Assert.Equal("invalid_or_expired_invitation", (await service.ReviewTokenAsync(fixture.Owner.Id, issued.RawToken, ct)).ErrorCode);
+        using var reviewed = await Mutate(client, HttpMethod.Post, "/invitations/review", new { token = issued.RawToken });
+        Assert.Equal(HttpStatusCode.OK, reviewed.StatusCode);
+        var preview = await reviewed.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal(fixture.Board.Name, preview.GetProperty("boardName").GetString());
+        Assert.Equal(fixture.Board.Id, preview.GetProperty("boardTarget").GetProperty("boardId").GetGuid());
+        Assert.Equal(role.ToString().ToUpperInvariant(), preview.GetProperty("boardTarget").GetProperty("role").GetString());
+        Assert.DoesNotContain(issued.RawToken, preview.GetRawText(), StringComparison.Ordinal);
+        Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct));
+        Assert.Null((await app.Services.GetRequiredService<IInvitationStore>().FindActiveByTokenHashAsync(
+            app.Services.GetRequiredService<ISecureTokenService>().Hash(issued.RawToken), DateTimeOffset.UtcNow, ct))!.AcceptedAt);
         using var accepted = await Mutate(client, HttpMethod.Post, "/invitations/accept", new { token = issued.RawToken });
         Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
         var ack = await accepted.Content.ReadFromJsonAsync<JsonElement>(ct);
@@ -117,6 +128,8 @@ public sealed partial class ApiHostTests
             fixture.Owner.Id, fixture.Inviter.Id, "fixture", ct)).Succeeded);
         else Assert.True((await app.Services.GetRequiredService<IOrganizationService>().RemoveMemberAsync(fixture.Board.OrganizationId,
             fixture.Owner.Id, change == "ISSUER_ORG_REMOVED" ? fixture.Inviter.Id : fixture.Recipient.Id, "fixture", ct)).Succeeded);
+        Assert.Equal("invalid_or_expired_invitation", (await app.Services.GetRequiredService<IInvitationService>().ReviewTokenAsync(
+            fixture.Recipient.Id, issued.RawToken, ct)).ErrorCode);
         Assert.Equal("invalid_or_expired_invitation", (await app.Services.GetRequiredService<IInvitationService>().AcceptAsync(
             fixture.Recipient.Id, issued.RawToken, "fixture", ct)).ErrorCode);
         Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct));

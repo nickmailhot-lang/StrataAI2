@@ -86,15 +86,28 @@ removed historical roles, archive and current issuer/recipient revocation. Requi
 exact-image cases cover Board/Organization grant, consume, audit/event/outbox rollback,
 role preservation, single use and retry after membership removal. These consumer
 fixtures use administratively attached targets; public issuance, actual Board mail,
-recipient discovery/review and MUI remain separate integration requirements. Execution
-of the new acceptance cases is pending CI. Demo storage retains its documented lack
+recipient discovery and public issuance remain separate integration requirements. The
+acceptance cases passed in run 36903987812; the full run failed at a later discovery
+fixture that still expected FOR UPDATE although canonical natural-ID lookup now
+blocks earlier at FOR SHARE. The fixture is corrected without weakening expiry
+or rollback assertions. Demo storage retains its documented lack
 of cross-store rollback; production atomicity evidence must come from PostgreSQL.
 
-These increments contain policy, persistence, creation, signup and acceptance support. They are not wired
-to a public Board invitation creation endpoint or recipient preview,
-or Board invitation Worker delivery. Existing Organization/Portal behavior is unchanged.
-The next integration must consume the tenant-bound Board target and add immutable mail
-snapshots; enforce the same current authority in creation, discovery, proof review,
-signup and acceptance; complete recipient discovery/review; and provide MUI review with desktop/mobile keyboard and exact-image CI
-coverage. Board-target invitations must remain unavailable until these consumers
-agree. Neither PRD is complete or eligible for closure at this stage.
+Recipient proof review now locks the actual Board before canonical lookup, requires
+an active verified matching account, and rechecks the same current issuance policy.
+It returns the current Board name and bound ID/role without granting or consuming.
+Both role host cases check authenticated review, email binding and no early grant;
+archive and issuer/recipient revocation cases now also deny review.
+
+MUI displays the Organization, current Board name and Board role before separate
+acceptance. It rejects malformed or Portal Board metadata, binds acknowledgment to
+the exact reviewed Board and role, and preserves the same natural ID for a lost
+acknowledgment. Successful acknowledgment links to the actual Board route. Nine
+new component cases exercise target binding, recovery and malformed metadata.
+The required exact-image signup fixture also checks authorized review and unchanged
+grant/consume/event state. Execution of these new review cases is pending CI.
+
+These increments are not wired to public Board invitation creation or Worker mail
+publication. Recipient discovery, desktop/mobile keyboard browser coverage and
+actual Board invitation delivery remain required. Board issuance must stay disabled
+until every consumer agrees. Neither PRD is eligible for closure.

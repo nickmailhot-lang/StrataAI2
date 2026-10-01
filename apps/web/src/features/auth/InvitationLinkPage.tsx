@@ -4,11 +4,16 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { AuthPage } from './AuthPage';
 
-type Preview = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string };
+type Preview = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string; boardTarget?: { boardId: string; role: 'ADMIN' | 'MEMBER' } | null; boardName?: string | null };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function preview(value: unknown): value is Preview {
   const row = value as Partial<Preview> | null;
-  return Boolean(row && typeof row.id === 'string' && uuid.test(row.id) && typeof row.organizationId === 'string' && uuid.test(row.organizationId)
+  const board = row?.boardTarget;
+  const validBoard = board == null ? row?.boardName == null
+    : row?.surface === 'INTERNAL' && row.targetRole === 'MEMBER' && typeof board.boardId === 'string'
+      && uuid.test(board.boardId) && board.boardId !== '00000000-0000-0000-0000-000000000000'
+      && ['ADMIN', 'MEMBER'].includes(board.role) && typeof row.boardName === 'string' && Boolean(row.boardName.trim());
+  return Boolean(validBoard && row && typeof row.id === 'string' && uuid.test(row.id) && typeof row.organizationId === 'string' && uuid.test(row.organizationId)
     && typeof row.organizationName === 'string' && row.organizationName.trim()
     && (row.surface === 'INTERNAL' ? ['OWNER', 'ADMIN', 'MEMBER'].includes(row.targetRole ?? '')
       : row.surface === 'PORTAL' && ['OWNER', 'CO_OWNER', 'TENANT', 'OCCUPANT', 'AUTHORIZED_REPRESENTATIVE', 'OTHER'].includes(row.targetRole ?? ''))
@@ -65,9 +70,11 @@ export function InvitationLinkPage() {
         if (result.status !== 200 || !preview(result.value)) throw new Error('Unconfirmed preview');
         setReview(result.value); setUncertain(false); return;
       }
-      const ack = result.value as { invitationId?: unknown; organizationId?: unknown; surface?: unknown; targetRole?: unknown } | null;
+      const ack = result.value as { invitationId?: unknown; organizationId?: unknown; surface?: unknown; targetRole?: unknown; boardTarget?: Preview['boardTarget'] } | null;
       if (result.status !== 200 || ack?.invitationId !== chosen!.id || ack.organizationId !== chosen!.organizationId
-        || ack.surface !== chosen!.surface || ack.targetRole !== chosen!.targetRole) throw new Error('Unconfirmed acceptance');
+        || ack.surface !== chosen!.surface || ack.targetRole !== chosen!.targetRole
+        || (chosen!.boardTarget == null ? ack.boardTarget != null
+          : ack.boardTarget?.boardId !== chosen!.boardTarget.boardId || ack.boardTarget?.role !== chosen!.boardTarget.role)) throw new Error('Unconfirmed acceptance');
       setAccepted(chosen); setReview(undefined); setToken(''); setUncertain(false);
       unconfirmed.current = undefined;
     } catch {
@@ -85,10 +92,11 @@ export function InvitationLinkPage() {
     <Container maxWidth="sm" sx={{ py: 4 }}><Paper variant="outlined" sx={{ p: 3 }}><Stack spacing={2}>
       <Typography variant="h4" component="h1">Your invitation link</Typography>
       {error && <Alert severity="error">{error}</Alert>}
-      {accepted ? <Alert severity="success">Invitation acceptance acknowledged. <Link to={accepted.surface === 'PORTAL' ? `/portal/${accepted.organizationId}` : `/app/${accepted.organizationId}`}>Open {accepted.surface === 'PORTAL' ? 'Owner Portal' : 'organization'}</Link></Alert>
+      {accepted ? <Alert severity="success">Invitation acceptance acknowledged. <Link to={accepted.surface === 'PORTAL' ? `/portal/${accepted.organizationId}` : `/app/${accepted.organizationId}${accepted.boardTarget ? `/boards/${accepted.boardTarget.boardId}` : ''}`}>Open {accepted.surface === 'PORTAL' ? 'Owner Portal' : accepted.boardTarget ? 'Board' : 'organization'}</Link></Alert>
         : review ? <>
           <Typography variant="h6" component="h2">{review.organizationName}</Typography>
-          <Typography>{review.surface === 'PORTAL' ? 'Owner Portal' : 'Internal organization'} access · {review.targetRole.toLowerCase().replaceAll('_', ' ')}</Typography>
+          {review.boardTarget && <Typography variant="h6" component="h3">{review.boardName}</Typography>}
+          <Typography>{review.boardTarget ? `Board access � ${review.boardTarget.role.toLowerCase()}` : <>{review.surface === 'PORTAL' ? 'Owner Portal' : 'Internal organization'} access · {review.targetRole.toLowerCase().replaceAll('_', ' ')}</>}</Typography>
           <Button disabled={busy || signIn} variant="contained" onClick={() => void submit(true)}>{uncertain ? 'Retry invitation acceptance' : 'Accept reviewed invitation'}</Button>
           <Typography>Acceptance checks current access again. Acknowledgment does not guarantee that access is still available later.</Typography>
         </> : uncertain ? <>

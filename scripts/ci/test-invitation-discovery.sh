@@ -63,7 +63,7 @@ for surface in INTERNAL PORTAL; do
   test "$(post recipient "/me/invitations/$id/accept" '{}')" = 200
   test "$saved" = "$(state)"
 done
-# Expiry committed during the invitation-row wait denies membership and audit publication.
+# Expiry committed during the canonical natural-ID FOR SHARE wait denies membership and audit publication.
 expiry_id="$(cat /proc/sys/kernel/random/uuid)"
 admin "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,created_by_user_id,created_at,expires_at)
  SELECT '$expiry_id',tenant_id,invited_email,email_normalized,encode(sha256('$expiry_id'::bytea),'hex'),
@@ -75,8 +75,8 @@ for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_a
 test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE query LIKE '%invitation-expiry-gate%' AND wait_event='PgSleep';")" = 1
 post recipient "/me/invitations/$expiry_id/accept" '{}' > "$scratch/expiry-status" &
 pending=$!; pids+=($pending)
-for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%FROM invitations%FOR UPDATE%';")" -ge 1; then break; fi; sleep 0.1; done
-test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%FROM invitations%FOR UPDATE%';")" -ge 1
+for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%FROM invitations%FOR SHARE%';")" -ge 1; then break; fi; sleep 0.1; done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%FROM invitations%FOR SHARE%';")" -ge 1
 wait "$gate"; wait "$pending"; pids=()
 test "$(cat "$scratch/expiry-status")" = 400
 test "$(admin "SELECT count(*) FROM invitations WHERE id='$expiry_id' AND accepted_at IS NULL AND accepted_by_user_id IS NULL;")" = 1

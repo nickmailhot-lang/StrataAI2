@@ -105,3 +105,41 @@ describe('Invitation link review and acknowledgment', () => {
     expect(screen.getByRole('heading', { name: 'Elsewhere' })).toBeInTheDocument(); expect(screen.queryByText(item.organizationName)).not.toBeInTheDocument();
   });
 });
+
+const boardItem = { ...item, surface: 'INTERNAL', targetRole: 'MEMBER', boardName: 'Private maintenance Board',
+  boardTarget: { boardId: '33333333-3333-4333-8333-333333333333', role: 'ADMIN' } };
+const boardAck = { ...ack, surface: 'INTERNAL', targetRole: 'MEMBER', boardTarget: boardItem.boardTarget };
+it('shows the Board role and recovers a lost acknowledgment for the exact reviewed Board', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(reply(boardItem)).mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply(boardAck));
+  vi.stubGlobal('fetch', fetch); mount(); fireEvent.click(screen.getByRole('button', { name: 'Review invitation' }));
+  await screen.findByRole('heading', { name: boardItem.boardName });
+  expect(screen.getByText('Board access · admin')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Accept reviewed invitation' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Retry invitation acceptance' }));
+  expect(await screen.findByRole('link', { name: 'Open Board' })).toHaveAttribute('href', `/app/${item.organizationId}/boards/${boardItem.boardTarget.boardId}`);
+  expect(fetch.mock.calls[2][0]).toBe(fetch.mock.calls[1][0]); expect(fetch.mock.calls[2][1].body).toBe('{}');
+});
+it.each([
+  { ...boardAck, boardTarget: null },
+  { ...boardAck, boardTarget: { ...boardItem.boardTarget, boardId: item.id } },
+  { ...boardAck, boardTarget: { ...boardItem.boardTarget, role: 'MEMBER' } },
+])('refuses acceptance acknowledgment for a different Board target: %j', async response => {
+  const fetch = vi.fn().mockResolvedValueOnce(reply(boardItem)).mockResolvedValueOnce(reply(response)); vi.stubGlobal('fetch', fetch); mount();
+  fireEvent.click(screen.getByRole('button', { name: 'Review invitation' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Accept reviewed invitation' }));
+  await screen.findByRole('button', { name: 'Retry invitation acceptance' });
+  expect(screen.queryByRole('link', { name: 'Open Board' })).not.toBeInTheDocument();
+});
+it.each([
+  { ...boardItem, surface: 'PORTAL', targetRole: 'OWNER' },
+  { ...boardItem, boardName: null },
+  { ...boardItem, boardTarget: { ...boardItem.boardTarget, role: 'OWNER' } },
+  { ...boardItem, boardTarget: { ...boardItem.boardTarget, boardId: '00000000-0000-0000-0000-000000000000' } },
+  { ...item, boardName: boardItem.boardName },
+])('rejects invalid or unsupported Board preview before disclosure: %j', async response => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply(response))); mount();
+  fireEvent.click(screen.getByRole('button', { name: 'Review invitation' }));
+  await screen.findByText('The invitation could not be reviewed. Wait and retry.');
+  expect(screen.queryByText(boardItem.boardName)).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Accept reviewed invitation' })).not.toBeInTheDocument();
+});
