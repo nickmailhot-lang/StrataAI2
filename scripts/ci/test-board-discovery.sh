@@ -30,7 +30,7 @@ list owner | jq -e 'length == 3' >/dev/null
 list member | jq -e 'length == 2 and all(.[]; .name != "Discovery PRIVATE")' >/dev/null
 status="$(curl --silent --show-error -b "$scratch/outsider.cookies" -o "$scratch/denied.json" -w '%{http_code}' "$BASE_URL/organizations/$organization_id/boards")"
 test "$status" = 404
-! grep -q 'Discovery PRIVATE' "$scratch/denied.json"
+scripts/ci/assert-file-excludes.sh 'Discovery PRIVATE' "$scratch/denied.json"
 admin "INSERT INTO board_members(id,tenant_id,board_id,user_id,role,created_at,updated_at) VALUES (gen_random_uuid(),'$organization_id','$private_id','$member_id','MEMBER',now(),now());"
 list member | jq -e 'length == 3' >/dev/null
 admin "UPDATE board_members SET status='REMOVED' WHERE board_id='$private_id' AND user_id='$member_id';"

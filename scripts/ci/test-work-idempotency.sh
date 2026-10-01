@@ -19,7 +19,7 @@ rejected() {
   status="$(curl --max-time 30 --silent --show-error -b "$scratch/${7:-owner}.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $4" -X "$1" -d "$3" -o "$scratch/failure.json" -w '%{http_code}' "$BASE_URL$2")"
   test "$status" = "$5"
   jq -e --arg code "$6" '.code == $code' "$scratch/failure.json" >/dev/null
-  ! grep -Eq 'Npgsql|work_command_replays|permission denied|INSERT INTO' "$scratch/failure.json"
+  scripts/ci/assert-file-excludes.sh 'Npgsql|work_command_replays|permission denied|INSERT INTO' "$scratch/failure.json"
 }
 account owner
 account member
@@ -86,5 +86,5 @@ test "$(admin "SELECT count(*) FROM cards WHERE tenant_id='$organization' AND li
 # Retain the old Board ADMIN row to prove fresh organization eligibility at replay.
 admin "UPDATE organization_members SET status='SUSPENDED' WHERE tenant_id='$organization' AND user_id='$member_id';" >/dev/null
 rejected POST "/boards/$board/lists" '{"name":"Member namespace"}' "$list_key" 404 board_not_found member
-! grep -q 'Member namespace' "$scratch/failure.json"
+scripts/ci/assert-file-excludes.sh 'Member namespace' "$scratch/failure.json"
 echo 'Exact release API proves durable duplicate/concurrency, rollback, actor/tenant isolation, expiry, version and revoked-access retry safety.'

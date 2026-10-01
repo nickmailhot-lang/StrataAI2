@@ -95,10 +95,7 @@ case_denied() {
   request_pid=''
   test "$(cat "$scratch/status")" = 404
   jq -e --arg code "$code" '.code==$code' "$scratch/failure.json" >/dev/null
-  if grep -Eq 'Protected|Npgsql|SELECT|FOR SHARE|FOR UPDATE' "$scratch/failure.json"; then
-    echo 'Denied write exposed protected content or storage details.' >&2
-    return 1
-  fi
+  scripts/ci/assert-file-excludes.sh 'Protected|Npgsql|SELECT|FOR SHARE|FOR UPDATE' "$scratch/failure.json"
   test "$before" = "$(protected_state)"
 }
 board_lock="SELECT id FROM boards WHERE id='$board' FOR UPDATE;"

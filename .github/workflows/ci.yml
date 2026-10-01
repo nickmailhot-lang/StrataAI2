@@ -41,6 +41,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Verify security assertion failure paths
+        run: scripts/ci/test-security-assertions.sh
+
       - name: Lint
         run: npm run lint
 

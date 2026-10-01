@@ -29,7 +29,7 @@ rejected() {
   status="$(curl --max-time 30 --silent --show-error -b "$scratch/${4:-owner}.cookies" -o "$scratch/failure.json" -w '%{http_code}' "$BASE_URL$1")"
   test "$status" = "$2"
   jq -e --arg code "$3" '.code==$code' "$scratch/failure.json" >/dev/null
-  ! grep -Eq 'Protected|Private|Npgsql|SELECT|permission denied|work_events' "$scratch/failure.json"
+  scripts/ci/assert-file-excludes.sh 'Protected|Private|Npgsql|SELECT|permission denied|work_events' "$scratch/failure.json"
 }
 account owner; account member; account outsider
 : > "$scratch/visitor.cookies"
@@ -53,7 +53,7 @@ cmp "$scratch/first.json" "$scratch/replay.json"
 jq -e '.cursor=="2" and .hasMore and (.pending|not) and (.events|length)==2' "$scratch/first.json" >/dev/null
 sync "$route?since=2" > "$scratch/last.json"
 jq -e --arg card "$card" '.cursor=="3" and (.hasMore|not) and (.events|length)==1 and .events[0].entityId==$card and .events[0].version==1 and .events[0].eventType=="CARD_CREATED" and .events[0].metadata=={}' "$scratch/last.json" >/dev/null
-! grep -Eq 'Protected title|Private description|safe-correlation' "$scratch/last.json"
+scripts/ci/assert-file-excludes.sh 'Protected title|Private description|safe-correlation' "$scratch/last.json"
 curl --fail --silent --show-error -b "$scratch/owner.cookies" -D "$scratch/headers" -o /dev/null "$BASE_URL$route"
 grep -iq '^cache-control: no-store' "$scratch/headers"
 rejected "$route" 404 board_not_found outsider
@@ -81,13 +81,13 @@ sync "$public_route" visitor | jq -e '(.events|length)==3 and all(.events[];.act
 admin "UPDATE work_events SET entity_id='$card' WHERE tenant_id='$organization' AND board_id='$public_board' AND sequence=3;" >/dev/null
 sync "$public_route?since=2" visitor > "$scratch/wrong-board.json"
 jq -e --arg board "$public_board" '.events[0].entityId==$board and .events[0].entityType=="Board" and .events[0].eventType=="BOARD_INVALIDATED"' "$scratch/wrong-board.json" >/dev/null
-! grep -q "$card" "$scratch/wrong-board.json"
+scripts/ci/assert-file-excludes.sh "$card" "$scratch/wrong-board.json"
 admin "UPDATE work_events SET entity_id='$public_card' WHERE tenant_id='$organization' AND board_id='$public_board' AND sequence=3;" >/dev/null
 request POST "/cards/$public_card/archive" '{"version":1}' >/dev/null
 admin "UPDATE work_events SET ready_at=clock_timestamp() WHERE tenant_id='$organization' AND board_id='$public_board';" >/dev/null
 sync "$public_route?since=2" visitor > "$scratch/hidden.json"
 jq -e --arg board "$public_board" '(.events|length)==2 and all(.events[];.entityType=="Board" and .entityId==$board and .eventType=="BOARD_INVALIDATED" and .actorId==null)' "$scratch/hidden.json" >/dev/null
-! grep -q "$public_card" "$scratch/hidden.json"
+scripts/ci/assert-file-excludes.sh "$public_card" "$scratch/hidden.json"
 request POST "/boards/$public_board/archive" '{"version":1}' >/dev/null
 rejected "$public_route" 404 board_not_found visitor
 # Boards predating event migration have a valid empty stream.
@@ -109,6 +109,6 @@ admin "UPDATE organization_members SET status='SUSPENDED' WHERE tenant_id='$orga
 wait "$reading"
 test "$(cat "$scratch/late.status")" = 404
 jq -e '.code=="board_not_found" and (has("events")|not)' "$scratch/late.json" >/dev/null
-! grep -Eq "$card|$list|Protected|Private" "$scratch/late.json"
+scripts/ci/assert-file-excludes.sh "$card|$list|Protected|Private" "$scratch/late.json"
 admin 'DROP POLICY ci_sync_read_delay ON work_events; DROP FUNCTION public.ci_sync_read_pause(uuid);' >/dev/null
 echo 'Exact PostgreSQL API proves bounded contiguous replay, precise cursor recovery, public-safe history, sanitized failures and access revocation during an awaited event read.'

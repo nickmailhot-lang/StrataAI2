@@ -39,7 +39,7 @@ rejected() {
   status="$(curl --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -X "$1" -d "$3" -o "$scratch/failure.json" -w '%{http_code}' "$BASE_URL$2")"
   test "$status" = 503
   jq -e '.code == "work_storage_unavailable" and .status == 503' "$scratch/failure.json" >/dev/null
-  ! grep -Eq 'audit_events|Npgsql|permission denied|INSERT INTO' "$scratch/failure.json"
+  scripts/ci/assert-file-excludes.sh 'audit_events|Npgsql|permission denied|INSERT INTO' "$scratch/failure.json"
 }
 rejected PATCH "/cards/$card_id" '{"title":"Must roll back","description":"Must roll back","version":1}'
 snapshot | jq -e --arg id "$card_id" '[.lists[].cards[] | select(.id == $id)] | length == 1 and .[0].title == "Original title" and .[0].version == 1' >/dev/null
