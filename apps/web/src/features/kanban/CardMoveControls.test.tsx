@@ -39,13 +39,50 @@ it('retains the exact intent and key after a lost response even when live state 
   await choose(); fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
   await screen.findByRole('button', { name: 'Retry this move' });
   view.rerender(<CardMoveControls {...props} card={{ ...card, version: 8 }} />);
-  expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
+  expect(screen.getByRole('combobox', { name: 'Destination list' })).toHaveAttribute('aria-disabled', 'true');
+  expect(screen.getByRole('combobox', { name: 'Card position' })).toHaveAttribute('aria-disabled', 'true');
   expect(screen.queryByRole('button', { name: 'Cancel move' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Retry this move' }));
   await screen.findByText('Move acknowledged. Current placement is being checked.');
   expect(fetcher.mock.calls[1][1].body).toBe(fetcher.mock.calls[0][1].body);
   expect(fetcher.mock.calls[1][1].headers.get('Idempotency-Key')).toBe(fetcher.mock.calls[0][1].headers.get('Idempotency-Key'));
   expect(refresh).toHaveBeenCalledOnce();
+});
+it('binds a relative position through an uncertain response even after its anchor disappears', async () => {
+  const positioned: BoardSnapshot = { ...snapshot, lists: snapshot.lists.map(column => column.list.id === 'dest'
+    ? { ...column, cards: [{ ...card, id: 'anchor', title: 'Check tiles' }] } : column) };
+  const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost response')).mockResolvedValueOnce(reply(ack));
+  vi.stubGlobal('fetch', fetcher);
+  const props = { card, disabled: false, onAcknowledged: vi.fn(), onRefresh: vi.fn() };
+  const view = render(<CardMoveControls {...props} snapshot={positioned} />);
+  await choose();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Card position' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Before Check tiles' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
+  await screen.findByRole('button', { name: 'Retry this move' });
+  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ destinationListId: 'dest', expectedVersion: 3, beforeCardId: 'anchor' });
+  view.rerender(<CardMoveControls {...props} card={{ ...card, version: 8 }} snapshot={snapshot} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Retry this move' }));
+  await screen.findByText('Move acknowledged. Current placement is being checked.');
+  expect(fetcher.mock.calls[1][1].body).toBe(fetcher.mock.calls[0][1].body);
+  expect(fetcher.mock.calls[1][1].headers.get('Idempotency-Key')).toBe(fetcher.mock.calls[0][1].headers.get('Idempotency-Key'));
+});
+it('blocks a vanished anchor before submission and allows choosing the end instead', async () => {
+  const positioned: BoardSnapshot = { ...snapshot, lists: snapshot.lists.map(column => column.list.id === 'dest'
+    ? { ...column, cards: [{ ...card, id: 'anchor', title: 'Check tiles' }] } : column) };
+  const fetcher = vi.fn().mockResolvedValue(reply(ack)); vi.stubGlobal('fetch', fetcher);
+  const props = { card, disabled: false, onAcknowledged: vi.fn(), onRefresh: vi.fn() };
+  const view = render(<CardMoveControls {...props} snapshot={positioned} />); await choose();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Card position' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Before Check tiles' }));
+  view.rerender(<CardMoveControls {...props} snapshot={snapshot} />);
+  expect(screen.getByRole('button', { name: 'Confirm card move' })).toBeDisabled();
+  expect(fetcher).not.toHaveBeenCalled();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Card position' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'End of list' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
+  await screen.findByText('Move acknowledged. Current placement is being checked.');
+  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ destinationListId: 'dest', expectedVersion: 3 });
 });
 it.each([{ ...ack, listId: 'foreign' }, { ...ack, boardId: 'other' }, { ...ack, organizationId: 'other' },
   { ...ack, version: 3 }, { ...ack, rank: 'private content' }])('does not acknowledge an invalid or cross-scope move result: %j', async result => {

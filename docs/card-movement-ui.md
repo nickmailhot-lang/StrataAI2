@@ -44,8 +44,28 @@ update, explicit same-body/key retry and persisted version remaining 2. They use
 the actual release API and Organization-scoped immutable Worker, not mocked
 business data. Local collection passes; execution remains pending.
 
-This implements same-Board append review, not complete PRD-06/08. Pointer drag/drop,
-keyboard positional reordering, cross-Board movement/copy, list movement and the
+This implements same-Board move review, not complete PRD-06/08. Pointer drag/drop,
+cross-Board movement/copy, list movement and the
 remaining lifecycle/large-data/performance/telemetry requirements remain open.
 Neither these source tests nor collection establish full accessibility or latency
 acceptance. The adopted MUI, API/Worker and PostgreSQL architecture is preserved.
+
+## Relative position review
+
+The review now offers End of list or Before a current destination card, excluding
+the moving card. Choosing another destination resets the position to End of list.
+The request binds the optional beforeCardId to the reviewed version and retry key;
+it never computes ranks from a potentially stale client snapshot. The API resolves
+current neighbors under the destination lock. A vanished anchor blocks an
+unsubmitted review until a current position is selected. After an uncertain
+response, explicit retry preserves the exact original position and key even when
+the anchor disappears or the moving card has a newer live version.
+
+Two additional control cases cover relative-position recovery and vanished-anchor
+reselection. All 291 web tests across 26 files pass locally, including the focused
+32 control/Board cases; production build and lint pass. The required phone browser case now selects Before Position anchor
+with the keyboard and checks persisted ordering and unchanged anchor rank after
+retry; the desktop case retains append coverage. Browser collection passes;
+actual execution of this extension remains pending Linux release CI. These
+controls provide a keyboard-accessible position choice but do not establish full
+drag/drop equivalence, complete WCAG acceptance, virtualization or latency targets.
