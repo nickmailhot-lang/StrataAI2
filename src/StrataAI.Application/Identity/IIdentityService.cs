@@ -21,7 +21,7 @@ public interface IIdentityService
         string rawSessionToken,
         CancellationToken cancellationToken = default);
 
-    Task LogoutAsync(
+    Task<IdentityOperation<bool>> LogoutAsync(
         string rawSessionToken,
         Guid actorId,
         string correlationId,

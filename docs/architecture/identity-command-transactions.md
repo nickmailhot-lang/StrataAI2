@@ -6,4 +6,12 @@ Identity account state is global. The factory uses a separate identity transacti
 
 The required exact-image fixture denies audit insertion during profile change and deactivation, compares the complete user/session state plus audit count, checks no cookie deletion on rejection, commits a valid profile edit, and rejects a stale version without changes. Controlled user locks observe logout committed during both profile and deactivation admission waits, then verify masked 401, unchanged profile/audit state and another session still working. With the API limited to one database connection, profile change and deactivation must finish; the final account remains in history, every session is revoked and exactly one deactivation audit exists. The API host test checks two independent sessions both lose access after deactivation.
 
-This increment does not declare registration, logout, verification/reset, recovery, durable retry keys, invitation delivery, identity UI or all PRD-02/60 acceptance criteria complete. Those operations and lifecycle/ownership interactions require their own remaining acceptance work.
+Registration, verification/reset, recovery, durable retry keys, invitation delivery, identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
+
+## Sign-in and logout
+
+Sign-in runs password verification, optional hash upgrade, session creation and its audit in one global identity transaction. The email lookup locks the current user before verification; a concurrent password reset or deactivation therefore precedes credential verification or follows session issuance. No existing HTTP session is fabricated for this public credential operation. Database failures return the masked `identity_storage_unavailable` envelope without setting a session cookie.
+
+Logout uses the authenticated identity command boundary. Session revocation and its audit commit together, and the API clears the browser cookie only after confirmed success. Audit failure preserves both the session and cookie so the user can retry. Restricted release-image fixtures cover audit denial for login/logout, account deactivation while sign-in waits, and both commands with a one-connection pool.
+
+Registration, recovery and verification still need their audit writes incorporated into their command boundaries. The demo store serializes identity commands but does not claim durable rollback.

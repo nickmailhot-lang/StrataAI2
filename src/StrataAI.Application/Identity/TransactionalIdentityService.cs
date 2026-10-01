@@ -17,19 +17,19 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
         string password,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        inner.LoginAsync(email, password, correlationId, cancellationToken);
+        commands.ExecuteSignInAsync(() => inner.LoginAsync(email, password, correlationId, cancellationToken), cancellationToken);
 
     public Task<AuthenticatedSession?> AuthenticateSessionAsync(
         string rawSessionToken,
         CancellationToken cancellationToken = default) =>
         inner.AuthenticateSessionAsync(rawSessionToken, cancellationToken);
 
-    public Task LogoutAsync(
+    public Task<IdentityOperation<bool>> LogoutAsync(
         string rawSessionToken,
         Guid actorId,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        inner.LogoutAsync(rawSessionToken, actorId, correlationId, cancellationToken);
+        commands.ExecuteAsync(actorId, () => inner.LogoutAsync(rawSessionToken, actorId, correlationId, cancellationToken), cancellationToken);
 
     public Task<PasswordResetRequestOutcome> RequestPasswordResetAsync(
         string email,

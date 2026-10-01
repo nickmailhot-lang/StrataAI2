@@ -195,7 +195,7 @@ public sealed class IdentityService(
             cancellationToken);
     }
 
-    public async Task LogoutAsync(
+    public async Task<IdentityOperation<bool>> LogoutAsync(
         string rawSessionToken,
         Guid actorId,
         string correlationId,
@@ -216,6 +216,7 @@ public sealed class IdentityService(
             actorId,
             correlationId,
             cancellationToken);
+        return IdentityOperation<bool>.Success(true);
     }
 
     public async Task<PasswordResetRequestOutcome> RequestPasswordResetAsync(

@@ -164,11 +164,13 @@ public static class IdentityEndpoints
                         SessionAuthenticationDefaults.CookieName,
                         out var rawToken);
 
-                    await identityService.LogoutAsync(
+                    var result = await identityService.LogoutAsync(
                         rawToken ?? string.Empty,
                         userId.Value,
                         context.TraceIdentifier,
                         cancellationToken);
+
+                    if (!result.Succeeded) return ErrorFor(result.ErrorCode);
 
                     context.Response.Cookies.Delete(
                         SessionAuthenticationDefaults.CookieName);

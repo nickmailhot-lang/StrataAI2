@@ -85,8 +85,8 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             UPDATE users
@@ -95,7 +95,7 @@ internal sealed class PostgresIdentityStore(
                 version = version + 1
             WHERE id = @id;
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("id", userId);
         command.Parameters.AddWithValue("password_hash", passwordHash);
         command.Parameters.AddWithValue("updated_at", updatedAt);
@@ -106,14 +106,14 @@ internal sealed class PostgresIdentityStore(
         SessionRecord session,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO sessions(id, user_id, token_hash, created_at, expires_at)
             VALUES (@id, @user_id, @token_hash, @created_at, @expires_at);
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("id", session.Id);
         command.Parameters.AddWithValue("user_id", session.UserId);
         command.Parameters.AddWithValue("token_hash", session.TokenHash);
@@ -165,15 +165,15 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset revokedAt,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             UPDATE sessions
             SET revoked_at = COALESCE(revoked_at, @revoked_at)
             WHERE token_hash = @token_hash;
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("token_hash", tokenHash);
         command.Parameters.AddWithValue("revoked_at", revokedAt);
         await command.ExecuteNonQueryAsync(cancellationToken);
@@ -495,9 +495,12 @@ internal sealed class PostgresIdentityStore(
         string value,
         CancellationToken cancellationToken)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
-        await using var command = new NpgsqlCommand(sql, connection);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        // A sign-in command locks the current account before checking its password/status.
+        // Password reset/deactivation then serialize before session issuance or after its commit.
+        var query = routing.Transaction is null ? sql : sql.TrimEnd(';') + " FOR UPDATE;";
+        await using var command = new NpgsqlCommand(query, routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("value", value);
         await using var reader =
             await command.ExecuteReaderAsync(cancellationToken);

@@ -42,9 +42,11 @@ login
 login other
 before="$(state)"
 admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
-for operation in profile deactivate; do
+for operation in profile deactivate login logout; do
   if test "$operation" = profile; then status="$(request PATCH /me '{"displayName":"Must roll back","version":1}')"
-  else status="$(request POST /me/deactivate '{}')"; fi
+  elif test "$operation" = deactivate; then status="$(request POST /me/deactivate '{}')"
+  elif test "$operation" = login; then status="$(request POST /auth/login "$body")"
+  else status="$(request POST /auth/logout '{}')"; fi
   test "$status" = 503
   jq -e '.code=="identity_storage_unavailable" and .status==503' "$scratch/response.json" >/dev/null
   scripts/ci/assert-file-excludes.sh 'Atomic account|Npgsql|audit_events|permission denied|UPDATE users|INSERT INTO' "$scratch/response.json"
@@ -114,9 +116,29 @@ for operation in profile deactivate; do
   curl --fail --silent --show-error -b "$scratch/other.cookies" "$BASE_URL/me" | jq -e '.version==2' >/dev/null
   login
 done
+# Sign-in must check the account again after waiting, before issuing a session.
+before="$(admin "SELECT jsonb_build_object('sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$user'),'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$user'))::text;")"
+hold "SELECT id FROM users WHERE id='$user' FOR UPDATE;"
+request POST /auth/login "$body" > "$scratch/status" &
+request_pid=$!
+blocked '%SELECT%FROM users WHERE email_normalized%FOR UPDATE%'
+release "UPDATE users SET status='DEACTIVATED' WHERE id='$user';"
+wait "$request_pid"
+request_pid=''
+test "$(cat "$scratch/status")" = 401
+jq -e '.code=="account_unavailable"' "$scratch/response.json" >/dev/null
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
+test "$before" = "$(admin "SELECT jsonb_build_object('sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$user'),'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$user'))::text;")"
+admin "UPDATE users SET status='ACTIVE' WHERE id='$user';" >/dev/null
+
 # Borrowed reads, writes and audit must work even with exactly one API connection.
 small_pool_started=1
 docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.atomic-test.yml up -d --wait --wait-timeout 180 api >/dev/null
+login
+test "$(request POST /auth/logout '{}')" = 204
+test "$(curl --silent --show-error -b "$scratch/primary.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me")" = 401
+curl --fail --silent --show-error -b "$scratch/other.cookies" "$BASE_URL/me" >/dev/null
+login
 test "$(request PATCH /me '{"displayName":"Single connection profile","version":2}')" = 200
 jq -e '.version==3' "$scratch/response.json" >/dev/null
 test "$(request POST /me/deactivate '{}')" = 204
@@ -126,4 +148,4 @@ test "$(admin "SELECT count(*) FROM audit_events WHERE actor_id='$user' AND even
 for cookie in primary other; do
   test "$(curl --silent --show-error -b "$scratch/$cookie.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me")" = 401
 done
-echo 'Identity profile/deactivation and audits commit together, logout during waits rejects changes, and one-connection execution succeeds.'
+echo 'Identity sign-in/logout/profile/deactivation audits are atomic; post-wait checks and one-connection execution succeed.'
