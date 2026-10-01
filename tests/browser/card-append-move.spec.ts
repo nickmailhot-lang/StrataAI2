@@ -24,6 +24,14 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     if (viewport.width === 390) {
       const result = await context.request.post(`/lists/${lists[1]}/cards`, { headers, data: { title: 'Position anchor' } });
       expect(result.status()).toBe(201); anchor = await result.json();
+      // Compare persisted records with persisted records. The creation response
+      // can contain .NET ticks that PostgreSQL rounds to microseconds.
+      const baseline = await context.request.get(`/boards/${board}`);
+      expect(baseline.status()).toBe(200);
+      const persistedAnchor = (await baseline.json()).lists
+        .find((column: { list: { id: string } }) => column.list.id === lists[1]).cards
+        .find((value: { id: string }) => value.id === anchor!.id);
+      expect(persistedAnchor).toBeDefined(); anchor = persistedAnchor;
     }
     const otherContext = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport });
     let restoreWorker = () => {};
