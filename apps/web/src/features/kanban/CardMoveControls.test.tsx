@@ -47,16 +47,19 @@ it('requires a selected active destination and checks a bound move acknowledgmen
 });
 it('retains the exact intent and key after a lost response even when live state changes', async () => {
   const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost ack')).mockResolvedValueOnce(reply(ack)); vi.stubGlobal('fetch', fetcher);
-  const refresh = vi.fn(); const props = { snapshot, disabled: false, onAcknowledged: refresh, onRefresh: vi.fn() };
+  const refresh = vi.fn(); const preview = vi.fn();
+  const props = { snapshot, disabled: false, onAcknowledged: refresh, onRefresh: vi.fn(), onPreview: preview };
   const view = render(<CardMoveControls {...props} card={card} />);
   await choose(); fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
   await screen.findByRole('button', { name: 'Retry this move' });
+  expect(preview.mock.calls.filter(call => call[0] !== undefined)).toHaveLength(1);
   view.rerender(<CardMoveControls {...props} card={{ ...card, version: 8 }} />);
   expect(screen.getByRole('combobox', { name: 'Destination list' })).toHaveAttribute('aria-disabled', 'true');
   expect(screen.getByRole('combobox', { name: 'Card position' })).toHaveAttribute('aria-disabled', 'true');
   expect(screen.queryByRole('button', { name: 'Cancel move' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Retry this move' }));
   await screen.findByText('Move acknowledged. Current placement is being checked.');
+  expect(preview.mock.calls.filter(call => call[0] !== undefined)).toHaveLength(1);
   expect(fetcher.mock.calls[1][1].body).toBe(fetcher.mock.calls[0][1].body);
   expect(fetcher.mock.calls[1][1].headers.get('Idempotency-Key')).toBe(fetcher.mock.calls[0][1].headers.get('Idempotency-Key'));
   expect(refresh).toHaveBeenCalledOnce();

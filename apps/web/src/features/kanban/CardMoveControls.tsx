@@ -31,7 +31,7 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
     const command = intent ?? { destination: review.destination, before: review.before, version: review.version, key: crypto.randomUUID() };
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setAcknowledged(false);
     onBusyChange?.(true);
-    onPreview?.({ cardId: card.id, destination: command.destination, before: command.before });
+    if (!intent) onPreview?.({ cardId: card.id, destination: command.destination, before: command.before });
     let abort: (() => void) | undefined;
     const timer = setTimeout(() => controller.abort(), 15_000);
     try {
@@ -69,7 +69,8 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
   }
   function closeReview() { setReview(undefined); setBlocked(false); setNotice(undefined); queueMicrotask(() => action.current?.focus()); }
   return <Stack spacing={1} sx={{ mt: 2 }}>
-    {busy && <Typography role="status">Saving move. Placement is provisional until confirmed.</Typography>}
+    {busy && <Typography role="status">{intent ? 'Checking the original move acknowledgment. Current placement may reflect later edits.'
+      : 'Saving move. Placement is provisional until confirmed.'}</Typography>}
     {notice && <Alert severity={acknowledged ? 'success' : 'info'}>{notice}</Alert>}
     {changed && <Alert severity="info">The card changed while reviewing this move. Check the current Board and review again.</Alert>}
     {review && !intent && destinationActive && !positionActive && <Alert severity="info">The selected card is no longer in this list. Choose a current position.</Alert>}

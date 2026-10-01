@@ -92,3 +92,10 @@ Local verification: all 295 web tests across 27 files pass. The final updated
 21-case Board suite also passes, including provisional placement before a
 deferred acknowledgment. Production build, typecheck and lint pass. Exact-image
 browser execution for this change remains pending CI.
+
+Recovery requests deliberately retain canonical placement instead of projecting
+the original destination again. A retry may acknowledge an already completed
+historical move after a later edit; its status therefore describes acknowledgment
+recovery. Control coverage verifies that the original submission publishes one
+projection and same-key recovery after a newer live version publishes no second
+projection. Both outcomes still read current placement.
