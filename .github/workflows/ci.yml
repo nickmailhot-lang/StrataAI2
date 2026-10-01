@@ -337,6 +337,9 @@ jobs:
       - name: Credential-checked sign-in retries against exact release API
         run: bash scripts/ci/test-identity-login-retries.sh
 
+      - name: Atomic registration retries against exact release API
+        run: bash scripts/ci/test-identity-registration-retries.sh
+
       - name: Verified-email invitation discovery and retry-safe acceptance
         run: bash scripts/ci/test-invitation-discovery.sh
 

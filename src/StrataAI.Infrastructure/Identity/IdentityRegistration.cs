@@ -61,6 +61,7 @@ public static class IdentityRegistration
             services.AddSingleton<IIdentityProfileReplayStore, InMemoryIdentityProfileReplayStore>();
             services.AddSingleton<IIdentityRevocationReplayStore, InMemoryIdentityRevocationReplayStore>();
             services.AddSingleton<IIdentityLoginReplayStore, InMemoryIdentityLoginReplayStore>();
+            services.AddSingleton<IIdentityRegistrationReplayStore, InMemoryIdentityRegistrationReplayStore>();
         }
         else
         {
@@ -69,6 +70,7 @@ public static class IdentityRegistration
             services.AddSingleton<IIdentityProfileReplayStore, PostgresIdentityProfileReplayStore>();
             services.AddSingleton<IIdentityRevocationReplayStore, PostgresIdentityRevocationReplayStore>();
             services.AddSingleton<IIdentityLoginReplayStore, PostgresIdentityLoginReplayStore>();
+            services.AddSingleton<IIdentityRegistrationReplayStore, PostgresIdentityRegistrationReplayStore>();
         }
 
         services.AddSingleton<IdentityService>();
@@ -81,9 +83,11 @@ public static class IdentityRegistration
 
     private static void AddLoginRetrySecrets(IServiceCollection services, IConfiguration configuration, RuntimeDescriptor runtime)
     {
+        services.AddSingleton<IIdentityRegistrationRetrySecrets>(provider => provider.GetRequiredService<IdentityLoginRetrySecrets>());
+        services.AddSingleton<IIdentityLoginRetrySecrets>(provider => provider.GetRequiredService<IdentityLoginRetrySecrets>());
         if (runtime.Mode == RuntimeMode.Demo)
         {
-            services.AddSingleton<IIdentityLoginRetrySecrets>(_ => new IdentityLoginRetrySecrets("demo-ephemeral",
+            services.AddSingleton<IdentityLoginRetrySecrets>(_ => new IdentityLoginRetrySecrets("demo-ephemeral",
                 new Dictionary<string, string> { ["demo-ephemeral"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)) }));
             return;
         }
@@ -97,7 +101,7 @@ public static class IdentityRegistration
         }
         catch (Exception error) when (error is JsonException or InvalidOperationException or ArgumentException)
         { throw new InvalidOperationException("Production sign-in retry keys require a valid current version and a unique JSON key ring of base64 32-byte secrets."); }
-        services.AddSingleton<IIdentityLoginRetrySecrets>(_ => signer);
+        services.AddSingleton<IdentityLoginRetrySecrets>(_ => signer);
     }
 
     private static bool GetBoolean(string? value, bool fallback) =>

@@ -1,5 +1,33 @@
 import { expect, test } from '@playwright/test';
 
+test('PRD-02/60: mobile keyboard registration retries a lost creation acknowledgment', async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const credentials = { email: `registration-ack-${Date.now()}@example.test`, password: 'browser-register-correct-horse', displayName: 'Registration retry account' };
+  const keys: string[] = []; const ids: string[] = [];
+  await page.route('**/auth/register', async route => {
+    keys.push(route.request().headers()['idempotency-key']);
+    const result = await route.fetch(); expect(result.status()).toBe(201);
+    ids.push((await result.json()).user.id);
+    if (keys.length === 1) await route.abort('timedout');
+    else await route.fulfill({ response: result });
+  });
+  await page.goto('/login');
+  await page.getByRole('tab', { name: 'Register', exact: true }).click();
+  await page.getByLabel(/^Display name/).fill(credentials.displayName);
+  await page.getByLabel(/^Email/).fill(credentials.email);
+  await page.getByLabel(/^Password/).fill(credentials.password);
+  await page.getByRole('button', { name: 'Create account' }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByText(/Registration could not be confirmed/)).toBeVisible();
+  await expect(page.getByLabel(/^Password/)).toHaveValue(credentials.password);
+  await page.getByRole('button', { name: 'Create account' }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByText('Account created. Sign in to continue.')).toBeVisible();
+  await expect(page.getByLabel(/^Password/)).toHaveValue('');
+  expect(keys).toHaveLength(2); expect(keys[1]).toBe(keys[0]); expect(ids[1]).toBe(ids[0]);
+  expect((await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' }, data: credentials })).status()).toBe(200);
+  const snapshot = await (await context.request.get('/me/sync?after=0')).json();
+  expect(snapshot.events.filter((event: { eventType: string }) => event.eventType === 'USER_REGISTERED')).toHaveLength(1);
+});
+
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-02/60: lost sign-in acknowledgment retries the original session at ${viewport.width}px`, async ({ page, context }) => {
     await page.setViewportSize(viewport);

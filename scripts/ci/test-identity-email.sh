@@ -11,6 +11,7 @@ cleanup() {
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON identity_events TO strataai_api_runtime;' >/dev/null
+  query 'GRANT INSERT ON email_verification_tokens,identity_delivery_jobs,identity_registration_replays TO strataai_api_runtime;' >/dev/null
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -247,4 +248,42 @@ wait_state "$expired" CANCELLED
 wait_state "$replacement" SENT
 token="$(mail_token verify "${replacement//-/}")"
 test "$(post /auth/verify-email "$(jq -nc --arg token "$token" '{token:$token}')")" = 200
+# Keyed registration must retain one verification token and one delivery, including lost responses.
+"${compose[@]}" stop worker >/dev/null
+email="keyed-registration-${RANDOM}-${RANDOM}@example.test"
+registration="$(jq -nc --arg email "$email" '{email:$email,password:"mail-correct-horse-battery",displayName:"Keyed registration"}')"
+registration_key="$(cat /proc/sys/kernel/random/uuid)"
+register_retry() {
+  curl --max-time 60 --silent --show-error -o "$scratch/response" -w '%{http_code}' -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -H "Idempotency-Key: $registration_key" -d "$registration" "$base/auth/register"
+}
+registration_retry_state() {
+  query "SELECT jsonb_build_object('users',(SELECT count(*) FROM users),'tokens',(SELECT count(*) FROM email_verification_tokens),'jobs',(SELECT count(*) FROM identity_delivery_jobs),'audits',(SELECT count(*) FROM audit_events),
+    'events',(SELECT count(*) FROM identity_events),'receipts',(SELECT count(*) FROM identity_registration_replays))::text;"
+}
+before_registration="$(registration_retry_state)"
+for table in email_verification_tokens identity_delivery_jobs identity_registration_replays; do
+  query "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+  test "$(register_retry)" = 503
+  jq -e '.code=="identity_storage_unavailable"' "$scratch/response" >/dev/null
+  test "$before_registration" = "$(registration_retry_state)"
+  query "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+done
+test "$(register_retry)" = 201
+cp "$scratch/response" "$scratch/registration-original"
+jq -e '.verificationToken==null and .user.emailVerified==false' "$scratch/response" >/dev/null
+registration_user="$(jq -r '.user.id' "$scratch/response")"
+for attempt in 1 2 3; do test "$(register_retry)" = 201; cmp "$scratch/registration-original" "$scratch/response"; done
+test "$(query "SELECT count(*) FROM email_verification_tokens WHERE user_id='$registration_user';")" = 1
+test "$(query "SELECT count(*) FROM identity_delivery_jobs WHERE user_id='$registration_user';")" = 1
+test "$(query "SELECT count(*) FROM identity_events WHERE user_id='$registration_user' AND event_type='USER_REGISTERED';")" = 1
+verification_job="$(latest_job VERIFY_EMAIL)"
+"${compose[@]}" up -d --wait --wait-timeout 180 worker >/dev/null
+wait_state "$verification_job" SENT
+token="$(mail_token verify "${verification_job//-/}")"
+test "$(post /auth/verify-email "$(jq -nc --arg token "$token" '{token:$token}')")" = 200
+test "$(register_retry)" = 201
+jq -e '.verificationToken==null and .user.emailVerified==true' "$scratch/response" >/dev/null
+test "$(query "SELECT count(*) FROM identity_delivery_jobs WHERE user_id='$registration_user';")" = 1
+echo 'Keyed production registration: token/delivery/receipt rollback, duplicate proof, one verification email and post-verification acknowledgment passed.'
 echo 'Exact-image identity email, atomic publication, restart/rotation, provider retry/idempotency, verification/reset/replay/revocation, cancellation and resend checks passed.'

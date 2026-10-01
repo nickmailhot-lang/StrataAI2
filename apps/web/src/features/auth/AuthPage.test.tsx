@@ -6,6 +6,40 @@ import { AuthPage } from './AuthPage';
 describe('PRD-02 authentication UI', () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
+  it('retries an uncertain registration with the same key and clears details only after a valid acknowledgment', async () => {
+    const fetch = vi.fn().mockRejectedValueOnce(new Error('lost creation response')).mockResolvedValueOnce(new Response(JSON.stringify({
+      user: { id: '11111111-1111-4111-8111-111111111111', email: 'person@example.test', emailVerified: true },
+    }), { status: 201 }));
+    vi.stubGlobal('fetch', fetch);
+    render(<MemoryRouter><AuthPage /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('tab', { name: 'Register' }));
+    fireEvent.change(screen.getByLabelText(/^Display name/), { target: { value: 'Person' } });
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await screen.findByText(/Registration could not be confirmed/);
+    expect(screen.getByLabelText(/^Password/)).toHaveValue('correct-private-password');
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await screen.findByText('Account created. Sign in to continue.');
+    expect(screen.getByLabelText(/^Password/)).toHaveValue('');
+    const first = fetch.mock.calls[0][1] as RequestInit; const second = fetch.mock.calls[1][1] as RequestInit;
+    expect(new Headers(first.headers).get('Idempotency-Key')).toBe(new Headers(second.headers).get('Idempotency-Key'));
+    expect(second.body).toBe(first.body);
+  });
+
+  it('preserves registration input when a creation response cannot prove the account', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 201 })));
+    render(<MemoryRouter><AuthPage /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('tab', { name: 'Register' }));
+    fireEvent.change(screen.getByLabelText(/^Display name/), { target: { value: 'Person' } });
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await screen.findByText(/Registration could not be confirmed/);
+    expect(screen.getByLabelText(/^Password/)).toHaveValue('correct-private-password');
+    expect(screen.queryByText('Account created. Sign in to continue.')).not.toBeInTheDocument();
+  });
+
   it('requires an explicit fresh attempt after an expired acknowledgment', async () => {
     const fetch = vi.fn().mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ code: 'idempotency_key_expired' }), { status: 409 })));
     vi.stubGlobal('fetch', fetch);

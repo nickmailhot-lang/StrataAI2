@@ -113,6 +113,35 @@ test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-0
 test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_login_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 50
 test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_login_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 0
 test "$(psql -X -At -c 'SELECT count(*) FROM identity_login_replays')" = 2
+# Registration retry maintenance cannot read credential intent or verification coordinates.
+psql -X -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
+INSERT INTO identity_registration_replays(user_id,key_id,key_version,fingerprint,verification_source,expires_at)
+SELECT id,id,'role-v1',repeat('0',64),'NONE',now()+interval '1 hour' FROM users
+WHERE id IN ('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
+INSERT INTO identity_registration_replays(user_id,key_id,key_version,fingerprint,verification_source,created_at,expires_at)
+SELECT '01200000-0000-0000-0000-000000000001',gen_random_uuid(),'role-v1',repeat('0',64),'NONE',
+ now()-interval '2 days',now()-interval '1 day' FROM generate_series(1,150);
+INSERT INTO email_verification_tokens(id,user_id,token_hash,created_at,expires_at)
+SELECT id,id,encode(sha256(('registration-role-'||id)::bytea),'hex'),now(),now()+interval '1 hour' FROM users
+WHERE id IN ('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
+SQL
+test "$(api 'SELECT count(*) FROM identity_registration_replays')" = 0
+test "$(api "SELECT has_table_privilege(current_user,'identity_registration_replays','UPDATE') OR has_table_privilege(current_user,'identity_registration_replays','DELETE')")" = f
+for column in fingerprint key_version verification_token_id verification_source verification_key_version; do
+  if worker "SELECT $column FROM identity_registration_replays"; then echo 'Maintenance read registration proof'; exit 1; fi
+done
+if api 'SELECT public.purge_expired_identity_registration_replays()'; then echo 'API invoked global registration purge'; exit 1; fi
+test "$(api "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT count(*) FROM identity_registration_replays; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_registration_replays WHERE user_id='01200000-0000-0000-0000-000000000002'; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+if api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; INSERT INTO identity_registration_replays(user_id,key_id,key_version,fingerprint,verification_token_id,verification_source,verification_key_version,expires_at) VALUES ('01200000-0000-0000-0000-000000000001',gen_random_uuid(),'role-v1',repeat('0',64),'01200000-0000-0000-0000-000000000002','EMAIL_DELIVERY','role-v1',now()+interval '1 hour'); ROLLBACK;"; then echo 'Registration bound another account verification token'; exit 1; fi
+test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(user_id) FROM identity_registration_replays; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+test "$(worker 'SELECT public.purge_expired_identity_registration_replays()')" = 0
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_registration_replays(); ROLLBACK;" | grep -E '^[0-9]+$')" = 100
+test "$(psql -X -At -c 'SELECT count(*) FROM identity_registration_replays WHERE expires_at<=clock_timestamp()')" = 150
+test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_registration_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 100
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_registration_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 50
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_registration_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 0
+test "$(psql -X -At -c 'SELECT count(*) FROM identity_registration_replays')" = 2
 test "$(psql -X -At -c "SELECT count(*) FROM identity_events WHERE correlation_id='role-fixture'")" = 2
 test "$(api 'SELECT count(*) FROM identity_events')" = 0
 test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events; ROLLBACK;" | grep -E '^[0-9]+$')" = 1

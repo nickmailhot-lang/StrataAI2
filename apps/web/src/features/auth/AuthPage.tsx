@@ -31,7 +31,7 @@ export function AuthPage() {
   const [verificationNeeded, setVerificationNeeded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [expiredAttempt, setExpiredAttempt] = useState(false);
-  const attempt = useRef<{ body: string; key: string } | undefined>(undefined);
+  const attempt = useRef<{ mode: AuthMode; body: string; key: string } | undefined>(undefined);
   const pending = useRef<AbortController | undefined>(undefined);
   useEffect(() => () => { pending.current?.abort(); pending.current = undefined; attempt.current = undefined; }, []);
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export function AuthPage() {
     const body = JSON.stringify(mode === 'login' ? { email, password } : {
       email, password, displayName, locale: 'en-CA', timezone: 'America/Vancouver',
     });
-    if (mode === 'login' && attempt.current?.body !== body) attempt.current = { body, key: crypto.randomUUID() };
+    if (attempt.current?.body !== body || attempt.current.mode !== mode) attempt.current = { mode, body, key: crypto.randomUUID() };
     const current = () => pending.current === controller && !controller.signal.aborted;
     let deadline: ReturnType<typeof setTimeout> | undefined;
     setSubmitting(true);
@@ -59,7 +59,7 @@ export function AuthPage() {
         {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json', ...(mode === 'login' ? { 'Idempotency-Key': attempt.current!.key } : {}) },
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': attempt.current!.key },
           body,
           signal: controller.signal,
         },
@@ -79,19 +79,24 @@ export function AuthPage() {
           invalid_credentials: 'The email or password is incorrect.',
           email_verification_required: 'Verify your email before signing in.',
           account_unavailable: 'This account is unavailable.',
-          idempotency_key_expired: 'This sign-in attempt has expired. Start a new sign-in attempt.',
-          identity_retry_key_unavailable: 'This sign-in retry could not be confirmed. Contact support before starting another attempt.',
+          idempotency_key_expired: mode === 'login' ? 'This sign-in attempt has expired. Start a new sign-in attempt.' : 'This registration attempt has expired. Request a verification link if your account was already created.',
+          identity_retry_key_unavailable: 'This retry could not be confirmed. Contact support before starting another attempt.',
           email_unavailable: 'This email cannot be registered.',
           self_registration_disabled: 'Ask your administrator for an invitation.',
         };
         setError(messages[problem.code ?? ''] ?? 'Authentication could not be confirmed. Please try again.');
-        setExpiredAttempt(problem.code === 'idempotency_key_expired');
-        setVerificationNeeded(problem.code === 'email_verification_required');
+        setExpiredAttempt(problem.code === 'idempotency_key_expired' && mode === 'login');
+        setVerificationNeeded(problem.code === 'email_verification_required' || (mode === 'register' && problem.code === 'idempotency_key_expired'));
         return;
       }
 
       if (mode === 'register') {
-        const registration = result as { user?: { emailVerified?: boolean } };
+        const registration = result as { user?: { id?: unknown; email?: unknown; emailVerified?: unknown } };
+        if (response.status !== 201 || typeof registration.user?.id !== 'string'
+          || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(registration.user.id)
+          || typeof registration.user.email !== 'string' || registration.user.email.trim().toLowerCase() !== email.trim().toLowerCase()
+          || typeof registration.user.emailVerified !== 'boolean') throw new Error('Invalid registration acknowledgment');
+        attempt.current = undefined;
         setVerificationNeeded(registration.user?.emailVerified === false);
         setNotice(registration.user?.emailVerified === false ? 'Account created. Use your verification email to activate it before signing in.' : 'Account created. Sign in to continue.');
         setMode('login');
@@ -106,7 +111,7 @@ export function AuthPage() {
       attempt.current = undefined;
       navigate('/app');
     } catch {
-      if (pending.current === controller) setError('Sign-in could not be confirmed. Retry with the same details to confirm this attempt.');
+      if (pending.current === controller) setError(`${mode === 'login' ? 'Sign-in' : 'Registration'} could not be confirmed. Retry with the same details to confirm this attempt.`);
     } finally {
       clearTimeout(deadline);
       if (pending.current === controller) { pending.current = undefined; setSubmitting(false); }

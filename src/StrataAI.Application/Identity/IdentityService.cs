@@ -11,7 +11,9 @@ public sealed class IdentityService(
     ISecureTokenService tokens,
     IClock clock,
     IdentityPolicy policy, IIdentityCommandContext? context = null,
-    IIdentityLoginReplayStore? loginReplays = null, IIdentityLoginRetrySecrets? loginSecrets = null) : IIdentityService
+    IIdentityLoginReplayStore? loginReplays = null, IIdentityLoginRetrySecrets? loginSecrets = null,
+    IIdentityRegistrationReplayStore? registrationReplays = null, IIdentityRegistrationRetrySecrets? registrationSecrets = null,
+    IIdentityDeliveryTokenSigner? deliverySigner = null) : IIdentityService
 {
     public async Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default)
@@ -66,7 +68,16 @@ public sealed class IdentityService(
         if (!TryNormalizeTimezone(profileTimezone, out profileTimezone))
             return IdentityOperation<RegistrationOutcome>.Failure("invalid_timezone");
 
-        var now = clock.UtcNow;
+        var registrationKey = context?.IdempotencyKey;
+        if (registrationKey is not null)
+        {
+            if (registrationReplays is null || registrationSecrets is null)
+                return IdentityOperation<RegistrationOutcome>.Failure("identity_storage_unavailable");
+            var existing = await store.FindUserByNormalizedEmailAsync(normalized, cancellationToken);
+            if (existing is not null) return await AcknowledgeRegistrationAsync(existing);
+        }
+        var registrationKeyVersion = registrationKey is null ? null : registrationSecrets!.CurrentKeyVersion;
+        var now = new DateTimeOffset(clock.UtcNow.UtcTicks / 10 * 10, TimeSpan.Zero);
         var userId = Guid.NewGuid();
         var status = policy.RequireVerifiedEmail
             ? AccountStatus.PendingVerification
@@ -90,12 +101,29 @@ public sealed class IdentityService(
         string? verificationToken = null;
         SecurityTokenRecord? verificationRecord = null;
         IdentityTokenDelivery? verificationDelivery = null;
+        var verificationSource = RegistrationVerificationSource.None;
+        string? verificationKeyVersion = null;
         if (policy.RequireVerifiedEmail)
         {
             var tokenId = Guid.NewGuid();
             var generated = tokens.GenerateForDelivery(tokenId, IdentityTokenPurpose.VerifyEmail, correlationId);
             verificationToken = generated.RawToken;
             verificationDelivery = generated.Delivery;
+            if (registrationKey is not null)
+            {
+                if (verificationDelivery is not null)
+                {
+                    verificationSource = RegistrationVerificationSource.EmailDelivery;
+                    verificationKeyVersion = verificationDelivery.KeyId;
+                }
+                else
+                {
+                    verificationSource = RegistrationVerificationSource.ApiRegistration;
+                    verificationKeyVersion = registrationKeyVersion;
+                    if (!registrationSecrets!.TryDeriveVerification(userId, tokenId, verificationKeyVersion!, out verificationToken))
+                        return IdentityOperation<RegistrationOutcome>.Failure("identity_retry_key_unavailable");
+                }
+            }
             verificationRecord = new SecurityTokenRecord(
                     tokenId,
                     userId,
@@ -105,6 +133,12 @@ public sealed class IdentityService(
         }
         if (!await store.TryCreateUserAsync(user, verificationRecord, verificationDelivery, cancellationToken))
         {
+            if (registrationKey is not null)
+            {
+                // A concurrent insert may have committed the same intent while this INSERT waited.
+                var winner = await store.FindUserByNormalizedEmailAsync(normalized, cancellationToken);
+                if (winner is not null) return await AcknowledgeRegistrationAsync(winner);
+            }
             return IdentityOperation<RegistrationOutcome>.Failure("email_unavailable");
         }
 
@@ -117,8 +151,53 @@ public sealed class IdentityService(
             cancellationToken);
         await store.AppendDomainEventAsync(userId, "USER_REGISTERED", correlationId, cancellationToken);
 
+        if (registrationKey is not null)
+        {
+            if (!registrationSecrets!.TryRegistrationFingerprint(userId, registrationKey.Value, normalized, password,
+                    cleanDisplayName, profileLocale, profileTimezone, registrationKeyVersion!, out var fingerprint))
+                return IdentityOperation<RegistrationOutcome>.Failure("identity_retry_key_unavailable");
+            await registrationReplays!.SaveAsync(userId, registrationKey.Value, new IdentityRegistrationReplay(
+                registrationKeyVersion!, fingerprint, verificationRecord?.Id, verificationSource, verificationKeyVersion,
+                now.AddHours(24)), cancellationToken);
+        }
+
         return IdentityOperation<RegistrationOutcome>.Success(
             new RegistrationOutcome(ToProfile(user), verificationToken));
+
+        async Task<IdentityOperation<RegistrationOutcome>> AcknowledgeRegistrationAsync(UserIdentity existing)
+        {
+            // Password and lifecycle proof precede any receipt or private-profile disclosure.
+            if (!passwordHashes.Verify(existing.Id, existing.PasswordHash, password).IsValid
+                || existing.Status is not (AccountStatus.Active or AccountStatus.PendingVerification))
+                return IdentityOperation<RegistrationOutcome>.Failure("email_unavailable");
+            var prior = await registrationReplays!.ReadAsync(existing.Id, registrationKey!.Value, cancellationToken);
+            if (prior is null) return IdentityOperation<RegistrationOutcome>.Failure("email_unavailable");
+            if (prior.ExpiresAt <= clock.UtcNow) return IdentityOperation<RegistrationOutcome>.Failure("idempotency_key_expired");
+            if (!registrationSecrets!.TryRegistrationFingerprint(existing.Id, registrationKey.Value, normalized, password,
+                    cleanDisplayName, profileLocale, profileTimezone, prior.KeyVersion, out var candidate))
+                return IdentityOperation<RegistrationOutcome>.Failure("identity_retry_key_unavailable");
+            if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(candidate), Encoding.ASCII.GetBytes(prior.Fingerprint)))
+                return IdentityOperation<RegistrationOutcome>.Failure("idempotency_key_reused");
+            string? originalVerification = null;
+            if (!existing.EmailVerified && prior.VerificationTokenId is Guid tokenId)
+            {
+                if (prior.VerificationSource == RegistrationVerificationSource.ApiRegistration)
+                {
+                    if (!registrationSecrets.TryDeriveVerification(existing.Id, tokenId, prior.VerificationKeyVersion!, out originalVerification))
+                        return IdentityOperation<RegistrationOutcome>.Failure("identity_retry_key_unavailable");
+                }
+                else if (prior.VerificationSource == RegistrationVerificationSource.EmailDelivery && deliverySigner is not null)
+                {
+                    try { originalVerification = deliverySigner.Derive(tokenId, IdentityTokenPurpose.VerifyEmail, prior.VerificationKeyVersion!); }
+                    catch (InvalidOperationException) { return IdentityOperation<RegistrationOutcome>.Failure("identity_retry_key_unavailable"); }
+                }
+                else return IdentityOperation<RegistrationOutcome>.Failure("identity_retry_key_unavailable");
+                if (await store.GetEmailVerificationUserIdAsync(tokens.Hash(originalVerification), clock.UtcNow, cancellationToken) != existing.Id)
+                    return IdentityOperation<RegistrationOutcome>.Failure("idempotency_key_expired");
+            }
+            if (prior.ExpiresAt <= clock.UtcNow) return IdentityOperation<RegistrationOutcome>.Failure("idempotency_key_expired");
+            return IdentityOperation<RegistrationOutcome>.Success(new(ToProfile(existing), originalVerification));
+        }
     }
 
     public async Task<IdentityOperation<LoginOutcome>> LoginAsync(
