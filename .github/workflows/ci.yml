@@ -247,7 +247,14 @@ jobs:
           gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
 
       - name: Start release topology
-        run: docker compose -f compose.release.yml up -d --wait --wait-timeout 180
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth_retry_key="$(openssl rand -base64 32)"
+          echo "::add-mask::$auth_retry_key"
+          echo 'STRATAAI_AUTH_RETRY_CURRENT_KEY=ci-auth-v1' >> "$GITHUB_ENV"
+          echo "STRATAAI_AUTH_RETRY_KEYS=$(jq -nc --arg key "$auth_retry_key" '{"ci-auth-v1":$key}')" >> "$GITHUB_ENV"
+          STRATAAI_AUTH_RETRY_CURRENT_KEY=ci-auth-v1 STRATAAI_AUTH_RETRY_KEYS="$(jq -nc --arg key "$auth_retry_key" '{"ci-auth-v1":$key}')" docker compose -f compose.release.yml up -d --wait --wait-timeout 180
 
       - name: Apply release-database migrations
         run: scripts/apply-compose-migrations.sh
@@ -326,6 +333,9 @@ jobs:
 
       - name: Session-bound logout and deactivation receipts against exact release API
         run: bash scripts/ci/test-identity-revocation-retries.sh
+
+      - name: Credential-checked sign-in retries against exact release API
+        run: bash scripts/ci/test-identity-login-retries.sh
 
       - name: Verified-email invitation discovery and retry-safe acceptance
         run: bash scripts/ci/test-invitation-discovery.sh

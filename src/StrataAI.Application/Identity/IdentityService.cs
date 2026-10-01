@@ -1,4 +1,6 @@
 using System.Net.Mail;
+using System.Security.Cryptography;
+using System.Text;
 using StrataAI.Application.Common;
 
 namespace StrataAI.Application.Identity;
@@ -8,7 +10,8 @@ public sealed class IdentityService(
     IPasswordHashService passwordHashes,
     ISecureTokenService tokens,
     IClock clock,
-    IdentityPolicy policy) : IIdentityService
+    IdentityPolicy policy, IIdentityCommandContext? context = null,
+    IIdentityLoginReplayStore? loginReplays = null, IIdentityLoginRetrySecrets? loginSecrets = null) : IIdentityService
 {
     public async Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default)
@@ -125,7 +128,7 @@ public sealed class IdentityService(
         CancellationToken cancellationToken = default)
     {
         var normalized = NormalizeEmail(email);
-        if (normalized is null)
+        if (normalized is null || string.IsNullOrWhiteSpace(password))
         {
             return IdentityOperation<LoginOutcome>.Failure("invalid_credentials");
         }
@@ -149,7 +152,7 @@ public sealed class IdentityService(
             return IdentityOperation<LoginOutcome>.Failure("invalid_credentials");
         }
 
-        if (user.Status == AccountStatus.PendingVerification)
+        if (user.Status == AccountStatus.PendingVerification || (policy.RequireVerifiedEmail && !user.EmailVerified))
         {
             return IdentityOperation<LoginOutcome>.Failure(
                 "email_verification_required");
@@ -158,6 +161,26 @@ public sealed class IdentityService(
         if (user.Status != AccountStatus.Active)
         {
             return IdentityOperation<LoginOutcome>.Failure("account_unavailable");
+        }
+
+        var intentKey = context?.IdempotencyKey;
+        if (intentKey is not null)
+        {
+            if (loginReplays is null || loginSecrets is null) return IdentityOperation<LoginOutcome>.Failure("identity_storage_unavailable");
+            var prior = await loginReplays.ReadAsync(user.Id, intentKey.Value, cancellationToken);
+            if (prior is not null)
+            {
+                if (prior.ExpiresAt <= clock.UtcNow) return IdentityOperation<LoginOutcome>.Failure("idempotency_key_expired");
+                if (!loginSecrets.TryFingerprint(user.Id, intentKey.Value, normalized, password, prior.KeyVersion, out var fingerprint)
+                    || !loginSecrets.TryDeriveSession(user.Id, prior.SessionId, prior.KeyVersion, out var originalToken))
+                    return IdentityOperation<LoginOutcome>.Failure("identity_retry_key_unavailable");
+                if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(fingerprint), Encoding.ASCII.GetBytes(prior.Fingerprint)))
+                    return IdentityOperation<LoginOutcome>.Failure("idempotency_key_reused");
+                var original = await store.FindActiveSessionAsync(tokens.Hash(originalToken), clock.UtcNow, cancellationToken);
+                if (original is null || original.SessionId != prior.SessionId || original.User.Id != user.Id || original.ExpiresAt <= clock.UtcNow)
+                    return IdentityOperation<LoginOutcome>.Failure("idempotency_key_expired");
+                return IdentityOperation<LoginOutcome>.Success(new LoginOutcome(ToProfile(original.User), originalToken, original.ExpiresAt));
+            }
         }
 
         if (verification.NeedsRehash)
@@ -177,10 +200,18 @@ public sealed class IdentityService(
             };
         }
 
+        var sessionId = Guid.NewGuid();
         var rawSessionToken = tokens.Generate();
+        string? intentFingerprint = null;
+        if (intentKey is not null)
+        {
+            if (!loginSecrets!.TryDeriveSession(user.Id, sessionId, loginSecrets.CurrentKeyVersion, out rawSessionToken)
+                || !loginSecrets.TryFingerprint(user.Id, intentKey.Value, normalized, password, loginSecrets.CurrentKeyVersion, out intentFingerprint))
+                return IdentityOperation<LoginOutcome>.Failure("identity_retry_key_unavailable");
+        }
         var now = clock.UtcNow;
         var session = new SessionRecord(
-            Guid.NewGuid(),
+            sessionId,
             user.Id,
             tokens.Hash(rawSessionToken),
             now,
@@ -194,6 +225,13 @@ public sealed class IdentityService(
             session.Id,
             correlationId,
             cancellationToken);
+
+        if (intentKey is not null)
+        {
+            if (session.ExpiresAt <= clock.UtcNow) return IdentityOperation<LoginOutcome>.Failure("session_unavailable");
+            await loginReplays!.SaveAsync(user.Id, intentKey.Value,
+                new IdentityLoginReplay(session.Id, loginSecrets!.CurrentKeyVersion, intentFingerprint!, now.AddHours(24)), cancellationToken);
+        }
 
         return IdentityOperation<LoginOutcome>.Success(
             new LoginOutcome(

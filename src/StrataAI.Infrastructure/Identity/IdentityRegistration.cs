@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Configuration;
+using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Runtime;
@@ -50,6 +52,7 @@ public static class IdentityRegistration
 
         services.AddSingleton<IPasswordHashService, AspNetPasswordHashService>();
         services.AddSingleton<ISecureTokenService, SecureTokenService>();
+        AddLoginRetrySecrets(services, configuration, runtime);
 
         if (runtime.Mode == RuntimeMode.Demo)
         {
@@ -57,6 +60,7 @@ public static class IdentityRegistration
             services.AddSingleton<IIdentityUnitOfWork, InMemoryIdentityUnitOfWork>();
             services.AddSingleton<IIdentityProfileReplayStore, InMemoryIdentityProfileReplayStore>();
             services.AddSingleton<IIdentityRevocationReplayStore, InMemoryIdentityRevocationReplayStore>();
+            services.AddSingleton<IIdentityLoginReplayStore, InMemoryIdentityLoginReplayStore>();
         }
         else
         {
@@ -64,6 +68,7 @@ public static class IdentityRegistration
             services.AddSingleton<IIdentityUnitOfWork, PostgresIdentityUnitOfWork>();
             services.AddSingleton<IIdentityProfileReplayStore, PostgresIdentityProfileReplayStore>();
             services.AddSingleton<IIdentityRevocationReplayStore, PostgresIdentityRevocationReplayStore>();
+            services.AddSingleton<IIdentityLoginReplayStore, PostgresIdentityLoginReplayStore>();
         }
 
         services.AddSingleton<IdentityService>();
@@ -72,6 +77,27 @@ public static class IdentityRegistration
             provider.GetRequiredService<IdentityService>(), provider.GetRequiredService<IIdentityUnitOfWork>(),
             provider.GetRequiredService<IIdentityCommandContext>(), provider.GetRequiredService<IIdentityProfileReplayStore>(),
             provider.GetRequiredService<ISecureTokenService>()));
+    }
+
+    private static void AddLoginRetrySecrets(IServiceCollection services, IConfiguration configuration, RuntimeDescriptor runtime)
+    {
+        if (runtime.Mode == RuntimeMode.Demo)
+        {
+            services.AddSingleton<IIdentityLoginRetrySecrets>(_ => new IdentityLoginRetrySecrets("demo-ephemeral",
+                new Dictionary<string, string> { ["demo-ephemeral"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)) }));
+            return;
+        }
+        IdentityLoginRetrySecrets signer;
+        try
+        {
+            using var document = JsonDocument.Parse(configuration["STRATAAI_AUTH_RETRY_KEYS"] ?? "");
+            var keys = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var entry in document.RootElement.EnumerateObject()) keys.Add(entry.Name, entry.Value.GetString()!);
+            signer = new IdentityLoginRetrySecrets(configuration["STRATAAI_AUTH_RETRY_CURRENT_KEY"] ?? "", keys);
+        }
+        catch (Exception error) when (error is JsonException or InvalidOperationException or ArgumentException)
+        { throw new InvalidOperationException("Production sign-in retry keys require a valid current version and a unique JSON key ring of base64 32-byte secrets."); }
+        services.AddSingleton<IIdentityLoginRetrySecrets>(_ => signer);
     }
 
     private static bool GetBoolean(string? value, bool fallback) =>

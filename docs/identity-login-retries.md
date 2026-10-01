@@ -1,0 +1,15 @@
+# Sign-in retry protocol
+
+`POST /auth/login` accepts an optional nonempty UUID `Idempotency-Key`. Each keyed attempt checks the current adaptive password hash, account status and verification policy before reading its receipt. Concurrent duplicates serialize under the existing identity command transaction. Session creation, its audit and the typed receipt commit together; a publication failure rolls them back.
+
+A receipt contains the original session ID, signing-key version, keyed intent fingerprint and expiry. It contains no password, raw cookie, response body or cached profile. A matching retry derives the original opaque token with the retained key version and checks that the original session remains active and unexpired. It returns that session's original expiry and the current authorized profile. Logout, reset or session expiry prevents replay from reopening authentication. A new attempt requires a fresh credential check.
+
+Production requires API-only runtime secrets `STRATAAI_AUTH_RETRY_CURRENT_KEY` and `STRATAAI_AUTH_RETRY_KEYS`. The latter is a JSON object mapping unique ASCII key versions to base64-encoded 32-byte keys. Supply it through the deployment secret mechanism, never source control. Startup rejects malformed, duplicate or missing current keys without reporting secret values. Session derivation and intent fingerprints use distinct HMAC purposes. The Worker receives neither key ring nor session token derivation access.
+
+Rotate by adding a new key and selecting it as current while retaining every version referenced by unexpired receipts. Receipts last at most 24 hours. Removing a required retained key makes retries fail closed with a masked service-unavailable response. Demo uses an ephemeral in-memory key and makes no restart durability promise.
+
+The existing Worker deletes at most 100 expired sign-in receipts per cleanup transaction, alongside at most 100 profile and 100 revocation receipts. Restricted PostgreSQL policies deny receipt updates and prevent the Worker from reading fingerprints, key versions or session IDs. Expired receipts reserve their UUID until cleanup; after removal, reuse is a new independently credential-verified attempt. This is bounded retention, not permanent key reservation.
+
+The MUI sign-in form preserves a UUID for unchanged submitted details after an uncertain response, owns a 15-second transport/body deadline and cancels on unmount. It masks untrusted server errors and validates the returned identity, email and session expiry before navigation. An expired attempt offers an explicit fresh attempt.
+
+Validation added in this increment includes API concurrency/logout replay and signing-key rotation tests, browser component retry/deadline/unmount tests, and an exact-image PostgreSQL fixture for publication rollback, duplicate session prevention, restart replay and revoked-session denial. The PostgreSQL fixture still requires a successful CI run; these changes do not prove the complete authentication or onboarding tickets.

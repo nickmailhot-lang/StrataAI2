@@ -305,6 +305,8 @@ public static class IdentityEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "idempotency_key_expired" => Problem(StatusCodes.Status409Conflict, errorCode, "This sign-in attempt is no longer available. Start a new sign-in attempt."),
+            "identity_retry_key_unavailable" => Problem(StatusCodes.Status503ServiceUnavailable, errorCode, "This sign-in retry could not be confirmed. Contact support before starting another attempt."),
             "idempotency_key_reused" => Problem(StatusCodes.Status409Conflict, errorCode, "This retry key was already used for another account change."),
             "invalid_identity_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode, "A valid account event cursor is required."),
             "session_unavailable" => Problem(StatusCodes.Status401Unauthorized, errorCode, "Your session is no longer available. Sign in again."),

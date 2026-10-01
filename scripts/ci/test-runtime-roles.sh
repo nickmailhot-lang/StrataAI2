@@ -90,6 +90,29 @@ test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANU
 test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_revocation_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 0
 test "$(psql -X -At -c 'SELECT count(*) FROM identity_revocation_replays')" = 2
 test "$(psql -X -At -c 'SELECT count(*) FROM sessions WHERE id IN (SELECT session_id FROM identity_revocation_replays)')" = 2
+# Sign-in receipts expose only expired key metadata to maintenance.
+psql -X -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
+INSERT INTO identity_login_replays(user_id,key_id,session_id,key_version,fingerprint,expires_at)
+SELECT id,id,id,'role-v1',repeat('0',64),now()+interval '1 hour' FROM sessions
+WHERE id IN ('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
+INSERT INTO identity_login_replays(user_id,key_id,session_id,key_version,fingerprint,created_at,expires_at)
+SELECT '01200000-0000-0000-0000-000000000001',gen_random_uuid(),'01200000-0000-0000-0000-000000000001',
+ 'role-v1',repeat('0',64),now()-interval '2 days',now()-interval '1 day' FROM generate_series(1,150);
+SQL
+test "$(api 'SELECT count(*) FROM identity_login_replays')" = 0
+test "$(api "SELECT has_table_privilege(current_user,'identity_login_replays','UPDATE') OR has_table_privilege(current_user,'identity_login_replays','DELETE')")" = f
+for column in session_id key_version fingerprint; do
+  if worker "SELECT $column FROM identity_login_replays"; then echo 'Maintenance read sign-in proof'; exit 1; fi
+done
+if api 'SELECT public.purge_expired_identity_login_replays()'; then echo 'API invoked global sign-in purge'; exit 1; fi
+test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(user_id) FROM identity_login_replays; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+test "$(worker 'SELECT public.purge_expired_identity_login_replays()')" = 0
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_login_replays(); ROLLBACK;" | grep -E '^[0-9]+$')" = 100
+test "$(psql -X -At -c 'SELECT count(*) FROM identity_login_replays WHERE expires_at<=clock_timestamp()')" = 150
+test "$(worker "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_login_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 100
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_login_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 50
+test "$(worker "BEGIN; SET LOCAL app.service_scope='GLOBAL_IDENTITY_RETRY_CLEANUP'; SELECT public.purge_expired_identity_login_replays(); COMMIT;" | grep -E '^[0-9]+$')" = 0
+test "$(psql -X -At -c 'SELECT count(*) FROM identity_login_replays')" = 2
 test "$(psql -X -At -c "SELECT count(*) FROM identity_events WHERE correlation_id='role-fixture'")" = 2
 test "$(api 'SELECT count(*) FROM identity_events')" = 0
 test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events; ROLLBACK;" | grep -E '^[0-9]+$')" = 1

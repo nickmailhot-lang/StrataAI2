@@ -1,5 +1,5 @@
 import { apiFetch } from '../../api/apiFetch';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -30,57 +30,86 @@ export function AuthPage() {
   const [notice, setNotice] = useState<string>();
   const [verificationNeeded, setVerificationNeeded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [expiredAttempt, setExpiredAttempt] = useState(false);
+  const attempt = useRef<{ body: string; key: string } | undefined>(undefined);
+  const pending = useRef<AbortController | undefined>(undefined);
+  useEffect(() => () => { pending.current?.abort(); pending.current = undefined; attempt.current = undefined; }, []);
   const navigate = useNavigate();
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting) return;
+    if (pending.current) return;
+    const controller = new AbortController();
+    pending.current = controller;
+    const body = JSON.stringify(mode === 'login' ? { email, password } : {
+      email, password, displayName, locale: 'en-CA', timezone: 'America/Vancouver',
+    });
+    if (mode === 'login' && attempt.current?.body !== body) attempt.current = { body, key: crypto.randomUUID() };
+    const current = () => pending.current === controller && !controller.signal.aborted;
+    let deadline: ReturnType<typeof setTimeout> | undefined;
     setSubmitting(true);
     setError(undefined);
     setNotice(undefined);
 
     try {
-      const response = await apiFetch(
+      const { response, result } = await Promise.race([
+        (async () => {
+          const response = await apiFetch(
         mode === 'login' ? '/auth/login' : '/auth/register',
         {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(
-            mode === 'login'
-              ? { email, password }
-              : {
-                  email,
-                  password,
-                  displayName,
-                  locale: 'en-CA',
-                  timezone: 'America/Vancouver',
-                },
-          ),
+          headers: { 'Content-Type': 'application/json', ...(mode === 'login' ? { 'Idempotency-Key': attempt.current!.key } : {}) },
+          body,
+          signal: controller.signal,
         },
       );
+          const result: unknown = await response.json().catch(() => ({}));
+          return { response, result };
+        })(),
+        new Promise<never>((_, reject) => {
+          deadline = setTimeout(() => { controller.abort(); reject(new Error('Authentication timed out')); }, 15_000);
+        }),
+      ]);
+      if (!current()) return;
 
       if (!response.ok) {
-        const problem = (await response.json().catch(() => ({}))) as ApiProblem;
-        setError(problem.title ?? 'Authentication failed.');
+        const problem = result as ApiProblem;
+        const messages: Record<string, string> = {
+          invalid_credentials: 'The email or password is incorrect.',
+          email_verification_required: 'Verify your email before signing in.',
+          account_unavailable: 'This account is unavailable.',
+          idempotency_key_expired: 'This sign-in attempt has expired. Start a new sign-in attempt.',
+          identity_retry_key_unavailable: 'This sign-in retry could not be confirmed. Contact support before starting another attempt.',
+          email_unavailable: 'This email cannot be registered.',
+          self_registration_disabled: 'Ask your administrator for an invitation.',
+        };
+        setError(messages[problem.code ?? ''] ?? 'Authentication could not be confirmed. Please try again.');
+        setExpiredAttempt(problem.code === 'idempotency_key_expired');
         setVerificationNeeded(problem.code === 'email_verification_required');
         return;
       }
 
       if (mode === 'register') {
-        const result = await response.json().catch(() => ({})) as { user?: { emailVerified?: boolean } };
-        setVerificationNeeded(result.user?.emailVerified === false);
-        setNotice(result.user?.emailVerified === false ? 'Account created. Use your verification email to activate it before signing in.' : 'Account created. Sign in to continue.');
+        const registration = result as { user?: { emailVerified?: boolean } };
+        setVerificationNeeded(registration.user?.emailVerified === false);
+        setNotice(registration.user?.emailVerified === false ? 'Account created. Use your verification email to activate it before signing in.' : 'Account created. Sign in to continue.');
         setMode('login');
         setPassword('');
         return;
       }
 
+      const login = result as { user?: { id?: unknown; email?: unknown }; sessionExpiresAt?: unknown };
+      if (typeof login.user?.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(login.user.id)
+        || typeof login.user.email !== 'string' || login.user.email.trim().toLowerCase() !== email.trim().toLowerCase()
+        || typeof login.sessionExpiresAt !== 'string' || !(Date.parse(login.sessionExpiresAt) > Date.now())) throw new Error('Invalid sign-in acknowledgment');
+      attempt.current = undefined;
       navigate('/app');
     } catch {
-      setError('Unable to contact StrataAI2.');
+      if (pending.current === controller) setError('Sign-in could not be confirmed. Retry with the same details to confirm this attempt.');
     } finally {
-      setSubmitting(false);
+      clearTimeout(deadline);
+      if (pending.current === controller) { pending.current = undefined; setSubmitting(false); }
     }
   }
 
@@ -103,11 +132,12 @@ export function AuthPage() {
             onChange={(_, next: AuthMode) => setMode(next)}
             aria-label="Authentication mode"
           >
-            <Tab value="login" label="Sign in" />
-            <Tab value="register" label="Register" />
+            <Tab value="login" label="Sign in" disabled={submitting} />
+            <Tab value="register" label="Register" disabled={submitting} />
           </Tabs>
 
           {error ? <Alert severity="error">{error}</Alert> : null}
+          {expiredAttempt ? <Button disabled={submitting} onClick={() => { attempt.current = undefined; setExpiredAttempt(false); setError(undefined); }}>Start a new sign-in attempt</Button> : null}
           {notice ? <Alert severity="success" role="status">{notice}</Alert> : null}
           {verificationNeeded ? <Button component={Link} to="/verify-email">Request a verification link</Button> : null}
 
@@ -116,6 +146,7 @@ export function AuthPage() {
               {mode === 'register' ? (
                 <TextField
                   label="Display name"
+                  disabled={submitting}
                   value={displayName}
                   onChange={(event) => setDisplayName(event.target.value)}
                   autoComplete="name"
@@ -125,6 +156,7 @@ export function AuthPage() {
 
               <TextField
                 label="Email"
+                disabled={submitting}
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -134,6 +166,7 @@ export function AuthPage() {
 
               <TextField
                 label="Password"
+                disabled={submitting}
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}

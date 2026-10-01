@@ -6,6 +6,7 @@ Required baseline production configuration:
 
 - `STRATAAI_RUNTIME_MODE=production`
 - `ConnectionStrings__Postgres`
+- API-only `STRATAAI_AUTH_RETRY_CURRENT_KEY` and `STRATAAI_AUTH_RETRY_KEYS`, supplied by runtime secret management. The key ring maps unique versions to base64 32-byte secrets; retain old versions while sign-in receipts remain live. See [sign-in retries](../identity-login-retries.md).
 - Or structured `STRATAAI_DATABASE_HOST`, `STRATAAI_DATABASE_NAME`,
   `STRATAAI_DATABASE_USERNAME`, `STRATAAI_DATABASE_PASSWORD` and optional
   `STRATAAI_DATABASE_PORT` (5432 by default). Compose uses these fields with
