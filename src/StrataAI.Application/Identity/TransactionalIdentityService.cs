@@ -2,6 +2,9 @@ namespace StrataAI.Application.Identity;
 
 public sealed class TransactionalIdentityService(IIdentityService inner, IIdentityUnitOfWork commands) : IIdentityService
 {
+    public Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
+        CancellationToken cancellationToken = default) =>
+        commands.ExecuteAsync(userId, () => inner.ReadEventsAsync(userId, after, cancellationToken), cancellationToken);
     public Task<IdentityOperation<RegistrationOutcome>> RegisterAsync(
         string email,
         string password,

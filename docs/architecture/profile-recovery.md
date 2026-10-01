@@ -1,6 +1,6 @@
 # Profile recovery
 
-The MUI profile form reads the authoritative profile at most every ten seconds while visible and also on focus, reconnection and visibility recovery. One read is active at a time. A fifteen-second deadline covers both transport and response-body parsing; timeout aborts the request, releases the read slot and fences an ignored-abort response. Unmount/reload removes listeners and timers and aborts the owned request.
+The MUI profile form reads the authoritative profile and identity-event cursor through `/me/sync` every ten seconds while visible and also on focus, reconnection and visibility recovery. Continuation pages follow immediately with at most 100 events per response. One read is active at a time. A fifteen-second deadline covers both transport and response-body parsing; timeout aborts the request, releases the read slot and fences an ignored-abort response. Unmount/reload removes listeners and timers and aborts the owned request. The event envelope is validated before its cursor advances; see [identity-events.md](identity-events.md).
 
 Recovery reads require the profile fields and a positive safe-integer version. Older/equal versions cannot replace a newer profile or draft. Starting a save or sign-out changes the read epoch, so an earlier read cannot overwrite its acknowledgment. Session denial clears the view and redirects to sign-in; a changed subject also requires sign-in rather than retaining the previous draft.
 

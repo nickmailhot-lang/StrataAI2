@@ -11,7 +11,7 @@ admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X 
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
-  admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON audit_events,identity_events TO strataai_api_runtime;' >/dev/null
   if test "$small_pool_started" = 1; then
     docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api >/dev/null
   fi
@@ -32,11 +32,15 @@ request() {
 state() {
   admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$user'),
     'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$user'),
-    'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$user' AND tenant_id IS NULL))::text;"
+    'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$user' AND tenant_id IS NULL),
+    'stream',(SELECT last_sequence FROM identity_event_streams WHERE user_id='$user'),
+    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM identity_events e WHERE user_id='$user'))::text;"
 }
 profile_state() {
   admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$user'),
-    'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$user' AND tenant_id IS NULL))::text;"
+    'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$user' AND tenant_id IS NULL),
+    'stream',(SELECT last_sequence FROM identity_event_streams WHERE user_id='$user'),
+    'events',(SELECT count(*) FROM identity_events WHERE user_id='$user'))::text;"
 }
 login
 login other
@@ -54,9 +58,35 @@ for operation in profile deactivate login logout; do
   test "$before" = "$(state)"
 done
 admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+
+# Event publication failure must roll back profile, audit and stream allocation.
+admin 'REVOKE INSERT ON identity_events FROM strataai_api_runtime;' >/dev/null
+test "$(request PATCH /me '{"displayName":"Event must roll back","version":1}')" = 503
+jq -e '.code=="identity_storage_unavailable"' "$scratch/response.json" >/dev/null
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON identity_events TO strataai_api_runtime;' >/dev/null
+curl --fail --silent --show-error -b "$scratch/primary.cookies" "$BASE_URL/me/sync" |
+  jq -e '.cursor==1 and .latestSequence==1 and (.events|length)==0 and .profile.version==1' >/dev/null
 test "$(request PATCH /me '{"displayName":"Atomic profile saved","locale":"en-CA","timezone":"UTC","version":1}')" = 200
 jq -e '.displayName=="Atomic profile saved" and .version==2 and .locale=="en-CA" and .timezone=="UTC"' "$scratch/response.json" >/dev/null
 test "$(admin "SELECT count(*) FROM audit_events WHERE actor_id='$user' AND event_type='USER_PROFILE_UPDATED';")" = 1
+curl --fail --silent --show-error -b "$scratch/other.cookies" "$BASE_URL/me/sync?after=1" > "$scratch/replay.json"
+jq -e --arg subject "$user" '.cursor==2 and .latestSequence==2 and .hasMore==false and .profile.version==2
+  and (.events|length)==1 and .events[0].sequence==2 and .events[0].eventType=="USER_PROFILE_UPDATED"
+  and .events[0].entityId==$subject and .events[0].actorId==$subject and .events[0].version==2
+  and .events[0].metadata=={} and .events[0].organizationId==null and .events[0].boardId==null' "$scratch/replay.json" >/dev/null
+# Disposable history fixture exercises bounded continuation without changing profile state.
+admin "BEGIN; SELECT id FROM users WHERE id='$user' FOR UPDATE;
+  UPDATE identity_event_streams SET last_sequence=103 WHERE user_id='$user';
+  INSERT INTO identity_events(event_id,user_id,sequence,actor_id,event_type,entity_id,entity_version,correlation_id)
+  SELECT gen_random_uuid(),'$user',n,'$user','SESSION_REVOKED','$user',2,'pagination-fixture' FROM generate_series(3,103) n;
+  COMMIT;" >/dev/null
+curl --fail --silent --show-error -b "$scratch/primary.cookies" "$BASE_URL/me/sync?after=2" |
+  jq -e '.cursor==102 and .latestSequence==103 and .hasMore==true and (.events|length)==100
+    and .events[0].sequence==3 and .events[99].sequence==102' >/dev/null
+curl --fail --silent --show-error -b "$scratch/primary.cookies" "$BASE_URL/me/sync?after=102" |
+  jq -e '.cursor==103 and .latestSequence==103 and .hasMore==false and (.events|length)==1
+    and .events[0].sequence==103' >/dev/null
 before="$(state)"
 test "$(request PATCH /me '{"displayName":"Stale profile","version":1}')" = 409
 test "$before" = "$(state)"
@@ -95,14 +125,16 @@ blocked() {
   return 1
 }
 
-for operation in profile deactivate; do
+for operation in profile deactivate replay; do
   before="$(profile_state)"
   hash="$(awk '$6=="strataai_session" {print $7}' "$scratch/primary.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1)"
   hold "SELECT id FROM users WHERE id='$user' FOR UPDATE;"
   if test "$operation" = profile; then
     request PATCH /me '{"displayName":"Logged out profile","version":2}' > "$scratch/status" &
-  else
+  elif test "$operation" = deactivate; then
     request POST /me/deactivate '{}' > "$scratch/status" &
+  else
+    request GET /me/sync?after=0 '{}' > "$scratch/status" &
   fi
   request_pid=$!
   blocked '%SELECT id FROM users%FOR UPDATE%'
@@ -136,6 +168,7 @@ small_pool_started=1
 docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.atomic-test.yml up -d --wait --wait-timeout 180 api >/dev/null
 login
 test "$(request POST /auth/logout '{}')" = 204
+test "$(curl --silent --show-error -b "$scratch/primary.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me/sync?after=0")" = 401
 test "$(curl --silent --show-error -b "$scratch/primary.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me")" = 401
 curl --fail --silent --show-error -b "$scratch/other.cookies" "$BASE_URL/me" >/dev/null
 login
@@ -145,6 +178,7 @@ test "$(request POST /me/deactivate '{}')" = 204
 test "$(admin "SELECT status||':'||version FROM users WHERE id='$user';")" = 'DEACTIVATED:4'
 test "$(admin "SELECT count(*) FROM sessions WHERE user_id='$user' AND revoked_at IS NULL;")" = 0
 test "$(admin "SELECT count(*) FROM audit_events WHERE actor_id='$user' AND event_type='USER_DEACTIVATED';")" = 1
+test "$(admin "SELECT count(*) FROM identity_events WHERE user_id='$user' AND event_type='USER_DEACTIVATED' AND entity_version=4;")" = 1
 for cookie in primary other; do
   test "$(curl --silent --show-error -b "$scratch/$cookie.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me")" = 401
 done

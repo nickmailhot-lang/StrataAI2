@@ -1,5 +1,6 @@
 import { apiFetch } from '../../api/apiFetch';
 import { formatUserDateTime } from './userDateTime';
+import { validateIdentitySync } from './identitySync';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   Alert,
@@ -112,30 +113,43 @@ export function ProfilePage() {
     let inFlight = false;
     let controller: AbortController | undefined;
     let deadline: ReturnType<typeof setTimeout> | undefined;
+    let cursor: number | undefined;
+    let subject: string | undefined;
+    const seenEvents = new Set<string>();
     async function refresh() {
       if (!active || inFlight || !canRead() || document.visibilityState === 'hidden') return;
       inFlight = true;
       const epoch = mutationEpoch.current;
+      let more = false;
       const requestController = new AbortController();
       controller = requestController;
       try {
         // Bound the complete read, even if a transport ignores abort or its body stalls.
         const response = await Promise.race([
-          apiFetch('/me', { signal: requestController.signal }).then(async result => ({ status: result.status, ok: result.ok, user: result.ok ? await result.json() : undefined })),
+          apiFetch(cursor === undefined ? '/me/sync' : `/me/sync?after=${cursor}`, { signal: requestController.signal }).then(async result => ({ status: result.status, ok: result.ok, user: result.ok ? await result.json() : undefined })),
           new Promise<never>((_, reject) => {
             deadline = setTimeout(() => { requestController.abort(); reject(new Error('Profile read timed out')); }, 15_000);
           }),
         ]);
         if (!active || epoch !== mutationEpoch.current) return;
         if (response.status === 401) { deny(); return; }
-        if (!response.ok || !isProfile(response.user)) throw new Error('Invalid profile response');
-        accept(response.user);
+        if (!response.ok) throw new Error('Invalid profile response');
+        const snapshot = validateIdentitySync(response.user, cursor, isProfile, seenEvents);
+        if (!snapshot) throw new Error('Invalid account event response');
+        if (subject && snapshot.profile.id !== subject) { deny(); return; }
+        subject = snapshot.profile.id;
+        accept(snapshot.profile);
+        cursor = snapshot.cursor;
+        more = snapshot.hasMore;
+        for (const id of snapshot.eventIds) seenEvents.add(id);
+        while (seenEvents.size > 1000) seenEvents.delete(seenEvents.values().next().value!);
       } catch {
         if (active && epoch === mutationEpoch.current) readFailed();
       } finally {
         clearTimeout(deadline);
         controller = undefined;
         inFlight = false;
+        if (more && active && epoch === mutationEpoch.current) queueMicrotask(() => void refresh());
       }
     }
     void refresh();

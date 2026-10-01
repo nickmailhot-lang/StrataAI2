@@ -181,6 +181,15 @@ public static class IdentityEndpoints
 
         var me = app.MapGroup("/me").RequireAuthorization();
 
+        me.MapGet("/sync", async (long? after, HttpContext context, IIdentityService identityService,
+            CancellationToken cancellationToken) =>
+        {
+            var userId = GetUserId(context);
+            if (userId is null) return Results.Unauthorized();
+            var result = await identityService.ReadEventsAsync(userId.Value, after, cancellationToken);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+
         me.MapGet(
             "",
             (HttpContext context) =>
@@ -294,6 +303,7 @@ public static class IdentityEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_identity_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode, "A valid account event cursor is required."),
             "session_unavailable" => Problem(StatusCodes.Status401Unauthorized, errorCode, "Your session is no longer available. Sign in again."),
             "identity_storage_unavailable" => Problem(StatusCodes.Status503ServiceUnavailable, errorCode, "The account change could not be confirmed. Retry shortly."),
             "self_registration_disabled" => Problem(

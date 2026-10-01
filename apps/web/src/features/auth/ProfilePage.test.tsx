@@ -3,6 +3,15 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProfilePage } from './ProfilePage';
 
 const profile = { id: 'user-1', email: 'council@example.test', displayName: 'Council', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'active', emailVerified: true, version: 1, createdAt: '2026-03-08T09:30:00Z', updatedAt: '2026-03-08T10:30:00Z' };
+function syncResponse(user: typeof profile, after?: number) {
+  const events = after === undefined ? [] : Array.from({ length: user.version - after }, (_, index) => ({
+    eventId: `00000000-0000-0000-0000-${String(after + index + 1).padStart(12, '0')}`,
+    sequence: after + index + 1, eventType: 'USER_PROFILE_UPDATED', actorId: user.id,
+    entityType: 'User', entityId: user.id, version: user.version, organizationId: null, boardId: null,
+    metadata: {}, createdAt: user.updatedAt,
+  }));
+  return new Response(JSON.stringify({ profile: user, cursor: user.version, latestSequence: user.version, hasMore: false, events }));
+}
 function renderProfile() {
   return render(<MemoryRouter initialEntries={['/profile']}><Routes><Route path="/profile" element={<ProfilePage />} /><Route path="/login" element={<p>Sign in again</p>} /></Routes></MemoryRouter>);
 }
@@ -13,7 +22,7 @@ describe('PRD-02 profile management', () => {
     vi.useFakeTimers();
     let finish: ((value: unknown) => void) | undefined;
     const stalled = new Promise(resolve => { finish = resolve; });
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockImplementationOnce(() => phase === 'transport' ? stalled : Promise.resolve({ status: 200, ok: true, json: () => stalled }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Retry saved', version: 2 })));
     vi.stubGlobal('fetch', fetchMock);
@@ -35,7 +44,7 @@ describe('PRD-02 profile management', () => {
   });
 
   it.each([{ ...profile, id: 'another-user', version: 2 }, { ...profile, version: 1 }, { version: 2 }])('PRD-02-TC-03 rejects an invalid or unrelated save acknowledgment %#', async invalid => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockResolvedValueOnce(new Response(JSON.stringify(invalid))));
     renderProfile();
     fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: 'My edits' } });
@@ -48,7 +57,7 @@ describe('PRD-02 profile management', () => {
   it('PRD-02-TC-06 bounds sign out and fences late success after retry', async () => {
     vi.useFakeTimers();
     let finish: ((response: Response) => void) | undefined;
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
       .mockResolvedValueOnce(new Response(null, { status: 503 }));
     vi.stubGlobal('fetch', fetchMock);
@@ -67,7 +76,7 @@ describe('PRD-02 profile management', () => {
 
   it('PRD-02-TC-06 aborts a pending mutation on unmount without navigating on late completion', async () => {
     let finish: ((response: Response) => void) | undefined;
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
     vi.stubGlobal('fetch', fetchMock);
     const view = renderProfile();
@@ -80,8 +89,8 @@ describe('PRD-02 profile management', () => {
   });
   it('AC-AUTH-02-03 periodically recovers preferences without a focus event', async () => {
     vi.useFakeTimers();
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, timezone: 'UTC', version: 2 }))));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
+      .mockResolvedValueOnce(syncResponse({ ...profile, timezone: 'UTC', version: 2 }, 1)));
     renderProfile();
     await act(async () => { await Promise.resolve(); });
     expect(screen.getByLabelText(/Timezone/)).toHaveValue('America/Vancouver');
@@ -93,7 +102,7 @@ describe('PRD-02 profile management', () => {
 
   it('PRD-02-TC-08 a read started before save cannot overwrite its authoritative acknowledgment', async () => {
     let finish: ((response: Response) => void) | undefined;
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Saved name', version: 2 }))));
     renderProfile();
@@ -102,15 +111,15 @@ describe('PRD-02 profile management', () => {
     fireEvent.change(screen.getByLabelText(/Display name/), { target: { value: 'Saved name' } });
     fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
     await screen.findByText('Profile saved.');
-    await act(async () => { finish?.(new Response(JSON.stringify(profile))); });
+    await act(async () => { finish?.(syncResponse(profile)); });
     expect(screen.getByLabelText(/Display name/)).toHaveValue('Saved name');
     expect(screen.getByRole('heading', { name: 'Saved name' })).toBeInTheDocument();
   });
 
   it('AC-AUTH-02-03 recovers another client preferences on focus without a manual reload', async () => {
     const latest = { ...profile, timezone: 'UTC', version: 2 };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
-      .mockResolvedValueOnce(new Response(JSON.stringify(latest))));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
+      .mockResolvedValueOnce(syncResponse(latest, 1)));
     renderProfile();
     await screen.findByLabelText(/Timezone/);
     fireEvent.focus(window);
@@ -118,8 +127,8 @@ describe('PRD-02 profile management', () => {
   });
 
   it('PRD-02-TC-08 automatic refresh preserves dirty edits and requires an explicit latest-profile reload', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, timezone: 'UTC', version: 2 }))));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
+      .mockResolvedValueOnce(syncResponse({ ...profile, timezone: 'UTC', version: 2 }, 1)));
     renderProfile();
     fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: 'My unsaved name' } });
     fireEvent.focus(window);
@@ -131,7 +140,7 @@ describe('PRD-02 profile management', () => {
   });
 
   it('PRD-02-TC-05 clears the profile on a background session denial', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockResolvedValueOnce(new Response(null, { status: 401 })));
     renderProfile();
     await screen.findByLabelText(/Display name/);
@@ -142,9 +151,9 @@ describe('PRD-02 profile management', () => {
 
   it('PRD-02-TC-06 times out an abort-ignoring read and fences its late profile after recovery', async () => {
     let finish: ((response: Response) => void) | undefined;
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, timezone: 'UTC', version: 3 })));
+      .mockResolvedValueOnce(syncResponse({ ...profile, timezone: 'UTC', version: 3 }, 1));
     vi.stubGlobal('fetch', fetchMock);
     vi.useFakeTimers();
     renderProfile();
@@ -165,9 +174,9 @@ describe('PRD-02 profile management', () => {
 
   it('PRD-02-TC-08 preserves conflicted edits until explicit reload and saves with the latest version', async () => {
     const latest = { ...profile, displayName: 'Other browser', timezone: 'UTC', version: 2 };
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Your profile changed elsewhere.' }), { status: 409 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(latest)))
+      .mockResolvedValueOnce(syncResponse(latest))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ...latest, displayName: 'Merged', version: 3 })));
     vi.stubGlobal('fetch', fetchMock);
     renderProfile();
@@ -184,7 +193,7 @@ describe('PRD-02 profile management', () => {
     expect(JSON.parse(fetchMock.mock.calls[3][1].body).version).toBe(2);
   });
   it('saves editable preferences and displays the authoritative response', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Updated council', timezone: 'UTC', version: 2 })));
     vi.stubGlobal('fetch', fetchMock);
     renderProfile();
@@ -200,7 +209,7 @@ describe('PRD-02 profile management', () => {
   });
 
   it('preserves changes after a network error and allows retry', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockRejectedValueOnce(new Error('Offline'))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Edited', version: 2 })));
     vi.stubGlobal('fetch', fetchMock);
@@ -214,7 +223,7 @@ describe('PRD-02 profile management', () => {
   });
 
   it('shows server validation and discards edits only when requested', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockResolvedValueOnce(new Response(JSON.stringify({ title: 'A valid timezone is required.' }), { status: 400 })));
     renderProfile();
     fireEvent.change(await screen.findByLabelText(/Timezone/), { target: { value: 'Invalid' } });
@@ -226,7 +235,7 @@ describe('PRD-02 profile management', () => {
   });
 
   it('redirects when the session expires during a save', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockResolvedValueOnce(new Response(null, { status: 401 })));
     renderProfile();
     await screen.findByLabelText(/Display name/);
@@ -235,7 +244,7 @@ describe('PRD-02 profile management', () => {
   });
 
   it('keeps the profile visible when sign out fails', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(profile)))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
       .mockResolvedValueOnce(new Response(null, { status: 503 })));
     renderProfile();
     fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }));

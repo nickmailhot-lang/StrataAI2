@@ -470,6 +470,79 @@ internal sealed class PostgresIdentityStore(
         return changed;
     }
 
+    public async Task<IdentityOperation<IdentityEventPage>> ReadEventsAsync(Guid userId, long? after,
+        CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasIdentityCommandScope)
+            throw new InvalidOperationException("Identity replay requires a global identity command scope.");
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var head = new NpgsqlCommand("""
+            SELECT set_config('app.identity_subject',@subject,true);
+            SELECT COALESCE((SELECT last_sequence FROM identity_event_streams WHERE user_id=@user),0);
+            """, routing.Connection, routing.Transaction);
+        head.Parameters.AddWithValue("subject", userId.ToString());
+        head.Parameters.AddWithValue("user", userId);
+        long latest;
+        await using (var reader = await head.ExecuteReaderAsync(cancellationToken))
+        {
+            await reader.NextResultAsync(cancellationToken);
+            await reader.ReadAsync(cancellationToken);
+            latest = reader.GetInt64(0);
+        }
+        if (after is < 0 || after > latest)
+            return IdentityOperation<IdentityEventPage>.Failure("invalid_identity_cursor");
+        if (after is null) return IdentityOperation<IdentityEventPage>.Success(new(latest, latest, false, []));
+        await using var command = new NpgsqlCommand("""
+            SELECT event_id,sequence,event_type,actor_id,entity_id,entity_version,correlation_id,created_at
+            FROM identity_events WHERE user_id=@user AND sequence>@after AND sequence<=@latest
+            ORDER BY sequence LIMIT 100;
+            """, routing.Connection, routing.Transaction);
+        command.Parameters.AddWithValue("user", userId);
+        command.Parameters.AddWithValue("after", after.Value);
+        command.Parameters.AddWithValue("latest", latest);
+        var events = new List<IdentityDomainEvent>();
+        await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            while (await reader.ReadAsync(cancellationToken))
+                events.Add(new(reader.GetGuid(0), reader.GetInt64(1), reader.GetString(2), reader.GetGuid(3),
+                    null, null, "User", reader.GetGuid(4), reader.GetInt64(5),
+                    new Dictionary<string,string>(), reader.GetString(6), reader.GetFieldValue<DateTimeOffset>(7)));
+        var cursor = after.Value;
+        foreach (var item in events)
+        {
+            if (item.Sequence != cursor + 1) throw new InvalidOperationException("Identity event stream is not contiguous.");
+            cursor = item.Sequence;
+        }
+        if (cursor < latest && events.Count < 100)
+            throw new InvalidOperationException("Identity event stream is incomplete.");
+        return IdentityOperation<IdentityEventPage>.Success(new(cursor, latest, cursor < latest, events));
+    }
+
+    public async Task AppendDomainEventAsync(Guid userId, string eventType, string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasIdentityCommandScope)
+            throw new InvalidOperationException("Identity events require a global identity command scope.");
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        if (routing.Transaction is null)
+            throw new InvalidOperationException("Identity events require an owning command transaction.");
+        await using var command = new NpgsqlCommand("""
+            SELECT set_config('app.identity_subject', @subject, true);
+            INSERT INTO identity_event_streams(user_id) VALUES (@user) ON CONFLICT DO NOTHING;
+            WITH allocated AS (
+                UPDATE identity_event_streams SET last_sequence=last_sequence+1,updated_at=clock_timestamp()
+                WHERE user_id=@user RETURNING last_sequence
+            ) INSERT INTO identity_events(event_id,user_id,sequence,actor_id,event_type,entity_id,entity_version,correlation_id)
+            SELECT @event,@user,a.last_sequence,@user,@type,@user,u.version,@correlation
+            FROM allocated a JOIN users u ON u.id=@user;
+            """, routing.Connection, routing.Transaction);
+        command.Parameters.AddWithValue("subject", userId.ToString());
+        command.Parameters.AddWithValue("user", userId);
+        command.Parameters.AddWithValue("event", Guid.NewGuid());
+        command.Parameters.AddWithValue("type", eventType);
+        command.Parameters.AddWithValue("correlation", correlationId);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     public async Task AppendAuditAsync(
         Guid? actorId,
         string eventType,

@@ -33,6 +33,8 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await expect(page).toHaveURL(/\/app$/);
   await page.getByRole('link', { name: 'Open profile' }).click();
   await expect(page.getByLabel(/^Display name/)).toHaveValue('Browser Council');
+  const syncBefore = await (await context.request.get('/me/sync')).json();
+  expect(syncBefore.events).toEqual([]);
   const second = await context.newPage();
   await second.setViewportSize({ width: 390, height: 844 });
   await second.goto('/app/demo/profile');
@@ -43,6 +45,11 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await page.getByRole('button', { name: 'Save profile', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Profile saved.');
   const currentProfile = await (await context.request.get('/me')).json();
+  const replay = await (await context.request.get(`/me/sync?after=${syncBefore.cursor}`)).json();
+  expect(replay.events).toHaveLength(1);
+  expect(replay.events[0]).toMatchObject({ eventType: 'USER_PROFILE_UPDATED', entityId: currentProfile.id,
+    version: currentProfile.version, organizationId: null, boardId: null, metadata: {} });
+  expect(replay.events[0].correlationId).toBeTruthy();
   await expect(page.locator(`time[datetime="${currentProfile.updatedAt}"]`)).toContainText(currentProfile.updatedAt.slice(11, 16));
   await expect(page.locator(`time[datetime="${currentProfile.updatedAt}"]`)).toContainText('UTC');
   await second.bringToFront();

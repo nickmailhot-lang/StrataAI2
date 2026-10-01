@@ -10,6 +10,20 @@ public sealed class IdentityService(
     IClock clock,
     IdentityPolicy policy) : IIdentityService
 {
+    public async Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
+        CancellationToken cancellationToken = default)
+    {
+        if (after is < 0) return IdentityOperation<IdentitySyncSnapshot>.Failure("invalid_identity_cursor");
+        var user = await store.FindUserByIdAsync(userId, cancellationToken);
+        if (user is null || user.Status != AccountStatus.Active)
+            return IdentityOperation<IdentitySyncSnapshot>.Failure("session_unavailable");
+        var result = await store.ReadEventsAsync(userId, after, cancellationToken);
+        if (!result.Succeeded || result.Value is null)
+            return IdentityOperation<IdentitySyncSnapshot>.Failure(result.ErrorCode ?? "identity_storage_unavailable");
+        var page = result.Value;
+        return IdentityOperation<IdentitySyncSnapshot>.Success(new(ToProfile(user), page.Cursor,
+            page.LatestSequence, page.HasMore, page.Events));
+    }
     public async Task<IdentityOperation<RegistrationOutcome>> RegisterAsync(
         string email,
         string password,
@@ -98,6 +112,7 @@ public sealed class IdentityService(
             userId,
             correlationId,
             cancellationToken);
+        await store.AppendDomainEventAsync(userId, "USER_REGISTERED", correlationId, cancellationToken);
 
         return IdentityOperation<RegistrationOutcome>.Success(
             new RegistrationOutcome(ToProfile(user), verificationToken));
@@ -223,6 +238,7 @@ public sealed class IdentityService(
             actorId,
             correlationId,
             cancellationToken);
+        await store.AppendDomainEventAsync(actorId, "SESSION_REVOKED", correlationId, cancellationToken);
         return IdentityOperation<bool>.Success(true);
     }
 
@@ -388,6 +404,7 @@ public sealed class IdentityService(
             user.Id,
             correlationId,
             cancellationToken);
+        await store.AppendDomainEventAsync(user.Id, "EMAIL_VERIFIED", correlationId, cancellationToken);
 
         return IdentityOperation<UserProfile>.Success(ToProfile(user));
     }
@@ -465,6 +482,7 @@ public sealed class IdentityService(
             userId,
             correlationId,
             cancellationToken);
+        await store.AppendDomainEventAsync(userId, "USER_PROFILE_UPDATED", correlationId, cancellationToken);
 
         return IdentityOperation<UserProfile>.Success(ToProfile(updated));
     }
@@ -488,6 +506,7 @@ public sealed class IdentityService(
                 userId,
                 correlationId,
                 cancellationToken);
+            await store.AppendDomainEventAsync(userId, "USER_DEACTIVATED", correlationId, cancellationToken);
         }
 
         return deactivated ? IdentityOperation<bool>.Success(true) : IdentityOperation<bool>.Failure("account_unavailable");

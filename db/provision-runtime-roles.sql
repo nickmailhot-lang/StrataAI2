@@ -24,6 +24,8 @@ GRANT INSERT ON audit_events,identity_delivery_jobs TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_command_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_event_streams TO strataai_api_runtime;
 GRANT SELECT,INSERT ON work_events TO strataai_api_runtime;
+GRANT SELECT,INSERT,UPDATE ON identity_event_streams TO strataai_api_runtime;
+GRANT SELECT,INSERT ON identity_events TO strataai_api_runtime;
 GRANT SELECT(tenant_id,event_id,board_id,actor_id,ready_at),UPDATE(ready_at) ON work_events TO strataai_worker_runtime;
 GRANT SELECT,INSERT ON background_jobs TO strataai_api_runtime;
 GRANT SELECT,UPDATE ON background_jobs TO strataai_worker_runtime;

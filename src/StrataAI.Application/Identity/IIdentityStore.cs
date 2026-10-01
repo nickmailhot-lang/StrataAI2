@@ -2,6 +2,11 @@ namespace StrataAI.Application.Identity;
 
 public interface IIdentityStore
 {
+    Task AppendDomainEventAsync(Guid userId, string eventType, string correlationId,
+        CancellationToken cancellationToken = default);
+    Task<IdentityOperation<IdentityEventPage>> ReadEventsAsync(Guid userId, long? after,
+        CancellationToken cancellationToken = default);
+
     Task<bool> TryCreateUserAsync(
         UserIdentity user,
         SecurityTokenRecord? verificationToken,

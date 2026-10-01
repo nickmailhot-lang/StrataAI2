@@ -1,8 +1,9 @@
 using StrataAI.Application.Identity;
+using StrataAI.Application.Common;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed class InMemoryIdentityStore : IIdentityStore
+internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
 {
     private sealed record TokenState(
         SecurityTokenRecord Token);
@@ -300,6 +301,36 @@ internal sealed class InMemoryIdentityStore : IIdentityStore
             RemoveSessionsForUser(userId);
             return Task.FromResult(true);
         }
+    }
+
+    private readonly List<IdentityDomainEvent> _events = [];
+
+    public Task<IdentityOperation<IdentityEventPage>> ReadEventsAsync(Guid userId, long? after,
+        CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            var subjectEvents = _events.Where(value => value.EntityId == userId).ToArray();
+            var latest = subjectEvents.LongLength;
+            if (after is < 0 || after > latest)
+                return Task.FromResult(IdentityOperation<IdentityEventPage>.Failure("invalid_identity_cursor"));
+            var events = after is null ? [] : subjectEvents.Where(value => value.Sequence > after).Take(100).ToArray();
+            var cursor = after is null ? latest : events.LastOrDefault()?.Sequence ?? after.Value;
+            return Task.FromResult(IdentityOperation<IdentityEventPage>.Success(new(cursor, latest, cursor < latest, events)));
+        }
+    }
+
+    public Task AppendDomainEventAsync(Guid userId, string eventType, string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            var user = _users[userId];
+            var sequence = _events.LongCount(value => value.EntityId == userId) + 1;
+            _events.Add(new(Guid.NewGuid(), sequence, eventType, userId, null, null, "User", userId,
+                user.Version, new Dictionary<string,string>(), correlationId, clock.UtcNow));
+        }
+        return Task.CompletedTask;
     }
 
     public Task AppendAuditAsync(

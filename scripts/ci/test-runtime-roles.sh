@@ -15,6 +15,24 @@ test "$(psql -X -At -c 'SELECT public.runtime_database_role_is_safe()')" = f
 test "$(api "SELECT has_table_privilege(current_user,'audit_events','UPDATE') OR has_table_privilege(current_user,'identity_delivery_jobs','SELECT')")" = f
 test "$(worker "SELECT has_table_privilege(current_user,'users','SELECT') OR has_table_privilege(current_user,'organizations','SELECT') OR has_table_privilege(current_user,'identity_delivery_jobs','INSERT')")" = f
 if worker 'SELECT password_hash FROM users'; then echo 'Worker read identity secrets'; exit 1; fi
+test "$(api 'SELECT count(*) FROM identity_events')" = 0
+test "$(api "SELECT has_table_privilege(current_user,'identity_events','UPDATE') OR has_table_privilege(current_user,'identity_events','DELETE')")" = f
+if worker 'SELECT event_id FROM identity_events'; then echo 'Tenant Worker read global identity events'; exit 1; fi
+# Disposable global subjects test real-login RLS, independently of tenant/mail GUCs.
+psql -X -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
+INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at)
+VALUES ('01200000-0000-0000-0000-000000000001','event-role-1@example.test','EVENT-ROLE-1@EXAMPLE.TEST','Role fixture','ACTIVE','unusable-ci-fixture',now(),now()),
+       ('01200000-0000-0000-0000-000000000002','event-role-2@example.test','EVENT-ROLE-2@EXAMPLE.TEST','Role fixture','ACTIVE','unusable-ci-fixture',now(),now());
+INSERT INTO identity_event_streams(user_id,last_sequence) SELECT id,1 FROM users WHERE id IN
+('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
+INSERT INTO identity_events(event_id,user_id,sequence,actor_id,event_type,entity_id,entity_version,correlation_id)
+SELECT id,id,1,id,'USER_REGISTERED',id,1,'role-fixture' FROM users WHERE id IN
+('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
+SQL
+test "$(api 'SELECT count(*) FROM identity_events')" = 0
+test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events; ROLLBACK;" | grep -E '^[0-9]+$')" = 1
+test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events WHERE user_id='01200000-0000-0000-0000-000000000002'; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+if api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; INSERT INTO identity_events(event_id,user_id,sequence,actor_id,event_type,entity_id,entity_version,correlation_id) VALUES ('01200000-0000-0000-0000-000000000003','01200000-0000-0000-0000-000000000002',2,'01200000-0000-0000-0000-000000000002','USER_PROFILE_UPDATED','01200000-0000-0000-0000-000000000002',1,'cross-subject'); ROLLBACK;"; then echo 'Cross-subject event write escaped RLS'; exit 1; fi
 if api 'CREATE TABLE public.forbidden_runtime_ddl(id integer)'; then echo 'Runtime created a table'; exit 1; fi
 restore() { psql -X -v ON_ERROR_STOP=1 -c 'ALTER ROLE strataai_api_runtime NOBYPASSRLS; REVOKE pg_read_all_data FROM strataai_api_runtime; REVOKE CREATE ON SCHEMA public FROM strataai_api_runtime;' >/dev/null; }
 trap restore EXIT

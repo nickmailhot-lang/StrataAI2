@@ -75,6 +75,15 @@ public sealed record LoginOutcome(
 public sealed record PasswordResetRequestOutcome(
     string? ResetToken);
 
+public sealed record IdentityDomainEvent(Guid EventId, long Sequence, string EventType, Guid ActorId,
+    Guid? OrganizationId, Guid? BoardId, string EntityType, Guid EntityId, long Version,
+    IReadOnlyDictionary<string, string> Metadata, string CorrelationId, DateTimeOffset CreatedAt);
+
+public sealed record IdentitySyncSnapshot(UserProfile Profile, long Cursor, long LatestSequence,
+    bool HasMore, IReadOnlyList<IdentityDomainEvent> Events);
+public sealed record IdentityEventPage(long Cursor, long LatestSequence,
+    bool HasMore, IReadOnlyList<IdentityDomainEvent> Events);
+
 public sealed record IdentityOperation<T>(
     bool Succeeded,
     T? Value,
