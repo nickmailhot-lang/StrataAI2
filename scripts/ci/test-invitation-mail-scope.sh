@@ -72,6 +72,7 @@ done
 board_reset
 test "$(scoped "SELECT is_usable FROM $load")" = t
 psql -X -v ON_ERROR_STOP=1 -c "UPDATE organization_members SET role='OWNER' WHERE tenant_id='$tenant' AND user_id='$actor';
+ DELETE FROM organization_members WHERE id='02600000-0000-0000-0000-000000000012';
  UPDATE invitation_mail_intents SET target_board_id=NULL,target_board_role=NULL WHERE job_id='$job';" >/dev/null
 psql -X -v ON_ERROR_STOP=1 -c "UPDATE invitations SET target_board_id=NULL,target_board_role=NULL WHERE id='$invitation';" >/dev/null
 test "$(scoped "SELECT is_usable FROM $load")" = t
