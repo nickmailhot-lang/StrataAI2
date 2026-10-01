@@ -2,4 +2,4 @@
 services:
   api:
     environment:
-      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-strataai};Username=strataai_api_runtime;Password=${STRATAAI_API_DB_PASSWORD};Maximum Pool Size=1;Timeout=3;Command Timeout=10"
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-strataai};Username=strataai_api_runtime;Password=${STRATAAI_API_DB_PASSWORD};Maximum Pool Size=1;Timeout=3;Command Timeout=${STRATAAI_TEST_COMMAND_TIMEOUT:-10}"

@@ -46,13 +46,13 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
         string newPassword,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        inner.ResetPasswordAsync(rawResetToken, newPassword, correlationId, cancellationToken);
+        commands.ExecuteTokenProofAsync(() => inner.ResetPasswordAsync(rawResetToken, newPassword, correlationId, cancellationToken), cancellationToken);
 
     public Task<IdentityOperation<UserProfile>> VerifyEmailAsync(
         string rawVerificationToken,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        inner.VerifyEmailAsync(rawVerificationToken, correlationId, cancellationToken);
+        commands.ExecuteTokenProofAsync(() => inner.VerifyEmailAsync(rawVerificationToken, correlationId, cancellationToken), cancellationToken);
 
     public Task<IdentityOperation<UserProfile>> UpdateProfileAsync(
         Guid userId,

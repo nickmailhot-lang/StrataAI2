@@ -6,7 +6,7 @@ Identity account state is global. The factory uses a separate identity transacti
 
 The required exact-image fixture denies audit insertion during profile change and deactivation, compares the complete user/session state plus audit count, checks no cookie deletion on rejection, commits a valid profile edit, and rejects a stale version without changes. Controlled user locks observe logout committed during both profile and deactivation admission waits, then verify masked 401, unchanged profile/audit state and another session still working. With the API limited to one database connection, profile change and deactivation must finish; the final account remains in history, every session is revoked and exactly one deactivation audit exists. The API host test checks two independent sessions both lose access after deactivation.
 
-Verification/reset, recovery, durable retry keys, invitation delivery, identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
+Recovery requests, durable retry keys, invitation delivery, identity UI and lifecycle/ownership interactions still require acceptance work. These changes do not declare all PRD-02/60 acceptance criteria complete.
 
 ## Sign-in and logout
 
@@ -14,10 +14,18 @@ Sign-in runs password verification, optional hash upgrade, session creation and 
 
 Logout uses the authenticated identity command boundary. Session revocation and its audit commit together, and the API clears the browser cookie only after confirmed success. Audit failure preserves both the session and cookie so the user can retry. Restricted release-image fixtures cover audit denial for login/logout, account deactivation while sign-in waits, and both commands with a one-connection pool.
 
-Recovery and verification still need their audit writes incorporated into their command boundaries. The demo store serializes identity commands but does not claim durable rollback.
+Recovery requests still need their audit writes incorporated into their command boundaries. The demo store serializes identity commands but does not claim durable rollback.
 
 ## Registration
 
 Self-registration validates the configured onboarding policy inside its global identity command. Account creation, the hashed verification token, durable delivery publication and `USER_REGISTERED` audit commit together. The store borrows the root transaction and retains owning-transaction behavior for direct store callers. Case-insensitive uniqueness uses `ON CONFLICT DO NOTHING`; a rejected duplicate does not produce another token, delivery or audit. Registration database errors use the same masked 503 response.
 
 The exact-image mail fixture limits the API to one database connection, stops the Worker, denies audit insertion, verifies all four record counts remain unchanged, then retries and checks exactly one verification token, queued delivery and registration audit. An uppercase-email duplicate leaves those counts unchanged. Publication rejection also returns the masked storage error without committing an account.
+
+## Password reset and verification
+
+These public commands prove possession of a hashed, expiring, single-use token inside a global identity transaction. Lookup locks the account before the token, consistently with sign-in and deactivation. Account state is checked under that lock; the existing verification policy preserves suspension while reset rejects suspended accounts. No session or Organization is fabricated.
+
+Token consumption, account changes, reset session revocation and the corresponding audit commit together. A failed audit or failed token consumption rolls everything back. Token lookup and consumption use `clock_timestamp()` so expiry during a wait cannot succeed using an earlier request timestamp. Direct store callers retain an owned transaction and the same account-before-token lock order.
+
+The one-connection exact-image mail fixture compares complete user/token/session state and audit counts after denying each command's audit. It also holds a token row, observes the API waiting on that row, allows the token to expire without changing its row, then releases the lock and expects `invalid_or_expired_token` with unchanged state. Successful retries and single-use checks follow. Recovery request publication/audit atomicity remains pending.

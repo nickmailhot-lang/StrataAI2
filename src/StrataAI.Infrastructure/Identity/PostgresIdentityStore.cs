@@ -209,10 +209,13 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset usedAt,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
-        await using var transaction =
-            await connection.BeginTransactionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var ownedTransaction = routing.Transaction is null
+            ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
+        var connection = routing.Connection;
+        var transaction = routing.Transaction ?? ownedTransaction!;
+        if (await FindTokenSubjectAsync("password_reset_tokens", tokenHash, usedAt, connection, transaction, cancellationToken) is null)
+            return false;
 
         await using var lookup = new NpgsqlCommand(
             """
@@ -223,6 +226,7 @@ internal sealed class PostgresIdentityStore(
               AND t.used_at IS NULL
               AND t.revoked_at IS NULL
               AND t.expires_at > @used_at
+              AND t.expires_at > clock_timestamp()
               AND u.status NOT IN ('SUSPENDED', 'DEACTIVATED')
             FOR UPDATE OF t;
             """,
@@ -234,7 +238,7 @@ internal sealed class PostgresIdentityStore(
         var userIdObject = await lookup.ExecuteScalarAsync(cancellationToken);
         if (userIdObject is not Guid userId)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            if (ownedTransaction is not null) await ownedTransaction.RollbackAsync(cancellationToken);
             return false;
         }
 
@@ -257,13 +261,14 @@ internal sealed class PostgresIdentityStore(
             """
             UPDATE password_reset_tokens
             SET used_at = @used_at
-            WHERE token_hash = @token_hash;
+            WHERE token_hash = @token_hash AND used_at IS NULL AND revoked_at IS NULL
+              AND expires_at > clock_timestamp();
             """,
             connection,
             transaction);
         consume.Parameters.AddWithValue("used_at", usedAt);
         consume.Parameters.AddWithValue("token_hash", tokenHash);
-        await consume.ExecuteNonQueryAsync(cancellationToken);
+        if (await consume.ExecuteNonQueryAsync(cancellationToken) != 1) return false;
 
         await using var revokeSessions = new NpgsqlCommand(
             """
@@ -277,7 +282,7 @@ internal sealed class PostgresIdentityStore(
         revokeSessions.Parameters.AddWithValue("user_id", userId);
         await revokeSessions.ExecuteNonQueryAsync(cancellationToken);
 
-        await transaction.CommitAsync(cancellationToken);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(cancellationToken);
         return true;
     }
 
@@ -307,10 +312,13 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset usedAt,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
-        await using var transaction =
-            await connection.BeginTransactionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var ownedTransaction = routing.Transaction is null
+            ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
+        var connection = routing.Connection;
+        var transaction = routing.Transaction ?? ownedTransaction!;
+        if (await FindTokenSubjectAsync("email_verification_tokens", tokenHash, usedAt, connection, transaction, cancellationToken) is null)
+            return false;
 
         await using var lookup = new NpgsqlCommand(
             """
@@ -320,6 +328,7 @@ internal sealed class PostgresIdentityStore(
               AND used_at IS NULL
               AND revoked_at IS NULL
               AND expires_at > @used_at
+              AND expires_at > clock_timestamp()
             FOR UPDATE;
             """,
             connection,
@@ -329,7 +338,7 @@ internal sealed class PostgresIdentityStore(
         var userIdObject = await lookup.ExecuteScalarAsync(cancellationToken);
         if (userIdObject is not Guid userId)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            if (ownedTransaction is not null) await ownedTransaction.RollbackAsync(cancellationToken);
             return false;
         }
 
@@ -351,7 +360,7 @@ internal sealed class PostgresIdentityStore(
         updateUser.Parameters.AddWithValue("user_id", userId);
         if (await updateUser.ExecuteNonQueryAsync(cancellationToken) != 1)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            if (ownedTransaction is not null) await ownedTransaction.RollbackAsync(cancellationToken);
             return false;
         }
 
@@ -359,15 +368,16 @@ internal sealed class PostgresIdentityStore(
             """
             UPDATE email_verification_tokens
             SET used_at = @used_at
-            WHERE token_hash = @token_hash;
+            WHERE token_hash = @token_hash AND used_at IS NULL AND revoked_at IS NULL
+              AND expires_at > clock_timestamp();
             """,
             connection,
             transaction);
         consume.Parameters.AddWithValue("used_at", usedAt);
         consume.Parameters.AddWithValue("token_hash", tokenHash);
-        await consume.ExecuteNonQueryAsync(cancellationToken);
+        if (await consume.ExecuteNonQueryAsync(cancellationToken) != 1) return false;
 
-        await transaction.CommitAsync(cancellationToken);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(cancellationToken);
         return true;
     }
 
@@ -579,18 +589,27 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        return await FindTokenSubjectAsync(tableName, tokenHash, now, routing.Connection, routing.Transaction, cancellationToken);
+    }
+
+    private static async Task<Guid?> FindTokenSubjectAsync(string tableName, string tokenHash, DateTimeOffset now,
+        NpgsqlConnection connection, NpgsqlTransaction? transaction, CancellationToken cancellationToken)
+    {
         await using var command = new NpgsqlCommand(
             $"""
-            SELECT user_id
-            FROM {tableName}
-            WHERE token_hash = @token_hash
-              AND used_at IS NULL
-              AND revoked_at IS NULL
-              AND expires_at > @now;
-            """,
-            connection);
+            SELECT u.id
+            FROM users u JOIN {tableName} t ON t.user_id=u.id
+            WHERE t.token_hash = @token_hash
+              AND t.used_at IS NULL
+              AND t.revoked_at IS NULL
+              AND t.expires_at > @now
+              AND t.expires_at > clock_timestamp()
+              AND u.status <> 'DEACTIVATED'
+              AND (@allow_suspended OR u.status <> 'SUSPENDED')
+            """ + (transaction is null ? ";" : " FOR UPDATE OF u;"),
+            connection, transaction);
+        command.Parameters.AddWithValue("allow_suspended", tableName == "email_verification_tokens");
         command.Parameters.AddWithValue("token_hash", tokenHash);
         command.Parameters.AddWithValue("now", now);
         var value = await command.ExecuteScalarAsync(cancellationToken);

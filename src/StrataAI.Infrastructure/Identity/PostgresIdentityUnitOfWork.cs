@@ -8,6 +8,21 @@ namespace StrataAI.Infrastructure.Identity;
 internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory connections,
     ICommandActorAuthorization actors, ILogger<PostgresIdentityUnitOfWork> logger) : IIdentityUnitOfWork
 {
+    public async Task<IdentityOperation<UserProfile>> ExecuteTokenProofAsync(
+        Func<Task<IdentityOperation<UserProfile>>> operation, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await connections.ExecuteIdentityCommandAsync(operation, result => result.Succeeded, cancellationToken);
+        }
+        catch (NpgsqlException exception)
+        {
+            logger.LogWarning("Identity token command lacked a database acknowledgment; code {DatabaseCode}.",
+                exception is PostgresException postgres ? postgres.SqlState : "connection_error");
+            return IdentityOperation<UserProfile>.Failure("identity_storage_unavailable");
+        }
+    }
+
     public async Task<IdentityOperation<RegistrationOutcome>> ExecuteRegistrationAsync(
         Func<Task<IdentityOperation<RegistrationOutcome>>> operation, CancellationToken cancellationToken = default)
     {

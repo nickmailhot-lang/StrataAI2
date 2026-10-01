@@ -4,7 +4,11 @@ base=http://localhost:8080
 fixture=http://localhost:19090
 compose=(docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml)
 scratch="$(mktemp -d)"
+gate_pid=''
+request_pid=''
 cleanup() {
+  if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
+  if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
   rm -rf "$scratch"
 }
@@ -12,7 +16,61 @@ trap cleanup EXIT
 trap 'echo "Identity mail integration failed at line $LINENO" >&2' ERR
 query() { docker compose -f compose.release.yml exec -T postgres psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" --quiet --tuples-only --no-align --command="$1"; }
 post() {
-  curl --silent --show-error -o "$scratch/response" -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$2" "$base$1"
+  curl --max-time 60 --silent --show-error -o "$scratch/response" -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$2" "$base$1"
+}
+token_state() {
+  query "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$identity_user'),
+    'verification',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM email_verification_tokens t WHERE user_id='$identity_user'),
+    'reset',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM password_reset_tokens t WHERE user_id='$identity_user'),
+    'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$identity_user'),
+    'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$identity_user'))::text;"
+}
+reject_token_audit() {
+  local before
+  before="$(token_state)"
+  query 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+  test "$(post "$1" "$2")" = 503
+  jq -e '.code=="identity_storage_unavailable"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh 'Npgsql|audit_events|permission denied|UPDATE users|INSERT INTO' "$scratch/response"
+  test "$before" = "$(token_state)"
+  query 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+}
+expire_token_during_wait() {
+  local table="$1" id="$2" endpoint="$3" payload="$4" before count
+  query "UPDATE $table SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$id';" >/dev/null
+  before="$(token_state)"
+  rm -f "$scratch/token-gate.in" "$scratch/token-gate.log"
+  mkfifo "$scratch/token-gate.in"
+  docker compose -f compose.release.yml exec -T postgres psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" < "$scratch/token-gate.in" > "$scratch/token-gate.log" 2>&1 &
+  gate_pid=$!
+  exec 3> "$scratch/token-gate.in"
+  printf 'BEGIN;\nSELECT id FROM %s WHERE id=%s FOR UPDATE;\n\\echo token_locked\n' "$table" "'$id'" >&3
+  for ((attempt=0; attempt<100; attempt++)); do
+    if grep -q '^token_locked$' "$scratch/token-gate.log"; then break; fi
+    kill -0 "$gate_pid" || return 1
+    sleep 0.05
+  done
+  grep -q '^token_locked$' "$scratch/token-gate.log"
+  post "$endpoint" "$payload" > "$scratch/token-status" &
+  request_pid=$!
+  for ((attempt=0; attempt<100; attempt++)); do
+    count="$(query "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%FROM $table%FOR UPDATE%';")"
+    if test "$count" = 1; then break; fi
+    sleep 0.05
+  done
+  test "$count" = 1
+  query 'SELECT pg_sleep(11);' >/dev/null
+  printf 'COMMIT;\n\\q\n' >&3
+  exec 3>&-
+  wait "$gate_pid"
+  gate_pid=''
+  wait "$request_pid"
+  request_pid=''
+  test "$(cat "$scratch/token-status")" = 400
+  jq -e '.code=="invalid_or_expired_token"' "$scratch/response" >/dev/null
+  test "$before" = "$(token_state)"
+  # Restore only the disposable token's expiry for the existing success/single-use checks.
+  query "UPDATE $table SET expires_at=clock_timestamp()+interval '30 minutes' WHERE id='$id';" >/dev/null
 }
 latest_job() { query "SELECT id FROM identity_delivery_jobs WHERE recipient_email='$email' AND purpose='$1' ORDER BY created_at DESC,id DESC LIMIT 1;"; }
 wait_state() {
@@ -38,7 +96,7 @@ done
 docker compose -f compose.release.yml exec -T postgres psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" < scripts/ci/grant-identity-worker.sql
 "${compose[@]}" stop worker
 # Registration and its token/delivery/audit must borrow one connection.
-"${compose[@]}" -f scripts/ci/compose.atomic-test.yml up -d --wait --wait-timeout 180 api
+STRATAAI_TEST_COMMAND_TIMEOUT=30 "${compose[@]}" -f scripts/ci/compose.atomic-test.yml up -d --wait --wait-timeout 180 api
 
 # PRD-02/60: audit rejection must roll back account, verification token and queued delivery.
 email="audit-rollback-${RANDOM}-${RANDOM}@example.test"
@@ -76,6 +134,7 @@ email="identity-${RANDOM}-${RANDOM}@example.test"
 password=mail-correct-horse-battery
 test "$(post /auth/register "$(jq -nc --arg email "$email" --arg password "$password" '{email:$email,password:$password,displayName:"Identity delivery"}')")" = 201
 jq -e '.verificationToken==null and .user.emailVerified==false' "$scratch/response" >/dev/null
+identity_user="$(jq -r '.user.id' "$scratch/response")"
 verification_id="$(latest_job VERIFY_EMAIL)"
 test -n "$verification_id"
 test "$(query "SELECT state FROM identity_delivery_jobs WHERE id='$verification_id';")" = PENDING
@@ -93,6 +152,8 @@ if query "SELECT row_to_json(j)::text FROM identity_delivery_jobs j WHERE id='$v
   echo 'Plaintext verification token persisted in queue' >&2; exit 1
 fi
 test "$(post /auth/password/reset "$(jq -nc --arg token "$verification" '{token:$token,newPassword:"replacement-correct-horse"}')")" = 400
+reject_token_audit /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')"
+expire_token_during_wait email_verification_tokens "$verification_id" /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')"
 test "$(post /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')")" = 200
 test "$(post /auth/verify-email "$(jq -nc --arg token "$verification" '{token:$token}')")" = 400
 curl --fail --silent -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
@@ -110,6 +171,9 @@ if query "SELECT row_to_json(j)::text FROM identity_delivery_jobs j WHERE id='$r
   echo 'Plaintext reset token persisted in queue' >&2; exit 1
 fi
 test "$(post /auth/verify-email "$(jq -nc --arg token "$reset" '{token:$token}')")" = 400
+reject_token_audit /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"replacement-correct-horse"}')"
+expire_token_during_wait password_reset_tokens "$reset_id" /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"replacement-correct-horse"}')"
+test "$(curl --silent -o /dev/null -w '%{http_code}' -b "$scratch/cookies" "$base/me")" = 200
 test "$(post /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"replacement-correct-horse"}')")" = 200
 test "$(post /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"another-replacement-horse"}')")" = 400
 test "$(curl --silent -o /dev/null -w '%{http_code}' -b "$scratch/cookies" "$base/me")" = 401
