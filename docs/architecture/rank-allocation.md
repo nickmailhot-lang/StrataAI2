@@ -84,3 +84,8 @@ responses and verifies that source placement, source rank, both card versions,
 and the destination anchor remain unchanged. This case compiles locally;
 execution remains pending Linux CI because Windows policy prevents local API
 test-host execution. It verifies rejection safety, not automatic rebalance.
+
+The required exact-image PostgreSQL rank fixture also checks two exhausted moves
+with one retry key, inspecting persisted placement/ranks/versions and the absence
+of CARD_MOVED audit records and events. Shell syntax validation passes locally;
+these production transaction assertions remain pending Linux CI execution.

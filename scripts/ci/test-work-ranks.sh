@@ -82,3 +82,24 @@ for pid in "${pids[@]}"; do wait "$pid"; done
 jq -s -e --arg list "$list" 'length==16 and ([.[].rank]|unique|length)==16 and all(.[];.listId==$list and .rank>"500000005000000000000000000000" and .rank<"500000005001000000000000000000")' "$scratch"/relative-result-*.json >/dev/null
 test "$(admin "SELECT count(*)=5017 AND count(DISTINCT rank)=5017 AND max(rank)='500000005001000000000000000000' FROM cards WHERE tenant_id='$organization' AND list_id='$list';")" = t
 echo 'Concurrent before-card insertion resolves current neighbors on a 5,000-card destination without sibling renumbering.'
+# Boundary failures must also remain atomic in the actual PostgreSQL command
+# transaction, including a repeated attempt with the same retry key.
+edge_list="$(jq -r '.id' "$scratch/list-0-2.json")"
+request "/lists/$edge_list/cards" '{"title":"Lowest valid anchor","rank":"000000000000000000000000000001"}' > "$scratch/edge-anchor.json"
+request "/lists/$source/cards" '{"title":"Exhaustion must preserve me"}' > "$scratch/edge-source.json"
+edge_card="$(jq -r '.id' "$scratch/edge-source.json")"
+edge_anchor="$(jq -r '.id' "$scratch/edge-anchor.json")"
+edge_key="$(cat /proc/sys/kernel/random/uuid)"
+edge_body="$(jq -nc --arg list "$edge_list" --arg before "$edge_anchor" '{destinationListId:$list,beforeCardId:$before,expectedVersion:1}')"
+for ((attempt=0; attempt<2; attempt++)); do
+  status="$(curl --max-time 60 --silent --show-error -o "$scratch/exhausted-$attempt.json" -w '%{http_code}' -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $edge_key" -X POST -d "$edge_body" "$BASE_URL/cards/$edge_card/move")"
+  test "$status" = 409
+  jq -e '.code=="rank_space_exhausted"' "$scratch/exhausted-$attempt.json" >/dev/null
+done
+original_rank="$(jq -r '.rank' "$scratch/edge-source.json")"
+[[ "$original_rank" =~ ^[0-9]{30}$ ]]
+test "$(admin "SELECT list_id='$source' AND rank='$original_rank' AND version=1 FROM cards WHERE tenant_id='$organization' AND board_id='$board' AND id='$edge_card';")" = t
+test "$(admin "SELECT count(*)=1 AND bool_and(id='$edge_anchor' AND rank='000000000000000000000000000001' AND version=1) FROM cards WHERE tenant_id='$organization' AND board_id='$board' AND list_id='$edge_list' AND lifecycle_state='ACTIVE';")" = t
+test "$(admin "SELECT count(*)=0 FROM audit_events WHERE tenant_id='$organization' AND entity_id='$edge_card' AND event_type='CARD_MOVED';")" = t
+test "$(admin "SELECT count(*)=0 FROM work_events WHERE tenant_id='$organization' AND board_id='$board' AND entity_id='$edge_card' AND event_type='CARD_MOVED';")" = t
+echo 'Repeated exhausted relative moves preserve PostgreSQL source placement and destination anchor.'
