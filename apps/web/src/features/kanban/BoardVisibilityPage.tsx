@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { watchBoard, type LiveStatus } from '../../api/boardLive';
 
 type Board = { id: string; organizationId: string; name: string; lifecycleState: string; visibility: string; version: number };
 const choices = ['PRIVATE', 'ORGANIZATION', 'PUBLIC'];
@@ -19,7 +20,23 @@ function Visibility({ org, id }: { org: string; id: string }) {
   const [busy, setBusy] = useState(false); const [review, setReview] = useState(false);
   const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false); const cancel = useRef<HTMLButtonElement>(null);
-  const action = useRef<HTMLButtonElement>(null);
+  const action = useRef<HTMLButtonElement>(null); const refresh = useRef<HTMLButtonElement>(null);
+  const [subscribed, setSubscribed] = useState(false); const [liveStatus, setLiveStatus] = useState<LiveStatus>('connecting');
+  const [retryRead, setRetryRead] = useState(false); const queued = useRef(false);
+  const invalidate = useEffectEvent(() => {
+    if (pending.current) { queued.current = true; return; }
+    setReview(false); setBoard(undefined); setDraft(''); void run();
+  });
+  useEffect(() => {
+    if (!subscribed) return;
+    return watchBoard({ organizationId: org, boardId: id, invalidate: () => invalidate(), status: setLiveStatus });
+  }, [org, id, subscribed]);
+  const retryLatest = useEffectEvent(() => { void run(); });
+  useEffect(() => {
+    if (!retryRead || busy) return;
+    const timer = setTimeout(() => retryLatest(), 10_000);
+    return () => clearTimeout(timer);
+  }, [retryRead, busy]);
   async function request(path: string, options: RequestInit, controller: AbortController) {
     const timer = setTimeout(() => controller.abort(), 15_000);
     let abort: (() => void) | undefined;
@@ -37,9 +54,9 @@ function Visibility({ org, id }: { org: string; id: string }) {
   }
   async function run(change?: { visibility: string; version: number }) {
     if (pending.current) return;
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); setNotice(undefined);
+    const controller = new AbortController(); pending.current = controller; setBusy(true); setRetryRead(false); setError(undefined); setNotice(undefined);
     const current = () => mounted.current && pending.current === controller && !controller.signal.aborted;
-    const deny = () => { setBoard(undefined); setDraft(''); setReview(false); setError('Board visibility administration is unavailable.'); };
+    const deny = () => { setSubscribed(false); setRetryRead(false); queued.current = false; setBoard(undefined); setDraft(''); setReview(false); setError('Board visibility administration is unavailable.'); };
     try {
       if (change) {
         const result = await request(`/boards/${encodeURIComponent(id)}/visibility`, { method: 'PATCH',
@@ -56,13 +73,16 @@ function Visibility({ org, id }: { org: string; id: string }) {
       if (!current()) return;
       const scope = result.body as { board?: unknown; access?: { canAdminister?: boolean } } | undefined;
       if ([401, 403, 404].includes(result.status)) { deny(); return; }
-      if (result.status !== 200 || !validBoard(scope?.board, org, id) || scope?.access?.canAdminister !== true) { deny(); return; }
-      setBoard(scope.board); setDraft(scope.board.visibility);
+      if (result.status !== 200) throw new Error('Board read unavailable');
+      if (!validBoard(scope?.board, org, id) || scope?.access?.canAdminister !== true) { deny(); return; }
+      setBoard(scope.board); setDraft(scope.board.visibility); setSubscribed(true);
       setNotice(change ? 'Visibility change acknowledged. Current visibility loaded.' : 'Current Board visibility loaded.');
     } catch {
-      if (mounted.current && pending.current === controller) { setBoard(undefined); setDraft(''); setError('Unable to confirm current Board visibility. Please check again.'); }
+      if (mounted.current && pending.current === controller) { setBoard(undefined); setDraft(''); setRetryRead(!change); setError('Unable to confirm current Board visibility. Please check again.'); }
     } finally {
-      if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); setReview(false); }
+      if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); setReview(false);
+        const drain = queued.current && !change; queued.current = false;
+        if (drain) queueMicrotask(() => { if (mounted.current && !pending.current) void run(); }); }
     }
   }
   useEffect(() => { mounted.current = true; void run(); return () => { mounted.current = false; pending.current?.abort(); }; }, []);
@@ -71,14 +91,15 @@ function Visibility({ org, id }: { org: string; id: string }) {
     <Typography component="h1" variant="h4">Board visibility</Typography>
     {board && <Typography component="h2" variant="h6">{board.name}</Typography>}
     {error && <Alert severity="error">{error}</Alert>}{notice && <Alert severity="info">{notice}</Alert>}
+    {subscribed && <Typography role="status">{liveStatus === 'live' ? 'Live visibility updates connected.' : 'Visibility updates are reconnecting or checking periodically.'}</Typography>}
     {busy && <CircularProgress aria-label="Checking Board visibility" />}
-    <Button disabled={busy} onClick={() => void run()}>Check current visibility</Button>
+    <Button ref={refresh} disabled={busy} onClick={() => void run()}>Check current visibility</Button>
     {board && <><Typography>Private Boards require authorized access. Organization Boards can be discovered by eligible members. Public Boards can be read by anyone. Visibility never grants edit access.</Typography>
       <TextField select label="Board visibility" value={draft} disabled={busy} onChange={event => setDraft(event.target.value)}>
         {choices.map(value => <MenuItem key={value} value={value}>{value === 'PRIVATE' ? 'Private' : value === 'ORGANIZATION' ? 'Organization' : 'Public'}</MenuItem>)}
       </TextField><Button ref={action} disabled={busy || draft === board.visibility} onClick={() => setReview(true)}>Review visibility change</Button></>}
     <Dialog open={review && !!board} onClose={() => { if (!busy) setReview(false); }} aria-labelledby="visibility-title"
-      slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: () => action.current?.focus() } }}>
+      slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: () => (action.current ?? refresh.current)?.focus() } }}>
       <DialogTitle id="visibility-title">Change Board visibility?</DialogTitle>
       <DialogContent><Typography>{board?.name}: {draft}</Typography><Typography>{draft === 'PUBLIC' ? 'Anyone, including people who are not signed in, can read this Board.' : 'This changes who can discover and read this Board.'} Existing membership and edit permissions are managed separately.</Typography></DialogContent>
       <DialogActions><Button ref={cancel} disabled={busy} onClick={() => setReview(false)}>Cancel</Button>

@@ -1,6 +1,11 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { BoardVisibilityPage } from './BoardVisibilityPage';
+const live = vi.hoisted(() => ({ invalidate: undefined as (() => void) | undefined, dispose: vi.fn() }));
+vi.mock('../../api/boardLive', () => ({ watchBoard: vi.fn((options: { invalidate: () => void }) => {
+  live.invalidate = options.invalidate; return live.dispose;
+}) }));
+beforeEach(() => { live.invalidate = undefined; live.dispose.mockClear(); });
 const board = { id: 'b', organizationId: 'o', name: 'Private repairs', lifecycleState: 'active', visibility: 'PRIVATE', version: 4 };
 const scope = { board, access: { canAdminister: true } };
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
@@ -42,4 +47,22 @@ it('clears stale state on conflict and checks the canonical state without anothe
   fireEvent.click(await screen.findByRole('button', { name: 'Check current visibility' }));
   await screen.findByRole('combobox');
   expect(mock.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(1);
+});
+
+it('cancels stale consent on live invalidation and loads the new canonical version without writing', async () => {
+  const mock = mount(response(scope), response({ ...scope, board: { ...board, visibility: 'ORGANIZATION', version: 5 } }));
+  await choose(); await waitFor(() => expect(live.invalidate).toBeDefined());
+  act(() => live.invalidate!());
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Board visibility' })).toHaveTextContent('Organization'));
+  expect(mock).toHaveBeenCalledTimes(2);
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(0);
+});
+it('clears private metadata and stops live updates when current administration is revoked', async () => {
+  mount(response(scope), response({}, 403));
+  await choose(); await waitFor(() => expect(live.invalidate).toBeDefined()); act(() => live.invalidate!());
+  await screen.findByText('Board visibility administration is unavailable.');
+  expect(screen.queryByText(board.name)).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await waitFor(() => expect(live.dispose).toHaveBeenCalledTimes(1));
 });

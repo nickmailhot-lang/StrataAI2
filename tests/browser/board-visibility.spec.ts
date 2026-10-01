@@ -18,6 +18,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await anonymous.request.get(`/boards/${board}`)).status()).toBe(404);
       await page.goto(`/app/${org}/boards/${board}`);
       await page.getByRole('link', { name: 'Board visibility', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByText('Live visibility updates connected.')).toBeVisible();
+      await expect(page.getByRole('progressbar', { name: 'Checking Board visibility' })).toHaveCount(0);
       const choosePublic = async () => {
         await page.getByRole('combobox', { name: 'Board visibility' }).focus(); await page.keyboard.press('ArrowDown');
         await page.getByRole('option', { name: 'Public', exact: true }).focus(); await page.keyboard.press('Enter');
@@ -29,12 +31,13 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Review visibility change' })).toBeFocused();
       expect((await anonymous.request.get(`/boards/${board}`)).status()).toBe(404);
-      // A different client changes the canonical version after the form loaded.
-      const competing = await context.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'ORGANIZATION', version } });
-      expect(competing.status()).toBe(200); const nextVersion = (await competing.json()).version;
-      let writes = 0;
+      let nextVersion = version; let writes = 0;
       await page.route(`**/boards/${board}/visibility`, async route => {
         const input = route.request().postDataJSON(); writes++;
+        if (writes === 1) {
+          const competing = await context.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'ORGANIZATION', version } });
+          expect(competing.status()).toBe(200); nextVersion = (await competing.json()).version;
+        }
         expect(input).toEqual({ visibility: 'PUBLIC', version: writes === 1 ? version : nextVersion });
         expect(route.request().headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
         const result = await route.fetch(); expect(result.status()).toBe(writes === 1 ? 409 : 200);

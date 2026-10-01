@@ -34,3 +34,7 @@ drop a successful Public acknowledgment and recover the canonical state without
 another write. Anonymous reads must transition from private denial to public
 read-only access, while anonymous visibility mutation remains unauthorized.
 Local collection passes for both cases; exact-image execution is pending CI.
+
+Live visibility administration now uses the shared authorized Board stream and polling fallback. An invalidation cancels open consent, clears the old Board details, and reloads current administration and visibility. Invalidations during a read coalesce into a subsequent read. Current denial clears metadata and stops the subscription; transient read failures schedule a bounded, read-only retry. Uncertain writes are never automatically repeated. Dialog exit restores focus to the review action or the refresh button when the old action is gone.
+
+Component coverage adds live stale-consent cancellation and current-authority revocation. The release browser fixture now introduces its competing visibility change after the reviewed request is submitted, so it still exercises server version rejection with live updates enabled. Browser collection succeeds; execution against the exact release images remains pending. This increment does not complete PRD-05 or its full performance, accessibility, and realtime acceptance criteria.
