@@ -3,7 +3,7 @@ import { Alert, Button, CircularProgress, Container, Paper, Stack, Typography } 
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 
-type Invitation = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string };
+type Invitation = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string; boardTarget?: { boardId: string; role: 'ADMIN' | 'MEMBER' } | null; boardName?: string | null };
 type Page = { items: Invitation[]; nextCursor: string | null };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function validPage(value: unknown): value is Page {
@@ -12,8 +12,14 @@ function validPage(value: unknown): value is Page {
   if (!Array.isArray(page.items) || page.items.length > 50 || (page.nextCursor !== null && (typeof page.nextCursor !== 'string' || !uuid.test(page.nextCursor)))) return false;
   const seen = new Set<string>();
   for (const item of page.items) {
-    if (!item || !uuid.test(item.id) || !uuid.test(item.organizationId) || typeof item.organizationName !== 'string' || !item.organizationName.trim()
-      || !['INTERNAL', 'PORTAL'].includes(item.surface) || typeof item.targetRole !== 'string' || !item.targetRole
+    const board = item?.boardTarget;
+    const validBoard = board == null ? item?.boardName == null
+      : item?.surface === 'INTERNAL' && item.targetRole === 'MEMBER' && typeof board.boardId === 'string'
+        && uuid.test(board.boardId) && board.boardId !== '00000000-0000-0000-0000-000000000000'
+        && ['ADMIN', 'MEMBER'].includes(board.role) && typeof item.boardName === 'string' && Boolean(item.boardName.trim());
+    if (!validBoard || !item || typeof item.id !== 'string' || typeof item.organizationId !== 'string' || !uuid.test(item.id) || !uuid.test(item.organizationId) || typeof item.organizationName !== 'string' || !item.organizationName.trim()
+      || !(item.surface === 'INTERNAL' ? ['OWNER', 'ADMIN', 'MEMBER'].includes(item.targetRole)
+        : item.surface === 'PORTAL' && ['OWNER', 'CO_OWNER', 'TENANT', 'OCCUPANT', 'AUTHORIZED_REPRESENTATIVE', 'OTHER'].includes(item.targetRole))
       || typeof item.expiresAt !== 'string' || !Number.isFinite(Date.parse(item.expiresAt)) || seen.has(item.id)) return false;
     seen.add(item.id);
   }
@@ -82,9 +88,11 @@ export function InvitationsPage() {
         setPage(previous => previous && { ...previous, items: previous.items.filter(item => item.id !== invitation.id) });
         setError('This invitation is no longer available to your account. Refresh to check current invitations.'); return;
       }
-      const ack = response.body as { invitationId?: string; organizationId?: string; surface?: string; targetRole?: string } | undefined;
+      const ack = response.body as { invitationId?: string; organizationId?: string; surface?: string; targetRole?: string; boardTarget?: Invitation['boardTarget'] } | undefined;
       if (response.status !== 200 || ack?.invitationId !== invitation.id || ack.organizationId !== invitation.organizationId
-        || ack.surface !== invitation.surface || ack.targetRole !== invitation.targetRole) throw new Error('Invalid invitation acknowledgment');
+        || ack.surface !== invitation.surface || ack.targetRole !== invitation.targetRole
+        || (invitation.boardTarget == null ? ack.boardTarget != null
+          : ack.boardTarget?.boardId !== invitation.boardTarget.boardId || ack.boardTarget?.role !== invitation.boardTarget.role)) throw new Error('Invalid invitation acknowledgment');
       setAccepted(invitation);
       setUncertain(undefined);
       setPage(previous => previous && { ...previous, items: previous.items.filter(item => item.id !== invitation.id) });
@@ -102,7 +110,7 @@ export function InvitationsPage() {
     <Typography variant="h4" component="h1">Your invitations</Typography>
     <Typography>Invitations matching your verified email appear here.</Typography>
     {error && <Alert severity="error">{error}</Alert>}
-    {accepted && <Alert severity="success">Invitation to {accepted.organizationName} accepted. <Link to={accepted.surface === 'PORTAL' ? `/portal/${accepted.organizationId}` : `/app/${accepted.organizationId}`}>Open {accepted.surface === 'PORTAL' ? 'Owner Portal' : 'organization'}</Link></Alert>}
+    {accepted && <Alert severity="success">Invitation to {accepted.organizationName} accepted. <Link to={accepted.surface === 'PORTAL' ? `/portal/${accepted.organizationId}` : `/app/${accepted.organizationId}${accepted.boardTarget ? `/boards/${accepted.boardTarget.boardId}` : ''}`}>Open {accepted.surface === 'PORTAL' ? 'Owner Portal' : accepted.boardTarget ? 'Board' : 'organization'}</Link></Alert>}
     {busy && <CircularProgress aria-label="Loading invitation request" />}
     {uncertain && <Paper variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>
       <Typography>An invitation acceptance still needs confirmation. Refreshing the list will preserve this attempt.</Typography>
@@ -111,8 +119,9 @@ export function InvitationsPage() {
     {page?.items.length === 0 && !uncertain && <Typography>No pending invitations on this page.</Typography>}
     {page?.items.filter(invitation => invitation.id !== uncertain?.id).map(invitation => <Paper key={invitation.id} variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>
       <Typography variant="h6" component="h2">{invitation.organizationName}</Typography>
-      <Typography>{invitation.surface === 'PORTAL' ? 'Owner Portal' : 'Internal organization'} access · {invitation.targetRole.toLowerCase().replaceAll('_', ' ')}</Typography>
-      <Button disabled={busy || Boolean(uncertain)} variant="contained" onClick={() => void accept(invitation)} aria-label={`Accept invitation to ${invitation.organizationName}`}>Accept invitation</Button>
+      {invitation.boardTarget && <Typography variant="h6" component="h3">{invitation.boardName}</Typography>}
+      <Typography>{invitation.boardTarget ? `Board access \u00b7 ${invitation.boardTarget.role.toLowerCase()}` : <>{invitation.surface === 'PORTAL' ? 'Owner Portal' : 'Internal organization'} access · {invitation.targetRole.toLowerCase().replaceAll('_', ' ')}</>}</Typography>
+      <Button disabled={busy || Boolean(uncertain)} variant="contained" onClick={() => void accept(invitation)} aria-label={`Accept invitation to ${invitation.organizationName}${invitation.boardTarget ? `, Board ${invitation.boardName}, ${invitation.boardTarget.role.toLowerCase()}` : ''}`}>Accept invitation</Button>
     </Stack></Paper>)}
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(page.nextCursor!)}>More invitations</Button>}
     <Button disabled={busy} onClick={() => void load()}>Refresh invitations</Button>

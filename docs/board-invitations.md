@@ -111,3 +111,14 @@ These increments are not wired to public Board invitation creation or Worker mai
 publication. Recipient discovery, desktop/mobile keyboard browser coverage and
 actual Board invitation delivery remain required. Board issuance must stay disabled
 until every consumer agrees. Neither PRD is eligible for closure.
+
+The verified-email invitation list now understands the same Board target contract
+as proof review. It displays the Board name/role, gives its accept button an
+accessible name containing Organization/Board/role, binds acceptance acknowledgment
+to the displayed Board ID/role, and retains that target through lost-response
+recovery and list refresh. It rejects unsupported surface-role combinations and
+malformed Board metadata before display. Nine additional component cases cover
+those paths. Server-side discovery still intentionally excludes Board targets;
+this UI integration does not prove recipient discovery or enable public issuance.
+The next backend discovery increment must authorize current canonical targets
+without reversing the Organization-before-account command lock order.

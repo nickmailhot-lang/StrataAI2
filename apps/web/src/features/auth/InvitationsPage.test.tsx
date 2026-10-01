@@ -98,3 +98,46 @@ describe('PRD-60 verified email invitation discovery', () => {
     expect(await screen.findByRole('heading', { name: 'Sign in destination' })).toBeVisible();
   });
 });
+
+const boardInvitation = { ...invitation, surface: 'INTERNAL', targetRole: 'MEMBER', boardName: 'Maintenance',
+  boardTarget: { boardId: '33333333-3333-4333-8333-333333333333', role: 'ADMIN' } };
+const boardAcknowledgment = { invitationId: invitation.id, organizationId: invitation.organizationId,
+  surface: 'INTERNAL', targetRole: 'MEMBER', boardTarget: boardInvitation.boardTarget };
+it('displays the Board role and preserves its exact target across lost acknowledgment and refresh', async () => {
+  const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [boardInvitation], nextCursor: null }))
+    .mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply({ items: [], nextCursor: null }))
+    .mockResolvedValueOnce(reply(boardAcknowledgment));
+  vi.stubGlobal('fetch', fetcher); mount();
+  await screen.findByRole('heading', { name: 'Maintenance' });
+  expect(screen.getByText('Board access \u00b7 admin')).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'Accept invitation to Council, Board Maintenance, admin' }));
+  await screen.findByRole('button', { name: 'Retry invitation acceptance' });
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Retry invitation acceptance' })).toBeEnabled());
+  fireEvent.click(screen.getByRole('button', { name: 'Retry invitation acceptance' }));
+  expect(await screen.findByRole('link', { name: 'Open Board' })).toHaveAttribute('href', `/app/${invitation.organizationId}/boards/${boardInvitation.boardTarget.boardId}`);
+  expect(fetcher.mock.calls[3][0]).toBe(fetcher.mock.calls[1][0]);
+});
+it.each([
+  { ...boardAcknowledgment, boardTarget: null },
+  { ...boardAcknowledgment, boardTarget: { ...boardInvitation.boardTarget, boardId: invitation.id } },
+  { ...boardAcknowledgment, boardTarget: { ...boardInvitation.boardTarget, role: 'MEMBER' } },
+])('rejects a Board acknowledgment that differs from the displayed invitation: %j', async ack => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply({ items: [boardInvitation], nextCursor: null })).mockResolvedValueOnce(reply(ack)));
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Accept invitation to Council, Board Maintenance, admin' }));
+  await screen.findByRole('button', { name: 'Retry invitation acceptance' });
+  expect(screen.queryByRole('link', { name: 'Open Board' })).not.toBeInTheDocument();
+});
+it.each([
+  { ...boardInvitation, surface: 'PORTAL', targetRole: 'OWNER' },
+  { ...boardInvitation, boardName: null },
+  { ...boardInvitation, boardTarget: { ...boardInvitation.boardTarget, role: 'OWNER' } },
+  { ...boardInvitation, boardTarget: { ...boardInvitation.boardTarget, boardId: '00000000-0000-0000-0000-000000000000' } },
+  { ...invitation, targetRole: 'ADMIN' },
+])('rejects unsupported invitation metadata before disclosure: %j', async item => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply({ items: [item], nextCursor: null }))); mount();
+  await screen.findByText('Unable to load invitations. Please refresh and try again.');
+  expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Maintenance' })).not.toBeInTheDocument();
+});
