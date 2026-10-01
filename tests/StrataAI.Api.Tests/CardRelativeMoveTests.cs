@@ -8,6 +8,45 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Exhausted_relative_positions_reject_without_moving_or_advancing_the_card()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        var board = await TelemetryBoard(owner, ct);
+        async Task<JsonElement> Create(string path, object body)
+        {
+            using var result = await Mutate(owner, HttpMethod.Post, path, body);
+            Assert.Equal(HttpStatusCode.Created, result.StatusCode);
+            return await result.Content.ReadFromJsonAsync<JsonElement>(ct);
+        }
+        var source = (await Create($"/boards/{board}/lists", new { name = "Source" })).GetProperty("id").GetGuid();
+        var destination = (await Create($"/boards/{board}/lists", new { name = "Destination" })).GetProperty("id").GetGuid();
+        var anchor = await Create($"/lists/{destination}/cards", new { title = "Lowest rank", rank = "000000000000000000000000000001" });
+        var original = await Create($"/lists/{source}/cards", new { title = "Must remain" });
+        var card = original.GetProperty("id").GetGuid();
+        var key = Guid.NewGuid().ToString();
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            using var result = await Mutate(owner, HttpMethod.Post, $"/cards/{card}/move",
+                new { destinationListId = destination, beforeCardId = anchor.GetProperty("id").GetGuid(), expectedVersion = 1 }, key);
+            Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+            Assert.Equal("rank_space_exhausted", (await result.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        }
+        var current = await owner.GetFromJsonAsync<JsonElement>($"/boards/{board}", ct);
+        var columns = current.GetProperty("lists").EnumerateArray().ToArray();
+        var persisted = Assert.Single(columns.Single(column => column.GetProperty("list").GetProperty("id").GetGuid() == source)
+            .GetProperty("cards").EnumerateArray());
+        Assert.Equal(card, persisted.GetProperty("id").GetGuid());
+        Assert.Equal(1, persisted.GetProperty("version").GetInt64());
+        Assert.Equal(original.GetProperty("rank").GetString(), persisted.GetProperty("rank").GetString());
+        var remainingAnchor = Assert.Single(columns.Single(column => column.GetProperty("list").GetProperty("id").GetGuid() == destination)
+            .GetProperty("cards").EnumerateArray());
+        Assert.Equal(anchor.GetProperty("id").GetGuid(), remainingAnchor.GetProperty("id").GetGuid());
+        Assert.Equal(anchor.GetProperty("rank").GetString(), remainingAnchor.GetProperty("rank").GetString());
+        Assert.Equal(1, remainingAnchor.GetProperty("version").GetInt64());
+    }
+
+    [Fact]
     public async Task Relative_card_moves_use_current_neighbors_and_bind_the_anchor_in_retry_receipts()
     {
         var ct = TestContext.Current.CancellationToken;

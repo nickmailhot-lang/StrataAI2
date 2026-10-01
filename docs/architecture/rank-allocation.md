@@ -62,8 +62,9 @@ key rejection, non-reapplying replay and a wrong-list anchor. The required exact
 release PostgreSQL fixture adds sixteen concurrent relative moves before one
 anchor on its 5,000-card destination and checks bounded interval/unique ranks and
 unchanged sibling ordering. Build/shell syntax pass locally; Linux execution is
-pending. Client positional controls/drag/drop and exhausted-interval rebalance
-remain unfinished. No full ticket or latency acceptance claim is established.
+pending. Client positional review controls were subsequently added in f3f854b;
+drag/drop and exhausted-interval rebalance remain unfinished. No full ticket or
+latency acceptance claim is established.
 
 The exact-image CI check issues independent concurrent commands for 128 lists
 and 128 cards, checks rank uniqueness, and appends to a database fixture containing
@@ -76,3 +77,10 @@ returns HTTP 409 with `rank_space_exhausted`, before insertion, rather than an
 unhandled exception. Concurrent explicitly ranked moves, list movement, keyboard
 movement, virtualization, and full performance acceptance remain outstanding.
 The PRD-06/07/08 tickets must remain open until their complete criteria are met.
+
+An additional API-host boundary case attempts insertion before the lowest valid
+rank twice with the same retry key. It requires rank_space_exhausted on both
+responses and verifies that source placement, source rank, both card versions,
+and the destination anchor remain unchanged. This case compiles locally;
+execution remains pending Linux CI because Windows policy prevents local API
+test-host execution. It verifies rejection safety, not automatic rebalance.
