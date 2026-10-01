@@ -72,6 +72,7 @@ export function ProfilePage() {
   const [refreshError, setRefreshError] = useState<string>();
   const mutationEpoch = useRef(0);
   const mutation = useRef<AbortController | undefined>(undefined);
+  const profileRetry = useRef<{ body: string; key: string } | undefined>(undefined);
   const mounted = useRef(true);
   const navigate = useNavigate();
   useEffect(() => {
@@ -184,10 +185,12 @@ export function ProfilePage() {
     setError(undefined);
     setSaved(false);
     try {
+      const body = JSON.stringify({ displayName: submitted.displayName, avatarUrl: submitted.avatarUrl ?? '', locale: submitted.locale, timezone: submitted.timezone, version: submitted.version });
+      if (profileRetry.current?.body !== body) profileRetry.current = { body, key: crypto.randomUUID() };
       const response = await profileCommand('/me', {
         method: 'PATCH', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName: draft.displayName, avatarUrl: draft.avatarUrl ?? '', locale: draft.locale, timezone: draft.timezone, version: draft.version }),
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': profileRetry.current.key },
+        body,
       }, controller, true);
       if (!current()) return;
       if (response.status === 401) {
@@ -205,6 +208,7 @@ export function ProfilePage() {
       if (!isProfile(user) || user.id !== submitted.id || user.version <= submitted.version) throw new Error('Invalid profile acknowledgment');
       setProfile(user);
       setDraft(user);
+      profileRetry.current = undefined;
       setSaved(true);
     } catch {
       if (current()) setError('Unable to confirm your profile save. Your changes are preserved; refresh the latest profile or retry.');

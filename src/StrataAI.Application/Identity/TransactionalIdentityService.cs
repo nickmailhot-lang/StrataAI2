@@ -1,6 +1,10 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+
 namespace StrataAI.Application.Identity;
 
-public sealed class TransactionalIdentityService(IIdentityService inner, IIdentityUnitOfWork commands) : IIdentityService
+public sealed class TransactionalIdentityService(IIdentityService inner, IIdentityUnitOfWork commands,
+    IIdentityCommandContext context, IIdentityProfileReplayStore profileReplays) : IIdentityService
 {
     public Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default) =>
@@ -66,7 +70,23 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
         long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        commands.ExecuteAsync(userId, () => inner.UpdateProfileAsync(userId, displayName, avatarUrl, locale, timezone, expectedVersion, correlationId, cancellationToken), cancellationToken);
+        commands.ExecuteAsync(userId, async () =>
+        {
+            // Authorization and the subject lock precede any stored acknowledgment disclosure.
+            var key = context.IdempotencyKey;
+            if (key is null)
+                return await inner.UpdateProfileAsync(userId, displayName, avatarUrl, locale, timezone, expectedVersion, correlationId, cancellationToken);
+            var fingerprint = Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(
+                new { Operation = "PROFILE_UPDATE", displayName, avatarUrl, locale, timezone, expectedVersion })));
+            var prior = await profileReplays.ReadAsync(userId, key.Value, cancellationToken);
+            if (prior is not null)
+                return prior.Fingerprint == fingerprint ? IdentityOperation<UserProfile>.Success(prior.Profile)
+                    : IdentityOperation<UserProfile>.Failure("idempotency_key_reused");
+            var result = await inner.UpdateProfileAsync(userId, displayName, avatarUrl, locale, timezone, expectedVersion, correlationId, cancellationToken);
+            if (result.Succeeded && result.Value is not null)
+                await profileReplays.SaveAsync(userId, key.Value, new IdentityProfileReplay(fingerprint, result.Value), cancellationToken);
+            return result;
+        }, cancellationToken);
 
     public Task<IdentityOperation<bool>> DeactivateAsync(
         Guid userId,

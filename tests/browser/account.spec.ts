@@ -1,5 +1,49 @@
 import { expect, test } from '@playwright/test';
 
+test('PRD-02/60-TC-06/07: lost acknowledgment retries the committed profile intent once', async ({ page, context }) => {
+  const headers = { 'X-StrataAI-Request': '1' };
+  const credentials = { email: `lost-ack-${Date.now()}@example.test`, password: 'browser-retry-correct-horse', displayName: 'Retry account' };
+  expect((await context.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
+  expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+  const initial = await (await context.request.get('/me/sync')).json();
+  let suspendRecovery = false;
+  // Simulate a disconnect that also prevents authoritative recovery until the explicit retry.
+  await page.route('**/me/sync**', route => suspendRecovery ? route.abort() : route.continue());
+  const keys: string[] = [];
+  const bodies: string[] = [];
+  let committed: { id: string; version: number; displayName: string } | undefined;
+  await page.route('**/me', async route => {
+    if (route.request().method() !== 'PATCH') { await route.continue(); return; }
+    keys.push(route.request().headers()['idempotency-key']);
+    bodies.push(route.request().postData()!);
+    if (keys.length === 1) {
+      const result = await route.fetch();
+      expect(result.status()).toBe(200);
+      committed = await result.json();
+      await route.abort('timedout');
+    } else await route.continue();
+  });
+  await page.goto('/app/demo/profile');
+  await expect(page.getByLabel(/^Display name/)).toHaveValue('Retry account');
+  suspendRecovery = true;
+  await page.getByLabel(/^Display name/).fill('Saved after lost acknowledgment');
+  await page.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(page.getByText(/Unable to confirm your profile save/)).toBeVisible();
+  await expect(page.getByLabel(/^Display name/)).toHaveValue('Saved after lost acknowledgment');
+  await page.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Profile saved.' })).toHaveText('Profile saved.');
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(keys[1]).toBe(keys[0]);
+  expect(bodies[1]).toBe(bodies[0]);
+  expect(committed?.version).toBe(initial.profile.version + 1);
+  const replay = await (await context.request.get(`/me/sync?after=${initial.cursor}`)).json();
+  expect(replay.profile).toMatchObject(committed!);
+  expect(replay.events).toHaveLength(1);
+  expect(replay.events[0].eventType).toBe('USER_PROFILE_UPDATED');
+  expect(replay.cursor).toBe(initial.cursor + 1);
+});
+
 test('PRD-02-TC-03/04: recovery confirmation is generic and invalid reset links recover safely', async ({ page }) => {
   await page.goto('/login');
   await page.getByRole('link', { name: 'Forgot password?' }).click();

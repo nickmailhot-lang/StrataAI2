@@ -55,16 +55,19 @@ public static class IdentityRegistration
         {
             services.AddSingleton<IIdentityStore, InMemoryIdentityStore>();
             services.AddSingleton<IIdentityUnitOfWork, InMemoryIdentityUnitOfWork>();
+            services.AddSingleton<IIdentityProfileReplayStore, InMemoryIdentityProfileReplayStore>();
         }
         else
         {
             services.AddSingleton<IIdentityStore, PostgresIdentityStore>();
             services.AddSingleton<IIdentityUnitOfWork, PostgresIdentityUnitOfWork>();
+            services.AddSingleton<IIdentityProfileReplayStore, PostgresIdentityProfileReplayStore>();
         }
 
         services.AddSingleton<IdentityService>();
         services.AddSingleton<IIdentityService>(provider => new TransactionalIdentityService(
-            provider.GetRequiredService<IdentityService>(), provider.GetRequiredService<IIdentityUnitOfWork>()));
+            provider.GetRequiredService<IdentityService>(), provider.GetRequiredService<IIdentityUnitOfWork>(),
+            provider.GetRequiredService<IIdentityCommandContext>(), provider.GetRequiredService<IIdentityProfileReplayStore>()));
     }
 
     private static bool GetBoolean(string? value, bool fallback) =>

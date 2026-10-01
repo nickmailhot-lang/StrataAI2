@@ -19,6 +19,28 @@ function renderProfile() {
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe('PRD-02 profile management', () => {
+  it('PRD-02/60-TC-07 starts a new retry intent when preserved edits change after a network failure', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
+      .mockRejectedValueOnce(new Error('Connection lost'))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ...profile, displayName: 'Revised edit', version: 2 })));
+    vi.stubGlobal('fetch', fetchMock);
+    renderProfile();
+    await waitFor(() => expect(screen.getByLabelText(/Display name/)).toHaveValue('Council'));
+    fireEvent.change(screen.getByLabelText(/Display name/), { target: { value: 'Initial edit' } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+    await screen.findByText(/Unable to confirm your profile save/);
+    fireEvent.change(screen.getByLabelText(/Display name/), { target: { value: 'Revised edit' } });
+    fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+    await screen.findByText('Profile saved.');
+    const firstKey = new Headers(fetchMock.mock.calls[1][1].headers).get('Idempotency-Key');
+    const secondKey = new Headers(fetchMock.mock.calls[2][1].headers).get('Idempotency-Key');
+    expect(firstKey).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(secondKey).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(secondKey).not.toBe(firstKey);
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ displayName: 'Initial edit', version: 1 });
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({ displayName: 'Revised edit', version: 1 });
+  });
+
   it.each(['transport', 'body'])('PRD-02-TC-06 bounds a stalled save %s and ignores its late acknowledgment', async phase => {
     vi.useFakeTimers();
     let finish: ((value: unknown) => void) | undefined;
@@ -39,6 +61,9 @@ describe('PRD-02 profile management', () => {
     fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
     await act(async () => { await Promise.resolve(); });
     expect(screen.getByText('Profile saved.')).toBeInTheDocument();
+    const firstKey = new Headers(fetchMock.mock.calls[1][1].headers).get('Idempotency-Key');
+    expect(firstKey).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(new Headers(fetchMock.mock.calls[2][1].headers).get('Idempotency-Key')).toBe(firstKey);
     const late = { ...profile, displayName: 'Late result', version: 9 };
     await act(async () => { finish?.(phase === 'transport' ? new Response(JSON.stringify(late)) : late); });
     expect(screen.getByLabelText(/Display name/)).toHaveValue('Retry saved');

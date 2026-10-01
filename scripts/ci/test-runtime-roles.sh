@@ -18,6 +18,9 @@ if worker 'SELECT password_hash FROM users'; then echo 'Worker read identity sec
 test "$(api 'SELECT count(*) FROM identity_events')" = 0
 test "$(api "SELECT has_table_privilege(current_user,'identity_events','UPDATE') OR has_table_privilege(current_user,'identity_events','DELETE')")" = f
 if worker 'SELECT event_id FROM identity_events'; then echo 'Tenant Worker read global identity events'; exit 1; fi
+test "$(api 'SELECT count(*) FROM identity_profile_replays')" = 0
+test "$(api "SELECT has_table_privilege(current_user,'identity_profile_replays','DELETE')")" = f
+if worker 'SELECT result_json FROM identity_profile_replays'; then echo 'Tenant Worker read global profile retries'; exit 1; fi
 # Disposable global subjects test real-login RLS, independently of tenant/mail GUCs.
 psql -X -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
 INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at)
@@ -28,7 +31,17 @@ INSERT INTO identity_event_streams(user_id,last_sequence) SELECT id,1 FROM users
 INSERT INTO identity_events(event_id,user_id,sequence,actor_id,event_type,entity_id,entity_version,correlation_id)
 SELECT id,id,1,id,'USER_REGISTERED',id,1,'role-fixture' FROM users WHERE id IN
 ('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
+INSERT INTO identity_profile_replays(user_id,key_id,fingerprint,result_json)
+SELECT id,id,repeat('0',64),jsonb_build_object('Id',id,'Email',email,'DisplayName',display_name,
+    'AvatarUrl',avatar_url,'Locale',locale,'Timezone',timezone,'Status',1,'EmailVerified',email_verified,
+    'CreatedAt',created_at,'UpdatedAt',updated_at,'Version',version)
+FROM users WHERE id IN ('01200000-0000-0000-0000-000000000001','01200000-0000-0000-0000-000000000002');
 SQL
+test "$(api 'SELECT count(*) FROM identity_profile_replays')" = 0
+test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_profile_replays; ROLLBACK;" | grep -E '^[0-9]+$')" = 1
+if api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; INSERT INTO identity_profile_replays(user_id,key_id,fingerprint,result_json) SELECT user_id,'01300000-0000-0000-0000-000000000004',fingerprint,result_json||jsonb_build_object('SessionToken','forbidden-fixture') FROM identity_profile_replays WHERE user_id='01200000-0000-0000-0000-000000000001'; ROLLBACK;"; then echo 'Credential-bearing result escaped profile schema'; exit 1; fi
+test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_profile_replays WHERE user_id='01200000-0000-0000-0000-000000000002'; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
+if api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; INSERT INTO identity_profile_replays(user_id,key_id,fingerprint,result_json) SELECT '01200000-0000-0000-0000-000000000002','01300000-0000-0000-0000-000000000003',fingerprint,jsonb_set(result_json,'{Id}',to_jsonb('01200000-0000-0000-0000-000000000002'::text)) FROM identity_profile_replays WHERE user_id='01200000-0000-0000-0000-000000000001'; ROLLBACK;"; then echo 'Cross-subject profile retry write escaped RLS'; exit 1; fi
 test "$(api 'SELECT count(*) FROM identity_events')" = 0
 test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events; ROLLBACK;" | grep -E '^[0-9]+$')" = 1
 test "$(api "BEGIN; SET LOCAL app.identity_subject='01200000-0000-0000-0000-000000000001'; SELECT count(*) FROM identity_events WHERE user_id='01200000-0000-0000-0000-000000000002'; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
