@@ -23,7 +23,7 @@ public static class WorkManagementEndpoints
                 return result.Succeeded && result.Value is not null
                     ? Results.Ok(result.Value)
                     : ErrorFor(result.ErrorCode);
-            });
+            }).AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPost(
                 "/boards",
@@ -133,7 +133,7 @@ public static class WorkManagementEndpoints
 
                     return ToMutationResult(result);
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPost(
                 "/boards/{boardId:guid}/archive",
@@ -295,7 +295,7 @@ public static class WorkManagementEndpoints
                         context.Response.Headers["X-StrataAI-Next-Cursor"] = items[^1].UserId.ToString();
                     return Results.Ok(items);
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPatch(
                 "/boards/{boardId:guid}/members/{targetUserId:guid}",
@@ -335,7 +335,7 @@ public static class WorkManagementEndpoints
                         ? Results.Ok(result.Value)
                         : ErrorFor(result.ErrorCode);
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapDelete(
                 "/boards/{boardId:guid}/members/{targetUserId:guid}",
@@ -365,7 +365,7 @@ public static class WorkManagementEndpoints
                         ? Results.NoContent()
                         : ErrorFor(result.ErrorCode);
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPost(
                 "/boards/{boardId:guid}/lists",

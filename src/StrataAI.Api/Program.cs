@@ -13,6 +13,8 @@ using StrataAI.Infrastructure.Runtime;
 using StrataAI.Infrastructure.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMetrics();
+builder.Services.AddSingleton<BoardSharingTelemetry>();
 // Transport connection tokens appear in request query strings. Retain warnings
 // without logging request-start URLs at the default Information level.
 builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
@@ -75,6 +77,7 @@ builder.Services.AddSignalR(options =>
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<BoardSharingTelemetryMiddleware>();
 app.UseMiddleware<RuntimeDatabaseSecurityMiddleware>();
 app.UseRouting();
 app.UseMiddleware<WorkRealtimeOriginMiddleware>();

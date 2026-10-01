@@ -1,3 +1,4 @@
+using StrataAI.Api.WorkManagement;
 using System.Security.Claims;
 using StrataAI.Application.Onboarding;
 using StrataAI.Application.Runtime;
@@ -17,7 +18,7 @@ public static class InvitationEndpoints
             if (actor is null) return Results.Unauthorized();
             var result = await service.RevokeAsync(boardId, actor.Value, invitationId, context.TraceIdentifier, cancellationToken);
             return result.Succeeded ? Results.NoContent() : ErrorFor(result.ErrorCode);
-        }).RequireAuthorization().RequireRateLimiting("invitation");
+        }).RequireAuthorization().RequireRateLimiting("invitation").AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapGet("/boards/{boardId:guid}/invitations", async (Guid boardId, string? after,
             HttpContext context, InvitationHistoryService service, CancellationToken cancellationToken) =>
@@ -33,7 +34,7 @@ public static class InvitationEndpoints
             }
             var result = await service.ListBoardAsync(boardId, actor.Value, cursor, cancellationToken);
             return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
-        }).RequireAuthorization().RequireRateLimiting("invitation");
+        }).RequireAuthorization().RequireRateLimiting("invitation").AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPost("/boards/{boardId:guid}/invitations", async (Guid boardId,
             CreateBoardInvitationRequest request, HttpContext context, BoardInvitationService service,
@@ -64,7 +65,7 @@ public static class InvitationEndpoints
                 InvitationToken = runtime.Mode == RuntimeMode.Demo && retryKey is null && !string.IsNullOrEmpty(result.Value.RawToken)
                     ? result.Value.RawToken : null,
             });
-        }).RequireAuthorization().RequireRateLimiting("invitation");
+        }).RequireAuthorization().RequireRateLimiting("invitation").AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapGet("/organizations/{organizationId:guid}/invitations", async (
             Guid organizationId, string? after, HttpContext context, InvitationHistoryService service,

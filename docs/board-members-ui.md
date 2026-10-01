@@ -108,3 +108,9 @@ Organization directory, navigates back, and checks former-member profile details
 remain hidden even though a different Organization membership is active. Both
 cases collect locally; exact-image execution remains pending. This is bounded
 paging evidence, not a large-Board latency/performance claim.
+
+The older live-member run for 9f140eb failed both member browser cases while waiting
+for `Live member updates connected.` (run 36922832577, container job 110574297300).
+This matches its missing per-Organization Worker scope. The scope/readiness/bootstrap
+fix is already on main in db3f477; its release execution remains in progress.
+The older run must not be described as green or retried as evidence for the fix.

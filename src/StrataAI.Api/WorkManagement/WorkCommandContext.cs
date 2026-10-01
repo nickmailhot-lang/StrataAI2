@@ -18,6 +18,8 @@ public sealed class WorkIdempotencyMiddleware(RequestDelegate next)
         {
             if (values.Count != 1 || values[0]?.Length != 36 || !Guid.TryParseExact(values[0], "D", out var key) || key == Guid.Empty)
             {
+                if (BoardSharingTelemetry.Operation(context) is not null)
+                    BoardSharingTelemetry.SetError(context, "invalid_idempotency_key");
                 await Results.Problem(statusCode: 400, title: "A nonempty UUID retry key is required.",
                     extensions: new Dictionary<string, object?> { ["code"] = "invalid_idempotency_key" }).ExecuteAsync(context);
                 return;
