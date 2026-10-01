@@ -56,7 +56,7 @@ builder.Services.AddSecurityRateLimits(builder.Configuration);
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
 builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
 builder.Services.AddStrataAiOrganizations(runtime);
-builder.Services.AddStrataAiOnboarding(runtime);
+builder.Services.AddStrataAiOnboarding(runtime, builder.Configuration);
 builder.Services.AddStrataAiWorkManagement(runtime);
 builder.Services.AddSingleton(new WorkRealtimeOrigin(builder.Configuration));
 builder.Services.AddSignalR(options =>

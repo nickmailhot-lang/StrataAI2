@@ -13,7 +13,8 @@ public sealed class InvitationService(
     IIdentityStore identityStore,
     ISecureTokenService tokens,
     IClock clock,
-    IOrganizationUnitOfWork unitOfWork, IIdentityUnitOfWork identityCommands, ICommandActorAuthorization actors) : IInvitationService
+    IOrganizationUnitOfWork unitOfWork, IIdentityUnitOfWork identityCommands, ICommandActorAuthorization actors,
+    IInvitationMailPublisher? mail = null) : IInvitationService
 {
     private static readonly TimeSpan InvitationLifetime = TimeSpan.FromDays(7);
 
@@ -176,9 +177,11 @@ public sealed class InvitationService(
         var now = clock.UtcNow;
         var organization = await organizationStore.FindOrganizationAsync(organizationId, cancellationToken);
         if (organization is null) return InvitationOperation<CreatedInvitation>.Failure("organization_not_found");
-        var rawToken = tokens.Generate();
+        var invitationId = Guid.NewGuid();
+        var deliveryToken = mail?.CreateToken(organizationId, invitationId);
+        var rawToken = deliveryToken?.RawToken ?? tokens.Generate();
         var invitation = new InvitationRecord(
-            Guid.NewGuid(),
+            invitationId,
             organizationId,
             invitedEmail.Trim(),
             emailNormalized,
@@ -192,6 +195,8 @@ public sealed class InvitationService(
             null, OrganizationName: organization.Name);
 
         invitation = await invitationStore.CreateAsync(invitation, cancellationToken);
+        if (deliveryToken is not null)
+            await mail!.PublishAsync(invitation, deliveryToken.KeyId, correlationId, cancellationToken);
         await organizationStore.AppendAuditAsync(
             organizationId,
             actorUserId,
@@ -205,7 +210,7 @@ public sealed class InvitationService(
             await invitationStore.SaveCreationReplayAsync(organizationId, actorUserId, completedKey, fingerprint, invitation.Id, cancellationToken);
 
         return InvitationOperation<CreatedInvitation>.Success(
-            new CreatedInvitation(invitation, idempotencyKey is null ? rawToken : ""));
+            new CreatedInvitation(invitation, idempotencyKey is null && mail is null ? rawToken : ""));
     }
 
     public async Task<InvitationOperation<PendingInvitationPage>> ListPendingAsync(

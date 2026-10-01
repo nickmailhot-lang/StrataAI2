@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using StrataAI.Application.Onboarding;
 using StrataAI.Application.Runtime;
 using StrataAI.Application.Organizations;
@@ -9,7 +10,7 @@ public static class OnboardingRegistration
 {
     public static void AddStrataAiOnboarding(
         this IServiceCollection services,
-        RuntimeDescriptor runtime)
+        RuntimeDescriptor runtime, IConfiguration configuration)
     {
         if (runtime.Mode == RuntimeMode.Demo)
         {
@@ -21,5 +22,7 @@ public static class OnboardingRegistration
         }
 
         services.AddSingleton<IInvitationService, InvitationService>();
+        if (InvitationMailRegistration.IsEnabled(configuration, runtime))
+            services.AddSingleton<IInvitationMailPublisher, PostgresInvitationMailPublisher>();
     }
 }

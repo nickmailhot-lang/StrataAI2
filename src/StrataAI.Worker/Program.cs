@@ -5,6 +5,9 @@ using StrataAI.Application.BackgroundJobs;
 using StrataAI.Worker;
 using StrataAI.Application.Identity;
 using StrataAI.Infrastructure.Identity;
+using StrataAI.Application.Onboarding;
+using StrataAI.Infrastructure.Onboarding;
+using StrataAI.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +50,15 @@ if (runtime.Mode == RuntimeMode.Production)
 }
 
 var jobScope = builder.Configuration["STRATAAI_WORKER_ORGANIZATION_IDS"];
+if (InvitationMailRegistration.IsEnabled(builder.Configuration, runtime))
+{
+    if (string.IsNullOrWhiteSpace(jobScope))
+        throw new InvalidOperationException("Invitation delivery requires explicit Worker Organization scope.");
+    var requireVerifiedEmail = !bool.TryParse(builder.Configuration["STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL"], out var verified) || verified;
+    builder.Services.AddSingleton<IInvitationDeliveryStore>(provider => new PostgresInvitationDeliveryStore(
+        provider.GetRequiredService<PostgresConnectionFactory>(), requireVerifiedEmail));
+    builder.Services.AddSingleton<IBackgroundJobHandler, InvitationEmailHandler>();
+}
 if (!string.IsNullOrWhiteSpace(jobScope))
 {
     if (runtime.Mode != RuntimeMode.Production)

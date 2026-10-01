@@ -16,7 +16,8 @@ cleanup() {
   query 'GRANT INSERT ON email_verification_tokens,identity_delivery_jobs,identity_registration_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON password_reset_tokens,identity_recovery_request_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON identity_token_consumption_replays TO strataai_api_runtime;' >/dev/null
-  if test "${signup_closed:-false}" = true; then "${compose[@]}" up -d --wait --wait-timeout 180 api >/dev/null || true; fi
+  query 'GRANT INSERT ON invitation_mail_intents,background_jobs,invitation_creation_replays TO strataai_api_runtime;' >/dev/null
+  if test "${signup_closed:-false}" = true; then "${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null || true; fi
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -479,14 +480,67 @@ signup_owner_post() { curl --max-time 60 --silent --show-error -b "$scratch/sign
 test "$(signup_owner_post /organizations '{"name":"Verified invitation signup"}')" = 201
 signup_org="$(jq -r '.organization.id' "$scratch/response")"
 signup_closed=true
-"${compose[@]}" -f scripts/ci/compose.invitation-signup-test.yml up -d --wait --wait-timeout 180 api >/dev/null
+export STRATAAI_TEST_INVITATION_ORGANIZATION_ID="$signup_org"
+"${compose[@]}" -f scripts/ci/compose.invitation-signup-test.yml -f scripts/ci/compose.invitation-mail-test.yml up -d --wait --wait-timeout 180 api worker >/dev/null
+# The new producer must roll back every sibling write if any publication step fails.
+invitation_atomic_state() {
+  query "SELECT jsonb_build_object('invitations',(SELECT count(*) FROM invitations WHERE tenant_id='$signup_org'),
+    'mail',(SELECT count(*) FROM invitation_mail_intents WHERE tenant_id='$signup_org'),
+    'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$signup_org'),
+    'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$signup_org'),
+    'receipts',(SELECT count(*) FROM invitation_creation_replays WHERE tenant_id='$signup_org'))::text;"
+}
+invitation_key="$(cat /proc/sys/kernel/random/uuid)"
+invitation_payload='{"email":"atomic-mail-recipient@example.test","surface":"INTERNAL","targetRole":"MEMBER"}'
+invitation_create() {
+  curl --max-time 60 --silent --show-error -b "$scratch/signup-owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $invitation_key" -d "$invitation_payload" -o "$scratch/response" -w '%{http_code}' "$base/organizations/$signup_org/invitations"
+}
+invitation_before="$(invitation_atomic_state)"
+for table in invitation_mail_intents background_jobs audit_events invitation_creation_replays; do
+  query "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+  test "$(invitation_create)" = 503
+  jq -e '.code=="invitation_storage_unavailable"' "$scratch/response" >/dev/null
+  test "$invitation_before" = "$(invitation_atomic_state)"
+  query "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+ done
 for surface in INTERNAL PORTAL; do
   role=MEMBER; if test "$surface" = PORTAL; then role=OWNER; fi
   email="signup-mail-recipient-${surface,,}-${RANDOM}-${RANDOM}@example.test"
-  test "$(signup_owner_post "/organizations/$signup_org/invitations" "$(jq -nc --arg email "$email" --arg surface "$surface" --arg role "$role" '{email:$email,surface:$surface,targetRole:$role}')")" = 201
-  signup_invitation="$(jq -r '.id' "$scratch/response")"; signup_token="$(openssl rand -hex 32)"
+  invitation_key="$(cat /proc/sys/kernel/random/uuid)"
+  invitation_payload="$(jq -nc --arg email "$email" --arg surface "$surface" --arg role "$role" '{email:$email,surface:$surface,targetRole:$role}')"
+  test "$(invitation_create)" = 201
+  cp "$scratch/response" "$scratch/invitation-ack"
+  test "$(invitation_create)" = 201
+  cmp "$scratch/invitation-ack" "$scratch/response"
+  signup_invitation="$(jq -r '.id' "$scratch/response")"
+  scripts/ci/assert-file-excludes.sh 'invitationToken":"[A-Za-z0-9_-]+|tokenHash' "$scratch/response"
+  invitation_job="$(query "SELECT job_id FROM invitation_mail_intents WHERE invitation_id='$signup_invitation' AND tenant_id='$signup_org';")"
+  test -n "$invitation_job"
+  for attempt in $(seq 1 90); do
+    if test "$(query "SELECT state FROM invitation_mail_intents WHERE job_id='$invitation_job';")" = SENT; then break; fi
+    sleep 1
+  done
+  test "$(query "SELECT state FROM invitation_mail_intents WHERE job_id='$invitation_job';")" = SENT
+  invitation_provider_key="strataai-invitation/${signup_org//-/}/${signup_invitation//-/}"
+  curl --fail --silent "$fixture/messages" > "$scratch/invitation-messages"
+  signup_token="$(jq -r --arg key "$invitation_provider_key" '.[]|select(.key==$key)|.payload.text|capture("/invitation#token=(?<token>[A-Za-z0-9_-]+)").token' "$scratch/invitation-messages")"
+  test -n "$signup_token"
+  jq -e --arg key "$invitation_provider_key" --arg email "$email" '[.[]|select(.key==$key)]|length==1 and .[0].attempts>=2 and .[0].payload.to==[$email]' "$scratch/invitation-messages" >/dev/null
   signup_hash="$(printf '%s' "$signup_token" | sha256sum | cut -d ' ' -f 1)"
-  query "UPDATE invitations SET token_hash='$signup_hash' WHERE id='$signup_invitation' AND tenant_id='$signup_org';" >/dev/null
+  test "$(query "SELECT count(*) FROM invitations WHERE id='$signup_invitation' AND token_hash='$signup_hash';")" = 1
+  test "$(query "SELECT count(*) FROM background_jobs WHERE id='$invitation_job' AND job_type='INVITATION_EMAIL' AND service_identity='invitation-email-delivery' AND actor_id='$mail_owner_id' AND safe_metadata=jsonb_build_object('invitationId','$signup_invitation'::uuid);")" = 1
+  delivery_attempts="$(jq -r --arg key "$invitation_provider_key" '.[]|select(.key==$key)|.attempts' "$scratch/invitation-messages")"
+  # Recover the gap between persisted SENT and generic job completion without a send.
+  query "UPDATE background_jobs SET state='PENDING',attempt_count=0,available_at=clock_timestamp(),worker_id=NULL,lease_id=NULL,lease_expires_at=NULL WHERE id='$invitation_job';" >/dev/null
+  "${compose[@]}" -f scripts/ci/compose.invitation-signup-test.yml -f scripts/ci/compose.invitation-mail-test.yml restart worker >/dev/null
+  for attempt in $(seq 1 90); do
+    if test "$(query "SELECT state FROM background_jobs WHERE id='$invitation_job';")" = SUCCEEDED; then break; fi
+    sleep 1
+  done
+  test "$(query "SELECT state FROM background_jobs WHERE id='$invitation_job';")" = SUCCEEDED
+  test "$(curl --fail --silent "$fixture/messages" | jq -r --arg key "$invitation_provider_key" '.[]|select(.key==$key)|.attempts')" = "$delivery_attempts"
+  query "SELECT to_jsonb(m)::text FROM invitation_mail_intents m WHERE job_id='$invitation_job';" > "$scratch/invitation-ledger"
+  scripts/ci/assert-file-excludes.sh "$signup_token" "$scratch/invitation-ledger"
   signup_body="$(jq -nc --arg email "$email" --arg token "$signup_token" '{email:$email,password:"signup-mail-correct-horse",displayName:"Invited mail recipient",invitationToken:$token}')"
   test "$(post /auth/register "$(jq 'del(.invitationToken)' <<< "$signup_body")")" = 403
   signup_key="$(cat /proc/sys/kernel/random/uuid)"
@@ -512,7 +566,8 @@ for surface in INTERNAL PORTAL; do
   scripts/ci/assert-file-excludes.sh "$signup_token|$mail_proof|invitationToken|tokenHash" "$scratch/response"
 done
 unset signup_token signup_hash mail_proof signup_body
-"${compose[@]}" up -d --wait --wait-timeout 180 api >/dev/null; signup_closed=false
+"${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null; signup_closed=false
+echo 'Exact-image invitation mail: atomic invitation/job/snapshot/audit/receipt rollback, keyed single publication, reference-only metadata, separate scoped Worker delivery, provider lost-acknowledgment idempotency, SENT completion recovery and no stored bearer passed.'
 echo 'Exact-image closed invitation signup: pending verification, retry acknowledgment, separate Worker verification and explicit Internal/Portal acceptance without premature grants passed.'
 echo 'Keyed production recovery: neutral atomic rollback, concurrent one-token/one-delivery publication, restart, single-use proof and actual Worker receipt retention passed.'
 echo 'Keyed production token consumption: atomic user/token/session/audit/event/receipt rollback, concurrent acknowledgment, restart, newer-session preservation, post-wait expiry, lifecycle denial and Worker cleanup passed.'

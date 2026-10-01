@@ -1,14 +1,12 @@
 using Npgsql;
 using NpgsqlTypes;
 using StrataAI.Application.BackgroundJobs;
-using StrataAI.Application.Identity;
 using StrataAI.Application.Onboarding;
 using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Onboarding;
 
-// Deliberately not registered until transactional publication is implemented.
-public sealed class PostgresInvitationDeliveryStore(PostgresConnectionFactory connections, IdentityPolicy policy)
+public sealed class PostgresInvitationDeliveryStore(PostgresConnectionFactory connections, bool requireVerifiedEmail)
     : IInvitationDeliveryStore
 {
     public async Task<InvitationMailIntent?> LoadAsync(ClaimedBackgroundJob job, CancellationToken cancellationToken)
@@ -19,7 +17,7 @@ public sealed class PostgresInvitationDeliveryStore(PostgresConnectionFactory co
         await using (var command = new NpgsqlCommand("SELECT * FROM public.load_invitation_mail(@job,@tenant,@actor,@worker,@lease,@verified);", session.Connection, session.Transaction))
         {
             Bind(command, job);
-            command.Parameters.AddWithValue("verified", policy.RequireVerifiedEmail);
+            command.Parameters.AddWithValue("verified", requireVerifiedEmail);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             result = await reader.ReadAsync(cancellationToken) ? new(reader.GetGuid(0), reader.GetGuid(1),
                 reader.GetGuid(2), reader.GetGuid(3), reader.GetString(4),

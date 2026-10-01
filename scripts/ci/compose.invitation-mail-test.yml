@@ -1,0 +1,10 @@
+# Isolated fixture; requires the identity transport overlay and actual tenant.
+services:
+  api:
+    environment:
+      STRATAAI_INVITATION_EMAIL_ENABLED: 'true'
+  worker:
+    environment:
+      STRATAAI_INVITATION_EMAIL_ENABLED: 'true'
+      STRATAAI_WORKER_ORGANIZATION_IDS: ${STRATAAI_TEST_INVITATION_ORGANIZATION_ID:?Set actual invitation tenant}
+      STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL: ${STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL:-true}

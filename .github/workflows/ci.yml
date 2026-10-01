@@ -80,6 +80,7 @@ jobs:
           docker compose --env-file .env.release.example -f compose.release.yml config --quiet
           STRATAAI_TEST_EVENT_ORGANIZATION_ID=11111111-1111-1111-1111-111111111111 docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.work-event-test.yml config --quiet
           docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.atomic-test.yml -f scripts/ci/compose.owner-continuity-test.yml config --quiet
+          STRATAAI_TEST_TOKEN_KEYS='{}' STRATAAI_TEST_INVITATION_ORGANIZATION_ID=11111111-1111-1111-1111-111111111111 docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml -f scripts/ci/compose.invitation-signup-test.yml -f scripts/ci/compose.invitation-mail-test.yml config --quiet
 
       - name: Reject dependency lock drift
         run: scripts/ci/test-dependency-locks.sh
