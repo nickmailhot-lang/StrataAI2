@@ -22,6 +22,7 @@ public static class OnboardingRegistration
         }
 
         services.AddSingleton<IInvitationService, InvitationService>();
+        services.AddSingleton<BoardInvitationService>();
         services.AddSingleton<IInvitationHistoryStore>(provider => (IInvitationHistoryStore)provider.GetRequiredService<IInvitationStore>());
         services.AddSingleton<InvitationHistoryService>();
         if (InvitationMailRegistration.IsEnabled(configuration, runtime))

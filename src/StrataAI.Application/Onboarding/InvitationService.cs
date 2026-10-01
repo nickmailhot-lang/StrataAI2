@@ -367,7 +367,7 @@ public sealed class InvitationService(
         return InvitationOperation<bool>.Success(true);
     }
 
-    private static string? NormalizeEmail(string email)
+    internal static string? NormalizeEmail(string email)
     {
         var trimmed = email?.Trim();
         if (string.IsNullOrWhiteSpace(trimmed) ||

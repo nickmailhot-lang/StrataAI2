@@ -32,7 +32,20 @@ Organization envelope. Required PostgreSQL fixtures verify target integrity,
 accepted-role immutability and this mail boundary. A host case verifies that a
 staged Board target cannot produce an Organization grant or registration proof.
 
-These increments contain policy and persistence foundations. They are not wired
+`BoardInvitationService.CreateAsync` now consumes this policy and target storage
+inside the existing Organization command transaction. It re-reads the real Board
+after its command lock, checks current issuer/recipient eligibility before retry
+replay, reserves a purpose-specific creation fingerprint, and writes one invitation,
+audit event, content-free `BOARD_MEMBER_INVITED` Board invalidation/outbox and receipt.
+Creation grants no access or account. Keyed acknowledgments never contain a bearer;
+changed target/input conflicts and revoked administrators cannot replay old receipts.
+Configured mail publication remains unavailable until Board mail snapshots are
+integrated, and the command has no public endpoint at this stage. Demo host cases
+exercise both Board roles, concurrent retry/event deduplication, onboarding authority,
+removed memberships, invalid input and archive behavior. PostgreSQL atomic command
+and exact-image execution of this new command still require the endpoint integration.
+
+These increments contain policy, persistence and creation-command foundations. They are not wired
 to a public endpoint, recipient preview, signup proof,
 acceptance, or Worker delivery. Existing Organization/Portal behavior is unchanged.
 The next integration must consume the tenant-bound Board target and add immutable mail
