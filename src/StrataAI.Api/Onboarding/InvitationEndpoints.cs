@@ -10,6 +10,15 @@ public static class InvitationEndpoints
         this WebApplication app,
         RuntimeDescriptor runtime)
     {
+        app.MapDelete("/boards/{boardId:guid}/invitations/{invitationId:guid}", async (Guid boardId,
+            Guid invitationId, HttpContext context, BoardInvitationService service, CancellationToken cancellationToken) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            var result = await service.RevokeAsync(boardId, actor.Value, invitationId, context.TraceIdentifier, cancellationToken);
+            return result.Succeeded ? Results.NoContent() : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().RequireRateLimiting("invitation");
+
         app.MapGet("/boards/{boardId:guid}/invitations", async (Guid boardId, string? after,
             HttpContext context, InvitationHistoryService service, CancellationToken cancellationToken) =>
         {

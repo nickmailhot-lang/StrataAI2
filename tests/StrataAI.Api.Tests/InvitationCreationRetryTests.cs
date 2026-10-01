@@ -51,7 +51,8 @@ public sealed partial class ApiHostTests
         public Task<InvitationRecord?> FindActiveByIdForEmailAsync(Guid id, Guid actor, string email, DateTimeOffset now, CancellationToken ct = default) => inner.FindActiveByIdForEmailAsync(id, actor, email, now, ct);
         public Task<InvitationRecord?> FindActiveByTokenHashAsync(string hash, DateTimeOffset now, CancellationToken ct = default) => inner.FindActiveByTokenHashAsync(hash, now, ct);
         public Task<InvitationAcceptStoreResult> AcceptAsync(string hash, Guid user, string email, DateTimeOffset now, CancellationToken ct = default) => inner.AcceptAsync(hash, user, email, now, ct);
-        public Task<bool> RevokeAsync(Guid org, Guid id, DateTimeOffset now, CancellationToken ct = default) => inner.RevokeAsync(org, id, now, ct);
+        public Task<InvitationRecord?> FindByIdAsync(Guid org, Guid id, CancellationToken ct = default) => inner.FindByIdAsync(org, id, ct);
+        public Task<bool> RevokeAsync(Guid org, Guid id, DateTimeOffset now, CancellationToken ct = default, Guid? boardId = null) => inner.RevokeAsync(org, id, now, ct, boardId);
     }
 
     [Fact]

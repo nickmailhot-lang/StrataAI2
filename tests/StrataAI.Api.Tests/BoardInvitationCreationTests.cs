@@ -160,8 +160,23 @@ public sealed partial class ApiHostTests
         Assert.DoesNotContain("tokenHash", historyBody, StringComparison.Ordinal);
         using var otherHistory = await client.GetAsync($"/boards/{otherBoard.Id}/invitations", ct);
         Assert.Equal(System.Net.HttpStatusCode.NotFound, otherHistory.StatusCode);
+        var invitationId = parsed.RootElement.GetProperty("id").GetGuid();
+        using var wrongBoardRevoke = await Mutate(client, HttpMethod.Delete, $"/boards/{fixture.Board.Id}/invitations/{otherInvitation}", new { });
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, wrongBoardRevoke.StatusCode);
+        using var ordinaryRevoke = await Mutate(client, HttpMethod.Delete, $"/boards/{fixture.Board.Id}/invitations/{ordinaryInvitation}", new { });
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, ordinaryRevoke.StatusCode);
+        using var revokedInvitation = await Mutate(client, HttpMethod.Delete, $"/boards/{fixture.Board.Id}/invitations/{invitationId}", new { });
+        Assert.Equal(System.Net.HttpStatusCode.NoContent, revokedInvitation.StatusCode);
+        using var revokeRetry = await Mutate(client, HttpMethod.Delete, $"/boards/{fixture.Board.Id}/invitations/{invitationId}", new { });
+        Assert.Equal(System.Net.HttpStatusCode.NoContent, revokeRetry.StatusCode);
+        Assert.Equal("invalid_or_expired_invitation", (await app.Services.GetRequiredService<IInvitationService>()
+            .AcceptPendingAsync(fixture.Recipient.Id, invitationId, "fixture", ct)).ErrorCode);
+        var stream = await app.Services.GetRequiredService<IWorkEventReader>().ReadAsync(fixture.Board.OrganizationId, fixture.Board.Id, 0, 100, ct);
+        Assert.Single(stream.Events, row => row.Event.EventType == "INVITATION_REVOKED");
         Assert.True((await app.Services.GetRequiredService<IWorkManagementService>().RemoveBoardMemberAsync(fixture.Board.Id,
             fixture.Owner.Id, fixture.Inviter.Id, "fixture", ct)).Succeeded);
+        using var revokeAfterRemoval = await Mutate(client, HttpMethod.Delete, $"/boards/{fixture.Board.Id}/invitations/{invitationId}", new { });
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, revokeAfterRemoval.StatusCode);
         using var revokedHistory = await client.GetAsync($"/boards/{fixture.Board.Id}/invitations", ct);
         Assert.Equal(System.Net.HttpStatusCode.NotFound, revokedHistory.StatusCode);
         Assert.DoesNotContain(fixture.Recipient.Email, await revokedHistory.Content.ReadAsStringAsync(ct), StringComparison.Ordinal);

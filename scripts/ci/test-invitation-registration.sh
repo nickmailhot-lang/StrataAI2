@@ -189,6 +189,28 @@ exec 3>&-; wait "$gate_pid"; gate_pid=''; wait "$pending"; pids=()
 test "$(cat "$scratch/board-wait-status")" = 400; test "$before" = "$(state)"
 admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$signup_board';" >/dev/null
 echo 'Exact-image Board invitation consumers: both roles, signup/acceptance rollback, no early grants, role preservation, one-use proof, non-restoring retry and fresh post-Board-wait signup admission passed.'
+# Board revocation commits its canonical mutation, audit, event and outbox together.
+surface=INTERNAL; role=MEMBER; board_role=MEMBER; email="board-revoke-${RANDOM}-${RANDOM}@example.test"; issue
+revoke_board_invitation() { curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -X DELETE -o "$scratch/response" -w '%{http_code}' "$base/boards/$signup_board/invitations/$invitation_id"; }
+revoke_board_state() { admin "SELECT jsonb_build_object(
+ 'invitation',(SELECT to_jsonb(i) FROM invitations i WHERE id='$invitation_id'),
+ 'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
+ 'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
+ 'stream',(SELECT jsonb_agg(to_jsonb(s) ORDER BY board_id) FROM work_event_streams s WHERE tenant_id='$org'),
+ 'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text;"; }
+before_revoke="$(revoke_board_state)"
+for table in audit_events work_events background_jobs; do
+ admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+ test "$(revoke_board_invitation)" = 503; test "$before_revoke" = "$(revoke_board_state)"
+ admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+done
+test "$(revoke_board_invitation)" = 204
+revoked_state="$(revoke_board_state)"
+test "$(revoke_board_invitation)" = 204; test "$revoked_state" = "$(revoke_board_state)"
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$invitation_id' AND event_type='INVITATION_REVOKED';")" = 1
+test "$(register)" = 400; test "$revoked_state" = "$(revoke_board_state)"
+echo 'Exact-image Board invitation revocation: audit/event/outbox rollback, one audited natural-ID acknowledgment and signup denial after revocation passed.'
+
 test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"
 signup_fixtures="$RUNNER_TEMP/invitation-signup-fixtures.json"
 printf '[]' > "$signup_fixtures"; chmod 600 "$signup_fixtures"

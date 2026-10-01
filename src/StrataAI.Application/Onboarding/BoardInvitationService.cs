@@ -93,4 +93,44 @@ public sealed class BoardInvitationService(IInvitationStore invitations, IOrgani
             _ => result.ErrorCode,
         });
     }
+    public async Task<InvitationOperation<bool>> RevokeAsync(Guid boardId, Guid actorId, Guid invitationId,
+        string correlationId, CancellationToken ct = default)
+    {
+        if (boardId == Guid.Empty || invitationId == Guid.Empty)
+            return InvitationOperation<bool>.Failure("invitation_not_found");
+        var route = await work.FindBoardAsync(boardId, ct);
+        if (route is null) return InvitationOperation<bool>.Failure("board_not_found");
+        var result = await commands.ExecuteAsync(route.OrganizationId, actorId, null, false, async () =>
+        {
+            if (!await work.AcquireCommandScopeAsync(route.OrganizationId, actorId, boardId, ct))
+                return OrganizationOperation<bool>.Failure("board_not_found");
+            var board = await work.FindBoardAsync(boardId, ct);
+            var organization = await organizations.FindOrganizationAsync(route.OrganizationId, ct);
+            var actor = await identities.FindUserByIdAsync(actorId, ct);
+            var membership = await organizations.FindMembershipAsync(route.OrganizationId, actorId, ct);
+            var boardMember = await work.FindBoardMemberAsync(boardId, actorId, ct);
+            if (board is null || organization is null || actor is null
+                || !BoardInvitationPolicy.CanIssue(organization, board, actor, membership, boardMember,
+                    actor, membership, BoardRole.Member, policy.RequireVerifiedEmail))
+                return OrganizationOperation<bool>.Failure("board_not_found");
+            var invitation = await invitations.FindByIdAsync(route.OrganizationId, invitationId, ct);
+            if (invitation?.BoardTarget?.BoardId != boardId || invitation.AcceptedAt is not null)
+                return OrganizationOperation<bool>.Failure("invitation_not_found");
+            if (invitation.RevokedAt is not null) return OrganizationOperation<bool>.Success(true);
+            var now = clock.UtcNow;
+            if (!await invitations.RevokeAsync(route.OrganizationId, invitationId, now, ct, boardId))
+                return OrganizationOperation<bool>.Failure("invitation_not_found");
+            await organizations.AppendAuditAsync(route.OrganizationId, actorId, "INVITATION_REVOKED", "Invitation",
+                invitationId, correlationId, ct);
+            await events.AppendAsync(new(Guid.NewGuid(), route.OrganizationId, boardId, actorId, "INVITATION_REVOKED",
+                "Board", boardId, board.Version, correlationId, now), ct);
+            return OrganizationOperation<bool>.Success(true);
+        }, ct);
+        return new(result.Succeeded, result.Value, result.ErrorCode switch {
+            "organization_not_found" => "board_not_found",
+            "organization_storage_unavailable" => "invitation_storage_unavailable",
+            _ => result.ErrorCode,
+        });
+    }
+
 }

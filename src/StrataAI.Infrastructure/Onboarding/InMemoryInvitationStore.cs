@@ -182,18 +182,23 @@ internal sealed class InMemoryInvitationStore(
         return new InvitationAcceptStoreResult(true, null, invitation);
     }
 
+    public Task<InvitationRecord?> FindByIdAsync(Guid organizationId, Guid invitationId, CancellationToken cancellationToken = default)
+    {
+        lock (_sync) return Task.FromResult(_byToken.Values.FirstOrDefault(row => row.OrganizationId == organizationId && row.Id == invitationId));
+    }
+
     public Task<bool> RevokeAsync(
         Guid organizationId,
         Guid invitationId,
         DateTimeOffset revokedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? boardId = null)
     {
         lock (_sync)
         {
             var pair = _byToken.FirstOrDefault(
                 item =>
                     item.Value.OrganizationId == organizationId &&
-                    item.Value.Id == invitationId &&
+                    item.Value.Id == invitationId && (boardId is null || item.Value.BoardTarget?.BoardId == boardId) &&
                     item.Value.AcceptedAt is null &&
                     item.Value.RevokedAt is null);
 

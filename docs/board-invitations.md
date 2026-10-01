@@ -252,3 +252,27 @@ read the new Board endpoint and assert actual SENT plus target binding and no
 sensitive delivery metadata. Local warning-as-error solution build, shell syntax
 and diff checks pass; host/container execution is pending CI. Board revoke command,
 MUI history and desktop/mobile sender browser integration remain outstanding.
+
+Board revocation is now exposed at DELETE /boards/{boardId}/invitations/{invitationId}.
+The command obtains current Organization/account/Board administration before
+reading the canonical invitation under the same transaction. The invitation must
+belong to that exact Board and remain unaccepted. The protected update repeats the
+Board predicate. Successful revocation, audit and a content-free Board invalidation
+commit together; a current-authority natural-ID retry returns 204 without repeating
+writes or events. Current revocation of sender access still denies that retry.
+The existing Organization-admin revoke path retains its prior scope semantics.
+
+Both-role authenticated route tests now cover cross-Board/ordinary-invitation
+revocation denial, success, natural-ID retry, no acceptance after revocation, one
+Board event and retry denial after sender removal. Local warning-as-error build
+passes; actual host execution and PostgreSQL rollback/lock-wait coverage for Board
+revocation remain pending. Demo retains its documented lack of cross-store atomic
+rollback. Sender history/revoke UI and required desktop/mobile release coverage
+remain outstanding.
+
+The required exact-image signup script additionally creates a real Board invitation
+and denies audit/event/outbox inserts one at a time during revocation. Each 503
+must leave canonical invitation, audit/event/stream/job state unchanged. Success
+and natural-ID retry must return 204 with one revocation audit and unchanged retry
+state; closed signup using the revoked proof must fail. Script syntax is checked
+locally; actual PostgreSQL execution of these assertions remains pending CI.

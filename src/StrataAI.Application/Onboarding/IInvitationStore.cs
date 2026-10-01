@@ -31,11 +31,14 @@ public interface IInvitationStore
         DateTimeOffset acceptedAt,
         CancellationToken cancellationToken = default);
 
+    // Canonical read inside the authorized Organization command; includes terminal invitations.
+    Task<InvitationRecord?> FindByIdAsync(Guid organizationId, Guid invitationId, CancellationToken cancellationToken = default);
+
     Task<bool> RevokeAsync(
         Guid organizationId,
         Guid invitationId,
         DateTimeOffset revokedAt,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? boardId = null);
 }
 
 public sealed record InvitationAcceptStoreResult(

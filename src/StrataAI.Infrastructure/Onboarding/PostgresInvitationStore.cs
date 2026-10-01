@@ -448,11 +448,26 @@ internal sealed class PostgresInvitationStore(
             invitation with { AcceptedAt = acceptedAt, AcceptedByUserId = userId });
     }
 
+    public async Task<InvitationRecord?> FindByIdAsync(Guid organizationId, Guid invitationId, CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId))
+            throw new InvalidOperationException("Canonical invitation administration requires Organization command scope.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role
+            FROM invitations WHERE tenant_id=@tenant AND id=@id FOR UPDATE;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("id", invitationId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken) ? ReadInvitation(reader) : null;
+    }
+
     public async Task<bool> RevokeAsync(
         Guid organizationId,
         Guid invitationId,
         DateTimeOffset revokedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? boardId = null)
     {
         await using var session =
             await connectionFactory.OpenTenantSessionAsync(
@@ -464,6 +479,7 @@ internal sealed class PostgresInvitationStore(
             SET revoked_at = @revoked_at
             WHERE id = @id
               AND tenant_id = @tenant_id
+              AND (@board IS NULL OR target_board_id=@board)
               AND accepted_at IS NULL
               AND revoked_at IS NULL;
             """,
@@ -472,6 +488,8 @@ internal sealed class PostgresInvitationStore(
         command.Parameters.AddWithValue("revoked_at", revokedAt);
         command.Parameters.AddWithValue("id", invitationId);
         command.Parameters.AddWithValue("tenant_id", organizationId);
+
+        command.Parameters.AddWithValue("board", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)boardId ?? DBNull.Value);
 
         var changed =
             await command.ExecuteNonQueryAsync(cancellationToken) == 1;
