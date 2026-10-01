@@ -101,7 +101,7 @@ internal sealed class InMemoryInvitationStore(
         lock (_sync)
         {
             if (!_byToken.TryGetValue(tokenHash, out var invitation) ||
-                invitation.BoardTarget is not null || invitation.AcceptedAt is not null ||
+                invitation.AcceptedAt is not null ||
                 invitation.RevokedAt is not null ||
                 invitation.ExpiresAt <= now)
             {

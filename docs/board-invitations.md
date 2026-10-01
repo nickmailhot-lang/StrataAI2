@@ -25,7 +25,7 @@ invalid Board roles and Organization OWNER/ADMIN enrollment through this target.
 Routing copies both fields, and accepted target attribution is immutable. The
 PostgreSQL adapter round-trips the target, including creation retry receipts.
 
-Board-target publication, discovery, proof review, signup and acceptance remain
+Board-target publication, discovery, recipient proof review and acceptance remain
 unavailable while consumers are upgraded; mail snapshots missing the exact
 canonical Board target are unusable instead of sending an ordinary Organization
 envelope. Migration 026 binds optional Board ID/role on protected mail snapshots
@@ -52,8 +52,24 @@ exercise both Board roles, concurrent retry/event deduplication, onboarding auth
 removed memberships, invalid input and archive behavior. PostgreSQL atomic command
 and exact-image execution of this new command still require the endpoint integration.
 
-These increments contain policy, persistence and creation-command foundations. They are not wired
-to a public endpoint, recipient preview, signup proof,
+Board signup proof now admits a current Organization Owner/Admin-issued Board
+target for the intended email. PostgreSQL freezes the actual parent, issuer
+membership, active same-tenant Board, invitation and global accounts in that order,
+then rechecks target shape/lifecycle and current enrollment authority before and
+after registration writes. Signup creates only the account and verification intent;
+verification alone grants neither Organization nor Board access and does not consume
+the invitation. Board administration alone cannot enroll a new Organization member.
+Five host cases cover both Board roles, email binding, retry acknowledgment,
+verification without grants, archive, revocation and issuer demotion. The mandatory
+exact-image signup fixture now covers both Board roles, audit rollback, stable retry,
+no early Board grants, archived replay denial and an actual Board archive committed
+during the signup Board-lock wait. That fixture attaches the canonical target with
+disposable administrative SQL to test this consumer; it does not prove public Board
+invitation creation or actual Board invitation-mail delivery. Execution evidence
+for this increment is pending CI.
+
+These increments contain policy, persistence, creation and signup-proof support. They are not wired
+to a public Board invitation creation endpoint or recipient preview,
 acceptance, or Worker delivery. Existing Organization/Portal behavior is unchanged.
 The next integration must consume the tenant-bound Board target and add immutable mail
 snapshots; enforce the same current authority in creation, discovery, proof review,

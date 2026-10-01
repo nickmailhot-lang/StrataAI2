@@ -16,7 +16,6 @@ internal sealed class PostgresInvitationRegistrationProofStore(PostgresConnectio
         Guid organizationId; Guid invitationId;
         await using (var route = new NpgsqlCommand("""
             SELECT tenant_id,invitation_id FROM invitation_routes WHERE token_hash=@hash AND email_normalized=@email
-              AND target_board_id IS NULL
               AND accepted_at IS NULL AND revoked_at IS NULL AND expires_at>clock_timestamp();
             """, root.Connection, root.Transaction))
         {
@@ -34,23 +33,33 @@ internal sealed class PostgresInvitationRegistrationProofStore(PostgresConnectio
                 parent.Parameters.AddWithValue("org", organizationId);
                 if (await parent.ExecuteScalarAsync(ct) is null) return null;
             }
-            Guid issuerId;
-            await using (var hint = new NpgsqlCommand("SELECT created_by_user_id FROM invitations WHERE id=@id AND tenant_id=@org AND token_hash=@hash;", root.Connection, root.Transaction))
+            Guid issuerId; Guid? boardId;
+            await using (var hint = new NpgsqlCommand("SELECT created_by_user_id,target_board_id FROM invitations WHERE id=@id AND tenant_id=@org AND token_hash=@hash;", root.Connection, root.Transaction))
             {
                 hint.Parameters.AddWithValue("id", invitationId); hint.Parameters.AddWithValue("org", organizationId); hint.Parameters.AddWithValue("hash", tokenHash);
-                if (await hint.ExecuteScalarAsync(ct) is not Guid issuer) return null;
-                issuerId = issuer;
+                await using var rows = await hint.ExecuteReaderAsync(ct);
+                if (!await rows.ReadAsync(ct)) return null;
+                issuerId = rows.GetGuid(0); boardId = rows.IsDBNull(1) ? null : rows.GetGuid(1);
             }
-            // Match Organization command order: parent, membership, invitation, global accounts.
+            // Match Organization command order: parent, membership, Board when
+            // targeted, invitation, global accounts. Parent serialization prevents
+            // Board commands from changing lifecycle while signup is admitted.
             await using (var member = new NpgsqlCommand("SELECT user_id FROM organization_members WHERE tenant_id=@org AND user_id=@issuer FOR SHARE;", root.Connection, root.Transaction))
             {
                 member.Parameters.AddWithValue("org", organizationId); member.Parameters.AddWithValue("issuer", issuerId);
                 if (await member.ExecuteScalarAsync(ct) is null) return null;
             }
-            await using (var invitation = new NpgsqlCommand("SELECT id FROM invitations WHERE tenant_id=@org AND id=@id AND created_by_user_id=@issuer AND token_hash=@hash FOR SHARE;", root.Connection, root.Transaction))
+            if (boardId is { } targetBoard)
+            {
+                await using var board = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@org AND id=@board AND lifecycle_state='ACTIVE' FOR SHARE;", root.Connection, root.Transaction);
+                board.Parameters.AddWithValue("org", organizationId); board.Parameters.AddWithValue("board", targetBoard);
+                if (await board.ExecuteScalarAsync(ct) is null) return null;
+            }
+            await using (var invitation = new NpgsqlCommand("SELECT id FROM invitations WHERE tenant_id=@org AND id=@id AND created_by_user_id=@issuer AND token_hash=@hash AND target_board_id IS NOT DISTINCT FROM @board::uuid FOR SHARE;", root.Connection, root.Transaction))
             {
                 invitation.Parameters.AddWithValue("org", organizationId); invitation.Parameters.AddWithValue("id", invitationId);
                 invitation.Parameters.AddWithValue("issuer", issuerId); invitation.Parameters.AddWithValue("hash", tokenHash);
+                invitation.Parameters.AddWithValue("board", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)boardId ?? DBNull.Value);
                 if (await invitation.ExecuteScalarAsync(ct) is null) return null;
             }
             // Existing subjects and issuers are frozen in canonical PostgreSQL UUID order.
@@ -80,9 +89,12 @@ internal sealed class PostgresInvitationRegistrationProofStore(PostgresConnectio
                   JOIN organizations o ON o.id=i.tenant_id
                   JOIN organization_members m ON m.tenant_id=i.tenant_id AND m.user_id=i.created_by_user_id
                   JOIN users u ON u.id=i.created_by_user_id
+                  LEFT JOIN boards b ON b.id=i.target_board_id AND b.tenant_id=i.tenant_id
                   WHERE i.tenant_id=@org AND i.id=@id AND i.created_by_user_id=@issuer AND i.token_hash=@hash
                     AND i.email_normalized=@email AND i.accepted_at IS NULL AND i.revoked_at IS NULL
-                    AND i.target_board_id IS NULL
+                    AND ((i.target_board_id IS NULL AND i.target_board_role IS NULL)
+                      OR (b.id IS NOT NULL AND b.lifecycle_state='ACTIVE' AND i.target_board_role IN ('ADMIN','MEMBER')
+                        AND i.target_surface='INTERNAL' AND i.target_role='MEMBER'))
                     AND i.expires_at>clock_timestamp() AND o.status='ACTIVE'
                     AND m.status='ACTIVE' AND m.role IN ('OWNER','ADMIN') AND u.status='ACTIVE'
                     AND (NOT @verified OR u.email_verified)

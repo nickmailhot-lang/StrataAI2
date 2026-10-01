@@ -91,6 +91,44 @@ for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_a
 test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%INSERT INTO audit_events%';")" -ge 1
 sleep 9; printf 'COMMIT;\n\\q\n' >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; wait "$pending"; pids=()
 test "$(cat "$scratch/expiry-status")" = 400; test "$before" = "$(state)"
+# PRD-60 ONBOARD-FR-001: explicit Board target signup against restricted
+# PostgreSQL. Administrative target attachment tests the proof consumer only;
+# the public Board invitation creation endpoint is a separate integration.
+test "$(owner_post /boards "$(jq -nc --arg org "$org" '{organizationId:$org,name:"Board signup",visibility:"PRIVATE"}')")" = 201
+signup_board="$(jq -r '.id' "$scratch/response")"
+for board_role in ADMIN MEMBER; do
+ surface=INTERNAL; role=MEMBER; email="board-signup-${board_role,,}-${RANDOM}-${RANDOM}@example.test"; issue
+ admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='$board_role' WHERE id='$invitation_id' AND tenant_id='$org';" >/dev/null
+ before="$(state)"
+ admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+ test "$(register)" = 503; test "$before" = "$(state)"
+ admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+ test "$(register)" = 201; cp "$scratch/response" "$scratch/board-ack"
+ test "$(register)" = 201; cmp "$scratch/board-ack" "$scratch/response"
+ jq -e '.users==1 and .receipts==1 and .events==1 and .audit==1 and .members==0 and .portal==0 and .accepted==0' <<< "$(state)" >/dev/null
+ test "$(admin "SELECT count(*) FROM board_members b JOIN users u ON u.id=b.user_id WHERE b.board_id='$signup_board' AND u.email_normalized=upper('$email');")" = 0
+ scripts/ci/assert-file-excludes.sh "$token|invitationToken|tokenHash" "$scratch/response"
+ admin "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='$signup_board';" >/dev/null
+ test "$(register)" = 400
+ admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$signup_board';" >/dev/null
+done
+# A Board archive committed during the real Board lock wait must reject signup
+# before any account/verification/receipt mutation, despite the earlier route hint.
+surface=INTERNAL; role=MEMBER; email="board-signup-wait-${RANDOM}-${RANDOM}@example.test"; issue
+admin "UPDATE invitations SET target_board_id='$signup_board',target_board_role='MEMBER' WHERE id='$invitation_id';" >/dev/null
+before="$(state)"; rm "$scratch/gate.in"; mkfifo "$scratch/gate.in"; exec 3<>"$scratch/gate.in"
+docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.out" &
+gate_pid=$!; printf "BEGIN; SELECT id FROM boards WHERE id='%s' FOR UPDATE; SELECT 'board-ready';\n" "$signup_board" >&3
+for attempt in $(seq 1 100); do if grep -q '^board-ready$' "$scratch/gate.out"; then break; fi; sleep 0.1; done
+grep -q '^board-ready$' "$scratch/gate.out"
+register > "$scratch/board-wait-status" & pending=$!; pids+=($pending)
+for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%FROM boards%';")" -ge 1; then break; fi; sleep 0.1; done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%FROM boards%';")" -ge 1
+printf "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='%s'; COMMIT;\n\\q\n" "$signup_board" >&3
+exec 3>&-; wait "$gate_pid"; gate_pid=''; wait "$pending"; pids=()
+test "$(cat "$scratch/board-wait-status")" = 400; test "$before" = "$(state)"
+admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$signup_board';" >/dev/null
+echo 'Exact-image Board signup proof: both roles, audit rollback, repeat acknowledgment, no early grants, archive replay denial and fresh post-Board-wait admission passed.'
 test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"
 signup_fixtures="$RUNNER_TEMP/invitation-signup-fixtures.json"
 printf '[]' > "$signup_fixtures"; chmod 600 "$signup_fixtures"
