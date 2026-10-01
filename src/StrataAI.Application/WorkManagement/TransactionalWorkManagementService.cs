@@ -134,8 +134,10 @@ public sealed class TransactionalWorkManagementService(
         string? rank,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default) =>
-        ListCommand(listId, actorUserId, "edit", WorkCommand.Create(actorUserId, context.IdempotencyKey, "UpdateListAsync", listId, new { name, rank, expectedVersion }, "list_not_found"), () => inner.UpdateListAsync(listId, actorUserId, name, rank, expectedVersion, correlationId, cancellationToken), cancellationToken);
+        CancellationToken cancellationToken = default, Guid? beforeListId = null, bool moveToEnd = false) =>
+        ListCommand(listId, actorUserId, "edit", WorkCommand.Create(actorUserId, context.IdempotencyKey, "UpdateListAsync", listId,
+            beforeListId is null && !moveToEnd ? (object)new { name, rank, expectedVersion } : new { name, rank, expectedVersion, beforeListId, moveToEnd }, "list_not_found"),
+            () => inner.UpdateListAsync(listId, actorUserId, name, rank, expectedVersion, correlationId, cancellationToken, beforeListId, moveToEnd), cancellationToken);
 
     public Task<WorkOperation<BoardListRecord>> SetListLifecycleAsync(
         Guid listId,

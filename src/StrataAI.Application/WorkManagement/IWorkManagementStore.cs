@@ -109,7 +109,7 @@ public interface IWorkManagementStore
         string rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? beforeListId = null, bool moveToEnd = false);
 
     Task<BoardListRecord?> SetListLifecycleAsync(
         Guid listId,

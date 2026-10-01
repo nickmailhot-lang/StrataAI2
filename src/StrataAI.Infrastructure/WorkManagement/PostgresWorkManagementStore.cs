@@ -67,6 +67,34 @@ internal sealed class PostgresWorkManagementStore(
         return RankToken.After(await last.ExecuteScalarAsync(cancellationToken) as string);
     }
 
+    private static async Task<string?> AllocateListPositionAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
+        Guid tenantId, Guid boardId, Guid movingId, Guid? beforeId, CancellationToken cancellationToken)
+    {
+        await using (var parent = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@tenant AND id=@board AND lifecycle_state='ACTIVE' FOR UPDATE;", connection, transaction))
+        {
+            parent.Parameters.AddWithValue("tenant", tenantId); parent.Parameters.AddWithValue("board", boardId);
+            if (await parent.ExecuteScalarAsync(cancellationToken) is null) return null;
+        }
+        string? upper = null;
+        if (beforeId is not null)
+        {
+            await using var anchor = new NpgsqlCommand("SELECT rank FROM board_lists WHERE tenant_id=@tenant AND board_id=@board AND id=@before AND id<>@moving AND lifecycle_state='ACTIVE';", connection, transaction);
+            anchor.Parameters.AddWithValue("tenant", tenantId); anchor.Parameters.AddWithValue("board", boardId);
+            anchor.Parameters.AddWithValue("before", beforeId.Value); anchor.Parameters.AddWithValue("moving", movingId);
+            if (await anchor.ExecuteScalarAsync(cancellationToken) is not string value) return null;
+            upper = value;
+        }
+        await using var previous = new NpgsqlCommand(beforeId is null
+            ? "SELECT rank FROM board_lists WHERE tenant_id=@tenant AND board_id=@board AND id<>@moving AND lifecycle_state='ACTIVE' ORDER BY rank DESC,id DESC LIMIT 1;"
+            : "SELECT rank FROM board_lists WHERE tenant_id=@tenant AND board_id=@board AND id<>@moving AND lifecycle_state='ACTIVE' AND (rank<@upper OR (rank=@upper AND id<@before)) ORDER BY rank DESC,id DESC LIMIT 1;", connection, transaction);
+        previous.Parameters.AddWithValue("tenant", tenantId); previous.Parameters.AddWithValue("board", boardId); previous.Parameters.AddWithValue("moving", movingId);
+        if (beforeId is not null) { previous.Parameters.AddWithValue("upper", upper!); previous.Parameters.AddWithValue("before", beforeId.Value); }
+        var lower = await previous.ExecuteScalarAsync(cancellationToken) as string;
+        if (upper is null) return RankToken.After(lower);
+        if (lower == upper) throw new RankSpaceExhaustedException();
+        return RankToken.Between(lower, upper);
+    }
+
     private static async Task<string?> AllocateBeforeCardRankAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
         Guid tenantId, Guid boardId, Guid listId, Guid movingId, Guid beforeId, CancellationToken cancellationToken)
     {
@@ -806,7 +834,7 @@ internal sealed class PostgresWorkManagementStore(
         string rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? beforeListId = null, bool moveToEnd = false)
     {
         var route = await ResolveListRouteAsync(
             listId,
@@ -821,6 +849,13 @@ internal sealed class PostgresWorkManagementStore(
             await connectionFactory.OpenTenantSessionAsync(
                 route.Value.TenantId,
                 cancellationToken);
+        if (beforeListId is not null || moveToEnd)
+        {
+            var allocated = await AllocateListPositionAsync(session.Connection, session.Transaction,
+                route.Value.TenantId, route.Value.BoardId, listId, beforeListId, cancellationToken);
+            if (allocated is null) return null;
+            rank = allocated;
+        }
         await using var command = new NpgsqlCommand(
             """
             UPDATE board_lists
@@ -829,6 +864,8 @@ internal sealed class PostgresWorkManagementStore(
                 updated_at = @updated_at,
                 version = version + 1
             WHERE id = @list_id
+              AND tenant_id = @tenant_id
+              AND board_id = @board_id
               AND version = @expected_version
               AND lifecycle_state = 'ACTIVE'
             RETURNING
@@ -838,6 +875,8 @@ internal sealed class PostgresWorkManagementStore(
             session.Connection,
             session.Transaction);
         command.Parameters.AddWithValue("name", name);
+        command.Parameters.AddWithValue("tenant_id", route.Value.TenantId);
+        command.Parameters.AddWithValue("board_id", route.Value.BoardId);
         command.Parameters.AddWithValue("rank", rank);
         command.Parameters.AddWithValue("updated_at", updatedAt);
         command.Parameters.AddWithValue("list_id", listId);

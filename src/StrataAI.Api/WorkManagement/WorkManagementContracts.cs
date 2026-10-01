@@ -30,7 +30,7 @@ public sealed record CreateListRequest(
 public sealed record UpdateListRequest(
     string Name,
     string? Rank,
-    long Version);
+    long Version, Guid? BeforeListId = null, bool MoveToEnd = false);
 
 public sealed record CreateCardRequest(
     string Title,

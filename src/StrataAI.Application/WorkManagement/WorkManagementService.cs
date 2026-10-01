@@ -496,7 +496,7 @@ public sealed class WorkManagementService(
         string? rank,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? beforeListId = null, bool moveToEnd = false)
     {
         var list = await store.FindListAsync(listId, cancellationToken);
         if (list is null)
@@ -522,26 +522,32 @@ public sealed class WorkManagementService(
             return WorkOperation<BoardListRecord>.Failure("invalid_list_name");
         }
 
+        if (list.Version != expectedVersion) return WorkOperation<BoardListRecord>.Failure("version_conflict");
+        if (beforeListId == Guid.Empty || beforeListId == listId || (beforeListId is not null && moveToEnd)
+            || (rank is not null && (beforeListId is not null || moveToEnd)))
+            return WorkOperation<BoardListRecord>.Failure("invalid_move_position");
         var normalizedRank = rank is null ? list.Rank : NormalizeRank(rank);
         if (normalizedRank is null)
         {
             return WorkOperation<BoardListRecord>.Failure("invalid_rank");
         }
 
-        var updated = await store.UpdateListAsync(
+        BoardListRecord? updated;
+        try { updated = await store.UpdateListAsync(
             listId,
             normalizedName,
             normalizedRank,
             expectedVersion,
             clock.UtcNow,
-            cancellationToken);
+            cancellationToken, beforeListId, moveToEnd); }
+        catch (RankSpaceExhaustedException) { return WorkOperation<BoardListRecord>.Failure("rank_space_exhausted"); }
 
         if (updated is null)
         {
             return WorkOperation<BoardListRecord>.Failure("version_conflict");
         }
 
-        await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, rank is null ? "LIST_RENAMED" : "LIST_MOVED", "List", updated.Id, updated.Version, correlationId, cancellationToken);
+        await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, rank is null && beforeListId is null && !moveToEnd ? "LIST_RENAMED" : "LIST_MOVED", "List", updated.Id, updated.Version, correlationId, cancellationToken);
 
         return WorkOperation<BoardListRecord>.Success(updated);
     }

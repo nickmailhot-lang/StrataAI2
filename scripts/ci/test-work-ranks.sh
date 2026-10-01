@@ -103,3 +103,30 @@ test "$(admin "SELECT count(*)=1 AND bool_and(id='$edge_anchor' AND rank='000000
 test "$(admin "SELECT count(*)=0 FROM audit_events WHERE tenant_id='$organization' AND entity_id='$edge_card' AND event_type='CARD_MOVED';")" = t
 test "$(admin "SELECT count(*)=0 FROM work_events WHERE tenant_id='$organization' AND board_id='$board' AND entity_id='$edge_card' AND event_type='CARD_MOVED';")" = t
 echo 'Repeated exhausted relative moves preserve PostgreSQL source placement and destination anchor.'
+# Current list neighbors are also resolved by the server, without sibling
+# renumbering. Use the lowest sixteen lists, leaving the highest anchor untouched.
+jq -s 'sort_by(.rank)' "$scratch"/list-*.json > "$scratch/ordered-lists.json"
+list_anchor="$(jq -r 'last.id' "$scratch/ordered-lists.json")"
+list_anchor_rank="$(jq -r 'last.rank' "$scratch/ordered-lists.json")"
+position_request() { curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $3" -X PATCH -d "$2" "$BASE_URL/lists/$1"; }
+pids=()
+for ((index=0; index<16; index++)); do
+  moving_list="$(jq -r --argjson index "$index" '.[$index].id' "$scratch/ordered-lists.json")"
+  cat /proc/sys/kernel/random/uuid > "$scratch/list-position-key-$index"
+  position_request "$moving_list" "$(jq -nc --arg before "$list_anchor" '{name:"Concurrent list",beforeListId:$before,version:1}')" "$(cat "$scratch/list-position-key-$index")" > "$scratch/list-position-$index.json" &
+  pids+=("$!")
+done
+for pid in "${pids[@]}"; do wait "$pid"; done
+jq -s -e --arg upper "$list_anchor_rank" 'length==16 and ([.[].rank]|unique|length)==16 and all(.[];.version==2 and .rank<$upper)' "$scratch"/list-position-*.json >/dev/null
+test "$(admin "SELECT count(*)=128 AND count(DISTINCT rank)=128 AND count(*) FILTER (WHERE version=2)=16 AND count(*) FILTER (WHERE version=1)=112 FROM board_lists WHERE tenant_id='$organization' AND board_id='$board' AND lifecycle_state='ACTIVE';")" = t
+test "$(admin "SELECT rank='$list_anchor_rank' AND version=1 FROM board_lists WHERE tenant_id='$organization' AND board_id='$board' AND id='$list_anchor';")" = t
+unchanged_lists="$(jq -c '.[16:]|map({id,rank})' "$scratch/ordered-lists.json")"
+test "$(admin "SELECT count(*)=112 AND bool_and(current.rank=original.rank AND current.version=1) FROM jsonb_to_recordset('$unchanged_lists'::jsonb) AS original(id uuid,rank text) JOIN board_lists current ON current.id=original.id AND current.tenant_id='$organization' AND current.board_id='$board';")" = t
+moving_list="$(jq -r '.[0].id' "$scratch/ordered-lists.json")"
+position_request "$moving_list" '{"name":"Concurrent list","moveToEnd":true,"version":2}' "$(cat /proc/sys/kernel/random/uuid)" > "$scratch/list-position-later.json"
+position_request "$moving_list" "$(jq -nc --arg before "$list_anchor" '{name:"Concurrent list",beforeListId:$before,version:1}')" "$(cat "$scratch/list-position-key-0")" > "$scratch/list-position-replay.json"
+test "$(jq -r '.rank' "$scratch/list-position-replay.json")" = "$(jq -r '.rank' "$scratch/list-position-0.json")"
+later_rank="$(jq -r '.rank' "$scratch/list-position-later.json")"
+[[ "$later_rank" =~ ^[0-9]{30}$ ]]
+test "$(admin "SELECT rank='$later_rank' AND version=3 FROM board_lists WHERE tenant_id='$organization' AND board_id='$board' AND id='$moving_list';")" = t
+echo 'Concurrent relative list positions and non-reapplying durable replay passed.'

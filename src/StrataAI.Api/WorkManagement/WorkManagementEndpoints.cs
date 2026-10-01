@@ -421,7 +421,7 @@ public static class WorkManagementEndpoints
                             request.Rank,
                             request.Version,
                             context.TraceIdentifier,
-                            cancellationToken));
+                            cancellationToken, request.BeforeListId, request.MoveToEnd));
                 })
             .RequireAuthorization();
 

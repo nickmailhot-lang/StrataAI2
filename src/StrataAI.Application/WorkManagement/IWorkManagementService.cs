@@ -99,7 +99,7 @@ public interface IWorkManagementService
         string? rank,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? beforeListId = null, bool moveToEnd = false);
 
     Task<WorkOperation<BoardListRecord>> SetListLifecycleAsync(
         Guid listId,

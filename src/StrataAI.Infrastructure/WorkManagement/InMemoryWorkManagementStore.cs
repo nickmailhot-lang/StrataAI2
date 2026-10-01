@@ -383,7 +383,7 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
         string rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? beforeListId = null, bool moveToEnd = false)
     {
         lock (_sync)
         {
@@ -393,6 +393,20 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
                 return Task.FromResult<BoardListRecord?>(null);
             }
 
+            if (beforeListId is not null || moveToEnd)
+            {
+                var siblings = _lists.Values.Where(value => value.BoardId == list.BoardId && value.Id != listId
+                    && value.LifecycleState == WorkItemLifecycleState.Active).OrderBy(value => value.Rank, StringComparer.Ordinal).ThenBy(value => value.Id).ToArray();
+                if (beforeListId is not null)
+                {
+                    var index = Array.FindIndex(siblings, value => value.Id == beforeListId.Value);
+                    if (index < 0) return Task.FromResult<BoardListRecord?>(null);
+                    var lower = index == 0 ? null : siblings[index - 1].Rank;
+                    if (lower == siblings[index].Rank) throw new RankSpaceExhaustedException();
+                    rank = RankToken.Between(lower, siblings[index].Rank);
+                }
+                else rank = RankToken.After(siblings.LastOrDefault()?.Rank);
+            }
             var updated = list with
             {
                 Name = name,
