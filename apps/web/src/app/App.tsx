@@ -18,6 +18,7 @@ import { OrganizationSettingsPage } from "../features/organizations/Organization
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
 import { OrganizationInvitationPage } from "../features/organizations/OrganizationInvitationPage";
 import { InvitationsPage } from "../features/auth/InvitationsPage";
+import { InvitationLinkPage } from "../features/auth/InvitationLinkPage";
 import { PortalShell } from "../portal/PortalShell";
 import { appTheme } from "../theme/appTheme";
 
@@ -25,6 +26,7 @@ const routes = [
   { path: "/app", element: <OrganizationHome /> },
   { path: "/app/profile", element: <ProfilePage /> },
   { path: "/app/invitations", element: <InvitationsPage /> },
+  { path: "/invitation", element: <InvitationLinkPage /> },
   { path: "/verify-email", element: <VerifyEmailPage /> },
   { path: "/forgot-password", element: <PasswordRecoveryPage /> },
   { path: "/reset-password", element: <ResetPasswordPage /> },

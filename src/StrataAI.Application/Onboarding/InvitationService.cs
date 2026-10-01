@@ -29,6 +29,49 @@ public sealed class InvitationService(
         ExecuteAsync(organizationId, actorUserId, null,
             () => RevokeCoreAsync(organizationId, actorUserId, invitationId, correlationId, cancellationToken), cancellationToken);
 
+    public async Task<InvitationOperation<PendingInvitation>> ReviewTokenAsync(Guid actorUserId, string rawToken,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(rawToken) || rawToken.Length > 512)
+            return InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation");
+        var user = await identityStore.FindUserByIdAsync(actorUserId, cancellationToken);
+        if (user is not { Status: AccountStatus.Active, EmailVerified: true })
+            return InvitationOperation<PendingInvitation>.Failure("account_unavailable");
+        var hash = tokens.Hash(rawToken);
+        // The first lookup is a routing hint. Re-read all disclosure authority after parent/identity locks.
+        var route = await invitationStore.FindActiveByTokenHashAsync(hash, clock.UtcNow, cancellationToken);
+        if (route is null || route.EmailNormalized != user.EmailNormalized)
+            return InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation");
+        var result = await ExecuteAsync(route.OrganizationId, actorUserId, route.CreatedByUserId, async () =>
+        {
+            var currentUser = await identityStore.FindUserByIdAsync(actorUserId, cancellationToken);
+            if (currentUser is not { Status: AccountStatus.Active, EmailVerified: true })
+                return InvitationOperation<PendingInvitation>.Failure("account_unavailable");
+            var invitation = await invitationStore.FindActiveByTokenHashAsync(hash, clock.UtcNow, cancellationToken);
+            if (invitation is null || invitation.OrganizationId != route.OrganizationId
+                || invitation.CreatedByUserId != route.CreatedByUserId || invitation.EmailNormalized != currentUser.EmailNormalized
+                || invitation.AcceptedAt is not null || invitation.RevokedAt is not null)
+                return InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation");
+            var issuerAccount = await identityStore.FindUserByIdAsync(invitation.CreatedByUserId, cancellationToken);
+            var issuer = await organizationStore.FindMembershipAsync(invitation.OrganizationId, invitation.CreatedByUserId, cancellationToken);
+            if (issuerAccount is not { Status: AccountStatus.Active }
+                || issuer is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin }
+                || (invitation.Surface == InvitationSurface.Internal && invitation.TargetRole == "OWNER" && issuer.Role != OrganizationRole.Owner))
+                return InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation");
+            var organization = await organizationStore.FindOrganizationAsync(invitation.OrganizationId, cancellationToken);
+            if (organization is not { Status: OrganizationStatus.Active } || invitation.ExpiresAt <= clock.UtcNow)
+                return InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation");
+            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                return InvitationOperation<PendingInvitation>.Failure("session_unavailable");
+            if (invitation.ExpiresAt <= clock.UtcNow)
+                return InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation");
+            return InvitationOperation<PendingInvitation>.Success(new(invitation.Id, invitation.OrganizationId,
+                invitation.Surface, invitation.TargetRole, invitation.ExpiresAt, organization.Name));
+        }, cancellationToken);
+        return result.ErrorCode == "organization_not_found"
+            ? InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation") : result;
+    }
+
     public async Task<InvitationOperation<AcceptedInvitation>> AcceptAsync(
         Guid actorUserId, string rawToken, string correlationId, CancellationToken cancellationToken = default)
     {

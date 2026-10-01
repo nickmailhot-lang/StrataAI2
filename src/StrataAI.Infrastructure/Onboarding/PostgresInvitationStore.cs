@@ -204,7 +204,7 @@ internal sealed class PostgresInvitationStore(
               AND accepted_at IS NULL
               AND revoked_at IS NULL
               AND expires_at > clock_timestamp();
-            """,
+            """.TrimEnd().TrimEnd(';') + (connectionFactory.HasCommandScope(tenantId.Value) ? " FOR SHARE;" : ";"),
             session.Connection,
             session.Transaction);
 

@@ -21,7 +21,7 @@ type ApiProblem = {
   code?: string;
 };
 
-export function AuthPage() {
+export function AuthPage({ onAuthenticated }: { onAuthenticated?: () => void } = {}) {
   const location = useLocation();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -115,7 +115,8 @@ export function AuthPage() {
         || typeof login.user.email !== 'string' || login.user.email.trim().toLowerCase() !== email.trim().toLowerCase()
         || typeof login.sessionExpiresAt !== 'string' || !(Date.parse(login.sessionExpiresAt) > Date.now())) throw new Error('Invalid sign-in acknowledgment');
       attempt.current = undefined;
-      navigate('/app');
+      if (onAuthenticated) onAuthenticated();
+      else navigate('/app');
     } catch {
       if (pending.current === controller) setError(`${mode === 'login' ? 'Sign-in' : 'Registration'} could not be confirmed. Retry with the same details to confirm this attempt.`);
     } finally {

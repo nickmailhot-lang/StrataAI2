@@ -20,6 +20,9 @@ public interface IInvitationService
     Task<InvitationOperation<AcceptedInvitation>> AcceptPendingAsync(Guid actorUserId, Guid invitationId,
         string correlationId, CancellationToken cancellationToken = default);
 
+    Task<InvitationOperation<PendingInvitation>> ReviewTokenAsync(Guid actorUserId, string rawToken,
+        CancellationToken cancellationToken = default);
+
     Task<InvitationOperation<AcceptedInvitation>> AcceptAsync(
         Guid actorUserId,
         string rawToken,

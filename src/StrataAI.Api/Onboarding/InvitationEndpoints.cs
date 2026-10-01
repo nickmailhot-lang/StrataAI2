@@ -107,6 +107,15 @@ public static class InvitationEndpoints
             return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().RequireRateLimiting("invitation");
 
+        app.MapPost("/invitations/review", async (AcceptInvitationRequest request, HttpContext context,
+            IInvitationService service, CancellationToken cancellationToken) =>
+        {
+            var userId = GetUserId(context);
+            if (userId is null) return Results.Unauthorized();
+            var result = await service.ReviewTokenAsync(userId.Value, request.Token ?? "", cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().RequireRateLimiting("invitation");
+
         // Bearer tokens belong in the request body, never in new recipient link paths.
         app.MapPost("/invitations/accept", async (AcceptInvitationRequest request, HttpContext context,
             IInvitationService service, CancellationToken cancellationToken) =>

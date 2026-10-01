@@ -108,16 +108,41 @@ for surface in INTERNAL PORTAL; do
   body_hash="$(printf '%s' "$body_token" | sha256sum | cut -d ' ' -f 1)"
   admin "UPDATE invitations SET token_hash='$body_hash' WHERE id='$body_id' AND tenant_id='$body_org';" >/dev/null
   body_json="$(jq -nc --arg token "$body_token" '{token:$token}')"
+  test "$(post wrong /invitations/review "$body_json")" = 400
+  test "$(post recipient /invitations/review "$body_json")" = 200
+  jq -e --arg id "$body_id" --arg org "$body_org" --arg surface "$surface" --arg role "$role" \
+    '.id==$id and .organizationId==$org and .surface==$surface and .targetRole==$role and .organizationName=="Body acceptance fixture"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$body_token|tokenHash|invitationToken" "$scratch/response"
+  test "$(admin "SELECT count(*) FROM audit_events WHERE event_type='INVITATION_ACCEPTED' AND entity_id='$body_id';")" = 0
+  test "$(admin "SELECT count(*) FROM invitations WHERE id='$body_id' AND accepted_at IS NULL;")" = 1
   test "$(post wrong /invitations/accept "$body_json")" = 400
   test "$(post recipient /invitations/accept "$body_json")" = 200
   jq -e --arg id "$body_id" --arg org "$body_org" --arg surface "$surface" --arg role "$role" \
     '.invitationId==$id and .organizationId==$org and .surface==$surface and .targetRole==$role' "$scratch/response" >/dev/null
   scripts/ci/assert-file-excludes.sh "$body_token|tokenHash|invitationToken" "$scratch/response"
   test "$(post recipient /invitations/accept "$body_json")" = 400
+  test "$(post recipient /invitations/review "$body_json")" = 400
   test "$(admin "SELECT count(*) FROM audit_events WHERE event_type='INVITATION_ACCEPTED' AND entity_id='$body_id';")" = 1
 done
 unset body_token body_hash body_json
 echo 'Exact-image body invitation proof: recipient binding, both surfaces, token-free acknowledgment and one-use acceptance passed.'
+# Keep ephemeral browser proofs outside retained diagnostics and release bundles.
+test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"
+link_fixtures="$RUNNER_TEMP/invitation-link-fixtures.json"
+printf '[]' > "$link_fixtures"; chmod 600 "$link_fixtures"
+link_email="$(jq -r '.user.email' "$scratch/wrong.user")"
+for width in 1280 390; do
+  surface=INTERNAL; role=MEMBER; if test "$width" = 390; then surface=PORTAL; role=OWNER; fi
+  test "$(post owner "/organizations/$body_org/invitations" "$(jq -nc --arg email "$link_email" --arg surface "$surface" --arg role "$role" '{email:$email,surface:$surface,targetRole:$role}')")" = 201
+  link_id="$(jq -r '.id' "$scratch/response")"; link_token="$(openssl rand -hex 32)"
+  link_hash="$(printf '%s' "$link_token" | sha256sum | cut -d ' ' -f 1)"
+  admin "UPDATE invitations SET token_hash='$link_hash' WHERE id='$link_id' AND tenant_id='$body_org';" >/dev/null
+  jq --argjson width "$width" --arg email "$link_email" --arg token "$link_token" --arg id "$link_id" --arg org "$body_org" --arg surface "$surface" \
+    '. + [{width:$width,email:$email,password:"invite-correct-horse-battery",token:$token,id:$id,organizationId:$org,surface:$surface,organizationName:"Body acceptance fixture"}]' "$link_fixtures" > "$scratch/link-next"
+  cat "$scratch/link-next" > "$link_fixtures"
+done
+unset link_token link_hash
+printf 'STRATAAI_E2E_INVITATION_LINK_FIXTURES=%s\n' "$link_fixtures" >> "$GITHUB_ENV"
 # Observe a real account-lock wait, then revoke the original session before disclosure.
 admin "BEGIN; SELECT id FROM users WHERE id='$user' FOR UPDATE; SELECT pg_sleep(10) /* invitation-read-gate */; COMMIT;" > "$scratch/gate" &
 gate=$!; pids+=($gate)
