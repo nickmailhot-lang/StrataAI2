@@ -52,8 +52,8 @@ for operation in profile deactivate; do
   test "$before" = "$(state)"
 done
 admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
-test "$(request PATCH /me '{"displayName":"Atomic profile saved","locale":"en","timezone":"UTC","version":1}')" = 200
-jq -e '.displayName=="Atomic profile saved" and .version==2' "$scratch/response.json" >/dev/null
+test "$(request PATCH /me '{"displayName":"Atomic profile saved","locale":"en-CA","timezone":"UTC","version":1}')" = 200
+jq -e '.displayName=="Atomic profile saved" and .version==2 and .locale=="en-CA" and .timezone=="UTC"' "$scratch/response.json" >/dev/null
 test "$(admin "SELECT count(*) FROM audit_events WHERE actor_id='$user' AND event_type='USER_PROFILE_UPDATED';")" = 1
 before="$(state)"
 test "$(request PATCH /me '{"displayName":"Stale profile","version":1}')" = 409
