@@ -44,7 +44,9 @@ public sealed record OrganizationMemberSummary(Guid MembershipId, Guid UserId, s
     bool EmailVerified, bool IsUsableOwner, DateTimeOffset JoinedAt, DateTimeOffset UpdatedAt, long Version);
 
 public sealed record OrganizationMemberPage(Guid OrganizationId,
-    IReadOnlyList<OrganizationMemberSummary> Items, Guid? NextCursor);
+    IReadOnlyList<OrganizationMemberSummary> Items, Guid? NextCursor, OrganizationRole ActorRole);
+
+public sealed record OrganizationMemberReview(Guid OrganizationId, OrganizationMemberSummary? Member, OrganizationRole ActorRole);
 
 public sealed record OrganizationBoardSummary(
     Guid Id,

@@ -47,6 +47,12 @@ jq -e --arg portal "$portal" 'length==68 and ([.[].userId]|length)==([.[].userId
 admin "SELECT user_id FROM organization_members WHERE tenant_id='$org' AND status='ACTIVE' ORDER BY user_id;" > "$scratch/expected.ids"
 jq -r '.[].userId' "$scratch/all.json" > "$scratch/actual.ids"
 cmp "$scratch/expected.ids" "$scratch/actual.ids"
+test "$(get owner "/organizations/$org/members/$member" exact)" = 200
+jq -e --arg org "$org" --arg member "$member" '.organizationId==$org and .actorRole==0 and .member.userId==$member and .member.role==2' "$scratch/exact.json" >/dev/null
+test "$(get owner "/organizations/$org/members/$portal" absent)" = 200
+jq -e '.member==null' "$scratch/absent.json" >/dev/null
+for actor in member portal; do test "$(get "$actor" "/organizations/$org/members/$member")" = 404; done
+test "$(get owner "/organizations/$foreign/members/$member")" = 404
 scripts/ci/assert-file-excludes.sh 'passwordHash|tokenHash|emailNormalized|Other private directory' "$scratch/all.json"
 for actor in member portal; do test "$(get "$actor" "/organizations/$org/members")" = 404; done
 test "$(get owner "/organizations/$foreign/members")" = 404
@@ -84,20 +90,26 @@ jq -e '.code=="member_version_conflict"' "$scratch/stale-removal.json" >/dev/nul
 test "$(admin "SELECT role||':'||status||':'||version FROM organization_members WHERE tenant_id='$org' AND user_id='$member';")" = "ADMIN:ACTIVE:$((member_version+1))"
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org';")" = "$audits"
 # A committed demotion wins while the directory request waits for actor membership.
+for path in "/organizations/$org/members" "/organizations/$org/members/$member"; do
 hold "SELECT user_id FROM organization_members WHERE tenant_id='$org' AND user_id='$owner' FOR UPDATE;"
-get owner "/organizations/$org/members" denied > "$scratch/status" & request_pid=$!
+get owner "$path" denied > "$scratch/status" & request_pid=$!
 blocked '%SELECT user_id FROM organization_members%FOR UPDATE%'
 release "UPDATE organization_members SET role='MEMBER',version=version+1 WHERE tenant_id='$org' AND user_id='$owner';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh 'Directory seeded member|directory-seed-|Bounded member directory' "$scratch/denied.json"
 admin "UPDATE organization_members SET role='OWNER',version=version+1 WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+done
 # The original session revoked during a parent wait cannot authorize disclosure.
+for path in "/organizations/$org/members" "/organizations/$org/members/$member"; do
 hold "SELECT id FROM organizations WHERE id='$org' FOR UPDATE;"
-get owner "/organizations/$org/members" revoked > "$scratch/status" & request_pid=$!
+get owner "$path" revoked > "$scratch/status" & request_pid=$!
 blocked '%SELECT id FROM organizations%FOR UPDATE%'
 release "UPDATE sessions SET revoked_at=now() WHERE user_id='$owner' AND revoked_at IS NULL;"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
 login owner
+done
 test "$(get owner "/organizations/$org/members")" = 200
+test "$(get owner "/organizations/$org/members/$member" exact)" = 200
+jq -e '.member.role==1' "$scratch/exact.json" >/dev/null
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org';")" = "$audits"
 echo 'Exact-image member directory: one-connection paging, scoped profiles, Portal separation, historical ownership, post-wait stale removal consent rejection, fresh role/session admission and read-only audit behavior passed.'

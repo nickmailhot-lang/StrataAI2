@@ -10,13 +10,27 @@ public sealed class OrganizationService(
     IOrganizationUnitOfWork unitOfWork,
     StrataAI.Application.Identity.ICommandActorAuthorization actors) : IOrganizationService
 {
+    public Task<OrganizationOperation<OrganizationMemberReview>> ReviewMemberAsync(Guid organizationId,
+        Guid actorUserId, Guid targetUserId, CancellationToken cancellationToken = default) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, targetUserId, false, async () =>
+        {
+            var actor = await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken);
+            if (!CanAdminister(actor))
+                return OrganizationOperation<OrganizationMemberReview>.Failure("organization_not_found");
+            var rows = await store.ListActiveMembersAsync(organizationId, null, cancellationToken, targetUserId);
+            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                return OrganizationOperation<OrganizationMemberReview>.Failure("session_unavailable");
+            return OrganizationOperation<OrganizationMemberReview>.Success(new(organizationId, rows.SingleOrDefault(), actor!.Role));
+        }, cancellationToken);
+
     public Task<OrganizationOperation<OrganizationMemberPage>> ListMembersAsync(Guid organizationId,
         Guid actorUserId, Guid? after, CancellationToken cancellationToken = default) =>
         unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false, async () =>
         {
             // Admission and reads share the existing parent/member/account/session
             // transaction; a demotion or revocation committed during a wait wins.
-            if (!CanAdminister(await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken)))
+            var actor = await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken);
+            if (!CanAdminister(actor))
                 return OrganizationOperation<OrganizationMemberPage>.Failure("organization_not_found");
             if (after == Guid.Empty) return OrganizationOperation<OrganizationMemberPage>.Failure("invalid_member_cursor");
             var rows = await store.ListActiveMembersAsync(organizationId, after, cancellationToken);
@@ -24,7 +38,7 @@ public sealed class OrganizationService(
                 return OrganizationOperation<OrganizationMemberPage>.Failure("session_unavailable");
             var items = rows.Take(50).ToArray();
             return OrganizationOperation<OrganizationMemberPage>.Success(new(organizationId, items,
-                rows.Count > 50 ? items[^1].UserId : null));
+                rows.Count > 50 ? items[^1].UserId : null, actor!.Role));
         }, cancellationToken);
 
     public Task<OrganizationOperation<OrganizationSummary>> CreateAsync(

@@ -9,7 +9,7 @@ internal sealed class PostgresOrganizationStore(
     PostgresConnectionFactory connectionFactory, IdentityPolicy policy) : IOrganizationStore
 {
     public async Task<IReadOnlyList<OrganizationMemberSummary>> ListActiveMembersAsync(Guid organizationId,
-        Guid? after, CancellationToken cancellationToken = default)
+        Guid? after, CancellationToken cancellationToken = default, Guid? userId = null)
     {
         if (!connectionFactory.HasCommandScope(organizationId))
             throw new InvalidOperationException("Member discovery requires the owning authorized Organization transaction.");
@@ -19,10 +19,12 @@ internal sealed class PostgresOrganizationStore(
                 m.created_at,m.updated_at,m.version
             FROM organization_members m JOIN users u ON u.id=m.user_id
             WHERE m.tenant_id=@tenant AND m.status='ACTIVE' AND (@after IS NULL OR m.user_id>@after)
+                AND (@user_id IS NULL OR m.user_id=@user_id)
             ORDER BY m.user_id LIMIT 51;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", organizationId);
         command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        command.Parameters.AddWithValue("user_id", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)userId ?? DBNull.Value);
         var result = new List<OrganizationMemberSummary>();
         await using var rows = await command.ExecuteReaderAsync(cancellationToken);
         while (await rows.ReadAsync(cancellationToken))

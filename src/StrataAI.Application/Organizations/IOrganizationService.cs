@@ -2,6 +2,8 @@ namespace StrataAI.Application.Organizations;
 
 public interface IOrganizationService
 {
+    Task<OrganizationOperation<OrganizationMemberReview>> ReviewMemberAsync(Guid organizationId,
+        Guid actorUserId, Guid targetUserId, CancellationToken cancellationToken = default);
     Task<OrganizationOperation<OrganizationMemberPage>> ListMembersAsync(Guid organizationId,
         Guid actorUserId, Guid? after, CancellationToken cancellationToken = default);
     Task<OrganizationOperation<OrganizationSummary>> CreateAsync(

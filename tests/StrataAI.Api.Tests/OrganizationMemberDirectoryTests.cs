@@ -10,6 +10,29 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD03_exact_member_review_distinguishes_current_absence_only_for_authorized_administrators()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(member);
+        using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Exact membership review" });
+        var org = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var user = (await member.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var store = app.Services.GetRequiredService<IOrganizationStore>();
+        await store.AddOrRestoreMemberAsync(org, user, OrganizationRole.Member, DateTimeOffset.UtcNow, ct);
+        var current = await owner.GetFromJsonAsync<JsonElement>($"/organizations/{org}/members/{user}", ct);
+        Assert.Equal(org, current.GetProperty("organizationId").GetGuid()); Assert.Equal(0, current.GetProperty("actorRole").GetInt32());
+        Assert.Equal(user, current.GetProperty("member").GetProperty("userId").GetGuid());
+        using var denied = await member.GetAsync($"/organizations/{org}/members/{user}", ct); Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        using var removed = await Mutate(owner, HttpMethod.Delete, $"/organizations/{org}/members/{user}?expectedVersion=1", new { });
+        Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
+        var absent = await owner.GetFromJsonAsync<JsonElement>($"/organizations/{org}/members/{user}", ct);
+        Assert.Equal(JsonValueKind.Null, absent.GetProperty("member").ValueKind);
+        using var foreign = await owner.GetAsync($"/organizations/{Guid.NewGuid()}/members/{user}", ct); Assert.Equal(HttpStatusCode.NotFound, foreign.StatusCode);
+        Assert.DoesNotContain("email", await foreign.Content.ReadAsStringAsync(ct));
+    }
+
+    [Fact]
     public async Task PRD03_member_removal_rejects_stale_consent_after_role_change()
     {
         var ct = TestContext.Current.CancellationToken;

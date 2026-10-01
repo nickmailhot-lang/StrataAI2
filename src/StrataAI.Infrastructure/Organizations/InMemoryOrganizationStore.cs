@@ -10,11 +10,12 @@ internal sealed class InMemoryOrganizationStore(IIdentityStore identities, Ident
     private readonly Dictionary<(Guid OrganizationId, Guid UserId), OrganizationMembership> _members = [];
 
     public async Task<IReadOnlyList<OrganizationMemberSummary>> ListActiveMembersAsync(Guid organizationId,
-        Guid? after, CancellationToken cancellationToken = default)
+        Guid? after, CancellationToken cancellationToken = default, Guid? userId = null)
     {
         OrganizationMembership[] members;
         lock (_sync)
             members = _members.Values.Where(member => member.OrganizationId == organizationId && member.Active
+                && (userId is null || member.UserId == userId)
                 && (after is null || string.CompareOrdinal(member.UserId.ToString("N"), after.Value.ToString("N")) > 0))
                 .OrderBy(member => member.UserId.ToString("N"), StringComparer.Ordinal).ToArray();
         var result = new List<OrganizationMemberSummary>();
