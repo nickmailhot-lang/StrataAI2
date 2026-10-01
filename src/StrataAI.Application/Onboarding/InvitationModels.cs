@@ -34,6 +34,8 @@ public sealed record CreatedInvitation(
     InvitationRecord Invitation,
     string RawToken);
 
+public sealed record InvitationCreationReplay(string Fingerprint, bool Expired, InvitationRecord Invitation);
+
 public sealed record PendingInvitationPage(IReadOnlyList<PendingInvitation> Items, Guid? NextCursor);
 
 public sealed record AcceptedInvitation(

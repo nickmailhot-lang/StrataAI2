@@ -46,7 +46,12 @@ internal sealed class PostgresOrganizationUnitOfWork(
                 }
                 if (!await actors.VerifyAsync(actorUserId, cancellationToken))
                     return OrganizationOperation<T>.Failure("session_unavailable");
-                return await operation();
+                var result = await operation();
+                // Wall-clock session expiry can occur during a database write
+                // wait even while account/session locks prevent revocation.
+                if (result.Succeeded && !await actors.VerifyAsync(actorUserId, cancellationToken))
+                    return OrganizationOperation<T>.Failure("session_unavailable");
+                return result;
             }, result => result.Succeeded, cancellationToken);
         }
         catch (NpgsqlException exception)

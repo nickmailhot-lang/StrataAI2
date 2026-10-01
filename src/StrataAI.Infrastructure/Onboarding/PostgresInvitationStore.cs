@@ -7,6 +7,37 @@ namespace StrataAI.Infrastructure.Onboarding;
 internal sealed class PostgresInvitationStore(
     PostgresConnectionFactory connectionFactory) : IInvitationStore
 {
+    public async Task<InvitationCreationReplay?> FindCreationReplayAsync(Guid organizationId, Guid actorId, Guid key,
+        CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId)) throw new InvalidOperationException("Invitation replay requires the authorized Organization transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT i.id,i.tenant_id,i.invited_email,i.email_normalized,i.token_hash,i.target_surface,i.target_role,
+                i.created_by_user_id,i.created_at,i.expires_at,i.accepted_at,i.revoked_at,i.accepted_by_user_id,
+                r.fingerprint,r.expires_at<=clock_timestamp()
+            FROM invitation_creation_replays r JOIN invitations i ON i.id=r.invitation_id AND i.tenant_id=r.tenant_id
+            WHERE r.tenant_id=@tenant AND r.actor_id=@actor AND r.key_id=@key;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("actor", actorId); command.Parameters.AddWithValue("key", key);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken) ? new(reader.GetString(13), reader.GetBoolean(14), ReadInvitation(reader)) : null;
+    }
+
+    public async Task SaveCreationReplayAsync(Guid organizationId, Guid actorId, Guid key, string fingerprint,
+        Guid invitationId, CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId)) throw new InvalidOperationException("Invitation replay requires the authorized Organization transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            INSERT INTO invitation_creation_replays(tenant_id,actor_id,key_id,fingerprint,invitation_id)
+            VALUES(@tenant,@actor,@key,@fingerprint,@invitation);
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("actor", actorId);
+        command.Parameters.AddWithValue("key", key); command.Parameters.AddWithValue("fingerprint", fingerprint); command.Parameters.AddWithValue("invitation", invitationId);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     public async Task CreateAsync(
         InvitationRecord invitation,
         CancellationToken cancellationToken = default)

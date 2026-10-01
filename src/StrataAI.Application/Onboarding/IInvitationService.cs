@@ -9,7 +9,8 @@ public interface IInvitationService
         InvitationSurface surface,
         string targetRole,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        Guid? idempotencyKey = null);
 
     Task<InvitationOperation<PendingInvitationPage>> ListPendingAsync(
         Guid actorUserId,

@@ -1,4 +1,6 @@
 using System.Net.Mail;
+using System.Security.Cryptography;
+using System.Text.Json;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
@@ -17,9 +19,9 @@ public sealed class InvitationService(
 
     public Task<InvitationOperation<CreatedInvitation>> CreateAsync(
         Guid organizationId, Guid actorUserId, string invitedEmail, InvitationSurface surface,
-        string targetRole, string correlationId, CancellationToken cancellationToken = default) =>
+        string targetRole, string correlationId, CancellationToken cancellationToken = default, Guid? idempotencyKey = null) =>
         ExecuteAsync(organizationId, actorUserId, null,
-            () => CreateCoreAsync(organizationId, actorUserId, invitedEmail, surface, targetRole, correlationId, cancellationToken), cancellationToken);
+            () => CreateCoreAsync(organizationId, actorUserId, invitedEmail, surface, targetRole, correlationId, cancellationToken, idempotencyKey), cancellationToken);
 
     public Task<InvitationOperation<bool>> RevokeAsync(
         Guid organizationId, Guid actorUserId, Guid invitationId, string correlationId,
@@ -80,7 +82,8 @@ public sealed class InvitationService(
         InvitationSurface surface,
         string targetRole,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Guid? idempotencyKey = null)
     {
         var membership = await organizationStore.FindMembershipAsync(
             organizationId,
@@ -111,6 +114,22 @@ public sealed class InvitationService(
         if (surface == InvitationSurface.Internal && role == "OWNER" && membership.Role != OrganizationRole.Owner)
             return InvitationOperation<CreatedInvitation>.Failure("insufficient_permission");
 
+        if (idempotencyKey == Guid.Empty) return InvitationOperation<CreatedInvitation>.Failure("invalid_idempotency_key");
+        var fingerprint = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new {
+            operation = "INVITATION_CREATE_V1", organizationId, actorUserId, emailNormalized, surface, role })));
+        if (idempotencyKey is { } key)
+        {
+            var replay = await invitationStore.FindCreationReplayAsync(organizationId, actorUserId, key, cancellationToken);
+            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                return InvitationOperation<CreatedInvitation>.Failure("session_unavailable");
+            if (replay is not null)
+            {
+                if (replay.Fingerprint != fingerprint) return InvitationOperation<CreatedInvitation>.Failure("idempotency_key_reused");
+                if (replay.Expired) return InvitationOperation<CreatedInvitation>.Failure("idempotency_key_expired");
+                return InvitationOperation<CreatedInvitation>.Success(new(replay.Invitation, ""));
+            }
+        }
+
         var now = clock.UtcNow;
         var organization = await organizationStore.FindOrganizationAsync(organizationId, cancellationToken);
         if (organization is null) return InvitationOperation<CreatedInvitation>.Failure("organization_not_found");
@@ -139,8 +158,11 @@ public sealed class InvitationService(
             correlationId,
             cancellationToken);
 
+        if (idempotencyKey is { } completedKey)
+            await invitationStore.SaveCreationReplayAsync(organizationId, actorUserId, completedKey, fingerprint, invitation.Id, cancellationToken);
+
         return InvitationOperation<CreatedInvitation>.Success(
-            new CreatedInvitation(invitation, rawToken));
+            new CreatedInvitation(invitation, idempotencyKey is null ? rawToken : ""));
     }
 
     public async Task<InvitationOperation<PendingInvitationPage>> ListPendingAsync(

@@ -350,6 +350,9 @@ jobs:
       - name: Verified-email invitation discovery and retry-safe acceptance
         run: bash scripts/ci/test-invitation-discovery.sh
 
+      - name: Atomic invitation creation retries against exact release API
+        run: bash scripts/ci/test-invitation-creation-retries.sh
+
       - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
         run: scripts/ci/test-board-discovery.sh
 

@@ -11,6 +11,25 @@ internal sealed class InMemoryInvitationStore(
     private readonly Dictionary<string, InvitationRecord> _byToken =
         new(StringComparer.Ordinal);
     private readonly HashSet<(Guid OrganizationId, Guid UserId, string Relationship)> _portalAccess = [];
+    private readonly Dictionary<(Guid OrganizationId, Guid ActorId, Guid Key), (string Fingerprint, Guid InvitationId, DateTimeOffset ExpiresAt)> _creationReplays = [];
+
+    public Task<InvitationCreationReplay?> FindCreationReplayAsync(Guid organizationId, Guid actorId, Guid key,
+        CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            if (!_creationReplays.TryGetValue((organizationId, actorId, key), out var receipt))
+                return Task.FromResult<InvitationCreationReplay?>(null);
+            var invitation = _byToken.Values.Single(row => row.Id == receipt.InvitationId && row.OrganizationId == organizationId);
+            return Task.FromResult<InvitationCreationReplay?>(new(receipt.Fingerprint, receipt.ExpiresAt <= clock.UtcNow, invitation));
+        }
+    }
+    public Task SaveCreationReplayAsync(Guid organizationId, Guid actorId, Guid key, string fingerprint,
+        Guid invitationId, CancellationToken cancellationToken = default)
+    {
+        lock (_sync) _creationReplays.Add((organizationId, actorId, key), (fingerprint, invitationId, clock.UtcNow.AddHours(24)));
+        return Task.CompletedTask;
+    }
 
     public Task CreateAsync(
         InvitationRecord invitation,

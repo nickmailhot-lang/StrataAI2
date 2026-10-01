@@ -25,6 +25,14 @@ public static class InvitationEndpoints
                         return Results.Unauthorized();
                     }
 
+                    Guid? retryKey = null;
+                    if (context.Request.Headers.TryGetValue("Idempotency-Key", out var values))
+                    {
+                        if (values.Count != 1 || values[0]?.Length != 36 || !Guid.TryParseExact(values[0], "D", out var key) || key == Guid.Empty)
+                            return ErrorFor("invalid_idempotency_key");
+                        retryKey = key;
+                    }
+
                     if (!TryParseSurface(request.Surface, out var surface))
                     {
                         return Problem(
@@ -40,7 +48,8 @@ public static class InvitationEndpoints
                         surface,
                         request.TargetRole,
                         context.TraceIdentifier,
-                        cancellationToken);
+                        cancellationToken,
+                        retryKey);
 
                     if (!result.Succeeded || result.Value is null)
                     {
@@ -57,7 +66,7 @@ public static class InvitationEndpoints
                             invitation.Surface.ToString().ToUpperInvariant(),
                             invitation.TargetRole,
                             invitation.ExpiresAt,
-                            runtime.Mode == RuntimeMode.Demo
+                            runtime.Mode == RuntimeMode.Demo && retryKey is null
                                 ? result.Value.RawToken
                                 : null));
                 })
@@ -188,6 +197,9 @@ public static class InvitationEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_idempotency_key" => Problem(StatusCodes.Status400BadRequest, errorCode, "A nonempty UUID retry key is required."),
+            "idempotency_key_reused" => Problem(StatusCodes.Status409Conflict, errorCode, "This retry key belongs to a different invitation request."),
+            "idempotency_key_expired" => Problem(StatusCodes.Status409Conflict, errorCode, "The invitation acknowledgment has expired. This key cannot create another invitation."),
             "invalid_invitation_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode, "A nonempty UUID invitation cursor is required."),
             "session_unavailable" => Problem(
                 StatusCodes.Status401Unauthorized,
