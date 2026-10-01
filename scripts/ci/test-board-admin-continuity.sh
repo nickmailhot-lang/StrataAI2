@@ -21,7 +21,8 @@ owner=$(jq -r '.user.id' "$scratch/owner.user")
 first=$(jq -r '.user.id' "$scratch/first.user")
 second=$(jq -r '.user.id' "$scratch/second.user")
 request() {
-  curl --max-time 30 --silent --show-error -b "$scratch/$1.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $5" -X "$2" -d "$4" -o "$scratch/$1.response" -w '%{http_code}' "$base$3"
+  local match=(); if test -n "${6:-}"; then match=(-H "If-Match: $6"); fi
+  curl --max-time 30 --silent --show-error -b "$scratch/$1.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $5" "${match[@]}" -X "$2" -d "$4" -o "$scratch/$1.response" -w '%{http_code}' "$base$3"
 }
 key() { cat /proc/sys/kernel/random/uuid; }
 test "$(request owner POST /organizations '{"name":"Exact Board admin continuity"}' "$(key)")" = 201
@@ -103,3 +104,37 @@ test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -o 
 jq -e --arg user "$former" 'map(select(.userId==$user)) | length==1 and .[0].organizationMemberActive==false and .[0].displayName==null and .[0].email==null' "$scratch/page.former" >/dev/null
 test "$before_page" = "$(state)"
 echo 'Exact-image Board member directory: real FK fixtures, bounded seek, complete ordered pages, terminal cursor absence, invalid cursor and no read audit/event/job/replay writes passed.'
+
+consent_user=$(jq -r --arg former "$former" '[.[] | select(.displayName=="Directory fixture" and .userId!=$former)][0].userId' "$scratch/page.first")
+test -n "$consent_user"; test "$consent_user" != null
+member_version() { admin "SELECT version FROM board_members WHERE board_id='$page_board' AND user_id='$consent_user';"; }
+consent_state() { admin "SELECT jsonb_build_object('member',(SELECT to_jsonb(m) FROM board_members m WHERE board_id='$page_board' AND user_id='$consent_user'),
+ 'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
+ 'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
+ 'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
+ 'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text;"; }
+old_version=$(member_version)
+test "$(request owner PATCH "/boards/$page_board/members/$consent_user" '{"role":"ADMIN"}' "$(key)")" = 200
+before_consent=$(consent_state)
+for method in PATCH DELETE; do
+ test "$(request owner "$method" "/boards/$page_board/members/$consent_user" '{"role":"MEMBER"}' "$(key)" "$old_version")" = 409
+ jq -e '.code=="version_conflict"' "$scratch/owner.response" >/dev/null
+ test "$before_consent" = "$(consent_state)"
+ test "$(request owner "$method" "/boards/$page_board/members/$consent_user" '{"role":"MEMBER"}' "$(key)" '-1')" = 400
+ jq -e '.code=="invalid_member_version"' "$scratch/owner.response" >/dev/null
+ test "$before_consent" = "$(consent_state)"
+done
+reviewed_version=$(member_version); role_key=$(key)
+test "$(request owner PATCH "/boards/$page_board/members/$consent_user" '{"role":"MEMBER"}' "$role_key" "$reviewed_version")" = 200
+cp "$scratch/owner.response" "$scratch/role.ack"
+test "$(request owner PATCH "/boards/$page_board/members/$consent_user" '{"role":"ADMIN"}' "$(key)")" = 200
+later_state=$(consent_state)
+test "$(request owner PATCH "/boards/$page_board/members/$consent_user" '{"role":"MEMBER"}' "$role_key" "$reviewed_version")" = 200
+cmp "$scratch/role.ack" "$scratch/owner.response"; test "$later_state" = "$(consent_state)"
+reviewed_version=$(member_version); remove_key=$(key)
+test "$(request owner DELETE "/boards/$page_board/members/$consent_user" '{}' "$remove_key" "$reviewed_version")" = 204
+test "$(request owner PATCH "/boards/$page_board/members/$consent_user" '{"role":"MEMBER"}' "$(key)")" = 200
+later_state=$(consent_state)
+test "$(request owner DELETE "/boards/$page_board/members/$consent_user" '{}' "$remove_key" "$reviewed_version")" = 204
+test "$later_state" = "$(consent_state)"
+echo 'Exact-image Board member consent: stale/malformed role and removal versions reject without writes, and keyed acknowledgments never reapply to later membership state.'

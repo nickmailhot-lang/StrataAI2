@@ -85,3 +85,12 @@ described as mandatory concurrency protection for every API caller.
 Two host cases cover stale role/removal consent and successful keyed retry after
 a later member change. Warnings-as-errors build passes. Linux host execution,
 real PostgreSQL consent checks and the management UI remain pending.
+
+The required Board continuity release fixture now exercises consent through the
+restricted PostgreSQL API: stale PATCH and DELETE must return `version_conflict`,
+malformed versions must return `invalid_member_version`, and member/audit/event/
+job/replay state must remain unchanged. A successful guarded role change is then
+superseded; replay must return the original acknowledgment without changing the
+newer role. A guarded removal followed by explicit re-addition similarly replays
+its 204 acknowledgment without removing the new membership. Local shell syntax
+and diff checks pass; actual fixture execution remains pending exact-image CI.
