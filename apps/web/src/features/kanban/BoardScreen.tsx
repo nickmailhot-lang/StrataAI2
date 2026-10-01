@@ -29,6 +29,7 @@ import { ListPositionControls } from "./ListPositionControls";
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
+import { listKeyboardCoordinates } from './listKeyboardCoordinates';
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
@@ -78,7 +79,7 @@ function BoardContent() {
     const next = new Set(previous); if (unresolved) next.add(id); else next.delete(id); return next;
   }), []);
   const dragList = useRef<{ listId: string; name: string; version: number } | undefined>(undefined);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: listKeyboardCoordinates }));
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
   const reading = useRef(false);

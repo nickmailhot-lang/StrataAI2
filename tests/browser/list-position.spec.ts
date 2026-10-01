@@ -47,8 +47,24 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect(persisted.map((list: { id: string }) => list.id)).toEqual([lists[0].id, lists[1].id]);
       expect(persisted.map((list: { version: number }) => list.version)).toEqual([2, 2]);
     }
+    const keyboardName = viewport.width === 1280 ? 'Second' : 'First';
+    const dragHandle = page.getByRole('button', { name: `Drag ${keyboardName} list`, exact: true });
+    const beforeKeyboard = await (await context.request.get(`/boards/${board}`)).json();
+    let moveWrites = 0;
+    page.on('request', request => { if (request.method() === 'PATCH' && request.url().includes('/lists/')) moveWrites++; });
+    await dragHandle.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Escape');
+    expect(moveWrites).toBe(0);
+    expect((await (await context.request.get(`/boards/${board}`)).json()).lists).toEqual(beforeKeyboard.lists);
+    await dragHandle.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Space');
+    await expect(page.getByRole('region').first()).toHaveAccessibleName(keyboardName);
+    await expect(page.getByRole('button', { name: `Move ${keyboardName} list`, exact: true })).toBeEnabled();
+    expect(moveWrites).toBe(1);
+    const afterKeyboard = await (await context.request.get(`/boards/${board}`)).json();
+    expect(afterKeyboard.lists[0].list.id).toBe(lists[viewport.width === 1280 ? 1 : 0].id);
+    expect(afterKeyboard.lists[0].list.version).toBe(beforeKeyboard.lists[1].list.version + 1);
+    expect(afterKeyboard.lists[1].list.rank).toBe(beforeKeyboard.lists[0].list.rank);
     await page.reload();
-    await expect(page.getByRole('region').first()).toHaveAccessibleName(viewport.width === 1280 ? 'First' : 'Second');
+    await expect(page.getByRole('region').first()).toHaveAccessibleName(keyboardName);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 }

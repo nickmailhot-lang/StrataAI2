@@ -81,5 +81,14 @@ Runtime pointer/browser execution, boundary auto-scroll and full keyboard/screen
 reader/performance acceptance remain pending. Card drag/drop, rebalance and
 virtualization are unfinished. No PRD closure follows from source or collection.
 
+Keyboard dragging now targets the next enabled, measured column for Left/Right,
+rather than using fixed pixel increments. Target centers account for responsive
+widths and the narrower end target; missing measurements and boundary presses
+do not move. Three source cases verify these behaviors. The release browser
+cases at desktop and phone widths also cancel a keyboard drag with Escape and
+require zero writes/unchanged persisted lists, then complete a keyboard drop and
+check the moved revision, unchanged sibling rank and reload. These cases collect;
+their runtime execution and assistive-technology behavior remain unverified.
+
 API usage follows the installed types and the official
 [dnd-kit draggable guidance](https://dndkit.com/legacy/api-documentation/draggable/).
