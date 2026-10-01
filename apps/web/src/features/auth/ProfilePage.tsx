@@ -1,4 +1,5 @@
 import { apiFetch } from '../../api/apiFetch';
+import { formatUserDateTime } from './userDateTime';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   Alert,
@@ -22,6 +23,8 @@ type UserProfile = {
   status: string;
   emailVerified: boolean;
   version: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 function isProfile(value: unknown): value is UserProfile {
@@ -30,7 +33,9 @@ function isProfile(value: unknown): value is UserProfile {
   return typeof user.id === 'string' && user.id.length > 0 && typeof user.email === 'string'
     && typeof user.displayName === 'string' && (user.avatarUrl === null || typeof user.avatarUrl === 'string')
     && typeof user.locale === 'string' && typeof user.timezone === 'string' && typeof user.status === 'string'
-    && typeof user.emailVerified === 'boolean' && Number.isSafeInteger(user.version) && (user.version ?? 0) > 0;
+    && typeof user.emailVerified === 'boolean' && Number.isSafeInteger(user.version) && (user.version ?? 0) > 0
+    && typeof user.createdAt === 'string' && Number.isFinite(Date.parse(user.createdAt))
+    && typeof user.updatedAt === 'string' && Number.isFinite(Date.parse(user.updatedAt));
 }
 
 export function ProfilePage() {
@@ -185,6 +190,8 @@ export function ProfilePage() {
           {profile.displayName}
         </Typography>
         <Typography>{profile.email}</Typography>
+        <Typography>Account created: <time dateTime={profile.createdAt}>{formatUserDateTime(profile.createdAt, profile) ?? 'Date display unavailable for this timezone.'}</time></Typography>
+        <Typography>Last updated: <time dateTime={profile.updatedAt}>{formatUserDateTime(profile.updatedAt, profile) ?? 'Date display unavailable for this timezone.'}</time></Typography>
         <Typography color="text.secondary">
           {profile.locale} · {profile.timezone}
         </Typography>

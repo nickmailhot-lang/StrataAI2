@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProfilePage } from './ProfilePage';
 
-const profile = { id: 'user-1', email: 'council@example.test', displayName: 'Council', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'active', emailVerified: true, version: 1 };
+const profile = { id: 'user-1', email: 'council@example.test', displayName: 'Council', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'active', emailVerified: true, version: 1, createdAt: '2026-03-08T09:30:00Z', updatedAt: '2026-03-08T10:30:00Z' };
 function renderProfile() {
   render(<MemoryRouter initialEntries={['/profile']}><Routes><Route path="/profile" element={<ProfilePage />} /><Route path="/login" element={<p>Sign in again</p>} /></Routes></MemoryRouter>);
 }
@@ -18,6 +18,8 @@ describe('PRD-02 profile management', () => {
     expect(screen.getByLabelText(/Timezone/)).toHaveValue('America/Vancouver');
     await act(() => vi.advanceTimersByTimeAsync(10_000));
     expect(screen.getByLabelText(/Timezone/)).toHaveValue('UTC');
+    expect(screen.getByText(/Account created:/)).toHaveTextContent('09:30');
+    expect(screen.getByText(/Last updated:/)).toHaveTextContent('10:30');
   });
 
   it('PRD-02-TC-08 a read started before save cannot overwrite its authoritative acknowledgment', async () => {

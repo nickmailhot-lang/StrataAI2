@@ -42,6 +42,13 @@ public sealed class IdentityService(
             return IdentityOperation<RegistrationOutcome>.Failure("invalid_display_name");
         }
 
+        var profileLocale = NormalizeLocale(locale);
+        if (!TryNormalizeLocale(profileLocale, out profileLocale))
+            return IdentityOperation<RegistrationOutcome>.Failure("invalid_locale");
+        var profileTimezone = NormalizeTimezone(timezone);
+        if (!TryNormalizeTimezone(profileTimezone, out profileTimezone))
+            return IdentityOperation<RegistrationOutcome>.Failure("invalid_timezone");
+
         var now = clock.UtcNow;
         var userId = Guid.NewGuid();
         var status = policy.RequireVerifiedEmail
@@ -54,8 +61,8 @@ public sealed class IdentityService(
             normalized,
             cleanDisplayName,
             null,
-            NormalizeLocale(locale),
-            NormalizeTimezone(timezone),
+            profileLocale,
+            profileTimezone,
             status,
             !policy.RequireVerifiedEmail,
             passwordHashes.Hash(userId, password),
@@ -427,23 +434,11 @@ public sealed class IdentityService(
 
         var nextLocale = (locale ?? existing.Locale).Trim();
         var nextTimezone = (timezone ?? existing.Timezone).Trim();
-        if (string.IsNullOrWhiteSpace(nextLocale) || nextLocale.Length > 64)
+        if (!TryNormalizeLocale(nextLocale, out nextLocale))
         {
             return IdentityOperation<UserProfile>.Failure("invalid_locale");
         }
-        try
-        {
-            if (System.Globalization.CultureInfo.GetCultureInfo(nextLocale).IsNeutralCulture)
-            {
-                return IdentityOperation<UserProfile>.Failure("invalid_locale");
-            }
-        }
-        catch (System.Globalization.CultureNotFoundException)
-        {
-            return IdentityOperation<UserProfile>.Failure("invalid_locale");
-        }
-        if (nextTimezone.Length > 128 ||
-            !TimeZoneInfo.TryFindSystemTimeZoneById(nextTimezone, out _))
+        if (!TryNormalizeTimezone(nextTimezone, out nextTimezone))
         {
             return IdentityOperation<UserProfile>.Failure("invalid_timezone");
         }
@@ -521,6 +516,28 @@ public sealed class IdentityService(
     private static string NormalizeTimezone(string? timezone) =>
         string.IsNullOrWhiteSpace(timezone) ? "America/Vancouver" : timezone.Trim();
 
+    private static bool TryNormalizeLocale(string value, out string normalized)
+    {
+        normalized = value;
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 64) return false;
+        try
+        {
+            var culture = System.Globalization.CultureInfo.GetCultureInfo(value);
+            if (culture.IsNeutralCulture) return false;
+            normalized = culture.Name;
+            return true;
+        }
+        catch (System.Globalization.CultureNotFoundException) { return false; }
+    }
+
+    private static bool TryNormalizeTimezone(string value, out string normalized)
+    {
+        normalized = value;
+        if (value.Length > 128 || !TimeZoneInfo.TryFindSystemTimeZoneById(value, out var zone)) return false;
+        normalized = zone.Id == "UTC" ? "UTC" : TimeZoneInfo.TryConvertWindowsIdToIanaId(zone.Id, out var iana) ? iana : zone.Id;
+        return true;
+    }
+
     private static UserProfile ToProfile(UserIdentity user) =>
         new(
             user.Id,
@@ -528,7 +545,7 @@ public sealed class IdentityService(
             user.DisplayName,
             user.AvatarUrl,
             user.Locale,
-            user.Timezone,
+            TryNormalizeTimezone(user.Timezone, out var timezone) ? timezone : user.Timezone,
             user.Status,
             user.EmailVerified,
             user.CreatedAt,

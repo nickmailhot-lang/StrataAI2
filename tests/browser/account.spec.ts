@@ -42,6 +42,9 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await page.getByLabel(/^Timezone/).fill('UTC');
   await page.getByRole('button', { name: 'Save profile', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Profile saved.');
+  const currentProfile = await (await context.request.get('/me')).json();
+  await expect(page.locator(`time[datetime="${currentProfile.updatedAt}"]`)).toContainText(currentProfile.updatedAt.slice(11, 16));
+  await expect(page.locator(`time[datetime="${currentProfile.updatedAt}"]`)).toContainText('UTC');
   await second.bringToFront();
   await expect(second.getByRole('alert')).toContainText('changed elsewhere', { timeout: 15_000 });
   await expect(second.getByLabel(/^Display name/)).toHaveValue('Stale browser save');
