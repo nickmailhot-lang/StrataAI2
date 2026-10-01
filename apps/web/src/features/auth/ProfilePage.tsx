@@ -8,6 +8,10 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Stack,
   TextField,
@@ -70,6 +74,11 @@ export function ProfilePage() {
   const [reload, setReload] = useState(0);
   const [conflict, setConflict] = useState(false);
   const [refreshError, setRefreshError] = useState<string>();
+  const [deactivateDialog, setDeactivateDialog] = useState(false);
+  const [deactivateUncertain, setDeactivateUncertain] = useState(false);
+  const [deactivateError, setDeactivateError] = useState<string>();
+  const deactivateRetry = useRef<string | undefined>(undefined);
+  const deactivateCancel = useRef<HTMLButtonElement | null>(null);
   const mutationEpoch = useRef(0);
   const mutation = useRef<AbortController | undefined>(undefined);
   const profileRetry = useRef<{ body: string; key: string } | undefined>(undefined);
@@ -83,9 +92,10 @@ export function ProfilePage() {
       mutationEpoch.current++;
       mutation.current?.abort();
       mutation.current = undefined;
+      deactivateRetry.current = undefined;
     };
   }, []);
-  const canRead = useEffectEvent(() => !busy);
+  const canRead = useEffectEvent(() => !busy && !mutation.current && !deactivateUncertain);
   const deny = useEffectEvent(() => {
     setProfile(undefined); setDraft(undefined);
     navigate('/login', { replace: true });
@@ -176,7 +186,7 @@ export function ProfilePage() {
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft || busy || conflict || mutation.current) return;
+    if (!draft || busy || conflict || deactivateUncertain || mutation.current) return;
     const submitted = draft;
     const epoch = ++mutationEpoch.current;
     const controller = new AbortController();
@@ -220,7 +230,7 @@ export function ProfilePage() {
   }
 
   async function logout() {
-    if (busy || mutation.current) return;
+    if (busy || deactivateUncertain || mutation.current) return;
     const epoch = ++mutationEpoch.current;
     const controller = new AbortController();
     mutation.current = controller;
@@ -242,6 +252,60 @@ export function ProfilePage() {
       if (mutation.current === controller) mutation.current = undefined;
       if (current()) setBusy(false);
     }
+  }
+
+  async function deactivate() {
+    if (busy || mutation.current || (!deactivateDialog && !deactivateUncertain)) return;
+    const epoch = ++mutationEpoch.current;
+    const controller = new AbortController();
+    mutation.current = controller;
+    const current = () => mounted.current && epoch === mutationEpoch.current;
+    setBusy(true); setDeactivateError(undefined); setSaved(false);
+    try {
+      deactivateRetry.current ??= crypto.randomUUID();
+      const response = await profileCommand('/me/deactivate', {
+        method: 'POST', credentials: 'include', headers: { 'Idempotency-Key': deactivateRetry.current },
+      }, controller, true);
+      if (!current()) return;
+      if (response.status === 204) {
+        deactivateRetry.current = undefined;
+        setProfile(undefined); setDraft(undefined); setDeactivateUncertain(false); setDeactivateDialog(false);
+        navigate('/login', { replace: true, state: { accountDeactivated: true } }); return;
+      }
+      if (response.status === 401) {
+        deactivateRetry.current = undefined;
+        setProfile(undefined); setDraft(undefined); setDeactivateUncertain(false); setDeactivateDialog(false);
+        navigate('/login', { replace: true }); return;
+      }
+      const code = (response.body as { code?: unknown } | undefined)?.code;
+      if (response.status === 409 && (code === 'organization_owner_required' || code === 'ownership_changed')) {
+        setDeactivateUncertain(false); setDeactivateDialog(false);
+        setDeactivateError(code === 'organization_owner_required'
+          ? 'Another active owner must take responsibility for every organization you own before you deactivate your account.'
+          : 'Your organization ownership changed. Review current access before retrying deactivation.');
+        return;
+      }
+      throw new Error('Unconfirmed account deactivation');
+    } catch {
+      if (current()) {
+        setDeactivateUncertain(true); setDeactivateDialog(false);
+        setDeactivateError('Unable to confirm account deactivation. Retry the original attempt to check whether it completed.');
+      }
+    } finally {
+      if (mutation.current === controller) mutation.current = undefined;
+      if (current()) setBusy(false);
+    }
+  }
+
+  if (deactivateUncertain) {
+    return <Paper variant="outlined" sx={{ p: 3, maxWidth: 720 }}><Stack spacing={2} aria-busy={busy}>
+      <Typography variant="h4" component="h2">Account deactivation</Typography>
+      {deactivateError && <Alert severity="error">{deactivateError}</Alert>}
+      <Typography>This account's deactivation still needs confirmation.</Typography>
+      {busy && <CircularProgress aria-label="Confirming account deactivation" />}
+      <Button type="button" variant="contained" disabled={busy} onClick={() => void deactivate()}>Retry deactivation</Button>
+      <Button type="button" disabled={busy} onClick={() => navigate('/login', { replace: true })}>Go to sign in</Button>
+    </Stack></Paper>;
   }
 
   if (error && !profile) {
@@ -273,6 +337,7 @@ export function ProfilePage() {
           {profile.emailVerified ? ' · email verified' : ''}
         </Typography>
         {error ? <Alert severity="error">{error}</Alert> : null}
+        {deactivateError ? <Alert severity="error">{deactivateError}</Alert> : null}
         {refreshError ? <Alert severity="warning" role="status">{refreshError}</Alert> : null}
         {conflict ? <Button type="button" disabled={busy} onClick={() => { setError(undefined); setSaved(false); setProfile(undefined); setDraft(undefined); setReload(value => value + 1); }}>Discard edits and load latest profile</Button> : null}
         {saved ? <Alert severity="success" role="status">Profile saved.</Alert> : null}
@@ -285,7 +350,19 @@ export function ProfilePage() {
         <Button type="button" disabled={busy} onClick={logout} variant="outlined" sx={{ alignSelf: 'flex-start' }}>
           Sign out
         </Button>
+        <Button type="button" disabled={busy} color="error" variant="outlined" sx={{ alignSelf: 'flex-start' }} onClick={() => setDeactivateDialog(true)}>
+          Deactivate account
+        </Button>
       </Stack>
+      <Dialog open={deactivateDialog} onClose={() => { if (!busy) setDeactivateDialog(false); }} aria-labelledby="confirm-account-deactivation"
+        slotProps={{ transition: { onEntered: () => deactivateCancel.current?.focus() } }}>
+        <DialogTitle id="confirm-account-deactivation">Deactivate your account?</DialogTitle>
+        <DialogContent><Typography>You will be signed out and future sign-in will be blocked. Your historical activity will be preserved. Every organization you own must have another active owner.</Typography></DialogContent>
+        <DialogActions>
+          <Button type="button" ref={deactivateCancel} autoFocus disabled={busy} onClick={() => setDeactivateDialog(false)}>Keep account active</Button>
+          <Button type="button" color="error" variant="contained" disabled={busy} onClick={() => void deactivate()}>Confirm deactivation</Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 }

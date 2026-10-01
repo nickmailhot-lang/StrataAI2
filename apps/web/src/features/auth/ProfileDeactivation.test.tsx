@@ -1,0 +1,108 @@
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { ProfilePage } from './ProfilePage';
+import { AuthPage } from './AuthPage';
+vi.mock('./identityLive', () => ({ watchIdentity: () => () => {} }));
+
+const profile = { id: '00000000-0000-4000-8000-000000000001', email: 'private-owner@example.test', displayName: 'Private owner', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'ACTIVE', emailVerified: true, version: 1, createdAt: '2026-03-08T09:30:00Z', updatedAt: '2026-03-08T10:30:00Z' };
+const snapshot = () => new Response(JSON.stringify({ profile, cursor: 1, latestSequence: 1, hasMore: false, events: [] }));
+function renderProfile() {
+  return render(<MemoryRouter initialEntries={['/profile']}><Routes><Route path="/profile" element={<ProfilePage />} /><Route path="/login" element={<AuthPage />} /></Routes></MemoryRouter>);
+}
+async function confirm() {
+  fireEvent.click(await screen.findByRole('button', { name: 'Deactivate account' }));
+  await screen.findByRole('dialog', { name: 'Deactivate your account?' });
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm deactivation' }));
+}
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+
+describe('PRD-02/03/18 account deactivation', () => {
+  it('requires explicit confirmation and focuses the safe cancellation action', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(snapshot()); vi.stubGlobal('fetch', fetchMock);
+    renderProfile();
+    fireEvent.click(await screen.findByRole('button', { name: 'Deactivate account' }));
+    await screen.findByRole('dialog', { name: 'Deactivate your account?' });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Keep account active' })).toHaveFocus());
+    expect(screen.getByText(/future sign-in will be blocked/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Keep account active' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['organization_owner_required', 'ownership_changed'])('preserves edits on %s and reuses the refused intent after fresh confirmation', async code => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(snapshot())
+      .mockResolvedValueOnce(new Response(JSON.stringify({ code, title: 'Private organization detail must not appear' }), { status: 409 }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock); renderProfile();
+    await screen.findByRole('button', { name: 'Deactivate account' });
+    fireEvent.change(screen.getByLabelText(/Display name/), { target: { value: 'Preserved draft' } });
+    await confirm();
+    await screen.findByText(code === 'organization_owner_required' ? /Another active owner must/ : /Your organization ownership changed/);
+    expect(screen.getByLabelText(/Display name/)).toHaveValue('Preserved draft');
+    expect(screen.queryByText('Private organization detail must not appear')).not.toBeInTheDocument();
+    await confirm();
+    await screen.findByText('Your account is deactivated. Historical activity is preserved.');
+    expect(new Headers(fetchMock.mock.calls[2][1].headers).get('Idempotency-Key')).toBe(new Headers(fetchMock.mock.calls[1][1].headers).get('Idempotency-Key'));
+  });
+
+  it('preserves a lost acknowledgment retry while suppressing reads and private profile details', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn().mockResolvedValueOnce(snapshot()).mockRejectedValueOnce(new Error('Lost committed response'))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock); renderProfile();
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.click(screen.getByRole('button', { name: 'Deactivate account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm deactivation' }));
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByRole('button', { name: 'Retry deactivation' })).toBeEnabled();
+    expect(screen.queryByText(profile.email)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Display name/)).not.toBeInTheDocument();
+    await act(() => vi.advanceTimersByTimeAsync(20_000));
+    fireEvent(window, new Event('focus')); fireEvent(window, new Event('online'));
+    await act(async () => { await Promise.resolve(); });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry deactivation' }));
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByText('Your account is deactivated. Historical activity is preserved.')).toBeInTheDocument();
+    const key = new Headers(fetchMock.mock.calls[1][1].headers).get('Idempotency-Key');
+    expect(key).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(new Headers(fetchMock.mock.calls[2][1].headers).get('Idempotency-Key')).toBe(key);
+    expect(fetchMock.mock.calls[2][0]).toBe('/me/deactivate');
+  });
+
+  it('does not treat an unexpected successful response as a deactivation acknowledgment', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(snapshot()).mockResolvedValueOnce(new Response(JSON.stringify(profile)));
+    vi.stubGlobal('fetch', fetchMock); renderProfile(); await confirm();
+    await screen.findByRole('button', { name: 'Retry deactivation' });
+    expect(screen.queryByText('Your account is deactivated. Historical activity is preserved.')).not.toBeInTheDocument();
+  });
+
+  it('clears protected details on current authorization denial without claiming deactivation', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(snapshot()).mockRejectedValueOnce(new Error('Lost response'))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }));
+    vi.stubGlobal('fetch', fetchMock); renderProfile(); await confirm();
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry deactivation' }));
+    await screen.findByRole('button', { name: 'Sign in' });
+    expect(screen.queryByText(profile.email)).not.toBeInTheDocument();
+    expect(screen.queryByText('Your account is deactivated. Historical activity is preserved.')).not.toBeInTheDocument();
+  });
+
+  it('bounds an abort-ignoring request and ignores a late deactivation acknowledgment after unmount', async () => {
+    vi.useFakeTimers();
+    let finish: ((response: Response) => void) | undefined;
+    const stalled = new Promise<Response>(resolve => { finish = resolve; });
+    const fetchMock = vi.fn().mockResolvedValueOnce(snapshot()).mockImplementationOnce(() => stalled);
+    vi.stubGlobal('fetch', fetchMock); const view = renderProfile();
+    await act(async () => { await Promise.resolve(); });
+    fireEvent.click(screen.getByRole('button', { name: 'Deactivate account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm deactivation' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm deactivation' }));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await act(() => vi.advanceTimersByTimeAsync(15_000));
+    expect(fetchMock.mock.calls[1][1].signal.aborted).toBe(true);
+    expect(screen.getByRole('button', { name: 'Retry deactivation' })).toBeEnabled();
+    view.unmount();
+    await act(async () => { finish!(new Response(null, { status: 204 })); await stalled; });
+    expect(screen.queryByText('Your account is deactivated. Historical activity is preserved.')).not.toBeInTheDocument();
+  });
+});

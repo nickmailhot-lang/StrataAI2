@@ -410,7 +410,10 @@ jobs:
         run: npx playwright test tests/browser/identity-mail.spec.ts
 
       - name: Restore isolated unverified-email account fixture for profile browser tests
-        run: STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL=false docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml up -d --wait --wait-timeout 180 api
+        # Earlier fixtures share the same socket peer and Nginx rate-limit zone.
+        # Start fresh processes from the same loaded release images; keep all
+        # production abuse limits enabled and preserve the PostgreSQL data.
+        run: STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL=false docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 api web
 
       - name: Authenticated browser E2E against exact release images
         env:

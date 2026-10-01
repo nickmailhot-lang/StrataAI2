@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 type AuthMode = 'login' | 'register';
 
@@ -22,12 +22,14 @@ type ApiProblem = {
 };
 
 export function AuthPage() {
+  const location = useLocation();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string>();
-  const [notice, setNotice] = useState<string>();
+  const [notice, setNotice] = useState<string | undefined>(() => location.state?.accountDeactivated === true
+    ? 'Your account is deactivated. Historical activity is preserved.' : undefined);
   const [verificationNeeded, setVerificationNeeded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [expiredAttempt, setExpiredAttempt] = useState(false);

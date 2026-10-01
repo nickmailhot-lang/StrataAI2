@@ -1,5 +1,60 @@
 import { expect, test } from '@playwright/test';
 
+for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+  test(`PRD-02/03/18: keyboard deactivation confirms and retries a lost acknowledgment at ${viewport.width}px`, async ({ page, context }) => {
+    await page.setViewportSize(viewport);
+    const headers = { 'X-StrataAI-Request': '1' };
+    const credentials = { email: `deactivation-ack-${Date.now()}@example.test`, password: 'browser-deactivate-correct-horse', displayName: 'Deactivation retry account' };
+    expect((await context.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
+    expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+    const originalCookies = await context.cookies();
+    const keys: string[] = [];
+    await page.route('**/me/deactivate', async route => {
+      keys.push(route.request().headers()['idempotency-key']);
+      if (keys.length === 1) {
+        expect((await route.fetch()).status()).toBe(204);
+        // Losing every response header leaves the original opaque cookie intact.
+        await context.addCookies(originalCookies);
+        await route.abort('timedout');
+      } else await route.continue();
+    });
+    await page.goto('/app/demo/profile');
+    const deactivate = page.getByRole('button', { name: 'Deactivate account', exact: true });
+    await deactivate.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog', { name: 'Deactivate your account?' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Keep account active' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0); expect(keys).toHaveLength(0);
+    await deactivate.focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Confirm deactivation' }).focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'Retry deactivation' })).toBeVisible();
+    await expect(page.getByText(credentials.email, { exact: true })).toHaveCount(0);
+    expect((await context.request.get('/me')).status()).toBe(401);
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await page.getByRole('button', { name: 'Retry deactivation' }).focus(); await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByText('Your account is deactivated. Historical activity is preserved.')).toBeVisible();
+    expect(keys).toHaveLength(2); expect(keys[1]).toBe(keys[0]); expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/i);
+    expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(401);
+  });
+}
+
+test('PRD-02/03/18: mobile deactivation keeps a sole owner signed in with an actionable refusal', async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const headers = { 'X-StrataAI-Request': '1' };
+  const credentials = { email: `sole-owner-${Date.now()}@example.test`, password: 'browser-sole-owner-correct-horse', displayName: 'Sole owner account' };
+  expect((await context.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
+  expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+  expect((await context.request.post('/organizations', { headers, data: { name: 'Retained owner organization' } })).status()).toBe(201);
+  await page.goto('/app/demo/profile');
+  await page.getByLabel(/^Display name/).fill('Preserved owner draft');
+  await page.getByRole('button', { name: 'Deactivate account', exact: true }).focus(); await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Confirm deactivation' }).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByText(/Another active owner must take responsibility/)).toBeVisible();
+  await expect(page.getByLabel(/^Display name/)).toHaveValue('Preserved owner draft');
+  expect((await context.request.get('/me')).status()).toBe(200);
+});
+
 test('PRD-02/60: mobile keyboard registration retries a lost creation acknowledgment', async ({ page, context }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const credentials = { email: `registration-ack-${Date.now()}@example.test`, password: 'browser-register-correct-horse', displayName: 'Registration retry account' };
