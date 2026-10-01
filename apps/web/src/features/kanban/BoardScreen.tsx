@@ -349,13 +349,16 @@ function BoardContent() {
           </Typography>
           <Typography>{snapshot.board.description}</Typography>
         </Box>
-        <Stack direction="row">
+        <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
           <Button
             disabled={busy}
             onClick={() => setReload((value) => value + 1)}
           >
             Refresh board
           </Button>
+          {snapshot.access.canAdminister && snapshot.board.lifecycleState === "active" && (
+            <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invite`}>Invite to Board</Button>
+          )}
           {editable && (
             <Button
               onClick={() => {

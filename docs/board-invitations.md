@@ -217,3 +217,21 @@ excludes Board-target invitations and is not claimed complete. This increment ad
 required execution coverage; only syntax/diff checks were run locally because the
 release PostgreSQL/Docker topology is unavailable here. Actual transport success
 must be proven by CI logs, not by these assertions' presence.
+
+The MUI sender route /app/{organizationId}/boards/{boardId}/invite now reuses the
+established creation/retry form with Board-specific admission and acknowledgment
+binding. It loads current account preferences and the actual Board, checks route
+Organization/Board identity, active lifecycle and canAdminister before showing the
+private Board name or form. The Board offers only MEMBER/ADMIN on INTERNAL access.
+The Board screen links to it only while active administration is available, with
+wrapping actions for narrow screens.
+
+Drafts are keyed by actor/Organization/Board under the existing logout-cleaned
+invitation prefix. Saved drafts must contain a valid Board role; uncertain creation
+retains the exact key/email/role payload across retry and reload. Acknowledgment must
+match Board ID/role and contain no bearer; it reports creation without claiming
+mail delivery or recipient grants. Current denial purges visible Board metadata.
+Six new component cases cover lost acknowledgment, separate draft storage, wrong
+Board/role acknowledgment and admission/creation denial. Sender history/revocation
+and actual browser keyboard/reload coverage remain outstanding; this form alone
+is not completion of PRD-05/60.

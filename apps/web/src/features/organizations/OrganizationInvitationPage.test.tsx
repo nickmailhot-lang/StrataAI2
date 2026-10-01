@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
-import { OrganizationInvitationPage } from './OrganizationInvitationPage';
+import { OrganizationInvitationPage, BoardInvitationPage } from './OrganizationInvitationPage';
 import { forgetInvitationIntents, invitationIntentKey } from './invitationIntent';
 const org = '10000000-0000-0000-0000-000000000000'; const actor = '20000000-0000-0000-0000-000000000000';
 const profile = { id: actor, locale: 'en-CA', timezone: 'America/Vancouver' };
@@ -109,4 +109,52 @@ describe('Administrator invitation intent and creation acknowledgment', () => {
     // Explicit utility cleanup does not touch unrelated temporary site data.
     sessionStorage.setItem('unrelated', 'keep'); forgetInvitationIntents(); expect(sessionStorage.getItem(storedKey)).toBeNull(); expect(sessionStorage.getItem('unrelated')).toBe('keep');
   });
+});
+
+const board = '50000000-0000-4000-8000-000000000000';
+const boardAdmission = { board: { id: board, organizationId: org, name: 'Private maintenance', lifecycleState: 'active' }, access: { canAdminister: true } };
+const boardAck = { ...ack, boardTarget: { boardId: board, role: 'MEMBER' } };
+function boardMount() {
+  const router = createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId/invite', element: <BoardInvitationPage /> },
+    { path: '/login', element: <h1>Sign in destination</h1> }], { initialEntries: [`/app/${org}/boards/${board}/invite`] });
+  render(<RouterProvider router={router} />); return router;
+}
+it('binds a Board creation draft and lost acknowledgment retry to the exact Board payload', async () => {
+  const mock = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission))
+    .mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply(boardAck, 201));
+  vi.stubGlobal('fetch', mock); boardMount(); await submit();
+  await screen.findByText(/invitation could not be confirmed/);
+  expect(screen.queryByLabelText('Access surface')).not.toBeInTheDocument();
+  expect(screen.getByLabelText(/^Invitation email/)).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Retry same invitation' }));
+  await screen.findByText('Invitation creation acknowledged.');
+  const calls = mock.mock.calls.filter(call => call[1]?.method === 'POST');
+  expect(calls).toHaveLength(2); expect(calls[0][0]).toBe(`/boards/${board}/invitations`);
+  expect(calls[0][1].body).toBe(calls[1][1].body);
+  expect(JSON.parse(calls[0][1].body)).toEqual({ email: input.email, role: 'MEMBER' });
+  expect(calls[0][1].headers.get('Idempotency-Key')).toBe(calls[1][1].headers.get('Idempotency-Key'));
+  expect(sessionStorage.getItem(`${storedKey}:board:${board}`)).not.toBeNull();
+  expect(sessionStorage.getItem(storedKey)).toBeNull();
+  expect(screen.getByText('Board: Member')).toBeVisible();
+});
+it.each([
+  { ...boardAck, boardTarget: null },
+  { ...boardAck, boardTarget: { boardId: org, role: 'MEMBER' } },
+  { ...boardAck, boardTarget: { boardId: board, role: 'ADMIN' } },
+])('refuses creation confirmation for a mismatched Board target: %j', async value => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission)).mockResolvedValueOnce(reply(value, 201)));
+  boardMount(); await submit(); await screen.findByText(/invitation could not be confirmed/);
+  expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Retry same invitation' })).toBeEnabled();
+});
+it('hides Board name and controls after current access denies creation', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission)).mockResolvedValueOnce(reply({}, 404)));
+  boardMount(); await submit(); await screen.findByText('Board invitations are unavailable to your account.');
+  expect(screen.queryByRole('heading', { name: 'Private maintenance' })).not.toBeInTheDocument();
+  expect(screen.queryByLabelText(/^Invitation email/)).not.toBeInTheDocument();
+});
+it('requires current Board administration even if the Board itself can be viewed', async () => {
+  const mock = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply({ ...boardAdmission, access: { canAdminister: false } }));
+  vi.stubGlobal('fetch', mock); boardMount(); await screen.findByText('Board invitations are unavailable to your account.');
+  expect(screen.queryByLabelText(/^Invitation email/)).not.toBeInTheDocument(); expect(mock).toHaveBeenCalledTimes(2);
 });
