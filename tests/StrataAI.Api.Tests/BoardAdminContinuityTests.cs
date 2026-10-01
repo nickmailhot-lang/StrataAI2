@@ -10,6 +10,46 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData("PATCH")]
+    [InlineData("DELETE")]
+    public async Task Board_member_version_consent_rejects_stale_state_and_keyed_retry_does_not_reapply(string method)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        var user = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        using var organization = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Version consent" });
+        var org = (await organization.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        using var board = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = org, name = "Consent Board" });
+        var id = (await board.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var original = (await store.FindBoardMemberAsync(id, user, ct))!;
+        using var competing = await Mutate(owner, HttpMethod.Patch, $"/boards/{id}/members/{user}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, competing.StatusCode);
+        var current = (await store.FindBoardMemberAsync(id, user, ct))!;
+        async Task<HttpResponseMessage> Send(long version, string key)
+        {
+            using var request = new HttpRequestMessage(new HttpMethod(method), $"/boards/{id}/members/{user}")
+                { Content = JsonContent.Create(new { role = "ADMIN" }) };
+            request.Headers.Add("X-StrataAI-Request", "1"); request.Headers.Add("Idempotency-Key", key);
+            request.Headers.TryAddWithoutValidation("If-Match", $"\"{version}\"");
+            return await owner.SendAsync(request, ct);
+        }
+        using var stale = await Send(original.Version, Guid.NewGuid().ToString());
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        Assert.Equal("version_conflict", (await stale.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        Assert.Equal(current, await store.FindBoardMemberAsync(id, user, ct));
+        var key = Guid.NewGuid().ToString(); using var accepted = await Send(current.Version, key);
+        Assert.Equal(method == "PATCH" ? HttpStatusCode.OK : HttpStatusCode.NoContent, accepted.StatusCode);
+        var acknowledgment = await accepted.Content.ReadAsStringAsync(ct);
+        using var later = await Mutate(owner, HttpMethod.Patch, $"/boards/{id}/members/{user}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, later.StatusCode);
+        var laterMember = (await store.FindBoardMemberAsync(id, user, ct))!;
+        using var retry = await Send(current.Version, key);
+        Assert.Equal(accepted.StatusCode, retry.StatusCode); Assert.Equal(acknowledgment, await retry.Content.ReadAsStringAsync(ct));
+        Assert.Equal(laterMember, await store.FindBoardMemberAsync(id, user, ct));
+    }
+
     [Fact]
     public async Task Board_member_directory_is_bounded_and_seeks_without_duplicates()
     {

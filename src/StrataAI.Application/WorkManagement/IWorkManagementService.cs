@@ -75,14 +75,14 @@ public interface IWorkManagementService
         Guid targetUserId,
         BoardRole role,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, long? expectedMemberVersion = null);
 
     Task<WorkOperation<bool>> RemoveBoardMemberAsync(
         Guid boardId,
         Guid actorUserId,
         Guid targetUserId,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, long? expectedMemberVersion = null);
 
     Task<WorkOperation<BoardListRecord>> CreateListAsync(
         Guid boardId,

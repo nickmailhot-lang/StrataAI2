@@ -321,13 +321,15 @@ public static class WorkManagementEndpoints
                             "Board role must be ADMIN or MEMBER.");
                     }
 
+                    if (!TryMemberVersion(context, out var memberVersion))
+                        return Problem(400, "invalid_member_version", "The membership version must be a positive integer.");
                     var result = await service.SetBoardMemberAsync(
                         boardId,
                         userId.Value,
                         targetUserId,
                         role,
                         context.TraceIdentifier,
-                        cancellationToken);
+                        cancellationToken, memberVersion);
 
                     return result.Succeeded && result.Value is not null
                         ? Results.Ok(result.Value)
@@ -350,12 +352,14 @@ public static class WorkManagementEndpoints
                         return Results.Unauthorized();
                     }
 
+                    if (!TryMemberVersion(context, out var memberVersion))
+                        return Problem(400, "invalid_member_version", "The membership version must be a positive integer.");
                     var result = await service.RemoveBoardMemberAsync(
                         boardId,
                         userId.Value,
                         targetUserId,
                         context.TraceIdentifier,
-                        cancellationToken);
+                        cancellationToken, memberVersion);
 
                     return result.Succeeded
                         ? Results.NoContent()
@@ -628,6 +632,19 @@ public static class WorkManagementEndpoints
                             cancellationToken));
                 })
             .RequireAuthorization();
+    }
+
+    private static bool TryMemberVersion(HttpContext context, out long? version)
+    {
+        version = null;
+        if (!context.Request.Headers.TryGetValue("If-Match", out var values)) return true;
+        if (values.Count != 1) return false;
+        var value = values[0]?.Trim() ?? "";
+        if (value.Length > 2 && value[0] == '"' && value[^1] == '"') value = value[1..^1];
+        if (!long.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture,
+            out var parsed) || parsed <= 0) return false;
+        version = parsed;
+        return true;
     }
 
     private static IResult ToMutationResult<T>(

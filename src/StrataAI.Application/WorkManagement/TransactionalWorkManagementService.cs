@@ -103,16 +103,20 @@ public sealed class TransactionalWorkManagementService(
         Guid targetUserId,
         BoardRole role,
         string correlationId,
-        CancellationToken cancellationToken = default) =>
-        BoardCommand(boardId, actorUserId, "admin", WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetBoardMemberAsync", boardId, new { targetUserId, role }, "board_not_found"), () => inner.SetBoardMemberAsync(boardId, actorUserId, targetUserId, role, correlationId, cancellationToken), cancellationToken);
+        CancellationToken cancellationToken = default, long? expectedMemberVersion = null) =>
+        BoardCommand(boardId, actorUserId, "admin", WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetBoardMemberAsync", boardId,
+            expectedMemberVersion is null ? (object)new { targetUserId, role } : new { targetUserId, role, expectedMemberVersion }, "board_not_found"),
+            () => inner.SetBoardMemberAsync(boardId, actorUserId, targetUserId, role, correlationId, cancellationToken, expectedMemberVersion), cancellationToken);
 
     public Task<WorkOperation<bool>> RemoveBoardMemberAsync(
         Guid boardId,
         Guid actorUserId,
         Guid targetUserId,
         string correlationId,
-        CancellationToken cancellationToken = default) =>
-        BoardCommand(boardId, actorUserId, "admin", WorkCommand.Create(actorUserId, context.IdempotencyKey, "RemoveBoardMemberAsync", boardId, new { targetUserId }, "board_not_found"), () => inner.RemoveBoardMemberAsync(boardId, actorUserId, targetUserId, correlationId, cancellationToken), cancellationToken);
+        CancellationToken cancellationToken = default, long? expectedMemberVersion = null) =>
+        BoardCommand(boardId, actorUserId, "admin", WorkCommand.Create(actorUserId, context.IdempotencyKey, "RemoveBoardMemberAsync", boardId,
+            expectedMemberVersion is null ? (object)new { targetUserId } : new { targetUserId, expectedMemberVersion }, "board_not_found"),
+            () => inner.RemoveBoardMemberAsync(boardId, actorUserId, targetUserId, correlationId, cancellationToken, expectedMemberVersion), cancellationToken);
 
     public Task<WorkOperation<BoardListRecord>> CreateListAsync(
         Guid boardId,

@@ -319,7 +319,7 @@ public sealed class WorkManagementService(
         Guid targetUserId,
         BoardRole role,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, long? expectedMemberVersion = null)
     {
         var resolved = await ResolveAccessAsync(
             boardId,
@@ -344,6 +344,12 @@ public sealed class WorkManagementService(
                 "member_not_eligible");
         }
 
+        if (expectedMemberVersion is not null)
+        {
+            var currentMember = await store.FindBoardMemberAsync(boardId, targetUserId, cancellationToken);
+            if (expectedMemberVersion <= 0 || currentMember is not { Active: true } || currentMember.Version != expectedMemberVersion)
+                return WorkOperation<BoardMemberRecord>.Failure("version_conflict");
+        }
         // PERM-FR-005/006: changing the role must retain the same safeguard as
         // removal. The existing Organization-admin override remains explicit.
         if (role != BoardRole.Admin && !IsOrganizationAdmin(resolved.Value.OrganizationMembership))
@@ -376,7 +382,7 @@ public sealed class WorkManagementService(
         Guid actorUserId,
         Guid targetUserId,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, long? expectedMemberVersion = null)
     {
         var resolved = await ResolveAccessAsync(
             boardId,
@@ -394,6 +400,9 @@ public sealed class WorkManagementService(
 
         var target = members.FirstOrDefault(
             member => member.UserId == targetUserId && member.Active);
+
+        if (expectedMemberVersion is not null && (expectedMemberVersion <= 0 || target?.Version != expectedMemberVersion))
+            return WorkOperation<bool>.Failure("version_conflict");
 
         if (target is null)
         {

@@ -64,3 +64,24 @@ pass locally; execution is pending Linux CI. Profile enrichment is bounded to th
 51-row seek window but currently performs per-row scoped queries. Performance
 evidence and any necessary batch-query optimization remain to be completed before
 the PRD performance target can be claimed.
+
+## Membership version consent
+
+Board role PATCH and member DELETE accept an optional `If-Match` header containing
+a positive membership version, plain or quoted. Invalid headers produce
+`invalid_member_version`. After current administrative admission and the Board
+lock, the command compares the active target membership with that version before
+changing/removing it. Stale or missing current membership rejects with
+`version_conflict`; last-administrator and target eligibility safeguards remain.
+
+Supplied versions participate in retry fingerprints. A successfully completed
+keyed retry returns its previous acknowledgment after current actor admission;
+it does not reapply a role change or removal to a later membership state. Calls
+without a precondition preserve the existing behavior and fingerprint format.
+The upcoming management UI must always send the reviewed version and obtain
+fresh consent after a conflict. The optional compatibility path must not be
+described as mandatory concurrency protection for every API caller.
+
+Two host cases cover stale role/removal consent and successful keyed retry after
+a later member change. Warnings-as-errors build passes. Linux host execution,
+real PostgreSQL consent checks and the management UI remain pending.
