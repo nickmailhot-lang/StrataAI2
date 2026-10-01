@@ -33,6 +33,46 @@ psql -X -v ON_ERROR_STOP=1 -c "INSERT INTO boards(id,tenant_id,name,created_at,u
  UPDATE invitations SET target_board_id='02500000-0000-0000-0000-000000000010',target_board_role='MEMBER'
  WHERE id='$invitation';" >/dev/null
 test "$(scoped "SELECT is_usable FROM $load")" = f
+psql -X -v ON_ERROR_STOP=1 -c "UPDATE invitation_mail_intents
+ SET target_board_id='02500000-0000-0000-0000-000000000010',target_board_role='MEMBER' WHERE job_id='$job';
+ INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+ VALUES('02600000-0000-0000-0000-000000000011','invited@example.test','INVITED@EXAMPLE.TEST','Board recipient','ACTIVE',true,'unusable-ci-fixture',now(),now());
+ INSERT INTO organization_members(id,user_id,tenant_id,role,status)
+ VALUES('02600000-0000-0000-0000-000000000012','02600000-0000-0000-0000-000000000011','$tenant','MEMBER','ACTIVE');
+ INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+ VALUES('02600000-0000-0000-0000-000000000013','$tenant','02500000-0000-0000-0000-000000000010','$actor','ADMIN','ACTIVE',now(),now());" >/dev/null
+test "$(scoped "SELECT is_usable FROM $load")" = t
+board_reset() {
+ psql -X -v ON_ERROR_STOP=1 -c "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='02500000-0000-0000-0000-000000000010';
+ UPDATE board_members SET status='ACTIVE',role='ADMIN' WHERE id='02600000-0000-0000-0000-000000000013';
+ UPDATE organization_members SET role='MEMBER',status='ACTIVE' WHERE tenant_id='$tenant' AND user_id='$actor';
+ UPDATE organization_members SET status='ACTIVE' WHERE id='02600000-0000-0000-0000-000000000012';
+ UPDATE users SET status='ACTIVE',email_verified=true WHERE id='02600000-0000-0000-0000-000000000011';
+ UPDATE invitation_mail_intents SET target_board_role='MEMBER' WHERE job_id='$job';" >/dev/null
+}
+board_reset
+test "$(scoped "SELECT is_usable FROM $load")" = t
+for invalid_target in "target_board_id=NULL" "target_board_role=NULL" "target_board_role='OWNER'" "target_surface='PORTAL'"; do
+ if psql -X -v ON_ERROR_STOP=1 -c "UPDATE invitation_mail_intents SET $invalid_target WHERE job_id='$job';" >/dev/null; then
+  echo 'Invalid Board mail snapshot was admitted'; exit 1
+ fi
+done
+for mutation in \
+ "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='02500000-0000-0000-0000-000000000010'" \
+ "UPDATE board_members SET status='REMOVED' WHERE id='02600000-0000-0000-0000-000000000013'" \
+ "UPDATE board_members SET role='MEMBER' WHERE id='02600000-0000-0000-0000-000000000013'" \
+ "UPDATE users SET status='SUSPENDED' WHERE id='02600000-0000-0000-0000-000000000011'" \
+ "UPDATE users SET email_verified=false WHERE id='02600000-0000-0000-0000-000000000011'" \
+ "UPDATE organization_members SET status='REMOVED' WHERE id='02600000-0000-0000-0000-000000000012'" \
+ "UPDATE invitation_mail_intents SET target_board_role='ADMIN' WHERE job_id='$job'"; do
+ board_reset
+ psql -X -v ON_ERROR_STOP=1 -c "$mutation" >/dev/null
+ test "$(scoped "SELECT is_usable FROM $load")" = f
+done
+board_reset
+test "$(scoped "SELECT is_usable FROM $load")" = t
+psql -X -v ON_ERROR_STOP=1 -c "UPDATE organization_members SET role='OWNER' WHERE tenant_id='$tenant' AND user_id='$actor';
+ UPDATE invitation_mail_intents SET target_board_id=NULL,target_board_role=NULL WHERE job_id='$job';" >/dev/null
 psql -X -v ON_ERROR_STOP=1 -c "UPDATE invitations SET target_board_id=NULL,target_board_role=NULL WHERE id='$invitation';" >/dev/null
 test "$(scoped "SELECT is_usable FROM $load")" = t
 test "$(worker "SELECT count(*) FROM $load")" = 0

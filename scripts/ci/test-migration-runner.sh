@@ -121,28 +121,32 @@ query "UPDATE invitations SET accepted_at=now(),accepted_by_user_id='02100000-00
 if query "UPDATE invitations SET target_board_role='MEMBER' WHERE id='02500000-0000-0000-0000-000000000004';" >/dev/null; then
  echo 'Accepted Board invitation role was rewritten'; exit 1
 fi
-cat > "$scratch/migrations/026_serialization_fixture.sql" <<'SQL'
+cp db/migrations/026_board_invitation_mail.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 26
+cat > "$scratch/migrations/027_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('026_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('027_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='026_serialization_fixture'")" = 1
-cat > "$scratch/migrations/027_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='027_serialization_fixture'")" = 1
+cat > "$scratch/migrations/028_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('027_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('028_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='027_failure_fixture'")" = 0
-rm "$scratch/migrations/027_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='028_failure_fixture'")" = 0
+rm "$scratch/migrations/028_failure_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

@@ -26,10 +26,17 @@ Routing copies both fields, and accepted target attribution is immutable. The
 PostgreSQL adapter round-trips the target, including creation retry receipts.
 
 Board-target publication, discovery, proof review, signup and acceptance remain
-unavailable while consumers are upgraded; the existing mail capability marks a
-canonical Board-target invitation unusable instead of sending an ordinary
-Organization envelope. Required PostgreSQL fixtures verify target integrity,
-accepted-role immutability and this mail boundary. A host case verifies that a
+unavailable while consumers are upgraded; mail snapshots missing the exact
+canonical Board target are unusable instead of sending an ordinary Organization
+envelope. Migration 026 binds optional Board ID/role on protected mail snapshots
+to the real tenant Board. The narrow Worker capability admits a matching active
+Board target only with current Organization administration, or current Board
+administration and an existing eligible recipient Organization member. It checks
+parent lifecycle, issuer membership, recipient account/verification policy and
+exact target-role equality without granting broad identity/membership reads.
+Required PostgreSQL fixtures verify target integrity,
+accepted-role immutability, snapshot mismatch, Board archive, issuer removal or
+demotion, and recipient suspension, verification or membership removal. A host case verifies that a
 staged Board target cannot produce an Organization grant or registration proof.
 
 `BoardInvitationService.CreateAsync` now consumes this policy and target storage
