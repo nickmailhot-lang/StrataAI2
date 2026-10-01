@@ -1,30 +1,35 @@
 import { expect, test } from '@playwright/test';
 
-test('PRD-02/60: lost sign-in acknowledgment retries the original session', async ({ page, context }) => {
-  const credentials = { email: `login-ack-${Date.now()}@example.test`, password: 'browser-login-correct-horse', displayName: 'Sign-in retry account' };
-  expect((await context.request.post('/auth/register', { headers: { 'X-StrataAI-Request': '1' }, data: credentials })).status()).toBe(201);
-  const keys: string[] = []; const cookies: string[] = [];
-  await page.route('**/auth/login', async route => {
-    keys.push(route.request().headers()['idempotency-key']);
-    const result = await route.fetch();
-    expect(result.status()).toBe(200);
-    cookies.push(result.headers()['set-cookie'].split(';')[0]);
-    if (keys.length === 1) { await context.clearCookies(); await route.abort('timedout'); }
-    else await route.fulfill({ response: result });
+for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+  test(`PRD-02/60: lost sign-in acknowledgment retries the original session at ${viewport.width}px`, async ({ page, context }) => {
+    await page.setViewportSize(viewport);
+    const credentials = { email: `login-ack-${Date.now()}@example.test`, password: 'browser-login-correct-horse', displayName: 'Sign-in retry account' };
+    expect((await context.request.post('/auth/register', { headers: { 'X-StrataAI-Request': '1' }, data: credentials })).status()).toBe(201);
+    const keys: string[] = []; const cookies: string[] = [];
+    await page.route('**/auth/login', async route => {
+      keys.push(route.request().headers()['idempotency-key']);
+      const result = await route.fetch();
+      expect(result.status()).toBe(200);
+      cookies.push(result.headers()['set-cookie'].split(';')[0]);
+      if (keys.length === 1) { await context.clearCookies(); await route.abort('timedout'); }
+      else await route.fulfill({ response: result });
+    });
+    await page.goto('/login');
+    await page.getByLabel(/^Email/).fill(credentials.email);
+    await page.getByLabel(/^Password/).fill(credentials.password);
+    await page.getByRole('button', { name: 'Sign in', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByText(/Retry with the same details/)).toBeVisible();
+    expect((await context.request.get('/me')).status()).toBe(401);
+    await page.getByRole('button', { name: 'Sign in', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/app$/);
+    expect(keys).toHaveLength(2); expect(keys[1]).toBe(keys[0]);
+    expect(cookies[1]).toBe(cookies[0]);
+    const profile = await context.request.get('/me'); expect(profile.status()).toBe(200);
+    expect((await profile.json()).email).toBe(credentials.email);
   });
-  await page.goto('/login');
-  await page.getByLabel(/^Email/).fill(credentials.email);
-  await page.getByLabel(/^Password/).fill(credentials.password);
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page.getByText(/Retry with the same details/)).toBeVisible();
-  expect((await context.request.get('/me')).status()).toBe(401);
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(/\/app$/);
-  expect(keys).toHaveLength(2); expect(keys[1]).toBe(keys[0]);
-  expect(cookies[1]).toBe(cookies[0]);
-  const profile = await context.request.get('/me'); expect(profile.status()).toBe(200);
-  expect((await profile.json()).email).toBe(credentials.email);
-});
+}
 
 test('PRD-60-TC-07/11/15: verified email discovers an invitation and retries lost acceptance', async ({ page, context, browser }) => {
   const issuer = await browser.newContext({ baseURL: test.info().project.use.baseURL });
