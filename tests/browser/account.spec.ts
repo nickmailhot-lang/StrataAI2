@@ -19,6 +19,20 @@ test('PRD-02-TC-03/04: recovery confirmation is generic and invalid reset links 
 
 test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two-browser conflict recovery', async ({ page, context }) => {
   test.setTimeout(75_000);
+  let liveSnapshots = 0;
+  const liveEventTypes: string[] = [];
+  page.on('websocket', socket => {
+    if (!new URL(socket.url()).pathname.startsWith('/me/live')) return;
+    socket.on('framereceived', frame => {
+      for (const item of frame.payload.toString().split('\u001e').filter(Boolean)) {
+        const message = JSON.parse(item);
+        if (message.type === 2 && message.item?.profile) {
+          liveSnapshots++;
+          for (const event of message.item.events) liveEventTypes.push(event.eventType);
+        }
+      }
+    });
+  });
   const email = `browser-${Date.now()}@example.test`;
   const password = 'browser-correct-horse-battery';
   await page.goto('/login');
@@ -33,6 +47,7 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await expect(page).toHaveURL(/\/app$/);
   await page.getByRole('link', { name: 'Open profile' }).click();
   await expect(page.getByLabel(/^Display name/)).toHaveValue('Browser Council');
+  await expect.poll(() => liveSnapshots, { timeout: 10_000 }).toBeGreaterThan(0);
   const syncBefore = await (await context.request.get('/me/sync')).json();
   expect(syncBefore.events).toEqual([]);
   const second = await context.newPage();
@@ -44,6 +59,7 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await page.getByLabel(/^Timezone/).fill('UTC');
   await page.getByRole('button', { name: 'Save profile', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Profile saved.');
+  await expect.poll(() => liveEventTypes.includes('USER_PROFILE_UPDATED'), { timeout: 10_000 }).toBe(true);
   const currentProfile = await (await context.request.get('/me')).json();
   const replay = await (await context.request.get(`/me/sync?after=${syncBefore.cursor}`)).json();
   expect(replay.events).toHaveLength(1);

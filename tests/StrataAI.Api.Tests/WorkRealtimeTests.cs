@@ -124,12 +124,12 @@ public sealed partial class ApiHostTests
         Assert.Empty(replacement.GetProperty("events").EnumerateArray());
     }
 
-    private static async Task<WebSocket> LiveSocket(ApiFactory app, string? cookie)
+    private static async Task<WebSocket> LiveSocket(ApiFactory app, string? cookie, string path = "/boards/live")
     {
         var client = app.Server.CreateWebSocketClient();
         client.ConfigureRequest = request =>
         { request.Headers.Origin = "http://localhost"; if (cookie is not null) request.Headers.Cookie = cookie; };
-        var socket = await client.ConnectAsync(new Uri("ws://localhost/boards/live"), TestContext.Current.CancellationToken);
+        var socket = await client.ConnectAsync(new Uri("ws://localhost" + path), TestContext.Current.CancellationToken);
         await SendFrame(socket, new { protocol = "json", version = 1 });
         var handshake = await Frame(socket, TestContext.Current.CancellationToken);
         Assert.NotNull(handshake); Assert.Equal("{}", handshake.Value.GetRawText());

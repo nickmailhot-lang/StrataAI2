@@ -17,6 +17,11 @@ export default defineConfig(({ mode }) => {
   server: {
     port: 5173,
     proxy: {
+      '/me/live': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        ws: true,
+      },
       '/boards/live': {
         target: 'http://localhost:8080',
         changeOrigin: true,

@@ -4,7 +4,7 @@ The MUI profile form reads the authoritative profile and identity-event cursor t
 
 Recovery reads require the profile fields and a positive safe-integer version. Older/equal versions cannot replace a newer profile or draft. Starting a save or sign-out changes the read epoch, so an earlier read cannot overwrite its acknowledgment. Session denial clears the view and redirects to sign-in; a changed subject also requires sign-in rather than retaining the previous draft.
 
-A clean form adopts newer name/avatar/locale/timezone values automatically. A dirty form preserves its exact draft and original version, updates the authoritative summary and announces that the profile changed elsewhere. Saving stays disabled until explicit discard-and-load-latest. Read failure preserves the form and exposes an accessible retry notice; periodic/focus recovery continues. This bounded recovery supplements, rather than completes, the still-pending identity event/replay contract.
+A clean form adopts newer name/avatar/locale/timezone values automatically. A dirty form preserves its exact draft and original version, updates the authoritative summary and announces that the profile changed elsewhere. Saving stays disabled until explicit discard-and-load-latest. Read failure preserves the form and exposes an accessible retry notice; periodic/focus recovery continues. The [identity SignalR stream](identity-realtime.md) invalidates this authoritative recovery when committed events arrive; it does not replace drafts directly.
 
 Account status uses canonical API strings (`PENDING_VERIFICATION`, `ACTIVE`, `SUSPENDED`, `DEACTIVATED`) rather than numeric enum ordinals. This matches the profile contract and provides an explicit lifecycle label.
 

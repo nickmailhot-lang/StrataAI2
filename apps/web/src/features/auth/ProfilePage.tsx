@@ -1,6 +1,7 @@
 import { apiFetch } from '../../api/apiFetch';
 import { formatUserDateTime } from './userDateTime';
 import { validateIdentitySync } from './identitySync';
+import { watchIdentity } from './identityLive';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   Alert,
@@ -116,6 +117,7 @@ export function ProfilePage() {
     let cursor: number | undefined;
     let subject: string | undefined;
     const seenEvents = new Set<string>();
+    let stopLive: (() => void) | undefined;
     async function refresh() {
       if (!active || inFlight || !canRead() || document.visibilityState === 'hidden') return;
       inFlight = true;
@@ -138,6 +140,7 @@ export function ProfilePage() {
         if (!snapshot) throw new Error('Invalid account event response');
         if (subject && snapshot.profile.id !== subject) { deny(); return; }
         subject = snapshot.profile.id;
+        stopLive ??= watchIdentity({ subject, isProfile, invalidate: () => void refresh() });
         accept(snapshot.profile);
         cursor = snapshot.cursor;
         more = snapshot.hasMore;
@@ -160,6 +163,7 @@ export function ProfilePage() {
     document.addEventListener('visibilitychange', recover);
     return () => {
       active = false;
+      stopLive?.();
       controller?.abort();
       clearTimeout(deadline); clearInterval(interval);
       window.removeEventListener('focus', recover);

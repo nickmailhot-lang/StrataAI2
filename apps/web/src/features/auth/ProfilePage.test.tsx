@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProfilePage } from './ProfilePage';
+vi.mock('./identityLive', () => ({ watchIdentity: () => () => {} }));
 
 const profile = { id: 'user-1', email: 'council@example.test', displayName: 'Council', avatarUrl: null, locale: 'en-CA', timezone: 'America/Vancouver', status: 'active', emailVerified: true, version: 1, createdAt: '2026-03-08T09:30:00Z', updatedAt: '2026-03-08T10:30:00Z' };
 function syncResponse(user: typeof profile, after?: number) {

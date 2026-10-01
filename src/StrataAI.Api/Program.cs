@@ -61,6 +61,11 @@ builder.Services.AddSignalR(options =>
     options.MaximumReceiveMessageSize = 4096;
     options.StreamBufferCapacity = 1;
     options.MaximumParallelInvocationsPerClient = 1;
+}).AddJsonProtocol(options =>
+{
+    options.PayloadSerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter<AccountStatus>(
+            System.Text.Json.JsonNamingPolicy.SnakeCaseUpper, allowIntegerValues: false));
 });
 
 var app = builder.Build();
@@ -139,6 +144,11 @@ app.MapHub<WorkRealtimeHub>("/boards/live", options =>
     options.ApplicationMaxBufferSize = 131072;
     options.TransportMaxBufferSize = 4096;
 });
+app.MapHub<IdentityRealtimeHub>("/me/live", options =>
+{
+    options.ApplicationMaxBufferSize = 131072;
+    options.TransportMaxBufferSize = 4096;
+}).RequireAuthorization();
 
 app.Run();
 
