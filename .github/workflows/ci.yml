@@ -12,7 +12,10 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Keep every distinct main/tag commit: ref-wide groups retain only one pending
+  # run by default, even when cancel-in-progress is false. Hosted CI topologies
+  # and exact-SHA artifacts are isolated per run; this is not a deployment gate.
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
