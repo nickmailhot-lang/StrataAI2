@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-05: keyboard visibility consent, conflict and public read-only recovery at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -22,16 +23,15 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       restoreWorker = scopedBoardWorker(org);
       await waitForBoardDelivery(context.request, board);
       await page.goto(`/app/${org}/boards/${board}`);
-      let visibilityReads = 0;
-      page.on('response', response => {
-        if (new URL(response.url()).pathname === `/boards/${board}` && response.request().method() === 'GET' && response.status() === 200) visibilityReads++;
-      });
+      const visibilityReads = trackBoardReads(page, board, `/app/${org}/boards/${board}/visibility`);
       await page.getByRole('link', { name: 'Board visibility', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Live visibility updates connected.')).toBeVisible();
-      await expect.poll(() => visibilityReads).toBeGreaterThanOrEqual(2);
+      await expect.poll(visibilityReads).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('progressbar', { name: 'Checking Board visibility' })).toHaveCount(0);
       const choosePublic = async () => {
-        await page.getByRole('combobox', { name: 'Board visibility' }).focus(); await page.keyboard.press('ArrowDown');
+        const visibility = page.getByRole('combobox', { name: 'Board visibility' });
+        await expect(visibility).toBeEnabled(); await visibility.press('ArrowDown');
+        await expect(visibility).toHaveAttribute('aria-expanded', 'true');
         await page.getByRole('option', { name: 'Public', exact: true }).focus(); await page.keyboard.press('Enter');
         await page.getByRole('button', { name: 'Review visibility change' }).focus(); await page.keyboard.press('Enter');
         await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
@@ -80,6 +80,6 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await publicRead.json()).access).toMatchObject({ canView: true, canEdit: false, canMove: false, canAdminister: false });
       expect((await anonymous.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'PRIVATE', version: nextVersion + 1 } })).status()).toBe(401);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    } finally { try { restoreWorker(); } finally { await anonymous.close(); } }
+    } finally { try { await anonymous.close(); } finally { restoreWorker(); } }
   });
 }

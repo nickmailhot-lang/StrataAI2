@@ -1,5 +1,6 @@
 import { expect, test, type Page, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
 
 test('PRD-05 AC-PERM-05-03: two administrators recover member changes and cancel visibility consent on live updates', async ({ page, context, browser }) => {
   test.setTimeout(180_000);
@@ -64,20 +65,19 @@ test('PRD-05 AC-PERM-05-03: two administrators recover member changes and cancel
     await expect(other.getByText('Live member updates connected.')).toBeVisible({ timeout: 45_000 });
     await setOwnerRole('MEMBER');
 
-    const visibilityReads = new Map<Page, number>([[page, 0], [other, 0]]);
-    for (const target of [page, other]) target.on('response', response => {
-      if (new URL(response.url()).pathname === `/boards/${board}` && response.request().method() === 'GET' && response.status() === 200)
-        visibilityReads.set(target, visibilityReads.get(target)! + 1);
-    });
+    const visibilityReads = new Map([page, other].map(target => [target,
+      trackBoardReads(target, board, `/app/${org}/boards/${board}/visibility`)]));
     for (const target of [page, other]) {
       await target.goto(`/app/${org}/boards/${board}/visibility`);
       await expect(target.getByText('Live visibility updates connected.')).toBeVisible();
-      await expect.poll(() => visibilityReads.get(target)).toBeGreaterThanOrEqual(2);
+      await expect.poll(visibilityReads.get(target)!).toBeGreaterThanOrEqual(2);
       await expect(target.getByRole('progressbar', { name: 'Checking Board visibility' })).toHaveCount(0);
     }
     let phoneWrites = 0;
     other.on('request', request => { if (request.method() === 'PATCH' && new URL(request.url()).pathname === `/boards/${board}/visibility`) phoneWrites++; });
-    await other.getByRole('combobox', { name: 'Board visibility' }).focus(); await other.keyboard.press('ArrowDown');
+    const visibility = other.getByRole('combobox', { name: 'Board visibility' });
+    await expect(visibility).toBeEnabled(); await visibility.press('ArrowDown');
+    await expect(visibility).toHaveAttribute('aria-expanded', 'true');
     await other.getByRole('option', { name: 'Public', exact: true }).focus(); await other.keyboard.press('Enter');
     await other.getByRole('button', { name: 'Review visibility change' }).focus(); await other.keyboard.press('Enter');
     await expect(other.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
@@ -97,5 +97,5 @@ test('PRD-05 AC-PERM-05-03: two administrators recover member changes and cancel
     expect((await phone.request.get(`/boards/${board}/members`)).status()).toBe(404);
     expect((await phone.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'PUBLIC', version: (await changed.json()).version } })).status()).toBe(404);
     for (const target of [page, other]) expect(await target.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  } finally { try { restoreWorker(); } finally { await phone.close(); } }
+  } finally { try { await phone.close(); } finally { restoreWorker(); } }
 });
