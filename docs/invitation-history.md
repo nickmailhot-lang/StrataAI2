@@ -58,3 +58,14 @@ and Board pages link to this history. Component coverage includes malformed
 bindings, admission denial, revoked authority and lost acknowledgment recovery.
 Desktop/mobile Board sender browser evidence and full exact-image CI remain
 required before the corresponding issues can close.
+
+`board-invitation-administration.spec.ts` adds required release-browser scenarios
+at 1280px and 390px. They create their own accounts and Board through the public
+API, exercise Admin and Member issuance with keyboard controls, drop a successful
+creation acknowledgment and recover the same UUID/key/body after reload, then
+cancel and revoke through Board history. The successful revocation response is
+also dropped: a read-only refresh must confirm the canonical revoked timestamp
+with exactly one DELETE. The scenarios verify one bound invitation and no
+horizontal overflow. Local collection passes for both cases; execution is pending
+the exact-image container CI job. No local collection result proves browser
+acceptance or actual email delivery.
