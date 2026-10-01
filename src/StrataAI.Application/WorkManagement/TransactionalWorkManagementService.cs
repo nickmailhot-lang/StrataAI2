@@ -1,11 +1,13 @@
 using StrataAI.Application.Organizations;
+using StrataAI.Application.Identity;
 
 namespace StrataAI.Application.WorkManagement;
 
 // ARCH-03 / PRD-04..09: one commit includes the mutation and its audit.
 public sealed class TransactionalWorkManagementService(
     WorkManagementService inner, IWorkManagementStore store,
-    IWorkManagementUnitOfWork transactions, IOrganizationStore organizations, IWorkCommandContext context) : IWorkManagementService, IWorkBoardAuthorization
+    IWorkManagementUnitOfWork transactions, IOrganizationStore organizations, IWorkCommandContext context,
+    ICommandActorAuthorization actors) : IWorkManagementService, IWorkBoardAuthorization
 {
     public Task<WorkOperation<BoardSyncScope>> GetSyncScopeAsync(Guid boardId, Guid? actorId,
         CancellationToken cancellationToken = default) => inner.GetSyncScopeAsync(boardId, actorId, cancellationToken);
@@ -85,7 +87,15 @@ public sealed class TransactionalWorkManagementService(
         Guid boardId,
         Guid actorUserId,
         CancellationToken cancellationToken = default) =>
-        inner.ListBoardMembersAsync(boardId, actorUserId, cancellationToken);
+        BoardCommand(boardId, actorUserId, "admin",
+            WorkCommand.Create(actorUserId, null, "ListBoardMembersAsync", boardId, new { }, "board_not_found"), async () =>
+            {
+                var result = await inner.ListBoardMembersAsync(boardId, actorUserId, cancellationToken);
+                if (!result.Succeeded) return result;
+                if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                    return WorkOperation<IReadOnlyList<BoardMemberRecord>>.Failure("session_unavailable");
+                return result;
+            }, cancellationToken);
 
     public Task<WorkOperation<BoardMemberRecord>> SetBoardMemberAsync(
         Guid boardId,

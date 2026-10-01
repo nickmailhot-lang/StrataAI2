@@ -110,7 +110,8 @@ board_accept_state() { admin "SELECT jsonb_build_object(
  'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org' AND board_id='$signup_board'),
  'stream',(SELECT last_sequence FROM work_event_streams WHERE tenant_id='$org' AND board_id='$signup_board'),
- 'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text;"; }
+ 'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
+ 'workReceipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text;"; }
 board_issue=true
 for board_role in ADMIN MEMBER; do
  surface=INTERNAL; role=MEMBER; email="board-signup-${board_role,,}-${RANDOM}-${RANDOM}@example.test"; issue
@@ -199,9 +200,9 @@ revoke_board_state() { admin "SELECT jsonb_build_object(
  'stream',(SELECT jsonb_agg(to_jsonb(s) ORDER BY board_id) FROM work_event_streams s WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text;"; }
 before_revoke="$(revoke_board_state)"
-# Routing hints and an earlier administration check must not survive an archive
-# committed while the restricted API waits for the current Board command lock.
-for operation in revoke history; do
+# Routing hints and an earlier administration check must not survive lifecycle
+# changes committed while the API waits for the current Board command lock.
+for operation in revoke history members; do
  rm "$scratch/gate.in"; mkfifo "$scratch/gate.in"; exec 3<>"$scratch/gate.in"
  docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.out" &
  gate_pid=$!; printf "BEGIN; SELECT id FROM boards WHERE id='%s' FOR UPDATE; SELECT 'board-ready';\n" "$signup_board" >&3
@@ -209,13 +210,16 @@ for operation in revoke history; do
  grep -q '^board-ready$' "$scratch/gate.out"
  if test "$operation" = revoke; then
   revoke_board_invitation > "$scratch/board-admin-wait-status" & pending=$!
- else
+ elif test "$operation" = history; then
   curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/response" -w '%{http_code}' "$base/boards/$signup_board/invitations" > "$scratch/board-admin-wait-status" & pending=$!
+ else
+  curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/response" -w '%{http_code}' "$base/boards/$signup_board/members" > "$scratch/board-admin-wait-status" & pending=$!
  fi
  pids+=($pending)
  for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%FROM boards%';")" -ge 1; then break; fi; sleep 0.1; done
  test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query ILIKE '%FROM boards%';")" -ge 1
- printf "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='%s'; COMMIT;\n\\q\n" "$signup_board" >&3
+ next_lifecycle=ARCHIVED; if test "$operation" = members; then next_lifecycle=DELETED; fi
+ printf "UPDATE boards SET lifecycle_state='%s' WHERE id='%s'; COMMIT;\n\\q\n" "$next_lifecycle" "$signup_board" >&3
  exec 3>&-; wait "$gate_pid"; gate_pid=''; wait "$pending"; pids=()
  test "$(cat "$scratch/board-admin-wait-status")" = 404
  jq -e '.code=="board_not_found"' "$scratch/response" >/dev/null

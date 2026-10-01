@@ -29,6 +29,8 @@ public sealed partial class ApiHostTests
         using var removed = await Mutate(owner, HttpMethod.Delete, $"/boards/{id}/members/{ownerId}", new { }); Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         var store = app.Services.GetRequiredService<IWorkManagementStore>();
         var original = await store.FindBoardMemberAsync(id, adminId, ct);
+        using var directory = await admin.GetAsync($"/boards/{id}/members", ct);
+        Assert.Equal(HttpStatusCode.OK, directory.StatusCode);
         var key = Guid.NewGuid().ToString();
         for (var retry = 0; retry < 2; retry++)
         {
@@ -40,6 +42,10 @@ public sealed partial class ApiHostTests
         using var allowed = await Mutate(owner, HttpMethod.Patch, $"/boards/{id}/members/{adminId}", new { role = "MEMBER" });
         Assert.Equal(HttpStatusCode.OK, allowed.StatusCode);
         Assert.Equal(BoardRole.Member, (await store.FindBoardMemberAsync(id, adminId, ct))!.Role);
+        using var deniedDirectory = await admin.GetAsync($"/boards/{id}/members", ct);
+        Assert.Equal(HttpStatusCode.NotFound, deniedDirectory.StatusCode);
+        using var ownerDirectory = await owner.GetAsync($"/boards/{id}/members", ct);
+        Assert.Equal(HttpStatusCode.OK, ownerDirectory.StatusCode);
     }
 
     [Fact]
