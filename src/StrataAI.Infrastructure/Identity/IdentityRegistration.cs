@@ -54,13 +54,17 @@ public static class IdentityRegistration
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<IIdentityStore, InMemoryIdentityStore>();
+            services.AddSingleton<IIdentityUnitOfWork, InMemoryIdentityUnitOfWork>();
         }
         else
         {
             services.AddSingleton<IIdentityStore, PostgresIdentityStore>();
+            services.AddSingleton<IIdentityUnitOfWork, PostgresIdentityUnitOfWork>();
         }
 
-        services.AddSingleton<IIdentityService, IdentityService>();
+        services.AddSingleton<IdentityService>();
+        services.AddSingleton<IIdentityService>(provider => new TransactionalIdentityService(
+            provider.GetRequiredService<IdentityService>(), provider.GetRequiredService<IIdentityUnitOfWork>()));
     }
 
     private static bool GetBoolean(string? value, bool fallback) =>

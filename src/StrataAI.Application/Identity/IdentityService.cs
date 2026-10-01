@@ -473,7 +473,7 @@ public sealed class IdentityService(
         return IdentityOperation<UserProfile>.Success(ToProfile(updated));
     }
 
-    public async Task<bool> DeactivateAsync(
+    public async Task<IdentityOperation<bool>> DeactivateAsync(
         Guid userId,
         string correlationId,
         CancellationToken cancellationToken = default)
@@ -494,7 +494,7 @@ public sealed class IdentityService(
                 cancellationToken);
         }
 
-        return deactivated;
+        return deactivated ? IdentityOperation<bool>.Success(true) : IdentityOperation<bool>.Failure("account_unavailable");
     }
 
     private bool IsValidPassword(string password) =>

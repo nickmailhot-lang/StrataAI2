@@ -55,7 +55,7 @@ public interface IIdentityService
         string correlationId,
         CancellationToken cancellationToken = default);
 
-    Task<bool> DeactivateAsync(
+    Task<IdentityOperation<bool>> DeactivateAsync(
         Guid userId,
         string correlationId,
         CancellationToken cancellationToken = default);

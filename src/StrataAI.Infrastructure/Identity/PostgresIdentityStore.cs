@@ -378,8 +378,8 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             $"""
             UPDATE users
@@ -394,7 +394,7 @@ internal sealed class PostgresIdentityStore(
               AND version = @expected_version
             RETURNING {UserColumns};
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("id", userId);
         command.Parameters.AddWithValue("display_name", displayName);
         command.Parameters.AddWithValue(
@@ -417,10 +417,11 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset deactivatedAt,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
-        await using var transaction =
-            await connection.BeginTransactionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var ownedTransaction = routing.Transaction is null
+            ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
+        var transaction = routing.Transaction ?? ownedTransaction!;
 
         await using var updateUser = new NpgsqlCommand(
             """
@@ -431,7 +432,7 @@ internal sealed class PostgresIdentityStore(
             WHERE id = @id
               AND status <> 'DEACTIVATED';
             """,
-            connection,
+            routing.Connection,
             transaction);
         updateUser.Parameters.AddWithValue("id", userId);
         updateUser.Parameters.AddWithValue("updated_at", deactivatedAt);
@@ -445,14 +446,14 @@ internal sealed class PostgresIdentityStore(
                 SET revoked_at = COALESCE(revoked_at, @revoked_at)
                 WHERE user_id = @user_id AND revoked_at IS NULL;
                 """,
-                connection,
+                routing.Connection,
                 transaction);
             revokeSessions.Parameters.AddWithValue("revoked_at", deactivatedAt);
             revokeSessions.Parameters.AddWithValue("user_id", userId);
             await revokeSessions.ExecuteNonQueryAsync(cancellationToken);
         }
 
-        await transaction.CommitAsync(cancellationToken);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(cancellationToken);
         return changed;
     }
 
@@ -464,8 +465,8 @@ internal sealed class PostgresIdentityStore(
         string correlationId,
         CancellationToken cancellationToken = default)
     {
-        await using var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken);
+        await using var routing =
+            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO audit_events(
@@ -475,7 +476,7 @@ internal sealed class PostgresIdentityStore(
                 @id, NULL, @actor_id, @event_type, @entity_type,
                 @entity_id, @correlation_id, '{}'::jsonb, now());
             """,
-            connection);
+            routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("id", Guid.NewGuid());
         command.Parameters.AddWithValue(
             "actor_id",

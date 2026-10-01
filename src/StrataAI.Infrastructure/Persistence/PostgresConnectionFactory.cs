@@ -11,6 +11,7 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
 {
     private readonly NpgsqlDataSource _dataSource;
     private readonly AsyncLocal<TenantDbSession?> _commandSession = new();
+    private readonly AsyncLocal<RoutingDbSession?> _identityCommandSession = new();
 
     public PostgresConnectionFactory(string connectionString)
     {
@@ -68,6 +69,9 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 nameof(organizationId));
         }
 
+        if (_identityCommandSession.Value is not null)
+            throw new InvalidOperationException("An Identity command cannot acquire an Organization session.");
+
         if (_commandSession.Value is { } commandSession)
         {
             if (commandSession.OrganizationId != organizationId)
@@ -108,6 +112,8 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
     {
         if (_commandSession.Value is { } session)
             return new RoutingDbSession(session.Connection, session.Transaction, ownsConnection: false);
+        if (_identityCommandSession.Value is { } identity)
+            return new RoutingDbSession(identity.Connection, identity.Transaction, ownsConnection: false);
         return new RoutingDbSession(await OpenConnectionAsync(cancellationToken), null, ownsConnection: true);
     }
 
@@ -117,7 +123,7 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
         Func<T, bool> succeeded,
         CancellationToken cancellationToken)
     {
-        if (_commandSession.Value is not null)
+        if (_commandSession.Value is not null || _identityCommandSession.Value is not null)
             throw new InvalidOperationException("Nested command transactions are not supported.");
         await using var session = await OpenTenantSessionAsync(organizationId, cancellationToken);
         // Set within the owning async scope so descendants share this transaction;
@@ -130,5 +136,23 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
             return result;
         }
         finally { _commandSession.Value = null; }
+    }
+
+    internal async Task<T> ExecuteIdentityCommandAsync<T>(Func<Task<T>> operation,
+        Func<T, bool> succeeded, CancellationToken cancellationToken)
+    {
+        if (_commandSession.Value is not null || _identityCommandSession.Value is not null)
+            throw new InvalidOperationException("Nested command transactions are not supported.");
+        await using var connection = await OpenConnectionAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        // Identity is global account state: no fabricated Organization or RLS bypass.
+        _identityCommandSession.Value = new RoutingDbSession(connection, transaction, ownsConnection: false);
+        try
+        {
+            var result = await operation();
+            if (succeeded(result)) await transaction.CommitAsync(cancellationToken);
+            return result;
+        }
+        finally { _identityCommandSession.Value = null; }
     }
 }

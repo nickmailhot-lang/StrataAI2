@@ -238,9 +238,9 @@ public static class IdentityEndpoints
                     context.TraceIdentifier,
                     cancellationToken);
 
-                if (!deactivated)
+                if (!deactivated.Succeeded)
                 {
-                    return Results.NotFound();
+                    return ErrorFor(deactivated.ErrorCode);
                 }
 
                 context.Response.Cookies.Delete(
@@ -292,6 +292,8 @@ public static class IdentityEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "session_unavailable" => Problem(StatusCodes.Status401Unauthorized, errorCode, "Your session is no longer available. Sign in again."),
+            "identity_storage_unavailable" => Problem(StatusCodes.Status503ServiceUnavailable, errorCode, "The account change could not be confirmed. Retry shortly."),
             "self_registration_disabled" => Problem(
                 StatusCodes.Status403Forbidden,
                 errorCode,

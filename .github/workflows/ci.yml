@@ -321,6 +321,9 @@ jobs:
           docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api
           scripts/ci/test-postgres-profile.sh http://localhost:8080
 
+      - name: Identity audit rollback, logout waits and one-connection commands
+        run: scripts/ci/test-identity-command-transactions.sh
+
       - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
         run: scripts/ci/test-board-discovery.sh
 
