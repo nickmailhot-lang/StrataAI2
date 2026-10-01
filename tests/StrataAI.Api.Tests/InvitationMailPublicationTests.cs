@@ -11,6 +11,8 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    // ONBOARD-FR-003/004, PRD-60-TC-07/15: proof reconstruction and one
+    // publication across retry, with immutable token-free acknowledgment.
     [Theory]
     [InlineData("INTERNAL", "MEMBER")]
     [InlineData("PORTAL", "OWNER")]

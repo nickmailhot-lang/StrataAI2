@@ -73,11 +73,46 @@ wait "$lock_pid"
 wait "$finish_pid"
 test "$(grep -E '^(t|f)$' "$scratch/finish")" = f
 psql -X -v ON_ERROR_STOP=1 -c "UPDATE background_jobs SET lease_expires_at=now()+interval '5 minutes' WHERE id='$job';" >/dev/null
-for mutation in "UPDATE users SET status='SUSPENDED' WHERE id='$actor'" "UPDATE organization_members SET status='REMOVED' WHERE user_id='$actor'" "UPDATE invitations SET revoked_at=now() WHERE id='$invitation'"; do
+# PRD-60-TC-04/06/10, ONBOARD-FR-002/003/004: fresh canonical
+# admission, including privileged changes after the immutable snapshot.
+for mutation in \
+  "UPDATE users SET status='SUSPENDED' WHERE id='$actor'" \
+  "UPDATE users SET email_verified=false WHERE id='$actor'" \
+  "UPDATE organizations SET status='ARCHIVED' WHERE id='$tenant'" \
+  "UPDATE organization_members SET status='REMOVED' WHERE user_id='$actor'" \
+  "UPDATE organization_members SET role='MEMBER' WHERE user_id='$actor'" \
+  "UPDATE invitations SET revoked_at=now() WHERE id='$invitation'" \
+  "UPDATE invitations SET accepted_at=now() WHERE id='$invitation'" \
+  "UPDATE invitations SET expires_at=now()-interval '1 second' WHERE id='$invitation'" \
+  "UPDATE invitations SET invited_email='changed@example.test' WHERE id='$invitation'" \
+  "UPDATE invitations SET email_normalized='CHANGED@EXAMPLE.TEST' WHERE id='$invitation'" \
+  "UPDATE invitations SET target_role='ADMIN' WHERE id='$invitation'" \
+  "UPDATE invitations SET target_surface='PORTAL' WHERE id='$invitation'"; do
   psql -X -v ON_ERROR_STOP=1 -c "$mutation" >/dev/null
   test "$(scoped "SELECT is_usable FROM $load")" = f
-  psql -X -v ON_ERROR_STOP=1 -c "UPDATE users SET status='ACTIVE' WHERE id='$actor'; UPDATE organization_members SET status='ACTIVE' WHERE user_id='$actor'; UPDATE invitations SET revoked_at=NULL WHERE id='$invitation';" >/dev/null
+  psql -X -v ON_ERROR_STOP=1 -c "UPDATE users SET status='ACTIVE',email_verified=true WHERE id='$actor';
+    UPDATE organizations SET status='ACTIVE' WHERE id='$tenant';
+    UPDATE organization_members SET status='ACTIVE',role='OWNER' WHERE user_id='$actor';
+    UPDATE invitations i SET revoked_at=NULL,accepted_at=NULL,invited_email=m.recipient_email,
+      email_normalized=upper(m.recipient_email),expires_at=m.expires_at,target_surface=m.target_surface,target_role=m.target_role
+      FROM invitation_mail_intents m WHERE i.id=m.invitation_id AND m.job_id='$job';" >/dev/null
 done
+# The Worker follows the explicitly configured verification policy. Administrative
+# fixture changes are needed here; neither runtime role can rewrite snapshots.
+psql -X -v ON_ERROR_STOP=1 -c "UPDATE users SET email_verified=false WHERE id='$actor';" >/dev/null
+test "$(scoped "SELECT is_usable FROM public.load_invitation_mail('$job','$tenant','$actor','$worker_id','$lease',false)")" = t
+psql -X -v ON_ERROR_STOP=1 -c "UPDATE users SET email_verified=true WHERE id='$actor';
+  UPDATE invitations SET target_role='OWNER' WHERE id='$invitation';
+  UPDATE invitation_mail_intents SET target_role='OWNER' WHERE job_id='$job';
+  UPDATE organization_members SET role='ADMIN' WHERE user_id='$actor';" >/dev/null
+test "$(scoped "SELECT is_usable FROM $load")" = f
+# Portal OWNER is a portal role, so it must not inherit the internal OWNER grant
+# restriction or cause an internal membership grant during mail delivery.
+psql -X -v ON_ERROR_STOP=1 -c "UPDATE invitations SET target_surface='PORTAL' WHERE id='$invitation';
+  UPDATE invitation_mail_intents SET target_surface='PORTAL' WHERE job_id='$job';" >/dev/null
+test "$(scoped "SELECT is_usable FROM $load")" = t
+test "$(psql -X -At -c "SELECT count(*) FROM organization_members WHERE tenant_id='$tenant'")" = 1
+test "$(psql -X -At -c "SELECT count(*) FROM portal_access WHERE tenant_id='$tenant'")" = 0
 # A wrong lease cannot change the ledger. A successful receipt is durable and
 # immutable even while the same generic job still has its live lease.
 test "$(scoped "SELECT public.finish_invitation_mail('$job','$tenant','$actor','$worker_id','$other','SENT',NULL,'$other')")" = f
