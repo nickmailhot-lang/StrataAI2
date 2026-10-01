@@ -8,6 +8,41 @@ namespace StrataAI.Infrastructure.Organizations;
 internal sealed class PostgresOrganizationStore(
     PostgresConnectionFactory connectionFactory, IdentityPolicy policy) : IOrganizationStore
 {
+    public async Task<IReadOnlyList<OrganizationMemberSummary>> ListActiveMembersAsync(Guid organizationId,
+        Guid? after, CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId))
+            throw new InvalidOperationException("Member discovery requires the owning authorized Organization transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT m.id,m.user_id,u.display_name,u.email,m.role,u.status,u.email_verified,
+                m.created_at,m.updated_at,m.version
+            FROM organization_members m JOIN users u ON u.id=m.user_id
+            WHERE m.tenant_id=@tenant AND m.status='ACTIVE' AND (@after IS NULL OR m.user_id>@after)
+            ORDER BY m.user_id LIMIT 51;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId);
+        command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        var result = new List<OrganizationMemberSummary>();
+        await using var rows = await command.ExecuteReaderAsync(cancellationToken);
+        while (await rows.ReadAsync(cancellationToken))
+        {
+            var role = ParseRole(rows.GetString(4));
+            var status = rows.GetString(5) switch
+            {
+                "PENDING_VERIFICATION" => AccountStatus.PendingVerification,
+                "ACTIVE" => AccountStatus.Active,
+                "SUSPENDED" => AccountStatus.Suspended,
+                "DEACTIVATED" => AccountStatus.Deactivated,
+                _ => throw new InvalidOperationException("Unknown account lifecycle in member directory."),
+            };
+            var verified = rows.GetBoolean(6);
+            result.Add(new(rows.GetGuid(0), rows.GetGuid(1), rows.GetString(2), rows.GetString(3), role, status, verified,
+                role == OrganizationRole.Owner && status == AccountStatus.Active && (!policy.RequireVerifiedEmail || verified),
+                rows.GetFieldValue<DateTimeOffset>(7), rows.GetFieldValue<DateTimeOffset>(8), rows.GetInt64(9)));
+        }
+        return result;
+    }
     public async Task<IReadOnlyList<Guid>> ListActiveOwnerUserIdsAsync(Guid organizationId, CancellationToken cancellationToken = default)
     {
         await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);

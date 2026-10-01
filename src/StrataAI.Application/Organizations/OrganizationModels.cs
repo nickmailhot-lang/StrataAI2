@@ -39,6 +39,13 @@ public sealed record OrganizationSummary(
     OrganizationRecord Organization,
     OrganizationRole Role);
 
+public sealed record OrganizationMemberSummary(Guid MembershipId, Guid UserId, string DisplayName,
+    string Email, OrganizationRole Role, StrataAI.Application.Identity.AccountStatus AccountStatus,
+    bool EmailVerified, bool IsUsableOwner, DateTimeOffset JoinedAt, DateTimeOffset UpdatedAt, long Version);
+
+public sealed record OrganizationMemberPage(Guid OrganizationId,
+    IReadOnlyList<OrganizationMemberSummary> Items, Guid? NextCursor);
+
 public sealed record OrganizationBoardSummary(
     Guid Id,
     string Name,

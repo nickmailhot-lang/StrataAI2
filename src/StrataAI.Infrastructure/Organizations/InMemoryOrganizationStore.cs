@@ -9,6 +9,27 @@ internal sealed class InMemoryOrganizationStore(IIdentityStore identities, Ident
     private readonly Dictionary<Guid, OrganizationRecord> _organizations = [];
     private readonly Dictionary<(Guid OrganizationId, Guid UserId), OrganizationMembership> _members = [];
 
+    public async Task<IReadOnlyList<OrganizationMemberSummary>> ListActiveMembersAsync(Guid organizationId,
+        Guid? after, CancellationToken cancellationToken = default)
+    {
+        OrganizationMembership[] members;
+        lock (_sync)
+            members = _members.Values.Where(member => member.OrganizationId == organizationId && member.Active
+                && (after is null || string.CompareOrdinal(member.UserId.ToString("N"), after.Value.ToString("N")) > 0))
+                .OrderBy(member => member.UserId.ToString("N"), StringComparer.Ordinal).ToArray();
+        var result = new List<OrganizationMemberSummary>();
+        foreach (var member in members)
+        {
+            var user = await identities.FindUserByIdAsync(member.UserId, cancellationToken);
+            if (user is null) continue;
+            result.Add(new(member.Id, user.Id, user.DisplayName, user.Email, member.Role, user.Status,
+                user.EmailVerified, member.Role == OrganizationRole.Owner && user.Status == AccountStatus.Active
+                    && (!policy.RequireVerifiedEmail || user.EmailVerified), member.CreatedAt, member.UpdatedAt, member.Version));
+            if (result.Count == 51) break;
+        }
+        return result;
+    }
+
     public Task<IReadOnlyList<Guid>> ListActiveOwnerUserIdsAsync(Guid organizationId, CancellationToken cancellationToken = default)
     {
         lock (_sync)

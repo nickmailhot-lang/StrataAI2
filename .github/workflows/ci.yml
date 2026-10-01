@@ -362,6 +362,9 @@ jobs:
       - name: Account deactivation and Organization active-owner continuity
         run: scripts/ci/test-account-owner-continuity.sh
 
+      - name: Authorized bounded Organization member directory and post-wait revocation
+        run: scripts/ci/test-organization-member-directory.sh
+
       - name: Durable work retry keys against exact release API
         run: scripts/ci/test-work-idempotency.sh
 

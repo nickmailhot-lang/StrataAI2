@@ -9,6 +9,22 @@ public static class OrganizationEndpoints
     {
         var group = app.MapGroup("/organizations").RequireAuthorization();
 
+        group.MapGet("/{organizationId:guid}/members", async (Guid organizationId, string? after,
+            HttpContext context, IOrganizationService service, CancellationToken cancellationToken) =>
+        {
+            var userId = GetUserId(context);
+            if (userId is null) return Results.Unauthorized();
+            Guid? cursor = null;
+            if (after is not null)
+            {
+                if (after.Length != 36 || !Guid.TryParseExact(after, "D", out var parsed) || parsed == Guid.Empty)
+                    return ErrorFor("invalid_member_cursor");
+                cursor = parsed;
+            }
+            var result = await service.ListMembersAsync(organizationId, userId.Value, cursor, cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+
         group.MapPost(
             "/",
             async (
@@ -200,6 +216,8 @@ public static class OrganizationEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_member_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode,
+                "The member page cursor is invalid."),
             "session_unavailable" => Problem(
                 StatusCodes.Status401Unauthorized,
                 errorCode,

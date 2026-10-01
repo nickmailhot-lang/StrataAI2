@@ -7,8 +7,26 @@ public sealed class OrganizationService(
     IOrganizationStore store,
     IWorkManagementStore workStore,
     IClock clock,
-    IOrganizationUnitOfWork unitOfWork) : IOrganizationService
+    IOrganizationUnitOfWork unitOfWork,
+    StrataAI.Application.Identity.ICommandActorAuthorization actors) : IOrganizationService
 {
+    public Task<OrganizationOperation<OrganizationMemberPage>> ListMembersAsync(Guid organizationId,
+        Guid actorUserId, Guid? after, CancellationToken cancellationToken = default) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false, async () =>
+        {
+            // Admission and reads share the existing parent/member/account/session
+            // transaction; a demotion or revocation committed during a wait wins.
+            if (!CanAdminister(await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken)))
+                return OrganizationOperation<OrganizationMemberPage>.Failure("organization_not_found");
+            if (after == Guid.Empty) return OrganizationOperation<OrganizationMemberPage>.Failure("invalid_member_cursor");
+            var rows = await store.ListActiveMembersAsync(organizationId, after, cancellationToken);
+            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                return OrganizationOperation<OrganizationMemberPage>.Failure("session_unavailable");
+            var items = rows.Take(50).ToArray();
+            return OrganizationOperation<OrganizationMemberPage>.Success(new(organizationId, items,
+                rows.Count > 50 ? items[^1].UserId : null));
+        }, cancellationToken);
+
     public Task<OrganizationOperation<OrganizationSummary>> CreateAsync(
         Guid actorUserId, string name, string? description, string correlationId,
         CancellationToken cancellationToken = default)
