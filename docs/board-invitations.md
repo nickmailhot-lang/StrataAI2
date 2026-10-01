@@ -235,3 +235,20 @@ Six new component cases cover lost acknowledgment, separate draft storage, wrong
 Board/role acknowledgment and admission/creation denial. Sender history/revocation
 and actual browser keyboard/reload coverage remain outstanding; this form alone
 is not completion of PRD-05/60.
+
+Board-scoped sender history is now exposed at GET /boards/{boardId}/invitations.
+It rechecks the actual Organization, account, active Board and current explicit
+Board administration or implicit Organization administration under the same
+Organization/account/Board command locks before reading recipient emails.
+A UUID seek cursor bounds history to 50 returned rows. PostgreSQL and Demo filter
+by the exact tenant/Board target; ordinary Organization history continues to exclude
+Board targets. Items add the bound Board ID/role to existing invitation lifecycle
+and safe delivery-state fields, with no hashes/proof/provider details.
+
+Authenticated both-role route tests now include history, isolation from another
+private Board and ordinary Organization invitations, and removal of history access
+immediately after issuer Board revocation. Required real-mail cases additionally
+read the new Board endpoint and assert actual SENT plus target binding and no
+sensitive delivery metadata. Local warning-as-error solution build, shell syntax
+and diff checks pass; host/container execution is pending CI. Board revoke command,
+MUI history and desktop/mobile sender browser integration remain outstanding.

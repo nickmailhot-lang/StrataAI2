@@ -141,8 +141,30 @@ public sealed partial class ApiHostTests
         using var conflict = await Create(role == BoardRole.Admin ? "MEMBER" : "ADMIN");
         Assert.Equal(System.Net.HttpStatusCode.Conflict, conflict.StatusCode);
         using var invalid = await Create("OWNER"); Assert.Equal(System.Net.HttpStatusCode.BadRequest, invalid.StatusCode);
+        var otherBoard = (await app.Services.GetRequiredService<IWorkManagementService>().CreateBoardAsync(fixture.Board.OrganizationId,
+            fixture.Owner.Id, "Other private Board", null, BoardVisibility.Private, "COLOR", "#112233", "fixture", ct)).Value!;
+        var otherInvitation = (await app.Services.GetRequiredService<BoardInvitationService>().CreateAsync(otherBoard.Id,
+            fixture.Owner.Id, fixture.Recipient.Email, role, "fixture", ct)).Value!.Invitation.Id;
+        var ordinaryInvitation = (await app.Services.GetRequiredService<IInvitationService>().CreateAsync(fixture.Board.OrganizationId,
+            fixture.Owner.Id, fixture.Recipient.Email, InvitationSurface.Internal, "MEMBER", "fixture", ct)).Value!.Invitation.Id;
+        using var history = await client.GetAsync($"/boards/{fixture.Board.Id}/invitations", ct);
+        Assert.Equal(System.Net.HttpStatusCode.OK, history.StatusCode);
+        var historyBody = await history.Content.ReadAsStringAsync(ct);
+        using var historyJson = System.Text.Json.JsonDocument.Parse(historyBody);
+        var entry = Assert.Single(historyJson.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(parsed.RootElement.GetProperty("id").GetGuid(), entry.GetProperty("id").GetGuid());
+        Assert.Equal(fixture.Recipient.Email, entry.GetProperty("email").GetString());
+        Assert.Equal(fixture.Board.Id, entry.GetProperty("boardTarget").GetProperty("boardId").GetGuid());
+        Assert.DoesNotContain(otherInvitation.ToString(), historyBody, StringComparison.Ordinal);
+        Assert.DoesNotContain(ordinaryInvitation.ToString(), historyBody, StringComparison.Ordinal);
+        Assert.DoesNotContain("tokenHash", historyBody, StringComparison.Ordinal);
+        using var otherHistory = await client.GetAsync($"/boards/{otherBoard.Id}/invitations", ct);
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, otherHistory.StatusCode);
         Assert.True((await app.Services.GetRequiredService<IWorkManagementService>().RemoveBoardMemberAsync(fixture.Board.Id,
             fixture.Owner.Id, fixture.Inviter.Id, "fixture", ct)).Succeeded);
+        using var revokedHistory = await client.GetAsync($"/boards/{fixture.Board.Id}/invitations", ct);
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, revokedHistory.StatusCode);
+        Assert.DoesNotContain(fixture.Recipient.Email, await revokedHistory.Content.ReadAsStringAsync(ct), StringComparison.Ordinal);
         using var revoked = await Create(role.ToString().ToUpperInvariant()); Assert.Equal(System.Net.HttpStatusCode.NotFound, revoked.StatusCode);
         using var hidden = await Create("OWNER"); Assert.Equal(System.Net.HttpStatusCode.NotFound, hidden.StatusCode);
         Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct));

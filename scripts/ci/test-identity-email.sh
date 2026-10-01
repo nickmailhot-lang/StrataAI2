@@ -569,6 +569,9 @@ for target in INTERNAL PORTAL BOARD_ADMIN BOARD_MEMBER; do
   scripts/ci/assert-file-excludes.sh "$signup_token" "$scratch/invitation-ledger"
   curl --fail --silent --show-error -b "$scratch/signup-owner.cookies" "$base/organizations/$signup_org/invitations" > "$scratch/invitation-history"
   if test -n "$board_role"; then
+    curl --fail --silent --show-error -b "$scratch/signup-owner.cookies" "$base/boards/$mail_board/invitations" > "$scratch/board-history"
+    jq -e --arg id "$signup_invitation" --arg board "$mail_board" --arg role "$board_role" --arg email "$email" '.items|map(select(.id==$id))|length==1 and .[0].email==$email and .[0].deliveryState=="SENT" and .[0].boardTarget.boardId==$board and .[0].boardTarget.role==$role' "$scratch/board-history" >/dev/null
+    scripts/ci/assert-file-excludes.sh "$signup_token|tokenHash|providerReceipt|safeMetadata|providerAccount" "$scratch/board-history"
     # Organization history currently excludes Board invitations; no false history completion claim.
     jq -e --arg id "$signup_invitation" '.items|map(select(.id==$id))|length==0' "$scratch/invitation-history" >/dev/null
   else

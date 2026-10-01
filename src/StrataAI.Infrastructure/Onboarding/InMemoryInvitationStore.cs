@@ -14,13 +14,13 @@ internal sealed class InMemoryInvitationStore(
     private readonly HashSet<(Guid OrganizationId, Guid UserId, string Relationship)> _portalAccess = [];
     private readonly Dictionary<(Guid OrganizationId, Guid ActorId, Guid Key), (string Fingerprint, Guid InvitationId, DateTimeOffset ExpiresAt)> _creationReplays = [];
 
-    public Task<IReadOnlyList<IssuedInvitation>> ListAsync(Guid organizationId, Guid? after, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<IssuedInvitation>> ListAsync(Guid organizationId, Guid? after, CancellationToken cancellationToken, Guid? boardId = null)
     {
         lock (_sync)
             return Task.FromResult<IReadOnlyList<IssuedInvitation>>(_byToken.Values
-                .Where(row => row.BoardTarget is null && row.OrganizationId == organizationId && (after is null || row.Id.CompareTo(after.Value) > 0))
+                .Where(row => row.BoardTarget?.BoardId == boardId && row.OrganizationId == organizationId && (after is null || row.Id.CompareTo(after.Value) > 0))
                 .OrderBy(row => row.Id).Take(51).Select(row => new IssuedInvitation(row.Id, row.InvitedEmail, row.Surface,
-                    row.TargetRole, row.CreatedAt, row.ExpiresAt, row.AcceptedAt, row.RevokedAt, null)).ToArray());
+                    row.TargetRole, row.CreatedAt, row.ExpiresAt, row.AcceptedAt, row.RevokedAt, null, row.BoardTarget)).ToArray());
     }
 
     public Task<InvitationCreationReplay?> FindCreationReplayAsync(Guid organizationId, Guid actorId, Guid key,
