@@ -5,13 +5,22 @@ using StrataAI.Application.Organizations;
 namespace StrataAI.Infrastructure.Onboarding;
 
 internal sealed class InMemoryInvitationStore(
-    IOrganizationStore organizationStore, IClock clock) : IInvitationStore
+    IOrganizationStore organizationStore, IClock clock) : IInvitationStore, IInvitationHistoryStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<string, InvitationRecord> _byToken =
         new(StringComparer.Ordinal);
     private readonly HashSet<(Guid OrganizationId, Guid UserId, string Relationship)> _portalAccess = [];
     private readonly Dictionary<(Guid OrganizationId, Guid ActorId, Guid Key), (string Fingerprint, Guid InvitationId, DateTimeOffset ExpiresAt)> _creationReplays = [];
+
+    public Task<IReadOnlyList<IssuedInvitation>> ListAsync(Guid organizationId, Guid? after, CancellationToken cancellationToken)
+    {
+        lock (_sync)
+            return Task.FromResult<IReadOnlyList<IssuedInvitation>>(_byToken.Values
+                .Where(row => row.OrganizationId == organizationId && (after is null || row.Id.CompareTo(after.Value) > 0))
+                .OrderBy(row => row.Id).Take(51).Select(row => new IssuedInvitation(row.Id, row.InvitedEmail, row.Surface,
+                    row.TargetRole, row.CreatedAt, row.ExpiresAt, row.AcceptedAt, row.RevokedAt, null)).ToArray());
+    }
 
     public Task<InvitationCreationReplay?> FindCreationReplayAsync(Guid organizationId, Guid actorId, Guid key,
         CancellationToken cancellationToken = default)

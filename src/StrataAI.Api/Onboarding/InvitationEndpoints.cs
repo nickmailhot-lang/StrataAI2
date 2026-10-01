@@ -10,6 +10,23 @@ public static class InvitationEndpoints
         this WebApplication app,
         RuntimeDescriptor runtime)
     {
+        app.MapGet("/organizations/{organizationId:guid}/invitations", async (
+            Guid organizationId, string? after, HttpContext context, InvitationHistoryService service,
+            CancellationToken cancellationToken) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            Guid? cursor = null;
+            if (after is not null)
+            {
+                if (after.Length != 36 || !Guid.TryParseExact(after, "D", out var parsed) || parsed == Guid.Empty)
+                    return ErrorFor("invalid_invitation_cursor");
+                cursor = parsed;
+            }
+            var result = await service.ListAsync(organizationId, actor.Value, cursor, cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().RequireRateLimiting("invitation");
+
         app.MapPost(
                 "/organizations/{organizationId:guid}/invitations",
                 async (

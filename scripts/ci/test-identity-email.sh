@@ -541,6 +541,9 @@ for surface in INTERNAL PORTAL; do
   test "$(curl --fail --silent "$fixture/messages" | jq -r --arg key "$invitation_provider_key" '.[]|select(.key==$key)|.attempts')" = "$delivery_attempts"
   query "SELECT to_jsonb(m)::text FROM invitation_mail_intents m WHERE job_id='$invitation_job';" > "$scratch/invitation-ledger"
   scripts/ci/assert-file-excludes.sh "$signup_token" "$scratch/invitation-ledger"
+  curl --fail --silent --show-error -b "$scratch/signup-owner.cookies" "$base/organizations/$signup_org/invitations" > "$scratch/invitation-history"
+  jq -e --arg id "$signup_invitation" --arg email "$email" '.items|map(select(.id==$id))|length==1 and .[0].email==$email and .[0].deliveryState=="SENT"' "$scratch/invitation-history" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$signup_token|tokenHash|providerReceipt|safeMetadata|providerAccount" "$scratch/invitation-history"
   signup_body="$(jq -nc --arg email "$email" --arg token "$signup_token" '{email:$email,password:"signup-mail-correct-horse",displayName:"Invited mail recipient",invitationToken:$token}')"
   test "$(post /auth/register "$(jq 'del(.invitationToken)' <<< "$signup_body")")" = 403
   signup_key="$(cat /proc/sys/kernel/random/uuid)"
@@ -564,6 +567,8 @@ for surface in INTERNAL PORTAL; do
   count=0; if test "$surface" = INTERNAL; then count=1; fi
   test "$(query "SELECT count(*) FROM organization_members WHERE tenant_id='$signup_org' AND user_id='$signup_user' AND role='MEMBER' AND status='ACTIVE';")" = "$count"
   scripts/ci/assert-file-excludes.sh "$signup_token|$mail_proof|invitationToken|tokenHash" "$scratch/response"
+  test "$(curl --max-time 60 --silent --show-error -b "$scratch/signup-recipient.cookies" -o "$scratch/invitation-history-denied" -w '%{http_code}' "$base/organizations/$signup_org/invitations")" = 404
+  scripts/ci/assert-file-excludes.sh "$email|$signup_invitation|$signup_token|deliveryState" "$scratch/invitation-history-denied"
 done
 unset signup_token signup_hash mail_proof signup_body
 "${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null; signup_closed=false

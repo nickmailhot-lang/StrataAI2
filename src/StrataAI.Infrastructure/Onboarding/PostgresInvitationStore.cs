@@ -5,8 +5,32 @@ using StrataAI.Infrastructure.Persistence;
 namespace StrataAI.Infrastructure.Onboarding;
 
 internal sealed class PostgresInvitationStore(
-    PostgresConnectionFactory connectionFactory) : IInvitationStore
+    PostgresConnectionFactory connectionFactory) : IInvitationStore, IInvitationHistoryStore
 {
+    public async Task<IReadOnlyList<IssuedInvitation>> ListAsync(Guid organizationId, Guid? after, CancellationToken cancellationToken)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId))
+            throw new InvalidOperationException("Invitation history requires the authorized Organization transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT i.id,i.invited_email,i.target_surface,i.target_role,i.created_at,i.expires_at,i.accepted_at,i.revoked_at,
+                CASE WHEN m.state='PENDING' AND j.state='FAILED' THEN 'RETRY_EXHAUSTED' ELSE m.state END
+            FROM invitations i LEFT JOIN invitation_mail_intents m ON m.tenant_id=i.tenant_id AND m.invitation_id=i.id
+            LEFT JOIN background_jobs j ON j.tenant_id=m.tenant_id AND j.id=m.job_id
+            WHERE i.tenant_id=@tenant AND (@after::uuid IS NULL OR i.id>@after)
+            ORDER BY i.id LIMIT 51;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId);
+        command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        var rows = new List<IssuedInvitation>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+            rows.Add(new(reader.GetGuid(0), reader.GetString(1), ParseSurface(reader.GetString(2)), reader.GetString(3),
+                reader.GetFieldValue<DateTimeOffset>(4), reader.GetFieldValue<DateTimeOffset>(5),
+                reader.IsDBNull(6) ? null : reader.GetFieldValue<DateTimeOffset>(6),
+                reader.IsDBNull(7) ? null : reader.GetFieldValue<DateTimeOffset>(7), reader.IsDBNull(8) ? null : reader.GetString(8)));
+        return rows;
+    }
     public async Task<InvitationCreationReplay?> FindCreationReplayAsync(Guid organizationId, Guid actorId, Guid key,
         CancellationToken cancellationToken = default)
     {
