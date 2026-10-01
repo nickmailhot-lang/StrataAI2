@@ -17,6 +17,8 @@ public sealed class PostgresInvitationMailPublisher(PostgresConnectionFactory co
 
     public async Task PublishAsync(InvitationRecord invitation, string keyId, string correlationId, CancellationToken cancellationToken)
     {
+        if (invitation.BoardTarget is not null)
+            throw new InvalidOperationException("Board invitation delivery is not yet enabled.");
         if (!connections.HasCommandScope(invitation.OrganizationId))
             throw new InvalidOperationException("Invitation mail publication requires the authorized Organization transaction.");
         await using var session = await connections.OpenTenantSessionAsync(invitation.OrganizationId, cancellationToken);
@@ -32,7 +34,7 @@ public sealed class PostgresInvitationMailPublisher(PostgresConnectionFactory co
             SELECT @job,tenant_id,id,created_by_user_id,invited_email,target_surface,target_role,expires_at,
                 @key,@sender,@origin,@account,1 FROM invitations
             WHERE id=@invitation AND tenant_id=@tenant AND created_by_user_id=@issuer AND token_hash=@hash
-                AND accepted_at IS NULL AND revoked_at IS NULL AND expires_at>clock_timestamp();
+                AND target_board_id IS NULL AND accepted_at IS NULL AND revoked_at IS NULL AND expires_at>clock_timestamp();
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("job", jobId);
         command.Parameters.AddWithValue("invitation", invitation.Id);

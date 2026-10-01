@@ -28,6 +28,13 @@ SQL
 load="public.load_invitation_mail('$job','$tenant','$actor','$worker_id','$lease',true)"
 scoped() { worker "BEGIN; SET LOCAL app.tenant_id='$tenant'; $1; ROLLBACK;" | grep -E '^(t|f|[0-9]+|PENDING|SENT)$'; }
 test "$(scoped "SELECT is_usable FROM $load")" = t
+psql -X -v ON_ERROR_STOP=1 -c "INSERT INTO boards(id,tenant_id,name,created_at,updated_at)
+ VALUES('02500000-0000-0000-0000-000000000010','$tenant','Mail target fixture',now(),now());
+ UPDATE invitations SET target_board_id='02500000-0000-0000-0000-000000000010',target_board_role='MEMBER'
+ WHERE id='$invitation';" >/dev/null
+test "$(scoped "SELECT is_usable FROM $load")" = f
+psql -X -v ON_ERROR_STOP=1 -c "UPDATE invitations SET target_board_id=NULL,target_board_role=NULL WHERE id='$invitation';" >/dev/null
+test "$(scoped "SELECT is_usable FROM $load")" = t
 test "$(worker "SELECT count(*) FROM $load")" = 0
 test "$(worker "BEGIN; SET LOCAL app.tenant_id='$other'; SELECT count(*) FROM $load; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
 for wrong in job tenant actor worker_id lease; do

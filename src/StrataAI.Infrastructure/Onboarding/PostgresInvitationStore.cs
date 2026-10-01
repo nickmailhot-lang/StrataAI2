@@ -17,7 +17,7 @@ internal sealed class PostgresInvitationStore(
                 CASE WHEN m.state='PENDING' AND j.state='FAILED' THEN 'RETRY_EXHAUSTED' ELSE m.state END
             FROM invitations i LEFT JOIN invitation_mail_intents m ON m.tenant_id=i.tenant_id AND m.invitation_id=i.id
             LEFT JOIN background_jobs j ON j.tenant_id=m.tenant_id AND j.id=m.job_id
-            WHERE i.tenant_id=@tenant AND (@after::uuid IS NULL OR i.id>@after)
+            WHERE i.tenant_id=@tenant AND i.target_board_id IS NULL AND (@after::uuid IS NULL OR i.id>@after)
             ORDER BY i.id LIMIT 51;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", organizationId);
@@ -38,14 +38,14 @@ internal sealed class PostgresInvitationStore(
         await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT i.id,i.tenant_id,i.invited_email,i.email_normalized,i.token_hash,i.target_surface,i.target_role,
-                i.created_by_user_id,i.created_at,i.expires_at,i.accepted_at,i.revoked_at,i.accepted_by_user_id,
+                i.created_by_user_id,i.created_at,i.expires_at,i.accepted_at,i.revoked_at,i.accepted_by_user_id,i.target_board_id,i.target_board_role,
                 r.fingerprint,r.expires_at<=clock_timestamp()
             FROM invitation_creation_replays r JOIN invitations i ON i.id=r.invitation_id AND i.tenant_id=r.tenant_id
             WHERE r.tenant_id=@tenant AND r.actor_id=@actor AND r.key_id=@key;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("actor", actorId); command.Parameters.AddWithValue("key", key);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        return await reader.ReadAsync(cancellationToken) ? new(reader.GetString(13), reader.GetBoolean(14), ReadInvitation(reader)) : null;
+        return await reader.ReadAsync(cancellationToken) ? new(reader.GetString(15), reader.GetBoolean(16), ReadInvitation(reader)) : null;
     }
 
     public async Task SaveCreationReplayAsync(Guid organizationId, Guid actorId, Guid key, string fingerprint,
@@ -76,13 +76,13 @@ internal sealed class PostgresInvitationStore(
             INSERT INTO invitations(
                 id, tenant_id, invited_email, email_normalized,
                 token_hash, target_surface, target_role,
-                created_by_user_id, created_at, expires_at)
+                created_by_user_id, created_at, expires_at, target_board_id, target_board_role)
             VALUES (
                 @id, @tenant_id, @invited_email, @email_normalized,
                 @token_hash, @target_surface, @target_role,
-                @created_by_user_id, @created_at, @expires_at)
+                @created_by_user_id, @created_at, @expires_at, @target_board_id, @target_board_role)
             RETURNING id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
-                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id;
+                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role;
             """,
             session.Connection,
             session.Transaction);
@@ -109,6 +109,14 @@ internal sealed class PostgresInvitationStore(
             invitation.CreatedByUserId);
         command.Parameters.AddWithValue("created_at", invitation.CreatedAt);
         command.Parameters.AddWithValue("expires_at", invitation.ExpiresAt);
+        command.Parameters.AddWithValue("target_board_id", NpgsqlTypes.NpgsqlDbType.Uuid,
+            (object?)invitation.BoardTarget?.BoardId ?? DBNull.Value);
+        command.Parameters.AddWithValue("target_board_role", NpgsqlTypes.NpgsqlDbType.Text,
+            invitation.BoardTarget is { } target ? target.Role switch {
+                StrataAI.Application.WorkManagement.BoardRole.Admin => "ADMIN",
+                StrataAI.Application.WorkManagement.BoardRole.Member => "MEMBER",
+                _ => throw new ArgumentOutOfRangeException(nameof(invitation)),
+            } : DBNull.Value);
 
         InvitationRecord persisted;
         await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
@@ -138,6 +146,7 @@ internal sealed class PostgresInvitationStore(
                 expires_at, organization_name
             FROM invitation_routes
             WHERE email_normalized = @email_normalized
+              AND target_board_id IS NULL
               AND accepted_at IS NULL
               AND revoked_at IS NULL
               AND expires_at > clock_timestamp()
@@ -177,6 +186,7 @@ internal sealed class PostgresInvitationStore(
         {
             await using var route = new NpgsqlCommand("""
                 SELECT tenant_id FROM invitation_routes WHERE invitation_id=@id AND email_normalized=@email
+                  AND target_board_id IS NULL
                   AND (accepted_at IS NULL OR accepted_by_user_id=@actor) AND revoked_at IS NULL AND expires_at>clock_timestamp();
                 """, routing.Connection, routing.Transaction);
             route.Parameters.AddWithValue("id", invitationId); route.Parameters.AddWithValue("email", emailNormalized);
@@ -187,7 +197,7 @@ internal sealed class PostgresInvitationStore(
         await using var session = await connectionFactory.OpenTenantSessionAsync(tenantId.Value, cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
-              created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id FROM invitations
+              created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role FROM invitations
             WHERE id=@id AND email_normalized=@email AND (accepted_at IS NULL OR accepted_by_user_id=@actor) AND revoked_at IS NULL
               AND expires_at>clock_timestamp();
             """, session.Connection, session.Transaction);
@@ -222,7 +232,7 @@ internal sealed class PostgresInvitationStore(
                 id, tenant_id, invited_email, email_normalized,
                 token_hash, target_surface, target_role,
                 created_by_user_id, created_at, expires_at,
-                accepted_at, revoked_at, accepted_by_user_id
+                accepted_at, revoked_at, accepted_by_user_id, target_board_id, target_board_role
             FROM invitations
             WHERE token_hash = @token_hash
               AND accepted_at IS NULL
@@ -275,7 +285,7 @@ internal sealed class PostgresInvitationStore(
                 id, tenant_id, invited_email, email_normalized,
                 token_hash, target_surface, target_role,
                 created_by_user_id, created_at, expires_at,
-                accepted_at, revoked_at, accepted_by_user_id
+                accepted_at, revoked_at, accepted_by_user_id, target_board_id, target_board_role
             FROM invitations
             WHERE token_hash = @token_hash
               AND accepted_at IS NULL
@@ -297,7 +307,7 @@ internal sealed class PostgresInvitationStore(
                 : null;
         }
 
-        if (invitation is null ||
+        if (invitation is null || invitation.BoardTarget is not null ||
             invitation.EmailNormalized != emailNormalized)
         {
             return new InvitationAcceptStoreResult(
@@ -449,6 +459,7 @@ internal sealed class PostgresInvitationStore(
             SELECT tenant_id
             FROM invitation_routes
             WHERE token_hash = @token_hash
+              AND target_board_id IS NULL
               AND accepted_at IS NULL
               AND revoked_at IS NULL
               AND expires_at > clock_timestamp();
@@ -480,7 +491,12 @@ internal sealed class PostgresInvitationStore(
             reader.IsDBNull(11)
                 ? null
                 : reader.GetFieldValue<DateTimeOffset>(11),
-            reader.IsDBNull(12) ? null : reader.GetGuid(12));
+            reader.IsDBNull(12) ? null : reader.GetGuid(12),
+            BoardTarget: reader.IsDBNull(13) ? null : new(reader.GetGuid(13), reader.GetString(14) switch {
+                "ADMIN" => StrataAI.Application.WorkManagement.BoardRole.Admin,
+                "MEMBER" => StrataAI.Application.WorkManagement.BoardRole.Member,
+                _ => throw new InvalidOperationException("Unknown Board invitation role."),
+            }));
 
     private static InvitationSurface ParseSurface(string surface) =>
         surface switch

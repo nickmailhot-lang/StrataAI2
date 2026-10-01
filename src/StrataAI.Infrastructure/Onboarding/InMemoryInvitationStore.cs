@@ -17,7 +17,7 @@ internal sealed class InMemoryInvitationStore(
     {
         lock (_sync)
             return Task.FromResult<IReadOnlyList<IssuedInvitation>>(_byToken.Values
-                .Where(row => row.OrganizationId == organizationId && (after is null || row.Id.CompareTo(after.Value) > 0))
+                .Where(row => row.BoardTarget is null && row.OrganizationId == organizationId && (after is null || row.Id.CompareTo(after.Value) > 0))
                 .OrderBy(row => row.Id).Take(51).Select(row => new IssuedInvitation(row.Id, row.InvitedEmail, row.Surface,
                     row.TargetRole, row.CreatedAt, row.ExpiresAt, row.AcceptedAt, row.RevokedAt, null)).ToArray());
     }
@@ -63,7 +63,7 @@ internal sealed class InMemoryInvitationStore(
             var result = _byToken.Values
                 .Where(
                     invitation =>
-                        invitation.EmailNormalized == emailNormalized &&
+                        invitation.BoardTarget is null && invitation.EmailNormalized == emailNormalized &&
                         invitation.AcceptedAt is null &&
                         invitation.RevokedAt is null &&
                         invitation.ExpiresAt > now && (after is null || invitation.Id.CompareTo(after.Value) > 0))
@@ -88,7 +88,7 @@ internal sealed class InMemoryInvitationStore(
     {
         lock (_sync)
         {
-            return Task.FromResult(_byToken.Values.FirstOrDefault(i => i.Id == invitationId && i.EmailNormalized == emailNormalized
+            return Task.FromResult(_byToken.Values.FirstOrDefault(i => i.BoardTarget is null && i.Id == invitationId && i.EmailNormalized == emailNormalized
                 && (i.AcceptedAt is null || i.AcceptedByUserId == actorUserId) && i.RevokedAt is null && i.ExpiresAt > clock.UtcNow));
         }
     }
@@ -101,7 +101,7 @@ internal sealed class InMemoryInvitationStore(
         lock (_sync)
         {
             if (!_byToken.TryGetValue(tokenHash, out var invitation) ||
-                invitation.AcceptedAt is not null ||
+                invitation.BoardTarget is not null || invitation.AcceptedAt is not null ||
                 invitation.RevokedAt is not null ||
                 invitation.ExpiresAt <= now)
             {
@@ -124,7 +124,7 @@ internal sealed class InMemoryInvitationStore(
         lock (_sync)
         {
             if (!_byToken.TryGetValue(tokenHash, out invitation!) ||
-                invitation.AcceptedAt is not null ||
+                invitation.BoardTarget is not null || invitation.AcceptedAt is not null ||
                 invitation.RevokedAt is not null ||
                 invitation.ExpiresAt <= clock.UtcNow ||
                 invitation.EmailNormalized != emailNormalized)

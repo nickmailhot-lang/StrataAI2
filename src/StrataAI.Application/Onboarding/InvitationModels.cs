@@ -20,7 +20,10 @@ public sealed record InvitationRecord(
     DateTimeOffset? AcceptedAt,
     DateTimeOffset? RevokedAt,
     Guid? AcceptedByUserId = null,
-    string? OrganizationName = null);
+    string? OrganizationName = null,
+    BoardInvitationTarget? BoardTarget = null);
+
+public sealed record BoardInvitationTarget(Guid BoardId, StrataAI.Application.WorkManagement.BoardRole Role);
 
 public sealed record PendingInvitation(
     Guid Id,

@@ -92,28 +92,57 @@ run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 24
 test "$(query "SELECT to_regclass('public.ix_invitations_tenant_cursor') IS NOT NULL")" = t
-cat > "$scratch/migrations/025_serialization_fixture.sql" <<'SQL'
+cp db/migrations/025_board_invitation_targets.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 25
+test "$(query "SELECT to_regclass('public.ix_invitations_board_pending') IS NOT NULL")" = t
+query "INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES
+ ('02500000-0000-0000-0000-000000000001','02100000-0000-0000-0000-000000000011','Board target',now(),now());
+ INSERT INTO organizations(id,name,created_at,updated_at) VALUES
+ ('02500000-0000-0000-0000-000000000002','Foreign target',now(),now());
+ INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES
+ ('02500000-0000-0000-0000-000000000003','02500000-0000-0000-0000-000000000002','Foreign Board',now(),now());
+ INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+ created_by_user_id,created_at,expires_at,target_board_id,target_board_role) VALUES
+ ('02500000-0000-0000-0000-000000000004','02100000-0000-0000-0000-000000000011','board@example.test','BOARD@EXAMPLE.TEST',
+ repeat('b',64),'INTERNAL','MEMBER','02100000-0000-0000-0000-000000000010',now(),now()+interval '1 day',
+ '02500000-0000-0000-0000-000000000001','ADMIN');" >/dev/null
+test "$(query "SELECT target_board_id='02500000-0000-0000-0000-000000000001' AND target_board_role='ADMIN'
+ FROM invitation_routes WHERE invitation_id='02500000-0000-0000-0000-000000000004'")" = t
+for change in "target_board_id='02500000-0000-0000-0000-000000000003'" "target_board_role=NULL" \
+ "target_board_id=NULL" "target_board_role='OWNER'" "target_surface='PORTAL'" "target_role='OWNER'"; do
+ if query "UPDATE invitations SET $change WHERE id='02500000-0000-0000-0000-000000000004';" >/dev/null; then
+   echo 'Invalid Board invitation target was admitted'; exit 1
+ fi
+done
+query "UPDATE invitations SET accepted_at=now(),accepted_by_user_id='02100000-0000-0000-0000-000000000010'
+ WHERE id='02500000-0000-0000-0000-000000000004';" >/dev/null
+if query "UPDATE invitations SET target_board_role='MEMBER' WHERE id='02500000-0000-0000-0000-000000000004';" >/dev/null; then
+ echo 'Accepted Board invitation role was rewritten'; exit 1
+fi
+cat > "$scratch/migrations/026_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('025_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('026_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='025_serialization_fixture'")" = 1
-cat > "$scratch/migrations/026_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='026_serialization_fixture'")" = 1
+cat > "$scratch/migrations/027_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('026_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('027_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='026_failure_fixture'")" = 0
-rm "$scratch/migrations/026_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='027_failure_fixture'")" = 0
+rm "$scratch/migrations/027_failure_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

@@ -49,7 +49,7 @@ public sealed class InvitationService(
             if (currentUser is not { Status: AccountStatus.Active, EmailVerified: true })
                 return InvitationOperation<PendingInvitation>.Failure("account_unavailable");
             var invitation = await invitationStore.FindActiveByTokenHashAsync(hash, clock.UtcNow, cancellationToken);
-            if (invitation is null || invitation.OrganizationId != route.OrganizationId
+            if (invitation is null || invitation.BoardTarget is not null || invitation.OrganizationId != route.OrganizationId
                 || invitation.CreatedByUserId != route.CreatedByUserId || invitation.EmailNormalized != currentUser.EmailNormalized
                 || invitation.AcceptedAt is not null || invitation.RevokedAt is not null)
                 return InvitationOperation<PendingInvitation>.Failure("invalid_or_expired_invitation");
@@ -82,7 +82,7 @@ public sealed class InvitationService(
         if (user is null || user.Status != AccountStatus.Active || !user.EmailVerified)
             return InvitationOperation<AcceptedInvitation>.Failure("account_unavailable");
         var invitation = await invitationStore.FindActiveByTokenHashAsync(tokens.Hash(rawToken), clock.UtcNow, cancellationToken);
-        if (invitation is null || invitation.EmailNormalized != user.EmailNormalized)
+        if (invitation is null || invitation.BoardTarget is not null || invitation.EmailNormalized != user.EmailNormalized)
             return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
         var result = await ExecuteAsync(invitation.OrganizationId, actorUserId, invitation.CreatedByUserId,
             () => AcceptCoreAsync(actorUserId, tokens.Hash(rawToken), null, correlationId, cancellationToken), cancellationToken);
@@ -99,7 +99,7 @@ public sealed class InvitationService(
             return InvitationOperation<AcceptedInvitation>.Failure("account_unavailable");
         // Routing is a hint only. Tenant admission and the exact verified email are checked again after locks.
         var invitation = await invitationStore.FindActiveByIdForEmailAsync(invitationId, actorUserId, user.EmailNormalized, clock.UtcNow, cancellationToken);
-        if (invitation is null) return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
+        if (invitation is null || invitation.BoardTarget is not null) return InvitationOperation<AcceptedInvitation>.Failure("invalid_or_expired_invitation");
         var result = await ExecuteAsync(invitation.OrganizationId, actorUserId, invitation.CreatedByUserId,
             () => AcceptCoreAsync(actorUserId, null, invitationId, correlationId, cancellationToken), cancellationToken);
         return result.ErrorCode == "organization_not_found"
@@ -168,6 +168,7 @@ public sealed class InvitationService(
                 return InvitationOperation<CreatedInvitation>.Failure("session_unavailable");
             if (replay is not null)
             {
+                if (replay.Invitation.BoardTarget is not null) return InvitationOperation<CreatedInvitation>.Failure("idempotency_key_reused");
                 if (replay.Fingerprint != fingerprint) return InvitationOperation<CreatedInvitation>.Failure("idempotency_key_reused");
                 if (replay.Expired) return InvitationOperation<CreatedInvitation>.Failure("idempotency_key_expired");
                 return InvitationOperation<CreatedInvitation>.Success(new(replay.Invitation, ""));
@@ -261,7 +262,7 @@ public sealed class InvitationService(
             ? await invitationStore.FindActiveByIdForEmailAsync(id, actorUserId, user.EmailNormalized, clock.UtcNow, cancellationToken)
             : await invitationStore.FindActiveByTokenHashAsync(tokenHash!, clock.UtcNow, cancellationToken);
 
-        if (invitation is null ||
+        if (invitation is null || invitation.BoardTarget is not null ||
             !string.Equals(
                 invitation.EmailNormalized,
                 user.EmailNormalized,

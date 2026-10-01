@@ -16,6 +16,7 @@ internal sealed class PostgresInvitationRegistrationProofStore(PostgresConnectio
         Guid organizationId; Guid invitationId;
         await using (var route = new NpgsqlCommand("""
             SELECT tenant_id,invitation_id FROM invitation_routes WHERE token_hash=@hash AND email_normalized=@email
+              AND target_board_id IS NULL
               AND accepted_at IS NULL AND revoked_at IS NULL AND expires_at>clock_timestamp();
             """, root.Connection, root.Transaction))
         {
@@ -81,6 +82,7 @@ internal sealed class PostgresInvitationRegistrationProofStore(PostgresConnectio
                   JOIN users u ON u.id=i.created_by_user_id
                   WHERE i.tenant_id=@org AND i.id=@id AND i.created_by_user_id=@issuer AND i.token_hash=@hash
                     AND i.email_normalized=@email AND i.accepted_at IS NULL AND i.revoked_at IS NULL
+                    AND i.target_board_id IS NULL
                     AND i.expires_at>clock_timestamp() AND o.status='ACTIVE'
                     AND m.status='ACTIVE' AND m.role IN ('OWNER','ADMIN') AND u.status='ACTIVE'
                     AND (NOT @verified OR u.email_verified)

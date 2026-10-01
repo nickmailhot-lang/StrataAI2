@@ -14,14 +14,14 @@ internal sealed class InMemoryInvitationRegistrationProofStore(IInvitationStore 
     public async Task<InvitationRegistrationProof?> PrepareAsync(string tokenHash, string emailNormalized, CancellationToken ct)
     {
         var invitation = await invitations.FindActiveByTokenHashAsync(tokenHash, clock.UtcNow, ct);
-        if (invitation is null) return null;
+        if (invitation is null || invitation.BoardTarget is not null) return null;
         var proof = new InvitationRegistrationProof(invitation.OrganizationId, invitation.Id, invitation.CreatedByUserId, tokenHash);
         return await CheckAsync(proof, emailNormalized, ct) ? proof : null;
     }
     public async Task<bool> CheckAsync(InvitationRegistrationProof proof, string emailNormalized, CancellationToken ct)
     {
         var invitation = await invitations.FindActiveByTokenHashAsync(proof.TokenHash, clock.UtcNow, ct);
-        if (invitation is null || invitation.Id != proof.InvitationId || invitation.OrganizationId != proof.OrganizationId
+        if (invitation is null || invitation.BoardTarget is not null || invitation.Id != proof.InvitationId || invitation.OrganizationId != proof.OrganizationId
             || invitation.CreatedByUserId != proof.IssuerId || invitation.EmailNormalized != emailNormalized) return false;
         var organization = await organizations.FindOrganizationAsync(proof.OrganizationId, ct);
         var member = await organizations.FindMembershipAsync(proof.OrganizationId, proof.IssuerId, ct);
