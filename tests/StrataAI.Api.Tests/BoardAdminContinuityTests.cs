@@ -10,6 +10,36 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Fact]
+    public async Task Board_member_directory_is_bounded_and_seeks_without_duplicates()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient();
+        await RegisterAndLogin(owner);
+        using var organization = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Paged Board members" });
+        var org = (await organization.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        using var board = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = org, name = "Paged members", visibility = "PRIVATE" });
+        var id = (await board.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        // Synthetic Demo-store members exercise seek ordering, not production FK eligibility.
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        for (var n = 0; n < 52; n++) await store.UpsertBoardMemberAsync(id, Guid.NewGuid(), BoardRole.Member, DateTimeOffset.UtcNow, ct);
+        using var first = await owner.GetAsync($"/boards/{id}/members", ct);
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        var firstRows = (await first.Content.ReadFromJsonAsync<JsonElement>(ct)).EnumerateArray().ToArray();
+        Assert.Equal(50, firstRows.Length);
+        var cursor = Assert.Single(first.Headers.GetValues("X-StrataAI-Next-Cursor"));
+        Assert.Equal(firstRows[^1].GetProperty("userId").GetGuid(), Guid.Parse(cursor));
+        using var second = await owner.GetAsync($"/boards/{id}/members?after={cursor}", ct);
+        Assert.Equal(HttpStatusCode.OK, second.StatusCode);
+        var secondRows = (await second.Content.ReadFromJsonAsync<JsonElement>(ct)).EnumerateArray().ToArray();
+        Assert.Equal(3, secondRows.Length); Assert.False(second.Headers.Contains("X-StrataAI-Next-Cursor"));
+        var ids = firstRows.Concat(secondRows).Select(row => row.GetProperty("userId").GetGuid()).ToArray();
+        Assert.Equal(53, ids.Distinct().Count()); Assert.Equal(ids.OrderBy(value => value), ids);
+        using var invalid = await owner.GetAsync($"/boards/{id}/members?after=not-a-uuid", ct);
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("invalid_board_member_cursor", (await invalid.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+    }
+
     // PERM-FR-005/006, PRD-05-TC-03/07/08: demotion cannot bypass the
     // same last-explicit-admin safeguard already enforced by removal.
     [Fact]

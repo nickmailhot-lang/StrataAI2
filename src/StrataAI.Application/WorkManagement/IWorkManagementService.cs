@@ -67,7 +67,7 @@ public interface IWorkManagementService
     Task<WorkOperation<IReadOnlyList<BoardMemberRecord>>> ListBoardMembersAsync(
         Guid boardId,
         Guid actorUserId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? after = null);
 
     Task<WorkOperation<BoardMemberRecord>> SetBoardMemberAsync(
         Guid boardId,

@@ -257,13 +257,14 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
 
     public Task<IReadOnlyList<BoardMemberRecord>> ListBoardMembersAsync(
         Guid boardId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? after = null, int? limit = null)
     {
         lock (_sync)
         {
             var result = _members.Values
-                .Where(member => member.BoardId == boardId && member.Active)
+                .Where(member => member.BoardId == boardId && member.Active && (after is null || member.UserId.CompareTo(after.Value) > 0))
                 .OrderBy(member => member.UserId)
+                .Take(limit ?? int.MaxValue)
                 .ToArray();
 
             return Task.FromResult<IReadOnlyList<BoardMemberRecord>>(result);

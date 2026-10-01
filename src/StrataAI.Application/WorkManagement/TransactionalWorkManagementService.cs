@@ -86,11 +86,11 @@ public sealed class TransactionalWorkManagementService(
     public Task<WorkOperation<IReadOnlyList<BoardMemberRecord>>> ListBoardMembersAsync(
         Guid boardId,
         Guid actorUserId,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default, Guid? after = null) =>
         BoardCommand(boardId, actorUserId, "admin",
             WorkCommand.Create(actorUserId, null, "ListBoardMembersAsync", boardId, new { }, "board_not_found"), async () =>
             {
-                var result = await inner.ListBoardMembersAsync(boardId, actorUserId, cancellationToken);
+                var result = await inner.ListBoardMembersAsync(boardId, actorUserId, cancellationToken, after);
                 if (!result.Succeeded) return result;
                 if (!await actors.VerifyAsync(actorUserId, cancellationToken))
                     return WorkOperation<IReadOnlyList<BoardMemberRecord>>.Failure("session_unavailable");

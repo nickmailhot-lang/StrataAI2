@@ -75,7 +75,8 @@ public interface IWorkManagementStore
 
     Task<IReadOnlyList<BoardMemberRecord>> ListBoardMembersAsync(
         Guid boardId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        Guid? after = null, int? limit = null);
 
     Task<BoardMemberRecord> UpsertBoardMemberAsync(
         Guid boardId,

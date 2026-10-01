@@ -287,7 +287,7 @@ public sealed class WorkManagementService(
     public async Task<WorkOperation<IReadOnlyList<BoardMemberRecord>>> ListBoardMembersAsync(
         Guid boardId,
         Guid actorUserId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? after = null)
     {
         var resolved = await ResolveAccessAsync(
             boardId,
@@ -303,7 +303,7 @@ public sealed class WorkManagementService(
         return WorkOperation<IReadOnlyList<BoardMemberRecord>>.Success(
             await store.ListBoardMembersAsync(
                 boardId,
-                cancellationToken));
+                cancellationToken, after, 51));
     }
 
     public async Task<WorkOperation<BoardMemberRecord>> SetBoardMemberAsync(

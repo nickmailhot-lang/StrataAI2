@@ -544,7 +544,7 @@ internal sealed class PostgresWorkManagementStore(
 
     public async Task<IReadOnlyList<BoardMemberRecord>> ListBoardMembersAsync(
         Guid boardId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? after = null, int? limit = null)
     {
         var tenantId = await ResolveBoardTenantAsync(
             boardId,
@@ -567,11 +567,15 @@ internal sealed class PostgresWorkManagementStore(
             FROM board_members
             WHERE board_id = @board_id
               AND status = 'ACTIVE'
-            ORDER BY user_id;
+              AND (@after::uuid IS NULL OR user_id > @after)
+            ORDER BY user_id LIMIT @limit;
             """,
             session.Connection,
             session.Transaction);
         command.Parameters.AddWithValue("board_id", boardId);
+
+        command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        command.Parameters.AddWithValue("limit", NpgsqlTypes.NpgsqlDbType.Integer, (object?)limit ?? DBNull.Value);
 
         var result = new List<BoardMemberRecord>();
         await using var reader =

@@ -16,6 +16,23 @@ unchanged invitation/audit/event/stream/job/replay state. Local warnings-as-erro
 build and shell syntax checks pass; host and PostgreSQL execution remain pending
 Linux CI because local test executables are blocked by Windows Application Control.
 
-Member-management UI, bounded member directory pagination and complete PRD-05
-acceptance evidence remain outstanding. This change does not close the ticket or
-claim unbounded member reads satisfy large-directory requirements.
+## Bounded HTTP directory
+
+The HTTP directory returns at most 50 active members ordered by user UUID. The
+response remains an array; when a 51st row exists, `X-StrataAI-Next-Cursor` contains
+the last returned user UUID. Supply it as `?after={uuid}` for the next page. The
+header is absent on a terminal page. Invalid or empty UUID cursors receive the
+stable `invalid_board_member_cursor` error. Cursors are positions, not grants;
+every page repeats current administration and account/session admission.
+
+Both stores apply the seek and 51-row limit for the directory. Internal safeguard
+reads deliberately retain their complete membership set, so paging cannot hide
+an administrator from removal/demotion continuity checks. No schema change is
+needed; the existing Board/user membership key supports this access pattern.
+
+A host case uses 53 synthetic Demo members to assert bounded results, cursor
+identity, terminal-header absence, complete ordering and no duplicate UUIDs. It
+does not prove production FK eligibility or PostgreSQL paging execution. Local
+warnings-as-errors build passes; Linux host execution and exact PostgreSQL paging
+evidence remain pending. Member-management UI and complete PRD-05 acceptance
+evidence remain outstanding. The ticket remains open.

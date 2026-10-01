@@ -266,6 +266,7 @@ public static class WorkManagementEndpoints
                 "/boards/{boardId:guid}/members",
                 async (
                     Guid boardId,
+                    string? after,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -276,14 +277,23 @@ public static class WorkManagementEndpoints
                         return Results.Unauthorized();
                     }
 
+                    Guid? cursor = null;
+                    if (after is not null)
+                    {
+                        if (!Guid.TryParse(after, out var parsed) || parsed == Guid.Empty)
+                            return Problem(400, "invalid_board_member_cursor", "The member cursor must be a nonempty UUID.");
+                        cursor = parsed;
+                    }
                     var result = await service.ListBoardMembersAsync(
                         boardId,
                         userId.Value,
-                        cancellationToken);
+                        cancellationToken, cursor);
 
-                    return result.Succeeded && result.Value is not null
-                        ? Results.Ok(result.Value)
-                        : ErrorFor(result.ErrorCode);
+                    if (!result.Succeeded || result.Value is null) return ErrorFor(result.ErrorCode);
+                    var items = result.Value.Take(50).ToArray();
+                    if (result.Value.Count > 50)
+                        context.Response.Headers["X-StrataAI-Next-Cursor"] = items[^1].UserId.ToString();
+                    return Results.Ok(items);
                 })
             .RequireAuthorization();
 
