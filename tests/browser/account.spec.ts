@@ -18,6 +18,7 @@ test('PRD-02-TC-03/04: recovery confirmation is generic and invalid reset links 
 });
 
 test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two-browser conflict recovery', async ({ page, context }) => {
+  test.setTimeout(75_000);
   const email = `browser-${Date.now()}@example.test`;
   const password = 'browser-correct-horse-battery';
   await page.goto('/login');
@@ -33,15 +34,16 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await page.getByRole('link', { name: 'Open profile' }).click();
   await expect(page.getByLabel(/^Display name/)).toHaveValue('Browser Council');
   const second = await context.newPage();
+  await second.setViewportSize({ width: 390, height: 844 });
   await second.goto('/app/demo/profile');
   await expect(second.getByLabel(/^Display name/)).toHaveValue('Browser Council');
+  await second.getByLabel(/^Display name/).fill('Stale browser save');
   await page.getByLabel(/^Display name/).fill('First browser save');
   await page.getByLabel(/^Timezone/).fill('UTC');
   await page.getByRole('button', { name: 'Save profile', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Profile saved.');
-  await second.getByLabel(/^Display name/).fill('Stale browser save');
-  await second.getByRole('button', { name: 'Save profile', exact: true }).click();
-  await expect(second.getByRole('alert')).toContainText('changed elsewhere');
+  await second.bringToFront();
+  await expect(second.getByRole('alert')).toContainText('changed elsewhere', { timeout: 15_000 });
   await expect(second.getByLabel(/^Display name/)).toHaveValue('Stale browser save');
   await expect(second.getByRole('button', { name: 'Save profile', exact: true })).toBeDisabled();
   await second.getByRole('button', { name: 'Discard edits and load latest profile' }).click();
@@ -50,10 +52,10 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await second.getByLabel(/^Display name/).fill('Merged browser save');
   await second.getByRole('button', { name: 'Save profile', exact: true }).click();
   await expect(second.getByRole('status')).toHaveText('Profile saved.');
-  await page.reload();
-  await expect(page.getByLabel(/^Display name/)).toHaveValue('Merged browser save');
+  await page.bringToFront();
+  await expect(page.getByLabel(/^Display name/)).toHaveValue('Merged browser save', { timeout: 15_000 });
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
-  await second.reload();
-  await expect(second).toHaveURL(/\/login$/);
+  await second.bringToFront();
+  await expect(second).toHaveURL(/\/login$/, { timeout: 15_000 });
 });

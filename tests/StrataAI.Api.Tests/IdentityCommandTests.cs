@@ -17,6 +17,7 @@ public sealed partial class ApiHostTests
         await using var app = new ApiFactory(); using var first = app.CreateClient(); using var other = app.CreateClient();
         await RegisterAndLogin(first);
         var user = await first.GetFromJsonAsync<JsonElement>("/me", ct);
+        Assert.Equal("ACTIVE", user.GetProperty("status").GetString());
         var id = user.GetProperty("id").GetGuid();
         using var login = await Mutate(other, HttpMethod.Post, "/auth/login", new { email = user.GetProperty("email").GetString(), password = "api-host-correct-horse" });
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);

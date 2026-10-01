@@ -1,5 +1,5 @@
 import { apiFetch } from '../../api/apiFetch';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -24,6 +24,15 @@ type UserProfile = {
   version: number;
 };
 
+function isProfile(value: unknown): value is UserProfile {
+  if (!value || typeof value !== 'object') return false;
+  const user = value as Partial<UserProfile>;
+  return typeof user.id === 'string' && user.id.length > 0 && typeof user.email === 'string'
+    && typeof user.displayName === 'string' && (user.avatarUrl === null || typeof user.avatarUrl === 'string')
+    && typeof user.locale === 'string' && typeof user.timezone === 'string' && typeof user.status === 'string'
+    && typeof user.emailVerified === 'boolean' && Number.isSafeInteger(user.version) && (user.version ?? 0) > 0;
+}
+
 export function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile>();
   const [error, setError] = useState<string>();
@@ -32,43 +41,86 @@ export function ProfilePage() {
   const [saved, setSaved] = useState(false);
   const [reload, setReload] = useState(0);
   const [conflict, setConflict] = useState(false);
+  const [refreshError, setRefreshError] = useState<string>();
+  const mutationEpoch = useRef(0);
   const navigate = useNavigate();
+  const canRead = useEffectEvent(() => !busy);
+  const deny = useEffectEvent(() => {
+    setProfile(undefined); setDraft(undefined);
+    navigate('/login', { replace: true });
+  });
+  const accept = useEffectEvent((user: UserProfile) => {
+    setRefreshError(undefined);
+    if (profile && user.id !== profile.id) { deny(); return; }
+    if (profile && user.version <= profile.version) return;
+    if (!profile) setError(undefined);
+    const edited = profile && draft && (draft.displayName !== profile.displayName || draft.avatarUrl !== profile.avatarUrl || draft.locale !== profile.locale || draft.timezone !== profile.timezone);
+    setProfile(user);
+    setSaved(false);
+    if (profile && (edited || conflict)) {
+      setConflict(true);
+      setError('Your profile changed elsewhere. Your edits are preserved; load the latest profile before saving.');
+    } else {
+      setDraft(user);
+      setConflict(false);
+    }
+  });
+  const readFailed = useEffectEvent(() => {
+    if (profile) setRefreshError('Unable to refresh your profile. Your changes are preserved; refresh will retry.');
+    else setError('Unable to load your profile.');
+  });
 
   useEffect(() => {
     let active = true;
-
-    void apiFetch('/me', { credentials: 'include' })
-      .then(async (response) => {
-        if (response.status === 401) {
-          navigate('/login', { replace: true });
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error('Unable to load profile.');
-        }
-
-        const user = (await response.json()) as UserProfile;
-        if (active) {
-          setProfile(user);
-          setDraft(user);
-          setConflict(false);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setError('Unable to load your profile.');
-        }
-      });
-
+    let inFlight = false;
+    let controller: AbortController | undefined;
+    let deadline: ReturnType<typeof setTimeout> | undefined;
+    async function refresh() {
+      if (!active || inFlight || !canRead() || document.visibilityState === 'hidden') return;
+      inFlight = true;
+      const epoch = mutationEpoch.current;
+      const requestController = new AbortController();
+      controller = requestController;
+      try {
+        // Bound the complete read, even if a transport ignores abort or its body stalls.
+        const response = await Promise.race([
+          apiFetch('/me', { signal: requestController.signal }).then(async result => ({ status: result.status, ok: result.ok, user: result.ok ? await result.json() : undefined })),
+          new Promise<never>((_, reject) => {
+            deadline = setTimeout(() => { requestController.abort(); reject(new Error('Profile read timed out')); }, 15_000);
+          }),
+        ]);
+        if (!active || epoch !== mutationEpoch.current) return;
+        if (response.status === 401) { deny(); return; }
+        if (!response.ok || !isProfile(response.user)) throw new Error('Invalid profile response');
+        accept(response.user);
+      } catch {
+        if (active && epoch === mutationEpoch.current) readFailed();
+      } finally {
+        clearTimeout(deadline);
+        controller = undefined;
+        inFlight = false;
+      }
+    }
+    void refresh();
+    const interval = setInterval(() => void refresh(), 10_000);
+    const recover = () => void refresh();
+    window.addEventListener('focus', recover);
+    window.addEventListener('online', recover);
+    document.addEventListener('visibilitychange', recover);
     return () => {
       active = false;
+      controller?.abort();
+      clearTimeout(deadline); clearInterval(interval);
+      window.removeEventListener('focus', recover);
+      window.removeEventListener('online', recover);
+      document.removeEventListener('visibilitychange', recover);
     };
   }, [navigate, reload]);
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft || busy || conflict) return;
+    mutationEpoch.current++;
     setBusy(true);
     setError(undefined);
     setSaved(false);
@@ -100,6 +152,7 @@ export function ProfilePage() {
   }
 
   async function logout() {
+    mutationEpoch.current++;
     setBusy(true);
     setError(undefined);
     try {
@@ -140,6 +193,7 @@ export function ProfilePage() {
           {profile.emailVerified ? ' · email verified' : ''}
         </Typography>
         {error ? <Alert severity="error">{error}</Alert> : null}
+        {refreshError ? <Alert severity="warning" role="status">{refreshError}</Alert> : null}
         {conflict ? <Button type="button" disabled={busy} onClick={() => { setError(undefined); setSaved(false); setProfile(undefined); setDraft(undefined); setReload(value => value + 1); }}>Discard edits and load latest profile</Button> : null}
         {saved ? <Alert severity="success" role="status">Profile saved.</Alert> : null}
         <TextField label="Display name" required value={draft.displayName} disabled={busy} onChange={event => { setDraft({ ...draft, displayName: event.target.value }); setSaved(false); }} slotProps={{ htmlInput: { maxLength: 120 } }} autoComplete="nickname" />
