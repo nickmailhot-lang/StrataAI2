@@ -204,7 +204,7 @@ expire_token_during_wait password_reset_tokens "$reset_id" /auth/password/reset 
 test "$(curl --silent -o /dev/null -w '%{http_code}' -b "$scratch/cookies" "$base/me")" = 200
 test "$(post /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"replacement-correct-horse"}')")" = 200
 reset_version="$(jq -r '.version' "$scratch/response")"
-test "$(query "SELECT count(*) FROM identity_events WHERE user_id='$identity_user' AND event_type='SESSION_REVOKED' AND version=$reset_version AND actor_id=user_id AND entity_id=user_id AND entity_type='User' AND organization_id IS NULL AND board_id IS NULL AND metadata='{}'::jsonb;")" = 1
+test "$(query "SELECT count(*) FROM identity_events WHERE user_id='$identity_user' AND event_type='SESSION_REVOKED' AND entity_version=$reset_version AND actor_id=user_id AND entity_id=user_id AND entity_type='User' AND organization_id IS NULL AND board_id IS NULL AND metadata='{}'::jsonb;")" = 1
 reset_state="$(token_state)"
 test "$(post /auth/password/reset "$(jq -nc --arg token "$reset" '{token:$token,newPassword:"another-replacement-horse"}')")" = 400
 test "$reset_state" = "$(token_state)"
