@@ -214,10 +214,12 @@ test('PRD-02/60-TC-06/07: lost acknowledgment retries the committed profile inte
   await expect(page.getByLabel(/^Display name/)).toHaveValue('Retry account');
   suspendRecovery = true;
   await page.getByLabel(/^Display name/).fill('Saved after lost acknowledgment');
-  await page.getByRole('button', { name: 'Save profile', exact: true }).click();
+  // Recovery warnings can change form geometry as the connection is lost.
+  // Keyboard activation remains deterministic and verifies the real submit.
+  await page.getByRole('button', { name: 'Save profile', exact: true }).focus(); await page.keyboard.press('Enter');
   await expect(page.getByText(/Unable to confirm your profile save/)).toBeVisible();
   await expect(page.getByLabel(/^Display name/)).toHaveValue('Saved after lost acknowledgment');
-  await page.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await page.getByRole('button', { name: 'Save profile', exact: true }).focus(); await page.keyboard.press('Enter');
   await expect(page.getByRole('status').filter({ hasText: 'Profile saved.' })).toHaveText('Profile saved.');
   expect(keys).toHaveLength(2);
   expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/i);
