@@ -44,9 +44,9 @@ public sealed class OrganizationService(
 
     public Task<OrganizationOperation<bool>> RemoveMemberAsync(
         Guid organizationId, Guid actorUserId, Guid targetUserId, string correlationId,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default, long? expectedVersion = null) =>
         unitOfWork.ExecuteAsync(organizationId, actorUserId, targetUserId, false,
-            () => RemoveMemberCoreAsync(organizationId, actorUserId, targetUserId, correlationId, cancellationToken), cancellationToken);
+            () => RemoveMemberCoreAsync(organizationId, actorUserId, targetUserId, correlationId, cancellationToken, expectedVersion), cancellationToken);
 
     public Task<OrganizationOperation<bool>> LeaveAsync(
         Guid organizationId, Guid actorUserId, string correlationId,
@@ -193,7 +193,8 @@ public sealed class OrganizationService(
         Guid actorUserId,
         Guid targetUserId,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        long? expectedVersion = null)
     {
         var actor = await store.FindMembershipAsync(
             organizationId,
@@ -220,6 +221,13 @@ public sealed class OrganizationService(
         {
             return OrganizationOperation<bool>.Failure("insufficient_permission");
         }
+
+        // The unit of work holds the parent and both membership locks. Check
+        // the freshly authorized target before changing membership or audit.
+        if (expectedVersion is <= 0)
+            return OrganizationOperation<bool>.Failure("invalid_member_version");
+        if (expectedVersion is not null && expectedVersion != target.Version)
+            return OrganizationOperation<bool>.Failure("member_version_conflict");
 
         var result = await store.RemoveMemberAsync(
             organizationId,

@@ -27,7 +27,11 @@ test('PRD-03-TC-04/05: Organization directory admission follows current internal
     expect(page.items.filter((item: { isUsableOwner: boolean }) => item.isUsableOwner)).toHaveLength(1);
     expect((await portal.request.get(`/organizations/${org}/members`)).status()).toBe(404);
     expect((await recipient.request.delete(`/organizations/${org}/members/${ids[0]}`, { headers })).status()).toBe(403);
-    expect((await context.request.delete(`/organizations/${org}/members/${ids[1]}`, { headers })).status()).toBe(204);
+    const target = page.items.find((item: { userId: string }) => item.userId === ids[1]);
+    const stale = await context.request.delete(`/organizations/${org}/members/${ids[1]}?expectedVersion=${target.version + 1}`, { headers });
+    expect(stale.status()).toBe(409); expect((await stale.json()).code).toBe('member_version_conflict');
+    expect((await recipient.request.get(`/organizations/${org}/members`)).status()).toBe(200);
+    expect((await context.request.delete(`/organizations/${org}/members/${ids[1]}?expectedVersion=${target.version}`, { headers })).status()).toBe(204);
     const revoked = await recipient.request.get(`/organizations/${org}/members`); expect(revoked.status()).toBe(404);
     expect(await revoked.text()).not.toContain('Directory browser');
     expect((await context.request.get(`/organizations/${org}/members?after=not-a-cursor`)).status()).toBe(400);

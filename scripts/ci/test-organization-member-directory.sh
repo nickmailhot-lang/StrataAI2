@@ -71,6 +71,18 @@ blocked() {
   return 1
 }
 release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; }
+# A role change committed during the parent wait invalidates removal consent.
+member_version="$(jq -r --arg member "$member" '.[]|select(.userId==$member)|.version' "$scratch/all.json")"
+[[ "$member_version" =~ ^[1-9][0-9]*$ ]]
+hold "SELECT id FROM organizations WHERE id='$org' FOR UPDATE;"
+curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -X DELETE \
+  -o "$scratch/stale-removal.json" -w '%{http_code}' "$base/organizations/$org/members/$member?expectedVersion=$member_version" > "$scratch/status" & request_pid=$!
+blocked '%SELECT id FROM organizations%FOR UPDATE%'
+release "UPDATE organization_members SET role='ADMIN',version=version+1 WHERE tenant_id='$org' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 409
+jq -e '.code=="member_version_conflict"' "$scratch/stale-removal.json" >/dev/null
+test "$(admin "SELECT role||':'||status||':'||version FROM organization_members WHERE tenant_id='$org' AND user_id='$member';")" = "ADMIN:ACTIVE:$((member_version+1))"
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org';")" = "$audits"
 # A committed demotion wins while the directory request waits for actor membership.
 hold "SELECT user_id FROM organization_members WHERE tenant_id='$org' AND user_id='$owner' FOR UPDATE;"
 get owner "/organizations/$org/members" denied > "$scratch/status" & request_pid=$!
@@ -88,4 +100,4 @@ wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
 login owner
 test "$(get owner "/organizations/$org/members")" = 200
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org';")" = "$audits"
-echo 'Exact-image member directory: one-connection paging, scoped profiles, Portal separation, historical ownership, fresh post-wait role/session admission and read-only audit behavior passed.'
+echo 'Exact-image member directory: one-connection paging, scoped profiles, Portal separation, historical ownership, post-wait stale removal consent rejection, fresh role/session admission and read-only audit behavior passed.'

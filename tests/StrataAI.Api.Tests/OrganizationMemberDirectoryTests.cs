@@ -10,6 +10,34 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD03_member_removal_rejects_stale_consent_after_role_change()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(member);
+        using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Removal consent" });
+        var org = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var user = (await member.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var store = app.Services.GetRequiredService<IOrganizationStore>();
+        await store.AddOrRestoreMemberAsync(org, user, OrganizationRole.Member, DateTimeOffset.UtcNow, ct);
+        var observed = (await store.FindMembershipAsync(org, user, ct))!;
+        await store.AddOrRestoreMemberAsync(org, user, OrganizationRole.Admin, DateTimeOffset.UtcNow, ct);
+        var changed = (await store.FindMembershipAsync(org, user, ct))!;
+        Assert.True(changed.Version > observed.Version);
+        using var stale = await Mutate(owner, HttpMethod.Delete, $"/organizations/{org}/members/{user}?expectedVersion={observed.Version}", new { });
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        Assert.Equal("member_version_conflict", (await stale.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        Assert.Equal(changed, await store.FindMembershipAsync(org, user, ct));
+        using var invalid = await Mutate(owner, HttpMethod.Delete, $"/organizations/{org}/members/{user}?expectedVersion=0", new { });
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        using var unrelated = await Mutate(member, HttpMethod.Delete, $"/organizations/{Guid.NewGuid()}/members/{user}?expectedVersion=0", new { });
+        Assert.Equal(HttpStatusCode.NotFound, unrelated.StatusCode);
+        using var current = await Mutate(owner, HttpMethod.Delete, $"/organizations/{org}/members/{user}?expectedVersion={changed.Version}", new { });
+        Assert.Equal(HttpStatusCode.NoContent, current.StatusCode);
+        Assert.False((await store.FindMembershipAsync(org, user, ct))!.Active);
+    }
+
+    [Fact]
     public async Task PRD03_admin_member_directory_is_bounded_and_contiguous_without_private_identity_fields()
     {
         var ct = TestContext.Current.CancellationToken;

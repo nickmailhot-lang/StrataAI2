@@ -132,6 +132,7 @@ public static class OrganizationEndpoints
             async (
                 Guid organizationId,
                 Guid targetUserId,
+                long? expectedVersion,
                 HttpContext context,
                 IOrganizationService service,
                 CancellationToken cancellationToken) =>
@@ -147,7 +148,8 @@ public static class OrganizationEndpoints
                     userId.Value,
                     targetUserId,
                     context.TraceIdentifier,
-                    cancellationToken);
+                    cancellationToken,
+                    expectedVersion);
 
                 return result.Succeeded
                     ? Results.NoContent()
@@ -216,6 +218,10 @@ public static class OrganizationEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_member_version" => Problem(StatusCodes.Status400BadRequest, errorCode,
+                "A positive membership version is required."),
+            "member_version_conflict" => Problem(StatusCodes.Status409Conflict, errorCode,
+                "The membership changed elsewhere. Review the current membership before removing it."),
             "invalid_member_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode,
                 "The member page cursor is invalid."),
             "session_unavailable" => Problem(

@@ -35,7 +35,8 @@ public interface IOrganizationService
         Guid actorUserId,
         Guid targetUserId,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        long? expectedVersion = null);
 
     Task<OrganizationOperation<bool>> LeaveAsync(
         Guid organizationId,
