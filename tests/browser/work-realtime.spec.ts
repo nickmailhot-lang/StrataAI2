@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './releaseTest';
 import { execFileSync } from 'node:child_process';
 
 type Probe = { frames: { cursor: string; events: { eventId: string; eventType: string; version: number }[] }[]; closed: boolean; socket: WebSocket };

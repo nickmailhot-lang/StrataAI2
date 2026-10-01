@@ -1,4 +1,4 @@
-import { expect, test, type WebSocketRoute } from "@playwright/test";
+import { expect, test, type WebSocketRoute } from "./releaseTest";
 import { execFileSync } from "node:child_process";
 
 test("PRD-22: desktop and phone boards consume live changes, preserve drafts, recover and clear revoked scope", async ({

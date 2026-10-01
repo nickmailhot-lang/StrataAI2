@@ -418,6 +418,7 @@ jobs:
       - name: Authenticated browser E2E against exact release images
         env:
           STRATAAI_E2E_RELEASE_HEADERS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
         run: npx playwright test
 
       - name: Authentication and invitation abuse limits on API and edge

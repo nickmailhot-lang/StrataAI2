@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './releaseTest';
 
 test('PRD-24-TC-03/04: release CSP blocks script injection and headers protect errors', async ({ page, request }) => {
   test.skip(process.env.STRATAAI_E2E_RELEASE_HEADERS !== '1', 'Requires the exact Nginx release image.');

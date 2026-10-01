@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './releaseTest';
 
 test('PRD-02-TC-01/07/11/12: mobile verification and recovery consume Worker-delivered links using keyboard', async ({ page, request }) => {
   test.skip(process.env.STRATAAI_E2E_IDENTITY_MAIL !== '1', 'Requires isolated provider and verified-email fixture.');

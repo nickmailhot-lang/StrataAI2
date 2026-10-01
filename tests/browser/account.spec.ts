@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './releaseTest';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-02/03/18: keyboard deactivation confirms and retries a lost acknowledgment at ${viewport.width}px`, async ({ page, context }) => {

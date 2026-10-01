@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./releaseTest";
 
 for (const viewport of [
   { name: "desktop", width: 1280, height: 720 },
