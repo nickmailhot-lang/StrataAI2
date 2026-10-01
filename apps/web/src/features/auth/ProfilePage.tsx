@@ -1,4 +1,5 @@
 import { apiFetch } from '../../api/apiFetch';
+import { forgetInvitationIntents } from '../organizations/invitationIntent';
 import { formatUserDateTime } from './userDateTime';
 import { validateIdentitySync } from './identitySync';
 import { watchIdentity } from './identityLive';
@@ -243,7 +244,8 @@ export function ProfilePage() {
         method: 'POST', credentials: 'include', headers: { 'Idempotency-Key': logoutRetry.current },
       }, controller, false);
       if (!current()) return;
-      if (!response.ok && response.status !== 401) throw new Error('Sign out failed');
+      if (response.status !== 204 && response.status !== 401) throw new Error('Sign out failed');
+      forgetInvitationIntents();
       setProfile(undefined); setDraft(undefined);
       navigate('/login', { replace: true });
     } catch {
@@ -268,6 +270,7 @@ export function ProfilePage() {
       }, controller, true);
       if (!current()) return;
       if (response.status === 204) {
+        forgetInvitationIntents();
         deactivateRetry.current = undefined;
         setProfile(undefined); setDraft(undefined); setDeactivateUncertain(false); setDeactivateDialog(false);
         navigate('/login', { replace: true, state: { accountDeactivated: true } }); return;

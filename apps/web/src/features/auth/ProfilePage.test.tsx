@@ -282,4 +282,14 @@ describe('PRD-02 profile management', () => {
     await screen.findByText('Unable to sign out. Please retry.');
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sign out' })).toBeEnabled());
   });
+  it.each([204, 200])('clears retained invitation commands only after a confirmed sign-out (%s)', async status => {
+    const storageKey = 'strataai:invitation-create:v1:actor:organization';
+    sessionStorage.setItem(storageKey, 'private pending input'); sessionStorage.setItem('unrelated-site-data', 'keep');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile)).mockResolvedValueOnce(new Response(null, { status })));
+    renderProfile(); fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }));
+    await screen.findByText(status === 204 ? 'Sign in again' : 'Unable to sign out. Please retry.');
+    expect(sessionStorage.getItem(storageKey)).toBe(status === 204 ? null : 'private pending input');
+    expect(sessionStorage.getItem('unrelated-site-data')).toBe('keep');
+    sessionStorage.removeItem(storageKey); sessionStorage.removeItem('unrelated-site-data');
+  });
 });

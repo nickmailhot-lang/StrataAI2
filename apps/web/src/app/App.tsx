@@ -16,6 +16,7 @@ import { BoardScreen } from "../features/kanban/BoardScreen";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
 import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
+import { OrganizationInvitationPage } from "../features/organizations/OrganizationInvitationPage";
 import { InvitationsPage } from "../features/auth/InvitationsPage";
 import { PortalShell } from "../portal/PortalShell";
 import { appTheme } from "../theme/appTheme";
@@ -42,6 +43,7 @@ const routes = [
       { index: true, element: <OrganizationHome /> },
       { path: "settings", element: <OrganizationSettingsPage /> },
       { path: "members", element: <OrganizationMembersPage /> },
+      { path: "invite", element: <OrganizationInvitationPage /> },
       {
         path: "profile",
         element: <ProfilePage />,
