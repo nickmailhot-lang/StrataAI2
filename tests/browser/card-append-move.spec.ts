@@ -94,6 +94,9 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === `/cards/${card}/move`) dragWrites++; });
         await dragHandle.focus(); await page.keyboard.press('Space');
         await expect(dragHandle).toHaveAttribute('aria-pressed', 'true');
+        // Pickup renders before the keyboard sensor installs its document
+        // listener and measures the scrolled targets. Let that frame settle.
+        await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
         await page.keyboard.press('ArrowLeft');
         await expect(page.getByText('Move this card card can be dropped at the end of Planning.', { exact: true })).toBeAttached();
         await page.keyboard.press('Escape');
@@ -102,6 +105,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         expect((await (await context.request.get(`/boards/${board}`)).json()).lists).toEqual(beforeDrag.lists);
         await dragHandle.focus(); await page.keyboard.press('Space');
         await expect(dragHandle).toHaveAttribute('aria-pressed', 'true');
+        await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
         await page.keyboard.press('ArrowLeft');
         await expect(page.getByText('Move this card card can be dropped at the end of Planning.', { exact: true })).toBeAttached();
         await page.keyboard.press('Space');
