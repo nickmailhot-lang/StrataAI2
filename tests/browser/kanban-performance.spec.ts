@@ -28,7 +28,7 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
     if (index === 1) feedbackCard = created.id;
   }
   // Warm application assets, not the Board snapshot or detail route.
-  await page.goto('/app'); await expect(page.getByRole('heading', { name: 'Organizations', exact: true })).toBeVisible();
+  await page.goto('/app'); await expect(page.getByRole('heading', { name: 'Your organizations', exact: true })).toBeVisible();
   const reads = trackBoardReads(page, board, `/app/${org}/boards/${board}`);
   const started = performance.now();
   await page.goto(`/app/${org}/boards/${board}`); await expect.poll(reads).toBeGreaterThanOrEqual(2);
