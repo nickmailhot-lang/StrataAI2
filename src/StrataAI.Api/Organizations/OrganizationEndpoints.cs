@@ -9,6 +9,17 @@ public static class OrganizationEndpoints
     {
         var group = app.MapGroup("/organizations").RequireAuthorization();
 
+        group.MapGet("/{organizationId:guid}/surface-access", async (Guid organizationId, string? surface,
+            HttpContext context, IOrganizationService service, CancellationToken cancellationToken) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            if (surface is not ("INTERNAL" or "PORTAL"))
+                return Problem(StatusCodes.Status400BadRequest, "invalid_access_surface", "Choose a valid access surface.");
+            var result = await service.ReadSurfaceAdmissionAsync(organizationId, actor.Value, surface == "PORTAL", cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+
         group.MapGet("/{organizationId:guid}/members/{targetUserId:guid}", async (Guid organizationId,
             Guid targetUserId, HttpContext context, IOrganizationService service, CancellationToken cancellationToken) =>
         {

@@ -2,6 +2,8 @@ namespace StrataAI.Application.Onboarding;
 
 public interface IInvitationStore
 {
+    Task<bool> HasActivePortalAccessAsync(Guid organizationId, Guid userId,
+        CancellationToken cancellationToken = default);
     Task<InvitationCreationReplay?> FindCreationReplayAsync(Guid organizationId, Guid actorId, Guid key,
         CancellationToken cancellationToken = default);
     Task SaveCreationReplayAsync(Guid organizationId, Guid actorId, Guid key, string fingerprint,

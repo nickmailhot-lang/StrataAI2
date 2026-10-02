@@ -12,6 +12,11 @@ internal sealed class InMemoryInvitationStore(
     private readonly Dictionary<string, InvitationRecord> _byToken =
         new(StringComparer.Ordinal);
     private readonly HashSet<(Guid OrganizationId, Guid UserId, string Relationship)> _portalAccess = [];
+    public Task<bool> HasActivePortalAccessAsync(Guid organizationId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (_sync) return Task.FromResult(_portalAccess.Any(row => row.OrganizationId == organizationId && row.UserId == userId));
+    }
     private readonly Dictionary<(Guid OrganizationId, Guid ActorId, Guid Key), (string Fingerprint, Guid InvitationId, DateTimeOffset ExpiresAt)> _creationReplays = [];
 
     public Task<IReadOnlyList<IssuedInvitation>> ListAsync(Guid organizationId, Guid? after, CancellationToken cancellationToken, Guid? boardId = null)

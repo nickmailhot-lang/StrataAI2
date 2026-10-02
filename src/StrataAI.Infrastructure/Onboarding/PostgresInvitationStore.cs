@@ -7,6 +7,22 @@ namespace StrataAI.Infrastructure.Onboarding;
 internal sealed class PostgresInvitationStore(
     PostgresConnectionFactory connectionFactory) : IInvitationStore, IInvitationHistoryStore
 {
+    public async Task<bool> HasActivePortalAccessAsync(Guid organizationId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId))
+            throw new InvalidOperationException("Portal admission requires the authorized Organization transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT id FROM portal_access WHERE tenant_id=@tenant AND user_id=@actor AND status='ACTIVE'
+            ORDER BY id FOR SHARE;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId);
+        command.Parameters.AddWithValue("actor", userId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        var admitted = false;
+        while (await reader.ReadAsync(cancellationToken)) admitted = true;
+        return admitted;
+    }
     public async Task<IReadOnlyList<IssuedInvitation>> ListAsync(Guid organizationId, Guid? after, CancellationToken cancellationToken, Guid? boardId = null)
     {
         if (!connectionFactory.HasCommandScope(organizationId))

@@ -42,6 +42,7 @@ public sealed partial class ApiHostTests
     // PostgreSQL for the host regression. Real-provider equality remains in CI.
     private sealed class PrecisionInvitationStore(IInvitationStore inner) : IInvitationStore
     {
+        public Task<bool> HasActivePortalAccessAsync(Guid org, Guid actor, CancellationToken ct = default) => inner.HasActivePortalAccessAsync(org, actor, ct);
         public Task<InvitationRecord> CreateAsync(InvitationRecord row, CancellationToken ct = default) => inner.CreateAsync(row with {
             CreatedAt = new(row.CreatedAt.Ticks - row.CreatedAt.Ticks % 10, row.CreatedAt.Offset),
             ExpiresAt = new(row.ExpiresAt.Ticks - row.ExpiresAt.Ticks % 10, row.ExpiresAt.Offset) }, ct);

@@ -1,5 +1,7 @@
 namespace StrataAI.Application.Organizations;
 
+public sealed record OrganizationSurfaceAdmission(Guid OrganizationId, string Surface);
+
 public enum OrganizationRole
 {
     Owner,

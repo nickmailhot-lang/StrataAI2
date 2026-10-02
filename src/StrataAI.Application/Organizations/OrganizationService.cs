@@ -8,8 +8,22 @@ public sealed class OrganizationService(
     IWorkManagementStore workStore,
     IClock clock,
     IOrganizationUnitOfWork unitOfWork,
-    StrataAI.Application.Identity.ICommandActorAuthorization actors) : IOrganizationService
+    StrataAI.Application.Identity.ICommandActorAuthorization actors,
+    StrataAI.Application.Onboarding.IInvitationStore invitations) : IOrganizationService
 {
+    // ARCH-02-AC-003: admission is a current read, never a transferable grant.
+    public Task<OrganizationOperation<OrganizationSurfaceAdmission>> ReadSurfaceAdmissionAsync(Guid organizationId,
+        Guid actorUserId, bool portal, CancellationToken cancellationToken = default) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false, async () =>
+        {
+            var admitted = portal
+                ? await invitations.HasActivePortalAccessAsync(organizationId, actorUserId, cancellationToken)
+                : (await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken))?.Active == true;
+            if (!admitted) return OrganizationOperation<OrganizationSurfaceAdmission>.Failure("organization_not_found");
+            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                return OrganizationOperation<OrganizationSurfaceAdmission>.Failure("session_unavailable");
+            return OrganizationOperation<OrganizationSurfaceAdmission>.Success(new(organizationId, portal ? "PORTAL" : "INTERNAL"));
+        }, cancellationToken);
     public Task<OrganizationOperation<OrganizationMemberReview>> ReviewMemberAsync(Guid organizationId,
         Guid actorUserId, Guid targetUserId, CancellationToken cancellationToken = default) =>
         unitOfWork.ExecuteAsync(organizationId, actorUserId, targetUserId, false, async () =>
