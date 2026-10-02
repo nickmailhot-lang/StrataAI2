@@ -29,7 +29,13 @@ public sealed partial class TransactionalWorkManagementService(
         Guid boardId,
         Guid? actorUserId,
         CancellationToken cancellationToken = default) =>
-        inner.GetBoardAsync(boardId, actorUserId, cancellationToken);
+        actorUserId is not { } actorId ? inner.GetBoardAsync(boardId, null, cancellationToken) :
+        BoardCommand(boardId, actorId, "view", WorkCommand.Create(actorId, null, "GetBoardAsync", boardId, new { }, "board_not_found"), async () =>
+        {
+            var result = await inner.GetBoardAsync(boardId, actorId, cancellationToken);
+            return result.Succeeded && !await actors.VerifyAsync(actorId, cancellationToken)
+                ? WorkOperation<BoardSnapshot>.Failure("session_unavailable") : result;
+        }, cancellationToken);
 
     public Task<WorkOperation<ArchivedListPage>> ListArchivedListsAsync(Guid boardId, Guid actorUserId,
         Guid? after = null, CancellationToken cancellationToken = default) =>

@@ -81,6 +81,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(clear).toBeEnabled(); await clear.focus(); await other.keyboard.press('Enter');
     await expect(other.getByText('Unmatched canvas Card', { exact: true })).toBeVisible();
     await expect(other.getByRole('button', { name: 'Drag Collaborative labeled Card card', exact: true })).toBeEnabled();
+    await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
     await other.goto(`${boardPath}/cards/${card}`);
     await expect(other.getByText('Live updates connected.', { exact: true })).toBeVisible();
     async function phoneAssignees() {
@@ -101,6 +102,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect((await phoneAssignees()).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
     expect(await other.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await other.goto(boardPath);
+    await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
     expect((await context.request.post(`/boards/${board}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
     await expect(filters).toHaveCount(0, { timeout: 20_000 });
     await expect(other.getByText('This board is archived. Editing is unavailable.', { exact: true })).toBeVisible();

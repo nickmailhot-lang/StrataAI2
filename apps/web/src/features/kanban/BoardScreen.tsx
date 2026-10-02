@@ -28,6 +28,7 @@ import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
 import { CardLabelPicker } from './CardLabelPicker';
 import { CardMemberPicker } from './CardMemberPicker';
+import { CardMemberIndicators } from './CardMemberIndicators';
 import { CardLabelIndicators } from './CardLabelIndicators';
 import { LabelCreateControl } from './LabelCreateControl';
 import { LabelManageControl } from './LabelManageControl';
@@ -559,6 +560,7 @@ function BoardContent() {
                 <Card
                   key={item.id}
                   component={Link}
+                  aria-label={item.title}
                   ref={(node: HTMLAnchorElement | null) => {
                     if (node) cardLinks.current.set(item.id, node);
                     else cardLinks.current.delete(item.id);
@@ -575,7 +577,7 @@ function BoardContent() {
                     },
                   }}
                 >
-                  <CardContent>{item.title}<CardLabelIndicators preview={snapshot.cardLabels?.[item.id]} /></CardContent>
+                  <CardContent>{item.title}<CardLabelIndicators preview={snapshot.cardLabels?.[item.id]} /><CardMemberIndicators version={item.version} preview={snapshotReading || loadError ? undefined : snapshot.cardMembers?.[item.id]} /></CardContent>
                 </Card>
                 </CardDragItem>
               ))}

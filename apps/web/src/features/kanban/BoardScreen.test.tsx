@@ -63,6 +63,18 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it("hides assignee names while refreshing and clears them on revoked Board access", async () => {
+    let invalidate = () => {}; let finish!: (value: Response) => void;
+    vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+    const named = { ...fixture, cardMembers: { 'card-1': { cardVersion: 3, total: 1, items: [{ userId: '44444444-4444-4444-4444-444444444444', displayName: 'Protected member' }] } } };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(named)).mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; })));
+    mount(); await screen.findByRole('img', { name: 'Assigned to Protected member' });
+    expect(screen.getByRole('link', { name: 'Inspect roof' })).toBeVisible();
+    act(() => invalidate()); await waitFor(() => expect(finish).toBeDefined());
+    expect(screen.queryByRole('img', { name: 'Assigned to Protected member' })).not.toBeInTheDocument();
+    await act(async () => finish(response({}, 403))); await screen.findByRole('button', { name: 'Retry' });
+    expect(screen.queryByRole('group', { name: 'Card assignee indicators' })).not.toBeInTheDocument();
+  });
   it("updates the card face on acknowledgement and ignores an older refresh without resurrecting a removed card", async () => {
     let finishRead!: (value: Response) => void;
     const savedCard = {

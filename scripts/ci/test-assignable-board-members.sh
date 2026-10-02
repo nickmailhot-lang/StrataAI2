@@ -115,6 +115,17 @@ assignee_cursor=$(jq -r '.nextCursor' "$scratch/card-first.json")
 test "$(get owner "/cards/$paged_card/members?after=$assignee_cursor" card-second)" = 200
 jq -e '(.items|length)==2 and .nextCursor==null' "$scratch/card-second.json" >/dev/null
 jq -se '([.[].items[].userId]|length)==52 and ([.[].items[].userId]|unique|length)==52' "$scratch/card-first.json" "$scratch/card-second.json" >/dev/null
+test "$(get owner "/boards/$board" member-preview)" = 200
+jq -e --arg card "$card" --arg paged "$paged_card" '.cardMembers[$card].total==2 and .cardMembers[$card].cardVersion==3 and (.cardMembers[$card].items|length)==2
+ and .cardMembers[$paged].total==52 and .cardMembers[$paged].cardVersion==53 and (.cardMembers[$paged].items|length)==6
+ and all(.cardMembers[].items[];(keys|sort)==["displayName","userId"])
+ and all(.cardMembers[].items[];.displayName!="Assignment seeded 51" and .displayName!="Assignment seeded 52" and .displayName!="Assignment seeded 53")' "$scratch/member-preview.json" >/dev/null
+admin "UPDATE boards SET visibility='PUBLIC' WHERE id='$board';" >/dev/null
+test "$(get outsider "/boards/$board" public-preview)" = 200
+jq -e '.cardMembers==null' "$scratch/public-preview.json" >/dev/null
+curl --max-time 60 --fail --silent --show-error "$base/boards/$board" > "$scratch/anonymous-preview.json"
+jq -e '.cardMembers==null' "$scratch/anonymous-preview.json" >/dev/null
+admin "UPDATE boards SET visibility='PRIVATE' WHERE id='$board';" >/dev/null
 after=$(state)
 test "$(request owner DELETE "$member_path?version=2" 11111111-1111-1111-1111-111111111143 '{}')" = 409
 test "$after" = "$(state)"
@@ -127,6 +138,8 @@ options_cursor=$(jq -r '.nextCursor' "$scratch/options-removed-first.json")
 test "$(get owner "/cards/$card/member-options?after=$options_cursor" options-removed-second)" = 200
 jq -se --arg owner "$owner" --arg member "$member" 'all(.[];.cardVersion==4) and all(.[].items[];.assigned==(.userId==$owner))
  and any(.[].items[];.userId==$member and .assigned==false)' "$scratch/options-removed-first.json" "$scratch/options-removed-second.json" >/dev/null
+test "$(get owner "/boards/$board" removed-preview)" = 200
+jq -e --arg card "$card" --arg owner "$owner" '.cardMembers[$card].total==1 and .cardMembers[$card].cardVersion==4 and .cardMembers[$card].items[0].userId==$owner' "$scratch/removed-preview.json" >/dev/null
 test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card';")" = 1
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='CARD_MEMBER_REMOVED';")" = 1
 test "$(request owner PUT "$member_path?version=4" 11111111-1111-1111-1111-111111111146 '{}')" = 200
@@ -146,6 +159,16 @@ blocked() {
   echo 'Expected assignment directory Board lock wait was not observed.' >&2; return 1
 }
 release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; rm "$scratch/gate.in" "$scratch/gate.log"; }
+hold; get member "/boards/$board" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh '"cardMembers"|Assignment fixture|displayName|Retained assignment' "$scratch/response.json"
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
+hold; get member "/boards/$board" > "$scratch/status" & request_pid=$!
+blocked; release "DELETE FROM sessions WHERE user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
+scripts/ci/assert-file-excludes.sh '"cardMembers"|Assignment fixture|displayName|Retained assignment' "$scratch/response.json"
+curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/member.credentials")" "$base/auth/login" >/dev/null
 hold; get member "/cards/$card/member-options" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404

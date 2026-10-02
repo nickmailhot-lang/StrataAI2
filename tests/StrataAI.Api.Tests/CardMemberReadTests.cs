@@ -49,5 +49,9 @@ public sealed partial class ApiHostTests
         Assert.Equal(ids.Skip(1).Order(), options.Where(i => i.Assigned).Select(i => i.UserId).Order());
         Assert.Equal(new[] { fixture.Owner.Id, fixture.Inviter.Id }.Order(), options.Where(i => !i.Assigned).Select(i => i.UserId).Order());
         Assert.Equal("invalid_board_member_cursor", (await work.ListCardMemberOptionsAsync(card.Id, fixture.Owner.Id, Guid.Empty, ct)).ErrorCode);
+        var board = await work.GetBoardAsync(fixture.Board.Id, fixture.Owner.Id, ct);
+        Assert.True(board.Succeeded); var preview = Assert.Single(board.Value!.CardMembers!).Value;
+        Assert.Equal(52, preview.Total); Assert.Equal(6, preview.Items.Count); Assert.Equal(54, preview.CardVersion);
+        Assert.Equal(ids.Skip(1).Order().Take(6), preview.Items.Select(i => i.UserId));
     }
 }

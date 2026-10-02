@@ -181,3 +181,36 @@ assignee section on a phone through real Worker delivery. Exact-image execution
 of the new picker/options/browser checks remains pending CI. Card-face previews,
 account-deactivation cleanup, notifications and remaining ticket acceptance
 criteria still require implementation/verification.
+
+Card faces now show up to six assignee initials with accessible full names,
+Unicode-aware initials, safe unnamed-member fallback, hover names and a remaining
+assignee count. The Board snapshot batches previews across active Cards/Lists;
+PostgreSQL applies current Board/Organization/account/verification eligibility
+before counting and selecting the first six UUID-ordered assignees. Each preview
+carries its canonical Card revision. The UI hides a preview when that revision
+does not match the displayed Card, during snapshot refresh or after read failure,
+and rejects malformed counts/IDs/names. Card navigation keeps the title as its
+accessible link name. No additional per-Card requests are issued for previews.
+
+Names and counts follow the detailed assignee-read policy: authenticated current
+Organization members with view access receive them; anonymous/PUBLIC visitors
+outside the Organization receive `cardMembers: null`. Authenticated Board
+snapshots now use the owning Organization/Board transaction, fresh post-wait
+view admission and final session verification. Anonymous snapshots retain the
+existing PUBLIC read path and contain no member metadata. Archived/deleted
+Cards and Cards in inactive Lists cannot enter the preview query.
+
+Host checks cover 52 eligible assignees with six indicators, canonical revision,
+minimal member fields, anonymous/PUBLIC visitor privacy and archived-List
+exclusion. The required release fixture checks preview counts/revisions/minimal
+fields through the web proxy, removal changes and observed Board-read membership
+and session revocation waits. The desktop/phone browser fixture also asserts
+accessible Card-face initials. Strict .NET compilation, web typecheck/lint/build,
+shell syntax and browser collection passed locally. New Linux/runtime acceptance
+checks remain pending CI. The preceding picker commit ba99f6f passed Linux
+.NET/web/PostgreSQL/source gates, image build and security in run 37049286520;
+its complete container/required-ci gate remains live.
+Nine indicator cases and 25 Board cases passed in the final serial local run.
+An earlier concurrent run had one archive-recovery dialog/focus timing failure;
+the unchanged assertion passed in the serial run. Linux browser execution
+remains required evidence for that interaction.

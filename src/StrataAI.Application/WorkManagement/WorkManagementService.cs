@@ -96,6 +96,11 @@ public sealed partial class WorkManagementService(
             access.Value.Access,
             cancellationToken);
 
+        // Member names follow the detailed member-read policy. PUBLIC visitors
+        // outside the Organization receive no member indicators or counts.
+        if (snapshot is not null && access.Value.OrganizationMembership is { Active: true })
+            snapshot = snapshot with { CardMembers = await store.ListCardMemberPreviewsAsync(boardId, identityPolicy.RequireVerifiedEmail, cancellationToken) };
+
         return snapshot is null
             ? WorkOperation<BoardSnapshot>.Failure("board_not_found")
             : WorkOperation<BoardSnapshot>.Success(snapshot);

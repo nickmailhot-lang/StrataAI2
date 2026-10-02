@@ -7,6 +7,7 @@ export type WorkCard = {
   version: number;
 };
 export type BoardSnapshot = {
+  cardMembers?: Record<string, { items: { userId: string; displayName: string }[]; total: number; cardVersion: number }> | null;
   cardLabels?: Record<string, { items: { id: string; name: string; color: string }[]; total: number }>;
   board: {
     id: string;
