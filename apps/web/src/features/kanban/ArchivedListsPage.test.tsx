@@ -16,6 +16,21 @@ function mount(fetch: ReturnType<typeof vi.fn>) {
   return render(<RouterProvider router={router} />);
 }
 async function review() { fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning list' })); }
+
+it('preserves the archive return focus through a real-time read after acknowledged restore', async () => {
+  let release: ((value: Response) => void) | undefined;
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply(ack))
+    .mockResolvedValueOnce(reply({ ...page, items: [] }))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { release = resolve; }));
+  mount(fetch); await review(); fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' }));
+  await screen.findByText('No archived lists on this page.');
+  const check = await screen.findByRole('button', { name: 'Check current archived lists' });
+  await waitFor(() => expect(check).toHaveFocus());
+  act(() => { vi.mocked(watchBoard).mock.calls.at(-1)![0].invalidate(); });
+  expect(check).toBeDisabled(); check.blur();
+  await act(async () => { release!(reply({ ...page, items: [] })); });
+  await waitFor(() => expect(check).toHaveFocus());
+});
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); vi.clearAllMocks(); });
 it('shows counted archived Lists, submits a reviewed keyed restore and refreshes authoritative data', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply(ack))

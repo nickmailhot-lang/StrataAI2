@@ -29,7 +29,10 @@ for (const width of [1280, 390]) {
     await page.getByLabel('Label name (optional)').fill('Priority');
     await page.getByRole('combobox', { name: 'Label color' }).focus(); await page.keyboard.press('Enter');
     await page.getByRole('option', { name: 'Red', exact: true }).focus(); await page.keyboard.press('Enter');
-    await page.getByRole('button', { name: 'Create', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('listbox', { name: 'Label color', exact: true })).toHaveCount(0);
+    const submitCreation = page.getByRole('button', { name: 'Create', exact: true });
+    await expect(submitCreation).toBeEnabled(); await submitCreation.focus(); await expect(submitCreation).toBeFocused();
+    await page.keyboard.press('Enter');
     const retry = page.getByRole('button', { name: 'Retry label creation' }); await expect(retry).toBeEnabled();
     await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeDisabled();
     await retry.focus(); await page.keyboard.press('Enter');

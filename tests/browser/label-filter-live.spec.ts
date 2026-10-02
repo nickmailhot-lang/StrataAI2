@@ -33,7 +33,8 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     const boardPath = `/app/${org}/boards/${board}`;
     await other.goto(boardPath); await expect(other.getByText('Live updates connected.', { exact: true })).toBeVisible();
     const openFilters = other.getByRole('button', { name: 'Filter Board Cards', exact: true });
-    await expect(openFilters).toBeEnabled(); await openFilters.focus(); await other.keyboard.press('Enter');
+    await expect(openFilters).toBeEnabled(); await openFilters.focus(); await expect(openFilters).toBeFocused();
+    await other.keyboard.press('Enter');
     const filters = other.getByRole('dialog', { name: 'Filter Board Cards' });
     const priority = filters.getByRole('checkbox', { name: 'Priority (red)', exact: true });
     await expect(priority).toBeEnabled(); await priority.focus(); await other.keyboard.press('Space');

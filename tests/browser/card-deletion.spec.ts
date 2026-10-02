@@ -33,7 +33,10 @@ for (const width of [1280, 390]) {
         const response = await route.fetch(); expect(response.status()).toBe(200);
         if (writes.length === 1) await route.abort('failed'); else await route.fulfill({ response });
       });
-      await page.getByRole('button', { name: 'Permanently delete Reviewed Card card', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByText('Archive updates: live.', { exact: true })).toBeVisible();
+      const reviewDeletion = page.getByRole('button', { name: 'Permanently delete Reviewed Card card', exact: true });
+      await expect(reviewDeletion).toBeEnabled(); await reviewDeletion.focus(); await expect(reviewDeletion).toBeFocused();
+      await page.keyboard.press('Enter');
       await expect(page.getByText('Permanently delete Reviewed Card from Planning?', { exact: true })).toBeVisible();
       await expect(page.getByText('This cannot be undone. This Card can no longer be restored or used.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Confirm permanent deletion', exact: true })).toBeDisabled(); expect(writes).toHaveLength(0);

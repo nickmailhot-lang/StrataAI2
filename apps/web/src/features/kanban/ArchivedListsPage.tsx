@@ -42,9 +42,20 @@ function Archive({ org, board }: { org: string; board: string }) {
   const read = useRef<AbortController | undefined>(undefined); const write = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(false); const refresh = useRef<HTMLButtonElement>(null);
   const focusRequested = useRef(false);
+  const focusFrame = useRef<number | undefined>(undefined);
   function restoreFocus() {
-    focusRequested.current = !refresh.current || refresh.current.disabled;
-    if (refresh.current && !refresh.current.disabled) refresh.current.focus({ preventScroll: true });
+    focusRequested.current = true;
+    if (focusFrame.current !== undefined) cancelAnimationFrame(focusFrame.current);
+    if (!refresh.current || refresh.current.disabled) return;
+    // Restore after the exiting MUI focus trap, then preserve that return target
+    // if Worker delivery immediately causes another background archive read.
+    focusFrame.current = requestAnimationFrame(() => {
+      focusFrame.current = requestAnimationFrame(() => {
+        focusFrame.current = undefined;
+        if (!mounted.current || !focusRequested.current || !refresh.current || refresh.current.disabled) return;
+        refresh.current.focus({ preventScroll: true }); focusRequested.current = false;
+      });
+    });
   }
   useEffect(() => { if (!reading && !writing && !selected && focusRequested.current) restoreFocus(); }, [reading, writing, selected]);
   const current = page?.items.find(e => e.list.id === selected?.list.id);
@@ -55,6 +66,7 @@ function Archive({ org, board }: { org: string; board: string }) {
     setRetryRead(false); setNotice(undefined); setError('Archived List administration is unavailable.');
   }
   async function load(cursor: string | null, trail: (string | null)[]) {
+    if (document.activeElement === refresh.current) focusRequested.current = true;
     read.current?.abort(); const c = new AbortController(); read.current = c;
     position.current = { cursor, history: trail }; setHistory(trail); setReading(true); setReady(false); setRetryRead(false); setError(undefined);
     try {
@@ -74,7 +86,8 @@ function Archive({ org, board }: { org: string; board: string }) {
   const invalidate = useEffectEvent(() => { void load(position.current.cursor, position.current.history); });
   useEffect(() => {
     mounted.current = true; void load(null, []);
-    return () => { mounted.current = false; read.current?.abort(); write.current?.abort(); };
+    return () => { mounted.current = false; read.current?.abort(); write.current?.abort();
+      if (focusFrame.current !== undefined) cancelAnimationFrame(focusFrame.current); };
   }, [org, board]);
   useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: board, invalidate: () => invalidate(), status: setLive }) : undefined,
     [org, board, subscribed]);
