@@ -34,6 +34,16 @@ must disappear. Existing canonical membership trigger, deferred-integrity and
 rollback tests retain their assertions under explicit tenant write context.
 The general migrated-catalog guard now has no routing exemptions.
 
-The solution builds with zero warnings/errors and shell syntax/diff checks pass.
-Linux execution of the new PostgreSQL checks and exact-image regression suites
-is required before this change establishes runtime or release evidence.
+Global identity operations use a separate global-session helper. It borrows an
+existing identity/tenant command transaction, but does not create a standalone
+discovery transaction. This preserves identity read lock timing and explicitly
+owned identity write commits. Actual routing lookups always use the bounded
+transactional routing helper.
+
+CI 36980974427 at 52f9127 passed the new real PostgreSQL routing/catalog tests,
+migration upgrades and existing restricted-role integrity checks. Exact images
+built and passed security checks, but the container suite stopped at the recipient
+deactivation lock-wait assertion because global identity reads were inadvertently
+given routing transactions. Commit 772590d separates those paths and builds with
+zero warnings/errors. Repaired exact-image regression proof is still required;
+this is not evidence of a successful complete release pipeline.
