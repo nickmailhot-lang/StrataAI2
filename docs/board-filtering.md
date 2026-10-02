@@ -40,8 +40,12 @@ removed assignments, literal keywords, 50+2 pages, archived parents, and observe
 Board-lock waits followed by membership/session revocation without result leaks.
 Strict local compilation and fixture syntax checks passed. Linux source CI for
 aa3e128 (run 37037711541, .NET job 110939925226) passed the complete host suite.
-Execution of the added PostgreSQL filter assertions against release images is
-still pending; the source migration/RLS job does not prove those API queries.
+The required label-command step also passed against the exact aa3e128 API image
+(container job 110941574917), including full-association ANY/ALL filtering,
+literal keywords, bounded pagination and observed post-wait revocation. The
+overall job was still running when this evidence was recorded. The later proxy
+repair changes this fixture to execute through the release web image; that
+additional proxy coverage and the current complete gate remain pending.
 
 Board viewers can open Filter Board Cards to select named label choices and a
 literal keyword, compose ANY/ALL predicates, and browse a 50-Card result page.
