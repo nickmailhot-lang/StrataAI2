@@ -423,7 +423,7 @@ public static class WorkManagementEndpoints
                             context.TraceIdentifier,
                             cancellationToken, request.BeforeListId, request.MoveToEnd));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         MapListLifecycle(app, "archive", WorkItemLifecycleState.Archived);
         MapListLifecycle(app, "restore", WorkItemLifecycleState.Active);
@@ -538,7 +538,7 @@ public static class WorkManagementEndpoints
                             context.TraceIdentifier,
                             cancellationToken, request.BeforeCardId));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         MapCardLifecycle(app, "archive", WorkItemLifecycleState.Archived);
         MapCardLifecycle(app, "restore", WorkItemLifecycleState.Active);

@@ -32,6 +32,8 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/invitations", "GET") => "invitation_read",
             ("/boards/{boardId:guid}/invitations", "POST") => "invitation_create",
             ("/boards/{boardId:guid}/invitations/{invitationId:guid}", "DELETE") => "invitation_revoke",
+            ("/lists/{listId:guid}", "PATCH") => "list_update",
+            ("/cards/{cardId:guid}/move", "POST") => "card_move",
             _ => null,
         };
 
@@ -45,7 +47,9 @@ public sealed class BoardSharingTelemetry
                 or "invalid_board_member_cursor" or "invalid_invitation_cursor" or "invalid_email"
                 or "invalid_invitation_role" or "member_not_eligible" or "sole_board_admin"
                 or "version_conflict" or "idempotency_key_reused" or "idempotency_key_expired"
-                or "invalid_idempotency_key" or "insufficient_permission" => code,
+                or "invalid_idempotency_key" or "insufficient_permission"
+                or "list_not_found" or "card_not_found" or "invalid_list_name" or "invalid_rank"
+                or "invalid_move_position" or "rank_space_exhausted" => code,
             _ => "other_error",
         };
     }
