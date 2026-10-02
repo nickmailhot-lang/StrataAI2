@@ -85,10 +85,10 @@ export function ListRenameControl({ list, snapshot, disabled, onRefresh, onBusyC
     {!review && notice && <Typography role="status" variant="body2">{notice}</Typography>}
     <Dialog open={!!review} onClose={close} disableRestoreFocus
       slotProps={{ transition: { onExited: () => action.current?.focus({ preventScroll: true }) } }} fullWidth maxWidth="sm">
-      <Box component="form" onSubmit={event => { event.preventDefault(); void save(); }}>
+      {review && <Box component="form" onSubmit={event => { event.preventDefault(); void save(); }}>
         <DialogTitle>Rename list</DialogTitle>
         <DialogContent>
-          {notice && <Alert severity="info">{notice}</Alert>}
+          {review && notice && <Alert severity="info">{notice}</Alert>}
           {changed && <Alert severity="warning">This list changed elsewhere. Your draft is preserved.</Alert>}
           <TextField autoFocus required fullWidth margin="normal" label="New list name" value={name}
             disabled={busy || !!intent || denied} onChange={event => setName(event.target.value)}
@@ -104,7 +104,7 @@ export function ListRenameControl({ list, snapshot, disabled, onRefresh, onBusyC
             {intent ? 'Retry this rename' : 'Save list name'}
           </Button>
         </DialogActions>
-      </Box>
+      </Box>}
     </Dialog>
   </>;
 }

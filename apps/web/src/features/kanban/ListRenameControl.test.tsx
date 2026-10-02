@@ -38,6 +38,14 @@ it('keeps a lost acknowledgment bound to its original name/version/key after new
   expect(fetch.mock.calls[1][1].body).toBe(fetch.mock.calls[0][1].body);
   expect(fetch.mock.calls[1][1].headers.get('Idempotency-Key')).toBe(fetch.mock.calls[0][1].headers.get('Idempotency-Key'));
 });
+it('renders one success announcement while the dialog exit is still pending', async () => {
+  let resolve!: (response: Response) => void;
+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(done => { resolve = done; })));
+  render(<ListRenameControl {...props} />); open(); save();
+  await act(async () => { resolve(reply(ack)); });
+  expect(screen.getAllByText('List rename acknowledged. Checking current list.')).toHaveLength(1);
+  expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('List rename acknowledged. Checking current list.');
+});
 it('preserves a dirty draft on a live revision and requires explicit discard before saving again', async () => {
   const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
   const view = render(<ListRenameControl {...props} />); open();

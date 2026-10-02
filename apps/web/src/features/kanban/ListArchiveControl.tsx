@@ -77,7 +77,7 @@ export function ListArchiveControl({ snapshot, disabled, unavailableListIds, onB
     <Dialog open={open} onClose={close} disableRestoreFocus fullWidth maxWidth="sm"
       slotProps={{ transition: { onExited: restoreFocus } }}>
       <DialogTitle>Archive List</DialogTitle><DialogContent>
-        {notice && <Alert severity="info">{notice}</Alert>}
+        {open && notice && <Alert severity="info">{notice}</Alert>}
         <Typography>Archiving hides this List and its cards from the active Board. All contained cards remain associated with it, and the List can be restored from Archived lists.</Typography>
         {!intent && <TextField select fullWidth margin="normal" label="List to archive" value={review?.id ?? ''} disabled={busy || disabled} onChange={event => {
           const selected = lists.find(l => l.id === event.target.value); setConflict(false); setNotice(undefined);

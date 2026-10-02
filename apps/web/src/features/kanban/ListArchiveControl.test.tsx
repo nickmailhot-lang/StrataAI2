@@ -45,6 +45,14 @@ it('blocks changed consent until a fresh explicit review', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Review current list for archive' }));
   expect(screen.getByRole('button', { name: 'Confirm archive' })).toBeEnabled(); expect(fetch).not.toHaveBeenCalled();
 });
+it('renders one success announcement while the dialog exit is still pending', async () => {
+  let resolve!: (response: Response) => void;
+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(done => { resolve = done; })));
+  render(<ListArchiveControl {...props} />); choose(); fireEvent.click(screen.getByRole('button', { name: 'Confirm archive' }));
+  await act(async () => { resolve(reply(ack)); });
+  expect(screen.getAllByText('List archive acknowledged. Current Board state is being checked.')).toHaveLength(1);
+  expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('List archive acknowledged. Current Board state is being checked.');
+});
 it.each([{ ...ack, organizationId: 'other' }, { ...ack, boardId: 'other' }, { ...ack, name: 'Other' },
   { ...ack, rank: 'other' }, { ...ack, version: 3 }, { ...ack, lifecycleState: 'active' }, null])('rejects wrong acknowledgment fields: %j', async value => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply(value)));
