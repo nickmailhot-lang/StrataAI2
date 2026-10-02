@@ -13,14 +13,22 @@ version 1 and new timestamps. Every non-deleted source Card gets a new ID,
 version 1 and new timestamps, retaining its title, description, rank and active
 or archived state. Archived copies receive their own archive timestamp. Deleted
 Cards are excluded. Source entities and sibling ranks are unchanged. This is a
-copy of the currently implemented canonical Card fields, not a claim that future
-labels, members, attachments, checklists or other PRD data have been implemented.
-Those features must extend this copy path before their acceptance is complete.
+copy includes current label assignments. A same-Board copy reuses existing label
+identities. A cross-Board copy creates one independent destination definition for
+each distinct active source label used by non-deleted copied Cards, preserving
+name/color and relative label order while appending after destination labels.
+Identical names/colors are not merged: distinct source labels stay distinct.
+Shared labels remain shared across the copied Cards. Labels used only by deleted
+Cards are excluded. Destination definitions and associations start at version 1;
+source label changes do not propagate to independent destination definitions.
+Members, attachments, checklists and other future Card data must extend this
+path before their acceptance is complete.
 
 Both Board command scopes are locked in stable ID order. Authorization, active
 Organization membership, session validity and parent lifecycle are rechecked
 after waits and before historical receipt disclosure. The PostgreSQL command
-owns one tenant transaction for the List, all copied Cards, `LIST_COPIED` audit
+owns one tenant transaction for the List, all copied Cards, label definitions and
+associations, `LIST_COPIED` audit
 and durable event/job, and the retry receipt. Audit failure rolls back the copy
 and claim. Identical retries return the original created response without
 duplicating entities or effects; a changed key fingerprint is rejected. A newer
@@ -29,6 +37,13 @@ source version does not replace a committed historical acknowledgment.
 The event invalidates the destination Board through the existing separate Worker
 delivery path. Its envelope contains no copied content. Operator metrics use the
 fixed `list_copy` operation with the existing bounded, content-free labels.
+
+The label extension adds host coverage for same-Board reuse, cross-Board identity,
+duplicate-looking labels, replay without duplicate definitions, and independent
+subsequent edits. The required exact-image fixture checks active and archived
+Card associations, omission of labels used only by deleted Cards, composite scope,
+and full label/route/association rollback on audit failure. Local compilation and
+shell validation are recorded separately from pending Linux runtime evidence.
 
 `ListCopyTests.cs` covers canonical data/order/lifecycle/new identities, identical
 receipt recovery after source rename, changed intent, stale version, private

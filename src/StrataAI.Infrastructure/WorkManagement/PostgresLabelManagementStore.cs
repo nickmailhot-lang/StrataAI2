@@ -6,6 +6,25 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class PostgresWorkManagementStore
 {
+    private async Task<Dictionary<Guid, Guid>> CopyListLabelDefinitionsAsync(Guid organizationId, Guid sourceBoardId,
+        Guid sourceListId, Guid destinationBoardId, DateTimeOffset now, CancellationToken ct)
+    {
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, ct);
+        var labels = new List<BoardLabelRecord>();
+        await using (var command = new NpgsqlCommand($"SELECT {string.Join(',', LabelColumns.Split(',').Select(column => "label." + column))} FROM board_labels label WHERE label.tenant_id=@tenant AND label.board_id=@board AND label.status='ACTIVE' AND EXISTS(SELECT 1 FROM card_labels a JOIN cards c ON c.id=a.card_id AND c.tenant_id=a.tenant_id AND c.board_id=a.board_id WHERE a.tenant_id=label.tenant_id AND a.board_id=label.board_id AND a.label_id=label.id AND c.list_id=@list AND c.lifecycle_state<>'DELETED') ORDER BY label.rank,label.id;", session.Connection, session.Transaction))
+        {
+            command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("board", sourceBoardId); command.Parameters.AddWithValue("list", sourceListId);
+            await using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct)) labels.Add(ReadLabel(reader));
+        }
+        var mapping = new Dictionary<Guid, Guid>();
+        foreach (var label in labels)
+        {
+            var target = sourceBoardId == destinationBoardId ? label : await CreateLabelAsync(destinationBoardId, Guid.NewGuid(), label.Name, label.Color, now, ct);
+            mapping.Add(label.Id, target.Id);
+        }
+        return mapping;
+    }
     public async Task<IReadOnlyList<BoardLabelRecord>> ListCardLabelsAsync(Guid cardId, Guid? after, CancellationToken cancellationToken = default)
     {
         var card = await FindCardAsync(cardId, cancellationToken);

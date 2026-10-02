@@ -38,6 +38,9 @@ admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES
       (gen_random_uuid(),'$org','$board','Deleted fixture','900000000000000000000000000000','DELETED',now(),now());" >/dev/null
 get() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -H 'Idempotency-Key: 11111111-1111-1111-1111-111111111111' -o "$scratch/${3:-response}.json" -w '%{http_code}' "$base$2"; }
 state() { admin "SELECT md5(jsonb_build_object(
+  'labels',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_labels l WHERE tenant_id='$org'),
+  'label_routes',(SELECT jsonb_agg(to_jsonb(r) ORDER BY label_id) FROM label_routes r WHERE tenant_id='$org'),
+  'card_labels',(SELECT jsonb_agg(to_jsonb(a) ORDER BY card_id,label_id) FROM card_labels a WHERE tenant_id='$org'),
   'lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l WHERE tenant_id='$org'),
   'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id='$org'),
   'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org'),
@@ -235,6 +238,12 @@ admin "INSERT INTO cards(id,tenant_id,board_id,list_id,title,description,rank,li
     CASE i WHEN 1 THEN 'ACTIVE' WHEN 2 THEN 'ARCHIVED' ELSE 'DELETED' END,now(),now(),7,
     CASE WHEN i=2 THEN now() ELSE NULL END FROM generate_series(1,3) i;" >/dev/null
 copy_key=$(cat /proc/sys/kernel/random/uuid)
+admin "INSERT INTO board_labels(id,tenant_id,board_id,name,color,rank,version)
+  VALUES(gen_random_uuid(),'$org','$board','Shared copy label','blue','500000000000000000000000000000',4),
+    (gen_random_uuid(),'$org','$board','Deleted Card only label','red','600000000000000000000000000000',2);
+  INSERT INTO card_labels(tenant_id,board_id,card_id,label_id)
+  SELECT c.tenant_id,c.board_id,c.id,l.id FROM cards c JOIN board_labels l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id
+    WHERE c.list_id='$copy_source' AND (l.name='Shared copy label' OR (l.name='Deleted Card only label' AND c.lifecycle_state='DELETED'));" >/dev/null
 committed_copy_key=$copy_key
 copy_body=$(jq -nc --arg dest "$copy_destination" '{destinationBoardId:$dest,name:"Copied List",version:1}')
 copy_list() {
@@ -254,6 +263,12 @@ copy_id=$(jq -r '.id' "$scratch/copied.json")
 jq -e --arg source "$copy_source" --arg board "$copy_destination" '.id!=$source and .boardId==$board and .version==1 and .lifecycleState=="active"' "$scratch/copied.json" >/dev/null
 cp "$scratch/copied.json" "$scratch/copy-receipt.json"
 test "$(admin "SELECT count(*) FROM cards WHERE tenant_id='$org' AND board_id='$copy_destination' AND list_id='$copy_id';")" = 2
+test "$(admin "SELECT count(*) FROM board_labels WHERE tenant_id='$org' AND board_id='$copy_destination';")" = 1
+test "$(admin "SELECT count(*) FROM board_labels copied JOIN board_labels original ON original.tenant_id=copied.tenant_id AND original.board_id='$board' AND original.name=copied.name
+  WHERE copied.tenant_id='$org' AND copied.board_id='$copy_destination' AND copied.id<>original.id AND copied.name='Shared copy label' AND copied.color='blue' AND copied.version=1 AND original.version=4;")" = 1
+test "$(admin "SELECT count(*) FROM card_labels a JOIN cards c ON c.id=a.card_id AND c.tenant_id=a.tenant_id AND c.board_id=a.board_id
+  JOIN board_labels l ON l.id=a.label_id AND l.tenant_id=a.tenant_id AND l.board_id=a.board_id
+  WHERE c.list_id='$copy_id' AND c.board_id='$copy_destination' AND l.name='Shared copy label' AND a.version=1;")" = 2
 test "$(admin "SELECT count(*) FROM cards c JOIN cards s ON s.tenant_id=c.tenant_id AND s.list_id='$copy_source' AND s.title=c.title
   WHERE c.tenant_id='$org' AND c.list_id='$copy_id' AND c.id<>s.id AND c.version=1 AND c.rank=s.rank
     AND c.description IS NOT DISTINCT FROM s.description AND c.lifecycle_state=s.lifecycle_state

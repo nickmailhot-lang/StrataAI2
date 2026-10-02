@@ -405,14 +405,32 @@ internal sealed partial class InMemoryWorkManagementStore : IWorkManagementStore
             if (source.OrganizationId != board.OrganizationId) throw new InvalidOperationException("Invalid copy scope.");
             var rank = RankToken.After(_lists.Values.Where(item => item.BoardId == destinationBoardId
                 && item.LifecycleState == WorkItemLifecycleState.Active).Select(item => item.Rank).Order(StringComparer.Ordinal).LastOrDefault());
-            var cards = _cards.Values.Where(item => item.OrganizationId == source.OrganizationId
+              var sourceCards = _cards.Values.Where(item => item.OrganizationId == source.OrganizationId
                 && item.BoardId == source.BoardId && item.ListId == sourceListId && item.LifecycleState != WorkItemLifecycleState.Deleted)
-                .Select(item => item with { Id = Guid.NewGuid(), BoardId = destinationBoardId, ListId = copiedListId,
+                  .ToArray();
+              var cards = sourceCards.Select(item => item with { Id = Guid.NewGuid(), BoardId = destinationBoardId, ListId = copiedListId,
                     CreatedAt = createdAt, UpdatedAt = createdAt, Version = 1 }).ToArray();
+              var sourceIds = sourceCards.Select(item => item.Id).ToHashSet();
+              var associations = _cardLabels.Where(item => sourceIds.Contains(item.CardId) && _labels.TryGetValue(item.LabelId, out var label) && !label.Deleted).ToArray();
+              var labelMap = new Dictionary<Guid, BoardLabelRecord>();
+              var lastLabelRank = _labels.Values.Where(item => item.BoardId == destinationBoardId && !item.Deleted).Select(item => item.Rank).Order(StringComparer.Ordinal).LastOrDefault();
+              foreach (var label in associations.Select(item => _labels[item.LabelId]).DistinctBy(item => item.Id).OrderBy(item => item.Rank, StringComparer.Ordinal).ThenBy(item => item.Id))
+              {
+                  var target = label;
+                  if (source.BoardId != destinationBoardId)
+                  {
+                      lastLabelRank = RankToken.After(lastLabelRank);
+                      target = label with { Id = Guid.NewGuid(), BoardId = destinationBoardId, Rank = lastLabelRank, CreatedAt = createdAt, UpdatedAt = createdAt, Version = 1 };
+                  }
+                  labelMap.Add(label.Id, target);
+              }
             var copied = new BoardListRecord(copiedListId, board.OrganizationId, board.Id, name, rank,
                 WorkItemLifecycleState.Active, createdAt, createdAt, 1);
             _lists.Add(copied.Id, copied);
             foreach (var card in cards) _cards.Add(card.Id, card);
+              foreach (var label in labelMap.Values) _labels.TryAdd(label.Id, label);
+              var cardMap = sourceCards.Select((item, index) => (item.Id, Copy: cards[index].Id)).ToDictionary(item => item.Id, item => item.Copy);
+              foreach (var association in associations) _cardLabels.Add((cardMap[association.CardId], labelMap[association.LabelId].Id));
             return Task.FromResult(copied);
         }
     }

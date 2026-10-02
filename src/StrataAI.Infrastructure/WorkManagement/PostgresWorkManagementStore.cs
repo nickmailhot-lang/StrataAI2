@@ -849,21 +849,33 @@ internal sealed partial class PostgresWorkManagementStore(
             ?? throw new InvalidOperationException("List was not found.");
         var destinationTenant = await ResolveBoardTenantAsync(destinationBoardId, cancellationToken);
         if (source.TenantId != destinationTenant) throw new InvalidOperationException("Invalid copy scope.");
+        if (!connectionFactory.HasCommandScope(source.TenantId)) throw new InvalidOperationException("List copy requires the owning command transaction.");
         await using var session = await connectionFactory.OpenTenantSessionAsync(source.TenantId, cancellationToken);
         var rank = await AllocateAppendRankAsync(session.Connection, session.Transaction,
             source.TenantId, destinationBoardId, null, cancellationToken);
+        var labels = await CopyListLabelDefinitionsAsync(source.TenantId, source.BoardId, sourceListId, destinationBoardId, createdAt, cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO board_lists(id, tenant_id, board_id, name, rank, lifecycle_state, created_at, updated_at, version)
             VALUES (@id, @tenant_id, @destination_board_id, @name, @rank, 'ACTIVE', @created_at, @created_at, 1);
+            WITH mapped AS MATERIALIZED (
+              SELECT *, gen_random_uuid() AS copied_id FROM cards
+              WHERE tenant_id=@tenant_id AND board_id=@source_board_id AND list_id=@source_list_id AND lifecycle_state<>'DELETED'
+            ), inserted AS (
             INSERT INTO cards(id, tenant_id, board_id, list_id, title, description, rank, lifecycle_state, created_at, updated_at, version, archived_at)
-            SELECT gen_random_uuid(), tenant_id, @destination_board_id, @id, title, description, rank, lifecycle_state, @created_at, @created_at, 1,
+            SELECT copied_id, tenant_id, @destination_board_id, @id, title, description, rank, lifecycle_state, @created_at, @created_at, 1,
                 CASE WHEN lifecycle_state = 'ARCHIVED' THEN @created_at ELSE NULL END
-            FROM cards
-            WHERE tenant_id = @tenant_id AND board_id = @source_board_id AND list_id = @source_list_id
-              AND lifecycle_state <> 'DELETED';
+            FROM mapped RETURNING id
+            )
+            INSERT INTO card_labels(tenant_id,board_id,card_id,label_id,created_at,updated_at,version)
+            SELECT @tenant_id,@destination_board_id,m.copied_id,labels.destination_id,@created_at,@created_at,1
+            FROM mapped m JOIN inserted i ON i.id=m.copied_id
+            JOIN card_labels a ON a.tenant_id=@tenant_id AND a.board_id=@source_board_id AND a.card_id=m.id
+            JOIN unnest(@source_labels::uuid[],@destination_labels::uuid[]) labels(source_id,destination_id) ON labels.source_id=a.label_id;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("id", copiedListId);
+        command.Parameters.AddWithValue("source_labels", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid, labels.Keys.ToArray());
+        command.Parameters.AddWithValue("destination_labels", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid, labels.Values.ToArray());
         command.Parameters.AddWithValue("tenant_id", source.TenantId);
         command.Parameters.AddWithValue("destination_board_id", destinationBoardId);
         command.Parameters.AddWithValue("source_board_id", source.BoardId);
