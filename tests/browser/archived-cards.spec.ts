@@ -18,6 +18,11 @@ for (const width of [1280, 390]) {
     expect(cardReply.status()).toBe(201); const card = await cardReply.json();
     const neighborReply = await context.request.post(`/lists/${list.id}/cards`, { headers, data: { title: 'Active neighbor' } });
     expect(neighborReply.status()).toBe(201); const neighbor = await neighborReply.json();
+    const initialSnapshotReply = await context.request.get(`/boards/${board}`); expect(initialSnapshotReply.status()).toBe(200);
+    // Compare persisted state with persisted state, including all timestamps.
+    // PostgreSQL's microsecond precision differs from the creation clock's ticks.
+    const initialNeighbor = (await initialSnapshotReply.json()).lists[0].cards.find((c: { id: string }) => c.id === neighbor.id);
+    expect(initialNeighbor).toMatchObject({ id: neighbor.id, title: neighbor.title, rank: neighbor.rank, version: 1 });
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request, board);
@@ -73,7 +78,7 @@ for (const width of [1280, 390]) {
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]); expect(JSON.parse(writes[0].body!)).toEqual({ version: 2 });
       expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
       const snapshot = await (await context.request.get(`/boards/${board}`)).json();
-      expect(snapshot.lists[0].cards.find((c: { id: string }) => c.id === neighbor.id)).toEqual(neighbor);
+      expect(snapshot.lists[0].cards.find((c: { id: string }) => c.id === neighbor.id)).toEqual(initialNeighbor);
       expect(snapshot.lists[0].cards.find((c: { id: string }) => c.id === card.id)).toMatchObject({ listId: list.id, rank: card.rank, version: 3, lifecycleState: 'active' });
       await page.reload(); await expect(page.getByText('No archived cards on this page.', { exact: true })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
