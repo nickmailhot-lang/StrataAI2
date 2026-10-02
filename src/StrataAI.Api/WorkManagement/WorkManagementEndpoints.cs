@@ -11,6 +11,7 @@ public static partial class WorkManagementEndpoints
         MapBoardCardFilterEndpoints(app);
         MapAssignableBoardMembersEndpoints(app);
         MapCardMemberEndpoints(app);
+        MapNotificationEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
             async (
@@ -738,6 +739,9 @@ public static partial class WorkManagementEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "notification_not_found" => Problem(404, errorCode, "The notifications are unavailable."),
+            "invalid_notification_cursor" => Problem(400, errorCode, "Use the notification page's current cursor."),
+            "invalid_notification_selection" => Problem(400, errorCode, "Select between one and 50 distinct notifications."),
             "invalid_label_name" => Problem(400, errorCode, "A label name must contain at most 160 characters."),
             "invalid_label_color" => Problem(400, errorCode, "Choose a supported label color."),
             "invalid_label_cursor" => Problem(400, errorCode, "The label cursor must be a nonempty UUID."),

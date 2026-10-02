@@ -29,6 +29,8 @@ public interface IWorkManagementStore
     // Organization. The caller must freshly authorize view access afterward.
     Task<bool> AcquireBoardReadScopeAsync(Guid organizationId, Guid actorId,
         Guid boardId, CancellationToken cancellationToken = default);
+    Task<bool> AcquireOrganizationReadScopeAsync(Guid organizationId, Guid actorId,
+        CancellationToken cancellationToken = default);
 
     // Caller must first verify active organization membership.
     Task<IReadOnlyList<StrataAI.Application.Organizations.OrganizationBoardSummary>> ListVisibleBoardsAsync(

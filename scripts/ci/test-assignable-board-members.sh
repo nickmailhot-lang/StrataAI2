@@ -10,6 +10,7 @@ cleanup() {
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null || true
   admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null || true
+  admin 'GRANT UPDATE(read_at) ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null || true
   admin 'DROP POLICY IF EXISTS assignment_deactivation_failure ON audit_events;' >/dev/null || true
   rm -rf "$scratch"
 }
@@ -95,6 +96,33 @@ test "$(admin "SELECT count(*) FROM card_assignment_notifications n JOIN work_ev
  AND n.card_version=2 AND n.notification_type='CARD_ASSIGNED' AND n.read_at IS NULL
  AND e.event_type='CARD_MEMBER_ADDED' AND e.entity_id=n.card_id AND e.actor_id=n.actor_id AND e.entity_version=n.card_version
  AND e.created_at=n.created_at AND e.metadata='{}'::jsonb;")" = 1
+notification_path="/organizations/$org/notifications"
+test "$(get member "$notification_path" notification-first)" = 200
+jq -e --arg org "$org" --arg member "$member" --arg owner "$owner" --arg card "$card" --arg board "$board" '
+ .organizationId==$org and (.items|length)==1 and .nextCursor==null and .items[0].recipientId==$member and .items[0].actorId==$owner
+ and .items[0].type=="CARD_ASSIGNED" and .items[0].entityType=="Card" and .items[0].entityId==$card and .items[0].boardId==$board
+ and .items[0].entityLink==("/app/"+$org+"/boards/"+$board+"/cards/"+$card) and .items[0].readAt==null
+ and (.items[0]|keys|sort)==["actorId","boardId","createdAt","entityId","entityLink","entityType","id","readAt","recipientId","type"]' "$scratch/notification-first.json" >/dev/null
+notification_id=$(jq -r '.items[0].id' "$scratch/notification-first.json")
+notification_key=11111111-1111-1111-1111-111111111155
+notification_before=$(state)
+test "$(get outsider "$notification_path?after=bad")" = 404
+test "$(get member "$notification_path?after=bad")" = 400
+test "$(request owner POST "$notification_path/$notification_id/read" "$notification_key" '{}')" = 404
+test "$(request member POST "$notification_path/read" "$notification_key" '{"ids":[]}')" = 400
+test "$notification_before" = "$(state)"
+admin 'REVOKE UPDATE(read_at) ON card_assignment_notifications FROM strataai_api_runtime;' >/dev/null
+test "$(request member POST "$notification_path/$notification_id/read" "$notification_key" '{}')" = 503
+admin 'GRANT UPDATE(read_at) ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null
+test "$notification_before" = "$(state)"
+test "$(request member POST "$notification_path/$notification_id/read" "$notification_key" '{}')" = 200
+jq -e --arg id "$notification_id" '.items|length==1 and .[0].id==$id and .[0].readAt!=null' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/notification-receipt.json"
+notification_after=$(state)
+test "$(request member POST "$notification_path/$notification_id/read" "$notification_key" '{}')" = 200
+cmp "$scratch/response.json" "$scratch/notification-receipt.json"; test "$notification_after" = "$(state)"
+test "$(get owner "$notification_path" owner-notifications)" = 200
+jq -e '(.items|length)==0 and .nextCursor==null' "$scratch/owner-notifications.json" >/dev/null
 after=$(state)
 test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 200
 cmp "$scratch/response.json" "$scratch/assignment-receipt.json"; test "$after" = "$(state)"
@@ -204,6 +232,46 @@ blocked() {
   echo 'Expected assignment directory Board lock wait was not observed.' >&2; return 1
 }
 release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; rm "$scratch/gate.in" "$scratch/gate.log"; }
+hold; get member "$notification_path" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh '"items"|"entityLink"|Retained assignment' "$scratch/response.json"
+test "$(get member "$notification_path" denied-notifications)" = 200
+jq -e '(.items|length)==0' "$scratch/denied-notifications.json" >/dev/null
+test "$(request member POST "$notification_path/$notification_id/read" "$notification_key" '{}')" = 404
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
+hold; request member POST "$notification_path/$notification_id/read" "$notification_key" '{}' > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh '"items"|"entityLink"|Retained assignment' "$scratch/response.json"
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
+hold; get member "$notification_path" > "$scratch/status" & request_pid=$!
+blocked; release "DELETE FROM sessions WHERE user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
+scripts/ci/assert-file-excludes.sh '"items"|"entityLink"|Retained assignment' "$scratch/response.json"
+curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/member.credentials")" "$base/auth/login" >/dev/null
+# Persist actual producer notifications through the exact release API, with the
+# newest extra Card archived before reading. Eligibility must precede LIMIT.
+for ((notification_index=0;notification_index<51;notification_index++)); do
+ notification_card=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"title":"Notification paging Card"}' "$base/lists/$list/cards" | jq -r '.id')
+ [[ "$notification_card" =~ ^[0-9a-fA-F-]{36}$ ]]
+ test "$(request owner PUT "/cards/$notification_card/members/$member?version=1" "$(cat /proc/sys/kernel/random/uuid)" '{}')" = 200
+done
+test "$(request owner POST "/cards/$notification_card/archive" "$(cat /proc/sys/kernel/random/uuid)" '{"version":2}')" = 200
+test "$(get member "$notification_path" notification-page-first)" = 200
+jq -e '(.items|length)==50 and .nextCursor!=null' "$scratch/notification-page-first.json" >/dev/null
+notification_cursor=$(jq -r '.nextCursor|@uri' "$scratch/notification-page-first.json")
+test "$(get member "$notification_path?after=$notification_cursor" notification-page-second)" = 200
+jq -e '(.items|length)==2 and .nextCursor==null' "$scratch/notification-page-second.json" >/dev/null
+jq -se --arg hidden "$notification_card" '([.[].items[].id]|unique|length)==52 and all(.[].items[];.entityId!=$hidden)' "$scratch/notification-page-first.json" "$scratch/notification-page-second.json" >/dev/null
+notification_selection=$(jq -c '{ids:[.items[].id]}' "$scratch/notification-page-first.json")
+notification_bulk_key=11111111-1111-1111-1111-111111111156
+test "$(request member POST "$notification_path/read" "$notification_bulk_key" "$notification_selection")" = 200
+jq -e '(.items|length)==50 and all(.items[];.readAt!=null)' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/notification-bulk-receipt.json"
+notification_after=$(state)
+test "$(request member POST "$notification_path/read" "$notification_bulk_key" "$notification_selection")" = 200
+cmp "$scratch/response.json" "$scratch/notification-bulk-receipt.json"; test "$notification_after" = "$(state)"
 hold; get member "/boards/$board/cards?members=$owner" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404

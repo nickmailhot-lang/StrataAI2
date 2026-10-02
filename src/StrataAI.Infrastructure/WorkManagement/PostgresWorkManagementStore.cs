@@ -16,6 +16,10 @@ internal sealed partial class PostgresWorkManagementStore(
         Guid boardId, CancellationToken cancellationToken = default) =>
         AcquireScopeAsync(organizationId, actorId, boardId, true, cancellationToken);
 
+    public Task<bool> AcquireOrganizationReadScopeAsync(Guid organizationId, Guid actorId,
+        CancellationToken cancellationToken = default) =>
+        AcquireScopeAsync(organizationId, actorId, null, true, cancellationToken);
+
     private async Task<bool> AcquireScopeAsync(Guid organizationId, Guid actorId,
         Guid? boardId, bool snapshotRead, CancellationToken cancellationToken)
     {

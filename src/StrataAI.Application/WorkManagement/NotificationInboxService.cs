@@ -1,0 +1,121 @@
+using System.Globalization;
+using StrataAI.Application.Common;
+using StrataAI.Application.Identity;
+using StrataAI.Application.Organizations;
+
+namespace StrataAI.Application.WorkManagement;
+
+public sealed record NotificationCursor(DateTimeOffset CreatedAt, Guid Id)
+{
+    public override string ToString() => $"{CreatedAt.ToUniversalTime():O}/{Id:D}";
+    public static NotificationCursor? Parse(string? value)
+    {
+        if (value is null) return null;
+        var parts = value.Split('/');
+        return parts.Length == 2 && DateTimeOffset.TryParseExact(parts[0], "O", CultureInfo.InvariantCulture,
+            DateTimeStyles.None, out var created) && created.Offset == TimeSpan.Zero &&
+            Guid.TryParse(parts[1], out var id) && id != Guid.Empty ? new(created, id) : new(default, Guid.Empty);
+    }
+}
+
+public sealed record NotificationInboxItem(Guid Id, Guid RecipientId, Guid ActorId, string Type,
+    string EntityType, Guid EntityId, Guid BoardId, string EntityLink, DateTimeOffset CreatedAt, DateTimeOffset? ReadAt);
+public sealed record NotificationInboxPage(Guid OrganizationId, IReadOnlyList<NotificationInboxItem> Items, string? NextCursor);
+public sealed record NotificationReadAcknowledgment(Guid Id, DateTimeOffset ReadAt);
+public sealed record NotificationReadResult(Guid OrganizationId, IReadOnlyList<NotificationReadAcknowledgment> Items);
+
+public interface INotificationInboxStore
+{
+    Task<IReadOnlyList<CardAssignmentNotification>> ListVisibleAsync(Guid organizationId, Guid recipientId,
+        NotificationCursor? after, bool requireVerifiedEmail, CancellationToken cancellationToken);
+    Task<IReadOnlyList<CardAssignmentNotification>> FindVisibleAsync(Guid organizationId, Guid recipientId,
+        IReadOnlyCollection<Guid> ids, bool requireVerifiedEmail, CancellationToken cancellationToken);
+    Task<IReadOnlyList<NotificationReadAcknowledgment>> MarkReadAsync(Guid organizationId, Guid recipientId,
+        IReadOnlyCollection<Guid> ids, DateTimeOffset now, CancellationToken cancellationToken);
+}
+
+public sealed class NotificationInboxService(INotificationInboxStore notifications, IWorkManagementStore work,
+    IOrganizationStore organizations, IWorkBoardAuthorization boards, IWorkManagementUnitOfWork transactions,
+    ICommandActorAuthorization actors, IWorkCommandContext context, IdentityPolicy policy, IClock clock)
+{
+    public Task<WorkOperation<NotificationInboxPage>> ListAsync(Guid organizationId, Guid recipientId,
+        NotificationCursor? after, CancellationToken ct = default)
+    {
+        if (organizationId == Guid.Empty || recipientId == Guid.Empty)
+            return Task.FromResult(WorkOperation<NotificationInboxPage>.Failure("notification_not_found"));
+        IReadOnlyList<CardAssignmentNotification> planned = [];
+        return transactions.ExecuteAsync(organizationId,
+            WorkCommand.Create(recipientId, null, "NotificationInbox", organizationId, new { }, "notification_not_found"),
+            async _ =>
+            {
+                if (!await AdmitOrganization(organizationId, recipientId, ct)) return false;
+                if (after?.Id == Guid.Empty) return true;
+                planned = await notifications.ListVisibleAsync(organizationId, recipientId, after, policy.RequireVerifiedEmail, ct);
+                return await LockAndVerify(organizationId, recipientId, planned, ct);
+            }, async () =>
+            {
+                if (after?.Id == Guid.Empty) return WorkOperation<NotificationInboxPage>.Failure("invalid_notification_cursor");
+                var current = await notifications.FindVisibleAsync(organizationId, recipientId,
+                    planned.Select(n => n.Id).ToArray(), policy.RequireVerifiedEmail, ct);
+                if (current.Count != planned.Count) return WorkOperation<NotificationInboxPage>.Failure("notification_not_found");
+                if (!await actors.VerifyAsync(recipientId, ct)) return WorkOperation<NotificationInboxPage>.Failure("session_unavailable");
+                var items = current.OrderByDescending(n => n.CreatedAt).ThenByDescending(n => n.Id.ToString("N"), StringComparer.Ordinal)
+                    .Take(50).ToArray();
+                return WorkOperation<NotificationInboxPage>.Success(new(organizationId, items.Select(n => new NotificationInboxItem(
+                    n.Id, n.RecipientId, n.ActorId, CardAssignmentNotification.Type, "Card", n.CardId, n.BoardId,
+                    $"/app/{organizationId:D}/boards/{n.BoardId:D}/cards/{n.CardId:D}", n.CreatedAt, n.ReadAt)).ToArray(),
+                    current.Count > 50 ? new NotificationCursor(items[^1].CreatedAt, items[^1].Id).ToString() : null));
+            }, ct);
+    }
+
+    // Bulk applies to an explicit bounded set, so newly arrived notifications
+    // cannot be accidentally marked read by a retried command.
+    public Task<WorkOperation<NotificationReadResult>> MarkReadAsync(Guid organizationId, Guid recipientId,
+        IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (organizationId == Guid.Empty || recipientId == Guid.Empty)
+            return Task.FromResult(WorkOperation<NotificationReadResult>.Failure("notification_not_found"));
+        var valid = ids.Count is > 0 and <= 50 && !ids.Contains(Guid.Empty) && ids.Distinct().Count() == ids.Count;
+        var ordered = ids.OrderBy(id => id.ToString("N"), StringComparer.Ordinal).ToArray();
+        return transactions.ExecuteAsync(organizationId,
+            WorkCommand.Create(recipientId, context.IdempotencyKey, "ReadNotifications", organizationId, new { ids = ordered }, "notification_not_found"),
+            async _ =>
+            {
+                if (!await AdmitOrganization(organizationId, recipientId, ct)) return false;
+                if (!valid) return true;
+                var rows = await notifications.FindVisibleAsync(organizationId, recipientId, ordered, policy.RequireVerifiedEmail, ct);
+                return rows.Count == ordered.Length && await LockAndVerify(organizationId, recipientId, rows, ct);
+            }, async () =>
+            {
+                if (!valid) return WorkOperation<NotificationReadResult>.Failure("invalid_notification_selection");
+                var rows = await notifications.FindVisibleAsync(organizationId, recipientId, ordered, policy.RequireVerifiedEmail, ct);
+                if (rows.Count != ordered.Length) return WorkOperation<NotificationReadResult>.Failure("notification_not_found");
+                var result = await notifications.MarkReadAsync(organizationId, recipientId, ordered, clock.UtcNow, ct);
+                if (result.Count != ordered.Length) return WorkOperation<NotificationReadResult>.Failure("notification_not_found");
+                if (!await actors.VerifyAsync(recipientId, ct)) return WorkOperation<NotificationReadResult>.Failure("session_unavailable");
+                return WorkOperation<NotificationReadResult>.Success(new(organizationId, result));
+            }, ct);
+    }
+
+    private async Task<bool> AdmitOrganization(Guid org, Guid recipient, CancellationToken ct) =>
+        org != Guid.Empty && recipient != Guid.Empty && await work.AcquireOrganizationReadScopeAsync(org, recipient, ct) &&
+        await organizations.FindOrganizationAsync(org, ct) is { Status: OrganizationStatus.Active or OrganizationStatus.Archived } &&
+        await organizations.FindMembershipAsync(org, recipient, ct) is { Active: true };
+
+    private async Task<bool> LockAndVerify(Guid org, Guid recipient, IReadOnlyList<CardAssignmentNotification> rows, CancellationToken ct)
+    {
+        foreach (var boardId in rows.Select(n => n.BoardId).Distinct().OrderBy(id => id.ToString("N"), StringComparer.Ordinal))
+        {
+            if (!await work.AcquireBoardReadScopeAsync(org, recipient, boardId, ct)) return false;
+            var view = await boards.GetSyncScopeAsync(boardId, recipient, ct);
+            if (view.Value is not { Access.CanView: true, Board.LifecycleState: BoardLifecycleState.Active } ||
+                view.Value.Board.OrganizationId != org) return false;
+        }
+        // One fresh joined eligibility read after all Board waits. It uses the
+        // held parent locks shared with Card movement and lifecycle commands.
+        if (rows.Any(n => n.OrganizationId != org || n.RecipientId != recipient)) return false;
+        var ids = rows.Select(n => n.Id).ToArray();
+        var current = await notifications.FindVisibleAsync(org, recipient, ids, policy.RequireVerifiedEmail, ct);
+        return current.Count == rows.Count && current.Select(n => n.Id).ToHashSet().SetEquals(ids);
+    }
+}

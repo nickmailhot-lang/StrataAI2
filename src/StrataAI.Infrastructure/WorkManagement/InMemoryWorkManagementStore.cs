@@ -11,6 +11,8 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
     private readonly Dictionary<Guid, CardRecord> _cards = [];
     private readonly Dictionary<(Guid BoardId, Guid UserId), BoardMemberRecord> _members = [];
     private readonly HashSet<(Guid BoardId, Guid UserId)> _starred = [];
+    public Task<bool> AcquireOrganizationReadScopeAsync(Guid organizationId, Guid actorId,
+        CancellationToken cancellationToken = default) => Task.FromResult(true);
 
     public Task<bool> AcquireBoardReadScopeAsync(Guid organizationId, Guid actorId,
         Guid boardId, CancellationToken cancellationToken = default) =>

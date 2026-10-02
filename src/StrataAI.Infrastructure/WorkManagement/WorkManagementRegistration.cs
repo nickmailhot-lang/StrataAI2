@@ -17,7 +17,9 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWorkEventStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkEventReader>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkManagementUnitOfWork, InMemoryWorkManagementUnitOfWork>();
-            services.AddSingleton<IWorkNotificationStore, InMemoryWorkNotificationStore>();
+            services.AddSingleton<InMemoryWorkNotificationStore>();
+            services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
+            services.AddSingleton<INotificationInboxStore, InMemoryNotificationInboxStore>();
         }
         else
         {
@@ -25,7 +27,9 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();
             services.AddSingleton<IWorkEventReader, PostgresWorkEventReader>();
             services.AddSingleton<IWorkManagementUnitOfWork, PostgresWorkManagementUnitOfWork>();
-            services.AddSingleton<IWorkNotificationStore, PostgresWorkNotificationStore>();
+            services.AddSingleton<PostgresWorkNotificationStore>();
+            services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
+            services.AddSingleton<INotificationInboxStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
         }
 
         services.AddSingleton<IWorkManagementService>(provider => new TransactionalWorkManagementService(new WorkManagementService(provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<StrataAI.Application.Organizations.IOrganizationStore>(), provider.GetRequiredService<StrataAI.Application.Common.IClock>(), provider.GetRequiredService<IWorkEventStore>(), provider.GetRequiredService<StrataAI.Application.Identity.IdentityPolicy>(), provider.GetRequiredService<IWorkNotificationStore>()),
@@ -34,5 +38,6 @@ public static class WorkManagementRegistration
                 provider.GetRequiredService<StrataAI.Application.Identity.ICommandActorAuthorization>()));
         services.AddSingleton<IWorkBoardAuthorization>(provider => (IWorkBoardAuthorization)provider.GetRequiredService<IWorkManagementService>());
         services.AddSingleton<WorkSynchronizationService>();
+        services.AddSingleton<NotificationInboxService>();
     }
 }

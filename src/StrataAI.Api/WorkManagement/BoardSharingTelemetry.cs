@@ -25,6 +25,9 @@ public sealed class BoardSharingTelemetry
         ((context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText, context.Request.Method.ToUpperInvariant()) switch
         {
             ("/boards/{boardId:guid}", "GET") => "board_read",
+            ("/organizations/{organizationId:guid}/notifications", "GET") => "notification_read",
+            ("/organizations/{organizationId:guid}/notifications/{notificationId:guid}/read", "POST") => "notification_mark_read",
+            ("/organizations/{organizationId:guid}/notifications/read", "POST") => "notification_bulk_read",
             ("/boards/{boardId:guid}/cards", "GET") => "board_filter_read",
             ("/boards/{boardId:guid}/assignable-members", "GET") => "assignable_member_read",
             ("/cards/{cardId:guid}/members", "GET") => "card_member_read",
@@ -69,6 +72,7 @@ public sealed class BoardSharingTelemetry
         context.Items[ErrorKey] = code switch
         {
             "board_not_found" or "organization_not_found" or "member_not_found" or "invitation_not_found"
+                or "notification_not_found" or "invalid_notification_cursor" or "invalid_notification_selection"
                 or "session_unavailable" or "work_storage_unavailable" or "invitation_storage_unavailable"
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"
                 or "invalid_board_member_cursor" or "invalid_invitation_cursor" or "invalid_email"
