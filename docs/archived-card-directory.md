@@ -21,6 +21,8 @@ Host regressions cover complete paging, summary privacy, parent archive/deletion
 invalid cursors and unauthorized callers. Required container checks extend the
 existing archived-List fixture with restricted-role paging, unchanged product/
 receipt state, current authority and session revocation during a Board lock wait.
-Linux execution is still required. This increment does not establish large-data
+The host regression passed on Linux at `2b8ecb1` in run `36991073544`; the added
+restricted-role container checks and contributor permission refinement still need
+runtime proof. This increment does not establish large-data
 latency, archive UI, archived-card restoration UI, deletion consent, telemetry or
 retention acceptance; those remaining requirements keep PRD-18 open.

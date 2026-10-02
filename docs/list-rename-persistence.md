@@ -27,5 +27,12 @@ draft, explicitly review another rename and verify persistence after reload.
 They compare unchanged card/neighbor records and exact version increments.
 Collection of these cases is not runtime proof; exact-image CI must execute them.
 
+Run `36983420996` exposed a fixture admission error: its disposable Organization
+was missing from the Worker's explicit delivery scope, leaving rename events
+pending and preventing the other client's draft warning. The browser scenarios
+now reuse `scopedBoardWorker` with cleanup, wait for durable initial delivery and
+require connected streams before changing a List. Existing timing assertions are
+unchanged. A fresh full run is required before claiming runtime acceptance.
+
 This advances List rename only. List copying, cross-Board movement and the other
 remaining PRD-07 acceptance criteria still require implementation and evidence.

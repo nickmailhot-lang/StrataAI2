@@ -30,7 +30,9 @@ same-intent recovery, changed-key reuse, outsider and inactive-parent denial and
 irreversibility. Required exact-image PostgreSQL checks also revoke audit writes
 to prove rollback of claim/mutation/audit, then recover the same key without
 additional product effects and reauthorize after grant/parent changes. Local
-build and shell syntax pass; actual Linux execution remains required.
+build and shell syntax pass. At `697459f`, Linux host tests and the required
+archived-List/deletion container fixture passed in run `36988663443`. The full
+pipeline and subsequent deletion UI browser checks remain pending.
 
 The archive page now provides permanent deletion with the exact reviewed name and
 card count, irreversible wording and a separate unchecked acknowledgment checkbox.
