@@ -4,7 +4,7 @@ The required release browser benchmark uses Chromium at 1280x844, one browser
 worker, exact web/API/Worker images behind Nginx and real PostgreSQL. Normal
 conditions are three lists and fifty active cards, one signed-in Organization
 owner, warm application assets, and a Board snapshot not previously opened in
-that browser. The runner hardware is GitHub's ubuntu-latest environment; results
+that browser. The runner hardware is GitHub's ubuntu-24.04 environment; results
 are specific to that deployment, not a promise about every network/device.
 
 Board readiness measures navigation through two current Board reads and an
@@ -18,6 +18,17 @@ The benchmark attaches kanban-performance.json with fixture conditions and
 durations only. No identities, titles, tenant/object IDs, bearer or retry-key
 material is retained. The overall setup deadline is separate from the unchanged
 performance thresholds; release retries remain zero.
+
+The performance reporter now retains a separate `browser-performance-{sha}`
+artifact on successful and failed CI runs. It copies only approved numeric
+durations, all twenty mutation samples, fixed fixture sizes/conditions, original
+budgets, a stable metric label, test outcome and the CI revision into
+`artifacts/browser-performance/kanban.json`. Arbitrary attachment fields, test
+titles, errors, identities and content are omitted. Invalid/missing measurements
+remain absent; unobserved feedback remains explicitly null. A failed test stays
+failed in this report. An empty report does not establish performance acceptance.
+The privacy/validation regressions run in source CI. Exact-image artifact
+production still needs verification for the reporter change.
 
 The normal fixture also measures card drop feedback in the browser's monotonic
 clock. A captured pointer-up starts the sample; the first frame with the card
@@ -35,7 +46,10 @@ sample ending after a frame boundary with the moved list first and visible.
 It requires under 100ms, exactly one write, unchanged canonical order while held,
 HTTP 200 with revision two, an unchanged complete neighbor, and persisted order
 after reload. The attachment contains fixture conditions and timing only.
-This new case collects locally; exact-image execution is pending. It does not
+This case passed in fully green exact-image runs 36970048153 (`57c9b16`) and
+36972597174 (`5d1d894`). Successful runs before the reporter retained the strict
+test result but not its numeric attachment, so no exact feedback duration is
+claimed for those runs. It does not
 provide mobile, large-board or physical-device performance evidence.
 
 The feedback sample also requires viewport intersection on both axes. After

@@ -56,6 +56,9 @@ jobs:
       - name: Verify feature HTTP requests retain the shared Problem boundary
         run: node --test tests/web-architecture.test.mjs
 
+      - name: Verify retained performance evidence excludes private fields
+        run: node --test tests/browser-performance.test.mjs
+
       - name: Unit and component tests
         run: npm test
 
@@ -458,6 +461,15 @@ jobs:
             playwright-report/
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Retain scoped browser performance measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-performance-${{ github.sha }}
+          path: artifacts/browser-performance/kanban.json
+          if-no-files-found: ignore
+          retention-days: 90
 
       - name: Capture container state and logs
         if: failure()
