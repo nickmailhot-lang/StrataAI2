@@ -48,8 +48,13 @@ ranks, moves 16 lists relative to a current anchor and verifies the other 184
 retain their original ranks/revisions. Historical receipt recovery remains
 non-reapplying. Card creation retains its separate 128-command concurrency
 fixture before SQL populates the existing 5000-card group. Shell syntax/diff
-checks pass; executed 200-list correctness evidence is pending Linux CI and
-does not establish 200-list rendering performance or archived-card capacity.
+checks pass. Run 36947681754 at f8a7dea reports successful completion of
+container-integration job 110654281749 step 33, which directly runs this script.
+The checked script at that commit requires all 200-list, unchanged-184-list,
+5000-card, concurrent move and non-reapplying receipt assertions above. This is
+step-level executed correctness evidence; the job is still running and final
+decoded logs/full release evidence remain pending. It does not establish
+200-list rendering performance or archived-card capacity.
 
 The required exact-image PostgreSQL fixture also seeds 100000 archived cards
 in the same list as the 5000 active cards. Their ranks exceed all active ranks.
