@@ -27,6 +27,8 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}", "GET") => "board_read",
             ("/boards/{boardId:guid}/cards", "GET") => "board_filter_read",
             ("/boards/{boardId:guid}/assignable-members", "GET") => "assignable_member_read",
+            ("/cards/{cardId:guid}/members/{userId:guid}", "PUT") => "card_member_assign",
+            ("/cards/{cardId:guid}/members/{userId:guid}", "DELETE") => "card_member_remove",
             ("/boards/{boardId:guid}/labels", "GET") => "label_read",
             ("/boards/{boardId:guid}/labels", "POST") => "label_create",
             ("/labels/{labelId:guid}", "PATCH") => "label_update",
@@ -76,7 +78,7 @@ public sealed class BoardSharingTelemetry
                 or "invalid_lifecycle_transition" or "delete_confirmation_required"
                 or "deletion_impact_required" or "deletion_impact_changed"
                 or "invalid_archive_cursor" or "invalid_card_title"
-                or "label_not_found" or "invalid_label_name" or "invalid_label_color" or "invalid_label_cursor" or "invalid_board_filter" => code,
+                or "label_not_found" or "invalid_label_name" or "invalid_label_color" or "invalid_label_cursor" or "invalid_board_filter" or "invalid_card_member_version" => code,
             _ => "other_error",
         };
     }

@@ -456,6 +456,10 @@ public sealed partial class WorkManagementService(
             return WorkOperation<bool>.Failure("member_not_found");
         }
 
+        var unassigned = await store.RemoveBoardCardMemberAssignmentsAsync(boardId, targetUserId, clock.UtcNow, cancellationToken);
+        foreach (var card in unassigned)
+            await RecordChangeAsync(card.OrganizationId, boardId, actorUserId, "CARD_MEMBER_REMOVED", "Card", card.Id,
+                card.Version, correlationId, cancellationToken);
         await AuditAsync(
             resolved.Value.Board,
             actorUserId,

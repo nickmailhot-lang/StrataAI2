@@ -32,8 +32,7 @@ and session revocation. Strict local compilation and fixture syntax checks
 passed. Host execution and exact PostgreSQL/runtime execution remain pending
 Linux CI; Windows Application Control prevents local host-test execution.
 
-PRD-11 remains open. Multi-assignee mutation APIs and atomic command behavior,
-assignment cleanup on departures, Card face/detail UI, member filters,
+PRD-11 remains open. Organization/account departure cleanup, Card face/detail UI, member filters,
 historical attribution, notification suppression, two-client/accessibility
 acceptance and documented performance evidence still require implementation.
 Historical users and events must remain stable during membership cleanup.
@@ -53,3 +52,36 @@ Migration upgrade/repeat and rollback/serialization fixtures now include version
 030; API/Worker readiness requires all 30 real migrations and rejects its
 absence. Local strict compilation and shell syntax passed; actual database
 execution remains pending CI.
+
+Card assignment commands use `PUT /cards/{cardId}/members/{userId}?version=N`
+and `DELETE` at the same path, with the existing Idempotency-Key contract. Both
+require current edit authority and active Card/List/Board scope. Assignment
+also requires current eligible explicit Board membership and configured account
+eligibility; PostgreSQL holds target membership/account share locks through the
+transaction. Fresh admission and target eligibility precede historical receipt
+reads. Ineligible targets return the same safe `card_not_found` envelope. Removal
+permits cleanup of an existing departed assignee without disclosing a directory
+profile. Versions must be positive and current even for no-ops. A changed
+association advances only the owning Card revision; title, description and rank
+stay unchanged. No-ops create no extra audit or event. A successful receipt
+contains the canonical Card, target user ID, requested assignment state and
+whether the association changed; retries retain the original receipt/revision.
+
+Production commits associations, Card revision, audit, `CARD_MEMBER_ADDED` or
+`CARD_MEMBER_REMOVED` invalidation event, durable delivery job and retry receipt
+in one existing transaction. Removing an explicit Board member also removes
+their assignments across that Board (including archived Cards), advances each
+affected Card once and emits removal events in the same command. Other assignees
+and historical users/events stay intact. Direct administrator database edits are
+not supported application operations and intentionally bypass command cleanup;
+the disposable lock-wait fixture uses such edits only to test fresh admission.
+
+Three host regressions cover multiple assignees, no-ops, stale revisions, exact
+receipts/key reuse, ineligible targets, caller denial, parent archival and Board
+departure with active/archived Cards. The required release-image fixture now
+also forces audit failures for both assignment and departure, verifies unchanged
+state after rollback, checks persisted assignees/events and exact retries, and
+verifies other-assignee retention during departure. Compilation and fixture
+syntax passed locally; these new command tests still require Linux execution.
+The earlier directory/schema commit 55f2ee8 passed Linux .NET host and PostgreSQL
+source CI (run 37044554455); its complete release-image gate is still pending.

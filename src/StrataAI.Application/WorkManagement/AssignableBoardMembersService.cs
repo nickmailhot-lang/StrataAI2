@@ -2,6 +2,7 @@ namespace StrataAI.Application.WorkManagement;
 
 public sealed partial class WorkManagementService
 {
+    internal bool RequiresVerifiedAssignmentEmail => identityPolicy.RequireVerifiedEmail;
     public async Task<WorkOperation<AssignableBoardMemberPage>> ListAssignableBoardMembersAsync(Guid boardId, Guid actorId,
         Guid? after = null, CancellationToken cancellationToken = default)
     {

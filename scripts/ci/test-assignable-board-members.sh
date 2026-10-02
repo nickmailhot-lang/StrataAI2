@@ -8,6 +8,7 @@ admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X 
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
+  admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null || true
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -48,6 +49,52 @@ test "$(get outsider "$path?after=bad")" = 404
 admin "UPDATE boards SET visibility='PUBLIC' WHERE id='$board';" >/dev/null
 test "$(get outsider "$path")" = 404
 admin "UPDATE boards SET visibility='PRIVATE' WHERE id='$board';" >/dev/null
+request() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -X "$2" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $4" -d "$5" -o "$scratch/response.json" -w '%{http_code}' "$base$3"; }
+list=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"name":"Assignment commands"}' "$base/boards/$board/lists" | jq -r '.id')
+card=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"title":"Retained assignment Card","description":"Retained assignment description"}' "$base/lists/$list/cards" | jq -r '.id')
+for id in "$list" "$card"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
+member_path="/cards/$card/members/$member"
+key=11111111-1111-1111-1111-111111111141
+state() { admin "SELECT md5(jsonb_build_object(
+ 'board_members',(SELECT jsonb_agg(to_jsonb(b) ORDER BY user_id) FROM board_members b WHERE tenant_id='$org'),
+ 'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY card_id,user_id) FROM card_members m WHERE tenant_id='$org'),
+ 'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id='$org'),
+ 'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
+ 'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
+ 'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
+ 'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
+before=$(state)
+test "$(request outsider PUT "$member_path?version=1" "$key" '{}')" = 404
+test "$before" = "$(state)"
+test "$(request owner PUT "$member_path?version=0" "$key" '{}')" = 400
+jq -e '.code=="invalid_card_member_version"' "$scratch/response.json" >/dev/null
+test "$before" = "$(state)"
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 200
+jq -e --arg member "$member" --arg card "$card" '.userId==$member and .assigned==true and .changed==true and .card.id==$card and .card.version==2' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/assignment-receipt.json"
+test "$(admin "SELECT assigned_by='$owner' AND version=1 AND created_at=updated_at FROM card_members WHERE tenant_id='$org' AND card_id='$card' AND user_id='$member';")" = t
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='CARD_MEMBER_ADDED';")" = 1
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='CARD_MEMBER_ADDED';")" = 1
+after=$(state)
+test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 200
+cmp "$scratch/response.json" "$scratch/assignment-receipt.json"; test "$after" = "$(state)"
+test "$(request owner PUT "/cards/$card/members/$owner?version=2" 11111111-1111-1111-1111-111111111142 '{}')" = 200
+jq -e '.card.version==3 and .changed==true' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card';")" = 2
+after=$(state)
+test "$(request owner DELETE "$member_path?version=2" 11111111-1111-1111-1111-111111111143 '{}')" = 409
+test "$after" = "$(state)"
+test "$(request owner PUT "$member_path?version=3" 11111111-1111-1111-1111-111111111144 '{}')" = 200
+jq -e '.card.version==3 and .changed==false' "$scratch/response.json" >/dev/null
+test "$(request owner DELETE "$member_path?version=3" 11111111-1111-1111-1111-111111111145 '{}')" = 200
+jq -e '.card.version==4 and .changed==true and .assigned==false and .card.title=="Retained assignment Card" and .card.description=="Retained assignment description"' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card';")" = 1
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='CARD_MEMBER_REMOVED';")" = 1
+test "$(request owner PUT "$member_path?version=4" 11111111-1111-1111-1111-111111111146 '{}')" = 200
 hold() {
   mkfifo "$scratch/gate.in"
   docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.log" 2>&1 & gate_pid=$!
@@ -68,6 +115,8 @@ hold; get member "$path" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh '"items"|Assignment seeded|displayName' "$scratch/response.json"
+test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 404
+scripts/ci/assert-file-excludes.sh 'Retained assignment|"card"|"userId"' "$scratch/response.json"
 test "$(get owner "$path" removed)" = 200
 jq -e --arg member "$member" 'all(.items[];.userId!=$member)' "$scratch/removed.json" >/dev/null
 admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
@@ -75,6 +124,22 @@ hold; get member "$path" > "$scratch/status" & request_pid=$!
 blocked; release "DELETE FROM sessions WHERE user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
 scripts/ci/assert-file-excludes.sh '"items"|Assignment seeded|displayName' "$scratch/response.json"
+departure_key=11111111-1111-1111-1111-111111111147
+departure_version=$(admin "SELECT version FROM board_members WHERE board_id='$board' AND user_id='$member';")
+departure_path="/boards/$board/members/$member?version=$departure_version"
+before=$(state)
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(request owner DELETE "$departure_path" "$departure_key" '{}')" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+test "$(request owner DELETE "$departure_path" "$departure_key" '{}')" = 204
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';")" = 0
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card' AND user_id='$owner';")" = 1
+test "$(admin "SELECT version FROM cards WHERE id='$card';")" = 6
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='CARD_MEMBER_REMOVED';")" = 2
+after=$(state)
+test "$(request owner DELETE "$departure_path" "$departure_key" '{}')" = 204
+test "$after" = "$(state)"
 admin "UPDATE boards SET lifecycle_state='ARCHIVED',version=version+1 WHERE id='$board';" >/dev/null
 test "$(get owner "$path")" = 404
-echo 'Assignable Board members: scoped minimal profiles, eligibility, 50+2 pages and post-wait revocation passed.'
+echo 'Assignable Board members and Card assignments: scoped choices, 50+2 pages, atomic rollback, exact retry, revisions, multiple assignees and post-wait revocation passed.'
