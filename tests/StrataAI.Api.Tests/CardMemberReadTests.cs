@@ -39,5 +39,15 @@ public sealed partial class ApiHostTests
         Assert.DoesNotContain(items, i => i.UserId == ids[0]); Assert.All(items, i => Assert.Equal(fixture.Owner.Id, i.AssignedBy));
         Assert.Equal(items.Select(i => i.UserId).Order(), items.Select(i => i.UserId));
         Assert.Equal("invalid_board_member_cursor", (await work.ListCardMembersAsync(card.Id, fixture.Owner.Id, Guid.Empty, ct)).ErrorCode);
+        var choices = await work.ListCardMemberOptionsAsync(card.Id, fixture.Owner.Id, cancellationToken: ct);
+        Assert.True(choices.Succeeded); Assert.Equal(54, choices.Value!.CardVersion); Assert.Equal(50, choices.Value.Items.Count);
+        var more = await work.ListCardMemberOptionsAsync(card.Id, fixture.Owner.Id, choices.Value.NextCursor, ct);
+        Assert.True(more.Succeeded); Assert.Equal(4, more.Value!.Items.Count); Assert.Null(more.Value.NextCursor);
+        var options = choices.Value.Items.Concat(more.Value.Items).ToArray();
+        Assert.Equal(54, options.Select(i => i.UserId).Distinct().Count());
+        Assert.DoesNotContain(options, i => i.UserId == ids[0] || i.UserId == fixture.Recipient.Id);
+        Assert.Equal(ids.Skip(1).Order(), options.Where(i => i.Assigned).Select(i => i.UserId).Order());
+        Assert.Equal(new[] { fixture.Owner.Id, fixture.Inviter.Id }.Order(), options.Where(i => !i.Assigned).Select(i => i.UserId).Order());
+        Assert.Equal("invalid_board_member_cursor", (await work.ListCardMemberOptionsAsync(card.Id, fixture.Owner.Id, Guid.Empty, ct)).ErrorCode);
     }
 }

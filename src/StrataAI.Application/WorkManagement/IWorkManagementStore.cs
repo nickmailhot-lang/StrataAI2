@@ -2,6 +2,7 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementStore
 {
+    Task<IReadOnlyList<CardMemberOption>> ListCardMemberOptionsAsync(Guid cardId, Guid? after, bool requireVerifiedEmail, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CardAssignee>> ListCardMembersAsync(Guid cardId, Guid? after, bool requireVerifiedEmail, CancellationToken cancellationToken = default);
     Task<bool> IsAssignableBoardMemberAsync(Guid boardId, Guid userId, bool requireVerifiedEmail, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CardRecord>> RemoveBoardCardMemberAssignmentsAsync(Guid boardId, Guid userId, DateTimeOffset now, CancellationToken cancellationToken = default);

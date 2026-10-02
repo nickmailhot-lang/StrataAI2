@@ -28,6 +28,7 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/cards", "GET") => "board_filter_read",
             ("/boards/{boardId:guid}/assignable-members", "GET") => "assignable_member_read",
             ("/cards/{cardId:guid}/members", "GET") => "card_member_read",
+            ("/cards/{cardId:guid}/member-options", "GET") => "card_member_options",
             ("/cards/{cardId:guid}/members/{userId:guid}", "PUT") => "card_member_assign",
             ("/cards/{cardId:guid}/members/{userId:guid}", "DELETE") => "card_member_remove",
             ("/boards/{boardId:guid}/labels", "GET") => "label_read",

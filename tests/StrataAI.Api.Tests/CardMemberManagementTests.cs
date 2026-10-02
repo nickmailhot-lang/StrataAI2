@@ -65,6 +65,14 @@ public sealed partial class ApiHostTests
         Assert.Equal(3, assignees.GetProperty("cardVersion").GetInt64()); Assert.Equal(card, assignees.GetProperty("cardId").GetGuid());
         Assert.Equal(board, assignees.GetProperty("boardId").GetGuid()); Assert.Equal(org, assignees.GetProperty("organizationId").GetGuid());
         Assert.True(assignees.GetProperty("canEdit").GetBoolean()); Assert.Equal(2, assignees.GetProperty("items").GetArrayLength());
+        var options = await teammate.GetFromJsonAsync<JsonElement>($"/cards/{card}/member-options", ct);
+        Assert.Equal(3, options.GetProperty("cardVersion").GetInt64()); Assert.Equal(card, options.GetProperty("cardId").GetGuid());
+        Assert.Equal(org, options.GetProperty("organizationId").GetGuid()); Assert.Equal(board, options.GetProperty("boardId").GetGuid());
+        Assert.Equal(2, options.GetProperty("items").GetArrayLength());
+        Assert.All(options.GetProperty("items").EnumerateArray(), item => {
+            Assert.True(item.GetProperty("assigned").GetBoolean());
+            Assert.Equal(new[] { "assigned", "displayName", "userId" }, item.EnumerateObject().Select(p => p.Name).Order().ToArray());
+        });
         Assert.All(assignees.GetProperty("items").EnumerateArray(), item => {
             Assert.Equal(actor, item.GetProperty("assignedBy").GetGuid()); Assert.True(item.GetProperty("assignedAt").TryGetDateTimeOffset(out _));
             Assert.Equal(new[] { "assignedAt", "assignedBy", "displayName", "userId" }, item.EnumerateObject().Select(p => p.Name).Order().ToArray());
@@ -79,6 +87,9 @@ public sealed partial class ApiHostTests
         Assert.Equal(4, removed.GetProperty("card").GetProperty("version").GetInt64());
         var remaining = await owner.GetFromJsonAsync<JsonElement>($"/cards/{card}/members", ct);
         Assert.Equal(actor, Assert.Single(remaining.GetProperty("items").EnumerateArray()).GetProperty("userId").GetGuid());
+        var afterRemoval = await owner.GetFromJsonAsync<JsonElement>($"/cards/{card}/member-options", ct);
+        Assert.Equal(4, afterRemoval.GetProperty("cardVersion").GetInt64());
+        Assert.False(afterRemoval.GetProperty("items").EnumerateArray().Single(i => i.GetProperty("userId").GetGuid() == user).GetProperty("assigned").GetBoolean());
         foreach (var property in new[] { "title", "description", "rank" }) Assert.Equal(original.GetProperty(property).GetString(), removed.GetProperty("card").GetProperty(property).GetString());
         using var reused = await Mutate(owner, HttpMethod.Put, $"/cards/{card}/members/{actor}?version=1", new { }, key); Assert.Equal(HttpStatusCode.Conflict, reused.StatusCode);
         await work.RemoveBoardMemberAsync(board, user, DateTimeOffset.UtcNow, ct);
@@ -99,15 +110,20 @@ public sealed partial class ApiHostTests
         var path = $"/cards/{card}/members/{user}?version=1";
         using var denied = await Mutate(outsider, HttpMethod.Put, path, new { }); Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
         using var deniedRead = await outsider.GetAsync($"/cards/{card}/members?after=bad", ct); Assert.Equal(HttpStatusCode.NotFound, deniedRead.StatusCode);
+        using var deniedOptions = await outsider.GetAsync($"/cards/{card}/member-options?after=bad", ct); Assert.Equal(HttpStatusCode.NotFound, deniedOptions.StatusCode);
         Assert.DoesNotContain("Private assignment", await denied.Content.ReadAsStringAsync(ct));
         var key = Guid.NewGuid().ToString(); using var assigned = await Mutate(owner, HttpMethod.Put, path, new { }, key); Assert.Equal(HttpStatusCode.OK, assigned.StatusCode);
         using var invalidRead = await owner.GetAsync($"/cards/{card}/members?after=bad", ct); Assert.Equal(HttpStatusCode.BadRequest, invalidRead.StatusCode);
+        using var invalidOptions = await owner.GetAsync($"/cards/{card}/member-options?after=bad", ct); Assert.Equal(HttpStatusCode.BadRequest, invalidOptions.StatusCode);
         using var publish = await Mutate(owner, HttpMethod.Patch, $"/boards/{board}/visibility", new { visibility = "PUBLIC", version = 1 }); Assert.Equal(HttpStatusCode.OK, publish.StatusCode);
         using var publicRead = await outsider.GetAsync($"/cards/{card}/members", ct); Assert.Equal(HttpStatusCode.NotFound, publicRead.StatusCode);
+        using var publicOptions = await outsider.GetAsync($"/cards/{card}/member-options", ct); Assert.Equal(HttpStatusCode.NotFound, publicOptions.StatusCode);
         using var anonymous = app.CreateClient(); using var anonymousRead = await anonymous.GetAsync($"/cards/{card}/members", ct); Assert.Equal(HttpStatusCode.Unauthorized, anonymousRead.StatusCode);
+        using var anonymousOptions = await anonymous.GetAsync($"/cards/{card}/member-options", ct); Assert.Equal(HttpStatusCode.Unauthorized, anonymousOptions.StatusCode);
         using var archive = await Mutate(owner, HttpMethod.Post, $"/lists/{list}/archive", new { version = 1 }); Assert.Equal(HttpStatusCode.OK, archive.StatusCode);
         using var retry = await Mutate(owner, HttpMethod.Put, path, new { }, key); Assert.Equal(HttpStatusCode.NotFound, retry.StatusCode);
         using var archivedRead = await owner.GetAsync($"/cards/{card}/members", ct); Assert.Equal(HttpStatusCode.NotFound, archivedRead.StatusCode);
+        using var archivedOptions = await owner.GetAsync($"/cards/{card}/member-options", ct); Assert.Equal(HttpStatusCode.NotFound, archivedOptions.StatusCode);
         using var remove = await Mutate(owner, HttpMethod.Delete, $"/cards/{card}/members/{user}?version=2", new { }); Assert.Equal(HttpStatusCode.NotFound, remove.StatusCode);
     }
 }

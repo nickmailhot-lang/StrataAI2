@@ -2,6 +2,9 @@ namespace StrataAI.Application.WorkManagement;
 
 public sealed record AssignableBoardMember(Guid UserId, string DisplayName);
 public sealed record CardMemberChange(CardRecord Card, Guid UserId, bool Assigned, bool Changed);
+public sealed record CardMemberOption(Guid UserId, string DisplayName, bool Assigned);
+public sealed record CardMemberOptionsPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
+    IReadOnlyList<CardMemberOption> Items, Guid? NextCursor);
 public sealed record CardAssignee(Guid UserId, string DisplayName, Guid AssignedBy, DateTimeOffset AssignedAt);
 public sealed record CardAssigneePage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
     IReadOnlyList<CardAssignee> Items, Guid? NextCursor, bool CanEdit);

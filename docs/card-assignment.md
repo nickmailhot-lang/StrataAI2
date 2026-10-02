@@ -141,3 +141,22 @@ an actual self-assignment and opens assignee details with the keyboard. Browser
 collection passed; exact-image runtime acceptance remains pending CI.
 The backing assignee-read commit 8c961eb passed Linux .NET host, web,
 PostgreSQL and source gates in run 37047146982; image/runtime CI remains pending.
+
+Editing now has a bounded `GET /cards/{cardId}/member-options?after=uuid` read.
+It requires current Organization membership and edit access on active parents,
+returns the canonical Card revision plus up to 50 eligible Board members with
+only user ID, display name and assigned flag, and uses UUID seek paging. Target
+Board/Organization/account/verification eligibility is applied before the SQL
+limit; assignment flags use same-tenant/Board/Card joins. Its own Board
+transaction rechecks admission after waits and verifies the session before
+returning. Host coverage includes 50+4 choices, assigned/unassigned flags,
+verification policy, privacy, invalid cursors and archived parents. The required
+release fixture adds 50+2 options through the web proxy, removal flags and
+observed Board-membership/session revocation lock waits. Compilation and shell
+syntax passed locally; execution of these new checks awaits Linux CI.
+
+The Organization-cleanup commit b677ccb passed the required exact-image
+`Bounded Board members, atomic Card assignments and post-wait revocation` step
+in run 37046379129. That verifies the command/directory/cleanup fixture as it
+existed at that commit; the newer assignee-read/options/UI runtime checks and
+the complete required-ci gate remain pending.

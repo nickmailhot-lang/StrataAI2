@@ -34,6 +34,12 @@ public sealed partial class ApiHostTests
         Assert.True(result.Succeeded);
         Assert.Equal(!requireVerified, result.Value!.Items.Any(m => m.UserId == ids[0]));
         Assert.DoesNotContain(result.Value.Items, m => m.UserId == ids[1] || m.UserId == ids[2]);
+        var list = await store.CreateListAsync(fixture.Board.Id, Guid.NewGuid(), "Policy choices", null, DateTimeOffset.UtcNow, ct);
+        var card = await store.CreateCardAsync(list.Id, Guid.NewGuid(), "Policy choices", null, null, DateTimeOffset.UtcNow, ct);
+        var options = await app.Services.GetRequiredService<IWorkManagementService>().ListCardMemberOptionsAsync(card.Id, fixture.Owner.Id, cancellationToken: ct);
+        Assert.True(options.Succeeded); Assert.Equal(!requireVerified, options.Value!.Items.Any(m => m.UserId == ids[0]));
+        Assert.DoesNotContain(options.Value.Items, m => m.UserId == ids[1] || m.UserId == ids[2]);
+        Assert.All(options.Value.Items, m => Assert.False(m.Assigned));
     }
 
     [Fact]
