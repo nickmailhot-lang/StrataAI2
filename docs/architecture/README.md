@@ -2,6 +2,10 @@
 
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
+The implemented web routing and query-state choices, their executable evidence
+and outstanding ARCH-02 audit scope are recorded in
+[Web SPA routing and state boundary](web-spa-boundary.md).
+
 ## Dependency direction
 
 ```text
