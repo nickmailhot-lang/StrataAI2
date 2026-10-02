@@ -2,7 +2,7 @@ using Npgsql;
 
 namespace StrataAI.Infrastructure.Persistence;
 
-internal enum RoutingLookup { Board, List, Card, OrganizationUser, InvitationToken, InvitationRecipient, InvitationId }
+internal enum RoutingLookup { Board, List, Card, Label, OrganizationUser, InvitationToken, InvitationRecipient, InvitationId }
 
 internal sealed class RoutingDbSession(NpgsqlConnection connection, NpgsqlTransaction? transaction, bool ownsConnection) : IAsyncDisposable
 {
@@ -14,6 +14,7 @@ internal sealed class RoutingDbSession(NpgsqlConnection connection, NpgsqlTransa
         var kind = lookup switch
         {
             RoutingLookup.Board => "BOARD", RoutingLookup.List => "LIST", RoutingLookup.Card => "CARD",
+            RoutingLookup.Label => "LABEL",
             RoutingLookup.OrganizationUser => "ORGANIZATION_USER", RoutingLookup.InvitationToken => "INVITATION_TOKEN",
             RoutingLookup.InvitationRecipient => "INVITATION_RECIPIENT", RoutingLookup.InvitationId => "INVITATION_ID",
             _ => throw new ArgumentOutOfRangeException(nameof(lookup))

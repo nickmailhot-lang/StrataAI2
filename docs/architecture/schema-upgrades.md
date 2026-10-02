@@ -13,15 +13,15 @@ The release includes `migration-stream.sh` beside `apply-migrations.sh`. Run fro
 the release directory, migrate with the administrator, provision restricted roles,
 and check readiness before routing traffic. Runtime processes never migrate schema.
 
-Every runtime connection requires all 27 current baseline migration versions,
-from `001_foundation` through `027_routing_isolation`. Missing
+Every runtime connection requires all 29 current baseline migration versions,
+from `001_foundation` through `029_label_routing`. Missing
 ledger permissions, missing ledger or incomplete baseline refuse database-backed
 operations with a sanitized 503 and readiness failure. Additional forward migrations
 are allowed only when they preserve this image's contract; incompatible changes
 require a phased migration and an updated image compatibility requirement. Ledger
 validation does not replace schema review or protect against manual column changes.
 
-CI exercises clean bootstrap, sequential upgrades from eight through 28 versions,
+CI exercises clean bootstrap, sequential upgrades from eight through 29 versions,
 populated membership/invitation integrity, repeated execution, concurrent runners
 and rollback of failed DDL/ledger changes. Exact release images test refusal
 and recovery with an incomplete baseline.

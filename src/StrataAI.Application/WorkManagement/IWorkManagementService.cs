@@ -2,6 +2,13 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementService
 {
+    Task<WorkOperation<BoardLabelPage>> ListLabelsAsync(Guid boardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default);
+    Task<WorkOperation<BoardLabelRecord>> CreateLabelAsync(Guid boardId, Guid actorId, string name, string color,
+        string correlationId, CancellationToken cancellationToken = default);
+    Task<WorkOperation<BoardLabelRecord>> UpdateLabelAsync(Guid labelId, Guid actorId, string name, string color,
+        string? rank, long version, string correlationId, CancellationToken cancellationToken = default);
+    Task<WorkOperation<BoardLabelRecord>> DeleteLabelAsync(Guid labelId, Guid actorId, long version,
+        bool confirmed, string correlationId, CancellationToken cancellationToken = default);
     Task<WorkOperation<BoardRecord>> CreateBoardAsync(
         Guid organizationId,
         Guid actorUserId,

@@ -25,6 +25,10 @@ public sealed class BoardSharingTelemetry
         ((context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText, context.Request.Method.ToUpperInvariant()) switch
         {
             ("/boards/{boardId:guid}", "GET") => "board_read",
+            ("/boards/{boardId:guid}/labels", "GET") => "label_read",
+            ("/boards/{boardId:guid}/labels", "POST") => "label_create",
+            ("/labels/{labelId:guid}", "PATCH") => "label_update",
+            ("/labels/{labelId:guid}", "DELETE") => "label_delete",
             ("/boards/{boardId:guid}/members", "GET") => "member_read",
             ("/boards/{boardId:guid}/members/{targetUserId:guid}", "PATCH") => "member_role",
             ("/boards/{boardId:guid}/members/{targetUserId:guid}", "DELETE") => "member_remove",
@@ -64,7 +68,8 @@ public sealed class BoardSharingTelemetry
                 or "invalid_move_position" or "rank_space_exhausted"
                 or "invalid_lifecycle_transition" or "delete_confirmation_required"
                 or "deletion_impact_required" or "deletion_impact_changed"
-                or "invalid_archive_cursor" or "invalid_card_title" => code,
+                or "invalid_archive_cursor" or "invalid_card_title"
+                or "label_not_found" or "invalid_label_name" or "invalid_label_color" or "invalid_label_cursor" => code,
             _ => "other_error",
         };
     }

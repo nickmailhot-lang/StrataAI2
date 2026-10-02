@@ -78,6 +78,10 @@ public sealed record BoardMemberDirectoryEntry(Guid BoardId, Guid UserId, BoardR
     string? DisplayName, string? Email, bool OrganizationMemberActive);
 
 public sealed record ArchivedListEntry(BoardListRecord List, long ContainedCardCount);
+public sealed record BoardLabelRecord(Guid Id, Guid OrganizationId, Guid BoardId, string Name, string Color,
+    string Rank, bool Deleted, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long Version);
+public sealed record BoardLabelPage(Guid OrganizationId, Guid BoardId, IReadOnlyList<BoardLabelRecord> Items,
+    Guid? NextCursor, bool CanEdit, bool CanDelete);
 public sealed record ArchivedCardEntry(CardRecord Card, BoardListRecord List);
 public sealed record ArchivedCardPage(Guid OrganizationId, Guid BoardId,
     IReadOnlyList<ArchivedCardEntry> Items, Guid? NextCursor, bool CanDelete);

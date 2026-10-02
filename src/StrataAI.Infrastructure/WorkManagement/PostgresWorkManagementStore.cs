@@ -5,7 +5,7 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class PostgresWorkManagementStore(
+internal sealed partial class PostgresWorkManagementStore(
     PostgresConnectionFactory connectionFactory) : IWorkManagementStore
 {
     public async Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,

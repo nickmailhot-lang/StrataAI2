@@ -107,7 +107,7 @@ public sealed class WorkSynchronizationService(IWorkBoardAuthorization authoriza
                 row.Event.OrganizationId != organization || row.Event.BoardId != board ||
                 row.Event.EventId == Guid.Empty || !identities.Add(row.Event.EventId) || row.Event.ActorId == Guid.Empty ||
                 row.Event.EntityId == Guid.Empty || row.Event.Version < 1 ||
-                row.Event.EntityType is not ("Board" or "List" or "Card")) return false;
+                row.Event.EntityType is not ("Board" or "List" or "Card" or "Label")) return false;
             cursor = row.Sequence;
         }
         return cursor == page.Cursor;

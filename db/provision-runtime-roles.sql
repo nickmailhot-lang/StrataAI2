@@ -23,6 +23,7 @@ GRANT SELECT,INSERT,UPDATE ON users,sessions,password_reset_tokens,email_verific
 GRANT INSERT ON audit_events,identity_delivery_jobs TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_command_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON board_labels TO strataai_api_runtime;
+GRANT SELECT,INSERT,UPDATE,DELETE ON label_routes TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE,DELETE ON card_labels TO strataai_api_runtime;
 GRANT SELECT,INSERT ON invitation_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_event_streams TO strataai_api_runtime;

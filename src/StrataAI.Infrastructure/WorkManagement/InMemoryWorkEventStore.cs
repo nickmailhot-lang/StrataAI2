@@ -45,6 +45,11 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work) : IWorkE
     private async Task<bool> VisibleAsync(WorkEvent change, CancellationToken cancellationToken)
     {
         if (change.EntityType == "Board") return change.EntityId == change.BoardId;
+        if (change.EntityType == "Label")
+        {
+            var label = await work.FindLabelAsync(change.EntityId, cancellationToken);
+            return label is { Deleted: false } && label.OrganizationId == change.OrganizationId && label.BoardId == change.BoardId;
+        }
         if (change.EntityType == "List")
         {
             var list = await work.FindListAsync(change.EntityId, cancellationToken);

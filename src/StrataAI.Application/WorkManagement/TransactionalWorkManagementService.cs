@@ -4,7 +4,7 @@ using StrataAI.Application.Identity;
 namespace StrataAI.Application.WorkManagement;
 
 // ARCH-03 / PRD-04..09: one commit includes the mutation and its audit.
-public sealed class TransactionalWorkManagementService(
+public sealed partial class TransactionalWorkManagementService(
     WorkManagementService inner, IWorkManagementStore store,
     IWorkManagementUnitOfWork transactions, IOrganizationStore organizations, IWorkCommandContext context,
     ICommandActorAuthorization actors) : IWorkManagementService, IWorkBoardAuthorization

@@ -3,7 +3,7 @@ using StrataAI.Application.Organizations;
 
 namespace StrataAI.Application.WorkManagement;
 
-public sealed class WorkManagementService(
+public sealed partial class WorkManagementService(
     IWorkManagementStore store,
     IOrganizationStore organizationStore,
     IClock clock, IWorkEventStore events) : IWorkManagementService, IWorkBoardAuthorization

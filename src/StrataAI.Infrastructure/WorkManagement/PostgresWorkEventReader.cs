@@ -32,6 +32,8 @@ internal sealed class PostgresWorkEventReader(PostgresConnectionFactory connecti
                        ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
                        WHERE c.tenant_id=@tenant AND c.board_id=@board AND c.id=e.entity_id
                          AND c.lifecycle_state='ACTIVE' AND l.lifecycle_state='ACTIVE')
+                     WHEN 'Label' THEN EXISTS(SELECT 1 FROM board_labels label
+                       WHERE label.tenant_id=@tenant AND label.board_id=@board AND label.id=e.entity_id AND label.status='ACTIVE')
                      ELSE false END
             FROM work_events e WHERE e.tenant_id=@tenant AND e.board_id=@board
               AND e.sequence>@since AND e.sequence<=@published

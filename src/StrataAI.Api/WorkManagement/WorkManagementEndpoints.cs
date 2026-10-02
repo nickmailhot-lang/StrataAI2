@@ -3,10 +3,11 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Api.WorkManagement;
 
-public static class WorkManagementEndpoints
+public static partial class WorkManagementEndpoints
 {
     public static void MapWorkManagementEndpoints(this WebApplication app)
     {
+        MapLabelEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
             async (
@@ -734,6 +735,10 @@ public static class WorkManagementEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_label_name" => Problem(400, errorCode, "A label name must contain at most 160 characters."),
+            "invalid_label_color" => Problem(400, errorCode, "Choose a supported label color."),
+            "invalid_label_cursor" => Problem(400, errorCode, "The label cursor must be a nonempty UUID."),
+            "label_not_found" => Problem(404, errorCode, "The label was not found."),
             "session_unavailable" => Problem(
                 StatusCodes.Status401Unauthorized,
                 errorCode,

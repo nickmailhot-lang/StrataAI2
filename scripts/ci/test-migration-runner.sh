@@ -135,28 +135,32 @@ run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 28
 test "$(query "SELECT count(*) FROM pg_class WHERE relname IN ('board_labels','card_labels') AND relrowsecurity AND relforcerowsecurity")" = 2
-cat > "$scratch/migrations/029_serialization_fixture.sql" <<'SQL'
+cp db/migrations/029_label_routing.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 29
+cat > "$scratch/migrations/030_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('029_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('030_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='029_serialization_fixture'")" = 1
-cat > "$scratch/migrations/030_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='030_serialization_fixture'")" = 1
+cat > "$scratch/migrations/031_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('030_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('031_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='030_failure_fixture'")" = 0
-rm "$scratch/migrations/030_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='031_failure_fixture'")" = 0
+rm "$scratch/migrations/031_failure_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

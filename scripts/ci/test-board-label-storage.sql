@@ -3,6 +3,7 @@ BEGIN;
 CREATE ROLE strataai_label_storage_ci NOSUPERUSER NOBYPASSRLS NOLOGIN;
 GRANT USAGE ON SCHEMA public TO strataai_label_storage_ci;
 GRANT SELECT,INSERT,UPDATE,DELETE ON board_labels,card_labels TO strataai_label_storage_ci;
+GRANT SELECT,INSERT,UPDATE,DELETE ON label_routes TO strataai_label_storage_ci;
 INSERT INTO organizations(id,name,created_at,updated_at) VALUES
  ('02800000-0000-0000-0000-000000000001','Label A',now(),now()),
  ('02800000-0000-0000-0000-000000000002','Label B',now(),now());
@@ -65,6 +66,20 @@ END $$;
 SELECT set_config('app.tenant_id','',true);
 DO $$ BEGIN
  IF EXISTS (SELECT 1 FROM board_labels) OR EXISTS (SELECT 1 FROM card_labels) THEN RAISE EXCEPTION 'Missing tenant exposed labels'; END IF;
+ IF EXISTS (SELECT 1 FROM label_routes) THEN RAISE EXCEPTION 'Missing route scope exposed labels'; END IF;
+END $$;
+SELECT set_config('app.route_kind','LABEL',true),set_config('app.route_key','02800000-0000-0000-0000-000000000041',true);
+DO $$ BEGIN
+ IF (SELECT count(*) FROM label_routes) <> 1 THEN RAISE EXCEPTION 'Typed label lookup did not select one route'; END IF;
+ IF EXISTS (SELECT 1 FROM board_labels) THEN RAISE EXCEPTION 'Label lookup exposed protected records'; END IF;
+END $$;
+SELECT set_config('app.route_kind','CARD',true);
+DO $$ BEGIN
+ IF EXISTS (SELECT 1 FROM label_routes) THEN RAISE EXCEPTION 'Wrong lookup type exposed a label route'; END IF;
+END $$;
+SELECT set_config('app.route_kind','LABEL',true),set_config('app.route_key','',true);
+DO $$ BEGIN
+ IF EXISTS (SELECT 1 FROM label_routes) THEN RAISE EXCEPTION 'Blank lookup exposed label routes'; END IF;
 END $$;
 RESET ROLE;
 ROLLBACK;
