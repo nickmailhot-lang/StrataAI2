@@ -24,7 +24,8 @@ for (const width of [1280, 390]) {
       const reply = await route.fetch(); expect(reply.status()).toBe(201);
       if (attempts.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
     });
-    await page.getByRole('button', { name: 'Create label', exact: true }).focus(); await page.keyboard.press('Enter');
+    const createLabel = page.getByRole('button', { name: 'Create label', exact: true });
+    await expect(createLabel).toBeEnabled(); await createLabel.focus(); await page.keyboard.press('Enter');
     await page.getByLabel('Label name (optional)').fill('Priority');
     await page.getByRole('combobox', { name: 'Label color' }).focus(); await page.keyboard.press('Enter');
     await page.getByRole('option', { name: 'Red', exact: true }).focus(); await page.keyboard.press('Enter');
@@ -55,6 +56,7 @@ for (const width of [1280, 390]) {
       if (assignmentAttempts.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
     });
     const edit = page.getByRole('button', { name: 'Edit Card labels', exact: true });
+    await expect(edit).toBeEnabled();
     await edit.focus(); await page.keyboard.press('Enter');
     await page.getByRole('button', { name: 'Add label Priority', exact: true }).focus(); await page.keyboard.press('Enter');
     const retryAssignment = page.getByRole('button', { name: 'Retry label change' }); await expect(retryAssignment).toBeEnabled();
@@ -70,6 +72,7 @@ for (const width of [1280, 390]) {
     await page.goto(path);
     const details = page.getByRole('dialog');
     const show = page.getByRole('button', { name: 'Show labels', exact: true });
+    await expect(show).toBeEnabled();
     await show.focus(); await page.keyboard.press('Enter');
     await expect(details.getByLabel('Priority, red', { exact: true })).toBeVisible();
     await expect(details.getByLabel('Unnamed label, blue', { exact: true })).toBeVisible();
@@ -88,7 +91,8 @@ for (const width of [1280, 390]) {
       const reply = await route.fetch(); expect(reply.status()).toBe(200);
       if (edits.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
     });
-    await page.getByRole('button', { name: 'Manage labels', exact: true }).focus(); await page.keyboard.press('Enter');
+    const manageLabels = page.getByRole('button', { name: 'Manage labels', exact: true });
+    await expect(manageLabels).toBeEnabled(); await manageLabels.focus(); await page.keyboard.press('Enter');
     const management = page.getByRole('dialog', { name: 'Manage Board labels' });
     await management.getByRole('button', { name: 'Edit Priority (red)', exact: true }).focus(); await page.keyboard.press('Enter');
     await management.getByLabel('Label name (optional)').fill('Urgent');
@@ -121,7 +125,7 @@ for (const width of [1280, 390]) {
     await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
     await expect(face.getByLabel('Urgent, purple', { exact: true })).toHaveCount(0);
     expect((await context.request.delete(`/labels/${labels[1]}?version=1&confirmed=true`, { headers })).status()).toBe(200);
-    await page.goto(path); await show.focus(); await page.keyboard.press('Enter');
+    await page.goto(path); await expect(show).toBeEnabled(); await show.focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('No labels assigned.', { exact: true })).toBeVisible();
     await expect(page.getByLabel('Priority, red', { exact: true })).toHaveCount(0);
     await expect(page.getByRole('textbox', { name: 'Card title' })).toHaveValue('Labeled work');

@@ -36,7 +36,11 @@ for (const width of [1280, 390]) {
         const response = await route.fetch(); expect(response.status()).toBe(201);
         if (attempts.length === 1) await route.abort('failed'); else await route.fulfill({ response });
       });
-      await page.getByRole('button', { name: 'Copy list', exact: true }).focus(); await page.keyboard.press('Enter');
+      const copyButton = page.getByRole('button', { name: 'Copy list', exact: true });
+      // A connected stream can invalidate the snapshot before its read settles.
+      // Focusing a disabled button silently does nothing, so admit the keyboard
+      // action only after the canonical Board read enables this control.
+      await expect(copyButton).toBeEnabled(); await copyButton.focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Reload copy destinations' })).toBeEnabled();
       async function choose(label: string, name: string) {
         await page.getByRole('combobox', { name: label }).focus(); await page.keyboard.press('Enter');
