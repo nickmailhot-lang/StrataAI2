@@ -66,7 +66,10 @@ public sealed partial class ApiHostTests
         Assert.Equal("board_not_found", (await service.ListAssignableBoardMembersAsync(fixture.Board.Id, Guid.NewGuid(), Guid.Empty, ct)).ErrorCode);
         Assert.Equal("invalid_board_member_cursor", (await service.ListAssignableBoardMembersAsync(fixture.Board.Id, fixture.Owner.Id, Guid.Empty, ct)).ErrorCode);
         Assert.True((await service.SetBoardVisibilityAsync(fixture.Board.Id, fixture.Owner.Id, BoardVisibility.Public, 1, "fixture", ct)).Succeeded);
-        Assert.Equal("board_not_found", (await service.ListAssignableBoardMembersAsync(fixture.Board.Id, Guid.NewGuid(), cancellationToken: ct)).ErrorCode);
+        var visitor = Guid.NewGuid(); var now = DateTimeOffset.UtcNow; var email = $"assignment-visitor-{visitor:N}@example.test";
+        Assert.True(await identities.TryCreateUserAsync(new(visitor, email, email.ToUpperInvariant(), "Public visitor fixture", null, "en", "UTC",
+            AccountStatus.Active, true, "unused-fixture-hash", now, now, 1), null, null, ct));
+        Assert.Equal("board_not_found", (await service.ListAssignableBoardMembersAsync(fixture.Board.Id, visitor, cancellationToken: ct)).ErrorCode);
         Assert.True((await service.ArchiveBoardAsync(fixture.Board.Id, fixture.Owner.Id, 2, "fixture", ct)).Succeeded);
         Assert.Equal("board_not_found", (await service.ListAssignableBoardMembersAsync(fixture.Board.Id, fixture.Owner.Id, cancellationToken: ct)).ErrorCode);
     }
