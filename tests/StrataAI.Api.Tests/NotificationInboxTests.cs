@@ -57,6 +57,11 @@ public sealed partial class ApiHostTests
         Assert.Empty((await owner.GetFromJsonAsync<JsonElement>(path + $"?recipientId={f.Recipient}", ct)).GetProperty("items").EnumerateArray());
         var first = items[0].GetProperty("id").GetGuid(); var second = items[1].GetProperty("id").GetGuid();
         var key = Guid.NewGuid().ToString();
+        using var invalidKey = await Mutate(recipient, HttpMethod.Post, $"{path}/{first}/read", new { }, "invalid-retry-key");
+        Assert.Equal(HttpStatusCode.BadRequest, invalidKey.StatusCode);
+        Assert.Equal("invalid_idempotency_key", (await invalidKey.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        using var invalidBulkKey = await Mutate(recipient, HttpMethod.Post, path + "/read", new { ids = new[] { first, second } }, "invalid-retry-key");
+        Assert.Equal(HttpStatusCode.BadRequest, invalidBulkKey.StatusCode);
         using var read = await Mutate(recipient, HttpMethod.Post, $"{path}/{first}/read", new { }, key);
         Assert.Equal(HttpStatusCode.OK, read.StatusCode); var receipt = await read.Content.ReadAsStringAsync(ct);
         var readAt = (await read.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("items")[0].GetProperty("readAt").GetDateTimeOffset();
