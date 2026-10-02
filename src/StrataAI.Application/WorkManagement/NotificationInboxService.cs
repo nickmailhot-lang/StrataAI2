@@ -26,9 +26,9 @@ public sealed record NotificationReadResult(Guid OrganizationId, IReadOnlyList<N
 
 public interface INotificationInboxStore
 {
-    Task<IReadOnlyList<CardAssignmentNotification>> ListVisibleAsync(Guid organizationId, Guid recipientId,
+    Task<IReadOnlyList<CardNotification>> ListVisibleAsync(Guid organizationId, Guid recipientId,
         NotificationCursor? after, bool requireVerifiedEmail, CancellationToken cancellationToken);
-    Task<IReadOnlyList<CardAssignmentNotification>> FindVisibleAsync(Guid organizationId, Guid recipientId,
+    Task<IReadOnlyList<CardNotification>> FindVisibleAsync(Guid organizationId, Guid recipientId,
         IReadOnlyCollection<Guid> ids, bool requireVerifiedEmail, CancellationToken cancellationToken);
     Task<IReadOnlyList<NotificationReadAcknowledgment>> MarkReadAsync(Guid organizationId, Guid recipientId,
         IReadOnlyCollection<Guid> ids, DateTimeOffset now, CancellationToken cancellationToken);
@@ -43,7 +43,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
     {
         if (organizationId == Guid.Empty || recipientId == Guid.Empty)
             return Task.FromResult(WorkOperation<NotificationInboxPage>.Failure("notification_not_found"));
-        IReadOnlyList<CardAssignmentNotification> planned = [];
+        IReadOnlyList<CardNotification> planned = [];
         return transactions.ExecuteAsync(organizationId,
             WorkCommand.Create(recipientId, null, "NotificationInbox", organizationId, new { }, "notification_not_found"),
             async _ =>
@@ -62,7 +62,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
                 var items = current.OrderByDescending(n => n.CreatedAt).ThenByDescending(n => n.Id.ToString("N"), StringComparer.Ordinal)
                     .Take(50).ToArray();
                 return WorkOperation<NotificationInboxPage>.Success(new(organizationId, items.Select(n => new NotificationInboxItem(
-                    n.Id, n.RecipientId, n.ActorId, CardAssignmentNotification.Type, "Card", n.CardId, n.BoardId,
+                    n.Id, n.RecipientId, n.ActorId, n.NotificationType, "Card", n.CardId, n.BoardId,
                     $"/app/{organizationId:D}/boards/{n.BoardId:D}/cards/{n.CardId:D}", n.CreatedAt, n.ReadAt)).ToArray(),
                     current.Count > 50 ? new NotificationCursor(items[^1].CreatedAt, items[^1].Id).ToString() : null));
             }, ct);
@@ -102,7 +102,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
         await organizations.FindOrganizationAsync(org, ct) is { Status: OrganizationStatus.Active or OrganizationStatus.Archived } &&
         await organizations.FindMembershipAsync(org, recipient, ct) is { Active: true };
 
-    private async Task<bool> LockAndVerify(Guid org, Guid recipient, IReadOnlyList<CardAssignmentNotification> rows, CancellationToken ct)
+    private async Task<bool> LockAndVerify(Guid org, Guid recipient, IReadOnlyList<CardNotification> rows, CancellationToken ct)
     {
         foreach (var boardId in rows.Select(n => n.BoardId).Distinct().OrderBy(id => id.ToString("N"), StringComparer.Ordinal))
         {

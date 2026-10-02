@@ -8,7 +8,7 @@ internal sealed class InMemoryNotificationInboxStore(InMemoryWorkNotificationSto
     IWorkManagementStore work, IOrganizationStore organizations, IIdentityStore identities,
     IWorkBoardAuthorization boards) : INotificationInboxStore
 {
-    public async Task<IReadOnlyList<CardAssignmentNotification>> ListVisibleAsync(Guid org, Guid recipient,
+    public async Task<IReadOnlyList<CardNotification>> ListVisibleAsync(Guid org, Guid recipient,
         NotificationCursor? after, bool verified, CancellationToken ct)
     {
         var rows = await Visible(org, recipient, null, verified, ct);
@@ -17,17 +17,17 @@ internal sealed class InMemoryNotificationInboxStore(InMemoryWorkNotificationSto
             .OrderByDescending(n => n.CreatedAt).ThenByDescending(n => n.Id.ToString("N"), StringComparer.Ordinal).Take(51).ToArray();
     }
 
-    public Task<IReadOnlyList<CardAssignmentNotification>> FindVisibleAsync(Guid org, Guid recipient,
+    public Task<IReadOnlyList<CardNotification>> FindVisibleAsync(Guid org, Guid recipient,
         IReadOnlyCollection<Guid> ids, bool verified, CancellationToken ct) => Visible(org, recipient, ids, verified, ct);
 
-    private async Task<IReadOnlyList<CardAssignmentNotification>> Visible(Guid org, Guid recipient, IReadOnlyCollection<Guid>? ids, bool verified, CancellationToken ct)
+    private async Task<IReadOnlyList<CardNotification>> Visible(Guid org, Guid recipient, IReadOnlyCollection<Guid>? ids, bool verified, CancellationToken ct)
     {
         if (ids is { Count: > 51 }) throw new ArgumentException("Notification windows contain at most 51 records.", nameof(ids));
         var account = await identities.FindUserByIdAsync(recipient, ct);
         if (account is not { Status: AccountStatus.Active } || verified && !account.EmailVerified ||
             await organizations.FindMembershipAsync(org, recipient, ct) is not { Active: true } ||
             await organizations.FindOrganizationAsync(org, ct) is not { Status: OrganizationStatus.Active or OrganizationStatus.Archived }) return [];
-        var result = new List<CardAssignmentNotification>();
+        var result = new List<CardNotification>();
         foreach (var item in notifications.Snapshot(org, recipient).Where(n => ids is null || ids.Contains(n.Id)))
         {
             var view = await boards.GetSyncScopeAsync(item.BoardId, recipient, ct);

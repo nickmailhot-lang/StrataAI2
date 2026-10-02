@@ -7,7 +7,7 @@ public sealed partial class WorkManagementService(
     IWorkManagementStore store,
     IOrganizationStore organizationStore,
     IClock clock, IWorkEventStore events, StrataAI.Application.Identity.IdentityPolicy identityPolicy,
-    IWorkNotificationStore notifications) : IWorkManagementService, IWorkBoardAuthorization
+    IWorkNotificationStore notifications, CardWatchNotificationProducer watchNotifications) : IWorkManagementService, IWorkBoardAuthorization
 {
     public async Task<WorkOperation<BoardSyncScope>> GetSyncScopeAsync(Guid boardId, Guid? actorId,
         CancellationToken cancellationToken = default)
@@ -1062,6 +1062,7 @@ public sealed partial class WorkManagementService(
         await events.AppendAsync(change, cancellationToken);
         if (notificationRecipientId is { } recipientId)
             await notifications.AppendCardAssignmentAsync(change, recipientId, cancellationToken);
+        await watchNotifications.AppendAsync(change, notificationRecipientId, cancellationToken);
     }
 
     private static bool IsOrganizationAdmin(

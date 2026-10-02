@@ -1,4 +1,8 @@
-# Authorized assignment inbox (PRD-17)
+# Authorized notification inbox (PRD-17)
+
+Assignment and configured watch activity share this inbox. See
+[watch activity notifications](watch-activity-notifications.md) for the event-time
+producer, stored type values, dedupe and forward migration 035.
 
 The internal app can read its signed-in recipient's notifications for an
 Organization through `GET /organizations/{organizationId}/notifications`. The

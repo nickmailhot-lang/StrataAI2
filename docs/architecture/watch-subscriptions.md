@@ -48,7 +48,8 @@ Fixed native telemetry operations are `watch_read`, `watch_create`, and
 Migration 033 enables and forces tenant RLS, defines typed reference integrity
 and indexes current watcher tuples. Migration 034 admits the explicit
 `WatchSubscription` work-event type, restricts its event names and requires a
-tenant-bound subscription reference. Runtime startup requires all 34 migrations.
+tenant-bound subscription reference. Runtime startup now requires all 35 migrations,
+including the [watch activity notification producer](watch-activity-notifications.md).
 The API receives SELECT/INSERT and only UPDATE of watching/update time/revision;
 the Worker receives no watch-table access. Demo retains host-lifetime rows and
 uses the existing serialized in-memory command boundary; it does not claim
@@ -104,8 +105,10 @@ watch event and reject cross-tenant watch references, reserved watch names on
 other entity types, unrelated watch event names and unknown entity types.
 Runtime rerun evidence is pending; the initial subscription full gate was failed.
 
-Recipient selection/fan-out for relevant activity, event-time List/Board scope rules,
-mentions/reminders and private notification realtime events remain required.
+Configured Card activity fan-out and event-time scopes are implemented in the
+[watch activity producer](watch-activity-notifications.md), with full runtime
+verification pending. Mentions/reminders and private notification realtime events
+remain required.
 PRD-17 stays open until all functional and acceptance requirements are proven.
 
 ## Card activity selection contract
@@ -128,10 +131,11 @@ not authorization evidence. PostgreSQL requires the owning command transaction;
 the caller must hold the current Board gate and recheck active account, email
 policy, Organization membership and Board view access before notification intent
 creation. Self-suppression, assignment/watch dedupe, event persistence and intents
-must share that transaction. The new candidate contract is not yet connected to
-notification production. Domain tests cover revision mismatch, relevant event
+share that transaction through the [watch activity producer](watch-activity-notifications.md).
+Domain tests cover revision mismatch, relevant event
 selection, movement, overlap, unwatch, tenant isolation and 75 additional watchers;
-Linux execution evidence is pending.
+The candidate contract passed Linux domain/host/source checks on run 37067080773.
+The subsequent notification producer's runtime evidence remains pending.
 
 ## Shared Board replay privacy
 

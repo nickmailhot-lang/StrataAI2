@@ -7,7 +7,7 @@ admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X 
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
-  admin 'GRANT INSERT ON audit_events,work_events,background_jobs TO strataai_api_runtime; GRANT UPDATE(watching,updated_at,version) ON watch_subscriptions TO strataai_api_runtime;' >/dev/null || true
+  admin 'GRANT INSERT ON audit_events,work_events,background_jobs,card_assignment_notifications TO strataai_api_runtime; GRANT UPDATE(watching,updated_at,version) ON watch_subscriptions TO strataai_api_runtime;' >/dev/null || true
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -36,6 +36,7 @@ state() { admin "SELECT md5(jsonb_build_object(
  'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
+ 'notifications',(SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
 for type in CARD LIST BOARD; do
   case "$type" in CARD) entity=$card;; LIST) entity=$list;; BOARD) entity=$board;; esac
@@ -94,7 +95,33 @@ for viewer in owner member; do
     ' "$scratch/response.json" >/dev/null
 done
 card_path="/watch/CARD/$card"; before_move=$(admin "SELECT id FROM watch_subscriptions WHERE tenant_id='$org' AND card_id='$card';")
-test "$(request owner POST "/cards/$card/move" "$(uuid)" "$(jq -nc --arg destination "$destination" '{destinationListId:$destination,expectedVersion:1}')")" = 200
+# Populate more than the inbox page size, then use the real API transaction to
+# prove all current eligible watchers receive one intent and actor/overlap dedupe.
+test "$(request owner PUT "/watch/BOARD/$board?version=0" "$(uuid)" '{}')" = 200
+test "$(admin "WITH candidates AS (SELECT gen_random_uuid() id FROM generate_series(1,75)),
+ accounts AS (INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+ SELECT id,'watch-many-'||id||'@example.test',upper('watch-many-'||id||'@example.test'),'Bulk watch fixture','ACTIVE',true,'unused-fixture-hash',now(),now() FROM candidates RETURNING id),
+ memberships AS (INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+ SELECT gen_random_uuid(),'$org',id,'MEMBER','ACTIVE' FROM accounts RETURNING user_id),
+ grants AS (INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+ SELECT gen_random_uuid(),'$org','$board',user_id,'MEMBER','ACTIVE',now(),now() FROM memberships RETURNING user_id),
+ watching AS (INSERT INTO watch_subscriptions(tenant_id,id,user_id,entity_type,entity_id,board_id,watching,created_at,updated_at,version)
+ SELECT '$org',gen_random_uuid(),user_id,'BOARD','$board','$board',true,now(),now(),1 FROM grants RETURNING user_id)
+ SELECT count(*) FROM watching;")" = 75
+move_key=$(uuid); move_body=$(jq -nc --arg destination "$destination" '{destinationListId:$destination,expectedVersion:1}')
+before_failure=$(state)
+admin 'REVOKE INSERT ON card_assignment_notifications FROM strataai_api_runtime;' >/dev/null
+test "$(request owner POST "/cards/$card/move" "$move_key" "$move_body")" = 503
+admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null
+test "$before_failure" = "$(state)"
+test "$(request owner POST "/cards/$card/move" "$move_key" "$move_body")" = 200
+after_activity=$(state)
+test "$(request owner POST "/cards/$card/move" "$move_key" "$move_body")" = 200
+test "$after_activity" = "$(state)"
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND card_id='$card' AND notification_type='CARD_MOVED';")" = 76
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$owner';")" = 0
+test "$(get member "/organizations/$org/notifications")" = 200
+jq -e --arg member "$member" --arg card "$card" '.items|length==1 and .[0].type=="CARD_MOVED" and .[0].recipientId==$member and .[0].entityId==$card' "$scratch/response.json" >/dev/null
 test "$(get member "$card_path")" = 200
 jq -e --arg id "$before_move" '.subscriptionId==$id and .watching and .version==3' "$scratch/response.json" >/dev/null
 admin "UPDATE organizations SET status='ARCHIVED' WHERE id='$org';" >/dev/null
@@ -119,6 +146,14 @@ blocked() {
 }
 release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; rm "$scratch/gate.in" "$scratch/gate.log"; }
 # The read and a mutation/receipt both freshly authorize after the Board wait.
+# Fan-out also selects recipients after that wait: a just-revoked private Board
+# member cannot receive a fresh notification from an otherwise permitted actor.
+hold; request owner PUT "/cards/$card/members/$owner?version=2" "$(uuid)" '{}' > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 200
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND notification_type='CARD_MEMBER_ADDED';")" = 75
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND notification_type='CARD_MEMBER_ADDED' AND recipient_id IN ('$member','$owner');")" = 0
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
 hold; get member "$card_path" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
@@ -132,4 +167,4 @@ admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user
 hold; get member "$card_path" > "$scratch/status" & request_pid=$!
 blocked; release "DELETE FROM sessions WHERE user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
-echo 'Watch subscriptions: all typed scopes, personal revisions, atomic audit/event/job rollback, replay, List movement, archived Organization and observed access/session waits passed.'
+echo 'Watch subscriptions: typed scopes, private replay, personal revisions, atomic fan-out/command rollback, 76 recipients, dedupe, List movement, archived Organization and observed access/session waits passed.'

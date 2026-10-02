@@ -9,7 +9,7 @@ internal sealed partial class PostgresWorkNotificationStore
     // Eligibility precedes ordering/limit; departed private Board notifications
     // never consume the bounded visible window or expose a pagination cursor.
     private const string VisibleNotifications = """
-        SELECT n.id,n.tenant_id,n.board_id,n.card_id,n.event_id,n.recipient_id,n.actor_id,n.card_version,n.created_at,n.read_at
+        SELECT n.id,n.tenant_id,n.board_id,n.card_id,n.event_id,n.recipient_id,n.actor_id,n.card_version,n.created_at,n.read_at,n.notification_type
         FROM card_assignment_notifications n
         JOIN organizations o ON o.id=n.tenant_id
         JOIN organization_members m ON m.tenant_id=n.tenant_id AND m.user_id=n.recipient_id
@@ -25,16 +25,16 @@ internal sealed partial class PostgresWorkNotificationStore
               AND bm.user_id=n.recipient_id AND bm.status='ACTIVE'))
         """;
 
-    public Task<IReadOnlyList<CardAssignmentNotification>> ListVisibleAsync(Guid organizationId, Guid recipientId,
+    public Task<IReadOnlyList<CardNotification>> ListVisibleAsync(Guid organizationId, Guid recipientId,
         NotificationCursor? after, bool requireVerifiedEmail, CancellationToken cancellationToken) =>
         ReadVisibleAsync(organizationId, recipientId, after, null, requireVerifiedEmail, cancellationToken);
 
-    public Task<IReadOnlyList<CardAssignmentNotification>> FindVisibleAsync(Guid organizationId, Guid recipientId,
+    public Task<IReadOnlyList<CardNotification>> FindVisibleAsync(Guid organizationId, Guid recipientId,
         IReadOnlyCollection<Guid> ids, bool requireVerifiedEmail, CancellationToken cancellationToken) =>
-        ids.Count == 0 ? Task.FromResult<IReadOnlyList<CardAssignmentNotification>>([]) :
+        ids.Count == 0 ? Task.FromResult<IReadOnlyList<CardNotification>>([]) :
         ReadVisibleAsync(organizationId, recipientId, null, ids, requireVerifiedEmail, cancellationToken);
 
-    private async Task<IReadOnlyList<CardAssignmentNotification>> ReadVisibleAsync(Guid org, Guid recipient,
+    private async Task<IReadOnlyList<CardNotification>> ReadVisibleAsync(Guid org, Guid recipient,
         NotificationCursor? after, IReadOnlyCollection<Guid>? ids, bool verified, CancellationToken ct)
     {
         if (ids is { Count: > 51 }) throw new ArgumentException("Notification windows contain at most 51 records.", nameof(ids));
@@ -51,12 +51,13 @@ internal sealed partial class PostgresWorkNotificationStore
             query.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, (object?)after?.CreatedAt ?? DBNull.Value);
         }
         else query.Parameters.AddWithValue("ids", ids.ToArray());
-        var result = new List<CardAssignmentNotification>();
+        var result = new List<CardNotification>();
         await using var reader = await query.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
             result.Add(new(reader.GetGuid(0), reader.GetGuid(1), reader.GetGuid(2), reader.GetGuid(3),
                 reader.GetGuid(4), reader.GetGuid(5), reader.GetGuid(6), reader.GetInt64(7),
-                reader.GetFieldValue<DateTimeOffset>(8), reader.IsDBNull(9) ? null : reader.GetFieldValue<DateTimeOffset>(9)));
+                reader.GetFieldValue<DateTimeOffset>(8), reader.IsDBNull(9) ? null : reader.GetFieldValue<DateTimeOffset>(9))
+                { NotificationType = reader.GetString(10) });
         return result;
     }
 

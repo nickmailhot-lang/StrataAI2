@@ -1,0 +1,61 @@
+# Watch activity notifications (PRD-17)
+
+Configured Card changes now create recipient notifications from the originating
+mutation transaction. The producer captures the exact post-mutation Card revision
+and current List/Board. Direct Card watches follow movement; List watches use the
+destination List at event time; Board watches apply across the current Board.
+Creation includes current List and Board watchers. The activity matrix is Card
+create/update/move/archive/restore, member add/remove, and label add/remove.
+Watch/unwatch and other entities never recursively fan out.
+
+The existing Board command gate serializes activity with watch changes and Board
+access changes. After acquiring that gate, the producer selects every matching
+candidate without an inbox page limit and checks active account, configured email
+verification, active Organization membership, and current Board view admission.
+Private Boards require an active Board grant or active Organization owner/admin
+role; Organization/Public Boards admit active Organization members. Active
+Organization/Board/List parents are required. Cleanup activity on an already
+archived/deleted Card is excluded; a direct Card archive event can retain a private
+notification that remains hidden by current inbox parent admission until restore.
+
+Actors do not receive their own actions. Overlapping watch tuples select one user.
+Assignment wins when the target also watches: one `CARD_ASSIGNED` notification is
+created for that event-recipient tuple. Other watchers receive the configured
+activity type. Replaying the original command returns its receipt without making
+another intent. Card state, audit, event, Worker readiness job, notifications and
+command receipt use the same PostgreSQL transaction; any insertion failure rolls
+all of them back. Demo remains an explicitly non-durable adapter.
+
+`CardNotification` generalizes the internal record. Migration 035 expands the
+existing `card_assignment_notifications` table's allowed type values; its legacy
+name, forced RLS, tenant references, event-recipient uniqueness and runtime grants
+are preserved. A generated source type maps assignment to `CARD_MEMBER_ADDED` and
+other types to their originating event name. A tenant/Board/event/type foreign key
+rejects an activity notification attached to the wrong event type. API can insert
+intents and update only `read_at`; Worker still cannot access notification rows.
+Runtime readiness requires all 35 migrations, and the migration runner exercises
+clean/repeated/upgraded application and failure rollback.
+
+The inbox applies the existing fresh recipient/content admission before paging
+and disclosure. It returns the stored notification type with the canonical Card
+link. The MUI center uses a fixed label for each supported type, with the existing
+keyboard read/selection controls, mobile layout, retry keys and recovery polling.
+Unknown types and watch transition names are rejected by the browser parser.
+No recipient, content, email or private payload is added to telemetry; existing
+bounded mutation/inbox operation metrics remain the observation surface.
+
+Validation added: activity store identity/replay/self-suppression cases for all
+nine activity types; host movement/creation/overlap/assignment precedence and
+fresh access-loss cases; storage type/event mismatch rejection; browser parser and
+render cases; and an exact-image fixture that tests notification insertion rollback,
+76 recipients, actor suppression, exact command replay and recipient revocation
+during an observed Board lock wait. Local strict build, web typecheck/lint/build,
+and 58 notification/watch tests passed before the additional render cases. Linux
+host/PostgreSQL and exact-image runtime execution for this producer are pending.
+The 76-recipient fixture is correctness coverage, not a production performance
+benchmark. Larger-scale fan-out currently performs per-candidate eligibility checks
+and writes; load/performance acceptance remains unproven.
+
+Mentions, due reminders, recipient-private notification realtime events, later
+Card activity producers and full end-to-end/performance acceptance still require
+work. PRD-17 remains open; no completed ticket is claimed by this producer slice.

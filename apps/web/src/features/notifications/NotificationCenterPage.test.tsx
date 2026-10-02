@@ -16,6 +16,14 @@ function mount() { return render(<MemoryRouter initialEntries={[`/app/${org}/not
 </Routes></MemoryRouter>); }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
+it.each([['CARD_MOVED', 'Card moved'], ['LABEL_REMOVED', 'Label removed']])('renders %s activity with the existing accessible read and Card-link controls', async (type, label) => {
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data([{ ...item(), type }])));
+  vi.stubGlobal('fetch', fetch); mount();
+  expect(await screen.findByText(`${label} · Unread`)).toBeVisible();
+  expect(screen.getByRole('link', { name: 'Open Card' })).toHaveAttribute('href', item().entityLink);
+  expect(screen.getByRole('button', { name: 'Mark read' })).toBeEnabled();
+});
+
 it('renders recipient-only Card links and sends explicit selected IDs with a retry key', async () => {
   const readAt = '2026-10-02T11:00:00Z';
   const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data([item(2), item(1)])))

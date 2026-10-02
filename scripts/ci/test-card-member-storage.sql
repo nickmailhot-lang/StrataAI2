@@ -120,9 +120,18 @@ DO $$ BEGIN
  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  IF (SELECT count(*) FROM card_assignment_notifications) <> 1 THEN RAISE EXCEPTION 'Notification tenant reads widened'; END IF;
  BEGIN
-  INSERT INTO card_assignment_notifications SELECT tenant_id,gen_random_uuid(),board_id,card_id,event_id,recipient_id,actor_id,notification_type,card_version,created_at,read_at FROM card_assignment_notifications;
+  INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,event_id,recipient_id,actor_id,notification_type,card_version,created_at,read_at)
+   SELECT tenant_id,gen_random_uuid(),board_id,card_id,event_id,recipient_id,actor_id,notification_type,card_version,created_at,read_at FROM card_assignment_notifications;
   RAISE EXCEPTION 'Duplicate event-recipient notification accepted';
  EXCEPTION WHEN unique_violation THEN NULL; END;
+ BEGIN
+  UPDATE card_assignment_notifications SET notification_type='UNKNOWN_ACTIVITY';
+  RAISE EXCEPTION 'Notification accepted an unconfigured type';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  UPDATE card_assignment_notifications SET notification_type='CARD_MOVED';
+  RAISE EXCEPTION 'Notification activity mismatched its originating event';
+ EXCEPTION WHEN foreign_key_violation THEN NULL; END;
  BEGIN
   UPDATE card_assignment_notifications SET board_id='03000000-0000-0000-0000-000000000012';
   RAISE EXCEPTION 'Notification crossed Board';

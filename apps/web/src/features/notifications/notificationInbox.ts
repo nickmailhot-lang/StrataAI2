@@ -1,5 +1,14 @@
 export type NotificationProfile = { id: string; version: number; locale: string; timezone: string; status: 'ACTIVE'; emailVerified: boolean };
-export type InboxItem = { id: string; actorId: string; recipientId: string; boardId: string; entityId: string; entityLink: string;
+export const notificationLabels = {
+  CARD_ASSIGNED: 'Assigned to you', CARD_CREATED: 'Card created', CARD_UPDATED: 'Card updated', CARD_MOVED: 'Card moved',
+  CARD_ARCHIVED: 'Card archived', CARD_RESTORED: 'Card restored', CARD_MEMBER_ADDED: 'Card member added',
+  CARD_MEMBER_REMOVED: 'Card member removed', LABEL_ADDED: 'Label added', LABEL_REMOVED: 'Label removed',
+} as const;
+export type NotificationType = keyof typeof notificationLabels;
+function notificationType(value: unknown): value is NotificationType {
+  return typeof value === 'string' && Object.hasOwn(notificationLabels, value);
+}
+export type InboxItem = { id: string; type: NotificationType; actorId: string; recipientId: string; boardId: string; entityId: string; entityLink: string;
   createdAt: string; createdTicks: bigint; readAt: string | null };
 export type InboxPage = { items: InboxItem[]; nextCursor: string | null };
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -39,13 +48,13 @@ export function parseInbox(value: unknown, organizationId: string, recipientId: 
     const n = value as Record<string, unknown> | null;
     if (!n || !notificationUuid(n.id) || !notificationUuid(n.actorId) || !notificationUuid(n.recipientId) ||
       n.recipientId.toLowerCase() !== recipientId.toLowerCase() || n.actorId.toLowerCase() === recipientId.toLowerCase() ||
-      n.type !== 'CARD_ASSIGNED' || n.entityType !== 'Card' || !notificationUuid(n.entityId) || !notificationUuid(n.boardId)) throw new Error('Invalid notification');
+      !notificationType(n.type) || n.entityType !== 'Card' || !notificationUuid(n.entityId) || !notificationUuid(n.boardId)) throw new Error('Invalid notification');
     const id = n.id.toLowerCase(); const created = instant(n.createdAt);
     const read = n.readAt === null ? null : instant(n.readAt);
     const link = `/app/${organizationId.toLowerCase()}/boards/${n.boardId.toLowerCase()}/cards/${n.entityId.toLowerCase()}`;
     if (n.entityLink !== link || ids.has(id) || previous && !before(created.ticks, id, previous) || read && read.ticks < created.ticks) throw new Error('Invalid notification order or link');
     ids.add(id); previous = { ticks: created.ticks, id };
-    return { id, actorId: n.actorId.toLowerCase(), recipientId: n.recipientId.toLowerCase(), boardId: n.boardId.toLowerCase(),
+    return { id, type: n.type, actorId: n.actorId.toLowerCase(), recipientId: n.recipientId.toLowerCase(), boardId: n.boardId.toLowerCase(),
       entityId: n.entityId.toLowerCase(), entityLink: link, createdAt: created.text, createdTicks: created.ticks, readAt: read?.text ?? null };
   });
   if (p.nextCursor !== null) {

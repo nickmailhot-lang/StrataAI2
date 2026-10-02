@@ -4,9 +4,9 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed class InMemoryWorkNotificationStore : IWorkNotificationStore
 {
-    private readonly Dictionary<(Guid Organization, Guid Event, Guid Recipient), CardAssignmentNotification> _notifications = [];
+    private readonly Dictionary<(Guid Organization, Guid Event, Guid Recipient), CardNotification> _notifications = [];
 
-    internal IReadOnlyList<CardAssignmentNotification> Snapshot(Guid organization, Guid recipient)
+    internal IReadOnlyList<CardNotification> Snapshot(Guid organization, Guid recipient)
     {
         lock (_notifications) return _notifications.Values.Where(n => n.OrganizationId == organization && n.RecipientId == recipient).ToArray();
     }
@@ -26,8 +26,12 @@ internal sealed class InMemoryWorkNotificationStore : IWorkNotificationStore
     }
 
     public Task AppendCardAssignmentAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
+        => Append(CardNotification.From(change, recipientId));
+    public Task AppendCardActivityAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
+        => Append(CardNotification.FromActivity(change, recipientId));
+
+    private Task Append(CardNotification? item)
     {
-        var item = CardAssignmentNotification.From(change, recipientId);
         if (item is null) return Task.CompletedTask;
         lock (_notifications)
         {
@@ -42,11 +46,11 @@ internal sealed class InMemoryWorkNotificationStore : IWorkNotificationStore
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<CardAssignmentNotification>> ListCardAssignmentsAsync(Guid organizationId,
+    public Task<IReadOnlyList<CardNotification>> ListCardNotificationsAsync(Guid organizationId,
         Guid recipientId, Guid? after = null, CancellationToken cancellationToken = default)
     {
         lock (_notifications)
-            return Task.FromResult<IReadOnlyList<CardAssignmentNotification>>(_notifications.Values
+            return Task.FromResult<IReadOnlyList<CardNotification>>(_notifications.Values
                 .Where(item => item.OrganizationId == organizationId && item.RecipientId == recipientId &&
                     (after is null || string.CompareOrdinal(item.Id.ToString("N"), after.Value.ToString("N")) > 0))
                 .OrderBy(item => item.Id.ToString("N"), StringComparer.Ordinal).Take(51).ToArray());

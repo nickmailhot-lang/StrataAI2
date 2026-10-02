@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { watchIdentity } from '../auth/identityLive';
-import { isNotificationProfile, notificationUuid, parseInbox, validateReadAcknowledgment,
+import { isNotificationProfile, notificationLabels, notificationUuid, parseInbox, validateReadAcknowledgment,
   type InboxPage, type NotificationProfile } from './notificationInbox';
 
 type ReadIntent = { recipientId: string; targets: { id: string; createdTicks: bigint }[]; key: string };
@@ -140,7 +140,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
           const created = formatUserDateTime(n.createdAt, profile) ?? 'Date unavailable';
           return <Paper key={n.id} component="article" variant="outlined" aria-label={`Card assignment, ${created}, ${n.readAt ? 'Read' : 'Unread'}`} sx={{ p: 2 }}>
             <Stack spacing={1}>
-              <Typography sx={{ fontWeight: 600 }}>Assigned to you · {n.readAt ? 'Read' : 'Unread'}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>{notificationLabels[n.type]} · {n.readAt ? 'Read' : 'Unread'}</Typography>
               <Typography component="time" dateTime={n.createdAt}>{created}</Typography>
               {n.readAt && <Typography>Read {formatUserDateTime(n.readAt, profile) ?? 'at an unavailable time'}</Typography>}
               <Stack direction="row" useFlexGap sx={{ gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
