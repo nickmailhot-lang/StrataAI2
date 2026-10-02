@@ -63,7 +63,9 @@ export async function workRequest<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  options.signal?.throwIfAborted();
   const response = await apiFetch(path, options);
+  options.signal?.throwIfAborted();
   if (!response.ok) {
     // Use only known stable codes; never display server titles/details or SQL.
     let code: string | undefined;
@@ -86,9 +88,9 @@ export async function workRequest<T>(
       code,
     );
   }
-  return response.status === 204
-    ? (undefined as T)
-    : ((await response.json()) as T);
+  const result = response.status === 204 ? (undefined as T) : ((await response.json()) as T);
+  options.signal?.throwIfAborted();
+  return result;
 }
 export async function loadBoard(
   organizationId: string,

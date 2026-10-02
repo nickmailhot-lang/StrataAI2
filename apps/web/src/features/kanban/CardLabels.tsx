@@ -27,11 +27,15 @@ function page(value: unknown, props: Props): { items: Label[]; next: string | nu
 }
 
 export function CardLabels(props: Props) {
-  return <CardLabelContent key={`${props.organizationId}/${props.boardId}/${props.cardId}/${props.version}/${props.unavailable}`} {...props} />;
+  return <LabelDisclosure key={`${props.organizationId}/${props.boardId}/${props.cardId}`} {...props} />;
 }
-function CardLabelContent(props: Props) {
-  const region = useId();
+function LabelDisclosure(props: Props) {
   const [open, setOpen] = useState(false);
+  return <CardLabelContent key={`${props.version}/${props.unavailable}`} {...props} open={open} onToggle={() => setOpen(value => !value)} />;
+}
+function CardLabelContent(props: Props & { open: boolean; onToggle: () => void }) {
+  const region = useId();
+  const { open } = props;
   const [cursor, setCursor] = useState<string>();
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{ items: Label[]; next: string | null; cursor?: string }>();
@@ -62,7 +66,7 @@ function CardLabelContent(props: Props) {
     return () => { active = false; controller.abort(); };
   }, [open, unavailable, organizationId, boardId, cardId, version, cursor, attempt]);
   return <Box sx={{ mt: 2 }}>
-    <Button aria-expanded={open} aria-controls={region} disabled={unavailable} onClick={() => { setCursor(undefined); setResult(undefined); setOpen(value => !value); }}>{open ? 'Hide labels' : 'Show labels'}</Button>
+    <Button aria-expanded={open} aria-controls={region} disabled={unavailable} onClick={() => { setCursor(undefined); setResult(undefined); props.onToggle(); }}>{open ? 'Hide labels' : 'Show labels'}</Button>
     {open && <Stack id={region} component="section" aria-label="Card labels" spacing={1}>
       {unavailable ? <Typography>Refreshing label access…</Typography> : <>
         {loading && <Typography role="status">Loading labels…</Typography>}

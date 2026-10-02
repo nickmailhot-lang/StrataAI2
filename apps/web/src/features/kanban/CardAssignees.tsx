@@ -22,10 +22,14 @@ function parse(value: unknown, props: Props, cursor?: string): Page {
   return { items, next: p.nextCursor as string | null };
 }
 export function CardAssignees(props: Props) {
-  return <AssigneeContent key={`${props.organizationId}/${props.boardId}/${props.cardId}/${props.version}/${props.unavailable}`} {...props} />;
+  return <AssigneeDisclosure key={`${props.organizationId}/${props.boardId}/${props.cardId}`} {...props} />;
 }
-function AssigneeContent(props: Props) {
-  const region = useId(); const [open, setOpen] = useState(false); const [cursor, setCursor] = useState<string>();
+function AssigneeDisclosure(props: Props) {
+  const [open, setOpen] = useState(false);
+  return <AssigneeContent key={`${props.version}/${props.unavailable}`} {...props} open={open} onToggle={() => setOpen(value => !value)} />;
+}
+function AssigneeContent(props: Props & { open: boolean; onToggle: () => void }) {
+  const region = useId(); const { open } = props; const [cursor, setCursor] = useState<string>();
   const [attempt, setAttempt] = useState(0); const [result, setResult] = useState<Page>();
   const [error, setError] = useState<string>(); const [loading, setLoading] = useState(false);
   const { organizationId, boardId, cardId, version, unavailable } = props;
@@ -43,7 +47,7 @@ function AssigneeContent(props: Props) {
     return () => { active = false; controller.abort(); };
   }, [open, unavailable, organizationId, boardId, cardId, version, cursor, attempt]);
   return <Box sx={{ mt: 2 }}>
-    <Button aria-expanded={open} aria-controls={region} disabled={unavailable} onClick={() => { setCursor(undefined); setResult(undefined); setOpen(v => !v); }}>{open ? 'Hide assignees' : 'Show assignees'}</Button>
+    <Button aria-expanded={open} aria-controls={region} disabled={unavailable} onClick={() => { setCursor(undefined); setResult(undefined); props.onToggle(); }}>{open ? 'Hide assignees' : 'Show assignees'}</Button>
     {open && <Stack id={region} component="section" aria-label="Card assignees" spacing={1}>
       {loading && <Typography role="status">Loading assignees…</Typography>}
       {error && <Alert severity="warning">{error}</Alert>}

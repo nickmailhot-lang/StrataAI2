@@ -14,6 +14,29 @@ function mount(p: ComponentProps<typeof WatchControl> = props) { return render(<
 async function open(kind = 'Card') { fireEvent.click(screen.getByRole('button', { name: `${kind} watching` })); await screen.findByText(`You are not watching this ${kind}.`); }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
+it('permits a freshly authorized read during Board refresh while keeping commands disabled until refresh finishes', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty));
+  vi.stubGlobal('fetch', fetch); const view = mount({ ...props, refreshing: true });
+  expect(screen.getByRole('button', { name: 'Card watching' })).toBeEnabled(); await open();
+  expect(screen.getByRole('button', { name: 'Watch Card' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Done watching' })).toBeEnabled(); expect(fetch).toHaveBeenCalledTimes(2);
+  view.rerender(<MemoryRouter><WatchControl {...props} refreshing={false} /></MemoryRouter>);
+  expect(screen.getByRole('button', { name: 'Watch Card' })).toBeEnabled(); expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it('dismisses a pending read-only check, aborts it and preserves a fresh reopen without applying the late result', async () => {
+  let finish!: (value: Response) => void;
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
+    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty));
+  vi.stubGlobal('fetch', fetch); mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Check current watching' }));
+  await waitFor(() => expect(finish).toBeDefined()); const signal = fetch.mock.calls[2][1]?.signal as AbortSignal;
+  expect(screen.getByRole('button', { name: 'Done watching' })).toBeEnabled(); fireEvent.click(screen.getByRole('button', { name: 'Done watching' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument()); expect(signal.aborted).toBe(true);
+  await act(async () => finish(response(profile))); expect(fetch).toHaveBeenCalledTimes(3);
+  await open(); expect(fetch).toHaveBeenCalledTimes(5);
+});
+
 it.each(['CARD', 'LIST', 'BOARD'] as const)('loads %s state on demand, submits its revision and reconciles canonical state', async type => {
   const kind = type === 'CARD' ? 'Card' : type === 'LIST' ? 'List' : 'Board';
   const target = type === 'BOARD' ? board : entity;

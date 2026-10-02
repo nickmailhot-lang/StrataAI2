@@ -38,5 +38,16 @@ it('fences late results when canonical revision or access changes', async () => 
   let finish!: (r: Response) => void; vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise<Response>(resolve => { finish = resolve; })));
   const view = render(<CardAssignees {...props} />); fireEvent.click(screen.getByText('Show assignees')); await waitFor(() => expect(finish).toBeDefined());
   view.rerender(<CardAssignees {...props} version={3} unavailable />); await act(async () => finish(response(page())));
-  expect(screen.queryByText('Member 1')).not.toBeInTheDocument(); expect(screen.getByText('Show assignees')).toBeDisabled();
+  expect(screen.queryByText('Member 1')).not.toBeInTheDocument(); expect(screen.getByText('Hide assignees')).toBeDisabled();
+});
+it('keeps disclosure intent through access/revision refresh while discarding old names and reading the new revision', async () => {
+  let finish!: (value: Response) => void; const stale = new Promise<Response>(resolve => { finish = resolve; });
+  const fetch = vi.fn().mockReturnValueOnce(stale).mockResolvedValueOnce(response({ ...page([member(2)]), cardVersion: 3 }));
+  vi.stubGlobal('fetch', fetch); const view = render(<CardAssignees {...props} />); fireEvent.click(screen.getByText('Show assignees'));
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1)); view.rerender(<CardAssignees {...props} version={3} unavailable />);
+  expect(screen.getByText('Hide assignees')).toBeDisabled(); expect(screen.queryByText('Member 1')).not.toBeInTheDocument();
+  view.rerender(<CardAssignees {...props} version={3} />); expect(await screen.findByText('Member 2')).toBeVisible();
+  await act(async () => finish(response(page())));
+  expect(screen.queryByText('Member 1')).not.toBeInTheDocument(); expect(screen.getByText('Member 2')).toBeVisible();
+  expect(screen.getByText('Hide assignees')).toHaveAttribute('aria-expanded', 'true'); expect(fetch).toHaveBeenCalledTimes(2);
 });

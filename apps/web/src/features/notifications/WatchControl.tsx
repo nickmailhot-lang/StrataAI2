@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile, notificationUuid } from './notificationInbox';
 
-type Props = { organizationId: string; boardId: string; entityType: 'CARD' | 'LIST' | 'BOARD'; entityId: string; admitted: boolean; disabled: boolean; onReturnFocus?: () => void };
+type Props = { organizationId: string; boardId: string; entityType: 'CARD' | 'LIST' | 'BOARD'; entityId: string; admitted: boolean; disabled: boolean; refreshing?: boolean; onReturnFocus?: () => void };
 type State = { organizationId: string; boardId: string; userId: string; entityType: string; entityId: string;
   watching: boolean; version: number; subscriptionId: string | null; createdAt: string | null; updatedAt: string | null; changed: boolean; canChange: boolean };
 type Intent = { userId: string; watching: boolean; version: number; subscriptionId: string | null; createdAt: string | null; key: string };
@@ -36,6 +36,7 @@ function WatchDialog(props: Props) {
   const content = useRef<HTMLDivElement>(null); const checkButton = useRef<HTMLButtonElement>(null);
   const retryButton = useRef<HTMLButtonElement>(null); const doneButton = useRef<HTMLButtonElement>(null); const returnFocus = useRef(false);
   const { organizationId, boardId, entityType, entityId, admitted, disabled } = props;
+  const commandBlocked = disabled || !!props.refreshing;
   const path = `/watch/${entityType}/${encodeURIComponent(entityId)}`;
   const retire = useCallback((message: string) => {
     intent.current = undefined; user.current = undefined; setCurrent(undefined); setRecovery(false); setDenied(true); setNotice(message);
@@ -81,7 +82,7 @@ function WatchDialog(props: Props) {
     return () => { clearInterval(timer); window.removeEventListener('focus', check); document.removeEventListener('visibilitychange', check); };
   }, [open, admitted, load]);
   async function submit() {
-    if (pending.current || !admitted || disabled || denied || (!intent.current && (!current || !current.canChange))) return;
+    if (pending.current || !admitted || commandBlocked || denied || (!intent.current && (!current || !current.canChange))) return;
     const command = intent.current ?? { userId: current!.userId, watching: !current!.watching, version: current!.version,
       subscriptionId: current!.subscriptionId, createdAt: current!.createdAt, key: crypto.randomUUID() };
     intent.current = command; returnFocus.current = true; const ticket = ++epoch.current; const controller = new AbortController(); pending.current = controller;
@@ -108,7 +109,12 @@ function WatchDialog(props: Props) {
     } finally { if (mounted.current && epoch.current === ticket) { pending.current = undefined; setBusy(false); if (reload) void load(); } }
   }
   const valid = [organizationId, boardId, entityId].every(notificationUuid);
-  const close = () => { if (!busy && !recovery) { setOpen(false); setCurrent(undefined); setNotice(undefined); } };
+  const close = () => {
+    if (recovery || intent.current) return;
+    // A read-only poll must not prevent dismissal or steal the Done key press.
+    ++epoch.current; pending.current?.abort(); pending.current = undefined;
+    setBusy(false); setOpen(false); setCurrent(undefined); setNotice(undefined);
+  };
   return <>
     <Button ref={button} disabled={!valid || !admitted || disabled} onClick={() => setOpen(true)}>{kind} watching</Button>
     <Dialog open={open} onClose={close} fullWidth maxWidth="xs" aria-labelledby={title} disableRestoreFocus
@@ -119,14 +125,15 @@ function WatchDialog(props: Props) {
       <DialogContent ref={content}><Stack spacing={1}>
         <Typography>Manage your own watch subscription. Watching is separate from being assigned to a Card.</Typography>
         {busy && <Typography role="status">Checking watching…</Typography>}
+        {props.refreshing && <Typography role="status">Checking current Board access…</Typography>}
         {notice && <Alert severity={recovery ? 'warning' : 'info'}>{notice}</Alert>}
         {current && <Typography role="status">{current.watching ? `You are watching this ${kind}.` : `You are not watching this ${kind}.`}</Typography>}
         <Button ref={checkButton} disabled={busy || !admitted} onClick={() => void load()}>Check current watching</Button>
-        {recovery ? <Button ref={retryButton} disabled={busy || disabled || !admitted} onClick={() => void submit()}>Retry same watch change</Button> :
-          current && <Button disabled={busy || disabled || !admitted || !current.canChange} onClick={() => void submit()}>{current.watching ? `Unwatch ${kind}` : `Watch ${kind}`}</Button>}
+        {recovery ? <Button ref={retryButton} disabled={busy || commandBlocked || !admitted} onClick={() => void submit()}>Retry same watch change</Button> :
+          current && <Button disabled={busy || commandBlocked || !admitted || !current.canChange} onClick={() => void submit()}>{current.watching ? `Unwatch ${kind}` : `Watch ${kind}`}</Button>}
         {denied && <Button component={Link} to="/login">Sign in</Button>}
       </Stack></DialogContent>
-      <DialogActions><Button ref={doneButton} disabled={busy || recovery} onClick={close}>Done watching</Button></DialogActions>
+      <DialogActions><Button ref={doneButton} disabled={recovery || busy && !!intent.current} onClick={close}>Done watching</Button></DialogActions>
     </Dialog>
   </>;
 }

@@ -64,7 +64,8 @@ for (const width of [1280, 390]) {
     await page.getByRole('button', { name: 'Add label Priority', exact: true }).focus(); await page.keyboard.press('Enter');
     const retryAssignment = page.getByRole('button', { name: 'Retry label change' }); await expect(retryAssignment).toBeEnabled();
     await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
-    await retryAssignment.focus(); await page.keyboard.press('Enter'); await expect(edit).toBeFocused();
+    await retryAssignment.focus(); await expect(retryAssignment).toBeFocused(); await expect(retryAssignment).toBeEnabled();
+    await retryAssignment.press('Enter'); await expect(edit).toBeFocused();
     expect(assignmentAttempts).toHaveLength(2); expect(assignmentAttempts[0]).toEqual(assignmentAttempts[1]);
     await edit.focus(); await page.keyboard.press('Enter');
     await page.getByRole('button', { name: 'Add label blue', exact: true }).focus(); await page.keyboard.press('Enter'); await expect(edit).toBeFocused();

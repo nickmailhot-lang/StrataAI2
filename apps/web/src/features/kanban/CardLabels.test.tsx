@@ -49,5 +49,17 @@ it('discards a late response after the Card revision changes', async () => {
   const view = render(<CardLabels {...props} />); fireEvent.click(screen.getByText('Show labels'));
   await waitFor(() => expect(finish).toBeDefined()); view.rerender(<CardLabels {...props} version={3} />);
   await act(async () => { finish(response(page())); });
-  expect(screen.queryByText('Important')).not.toBeInTheDocument(); expect(screen.getByText('Show labels')).toBeVisible();
+  expect(screen.queryByText('Important')).not.toBeInTheDocument(); expect(screen.getByText('Hide labels')).toHaveAttribute('aria-expanded', 'true');
+});
+it('keeps disclosure intent through access/revision refresh while discarding old names and reading the new revision', async () => {
+  let finish!: (value: Response) => void; const stale = new Promise<Response>(resolve => { finish = resolve; });
+  const fetch = vi.fn().mockReturnValueOnce(stale).mockResolvedValueOnce(response({ ...page([{ ...label(), name: 'Current label' }]), cardVersion: 3 }));
+  vi.stubGlobal('fetch', fetch); const view = render(<CardLabels {...props} />); fireEvent.click(screen.getByText('Show labels'));
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  view.rerender(<CardLabels {...props} version={3} unavailable />);
+  expect(screen.getByText('Hide labels')).toBeDisabled(); expect(screen.queryByText('Important')).not.toBeInTheDocument();
+  view.rerender(<CardLabels {...props} version={3} />); expect(await screen.findByText('Current label')).toBeVisible();
+  await act(async () => finish(response(page())));
+  expect(screen.queryByText('Important')).not.toBeInTheDocument(); expect(screen.getByText('Current label')).toBeVisible();
+  expect(screen.getByText('Hide labels')).toHaveAttribute('aria-expanded', 'true'); expect(fetch).toHaveBeenCalledTimes(2);
 });

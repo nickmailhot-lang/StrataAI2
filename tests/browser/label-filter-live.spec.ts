@@ -87,7 +87,9 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(other.getByText('Live updates connected.', { exact: true })).toBeVisible();
     async function phoneAssignees() {
       const show = other.getByRole('button', { name: 'Show assignees', exact: true });
-      await expect(show).toBeEnabled({ timeout: 20_000 }); await show.focus(); await other.keyboard.press('Enter');
+      if (await show.count()) { await expect(show).toBeEnabled({ timeout: 20_000 }); await show.press('Enter'); }
+      else await expect(other.getByRole('button', { name: 'Hide assignees', exact: true })).toBeEnabled({ timeout: 20_000 });
+      await expect(other.getByRole('region', { name: 'Card assignees' })).toBeVisible();
       return other.getByRole('region', { name: 'Card assignees' });
     }
     await expect((await phoneAssignees()).getByText('Label collaboration fixture', { exact: true })).toBeVisible();

@@ -17,6 +17,22 @@ function mount(fetch: ReturnType<typeof vi.fn>) {
 }
 async function review() { fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning list' })); }
 
+it('opens a passive deletion review during a live read but prevents confirmation until current impact is verified', async () => {
+  let invalidate!: () => void; let finish!: (value: Response) => void;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  mount(fetch); await screen.findByRole('button', { name: 'Permanently delete Planning list' });
+  await waitFor(() => expect(invalidate).toBeTypeOf('function')); act(() => invalidate()); await waitFor(() => expect(finish).toBeDefined());
+  expect(screen.getByRole('button', { name: 'Permanently delete Planning list' })).toBeEnabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Permanently delete Planning list' }));
+  expect(screen.getByText('Permanently delete Planning and make its 2 contained cards unavailable?')).toBeVisible();
+  fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled();
+  await act(async () => finish(reply(page)));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeEnabled());
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
 it('preserves the archive return focus through a real-time read after acknowledged restore', async () => {
   let release: ((value: Response) => void) | undefined;
   const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply(ack))

@@ -136,10 +136,10 @@ function Archive({ org, board }: { org: string; board: string }) {
     {page?.items.map(e => <Paper key={e.list.id} component="article" aria-label={e.list.name} sx={{ p: 2, overflowWrap: 'anywhere' }}>
       <Typography component="h3" variant="h6">{e.list.name}</Typography>
       <Typography>{e.containedCardCount} contained cards</Typography>
-      <Button disabled={!ready || reading || writing || !!intent} aria-label={`Restore ${e.list.name} list`} onClick={() => {
+      <Button disabled={writing || !!intent} aria-label={`Restore ${e.list.name} list`} onClick={() => {
         setSelected(e); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined);
       }}>Restore List</Button>
-      <Button color="error" disabled={!ready || reading || writing || !!intent} aria-label={`Permanently delete ${e.list.name} list`} onClick={() => {
+      <Button color="error" disabled={writing || !!intent} aria-label={`Permanently delete ${e.list.name} list`} onClick={() => {
         setSelected(e); setDeleting(true); setConfirmed(false); setConflict(false); setNotice(undefined);
       }}>Permanently delete List</Button>
     </Paper>)}

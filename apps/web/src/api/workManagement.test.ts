@@ -6,6 +6,18 @@ import {
 } from "./workManagement";
 
 afterEach(() => vi.unstubAllGlobals());
+it('never starts a request whose scope is already cancelled', async () => {
+  const fetch = vi.fn(); vi.stubGlobal('fetch', fetch); const controller = new AbortController(); controller.abort();
+  await expect(workRequest('/me', { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });
+  expect(fetch).not.toHaveBeenCalled();
+});
+it('rejects a late transport response after cancellation before a chained command can start', async () => {
+  let finish!: (value: Response) => void; const fetch = vi.fn().mockReturnValue(new Promise<Response>(resolve => { finish = resolve; }));
+  vi.stubGlobal('fetch', fetch); const controller = new AbortController();
+  const command = workRequest('/me', { signal: controller.signal }).then(() => workRequest('/cards/one', { method: 'PATCH', signal: controller.signal }));
+  const rejected = expect(command).rejects.toMatchObject({ name: 'AbortError' });
+  controller.abort(); finish(new Response('{}')); await rejected; expect(fetch).toHaveBeenCalledTimes(1);
+});
 describe("PRD-22 bounded board snapshot reads", () => {
   afterEach(() => vi.useRealTimers());
   it("times out a hung fetch even when it ignores cancellation", async () => {

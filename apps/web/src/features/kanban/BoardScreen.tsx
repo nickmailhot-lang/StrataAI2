@@ -439,7 +439,7 @@ function BoardContent() {
             Refresh board
           </Button>
           <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="BOARD" entityId={snapshot.board.id}
-            admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active'} disabled={busy || snapshotReading || !!loadError}
+            admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active'} disabled={busy || !!loadError} refreshing={snapshotReading}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           {snapshot.access.canAdminister && snapshot.board.lifecycleState === "active" && (
             <><Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invite`}>Invite to Board</Button>
@@ -557,7 +557,7 @@ function BoardContent() {
             </Stack>
             {!canvasFilter && <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="LIST" entityId={column.list.id}
               admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active'}
-              disabled={busy || snapshotReading || !!loadError} onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />}
+              disabled={busy || !!loadError} refreshing={snapshotReading} onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />}
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active" && column.list.lifecycleState === "active" && <ListPositionControls
               list={column.list} snapshot={snapshot} disabled={!!canvasFilter || busy || snapshotReading || !!loadError || renameRecovery.has(column.list.id)} onBusyChange={setBusy}
               onPreview={setListPreview}
@@ -695,10 +695,10 @@ function BoardContent() {
               editable={Boolean(editable)} disabled={otherBusy || cardRecovery} unavailable={snapshotReading || !!loadError}
               onBusyChange={setBusy} onRecoveryChange={setDateRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
-            {cardId && <CardLabels key={`labels-${card.id}-${card.version}-${reload}`} organizationId={snapshot.board.organizationId}
+            {cardId && <CardLabels key={`labels-${card.id}`} organizationId={snapshot.board.organizationId}
               boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {cardId && <CardAssignees key={`assignees-${card.id}-${card.version}-${reload}`} organizationId={snapshot.board.organizationId}
+            {cardId && <CardAssignees key={`assignees-${card.id}`} organizationId={snapshot.board.organizationId}
               boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active"
@@ -712,7 +712,7 @@ function BoardContent() {
           {cardId && <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="CARD" entityId={cardId}
             admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active' && !!card &&
               snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === cardId))}
-            disabled={busy || snapshotReading || !!loadError} onReturnFocus={() => cardClose.current?.focus({ preventScroll: true })} />}
+            disabled={busy || !!loadError} refreshing={snapshotReading} onReturnFocus={() => cardClose.current?.focus({ preventScroll: true })} />}
           {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
             disabled={operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
