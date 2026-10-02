@@ -132,3 +132,19 @@ must share that transaction. The new candidate contract is not yet connected to
 notification production. Domain tests cover revision mismatch, relevant event
 selection, movement, overlap, unwatch, tenant isolation and 75 additional watchers;
 Linux execution evidence is pending.
+
+## Shared Board replay privacy
+
+Watch transitions occupy the Board's durable stream but are personal state.
+Replay explicitly accepts only the two supported watch transition names and
+always projects them to `BOARD_INVALIDATED`, even if an adapter incorrectly
+reports the subscription as visible. Subscription identity, revision, actor and
+watch/unwatch type remain private; the Board cursor can advance to later shared
+events. PostgreSQL and Demo adapters both treat these entities as hidden. Unknown
+entity types remain rejected. This does not implement recipient-private realtime
+notification delivery, which is still required separately.
+
+Unit and host tests cover privacy for both the subscriber and Board administrator.
+The exact-image fixture waits for the real Worker to publish readiness and checks
+both clients' replay and cursor recovery. These checks were added after finding
+that the prior replay entity allowlist rejected WatchSubscription entirely.

@@ -139,6 +139,36 @@ public sealed class WorkSynchronizationTests
         Assert.Equal(result.Value.Cursor, Assert.Single(result.Value.Events).Sequence);
     }
 
+    [Theory]
+    [InlineData("WATCH_CREATED", true)]
+    [InlineData("WATCH_REMOVED", true)]
+    [InlineData("WATCH_CREATED", false)]
+    [InlineData("WATCH_REMOVED", false)]
+    public async Task Personal_watch_events_advance_replay_without_disclosing_subscription_or_actor_even_if_adapter_claims_visibility(string type, bool visible)
+    {
+        var row = Row(1, visible: visible);
+        row = row with { Event = row.Event with { EntityType = "WatchSubscription", EventType = type } };
+        var next = Row(2);
+        var reader = new Reader { Read = () => Task.FromResult(new WorkEventReadPage(2, false, false, false, [row, next])) };
+        var result = await new WorkSynchronizationService(new Authorization(), reader).ReadAsync(Board, Actor, 0,
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(result.Succeeded); Assert.Equal("2", result.Value!.Cursor);
+        var hidden = result.Value.Events[0]; Assert.Equal(row.Event.EventId, hidden.EventId);
+        Assert.Equal("BOARD_INVALIDATED", hidden.EventType); Assert.Equal("Board", hidden.EntityType);
+        Assert.Equal(Board, hidden.EntityId); Assert.Null(hidden.ActorId); Assert.Equal(7, hidden.Version); Assert.Empty(hidden.Metadata);
+        Assert.Equal(next.Event.EntityId, result.Value.Events[1].EntityId);
+    }
+
+    [Fact]
+    public async Task Watch_replay_rejects_an_unrelated_event_type()
+    {
+        var row = Row(1); row = row with { Event = row.Event with { EntityType = "WatchSubscription" } };
+        var reader = new Reader { Read = () => Task.FromResult(new WorkEventReadPage(1, false, false, false, [row])) };
+        var result = await new WorkSynchronizationService(new Authorization(), reader).ReadAsync(Board, Actor, 0,
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("work_sync_unavailable", result.ErrorCode); Assert.Null(result.Value);
+    }
+
     private sealed class Authorization : IWorkBoardAuthorization
     {
         public bool Denied { get; set; }

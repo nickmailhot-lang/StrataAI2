@@ -78,7 +78,8 @@ public sealed class WorkSynchronizationService(IWorkBoardAuthorization authoriza
             var change = row.Event;
             // Hidden/archived/deleted entities yield only a Board invalidation;
             // their historical IDs/type/version never reach an unauthorized view.
-            var visible = row.EntityVisible && (change.EntityType != "Board" || change.EntityId == boardId);
+            var visible = row.EntityVisible && change.EntityType != "WatchSubscription" &&
+                (change.EntityType != "Board" || change.EntityId == boardId);
             return new BoardSyncEvent(change.EventId, organization, boardId,
                 visible && current.Value.Access.CanAdminister ? change.ActorId : null,
                 visible ? change.EventType : "BOARD_INVALIDATED", visible ? change.EntityType : "Board",
@@ -107,7 +108,8 @@ public sealed class WorkSynchronizationService(IWorkBoardAuthorization authoriza
                 row.Event.OrganizationId != organization || row.Event.BoardId != board ||
                 row.Event.EventId == Guid.Empty || !identities.Add(row.Event.EventId) || row.Event.ActorId == Guid.Empty ||
                 row.Event.EntityId == Guid.Empty || row.Event.Version < 1 ||
-                row.Event.EntityType is not ("Board" or "List" or "Card" or "Label")) return false;
+                row.Event.EntityType is not ("Board" or "List" or "Card" or "Label" or "WatchSubscription") ||
+                row.Event.EntityType == "WatchSubscription" && row.Event.EventType is not ("WATCH_CREATED" or "WATCH_REMOVED")) return false;
             cursor = row.Sequence;
         }
         return cursor == page.Cursor;

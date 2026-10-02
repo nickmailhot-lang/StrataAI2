@@ -75,6 +75,24 @@ done
 test "$(admin "SELECT count(*) FROM watch_subscriptions WHERE tenant_id='$org' AND user_id='$member' AND watching AND version=3;")" = 3
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type IN ('WATCH_CREATED','WATCH_REMOVED');")" = 9
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type IN ('WATCH_CREATED','WATCH_REMOVED');")" = 9
+# The real Worker must make these events ready without exposing personal watch
+# payloads or breaking the shared Board cursor for either authorized viewer.
+published=$(admin "SELECT last_sequence FROM work_event_streams WHERE tenant_id='$org' AND board_id='$board';")
+watch_ids=$(admin "SELECT json_agg(event_id) FROM work_events WHERE tenant_id='$org' AND board_id='$board' AND entity_type='WatchSubscription';")
+for ((attempt=0;attempt<60;attempt++)); do
+  test "$(get owner "/boards/$board/sync")" = 200
+  if jq -e --arg cursor "$published" '.cursor==$cursor and .pending==false' "$scratch/response.json" >/dev/null; then break; fi
+  sleep 0.5
+done
+jq -e --arg cursor "$published" '.cursor==$cursor and .pending==false' "$scratch/response.json" >/dev/null
+for viewer in owner member; do
+  test "$(get "$viewer" "/boards/$board/sync")" = 200
+  jq -e --arg board "$board" --argjson ids "$watch_ids" '
+    [.events[] | select(.eventId as $id | $ids | index($id))] as $private |
+    ($private | length)==9 and all($private[];
+      .eventType=="BOARD_INVALIDATED" and .entityType=="Board" and .entityId==$board and .actorId==null and .metadata=={})
+    ' "$scratch/response.json" >/dev/null
+done
 card_path="/watch/CARD/$card"; before_move=$(admin "SELECT id FROM watch_subscriptions WHERE tenant_id='$org' AND card_id='$card';")
 test "$(request owner POST "/cards/$card/move" "$(uuid)" "$(jq -nc --arg destination "$destination" '{destinationListId:$destination,expectedVersion:1}')")" = 200
 test "$(get member "$card_path")" = 200

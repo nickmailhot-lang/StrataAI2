@@ -56,6 +56,7 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work) : IWorkE
             return list is { LifecycleState: WorkItemLifecycleState.Active } &&
                 list.OrganizationId == change.OrganizationId && list.BoardId == change.BoardId;
         }
+        if (change.EntityType != "Card") return false;
         var card = await work.FindCardAsync(change.EntityId, cancellationToken);
         if (card is not { LifecycleState: WorkItemLifecycleState.Active } ||
             card.OrganizationId != change.OrganizationId || card.BoardId != change.BoardId) return false;

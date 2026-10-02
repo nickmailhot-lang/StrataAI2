@@ -59,6 +59,20 @@ public sealed partial class ApiHostTests
         Assert.Equal(9, watchEvents.Length); Assert.All(watchEvents, e => Assert.Equal(f.Recipient, e.Event.ActorId));
         Assert.Equal(6, watchEvents.Count(e => e.Event.EventType == "WATCH_CREATED"));
         Assert.Equal(3, watchEvents.Count(e => e.Event.EventType == "WATCH_REMOVED"));
+        Assert.All(watchEvents, e => Assert.False(e.EntityVisible));
+        var watchIds = watchEvents.Select(e => e.Event.EventId).ToHashSet();
+        foreach (var viewer in new[] { owner, recipient })
+        {
+            var page = await viewer.GetFromJsonAsync<BoardSyncPage>($"/boards/{f.Board}/sync", ct);
+            Assert.NotNull(page);
+            var invalidations = page.Events.Where(e => watchIds.Contains(e.EventId)).ToArray();
+            Assert.Equal(9, invalidations.Length);
+            Assert.All(invalidations, e =>
+            {
+                Assert.Equal("BOARD_INVALIDATED", e.EventType); Assert.Equal("Board", e.EntityType);
+                Assert.Equal(f.Board, e.EntityId); Assert.Null(e.ActorId); Assert.Empty(e.Metadata);
+            });
+        }
     }
 
     [Fact]
