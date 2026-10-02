@@ -67,6 +67,22 @@ denials; the exact-image fixture now adds 52-assignment paging, uniqueness, and
 observed post-wait permission revocation on the later page. These new read tests
 await the next CI run.
 
+Card details now include an on-demand MUI label reader with text names, color
+descriptions, an unnamed-label fallback, explicit empty/loading/error states,
+and a keyboard-operable next-page button. It validates the Organization, Board,
+Card, exact Card revision, palette, identifiers, duplicate IDs and page cursor
+before displaying a response. Scope/revision/access changes remount the reader
+and abort its request; a denied later page removes already-rendered label data.
+Reads reuse the shared HTTP Problem boundary and 15-second deadline covering
+response-body parsing. The panel reads authenticated assignments; anonymous
+public Board indicators and mutation controls remain outstanding.
+Validation for the reader: all 453 web unit/component tests passed, including
+10 new label-reader cases for readable names, pagination, denied later pages,
+invalid scope/revision/palette/duplicates, and late responses. Typecheck, lint,
+and production build passed. Two browser cases at 1280px and 390px were collected
+for keyboard expansion and persisted label deletion; their runtime execution
+awaits exact-image CI.
+
 This is a foundation, not PRD-10 closure. Public
 Card indicators, accessible label administration, filtering, relative reorder
 controls, copy/move metadata reconciliation, and exact-image concurrency,

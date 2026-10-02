@@ -88,7 +88,7 @@ export async function loadBoard(
   boardId: string,
   signal: AbortSignal,
 ) {
-  const data = await boundedBoardRead(
+  const data = await boundedWorkRead(
     (bounded) =>
       workRequest<BoardSnapshot>(`/boards/${encodeURIComponent(boardId)}`, {
         signal: bounded,
@@ -103,7 +103,7 @@ export async function loadBoard(
     throw new WorkRequestError(404, null);
   return data;
 }
-async function boundedBoardRead<T>(
+export async function boundedWorkRead<T>(
   read: (signal: AbortSignal) => Promise<T>,
   signal: AbortSignal,
 ): Promise<T> {

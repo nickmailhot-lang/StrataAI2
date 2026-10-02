@@ -24,6 +24,7 @@ import {
   type WorkCard,
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
+import { CardLabels } from './CardLabels';
 import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardArchiveControl } from './CardArchiveControl';
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
@@ -648,6 +649,9 @@ function BoardContent() {
               onDiscard={discardAndLoad}
               onRefresh={() => setReload((value) => value + 1)}
             />
+            {cardId && <CardLabels key={`labels-${card.id}-${card.version}-${reload}`} organizationId={snapshot.board.organizationId}
+              boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active"
               && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id)) && <CardMoveControls
               key={`move-${card.id}`} card={card} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery}
