@@ -160,3 +160,37 @@ checks forced tenant isolation, composite identities, uniqueness, invalid interv
 and generation/trigger/status constraints, cancellation and actual DST elapsed-hour
 arithmetic. Clean/repeat/forward migrations and runtime readiness now require 037.
 PRD-12 and PRD-17 remain open.
+
+## Reminder job and command participant contracts
+
+The internal generation publisher now verifies the exact persisted Reminder
+identity, user/Card, revision, enabled state, interval and UTC due/trigger before
+publishing into the owning Card transaction. Jobs use a stable Reminder/generation
+key and exact trigger availability; queue metadata contains only reminderId and
+generation. Duplicate publication retains the original committed queue entry.
+
+The internal rescheduling participant advances every enabled personal plan for
+due/completion/lifecycle changes, republishes valid new generations, and suspends
+cleared, completed or inactive deadlines without losing interval intent. Start,
+timezone-context, title and movement-only changes retain an already queued attempt,
+even after its original trigger. Current recipient eligibility is a delivery check.
+
+The handler contract rejects malformed metadata, unsupported job/service identity
+and missing claim identifiers; obsolete generations are acknowledged without an
+effect, while lost leases cannot be acknowledged as success. Its delivery adapter
+must revalidate the locked live claim, canonical generation/deadline/lifecycle and
+current recipient access before atomically committing notification, private event
+and FIRED transition.
+
+These are internal components, not yet registered or invoked by Card commands or
+Worker composition. No new CARD_REMINDER job is published by the running API, and
+no public Reminder endpoint is available yet. Database delivery and its SQL/lease/
+rollback tests must be implemented before activation. Thirty-two additional domain
+cases cover payload/claim boundaries, stable generation keys, inactive plans,
+76-recipient rescheduling, completion/reopen/clear/archive and unrelated-edit
+preservation. Strict compilation passed; Linux CI must execute the tests.
+
+CI for 7b83643 passed web and PostgreSQL migration/storage checks but failed two
+Demo store tests because the Reminder store registration was missing. Commit
+0a3c962 registers both runtime adapters; its Linux test result remains pending.
+PRD-12 and PRD-17 remain open.

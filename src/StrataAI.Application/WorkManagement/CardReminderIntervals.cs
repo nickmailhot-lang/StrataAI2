@@ -33,4 +33,6 @@ public static class CardReminderIntervals
         Available(card, now).SingleOrDefault(option => option.Code == code);
 
     public static bool IsConfigured(string code) => Configured.Any(interval => interval.Code == code);
+
+    public static TimeSpan Duration(string code) => Configured.Single(interval => interval.Code == code).BeforeDue;
 }
