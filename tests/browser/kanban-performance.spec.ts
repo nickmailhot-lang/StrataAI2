@@ -48,25 +48,33 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   await page.route(feedbackRoute, async route => { heldMove = true; await gate; await route.continue(); });
   let feedbackMs: number;
   try {
+    await page.getByRole('button', { name: 'Drag Performance card 2 card', exact: true }).scrollIntoViewIfNeeded();
+    await page.getByRole('link', { name: 'Performance card 4', exact: true }).scrollIntoViewIfNeeded();
     const source = await page.getByRole('button', { name: 'Drag Performance card 2 card', exact: true }).boundingBox();
     const target = await page.getByRole('link', { name: 'Performance card 4', exact: true }).boundingBox();
     expect(source).not.toBeNull(); expect(target).not.toBeNull();
     await page.evaluate(({ id, destination }) => {
       const state = window as Window & { kanbanFeedback?: Promise<number> };
       state.kanbanFeedback = new Promise<number>(resolve => {
-        window.addEventListener('pointerup', () => {
+        let started = false;
+        const failTimer = window.setTimeout(() => resolve(Infinity), 5000);
+        const release = () => {
+          if (started) return;
+          started = true;
           const began = performance.now();
           const check = () => {
             const link = document.querySelector<HTMLAnchorElement>(`a[href$="/cards/${id}"]`);
             const rect = link?.getBoundingClientRect();
             const positioned = link?.closest('section')?.getAttribute('aria-labelledby') === `list-name-${destination}`;
             if (positioned && rect && rect.height > 0 && rect.width > 0 && rect.top < innerHeight && rect.bottom > 0 && rect.left < innerWidth && rect.right > 0) {
-              requestAnimationFrame(() => resolve(performance.now() - began));
+              requestAnimationFrame(() => { clearTimeout(failTimer); resolve(performance.now() - began); });
             } else if (performance.now() - began >= 2000) resolve(Infinity);
             else requestAnimationFrame(check);
           };
           requestAnimationFrame(check);
-        }, { capture: true, once: true });
+        };
+        window.addEventListener('pointerup', release, { capture: true, once: true });
+        window.addEventListener('mouseup', release, { capture: true, once: true });
       });
     }, { id: feedbackCard, destination: lists[0] });
     await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
