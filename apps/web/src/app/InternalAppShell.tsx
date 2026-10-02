@@ -20,7 +20,8 @@ import {
   Typography,
 } from "@mui/material";
 import type { ReactNode } from "react";
-import { Link, Outlet, useParams } from "react-router-dom";
+import { Link, Outlet, useLocation, useParams } from "react-router-dom";
+import { SurfaceAdmission } from './SurfaceAdmission';
 
 const drawerWidth = 248;
 
@@ -48,6 +49,14 @@ const navigation: NavigationItem[] = [
 ];
 
 export function InternalAppShell() {
+  const { pathname } = useLocation();
+  const boardView = /^\/app\/[^/]+\/boards\/[^/]+(?:\/cards\/[^/]+)?\/?$/.test(pathname);
+  return <SurfaceAdmission surface="INTERNAL" deniedContent={boardView ? <Box component="main" sx={{ p: 2 }}><Outlet /></Box> : undefined}>
+    <InternalLayout />
+  </SurfaceAdmission>;
+}
+
+function InternalLayout() {
   const { organizationId } = useParams();
 
   return (

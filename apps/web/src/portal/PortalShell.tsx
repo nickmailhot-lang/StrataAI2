@@ -10,8 +10,13 @@ import {
   Typography,
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
+import { SurfaceAdmission } from '../app/SurfaceAdmission';
 
 export function PortalShell() {
+  return <SurfaceAdmission surface="PORTAL"><PortalLayout /></SurfaceAdmission>;
+}
+
+function PortalLayout() {
   const { organizationId } = useParams();
 
   return (

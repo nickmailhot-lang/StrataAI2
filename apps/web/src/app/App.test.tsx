@@ -9,7 +9,8 @@ describe("StrataAI2 application shell", () => {
     window.history.pushState({}, "", "/app/demo/boards/demo-board");
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
+      vi.fn().mockImplementation((path: string) => Promise.resolve(path.includes('/surface-access')
+        ? new Response(JSON.stringify({ organizationId: 'demo', surface: 'INTERNAL' })) :
         new Response(
           JSON.stringify({
             board: {
@@ -22,7 +23,7 @@ describe("StrataAI2 application shell", () => {
             access: { canView: true, canEdit: false },
           }),
         ),
-      ),
+      )),
     );
 
     render(<App />);
@@ -35,6 +36,7 @@ describe("StrataAI2 application shell", () => {
 
   it("keeps the owner portal visually and navigationally separate", async () => {
     window.history.pushState({}, "", "/portal/demo");
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ organizationId: 'demo', surface: 'PORTAL' })))));
 
     render(<App />);
 

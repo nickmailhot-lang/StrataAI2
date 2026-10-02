@@ -28,7 +28,24 @@ access, inactive Organization, invalid input, minimal response fields and logout
 The solution builds with zero warnings/errors; Windows Application Control
 prevents local test execution, so Linux execution remains required.
 
-The endpoint is the server contract for upcoming shell admission. The current
-InternalAppShell and PortalShell are not yet wired to it. Client scope changes,
-stale reads, public Board viewing and exact-image Portal-only deep-link tests
-remain required before ARCH-02 closure.
+InternalAppShell and PortalShell now withhold protected navigation/content until
+the requested current surface read succeeds with matching Organization/surface.
+Organization changes immediately retire previous admission; aborted or late old
+responses cannot admit the new scope. Reads have a five-second deadline and an
+explicit fresh-check action. Focus and ten-second polling recheck current grants.
+Background success retains the mounted child to preserve Board/detail context;
+denial or error removes protected shell content. These checks supplement server
+authorization and do not promise instant detection between checks.
+
+Only exact Board/Card viewing paths can fall back to an independent Board screen
+after denied internal admission. That screen obtains its own authorized snapshot
+without Council navigation; administration/invitation/settings paths cannot use
+the fallback. Storage/network/malformed-admission errors do not enable fallback.
+
+Unit coverage includes pending/denied content, wrong-surface responses, late
+old-scope replies, current revocation on focus, independent Board fallback and
+bounded timeout/recheck. The exact-image browser case covers Portal-only deep
+links, private denial, public read-only viewing, separate internal grant/removal,
+retained Portal grant and logout at desktop/phone widths. Local unit tests,
+typecheck/lint and collection pass; exact-image execution remains required before
+ARCH-02 closure.
