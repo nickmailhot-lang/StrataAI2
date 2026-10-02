@@ -35,6 +35,16 @@ public static class WorkManagementEndpoints
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
+        app.MapGet("/boards/{boardId:guid}/archived-cards", async (Guid boardId, string? after,
+            HttpContext context, IWorkManagementService service, CancellationToken cancellationToken) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            Guid? cursor = after is null ? null : Guid.TryParse(after, out var parsed) ? parsed : Guid.Empty;
+            var result = await service.ListArchivedCardsAsync(boardId, actor.Value, cursor, cancellationToken);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+
         app.MapPost(
                 "/boards",
                 async (

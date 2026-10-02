@@ -42,6 +42,17 @@ public sealed class TransactionalWorkManagementService(
                 return result;
             }, cancellationToken);
 
+    public Task<WorkOperation<ArchivedCardPage>> ListArchivedCardsAsync(Guid boardId, Guid actorUserId,
+        Guid? after = null, CancellationToken cancellationToken = default) =>
+        BoardCommand(boardId, actorUserId, "admin",
+            WorkCommand.Create(actorUserId, null, "ListArchivedCardsAsync", boardId, new { }, "board_not_found"), async () =>
+            {
+                var result = await inner.ListArchivedCardsAsync(boardId, actorUserId, after, cancellationToken);
+                if (result.Succeeded && !await actors.VerifyAsync(actorUserId, cancellationToken))
+                    return WorkOperation<ArchivedCardPage>.Failure("session_unavailable");
+                return result;
+            }, cancellationToken);
+
     public Task<WorkOperation<BoardRecord>> UpdateBoardAsync(
         Guid boardId,
         Guid actorUserId,

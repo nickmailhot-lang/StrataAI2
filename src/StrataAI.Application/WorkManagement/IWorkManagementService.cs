@@ -21,6 +21,9 @@ public interface IWorkManagementService
     Task<WorkOperation<ArchivedListPage>> ListArchivedListsAsync(Guid boardId, Guid actorUserId,
         Guid? after = null, CancellationToken cancellationToken = default);
 
+    Task<WorkOperation<ArchivedCardPage>> ListArchivedCardsAsync(Guid boardId, Guid actorUserId,
+        Guid? after = null, CancellationToken cancellationToken = default);
+
     Task<WorkOperation<BoardRecord>> UpdateBoardAsync(
         Guid boardId,
         Guid actorUserId,

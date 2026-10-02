@@ -314,6 +314,32 @@ internal sealed class PostgresWorkManagementStore(
         return rows;
     }
 
+    public async Task<IReadOnlyList<ArchivedCardEntry>> ListArchivedCardsAsync(Guid boardId, Guid? after,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(boardId, cancellationToken);
+        if (tenantId is null) return [];
+        await using var session = await connectionFactory.OpenTenantSessionAsync(tenantId.Value, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT c.id,c.tenant_id,c.board_id,c.list_id,c.title,NULL::text,c.rank,c.lifecycle_state,
+                c.created_at,c.updated_at,c.version,
+                l.id,l.tenant_id,l.board_id,l.name,l.rank,l.lifecycle_state,l.created_at,l.updated_at,l.version
+            FROM cards c JOIN board_lists l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
+            WHERE c.tenant_id=@tenant AND c.board_id=@board AND c.lifecycle_state='ARCHIVED'
+                AND l.lifecycle_state<>'DELETED' AND (@after IS NULL OR c.id>@after)
+            ORDER BY c.id LIMIT 51;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", tenantId.Value); command.Parameters.AddWithValue("board", boardId);
+        command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, after is null ? DBNull.Value : after.Value);
+        var rows = new List<ArchivedCardEntry>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) rows.Add(new(ReadCard(reader),
+            new(reader.GetGuid(11), reader.GetGuid(12), reader.GetGuid(13), reader.GetString(14), reader.GetString(15),
+                ParseWorkLifecycle(reader.GetString(16)), reader.GetFieldValue<DateTimeOffset>(17),
+                reader.GetFieldValue<DateTimeOffset>(18), reader.GetInt64(19))));
+        return rows;
+    }
+
     public async Task<BoardSnapshot?> GetSnapshotAsync(
         Guid boardId,
         Guid? userId,

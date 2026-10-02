@@ -45,6 +45,9 @@ public interface IWorkManagementStore
     Task<IReadOnlyList<ArchivedListEntry>> ListArchivedListsAsync(Guid boardId, Guid? after,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<ArchivedCardEntry>> ListArchivedCardsAsync(Guid boardId, Guid? after,
+        CancellationToken cancellationToken = default);
+
     Task<BoardRecord?> UpdateBoardAsync(
         Guid boardId,
         string name,

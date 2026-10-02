@@ -116,6 +116,20 @@ public sealed class WorkManagementService(
             boardId, items, rows.Count > 50 ? items[^1].List.Id : null));
     }
 
+    public async Task<WorkOperation<ArchivedCardPage>> ListArchivedCardsAsync(Guid boardId, Guid actorUserId,
+        Guid? after = null, CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(boardId, actorUserId, cancellationToken);
+        if (resolved is null || !resolved.Value.Access.CanAdminister ||
+            resolved.Value.Board.LifecycleState != BoardLifecycleState.Active)
+            return WorkOperation<ArchivedCardPage>.Failure("board_not_found");
+        if (after == Guid.Empty) return WorkOperation<ArchivedCardPage>.Failure("invalid_archive_cursor");
+        var rows = await store.ListArchivedCardsAsync(boardId, after, cancellationToken);
+        var items = rows.Take(50).ToArray();
+        return WorkOperation<ArchivedCardPage>.Success(new(resolved.Value.Board.OrganizationId,
+            boardId, items, rows.Count > 50 ? items[^1].Card.Id : null));
+    }
+
     public async Task<WorkOperation<BoardRecord>> UpdateBoardAsync(
         Guid boardId,
         Guid actorUserId,

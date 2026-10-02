@@ -45,6 +45,24 @@ state() { admin "SELECT md5(jsonb_build_object(
   'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
   'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
 before=$(state)
+# PRD-18-FR-004/011: card discovery is bounded and hides deleted parents/detail bodies.
+test "$(get owner "/boards/$board/archived-cards" cards-first)" = 200
+jq -e --arg org "$org" --arg board "$board" '.organizationId==$org and .boardId==$board and (.items|length)==50
+  and .nextCursor==.items[-1].card.id and all(.items[];.card.lifecycleState=="archived"
+    and .card.description==null and .list.lifecycleState=="archived" and .card.listId==.list.id)' "$scratch/cards-first.json" >/dev/null
+card_cursor=$(jq -r '.nextCursor' "$scratch/cards-first.json")
+test "$(get owner "/boards/$board/archived-cards?after=$card_cursor" cards-second)" = 200
+jq -e '.nextCursor==null and (.items|length)==2' "$scratch/cards-second.json" >/dev/null
+admin "SELECT c.id FROM cards c JOIN board_lists l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
+  WHERE c.tenant_id='$org' AND c.board_id='$board' AND c.lifecycle_state='ARCHIVED' AND l.lifecycle_state<>'DELETED' ORDER BY c.id;" > "$scratch/expected-card.ids"
+jq -sr '.[].items[].card.id' "$scratch/cards-first.json" "$scratch/cards-second.json" > "$scratch/actual-card.ids"
+cmp "$scratch/expected-card.ids" "$scratch/actual-card.ids"
+test "$(get owner "/boards/$board/archived-cards?after=bad")" = 400
+jq -e '.code=="invalid_archive_cursor"' "$scratch/response.json" >/dev/null
+test "$(get outsider "/boards/$board/archived-cards?after=bad")" = 404
+scripts/ci/assert-file-excludes.sh 'Archived fixture|Contained fixture|"items"' "$scratch/response.json"
+test "$(get portal "/boards/$board/archived-cards")" = 404
+test "$before" = "$(state)"
 test "$(get owner "/boards/$board/archived-lists" first)" = 200
 jq -e --arg org "$org" --arg board "$board" '.organizationId==$org and .boardId==$board and (.items|length)==50
   and .nextCursor==.items[-1].list.id and all(.items[];.list.lifecycleState=="archived" and .containedCardCount==2)' "$scratch/first.json" >/dev/null
@@ -91,13 +109,19 @@ wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh 'Archived fixture|Contained fixture|containedCardCount' "$scratch/response.json"
 admin "UPDATE board_members SET status='ACTIVE',role='MEMBER' WHERE board_id='$board' AND user_id='$editor';" >/dev/null
 test "$(get editor "/boards/$board/archived-lists")" = 404
+test "$(get editor "/boards/$board/archived-cards")" = 404
 hold; get owner "/boards/$board/archived-lists" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE sessions SET revoked_at=now() WHERE user_id='$owner' AND revoked_at IS NULL;"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
+login owner
+hold; get owner "/boards/$board/archived-cards?after=$card_cursor" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE sessions SET revoked_at=now() WHERE user_id='$owner' AND revoked_at IS NULL;"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
 login owner
 hold; get owner "/boards/$board/archived-lists" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE boards SET lifecycle_state='ARCHIVED',version=version+1 WHERE id='$board';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+test "$(get owner "/boards/$board/archived-cards")" = 404
 admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$board';" >/dev/null
 test "$(get owner "/boards/$board/archived-lists")" = 200
 test "$before" = "$(state)"
@@ -128,6 +152,8 @@ deleted_state=$(state)
 test "$(delete_list '&confirmed=true&containedCardCount=2')" = 200
 cmp "$scratch/receipt.json" "$scratch/deleted.json"
 test "$deleted_state" = "$(state)"
+test "$(get owner "/boards/$board/archived-cards" cards-deleted)" = 200
+jq -e --arg target "$target" 'all(.items[];.list.id!=$target and .card.listId!=$target)' "$scratch/cards-deleted.json" >/dev/null
 test "$(delete_list '&confirmed=true&containedCardCount=1')" = 409
 jq -e '.code=="idempotency_key_reused"' "$scratch/deleted.json" >/dev/null
 test "$deleted_state" = "$(state)"
