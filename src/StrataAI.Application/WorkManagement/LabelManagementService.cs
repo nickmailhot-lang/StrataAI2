@@ -2,6 +2,27 @@ namespace StrataAI.Application.WorkManagement;
 
 public sealed partial class WorkManagementService
 {
+    public async Task<WorkOperation<BoardLabelRecord>> MoveLabelAsync(Guid labelId, Guid actorId, Guid? beforeLabelId, long version, string correlationId, CancellationToken cancellationToken = default)
+    {
+        var label = await store.FindLabelAsync(labelId, cancellationToken);
+        if (label is null) return WorkOperation<BoardLabelRecord>.Failure("label_not_found");
+        var access = await ResolveAccessAsync(label.BoardId, actorId, cancellationToken);
+        if (access is not { Access.CanEdit: true } || access.Value.Board.LifecycleState != BoardLifecycleState.Active)
+            return WorkOperation<BoardLabelRecord>.Failure("label_not_found");
+        if (label.Version != version) return WorkOperation<BoardLabelRecord>.Failure("version_conflict");
+        if (beforeLabelId is not null)
+        {
+            var anchor = await store.FindLabelAsync(beforeLabelId.Value, cancellationToken);
+            if (anchor is null || anchor.Id == label.Id || anchor.BoardId != label.BoardId || anchor.OrganizationId != label.OrganizationId)
+                return WorkOperation<BoardLabelRecord>.Failure("invalid_move_position");
+        }
+        BoardLabelRecord? moved;
+        try { moved = await store.MoveLabelAsync(labelId, beforeLabelId, version, clock.UtcNow, cancellationToken); }
+        catch (RankSpaceExhaustedException) { return WorkOperation<BoardLabelRecord>.Failure("rank_space_exhausted"); }
+        if (moved is null) return WorkOperation<BoardLabelRecord>.Failure("version_conflict");
+        await RecordChangeAsync(moved.OrganizationId, moved.BoardId, actorId, "LABEL_UPDATED", "Label", moved.Id, moved.Version, correlationId, cancellationToken);
+        return WorkOperation<BoardLabelRecord>.Success(moved);
+    }
     private static readonly HashSet<string> LabelColors = new(StringComparer.Ordinal)
         { "green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black" };
     public async Task<WorkOperation<BoardLabelPage>> ListLabelsAsync(Guid boardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default)

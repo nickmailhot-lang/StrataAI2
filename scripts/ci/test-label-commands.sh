@@ -132,7 +132,7 @@ curl --fail --silent --show-error -c "$scratch/owner.cookies" -H 'X-StrataAI-Req
 test "$(request owner DELETE "/labels/$label?version=2&confirmed=true" "$delete_key" '{}')" = 200
 cmp "$scratch/response.json" "$scratch/delete-receipt.json"
 admin "INSERT INTO board_labels(id,tenant_id,board_id,name,color,rank)
- SELECT gen_random_uuid(),'$org','$board','Paged label','blue',lpad(i::text,30,'0') FROM generate_series(1,52) i;
+ SELECT gen_random_uuid(),'$org','$board','Paged label','blue',lpad((i*1000)::text,30,'0') FROM generate_series(1,52) i;
  INSERT INTO card_labels(tenant_id,board_id,card_id,label_id)
  SELECT tenant_id,board_id,'$card',id FROM board_labels WHERE board_id='$board' AND status='ACTIVE';" >/dev/null
 test "$(get owner "/cards/$card/labels")" = 200
@@ -153,4 +153,25 @@ hold; get editor "/cards/$card/labels?after=$cursor" > "$scratch/status" & reque
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$editor';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh 'Paged label|"items"|"cardVersion"' "$scratch/response.json"
+moving=$(admin "SELECT id FROM board_labels WHERE board_id='$board' AND status='ACTIVE' ORDER BY rank DESC,id DESC LIMIT 1;")
+anchor=$(admin "SELECT id FROM board_labels WHERE board_id='$board' AND status='ACTIVE' ORDER BY rank,id LIMIT 1;")
+move_body=$(jq -nc --arg id "$anchor" '{beforeLabelId:$id,version:1}')
+move_key=11111111-1111-1111-1111-111111111112
+neighbors() { admin "SELECT md5(jsonb_agg(to_jsonb(l) ORDER BY id)::text) FROM board_labels l WHERE board_id='$board' AND id<>'$moving';"; }
+before=$(state); original_neighbors=$(neighbors)
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(request owner POST "/labels/$moving/move" "$move_key" "$move_body")" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+test "$(request owner POST "/labels/$moving/move" "$move_key" "$move_body")" = 200
+jq -e '.version==2' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/move-receipt.json"
+test "$(admin "SELECT a.rank<b.rank FROM board_labels a JOIN board_labels b ON b.id='$anchor' WHERE a.id='$moving';")" = t
+test "$original_neighbors" = "$(neighbors)"
+after=$(state)
+test "$(request owner POST "/labels/$moving/move" "$move_key" "$move_body")" = 200
+cmp "$scratch/response.json" "$scratch/move-receipt.json"; test "$after" = "$(state)"
+test "$(request owner POST "/labels/$moving/move" 11111111-1111-1111-1111-111111111113 '{"version":2}')" = 200
+test "$(admin "SELECT rank>(SELECT max(rank) FROM board_labels WHERE board_id='$board' AND status='ACTIVE' AND id<>'$moving') FROM board_labels WHERE id='$moving';")" = t
+test "$original_neighbors" = "$(neighbors)"
 echo 'Label commands: exact-image CRUD, admission, retry identity, atomic audit rollback and association removal, Card revisions, and observed post-wait receipt authorization passed.'

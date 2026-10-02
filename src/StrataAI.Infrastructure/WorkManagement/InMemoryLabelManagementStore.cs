@@ -4,6 +4,22 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class InMemoryWorkManagementStore
 {
+    public Task<BoardLabelRecord?> MoveLabelAsync(Guid labelId, Guid? beforeLabelId, long version, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            if (!_labels.TryGetValue(labelId, out var label) || label.Deleted || label.Version != version) return Task.FromResult<BoardLabelRecord?>(null);
+            BoardLabelRecord? anchor = null;
+            if (beforeLabelId is not null && (!_labels.TryGetValue(beforeLabelId.Value, out anchor) || anchor.Deleted || anchor.BoardId != label.BoardId || anchor.Id == labelId))
+                return Task.FromResult<BoardLabelRecord?>(null);
+            var previous = _labels.Values.Where(item => item.BoardId == label.BoardId && !item.Deleted && item.Id != labelId
+                && (anchor is null || string.CompareOrdinal(item.Rank, anchor.Rank) < 0 || item.Rank == anchor.Rank && item.Id.CompareTo(anchor.Id) < 0))
+                .OrderBy(item => item.Rank, StringComparer.Ordinal).ThenBy(item => item.Id).LastOrDefault();
+            if (anchor is not null && previous?.Rank == anchor.Rank) throw new RankSpaceExhaustedException();
+            var rank = anchor is null ? RankToken.After(previous?.Rank) : RankToken.Between(previous?.Rank, anchor.Rank);
+            return UpdateLabelAsync(labelId, label.Name, label.Color, rank, version, now, cancellationToken);
+        }
+    }
     private IReadOnlyDictionary<Guid, CardLabelPreview> LabelPreviews(IReadOnlyList<BoardListSnapshot> lists)
     {
         var cards = lists.SelectMany(list => list.Cards).ToDictionary(card => card.Id);

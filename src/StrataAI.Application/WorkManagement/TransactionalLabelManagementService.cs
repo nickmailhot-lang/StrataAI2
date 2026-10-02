@@ -2,6 +2,9 @@ namespace StrataAI.Application.WorkManagement;
 
 public sealed partial class TransactionalWorkManagementService
 {
+    public Task<WorkOperation<BoardLabelRecord>> MoveLabelAsync(Guid labelId, Guid actorId, Guid? beforeLabelId, long version, string correlationId, CancellationToken cancellationToken = default) =>
+        LabelCommand(labelId, actorId, "edit", WorkCommand.Create(actorId, context.IdempotencyKey, "MoveLabelAsync", labelId,
+            new { beforeLabelId, version }, "label_not_found"), () => inner.MoveLabelAsync(labelId, actorId, beforeLabelId, version, correlationId, cancellationToken), cancellationToken);
     public Task<WorkOperation<BoardLabelPage>> ListLabelsAsync(Guid boardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default) =>
         BoardCommand(boardId, actorId, "view", WorkCommand.Create(actorId, null, "ListLabelsAsync", boardId, new { }, "board_not_found"), async () =>
         {

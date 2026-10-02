@@ -6,6 +6,13 @@ public static partial class WorkManagementEndpoints
 {
     private static void MapLabelEndpoints(WebApplication app)
     {
+        app.MapPost("/labels/{labelId:guid}/move", async (Guid labelId, MoveLabelRequest request, HttpContext context, IWorkManagementService service, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            var result = await service.MoveLabelAsync(labelId, actor.Value, request.BeforeLabelId, request.Version, context.TraceIdentifier, ct);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         app.MapGet("/cards/{cardId:guid}/labels", async (Guid cardId, string? after, HttpContext context, IWorkManagementService service, CancellationToken ct) =>
         {
             var actor = GetUserId(context);
@@ -58,4 +65,5 @@ public static partial class WorkManagementEndpoints
 }
 
 public sealed record CreateLabelRequest(string Name, string Color);
+public sealed record MoveLabelRequest(Guid? BeforeLabelId, long Version);
 public sealed record UpdateLabelRequest(string Name, string Color, string? Rank, long Version);

@@ -6,6 +6,23 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class PostgresWorkManagementStore
 {
+    public async Task<BoardLabelRecord?> MoveLabelAsync(Guid labelId, Guid? beforeLabelId, long version, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        var label = await FindLabelAsync(labelId, cancellationToken);
+        if (label is null || label.Version != version) return null;
+        if (!connectionFactory.HasCommandScope(label.OrganizationId)) throw new InvalidOperationException("Label ordering requires the owning command transaction.");
+        var anchor = beforeLabelId is null ? null : await FindLabelAsync(beforeLabelId.Value, cancellationToken);
+        if (beforeLabelId is not null && (anchor is null || anchor.BoardId != label.BoardId || anchor.OrganizationId != label.OrganizationId || anchor.Id == label.Id)) return null;
+        await using var session = await connectionFactory.OpenTenantSessionAsync(label.OrganizationId, cancellationToken);
+        await using var previous = new NpgsqlCommand("SELECT rank FROM board_labels WHERE tenant_id=@tenant AND board_id=@board AND status='ACTIVE' AND id<>@id AND (@before IS NULL OR rank<@upper OR (rank=@upper AND id<@before)) ORDER BY rank DESC,id DESC LIMIT 1;", session.Connection, session.Transaction);
+        previous.Parameters.AddWithValue("tenant", label.OrganizationId); previous.Parameters.AddWithValue("board", label.BoardId); previous.Parameters.AddWithValue("id", labelId);
+        previous.Parameters.AddWithValue("before", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)beforeLabelId ?? DBNull.Value);
+        previous.Parameters.AddWithValue("upper", NpgsqlTypes.NpgsqlDbType.Text, (object?)anchor?.Rank ?? DBNull.Value);
+        var lower = await previous.ExecuteScalarAsync(cancellationToken) as string;
+        if (anchor is not null && lower == anchor.Rank) throw new RankSpaceExhaustedException();
+        var rank = anchor is null ? RankToken.After(lower) : RankToken.Between(lower, anchor.Rank);
+        return await UpdateLabelAsync(labelId, label.Name, label.Color, rank, version, now, cancellationToken);
+    }
     private static async Task<IReadOnlyDictionary<Guid, CardLabelPreview>> LoadLabelPreviewsAsync(TenantDbSession session, Guid tenant, Guid board, CancellationToken ct)
     {
         await using var command = new NpgsqlCommand("""

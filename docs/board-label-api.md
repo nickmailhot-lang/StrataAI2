@@ -116,6 +116,17 @@ indicators plus the correct count to an authorized and an anonymous public
 reader. Existing desktop/mobile browser cases now assert Card-face indicators.
 These new server/browser runtime checks await CI.
 
+POST `/labels/{labelId}/move` accepts the current label `version` and optional
+`beforeLabelId`; null places it at the end. It allocates rank under the existing
+Board command lock, validates a same-Board active anchor, preserves sibling
+records, and emits the standard LABEL_UPDATED event. Stale revisions and
+exhausted/equal rank intervals return conflicts without partial changes. Retry
+fingerprints include the requested position, and historical receipts retain
+current label/Board admission. Host tests cover ordering, unchanged neighbors,
+exact retries, stale/self/outsider requests, and exhausted space; the required
+exact-image fixture adds audit rollback, before/end ordering and unchanged
+neighbor records. Local strict compilation passed; runtime evidence awaits CI.
+
 This is a foundation, not PRD-10 closure. Accessible label administration, filtering, relative reorder
 controls, copy/move metadata reconciliation, and exact-image concurrency,
 rollback, telemetry, and browser acceptance remain required.
