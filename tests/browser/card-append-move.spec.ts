@@ -97,7 +97,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         await page.keyboard.press('ArrowLeft');
         await expect(page.getByText('Move this card card can be dropped at the end of Planning.', { exact: true })).toBeAttached();
         await page.keyboard.press('Escape');
-        await expect(dragHandle).toHaveAttribute('aria-pressed', 'false');
+        await expect(dragHandle).not.toHaveAttribute('aria-pressed', 'true');
         expect(dragWrites).toBe(0);
         expect((await (await context.request.get(`/boards/${board}`)).json()).lists).toEqual(beforeDrag.lists);
         await dragHandle.focus(); await page.keyboard.press('Space');

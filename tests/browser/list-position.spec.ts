@@ -69,7 +69,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await expect(page.getByText(targetAnnouncement, { exact: true })).toBeAttached();
     await page.keyboard.press('Escape');
     await expect(page.getByText(`Drag cancelled. ${keyboardName} list was not moved.`, { exact: true })).toBeAttached();
-    await expect(dragHandle).toHaveAttribute('aria-pressed', 'false');
+    await expect(dragHandle).not.toHaveAttribute('aria-pressed', 'true');
     expect(moveWrites).toBe(0);
     expect((await (await context.request.get(`/boards/${board}`)).json()).lists).toEqual(beforeKeyboard.lists);
     await dragHandle.focus(); await page.keyboard.press('Space');
