@@ -103,6 +103,17 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     expect(await other.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await other.goto(boardPath);
     await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
+    await expect(openFilters).toBeEnabled(); await openFilters.focus(); await other.keyboard.press('Enter');
+    const chooseMembers = filters.getByRole('button', { name: 'Choose assignees', exact: true });
+    await expect(chooseMembers).toBeEnabled(); await chooseMembers.focus(); await other.keyboard.press('Enter');
+    const selectedMember = filters.getByRole('checkbox', { name: 'Label collaboration fixture', exact: true });
+    await expect(selectedMember).toBeEnabled(); await selectedMember.focus(); await other.keyboard.press('Space');
+    await filters.getByRole('button', { name: 'Apply filters', exact: true }).focus(); await other.keyboard.press('Enter');
+    await expect(matching).toBeVisible();
+    await memberChange('Unassign');
+    await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(selectedMember).toBeChecked();
+    await memberChange('Assign'); await expect(matching).toBeVisible({ timeout: 20_000 });
     expect((await context.request.post(`/boards/${board}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
     await expect(filters).toHaveCount(0, { timeout: 20_000 });
     await expect(other.getByText('This board is archived. Editing is unavailable.', { exact: true })).toBeVisible();

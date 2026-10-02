@@ -6,17 +6,19 @@ import { filterPageMatchesSnapshot, type BoardCanvasFilter } from './boardFilter
 
 const uuid = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v) && v !== '00000000-0000-0000-0000-000000000000';
 const palette = ['green', 'yellow', 'orange', 'red', 'purple', 'blue', 'sky', 'lime', 'pink', 'black'];
-type Criteria = { keyword: string; labels: string[]; match: 'all' | 'any' };
+type Criteria = { keyword: string; labels: string[]; members: string[]; match: 'all' | 'any' };
 type Label = { id: string; name: string; color: string };
+type Member = { userId: string; displayName: string };
 type Result = { items: (WorkCard & { listId: string })[]; next: string | null };
 type Props = { snapshot: BoardSnapshot; disabled: boolean; onRefresh: () => void; onCanvasChange?: (page: BoardCanvasFilter | undefined) => void };
-const empty = (): Criteria => ({ keyword: '', labels: [], match: 'all' });
+const empty = (): Criteria => ({ keyword: '', labels: [], members: [], match: 'all' });
 function saved(key: string): { criteria: Criteria; canvas: boolean } {
   try {
     const c = JSON.parse(sessionStorage.getItem(key) ?? 'null') as (Criteria & { canvas?: unknown }) | null;
     if (c && typeof c.keyword === 'string' && c.keyword.length <= 160 && (c.match === 'all' || c.match === 'any')
-      && Array.isArray(c.labels) && c.labels.length <= 25 && c.labels.every(uuid) && new Set(c.labels).size === c.labels.length)
-      return { criteria: { keyword: c.keyword, labels: c.labels, match: c.match }, canvas: c.canvas === true };
+      && Array.isArray(c.labels) && c.labels.length <= 25 && c.labels.every(uuid) && new Set(c.labels).size === c.labels.length
+      && (c.members === undefined || (Array.isArray(c.members) && c.members.length <= 25 && c.members.every(uuid) && new Set(c.members.map(id => id.toLowerCase())).size === c.members.length)))
+      return { criteria: { keyword: c.keyword, labels: c.labels, members: (c.members ?? []).map(id => id.toLowerCase()), match: c.match }, canvas: c.canvas === true };
   } catch { /* Storage is optional; admitted server reads remain authoritative. */ }
   return { criteria: empty(), canvas: false };
 }
@@ -29,6 +31,9 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const [identity, setIdentity] = useState<string>(); const [loading, setLoading] = useState(false);
   const [labelLoading, setLabelLoading] = useState(false); const [notice, setNotice] = useState<string>();
   const [labelNotice, setLabelNotice] = useState<string>();
+  const [memberOpen, setMemberOpen] = useState(false); const [members, setMembers] = useState<Member[]>([]);
+  const [memberCursor, setMemberCursor] = useState<string | null>(null); const [memberLoading, setMemberLoading] = useState(false);
+  const [memberNotice, setMemberNotice] = useState<string>(); const memberPending = useRef<AbortController | undefined>(undefined);
   const epoch = useRef(0); const pending = useRef<AbortController | undefined>(undefined);
   const org = snapshot.board.organizationId, board = snapshot.board.id;
   const available = snapshot.access.canView && snapshot.board.lifecycleState === 'active';
@@ -37,9 +42,10 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     onCanvasChange?.(canvasMode && applied && available ? { snapshot, items: !disabled && result ? result.items : [] } : undefined);
   }, [canvasMode, applied, available, disabled, result, snapshot, onCanvasChange]);
   useEffect(() => () => onCanvasChange?.(undefined), [onCanvasChange]);
-  useEffect(() => () => { epoch.current++; pending.current?.abort(); }, []);
+  useEffect(() => () => { epoch.current++; pending.current?.abort(); memberPending.current?.abort(); }, []);
   useEffect(() => {
     epoch.current++; pending.current?.abort(); pending.current = undefined;
+    memberPending.current?.abort(); memberPending.current = undefined; setMemberOpen(false); setMembers([]); setMemberCursor(null); setMemberLoading(false); setMemberNotice(undefined);
     setLabels([]); setLabelCursor(null); setResult(undefined); setIdentity(undefined); setApplied(undefined); setLoading(false); setLabelLoading(false);
     setNotice(undefined); setLabelNotice(undefined);
     setCriteria(empty()); setOpen(false); setCursor(undefined);
@@ -48,7 +54,10 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   async function loadLabels(after?: string, opening = false, restoring = false) {
     if (!available || disabled || pending.current) return;
     const controller = new AbortController(); pending.current = controller; const ticket = epoch.current;
-    if (opening) { setCanvasMode(false); setOpen(!restoring); setCriteria(empty()); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCursor(undefined); setNotice(undefined); }
+    if (opening) {
+      memberPending.current?.abort(); memberPending.current = undefined; setMemberOpen(false); setMembers([]); setMemberCursor(null); setMemberLoading(false); setMemberNotice(undefined);
+      setCanvasMode(false); setOpen(!restoring); setCriteria(empty()); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCursor(undefined); setNotice(undefined);
+    }
     setLabelLoading(true); setLabelNotice(undefined); setLabels([]); setLabelCursor(null);
     try {
       if (opening) {
@@ -74,8 +83,36 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     } catch (error) {
       if (ticket !== epoch.current) return;
       setLabelNotice('Label choices could not be loaded. Reload choices to continue.');
-      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { setLabelNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); setOpen(false); setIdentity(undefined); setResult(undefined); onRefresh(); }
+      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+        memberPending.current?.abort(); memberPending.current = undefined; setMembers([]); setMemberLoading(false);
+        setLabelNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); setOpen(false); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCanvasMode(false); onRefresh();
+      }
     } finally { if (ticket === epoch.current) { pending.current = undefined; setLabelLoading(false); } }
+  }
+  async function loadMembers(after?: string) {
+    if (!available || disabled || !open || !identity || memberPending.current || snapshot.cardMembers === null) return;
+    const controller = new AbortController(); memberPending.current = controller; const ticket = epoch.current;
+    setMemberOpen(true); setMemberLoading(true); setMemberNotice(undefined); setMembers([]); setMemberCursor(null);
+    try {
+      const p = await boundedWorkRead(signal => workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/assignable-members${after ? `?after=${encodeURIComponent(after)}` : ''}`, { signal }), controller.signal);
+      if (ticket !== epoch.current || controller.signal.aborted) return;
+      if (p.organizationId !== org || p.boardId !== board || !Array.isArray(p.items) || p.items.length > 50) throw new Error('Invalid member choices');
+      let previous = after?.toLowerCase();
+      const items = p.items.map((value: unknown): Member => {
+        const m = value as Record<string, unknown> | null;
+        if (!m || !uuid(m.userId) || typeof m.displayName !== 'string' || m.displayName.length > 160
+          || (previous && m.userId.toLowerCase() <= previous)) throw new Error('Invalid member choice');
+        previous = m.userId.toLowerCase(); return { userId: previous, displayName: m.displayName };
+      });
+      if (p.nextCursor !== null && (!uuid(p.nextCursor) || items.length !== 50 || p.nextCursor !== items.at(-1)?.userId)) throw new Error('Invalid member cursor');
+      setMembers(items); setMemberCursor(p.nextCursor as string | null);
+    } catch (error) {
+      if (ticket !== epoch.current || controller.signal.aborted) return;
+      setMembers([]); setMemberNotice('Assignee choices could not be loaded. Reload choices to continue.');
+      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+        setOpen(false); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCanvasMode(false); onRefresh();
+      }
+    } finally { if (ticket === epoch.current) { memberPending.current = undefined; setMemberLoading(false); } }
   }
   const restoreSavedCanvas = useEffectEvent(() => {
     if (!onCanvasChange || !available || disabled || identity || pending.current) return;
@@ -88,7 +125,10 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const refreshChoices = useEffectEvent(() => {
     if (!open || !identity || disabled || !available) return;
     epoch.current++; pending.current?.abort(); pending.current = undefined;
+    memberPending.current?.abort(); memberPending.current = undefined;
+    setMembers([]); setMemberCursor(null); setMemberLoading(false);
     void loadLabels();
+    if (memberOpen) void loadMembers();
   });
   useEffect(() => { refreshChoices(); }, [snapshot, disabled]);
   // Every canonical refresh invalidates the result page, including realtime
@@ -97,6 +137,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     if ((!open && !canvasMode) || !applied || !identity || disabled || !available) { setResult(undefined); return; }
     let active = true; const controller = new AbortController(); setResult(undefined); setLoading(true); setNotice(undefined);
     const query = new URLSearchParams({ keyword: applied.keyword, labels: applied.labels.join(','), match: applied.match });
+    if (applied.members.length) query.set('members', applied.members.join(','));
     if (cursor) query.set('after', cursor);
     void boundedWorkRead(signal => workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/cards?${query}`, { signal }), controller.signal).then(p => {
       if (!active) return;
@@ -126,12 +167,12 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     if (identity) try { sessionStorage.removeItem(storageKey(identity)); } catch { /* Optional storage. */ }
   }
   function apply() {
-    if (!identity || disabled || labelLoading) return;
-    const next = { ...criteria, keyword: criteria.keyword.trim(), labels: [...criteria.labels] };
+    if (!identity || disabled || labelLoading || memberLoading) return;
+    const next = { ...criteria, keyword: criteria.keyword.trim(), labels: [...criteria.labels], members: [...criteria.members] };
     try { sessionStorage.setItem(storageKey(identity), JSON.stringify(next)); } catch { /* Optional persistence. */ }
     setApplied(next); setCursor(undefined);
   }
-  function close() { epoch.current++; pending.current?.abort(); pending.current = undefined; setLabelLoading(false); setOpen(false); setResult(undefined); }
+  function close() { epoch.current++; pending.current?.abort(); pending.current = undefined; memberPending.current?.abort(); memberPending.current = undefined; setMemberLoading(false); setMembers([]); setMemberOpen(false); setLabelLoading(false); setOpen(false); setResult(undefined); }
   return <>
     {available && <Button disabled={disabled} onClick={() => void loadLabels(undefined, true)}>Filter Board Cards</Button>}
     {canvasMode && !open && <Stack spacing={1}>
@@ -159,10 +200,21 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
         {!labelLoading && !labelNotice && identity && labels.length === 0 && <Typography>No labels on this choice page. Use a keyword, or reload choices.</Typography>}
         {labels.map(l => <FormControlLabel key={l.id} label={`${l.name || 'Unnamed label'} (${l.color})`} control={<Checkbox checked={criteria.labels.includes(l.id)} disabled={disabled || labelLoading || (!criteria.labels.includes(l.id) && criteria.labels.length >= 25)} onChange={e => setCriteria(c => ({ ...c, labels: e.target.checked ? [...c.labels, l.id] : c.labels.filter(id => id !== l.id) }))} />} />)}
         <Typography>{criteria.labels.length} selected labels</Typography>
+        {snapshot.cardMembers !== null && <>
+          <Typography>Choose up to 25 assignees. Selections stay selected when you change choice pages.</Typography>
+          <Button disabled={disabled || memberLoading || !identity} onClick={() => void loadMembers()}>{memberOpen ? 'Reload assignee choices' : 'Choose assignees'}</Button>
+          {memberLoading && <Typography role="status">Loading assignee choices…</Typography>}
+          {memberNotice && <Alert severity="warning">{memberNotice}</Alert>}
+          {!disabled && !memberLoading && members.map(m => <FormControlLabel key={m.userId} label={m.displayName.trim() || 'Unnamed member'} control={<Checkbox checked={criteria.members.includes(m.userId)}
+            disabled={disabled || (!criteria.members.includes(m.userId) && criteria.members.length >= 25)} onChange={e => setCriteria(c => ({ ...c, members: e.target.checked ? [...c.members, m.userId] : c.members.filter(id => id !== m.userId) }))} />} />)}
+          {memberOpen && !memberLoading && !memberNotice && members.length === 0 && <Typography>No eligible assignees on this choice page.</Typography>}
+          {memberCursor && <Button disabled={disabled || memberLoading} onClick={() => void loadMembers(memberCursor)}>Next assignee choices</Button>}
+          <Typography>{criteria.members.length} selected assignees</Typography>
+        </>}
         <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
           <Button disabled={disabled || labelLoading} onClick={() => void loadLabels()}>Reload label choices</Button>
           {labelCursor && <Button disabled={disabled || labelLoading} onClick={() => void loadLabels(labelCursor!)}>Next label choices</Button>}
-          <Button disabled={disabled || labelLoading || !identity} onClick={apply}>Apply filters</Button>
+          <Button disabled={disabled || labelLoading || memberLoading || !identity} onClick={apply}>Apply filters</Button>
           <Button disabled={disabled || labelLoading || !identity} onClick={clear}>Clear filters</Button>
         </Stack>
         {loading && <Typography role="status">Loading filtered Cards…</Typography>}

@@ -127,3 +127,31 @@ release web proxy. Strict .NET compilation and shell syntax passed locally;
 execution of these new checks awaits Linux CI. Member selection in the MUI
 filter, stored member criteria and two-client filter acceptance remain required
 work; this does not complete PRD-16 or PRD-11.
+
+The MUI filter dialog now offers on-demand assignee discovery using the admitted
+assignable Board directory. It holds one 50-person choice page, validates scope,
+names, UUID order and cursors, supports Next/Reload pages and retains up to 25
+selected user IDs across choice pages. Named checkbox controls support keyboard
+use; empty/loading/denied states have safe recovery. PUBLIC visitor snapshots
+with no member metadata hide member discovery. Board/scope changes retire reads,
+canonical refresh reloads an open member page, and pending/disabled states hide
+names. Member denials close the filter and request fresh Board admission.
+
+Applied member IDs are sent with the keyword/label/match criteria to the server.
+Storage contains only bounded criteria (never names/results) under the admitted
+actor/Organization/Board key. Legacy label-only criteria restore with no members;
+member UUIDs are validated/deduplicated case-insensitively before restoration.
+Member criteria also restore the bounded filtered canvas after fresh identity
+admission; Clear removes every predicate and the stored entry. Another signed-in
+actor cannot reuse those member predicates.
+
+Twenty-four component cases passed locally, including member paging/cap,
+selection persistence, other-actor isolation, canvas restoration, denial and
+late-read fencing. Typecheck/lint/production build and browser collection passed.
+The required desktop/phone browser fixture now selects an assignee by keyboard
+on the phone and checks result disappearance/reappearance after desktop member
+removal/restoration through real Worker delivery. Exact-image execution of these
+UI/browser checks remains pending. Server commit cc030b6 passed Linux .NET/web/
+PostgreSQL/source gates, image build and security in run 37051528948; its complete
+container/required-ci gate is still live. PRD-16's other required filters/search
+and full acceptance evidence remain outstanding.

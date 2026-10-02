@@ -24,18 +24,20 @@ it('lets a viewer apply canonical label and keyword predicates and persists only
   const link = await screen.findByRole('link', { name: 'Persisted match — Planning' }); expect(link).toHaveAttribute('href', `/app/${org}/boards/${board}/cards/${card.id}`);
   const query = new URL(fetch.mock.calls[2][0], 'https://example.test').searchParams;
   expect(query.get('keyword')).toBe('roof'); expect(query.get('labels')).toBe(label.id); expect(query.get('match')).toBe('all');
-  expect(JSON.parse(sessionStorage.getItem(storage())!)).toEqual({ keyword: 'roof', labels: [label.id], match: 'all' });
+  expect(JSON.parse(sessionStorage.getItem(storage())!)).toEqual({ keyword: 'roof', labels: [label.id], members: [], match: 'all' });
   expect(sessionStorage.getItem(storage())).not.toContain('Persisted match');
   fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
   expect(sessionStorage.getItem(storage())).toBeNull(); expect(screen.queryByRole('link', { name: 'Persisted match — Planning' })).not.toBeInTheDocument();
 });
 it('restores valid criteria and does not reuse another signed-in user’s criteria', async () => {
-  sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Saved text', labels: [label.id], match: 'any' }));
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Saved text', labels: [label.id], members: [actor], match: 'any' }));
   const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices())
     .mockResolvedValueOnce(response({ id: '77777777-7777-7777-7777-777777777777' })).mockResolvedValueOnce(choices());
   vi.stubGlobal('fetch', fetch); mount(); await open(); expect(screen.getByLabelText('Card keyword')).toHaveValue('Saved text'); expect(screen.getByRole('checkbox')).toBeChecked();
+  expect(screen.getByText('1 selected assignees')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Close filters' })); await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   await open(); expect(screen.getByLabelText('Card keyword')).toHaveValue(''); expect(screen.getByRole('checkbox')).not.toBeChecked();
+  expect(screen.getByText('0 selected assignees')).toBeInTheDocument();
 });
 it('keeps selected IDs while paging label choices', async () => {
   const extra = Array.from({ length: 49 }, (_, i) => ({ ...label, id: `88888888-8888-8888-8888-${String(i + 1).padStart(12, '0')}`, name: `Label ${i}` }));
@@ -102,7 +104,7 @@ it('projects a fresh bounded page onto canonical Lists, restores it for the admi
   const page = onCanvasChange.mock.calls.at(-1)![0];
   expect(filteredBoardCanvas(canonical, page).lists.map(l => l.cards.map(c => c.id))).toEqual([[card.id], []]);
   expect(canonical.lists[0].cards).toEqual([other, card]);
-  expect(JSON.parse(sessionStorage.getItem(storage())!)).toEqual({ keyword: '', labels: [label.id], match: 'all', canvas: true });
+  expect(JSON.parse(sessionStorage.getItem(storage())!)).toEqual({ keyword: '', labels: [label.id], members: [], match: 'all', canvas: true });
   view.unmount(); const restored = mount(p);
   await screen.findByText('Filtered Board: 1 matching Cards on this page.');
   fireEvent.click(screen.getByRole('button', { name: 'Clear Board filters' }));
@@ -150,4 +152,62 @@ it('keeps all Lists and canonical order and hides results from a superseded snap
   expect(filteredBoardCanvas(canonical, { snapshot: canonical, items: [second, card] }).lists[0].cards).toEqual([card, second]);
   expect(filteredBoardCanvas({ ...canonical }, { snapshot: canonical, items: [card] }).lists[0].cards).toEqual([]);
   expect(filteredBoardCanvas(canonical, { snapshot: canonical, items: [{ ...card, listId: actor }] }).lists[0].cards).toEqual([]);
+});
+
+const member = { userId: '77777777-7777-7777-7777-777777777777', displayName: 'Taylor' };
+const memberChoices = (items = [member], nextCursor: string | null = null) => response({ organizationId: org, boardId: board, items, nextCursor });
+async function chooseMembers() { fireEvent.click(screen.getByRole('button', { name: 'Choose assignees' })); await screen.findByRole('checkbox', { name: 'Taylor' }); }
+it('applies named assignees with labels and stores only user IDs under the admitted actor', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(memberChoices()).mockResolvedValueOnce(results());
+  vi.stubGlobal('fetch', fetch); mount(); await open(); await chooseMembers();
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Taylor' })); fireEvent.click(screen.getByRole('checkbox', { name: 'Priority (red)' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await screen.findByRole('link', { name: 'Persisted match — Planning' });
+  const query = new URL(fetch.mock.calls[3][0], 'https://example.test').searchParams;
+  expect(query.get('members')).toBe(member.userId); expect(query.get('labels')).toBe(label.id);
+  const stored = sessionStorage.getItem(storage())!; expect(JSON.parse(stored).members).toEqual([member.userId]); expect(stored).not.toContain('Taylor');
+  fireEvent.click(screen.getByRole('button', { name: 'Clear filters' })); expect(screen.getByText('0 selected assignees')).toBeInTheDocument(); expect(sessionStorage.getItem(storage())).toBeNull();
+});
+it('replaces bounded member pages while retaining selected IDs and enforces the 25-member cap', async () => {
+  const items = Array.from({ length: 50 }, (_, i) => ({ userId: `88888888-8888-8888-8888-${String(i + 1).padStart(12, '0')}`, displayName: `Person ${i}` }));
+  const next = { userId: '99999999-9999-9999-9999-999999999999', displayName: 'Next person' };
+  const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(memberChoices(items, items[49].userId)).mockResolvedValueOnce(memberChoices([next]));
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: '', labels: [], members: items.slice(0, 24).map(m => m.userId), match: 'all' }));
+  vi.stubGlobal('fetch', fetch); mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Choose assignees' }));
+  await screen.findByRole('checkbox', { name: 'Person 0' });
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Person 24' }));
+  expect(screen.getByRole('checkbox', { name: 'Person 25' })).toBeDisabled();
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Person 0' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Next assignee choices' })); fireEvent.click(await screen.findByRole('checkbox', { name: 'Next person' }));
+  expect(screen.queryByRole('checkbox', { name: 'Person 1' })).not.toBeInTheDocument(); expect(screen.getByText('25 selected assignees')).toBeInTheDocument();
+  expect(fetch.mock.calls[3][0]).toBe(`/boards/${board}/assignable-members?after=${items[49].userId}`);
+});
+it('restores selected member criteria after fresh identity admission', async () => {
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: '', labels: [], members: [member.userId], match: 'all' }));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(memberChoices()));
+  mount(); await open(); await chooseMembers(); expect(screen.getByRole('checkbox', { name: 'Taylor' })).toBeChecked();
+});
+it.each([401, 403, 404])('clears assignee choices and refreshes admission after member denial %s', async status => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(response({ detail: 'Private member details' }, status)));
+  const p = props(); mount(p); await open(); fireEvent.click(screen.getByRole('button', { name: 'Choose assignees' }));
+  await waitFor(() => expect(p.onRefresh).toHaveBeenCalled()); await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.queryByText('Private member details')).not.toBeInTheDocument(); expect(screen.queryByRole('checkbox', { name: 'Taylor' })).not.toBeInTheDocument();
+});
+it('fences a late member directory response after Board scope changes', async () => {
+  let resolve!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })));
+  const p = props(); const view = mount(p); await open(); fireEvent.click(screen.getByRole('button', { name: 'Choose assignees' })); await waitFor(() => expect(resolve).toBeDefined());
+  view.rerender(<MemoryRouter><BoardFilterControl {...p} snapshot={{ ...snapshot, board: { ...snapshot.board, id: actor } }} /></MemoryRouter>);
+  await act(async () => resolve(memberChoices())); await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.queryByRole('checkbox', { name: 'Taylor' })).not.toBeInTheDocument();
+});
+it('hides member discovery for a PUBLIC visitor snapshot with no member metadata', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()));
+  mount({ ...props(), snapshot: { ...snapshot, cardMembers: null } }); await open(); expect(screen.queryByRole('button', { name: 'Choose assignees' })).not.toBeInTheDocument();
+});
+it('restores member canvas criteria using fresh identity and an admitted result read', async () => {
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: '', labels: [], members: [member.userId], match: 'all', canvas: true }));
+  const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(results());
+  vi.stubGlobal('fetch', fetch); mount({ ...props(), snapshot: { ...snapshot, lists: [{ ...snapshot.lists[0], cards: [card] }] }, onCanvasChange: vi.fn() });
+  await screen.findByText('Filtered Board: 1 matching Cards on this page.');
+  expect(new URL(fetch.mock.calls[2][0], 'https://example.test').searchParams.get('members')).toBe(member.userId);
 });
