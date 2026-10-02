@@ -17,6 +17,20 @@ async function choose() {
   fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it('restores review-action focus after a current-Board refresh releases the disabled control', async () => {
+  const props = { card, snapshot, disabled: false, onAcknowledged: vi.fn(), onRefresh: () => {} };
+  const view = render(<CardMoveControls {...props} />);
+  await choose();
+  const newer = { ...card, version: 4 };
+  const refreshed = { ...props, card: newer, onRefresh: () => view.rerender(<CardMoveControls {...refreshed} disabled />) };
+  view.rerender(<CardMoveControls {...refreshed} />);
+  screen.getByRole('button', { name: 'Check current Board' }).focus();
+  fireEvent.click(screen.getByRole('button', { name: 'Check current Board' }));
+  const action = screen.getByRole('button', { name: 'Move card' });
+  expect(action).toBeDisabled(); expect(action).not.toHaveFocus();
+  view.rerender(<CardMoveControls {...refreshed} />);
+  await waitFor(() => expect(action).toHaveFocus());
+});
 it('submits an admitted drop through the bound move and uncertain-response recovery path', async () => {
   const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost response')).mockResolvedValueOnce(reply(ack)); vi.stubGlobal('fetch', fetcher);
   const recovery = vi.fn(); const acknowledged = vi.fn();

@@ -110,7 +110,7 @@ card revision blocks a fresh drop and requests current state. An unresolved
 intent cannot be replaced by a later drop. A recovery callback exposes that
 fence to the canvas drag handles.
 
-Fifteen focused control tests pass, including drop delivery with a lost
+Sixteen focused control tests pass, including drop delivery with a lost
 response/exact retry and stale drag-start rejection without a write. Typecheck,
 lint and production build pass.
 
@@ -174,4 +174,8 @@ a newer canonical placement. It requires no automatic replacement write, a
 disabled unchanged destination, the original retry body/key and no repeated
 projection of historical placement. This source check does not prove executed
 browser recovery acceptance.
+Closing card-move review now queues focus until its action is enabled after a
+current-Board refresh. A focused source case checks the disabled interval and
+subsequent focus restoration; canvas acknowledgment focus remains separately
+managed by the Board.
 

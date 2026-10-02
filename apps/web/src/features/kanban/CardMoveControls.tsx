@@ -20,6 +20,12 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
   useEffect(() => { onRecoveryChange?.(card.id, !!intent || blocked); return () => onRecoveryChange?.(card.id, false); }, [card.id, intent, blocked, onRecoveryChange]);
   const pending = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(true); const action = useRef<HTMLButtonElement>(null);
+  const focusRequested = useRef(false);
+  useEffect(() => {
+    if (focusRequested.current && !disabled && !busy && !review) {
+      action.current?.focus(); focusRequested.current = false;
+    }
+  }, [disabled, busy, review]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false;
     if (pending.current) { pending.current.abort(); onBusyChange?.(false); onPreview?.(); }
   }; }, [onBusyChange, onPreview]);
@@ -83,7 +89,7 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
       if (pending.current === controller) { pending.current = undefined; if (mounted.current) { setBusy(false); onBusyChange?.(false); onPreview?.(); } }
     }
   }
-  function closeReview() { setReview(undefined); setBlocked(false); setNotice(undefined); queueMicrotask(() => action.current?.focus()); }
+  function closeReview() { focusRequested.current = true; setReview(undefined); setBlocked(false); setNotice(undefined); }
   return <Stack spacing={1} sx={{ mt: 2 }}>
     {busy && <Typography role="status">{intent ? 'Checking the original move acknowledgment. Current placement may reflect later edits.'
       : 'Saving move. Placement is provisional until confirmed.'}</Typography>}

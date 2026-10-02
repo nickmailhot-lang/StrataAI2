@@ -20,6 +20,10 @@ position, with the existing bounded-label/value assertions.
 
 The solution and test compile with zero warnings/errors. Local .NET execution
 is blocked by Windows Application Control; executed test evidence is pending
-Linux CI. Operator collector/export, dashboards, alerting, client exceptions,
+Linux CI. Run 36946480776 at 97b2cce subsequently executed all 123 Domain and
+179 API-host tests successfully, as confirmed in decoded job 110649660708 logs.
+That includes the newly compiled Kanban telemetry regression in the unfiltered
+API-host suite; it is source/host evidence, not full release-image acceptance.
+Operator collector/export, dashboards, alerting, client exceptions,
 reconnect/conflict rates, user-visible retry events and browser timing/performance
 acceptance remain incomplete. This instrumentation does not complete PRD-06.
