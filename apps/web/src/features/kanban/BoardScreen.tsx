@@ -25,6 +25,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardDateDisplay } from './CardDateDisplay';
+import { CardDateEditor } from './CardDateEditor';
 import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
 import { WatchControl } from '../notifications/WatchControl';
@@ -98,7 +99,9 @@ function BoardContent() {
   const [labelManageRecovery, setLabelManageRecovery] = useState(false);
   const [assignmentRecovery, setAssignmentRecovery] = useState(false);
   const [memberRecovery, setMemberRecovery] = useState(false);
-  const busy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery;
+  const [dateRecovery, setDateRecovery] = useState(false);
+  const otherBusy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery;
+  const busy = otherBusy || dateRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
   const [listDrop, setListDrop] = useState<ListDropRequest>();
@@ -687,6 +690,11 @@ function BoardContent() {
             />
             <CardDateDisplay card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               unavailable={snapshotReading || !!loadError} onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
+            <CardDateEditor card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              listId={snapshot.lists.find(column => column.cards.some(item => item.id === card.id))!.list.id}
+              editable={Boolean(editable)} disabled={otherBusy || cardRecovery} unavailable={snapshotReading || !!loadError}
+              onBusyChange={setBusy} onRecoveryChange={setDateRecovery}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             {cardId && <CardLabels key={`labels-${card.id}-${card.version}-${reload}`} organizationId={snapshot.board.organizationId}
               boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}

@@ -16,10 +16,26 @@ for (const width of [1280, 390]) {
     const cardReply = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Dated work' } });
     expect(cardReply.status()).toBe(201); const card = (await cardReply.json()).id;
     const dateInput = { startAt: null, dueAt: '2040-01-02', dueTimezone: 'Pacific/Honolulu', dueHasTime: false, dueComplete: false, version: 1 };
-    const dateReply = await context.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: dateInput });
-    expect(dateReply.status()).toBe(200);
     const route = `/app/${org}/boards/${board}/cards/${card}`;
     await page.goto(route);
+    const attempts: { key: string | undefined; body: string | null }[] = []; let drop = true;
+    await page.route(`**/cards/${card}/dates`, async intercepted => {
+      attempts.push({ key: intercepted.request().headers()['idempotency-key'], body: intercepted.request().postData() });
+      const result = await intercepted.fetch(); expect(result.status()).toBe(200);
+      if (drop) { drop = false; await intercepted.abort('failed'); } else await intercepted.fulfill({ response: result });
+    });
+    const edit = page.getByRole('button', { name: 'Edit dates' }); await expect(edit).toBeEnabled();
+    await edit.focus(); await expect(edit).toBeFocused(); await page.keyboard.press('Enter');
+    await page.getByLabel('Due date', { exact: true }).fill('2040-01-02');
+    await page.getByLabel('Date timezone', { exact: true }).fill('Pacific/Honolulu');
+    await page.getByRole('button', { name: 'Save dates', exact: true }).click();
+    const retry = page.getByRole('button', { name: 'Retry date save' }); await expect(retry).toBeEnabled();
+    await expect(page.getByLabel('Due date', { exact: true })).toBeDisabled();
+    await retry.focus(); await expect(retry).toBeFocused(); await page.keyboard.press('Enter');
+    await expect(page.getByText('Dates saved.', { exact: true })).toBeVisible();
+    expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
+    expect(JSON.parse(attempts[0].body!)).toMatchObject({ dueAt: '2040-01-02', dueTimezone: 'Pacific/Honolulu', version: 1 });
+    await page.unroute(`**/cards/${card}/dates`);
     const region = page.getByRole('region', { name: 'Card dates' });
     await expect(region).toContainText('Due Jan 3, 2040'); await expect(region).toContainText('Upcoming');
     await expect(region).toContainText('Viewing timezone: UTC. Date context: Pacific/Honolulu.');

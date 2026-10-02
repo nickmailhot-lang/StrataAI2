@@ -81,4 +81,30 @@ CI: separate authenticated sessions, canonical completion, configured timezone
 changes and clearing dates. They explicitly refresh canonical state and do not
 prove realtime notification delivery. Runtime browser evidence is pending.
 
-The editor, Board timezone override, reminders and wider acceptance remain open.
+Board timezone override, reminders and wider acceptance remain open.
+
+## Card date editor
+
+The MUI detail editor supports optional UTC start, date-only or timed UTC due,
+IANA timezone context, independent completion/reopening and clearing dates.
+Date-only editing uses the stored calendar context; untouched timed values
+retain their PostgreSQL microsecond precision. Drafts remain tied to their base
+Card revision. A newer snapshot preserves a dirty draft and disables submission
+until explicit discard and fresh review. Scope/account admission is rechecked
+before submission and all responses must match the expected Card, parent scope,
+revision, date values and flags. Stable errors do not render provider details.
+
+An unconfirmed save freezes its original payload, actor, Card revision and UUID
+key. Canonical snapshots cannot replace this intent. Only the same save may be
+retried; receipt acknowledgment then refreshes canonical state. Permission/scope
+loss disables or hides editing. Recovery contributes to Board-wide action gating
+while the date editor retains its own recovery action. Focus returns to an enabled
+action after acknowledgement/recovery. Explicit discard starts a fresh profile
+review rather than reusing a former actor.
+
+Local validation: 36 date/editor/detail tests passed, including frozen-key lost
+acknowledgment, incoming revision conflict and account/scope loss; web typecheck,
+lint and build passed. The desktop/phone exact-image browser scenarios now create
+dates through the actual editor, discard a real committed response, retry with
+identical payload/key and check canonical two-session completion and timezone
+display. These runtime scenarios remain pending in CI.
