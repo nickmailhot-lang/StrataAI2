@@ -32,7 +32,19 @@ to prove rollback of claim/mutation/audit, then recover the same key without
 additional product effects and reauthorize after grant/parent changes. Local
 build and shell syntax pass; actual Linux execution remains required.
 
-The reviewed permanent-delete UI and its irreversible contained-card disclosure
-still need implementation and browser proof. Archived-card browsing and the
-remaining PRD-07/18 requirements also remain open. The retention/purge policy
-must be completed under the wider retention tickets before their criteria close.
+The archive page now provides permanent deletion with the exact reviewed name and
+card count, irreversible wording and a separate unchecked acknowledgment checkbox.
+No DELETE can be submitted without that explicit consent. A changed count or List
+revision blocks old consent; canceling/reopening a fresh review resets the checkbox.
+Lost or malformed acknowledgments preserve the original version/count/confirmation/
+key even after the deleted row disappears. The same dialog can recheck current
+authority before recovering that receipt. Denied authority clears protected data.
+
+Component regressions cover zero/nonzero impact, explicit confirmation, changed
+impact without a List revision, unchanged historical retry, rejected impact and
+wrong lifecycle acknowledgments. Two release-browser cases at desktop/phone widths
+verify keyboard consent, deliberately lost committed deletion, two-client canonical
+removal, identical retry, focus/reload, denied child restoration/movement and an
+unchanged active neighbor. Runtime execution in Linux CI remains required; collected
+cases do not prove browser acceptance. Archived-card browsing and remaining PRD-07/18
+requirements stay open. Retention/purge policy is required under the wider tickets.

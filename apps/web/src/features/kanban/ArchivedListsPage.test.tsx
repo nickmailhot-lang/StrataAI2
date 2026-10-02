@@ -112,3 +112,59 @@ it('allows an unresolved restore to recheck authority inside its dialog after a 
   expect(fetch.mock.calls[4][1].body).toBe(fetch.mock.calls[1][1].body);
   expect(fetch.mock.calls[4][1].headers.get('Idempotency-Key')).toBe(fetch.mock.calls[1][1].headers.get('Idempotency-Key'));
 });
+async function reviewDeletion() { fireEvent.click(await screen.findByRole('button', { name: 'Permanently delete Planning list' })); }
+function confirmDeletion() { fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' })); }
+it.each([0, 2])('requires explicit irreversible consent and sends the reviewed %i-card impact', async count => {
+  const fetch = vi.fn().mockResolvedValueOnce(reply({ ...page, items: [{ ...row, containedCardCount: count }] }))
+    .mockResolvedValueOnce(reply({ ...ack, lifecycleState: 'deleted' })).mockResolvedValue(reply({ ...page, items: [] }));
+  mount(fetch); await reviewDeletion();
+  expect(screen.getByText(`Permanently delete Planning and make its ${count} contained cards unavailable?`)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled();
+  confirmDeletion(); fireEvent.click(screen.getByRole('button', { name: 'Confirm permanent deletion' }));
+  await screen.findByText('No archived lists on this page.');
+  expect(fetch.mock.calls[1][0]).toBe(`/lists/${list.id}?version=1&confirmed=true&containedCardCount=${count}`);
+  expect(fetch.mock.calls[1][1].method).toBe('DELETE'); expect(fetch.mock.calls[1][1].body).toBeUndefined();
+  expect(fetch.mock.calls[1][1].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
+});
+it('keeps deletion count/version/confirmation/key unchanged after loss and canonical removal', async () => {
+  const writes: { path: RequestInfo | URL; init: RequestInit }[] = []; let reads = 0;
+  const fetch = vi.fn((path: RequestInfo | URL, init?: RequestInit) => {
+    if (init?.method === 'DELETE') { writes.push({ path, init }); return writes.length === 1 ? Promise.reject(new Error('Lost'))
+      : Promise.resolve(reply({ ...ack, lifecycleState: 'deleted' })); }
+    return Promise.resolve(reply(reads++ === 0 ? page : { ...page, items: [] }));
+  }); mount(fetch); await reviewDeletion(); confirmDeletion(); fireEvent.click(screen.getByRole('button', { name: 'Confirm permanent deletion' }));
+  const retry = await screen.findByRole('button', { name: 'Retry this deletion' }); await waitFor(() => expect(retry).toBeEnabled());
+  expect(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' })).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Cancel deletion' })).not.toBeInTheDocument();
+  fireEvent.click(retry); await screen.findByText('No archived lists on this page.');
+  expect(writes).toHaveLength(2); expect(writes[1].path).toBe(writes[0].path);
+  expect(new Headers(writes[1].init.headers).get('Idempotency-Key')).toBe(new Headers(writes[0].init.headers).get('Idempotency-Key'));
+});
+it('invalidates consent when card impact changes without a List version change', async () => {
+  let invalidate: (() => void) | undefined;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValue(reply({ ...page, items: [{ ...row, containedCardCount: 3 }] }));
+  mount(fetch); await reviewDeletion(); confirmDeletion(); await waitFor(() => expect(invalidate).toBeDefined());
+  await act(async () => { invalidate!(); });
+  await screen.findByText('This List or card impact changed. Cancel this review and check the current archive before deletion.');
+  expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel deletion' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await reviewDeletion(); expect(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' })).not.toBeChecked();
+  expect(screen.getByText('Permanently delete Planning and make its 3 contained cards unavailable?')).toBeInTheDocument();
+  expect(fetch.mock.calls.every(([, init]) => init.method !== 'DELETE')).toBe(true);
+});
+it('rejects a restore-shaped acknowledgment for deletion and retains the delete intent', async () => {
+  mount(vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply(ack)).mockResolvedValue(reply(page)));
+  await reviewDeletion(); confirmDeletion(); fireEvent.click(screen.getByRole('button', { name: 'Confirm permanent deletion' }));
+  await screen.findByRole('button', { name: 'Retry this deletion' });
+  expect(screen.queryByText('List deletion acknowledged. Current archived Lists are being checked.')).not.toBeInTheDocument();
+});
+it('requires fresh review after a rejected impact and displays no server detail', async () => {
+  mount(vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply({ code: 'deletion_impact_changed', title: 'private SQL' }, 409))
+    .mockResolvedValue(reply(page)));
+  await reviewDeletion(); confirmDeletion(); fireEvent.click(screen.getByRole('button', { name: 'Confirm permanent deletion' }));
+  await within(await screen.findByRole('dialog')).findByText('This deletion could not be applied. Check the archive and review the current List and card impact.');
+  expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled();
+  expect(screen.queryByText('private SQL')).not.toBeInTheDocument();
+});

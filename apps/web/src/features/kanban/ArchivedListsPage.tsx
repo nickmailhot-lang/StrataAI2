@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { Alert, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Button, Checkbox, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { watchBoard, type LiveStatus } from '../../api/boardLive';
@@ -8,7 +8,7 @@ import { validInvitationKey as uuid } from '../organizations/invitationIntent';
 type ArchivedList = { id: string; organizationId: string; boardId: string; name: string; rank: string; version: number; lifecycleState: string };
 type Entry = { list: ArchivedList; containedCardCount: number };
 type ArchivePage = { organizationId: string; boardId: string; items: Entry[]; nextCursor: string | null };
-type Restore = { entry: Entry; key: string };
+type LifecycleIntent = { entry: Entry; key: string; deleting: boolean };
 function entry(value: unknown, org: string, board: string): value is Entry {
   const e = value as Entry | undefined; const l = e?.list;
   return !!l && uuid(l.id) && l.organizationId === org && l.boardId === board && l.lifecycleState === 'archived'
@@ -34,7 +34,8 @@ function Archive({ org, board }: { org: string; board: string }) {
   const [page, setPage] = useState<ArchivePage>(); const [reading, setReading] = useState(false);
   const [ready, setReady] = useState(false); const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
   const [history, setHistory] = useState<(string | null)[]>([]); const [selected, setSelected] = useState<Entry>();
-  const [intent, setIntent] = useState<Restore>(); const [writing, setWriting] = useState(false); const [conflict, setConflict] = useState(false);
+  const [intent, setIntent] = useState<LifecycleIntent>(); const [writing, setWriting] = useState(false); const [conflict, setConflict] = useState(false);
+  const [deleting, setDeleting] = useState(false); const [confirmed, setConfirmed] = useState(false);
   const [subscribed, setSubscribed] = useState(false); const [live, setLive] = useState<LiveStatus>('connecting');
   const [retryRead, setRetryRead] = useState(false);
   const position = useRef<{ cursor: string | null; history: (string | null)[] }>({ cursor: null, history: [] });
@@ -48,7 +49,7 @@ function Archive({ org, board }: { org: string; board: string }) {
   useEffect(() => { if (!reading && !writing && !selected && focusRequested.current) restoreFocus(); }, [reading, writing, selected]);
   const current = page?.items.find(e => e.list.id === selected?.list.id);
   const changed = !!selected && !intent && (!current || current.list.version !== selected.list.version
-    || current.list.name !== selected.list.name || current.list.rank !== selected.list.rank);
+    || current.list.name !== selected.list.name || current.list.rank !== selected.list.rank || current.containedCardCount !== selected.containedCardCount);
   function deny() {
     setPage(undefined); setSelected(undefined); setIntent(undefined); setReady(false); setSubscribed(false);
     setRetryRead(false); setNotice(undefined); setError('Archived List administration is unavailable.');
@@ -78,26 +79,35 @@ function Archive({ org, board }: { org: string; board: string }) {
   useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: board, invalidate: () => invalidate(), status: setLive }) : undefined,
     [org, board, subscribed]);
   useEffect(() => { if (!retryRead || reading) return; const timer = setTimeout(() => invalidate(), 10_000); return () => clearTimeout(timer); }, [retryRead, reading]);
-  async function restore() {
-    if (write.current || !selected || !ready || reading || (!intent && (changed || conflict))) return;
-    const command = intent ?? { entry: selected, key: crypto.randomUUID() }; const l = command.entry.list;
+  async function change() {
+    if (write.current || !selected || !ready || reading || (!intent && (changed || conflict || deleting && !confirmed))) return;
+    const command = intent ?? { entry: selected, key: crypto.randomUUID(), deleting }; const l = command.entry.list;
     const c = new AbortController(); write.current = c; setWriting(true); setNotice(undefined);
     try {
-      const result = await request(`/lists/${encodeURIComponent(l.id)}/restore`, { method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify({ version: l.version }) }, c);
+      const path = command.deleting ? `/lists/${encodeURIComponent(l.id)}?version=${l.version}&confirmed=true&containedCardCount=${command.entry.containedCardCount}`
+        : `/lists/${encodeURIComponent(l.id)}/restore`;
+      const result = await request(path, { method: command.deleting ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key },
+        ...(command.deleting ? {} : { body: JSON.stringify({ version: l.version }) }) }, c);
       if (!mounted.current || write.current !== c) return;
       if ([401, 403, 404].includes(result.status)) { deny(); return; }
       if ([400, 409].includes(result.status)) {
-        setIntent(undefined); setConflict(true); setNotice('This restore could not be applied. Check the archive and review the current List.');
+        setIntent(undefined); setConflict(true); setNotice(command.deleting
+          ? 'This deletion could not be applied. Check the archive and review the current List and card impact.'
+          : 'This restore could not be applied. Check the archive and review the current List.');
       } else {
         const ack = result.body as ArchivedList | undefined;
         if (result.status !== 200 || ack?.id !== l.id || ack.organizationId !== org || ack.boardId !== board
-          || ack.name !== l.name || ack.rank !== l.rank || ack.lifecycleState !== 'active' || ack.version !== l.version + 1)
-          throw new Error('Unconfirmed restore');
-        setIntent(undefined); setSelected(undefined); setNotice('List restore acknowledged. Current archived Lists are being checked.');
+          || ack.name !== l.name || ack.rank !== l.rank || ack.lifecycleState !== (command.deleting ? 'deleted' : 'active') || ack.version !== l.version + 1)
+          throw new Error('Unconfirmed lifecycle change');
+        setIntent(undefined); setSelected(undefined); setNotice(command.deleting
+          ? 'List deletion acknowledged. Current archived Lists are being checked.'
+          : 'List restore acknowledged. Current archived Lists are being checked.');
       }
     } catch { if (mounted.current && write.current === c) {
-      setIntent(command); setNotice('The restore could not be confirmed. Retry the same restore to recover its acknowledgment.');
+      setIntent(command); setNotice(command.deleting
+        ? 'The deletion could not be confirmed. Retry the same deletion to recover its acknowledgment.'
+        : 'The restore could not be confirmed. Retry the same restore to recover its acknowledgment.');
     } } finally { if (mounted.current && write.current === c) {
       write.current = undefined; setWriting(false); void load(position.current.cursor, position.current.history);
     } }
@@ -114,8 +124,11 @@ function Archive({ org, board }: { org: string; board: string }) {
       <Typography component="h3" variant="h6">{e.list.name}</Typography>
       <Typography>{e.containedCardCount} contained cards</Typography>
       <Button disabled={!ready || reading || writing || !!intent} aria-label={`Restore ${e.list.name} list`} onClick={() => {
-        setSelected(e); setConflict(false); setNotice(undefined);
+        setSelected(e); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined);
       }}>Restore List</Button>
+      <Button color="error" disabled={!ready || reading || writing || !!intent} aria-label={`Permanently delete ${e.list.name} list`} onClick={() => {
+        setSelected(e); setDeleting(true); setConfirmed(false); setConflict(false); setNotice(undefined);
+      }}>Permanently delete List</Button>
     </Paper>)}
     {ready && page?.items.length === 0 && <Typography>No archived lists on this page.</Typography>}
     <Stack direction="row" spacing={1}>
@@ -124,17 +137,26 @@ function Archive({ org, board }: { org: string; board: string }) {
     </Stack>
   </Stack><Dialog open={!!selected} onClose={() => { if (!writing && !intent) setSelected(undefined); }} fullWidth maxWidth="sm"
     disableRestoreFocus slotProps={{ transition: { onExited: restoreFocus } }}>
-    <DialogTitle>Restore List</DialogTitle><DialogContent>
-      <Typography sx={{ overflowWrap: 'anywhere' }}>Restore {selected?.list.name} with its {selected?.containedCardCount} contained cards?</Typography>
-      <Typography>This makes the List active again. Its position and contained card lifecycle states are preserved.</Typography>
+    <DialogTitle>{deleting ? 'Permanently delete List' : 'Restore List'}</DialogTitle><DialogContent>
+      {deleting ? <>
+        <Typography sx={{ overflowWrap: 'anywhere' }}>Permanently delete {selected?.list.name} and make its {selected?.containedCardCount} contained cards unavailable?</Typography>
+        <Alert severity="warning">This cannot be undone. This List cannot be restored, and its contained cards can no longer be used through it.</Alert>
+        <FormControlLabel control={<Checkbox checked={confirmed} disabled={writing || !!intent} onChange={event => setConfirmed(event.target.checked)} />}
+          label="I understand this cannot be undone." />
+      </> : <>
+        <Typography sx={{ overflowWrap: 'anywhere' }}>Restore {selected?.list.name} with its {selected?.containedCardCount} contained cards?</Typography>
+        <Typography>This makes the List active again. Its position and contained card lifecycle states are preserved.</Typography>
+      </>}
       {error && <Alert severity="warning">{error}</Alert>}{notice && <Alert severity="info">{notice}</Alert>}
-      {(changed || conflict) && !intent && <Alert severity="warning">This List changed. Cancel this review and check the current archive before another restore.</Alert>}
-      {intent && <Alert severity="info">The original restore is unresolved. Retry that same request; it cannot apply twice.</Alert>}
-      <Button disabled={writing || reading} onClick={() => void load(position.current.cursor, position.current.history)}>Check current archive for this restore</Button>
+      {(changed || conflict) && !intent && <Alert severity="warning">{deleting
+        ? 'This List or card impact changed. Cancel this review and check the current archive before deletion.'
+        : 'This List changed. Cancel this review and check the current archive before another restore.'}</Alert>}
+      {intent && <Alert severity="info">{deleting ? 'The original deletion is unresolved. Retry that same request; it cannot apply twice.' : 'The original restore is unresolved. Retry that same request; it cannot apply twice.'}</Alert>}
+      <Button disabled={writing || reading} onClick={() => void load(position.current.cursor, position.current.history)}>{deleting ? 'Check current archive for this deletion' : 'Check current archive for this restore'}</Button>
     </DialogContent><DialogActions>
-      {!intent && <Button disabled={writing} onClick={() => setSelected(undefined)}>Cancel restore</Button>}
-      <Button disabled={writing || reading || !ready || (!intent && (changed || conflict))} onClick={() => void restore()}>
-        {intent ? 'Retry this restore' : 'Confirm restore'}
+      {!intent && <Button disabled={writing} onClick={() => setSelected(undefined)}>{deleting ? 'Cancel deletion' : 'Cancel restore'}</Button>}
+      <Button color={deleting ? 'error' : 'primary'} disabled={writing || reading || !ready || (!intent && (changed || conflict || deleting && !confirmed))} onClick={() => void change()}>
+        {deleting ? intent ? 'Retry this deletion' : 'Confirm permanent deletion' : intent ? 'Retry this restore' : 'Confirm restore'}
       </Button>
     </DialogActions>
   </Dialog></Container>;
