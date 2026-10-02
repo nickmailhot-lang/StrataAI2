@@ -27,6 +27,7 @@ import { CardDetailEditor } from "./CardDetailEditor";
 import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
 import { ListPositionControls } from "./ListPositionControls";
+import { ListRenameControl } from './ListRenameControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
@@ -87,6 +88,11 @@ function BoardContent() {
   const updateCardRecovery = useCallback((_id: string, unresolved: boolean) => setCardRecovery(unresolved), []);
   const dragCard = useRef<{ cardId: string; version: number } | undefined>(undefined);
   const [listRecovery, setListRecovery] = useState(new Set<string>());
+  const [renameRecovery, setRenameRecovery] = useState(new Set<string>());
+  const updateRenameRecovery = useCallback((id: string, unresolved: boolean) => setRenameRecovery(previous => {
+    if (previous.has(id) === unresolved) return previous;
+    const next = new Set(previous); if (unresolved) next.add(id); else next.delete(id); return next;
+  }), []);
   const updateListRecovery = useCallback((id: string, unresolved: boolean) => setListRecovery(previous => {
     if (previous.has(id) === unresolved) return previous;
     const next = new Set(previous); if (unresolved) next.add(id); else next.delete(id); return next;
@@ -479,14 +485,20 @@ function BoardContent() {
           <ListDragColumn
             key={column.list.id}
             id={column.list.id} name={column.list.name}
-            disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id)}
+            disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id) || renameRecovery.has(column.list.id)}
             available={snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
           >
-            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3">
+            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
               {column.list.name}
             </Typography>
+            <ListRenameControl list={column.list} snapshot={snapshot}
+              disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id)}
+              onBusyChange={setBusy} onRecoveryChange={updateRenameRecovery}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
+            </Stack>
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active" && column.list.lifecycleState === "active" && <ListPositionControls
-              list={column.list} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError} onBusyChange={setBusy}
+              list={column.list} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || renameRecovery.has(column.list.id)} onBusyChange={setBusy}
               onPreview={setListPreview}
               onRecoveryChange={updateListRecovery}
               dropRequest={listDrop?.listId === column.list.id ? listDrop : undefined}
