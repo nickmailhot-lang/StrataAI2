@@ -17,6 +17,29 @@ async function choose() {
   fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it('submits an admitted drop through the bound move and uncertain-response recovery path', async () => {
+  const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost response')).mockResolvedValueOnce(reply(ack)); vi.stubGlobal('fetch', fetcher);
+  const recovery = vi.fn(); const acknowledged = vi.fn();
+  render(<CardMoveControls card={card} snapshot={snapshot} disabled={false} onAcknowledged={acknowledged} onRefresh={vi.fn()}
+    onRecoveryChange={recovery} dropRequest={{ cardId: card.id, version: 3, destination: 'dest', before: '', nonce: 'drop-1' }} />);
+  await screen.findByRole('button', { name: 'Retry this move' });
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  const initial = fetcher.mock.calls[0][1];
+  expect(JSON.parse(initial.body)).toEqual({ destinationListId: 'dest', expectedVersion: 3 });
+  expect(recovery).toHaveBeenCalledWith(card.id, true);
+  fireEvent.click(screen.getByRole('button', { name: 'Retry this move' }));
+  await waitFor(() => expect(acknowledged).toHaveBeenCalledTimes(1));
+  expect(fetcher.mock.calls[1][1].body).toBe(initial.body);
+  expect(new Headers(fetcher.mock.calls[1][1].headers).get('Idempotency-Key')).toBe(new Headers(initial.headers).get('Idempotency-Key'));
+  await waitFor(() => expect(recovery).toHaveBeenLastCalledWith(card.id, false));
+});
+it('rejects a drop captured before a newer card revision without writing', async () => {
+  const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher); const refresh = vi.fn();
+  render(<CardMoveControls card={{ ...card, version: 4 }} snapshot={snapshot} disabled={false} onAcknowledged={vi.fn()} onRefresh={refresh}
+    dropRequest={{ cardId: card.id, version: 3, destination: 'dest', before: '', nonce: 'drop-2' }} />);
+  expect(await screen.findByText(/The card changed during dragging/)).toBeVisible();
+  expect(fetcher).not.toHaveBeenCalled(); expect(refresh).toHaveBeenCalledTimes(1);
+});
 it('publishes provisional placement only while saving, then clears it and reconciles an uncertain result', async () => {
   let reject: ((reason: Error) => void) | undefined;
   vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((_, failed) => { reject = failed; })));

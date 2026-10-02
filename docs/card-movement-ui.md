@@ -99,3 +99,18 @@ historical move after a later edit; its status therefore describes acknowledgmen
 recovery. Control coverage verifies that the original submission publishes one
 projection and same-key recovery after a newer live version publishes no second
 projection. Both outcomes still read current placement.
+# Card drop command integration
+
+CardMoveControls accepts a card-scoped drop request containing the drag-start
+revision, destination list and optional before-card position. It submits through
+the same version-bound command, provisional feedback, deadline, acknowledgment
+validation and exact-key recovery path as reviewed keyboard movement. A newer
+card revision blocks a fresh drop and requests current state. An unresolved
+intent cannot be replaced by a later drop. A recovery callback exposes that
+fence to the future canvas drag handle.
+
+Fourteen focused control tests pass, including drop delivery with a lost
+response/exact retry and stale drag-start rejection without a write. Typecheck,
+lint and production build pass. Canvas card handles/drop targets are not wired
+yet, so this integration contract does not satisfy card drag/drop acceptance.
+

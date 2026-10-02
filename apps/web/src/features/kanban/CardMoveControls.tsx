@@ -1,21 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { apiFetch } from '../../api/apiFetch';
 import type { BoardSnapshot, WorkCard } from '../../api/workManagement';
 import type { CardMovePreview } from './cardMovePreview';
 
 type Intent = { destination: string; before: string; version: number; key: string };
-type Props = { card: WorkCard; snapshot: BoardSnapshot; disabled: boolean; onAcknowledged: () => void; onRefresh: () => void; onBusyChange?: (value: boolean) => void; onPreview?: (value?: CardMovePreview) => void };
+export type CardDropRequest = { cardId: string; version: number; destination: string; before: string; nonce: string };
+type Props = { card: WorkCard; snapshot: BoardSnapshot; disabled: boolean; onAcknowledged: () => void; onRefresh: () => void; onBusyChange?: (value: boolean) => void; onPreview?: (value?: CardMovePreview) => void; dropRequest?: CardDropRequest; onRecoveryChange?: (cardId: string, unresolved: boolean) => void };
 const validRank = (rank: unknown): rank is string => typeof rank === 'string' && /^\d{30}$/.test(rank)
   && BigInt(rank) > 0n && BigInt(rank) < 10n ** 30n - 1n;
 
-export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onRefresh, onBusyChange, onPreview }: Props) {
+export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onRefresh, onBusyChange, onPreview, dropRequest, onRecoveryChange }: Props) {
   const [review, setReview] = useState<{ version: number; destination: string; before: string }>();
   const [intent, setIntent] = useState<Intent>();
   const [busy, setBusy] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [notice, setNotice] = useState<string>();
   const [acknowledged, setAcknowledged] = useState(false);
+  useEffect(() => { onRecoveryChange?.(card.id, !!intent || blocked); return () => onRecoveryChange?.(card.id, false); }, [card.id, intent, blocked, onRecoveryChange]);
   const pending = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(true); const action = useRef<HTMLButtonElement>(null);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false;
@@ -26,9 +28,23 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
   const destinationActive = !!review && lists.some(column => column.list.id === review.destination);
   const neighbors = lists.find(column => column.list.id === review?.destination)?.cards.filter(value => value.id !== card.id) ?? [];
   const positionActive = !!review && (!review.before || neighbors.some(value => value.id === review.before));
-  async function move() {
-    if (pending.current || disabled || blocked || changed || !review || (!intent && (!destinationActive || !positionActive))) return;
-    const command = intent ?? { destination: review.destination, before: review.before, version: review.version, key: crypto.randomUUID() };
+  const consumeDrop = useEffectEvent((request: CardDropRequest) => {
+    if (request.cardId !== card.id || intent || blocked || disabled || pending.current) return;
+    const selected = { version: request.version, destination: request.destination, before: request.before };
+    setReview(selected);
+    if (request.version !== card.version) {
+      setBlocked(true); setNotice('The card changed during dragging. Check the current Board before reviewing another move.'); onRefresh(); return;
+    }
+    void move(selected);
+  });
+  useEffect(() => { if (dropRequest) consumeDrop(dropRequest); }, [dropRequest]);
+  async function move(selected?: NonNullable<typeof review>) {
+    const proposed = selected ?? review;
+    const destination = lists.find(column => column.list.id === proposed?.destination);
+    const validPosition = !!proposed && !!destination && (!proposed.before || destination.cards.some(value => value.id === proposed.before && value.id !== card.id));
+    if (pending.current || disabled || blocked || !proposed || (selected && intent)
+      || (!intent && (proposed.version !== card.version || !validPosition))) return;
+    const command = intent ?? { ...proposed, key: crypto.randomUUID() };
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setAcknowledged(false);
     onBusyChange?.(true);
     if (!intent) onPreview?.({ cardId: card.id, destination: command.destination, before: command.before });
