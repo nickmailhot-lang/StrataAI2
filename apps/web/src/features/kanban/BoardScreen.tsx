@@ -27,6 +27,7 @@ import { CardDetailEditor } from "./CardDetailEditor";
 import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
 import { CardLabelPicker } from './CardLabelPicker';
+import { CardMemberPicker } from './CardMemberPicker';
 import { CardLabelIndicators } from './CardLabelIndicators';
 import { LabelCreateControl } from './LabelCreateControl';
 import { LabelManageControl } from './LabelManageControl';
@@ -93,7 +94,8 @@ function BoardContent() {
   const [labelRecovery, setLabelRecovery] = useState(false);
   const [labelManageRecovery, setLabelManageRecovery] = useState(false);
   const [assignmentRecovery, setAssignmentRecovery] = useState(false);
-  const busy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery;
+  const [memberRecovery, setMemberRecovery] = useState(false);
+  const busy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
   const [listDrop, setListDrop] = useState<ListDropRequest>();
@@ -687,14 +689,18 @@ function BoardContent() {
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
           )}
           {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || cardRecovery || snapshotReading || !!loadError}
+            disabled={operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onAcknowledged={() => { canvasFocus.current = { scope: key, cardId };
               setSnapshotReading(true); setReload(value => value + 1); closeCard(); }} />}
           {cardId && <CardLabelPicker key={`label-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || cardRecovery || snapshotReading || !!loadError}
+            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || memberRecovery || cardRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setAssignmentRecovery}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+          {cardId && <CardMemberPicker key={`member-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
+            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || cardRecovery || snapshotReading || !!loadError}
+            onBusyChange={setBusy} onRecoveryChange={setMemberRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
         </DialogContent>
         <DialogActions>

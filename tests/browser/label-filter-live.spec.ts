@@ -81,6 +81,26 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(clear).toBeEnabled(); await clear.focus(); await other.keyboard.press('Enter');
     await expect(other.getByText('Unmatched canvas Card', { exact: true })).toBeVisible();
     await expect(other.getByRole('button', { name: 'Drag Collaborative labeled Card card', exact: true })).toBeEnabled();
+    await other.goto(`${boardPath}/cards/${card}`);
+    await expect(other.getByText('Live updates connected.', { exact: true })).toBeVisible();
+    async function phoneAssignees() {
+      const show = other.getByRole('button', { name: 'Show assignees', exact: true });
+      await expect(show).toBeEnabled({ timeout: 20_000 }); await show.focus(); await other.keyboard.press('Enter');
+      return other.getByRole('region', { name: 'Card assignees' });
+    }
+    await expect((await phoneAssignees()).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
+    const editMembers = page.getByRole('button', { name: 'Edit Card assignees', exact: true });
+    async function memberChange(action: string) {
+      await expect(editMembers).toBeEnabled(); await editMembers.focus(); await page.keyboard.press('Enter');
+      const change = page.getByRole('button', { name: `${action} Label collaboration fixture`, exact: true });
+      await expect(change).toBeEnabled(); await change.focus(); await page.keyboard.press('Enter'); await expect(editMembers).toBeFocused();
+    }
+    await memberChange('Unassign');
+    await expect((await phoneAssignees()).getByText('No assignees on this page.', { exact: true })).toBeVisible();
+    await memberChange('Assign');
+    await expect((await phoneAssignees()).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
+    expect(await other.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await other.goto(boardPath);
     expect((await context.request.post(`/boards/${board}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
     await expect(filters).toHaveCount(0, { timeout: 20_000 });
     await expect(other.getByText('This board is archived. Editing is unavailable.', { exact: true })).toBeVisible();

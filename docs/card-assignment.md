@@ -160,3 +160,24 @@ The Organization-cleanup commit b677ccb passed the required exact-image
 in run 37046379129. That verifies the command/directory/cleanup fixture as it
 existed at that commit; the newer assignee-read/options/UI runtime checks and
 the complete required-ci gate remain pending.
+
+Card details now mount an editor outside the conditional canonical Card body,
+so an uncertain assignment can still be retried when the Card is temporarily
+unavailable. The picker reads one bounded member-options page, validates scope,
+revision, eligible option structure, UUID order and cursors, and replaces pages
+instead of accumulating names. Named Assign/Unassign buttons submit the current
+Card revision and a unique request key; acknowledgement validation checks scope,
+member, action and changed/no-op revision. Unknown outcomes retain exactly the
+original member/action/revision/key through canonical refresh. Known conflicts
+require reloading choices. Admission changes fence late reads/commands and clear
+recovery; denied responses hide names and use safe local copy. Other Card
+mutations are blocked while recovery is pending. Successful acknowledgement
+reloads the Board and restores keyboard focus when the fresh Card is available.
+
+Fifteen picker cases and 24 Board cases passed locally, plus typecheck, lint and
+production build. The release browser fixture collected successfully and now
+keyboard-unassigns/reassigns on desktop and reads the resulting named/empty
+assignee section on a phone through real Worker delivery. Exact-image execution
+of the new picker/options/browser checks remains pending CI. Card-face previews,
+account-deactivation cleanup, notifications and remaining ticket acceptance
+criteria still require implementation/verification.
