@@ -50,5 +50,17 @@ Desktop/phone release-browser cases deliberately lose a committed restore respon
 retry it unchanged and verify two-client recovery, unchanged cards/neighbor/rank,
 preserved archived-card exclusion, exact version increments, focus and reload.
 These browser cases require actual CI execution; collection alone proves no runtime
-behavior. Archived-card browsing, active-List archive controls and permanent-delete
-confirmation/contained-card impact still require work before PRD-07/18 can close.
+behavior.
+
+The active Board now offers an administration-only archive dialog with explicit
+List selection and reversible-impact review. Changed canonical versions require
+another explicit review; other unresolved List operations block that choice.
+Its owner lives outside the canvas, so an unresolved original key/version remains
+recoverable after a committed archive removes its column. While unresolved, other
+Board writes are blocked but its own retry and fresh-read control remain available.
+Thirteen focused component regressions cover selection, exact acknowledgments,
+column disappearance, changed consent, permission denial and the request deadline.
+The same two release-browser cases now archive through the real UI, lose/recover
+that response and then restore through the archive page. Archived-card browsing
+and permanent-delete confirmation/contained-card impact still require work before
+PRD-07/18 can close.

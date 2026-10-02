@@ -28,6 +28,7 @@ import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
 import { ListPositionControls } from "./ListPositionControls";
 import { ListRenameControl } from './ListRenameControl';
+import { ListArchiveControl } from './ListArchiveControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
@@ -73,7 +74,9 @@ function BoardContent() {
   const [loaded, setLoaded] = useState<Loaded>();
   const [reload, setReload] = useState(0);
   const [creation, setCreation] = useState<Creation>();
-  const [busy, setBusy] = useState(false);
+  const [operationBusy, setBusy] = useState(false);
+  const [archiveRecovery, setArchiveRecovery] = useState(false);
+  const busy = operationBusy || archiveRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
   const [listDrop, setListDrop] = useState<ListDropRequest>();
@@ -416,6 +419,12 @@ function BoardContent() {
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invitations`}>Board invitations</Button>
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/archived-lists`}>Archived lists</Button></>
           )}
+          <ListArchiveControl snapshot={snapshot}
+            disabled={operationBusy || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
+            unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
+            onBusyChange={setBusy} onRecoveryChange={setArchiveRecovery}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
+            onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           {editable && (
             <Button
               onClick={() => {
