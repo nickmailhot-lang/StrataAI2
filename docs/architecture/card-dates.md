@@ -55,3 +55,10 @@ assertion was outdated. B.C. adopted permanent daylight time after March 8, 2026
 conversion already followed the runtime's current timezone database correctly.
 Only the disposable role receives the additional column permissions, inside the
 fixture rollback transaction. Fresh CI remains necessary.
+
+The date storage write also invokes the existing canonical Card route trigger.
+A subsequent CI pass exposed the fixture role's missing card_routes permissions.
+The disposable role now has SELECT/INSERT/UPDATE for that routing table within
+its rollback transaction, matching the trigger's ordinary runtime requirements.
+The Linux domain and host suites passed on d595cbd; storage verification remained
+failed until this additional fixture correction. Production grants are unchanged.
