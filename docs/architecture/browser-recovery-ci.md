@@ -25,3 +25,9 @@ selection/menu-exit timing overlaps the next keyboard operation; it is diagnosti
 evidence only, not a replacement for exact-image integration. The new browser
 assertions and List focus repair require a fresh exact-image CI run. The prior
 failed required-CI gate remains failed, and no ticket is closed by this change.
+
+Run 37074806985 passed .NET and PostgreSQL source checks but failed one archive
+component test: its live invalidation callback was invoked before the subscription
+passive effect attached. The test now waits for that callback readiness, keeping
+the three invalidations, exact read counts and non-aborted pending read assertions.
+This is a test setup correction; it does not weaken the slow-read behavior check.

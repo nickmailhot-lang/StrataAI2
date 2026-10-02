@@ -96,6 +96,7 @@ it('queues live invalidations behind a read instead of repeatedly aborting a slo
   vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
   const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }))
     .mockResolvedValue(reply({ ...page, items: [] })); mount(fetch); await screen.findByRole('button', { name: 'Restore Review budget card' });
+  await waitFor(() => expect(invalidate).toBeTypeOf('function'));
   await act(async () => { invalidate(); invalidate(); invalidate(); }); expect(fetch).toHaveBeenCalledTimes(2);
   expect(fetch.mock.calls[1][1].signal.aborted).toBe(false);
   await act(async () => { resolve(reply(page)); }); await screen.findByText('No archived cards on this page.'); expect(fetch).toHaveBeenCalledTimes(3);
