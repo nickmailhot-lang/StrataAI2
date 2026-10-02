@@ -23,6 +23,23 @@ existing archived-List fixture with restricted-role paging, unchanged product/
 receipt state, current authority and session revocation during a Board lock wait.
 The host regression passed on Linux at `2b8ecb1` in run `36991073544`; the added
 restricted-role container checks and contributor permission refinement still need
-runtime proof. This increment does not establish large-data
-latency, archive UI, archived-card restoration UI, deletion consent, telemetry or
-retention acceptance; those remaining requirements keep PRD-18 open.
+runtime proof.
+
+The Card archive page is reachable from active Boards with editing rights. It shows
+bounded live pages with each parent List, explains archived-parent prerequisites,
+and reviews the Card/parent before restoration. Card/parent revision changes block
+old reviews. Lost or malformed acknowledgments retain the original version and key
+outside the paged row, including after the committed Card disappears. Full fetch
+and response-body deadlines are 15 seconds. Denied reads clear protected data and
+abort/fence pending writes. Realtime invalidations queue behind an in-flight read
+so repeated events cannot starve a slow current page. Dialog exit restores focus
+after current discovery settles. Summary descriptions and server error titles are
+not rendered.
+
+Component checks cover parent changes, immutable recovery, scoped acknowledgments,
+summary validation/privacy, bounded paging, hung response bodies, queued reads and
+denial during a write. Desktop/phone release cases exercise keyboard review, live
+parent changes, a lost committed restore, another client's updated canvas, unchanged
+neighbor data, receipt recovery, focus and reload. Collection is not runtime proof.
+Large-data latency, Card deletion consent, telemetry and retention acceptance still
+need work; those remaining requirements keep PRD-18 open.

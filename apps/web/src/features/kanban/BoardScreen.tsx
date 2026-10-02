@@ -419,6 +419,8 @@ function BoardContent() {
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invitations`}>Board invitations</Button>
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/archived-lists`}>Archived lists</Button></>
           )}
+          {snapshot.access.canEdit && snapshot.board.lifecycleState === 'active' &&
+            <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/archived-cards`}>Archived cards</Button>}
           <ListArchiveControl snapshot={snapshot}
             disabled={operationBusy || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
             unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
