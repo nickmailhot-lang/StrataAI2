@@ -20,6 +20,16 @@ Existing provider-attempt and single-message assertions still require no
 additional send. The polling window is unchanged; runtime role, tenant scope,
 delivery admission and immutable release images are unchanged.
 
-Shell syntax and diff checks pass locally. Execution requires Linux CI with
-PostgreSQL and the exact release API/Worker images; runtime success remains
-pending. No mail or architecture issue is complete from this fixture change.
+Shell syntax and diff checks pass locally. Run
+[36943362278](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36943362278)
+at 58c1ad4 reports success for job 110640774813 step 36 (exact-image identity and
+invitation mail), including this expired-lease boundary, attempt-two completion
+and existing no-additional-provider-send assertions. Step 39, dedicated mobile
+verification/recovery through Worker delivery, also reports success. Step 33,
+concurrent/large-board rank allocation, reports success in the same job.
+
+At the evidence check, authenticated browser E2E was still running. This is
+step-level runtime evidence; final decoded logs, required-ci, release artifacts
+and full acceptance still need audit. It neither proves the root cause of the
+historical failures nor establishes a fully green release. No mail or
+architecture issue is complete from this evidence alone.
