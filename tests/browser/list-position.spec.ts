@@ -65,6 +65,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     page.on('request', request => { if (request.method() === 'PATCH' && request.url().includes('/lists/')) moveWrites++; });
     await dragHandle.focus(); await page.keyboard.press('Space');
     await expect(page.getByText(`Dragging ${keyboardName} list. Use Left and Right to choose a position.`, { exact: true })).toBeAttached();
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     await page.keyboard.press('ArrowLeft');
     await expect(page.getByText(targetAnnouncement, { exact: true })).toBeAttached();
     await page.keyboard.press('Escape');
@@ -74,6 +75,9 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     expect((await (await context.request.get(`/boards/${board}`)).json()).lists).toEqual(beforeKeyboard.lists);
     await dragHandle.focus(); await page.keyboard.press('Space');
     await expect(dragHandle).toHaveAttribute('aria-pressed', 'true');
+    // The second pickup follows cancellation and scroll restoration. Wait for
+    // its measured frame before sending input to the asynchronous sensor.
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     await page.keyboard.press('ArrowLeft');
     await expect(page.getByText(targetAnnouncement, { exact: true })).toBeAttached();
     await page.keyboard.press('Space');
