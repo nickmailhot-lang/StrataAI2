@@ -18,7 +18,8 @@ public sealed partial class ApiHostTests
         using var created = await Mutate(owner, HttpMethod.Post, $"/lists/{list}/cards", new { title = "Delete reviewed Card" });
         var card = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
         using var activeDelete = await Mutate(owner, HttpMethod.Delete, $"/cards/{card}?version=1&confirmed=true", new { });
-        Assert.Equal(HttpStatusCode.BadRequest, activeDelete.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, activeDelete.StatusCode);
+        Assert.Equal("invalid_lifecycle_transition", (await activeDelete.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
         using var archived = await Mutate(owner, HttpMethod.Post, $"/cards/{card}/archive", new { version = 1 });
         Assert.Equal(HttpStatusCode.OK, archived.StatusCode);
         foreach (var query in new[] { "", "&confirmed=false" })
