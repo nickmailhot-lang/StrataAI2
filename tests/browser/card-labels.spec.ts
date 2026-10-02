@@ -49,14 +49,19 @@ for (const width of [1280, 390]) {
       expect(assigned.status()).toBe(200); version = (await assigned.json()).card.version;
     }
     const path = `/app/${org}/boards/${board}/cards/${card}`;
+    await page.goto(`/app/${org}/boards/${board}`);
+    const face = page.getByRole('link').filter({ hasText: 'Labeled work' });
+    await expect(face.getByLabel('Priority, red', { exact: true })).toBeVisible();
+    await expect(face.getByText('blue label', { exact: true })).toBeVisible();
     await page.goto(path);
+    const details = page.getByRole('dialog');
     const show = page.getByRole('button', { name: 'Show labels', exact: true });
     await show.focus(); await page.keyboard.press('Enter');
-    await expect(page.getByLabel('Priority, red', { exact: true })).toBeVisible();
-    await expect(page.getByLabel('Unnamed label, blue', { exact: true })).toBeVisible();
-    await expect(page.getByText('blue label', { exact: true })).toBeVisible();
+    await expect(details.getByLabel('Priority, red', { exact: true })).toBeVisible();
+    await expect(details.getByLabel('Unnamed label, blue', { exact: true })).toBeVisible();
+    await expect(details.getByText('blue label', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Hide labels', exact: true }).focus(); await page.keyboard.press('Enter');
-    await expect(page.getByLabel('Priority, red', { exact: true })).toHaveCount(0);
+    await expect(details.getByLabel('Priority, red', { exact: true })).toHaveCount(0);
     for (const id of labels) expect((await context.request.delete(`/labels/${id}?version=1&confirmed=true`, { headers })).status()).toBe(200);
     await page.reload(); await show.focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('No labels assigned.', { exact: true })).toBeVisible();

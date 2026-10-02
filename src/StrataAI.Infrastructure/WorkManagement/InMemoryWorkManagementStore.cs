@@ -170,7 +170,7 @@ internal sealed partial class InMemoryWorkManagementStore : IWorkManagementStore
                 userId.HasValue && _starred.Contains((boardId, userId.Value));
 
             return Task.FromResult<BoardSnapshot?>(
-                new BoardSnapshot(board, lists, starred, access));
+                  new BoardSnapshot(board, lists, starred, access, LabelPreviews(lists)));
         }
     }
 

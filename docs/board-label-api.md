@@ -99,7 +99,23 @@ keyboard controls, lose the first actual server acknowledgement, retry the same
 key/body, assert one persisted definition and focus recovery, then inspect Card
 labels and persisted deletion. Browser runtime execution remains pending CI.
 
-This is a foundation, not PRD-10 closure. Public
-Card indicators, accessible label administration, filtering, relative reorder
+Board snapshots now carry bounded Card face previews: at most six active label
+names/colors in label rank order plus the total assignment count. PostgreSQL
+loads these with one additional query on the same tenant session, without a
+query per Card. Demo applies the same scope and lifecycle rules. Public Board
+viewers receive the same readable indicators through the existing Board read
+authorization; private Boards retain their access checks. Archived Cards and
+Cards in archived/deleted Lists contribute no face previews. The MUI indicators
+are noninteractive spans inside Card links, with textual names, named-color
+fallbacks, accessible descriptions and an explicit remaining-label count.
+
+Preview validation: 27 focused indicator/Board tests passed and a compiled host
+regression covers bounded public previews, private denial and archived-parent
+exclusion. The required exact-image fixture checks a 52-label Card returns six
+indicators plus the correct count to an authorized and an anonymous public
+reader. Existing desktop/mobile browser cases now assert Card-face indicators.
+These new server/browser runtime checks await CI.
+
+This is a foundation, not PRD-10 closure. Accessible label administration, filtering, relative reorder
 controls, copy/move metadata reconciliation, and exact-image concurrency,
 rollback, telemetry, and browser acceptance remain required.

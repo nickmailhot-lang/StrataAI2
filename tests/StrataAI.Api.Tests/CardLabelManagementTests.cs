@@ -8,6 +8,37 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Card_label_face_previews_are_bounded_and_follow_Board_visibility_and_parent_lifecycle()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        var board = await TelemetryBoard(owner, ct);
+        using var createdList = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/lists", new { name = "Label previews" });
+        var list = (await createdList.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var createdCard = await Mutate(owner, HttpMethod.Post, $"/lists/{list}/cards", new { title = "Preview Card" });
+        var card = (await createdCard.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        for (var i = 0; i < 8; i++)
+        {
+            using var labelResponse = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/labels", new { name = $"Label {i}", color = "blue" });
+            var label = (await labelResponse.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+            using var assigned = await Mutate(owner, HttpMethod.Put, $"/cards/{card}/labels/{label}?version={i + 1}", new { });
+            Assert.Equal(HttpStatusCode.OK, assigned.StatusCode);
+        }
+        using var guest = app.CreateClient(); using var denied = await guest.GetAsync($"/boards/{board}", ct);
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        using var publish = await Mutate(owner, HttpMethod.Patch, $"/boards/{board}/visibility", new { visibility = "PUBLIC", version = 1 });
+        Assert.Equal(HttpStatusCode.OK, publish.StatusCode);
+        var snapshot = await guest.GetFromJsonAsync<JsonElement>($"/boards/{board}", ct);
+        var preview = snapshot.GetProperty("cardLabels").GetProperty(card.ToString());
+        Assert.Equal(8, preview.GetProperty("total").GetInt64()); Assert.Equal(6, preview.GetProperty("items").GetArrayLength());
+        Assert.Equal("Label 0", preview.GetProperty("items")[0].GetProperty("name").GetString());
+        Assert.False(snapshot.GetProperty("access").GetProperty("canEdit").GetBoolean());
+        using var archive = await Mutate(owner, HttpMethod.Post, $"/lists/{list}/archive", new { version = 1 });
+        Assert.Equal(HttpStatusCode.OK, archive.StatusCode);
+        var archivedSnapshot = await guest.GetFromJsonAsync<JsonElement>($"/boards/{board}", ct);
+        Assert.False(archivedSnapshot.GetProperty("cardLabels").TryGetProperty(card.ToString(), out _));
+    }
+    [Fact]
     public async Task Card_label_assignment_is_versioned_retry_safe_and_definition_deletion_advances_Card_revision()
     {
         var ct = TestContext.Current.CancellationToken;

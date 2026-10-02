@@ -142,6 +142,12 @@ test "$(get owner "/cards/$card/labels?after=$cursor")" = 200
 jq -e '.nextCursor==null and (.items|length)==2' "$scratch/response.json" >/dev/null
 jq -se '([.[0].items[].id,.[1].items[].id]|length)==52 and ([.[0].items[].id,.[1].items[].id]|unique|length)==52' "$scratch/labels-first.json" "$scratch/response.json" >/dev/null
 test "$(get owner "/cards/$card/labels?after=bad")" = 400
+test "$(get owner "/boards/$board")" = 200
+jq -e --arg card "$card" '.cardLabels[$card].total==52 and (.cardLabels[$card].items|length)==6 and (.cardLabels|keys|length)==1' "$scratch/response.json" >/dev/null
+admin "UPDATE boards SET visibility='PUBLIC' WHERE id='$board';" >/dev/null
+test "$(curl --silent --show-error -o "$scratch/public-labels.json" -w '%{http_code}' "$base/boards/$board")" = 200
+jq -e --arg card "$card" '.access.canEdit==false and .cardLabels[$card].total==52 and (.cardLabels[$card].items|length)==6' "$scratch/public-labels.json" >/dev/null
+admin "UPDATE boards SET visibility='PRIVATE' WHERE id='$board';" >/dev/null
 test "$(get outsider "/cards/$card/labels")" = 404
 hold; get editor "/cards/$card/labels?after=$cursor" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$editor';"

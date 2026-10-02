@@ -464,7 +464,8 @@ internal sealed partial class PostgresWorkManagementStore(
                             cardsByList[list.Id]))
                 .ToArray(),
             starred,
-            access);
+            access,
+            await LoadLabelPreviewsAsync(session, tenantId.Value, boardId, cancellationToken));
     }
 
     public Task<BoardRecord?> UpdateBoardAsync(

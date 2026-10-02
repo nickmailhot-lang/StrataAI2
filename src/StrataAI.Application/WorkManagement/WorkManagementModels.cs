@@ -1,6 +1,8 @@
 namespace StrataAI.Application.WorkManagement;
 
 public sealed record CardLabelChange(CardRecord Card, Guid LabelId, bool Assigned, bool Changed);
+public sealed record CardLabelIndicator(Guid Id, string Name, string Color);
+public sealed record CardLabelPreview(IReadOnlyList<CardLabelIndicator> Items, long Total);
 public sealed record CardLabelPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
     IReadOnlyList<BoardLabelRecord> Items, Guid? NextCursor, bool CanEdit);
 
@@ -96,7 +98,8 @@ public sealed record BoardSnapshot(
     BoardRecord Board,
     IReadOnlyList<BoardListSnapshot> Lists,
     bool Starred,
-    BoardAccess Access);
+    BoardAccess Access,
+    IReadOnlyDictionary<Guid, CardLabelPreview>? CardLabels = null);
 
 public sealed record BoardListSnapshot(
     BoardListRecord List,

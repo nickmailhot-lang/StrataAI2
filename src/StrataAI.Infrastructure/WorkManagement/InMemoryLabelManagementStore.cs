@@ -4,6 +4,15 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class InMemoryWorkManagementStore
 {
+    private IReadOnlyDictionary<Guid, CardLabelPreview> LabelPreviews(IReadOnlyList<BoardListSnapshot> lists)
+    {
+        var cards = lists.SelectMany(list => list.Cards).ToDictionary(card => card.Id);
+        return _cardLabels.Where(a => cards.TryGetValue(a.CardId, out var card) && _labels.TryGetValue(a.LabelId, out var label)
+                && !label.Deleted && label.OrganizationId == card.OrganizationId && label.BoardId == card.BoardId)
+            .GroupBy(a => a.CardId).ToDictionary(group => group.Key, group => new CardLabelPreview(
+                group.Select(a => _labels[a.LabelId]).OrderBy(label => label.Rank, StringComparer.Ordinal).ThenBy(label => label.Id)
+                    .Take(6).Select(label => new CardLabelIndicator(label.Id, label.Name, label.Color)).ToArray(), group.LongCount()));
+    }
     private readonly Dictionary<Guid, BoardLabelRecord> _labels = [];
     private readonly HashSet<(Guid CardId, Guid LabelId)> _cardLabels = [];
     public Task<IReadOnlyList<BoardLabelRecord>> ListCardLabelsAsync(Guid cardId, Guid? after, CancellationToken cancellationToken = default)

@@ -25,6 +25,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardLabels } from './CardLabels';
+import { CardLabelIndicators } from './CardLabelIndicators';
 import { LabelCreateControl } from './LabelCreateControl';
 import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardArchiveControl } from './CardArchiveControl';
@@ -557,7 +558,7 @@ function BoardContent() {
                     },
                   }}
                 >
-                  <CardContent>{item.title}</CardContent>
+                  <CardContent>{item.title}<CardLabelIndicators preview={snapshot.cardLabels?.[item.id]} /></CardContent>
                 </Card>
                 </CardDragItem>
               ))}

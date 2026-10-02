@@ -6,6 +6,30 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class PostgresWorkManagementStore
 {
+    private static async Task<IReadOnlyDictionary<Guid, CardLabelPreview>> LoadLabelPreviewsAsync(TenantDbSession session, Guid tenant, Guid board, CancellationToken ct)
+    {
+        await using var command = new NpgsqlCommand("""
+            SELECT card_id,id,name,color,total FROM (
+              SELECT a.card_id,l.id,l.name,l.color,count(*) OVER(PARTITION BY a.card_id) AS total,
+                row_number() OVER(PARTITION BY a.card_id ORDER BY l.rank,l.id) AS position
+              FROM card_labels a JOIN board_labels l ON l.tenant_id=a.tenant_id AND l.board_id=a.board_id AND l.id=a.label_id
+              JOIN cards c ON c.tenant_id=a.tenant_id AND c.board_id=a.board_id AND c.id=a.card_id
+              JOIN board_lists parent ON parent.tenant_id=c.tenant_id AND parent.board_id=c.board_id AND parent.id=c.list_id
+              WHERE a.tenant_id=@tenant AND a.board_id=@board AND l.status='ACTIVE'
+                AND c.lifecycle_state='ACTIVE' AND parent.lifecycle_state='ACTIVE'
+            ) ranked WHERE position<=6 ORDER BY card_id,position;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", tenant); command.Parameters.AddWithValue("board", board);
+        var result = new Dictionary<Guid, CardLabelPreview>();
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            var id = reader.GetGuid(0);
+            if (!result.TryGetValue(id, out var preview)) result[id] = preview = new(new List<CardLabelIndicator>(), reader.GetInt64(4));
+            ((List<CardLabelIndicator>)preview.Items).Add(new(reader.GetGuid(1), reader.GetString(2), reader.GetString(3)));
+        }
+        return result;
+    }
     private async Task<Dictionary<Guid, Guid>> CopyListLabelDefinitionsAsync(Guid organizationId, Guid sourceBoardId,
         Guid sourceListId, Guid destinationBoardId, DateTimeOffset now, CancellationToken ct)
     {
