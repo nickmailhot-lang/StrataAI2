@@ -32,7 +32,7 @@ and session revocation. Strict local compilation and fixture syntax checks
 passed. Host execution and exact PostgreSQL/runtime execution remain pending
 Linux CI; Windows Application Control prevents local host-test execution.
 
-PRD-11 remains open. Organization/account departure cleanup, Card face/detail UI, member filters,
+PRD-11 remains open. Account departure cleanup, Card face/detail UI, member filters,
 historical attribution, notification suppression, two-client/accessibility
 acceptance and documented performance evidence still require implementation.
 Historical users and events must remain stable during membership cleanup.
@@ -85,3 +85,22 @@ verifies other-assignee retention during departure. Compilation and fixture
 syntax passed locally; these new command tests still require Linux execution.
 The earlier directory/schema commit 55f2ee8 passed Linux .NET host and PostgreSQL
 source CI (run 37044554455); its complete release-image gate is still pending.
+
+Organization member removal and voluntary leave now clear that user's assignments
+across all Boards in the departing Organization, including archived Cards.
+They retain other Organizations' assignments, other assignees and historical
+users/membership rows. Each affected Card advances once and emits a removal
+audit/event/delivery job inside the existing Organization transaction. The
+Organization parent lock excludes concurrent Work commands before they enter
+Board/Card/event scope. Restoring Organization membership does not resurrect
+assignments. The two host cases cover administrator removal and voluntary leave
+across active/archived Boards and a separate Organization. The required release
+fixture also forces audit failures during both operations and checks complete
+rollback, revision/event changes, retained foreign assignments and historical
+users. Local compilation and fixture syntax passed; execution of these new
+Organization cleanup checks remains pending CI. Account deactivation uses its
+separate global identity transaction and still needs corresponding cleanup.
+
+The assignment/Board-departure command commit 2bb05d7 passed Linux .NET host,
+web and PostgreSQL source checks in run 37045729473. Its image/runtime evidence
+is still pending; this does not verify the newer Organization cleanup.

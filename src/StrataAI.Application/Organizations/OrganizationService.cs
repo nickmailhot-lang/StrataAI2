@@ -9,7 +9,7 @@ public sealed class OrganizationService(
     IClock clock,
     IOrganizationUnitOfWork unitOfWork,
     StrataAI.Application.Identity.ICommandActorAuthorization actors,
-    StrataAI.Application.Onboarding.IInvitationStore invitations) : IOrganizationService
+    StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents) : IOrganizationService
 {
     // ARCH-02-AC-003: admission is a current read, never a transferable grant.
     public Task<OrganizationOperation<OrganizationSurfaceAdmission>> ReadSurfaceAdmissionAsync(Guid organizationId,
@@ -275,6 +275,7 @@ public sealed class OrganizationService(
             return OrganizationOperation<bool>.Failure("member_not_found");
         }
 
+        await RemoveAssignmentsAsync(organizationId, targetUserId, actorUserId, correlationId, cancellationToken);
         await store.AppendAuditAsync(
             organizationId,
             actorUserId,
@@ -319,6 +320,7 @@ public sealed class OrganizationService(
             return OrganizationOperation<bool>.Failure("organization_not_found");
         }
 
+        await RemoveAssignmentsAsync(organizationId, actorUserId, actorUserId, correlationId, cancellationToken);
         await store.AppendAuditAsync(
             organizationId,
             actorUserId,
@@ -329,6 +331,19 @@ public sealed class OrganizationService(
             cancellationToken);
 
         return OrganizationOperation<bool>.Success(true);
+    }
+
+    private async Task RemoveAssignmentsAsync(Guid organizationId, Guid userId, Guid actorUserId,
+        string correlationId, CancellationToken cancellationToken)
+    {
+        var now = clock.UtcNow;
+        var cards = await workStore.RemoveOrganizationCardMemberAssignmentsAsync(organizationId, userId, now, cancellationToken);
+        foreach (var card in cards)
+        {
+            await workStore.AppendAuditAsync(organizationId, actorUserId, "CARD_MEMBER_REMOVED", "Card", card.Id, correlationId, cancellationToken);
+            await workEvents.AppendAsync(new WorkEvent(Guid.NewGuid(), organizationId, card.BoardId, actorUserId,
+                "CARD_MEMBER_REMOVED", "Card", card.Id, card.Version, correlationId, now), cancellationToken);
+        }
     }
 
     private async Task<OrganizationOperation<bool>> MarkDeletingCoreAsync(

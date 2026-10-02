@@ -6,6 +6,27 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class PostgresWorkManagementStore
 {
+    public async Task<IReadOnlyList<CardRecord>> RemoveOrganizationCardMemberAssignmentsAsync(Guid organizationId, Guid userId,
+        DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId)) throw new InvalidOperationException("Organization assignment cleanup requires its owning transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        // The Organization command holds the parent FOR UPDATE, excluding work
+        // commands before their Board/Card/event locks. Preserve other tenants.
+        await using var query = new NpgsqlCommand("""
+            WITH removed AS (
+                DELETE FROM card_members WHERE tenant_id=@tenant AND user_id=@user RETURNING card_id,board_id
+            ), changed AS (
+                UPDATE cards c SET version=c.version+1,updated_at=@now
+                WHERE c.tenant_id=@tenant AND EXISTS(SELECT 1 FROM removed r WHERE r.card_id=c.id AND r.board_id=c.board_id)
+                RETURNING c.id,c.tenant_id,c.board_id,c.list_id,c.title,c.description,c.rank,c.lifecycle_state,c.created_at,c.updated_at,c.version
+            ) SELECT * FROM changed ORDER BY board_id,id;
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organizationId); query.Parameters.AddWithValue("user", userId); query.Parameters.AddWithValue("now", now);
+        var result = new List<CardRecord>(); await using var reader = await query.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) result.Add(ReadCard(reader));
+        return result;
+    }
     public async Task<IReadOnlyList<CardRecord>> RemoveBoardCardMemberAssignmentsAsync(Guid boardId, Guid userId,
         DateTimeOffset now, CancellationToken cancellationToken = default)
     {
@@ -78,6 +99,22 @@ internal sealed partial class PostgresWorkManagementStore
 internal sealed partial class InMemoryWorkManagementStore
 {
     private readonly Dictionary<(Guid CardId, Guid UserId), (Guid AssignedBy, DateTimeOffset AssignedAt)> _cardMembers = [];
+    public Task<IReadOnlyList<CardRecord>> RemoveOrganizationCardMemberAssignmentsAsync(Guid organizationId, Guid userId,
+        DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            var cards = _cardMembers.Keys.Where(k => k.UserId == userId && _cards.TryGetValue(k.CardId, out var c) && c.OrganizationId == organizationId)
+                .Select(k => _cards[k.CardId]).OrderBy(c => c.BoardId).ThenBy(c => c.Id).ToArray();
+            var result = new List<CardRecord>();
+            foreach (var card in cards)
+            {
+                _cardMembers.Remove((card.Id, userId)); var updated = card with { Version = card.Version + 1, UpdatedAt = now };
+                _cards[card.Id] = updated; result.Add(updated);
+            }
+            return Task.FromResult<IReadOnlyList<CardRecord>>(result);
+        }
+    }
     public Task<IReadOnlyList<CardRecord>> RemoveBoardCardMemberAssignmentsAsync(Guid boardId, Guid userId,
         DateTimeOffset now, CancellationToken cancellationToken = default)
     {

@@ -57,6 +57,7 @@ member_path="/cards/$card/members/$member"
 key=11111111-1111-1111-1111-111111111141
 state() { admin "SELECT md5(jsonb_build_object(
  'board_members',(SELECT jsonb_agg(to_jsonb(b) ORDER BY user_id) FROM board_members b WHERE tenant_id='$org'),
+ 'organization_members',(SELECT jsonb_agg(to_jsonb(o) ORDER BY user_id) FROM organization_members o WHERE tenant_id='$org'),
  'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY card_id,user_id) FROM card_members m WHERE tenant_id='$org'),
  'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id='$org'),
  'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
@@ -140,6 +141,53 @@ test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entit
 after=$(state)
 test "$(request owner DELETE "$departure_path" "$departure_key" '{}')" = 204
 test "$after" = "$(state)"
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
+test "$(request owner PUT "$member_path?version=6" 11111111-1111-1111-1111-111111111148 '{}')" = 200
+second_board=$(admin 'SELECT gen_random_uuid();'); second_list=$(admin 'SELECT gen_random_uuid();'); archived_card=$(admin 'SELECT gen_random_uuid();')
+foreign_org=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"name":"Retained foreign assignments"}' "$base/organizations" | jq -r '.organization.id')
+foreign_board=$(admin 'SELECT gen_random_uuid();'); foreign_list=$(admin 'SELECT gen_random_uuid();'); foreign_card=$(admin 'SELECT gen_random_uuid();')
+admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),'$foreign_org','$member','MEMBER','ACTIVE');
+ INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES
+ ('$second_board','$org','Second cleanup Board',now(),now()),('$foreign_board','$foreign_org','Retained foreign Board',now(),now());
+ INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES
+ (gen_random_uuid(),'$org','$second_board','$member','MEMBER','ACTIVE',now(),now()),
+ (gen_random_uuid(),'$foreign_org','$foreign_board','$member','MEMBER','ACTIVE',now(),now());
+ INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at) VALUES
+ ('$second_list','$org','$second_board','Archived cleanup List','500000000000000000000000000000',now(),now()),
+ ('$foreign_list','$foreign_org','$foreign_board','Retained foreign List','500000000000000000000000000000',now(),now());
+ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,lifecycle_state,archived_at,version,created_at,updated_at) VALUES
+ ('$archived_card','$org','$second_board','$second_list','Archived assigned Card','500000000000000000000000000000','ARCHIVED',now(),3,now(),now()),
+ ('$foreign_card','$foreign_org','$foreign_board','$foreign_list','Retained foreign Card','500000000000000000000000000000','ACTIVE',null,2,now(),now());
+ INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by) VALUES
+ ('$org','$second_board','$archived_card','$member','$owner'),('$foreign_org','$foreign_board','$foreign_card','$member','$owner');" >/dev/null
+before=$(state)
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(request owner DELETE "/organizations/$org/members/$member" 11111111-1111-1111-1111-111111111149 '{}')" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+test "$(request owner DELETE "/organizations/$org/members/$member" 11111111-1111-1111-1111-111111111149 '{}')" = 204
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND user_id='$member';")" = 0
+test "$(admin "SELECT version FROM cards WHERE id='$card';")" = 8
+test "$(admin "SELECT version FROM cards WHERE id='$archived_card';")" = 4
+test "$(admin "SELECT version FROM cards WHERE id='$foreign_card';")" = 2
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$foreign_org' AND card_id='$foreign_card' AND user_id='$member';")" = 1
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card' AND user_id='$owner';")" = 1
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CARD_MEMBER_REMOVED' AND entity_id IN ('$card','$archived_card');")" = 4
+admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
+test "$(request owner DELETE "$member_path?version=8" 11111111-1111-1111-1111-111111111150 '{}')" = 200
+jq -e '.changed==false and .card.version==8' "$scratch/response.json" >/dev/null
+test "$(request owner PUT "$member_path?version=8" 11111111-1111-1111-1111-111111111151 '{}')" = 200
+curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/member.credentials")" "$base/auth/login" >/dev/null
+before=$(state)
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(request member POST "/organizations/$org/leave" 11111111-1111-1111-1111-111111111152 '{}')" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+test "$(request member POST "/organizations/$org/leave" 11111111-1111-1111-1111-111111111152 '{}')" = 204
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND user_id='$member';")" = 0
+test "$(admin "SELECT version FROM cards WHERE id='$card';")" = 10
+test "$(admin "SELECT version FROM cards WHERE id='$foreign_card';")" = 2
+test "$(admin "SELECT count(*) FROM users WHERE id='$member' AND status='ACTIVE';")" = 1
 admin "UPDATE boards SET lifecycle_state='ARCHIVED',version=version+1 WHERE id='$board';" >/dev/null
 test "$(get owner "$path")" = 404
 echo 'Assignable Board members and Card assignments: scoped choices, 50+2 pages, atomic rollback, exact retry, revisions, multiple assignees and post-wait revocation passed.'
