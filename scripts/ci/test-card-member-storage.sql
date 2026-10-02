@@ -4,6 +4,7 @@ CREATE ROLE strataai_member_storage_ci NOSUPERUSER NOBYPASSRLS NOLOGIN;
 GRANT USAGE ON SCHEMA public TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE,DELETE ON card_members TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON card_assignment_notifications TO strataai_member_storage_ci;
+GRANT SELECT,INSERT,UPDATE ON watch_subscriptions TO strataai_member_storage_ci;
 INSERT INTO organizations(id,name,created_at,updated_at) VALUES
  ('03000000-0000-0000-0000-000000000001','Member A',now(),now()),
  ('03000000-0000-0000-0000-000000000002','Member B',now(),now());
@@ -51,9 +52,46 @@ INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,event_id
  e.board_id,e.entity_id,e.event_id,CASE WHEN e.entity_id='03000000-0000-0000-0000-000000000031'::uuid
  THEN '03000000-0000-0000-0000-000000000041'::uuid ELSE '03000000-0000-0000-0000-000000000043'::uuid END,
  e.actor_id,e.entity_version,e.created_at FROM work_events e WHERE e.correlation_id='notification-storage';
+INSERT INTO watch_subscriptions(tenant_id,id,user_id,entity_type,entity_id,card_id,watching,created_at,updated_at,version)
+ SELECT c.tenant_id,gen_random_uuid(),CASE WHEN c.id='03000000-0000-0000-0000-000000000031'::uuid
+ THEN '03000000-0000-0000-0000-000000000041'::uuid ELSE '03000000-0000-0000-0000-000000000043'::uuid END,
+ 'CARD',c.id,c.id,true,now(),now(),1 FROM cards c WHERE c.id IN ('03000000-0000-0000-0000-000000000031','03000000-0000-0000-0000-000000000032');
 SET LOCAL ROLE strataai_member_storage_ci;
 SELECT set_config('app.tenant_id','03000000-0000-0000-0000-000000000001',true);
 DO $$ BEGIN
+ IF (SELECT count(*) FROM watch_subscriptions) <> 1 THEN RAISE EXCEPTION 'Watch tenant reads widened'; END IF;
+ BEGIN
+  INSERT INTO watch_subscriptions SELECT tenant_id,gen_random_uuid(),user_id,entity_type,entity_id,board_id,list_id,card_id,watching,created_at,updated_at,version FROM watch_subscriptions;
+  RAISE EXCEPTION 'Duplicate personal watch accepted';
+ EXCEPTION WHEN unique_violation THEN NULL; END;
+ BEGIN
+  UPDATE watch_subscriptions SET user_id='03000000-0000-0000-0000-000000000043';
+  RAISE EXCEPTION 'Watch user crossed tenant';
+ EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ BEGIN
+  UPDATE watch_subscriptions SET entity_id='03000000-0000-0000-0000-000000000032',card_id='03000000-0000-0000-0000-000000000032';
+  RAISE EXCEPTION 'Watch entity crossed tenant';
+ EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ BEGIN
+  UPDATE watch_subscriptions SET card_id=NULL;
+  RAISE EXCEPTION 'Watch lost its typed entity reference';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  UPDATE watch_subscriptions SET entity_type='LIST';
+  RAISE EXCEPTION 'Watch type disagreed with its reference';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  UPDATE watch_subscriptions SET version=0;
+  RAISE EXCEPTION 'Watch accepted zero persisted revision';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  UPDATE watch_subscriptions SET updated_at=created_at-interval '1 second';
+  RAISE EXCEPTION 'Watch update preceded creation';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  INSERT INTO watch_subscriptions SELECT '03000000-0000-0000-0000-000000000002',gen_random_uuid(),user_id,entity_type,entity_id,board_id,list_id,card_id,watching,created_at,updated_at,version FROM watch_subscriptions;
+  RAISE EXCEPTION 'Watch cross-tenant insert escaped RLS';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  IF (SELECT count(*) FROM card_assignment_notifications) <> 1 THEN RAISE EXCEPTION 'Notification tenant reads widened'; END IF;
  BEGIN
   INSERT INTO card_assignment_notifications SELECT tenant_id,gen_random_uuid(),board_id,card_id,event_id,recipient_id,actor_id,notification_type,card_version,created_at,read_at FROM card_assignment_notifications;
@@ -124,11 +162,13 @@ DO $$ BEGIN
 END $$;
 SELECT set_config('app.tenant_id','03000000-0000-0000-0000-000000000002',true);
 DO $$ BEGIN
+ IF (SELECT count(*) FROM watch_subscriptions) <> 1 THEN RAISE EXCEPTION 'Other tenant watch reads widened'; END IF;
  IF (SELECT count(*) FROM card_assignment_notifications) <> 1 OR EXISTS(SELECT 1 FROM card_assignment_notifications WHERE tenant_id<>'03000000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'Other tenant notifications widened'; END IF;
  IF (SELECT count(*) FROM card_members) <> 1 OR EXISTS(SELECT 1 FROM card_members WHERE tenant_id<>'03000000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'Other tenant assignment reads widened'; END IF;
 END $$;
 SELECT set_config('app.tenant_id','',true);
 DO $$ BEGIN
+ IF EXISTS(SELECT 1 FROM watch_subscriptions) THEN RAISE EXCEPTION 'Missing tenant exposed watches'; END IF;
  IF EXISTS(SELECT 1 FROM card_assignment_notifications) THEN RAISE EXCEPTION 'Missing tenant exposed notifications'; END IF;
  IF EXISTS(SELECT 1 FROM card_members) THEN RAISE EXCEPTION 'Missing tenant exposed assignments'; END IF;
 END $$;
@@ -138,6 +178,7 @@ RESET ROLE;
 UPDATE board_members SET status='REMOVED' WHERE user_id='03000000-0000-0000-0000-000000000041';
 UPDATE organization_members SET status='REMOVED' WHERE user_id='03000000-0000-0000-0000-000000000044';
 DO $$ BEGIN
+ IF (SELECT count(*) FROM watch_subscriptions) <> 2 THEN RAISE EXCEPTION 'Departure erased watch history'; END IF;
  IF (SELECT count(*) FROM card_assignment_notifications) <> 2 THEN RAISE EXCEPTION 'Membership departure erased notification history'; END IF;
  IF NOT EXISTS(SELECT 1 FROM card_members WHERE assigned_by='03000000-0000-0000-0000-000000000044') THEN RAISE EXCEPTION 'Departure erased historical actor reference'; END IF;
 END $$;

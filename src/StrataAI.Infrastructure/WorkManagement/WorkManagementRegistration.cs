@@ -20,6 +20,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<InMemoryWorkNotificationStore>();
             services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
             services.AddSingleton<INotificationInboxStore, InMemoryNotificationInboxStore>();
+            services.AddSingleton<IWatchSubscriptionStore, InMemoryWatchSubscriptionStore>();
         }
         else
         {
@@ -30,6 +31,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<PostgresWorkNotificationStore>();
             services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
             services.AddSingleton<INotificationInboxStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
+            services.AddSingleton<IWatchSubscriptionStore, PostgresWatchSubscriptionStore>();
         }
 
         services.AddSingleton<IWorkManagementService>(provider => new TransactionalWorkManagementService(new WorkManagementService(provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<StrataAI.Application.Organizations.IOrganizationStore>(), provider.GetRequiredService<StrataAI.Application.Common.IClock>(), provider.GetRequiredService<IWorkEventStore>(), provider.GetRequiredService<StrataAI.Application.Identity.IdentityPolicy>(), provider.GetRequiredService<IWorkNotificationStore>()),
@@ -39,5 +41,6 @@ public static class WorkManagementRegistration
         services.AddSingleton<IWorkBoardAuthorization>(provider => (IWorkBoardAuthorization)provider.GetRequiredService<IWorkManagementService>());
         services.AddSingleton<WorkSynchronizationService>();
         services.AddSingleton<NotificationInboxService>();
+        services.AddSingleton<WatchSubscriptionService>();
     }
 }

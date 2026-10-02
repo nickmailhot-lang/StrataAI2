@@ -11,7 +11,7 @@ public sealed class WorkIdempotencyMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context)
     {
-        var workPath = new[] { "/boards", "/lists", "/cards", "/labels" }.Any(path => context.Request.Path.StartsWithSegments(path));
+        var workPath = new[] { "/boards", "/lists", "/cards", "/labels", "/watch" }.Any(path => context.Request.Path.StartsWithSegments(path));
         var notificationRead = (context.GetEndpoint() as Microsoft.AspNetCore.Routing.RouteEndpoint)?.RoutePattern.RawText is
             "/organizations/{organizationId:guid}/notifications/{notificationId:guid}/read" or
             "/organizations/{organizationId:guid}/notifications/read";

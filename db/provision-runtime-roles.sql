@@ -28,6 +28,8 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON card_labels TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE,DELETE ON card_members TO strataai_api_runtime;
 GRANT SELECT,INSERT ON card_assignment_notifications TO strataai_api_runtime;
 GRANT UPDATE(read_at) ON card_assignment_notifications TO strataai_api_runtime;
+GRANT SELECT,INSERT ON watch_subscriptions TO strataai_api_runtime;
+GRANT UPDATE(watching,updated_at,version) ON watch_subscriptions TO strataai_api_runtime;
 GRANT SELECT,INSERT ON invitation_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_event_streams TO strataai_api_runtime;
 GRANT SELECT,INSERT ON work_events TO strataai_api_runtime;

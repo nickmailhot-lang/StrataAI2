@@ -12,6 +12,7 @@ public static partial class WorkManagementEndpoints
         MapAssignableBoardMembersEndpoints(app);
         MapCardMemberEndpoints(app);
         MapNotificationEndpoints(app);
+        MapWatchEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
             async (
@@ -740,6 +741,8 @@ public static partial class WorkManagementEndpoints
         errorCode switch
         {
             "notification_not_found" => Problem(404, errorCode, "The notifications are unavailable."),
+            "watch_not_found" => Problem(404, errorCode, "This watch or entity is unavailable."),
+            "invalid_watch_version" => Problem(400, errorCode, "Use the current watch revision, or zero for a new subscription."),
             "invalid_notification_cursor" => Problem(400, errorCode, "Use the notification page's current cursor."),
             "invalid_notification_selection" => Problem(400, errorCode, "Select between one and 50 distinct notifications."),
             "invalid_label_name" => Problem(400, errorCode, "A label name must contain at most 160 characters."),

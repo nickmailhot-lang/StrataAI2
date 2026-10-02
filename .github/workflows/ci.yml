@@ -411,6 +411,9 @@ jobs:
       - name: Bounded Board members, atomic Card assignments and post-wait revocation through exact release images
         run: scripts/ci/test-assignable-board-members.sh
 
+      - name: Personal watch revisions, atomic publication and post-wait revocation through exact release images
+        run: scripts/ci/test-watch-subscriptions.sh
+
       - name: Atomic Work events and leased Worker readiness against exact release images
         run: scripts/ci/test-work-events.sh
 

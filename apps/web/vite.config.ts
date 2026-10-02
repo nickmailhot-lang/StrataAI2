@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-      '^/(auth|me|organizations|boards|lists|cards|labels|invitations)(/|$)': {
+      '^/(auth|me|organizations|boards|lists|cards|labels|watch|invitations)(/|$)': {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },

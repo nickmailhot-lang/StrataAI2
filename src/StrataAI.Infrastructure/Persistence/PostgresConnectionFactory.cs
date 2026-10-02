@@ -40,11 +40,11 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 throw new RuntimeDatabaseRoleException();
             }
             await using var schema = new NpgsqlCommand("""
-                SELECT count(*) = 32 FROM public.schema_migrations WHERE version = ANY(ARRAY[
+                SELECT count(*) = 33 FROM public.schema_migrations WHERE version = ANY(ARRAY[
                   '001_foundation','002_audit_runtime','003_identity','004_organization_access_routing',
                   '005_invitation_routing','006_work_management','007_background_jobs',
                   '008_identity_delivery','009_runtime_role_guard','010_work_command_replays','011_work_events','012_identity_events',
-                  '013_identity_profile_replays','014_identity_retry_retention','015_identity_revocation_replays','016_invitation_discovery','017_identity_login_replays','018_identity_registration_replays','019_identity_recovery_request_replays','020_identity_token_consumption_replays','021_organization_access_integrity','022_invitation_creation_replays','023_invitation_mail_intents','024_invitation_history','025_board_invitation_targets','026_board_invitation_mail','027_routing_isolation','028_board_labels','029_label_routing','030_card_members','031_card_assignment_notifications','032_notification_inbox']);
+                  '013_identity_profile_replays','014_identity_retry_retention','015_identity_revocation_replays','016_invitation_discovery','017_identity_login_replays','018_identity_registration_replays','019_identity_recovery_request_replays','020_identity_token_consumption_replays','021_organization_access_integrity','022_invitation_creation_replays','023_invitation_mail_intents','024_invitation_history','025_board_invitation_targets','026_board_invitation_mail','027_routing_isolation','028_board_labels','029_label_routing','030_card_members','031_card_assignment_notifications','032_notification_inbox','033_watch_subscriptions']);
                 """, connection);
             try
             {
