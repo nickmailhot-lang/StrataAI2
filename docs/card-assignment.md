@@ -126,3 +126,18 @@ session revocation during Card-assignee read lock waits. Local strict
 compilation and shell syntax passed; these new read checks await Linux execution.
 Organization cleanup commit b677ccb passed Linux .NET host, web, PostgreSQL and
 source gates in run 37046379129; complete runtime CI is still in progress.
+
+Card details now include an on-demand Show assignees section with readable names
+and decorative initials avatars. It keeps at most one 50-person page, provides
+Next/First controls, and validates scope, canonical Card revision, IDs,
+assignment attribution/time, duplicate users and cursor structure before
+rendering. A revision, scope or access change retires pending reads and clears
+the section; late responses cannot restore stale names. Denials clear names and
+show safe local recovery controls, with no raw server error content. These are
+read controls; assignment editing and Card-face previews remain required work.
+Twelve component cases and 24 Board cases passed locally, along with typecheck
+and lint/production build. The required desktop/phone browser collaboration fixture now seeds
+an actual self-assignment and opens assignee details with the keyboard. Browser
+collection passed; exact-image runtime acceptance remains pending CI.
+The backing assignee-read commit 8c961eb passed Linux .NET host, web,
+PostgreSQL and source gates in run 37047146982; image/runtime CI remains pending.

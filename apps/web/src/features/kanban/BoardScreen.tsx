@@ -25,6 +25,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardLabels } from './CardLabels';
+import { CardAssignees } from './CardAssignees';
 import { CardLabelPicker } from './CardLabelPicker';
 import { CardLabelIndicators } from './CardLabelIndicators';
 import { LabelCreateControl } from './LabelCreateControl';
@@ -672,6 +673,9 @@ function BoardContent() {
               onRefresh={() => setReload((value) => value + 1)}
             />
             {cardId && <CardLabels key={`labels-${card.id}-${card.version}-${reload}`} organizationId={snapshot.board.organizationId}
+              boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            {cardId && <CardAssignees key={`assignees-${card.id}-${card.version}-${reload}`} organizationId={snapshot.board.organizationId}
               boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active"

@@ -15,6 +15,8 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
   expect(listReply.status()).toBe(201); const list = (await listReply.json()).id;
   const cardReply = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Collaborative labeled Card' } });
   expect(cardReply.status()).toBe(201); const card = (await cardReply.json()).id;
+  const actor = (await (await context.request.get('/me')).json()).id;
+  expect((await context.request.put(`/cards/${card}/members/${actor}?version=1`, { headers, data: {} })).status()).toBe(200);
   expect((await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Unmatched canvas Card' } })).status()).toBe(201);
   const labelReply = await context.request.post(`/boards/${board}/labels`, { headers, data: { name: 'Priority', color: 'red' } });
   expect(labelReply.status()).toBe(201); const label = (await labelReply.json()).id;
@@ -39,6 +41,9 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
     await page.goto(`${boardPath}/cards/${card}`);
     await expect(page.getByText('Live updates connected.', { exact: true })).toBeVisible();
+    const assignees = page.getByRole('button', { name: 'Show assignees', exact: true });
+    await expect(assignees).toBeEnabled(); await assignees.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('region', { name: 'Card assignees' }).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
     const edit = page.getByRole('button', { name: 'Edit Card labels', exact: true });
     async function assignment(action: string) {
       await expect(edit).toBeEnabled(); await edit.focus(); await page.keyboard.press('Enter');
