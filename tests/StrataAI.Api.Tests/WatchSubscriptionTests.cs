@@ -23,6 +23,7 @@ public sealed partial class ApiHostTests
             var path = $"/watch/{type}/{entity}";
             var initial = await recipient.GetFromJsonAsync<WatchState>(path, ct);
             Assert.NotNull(initial); Assert.False(initial.Watching); Assert.Equal(0, initial.Version); Assert.Null(initial.SubscriptionId);
+            Assert.True(initial.CanChange);
             using var invalidKey = await Mutate(recipient, HttpMethod.Put, path + "?version=0", new { }, "bad-key");
             Assert.Equal(HttpStatusCode.BadRequest, invalidKey.StatusCode);
             var key = Guid.NewGuid().ToString();

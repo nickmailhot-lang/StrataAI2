@@ -8,7 +8,7 @@ public sealed record WatchSubscription(Guid Id, Guid OrganizationId, Guid UserId
     Guid EntityId, bool Watching, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long Version);
 public sealed record WatchState(Guid OrganizationId, Guid BoardId, Guid UserId, string EntityType,
     Guid EntityId, bool Watching, long Version, Guid? SubscriptionId, DateTimeOffset? CreatedAt,
-    DateTimeOffset? UpdatedAt, bool Changed);
+    DateTimeOffset? UpdatedAt, bool Changed, bool CanChange);
 
 public interface IWatchSubscriptionStore
 {
@@ -38,6 +38,7 @@ public sealed class WatchSubscriptionService(IWatchSubscriptionStore subscriptio
             return WorkOperation<WatchState>.Failure("watch_not_found");
         var hint = await Resolve(type, entityId, ct);
         if (hint is null) return WorkOperation<WatchState>.Failure("watch_not_found");
+        var canChange = false;
         return await transactions.ExecuteAsync(hint.OrganizationId,
             WorkCommand.Create(userId, watching is null ? null : context.IdempotencyKey, "WatchSubscription", entityId,
                 new { type, watching, expectedVersion }, "watch_not_found"), async receipt =>
@@ -51,6 +52,7 @@ public sealed class WatchSubscriptionService(IWatchSubscriptionStore subscriptio
                 var organization = await organizations.FindOrganizationAsync(hint.OrganizationId, ct);
                 if (organization is null || (watching is not null ? organization.Status != OrganizationStatus.Active :
                     organization.Status is not (OrganizationStatus.Active or OrganizationStatus.Archived))) return false;
+                canChange = organization.Status == OrganizationStatus.Active;
                 var scope = await Resolve(type, entityId, ct);
                 if (scope != hint) return false;
                 var view = await boards.GetSyncScopeAsync(hint.BoardId, userId, ct);
@@ -73,17 +75,17 @@ public sealed class WatchSubscriptionService(IWatchSubscriptionStore subscriptio
                         await events.AppendAsync(new(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, userId,
                             eventType, "WatchSubscription", current.Id, current.Version, correlationId, clock.UtcNow), ct);
                         if (!await actors.VerifyAsync(userId, ct)) return WorkOperation<WatchState>.Failure("session_unavailable");
-                        return WorkOperation<WatchState>.Success(State(hint, userId, type, entityId, current, true));
+                        return WorkOperation<WatchState>.Success(State(hint, userId, type, entityId, current, true, canChange));
                     }
                 }
                 if (!await actors.VerifyAsync(userId, ct)) return WorkOperation<WatchState>.Failure("session_unavailable");
-                return WorkOperation<WatchState>.Success(State(hint, userId, type, entityId, current, false));
+                return WorkOperation<WatchState>.Success(State(hint, userId, type, entityId, current, false, canChange));
             }, ct);
     }
 
-    private static WatchState State(Scope scope, Guid user, string type, Guid id, WatchSubscription? row, bool changed) =>
+    private static WatchState State(Scope scope, Guid user, string type, Guid id, WatchSubscription? row, bool changed, bool canChange) =>
         new(scope.OrganizationId, scope.BoardId, user, type, id, row?.Watching ?? false, row?.Version ?? 0,
-            row?.Id, row?.CreatedAt, row?.UpdatedAt, changed);
+            row?.Id, row?.CreatedAt, row?.UpdatedAt, changed, canChange);
 
     private async Task<Scope?> Resolve(string type, Guid entityId, CancellationToken ct)
     {

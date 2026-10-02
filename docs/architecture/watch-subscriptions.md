@@ -14,6 +14,9 @@ row/event/job/audit and does not increment a revision. A stale revision returns
 `version_conflict`. Invalid revisions are rejected only after entity admission.
 Successful state changes return the subscription ID, current revision and dates,
 authenticated user and canonical entity/Organization/Board scope.
+Reads also return authoritative `canChange`, which is false for an archived
+Organization. The UI uses it to disable personal changes while showing the
+retained subscription state.
 
 Unwatch retains the original row and creation time, toggles `watching`, and
 increments its revision. Rewatch restores that same identity. Unique
@@ -60,7 +63,35 @@ movement retention, archived Organization reads/frozen writes, and observed Boar
 waits during membership and session revocation. Local strict build and Bash
 syntax checks passed; Linux host/storage/exact-image runtime evidence is pending.
 
-This implements the subscription foundation. MUI watch controls, recipient
-selection/fan-out for relevant activity, event-time List/Board scope rules,
+## Watch controls
+
+The Board header, unfiltered List columns and Card detail provide named MUI
+watch controls. Personal state loads on demand in a keyboard-accessible dialog,
+then refreshes every ten seconds while visible and on focus. Writes first check
+the current account and submit the displayed personal revision with a stable UUID
+retry key. An uncertain acknowledgment retains that recipient/revision/method/key
+even after newer canonical state is loaded; the dialog offers exact-intent retry
+and prevents accidental dismissal. Confirmed acknowledgments reconcile through
+fresh GET. Known conflicts require a fresh check. Permission, account and entity
+scope changes retire private state and fence late responses. An archived
+Organization read retires unresolved changes and disables mutation. Focus returns
+to a stable dialog action after refresh/retry and to the source control (or the
+parent fallback) after closing. List controls are available on the unfiltered
+Board so a changing filter result cannot erase a List's active dialog intent.
+
+Twenty-one component cases cover all typed controls, key/revision binding, lost
+responses with newer canonical state, unwatch, malformed scope/acknowledgment,
+account/permission loss, read-only Organization state, conflicts, periodic
+recovery and keyboard focus. The existing 25 Board screen tests pass with the
+controls. A real release browser scenario adds desktop/390px phone watch/unwatch
+and automatic cross-client recovery for all three types, a committed Card watch
+with a lost response and exact replay, movement retention and current List archive
+admission. Browser collection passed; runtime execution is pending.
+
+The initial subscription commit 9f46c85 passed Linux host tests, PostgreSQL
+storage/migration/role checks, web quality and the source gate on run 37063617467.
+Its full build-once release gate remains pending.
+
+Recipient selection/fan-out for relevant activity, event-time List/Board scope rules,
 mentions/reminders and private notification realtime events remain required.
 PRD-17 stays open until all functional and acceptance requirements are proven.

@@ -81,6 +81,7 @@ test "$(get member "$card_path")" = 200
 jq -e --arg id "$before_move" '.subscriptionId==$id and .watching and .version==3' "$scratch/response.json" >/dev/null
 admin "UPDATE organizations SET status='ARCHIVED' WHERE id='$org';" >/dev/null
 test "$(get member "$card_path")" = 200
+jq -e '.canChange==false and .watching and .version==3' "$scratch/response.json" >/dev/null
 test "$(request member DELETE "$card_path?version=3" "$(uuid)" '{}')" = 404
 admin "UPDATE organizations SET status='ACTIVE' WHERE id='$org';" >/dev/null
 hold() {

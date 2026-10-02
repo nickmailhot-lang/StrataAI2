@@ -26,6 +26,7 @@ import {
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
+import { WatchControl } from '../notifications/WatchControl';
 import { CardLabelPicker } from './CardLabelPicker';
 import { CardMemberPicker } from './CardMemberPicker';
 import { CardMemberIndicators } from './CardMemberIndicators';
@@ -128,6 +129,7 @@ function BoardContent() {
   const [snapshotReading, setSnapshotReading] = useState(true);
   const cardLinks = useRef(new Map<string, HTMLAnchorElement>());
   const closeFocusCard = useRef<string | undefined>(undefined);
+  const cardClose = useRef<HTMLButtonElement>(null);
   const canvasFocus = useRef<{ scope: string; cardId: string } | undefined>(undefined);
   useEffect(() => {
     const requested = canvasFocus.current;
@@ -432,6 +434,9 @@ function BoardContent() {
           >
             Refresh board
           </Button>
+          <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="BOARD" entityId={snapshot.board.id}
+            admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active'} disabled={busy || snapshotReading || !!loadError}
+            onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           {snapshot.access.canAdminister && snapshot.board.lifecycleState === "active" && (
             <><Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invite`}>Invite to Board</Button>
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/visibility`}>Board visibility</Button>
@@ -546,6 +551,9 @@ function BoardContent() {
               onBusyChange={setBusy} onRecoveryChange={updateRenameRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             </Stack>
+            {!canvasFilter && <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="LIST" entityId={column.list.id}
+              admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active'}
+              disabled={busy || snapshotReading || !!loadError} onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />}
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active" && column.list.lifecycleState === "active" && <ListPositionControls
               list={column.list} snapshot={snapshot} disabled={!!canvasFilter || busy || snapshotReading || !!loadError || renameRecovery.has(column.list.id)} onBusyChange={setBusy}
               onPreview={setListPreview}
@@ -690,6 +698,10 @@ function BoardContent() {
               onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
           )}
+          {cardId && <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="CARD" entityId={cardId}
+            admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active' && !!card &&
+              snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === cardId))}
+            disabled={busy || snapshotReading || !!loadError} onReturnFocus={() => cardClose.current?.focus({ preventScroll: true })} />}
           {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
             disabled={operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
@@ -706,7 +718,7 @@ function BoardContent() {
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
         </DialogContent>
         <DialogActions>
-          <Button disabled={busy} onClick={closeCard}>
+          <Button ref={cardClose} disabled={busy} onClick={closeCard}>
             Close
           </Button>
         </DialogActions>
