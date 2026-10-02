@@ -1,5 +1,10 @@
 import { apiFetch } from "./apiFetch";
 export type WorkCard = {
+  startAt?: string | null;
+  dueAt?: string | null;
+  dueTimezone?: string | null;
+  dueHasTime?: boolean;
+  dueComplete?: boolean;
   id: string;
   title: string;
   description: string | null;

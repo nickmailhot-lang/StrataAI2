@@ -42,7 +42,7 @@ Control; Linux CI executes the host and domain suites. Database/container checks
 require CI on the exact release images. These checks are pending for this commit.
 
 PRD-12 remains open. This dependency slice does not yet provide the MUI date
-editor/status display, viewing-timezone/Board override behavior, reminder
+editor, viewing-timezone/Board override behavior, reminder
 interval selection, scheduling/rescheduling/cancellation or delivery. Those
 requirements, two-client browser evidence and performance/accessibility checks
 are still required before closure. PRD-17 also remains open.
@@ -62,3 +62,23 @@ The disposable role now has SELECT/INSERT/UPDATE for that routing table within
 its rollback transaction, matching the trigger's ordinary runtime requirements.
 The Linux domain and host suites passed on d595cbd; storage verification remained
 failed until this additional fixture correction. Production grants are unchanged.
+
+## Card detail display
+
+The MUI Card detail panel now shows optional start/due values and textual/icon
+urgency: UPCOMING, DUE_SOON (within 24 hours), DUE_TODAY (viewer calendar day),
+OVERDUE, or COMPLETE. Completion takes precedence; actual expiry precedes the
+calendar-day label. UTC comparisons retain microseconds. The bounded current
+profile read supplies the configured viewing timezone and locale; the stored
+timezone context is shown separately. Date-only due display omits the time.
+Profile checks refresh while visible, on focus and every 30 seconds. Date scope
+loss, account changes and malformed profile/date data hide dates; late profile
+responses are fenced by component scope. Cards without dates add no profile read.
+
+The date model and display have 16 passing local tests; typecheck/lint/build
+passed. Two browser scenarios (1280px and 390px) are collected for exact-release
+CI: separate authenticated sessions, canonical completion, configured timezone
+changes and clearing dates. They explicitly refresh canonical state and do not
+prove realtime notification delivery. Runtime browser evidence is pending.
+
+The editor, Board timezone override, reminders and wider acceptance remain open.

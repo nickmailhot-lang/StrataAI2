@@ -24,6 +24,7 @@ import {
   type WorkCard,
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
+import { CardDateDisplay } from './CardDateDisplay';
 import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
 import { WatchControl } from '../notifications/WatchControl';
@@ -684,6 +685,8 @@ function BoardContent() {
               onDiscard={discardAndLoad}
               onRefresh={() => setReload((value) => value + 1)}
             />
+            <CardDateDisplay card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              unavailable={snapshotReading || !!loadError} onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             {cardId && <CardLabels key={`labels-${card.id}-${card.version}-${reload}`} organizationId={snapshot.board.organizationId}
               boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
