@@ -18,15 +18,32 @@ for (const width of [1280, 390]) {
     expect(cardReply.status()).toBe(201); const card = await cardReply.json();
     const neighborReply = await context.request.post(`/lists/${list.id}/cards`, { headers, data: { title: 'Active neighbor' } });
     expect(neighborReply.status()).toBe(201); const neighbor = await neighborReply.json();
-    expect((await context.request.post(`/cards/${card.id}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request, board);
       const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
       const boardPath = `/app/${org}/boards/${board}`;
       await other.goto(boardPath); await expect(other.getByText('Live updates connected.', { exact: true })).toBeVisible();
+      await expect(other.getByRole('link', { name: 'Archived work', exact: true })).toBeVisible();
+      await page.goto(boardPath);
+      const archives: { key: string | undefined; body: string | null }[] = [];
+      await page.route(`**/cards/${card.id}/archive`, async route => {
+        archives.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
+        const response = await route.fetch(); expect(response.status()).toBe(200);
+        if (archives.length === 1) await route.abort('failed'); else await route.fulfill({ response });
+      });
+      await page.getByRole('link', { name: 'Archived work', exact: true }).focus(); await page.keyboard.press('Enter');
+      await page.getByRole('button', { name: 'Archive Card', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByText('Archive Archived work from Planning?', { exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Confirm Card archive', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByRole('button', { name: 'Retry this Card archive', exact: true })).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
       await expect(other.getByRole('link', { name: 'Archived work', exact: true })).toHaveCount(0);
-      await page.goto(boardPath); await page.getByRole('link', { name: 'Archived cards', exact: true }).click();
+      await page.getByRole('button', { name: 'Retry this Card archive', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
+      expect(archives).toHaveLength(2); expect(archives[1]).toEqual(archives[0]); expect(JSON.parse(archives[0].body!)).toEqual({ version: 1 });
+      expect(archives[0].key).toMatch(/^[0-9a-f-]{36}$/);
+      await page.getByRole('link', { name: 'Archived cards', exact: true }).click();
       await expect(page.getByRole('heading', { name: 'Archived cards', exact: true })).toBeVisible();
       await expect(page.getByText('Detail stays out of archive UI', { exact: true })).toHaveCount(0);
       await page.getByRole('button', { name: 'Restore Archived work card', exact: true }).focus(); await page.keyboard.press('Enter');

@@ -25,6 +25,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
+import { CardArchiveControl } from './CardArchiveControl';
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
 import { ListPositionControls } from "./ListPositionControls";
 import { ListRenameControl } from './ListRenameControl';
@@ -76,7 +77,8 @@ function BoardContent() {
   const [creation, setCreation] = useState<Creation>();
   const [operationBusy, setBusy] = useState(false);
   const [archiveRecovery, setArchiveRecovery] = useState(false);
-  const busy = operationBusy || archiveRecovery;
+  const [cardArchiveRecovery, setCardArchiveRecovery] = useState(false);
+  const busy = operationBusy || archiveRecovery || cardArchiveRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
   const [listDrop, setListDrop] = useState<ListDropRequest>();
@@ -646,6 +648,12 @@ function BoardContent() {
               onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
           )}
+          {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
+            disabled={operationBusy || archiveRecovery || cardRecovery || snapshotReading || !!loadError}
+            onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
+            onAcknowledged={() => { canvasFocus.current = { scope: key, cardId };
+              setSnapshotReading(true); setReload(value => value + 1); closeCard(); }} />}
         </DialogContent>
         <DialogActions>
           <Button disabled={busy} onClick={closeCard}>

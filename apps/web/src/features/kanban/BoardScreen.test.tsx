@@ -635,4 +635,26 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(await screen.findByLabelText("Loading board")).toBeVisible();
     expect(screen.queryByText("Persisted board")).not.toBeInTheDocument();
   });
+  it('keeps Card archive recovery outside the removed canonical editor and returns to the Board', async () => {
+    const active = { ...fixture, lists: [{ ...fixture.lists[0], list: { ...fixture.lists[0].list, version: 1 } }] };
+    let archived = false; const writes: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn((_path: string, init?: RequestInit) => {
+      if (init?.method === 'POST') {
+        writes.push(init); archived = true;
+        return writes.length === 1 ? Promise.reject(new Error('Lost')) : Promise.resolve(response({ ...fixture.lists[0].cards[0],
+          organizationId: 'org-1', boardId: 'board-1', listId: 'list-1', version: 4, lifecycleState: 'archived' }));
+      }
+      return Promise.resolve(response(archived ? { ...active, lists: [{ ...active.lists[0], cards: [] }] } : active));
+    }));
+    const router = mount('/app/org-1/boards/board-1/cards/card-1');
+    fireEvent.click(await screen.findByRole('button', { name: 'Archive Card' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Card archive' }));
+    const retry = await screen.findByRole('button', { name: 'Retry this Card archive' });
+    await waitFor(() => expect(retry).toBeEnabled()); expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
+    expect(screen.getByText('This card is unavailable in this board.')).toBeInTheDocument();
+    fireEvent.click(retry); await waitFor(() => expect(router.state.location.pathname).toBe('/app/org-1/boards/board-1'));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toHaveFocus());
+    expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
+    expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
+  });
 });
