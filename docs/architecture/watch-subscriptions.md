@@ -46,7 +46,9 @@ Fixed native telemetry operations are `watch_read`, `watch_create`, and
 `watch_remove`, with stable error codes and no identifiers as metric labels.
 
 Migration 033 enables and forces tenant RLS, defines typed reference integrity
-and indexes current watcher tuples. Runtime startup requires all 33 migrations.
+and indexes current watcher tuples. Migration 034 admits the explicit
+`WatchSubscription` work-event type, restricts its event names and requires a
+tenant-bound subscription reference. Runtime startup requires all 34 migrations.
 The API receives SELECT/INSERT and only UPDATE of watching/update time/revision;
 the Worker receives no watch-table access. Demo retains host-lifetime rows and
 uses the existing serialized in-memory command boundary; it does not claim
@@ -90,7 +92,17 @@ admission. Browser collection passed; runtime execution is pending.
 
 The initial subscription commit 9f46c85 passed Linux host tests, PostgreSQL
 storage/migration/role checks, web quality and the source gate on run 37063617467.
-Its full build-once release gate remains pending.
+Its full build-once release gate failed in the exact-image watch fixture described below.
+
+The subsequent exact-image watch fixture on run 37063617467 failed its first
+successful watch assertion (HTTP 200), after the rollback probes passed. The
+existing `work_events_entity_type_check` admitted only Board/List/Card/Label, so
+the new WatchSubscription event could not publish and the command rolled back.
+Forward migration 034 repairs that publication contract without editing migration
+033 or weakening the success/rollback assertions. Storage tests require a valid
+watch event and reject cross-tenant watch references, reserved watch names on
+other entity types, unrelated watch event names and unknown entity types.
+Runtime rerun evidence is pending; the initial subscription full gate was failed.
 
 Recipient selection/fan-out for relevant activity, event-time List/Board scope rules,
 mentions/reminders and private notification realtime events remain required.

@@ -5,6 +5,7 @@ GRANT USAGE ON SCHEMA public TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE,DELETE ON card_members TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON card_assignment_notifications TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON watch_subscriptions TO strataai_member_storage_ci;
+GRANT SELECT,INSERT ON work_events TO strataai_member_storage_ci;
 INSERT INTO organizations(id,name,created_at,updated_at) VALUES
  ('03000000-0000-0000-0000-000000000001','Member A',now(),now()),
  ('03000000-0000-0000-0000-000000000002','Member B',now(),now());
@@ -53,12 +54,37 @@ INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,event_id
  THEN '03000000-0000-0000-0000-000000000041'::uuid ELSE '03000000-0000-0000-0000-000000000043'::uuid END,
  e.actor_id,e.entity_version,e.created_at FROM work_events e WHERE e.correlation_id='notification-storage';
 INSERT INTO watch_subscriptions(tenant_id,id,user_id,entity_type,entity_id,card_id,watching,created_at,updated_at,version)
- SELECT c.tenant_id,gen_random_uuid(),CASE WHEN c.id='03000000-0000-0000-0000-000000000031'::uuid
+ SELECT c.tenant_id,CASE WHEN c.id='03000000-0000-0000-0000-000000000031'::uuid THEN '03400000-0000-0000-0000-000000000061'::uuid
+ ELSE '03400000-0000-0000-0000-000000000062'::uuid END,CASE WHEN c.id='03000000-0000-0000-0000-000000000031'::uuid
  THEN '03000000-0000-0000-0000-000000000041'::uuid ELSE '03000000-0000-0000-0000-000000000043'::uuid END,
  'CARD',c.id,c.id,true,now(),now(),1 FROM cards c WHERE c.id IN ('03000000-0000-0000-0000-000000000031','03000000-0000-0000-0000-000000000032');
+INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+ SELECT w.tenant_id,gen_random_uuid(),c.board_id,2,w.user_id,'WATCH_CREATED','WatchSubscription',w.id,w.version,'watch-storage',w.created_at
+ FROM watch_subscriptions w JOIN cards c ON c.tenant_id=w.tenant_id AND c.id=w.card_id;
 SET LOCAL ROLE strataai_member_storage_ci;
 SELECT set_config('app.tenant_id','03000000-0000-0000-0000-000000000001',true);
 DO $$ BEGIN
+ IF (SELECT count(*) FROM work_events WHERE entity_type='WatchSubscription' AND watch_subscription_id=entity_id) <> 1 THEN RAISE EXCEPTION 'Valid watch event reference rejected or exposed another tenant'; END IF;
+ BEGIN
+  INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+   SELECT tenant_id,gen_random_uuid(),board_id,3,actor_id,'WATCH_CREATED','WatchSubscription','03400000-0000-0000-0000-000000000062',1,'watch-cross-tenant',created_at FROM work_events WHERE entity_type='WatchSubscription';
+  RAISE EXCEPTION 'Watch event crossed subscription tenant';
+ EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ BEGIN
+  INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+   SELECT tenant_id,gen_random_uuid(),board_id,3,actor_id,'CARD_UPDATED','WatchSubscription',entity_id,1,'watch-invalid-type',created_at FROM work_events WHERE entity_type='WatchSubscription';
+  RAISE EXCEPTION 'Watch event accepted an unrelated event type';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+   SELECT tenant_id,gen_random_uuid(),board_id,3,actor_id,'WATCH_CREATED','Board',board_id,1,'watch-invalid-entity',created_at FROM work_events WHERE entity_type='WatchSubscription';
+  RAISE EXCEPTION 'Watch event accepted an unrelated entity type';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+   SELECT tenant_id,gen_random_uuid(),board_id,3,actor_id,'CARD_UPDATED','Unknown',entity_id,1,'watch-unknown-entity',created_at FROM work_events WHERE entity_type='WatchSubscription';
+  RAISE EXCEPTION 'Work event accepted an unknown entity type';
+ EXCEPTION WHEN check_violation THEN NULL; END;
  IF (SELECT count(*) FROM watch_subscriptions) <> 1 THEN RAISE EXCEPTION 'Watch tenant reads widened'; END IF;
  BEGIN
   INSERT INTO watch_subscriptions SELECT tenant_id,gen_random_uuid(),user_id,entity_type,entity_id,board_id,list_id,card_id,watching,created_at,updated_at,version FROM watch_subscriptions;
