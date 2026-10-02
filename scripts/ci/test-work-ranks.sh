@@ -16,13 +16,13 @@ board="$(request /boards "$(jq -nc --arg org "$organization" '{organizationId:$o
 # Independent commands, rather than retries of one key, contend on the parent.
 for ((batch=0; batch<8; batch++)); do
   pids=()
-  for ((index=0; index<16; index++)); do
+  for ((index=0; index<25; index++)); do
     request "/boards/$board/lists" '{"name":"Concurrent list"}' > "$scratch/list-$batch-$index.json" &
     pids+=("$!")
   done
   for pid in "${pids[@]}"; do wait "$pid"; done
 done
-jq -s -e 'length==128 and ([.[].rank]|unique|length)==128 and all(.[];.rank|test("^[0-9]{30}$"))' "$scratch"/list-*.json >/dev/null
+jq -s -e 'length==200 and ([.[].rank]|unique|length)==200 and all(.[];.rank|test("^[0-9]{30}$"))' "$scratch"/list-*.json >/dev/null
 list="$(jq -r '.id' "$scratch/list-0-0.json")"
 for ((batch=0; batch<8; batch++)); do
   pids=()
@@ -118,10 +118,10 @@ for ((index=0; index<16; index++)); do
 done
 for pid in "${pids[@]}"; do wait "$pid"; done
 jq -s -e --arg upper "$list_anchor_rank" 'length==16 and ([.[].rank]|unique|length)==16 and all(.[];.version==2 and .rank<$upper)' "$scratch"/list-position-*.json >/dev/null
-test "$(admin "SELECT count(*)=128 AND count(DISTINCT rank)=128 AND count(*) FILTER (WHERE version=2)=16 AND count(*) FILTER (WHERE version=1)=112 FROM board_lists WHERE tenant_id='$organization' AND board_id='$board' AND lifecycle_state='ACTIVE';")" = t
+test "$(admin "SELECT count(*)=200 AND count(DISTINCT rank)=200 AND count(*) FILTER (WHERE version=2)=16 AND count(*) FILTER (WHERE version=1)=184 FROM board_lists WHERE tenant_id='$organization' AND board_id='$board' AND lifecycle_state='ACTIVE';")" = t
 test "$(admin "SELECT rank='$list_anchor_rank' AND version=1 FROM board_lists WHERE tenant_id='$organization' AND board_id='$board' AND id='$list_anchor';")" = t
 unchanged_lists="$(jq -c '.[16:]|map({id,rank})' "$scratch/ordered-lists.json")"
-test "$(admin "SELECT count(*)=112 AND bool_and(current.rank=original.rank AND current.version=1) FROM jsonb_to_recordset('$unchanged_lists'::jsonb) AS original(id uuid,rank text) JOIN board_lists current ON current.id=original.id AND current.tenant_id='$organization' AND current.board_id='$board';")" = t
+test "$(admin "SELECT count(*)=184 AND bool_and(current.rank=original.rank AND current.version=1) FROM jsonb_to_recordset('$unchanged_lists'::jsonb) AS original(id uuid,rank text) JOIN board_lists current ON current.id=original.id AND current.tenant_id='$organization' AND current.board_id='$board';")" = t
 moving_list="$(jq -r '.[0].id' "$scratch/ordered-lists.json")"
 position_request "$moving_list" '{"name":"Concurrent list","moveToEnd":true,"version":2}' "$(cat /proc/sys/kernel/random/uuid)" > "$scratch/list-position-later.json"
 position_request "$moving_list" "$(jq -nc --arg before "$list_anchor" '{name:"Concurrent list",beforeListId:$before,version:1}')" "$(cat "$scratch/list-position-key-0")" > "$scratch/list-position-replay.json"

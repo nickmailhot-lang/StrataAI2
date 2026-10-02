@@ -23,3 +23,12 @@ This test collects locally but requires Linux CI execution. Timing success is
 unproved. It does not establish the separate 200-list/5000-card/100000-archived-card
 capacity requirement, mobile performance, under-100ms visual feedback or actual
 screen-reader behavior. Those remain required work before PRD-06 closure.
+
+The required PostgreSQL rank fixture now creates exactly 200 lists through eight
+batches of 25 concurrent independent API commands. It requires 200 distinct
+ranks, moves 16 lists relative to a current anchor and verifies the other 184
+retain their original ranks/revisions. Historical receipt recovery remains
+non-reapplying. Card creation retains its separate 128-command concurrency
+fixture before SQL populates the existing 5000-card group. Shell syntax/diff
+checks pass; executed 200-list correctness evidence is pending Linux CI and
+does not establish 200-list rendering performance or archived-card capacity.
