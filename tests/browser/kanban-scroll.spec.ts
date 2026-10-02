@@ -43,6 +43,22 @@ for (const width of [1280, 390]) {
     expect(writes).toBe(0);
     const current = await context.request.get(`/boards/${board}`); expect(current.status()).toBe(200);
     expect((await current.json()).lists).toEqual(baseline.lists);
+    // Keep a partially scrolled list and canvas while opening card details by keyboard.
+    await canvas.evaluate(node => { node.scrollLeft = 20; });
+    await column.evaluate(node => { node.scrollTop = 100; });
+    const cardLink = page.getByRole('link', { name: 'Scrollable card 4', exact: true });
+    await cardLink.evaluate(node => (node as HTMLElement).focus({ preventScroll: true }));
+    await expect(cardLink).toBeFocused();
+    const canvasLeft = await canvas.evaluate(node => node.scrollLeft);
+    const columnTop = await column.evaluate(node => node.scrollTop);
+    expect(canvasLeft).toBeGreaterThan(0); expect(columnTop).toBeGreaterThan(0);
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog', { name: 'Card details' })).toBeVisible();
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(cardLink).toBeFocused();
+    expect(await canvas.evaluate(node => node.scrollLeft)).toBe(canvasLeft);
+    expect(await column.evaluate(node => node.scrollTop)).toBe(columnTop);
+    expect(writes).toBe(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 }
