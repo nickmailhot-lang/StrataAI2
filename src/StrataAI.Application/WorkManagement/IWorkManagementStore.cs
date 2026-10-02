@@ -41,6 +41,10 @@ public interface IWorkManagementStore
         BoardAccess access,
         CancellationToken cancellationToken = default);
 
+    // Caller must hold current Board administration authority in its command scope.
+    Task<IReadOnlyList<ArchivedListEntry>> ListArchivedListsAsync(Guid boardId, Guid? after,
+        CancellationToken cancellationToken = default);
+
     Task<BoardRecord?> UpdateBoardAsync(
         Guid boardId,
         string name,

@@ -290,6 +290,30 @@ internal sealed class PostgresWorkManagementStore(
             : null;
     }
 
+    public async Task<IReadOnlyList<ArchivedListEntry>> ListArchivedListsAsync(Guid boardId, Guid? after,
+        CancellationToken cancellationToken = default)
+    {
+        var tenantId = await ResolveBoardTenantAsync(boardId, cancellationToken);
+        if (tenantId is null) return [];
+        await using var session = await connectionFactory.OpenTenantSessionAsync(tenantId.Value, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT l.id,l.tenant_id,l.board_id,l.name,l.rank,l.lifecycle_state,
+                l.created_at,l.updated_at,l.version,
+                (SELECT count(*) FROM cards c WHERE c.tenant_id=l.tenant_id AND c.board_id=l.board_id
+                    AND c.list_id=l.id AND c.lifecycle_state<>'DELETED')
+            FROM board_lists l
+            WHERE l.tenant_id=@tenant AND l.board_id=@board AND l.lifecycle_state='ARCHIVED'
+                AND (@after IS NULL OR l.id>@after)
+            ORDER BY l.id LIMIT 51;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", tenantId.Value); command.Parameters.AddWithValue("board", boardId);
+        command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, after is null ? DBNull.Value : after.Value);
+        var rows = new List<ArchivedListEntry>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) rows.Add(new(ReadList(reader), reader.GetInt64(9)));
+        return rows;
+    }
+
     public async Task<BoardSnapshot?> GetSnapshotAsync(
         Guid boardId,
         Guid? userId,

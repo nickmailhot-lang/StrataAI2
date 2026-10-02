@@ -396,6 +396,9 @@ jobs:
       - name: Durable work retry keys against exact release API
         run: scripts/ci/test-work-idempotency.sh
 
+      - name: Bounded archived List pages and post-wait administration authority
+        run: scripts/ci/test-archived-lists.sh
+
       - name: Atomic Work events and leased Worker readiness against exact release images
         run: scripts/ci/test-work-events.sh
 

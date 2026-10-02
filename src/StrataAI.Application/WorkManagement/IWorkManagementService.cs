@@ -18,6 +18,9 @@ public interface IWorkManagementService
         Guid? actorUserId,
         CancellationToken cancellationToken = default);
 
+    Task<WorkOperation<ArchivedListPage>> ListArchivedListsAsync(Guid boardId, Guid actorUserId,
+        Guid? after = null, CancellationToken cancellationToken = default);
+
     Task<WorkOperation<BoardRecord>> UpdateBoardAsync(
         Guid boardId,
         Guid actorUserId,

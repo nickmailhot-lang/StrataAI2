@@ -101,6 +101,21 @@ public sealed class WorkManagementService(
             : WorkOperation<BoardSnapshot>.Success(snapshot);
     }
 
+    // PRD-07-FR-009 / PRD-18-FR-004: an archive is distinct from active canvas data.
+    public async Task<WorkOperation<ArchivedListPage>> ListArchivedListsAsync(Guid boardId, Guid actorUserId,
+        Guid? after = null, CancellationToken cancellationToken = default)
+    {
+        var resolved = await ResolveAccessAsync(boardId, actorUserId, cancellationToken);
+        if (resolved is null || !resolved.Value.Access.CanAdminister ||
+            resolved.Value.Board.LifecycleState != BoardLifecycleState.Active)
+            return WorkOperation<ArchivedListPage>.Failure("board_not_found");
+        if (after == Guid.Empty) return WorkOperation<ArchivedListPage>.Failure("invalid_archive_cursor");
+        var rows = await store.ListArchivedListsAsync(boardId, after, cancellationToken);
+        var items = rows.Take(50).ToArray();
+        return WorkOperation<ArchivedListPage>.Success(new(resolved.Value.Board.OrganizationId,
+            boardId, items, rows.Count > 50 ? items[^1].List.Id : null));
+    }
+
     public async Task<WorkOperation<BoardRecord>> UpdateBoardAsync(
         Guid boardId,
         Guid actorUserId,

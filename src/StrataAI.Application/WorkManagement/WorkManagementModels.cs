@@ -77,6 +77,10 @@ public sealed record BoardMemberDirectoryEntry(Guid BoardId, Guid UserId, BoardR
     bool Active, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long Version,
     string? DisplayName, string? Email, bool OrganizationMemberActive);
 
+public sealed record ArchivedListEntry(BoardListRecord List, long ContainedCardCount);
+public sealed record ArchivedListPage(Guid OrganizationId, Guid BoardId,
+    IReadOnlyList<ArchivedListEntry> Items, Guid? NextCursor);
+
 public sealed record BoardSnapshot(
     BoardRecord Board,
     IReadOnlyList<BoardListSnapshot> Lists,

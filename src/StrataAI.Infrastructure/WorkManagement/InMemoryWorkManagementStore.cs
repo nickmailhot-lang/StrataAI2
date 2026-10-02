@@ -41,6 +41,21 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
         }
     }
 
+    public Task<IReadOnlyList<ArchivedListEntry>> ListArchivedListsAsync(Guid boardId, Guid? after,
+        CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            return Task.FromResult<IReadOnlyList<ArchivedListEntry>>(_lists.Values
+                .Where(list => list.BoardId == boardId && list.LifecycleState == WorkItemLifecycleState.Archived
+                    && (after is null || list.Id.CompareTo(after.Value) > 0))
+                .OrderBy(list => list.Id).Take(51)
+                .Select(list => new ArchivedListEntry(list, _cards.Values.LongCount(card =>
+                    card.OrganizationId == list.OrganizationId && card.BoardId == boardId && card.ListId == list.Id
+                    && card.LifecycleState != WorkItemLifecycleState.Deleted))).ToArray());
+        }
+    }
+
     public Task<BoardRecord> CreateBoardAsync(
         Guid organizationId,
         Guid actorUserId,
