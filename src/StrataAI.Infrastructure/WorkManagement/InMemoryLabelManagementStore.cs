@@ -6,6 +6,16 @@ internal sealed partial class InMemoryWorkManagementStore
 {
     private readonly Dictionary<Guid, BoardLabelRecord> _labels = [];
     private readonly HashSet<(Guid CardId, Guid LabelId)> _cardLabels = [];
+    public Task<IReadOnlyList<BoardLabelRecord>> ListCardLabelsAsync(Guid cardId, Guid? after, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            if (!_cards.TryGetValue(cardId, out var card)) return Task.FromResult<IReadOnlyList<BoardLabelRecord>>([]);
+            return Task.FromResult<IReadOnlyList<BoardLabelRecord>>(_labels.Values.Where(label => !label.Deleted
+                && label.OrganizationId == card.OrganizationId && label.BoardId == card.BoardId && _cardLabels.Contains((cardId, label.Id))
+                && (after is null || label.Id.CompareTo(after.Value) > 0)).OrderBy(label => label.Id).Take(51).ToArray());
+        }
+    }
     public Task<CardLabelChange?> SetCardLabelAsync(Guid cardId, Guid labelId, bool assigned, long version, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         lock (_sync)

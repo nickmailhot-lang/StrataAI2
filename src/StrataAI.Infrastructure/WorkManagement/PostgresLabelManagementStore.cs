@@ -6,6 +6,19 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class PostgresWorkManagementStore
 {
+    public async Task<IReadOnlyList<BoardLabelRecord>> ListCardLabelsAsync(Guid cardId, Guid? after, CancellationToken cancellationToken = default)
+    {
+        var card = await FindCardAsync(cardId, cancellationToken);
+        if (card is null) return [];
+        await using var session = await connectionFactory.OpenTenantSessionAsync(card.OrganizationId, cancellationToken);
+        await using var command = new NpgsqlCommand($"SELECT {LabelColumns} FROM board_labels label WHERE tenant_id=@tenant AND board_id=@board AND status='ACTIVE' AND (@after IS NULL OR id>@after) AND EXISTS(SELECT 1 FROM card_labels a WHERE a.tenant_id=label.tenant_id AND a.board_id=label.board_id AND a.label_id=label.id AND a.card_id=@card) ORDER BY id LIMIT 51;", session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", card.OrganizationId); command.Parameters.AddWithValue("board", card.BoardId); command.Parameters.AddWithValue("card", cardId);
+        command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        var result = new List<BoardLabelRecord>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) result.Add(ReadLabel(reader));
+        return result;
+    }
     public async Task<CardLabelChange?> SetCardLabelAsync(Guid cardId, Guid labelId, bool assigned, long version, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         var card = await FindCardAsync(cardId, cancellationToken);

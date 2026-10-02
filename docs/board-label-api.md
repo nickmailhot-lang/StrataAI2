@@ -48,7 +48,26 @@ Both demo and PostgreSQL definition deletion reconcile affected Card revisions.
 Two new host regressions and an extended exact-image fixture cover this behavior;
 local strict compilation passes, with runtime execution pending CI.
 
-This is a foundation, not PRD-10 closure. Association reads and public
+The exact-image label fixture passed on commit 865a944 in CI run
+[37015140289](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37015140289).
+All nine jobs passed, including source tests, restricted PostgreSQL checks,
+security, container integration, required gate, and release bundle. Container
+integration reported 66 main browser cases passed, one conditional skip, and a
+separate mobile case passed. This proves the executed command foundation and
+existing browser coverage; it does not prove a label UI that is not implemented.
+
+Authenticated GET `/cards/{cardId}/labels?after={labelId}` now supplies 50-item
+pages of current, non-deleted assignments, Card version, and current editing
+capability. The typed Card hint is revalidated after the Board lock, and a fresh
+session check precedes returning the page. Archived/deleted Cards or parent Lists
+remain unavailable through this active-Card endpoint. Malformed cursors return
+400. PostgreSQL reads seek by label ID and fetch at most 51 rows, independently
+of the total association count. Host tests cover assignment/deletion reads and
+denials; the exact-image fixture now adds 52-assignment paging, uniqueness, and
+observed post-wait permission revocation on the later page. These new read tests
+await the next CI run.
+
+This is a foundation, not PRD-10 closure. Public
 Card indicators, accessible label administration, filtering, relative reorder
 controls, copy/move metadata reconciliation, and exact-image concurrency,
 rollback, telemetry, and browser acceptance remain required.

@@ -2,6 +2,20 @@ namespace StrataAI.Application.WorkManagement;
 
 public sealed partial class WorkManagementService
 {
+    public async Task<WorkOperation<CardLabelPage>> ListCardLabelsAsync(Guid cardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default)
+    {
+        var card = await store.FindCardAsync(cardId, cancellationToken);
+        if (card is not { LifecycleState: WorkItemLifecycleState.Active }) return WorkOperation<CardLabelPage>.Failure("card_not_found");
+        var parent = await store.FindListAsync(card.ListId, cancellationToken);
+        var access = await ResolveAccessAsync(card.BoardId, actorId, cancellationToken);
+        if (parent is not { LifecycleState: WorkItemLifecycleState.Active } || access is not { Access.CanView: true })
+            return WorkOperation<CardLabelPage>.Failure("card_not_found");
+        if (after == Guid.Empty) return WorkOperation<CardLabelPage>.Failure("invalid_label_cursor");
+        var rows = await store.ListCardLabelsAsync(cardId, after, cancellationToken);
+        var items = rows.Take(50).ToArray();
+        return WorkOperation<CardLabelPage>.Success(new(card.OrganizationId, card.BoardId, cardId, card.Version,
+            items, rows.Count > 50 ? items[^1].Id : null, access.Value.Access.CanEdit && access.Value.Board.LifecycleState == BoardLifecycleState.Active));
+    }
     public async Task<WorkOperation<CardLabelChange>> SetCardLabelAsync(Guid cardId, Guid labelId, Guid actorId, bool assigned,
         long version, string correlationId, CancellationToken cancellationToken = default)
     {
@@ -25,6 +39,24 @@ public sealed partial class WorkManagementService
 
 public sealed partial class TransactionalWorkManagementService
 {
+    public async Task<WorkOperation<CardLabelPage>> ListCardLabelsAsync(Guid cardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default)
+    {
+        var hint = await store.FindCardAsync(cardId, cancellationToken);
+        if (hint is null) return WorkOperation<CardLabelPage>.Failure("card_not_found");
+        return await transactions.ExecuteAsync(hint.OrganizationId,
+            WorkCommand.Create(actorId, null, "ListCardLabelsAsync", cardId, new { }, "card_not_found"),
+            async _ =>
+            {
+                if (!await AuthorizeBoard(hint.BoardId, actorId, "view", cancellationToken)) return false;
+                var current = await store.FindCardAsync(cardId, cancellationToken);
+                return current is not null && current.OrganizationId == hint.OrganizationId && current.BoardId == hint.BoardId && current.ListId == hint.ListId;
+            }, async () =>
+            {
+                var result = await inner.ListCardLabelsAsync(cardId, actorId, after, cancellationToken);
+                return result.Succeeded && !await actors.VerifyAsync(actorId, cancellationToken)
+                    ? WorkOperation<CardLabelPage>.Failure("session_unavailable") : result;
+            }, cancellationToken);
+    }
     public async Task<WorkOperation<CardLabelChange>> SetCardLabelAsync(Guid cardId, Guid labelId, Guid actorId, bool assigned,
         long version, string correlationId, CancellationToken cancellationToken = default)
     {

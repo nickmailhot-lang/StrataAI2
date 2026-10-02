@@ -131,4 +131,20 @@ wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401; test
 curl --fail --silent --show-error -c "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/owner.credentials")" "$base/auth/login" >/dev/null
 test "$(request owner DELETE "/labels/$label?version=2&confirmed=true" "$delete_key" '{}')" = 200
 cmp "$scratch/response.json" "$scratch/delete-receipt.json"
+admin "INSERT INTO board_labels(id,tenant_id,board_id,name,color,rank)
+ SELECT gen_random_uuid(),'$org','$board','Paged label','blue',lpad(i::text,30,'0') FROM generate_series(1,52) i;
+ INSERT INTO card_labels(tenant_id,board_id,card_id,label_id)
+ SELECT tenant_id,board_id,'$card',id FROM board_labels WHERE board_id='$board' AND status='ACTIVE';" >/dev/null
+test "$(get owner "/cards/$card/labels")" = 200
+jq -e --arg card "$card" --arg board "$board" '.cardId==$card and .boardId==$board and .cardVersion==11 and .canEdit==true and (.items|length)==50 and .nextCursor==.items[-1].id' "$scratch/response.json" >/dev/null
+cursor=$(jq -r '.nextCursor' "$scratch/response.json"); cp "$scratch/response.json" "$scratch/labels-first.json"
+test "$(get owner "/cards/$card/labels?after=$cursor")" = 200
+jq -e '.nextCursor==null and (.items|length)==2' "$scratch/response.json" >/dev/null
+jq -se '([.[0].items[].id,.[1].items[].id]|length)==52 and ([.[0].items[].id,.[1].items[].id]|unique|length)==52' "$scratch/labels-first.json" "$scratch/response.json" >/dev/null
+test "$(get owner "/cards/$card/labels?after=bad")" = 400
+test "$(get outsider "/cards/$card/labels")" = 404
+hold; get editor "/cards/$card/labels?after=$cursor" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$editor';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh 'Paged label|"items"|"cardVersion"' "$scratch/response.json"
 echo 'Label commands: exact-image CRUD, admission, retry identity, atomic audit rollback and association removal, Card revisions, and observed post-wait receipt authorization passed.'

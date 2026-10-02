@@ -1,6 +1,8 @@
 namespace StrataAI.Application.WorkManagement;
 
 public sealed record CardLabelChange(CardRecord Card, Guid LabelId, bool Assigned, bool Changed);
+public sealed record CardLabelPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
+    IReadOnlyList<BoardLabelRecord> Items, Guid? NextCursor, bool CanEdit);
 
 public enum BoardVisibility
 {
