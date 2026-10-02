@@ -19,10 +19,13 @@ export function listDragAnnouncements(snapshot: BoardSnapshot): Announcements {
     onDragStart: ({ active }) => cardName(active.id) ? `Dragging ${cardName(active.id)} card. Use arrow keys to choose a position.`
       : name(active.id) ? `Dragging ${name(active.id)} list. Use Left and Right to choose a position.` : undefined,
     onDragOver: ({ active, over }) => {
-      if (cardName(active.id)) return over && over.id !== active.id && cardPosition(over.id) ? `${cardName(active.id)} card can be dropped ${cardPosition(over.id)}.` : 'Card is outside a new available position.';
+      if (cardName(active.id)) {
+        if (over?.id === active.id) return `Dragging ${cardName(active.id)} card. Use arrow keys to choose a position.`;
+        return over && cardPosition(over.id) ? `${cardName(active.id)} card can be dropped ${cardPosition(over.id)}.` : 'Card is outside a new available position.';
+      }
       if (!name(active.id)) return;
       if (!over) return 'Outside the available list positions. Dropping here will not move the list.';
-      if (over.id === active.id) return `${name(active.id)} list is at its starting position.`;
+      if (over.id === active.id) return `Dragging ${name(active.id)} list. Use Left and Right to choose a position.`;
       const target = position(over.id);
       return target ? `${name(active.id)} list can be dropped ${target}.` : undefined;
     },

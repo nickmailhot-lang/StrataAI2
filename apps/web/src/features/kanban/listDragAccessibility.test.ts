@@ -17,6 +17,7 @@ it('names card targets and empty-list destinations without claiming an acknowled
   const cardAnnouncements = listDragAnnouncements(withCard);
   const drop = event('card-end:internal-1', 'card:card');
   expect(cardAnnouncements.onDragStart(drop)).toContain('Dragging Inspect roof card');
+  expect(cardAnnouncements.onDragOver(event('card:card', 'card:card'))).toBe(cardAnnouncements.onDragStart(drop));
   expect(cardAnnouncements.onDragOver(drop)).toBe('Inspect roof card can be dropped at the end of Complete.');
   expect(cardAnnouncements.onDragEnd(drop)).toBe('Drop requested for Inspect roof card at the end of Complete. Check the move status for confirmation.');
   expect(cardAnnouncements.onDragCancel(drop)).toBe('Drag cancelled. Inspect roof card was not moved.');
@@ -26,6 +27,7 @@ function event(target: string | null = 'internal-1', source = 'internal-0') {
 }
 it('announces named positions and a request without claiming persistence', () => {
   expect(announcements.onDragStart(event())).toContain('Dragging Planning list');
+  expect(announcements.onDragOver(event('internal-0'))).toBe(announcements.onDragStart(event()));
   expect(announcements.onDragOver(event())).toBe('Planning list can be dropped before Complete.');
   expect(announcements.onDragOver(event('list-end'))).toContain('at the end of the Board');
   expect(announcements.onDragEnd(event())).toBe('Drop requested for Planning list before Complete. Check the move status for confirmation.');
