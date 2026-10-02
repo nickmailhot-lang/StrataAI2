@@ -32,3 +32,12 @@ non-reapplying. Card creation retains its separate 128-command concurrency
 fixture before SQL populates the existing 5000-card group. Shell syntax/diff
 checks pass; executed 200-list correctness evidence is pending Linux CI and
 does not establish 200-list rendering performance or archived-card capacity.
+
+The required exact-image PostgreSQL fixture also seeds 100000 archived cards
+in the same list as the 5000 active cards. Their ranks exceed all active ranks.
+The next API append must use the active tail, and the authorized Board snapshot
+must return 200 lists and only the 5001 active cards. Concurrent append and
+relative moves retain their existing rank assertions. A count and a fingerprint
+of every complete archived row must remain unchanged after those moves.
+Shell syntax and diff checks pass; Linux execution is pending. This establishes
+no browser rendering or timing evidence until those separate checks execute.

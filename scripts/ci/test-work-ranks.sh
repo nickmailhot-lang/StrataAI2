@@ -39,9 +39,18 @@ admin "INSERT INTO cards(id,tenant_id,board_id,list_id,title,description,rank,li
 SELECT gen_random_uuid(),'$organization','$board','$list','Scale fixture',repeat('x',1024),
 lpad((500000000000000000000000000000::numeric+i*1000000000000000000::numeric)::text,30,'0'),'ACTIVE',now(),now(),1
 FROM generate_series(129,5000) i;" >/dev/null
+# Archived ranks deliberately exceed every active rank, so an unfiltered tail
+# lookup cannot accidentally satisfy the expected active append result.
+admin "INSERT INTO cards(id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,archived_at,created_at,updated_at,version)
+SELECT gen_random_uuid(),'$organization','$board','$list','Archived scale fixture','',
+lpad((900000000000000000000000000000::numeric+i)::text,30,'0'),'ARCHIVED',now(),now(),now(),1
+FROM generate_series(1,100000) i;" >/dev/null
+archive_fingerprint="$(admin "SELECT md5(string_agg(row_to_json(c)::text,'' ORDER BY c.id)) FROM cards c WHERE tenant_id='$organization' AND board_id='$board' AND list_id='$list' AND lifecycle_state='ARCHIVED';")"
 request "/lists/$list/cards" '{"title":"After five thousand"}' > "$scratch/last.json"
 test "$(jq -r '.rank' "$scratch/last.json")" = '500000005001000000000000000000'
-test "$(admin "SELECT count(*)=5001 AND count(DISTINCT rank)=5001 FROM cards WHERE tenant_id='$organization' AND list_id='$list';")" = t
+test "$(admin "SELECT count(*)=5001 AND count(DISTINCT rank)=5001 FROM cards WHERE tenant_id='$organization' AND list_id='$list' AND lifecycle_state='ACTIVE';")" = t
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$BASE_URL/boards/$board" > "$scratch/capacity-board.json"
+jq -e --arg list "$list" '(.lists|length)==200 and ([.lists[]|select(.list.id==$list)|.cards[]]|length)==5001 and all(.lists[].cards[];.lifecycleState=="active")' "$scratch/capacity-board.json" >/dev/null
 echo 'Concurrent default allocation and append on a 5,000-card PostgreSQL fixture passed.'
 # Rank-free moves allocate under the destination parent lock after a fresh read.
 source="$(jq -r '.id' "$scratch/list-0-1.json")"
@@ -58,7 +67,7 @@ for ((index=0; index<16; index++)); do
 done
 for pid in "${pids[@]}"; do wait "$pid"; done
 jq -s -e --arg list "$list" 'length==16 and ([.[].rank]|unique|length)==16 and all(.[];.listId==$list and .version==2 and .rank>"500000005001000000000000000000")' "$scratch"/move-result-*.json >/dev/null
-test "$(admin "SELECT count(*)=5017 AND count(DISTINCT rank)=5017 AND max(rank)='500000005017000000000000000000' FROM cards WHERE tenant_id='$organization' AND list_id='$list';")" = t
+test "$(admin "SELECT count(*)=5017 AND count(DISTINCT rank)=5017 AND max(rank)='500000005017000000000000000000' FROM cards WHERE tenant_id='$organization' AND list_id='$list' AND lifecycle_state='ACTIVE';")" = t
 # A durable append receipt returns its first allocated rank after a later move,
 # without appending again or restoring its former destination.
 card="$(jq -r '.id' "$scratch/move-source-0.json")"
@@ -80,7 +89,10 @@ for ((index=0; index<16; index++)); do
 done
 for pid in "${pids[@]}"; do wait "$pid"; done
 jq -s -e --arg list "$list" 'length==16 and ([.[].rank]|unique|length)==16 and all(.[];.listId==$list and .rank>"500000005000000000000000000000" and .rank<"500000005001000000000000000000")' "$scratch"/relative-result-*.json >/dev/null
-test "$(admin "SELECT count(*)=5017 AND count(DISTINCT rank)=5017 AND max(rank)='500000005001000000000000000000' FROM cards WHERE tenant_id='$organization' AND list_id='$list';")" = t
+test "$(admin "SELECT count(*)=5017 AND count(DISTINCT rank)=5017 AND max(rank)='500000005001000000000000000000' FROM cards WHERE tenant_id='$organization' AND list_id='$list' AND lifecycle_state='ACTIVE';")" = t
+test "$(admin "SELECT count(*)=100000 FROM cards WHERE tenant_id='$organization' AND board_id='$board' AND list_id='$list' AND lifecycle_state='ARCHIVED';")" = t
+test "$(admin "SELECT md5(string_agg(row_to_json(c)::text,'' ORDER BY c.id)) FROM cards c WHERE tenant_id='$organization' AND board_id='$board' AND list_id='$list' AND lifecycle_state='ARCHIVED';")" = "$archive_fingerprint"
+echo 'Active append and relative moves ignore 100,000 higher-ranked archived cards and preserve every archived record.'
 echo 'Concurrent before-card insertion resolves current neighbors on a 5,000-card destination without sibling renumbering.'
 # Boundary failures must also remain atomic in the actual PostgreSQL command
 # transaction, including a repeated attempt with the same retry key.
