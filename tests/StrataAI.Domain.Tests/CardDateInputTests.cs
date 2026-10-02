@@ -8,7 +8,8 @@ public sealed class CardDateInputTests
 {
     [Theory]
     [InlineData("2026-03-08", "2026-03-08T08:00:00Z", "2026-03-09T06:59:59.999999Z", 23)]
-    [InlineData("2026-11-01", "2026-11-01T07:00:00Z", "2026-11-02T07:59:59.999999Z", 25)]
+    [InlineData("2025-11-02", "2025-11-02T07:00:00Z", "2025-11-03T07:59:59.999999Z", 25)]
+    [InlineData("2026-11-01", "2026-11-01T07:00:00Z", "2026-11-02T06:59:59.999999Z", 24)]
     [InlineData("2026-10-02", "2026-10-02T07:00:00Z", "2026-10-03T06:59:59.999999Z", 24)]
     public void Date_only_uses_the_entire_local_calendar_day_across_DST_and_roundtrips(string day, string start, string due, int hours)
     {

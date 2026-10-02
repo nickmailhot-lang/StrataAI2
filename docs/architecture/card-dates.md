@@ -46,3 +46,12 @@ editor/status display, viewing-timezone/Board override behavior, reminder
 interval selection, scheduling/rescheduling/cancellation or delivery. Those
 requirements, two-client browser evidence and performance/accessibility checks
 are still required before closure. PRD-17 also remains open.
+
+Initial Linux source CI found two fixture issues: the disposable storage role
+needed SELECT plus UPDATE on the five date columns, and a 2026 Vancouver fallback
+assertion was outdated. B.C. adopted permanent daylight time after March 8, 2026
+(https://news.gov.bc.ca/releases/2026AG0013-000209). The suite now checks the historic
+2025 25-hour day and the current 2026 24-hour November day. Production timezone
+conversion already followed the runtime's current timezone database correctly.
+Only the disposable role receives the additional column permissions, inside the
+fixture rollback transaction. Fresh CI remains necessary.

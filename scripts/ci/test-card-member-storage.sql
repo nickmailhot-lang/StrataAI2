@@ -6,6 +6,8 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON card_members TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON card_assignment_notifications TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON watch_subscriptions TO strataai_member_storage_ci;
 GRANT SELECT,INSERT ON work_events TO strataai_member_storage_ci;
+GRANT SELECT ON cards TO strataai_member_storage_ci;
+GRANT UPDATE(start_at,due_at,due_timezone,due_has_time,due_complete) ON cards TO strataai_member_storage_ci;
 INSERT INTO organizations(id,name,created_at,updated_at) VALUES
  ('03000000-0000-0000-0000-000000000001','Member A',now(),now()),
  ('03000000-0000-0000-0000-000000000002','Member B',now(),now());
