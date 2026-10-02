@@ -482,7 +482,9 @@ for purpose in RESET_PASSWORD VERIFY_EMAIL; do
   test "$consumed_state" = "$(token_state)"
   "${compose[@]}" stop worker >/dev/null
 done
-"${compose[@]}" up -d --wait --wait-timeout 180 worker >/dev/null
+# Replace the deliberately stopped process rather than racing its final shutdown
+# state. This reuses the loaded release image and all durable database records.
+"${compose[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 # Invitation signup with the default verified-email policy and actual separate Worker.
 # First create and verify the issuer through the same mail transport.
 email="signup-mail-owner-${RANDOM}-${RANDOM}@example.test"
