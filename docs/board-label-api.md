@@ -156,6 +156,32 @@ through the UI, lose the first persisted assignment acknowledgment, compare the
 same retry URL/key, recover focus, and remove through the UI. These runtime
 scenarios await CI and are not yet acceptance evidence.
 
-This is a foundation, not PRD-10 closure. Accessible label administration, filtering, relative reorder
-controls, copy/move metadata reconciliation, and exact-image concurrency,
-rollback, telemetry, and browser acceptance remain required.
+Board editors can now open Manage labels to rename/recolor current definitions
+and move them before another label or to the end of the entire Board directory.
+The directory loads at most 50 records per request. A selected source can remain
+selected while paging through ordering destinations, so labels on different
+pages can be reordered. Move submits the saved metadata and original revision;
+unsaved field changes require a separate Save. Administrator deletion also
+requires the current directory's delete capability and an explicit confirmation
+that all Card associations will be removed.
+
+Unknown mutation outcomes retain the original URL/body/revision/key and prevent
+closing the dialog or competing Board changes. Definite conflicts discard the
+stale directory and require a new read. Board scope, edit permission, or admin
+capability changes abort pending work and fence late responses. Returned entities
+must match Board/Organization/label identity, expected revision and mutation
+content before the UI acknowledges completion. Confirmed writes refresh the
+Board; closing returns focus only after the transition and Board refresh finish.
+
+The 14 management cases and 24 Board cases passed locally (38 focused tests),
+along with typecheck, lint and production build. Component coverage includes edit/recolor, before/end ordering across pages,
+explicit deletion, capability denial, demotion during a pending command,
+unchanged retry identity, mismatched acknowledgments, stale revisions, and safe
+denials. Desktop/mobile browser scenarios now rename/recolor with a lost persisted
+acknowledgment, reorder, and explicitly delete through the UI in addition to the
+existing creation and Card assignment/removal coverage. Browser collection is
+not execution evidence; these scenarios await the required exact-image CI job.
+
+PRD-10 remains open. Filtering integration with PRD-16, remaining copy/move
+metadata reconciliation, two-client/reconnect proof, performance/telemetry,
+and current exact-image/browser acceptance remain required.
