@@ -25,6 +25,7 @@ GRANT SELECT,INSERT,UPDATE ON work_command_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON board_labels TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE,DELETE ON label_routes TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE,DELETE ON card_labels TO strataai_api_runtime;
+GRANT SELECT,INSERT,UPDATE,DELETE ON card_members TO strataai_api_runtime;
 GRANT SELECT,INSERT ON invitation_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_event_streams TO strataai_api_runtime;
 GRANT SELECT,INSERT ON work_events TO strataai_api_runtime;

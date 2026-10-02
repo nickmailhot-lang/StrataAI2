@@ -32,8 +32,24 @@ and session revocation. Strict local compilation and fixture syntax checks
 passed. Host execution and exact PostgreSQL/runtime execution remain pending
 Linux CI; Windows Application Control prevents local host-test execution.
 
-PRD-11 remains open. Persisted multi-assignee associations and mutation APIs,
+PRD-11 remains open. Multi-assignee mutation APIs and atomic command behavior,
 assignment cleanup on departures, Card face/detail UI, member filters,
 historical attribution, notification suppression, two-client/accessibility
 acceptance and documented performance evidence still require implementation.
 Historical users and events must remain stable during membership cleanup.
+
+Migration `030_card_members` adds the persisted association structure, timestamps,
+positive association revisions and the assigning actor. Composite foreign keys
+require the same Organization/Board for Card and target Board member, active or
+historical Organization membership rows for target and assigning actor, and a
+unique Card/user pair. Forced RLS applies to reads and writes. API privileges
+allow the association operations; the Worker receives no association privileges.
+Existing membership rows remain stable during soft departures, permitting
+history to retain actor IDs. Current eligibility and atomic cleanup are command
+responsibilities; the schema alone does not implement assignment or departure
+behavior. A required PostgreSQL fixture covers multiple assignees, duplicate and
+cross-scope rejection, tenant reads/writes, missing tenant and invalid revisions.
+Migration upgrade/repeat and rollback/serialization fixtures now include version
+030; API/Worker readiness requires all 30 real migrations and rejects its
+absence. Local strict compilation and shell syntax passed; actual database
+execution remains pending CI.
