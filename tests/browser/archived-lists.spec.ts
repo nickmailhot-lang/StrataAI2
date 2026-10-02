@@ -26,9 +26,11 @@ for (const width of [1280, 390]) {
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request, board);
-    const path = `/app/${org}/boards/${board}`; const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
+      const path = `/app/${org}/boards/${board}`; const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
       const reads = trackBoardReads(other, board, path); const pageReads = trackBoardReads(page, board, path);
       await other.goto(path); await page.goto(path);
+      for (const client of [page, other])
+        await expect(client.getByText('Live updates connected.', { exact: true })).toBeVisible();
       await expect.poll(reads).toBeGreaterThanOrEqual(2); await expect.poll(pageReads).toBeGreaterThanOrEqual(2);
       const archiveRequests: { key: string | undefined; body: string | null }[] = [];
       await page.route(`**/lists/${list.id}/archive`, async route => {

@@ -26,7 +26,7 @@ for (const width of [1280, 390]) {
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request, board);
-    const path = `/app/${org}/boards/${board}/archived-lists`; const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
+      const path = `/app/${org}/boards/${board}/archived-lists`; const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
       await page.goto(path); await other.goto(path);
       await expect(other.getByRole('heading', { name: 'Reviewed List', exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Permanently delete Reviewed List list', exact: true })).toBeEnabled();

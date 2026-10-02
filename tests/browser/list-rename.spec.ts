@@ -23,9 +23,11 @@ for (const width of [1280, 390]) {
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request, board);
-    const path = `/app/${org}/boards/${board}`;
+      const path = `/app/${org}/boards/${board}`;
       const reads = trackBoardReads(page, board, path); const otherReads = trackBoardReads(other, board, path);
       await page.goto(path); await other.goto(path);
+      for (const client of [page, other])
+        await expect(client.getByText('Live updates connected.', { exact: true })).toBeVisible();
       await expect.poll(reads).toBeGreaterThanOrEqual(2); await expect.poll(otherReads).toBeGreaterThanOrEqual(2);
       await other.getByRole('button', { name: 'Rename Planning list', exact: true }).click();
       await other.getByRole('textbox', { name: 'New list name' }).fill('Preserved draft');
