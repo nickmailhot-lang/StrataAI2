@@ -49,3 +49,12 @@ links, private denial, public read-only viewing, separate internal grant/removal
 retained Portal grant and logout at desktop/phone widths. Local unit tests,
 typecheck/lint and collection pass; exact-image execution remains required before
 ARCH-02 closure.
+
+The required restricted-role member-directory fixture now also exercises this
+endpoint against the exact API image. It fingerprints complete membership and
+Portal grant rows and checks audit/event/job counts around admission reads.
+It then proves Portal revocation after an observed Portal-row lock wait,
+internal removal after an observed member-row lock wait, and original-session
+revocation during a parent lock wait for both surfaces. Each denied response
+retains the safe existing problem contract. Shell syntax and diff checks pass;
+these new lock-wait assertions still require Linux execution.

@@ -77,6 +77,67 @@ blocked() {
   return 1
 }
 release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; }
+# ARCH-02-AC-003: current surface admission against the restricted exact API.
+# These reads must not manufacture a membership or alter a separate Portal grant.
+surface_state() { admin "SELECT json_build_object(
+  'members',(SELECT md5(coalesce(string_agg(row_to_json(m)::text,',' ORDER BY m.id),'')) FROM organization_members m WHERE tenant_id='$org'),
+  'portal',(SELECT md5(coalesce(string_agg(row_to_json(p)::text,',' ORDER BY p.id),'')) FROM portal_access p WHERE tenant_id='$org'),
+  'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
+  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
+  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
+  'identity_events',(SELECT count(*) FROM identity_events WHERE user_id IN ('$owner','$member','$portal')))::text;"; }
+surface_before="$(surface_state)"
+for actor in owner member; do
+  test "$(get "$actor" "/organizations/$org/surface-access?surface=INTERNAL" admission)" = 200
+  jq -e --arg org "$org" 'keys==["organizationId","surface"] and .organizationId==$org and .surface=="INTERNAL"' "$scratch/admission.json" >/dev/null
+  test "$(get "$actor" "/organizations/$org/surface-access?surface=PORTAL")" = 404
+done
+test "$(get portal "/organizations/$org/surface-access?surface=PORTAL" admission)" = 200
+jq -e --arg org "$org" 'keys==["organizationId","surface"] and .organizationId==$org and .surface=="PORTAL"' "$scratch/admission.json" >/dev/null
+test "$(get portal "/organizations/$org/surface-access?surface=INTERNAL" denied)" = 404
+test "$(get owner "/organizations/$foreign/surface-access?surface=PORTAL" denied)" = 404
+scripts/ci/assert-file-excludes.sh 'Bounded member directory|Other private directory|Directory fixture|directory-' "$scratch/denied.json"
+test "$(get owner "/organizations/$org/surface-access?surface=INVALID")" = 400
+jq -e '.code=="invalid_access_surface"' "$scratch/response.json" >/dev/null
+test "$(surface_state)" = "$surface_before"
+
+# A committed Portal revocation wins after the dedicated grant-row lock wait.
+hold "SELECT id FROM portal_access WHERE tenant_id='$org' AND user_id='$portal' FOR UPDATE;"
+get portal "/organizations/$org/surface-access?surface=PORTAL" portal-revoked > "$scratch/status" & request_pid=$!
+blocked '%SELECT id FROM portal_access%FOR SHARE%'
+release "UPDATE portal_access SET status='REVOKED',version=version+1 WHERE tenant_id='$org' AND user_id='$portal';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+jq -e '.code=="organization_not_found"' "$scratch/portal-revoked.json" >/dev/null
+scripts/ci/assert-file-excludes.sh 'Bounded member directory|Directory fixture|directory-' "$scratch/portal-revoked.json"
+admin "UPDATE portal_access SET status='ACTIVE',version=version+1 WHERE tenant_id='$org' AND user_id='$portal';" >/dev/null
+
+# Internal membership loss does not become an implicit Portal grant.
+hold "SELECT user_id FROM organization_members WHERE tenant_id='$org' AND user_id='$member' FOR UPDATE;"
+get member "/organizations/$org/surface-access?surface=INTERNAL" member-revoked > "$scratch/status" & request_pid=$!
+blocked '%SELECT user_id FROM organization_members%FOR UPDATE%'
+release "UPDATE organization_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+test "$(get member "/organizations/$org/surface-access?surface=PORTAL")" = 404
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1 WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
+# Later removal-consent assertions must use the newly current member revision.
+test "$(get owner "/organizations/$org/members" first)" = 200
+cursor="$(jq -r '.nextCursor' "$scratch/first.json")"
+test "$(get owner "/organizations/$org/members?after=$cursor" second)" = 200
+jq -s '[.[].items[]]' "$scratch/first.json" "$scratch/second.json" > "$scratch/all.json"
+
+# Session revocation committed while waiting for the parent invalidates admission.
+for entry in 'owner INTERNAL' 'portal PORTAL'; do
+  read -r actor surface <<< "$entry"
+  hold "SELECT id FROM organizations WHERE id='$org' FOR UPDATE;"
+  get "$actor" "/organizations/$org/surface-access?surface=$surface" surface-session > "$scratch/status" & request_pid=$!
+  blocked '%SELECT id FROM organizations%FOR UPDATE%'
+  if test "$actor" = owner; then actor_id="$owner"; else actor_id="$portal"; fi
+  release "UPDATE sessions SET revoked_at=now() WHERE user_id='$actor_id' AND revoked_at IS NULL;"
+  wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
+  login "$actor"
+done
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org';")" = "$audits"
+echo 'Exact-image surface admission: independent minimal grants, unchanged read state, post-wait Portal/internal revocation and current session checks passed.'
 # A role change committed during the parent wait invalidates removal consent.
 member_version="$(jq -r --arg member "$member" '.[]|select(.userId==$member)|.version' "$scratch/all.json")"
 [[ "$member_version" =~ ^[1-9][0-9]*$ ]]
