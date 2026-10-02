@@ -83,6 +83,9 @@ test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move pe
     expect(endX).toBeGreaterThan(0); expect(endX).toBeLessThan(390);
     expect(endY).toBeGreaterThan(0); expect(endY).toBeLessThan(844);
     await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: endX, y: endY, id: 1 }] });
+    // Sending a CDP event acknowledges dispatch, not React's collision update.
+    // Release only after the active drag identifies the intended destination.
+    await expect(page.getByText('Touch moving card card can be dropped at the end of Empty touch destination.', { exact: true })).toBeAttached();
     await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     touching = false;
     await expect(page.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
