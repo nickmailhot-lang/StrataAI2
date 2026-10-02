@@ -13,7 +13,7 @@ internal sealed partial class PostgresWorkManagementStore
         if (board is null) return [];
         await using var session = await connectionFactory.OpenTenantSessionAsync(board.OrganizationId, cancellationToken);
         await using var command = new NpgsqlCommand("""
-            SELECT c.id,c.tenant_id,c.board_id,c.list_id,c.title,c.description,c.rank,c.lifecycle_state,c.created_at,c.updated_at,c.version
+            SELECT c.id,c.tenant_id,c.board_id,c.list_id,c.title,c.description,c.rank,c.lifecycle_state,c.created_at,c.updated_at,c.version,c.start_at,c.due_at,c.due_timezone,c.due_has_time,c.due_complete
             FROM cards c JOIN board_lists parent ON parent.id=c.list_id AND parent.board_id=c.board_id AND parent.tenant_id=c.tenant_id
             CROSS JOIN LATERAL (
               SELECT count(*) AS hits FROM card_labels a JOIN board_labels l

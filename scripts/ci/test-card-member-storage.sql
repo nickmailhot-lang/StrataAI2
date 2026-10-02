@@ -195,6 +195,37 @@ DO $$ BEGIN
   RAISE EXCEPTION 'Cross-tenant assignment write accepted';
  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END $$;
+-- Card date columns share canonical Card RLS and enforce context/order/flags.
+DO $$ BEGIN
+ UPDATE cards SET start_at='2026-03-08T08:00:00Z',due_at='2026-03-09T06:59:59.999999Z',
+   due_timezone='America/Vancouver',due_has_time=false,due_complete=true;
+ IF (SELECT count(*) FROM cards WHERE due_at='2026-03-09T06:59:59.999999Z' AND due_complete) <> 1
+   THEN RAISE EXCEPTION 'Date write or tenant isolation failed'; END IF;
+ BEGIN
+   UPDATE cards SET due_timezone=NULL;
+   RAISE EXCEPTION 'Dates accepted missing timezone';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+   UPDATE cards SET start_at=due_at+interval '1 second';
+   RAISE EXCEPTION 'Dates accepted start after due';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+   UPDATE cards SET due_at=NULL;
+   RAISE EXCEPTION 'Due completion accepted without due date';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ UPDATE cards SET start_at=NULL,due_at=NULL,due_timezone=NULL,due_complete=false,due_has_time=false;
+ BEGIN
+   UPDATE cards SET due_has_time=true;
+   RAISE EXCEPTION 'Timed flag accepted without due date';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+   UPDATE cards SET due_timezone='UTC';
+   RAISE EXCEPTION 'Timezone context remained without dates';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ UPDATE cards SET due_at='2026-11-02T15:00:00Z',due_timezone='America/Vancouver',due_has_time=true;
+ UPDATE cards SET due_complete=true WHERE tenant_id='03000000-0000-0000-0000-000000000002';
+ IF FOUND THEN RAISE EXCEPTION 'Date write crossed tenant'; END IF;
+END $$;
 SELECT set_config('app.tenant_id','03000000-0000-0000-0000-000000000002',true);
 DO $$ BEGIN
  IF (SELECT count(*) FROM watch_subscriptions) <> 1 THEN RAISE EXCEPTION 'Other tenant watch reads widened'; END IF;

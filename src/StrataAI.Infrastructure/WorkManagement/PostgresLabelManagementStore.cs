@@ -119,7 +119,7 @@ internal sealed partial class PostgresWorkManagementStore
             count = await change.ExecuteNonQueryAsync(cancellationToken);
         if (count > 0)
         {
-            await using var update = Query("UPDATE cards SET version=version+1,updated_at=@now WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version RETURNING id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version;");
+            await using var update = Query("UPDATE cards SET version=version+1,updated_at=@now WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version RETURNING id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version, start_at, due_at, due_timezone, due_has_time, due_complete;");
             await using var reader = await update.ExecuteReaderAsync(cancellationToken);
             if (!await reader.ReadAsync(cancellationToken)) throw new InvalidOperationException("Locked Card revision changed unexpectedly.");
             card = ReadCard(reader);

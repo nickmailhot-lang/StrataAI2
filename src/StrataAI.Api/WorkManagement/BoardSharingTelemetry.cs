@@ -63,6 +63,7 @@ public sealed class BoardSharingTelemetry
             ("/lists/{listId:guid}", "DELETE") => "list_delete",
             ("/lists/{listId:guid}/cards", "POST") => "card_create",
             ("/cards/{cardId:guid}", "PATCH") => "card_update",
+            ("/cards/{cardId:guid}/dates", "PATCH") => "card_date_update",
             ("/cards/{cardId:guid}/archive", "POST") => "card_archive",
             ("/cards/{cardId:guid}/restore", "POST") => "card_restore",
             ("/cards/{cardId:guid}", "DELETE") => "card_delete",
@@ -76,7 +77,7 @@ public sealed class BoardSharingTelemetry
         {
             "board_not_found" or "organization_not_found" or "member_not_found" or "invitation_not_found"
                 or "notification_not_found" or "invalid_notification_cursor" or "invalid_notification_selection"
-                or "watch_not_found" or "invalid_watch_version"
+                or "watch_not_found" or "invalid_watch_version" or "invalid_card_dates" or "invalid_card_date_version"
                 or "session_unavailable" or "work_storage_unavailable" or "invitation_storage_unavailable"
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"
                 or "invalid_board_member_cursor" or "invalid_invitation_cursor" or "invalid_email"

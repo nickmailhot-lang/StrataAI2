@@ -23,6 +23,9 @@ public sealed class CardWatchActivityTests
     [InlineData("CARD_MEMBER_REMOVED")]
     [InlineData("LABEL_ADDED")]
     [InlineData("LABEL_REMOVED")]
+    [InlineData("CARD_DATE_CHANGED")]
+    [InlineData("CARD_DUE_COMPLETED")]
+    [InlineData("CARD_DUE_REOPENED")]
     public void Configured_activity_captures_the_triggering_post_mutation_revision(string type)
     {
         var card = Card(); if (type == "CARD_ARCHIVED") card = card with { LifecycleState = WorkItemLifecycleState.Archived };

@@ -13,6 +13,7 @@ public static partial class WorkManagementEndpoints
         MapCardMemberEndpoints(app);
         MapNotificationEndpoints(app);
         MapWatchEndpoints(app);
+        MapCardDateEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
             async (
@@ -742,6 +743,8 @@ public static partial class WorkManagementEndpoints
         {
             "notification_not_found" => Problem(404, errorCode, "The notifications are unavailable."),
             "watch_not_found" => Problem(404, errorCode, "This watch or entity is unavailable."),
+            "invalid_card_dates" => Problem(400, errorCode, "Use UTC instants or calendar dates with IANA timezone context and valid date order."),
+            "invalid_card_date_version" => Problem(400, errorCode, "Use the current Card revision."),
             "invalid_watch_version" => Problem(400, errorCode, "Use the current watch revision, or zero for a new subscription."),
             "invalid_notification_cursor" => Problem(400, errorCode, "Use the notification page's current cursor."),
             "invalid_notification_selection" => Problem(400, errorCode, "Select between one and 50 distinct notifications."),

@@ -6,7 +6,7 @@ using StrataAI.Infrastructure.Persistence;
 namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class PostgresWorkManagementStore(
-    PostgresConnectionFactory connectionFactory) : IWorkManagementStore
+    PostgresConnectionFactory connectionFactory) : IWorkManagementStore, ICardDateStore
 {
     public Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,
         Guid? boardId, CancellationToken cancellationToken = default) =>
@@ -337,7 +337,8 @@ internal sealed partial class PostgresWorkManagementStore(
         await using var command = new NpgsqlCommand("""
             SELECT c.id,c.tenant_id,c.board_id,c.list_id,c.title,NULL::text,c.rank,c.lifecycle_state,
                 c.created_at,c.updated_at,c.version,
-                l.id,l.tenant_id,l.board_id,l.name,l.rank,l.lifecycle_state,l.created_at,l.updated_at,l.version
+                l.id,l.tenant_id,l.board_id,l.name,l.rank,l.lifecycle_state,l.created_at,l.updated_at,l.version,
+                c.start_at,c.due_at,c.due_timezone,c.due_has_time,c.due_complete
             FROM cards c JOIN board_lists l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
             WHERE c.tenant_id=@tenant AND c.board_id=@board AND c.lifecycle_state='ARCHIVED'
                 AND l.lifecycle_state<>'DELETED' AND (@after IS NULL OR c.id>@after)
@@ -427,7 +428,7 @@ internal sealed partial class PostgresWorkManagementStore(
                 """
                 SELECT
                     id, tenant_id, board_id, list_id, title, description,
-                    rank, lifecycle_state, created_at, updated_at, version
+                    rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete
                 FROM cards
                 WHERE board_id = @board_id
                   AND lifecycle_state = 'ACTIVE'
@@ -877,9 +878,9 @@ internal sealed partial class PostgresWorkManagementStore(
               SELECT *, gen_random_uuid() AS copied_id FROM cards
               WHERE tenant_id=@tenant_id AND board_id=@source_board_id AND list_id=@source_list_id AND lifecycle_state<>'DELETED'
             ), inserted AS (
-            INSERT INTO cards(id, tenant_id, board_id, list_id, title, description, rank, lifecycle_state, created_at, updated_at, version, archived_at)
+            INSERT INTO cards(id, tenant_id, board_id, list_id, title, description, rank, lifecycle_state, created_at, updated_at, version, archived_at, start_at, due_at, due_timezone, due_has_time, due_complete)
             SELECT copied_id, tenant_id, @destination_board_id, @id, title, description, rank, lifecycle_state, @created_at, @created_at, 1,
-                CASE WHEN lifecycle_state = 'ARCHIVED' THEN @created_at ELSE NULL END
+                CASE WHEN lifecycle_state = 'ARCHIVED' THEN @created_at ELSE NULL END, start_at, due_at, due_timezone, due_has_time, due_complete
             FROM mapped RETURNING id
             )
             INSERT INTO card_labels(tenant_id,board_id,card_id,label_id,created_at,updated_at,version)
@@ -1165,7 +1166,7 @@ internal sealed partial class PostgresWorkManagementStore(
             """
             SELECT
                 id, tenant_id, board_id, list_id, title, description,
-                rank, lifecycle_state, created_at, updated_at, version
+                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete
             FROM cards
             WHERE id = @card_id;
             """,
@@ -1213,7 +1214,7 @@ internal sealed partial class PostgresWorkManagementStore(
               AND lifecycle_state = 'ACTIVE'
             RETURNING
                 id, tenant_id, board_id, list_id, title, description,
-                rank, lifecycle_state, created_at, updated_at, version;
+                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete;
             """,
             session.Connection,
             session.Transaction);
@@ -1288,7 +1289,7 @@ internal sealed partial class PostgresWorkManagementStore(
               AND lifecycle_state = 'ACTIVE'
             RETURNING
                 id, tenant_id, board_id, list_id, title, description,
-                rank, lifecycle_state, created_at, updated_at, version;
+                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete;
             """,
             session.Connection,
             session.Transaction);
@@ -1357,7 +1358,7 @@ internal sealed partial class PostgresWorkManagementStore(
               AND version = @expected_version
             RETURNING
                 id, tenant_id, board_id, list_id, title, description,
-                rank, lifecycle_state, created_at, updated_at, version;
+                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete;
             """,
             session.Connection,
             session.Transaction);
@@ -1613,7 +1614,14 @@ internal sealed partial class PostgresWorkManagementStore(
             ParseWorkLifecycle(reader.GetString(7)),
             reader.GetFieldValue<DateTimeOffset>(8),
             reader.GetFieldValue<DateTimeOffset>(9),
-            reader.GetInt64(10));
+            reader.GetInt64(10))
+        {
+            StartAt = reader.IsDBNull(reader.GetOrdinal("start_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("start_at")),
+            DueAt = reader.IsDBNull(reader.GetOrdinal("due_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("due_at")),
+            DueTimezone = reader.IsDBNull(reader.GetOrdinal("due_timezone")) ? null : reader.GetString(reader.GetOrdinal("due_timezone")),
+            DueHasTime = reader.GetBoolean(reader.GetOrdinal("due_has_time")),
+            DueComplete = reader.GetBoolean(reader.GetOrdinal("due_complete")),
+        };
 
     private static BoardMemberRecord ReadBoardMember(NpgsqlDataReader reader) =>
         new(

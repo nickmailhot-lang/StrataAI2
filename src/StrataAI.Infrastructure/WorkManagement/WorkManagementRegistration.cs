@@ -42,6 +42,8 @@ public static class WorkManagementRegistration
         services.AddSingleton<WorkSynchronizationService>();
         services.AddSingleton<NotificationInboxService>();
         services.AddSingleton<WatchSubscriptionService>();
+        services.AddSingleton<ICardDateStore>(provider => (ICardDateStore)provider.GetRequiredService<IWorkManagementStore>());
+        services.AddSingleton<CardDateService>();
         services.AddSingleton<CardWatchNotificationProducer>();
     }
 }

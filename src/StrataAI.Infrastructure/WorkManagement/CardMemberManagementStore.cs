@@ -19,7 +19,7 @@ internal sealed partial class PostgresWorkManagementStore
             ), changed AS (
                 UPDATE cards c SET version=c.version+1,updated_at=@now
                 WHERE c.tenant_id=@tenant AND EXISTS(SELECT 1 FROM removed r WHERE r.card_id=c.id AND r.board_id=c.board_id)
-                RETURNING c.id,c.tenant_id,c.board_id,c.list_id,c.title,c.description,c.rank,c.lifecycle_state,c.created_at,c.updated_at,c.version
+                RETURNING c.id,c.tenant_id,c.board_id,c.list_id,c.title,c.description,c.rank,c.lifecycle_state,c.created_at,c.updated_at,c.version,c.start_at,c.due_at,c.due_timezone,c.due_has_time,c.due_complete
             ) SELECT * FROM changed ORDER BY board_id,id;
             """, session.Connection, session.Transaction);
         query.Parameters.AddWithValue("tenant", organizationId); query.Parameters.AddWithValue("user", userId); query.Parameters.AddWithValue("now", now);
@@ -39,7 +39,7 @@ internal sealed partial class PostgresWorkManagementStore
             ), changed AS (
                 UPDATE cards c SET version=c.version+1,updated_at=@now
                 WHERE c.tenant_id=@tenant AND c.board_id=@board AND c.id IN (SELECT card_id FROM removed)
-                RETURNING c.id,c.tenant_id,c.board_id,c.list_id,c.title,c.description,c.rank,c.lifecycle_state,c.created_at,c.updated_at,c.version
+                RETURNING c.id,c.tenant_id,c.board_id,c.list_id,c.title,c.description,c.rank,c.lifecycle_state,c.created_at,c.updated_at,c.version,c.start_at,c.due_at,c.due_timezone,c.due_has_time,c.due_complete
             ) SELECT * FROM changed ORDER BY id;
             """, session.Connection, session.Transaction);
         query.Parameters.AddWithValue("tenant", board.OrganizationId); query.Parameters.AddWithValue("board", boardId);
@@ -87,7 +87,7 @@ internal sealed partial class PostgresWorkManagementStore
             count = await change.ExecuteNonQueryAsync(cancellationToken);
         if (count > 0)
         {
-            await using var update = Query("UPDATE cards SET version=version+1,updated_at=@now WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version RETURNING id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version;");
+            await using var update = Query("UPDATE cards SET version=version+1,updated_at=@now WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version RETURNING id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version, start_at, due_at, due_timezone, due_has_time, due_complete;");
             await using var reader = await update.ExecuteReaderAsync(cancellationToken);
             if (!await reader.ReadAsync(cancellationToken)) throw new InvalidOperationException("Locked Card assignment revision changed unexpectedly.");
             card = ReadCard(reader);

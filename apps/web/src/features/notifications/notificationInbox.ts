@@ -3,6 +3,7 @@ export const notificationLabels = {
   CARD_ASSIGNED: 'Assigned to you', CARD_CREATED: 'Card created', CARD_UPDATED: 'Card updated', CARD_MOVED: 'Card moved',
   CARD_ARCHIVED: 'Card archived', CARD_RESTORED: 'Card restored', CARD_MEMBER_ADDED: 'Card member added',
   CARD_MEMBER_REMOVED: 'Card member removed', LABEL_ADDED: 'Label added', LABEL_REMOVED: 'Label removed',
+  CARD_DATE_CHANGED: 'Card dates changed', CARD_DUE_COMPLETED: 'Due date completed', CARD_DUE_REOPENED: 'Due date reopened',
 } as const;
 export type NotificationType = keyof typeof notificationLabels;
 function notificationType(value: unknown): value is NotificationType {

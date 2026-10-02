@@ -88,7 +88,14 @@ public sealed record CardRecord(
     WorkItemLifecycleState LifecycleState,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    long Version);
+    long Version)
+{
+    public DateTimeOffset? StartAt { get; init; }
+    public DateTimeOffset? DueAt { get; init; }
+    public string? DueTimezone { get; init; }
+    public bool DueHasTime { get; init; }
+    public bool DueComplete { get; init; }
+}
 
 public sealed record BoardMemberRecord(
     Guid BoardId,
