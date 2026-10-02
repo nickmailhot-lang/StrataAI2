@@ -19,9 +19,19 @@ durations only. No identities, titles, tenant/object IDs, bearer or retry-key
 material is retained. The overall setup deadline is separate from the unchanged
 performance thresholds; release retries remain zero.
 
+The normal fixture also measures card drop feedback in the browser's monotonic
+clock. A captured pointer-up starts the sample; the first frame with the card
+in its destination section is followed by a frame boundary before measurement
+ends. Its one move request is held before server dispatch until that observation,
+so persistence cannot supply the measured update. Feedback must be under 100ms.
+The released request must then receive HTTP 200. The attachment includes
+feedbackObserved and feedbackMs; an unobserved destination fails the threshold
+and records a null duration. This covers normal desktop card drop feedback;
+list feedback and mobile feedback still need corresponding timing evidence.
+
 This test collects locally but requires Linux CI execution. Timing success is
 unproved. It does not establish the separate 200-list/5000-card/100000-archived-card
-capacity requirement, mobile performance, under-100ms visual feedback or actual
+capacity requirement, mobile performance, executed under-100ms visual feedback or actual
 screen-reader behavior. Those remain required work before PRD-06 closure.
 
 The required PostgreSQL rank fixture now creates exactly 200 lists through eight
