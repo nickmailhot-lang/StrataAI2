@@ -185,3 +185,12 @@ not execution evidence; these scenarios await the required exact-image CI job.
 PRD-10 remains open. Filtering integration with PRD-16, remaining copy/move
 metadata reconciliation, two-client/reconnect proof, performance/telemetry,
 and current exact-image/browser acceptance remain required.
+
+Release proxy coverage: CI runs 37030478776 and 37031146291 exposed HTTP 405
+for label deletion through the web origin, despite direct API checks passing.
+The `/labels` resource is now routed to the API in both Nginx and Vite. The
+required label-command fixture now uses the release web origin on port 8088,
+covering definition mutations, reads, retry receipts, authorization waits and
+filtering through the exact web/API images. Shell syntax and local web build
+passed; execution of this repair is pending CI. Existing browser assertions
+retain their expected statuses and recovery behavior.

@@ -27,6 +27,20 @@ it('reviews a Card and current parent, sends only the version/key and restores f
   expect(screen.queryByText(ack.description)).not.toBeInTheDocument();
   await waitFor(() => expect(screen.getByRole('button', { name: 'Check current archived cards' })).toHaveFocus());
 });
+it('preserves archive focus when a following realtime read disables the return target', async () => {
+  let invalidate!: () => void; let resolve!: (value: Response) => void;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  mount(vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply({ ...ack, lifecycleState: 'deleted' }))
+    .mockResolvedValueOnce(reply({ ...page, items: [] })).mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })));
+  await reviewDeletion(); confirmDeletion();
+  const refresh = await screen.findByRole('button', { name: 'Check current archived cards' });
+  await waitFor(() => expect(refresh).toHaveFocus());
+  await act(async () => invalidate()); expect(refresh).toBeDisabled();
+  // Native browsers drop focus when a focused button becomes disabled.
+  refresh.blur(); expect(refresh).not.toHaveFocus();
+  await act(async () => resolve(reply({ ...page, items: [] })));
+  await waitFor(() => expect(refresh).toBeEnabled()); await waitFor(() => expect(refresh).toHaveFocus());
+});
 it('retains the exact historical restore after the committed Card disappears from discovery', async () => {
   const writes: RequestInit[] = []; let reads = 0;
   const fetch = vi.fn((_path: RequestInfo | URL, init?: RequestInit) => {

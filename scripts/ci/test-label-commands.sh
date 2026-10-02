@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# PRD-10: disposable fixtures against the exact, already-built release API.
+# PRD-10: disposable fixtures through the release web proxy to the exact API.
 test "${CI:-}" = true || { echo 'Label command fixtures may run only in CI.' >&2; exit 1; }
-base=http://localhost:8080
+base=http://localhost:8088
 scratch=$(mktemp -d); gate_pid=''; request_pid=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {

@@ -37,3 +37,13 @@ Component regressions and desktop/phone release scenarios cover those boundaries
 keyboard consent, lost committed receipt, second-client removal, reload and denied
 restoration. Collection is not execution proof. Retention, search/notification
 exclusions, telemetry and remaining PRD clauses stay open.
+
+CI run 37031146291 exposed lost focus after a desktop deletion retry. Archive
+focus recovery now waits two animation frames after dialog exit and preserves
+the return target when a following realtime read disables the focused refresh
+button. Pending focus callbacks are canceled on unmount. A new component
+regression models native focus loss during that background read and checks
+restoration after discovery settles. All 29 archive component tests passed,
+as did typecheck, lint and production build. The original desktop/mobile browser
+focus assertion is retained; verification of the repair against release images
+is pending CI.
