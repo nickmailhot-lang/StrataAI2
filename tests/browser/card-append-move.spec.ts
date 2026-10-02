@@ -94,6 +94,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
           await page.mouse.move(destination!.x + destination!.width / 2, destination!.y + destination!.height / 2, { steps: 12 }); await page.mouse.up();
           await expect(page.getByText('Move acknowledged. Current placement is being checked.')).toBeVisible();
           await expect(handle).toBeEnabled();
+          await expect(page.getByRole('link', { name: handleName.slice(5, -5), exact: true })).toBeFocused();
         }
         await page.unroute(`**/cards/${card}/move`);
         await dragBefore('Drag Move this card card', page.getByText('Drop card at end of Planning', { exact: true }));

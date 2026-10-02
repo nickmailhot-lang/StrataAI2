@@ -98,6 +98,15 @@ function BoardContent() {
   const [snapshotReading, setSnapshotReading] = useState(true);
   const cardLinks = useRef(new Map<string, HTMLAnchorElement>());
   const closeFocusCard = useRef<string | undefined>(undefined);
+  const canvasFocus = useRef<{ scope: string; cardId: string } | undefined>(undefined);
+  useEffect(() => {
+    const requested = canvasFocus.current;
+    if (!requested) return;
+    if (requested.scope !== key || cardId) { canvasFocus.current = undefined; return; }
+    if (snapshotReading || busy) return;
+    canvasFocus.current = undefined;
+    if (requested.scope === key) (cardLinks.current.get(requested.cardId) ?? boardRefresh.current)?.focus();
+  }, [snapshotReading, busy, cardId, key]);
   const boardRefresh = useRef<HTMLButtonElement>(null);
   const queuedRefresh = useRef(false);
   const [liveStatus, setLiveStatus] = useState<LiveStatus>("connecting");
@@ -534,7 +543,7 @@ function BoardContent() {
         return moved && <CardMoveControls key={`canvas-move-${moved.id}`} card={moved} snapshot={snapshot}
           dropRequest={cardDrop} disabled={busy || snapshotReading || !!loadError} onRecoveryChange={updateCardRecovery}
           onBusyChange={setBusy} onPreview={setMovePreview}
-          onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
+          onAcknowledged={() => { canvasFocus.current = { scope: key, cardId: moved.id }; setSnapshotReading(true); setReload(value => value + 1); }}
           onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />;
       })()}
       <Dialog

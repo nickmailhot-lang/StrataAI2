@@ -127,6 +127,11 @@ The stable canvas move control remains outside reparented cards and uses the
 existing preview and canonical reconciliation. Named card announcements describe
 requested positions and require move-status confirmation.
 Changing Board scope retires drop events so returning cannot resubmit them.
+After acknowledgment and current-read completion, canvas moves restore focus to
+the moved card's current link (or Board refresh if the card is unavailable).
+Navigating to another Board or opening card details retires this focus request.
+The desktop browser drag scenarios also require that current link to be focused;
+runtime execution remains pending.
 
 The desktop release browser scenario now drags into an empty source list, then
 drags a newly created sibling before the moved card in the same list. It checks
