@@ -206,7 +206,7 @@ describe('PRD-02 profile management', () => {
   it('PRD-02-TC-08 preserves conflicted edits until explicit reload and saves with the latest version', async () => {
     const latest = { ...profile, displayName: 'Other browser', timezone: 'UTC', version: 2 };
     const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ title: 'Your profile changed elsewhere.' }), { status: 409 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ code: 'version_conflict', title: 'private-server-conflict-details' }), { status: 409 }))
       .mockResolvedValueOnce(syncResponse(latest))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ...latest, displayName: 'Merged', version: 3 })));
     vi.stubGlobal('fetch', fetchMock);
@@ -214,6 +214,7 @@ describe('PRD-02 profile management', () => {
     fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: 'My edits' } });
     fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
     await screen.findByText('Your profile changed elsewhere.');
+    expect(screen.queryByText('private-server-conflict-details')).not.toBeInTheDocument();
     expect(screen.getByLabelText(/Display name/)).toHaveValue('My edits');
     expect(screen.getByRole('button', { name: 'Save profile' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Discard edits and load latest profile' }));
@@ -255,11 +256,12 @@ describe('PRD-02 profile management', () => {
 
   it('shows server validation and discards edits only when requested', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ title: 'A valid timezone is required.' }), { status: 400 })));
+      .mockResolvedValueOnce(new Response(JSON.stringify({ code: 'invalid_timezone', title: 'private-server-validation-details' }), { status: 400 })));
     renderProfile();
     fireEvent.change(await screen.findByLabelText(/Timezone/), { target: { value: 'Invalid' } });
     fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
     await screen.findByText('A valid timezone is required.');
+    expect(screen.queryByText('private-server-validation-details')).not.toBeInTheDocument();
     expect(screen.getByLabelText(/Timezone/)).toHaveValue('Invalid');
     fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }));
     expect(screen.getByLabelText(/Timezone/)).toHaveValue('America/Vancouver');

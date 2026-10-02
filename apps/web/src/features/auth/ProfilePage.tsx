@@ -212,8 +212,16 @@ export function ProfilePage() {
       }
       if (!response.ok) {
         setConflict(response.status === 409);
-        const problem = response.body as { title?: unknown } | undefined;
-        setError(typeof problem?.title === 'string' ? problem.title : 'Unable to save your profile. Please retry.');
+        const problem = response.body as { code?: unknown } | undefined;
+        const messages: Record<string, string> = {
+          invalid_display_name: 'A valid display name is required.',
+          invalid_version: 'Load the latest profile before saving again.',
+          invalid_avatar_url: 'Avatar must be an HTTPS image URL without credentials.',
+          invalid_locale: 'A valid regional locale is required.',
+          invalid_timezone: 'A valid timezone is required.',
+        };
+        setError(response.status === 409 ? 'Your profile changed elsewhere.'
+          : typeof problem?.code === 'string' && messages[problem.code] ? messages[problem.code] : 'Unable to save your profile. Please retry.');
         return;
       }
       const user = response.body;
