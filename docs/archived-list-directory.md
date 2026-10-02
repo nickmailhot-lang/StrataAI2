@@ -31,7 +31,24 @@ lock waits followed by Board administrator removal, session revocation and
 parent archive. The build and shell syntax checks pass locally; execution of
 the host and real PostgreSQL cases is required in Linux CI.
 
-The Archived Items interface, archived-card discovery and restore/delete controls
-are still required. Permanent deletion must also add explicit confirmation and
-contained-card impact disclosure before PRD-07/18 can close. This read establishes
-the authorized, bounded List collection those controls need.
+The MUI Archived Lists page is linked from active Board administration and supports
+previous/next pages, empty/loading/error states and SignalR/polling revalidation.
+A restore dialog reviews the name and card count, explains preserved position/card
+states and checks fresh data before sending the original version with a new key.
+A changed review requires cancellation and fresh review. Lost or malformed
+acknowledgments retain the original key/version even when the List has disappeared
+from the canonical archive; only that same restore can be retried. Denied authority
+clears the review, and scoped reads/writes are bounded and abort on route changes.
+Focus returns to the refresh control after the dialog exits and current reads settle.
+
+Fifteen component checks cover scoped restore acknowledgment, loss/retry after
+canonical removal, mismatched acknowledgments, stale consent, malformed pages,
+denied persistence, cancellation, read-page recovery and the request deadline.
+An unresolved dialog can explicitly recheck current authority after a failed
+canonical read without discarding or changing its original restore intent.
+Desktop/phone release-browser cases deliberately lose a committed restore response,
+retry it unchanged and verify two-client recovery, unchanged cards/neighbor/rank,
+preserved archived-card exclusion, exact version increments, focus and reload.
+These browser cases require actual CI execution; collection alone proves no runtime
+behavior. Archived-card browsing, active-List archive controls and permanent-delete
+confirmation/contained-card impact still require work before PRD-07/18 can close.

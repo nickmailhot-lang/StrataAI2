@@ -1,0 +1,61 @@
+import { expect, test } from './releaseTest';
+import { trackBoardReads } from './boardReadTracker';
+
+for (const width of [1280, 390]) {
+  test(`PRD-07/18: reviewed archived List restore recovers without changing card states at ${width}px`, async ({ page, context }) => {
+    test.setTimeout(90_000); await page.setViewportSize({ width, height: 844 });
+    const headers = { 'X-StrataAI-Request': '1' };
+    const account = { email: `archived-lists-${width}-${Date.now()}@example.test`, password: 'archive-correct-horse-battery', displayName: 'Archive editor' };
+    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
+    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    const orgReply = await context.request.post('/organizations', { headers, data: { name: 'Archive browser fixture' } });
+    expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
+    const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Archive Board', visibility: 'PRIVATE' } });
+    expect(boardReply.status()).toBe(201); const board = (await boardReply.json()).id;
+    const listReply = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Planning' } });
+    expect(listReply.status()).toBe(201); const list = await listReply.json();
+    expect((await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Neighbor' } })).status()).toBe(201);
+    const activeReply = await context.request.post(`/lists/${list.id}/cards`, { headers, data: { title: 'Active contained card' } });
+    expect(activeReply.status()).toBe(201);
+    const archivedReply = await context.request.post(`/lists/${list.id}/cards`, { headers, data: { title: 'Archived contained card' } });
+    expect(archivedReply.status()).toBe(201); const archivedCard = await archivedReply.json();
+    expect((await context.request.post(`/cards/${archivedCard.id}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
+    const before = await (await context.request.get(`/boards/${board}`)).json();
+    expect(before.lists[0].cards).toHaveLength(1);
+    expect((await context.request.post(`/lists/${list.id}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
+    const path = `/app/${org}/boards/${board}`; const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
+    const reads = trackBoardReads(other, board, path); await other.goto(path); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+    await expect(other.getByRole('heading', { name: 'Planning', exact: true })).toHaveCount(0);
+    const firstArchive = await context.request.get(`/boards/${board}/archived-lists`); expect(firstArchive.status()).toBe(200);
+    expect((await firstArchive.json()).items[0]).toMatchObject({ list: { id: list.id, version: 2, rank: list.rank }, containedCardCount: 2 });
+    await page.goto(`${path}/archived-lists`);
+    await expect(page.getByRole('heading', { name: 'Planning', exact: true })).toBeVisible();
+    await expect(page.getByText('2 contained cards', { exact: true })).toBeVisible();
+    await expect(page.getByText('Archived contained card', { exact: true })).toHaveCount(0);
+    const requests: { key: string | undefined; body: string | null }[] = [];
+    await page.route(`**/lists/${list.id}/restore`, async route => {
+      requests.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
+      const result = await route.fetch(); expect(result.status()).toBe(200);
+      if (requests.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
+    });
+    await page.getByRole('button', { name: 'Restore Planning list', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(page.getByText('Restore Planning with its 2 contained cards?', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Confirm restore', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'Retry this restore', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Cancel restore', exact: true })).toHaveCount(0);
+    await expect(other.getByRole('heading', { name: 'Planning', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Retry this restore', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(page.getByText('No archived lists on this page.', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Check current archived lists', exact: true })).toBeFocused();
+    expect(requests).toHaveLength(2); expect(requests[1]).toEqual(requests[0]);
+    expect(requests[0].key).toMatch(/^[0-9a-f-]{36}$/); expect(JSON.parse(requests[0].body!)).toEqual({ version: 2 });
+    const after = await (await context.request.get(`/boards/${board}`)).json();
+    expect(after.lists[0].list).toMatchObject({ id: list.id, rank: list.rank, version: 3, lifecycleState: 'active' });
+    expect(after.lists[0].cards).toEqual(before.lists[0].cards); expect(after.lists[1]).toEqual(before.lists[1]);
+    await expect(other.getByText('Active contained card', { exact: true })).toBeVisible();
+    await expect(other.getByText('Archived contained card', { exact: true })).toHaveCount(0);
+    await page.reload(); await expect(page.getByText('No archived lists on this page.', { exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await other.close();
+  });
+}

@@ -413,7 +413,8 @@ function BoardContent() {
             <><Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invite`}>Invite to Board</Button>
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/visibility`}>Board visibility</Button>
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/members`}>Board members</Button>
-            <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invitations`}>Board invitations</Button></>
+            <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invitations`}>Board invitations</Button>
+            <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/archived-lists`}>Archived lists</Button></>
           )}
           {editable && (
             <Button

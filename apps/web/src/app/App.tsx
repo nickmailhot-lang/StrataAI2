@@ -15,6 +15,7 @@ import { VerifyEmailPage } from "../features/auth/VerifyEmailPage";
 import { BoardScreen } from "../features/kanban/BoardScreen";
 import { BoardVisibilityPage } from "../features/kanban/BoardVisibilityPage";
 import { BoardMembersPage } from "../features/kanban/BoardMembersPage";
+import { ArchivedListsPage } from "../features/kanban/ArchivedListsPage";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
 import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
@@ -53,6 +54,7 @@ const routes = [
       { path: "boards/:boardId/invite", element: <BoardInvitationPage /> },
       { path: "boards/:boardId/visibility", element: <BoardVisibilityPage /> },
       { path: "boards/:boardId/members", element: <BoardMembersPage /> },
+      { path: "boards/:boardId/archived-lists", element: <ArchivedListsPage /> },
       { path: "boards/:boardId/invitations", element: <BoardInvitationHistoryPage /> },
       { path: "invitations", element: <OrganizationInvitationHistoryPage /> },
       {
