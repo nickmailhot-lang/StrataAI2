@@ -127,6 +127,19 @@ exact retries, stale/self/outsider requests, and exhausted space; the required
 exact-image fixture adds audit rollback, before/end ordering and unchanged
 neighbor records. Local strict compilation passed; runtime evidence awaits CI.
 
+The authenticated editing picker uses GET `/cards/{cardId}/label-options`, with
+the same optional label-ID cursor. Each 50-item page pairs a current Board label
+with an `assigned` flag and reports the current Card revision. PostgreSQL computes
+assignment flags in the bounded label query, so the client need not load all
+assignments or combine differently aged directories to decide its next action.
+Only editors of an active Board/Card/parent List can read these editing options;
+viewers retain the separate read-only assigned-label endpoint and face previews.
+The command gate revalidates scope/access after waits and the session after reads.
+Host assertions cover unassigned/assigned/deleted options and denied parents or
+actors; the required exact-image fixture covers two pages, removal reflected at
+the next Card revision, invalid cursors and revoked editors. Strict compilation,
+shell syntax and diff checks passed; execution awaits Linux CI.
+
 This is a foundation, not PRD-10 closure. Accessible label administration, filtering, relative reorder
 controls, copy/move metadata reconciliation, and exact-image concurrency,
 rollback, telemetry, and browser acceptance remain required.

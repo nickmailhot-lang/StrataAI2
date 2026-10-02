@@ -4,6 +4,16 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class InMemoryWorkManagementStore
 {
+    public Task<IReadOnlyList<CardLabelOption>> ListCardLabelOptionsAsync(Guid cardId, Guid? after, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            if (!_cards.TryGetValue(cardId, out var card)) return Task.FromResult<IReadOnlyList<CardLabelOption>>([]);
+            return Task.FromResult<IReadOnlyList<CardLabelOption>>(_labels.Values.Where(label => !label.Deleted
+                && label.OrganizationId == card.OrganizationId && label.BoardId == card.BoardId && (after is null || label.Id.CompareTo(after.Value) > 0))
+                .OrderBy(label => label.Id).Take(51).Select(label => new CardLabelOption(label, _cardLabels.Contains((cardId, label.Id)))).ToArray());
+        }
+    }
     public Task<BoardLabelRecord?> MoveLabelAsync(Guid labelId, Guid? beforeLabelId, long version, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         lock (_sync)

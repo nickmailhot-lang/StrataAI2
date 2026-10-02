@@ -174,4 +174,14 @@ cmp "$scratch/response.json" "$scratch/move-receipt.json"; test "$after" = "$(st
 test "$(request owner POST "/labels/$moving/move" 11111111-1111-1111-1111-111111111113 '{"version":2}')" = 200
 test "$(admin "SELECT rank>(SELECT max(rank) FROM board_labels WHERE board_id='$board' AND status='ACTIVE' AND id<>'$moving') FROM board_labels WHERE id='$moving';")" = t
 test "$original_neighbors" = "$(neighbors)"
+test "$(get owner "/cards/$card/label-options")" = 200
+jq -e '.cardVersion==11 and (.items|length)==50 and all(.items[];.assigned==true) and .nextCursor==.items[-1].label.id' "$scratch/response.json" >/dev/null
+option_cursor=$(jq -r '.nextCursor' "$scratch/response.json"); option_id=$(jq -r '.items[0].label.id' "$scratch/response.json")
+test "$(get owner "/cards/$card/label-options?after=$option_cursor")" = 200
+jq -e '(.items|length)==2 and .nextCursor==null and all(.items[];.assigned==true)' "$scratch/response.json" >/dev/null
+test "$(request owner DELETE "/cards/$card/labels/$option_id?version=11" 11111111-1111-1111-1111-111111111114 '{}')" = 200
+test "$(get owner "/cards/$card/label-options")" = 200
+jq -e --arg id "$option_id" '.cardVersion==12 and ([.items[]|select(.label.id==$id and .assigned==false)]|length)==1' "$scratch/response.json" >/dev/null
+test "$(get owner "/cards/$card/label-options?after=invalid")" = 400
+test "$(get editor "/cards/$card/label-options")" = 404
 echo 'Label commands: exact-image CRUD, admission, retry identity, atomic audit rollback and association removal, Card revisions, and observed post-wait receipt authorization passed.'

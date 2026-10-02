@@ -1,6 +1,9 @@
 namespace StrataAI.Application.WorkManagement;
 
 public sealed record CardLabelChange(CardRecord Card, Guid LabelId, bool Assigned, bool Changed);
+public sealed record CardLabelOption(BoardLabelRecord Label, bool Assigned);
+public sealed record CardLabelOptionsPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
+    IReadOnlyList<CardLabelOption> Items, Guid? NextCursor);
 public sealed record CardLabelIndicator(Guid Id, string Name, string Color);
 public sealed record CardLabelPreview(IReadOnlyList<CardLabelIndicator> Items, long Total);
 public sealed record CardLabelPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,

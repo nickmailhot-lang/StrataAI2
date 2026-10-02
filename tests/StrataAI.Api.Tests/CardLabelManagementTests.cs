@@ -50,12 +50,18 @@ public sealed partial class ApiHostTests
         var original = await createdCard.Content.ReadFromJsonAsync<JsonElement>(ct); var card = original.GetProperty("id").GetGuid();
         using var createdLabel = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/labels", new { name = "Priority", color = "red" });
         var label = (await createdLabel.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        var initialOptions = await owner.GetFromJsonAsync<JsonElement>($"/cards/{card}/label-options", ct);
+        var initialOption = Assert.Single(initialOptions.GetProperty("items").EnumerateArray());
+        Assert.Equal(label, initialOption.GetProperty("label").GetProperty("id").GetGuid()); Assert.False(initialOption.GetProperty("assigned").GetBoolean());
         var key = Guid.NewGuid().ToString(); var path = $"/cards/{card}/labels/{label}";
         using var assigned = await Mutate(owner, HttpMethod.Put, path + "?version=1", new { }, key);
         Assert.Equal(HttpStatusCode.OK, assigned.StatusCode); var receipt = await assigned.Content.ReadAsStringAsync(ct);
         var changed = JsonSerializer.Deserialize<JsonElement>(receipt);
         Assert.True(changed.GetProperty("assigned").GetBoolean()); Assert.True(changed.GetProperty("changed").GetBoolean());
         Assert.Equal(2, changed.GetProperty("card").GetProperty("version").GetInt64());
+        var assignedOptions = await owner.GetFromJsonAsync<JsonElement>($"/cards/{card}/label-options", ct);
+        Assert.True(Assert.Single(assignedOptions.GetProperty("items").EnumerateArray()).GetProperty("assigned").GetBoolean());
+        Assert.Equal(2, assignedOptions.GetProperty("cardVersion").GetInt64());
         var assignedPage = await owner.GetFromJsonAsync<JsonElement>($"/cards/{card}/labels", ct);
         Assert.Equal(card, assignedPage.GetProperty("cardId").GetGuid()); Assert.Equal(2, assignedPage.GetProperty("cardVersion").GetInt64());
         Assert.Equal(label, Assert.Single(assignedPage.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
@@ -83,6 +89,8 @@ public sealed partial class ApiHostTests
         Assert.Equal(original.GetProperty("rank").GetString(), retained.GetProperty("rank").GetString());
         var emptyPage = await owner.GetFromJsonAsync<JsonElement>($"/cards/{card}/labels", ct);
         Assert.Empty(emptyPage.GetProperty("items").EnumerateArray()); Assert.Equal(5, emptyPage.GetProperty("cardVersion").GetInt64());
+        var deletedOptions = await owner.GetFromJsonAsync<JsonElement>($"/cards/{card}/label-options", ct);
+        Assert.Empty(deletedOptions.GetProperty("items").EnumerateArray());
         using var deletedLabelReplay = await Mutate(owner, HttpMethod.Put, path + "?version=1", new { }, key);
         Assert.Equal(HttpStatusCode.NotFound, deletedLabelReplay.StatusCode);
     }
@@ -106,6 +114,8 @@ public sealed partial class ApiHostTests
         using var outsider = app.CreateClient(); await RegisterAndLogin(outsider);
         using var outsiderRead = await outsider.GetAsync($"/cards/{card}/labels", ct);
         Assert.Equal(HttpStatusCode.NotFound, outsiderRead.StatusCode);
+        using var outsiderOptions = await outsider.GetAsync($"/cards/{card}/label-options", ct);
+        Assert.Equal(HttpStatusCode.NotFound, outsiderOptions.StatusCode);
         using var invalidCursor = await owner.GetAsync($"/cards/{card}/labels?after=invalid", ct);
         Assert.Equal(HttpStatusCode.BadRequest, invalidCursor.StatusCode);
         using var denied = await Mutate(outsider, HttpMethod.Put, $"/cards/{card}/labels/{label}?version=1", new { });
@@ -119,5 +129,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.NotFound, unavailable.StatusCode);
         using var archivedRead = await owner.GetAsync($"/cards/{card}/labels", ct);
         Assert.Equal(HttpStatusCode.NotFound, archivedRead.StatusCode);
+        using var archivedOptions = await owner.GetAsync($"/cards/{card}/label-options", ct);
+        Assert.Equal(HttpStatusCode.NotFound, archivedOptions.StatusCode);
     }
 }
