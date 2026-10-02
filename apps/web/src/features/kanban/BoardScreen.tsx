@@ -29,6 +29,7 @@ import { CardLabelPicker } from './CardLabelPicker';
 import { CardLabelIndicators } from './CardLabelIndicators';
 import { LabelCreateControl } from './LabelCreateControl';
 import { LabelManageControl } from './LabelManageControl';
+import { BoardFilterControl } from './BoardFilterControl';
 import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardArchiveControl } from './CardArchiveControl';
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
@@ -467,6 +468,8 @@ function BoardContent() {
         </Stack>
       </Stack>
       {saved && <Typography role="status">Changes saved.</Typography>}
+      <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
+        onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
       {snapshot.board.lifecycleState !== "active" && (
         <Alert severity="info">
           This board is archived. Editing is unavailable.

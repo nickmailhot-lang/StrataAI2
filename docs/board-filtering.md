@@ -4,7 +4,7 @@ Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 This initial server read supports keyword and label predicates. Member,
 completion, due-date, recent-activity filters, anonymous PUBLIC Board parity,
-session-persisted Board controls and global search remain required PRD-16 work.
+and global search remain required PRD-16 work.
 
 Keyword matching is a case-insensitive literal substring of title or description;
 SQL wildcard characters such as `%` and `_` are literal. The trimmed keyword is
@@ -38,9 +38,36 @@ validation, 50+2 pagination and invalid input. The required exact-image label
 fixture additionally covers persisted PostgreSQL filtering beyond face previews,
 removed assignments, literal keywords, 50+2 pages, archived parents, and observed
 Board-lock waits followed by membership/session revocation without result leaks.
-Strict local compilation and fixture syntax checks passed. Host and PostgreSQL
-runtime assertions await Linux CI; local Windows execution is restricted.
+Strict local compilation and fixture syntax checks passed. Linux source CI for
+aa3e128 (run 37037711541, .NET job 110939925226) passed the complete host suite.
+Execution of the added PostgreSQL filter assertions against release images is
+still pending; the source migration/RLS job does not prove those API queries.
 
-Neither PRD-10 nor PRD-16 is complete. The remaining filters, UI, event/reconnect
+Board viewers can open Filter Board Cards to select named label choices and a
+literal keyword, compose ANY/ALL predicates, and browse a 50-Card result page.
+Results link to canonical Card details and identify the current parent List.
+Label choices are separately paged, retaining selected IDs across pages, and the
+selection is limited to 25 labels. Results use the last applied criteria; changing
+draft fields requires Apply again. A canonical Board refresh (including event
+delivery and reconnect recovery) retires pending reads and reloads applied
+results and reloads label choices from the first page while retaining selected
+IDs. Late responses cannot restore the old page. Reads validate scope,
+lifecycle, Card identity/version/rank and cursor shape before displaying content.
+Denied reads clear results and refresh Board admission with safe local messages.
+
+Applied criteria persist in sessionStorage under current `/me` identity,
+Organization and Board IDs. Reopening the filter dialog after navigation or page
+reload restores those criteria for an explicit Apply; results themselves are
+never stored. A different signed-in identity gets a different storage key. Clear
+filters removes the saved criteria. Unavailable browser storage degrades to the
+current in-memory draft. Invalid stored criteria are ignored. Anonymous filtering
+remains pending: the current dialog requires authentication and explains denial.
+
+Ten filter component cases and 24 Board cases passed locally (34 focused tests),
+plus typecheck, lint and production build. Desktop/mobile keyboard browser cases
+now include ALL empty results, ANY matching, criterion restoration after refresh,
+and clearing. Collection passed; execution against exact images remains pending.
+
+Neither PRD-10 nor PRD-16 is complete. The remaining filters, canvas integration, event/reconnect
 acceptance and performance evidence must be implemented and verified before
 closure.

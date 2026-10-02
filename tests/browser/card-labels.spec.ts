@@ -85,6 +85,25 @@ for (const width of [1280, 390]) {
     const remainingItems = (await remaining.json()).items; expect(remainingItems).toHaveLength(1); expect(remainingItems[0].id).toBe(labels[0]);
     await page.goto(`/app/${org}/boards/${board}`);
     const edits: { url: string; key: string | undefined; body: string | null }[] = [];
+    const filterButton = page.getByRole('button', { name: 'Filter Board Cards', exact: true });
+    await expect(filterButton).toBeEnabled(); await filterButton.focus(); await page.keyboard.press('Enter');
+    const filters = page.getByRole('dialog', { name: 'Filter Board Cards' });
+    await expect(filters.getByRole('checkbox', { name: 'Priority (red)', exact: true })).toBeEnabled();
+    await filters.getByRole('checkbox', { name: 'Priority (red)', exact: true }).focus(); await page.keyboard.press('Space');
+    await filters.getByLabel('Card keyword').fill('absent');
+    await filters.getByRole('button', { name: 'Apply filters', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
+    await filters.getByRole('combobox', { name: 'Match filters' }).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('option', { name: 'Match ANY', exact: true }).focus(); await page.keyboard.press('Enter');
+    await filters.getByRole('button', { name: 'Apply filters', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(filters.getByRole('link', { name: 'Labeled work — Planning', exact: true })).toBeVisible();
+    await page.reload(); await expect(filterButton).toBeEnabled(); await filterButton.focus(); await page.keyboard.press('Enter');
+    await expect(filters.getByLabel('Card keyword')).toHaveValue('absent');
+    await expect(filters.getByRole('checkbox', { name: 'Priority (red)', exact: true })).toBeChecked();
+    await expect(filters.getByRole('combobox', { name: 'Match filters' })).toHaveText('Match ANY');
+    await filters.getByRole('button', { name: 'Clear filters', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(filters.getByLabel('Card keyword')).toHaveValue('');
+    await filters.getByRole('button', { name: 'Close filters', exact: true }).focus(); await page.keyboard.press('Enter'); await expect(filters).toHaveCount(0);
     await page.route(`**/labels/${labels[0]}`, async route => {
       if (route.request().method() !== 'PATCH') return route.continue();
       edits.push({ url: route.request().url(), key: route.request().headers()['idempotency-key'], body: route.request().postData() });
