@@ -13,6 +13,7 @@ internal sealed class PostgresInvitationRegistrationProofStore(PostgresConnectio
     {
         RequireScope();
         await using var root = await connections.OpenRoutingSessionAsync(ct);
+        await root.SetLookupAsync(RoutingLookup.InvitationToken, tokenHash, ct);
         Guid organizationId; Guid invitationId;
         await using (var route = new NpgsqlCommand("""
             SELECT tenant_id,invitation_id FROM invitation_routes WHERE token_hash=@hash AND email_normalized=@email

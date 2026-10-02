@@ -9,6 +9,7 @@ stranger=02100000-0000-0000-0000-000000000004
 member=02100000-0000-0000-0000-000000000005
 admin() { psql -X -qAt -v ON_ERROR_STOP=1 -c "$1"; }
 api() { PGUSER=strataai_api_runtime PGPASSWORD='ci-api-runtime-password' psql -X -qAt -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -c "$1"; }
+route() { api "BEGIN; SET LOCAL app.route_kind='ORGANIZATION_USER'; SET LOCAL app.route_key='$actor'; $1; ROLLBACK;"; }
 cleanup() {
   admin "DELETE FROM organization_members WHERE tenant_id IN ('$tenant','$other');
     DELETE FROM organizations WHERE id IN ('$tenant','$other');
@@ -39,24 +40,26 @@ reject() {
 }
 insert_member
 test "$(api 'SELECT count(*) FROM organization_members')" = 0
-test "$(api "SELECT role||':'||status FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = OWNER:ACTIVE
-# Each rejection reaches COMMIT, so it tests the deferred constraint rather than an early syntax error.
-reject "BEGIN; DELETE FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503 fk_organization_membership_route
-reject "BEGIN; UPDATE user_organization_access SET role='ADMIN' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503
-reject "BEGIN; UPDATE user_organization_access SET status='REMOVED' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503
-reject "BEGIN; UPDATE user_organization_access SET tenant_id='$other' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503
-reject "BEGIN; INSERT INTO user_organization_access(user_id,tenant_id,role,status) VALUES ('$stranger','$tenant','OWNER','ACTIVE'); COMMIT;" 23503 fk_organization_route_membership
+test "$(api 'SELECT count(*) FROM user_organization_access')" = 0
+test "$(route "SELECT role||':'||status FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = OWNER:ACTIVE
+# Tenant-scoped divergence still reaches the deferred constraints. A cross-tenant
+# rewrite is now rejected earlier by the route's forced RLS write policy.
+reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; DELETE FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503 fk_organization_membership_route
+reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE user_organization_access SET role='ADMIN' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503
+reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE user_organization_access SET status='REMOVED' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503
+reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE user_organization_access SET tenant_id='$other' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 42501
+reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; INSERT INTO user_organization_access(user_id,tenant_id,role,status) VALUES ('$stranger','$tenant','OWNER','ACTIVE'); COMMIT;" 23503 fk_organization_route_membership
 reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; INSERT INTO organization_members(id,tenant_id,user_id,role)
   VALUES (gen_random_uuid(),'$other','$actor','OWNER'); COMMIT;" 42501
 before="$(state)"
 api "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE organization_members SET role='ADMIN',status='REMOVED',version=version+1 WHERE id='$member'; ROLLBACK;" >/dev/null
 test "$before" = "$(state)"
 api "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE organization_members SET role='ADMIN',status='REMOVED',version=version+1 WHERE id='$member'; COMMIT;" >/dev/null
-test "$(api "SELECT role||':'||status FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = ADMIN:REMOVED
+test "$(route "SELECT role||':'||status FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = ADMIN:REMOVED
 api "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE organization_members SET role='OWNER',status='ACTIVE',version=version+1 WHERE id='$member'; COMMIT;" >/dev/null
-test "$(api "SELECT role||':'||status FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = OWNER:ACTIVE
+test "$(route "SELECT role||':'||status FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = OWNER:ACTIVE
 api "BEGIN; SET LOCAL app.tenant_id='$tenant'; DELETE FROM organization_members WHERE id='$member'; COMMIT;" >/dev/null
-test "$(api "SELECT count(*) FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = 0
+test "$(route "SELECT count(*) FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = 0
 insert_member
 test "$(admin "SELECT count(*) FROM organization_members m JOIN user_organization_access r USING(user_id,tenant_id,role,status) WHERE m.id='$member'")" = 1
 echo 'Organization routing integrity: restricted-login insert/update/delete synchronization, rollback, deferred divergence rejection and canonical tenant RLS passed.'

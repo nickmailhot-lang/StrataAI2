@@ -82,6 +82,7 @@ internal sealed class PostgresAccountDeactivationOwnership(PostgresConnectionFac
 
     private static async Task<Guid[]> ReadRoutesAsync(RoutingDbSession root, Guid userId, CancellationToken cancellationToken)
     {
+        await root.SetLookupAsync(RoutingLookup.OrganizationUser, userId.ToString(), cancellationToken);
         var ids = new List<Guid>();
         await using var routes = new NpgsqlCommand("SELECT tenant_id FROM user_organization_access WHERE user_id=@user AND role='OWNER' AND status='ACTIVE' ORDER BY tenant_id;", root.Connection, root.Transaction);
         routes.Parameters.AddWithValue("user", userId);

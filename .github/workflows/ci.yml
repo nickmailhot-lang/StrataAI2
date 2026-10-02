@@ -142,6 +142,9 @@ jobs:
       - name: Apply ordered migrations
         run: scripts/ci/apply-migrations.sh
 
+      - name: Verify every migrated tenant table retains its isolation boundary
+        run: scripts/ci/test-tenant-schema.sh
+
       - name: Verify migration repeat, upgrade, failure rollback and serialization
         run: scripts/ci/test-migration-runner.sh
 
@@ -165,6 +168,9 @@ jobs:
 
       - name: Verify canonical Organization membership and routing integrity
         run: scripts/ci/test-organization-access-integrity.sh
+
+      - name: Verify restricted routing discovery cannot widen across Organizations
+        run: scripts/ci/test-routing-isolation.sh
 
   source-quality-gate:
     name: source-quality-gate

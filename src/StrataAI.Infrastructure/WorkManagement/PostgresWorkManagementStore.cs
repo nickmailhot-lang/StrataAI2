@@ -1378,6 +1378,7 @@ internal sealed class PostgresWorkManagementStore(
     {
         await using var routing =
             await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await routing.SetLookupAsync(RoutingLookup.Board, boardId.ToString(), cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id
@@ -1398,6 +1399,7 @@ internal sealed class PostgresWorkManagementStore(
     {
         await using var routing =
             await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await routing.SetLookupAsync(RoutingLookup.List, listId.ToString(), cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id, board_id
@@ -1422,6 +1424,7 @@ internal sealed class PostgresWorkManagementStore(
     {
         await using var routing =
             await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await routing.SetLookupAsync(RoutingLookup.Card, cardId.ToString(), cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id, board_id, list_id

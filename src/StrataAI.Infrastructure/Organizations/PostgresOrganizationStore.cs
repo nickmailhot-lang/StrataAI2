@@ -138,9 +138,10 @@ internal sealed class PostgresOrganizationStore(
     {
         var routes = new List<(Guid TenantId, OrganizationRole Role)>();
 
-        await using (var connection =
-            await connectionFactory.OpenConnectionAsync(cancellationToken))
-        await using (var command = new NpgsqlCommand(
+        await using (var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken))
+        {
+            await routing.SetLookupAsync(RoutingLookup.OrganizationUser, userId.ToString(), cancellationToken);
+            await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id, role
             FROM user_organization_access
@@ -148,8 +149,7 @@ internal sealed class PostgresOrganizationStore(
               AND status = 'ACTIVE'
             ORDER BY tenant_id;
             """,
-            connection))
-        {
+            routing.Connection, routing.Transaction);
             command.Parameters.AddWithValue("user_id", userId);
             await using var reader =
                 await command.ExecuteReaderAsync(cancellationToken);

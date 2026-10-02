@@ -158,6 +158,7 @@ internal sealed class PostgresInvitationStore(
     {
         if (!connectionFactory.HasIdentityCommandScope) throw new InvalidOperationException("Invitation discovery requires a freshly authorized identity transaction.");
         await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await routing.SetLookupAsync(RoutingLookup.InvitationRecipient, emailNormalized, cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT
@@ -208,6 +209,7 @@ internal sealed class PostgresInvitationStore(
         Guid? tenantId;
         await using (var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken))
         {
+            await routing.SetLookupAsync(RoutingLookup.InvitationId, invitationId.ToString(), cancellationToken);
             await using var route = new NpgsqlCommand("""
                 SELECT tenant_id FROM invitation_routes WHERE invitation_id=@id AND email_normalized=@email
                   AND (accepted_at IS NULL OR accepted_by_user_id=@actor) AND revoked_at IS NULL AND expires_at>clock_timestamp();
@@ -525,6 +527,7 @@ internal sealed class PostgresInvitationStore(
     {
         await using var routing =
             await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await routing.SetLookupAsync(RoutingLookup.InvitationToken, tokenHash, cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             SELECT tenant_id

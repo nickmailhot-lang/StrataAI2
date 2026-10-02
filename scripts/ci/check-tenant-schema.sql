@@ -1,0 +1,37 @@
+-- ARCH-04-FR-002/004: classify every application table, then inspect the
+-- actual migrated catalog. Global identity tables use separate subject/service
+-- authorization; this classification does not grant database privileges.
+DO $$
+DECLARE
+    relation record;
+    isolation_key record;
+    global_tables constant text[] := ARRAY[
+      'schema_migrations','users','sessions','password_reset_tokens','email_verification_tokens',
+      'identity_delivery_jobs','identity_event_streams','identity_events','identity_profile_replays',
+      'identity_revocation_replays','identity_login_replays','identity_registration_replays',
+      'identity_recovery_request_replays','identity_token_consumption_replays'];
+BEGIN
+    FOR relation IN
+      SELECT c.oid, c.relname, c.relrowsecurity, c.relforcerowsecurity
+      FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+      WHERE n.nspname='public' AND c.relkind IN ('r','p')
+        AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_class'::regclass
+          AND d.objid=c.oid AND d.deptype='e')
+      ORDER BY c.relname
+    LOOP
+      IF relation.relname = ANY(global_tables) THEN CONTINUE; END IF;
+      SELECT a.attnotnull, a.atttypid INTO isolation_key
+      FROM pg_attribute a WHERE a.attrelid=relation.oid AND NOT a.attisdropped
+        AND a.attname=CASE WHEN relation.relname='organizations' THEN 'id' ELSE 'tenant_id' END;
+      IF NOT FOUND OR isolation_key.attnotnull IS NOT TRUE OR isolation_key.atttypid <> 'uuid'::regtype THEN
+        RAISE EXCEPTION 'Tenant schema invariant failed: % requires a non-null UUID Organization key', relation.relname;
+      END IF;
+      IF NOT relation.relrowsecurity OR NOT relation.relforcerowsecurity THEN
+        RAISE EXCEPTION 'Tenant schema invariant failed: % requires enabled and forced RLS', relation.relname;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid=relation.oid) THEN
+        RAISE EXCEPTION 'Tenant schema invariant failed: % requires an explicit RLS policy', relation.relname;
+      END IF;
+    END LOOP;
+END;
+$$;
