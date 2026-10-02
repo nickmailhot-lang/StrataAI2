@@ -47,6 +47,10 @@ if (runtime.Mode == RuntimeMode.Production)
     builder.Services.AddHostedService<IdentityRetryCleanupWorker>();
     builder.Services.AddSingleton<StrataAI.Application.WorkManagement.IWorkEventDeliveryStore, StrataAI.Infrastructure.WorkManagement.PostgresWorkEventDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.WorkManagement.WorkEventDeliveryHandler>();
+    var reminderRequireVerified = !bool.TryParse(builder.Configuration["STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL"], out var reminderVerified) || reminderVerified;
+    builder.Services.AddSingleton<StrataAI.Application.WorkManagement.ICardReminderDeliveryStore>(provider =>
+        new StrataAI.Infrastructure.WorkManagement.PostgresCardReminderDeliveryStore(provider.GetRequiredService<PostgresConnectionFactory>(), reminderRequireVerified));
+    builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.WorkManagement.CardReminderDeliveryHandler>();
 }
 
 var jobScope = builder.Configuration["STRATAAI_WORKER_ORGANIZATION_IDS"];

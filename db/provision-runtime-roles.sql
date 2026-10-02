@@ -58,6 +58,7 @@ GRANT EXECUTE ON FUNCTION public.purge_expired_identity_token_consumption_replay
 GRANT SELECT(tenant_id,event_id,board_id,actor_id,ready_at),UPDATE(ready_at) ON work_events TO strataai_worker_runtime;
 GRANT SELECT,INSERT ON background_jobs TO strataai_api_runtime;
 GRANT SELECT,UPDATE ON background_jobs TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.deliver_card_reminder(uuid,uuid,uuid,uuid,uuid,uuid,bigint,boolean) TO strataai_worker_runtime;
 GRANT SELECT,INSERT,UPDATE,DELETE ON organizations,boards,board_lists,cards,organization_members,invitations,portal_access,
     user_organization_access,invitation_routes,board_members,user_board_preferences,board_routes,list_routes,card_routes TO strataai_api_runtime;
 GRANT SELECT,INSERT ON invitation_mail_intents TO strataai_api_runtime;

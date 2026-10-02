@@ -13,6 +13,13 @@ it.each(Object.keys(notificationLabels))('accepts configured notification %s wit
 it.each(['WATCH_CREATED', 'UNKNOWN', 'constructor', '__proto__'])('rejects unrelated or inherited notification type %s', type => {
   expect(() => parseInbox(page([{ ...item(), type }]), org, recipient)).toThrow();
 });
+it('accepts personal due reminders while retaining self-action suppression for every activity type', () => {
+  expect(parseInbox(page([{ ...item(), type: 'REMINDER_FIRED', actorId: recipient }]), org, recipient).items[0].type).toBe('REMINDER_FIRED');
+  for (const type of Object.keys(notificationLabels).filter(type => type !== 'REMINDER_FIRED')) {
+    expect(() => parseInbox(page([{ ...item(), type, actorId: recipient }]), org, recipient)).toThrow();
+  }
+  expect(() => parseInbox(page([{ ...item(), type: 'REMINDER_FIRED', recipientId: actor }]), org, recipient)).toThrow();
+});
 
 it('preserves sub-millisecond ordering and timestamp/UUID seek boundaries', () => {
   const data = page([item(1, '2026-10-02T10:00:00.000002Z'), item(2)]);

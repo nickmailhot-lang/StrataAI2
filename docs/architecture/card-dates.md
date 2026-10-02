@@ -194,3 +194,48 @@ CI for 7b83643 passed web and PostgreSQL migration/storage checks but failed two
 Demo store tests because the Reminder store registration was missing. Commit
 0a3c962 registers both runtime adapters; its Linux test result remains pending.
 PRD-12 and PRD-17 remain open.
+
+## Restricted Worker delivery
+
+Migration 038 implements the private delivery transaction as a SECURITY DEFINER
+capability with explicit tenant, canonical reference and live claim fences.
+PUBLIC execution is revoked; the Worker receives only function execution and
+retains no general access to Cards, accounts, memberships, Reminder rows or
+notification writes. Claims must match the persisted job type/service, actor,
+Worker/lease, exact reference metadata and Reminder/generation key before scope
+reads, then are locked and revalidated after current Board admission locks.
+
+Delivery checks the current active Organization, account and verified-email
+policy, Organization/private Board membership, Board/List/Card lifecycle, exact
+due instant, completion, enabled generation and reached trigger. Obsolete or
+currently ineligible attempts create no effect. A moved Card whose original hint
+is stale requires a retry under its current Board. Fired generations replay
+without creating another effect, including after another Worker recovers the job.
+
+A successful delivery atomically allocates one Board stream sequence, creates a
+ready REMINDER_FIRED event, one recipient notification and append-only audit event,
+and transitions the personal row to FIRED with one revision increment. It retains
+the generation and Card revision. A final lease fence raises on expiry, rolling
+back every tentative effect and sequence allocation. Queue acknowledgment stays
+with the existing background job processor.
+
+Reminder events use a typed tenant-safe Reminder identity reference. Shared Board
+replay projects them only as Board invalidations even if an adapter incorrectly
+claims visibility; Reminder identity, actor, private type/revision and metadata
+are withheld. The inbox supports a text-labeled due reminder and self reminders
+only for REMINDER_FIRED; ordinary self activity remains suppressed.
+
+The production Worker composes the handler/store using the existing explicit
+Organization job scope and verification policy. The API still publishes no
+CARD_REMINDER jobs: configuration endpoints and Card lifecycle/date scheduling
+integration are the next work, followed by MUI controls and exact-image browser
+acceptance. This is not full PRD-12/17 completion.
+
+The mandatory PostgreSQL fixture uses a non-bypass restricted role and exercises
+missing/cross-tenant scope, wrong/lost leases, forged metadata, 13 current-state
+changes (including removed/missing private membership), future triggers,
+notification failure rollback, lease expiry during an effect, self delivery,
+duplicate effects and recovery by a different Worker. Runtime readiness and
+clean/repeat/forward/failure migrations require 038. Strict build and front-end
+checks plus 31 inbox tests passed locally; Linux must execute database and six
+new private replay cases before their success is claimed.

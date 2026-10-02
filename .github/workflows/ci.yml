@@ -157,6 +157,9 @@ jobs:
       - name: Verify Card member and assigning actor tenant integrity
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-member-storage.sql
 
+      - name: Verify private Reminder delivery, eligibility, leases and atomic effects
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-reminder-delivery.sql
+
       - name: Verify append-only audit storage
         run: scripts/ci/test-audit-append-only.sh
 

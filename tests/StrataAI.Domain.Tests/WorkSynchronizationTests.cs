@@ -169,6 +169,35 @@ public sealed class WorkSynchronizationTests
         Assert.Equal("work_sync_unavailable", result.ErrorCode); Assert.Null(result.Value);
     }
 
+    [Theory]
+    [InlineData("REMINDER_SCHEDULED", true)]
+    [InlineData("REMINDER_CANCELLED", true)]
+    [InlineData("REMINDER_FIRED", true)]
+    [InlineData("REMINDER_FIRED", false)]
+    public async Task Personal_reminder_events_advance_replay_without_disclosing_reminder_identity_or_actor(string type, bool visible)
+    {
+        var row = Row(1, visible: visible); row = row with { Event = row.Event with { EntityType = "Reminder", EventType = type } };
+        var reader = new Reader { Read = () => Task.FromResult(new WorkEventReadPage(1, false, false, false, [row])) };
+        var result = await new WorkSynchronizationService(new Authorization(), reader).ReadAsync(Board, Actor, 0,
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(result.Succeeded); Assert.Equal("1", result.Value!.Cursor);
+        var change = Assert.Single(result.Value.Events); Assert.Equal("BOARD_INVALIDATED", change.EventType);
+        Assert.Equal("Board", change.EntityType); Assert.Equal(Board, change.EntityId); Assert.Null(change.ActorId);
+        Assert.Equal(7, change.Version); Assert.Empty(change.Metadata);
+    }
+
+    [Theory]
+    [InlineData("Reminder", "CARD_UPDATED")]
+    [InlineData("Card", "REMINDER_FIRED")]
+    public async Task Reminder_replay_requires_an_exact_private_type_pair(string entity, string type)
+    {
+        var row = Row(1); row = row with { Event = row.Event with { EntityType = entity, EventType = type } };
+        var reader = new Reader { Read = () => Task.FromResult(new WorkEventReadPage(1, false, false, false, [row])) };
+        var result = await new WorkSynchronizationService(new Authorization(), reader).ReadAsync(Board, Actor, 0,
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("work_sync_unavailable", result.ErrorCode); Assert.Null(result.Value);
+    }
+
     private sealed class Authorization : IWorkBoardAuthorization
     {
         public bool Denied { get; set; }

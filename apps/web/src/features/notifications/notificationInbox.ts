@@ -4,6 +4,7 @@ export const notificationLabels = {
   CARD_ARCHIVED: 'Card archived', CARD_RESTORED: 'Card restored', CARD_MEMBER_ADDED: 'Card member added',
   CARD_MEMBER_REMOVED: 'Card member removed', LABEL_ADDED: 'Label added', LABEL_REMOVED: 'Label removed',
   CARD_DATE_CHANGED: 'Card dates changed', CARD_DUE_COMPLETED: 'Due date completed', CARD_DUE_REOPENED: 'Due date reopened',
+  REMINDER_FIRED: 'Due date reminder',
 } as const;
 export type NotificationType = keyof typeof notificationLabels;
 function notificationType(value: unknown): value is NotificationType {
@@ -48,7 +49,8 @@ export function parseInbox(value: unknown, organizationId: string, recipientId: 
   const items = p.items.map((value: unknown): InboxItem => {
     const n = value as Record<string, unknown> | null;
     if (!n || !notificationUuid(n.id) || !notificationUuid(n.actorId) || !notificationUuid(n.recipientId) ||
-      n.recipientId.toLowerCase() !== recipientId.toLowerCase() || n.actorId.toLowerCase() === recipientId.toLowerCase() ||
+      n.recipientId.toLowerCase() !== recipientId.toLowerCase() ||
+      n.actorId.toLowerCase() === recipientId.toLowerCase() && n.type !== 'REMINDER_FIRED' ||
       !notificationType(n.type) || n.entityType !== 'Card' || !notificationUuid(n.entityId) || !notificationUuid(n.boardId)) throw new Error('Invalid notification');
     const id = n.id.toLowerCase(); const created = instant(n.createdAt);
     const read = n.readAt === null ? null : instant(n.readAt);
