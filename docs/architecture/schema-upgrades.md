@@ -21,7 +21,7 @@ are allowed only when they preserve this image's contract; incompatible changes
 require a phased migration and an updated image compatibility requirement. Ledger
 validation does not replace schema review or protect against manual column changes.
 
-CI exercises clean bootstrap, sequential upgrades from eight through 27 versions,
+CI exercises clean bootstrap, sequential upgrades from eight through 28 versions,
 populated membership/invitation integrity, repeated execution, concurrent runners
 and rollback of failed DDL/ledger changes. Exact release images test refusal
 and recovery with an incomplete baseline.

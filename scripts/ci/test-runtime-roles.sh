@@ -14,6 +14,8 @@ if api "BEGIN; SET LOCAL app.tenant_id='11111111-1111-1111-1111-111111111111'; I
 test "$(psql -X -At -c 'SELECT public.runtime_database_role_is_safe()')" = f
 test "$(api "SELECT has_table_privilege(current_user,'audit_events','UPDATE') OR has_table_privilege(current_user,'identity_delivery_jobs','SELECT')")" = f
 test "$(worker "SELECT has_table_privilege(current_user,'users','SELECT') OR has_table_privilege(current_user,'organizations','SELECT') OR has_table_privilege(current_user,'identity_delivery_jobs','INSERT')")" = f
+test "$(api "SELECT has_table_privilege(current_user,'board_labels','SELECT') AND has_table_privilege(current_user,'card_labels','INSERT') AND NOT has_table_privilege(current_user,'board_labels','DELETE')")" = t
+test "$(worker "SELECT has_table_privilege(current_user,'board_labels','SELECT') OR has_table_privilege(current_user,'card_labels','SELECT')")" = f
 if worker 'SELECT password_hash FROM users'; then echo 'Worker read identity secrets'; exit 1; fi
 test "$(api 'SELECT count(*) FROM identity_events')" = 0
 test "$(api "SELECT has_table_privilege(current_user,'identity_events','UPDATE') OR has_table_privilege(current_user,'identity_events','DELETE')")" = f

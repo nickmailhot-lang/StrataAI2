@@ -151,6 +151,9 @@ jobs:
       - name: Verify pgvector and forced tenant RLS
         run: scripts/ci/test-rls.sh
 
+      - name: Verify Board label and Card association isolation
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-board-label-storage.sql
+
       - name: Verify append-only audit storage
         run: scripts/ci/test-audit-append-only.sh
 
