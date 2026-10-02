@@ -30,7 +30,7 @@ public sealed partial class TransactionalWorkManagementService(
         Guid? actorUserId,
         CancellationToken cancellationToken = default) =>
         actorUserId is not { } actorId ? inner.GetBoardAsync(boardId, null, cancellationToken) :
-        BoardCommand(boardId, actorId, "view", WorkCommand.Create(actorId, null, "GetBoardAsync", boardId, new { }, "board_not_found"), async () =>
+        BoardSnapshotRead(boardId, actorId, async () =>
         {
             var result = await inner.GetBoardAsync(boardId, actorId, cancellationToken);
             return result.Succeeded && !await actors.VerifyAsync(actorId, cancellationToken)
@@ -264,6 +264,18 @@ public sealed partial class TransactionalWorkManagementService(
         var resource = await store.FindBoardAsync(id, cancellationToken);
         return resource is null ? WorkOperation<T>.Failure("board_not_found") :
             await transactions.ExecuteAsync(resource.OrganizationId, command, _ => AuthorizeBoard(resource.Id, actorId, permission, cancellationToken), operation, cancellationToken);
+    }
+
+    private async Task<WorkOperation<BoardSnapshot>> BoardSnapshotRead(Guid boardId, Guid actorId,
+        Func<Task<WorkOperation<BoardSnapshot>>> operation, CancellationToken cancellationToken)
+    {
+        var resource = await store.FindBoardAsync(boardId, cancellationToken);
+        if (resource is null) return WorkOperation<BoardSnapshot>.Failure("board_not_found");
+        return await transactions.ExecuteAsync(resource.OrganizationId,
+            WorkCommand.Create(actorId, null, "GetBoardAsync", boardId, new { }, "board_not_found"),
+            async _ => await store.AcquireBoardReadScopeAsync(resource.OrganizationId, actorId, boardId, cancellationToken) &&
+                await inner.CheckCommandAccessAsync(boardId, actorId, "view", cancellationToken),
+            operation, cancellationToken);
     }
 
     private async Task<WorkOperation<T>> ListCommand<T>(Guid id, Guid actorId, string permission, WorkCommand command, Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken, bool includeDeleted = false)

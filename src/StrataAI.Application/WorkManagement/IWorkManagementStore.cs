@@ -25,6 +25,11 @@ public interface IWorkManagementStore
     Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,
         Guid? boardId, CancellationToken cancellationToken = default);
 
+    // Snapshot reads keep the same parent/member locks but admit an archived
+    // Organization. The caller must freshly authorize view access afterward.
+    Task<bool> AcquireBoardReadScopeAsync(Guid organizationId, Guid actorId,
+        Guid boardId, CancellationToken cancellationToken = default);
+
     // Caller must first verify active organization membership.
     Task<IReadOnlyList<StrataAI.Application.Organizations.OrganizationBoardSummary>> ListVisibleBoardsAsync(
         Guid organizationId,

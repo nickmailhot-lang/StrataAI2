@@ -120,6 +120,12 @@ org_lock="SELECT id FROM organizations WHERE id='$organization' FOR UPDATE;"
 org_query='%SELECT id FROM organizations%FOR SHARE%'
 case_denied "$org_lock" "UPDATE organizations SET status='ARCHIVED',version=version+1 WHERE id='$organization';" "$org_query" POST "/boards/$board/lists" '{"name":"Denied"}' board_not_found owner keyed
 curl --fail --silent --show-error -b "$scratch/owner.cookies" "$BASE_URL/boards/$board" | jq -e '(.access.canEdit|not) and (.access.canAdminister|not) and (.access.canMove|not)' >/dev/null
+# Archived Organizations retain authorized snapshot viewing with frozen edits.
+# Snapshot reads use their own locked admission, never write admission.
+curl --fail --silent --show-error -b "$scratch/member.cookies" "$BASE_URL/boards/$board" | jq -e '.access.canView and (.access.canEdit|not) and (.access.canAdminister|not) and (.access.canMove|not)' >/dev/null
+case_denied "$board_lock" "UPDATE board_members SET status='REMOVED',version=version+1 WHERE board_id='$board' AND user_id='$member';" "$board_query" GET "/boards/$board" '{}' board_not_found member unkeyed
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
+case_denied "$org_lock" "UPDATE organizations SET status='DELETING',version=version+1 WHERE id='$organization';" "$org_query" GET "/boards/$board" '{}' board_not_found owner unkeyed
 admin "UPDATE organizations SET status='ACTIVE' WHERE id='$organization';" >/dev/null
 case_denied "$org_lock" "UPDATE organizations SET status='DELETING',version=version+1 WHERE id='$organization';" "$org_query" POST /boards "$(jq -nc --arg org "$organization" '{organizationId:$org,name:"Denied"}')" organization_not_found owner unkeyed
 test "$(curl --silent --show-error -b "$scratch/owner.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$board/sync")" = 404

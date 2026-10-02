@@ -8,8 +8,16 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed partial class PostgresWorkManagementStore(
     PostgresConnectionFactory connectionFactory) : IWorkManagementStore
 {
-    public async Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,
-        Guid? boardId, CancellationToken cancellationToken = default)
+    public Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,
+        Guid? boardId, CancellationToken cancellationToken = default) =>
+        AcquireScopeAsync(organizationId, actorId, boardId, false, cancellationToken);
+
+    public Task<bool> AcquireBoardReadScopeAsync(Guid organizationId, Guid actorId,
+        Guid boardId, CancellationToken cancellationToken = default) =>
+        AcquireScopeAsync(organizationId, actorId, boardId, true, cancellationToken);
+
+    private async Task<bool> AcquireScopeAsync(Guid organizationId, Guid actorId,
+        Guid? boardId, bool snapshotRead, CancellationToken cancellationToken)
     {
         if (!connectionFactory.HasCommandScope(organizationId))
             throw new InvalidOperationException("Write authorization requires the owning command transaction.");
@@ -24,7 +32,9 @@ internal sealed partial class PostgresWorkManagementStore(
         }
         // SHARE (rather than KEY SHARE) prevents status/role updates too. The
         // board gate serializes its commands before any child or event-stream lock.
-        if (await Lock("SELECT id FROM organizations WHERE id=@tenant AND status='ACTIVE' FOR SHARE;") is null)
+        if (await Lock(snapshotRead
+                ? "SELECT id FROM organizations WHERE id=@tenant AND status IN ('ACTIVE','ARCHIVED') FOR SHARE;"
+                : "SELECT id FROM organizations WHERE id=@tenant AND status='ACTIVE' FOR SHARE;") is null)
             return false;
         await Lock("SELECT id FROM organization_members WHERE tenant_id=@tenant AND user_id=@actor FOR SHARE;");
         if (boardId is not null)

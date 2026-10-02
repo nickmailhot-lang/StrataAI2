@@ -25,6 +25,16 @@ cannot be followed by a newly accepted write using the old membership state.
 
 Archived organizations expose read-only board permissions. Deleting organizations
 deny board snapshots and synchronization, including previously public boards.
+Authenticated snapshots acquire a dedicated Board read scope: the Organization
+SHARE lock accepts ACTIVE or ARCHIVED, followed by the same membership and Board
+locks as command admission. Fresh view authorization and final session verification
+remain mandatory. Write admission continues to require ACTIVE. This restores the
+archived-Organization snapshot contract after member previews introduced locked
+snapshot reads. Exact-image run 37052462546 exposed the regression at the existing
+read-only assertion in `test-work-command-scopes.sh`; the expanded fixture also
+checks an ordinary member's frozen permissions and observed read lock waits during
+Board membership removal and Organization deletion. The repair's runtime evidence
+must pass CI before related acceptance criteria can be claimed complete.
 An archived source list blocks card edits, moves, archive and restoration. A
 deleted source list blocks all card lifecycle commands. List lifecycle changes
 require an active board. Permanent card deletion requires administrator permission

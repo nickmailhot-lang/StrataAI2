@@ -12,6 +12,10 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
     private readonly Dictionary<(Guid BoardId, Guid UserId), BoardMemberRecord> _members = [];
     private readonly HashSet<(Guid BoardId, Guid UserId)> _starred = [];
 
+    public Task<bool> AcquireBoardReadScopeAsync(Guid organizationId, Guid actorId,
+        Guid boardId, CancellationToken cancellationToken = default) =>
+        AcquireCommandScopeAsync(organizationId, actorId, boardId, cancellationToken);
+
     public Task<bool> AcquireCommandScopeAsync(Guid organizationId, Guid actorId,
         Guid? boardId, CancellationToken cancellationToken = default)
     {
