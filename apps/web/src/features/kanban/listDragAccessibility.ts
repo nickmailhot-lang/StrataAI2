@@ -7,11 +7,14 @@ export const listDragInstructions = {
 
 export function listDragAnnouncements(snapshot: BoardSnapshot): Announcements {
   const lists = snapshot.lists.filter(column => column.list.lifecycleState === 'active');
-  const name = (id: string | number) => lists.find(column => column.list.id === id)?.list.name;
-  const cardName = (id: string | number) => lists.flatMap(column => column.cards).find(card => `card:${card.id}` === id)?.title;
+  const listNames = new Map<string | number, string>(lists.map(column => [column.list.id, column.list.name]));
+  const cardNames = new Map<string | number, string>(lists.flatMap(column => column.cards.map(card => [`card:${card.id}`, card.title] as const)));
+  const endNames = new Map<string | number, string>(lists.map(column => [`card-end:${column.list.id}`, column.list.name]));
+  const name = (id: string | number) => listNames.get(id);
+  const cardName = (id: string | number) => cardNames.get(id);
   const cardPosition = (id: string | number) => {
-    const column = lists.find(value => `card-end:${value.list.id}` === id);
-    return column ? `at the end of ${column.list.name}` : cardName(id) ? `before ${cardName(id)}` : undefined;
+    const column = endNames.get(id);
+    return column ? `at the end of ${column}` : cardName(id) ? `before ${cardName(id)}` : undefined;
   };
   const position = (id: string | number) => id === 'list-end' ? 'at the end of the Board'
     : name(id) ? `before ${name(id)}` : undefined;
