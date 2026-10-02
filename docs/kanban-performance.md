@@ -37,10 +37,15 @@ the moved card from its former list. Thus a fast visual sample cannot pass with
 an unrelated successful response or a different persisted position. These reads
 occur outside the timed sample and do not relax any budgets.
 
-This test collects locally but requires Linux CI execution. Timing success is
-unproved. It does not establish the separate 200-list/5000-card/100000-archived-card
-capacity requirement, mobile performance, executed under-100ms visual feedback or actual
-screen-reader behavior. Those remain required work before PRD-06 closure.
+The exact-image Linux browser case passed in run 36963451064 at
+5ecf15aa47b017f0fc871b9272bb3d1b08ad7d06. Its retained
+kanban-performance.json reports Board readiness 507.43ms, observed optimistic
+drop feedback 59.80ms, cached detail 140.90ms and mutation p95 51.07ms across
+all twenty samples. These meet the unchanged normal desktop budgets above.
+The whole run failed a separate phone list keyboard case, so these measurements
+are scoped executed evidence, not a green release claim. Large-board rendering,
+mobile timing and actual screen-reader behavior remain required work before
+PRD-06 closure.
 
 The required PostgreSQL rank fixture now creates exactly 200 lists through eight
 batches of 25 concurrent independent API commands. It requires 200 distinct
@@ -52,8 +57,9 @@ checks pass. Run 36947681754 at f8a7dea reports successful completion of
 container-integration job 110654281749 step 33, which directly runs this script.
 The checked script at that commit requires all 200-list, unchanged-184-list,
 5000-card, concurrent move and non-reapplying receipt assertions above. This is
-step-level executed correctness evidence; the job is still running and final
-decoded logs/full release evidence remain pending. It does not establish
+step-level executed correctness evidence; that run later failed browser checks.
+The same fixture passed step 33 in run 36963451064, which also failed a separate
+browser check. It does not establish
 200-list rendering performance or archived-card capacity.
 
 The required exact-image PostgreSQL fixture also seeds 100000 archived cards
@@ -62,5 +68,7 @@ The next API append must use the active tail, and the authorized Board snapshot
 must return 200 lists and only the 5001 active cards. Concurrent append and
 relative moves retain their existing rank assertions. A count and a fingerprint
 of every complete archived row must remain unchanged after those moves.
-Shell syntax and diff checks pass; Linux execution is pending. This establishes
-no browser rendering or timing evidence until those separate checks execute.
+These assertions executed successfully in step 33 of run 36963451064 against
+the exact release images and restricted PostgreSQL runtime. This establishes
+database correctness at that capacity, not browser rendering or timing evidence
+for that large fixture.
