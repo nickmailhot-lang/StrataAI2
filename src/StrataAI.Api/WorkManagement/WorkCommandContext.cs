@@ -11,7 +11,7 @@ public sealed class WorkIdempotencyMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context)
     {
-        var workPath = new[] { "/boards", "/lists", "/cards" }.Any(path => context.Request.Path.StartsWithSegments(path));
+        var workPath = new[] { "/boards", "/lists", "/cards", "/labels" }.Any(path => context.Request.Path.StartsWithSegments(path));
         var mutation = HttpMethods.IsPost(context.Request.Method) || HttpMethods.IsPatch(context.Request.Method)
             || HttpMethods.IsPut(context.Request.Method) || HttpMethods.IsDelete(context.Request.Method);
         if (workPath && mutation && context.Request.Headers.TryGetValue("Idempotency-Key", out var values))

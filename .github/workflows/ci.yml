@@ -402,6 +402,9 @@ jobs:
       - name: Bounded archives, confirmed deletion and atomic List copies
         run: scripts/ci/test-archived-lists.sh
 
+      - name: Transactional labels, atomic association removal and post-wait receipt authorization
+        run: scripts/ci/test-label-commands.sh
+
       - name: Atomic Work events and leased Worker readiness against exact release images
         run: scripts/ci/test-work-events.sh
 

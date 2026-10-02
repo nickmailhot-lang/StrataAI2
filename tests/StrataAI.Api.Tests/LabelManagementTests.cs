@@ -31,6 +31,8 @@ public sealed partial class ApiHostTests
         Assert.Equal(2, (await updated.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("version").GetInt64());
         using var stale = await Mutate(owner, HttpMethod.Patch, $"/labels/{id}", new { name = "Stale", color = "red", version = 1 });
         Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        using var invalidKey = await Mutate(owner, HttpMethod.Patch, $"/labels/{id}", new { name = "Invalid retry key", color = "red", version = 2 }, "not-a-uuid");
+        Assert.Equal(HttpStatusCode.BadRequest, invalidKey.StatusCode);
         using var unconfirmed = await Mutate(owner, HttpMethod.Delete, $"/labels/{id}?version=2", new { });
         Assert.Equal(HttpStatusCode.BadRequest, unconfirmed.StatusCode);
         var deleteKey = Guid.NewGuid().ToString();

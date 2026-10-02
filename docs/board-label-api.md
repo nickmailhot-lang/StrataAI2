@@ -25,8 +25,16 @@ Label events contain references and versions only; deleted labels translate to
 Board invalidation during replay so stream continuity is preserved.
 
 Local validation: warnings-as-errors solution build, shell syntax, and diff
-checks passed. Two new API host regressions compile and await Linux CI execution
-because this Windows host prevents running rebuilt test executables.
+checks passed. Linux CI for c8f9639 passed PostgreSQL routing/storage tests and
+web checks but found that the retry middleware omitted the new `/labels` path,
+making the delete retry regression return 404. The route is now covered; the
+unchanged receipt equality assertion and an invalid-key assertion await the
+corrected Linux run. This Windows host prevents running rebuilt test executables.
+The required exact-image fixture now covers create/delete audit rollback,
+association removal and retained Card revisions, outsider/editor authorization,
+identical receipts, changed fingerprints, stale writes, malformed cursors, and
+observed Board lock waits with lifecycle and session revocation. Its runtime
+execution is pending CI; merely adding the fixture is not acceptance evidence.
 
 This is a foundation, not PRD-10 closure. Card assignment/removal APIs, public
 Card indicators, accessible label administration, filtering, relative reorder
