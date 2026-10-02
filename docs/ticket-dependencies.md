@@ -1,0 +1,128 @@
+# Canonical ticket dependency audit
+
+Snapshot: 2026-10-02. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
+
+Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
+
+## Dependency groups
+
+A dependency-first traversal of strongly connected components produces the groups below. Within a cycle there is no whole-ticket topological order: implement shared contracts and producer/consumer slices sequentially, then verify each ticket's complete acceptance criteria. The grouping does not waive a dependency, acceptance criterion, or adopted architecture requirement.
+
+1. PRD-01, PRD-02, PRD-03, PRD-04, PRD-05, PRD-06, PRD-07, PRD-08, PRD-09, PRD-10, PRD-11, PRD-12, PRD-13, PRD-14, PRD-15, PRD-16, PRD-17, PRD-18, PRD-20, PRD-21, PRD-22, PRD-23, PRD-24, PRD-25 (cycle)
+2. PRD-19
+3. PRD-27
+4. PRD-28, PRD-29, PRD-30, PRD-31, PRD-32, PRD-33, PRD-34, PRD-35, PRD-36, PRD-37, PRD-38, PRD-39, PRD-40, PRD-41, PRD-42, PRD-43, PRD-44, PRD-45, PRD-46, PRD-47, PRD-48, PRD-49, PRD-50, PRD-51, PRD-52, PRD-53, PRD-54, PRD-55, PRD-56, PRD-57, PRD-58, PRD-59, PRD-60, PRD-61, PRD-62, PRD-63, PRD-64, PRD-65, PRD-66, PRD-67, PRD-68, PRD-69, PRD-70, PRD-71, PRD-72, PRD-73, PRD-74, PRD-75, PRD-76, PRD-77, PRD-78, PRD-79, PRD-80 (cycle)
+5. PRD-26
+6. ARCH-01
+7. ARCH-03, ARCH-04, ARCH-05, ARCH-06, ARCH-07, ARCH-08, ARCH-09, ARCH-10, ARCH-11, ARCH-12 (cycle)
+8. ARCH-02
+
+The architecture foundation is already adopted and is being implemented alongside its dependent product contracts. Group order describes the issue graph, not an instruction to discard or rebuild that foundation.
+
+In particular, PRD-11 depends on PRD-16 and PRD-17; PRD-17 depends on PRD-11, PRD-12, PRD-15 and PRD-22; PRD-12 depends on PRD-17. Assignment persistence, editing, previews and member filtering are producer slices. Assignment recipient intent, the notification center, watch relationships, date reminders and mentions still need their respective contracts and runtime evidence. Existing content-free Work invalidation events do not prove notification delivery.
+
+## Complete canonical inventory
+
+Dependencies are copied from the issue's Dependencies section, sorted and deduplicated. A closed state below records GitHub's state only; it does not substitute for the final completion audit.
+
+| Ticket | GitHub issue | State | Declared dependencies |
+| --- | --- | --- | --- |
+| ARCH-01 | [[ARCH-01] Repository, Solution and Technology Baseline](https://github.com/nickmailhot-lang/StrataAI2/issues/82) | closed | PRD-01, PRD-19, PRD-21, PRD-25, PRD-26 |
+| ARCH-02 | [[ARCH-02] Web SPA, Nginx Edge and Front-End Module Architecture](https://github.com/nickmailhot-lang/StrataAI2/issues/83) | open | ARCH-01, ARCH-03, ARCH-06, ARCH-10, PRD-80 |
+| ARCH-03 | [[ARCH-03] ASP.NET Core Modular-Monolith API Architecture](https://github.com/nickmailhot-lang/StrataAI2/issues/84) | open | ARCH-04, ARCH-05, ARCH-06, ARCH-07 |
+| ARCH-04 | [[ARCH-04] PostgreSQL Persistence, Tenant Isolation and Schema Evolution](https://github.com/nickmailhot-lang/StrataAI2/issues/85) | open | ARCH-03, ARCH-06, ARCH-09, ARCH-12, PRD-20, PRD-70 |
+| ARCH-05 | [[ARCH-05] Runtime Modes, Provider Abstractions and Demo Isolation](https://github.com/nickmailhot-lang/StrataAI2/issues/86) | open | ARCH-03, ARCH-04, ARCH-07, ARCH-10 |
+| ARCH-06 | [[ARCH-06] Authentication, Authorization and Shared Security Boundary](https://github.com/nickmailhot-lang/StrataAI2/issues/87) | open | ARCH-04, ARCH-07, PRD-02, PRD-24, PRD-35, PRD-80 |
+| ARCH-07 | [[ARCH-07] Integrations, AI, Email and Background Processing Architecture](https://github.com/nickmailhot-lang/StrataAI2/issues/88) | open | ARCH-03, ARCH-04, ARCH-06, ARCH-08, PRD-72, PRD-79 |
+| ARCH-08 | [[ARCH-08] Observability, Health, Audit and Operational Resilience](https://github.com/nickmailhot-lang/StrataAI2/issues/89) | open | ARCH-04, ARCH-07, ARCH-10, ARCH-11, PRD-53, PRD-70 |
+| ARCH-09 | [[ARCH-09] Automated Test Architecture and Engineering Quality Gates](https://github.com/nickmailhot-lang/StrataAI2/issues/90) | open | ARCH-01, ARCH-04, ARCH-06, ARCH-10, ARCH-11 |
+| ARCH-10 | [[ARCH-10] Docker Images, Compose Runtime and Local/Hosted Execution](https://github.com/nickmailhot-lang/StrataAI2/issues/91) | open | ARCH-01, ARCH-03, ARCH-04, ARCH-05, ARCH-11 |
+| ARCH-11 | [[ARCH-11] Rigorous CI, Immutable Containers and Release Artifacts](https://github.com/nickmailhot-lang/StrataAI2/issues/92) | open | ARCH-01, ARCH-03, ARCH-04, ARCH-07, ARCH-08, ARCH-09, ARCH-10, ARCH-12 |
+| ARCH-12 | [[ARCH-12] Configuration, Secrets, Environments, Promotion and Rollback](https://github.com/nickmailhot-lang/StrataAI2/issues/93) | open | ARCH-04, ARCH-08, ARCH-11, PRD-24, PRD-70 |
+| PRD-01 | [[PRD-01] Product Foundation and Information Architecture](https://github.com/nickmailhot-lang/StrataAI2/issues/1) | open | PRD-02, PRD-03, PRD-04, PRD-06, PRD-08, PRD-09 |
+| PRD-02 | [[PRD-02] Authentication and User Accounts](https://github.com/nickmailhot-lang/StrataAI2/issues/2) | open | PRD-24 |
+| PRD-03 | [[PRD-03] Organizations and Organization Membership](https://github.com/nickmailhot-lang/StrataAI2/issues/3) | open | PRD-02, PRD-05, PRD-18 |
+| PRD-04 | [[PRD-04] Board Creation and Board Management](https://github.com/nickmailhot-lang/StrataAI2/issues/5) | open | PRD-03, PRD-05, PRD-18 |
+| PRD-05 | [[PRD-05] Board Sharing, Visibility, Roles and Permissions](https://github.com/nickmailhot-lang/StrataAI2/issues/6) | open | PRD-02, PRD-03, PRD-04, PRD-24 |
+| PRD-06 | [[PRD-06] Kanban Board Interface and Drag-and-Drop Interaction](https://github.com/nickmailhot-lang/StrataAI2/issues/7) | open | PRD-07, PRD-08, PRD-22, PRD-23 |
+| PRD-07 | [[PRD-07] List Management](https://github.com/nickmailhot-lang/StrataAI2/issues/8) | open | PRD-04, PRD-06, PRD-08, PRD-17, PRD-18 |
+| PRD-08 | [[PRD-08] Card Creation, Movement and Lifecycle](https://github.com/nickmailhot-lang/StrataAI2/issues/9) | open | PRD-06, PRD-09, PRD-18, PRD-22 |
+| PRD-09 | [[PRD-09] Card Detail Experience](https://github.com/nickmailhot-lang/StrataAI2/issues/10) | open | PRD-08, PRD-10, PRD-11, PRD-12, PRD-13, PRD-14, PRD-15, PRD-17 |
+| PRD-10 | [[PRD-10] Labels and Categorization](https://github.com/nickmailhot-lang/StrataAI2/issues/11) | open | PRD-04, PRD-08, PRD-16 |
+| PRD-11 | [[PRD-11] Members and Card Assignment](https://github.com/nickmailhot-lang/StrataAI2/issues/12) | open | PRD-05, PRD-08, PRD-16, PRD-17 |
+| PRD-12 | [[PRD-12] Start Dates, Due Dates, Reminders and Completion](https://github.com/nickmailhot-lang/StrataAI2/issues/13) | open | PRD-08, PRD-17, PRD-24 |
+| PRD-13 | [[PRD-13] Checklists and Checklist Items](https://github.com/nickmailhot-lang/StrataAI2/issues/14) | open | PRD-08, PRD-22 |
+| PRD-14 | [[PRD-14] Attachments and Card Covers](https://github.com/nickmailhot-lang/StrataAI2/issues/15) | open | PRD-08, PRD-24 |
+| PRD-15 | [[PRD-15] Comments, Mentions and Activity History](https://github.com/nickmailhot-lang/StrataAI2/issues/16) | open | PRD-08, PRD-17, PRD-24 |
+| PRD-16 | [[PRD-16] Search and Board Filtering](https://github.com/nickmailhot-lang/StrataAI2/issues/17) | open | PRD-10, PRD-11, PRD-12, PRD-18, PRD-24 |
+| PRD-17 | [[PRD-17] Notifications and Watching](https://github.com/nickmailhot-lang/StrataAI2/issues/18) | open | PRD-11, PRD-12, PRD-15, PRD-22 |
+| PRD-18 | [[PRD-18] Archiving, Restoration, Permanent Deletion and Audit Integrity](https://github.com/nickmailhot-lang/StrataAI2/issues/19) | open | PRD-04, PRD-07, PRD-08, PRD-15, PRD-24 |
+| PRD-19 | [[PRD-19] Cross-Cutting Non-Functional Requirements](https://github.com/nickmailhot-lang/StrataAI2/issues/20) | open | PRD-01, PRD-22, PRD-25 |
+| PRD-20 | [[PRD-20] Application Data Model](https://github.com/nickmailhot-lang/StrataAI2/issues/21) | open | PRD-01, PRD-18 |
+| PRD-21 | [[PRD-21] API Contract and Service Architecture](https://github.com/nickmailhot-lang/StrataAI2/issues/22) | open | PRD-20, PRD-24 |
+| PRD-22 | [[PRD-22] Real-Time Collaboration and Concurrency](https://github.com/nickmailhot-lang/StrataAI2/issues/23) | open | PRD-06, PRD-08, PRD-21, PRD-24 |
+| PRD-23 | [[PRD-23] Accessibility and Keyboard Interaction](https://github.com/nickmailhot-lang/StrataAI2/issues/24) | open | PRD-06, PRD-09, PRD-25 |
+| PRD-24 | [[PRD-24] Security, Privacy and Authorization](https://github.com/nickmailhot-lang/StrataAI2/issues/25) | open | PRD-02, PRD-05, PRD-14, PRD-21, PRD-22, PRD-25 |
+| PRD-25 | [[PRD-25] Testing and Definition of Done](https://github.com/nickmailhot-lang/StrataAI2/issues/26) | open | PRD-01, PRD-24 |
+| PRD-26 | [[PRD-26] MVP Release and Implementation Plan](https://github.com/nickmailhot-lang/StrataAI2/issues/27) | open | PRD-01, PRD-25, PRD-27, PRD-80 |
+| PRD-27 | [[PRD-27] Organization Types and Strata Organization Configuration](https://github.com/nickmailhot-lang/StrataAI2/issues/28) | open | PRD-01, PRD-03, PRD-20, PRD-24 |
+| PRD-28 | [[PRD-28] Strata Lots / Units and Common Property](https://github.com/nickmailhot-lang/StrataAI2/issues/29) | open | PRD-27, PRD-34, PRD-61, PRD-62 |
+| PRD-29 | [[PRD-29] Organization Membership and Unit Associations](https://github.com/nickmailhot-lang/StrataAI2/issues/30) | open | PRD-03, PRD-24, PRD-60, PRD-61, PRD-80 |
+| PRD-30 | [[PRD-30] Council Terms and Historical Governance](https://github.com/nickmailhot-lang/StrataAI2/issues/31) | open | PRD-27, PRD-31, PRD-37, PRD-43 |
+| PRD-31 | [[PRD-31] President, Vice-President and Council Governance Roles](https://github.com/nickmailhot-lang/StrataAI2/issues/32) | open | PRD-30, PRD-35, PRD-38, PRD-43 |
+| PRD-32 | [[PRD-32] Strata Manager and Acting-on-Behalf-of-Strata](https://github.com/nickmailhot-lang/StrataAI2/issues/33) | open | PRD-31, PRD-33, PRD-35, PRD-53, PRD-67 |
+| PRD-33 | [[PRD-33] Property Management Companies and Manager Assignments](https://github.com/nickmailhot-lang/StrataAI2/issues/34) | open | PRD-32, PRD-48, PRD-67 |
+| PRD-34 | [[PRD-34] Strata Card Metadata: Priority, Category, Scope and Source](https://github.com/nickmailhot-lang/StrataAI2/issues/35) | open | PRD-08, PRD-10, PRD-28, PRD-35 |
+| PRD-35 | [[PRD-35] Card Confidentiality and Object-Level Permissions](https://github.com/nickmailhot-lang/StrataAI2/issues/36) | open | PRD-05, PRD-24, PRD-53, PRD-56, PRD-72, PRD-80 |
+| PRD-36 | [[PRD-36] Projects and Project Work Management](https://github.com/nickmailhot-lang/StrataAI2/issues/37) | open | PRD-34, PRD-44, PRD-45, PRD-69, PRD-77 |
+| PRD-37 | [[PRD-37] Meetings and Meeting Lifecycle](https://github.com/nickmailhot-lang/StrataAI2/issues/38) | open | PRD-31, PRD-38, PRD-39, PRD-40, PRD-66 |
+| PRD-38 | [[PRD-38] Meeting Attendance and Roles](https://github.com/nickmailhot-lang/StrataAI2/issues/39) | open | PRD-31, PRD-37, PRD-40, PRD-43, PRD-66 |
+| PRD-39 | [[PRD-39] Agendas and Agenda Items](https://github.com/nickmailhot-lang/StrataAI2/issues/40) | open | PRD-37, PRD-41, PRD-48, PRD-65 |
+| PRD-40 | [[PRD-40] Meeting Minutes, Minute Sections and Approval](https://github.com/nickmailhot-lang/StrataAI2/issues/41) | open | PRD-37, PRD-38, PRD-39, PRD-41, PRD-74, PRD-77, PRD-80 |
+| PRD-41 | [[PRD-41] Card / Meeting / Agenda / Minutes Relationships](https://github.com/nickmailhot-lang/StrataAI2/issues/42) | open | PRD-08, PRD-39, PRD-40, PRD-44, PRD-57, PRD-78 |
+| PRD-42 | [[PRD-42] Motions](https://github.com/nickmailhot-lang/StrataAI2/issues/43) | open | PRD-37, PRD-39, PRD-43, PRD-44, PRD-72 |
+| PRD-43 | [[PRD-43] Voting and Voting Thresholds](https://github.com/nickmailhot-lang/StrataAI2/issues/44) | open | PRD-31, PRD-38, PRD-42, PRD-44, PRD-66 |
+| PRD-44 | [[PRD-44] Resolutions and Decision Follow-Up](https://github.com/nickmailhot-lang/StrataAI2/issues/45) | open | PRD-36, PRD-42, PRD-43, PRD-69, PRD-77 |
+| PRD-45 | [[PRD-45] Vendors and Vendor Contacts](https://github.com/nickmailhot-lang/StrataAI2/issues/46) | open | PRD-36, PRD-46, PRD-47, PRD-58, PRD-71 |
+| PRD-46 | [[PRD-46] Quotes and Procurement Records](https://github.com/nickmailhot-lang/StrataAI2/issues/47) | open | PRD-45, PRD-48, PRD-69, PRD-76, PRD-77 |
+| PRD-47 | [[PRD-47] Invoices and Cost Records](https://github.com/nickmailhot-lang/StrataAI2/issues/48) | open | PRD-45, PRD-46, PRD-69, PRD-76, PRD-77 |
+| PRD-48 | [[PRD-48] Strata Document Management](https://github.com/nickmailhot-lang/StrataAI2/issues/49) | open | PRD-14, PRD-35, PRD-49, PRD-70, PRD-80 |
+| PRD-49 | [[PRD-49] Document Relationships and Versioning](https://github.com/nickmailhot-lang/StrataAI2/issues/50) | open | PRD-48, PRD-50, PRD-70, PRD-80 |
+| PRD-50 | [[PRD-50] Bylaws, Bylaw Versions and Rules](https://github.com/nickmailhot-lang/StrataAI2/issues/51) | open | PRD-44, PRD-48, PRD-49, PRD-64, PRD-75 |
+| PRD-51 | [[PRD-51] Owner / Resident Issue Intake](https://github.com/nickmailhot-lang/StrataAI2/issues/52) | open | PRD-28, PRD-52, PRD-64, PRD-65, PRD-80 |
+| PRD-52 | [[PRD-52] Issue-to-Card and Issue Escalation Workflow](https://github.com/nickmailhot-lang/StrataAI2/issues/53) | open | PRD-08, PRD-41, PRD-51, PRD-64, PRD-78, PRD-80 |
+| PRD-53 | [[PRD-53] Strata Audit Trail and Historical Attribution](https://github.com/nickmailhot-lang/StrataAI2/issues/54) | open | PRD-15, PRD-24, PRD-32, PRD-70, PRD-72 |
+| PRD-54 | [[PRD-54] StrataAI Operational Dashboard](https://github.com/nickmailhot-lang/StrataAI2/issues/55) | open | PRD-34, PRD-36, PRD-37, PRD-58, PRD-72 |
+| PRD-55 | [[PRD-55] Role-Specific Dashboards](https://github.com/nickmailhot-lang/StrataAI2/issues/56) | open | PRD-31, PRD-54, PRD-67 |
+| PRD-56 | [[PRD-56] StrataAI Global Search](https://github.com/nickmailhot-lang/StrataAI2/issues/57) | open | PRD-16, PRD-24, PRD-35, PRD-75, PRD-80 |
+| PRD-57 | [[PRD-57] Related Records and Relationship Navigation](https://github.com/nickmailhot-lang/StrataAI2/issues/58) | open | PRD-20, PRD-41, PRD-49, PRD-78 |
+| PRD-58 | [[PRD-58] StrataAI Notifications and Watching](https://github.com/nickmailhot-lang/StrataAI2/issues/59) | open | PRD-17, PRD-35, PRD-54, PRD-80 |
+| PRD-59 | [[PRD-59] StrataAI Operational Reporting](https://github.com/nickmailhot-lang/StrataAI2/issues/60) | open | PRD-53, PRD-54, PRD-56, PRD-67, PRD-70 |
+| PRD-60 | [[PRD-60] User Onboarding, Invitations and Account Lifecycle](https://github.com/nickmailhot-lang/StrataAI2/issues/61) | open | PRD-02, PRD-03, PRD-24, PRD-80 |
+| PRD-61 | [[PRD-61] Owners, Residents, Occupants and Strata-Lot Relationship History](https://github.com/nickmailhot-lang/StrataAI2/issues/62) | open | PRD-28, PRD-29, PRD-35, PRD-70, PRD-80 |
+| PRD-62 | [[PRD-62] Property, Buildings, Common Areas and Asset Registry](https://github.com/nickmailhot-lang/StrataAI2/issues/63) | open | PRD-27, PRD-28, PRD-57, PRD-63, PRD-68 |
+| PRD-63 | [[PRD-63] Maintenance, Inspections, Recurring Work and Asset Service History](https://github.com/nickmailhot-lang/StrataAI2/issues/64) | open | PRD-12, PRD-34, PRD-45, PRD-62, PRD-71 |
+| PRD-64 | [[PRD-64] Bylaw Enforcement and Compliance Cases](https://github.com/nickmailhot-lang/StrataAI2/issues/65) | open | PRD-35, PRD-50, PRD-51, PRD-65, PRD-77 |
+| PRD-65 | [[PRD-65] Correspondence, Notices and Delivery Tracking](https://github.com/nickmailhot-lang/StrataAI2/issues/66) | open | PRD-35, PRD-48, PRD-58, PRD-70, PRD-77, PRD-79 |
+| PRD-66 | [[PRD-66] AGM / SGM Notice, Quorum, Proxies and General-Meeting Voting](https://github.com/nickmailhot-lang/StrataAI2/issues/67) | open | PRD-37, PRD-38, PRD-42, PRD-43, PRD-70 |
+| PRD-67 | [[PRD-67] Multi-Strata Portfolio Management](https://github.com/nickmailhot-lang/StrataAI2/issues/68) | open | PRD-24, PRD-32, PRD-33, PRD-55, PRD-56 |
+| PRD-68 | [[PRD-68] Incident, Damage and Insurance Claim Management](https://github.com/nickmailhot-lang/StrataAI2/issues/69) | open | PRD-28, PRD-34, PRD-36, PRD-45, PRD-69 |
+| PRD-69 | [[PRD-69] Financial Authorization, Budgets and Funding Context](https://github.com/nickmailhot-lang/StrataAI2/issues/70) | open | PRD-36, PRD-44, PRD-46, PRD-47, PRD-77 |
+| PRD-70 | [[PRD-70] Records Retention, Privacy, Redaction, Legal Hold and Data Export](https://github.com/nickmailhot-lang/StrataAI2/issues/71) | open | PRD-18, PRD-24, PRD-48, PRD-53, PRD-59 |
+| PRD-71 | [[PRD-71] Calendar, Recurrence and Operational Deadlines](https://github.com/nickmailhot-lang/StrataAI2/issues/72) | open | PRD-12, PRD-37, PRD-58, PRD-63 |
+| PRD-72 | [[PRD-72] StrataAI AI Platform, Permissions and Human-in-the-Loop Governance](https://github.com/nickmailhot-lang/StrataAI2/issues/73) | open | PRD-24, PRD-35, PRD-53, PRD-70 |
+| PRD-73 | [[PRD-73] AI Email Intake, Triage, Card Routing and Response Drafting](https://github.com/nickmailhot-lang/StrataAI2/issues/74) | open | PRD-34, PRD-35, PRD-65, PRD-72, PRD-77, PRD-78, PRD-79 |
+| PRD-74 | [[PRD-74] AI Meeting, Agenda and Minutes Assistant](https://github.com/nickmailhot-lang/StrataAI2/issues/75) | open | PRD-37, PRD-39, PRD-40, PRD-41, PRD-72, PRD-77 |
+| PRD-75 | [[PRD-75] AI Search, Question Answering and Source Citation](https://github.com/nickmailhot-lang/StrataAI2/issues/76) | open | PRD-35, PRD-50, PRD-56, PRD-72 |
+| PRD-76 | [[PRD-76] AI Document Intelligence](https://github.com/nickmailhot-lang/StrataAI2/issues/77) | open | PRD-48, PRD-49, PRD-72 |
+| PRD-77 | [[PRD-77] Approval Workflows, Review and Sign-Off](https://github.com/nickmailhot-lang/StrataAI2/issues/78) | open | PRD-24, PRD-53, PRD-65, PRD-69, PRD-72 |
+| PRD-78 | [[PRD-78] Duplicate Detection, Card Merge, Split and Reconciliation](https://github.com/nickmailhot-lang/StrataAI2/issues/79) | open | PRD-08, PRD-41, PRD-53, PRD-57, PRD-73 |
+| PRD-79 | [[PRD-79] Shared Mailbox, Outbound Email and Correspondence Delivery](https://github.com/nickmailhot-lang/StrataAI2/issues/80) | open | PRD-65, PRD-72, PRD-73, PRD-77 |
+| PRD-80 | [[PRD-80] Owner and Resident Portal](https://github.com/nickmailhot-lang/StrataAI2/issues/81) | open | PRD-24, PRD-29, PRD-48, PRD-51, PRD-58, PRD-60, PRD-70 |
+
+## Verification and closure discipline
+
+For each ticket, derive its functional requirements, acceptance criteria, linked test cases and definition of done from the current issue body before implementing or closing it. Match evidence to each requirement; local compilation, source tests, image fixtures and browser execution prove different scopes. A passing producer test does not prove its downstream consumer, privacy/access boundary, accessibility, performance or full lifecycle behavior.
+
+Latest repair a074f991a0c082ce43384e55dfcc2dacaa8df4ba restores locked Board snapshot admission under archived Organizations. Its .NET build and fixture syntax checks passed locally; exact-image CI run 37054915157 is pending. Previous run 37052462546 passed the Card assignment/options/previews/member-filter fixture and subsequently failed the archived-Organization snapshot assertion. No full-current-main green gate or remaining-ticket completion is claimed.
+
