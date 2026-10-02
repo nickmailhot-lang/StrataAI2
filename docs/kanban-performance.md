@@ -27,7 +27,16 @@ so persistence cannot supply the measured update. Feedback must be under 100ms.
 The released request must then receive HTTP 200. The attachment includes
 feedbackObserved and feedbackMs; an unobserved destination fails the threshold
 and records a null duration. This covers normal desktop card drop feedback;
-list feedback and mobile feedback still need corresponding timing evidence.
+list feedback and mobile feedback still need executed timing evidence.
+
+The separate desktop list-feedback case uses two empty lists at 1280x844 and
+holds the keyed PATCH before dispatch. Pointer release starts a browser-clock
+sample ending after a frame boundary with the moved list first and visible.
+It requires under 100ms, exactly one write, unchanged canonical order while held,
+HTTP 200 with revision two, an unchanged complete neighbor, and persisted order
+after reload. The attachment contains fixture conditions and timing only.
+This new case collects locally; exact-image execution is pending. It does not
+provide mobile, large-board or physical-device performance evidence.
 
 The feedback sample also requires viewport intersection on both axes. After
 release, the acknowledgment must return the moved ID, intended destination and
