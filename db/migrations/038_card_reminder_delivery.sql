@@ -12,7 +12,16 @@ ALTER TABLE card_assignment_notifications DROP CONSTRAINT card_assignment_notifi
 ALTER TABLE card_assignment_notifications ADD CONSTRAINT card_assignment_notifications_notification_type_check
  CHECK(notification_type IN ('CARD_ASSIGNED','CARD_CREATED','CARD_UPDATED','CARD_MOVED','CARD_ARCHIVED','CARD_RESTORED',
   'CARD_MEMBER_ADDED','CARD_MEMBER_REMOVED','LABEL_ADDED','LABEL_REMOVED','CARD_DATE_CHANGED','CARD_DUE_COMPLETED','CARD_DUE_REOPENED','REMINDER_FIRED'));
-ALTER TABLE card_assignment_notifications DROP CONSTRAINT card_assignment_notifications_check;
+-- PostgreSQL's auto-generated CHECK names depend on column/table placement.
+-- Locate the actor inequality itself; preserve the separate read-time check.
+DO $$
+DECLARE actor_constraint text;
+BEGIN
+ SELECT conname INTO STRICT actor_constraint FROM pg_constraint
+ WHERE conrelid='public.card_assignment_notifications'::regclass AND contype='c'
+  AND pg_get_constraintdef(oid)='CHECK ((actor_id <> recipient_id))';
+ EXECUTE format('ALTER TABLE public.card_assignment_notifications DROP CONSTRAINT %I',actor_constraint);
+END $$;
 ALTER TABLE card_assignment_notifications ADD CONSTRAINT notification_actor_recipient_check
  CHECK(actor_id<>recipient_id OR notification_type='REMINDER_FIRED');
 

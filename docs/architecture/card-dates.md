@@ -239,3 +239,11 @@ duplicate effects and recovery by a different Worker. Runtime readiness and
 clean/repeat/forward/failure migrations require 038. Strict build and front-end
 checks plus 31 inbox tests passed locally; Linux must execute database and six
 new private replay cases before their success is claimed.
+
+CI repair: dc37639's PostgreSQL stage stopped in the existing notification storage
+fixture: the auto-named CHECK selected for replacement was the read-time check,
+not actor inequality. Migration 038 now locates the exact existing actor inequality
+from the catalog and preserves the read-time constraint. The existing fixture's
+rejection of read_at before created_at remains mandatory; new Reminder delivery
+checks must still execute after it passes. The failed commit produced no accepted
+release bundle or proven database delivery result.
