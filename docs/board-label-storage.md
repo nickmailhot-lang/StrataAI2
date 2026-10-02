@@ -31,7 +31,13 @@ back. Runtime-login tests separately inspect the API/Worker grants. The migratio
 runner now upgrades through 28, repeats the upgrade, and retains serialization
 and failed-migration rollback checks. The generic tenant catalog guard inspects
 both new tables without adding exemptions. Local shell syntax/diff checks pass;
-actual database execution remains pending Linux CI.
+Linux PostgreSQL job `110853423513` in
+[run 37011914011](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37011914011)
+at `2540011` subsequently passed the label storage fixture, full migration
+upgrade/repeat/rollback checks, generic tenant catalog checks and real runtime
+login grant checks. The whole release pipeline for subsequent main revisions
+remains pending; this proves the inspected database boundary, not the future
+Label API or UI.
 
 This is not a completed Labels feature. CRUD/assignment APIs, typed label route
 discovery, fresh authorization, atomic events/audit, UI indicators and controls,
