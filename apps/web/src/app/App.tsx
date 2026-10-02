@@ -24,6 +24,7 @@ import { InvitationsPage } from "../features/auth/InvitationsPage";
 import { InvitationLinkPage } from "../features/auth/InvitationLinkPage";
 import { PortalShell } from "../portal/PortalShell";
 import { appTheme } from "../theme/appTheme";
+import { BuildIdentityFooter } from './BuildIdentityFooter';
 
 const routes = [
   { path: "/app", element: <OrganizationHome /> },
@@ -81,6 +82,7 @@ export function App() {
     <ThemeProvider theme={appTheme}>
       <CssBaseline />
       <RouterProvider router={router} />
+      <BuildIdentityFooter />
     </ThemeProvider>
   );
 }

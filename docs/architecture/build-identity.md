@@ -22,6 +22,14 @@ variables, requiring the embedded identifiers to remain correct. This check runs
 before feature fixtures; a mismatch blocks required-ci and the release bundle.
 Images are not rebuilt for these tests or for bundle generation.
 
+The SPA also displays its compiled version and full revision in the application
+footer, including authentication and Portal routes. These use the same Vite
+build variables validated by the metadata emitter; the footer does not fetch a
+runtime label or use browser storage. Long revisions wrap at phone widths.
+The ARCH-02-AC-004 browser case compares visible footer text with the deployed
+metadata asset and API runtime identity at desktop/phone widths. Local source
+checks and browser collection pass; exact-image browser execution is pending.
+
 Local .NET source builds use the available source-control revision and MSBuild
 version; builds without source-control identity report `development`. Local web
 builds without explicit variables report `development` / `0.0.0-dev`. These are
