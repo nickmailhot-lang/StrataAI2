@@ -34,6 +34,11 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   await page.goto(`/app/${org}/boards/${board}`); await expect.poll(reads).toBeGreaterThanOrEqual(2);
   const handle = page.getByRole('button', { name: 'Drag Performance card 1 card', exact: true }); await expect(handle).toBeEnabled();
   const usableMs = performance.now() - started;
+  const baselineResponse = await context.request.get(`/boards/${board}`);
+  expect(baselineResponse.status()).toBe(200);
+  const baseline = await baselineResponse.json();
+  const feedbackAnchor = baseline.lists[0].cards.find((item: { title: string }) => item.title === 'Performance card 4');
+  expect(feedbackAnchor).toBeDefined();
   // Keep persistence out of this sample: the next rendered frame must show the
   // destination before this one move request is allowed to reach the server.
   let releaseMove!: () => void;
@@ -55,7 +60,7 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
             const link = document.querySelector<HTMLAnchorElement>(`a[href$="/cards/${id}"]`);
             const rect = link?.getBoundingClientRect();
             const positioned = link?.closest('section')?.getAttribute('aria-labelledby') === `list-name-${destination}`;
-            if (positioned && rect && rect.height > 0 && rect.top < innerHeight && rect.bottom > 0) {
+            if (positioned && rect && rect.height > 0 && rect.width > 0 && rect.top < innerHeight && rect.bottom > 0 && rect.left < innerWidth && rect.right > 0) {
               requestAnimationFrame(() => resolve(performance.now() - began));
             } else if (performance.now() - began >= 2000) resolve(Infinity);
             else requestAnimationFrame(check);
@@ -70,8 +75,18 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
     await expect.poll(() => heldMove).toBe(true);
     const acknowledgment = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === `/cards/${feedbackCard}/move`);
     releaseMove();
-    expect((await acknowledgment).status()).toBe(200);
+    const response = await acknowledgment;
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toMatchObject({ id: feedbackCard, listId: lists[0], version: 2 });
     await expect(handle).toBeEnabled();
+    const persistedResponse = await context.request.get(`/boards/${board}`);
+    expect(persistedResponse.status()).toBe(200);
+    const persisted = await persistedResponse.json();
+    const destinationCards = persisted.lists[0].cards;
+    const movedIndex = destinationCards.findIndex((item: { id: string }) => item.id === feedbackCard);
+    expect(movedIndex).toBeGreaterThanOrEqual(0);
+    expect(destinationCards[movedIndex + 1]).toEqual(feedbackAnchor);
+    expect(persisted.lists[1].cards.some((item: { id: string }) => item.id === feedbackCard)).toBe(false);
   } finally {
     releaseMove(); await page.unroute(feedbackRoute);
   }

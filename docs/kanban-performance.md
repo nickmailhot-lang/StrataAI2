@@ -29,6 +29,14 @@ feedbackObserved and feedbackMs; an unobserved destination fails the threshold
 and records a null duration. This covers normal desktop card drop feedback;
 list feedback and mobile feedback still need corresponding timing evidence.
 
+The feedback sample also requires viewport intersection on both axes. After
+release, the acknowledgment must return the moved ID, intended destination and
+revision two. A fresh canonical Board read must place the card immediately before
+the selected anchor, preserve that anchor's complete baseline record, and omit
+the moved card from its former list. Thus a fast visual sample cannot pass with
+an unrelated successful response or a different persisted position. These reads
+occur outside the timed sample and do not relax any budgets.
+
 This test collects locally but requires Linux CI execution. Timing success is
 unproved. It does not establish the separate 200-list/5000-card/100000-archived-card
 capacity requirement, mobile performance, executed under-100ms visual feedback or actual
