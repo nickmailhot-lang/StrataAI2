@@ -75,3 +75,16 @@ and clearing. Collection passed; execution against exact images remains pending.
 Neither PRD-10 nor PRD-16 is complete. The remaining filters, canvas integration, event/reconnect
 acceptance and performance evidence must be implemented and verified before
 closure.
+
+The required release browser suite now includes a desktop editor and an isolated
+phone browser context using a real authenticated session. The fixture scopes the
+already-built Worker to its disposable Organization and waits for durable event
+delivery before subscribing. An initially empty label filter must gain a Card
+after desktop assignment, retain its selected ID while the label is renamed and
+recolored, lose the Card after removal during a forced proxied-socket outage,
+and gain it again after reconnect and reassignment. Reconnect attempts are
+temporarily rejected while ordinary HTTP replay remains available. No event or
+Card response is mocked. Board archival must close the filter and reject its
+server read. The fixture always restores Worker scope and closes its browser
+context. This scenario has collected successfully; runtime execution is pending
+CI and is not yet two-client/reconnect acceptance evidence.
