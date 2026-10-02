@@ -431,7 +431,7 @@ function BoardContent() {
           No lists yet.{editable && " Add a list to begin."}
         </Typography>
       )}
-      <DndContext sensors={sensors} collisionDetection={args => {
+      <DndContext sensors={sensors} autoScroll={{ canScroll: element => element.hasAttribute('data-kanban-scroll') }} collisionDetection={args => {
         const movingCard = String(args.active.id).startsWith('card:');
         const droppableContainers = args.droppableContainers.filter(value => {
           const cardTarget = String(value.id).startsWith('card:') || String(value.id).startsWith('card-end:');
@@ -465,6 +465,7 @@ function BoardContent() {
       }}>
       <Box
         aria-label="Kanban board"
+        data-kanban-scroll
         sx={{
           display: "grid",
           gridAutoFlow: "column",

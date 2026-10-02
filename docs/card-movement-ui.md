@@ -144,3 +144,14 @@ Source verification: the full web suite passed 313 tests in 31 files; final
 focused Board/announcement cases passed 25 tests. Typecheck, lint and production
 build pass. Four card/list release browser cases collect.
 
+## Boundary scrolling
+
+List columns now have a viewport-relative maximum height and vertical overflow.
+The shared drag context explicitly permits auto-scroll only for the Kanban
+canvas and list containers. Desktop/phone release scenarios create six columns
+and twelve cards, require actual overflow in both directions, hold a card at
+each boundary and require the corresponding scroll offset to increase. They
+then cancel and require zero move writes, unchanged persisted list/card records
+and no page-level horizontal overflow. Both scenarios collect locally; actual
+auto-scroll execution and large-board performance remain pending Linux CI.
+
