@@ -8,6 +8,7 @@ cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events,work_events,background_jobs,card_assignment_notifications TO strataai_api_runtime; GRANT UPDATE(watching,updated_at,version) ON watch_subscriptions TO strataai_api_runtime;' >/dev/null || true
+  docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null || true
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -78,6 +79,8 @@ test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type IN ('WATCH_CREATED','WATCH_REMOVED');")" = 9
 # The real Worker must make these events ready without exposing personal watch
 # payloads or breaking the shared Board cursor for either authorized viewer.
+export STRATAAI_TEST_EVENT_ORGANIZATION_ID="$org"
+docker compose -f compose.release.yml -f scripts/ci/compose.work-event-test.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
 published=$(admin "SELECT last_sequence FROM work_event_streams WHERE tenant_id='$org' AND board_id='$board';")
 watch_ids=$(admin "SELECT json_agg(event_id) FROM work_events WHERE tenant_id='$org' AND board_id='$board' AND entity_type='WatchSubscription';")
 for ((attempt=0;attempt<60;attempt++)); do

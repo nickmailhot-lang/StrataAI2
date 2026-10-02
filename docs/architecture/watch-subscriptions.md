@@ -152,3 +152,10 @@ Unit and host tests cover privacy for both the subscriber and Board administrato
 The exact-image fixture waits for the real Worker to publish readiness and checks
 both clients' replay and cursor recovery. These checks were added after finding
 that the prior replay entity allowlist rejected WatchSubscription entirely.
+
+The a102259 exact-image run failed the readiness assertion at fixture line 88:
+its newly created Organization was absent from the Worker's explicit processing
+scope. The fixture now recreates the same release Worker image using the existing
+isolated event-test override, then restores the default Worker during cleanup.
+The readiness, contiguous cursor and private projection assertions remain intact.
+Fresh CI is required to verify this repair and the subsequent fan-out checks.
