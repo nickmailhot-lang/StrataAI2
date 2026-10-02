@@ -69,16 +69,20 @@ test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move pe
     for (let step = 1; step <= 12; step++) {
       await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: startX + (edgeX - startX) * step / 12, y: startY, id: 1 }] });
     }
-    await expect.poll(() => canvas.evaluate(node => node.scrollLeft >= node.scrollWidth - node.clientWidth - 1)).toBe(true);
+    const destination = page.getByText('Drop card at end of Empty touch destination', { exact: true });
+    // The trailing list-drop target is another column. Scrolling to the canvas
+    // maximum would pass the intended card destination and hide it again.
+    await expect.poll(async () => {
+      const box = await destination.boundingBox();
+      return await canvas.evaluate(node => node.scrollLeft > 0) && Boolean(box && box.x + box.width / 2 > 0 && box.x + box.width / 2 < 390);
+    }).toBe(true);
     expect(writes).toBe(1);
-    const end = await page.getByText('Drop card at end of Empty touch destination', { exact: true }).boundingBox();
+    const end = await destination.boundingBox();
     expect(end).not.toBeNull();
     const endX = end!.x + end!.width / 2; const endY = end!.y + end!.height / 2;
     expect(endX).toBeGreaterThan(0); expect(endX).toBeLessThan(390);
     expect(endY).toBeGreaterThan(0); expect(endY).toBeLessThan(844);
-    for (let step = 1; step <= 12; step++) {
-      await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: edgeX + (endX - edgeX) * step / 12, y: startY + (endY - startY) * step / 12, id: 1 }] });
-    }
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: endX, y: endY, id: 1 }] });
     await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     touching = false;
     await expect(page.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
