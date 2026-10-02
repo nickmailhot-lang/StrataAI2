@@ -1,10 +1,13 @@
 # Archived card discovery (PRD-18)
 
-`GET /boards/{id}/archived-cards?after={uuid}` requires current Board administration
+`GET /boards/{id}/archived-cards?after={uuid}` requires current Board editing rights
 and active Organization/Board scope. The command scope serializes with Board changes,
 rechecks membership after lock waits, and verifies the live actor/session after the
 read. Each request is a read: it creates no receipt, audit, event or job, even when
 an Idempotency-Key header is supplied.
+
+This matches Card archive/restore permission: contributors who can archive a Card
+can find it again. Archived-List administration remains restricted to administrators.
 
 Pages contain at most 50 archived cards, ordered by UUID with a strict seek cursor.
 They include each parent List's current lifecycle and version. Archived Lists remain

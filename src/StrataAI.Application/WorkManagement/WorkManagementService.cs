@@ -120,7 +120,7 @@ public sealed class WorkManagementService(
         Guid? after = null, CancellationToken cancellationToken = default)
     {
         var resolved = await ResolveAccessAsync(boardId, actorUserId, cancellationToken);
-        if (resolved is null || !resolved.Value.Access.CanAdminister ||
+        if (resolved is null || !resolved.Value.Access.CanEdit ||
             resolved.Value.Board.LifecycleState != BoardLifecycleState.Active)
             return WorkOperation<ArchivedCardPage>.Failure("board_not_found");
         if (after == Guid.Empty) return WorkOperation<ArchivedCardPage>.Failure("invalid_archive_cursor");

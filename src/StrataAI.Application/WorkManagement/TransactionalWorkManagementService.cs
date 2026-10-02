@@ -44,7 +44,7 @@ public sealed class TransactionalWorkManagementService(
 
     public Task<WorkOperation<ArchivedCardPage>> ListArchivedCardsAsync(Guid boardId, Guid actorUserId,
         Guid? after = null, CancellationToken cancellationToken = default) =>
-        BoardCommand(boardId, actorUserId, "admin",
+        BoardCommand(boardId, actorUserId, "edit",
             WorkCommand.Create(actorUserId, null, "ListArchivedCardsAsync", boardId, new { }, "board_not_found"), async () =>
             {
                 var result = await inner.ListArchivedCardsAsync(boardId, actorUserId, after, cancellationToken);

@@ -109,7 +109,13 @@ wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh 'Archived fixture|Contained fixture|containedCardCount' "$scratch/response.json"
 admin "UPDATE board_members SET status='ACTIVE',role='MEMBER' WHERE board_id='$board' AND user_id='$editor';" >/dev/null
 test "$(get editor "/boards/$board/archived-lists")" = 404
-test "$(get editor "/boards/$board/archived-cards")" = 404
+test "$(get editor "/boards/$board/archived-cards")" = 200
+# Contributor discovery follows Card archive/restore rights; removed membership does not.
+hold; get editor "/boards/$board/archived-cards?after=$card_cursor" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED',version=version+1 WHERE board_id='$board' AND user_id='$editor';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh 'Archived fixture|Contained fixture|"items"' "$scratch/response.json"
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$editor';" >/dev/null
 hold; get owner "/boards/$board/archived-lists" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE sessions SET revoked_at=now() WHERE user_id='$owner' AND revoked_at IS NULL;"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
