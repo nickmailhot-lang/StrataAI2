@@ -10,6 +10,17 @@ const snapshot: BoardSnapshot = {
   })),
 };
 const announcements = listDragAnnouncements(snapshot);
+it('names card targets and empty-list destinations without claiming an acknowledgment', () => {
+  const withCard: BoardSnapshot = { ...snapshot, lists: snapshot.lists.map((column, index) => ({ ...column,
+    cards: index === 0 ? [{ id: 'card', title: 'Inspect roof', description: null, rank: '1', version: 1 }] : [],
+  })) };
+  const cardAnnouncements = listDragAnnouncements(withCard);
+  const drop = event('card-end:internal-1', 'card:card');
+  expect(cardAnnouncements.onDragStart(drop)).toContain('Dragging Inspect roof card');
+  expect(cardAnnouncements.onDragOver(drop)).toBe('Inspect roof card can be dropped at the end of Complete.');
+  expect(cardAnnouncements.onDragEnd(drop)).toBe('Drop requested for Inspect roof card at the end of Complete. Check the move status for confirmation.');
+  expect(cardAnnouncements.onDragCancel(drop)).toBe('Drag cancelled. Inspect roof card was not moved.');
+});
 function event(target: string | null = 'internal-1', source = 'internal-0') {
   return { active: { id: source }, over: target ? { id: target } : null } as Parameters<typeof announcements.onDragOver>[0];
 }

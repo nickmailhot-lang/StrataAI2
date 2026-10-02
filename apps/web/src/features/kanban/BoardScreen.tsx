@@ -24,10 +24,11 @@ import {
   type WorkCard,
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
-import { CardMoveControls } from "./CardMoveControls";
+import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
+import { CardDragItem, CardListEndTarget } from './CardDragItem';
 import { ListPositionControls } from "./ListPositionControls";
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
-import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, PointerSensor, KeyboardSensor, closestCenter, pointerWithin, rectIntersection, defaultKeyboardCoordinateGetter, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
 import { listKeyboardCoordinates } from './listKeyboardCoordinates';
 import { listDragAnnouncements, listDragInstructions } from './listDragAccessibility';
@@ -74,13 +75,23 @@ function BoardContent() {
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
   const [listDrop, setListDrop] = useState<ListDropRequest>();
+  const [cardDrop, setCardDrop] = useState<CardDropRequest>();
+  const [cardRecovery, setCardRecovery] = useState(false);
+  const [moveScope, setMoveScope] = useState(key);
+  // Retire drop events when navigating away; returning must not resubmit one.
+  if (moveScope !== key) {
+    setMoveScope(key); setCardDrop(undefined); setListDrop(undefined);
+    setCardRecovery(false); setMovePreview(undefined); setListPreview(undefined);
+  }
+  const updateCardRecovery = useCallback((_id: string, unresolved: boolean) => setCardRecovery(unresolved), []);
+  const dragCard = useRef<{ cardId: string; version: number } | undefined>(undefined);
   const [listRecovery, setListRecovery] = useState(new Set<string>());
   const updateListRecovery = useCallback((id: string, unresolved: boolean) => setListRecovery(previous => {
     if (previous.has(id) === unresolved) return previous;
     const next = new Set(previous); if (unresolved) next.add(id); else next.delete(id); return next;
   }), []);
   const dragList = useRef<{ listId: string; name: string; version: number } | undefined>(undefined);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: listKeyboardCoordinates }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: (event, args) => String(args.active).startsWith('card:') ? defaultKeyboardCoordinateGetter(event, args) : listKeyboardCoordinates(event, args) }));
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
   const reading = useRef(false);
@@ -411,11 +422,34 @@ function BoardContent() {
           No lists yet.{editable && " Add a list to begin."}
         </Typography>
       )}
-      <DndContext sensors={sensors} collisionDetection={closestCenter}
+      <DndContext sensors={sensors} collisionDetection={args => {
+        const movingCard = String(args.active.id).startsWith('card:');
+        const droppableContainers = args.droppableContainers.filter(value => {
+          const cardTarget = String(value.id).startsWith('card:') || String(value.id).startsWith('card-end:');
+          return movingCard === cardTarget;
+        });
+        return movingCard ? (args.pointerCoordinates ? pointerWithin({ ...args, droppableContainers }) : rectIntersection({ ...args, droppableContainers }))
+          : closestCenter({ ...args, droppableContainers });
+      }}
         accessibility={{ announcements: listDragAnnouncements(snapshot), screenReaderInstructions: listDragInstructions }} onDragStart={event => {
+        dragCard.current = undefined; dragList.current = undefined;
+        if (String(event.active.id).startsWith('card:')) {
+          const item = snapshot.lists.flatMap(value => value.cards).find(value => `card:${value.id}` === event.active.id);
+          if (item) dragCard.current = { cardId: item.id, version: item.version };
+          return;
+        }
         const column = snapshot.lists.find(value => value.list.id === event.active.id);
         if (column && Number.isSafeInteger(column.list.version)) dragList.current = { listId: column.list.id, name: column.list.name, version: column.list.version! };
-      }} onDragCancel={() => { dragList.current = undefined; }} onDragEnd={event => {
+      }} onDragCancel={() => { dragList.current = undefined; dragCard.current = undefined; }} onDragEnd={event => {
+        const sourceCard = dragCard.current; dragCard.current = undefined;
+        if (sourceCard) {
+          if (!event.over || event.over.id === `card:${sourceCard.cardId}` || busy || snapshotReading || loadError || cardRecovery) return;
+          const target = String(event.over.id);
+          const column = snapshot.lists.find(value => value.list.lifecycleState === 'active' && (target === `card-end:${value.list.id}` || value.cards.some(item => target === `card:${item.id}`)));
+          if (!column || !snapshot.access.canMove || snapshot.board.lifecycleState !== 'active') return;
+          setCardDrop({ ...sourceCard, destination: column.list.id, before: target.startsWith('card:') ? target.slice(5) : '', nonce: crypto.randomUUID() });
+          return;
+        }
         const source = dragList.current; dragList.current = undefined;
         if (!source || !event.over || event.over.id === source.listId || busy || snapshotReading || loadError) return;
         setListDrop({ ...source, before: event.over.id === 'list-end' ? '' : String(event.over.id), nonce: crypto.randomUUID() });
@@ -449,6 +483,9 @@ function BoardContent() {
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             <Stack spacing={1} sx={{ mt: 2 }}>
               {column.cards.map((item) => (
+                <CardDragItem key={item.id} id={item.id} title={item.title}
+                  disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId}
+                  available={snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(item.version) && item.version > 0}>
                 <Card
                   key={item.id}
                   component={Link}
@@ -459,6 +496,7 @@ function BoardContent() {
                   to={`${boardPath}/cards/${item.id}`}
                   state={{ cardOverlay: true }}
                   sx={{
+                    display: 'block',
                     color: "inherit",
                     textDecoration: "none",
                     "&:focus-visible": {
@@ -469,8 +507,10 @@ function BoardContent() {
                 >
                   <CardContent>{item.title}</CardContent>
                 </Card>
+                </CardDragItem>
               ))}
             </Stack>
+            {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && <CardListEndTarget id={column.list.id} name={column.list.name} disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId} />}
             {column.cards.length === 0 && (
               <Typography sx={{ my: 2 }}>No cards yet.</Typography>
             )}
@@ -489,6 +529,14 @@ function BoardContent() {
         {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && <ListEndTarget disabled={busy || snapshotReading || !!loadError} />}
       </Box>
       </DndContext>
+      {cardDrop && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && (() => {
+        const moved = snapshot.lists.filter(column => column.list.lifecycleState === 'active').flatMap(column => column.cards).find(value => value.id === cardDrop.cardId);
+        return moved && <CardMoveControls key={`canvas-move-${moved.id}`} card={moved} snapshot={snapshot}
+          dropRequest={cardDrop} disabled={busy || snapshotReading || !!loadError} onRecoveryChange={updateCardRecovery}
+          onBusyChange={setBusy} onPreview={setMovePreview}
+          onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
+          onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />;
+      })()}
       <Dialog
         open={Boolean(creation)}
         onClose={() => {
@@ -557,7 +605,7 @@ function BoardContent() {
             />
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active"
               && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id)) && <CardMoveControls
-              key={`move-${card.id}`} card={card} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError}
+              key={`move-${card.id}`} card={card} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery}
               onBusyChange={setBusy}
               onPreview={setMovePreview}
               onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}

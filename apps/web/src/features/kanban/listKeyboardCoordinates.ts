@@ -8,6 +8,7 @@ export const listKeyboardCoordinates: KeyboardCoordinateGetter = (event, { curre
   const current = context.collisionRect;
   const center = { x: current.left + current.width / 2, y: current.top + current.height / 2 };
   const targets = context.droppableContainers.getEnabled().flatMap(container => {
+    if (String(container.id).startsWith('card:') || String(container.id).startsWith('card-end:')) return [];
     const rect = context.droppableRects.get(container.id);
     if (!rect) return [];
     const x = rect.left + rect.width / 2;

@@ -85,6 +85,32 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       if (anchor) { expect(persisted[1]).toMatchObject(anchor); expect(persisted[0].rank < anchor.rank).toBe(true); }
       await page.getByRole('button', { name: 'Close', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('region', { name: 'Complete', exact: true }).getByRole('link', { name: 'Move this card', exact: true })).toBeFocused();
+      if (viewport.width === 1280) {
+        async function dragBefore(handleName: string, target: import('@playwright/test').Locator) {
+          const handle = page.getByRole('button', { name: handleName, exact: true }); await expect(handle).toBeEnabled();
+          const source = await handle.boundingBox(); const destination = await target.boundingBox();
+          expect(source).not.toBeNull(); expect(destination).not.toBeNull();
+          await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
+          await page.mouse.move(destination!.x + destination!.width / 2, destination!.y + destination!.height / 2, { steps: 12 }); await page.mouse.up();
+          await expect(page.getByText('Move acknowledged. Current placement is being checked.')).toBeVisible();
+          await expect(handle).toBeEnabled();
+        }
+        await page.unroute(`**/cards/${card}/move`);
+        await dragBefore('Drag Move this card card', page.getByText('Drop card at end of Planning', { exact: true }));
+        let persistedBoard = await (await context.request.get(`/boards/${board}`)).json();
+        expect(persistedBoard.lists.find((column: { list: { id: string } }) => column.list.id === lists[0]).cards[0]).toMatchObject({ id: card, version: 3 });
+        expect(persistedBoard.lists.find((column: { list: { id: string } }) => column.list.id === lists[1]).cards).toHaveLength(0);
+        const extra = await context.request.post(`/lists/${lists[0]}/cards`, { headers, data: { title: 'Reorder anchor' } });
+        expect(extra.status()).toBe(201); const extraId = (await extra.json()).id;
+        await page.reload();
+        await dragBefore('Drag Reorder anchor card', page.getByRole('link', { name: 'Move this card', exact: true }));
+        persistedBoard = await (await context.request.get(`/boards/${board}`)).json();
+        const planning = persistedBoard.lists.find((column: { list: { id: string } }) => column.list.id === lists[0]).cards;
+        expect(planning.map((value: { id: string }) => value.id)).toEqual([extraId, card]);
+        expect(planning.map((value: { version: number }) => value.version)).toEqual([2, 3]);
+        await page.reload();
+        await expect(page.getByRole('region', { name: 'Planning', exact: true }).getByRole('link').first()).toHaveAccessibleName('Reorder anchor');
+      }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     } finally { try { await otherContext.close(); } finally { restoreWorker(); } }
   });

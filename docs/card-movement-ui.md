@@ -99,7 +99,8 @@ historical move after a later edit; its status therefore describes acknowledgmen
 recovery. Control coverage verifies that the original submission publishes one
 projection and same-key recovery after a newer live version publishes no second
 projection. Both outcomes still read current placement.
-# Card drop command integration
+
+## Card drop command integration
 
 CardMoveControls accepts a card-scoped drop request containing the drag-start
 revision, destination list and optional before-card position. It submits through
@@ -107,10 +108,34 @@ the same version-bound command, provisional feedback, deadline, acknowledgment
 validation and exact-key recovery path as reviewed keyboard movement. A newer
 card revision blocks a fresh drop and requests current state. An unresolved
 intent cannot be replaced by a later drop. A recovery callback exposes that
-fence to the future canvas drag handle.
+fence to the canvas drag handles.
 
 Fourteen focused control tests pass, including drop delivery with a lost
 response/exact retry and stale drag-start rejection without a write. Typecheck,
-lint and production build pass. Canvas card handles/drop targets are not wired
-yet, so this integration contract does not satisfy card drag/drop acceptance.
+lint and production build pass.
+
+## Canvas card dragging
+
+Dedicated card handles and before-card/end-of-list targets now share the Board's
+dnd-kit context. Namespaced targets and filtered collision detection separate
+card moves from list moves. Only the handle disables touch scrolling; card
+links retain detail navigation. Empty active lists expose an end target.
+Drag-start revisions come from canonical state. Cancel, self and outside drops
+do not submit. Current Board/list scope and move permission gate targets;
+loading, write activity, open card dialogs and unresolved recovery fence handles.
+The stable canvas move control remains outside reparented cards and uses the
+existing preview and canonical reconciliation. Named card announcements describe
+requested positions and require move-status confirmation.
+Changing Board scope retires drop events so returning cannot resubmit them.
+
+The desktop release browser scenario now drags into an empty source list, then
+drags a newly created sibling before the moved card in the same list. It checks
+persisted order/revisions and reload. Both card and list browser cases collect;
+runtime pointer execution, mobile drag, boundary auto-scroll, assistive
+technology and large-board performance remain unverified. No full PRD closure
+follows from these source changes.
+
+Source verification: the full web suite passed 313 tests in 31 files; final
+focused Board/announcement cases passed 25 tests. Typecheck, lint and production
+build pass. Four card/list release browser cases collect.
 
