@@ -149,6 +149,30 @@ public sealed class TransactionalWorkManagementService(
         CancellationToken cancellationToken = default) =>
         BoardCommand(boardId, actorUserId, "edit", WorkCommand.Create(actorUserId, context.IdempotencyKey, "CreateListAsync", boardId, new { name, rank }, "board_not_found"), () => inner.CreateListAsync(boardId, actorUserId, name, rank, correlationId, cancellationToken), cancellationToken);
 
+    public async Task<WorkOperation<BoardListRecord>> CopyListAsync(Guid listId, Guid destinationBoardId,
+        Guid actorUserId, string name, long expectedVersion, string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await store.FindListAsync(listId, cancellationToken);
+        var destination = await store.FindBoardAsync(destinationBoardId, cancellationToken);
+        if (source is null || destination is null || source.OrganizationId != destination.OrganizationId)
+            return WorkOperation<BoardListRecord>.Failure("list_not_found");
+        var boards = new[] { source.BoardId, destinationBoardId }.Distinct().Order().ToArray();
+        return await transactions.ExecuteAsync(source.OrganizationId,
+            WorkCommand.Create(actorUserId, context.IdempotencyKey, "CopyListAsync", listId,
+                new { destinationBoardId, name, expectedVersion }, "list_not_found"), async _ =>
+            {
+                // Stable ordering serializes opposing cross-Board copies without
+                // acquiring a second Board before the first command scope.
+                foreach (var boardId in boards)
+                    if (!await AuthorizeBoard(boardId, actorUserId, "edit", cancellationToken)
+                        || (await store.FindBoardAsync(boardId, cancellationToken))?.LifecycleState != BoardLifecycleState.Active)
+                        return false;
+                return await store.FindListAsync(listId, cancellationToken) is { LifecycleState: WorkItemLifecycleState.Active } current
+                    && current.OrganizationId == source.OrganizationId && current.BoardId == source.BoardId;
+            }, () => inner.CopyListAsync(listId, destinationBoardId, actorUserId, name, expectedVersion, correlationId, cancellationToken), cancellationToken);
+    }
+
     public Task<WorkOperation<BoardListRecord>> UpdateListAsync(
         Guid listId,
         Guid actorUserId,

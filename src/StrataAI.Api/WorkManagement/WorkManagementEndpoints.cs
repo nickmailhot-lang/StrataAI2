@@ -446,6 +446,16 @@ public static class WorkManagementEndpoints
             .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         MapListLifecycle(app, "archive", WorkItemLifecycleState.Archived);
+        app.MapPost("/lists/{listId:guid}/copy", async (Guid listId, CopyListRequest request,
+            HttpContext context, IWorkManagementService service, CancellationToken cancellationToken) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            var result = await service.CopyListAsync(listId, request.DestinationBoardId, actor.Value,
+                request.Name, request.Version, context.TraceIdentifier, cancellationToken);
+            return result.Succeeded && result.Value is not null
+                ? Results.Created($"/lists/{result.Value.Id}", result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         MapListLifecycle(app, "restore", WorkItemLifecycleState.Active);
 
         app.MapDelete(

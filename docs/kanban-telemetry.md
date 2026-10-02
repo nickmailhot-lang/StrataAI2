@@ -10,7 +10,7 @@ The same meter now covers List/Card creation, Card updates, List/Card archive,
 restore and deletion, plus archived List/Card page reads. Operations use fixed
 names (`list_create`, `card_create`, `card_update`, `list_archive`, `card_archive`,
 `list_restore`, `card_restore`, `list_delete`, `card_delete`,
-`archived_list_read`, `archived_card_read`). Lifecycle, explicit-consent,
+`archived_list_read`, `archived_card_read`, and List copying as `list_copy`). Lifecycle, explicit-consent,
 contained-card impact and invalid archive-cursor errors join the bounded
 allowlist. Matched route templates select operations; raw URLs and cursor input
 never become labels.
@@ -19,8 +19,11 @@ The lifecycle host regression exercises successful creation/edit/archive/restore
 deletion, repeated archive acknowledgment, rejected deletion consent, changed
 contained-card impact, malformed cursor and private denial. It asserts exact
 request/duration counts and the shared safe-label contract. This new case builds
-with warnings as errors; its execution remains pending Linux CI. The earlier
-historical run below proves the movement case only.
+with warnings as errors. Linux CI run
+[37008689795](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37008689795)
+at `4db92b3` subsequently passed the unfiltered Domain/API host and web source
+gates, including the lifecycle regression. Its full exact-image release gate is
+still running. The earlier historical run below proves the movement case only.
 
 Labels remain operation, outcome, allowlisted error_code and boolean
 keyed_attempt. Titles, recipients, actor/tenant/object IDs, route values, raw

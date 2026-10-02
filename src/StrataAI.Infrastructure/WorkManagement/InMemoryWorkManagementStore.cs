@@ -396,6 +396,27 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
         }
     }
 
+    public Task<BoardListRecord> CopyListAsync(Guid sourceListId, Guid destinationBoardId,
+        Guid copiedListId, string name, DateTimeOffset createdAt, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            var source = _lists[sourceListId]; var board = _boards[destinationBoardId];
+            if (source.OrganizationId != board.OrganizationId) throw new InvalidOperationException("Invalid copy scope.");
+            var rank = RankToken.After(_lists.Values.Where(item => item.BoardId == destinationBoardId
+                && item.LifecycleState == WorkItemLifecycleState.Active).Select(item => item.Rank).Order(StringComparer.Ordinal).LastOrDefault());
+            var cards = _cards.Values.Where(item => item.OrganizationId == source.OrganizationId
+                && item.BoardId == source.BoardId && item.ListId == sourceListId && item.LifecycleState != WorkItemLifecycleState.Deleted)
+                .Select(item => item with { Id = Guid.NewGuid(), BoardId = destinationBoardId, ListId = copiedListId,
+                    CreatedAt = createdAt, UpdatedAt = createdAt, Version = 1 }).ToArray();
+            var copied = new BoardListRecord(copiedListId, board.OrganizationId, board.Id, name, rank,
+                WorkItemLifecycleState.Active, createdAt, createdAt, 1);
+            _lists.Add(copied.Id, copied);
+            foreach (var card in cards) _cards.Add(card.Id, card);
+            return Task.FromResult(copied);
+        }
+    }
+
     public Task<BoardListRecord?> FindListAsync(
         Guid listId,
         CancellationToken cancellationToken = default, bool includeDeleted = false)

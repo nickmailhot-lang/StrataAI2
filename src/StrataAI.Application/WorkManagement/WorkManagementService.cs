@@ -518,6 +518,31 @@ public sealed class WorkManagementService(
         return WorkOperation<BoardListRecord>.Success(list);
     }
 
+    public async Task<WorkOperation<BoardListRecord>> CopyListAsync(Guid listId, Guid destinationBoardId,
+        Guid actorUserId, string name, long expectedVersion, string correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await store.FindListAsync(listId, cancellationToken);
+        if (source is null || source.LifecycleState != WorkItemLifecycleState.Active)
+            return WorkOperation<BoardListRecord>.Failure("list_not_found");
+        var sourceAccess = await ResolveAccessAsync(source.BoardId, actorUserId, cancellationToken);
+        var destinationAccess = await ResolveAccessAsync(destinationBoardId, actorUserId, cancellationToken);
+        if (sourceAccess is not { Access.CanEdit: true } || destinationAccess is not { Access.CanEdit: true }
+            || sourceAccess.Value.Board.LifecycleState != BoardLifecycleState.Active
+            || destinationAccess.Value.Board.LifecycleState != BoardLifecycleState.Active
+            || source.OrganizationId != destinationAccess.Value.Board.OrganizationId)
+            return WorkOperation<BoardListRecord>.Failure("list_not_found");
+        if (!TryNormalizeListName(name, out var normalizedName))
+            return WorkOperation<BoardListRecord>.Failure("invalid_list_name");
+        if (source.Version != expectedVersion) return WorkOperation<BoardListRecord>.Failure("version_conflict");
+        BoardListRecord copied;
+        try { copied = await store.CopyListAsync(source.Id, destinationBoardId, Guid.NewGuid(), normalizedName, clock.UtcNow, cancellationToken); }
+        catch (RankSpaceExhaustedException) { return WorkOperation<BoardListRecord>.Failure("rank_space_exhausted"); }
+        await RecordChangeAsync(copied.OrganizationId, copied.BoardId, actorUserId, "LIST_COPIED", "List",
+            copied.Id, copied.Version, correlationId, cancellationToken);
+        return WorkOperation<BoardListRecord>.Success(copied);
+    }
+
     public async Task<WorkOperation<BoardListRecord>> UpdateListAsync(
         Guid listId,
         Guid actorUserId,

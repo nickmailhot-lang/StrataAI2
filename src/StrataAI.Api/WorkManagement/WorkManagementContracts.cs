@@ -32,6 +32,8 @@ public sealed record UpdateListRequest(
     string? Rank,
     long Version, Guid? BeforeListId = null, bool MoveToEnd = false);
 
+public sealed record CopyListRequest(Guid DestinationBoardId, string Name, long Version);
+
 public sealed record CreateCardRequest(
     string Title,
     string? Description,

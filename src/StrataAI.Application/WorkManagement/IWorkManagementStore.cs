@@ -106,6 +106,12 @@ public interface IWorkManagementStore
         DateTimeOffset createdAt,
         CancellationToken cancellationToken = default);
 
+    // Owning command holds both Board scopes. Copies every non-deleted Card;
+    // timestamps/IDs/versions are new while order and archive state are preserved.
+    Task<BoardListRecord> CopyListAsync(Guid sourceListId, Guid destinationBoardId,
+        Guid copiedListId, string name, DateTimeOffset createdAt,
+        CancellationToken cancellationToken = default);
+
     Task<BoardListRecord?> FindListAsync(
         Guid listId,
         CancellationToken cancellationToken = default, bool includeDeleted = false);

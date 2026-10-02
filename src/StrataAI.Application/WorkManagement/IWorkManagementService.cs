@@ -98,6 +98,10 @@ public interface IWorkManagementService
         string correlationId,
         CancellationToken cancellationToken = default);
 
+    Task<WorkOperation<BoardListRecord>> CopyListAsync(Guid listId, Guid destinationBoardId,
+        Guid actorUserId, string name, long expectedVersion, string correlationId,
+        CancellationToken cancellationToken = default);
+
     Task<WorkOperation<BoardListRecord>> UpdateListAsync(
         Guid listId,
         Guid actorUserId,

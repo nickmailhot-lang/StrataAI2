@@ -224,3 +224,68 @@ admin "UPDATE board_lists SET lifecycle_state='DELETED' WHERE id='$card_parent';
 test "$(delete_card '&confirmed=true')" = 404
 scripts/ci/assert-file-excludes.sh 'Contained fixture|lifecycleState|version' "$scratch/card-deleted.json"
 echo 'Card deletion: explicit archived consent, rollback, identical non-reapplying receipts, changed intent, current authority and deleted-parent denial passed.'
+
+# LIST-FR-005: copy the complete non-deleted canonical Card set atomically.
+copy_source=$(admin "SELECT id FROM board_lists WHERE tenant_id='$org' AND board_id='$board' AND name='Active fixture';")
+copy_destination=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -d "$(jq -nc --arg org "$org" '{organizationId:$org,name:"Copy destination",visibility:"PRIVATE"}')" "$base/boards" | jq -r '.id')
+for id in "$copy_source" "$copy_destination"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
+admin "INSERT INTO cards(id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version,archived_at)
+  SELECT gen_random_uuid(),'$org','$board','$copy_source','Copy Card '||i,'Private copy body',lpad(i::text,30,'0'),
+    CASE i WHEN 1 THEN 'ACTIVE' WHEN 2 THEN 'ARCHIVED' ELSE 'DELETED' END,now(),now(),7,
+    CASE WHEN i=2 THEN now() ELSE NULL END FROM generate_series(1,3) i;" >/dev/null
+copy_key=$(cat /proc/sys/kernel/random/uuid)
+committed_copy_key=$copy_key
+copy_body=$(jq -nc --arg dest "$copy_destination" '{destinationBoardId:$dest,name:"Copied List",version:1}')
+copy_list() {
+  curl --max-time 60 --silent --show-error -b "$scratch/${1:-owner}.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -H "Idempotency-Key: $copy_key" -d "${2:-$copy_body}" -o "$scratch/copied.json" -w '%{http_code}' "$base/lists/$copy_source/copy"
+}
+copy_before=$(state)
+test "$(copy_list outsider)" = 404
+test "$(copy_list portal)" = 404
+test "$copy_before" = "$(state)"
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(copy_list)" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$copy_before" = "$(state)"
+test "$(copy_list)" = 201
+copy_id=$(jq -r '.id' "$scratch/copied.json")
+jq -e --arg source "$copy_source" --arg board "$copy_destination" '.id!=$source and .boardId==$board and .version==1 and .lifecycleState=="active"' "$scratch/copied.json" >/dev/null
+cp "$scratch/copied.json" "$scratch/copy-receipt.json"
+test "$(admin "SELECT count(*) FROM cards WHERE tenant_id='$org' AND board_id='$copy_destination' AND list_id='$copy_id';")" = 2
+test "$(admin "SELECT count(*) FROM cards c JOIN cards s ON s.tenant_id=c.tenant_id AND s.list_id='$copy_source' AND s.title=c.title
+  WHERE c.tenant_id='$org' AND c.list_id='$copy_id' AND c.id<>s.id AND c.version=1 AND c.rank=s.rank
+    AND c.description IS NOT DISTINCT FROM s.description AND c.lifecycle_state=s.lifecycle_state
+    AND c.created_at=c.updated_at AND c.deleted_at IS NULL
+    AND (c.lifecycle_state<>'ARCHIVED' OR c.archived_at=c.created_at);")" = 2
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND board_id='$copy_destination' AND entity_id='$copy_id' AND event_type='LIST_COPIED';")" = 1
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$copy_id' AND event_type='LIST_COPIED';")" = 1
+copy_after=$(state)
+test "$(copy_list)" = 201
+cmp "$scratch/copy-receipt.json" "$scratch/copied.json"
+test "$copy_after" = "$(state)"
+changed_body=$(jq '.name="Changed intent"' <<< "$copy_body")
+test "$(copy_list owner "$changed_body")" = 409
+test "$copy_after" = "$(state)"
+# A destination lifecycle change during its Board wait prevents copying.
+copy_key=$(cat /proc/sys/kernel/random/uuid)
+copy_source_board=$board; board=$copy_destination; hold; board=$copy_source_board
+copy_list > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='$copy_destination';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh 'Copied List|Copy Card|Private copy body|lifecycleState' "$scratch/copied.json"
+admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$copy_destination';" >/dev/null
+test "$copy_after" = "$(state)"
+# Historical recovery also demands current source and destination authority.
+copy_key=$committed_copy_key
+admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+test "$(copy_list)" = 404
+admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+admin "UPDATE board_lists SET lifecycle_state='ARCHIVED' WHERE id='$copy_source';" >/dev/null
+test "$(copy_list)" = 404
+admin "UPDATE board_lists SET lifecycle_state='ACTIVE' WHERE id='$copy_source';" >/dev/null
+test "$(copy_list)" = 201
+cmp "$scratch/copy-receipt.json" "$scratch/copied.json"
+test "$copy_after" = "$(state)"
+echo 'List copy: cross-Board Card content/order/archive state, new IDs/versions, atomic audit rollback, one receipt, changed intent, post-wait destination lifecycle and current source authority passed.'

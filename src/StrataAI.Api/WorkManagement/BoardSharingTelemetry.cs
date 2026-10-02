@@ -38,6 +38,7 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/archived-cards", "GET") => "archived_card_read",
             ("/lists/{listId:guid}/archive", "POST") => "list_archive",
             ("/lists/{listId:guid}/restore", "POST") => "list_restore",
+            ("/lists/{listId:guid}/copy", "POST") => "list_copy",
             ("/lists/{listId:guid}", "DELETE") => "list_delete",
             ("/lists/{listId:guid}/cards", "POST") => "card_create",
             ("/cards/{cardId:guid}", "PATCH") => "card_update",
