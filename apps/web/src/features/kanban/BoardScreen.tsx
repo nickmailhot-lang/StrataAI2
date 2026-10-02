@@ -30,6 +30,7 @@ import { CardDragItem, CardListEndTarget } from './CardDragItem';
 import { ListPositionControls } from "./ListPositionControls";
 import { ListRenameControl } from './ListRenameControl';
 import { ListArchiveControl } from './ListArchiveControl';
+import { ListCopyControl } from './ListCopyControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
 import { DndContext, PointerSensor, KeyboardSensor, closestCenter, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
@@ -78,7 +79,8 @@ function BoardContent() {
   const [operationBusy, setBusy] = useState(false);
   const [archiveRecovery, setArchiveRecovery] = useState(false);
   const [cardArchiveRecovery, setCardArchiveRecovery] = useState(false);
-  const busy = operationBusy || archiveRecovery || cardArchiveRecovery;
+  const [copyRecovery, setCopyRecovery] = useState(false);
+  const busy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
   const [listDrop, setListDrop] = useState<ListDropRequest>();
@@ -424,9 +426,15 @@ function BoardContent() {
           {snapshot.access.canEdit && snapshot.board.lifecycleState === 'active' &&
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/archived-cards`}>Archived cards</Button>}
           <ListArchiveControl snapshot={snapshot}
-            disabled={operationBusy || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
+            disabled={operationBusy || copyRecovery || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
             unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
             onBusyChange={setBusy} onRecoveryChange={setArchiveRecovery}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
+            onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
+          <ListCopyControl snapshot={snapshot}
+            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
+            unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
+            onBusyChange={setBusy} onRecoveryChange={setCopyRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           {editable && (
@@ -649,7 +657,7 @@ function BoardContent() {
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
           )}
           {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || cardRecovery || snapshotReading || !!loadError}
+            disabled={operationBusy || archiveRecovery || copyRecovery || cardRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onAcknowledged={() => { canvasFocus.current = { scope: key, cardId };

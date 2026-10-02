@@ -37,9 +37,42 @@ denial, archived source and cross-Organization rejection. The required exact-ima
 complete audit-failure rollback, archived timestamps, single event/audit effects,
 post-wait destination lifecycle loss and historical current-authority checks.
 The solution and tests build with zero warnings/errors and shell syntax passes;
-runtime evidence for these new cases remains pending Linux CI.
+Linux CI run [37009610022](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37009610022)
+at `1aaeda9` subsequently passed the unfiltered Domain/API host source tests,
+PostgreSQL source integration, web checks, immutable image build and security.
+The new required exact-image copy database fixture remains pending its container
+stage; passing host tests alone does not establish those PostgreSQL semantics.
 
-This server increment does not complete LIST-FR-005's UI workflow or PRD-07.
-Reviewed desktop/mobile controls, browser recovery/accessibility and the wider
-copy, cross-Board movement, watching, telemetry and scale requirements remain
-part of the original open ticket scope.
+## Reviewed Board control
+
+The Board toolbar's `Copy list` opens a MUI review. Users choose the active
+source List, a name and a visible destination Board. Before enabling confirmation,
+the control reads that destination and requires exact Organization/Board scope,
+active lifecycle and current edit access. The server repeats authorization during
+the actual command; the review is not a grant. The review explicitly describes
+new identities, inclusion of active/archived Cards and exclusion of deleted Cards.
+
+A live source version/name/rank change preserves the name draft but blocks a first
+submission until the user explicitly adopts the current List and reviews again.
+An uncertain submission instead retains its original source version, normalized
+name, destination and retry key outside the canvas column. It cannot be replaced
+by another copy or an edited destination/name. A scoped created acknowledgment
+must have a new ID, version 1, matching name/Organization/destination, active
+lifecycle and valid rank. Missing/malformed acknowledgments remain recoverable.
+Current access loss clears protected review and aborts/fences pending responses.
+Reads and the complete acknowledgment body have a 15-second deadline. Cancel
+and acknowledged completion return focus after the dialog exits.
+
+`ListCopyControl.test.tsx` checks scoped review/receipt, unchanged recovery after
+source removal, malformed receipts, draft conflict, unavailable destination,
+permission loss, safe fixed errors, response-body timeout and malformed/denied
+discovery. The Board integration regression checks recovery through a canonical
+source revision and focus return. Their 40 focused tests pass together.
+`tests/browser/list-copy.spec.ts` adds desktop/phone keyboard flows against exact
+images, real cross-Board copying, lost-response recovery after source rename,
+Worker delivery to another client, archive-state/order persistence and reload.
+Both browser cases collect successfully; runtime evidence remains pending CI.
+
+This does not complete PRD-07. Full browser/accessibility verification, future
+Card metadata copying, cross-Board movement, watching, telemetry and scale
+requirements remain part of the original open ticket scope.

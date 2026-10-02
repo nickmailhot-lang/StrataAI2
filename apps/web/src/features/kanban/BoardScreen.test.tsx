@@ -657,4 +657,39 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
   });
+  it('keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery', async () => {
+    const board = '11111111-1111-1111-1111-111111111111'; const org = '22222222-2222-2222-2222-222222222222';
+    const list = '33333333-3333-3333-3333-333333333333'; const copiedId = '44444444-4444-4444-4444-444444444444';
+    const rank = '500000000000000000000000000000';
+    const active = { ...fixture, board: { ...fixture.board, id: board, organizationId: org },
+      lists: [{ ...fixture.lists[0], list: { ...fixture.lists[0].list, id: list, rank, version: 1 } }] };
+    let copied = false; const writes: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn((path: string, init?: RequestInit) => {
+      if (path === `/organizations/${org}/boards`) return Promise.resolve(response([{ id: board, name: 'Persisted board', version: 1 }]));
+      if (init?.method === 'POST') {
+        writes.push(init); copied = true;
+        return writes.length === 1 ? Promise.reject(new Error('Lost')) : Promise.resolve(response({ id: copiedId,
+          organizationId: org, boardId: board, name: 'Planning copy', rank, version: 1, lifecycleState: 'active' }, 201));
+      }
+      return Promise.resolve(response(copied ? { ...active, lists: [{ ...active.lists[0], list: { ...active.lists[0].list, name: 'Newer source', version: 2 } }] } : active));
+    }));
+    mount(`/app/${org}/boards/${board}`);
+    fireEvent.click(await screen.findByRole('button', { name: 'Copy list' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Reload copy destinations' })).toBeEnabled());
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'List to copy' }));
+    fireEvent.click(screen.getByRole('option', { name: 'Planning' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Review List copy' }));
+    await screen.findByText('Copy Planning as Planning copy to Persisted board?');
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm List copy' }));
+    const retry = await screen.findByRole('button', { name: 'Retry this List copy' });
+    await waitFor(() => expect(retry).toBeEnabled());
+    expect(screen.queryByRole('button', { name: 'Cancel copy' })).not.toBeInTheDocument();
+    expect(screen.getByText('Newer source', { selector: 'h3' })).toBeInTheDocument();
+    fireEvent.click(retry);
+    await screen.findByText('List copy acknowledged. Check its destination Board for the current copy.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toHaveFocus());
+    expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
+    expect(JSON.parse(writes[0].body as string)).toEqual({ destinationBoardId: board, name: 'Planning copy', version: 1 });
+    expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
+  });
 });
