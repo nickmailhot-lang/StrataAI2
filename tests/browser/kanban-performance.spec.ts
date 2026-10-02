@@ -61,14 +61,14 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
         const release = () => {
           if (started) return;
           started = true;
-          const began = performance.now();
+          const began = window.performance.now();
           const check = () => {
             const link = document.querySelector<HTMLAnchorElement>(`a[href$="/cards/${id}"]`);
             const rect = link?.getBoundingClientRect();
             const positioned = link?.closest('section')?.getAttribute('aria-labelledby') === `list-name-${destination}`;
             if (positioned && rect && rect.height > 0 && rect.width > 0 && rect.top < innerHeight && rect.bottom > 0 && rect.left < innerWidth && rect.right > 0) {
-              requestAnimationFrame(() => { clearTimeout(failTimer); resolve(performance.now() - began); });
-            } else if (performance.now() - began >= 2000) resolve(Infinity);
+              requestAnimationFrame(() => { clearTimeout(failTimer); resolve(window.performance.now() - began); });
+            } else if (window.performance.now() - began >= 2000) resolve(Infinity);
             else requestAnimationFrame(check);
           };
           requestAnimationFrame(check);
