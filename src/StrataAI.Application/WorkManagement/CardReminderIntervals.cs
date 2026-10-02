@@ -31,4 +31,6 @@ public static class CardReminderIntervals
 
     public static CardReminderOption? Find(CardRecord card, string code, DateTimeOffset now) =>
         Available(card, now).SingleOrDefault(option => option.Code == code);
+
+    public static bool IsConfigured(string code) => Configured.Any(interval => interval.Code == code);
 }

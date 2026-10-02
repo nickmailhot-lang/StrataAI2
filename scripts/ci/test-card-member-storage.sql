@@ -6,6 +6,7 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON card_members TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON card_assignment_notifications TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON watch_subscriptions TO strataai_member_storage_ci;
 GRANT SELECT,INSERT ON work_events TO strataai_member_storage_ci;
+GRANT SELECT,INSERT,UPDATE ON card_reminders TO strataai_member_storage_ci;
 GRANT SELECT ON cards TO strataai_member_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON card_routes TO strataai_member_storage_ci;
 GRANT UPDATE(start_at,due_at,due_timezone,due_has_time,due_complete) ON cards TO strataai_member_storage_ci;
@@ -64,6 +65,12 @@ INSERT INTO watch_subscriptions(tenant_id,id,user_id,entity_type,entity_id,card_
 INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
  SELECT w.tenant_id,gen_random_uuid(),c.board_id,2,w.user_id,'WATCH_CREATED','WatchSubscription',w.id,w.version,'watch-storage',w.created_at
  FROM watch_subscriptions w JOIN cards c ON c.tenant_id=w.tenant_id AND c.id=w.card_id;
+-- Exact elapsed hours keep UTC reminder intervals independent of session DST.
+SET LOCAL TIME ZONE 'America/Vancouver';
+INSERT INTO card_reminders(tenant_id,id,user_id,card_id,interval_code,enabled,due_at,trigger_at,status,generation,created_at,updated_at,version) VALUES
+ ('03000000-0000-0000-0000-000000000001','03700000-0000-0000-0000-000000000071','03000000-0000-0000-0000-000000000041','03000000-0000-0000-0000-000000000031','1_DAY',true,'2026-03-09T06:59:59.999999Z','2026-03-08T06:59:59.999999Z','SCHEDULED',1,now(),now(),1),
+ ('03000000-0000-0000-0000-000000000002','03700000-0000-0000-0000-000000000072','03000000-0000-0000-0000-000000000043','03000000-0000-0000-0000-000000000032','AT_DUE',true,'2026-03-09T06:59:59.999999Z','2026-03-09T06:59:59.999999Z','SCHEDULED',1,now(),now(),1);
+SET LOCAL TIME ZONE 'UTC';
 SET LOCAL ROLE strataai_member_storage_ci;
 SELECT set_config('app.tenant_id','03000000-0000-0000-0000-000000000001',true);
 DO $$ BEGIN
@@ -229,15 +236,56 @@ DO $$ BEGIN
  UPDATE cards SET due_complete=true WHERE tenant_id='03000000-0000-0000-0000-000000000002';
  IF FOUND THEN RAISE EXCEPTION 'Date write crossed tenant'; END IF;
 END $$;
+DO $$ BEGIN
+ IF (SELECT count(*) FROM card_reminders)<>1 OR EXISTS(SELECT FROM card_reminders WHERE tenant_id<>'03000000-0000-0000-0000-000000000001')
+   THEN RAISE EXCEPTION 'Reminder tenant reads widened'; END IF;
+ BEGIN
+  INSERT INTO card_reminders SELECT tenant_id,gen_random_uuid(),user_id,card_id,interval_code,enabled,due_at,trigger_at,status,generation,created_at,updated_at,version FROM card_reminders;
+  RAISE EXCEPTION 'Duplicate personal Card reminder accepted';
+ EXCEPTION WHEN unique_violation THEN NULL; END;
+ BEGIN
+  UPDATE card_reminders SET user_id='03000000-0000-0000-0000-000000000043';
+  RAISE EXCEPTION 'Reminder user crossed Organization';
+ EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ BEGIN
+  UPDATE card_reminders SET card_id='03000000-0000-0000-0000-000000000032';
+  RAISE EXCEPTION 'Reminder Card crossed Organization';
+ EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ BEGIN
+  UPDATE card_reminders SET interval_code='UNKNOWN';
+  RAISE EXCEPTION 'Unsupported reminder interval accepted';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  UPDATE card_reminders SET generation=2;
+  RAISE EXCEPTION 'Reminder generation exceeded persisted revision';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  UPDATE card_reminders SET trigger_at=due_at;
+  RAISE EXCEPTION 'Reminder trigger disagreed with selected interval';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  UPDATE card_reminders SET status='CANCELLED';
+  RAISE EXCEPTION 'Enabled scheduled reminder accepted cancelled state';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ BEGIN
+  INSERT INTO card_reminders SELECT '03000000-0000-0000-0000-000000000002',gen_random_uuid(),user_id,card_id,interval_code,enabled,due_at,trigger_at,status,generation,created_at,updated_at,version FROM card_reminders;
+  RAISE EXCEPTION 'Reminder insert crossed tenant RLS';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ UPDATE card_reminders SET status='CANCELLED',enabled=false,due_at=NULL,trigger_at=NULL,generation=2,version=2;
+ IF EXISTS(SELECT FROM card_reminders WHERE enabled OR trigger_at IS NOT NULL OR generation<>2)
+   THEN RAISE EXCEPTION 'Reminder cancellation retained deliverable generation'; END IF;
+END $$;
 SELECT set_config('app.tenant_id','03000000-0000-0000-0000-000000000002',true);
 DO $$ BEGIN
  IF (SELECT count(*) FROM watch_subscriptions) <> 1 THEN RAISE EXCEPTION 'Other tenant watch reads widened'; END IF;
+ IF (SELECT count(*) FROM card_reminders)<>1 OR EXISTS(SELECT FROM card_reminders WHERE tenant_id<>'03000000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'Other tenant reminder reads widened'; END IF;
  IF (SELECT count(*) FROM card_assignment_notifications) <> 1 OR EXISTS(SELECT 1 FROM card_assignment_notifications WHERE tenant_id<>'03000000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'Other tenant notifications widened'; END IF;
  IF (SELECT count(*) FROM card_members) <> 1 OR EXISTS(SELECT 1 FROM card_members WHERE tenant_id<>'03000000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'Other tenant assignment reads widened'; END IF;
 END $$;
 SELECT set_config('app.tenant_id','',true);
 DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM watch_subscriptions) THEN RAISE EXCEPTION 'Missing tenant exposed watches'; END IF;
+ IF EXISTS(SELECT FROM card_reminders) THEN RAISE EXCEPTION 'Missing tenant exposed reminders'; END IF;
  IF EXISTS(SELECT 1 FROM card_assignment_notifications) THEN RAISE EXCEPTION 'Missing tenant exposed notifications'; END IF;
  IF EXISTS(SELECT 1 FROM card_members) THEN RAISE EXCEPTION 'Missing tenant exposed assignments'; END IF;
 END $$;

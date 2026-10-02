@@ -129,3 +129,34 @@ require Linux CI execution. Personal Reminder records/API, transaction-bound
 rescheduling/cancellation, generation and lease fencing, current recipient eligibility,
 Worker delivery, reminder notifications and the MUI selector remain required.
 No reminder is scheduled or fired by the interval policy alone.
+
+## Personal Reminder persistence
+
+Migration 037 adds one stable Reminder per Organization/user/Card, with tenant-safe
+membership and Card identity references, forced RLS, constrained interval/status
+shape, generation and revision, immutable identity columns under API grants and
+monotonic timestamps. A Card's List/Board are not identity columns, so movement
+can retain personal interval intent without copying it to new Cards.
+
+Demo and PostgreSQL stores preserve identity/creation on rescheduling, no-op
+unchanged canonical plans, and advance generation/revision for changed plans.
+Plans are SCHEDULED for valid future triggers, SUSPENDED for missing/shortened due,
+completion or inactive Card, and CANCELLED on explicit disable. Suspension retains
+interval intent for later reactivation. UTC interval constraints use elapsed hours,
+including the one-day interval, independent of the SQL session's DST timezone.
+
+This is internal storage and planning. There is no network Reminder endpoint or
+new job producer/Worker handler yet. A store call cannot authorize a recipient,
+schedule a job, reschedule existing jobs or deliver a notification. The remaining
+service must bind current scope and recipient eligibility, publish each generation
+in the same transaction, and have the Worker reject superseded/cancelled/currently
+ineligible attempts before any event or notification effect. No unsupported job
+type is being exposed to the running Worker by this persistence change.
+
+Strict .NET build passed. Six planning/store tests cover 76 users, exact personal
+lookup, stable identity across movement, no-op/stale revisions and generation
+changes. Linux CI must execute them and the extended PostgreSQL fixture, which
+checks forced tenant isolation, composite identities, uniqueness, invalid interval
+and generation/trigger/status constraints, cancellation and actual DST elapsed-hour
+arithmetic. Clean/repeat/forward migrations and runtime readiness now require 037.
+PRD-12 and PRD-17 remain open.
