@@ -2,7 +2,10 @@ namespace StrataAI.Application.BackgroundJobs;
 
 public sealed record NewBackgroundJob(
     Guid Id, Guid OrganizationId, string JobType, string IdempotencyKey,
-    Guid ActorId, string ServiceIdentity, string CorrelationId, string SafeMetadataJson);
+    Guid ActorId, string ServiceIdentity, string CorrelationId, string SafeMetadataJson)
+{
+    public DateTimeOffset? AvailableAt { get; init; }
+}
 
 public sealed record ClaimedBackgroundJob(
     Guid Id, Guid OrganizationId, string JobType, Guid ActorId,

@@ -108,3 +108,24 @@ lint and build passed. The desktop/phone exact-image browser scenarios now creat
 dates through the actual editor, discard a real committed response, retry with
 identical payload/key and check canonical two-session completion and timezone
 display. These runtime scenarios remain pending in CI.
+
+## Reminder scheduling foundation
+
+The existing Organization queue publisher now accepts optional future availability
+in the same owning transaction. Unspecified availability uses the database clock
+as before; explicit availability normalizes to UTC. Duplicate publication retains
+the original job and trigger. The existing claim function already gates availability.
+Its mandatory PostgreSQL fixture now verifies no early claim, duplicate trigger
+preservation, availability transition and ordinary lease acknowledgment.
+
+The application policy offers at-due, 5-minute, 1-hour and 1-day intervals only
+when the resulting canonical UTC trigger is in the future and the Card is active,
+uncompleted and has a due date. It preserves UTC microseconds and handles skipped
+intervals or minimum-date underflow. Date-only/DST deadlines use the stored expiry
+instant. This policy is not recipient authorization or scheduling persistence.
+
+Strict .NET compilation passed. Seven interval tests and the queue SQL fixture
+require Linux CI execution. Personal Reminder records/API, transaction-bound
+rescheduling/cancellation, generation and lease fencing, current recipient eligibility,
+Worker delivery, reminder notifications and the MUI selector remain required.
+No reminder is scheduled or fired by the interval policy alone.

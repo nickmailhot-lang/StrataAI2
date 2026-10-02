@@ -15,8 +15,8 @@ public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connect
         if (session.OrganizationId != job.OrganizationId)
             throw new ArgumentException("Job Organization must match the transaction.", nameof(job));
         await using var command = new NpgsqlCommand("""
-            INSERT INTO background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,safe_metadata)
-            VALUES (@id,@tenant,@type,@key,@actor,@service,@correlation,@metadata)
+            INSERT INTO background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,safe_metadata,available_at)
+            VALUES (@id,@tenant,@type,@key,@actor,@service,@correlation,@metadata,COALESCE(@available,clock_timestamp()))
             ON CONFLICT (tenant_id,job_type,idempotency_key) DO NOTHING;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("id", job.Id);
@@ -27,6 +27,7 @@ public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connect
         command.Parameters.AddWithValue("service", job.ServiceIdentity);
         command.Parameters.AddWithValue("correlation", job.CorrelationId);
         command.Parameters.AddWithValue("metadata", NpgsqlDbType.Jsonb, job.SafeMetadataJson);
+        command.Parameters.AddWithValue("available", NpgsqlDbType.TimestampTz, (object?)job.AvailableAt?.ToUniversalTime() ?? DBNull.Value);
         return await command.ExecuteNonQueryAsync(cancellationToken) == 1;
     }
 

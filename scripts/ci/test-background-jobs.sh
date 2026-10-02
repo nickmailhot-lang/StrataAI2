@@ -76,6 +76,28 @@ DO $$ DECLARE j background_jobs; BEGIN
     IF NOT complete_background_job(j.id,j.lease_id,j.worker_id) THEN RAISE EXCEPTION 'success rejected'; END IF;
     IF complete_background_job(j.id,j.lease_id,j.worker_id) THEN RAISE EXCEPTION 'replayed completion accepted'; END IF;
 END $$;
+-- Scheduled publication cannot be claimed early; retries preserve its first date.
+BEGIN;
+INSERT INTO background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,available_at)
+VALUES ('88888888-8888-8888-8888-888888888889','11111111-1111-1111-1111-111111111111','TEST_JOB','future-trigger',
+ '11111111-1111-1111-1111-111111111111','ci-worker','scheduled-ci',clock_timestamp()+interval '1 day');
+INSERT INTO background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,available_at)
+VALUES (gen_random_uuid(),'11111111-1111-1111-1111-111111111111','TEST_JOB','future-trigger',
+ '11111111-1111-1111-1111-111111111111','ci-worker','scheduled-ci',clock_timestamp()-interval '1 day')
+ON CONFLICT(tenant_id,job_type,idempotency_key) DO NOTHING;
+DO $$ DECLARE j background_jobs; BEGIN
+ IF NOT EXISTS(SELECT FROM background_jobs WHERE idempotency_key='future-trigger' AND available_at>clock_timestamp() AND state='PENDING' AND attempt_count=0)
+   THEN RAISE EXCEPTION 'Duplicate publication changed future availability'; END IF;
+ IF EXISTS(SELECT FROM claim_background_job('99999999-9999-9999-9999-999999999999'))
+   THEN RAISE EXCEPTION 'Future job claimed before its trigger'; END IF;
+ UPDATE background_jobs SET available_at=clock_timestamp()-interval '1 second' WHERE idempotency_key='future-trigger';
+ SELECT * INTO STRICT j FROM claim_background_job('99999999-9999-9999-9999-999999999999');
+ IF j.id<>'88888888-8888-8888-8888-888888888889' OR j.attempt_count<>1
+   THEN RAISE EXCEPTION 'Scheduled job did not become claimable at its trigger'; END IF;
+ IF NOT complete_background_job(j.id,j.lease_id,j.worker_id)
+   THEN RAISE EXCEPTION 'Scheduled claim lost its lease acknowledgment'; END IF;
+END $$;
+ROLLBACK;
 SELECT set_config('app.tenant_id','',false);
 DO $$ BEGIN
     IF EXISTS (SELECT FROM background_jobs) OR EXISTS (SELECT FROM claim_background_job(gen_random_uuid())) THEN
