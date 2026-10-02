@@ -827,7 +827,7 @@ public sealed class WorkManagementService(
         WorkItemLifecycleState nextState,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool deletionConfirmed = false)
     {
         var card = await store.FindCardAsync(cardId, cancellationToken);
         if (card is null)
@@ -856,6 +856,9 @@ public sealed class WorkManagementService(
             return WorkOperation<CardRecord>.Failure(
                 "invalid_lifecycle_transition");
         }
+
+        if (nextState == WorkItemLifecycleState.Deleted && !deletionConfirmed)
+            return WorkOperation<CardRecord>.Failure("delete_confirmation_required");
 
         var updated = await store.SetCardLifecycleAsync(
             cardId,

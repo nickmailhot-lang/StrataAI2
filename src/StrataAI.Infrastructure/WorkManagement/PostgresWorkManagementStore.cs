@@ -1085,11 +1085,11 @@ internal sealed class PostgresWorkManagementStore(
 
     public async Task<CardRecord?> FindCardAsync(
         Guid cardId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         var route = await ResolveCardRouteAsync(
             cardId,
-            cancellationToken);
+            cancellationToken, includeDeleted);
 
         if (route is null)
         {
@@ -1482,7 +1482,7 @@ internal sealed class PostgresWorkManagementStore(
 
     private async Task<(Guid TenantId, Guid BoardId, Guid ListId)?> ResolveCardRouteAsync(
         Guid cardId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, bool includeDeleted = false)
     {
         await using var routing =
             await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
@@ -1492,10 +1492,11 @@ internal sealed class PostgresWorkManagementStore(
             SELECT tenant_id, board_id, list_id
             FROM card_routes
             WHERE card_id = @card_id
-              AND lifecycle_state <> 'DELETED';
+              AND (@include_deleted OR lifecycle_state <> 'DELETED');
             """,
             routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("card_id", cardId);
+        command.Parameters.AddWithValue("include_deleted", includeDeleted);
 
         await using var reader =
             await command.ExecuteReaderAsync(cancellationToken);

@@ -63,7 +63,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.OK, restoredCard.StatusCode);
         using var rearchivedCard = await Mutate(member, HttpMethod.Post, $"/cards/{card}/archive", new { version = 3 });
         Assert.Equal(HttpStatusCode.OK, rearchivedCard.StatusCode);
-        using var deleted = await Mutate(owner, HttpMethod.Delete, $"/cards/{card}?version=4", new { });
+        using var deleted = await Mutate(owner, HttpMethod.Delete, $"/cards/{card}?version=4&confirmed=true", new { });
         Assert.Equal(HttpStatusCode.OK, deleted.StatusCode);
     }
 

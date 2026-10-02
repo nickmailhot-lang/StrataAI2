@@ -148,5 +148,5 @@ public interface IWorkManagementService
         WorkItemLifecycleState nextState,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, bool deletionConfirmed = false);
 }

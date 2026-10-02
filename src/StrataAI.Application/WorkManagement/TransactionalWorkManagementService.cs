@@ -219,8 +219,15 @@ public sealed class TransactionalWorkManagementService(
         WorkItemLifecycleState nextState,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default) =>
-        CardCommand(cardId, actorUserId, nextState == WorkItemLifecycleState.Deleted ? "admin" : "edit", WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetCardLifecycleAsync", cardId, new { nextState, expectedVersion }, "card_not_found"), () => inner.SetCardLifecycleAsync(cardId, actorUserId, nextState, expectedVersion, correlationId, cancellationToken), cancellationToken);
+        CancellationToken cancellationToken = default, bool deletionConfirmed = false)
+    {
+        object body = nextState == WorkItemLifecycleState.Deleted
+            ? new { nextState, expectedVersion, deletionConfirmed } : new { nextState, expectedVersion };
+        return CardCommand(cardId, actorUserId, nextState == WorkItemLifecycleState.Deleted ? "admin" : "edit",
+            WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetCardLifecycleAsync", cardId, body, "card_not_found"),
+            () => inner.SetCardLifecycleAsync(cardId, actorUserId, nextState, expectedVersion, correlationId, cancellationToken, deletionConfirmed),
+            cancellationToken, includeDeleted: nextState == WorkItemLifecycleState.Deleted);
+    }
 
     private async Task<WorkOperation<T>> BoardCommand<T>(Guid id, Guid actorId, string permission, WorkCommand command, Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken)
     {
@@ -239,11 +246,15 @@ public sealed class TransactionalWorkManagementService(
                 operation, cancellationToken);
     }
 
-    private async Task<WorkOperation<T>> CardCommand<T>(Guid id, Guid actorId, string permission, WorkCommand command, Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken)
+    private async Task<WorkOperation<T>> CardCommand<T>(Guid id, Guid actorId, string permission, WorkCommand command, Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken, bool includeDeleted = false)
     {
-        var resource = await store.FindCardAsync(id, cancellationToken);
+        var resource = await store.FindCardAsync(id, cancellationToken, includeDeleted);
         return resource is null ? WorkOperation<T>.Failure("card_not_found") :
-            await transactions.ExecuteAsync(resource.OrganizationId, command, _ => AuthorizeBoard(resource.BoardId, actorId, permission, cancellationToken), operation, cancellationToken);
+            await transactions.ExecuteAsync(resource.OrganizationId, command, async _ =>
+                await AuthorizeBoard(resource.BoardId, actorId, permission, cancellationToken) &&
+                (!includeDeleted || (await store.FindBoardAsync(resource.BoardId, cancellationToken))?.LifecycleState == BoardLifecycleState.Active &&
+                    await store.FindListAsync(resource.ListId, cancellationToken) is { LifecycleState: not WorkItemLifecycleState.Deleted }),
+                operation, cancellationToken);
     }
 
     private async Task<bool> AuthorizeOrganization(Guid organizationId, Guid actorId, CancellationToken cancellationToken) =>

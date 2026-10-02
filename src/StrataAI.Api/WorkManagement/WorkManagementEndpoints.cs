@@ -570,6 +570,7 @@ public static class WorkManagementEndpoints
                 async (
                     Guid cardId,
                     long version,
+                    bool? confirmed,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -587,7 +588,7 @@ public static class WorkManagementEndpoints
                             WorkItemLifecycleState.Deleted,
                             version,
                             context.TraceIdentifier,
-                            cancellationToken));
+                            cancellationToken, confirmed is true));
                 })
             .RequireAuthorization();
     }

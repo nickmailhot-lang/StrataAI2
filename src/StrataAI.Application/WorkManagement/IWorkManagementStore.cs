@@ -139,7 +139,7 @@ public interface IWorkManagementStore
 
     Task<CardRecord?> FindCardAsync(
         Guid cardId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     Task<CardRecord?> UpdateCardAsync(
         Guid cardId,

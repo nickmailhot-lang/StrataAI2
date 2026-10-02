@@ -177,3 +177,49 @@ test "$(delete_list '&confirmed=true&containedCardCount=2')" = 200
 cmp "$scratch/receipt.json" "$scratch/deleted.json"
 test "$deleted_state" = "$(state)"
 echo 'List deletion: explicit confirmation/current impact, full rollback, non-reapplying historical receipt, changed-intent rejection, fresh authority and tombstone exclusion passed.'
+
+# Card deletion uses a distinct explicit consent fingerprint and tombstone receipt recovery.
+card_target=$(admin "SELECT c.id FROM cards c JOIN board_lists l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
+  WHERE c.tenant_id='$org' AND c.board_id='$board' AND c.lifecycle_state='ARCHIVED' AND l.lifecycle_state<>'DELETED' ORDER BY c.id LIMIT 1;")
+card_parent=$(admin "SELECT list_id FROM cards WHERE tenant_id='$org' AND id='$card_target';")
+card_key=$(cat /proc/sys/kernel/random/uuid)
+delete_card() {
+  curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+    -H "Idempotency-Key: $card_key" -X DELETE -o "$scratch/card-deleted.json" -w '%{http_code}' "$base/cards/$card_target?version=1$1"
+}
+card_before=$(state)
+for query in '' '&confirmed=false'; do
+  test "$(delete_card "$query")" = 400
+  jq -e '.code=="delete_confirmation_required"' "$scratch/card-deleted.json" >/dev/null
+  test "$card_before" = "$(state)"
+done
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(delete_card '&confirmed=true')" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$card_before" = "$(state)"
+test "$(delete_card '&confirmed=true')" = 200
+jq -e --arg id "$card_target" '.id==$id and .lifecycleState=="deleted" and .version==2' "$scratch/card-deleted.json" >/dev/null
+cp "$scratch/card-deleted.json" "$scratch/card-receipt.json"
+card_after=$(state)
+test "$(delete_card '&confirmed=true')" = 200
+cmp "$scratch/card-receipt.json" "$scratch/card-deleted.json"
+test "$card_after" = "$(state)"
+test "$(delete_card '&confirmed=false')" = 409
+jq -e '.code=="idempotency_key_reused"' "$scratch/card-deleted.json" >/dev/null
+test "$card_after" = "$(state)"
+admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+test "$(delete_card '&confirmed=true')" = 404
+scripts/ci/assert-file-excludes.sh 'Contained fixture|lifecycleState|version' "$scratch/card-deleted.json"
+admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+admin "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='$board';" >/dev/null
+test "$(delete_card '&confirmed=true')" = 404
+admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$board';" >/dev/null
+test "$(delete_card '&confirmed=true')" = 200
+cmp "$scratch/card-receipt.json" "$scratch/card-deleted.json"
+test "$card_after" = "$(state)"
+test "$(get owner "/boards/$board/archived-cards" card-hidden)" = 200
+jq -e --arg id "$card_target" 'all(.items[];.card.id!=$id)' "$scratch/card-hidden.json" >/dev/null
+admin "UPDATE board_lists SET lifecycle_state='DELETED' WHERE id='$card_parent';" >/dev/null
+test "$(delete_card '&confirmed=true')" = 404
+scripts/ci/assert-file-excludes.sh 'Contained fixture|lifecycleState|version' "$scratch/card-deleted.json"
+echo 'Card deletion: explicit archived consent, rollback, identical non-reapplying receipts, changed intent, current authority and deleted-parent denial passed.'

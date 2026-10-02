@@ -528,12 +528,12 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
 
     public Task<CardRecord?> FindCardAsync(
         Guid cardId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         lock (_sync)
         {
             _cards.TryGetValue(cardId, out var card);
-            return Task.FromResult<CardRecord?>(card);
+            return Task.FromResult<CardRecord?>(card is not null && (includeDeleted || card.LifecycleState != WorkItemLifecycleState.Deleted) ? card : null);
         }
     }
 
