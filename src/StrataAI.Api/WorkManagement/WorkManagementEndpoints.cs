@@ -730,7 +730,7 @@ public static class WorkManagementEndpoints
                 errorCode,
                 "The requested rank is invalid."),
             "invalid_move_position" => Problem(
-                StatusCodes.Status400BadRequest, errorCode, "The requested card position is invalid."),
+                StatusCodes.Status400BadRequest, errorCode, "The requested position is invalid."),
             "rank_space_exhausted" => Problem(
                 StatusCodes.Status409Conflict,
                 errorCode,
