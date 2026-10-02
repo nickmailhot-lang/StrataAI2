@@ -33,6 +33,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     expect(order.map((list: { id: string }) => list.id)).toEqual([lists[1].id, lists[0].id]);
     expect(order[0].version).toBe(2); expect(order[1].rank).toBe(lists[0].rank);
     if (viewport.width === 1280) {
+      let outsideWrites = 0;
+      page.on('request', request => { if (request.method() === 'PATCH' && /\/lists\/[^/]+$/.test(new URL(request.url()).pathname)) outsideWrites++; });
+      const outsideSource = await page.getByRole('button', { name: 'Drag First list', exact: true }).boundingBox();
+      const outsideTarget = await page.getByRole('heading', { name: 'Ordered lists', exact: true }).boundingBox();
+      expect(outsideSource).not.toBeNull(); expect(outsideTarget).not.toBeNull();
+      await page.mouse.move(outsideSource!.x + outsideSource!.width / 2, outsideSource!.y + outsideSource!.height / 2); await page.mouse.down();
+      await page.mouse.move(outsideTarget!.x + outsideTarget!.width / 2, outsideTarget!.y + outsideTarget!.height / 2, { steps: 12 }); await page.mouse.up();
+      expect(outsideWrites).toBe(0);
+      const afterOutside = await context.request.get(`/boards/${board}`); expect(afterOutside.status()).toBe(200);
+      expect((await afterOutside.json()).lists.map((column: { list: unknown }) => column.list)).toEqual(order);
       const source = await page.getByRole('button', { name: 'Drag First list', exact: true }).boundingBox();
       const target = await page.getByRole('region', { name: 'Second', exact: true }).boundingBox();
       expect(source).not.toBeNull(); expect(target).not.toBeNull();

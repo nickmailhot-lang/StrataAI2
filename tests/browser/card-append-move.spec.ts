@@ -85,6 +85,26 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       if (anchor) { expect(persisted[1]).toMatchObject(anchor); expect(persisted[0].rank < anchor.rank).toBe(true); }
       await page.getByRole('button', { name: 'Close', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('region', { name: 'Complete', exact: true }).getByRole('link', { name: 'Move this card', exact: true })).toBeFocused();
+      if (viewport.width === 390) {
+        await page.unroute(`**/cards/${card}/move`);
+        const dragHandle = page.getByRole('button', { name: 'Drag Move this card card', exact: true });
+        await expect(dragHandle).toBeEnabled();
+        const beforeDrag = await (await context.request.get(`/boards/${board}`)).json();
+        let dragWrites = 0;
+        page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === `/cards/${card}/move`) dragWrites++; });
+        await dragHandle.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Escape');
+        expect(dragWrites).toBe(0);
+        expect((await (await context.request.get(`/boards/${board}`)).json()).lists).toEqual(beforeDrag.lists);
+        await dragHandle.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Space');
+        await expect(page.getByText('Move acknowledged. Current placement is being checked.')).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Planning', exact: true }).getByRole('link', { name: 'Move this card', exact: true })).toBeFocused();
+        expect(dragWrites).toBe(1);
+        const afterDrag = await (await context.request.get(`/boards/${board}`)).json();
+        expect(afterDrag.lists.find((column: { list: { id: string } }) => column.list.id === lists[0]).cards[0]).toMatchObject({ id: card, version: 3 });
+        expect(afterDrag.lists.find((column: { list: { id: string } }) => column.list.id === lists[1]).cards).toEqual([anchor]);
+        await page.reload();
+        await expect(page.getByRole('region', { name: 'Planning', exact: true }).getByRole('link', { name: 'Move this card', exact: true })).toBeVisible();
+      }
       if (viewport.width === 1280) {
         async function dragBefore(handleName: string, target: import('@playwright/test').Locator) {
           const handle = page.getByRole('button', { name: handleName, exact: true }); await expect(handle).toBeEnabled();

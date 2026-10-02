@@ -1,0 +1,22 @@
+import type { KeyboardCoordinateGetter } from '@dnd-kit/core';
+
+export const cardKeyboardCoordinates: KeyboardCoordinateGetter = (event, { currentCoordinates, context }) => {
+  const horizontal = event.code === 'ArrowLeft' || event.code === 'ArrowRight';
+  const direction = event.code === 'ArrowLeft' || event.code === 'ArrowUp' ? -1
+    : event.code === 'ArrowRight' || event.code === 'ArrowDown' ? 1 : 0;
+  if (!direction || !context.collisionRect) return;
+  event.preventDefault();
+  const current = context.collisionRect;
+  const center = { x: current.left + current.width / 2, y: current.top + current.height / 2 };
+  const targets = context.droppableContainers.getEnabled().flatMap(container => {
+    if (!String(container.id).startsWith('card:') && !String(container.id).startsWith('card-end:')) return [];
+    const rect = context.droppableRects.get(container.id); if (!rect) return [];
+    const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
+    if (horizontal ? (x - center.x) * direction <= 1 : Math.abs(x - center.x) > 1 || (y - center.y) * direction <= 1) return [];
+    return [{ x, y }];
+  }).sort((a, b) => horizontal
+    ? Math.abs(a.x - center.x) - Math.abs(b.x - center.x) || Math.abs(a.y - center.y) - Math.abs(b.y - center.y)
+    : Math.abs(a.y - center.y) - Math.abs(b.y - center.y));
+  const target = targets[0];
+  return target ? { x: currentCoordinates.x + target.x - center.x, y: currentCoordinates.y + target.y - center.y } : undefined;
+};

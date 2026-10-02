@@ -155,3 +155,17 @@ then cancel and require zero move writes, unchanged persisted list/card records
 and no page-level horizontal overflow. Both scenarios collect locally; actual
 auto-scroll execution and large-board performance remain pending Linux CI.
 
+## Keyboard card targets
+
+Card keyboard dragging now moves to measured targets rather than fixed pixel
+increments: Up/Down stays in the current column; Left/Right chooses the nearest
+vertical target in the adjacent available column. It ignores list targets,
+disabled/unmeasured targets and out-of-range directions. Three source cases
+verify navigation, the end target and boundaries. The phone release case now
+cancels a keyboard card drag with zero writes/unchanged records, then completes
+a move into an empty list, requires one write, current-link focus, persisted
+revision, unchanged anchor and reload. Browser execution remains pending.
+Pointer collision detection now requires containment for both cards and lists;
+outside drops cannot select the nearest target. Keyboard collision uses centers
+so targets remain selectable despite different card/target heights.
+

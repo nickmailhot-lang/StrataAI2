@@ -28,9 +28,10 @@ import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
 import { ListPositionControls } from "./ListPositionControls";
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
-import { DndContext, PointerSensor, KeyboardSensor, closestCenter, pointerWithin, rectIntersection, defaultKeyboardCoordinateGetter, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, PointerSensor, KeyboardSensor, closestCenter, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
 import { listKeyboardCoordinates } from './listKeyboardCoordinates';
+import { cardKeyboardCoordinates } from './cardKeyboardCoordinates';
 import { listDragAnnouncements, listDragInstructions } from './listDragAccessibility';
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
@@ -91,7 +92,7 @@ function BoardContent() {
     const next = new Set(previous); if (unresolved) next.add(id); else next.delete(id); return next;
   }), []);
   const dragList = useRef<{ listId: string; name: string; version: number } | undefined>(undefined);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: (event, args) => String(args.active).startsWith('card:') ? defaultKeyboardCoordinateGetter(event, args) : listKeyboardCoordinates(event, args) }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: (event, args) => String(args.active).startsWith('card:') ? cardKeyboardCoordinates(event, args) : listKeyboardCoordinates(event, args) }));
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
   const reading = useRef(false);
@@ -437,8 +438,7 @@ function BoardContent() {
           const cardTarget = String(value.id).startsWith('card:') || String(value.id).startsWith('card-end:');
           return movingCard === cardTarget;
         });
-        return movingCard ? (args.pointerCoordinates ? pointerWithin({ ...args, droppableContainers }) : rectIntersection({ ...args, droppableContainers }))
-          : closestCenter({ ...args, droppableContainers });
+        return args.pointerCoordinates ? pointerWithin({ ...args, droppableContainers }) : closestCenter({ ...args, droppableContainers });
       }}
         accessibility={{ announcements: listDragAnnouncements(snapshot), screenReaderInstructions: listDragInstructions }} onDragStart={event => {
         dragCard.current = undefined; dragList.current = undefined;
