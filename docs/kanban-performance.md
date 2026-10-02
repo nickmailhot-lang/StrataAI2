@@ -27,8 +27,18 @@ budgets, a stable metric label, test outcome and the CI revision into
 titles, errors, identities and content are omitted. Invalid/missing measurements
 remain absent; unobserved feedback remains explicitly null. A failed test stays
 failed in this report. An empty report does not establish performance acceptance.
-The privacy/validation regressions run in source CI. Exact-image artifact
-production still needs verification for the reporter change.
+The privacy/validation regressions run in source CI. Fully green exact-image run
+36978417479 at `3e0d033` produced artifact 11216517737 (764-byte ZIP), retained
+through 2026-12-31 with SHA-256
+`036805b988651f92608270ee05c2a2f42959fb737962b332d6eebdc99d56aba0`.
+The inspected schema-1 JSON matches that exact revision and retains all twenty
+samples. Both metrics have passed outcomes: normal desktop Board readiness
+428.588ms, cached detail 101.521ms, card feedback 45.100ms and mutation p95
+28.395ms; the separate empty-List fixture measured List feedback at 31.000ms.
+Every original budget passed. The container suite passed 54 browser scenarios
+with one conditional skip, plus the separate mobile Worker-delivery case; all
+nine CI jobs and immutable release promotion passed. This run predates routing
+migration 027 and the new List rename UI, which require their own current proof.
 
 The normal fixture also measures card drop feedback in the browser's monotonic
 clock. A captured pointer-up starts the sample; the first frame with the card
@@ -38,7 +48,8 @@ so persistence cannot supply the measured update. Feedback must be under 100ms.
 The released request must then receive HTTP 200. The attachment includes
 feedbackObserved and feedbackMs; an unobserved destination fails the threshold
 and records a null duration. This covers normal desktop card drop feedback;
-list feedback and mobile feedback still need executed timing evidence.
+List feedback now has the separate executed evidence below; mobile feedback
+still needs executed timing evidence.
 
 The separate desktop list-feedback case uses two empty lists at 1280x844 and
 holds the keyed PATCH before dispatch. Pointer release starts a browser-clock
