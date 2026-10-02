@@ -18,7 +18,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         await route.abort('timedout');
       } else await route.continue();
     });
-    await page.goto('/app/demo/profile');
+    await page.goto('/app/profile');
     const deactivate = page.getByRole('button', { name: 'Deactivate account', exact: true });
     await deactivate.focus(); await page.keyboard.press('Enter');
     await expect(page.getByRole('dialog', { name: 'Deactivate your account?' })).toBeVisible();
@@ -46,7 +46,7 @@ test('PRD-02/03/18: mobile deactivation keeps a sole owner signed in with an act
   expect((await context.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
   expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
   expect((await context.request.post('/organizations', { headers, data: { name: 'Retained owner organization' } })).status()).toBe(201);
-  await page.goto('/app/demo/profile');
+  await page.goto('/app/profile');
   await page.getByLabel(/^Display name/).fill('Preserved owner draft');
   await page.getByRole('button', { name: 'Deactivate account', exact: true }).focus(); await page.keyboard.press('Enter');
   await page.getByRole('button', { name: 'Confirm deactivation' }).focus(); await page.keyboard.press('Enter');
@@ -173,7 +173,7 @@ test('PRD-02/60-TC-06: lost logout acknowledgment retries the original session r
       await route.abort('timedout');
     } else await route.continue();
   });
-  await page.goto('/app/demo/profile');
+  await page.goto('/app/profile');
   await expect(page.getByLabel(/^Display name/)).toHaveValue('Logout retry account');
   suspendRecovery = true;
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
@@ -210,7 +210,7 @@ test('PRD-02/60-TC-06/07: lost acknowledgment retries the committed profile inte
       await route.abort('timedout');
     } else await route.continue();
   });
-  await page.goto('/app/demo/profile');
+  await page.goto('/app/profile');
   await expect(page.getByLabel(/^Display name/)).toHaveValue('Retry account');
   suspendRecovery = true;
   await page.getByLabel(/^Display name/).fill('Saved after lost acknowledgment');
@@ -313,7 +313,7 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   expect(syncBefore.events).toEqual([]);
   const second = await context.newPage();
   await second.setViewportSize({ width: 390, height: 844 });
-  await second.goto('/app/demo/profile');
+  await second.goto('/app/profile');
   await expect(second.getByLabel(/^Display name/)).toHaveValue('Browser Council');
   await second.getByLabel(/^Display name/).fill('Stale browser save');
   await page.getByLabel(/^Display name/).fill('First browser save');

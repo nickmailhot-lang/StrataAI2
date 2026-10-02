@@ -14,6 +14,8 @@ public sealed class OrganizationService(
     // ARCH-02-AC-003: admission is a current read, never a transferable grant.
     public Task<OrganizationOperation<OrganizationSurfaceAdmission>> ReadSurfaceAdmissionAsync(Guid organizationId,
         Guid actorUserId, bool portal, CancellationToken cancellationToken = default) =>
+        organizationId == Guid.Empty
+            ? Task.FromResult(OrganizationOperation<OrganizationSurfaceAdmission>.Failure("organization_not_found")) :
         unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false, async () =>
         {
             var admitted = portal

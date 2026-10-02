@@ -32,6 +32,12 @@ public sealed partial class ApiHostTests
         using var invalid = await owner.GetAsync(route + "?surface=UNKNOWN", ct);
         Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
         Assert.Equal("invalid_access_surface", (await invalid.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        foreach (var surface in new[] { "INTERNAL", "PORTAL" })
+        {
+            using var empty = await owner.GetAsync($"/organizations/{Guid.Empty}/surface-access?surface={surface}", ct);
+            Assert.Equal(HttpStatusCode.NotFound, empty.StatusCode);
+            Assert.Equal("organization_not_found", (await empty.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        }
 
         // Seed the existing separate Portal grant via invitation acceptance;
         // never manufacture internal membership as a side effect of admission.
@@ -64,5 +70,7 @@ public sealed partial class ApiHostTests
         using var inactiveInternal = await owner.GetAsync(route + "?surface=INTERNAL", ct); Assert.Equal(HttpStatusCode.NotFound, inactiveInternal.StatusCode);
         using var loggedOut = await Mutate(portal, HttpMethod.Post, "/auth/logout", new { }); Assert.Equal(HttpStatusCode.NoContent, loggedOut.StatusCode);
         using var noSession = await portal.GetAsync(route + "?surface=PORTAL", ct); Assert.Equal(HttpStatusCode.Unauthorized, noSession.StatusCode);
+        using var emptyNoSession = await portal.GetAsync($"/organizations/{Guid.Empty}/surface-access?surface=PORTAL", ct);
+        Assert.Equal(HttpStatusCode.Unauthorized, emptyNoSession.StatusCode);
     }
 }

@@ -99,6 +99,10 @@ test "$(get owner "/organizations/$foreign/surface-access?surface=PORTAL" denied
 scripts/ci/assert-file-excludes.sh 'Bounded member directory|Other private directory|Directory fixture|directory-' "$scratch/denied.json"
 test "$(get owner "/organizations/$org/surface-access?surface=INVALID")" = 400
 jq -e '.code=="invalid_access_surface"' "$scratch/response.json" >/dev/null
+for surface in INTERNAL PORTAL; do
+  test "$(get owner "/organizations/00000000-0000-0000-0000-000000000000/surface-access?surface=$surface")" = 404
+  jq -e '.code=="organization_not_found"' "$scratch/response.json" >/dev/null
+done
 test "$(surface_state)" = "$surface_before"
 
 # A committed Portal revocation wins after the dedicated grant-row lock wait.

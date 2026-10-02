@@ -7,6 +7,9 @@ role or invitation material. Missing/inactive Organization or absent requested
 grant returns the existing non-disclosing `organization_not_found` problem.
 An invalid surface returns `invalid_access_surface` (400). Missing/revoked
 session remains 401; storage failure remains the existing safe 503 problem.
+An all-zero Organization identifier returns the same non-disclosing 404 before
+constructing a tenant command scope. It does not turn invalid scope into a
+storage failure or enable either shell. Authentication still runs first.
 
 Internal admission requires active internal membership. Portal admission
 requires an active row in the separate `portal_access` store. Neither grant
