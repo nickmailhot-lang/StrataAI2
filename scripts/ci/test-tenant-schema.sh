@@ -21,6 +21,7 @@ reject() {
 reject 'ALTER TABLE boards ALTER COLUMN tenant_id DROP NOT NULL'
 reject 'ALTER TABLE boards DISABLE ROW LEVEL SECURITY'
 reject 'ALTER TABLE boards NO FORCE ROW LEVEL SECURITY'
+reject 'ALTER TABLE audit_events DISABLE ROW LEVEL SECURITY'
 reject 'CREATE TABLE schema_guard_fixture(id uuid PRIMARY KEY)'
 reject 'CREATE TABLE schema_guard_fixture(id uuid PRIMARY KEY, tenant_id uuid NOT NULL); ALTER TABLE schema_guard_fixture ENABLE ROW LEVEL SECURITY; ALTER TABLE schema_guard_fixture FORCE ROW LEVEL SECURITY'
 echo 'Migrated tenant catalog, nullable/missing key, disabled/unforced RLS, missing policy and rollback checks passed.'

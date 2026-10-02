@@ -23,7 +23,12 @@ BEGIN
       SELECT a.attnotnull, a.atttypid INTO isolation_key
       FROM pg_attribute a WHERE a.attrelid=relation.oid AND NOT a.attisdropped
         AND a.attname=CASE WHEN relation.relname='organizations' THEN 'id' ELSE 'tenant_id' END;
-      IF NOT FOUND OR isolation_key.attnotnull IS NOT TRUE OR isolation_key.atttypid <> 'uuid'::regtype THEN
+      -- The shared append-only audit table also stores demonstrably global
+      -- identity events without manufacturing an Organization. Keep its UUID
+      -- key, forced RLS and policy checks; only this existing nullable-key
+      -- classification differs from tenant-only tables.
+      IF NOT FOUND OR isolation_key.atttypid <> 'uuid'::regtype
+        OR (isolation_key.attnotnull IS NOT TRUE AND relation.relname <> 'audit_events') THEN
         RAISE EXCEPTION 'Tenant schema invariant failed: % requires a non-null UUID Organization key', relation.relname;
       END IF;
       IF NOT relation.relrowsecurity OR NOT relation.relforcerowsecurity THEN

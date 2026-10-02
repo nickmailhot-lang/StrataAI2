@@ -30,7 +30,11 @@ After migration, the catalog guard classifies every non-extension application
 table in `public`. Explicitly listed global identity/ledger tables retain their
 separate subject/service authorization contracts. All other tables require a
 non-null UUID `tenant_id`, or the root Organization's non-null UUID `id`, enabled
-and forced RLS, and an explicit policy. Adding a global table requires deliberate
+and forced RLS, and an explicit policy. The existing shared append-only
+`audit_events` table also stores global identity events: its UUID Organization key
+may be null for those global records, while its key type, forced RLS and policy
+remain checked. This does not exempt tenant-only tables or routing tables.
+Adding a global table requires deliberate
 classification and its own security review; classification grants no privileges.
 This guard checks catalog structure, not the correctness of policy predicates.
 Cross-tenant query/write, missing-context and restricted-role fixtures remain
