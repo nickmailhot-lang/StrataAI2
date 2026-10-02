@@ -583,8 +583,9 @@ function BoardContent() {
       </Dialog>
       <Dialog
         open={Boolean(cardId)}
+        disableRestoreFocus
         slotProps={{ transition: { onExited: () => {
-          (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus();
+          (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });
           closeFocusCard.current = undefined;
         } } }}
         onClose={() => {
