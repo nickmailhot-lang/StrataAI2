@@ -40,6 +40,30 @@ it('rejects a drop captured before a newer card revision without writing', async
   expect(await screen.findByText(/The card changed during dragging/)).toBeVisible();
   expect(fetcher).not.toHaveBeenCalled(); expect(refresh).toHaveBeenCalledTimes(1);
 });
+it('does not replace an uncertain drop with another drop after newer live placement arrives', async () => {
+  const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply(ack)); vi.stubGlobal('fetch', fetcher);
+  const preview = vi.fn(); const acknowledged = vi.fn();
+  const props = { disabled: false, onAcknowledged: acknowledged, onRefresh: vi.fn(), onPreview: preview };
+  const view = render(<CardMoveControls {...props} card={card} snapshot={snapshot}
+    dropRequest={{ cardId: card.id, version: 3, destination: 'dest', before: '', nonce: 'first' }} />);
+  await screen.findByRole('button', { name: 'Retry this move' });
+  const original = fetcher.mock.calls[0][1];
+  const newer = { ...card, version: 4 };
+  const current: BoardSnapshot = { ...snapshot, lists: snapshot.lists.map(column => ({ ...column,
+    cards: column.list.id === 'dest' ? [newer] : [],
+  })) };
+  view.rerender(<CardMoveControls {...props} card={newer} snapshot={current}
+    dropRequest={{ cardId: card.id, version: 4, destination: 'source', before: '', nonce: 'replacement' }} />);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole('combobox', { name: 'Destination list' })).toHaveTextContent('Complete');
+  expect(screen.getByRole('combobox', { name: 'Destination list' })).toHaveAttribute('aria-disabled', 'true');
+  fireEvent.click(screen.getByRole('button', { name: 'Retry this move' }));
+  await waitFor(() => expect(acknowledged).toHaveBeenCalledTimes(1));
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(fetcher.mock.calls[1][1].body).toBe(original.body);
+  expect(new Headers(fetcher.mock.calls[1][1].headers).get('Idempotency-Key')).toBe(new Headers(original.headers).get('Idempotency-Key'));
+  expect(preview.mock.calls.filter(call => call[0] !== undefined)).toEqual([[{ cardId: card.id, destination: 'dest', before: '' }]]);
+});
 it('publishes provisional placement only while saving, then clears it and reconciles an uncertain result', async () => {
   let reject: ((reason: Error) => void) | undefined;
   vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((_, failed) => { reject = failed; })));

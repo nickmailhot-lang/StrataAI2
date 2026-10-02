@@ -110,7 +110,7 @@ card revision blocks a fresh drop and requests current state. An unresolved
 intent cannot be replaced by a later drop. A recovery callback exposes that
 fence to the canvas drag handles.
 
-Fourteen focused control tests pass, including drop delivery with a lost
+Fifteen focused control tests pass, including drop delivery with a lost
 response/exact retry and stale drag-start rejection without a write. Typecheck,
 lint and production build pass.
 
@@ -168,4 +168,10 @@ revision, unchanged anchor and reload. Browser execution remains pending.
 Pointer collision detection now requires containment for both cards and lists;
 outside drops cannot select the nearest target. Keyboard collision uses centers
 so targets remain selectable despite different card/target heights.
+
+Recovery coverage also delivers a second drop after an uncertain first drop and
+a newer canonical placement. It requires no automatic replacement write, a
+disabled unchanged destination, the original retry body/key and no repeated
+projection of historical placement. This source check does not prove executed
+browser recovery acceptance.
 
