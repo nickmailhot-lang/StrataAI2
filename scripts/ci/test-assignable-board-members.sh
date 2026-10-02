@@ -9,6 +9,7 @@ cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null || true
+  admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null || true
   admin 'DROP POLICY IF EXISTS assignment_deactivation_failure ON audit_events;' >/dev/null || true
   rm -rf "$scratch"
 }
@@ -64,6 +65,7 @@ state() { admin "SELECT md5(jsonb_build_object(
  'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
+ 'notifications',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='$org'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
 before=$(state)
 test "$(request outsider PUT "$member_path?version=1" "$key" '{}')" = 404
@@ -75,17 +77,30 @@ admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
 test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 503
 admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
 test "$before" = "$(state)"
+admin 'REVOKE INSERT ON card_assignment_notifications FROM strataai_api_runtime;' >/dev/null
+# Fail after the Card association, revision, audit and Work event/job were written.
+test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 503
+admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+
 test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 200
 jq -e --arg member "$member" --arg card "$card" '.userId==$member and .assigned==true and .changed==true and .card.id==$card and .card.version==2' "$scratch/response.json" >/dev/null
 cp "$scratch/response.json" "$scratch/assignment-receipt.json"
 test "$(admin "SELECT assigned_by='$owner' AND version=1 AND created_at=updated_at FROM card_members WHERE tenant_id='$org' AND card_id='$card' AND user_id='$member';")" = t
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='CARD_MEMBER_ADDED';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='CARD_MEMBER_ADDED';")" = 1
+test "$(admin "SELECT count(*) FROM card_assignment_notifications n JOIN work_events e
+ ON e.tenant_id=n.tenant_id AND e.board_id=n.board_id AND e.event_id=n.event_id
+ WHERE n.tenant_id='$org' AND n.card_id='$card' AND n.recipient_id='$member' AND n.actor_id='$owner'
+ AND n.card_version=2 AND n.notification_type='CARD_ASSIGNED' AND n.read_at IS NULL
+ AND e.event_type='CARD_MEMBER_ADDED' AND e.entity_id=n.card_id AND e.actor_id=n.actor_id AND e.entity_version=n.card_version
+ AND e.created_at=n.created_at AND e.metadata='{}'::jsonb;")" = 1
 after=$(state)
 test "$(request owner PUT "$member_path?version=1" "$key" '{}')" = 200
 cmp "$scratch/response.json" "$scratch/assignment-receipt.json"; test "$after" = "$(state)"
 test "$(request owner PUT "/cards/$card/members/$owner?version=2" 11111111-1111-1111-1111-111111111142 '{}')" = 200
 jq -e '.card.version==3 and .changed==true' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND card_id='$card';")" = 1
 test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card';")" = 2
 test "$(get owner "/cards/$card/members")" = 200
 jq -e --arg card "$card" --arg owner "$owner" '.cardId==$card and .cardVersion==3 and .canEdit==true and (.items|length)==2 and .nextCursor==null
@@ -159,6 +174,7 @@ test "$(request owner DELETE "$member_path?version=2" 11111111-1111-1111-1111-11
 test "$after" = "$(state)"
 test "$(request owner PUT "$member_path?version=3" 11111111-1111-1111-1111-111111111144 '{}')" = 200
 jq -e '.card.version==3 and .changed==false' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND card_id='$card';")" = 1
 test "$(request owner DELETE "$member_path?version=3" 11111111-1111-1111-1111-111111111145 '{}')" = 200
 jq -e '.card.version==4 and .changed==true and .assigned==false and .card.title=="Retained assignment Card" and .card.description=="Retained assignment description"' "$scratch/response.json" >/dev/null
 test "$(get owner "/cards/$card/member-options" options-removed-first)" = 200
@@ -171,6 +187,7 @@ jq -e --arg card "$card" --arg owner "$owner" '.cardMembers[$card].total==1 and 
 test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card';")" = 1
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='CARD_MEMBER_REMOVED';")" = 1
 test "$(request owner PUT "$member_path?version=4" 11111111-1111-1111-1111-111111111146 '{}')" = 200
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND card_id='$card' AND recipient_id='$member';")" = 2
 hold() {
   mkfifo "$scratch/gate.in"
   docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.log" 2>&1 & gate_pid=$!
@@ -321,6 +338,7 @@ account_state() { admin "SELECT md5(jsonb_build_object(
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id IN ('$org','$foreign_org')),
  'receipts',(SELECT count(*) FROM identity_revocation_replays WHERE user_id='$member'))::text);"; }
 deactivation_key=11111111-1111-1111-1111-111111111154
+cleanup_event_count=$(admin "SELECT count(*) FROM work_events WHERE actor_id='$member' AND event_type='CARD_MEMBER_REMOVED' AND entity_id IN ('$card','$archived_card','$foreign_card');")
 before=$(account_state)
 # Fail specifically inside Card cleanup after the account/session/identity event
 # changes, proving those earlier writes share the same rollback/commit boundary.
@@ -336,7 +354,10 @@ test "$(admin "SELECT version FROM cards WHERE id='$foreign_card';")" = 3
 test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card' AND user_id='$owner';")" = 1
 test "$(admin "SELECT count(*) FROM users WHERE id='$member' AND status='DEACTIVATED';")" = 1
 test "$(admin "SELECT count(*) FROM organization_members WHERE user_id='$member' AND tenant_id IN ('$org','$foreign_org');")" = 2
-test "$(admin "SELECT count(*) FROM work_events WHERE actor_id='$member' AND event_type='CARD_MEMBER_REMOVED' AND entity_id IN ('$card','$archived_card','$foreign_card');")" = 3
+test "$(admin "SELECT count(*) FROM work_events WHERE actor_id='$member' AND event_type='CARD_MEMBER_REMOVED' AND entity_id IN ('$card','$archived_card','$foreign_card');")" = "$((cleanup_event_count + 3))"
+test "$(admin "SELECT count(*) FROM work_events e JOIN cards c ON c.tenant_id=e.tenant_id AND c.board_id=e.board_id AND c.id=e.entity_id
+ WHERE e.actor_id='$member' AND e.event_type='CARD_MEMBER_REMOVED' AND e.entity_version=c.version
+ AND e.entity_id IN ('$card','$archived_card','$foreign_card');")" = 3
 test "$(admin "SELECT count(*) FROM identity_revocation_replays WHERE user_id='$member' AND key_id='$deactivation_key';")" = 1
 after=$(account_state)
 test "$(request member POST /me/deactivate "$deactivation_key" '{}')" = 204

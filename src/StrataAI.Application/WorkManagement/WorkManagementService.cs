@@ -6,7 +6,8 @@ namespace StrataAI.Application.WorkManagement;
 public sealed partial class WorkManagementService(
     IWorkManagementStore store,
     IOrganizationStore organizationStore,
-    IClock clock, IWorkEventStore events, StrataAI.Application.Identity.IdentityPolicy identityPolicy) : IWorkManagementService, IWorkBoardAuthorization
+    IClock clock, IWorkEventStore events, StrataAI.Application.Identity.IdentityPolicy identityPolicy,
+    IWorkNotificationStore notifications) : IWorkManagementService, IWorkBoardAuthorization
 {
     public async Task<WorkOperation<BoardSyncScope>> GetSyncScopeAsync(Guid boardId, Guid? actorId,
         CancellationToken cancellationToken = default)
@@ -1053,11 +1054,14 @@ public sealed partial class WorkManagementService(
 
     private async Task RecordChangeAsync(Guid organizationId, Guid boardId, Guid actorUserId,
         string eventType, string entityType, Guid entityId, long version, string correlationId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, Guid? notificationRecipientId = null)
     {
         await store.AppendAuditAsync(organizationId, actorUserId, eventType, entityType, entityId, correlationId, cancellationToken);
-        await events.AppendAsync(new WorkEvent(Guid.NewGuid(), organizationId, boardId, actorUserId,
-            eventType, entityType, entityId, version, correlationId, clock.UtcNow), cancellationToken);
+        var change = new WorkEvent(Guid.NewGuid(), organizationId, boardId, actorUserId,
+            eventType, entityType, entityId, version, correlationId, clock.UtcNow);
+        await events.AppendAsync(change, cancellationToken);
+        if (notificationRecipientId is { } recipientId)
+            await notifications.AppendCardAssignmentAsync(change, recipientId, cancellationToken);
     }
 
     private static bool IsOrganizationAdmin(

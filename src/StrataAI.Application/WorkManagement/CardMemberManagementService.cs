@@ -18,7 +18,7 @@ public sealed partial class WorkManagementService
         if (change is null) return WorkOperation<CardMemberChange>.Failure("version_conflict");
         if (change.Changed)
             await RecordChangeAsync(card.OrganizationId, card.BoardId, actorId, assigned ? "CARD_MEMBER_ADDED" : "CARD_MEMBER_REMOVED",
-                "Card", cardId, change.Card.Version, correlationId, cancellationToken);
+                "Card", cardId, change.Card.Version, correlationId, cancellationToken, assigned ? userId : null);
         return WorkOperation<CardMemberChange>.Success(change);
     }
 }
