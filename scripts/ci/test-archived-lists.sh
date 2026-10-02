@@ -48,7 +48,7 @@ before=$(state)
 # PRD-18-FR-004/011: card discovery is bounded and hides deleted parents/detail bodies.
 test "$(get owner "/boards/$board/archived-cards" cards-first)" = 200
 jq -e --arg org "$org" --arg board "$board" '.organizationId==$org and .boardId==$board and (.items|length)==50
-  and .nextCursor==.items[-1].card.id and all(.items[];.card.lifecycleState=="archived"
+  and .canDelete==true and .nextCursor==.items[-1].card.id and all(.items[];.card.lifecycleState=="archived"
     and .card.description==null and .list.lifecycleState=="archived" and .card.listId==.list.id)' "$scratch/cards-first.json" >/dev/null
 card_cursor=$(jq -r '.nextCursor' "$scratch/cards-first.json")
 test "$(get owner "/boards/$board/archived-cards?after=$card_cursor" cards-second)" = 200
@@ -110,6 +110,7 @@ scripts/ci/assert-file-excludes.sh 'Archived fixture|Contained fixture|contained
 admin "UPDATE board_members SET status='ACTIVE',role='MEMBER' WHERE board_id='$board' AND user_id='$editor';" >/dev/null
 test "$(get editor "/boards/$board/archived-lists")" = 404
 test "$(get editor "/boards/$board/archived-cards")" = 200
+jq -e '.canDelete==false' "$scratch/response.json" >/dev/null
 # Contributor discovery follows Card archive/restore rights; removed membership does not.
 hold; get editor "/boards/$board/archived-cards?after=$card_cursor" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED',version=version+1 WHERE board_id='$board' AND user_id='$editor';"

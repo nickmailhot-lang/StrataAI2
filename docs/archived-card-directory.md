@@ -41,5 +41,8 @@ summary validation/privacy, bounded paging, hung response bodies, queued reads a
 denial during a write. Desktop/phone release cases exercise keyboard review, live
 parent changes, a lost committed restore, another client's updated canvas, unchanged
 neighbor data, receipt recovery, focus and reload. Collection is not runtime proof.
-Large-data latency, Card deletion consent, telemetry and retention acceptance still
-need work; those remaining requirements keep PRD-18 open.
+The directory reports current `canDelete` alongside its summary page, under the
+same post-wait authority boundary. Editing rights permit discovery/restore; current
+administration permits the irreversible deletion review described in
+`card-deletion-consent.md`. Large-data latency, full deletion runtime proof,
+telemetry and retention acceptance still need work; PRD-18 remains open.

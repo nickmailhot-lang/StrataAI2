@@ -18,5 +18,22 @@ irreversibility, outsider denial, Board archive/recovery and parent deletion.
 Required restricted-role container checks prove consent rejection without effects,
 audit-write rollback, receipt recovery without extra entity/audit/event/job writes
 and fresh authority. Local compilation/syntax checks do not establish Linux runtime
-acceptance. Card deletion UI with irreversible review is the next increment;
-retention, search/notification exclusions and remaining PRD clauses stay open.
+acceptance. An active-Card deletion is the established 409
+`invalid_lifecycle_transition`, distinct from missing archived deletion consent (400).
+
+The Card archive page now receives current `canDelete` capability with each page.
+Contributors retain restoration but see no permanent deletion action. Administrative
+deletion reviews the exact Card/parent, states irreversibility and requires a separate
+unchecked acknowledgment. It is available under active or archived nondeleted Lists.
+Changed Card/parent data invalidates an unsubmitted review. An uncertain response
+retains the exact original version/confirmation/key after the row disappears. A
+current read that revokes administration aborts/fences pending deletion and removes
+its review, while retaining authorized contributor discovery/restoration. A late
+response cannot resurrect its intent. No restore-shaped acknowledgment confirms a
+deletion. Dialog content disappears immediately on review closure, and focus returns
+after exit/current discovery.
+
+Component regressions and desktop/phone release scenarios cover those boundaries,
+keyboard consent, lost committed receipt, second-client removal, reload and denied
+restoration. Collection is not execution proof. Retention, search/notification
+exclusions, telemetry and remaining PRD clauses stay open.

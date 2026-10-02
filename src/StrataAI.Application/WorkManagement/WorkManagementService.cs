@@ -127,7 +127,7 @@ public sealed class WorkManagementService(
         var rows = await store.ListArchivedCardsAsync(boardId, after, cancellationToken);
         var items = rows.Take(50).ToArray();
         return WorkOperation<ArchivedCardPage>.Success(new(resolved.Value.Board.OrganizationId,
-            boardId, items, rows.Count > 50 ? items[^1].Card.Id : null));
+            boardId, items, rows.Count > 50 ? items[^1].Card.Id : null, resolved.Value.Access.CanAdminister));
     }
 
     public async Task<WorkOperation<BoardRecord>> UpdateBoardAsync(

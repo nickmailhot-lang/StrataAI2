@@ -80,7 +80,7 @@ public sealed record BoardMemberDirectoryEntry(Guid BoardId, Guid UserId, BoardR
 public sealed record ArchivedListEntry(BoardListRecord List, long ContainedCardCount);
 public sealed record ArchivedCardEntry(CardRecord Card, BoardListRecord List);
 public sealed record ArchivedCardPage(Guid OrganizationId, Guid BoardId,
-    IReadOnlyList<ArchivedCardEntry> Items, Guid? NextCursor);
+    IReadOnlyList<ArchivedCardEntry> Items, Guid? NextCursor, bool CanDelete);
 public sealed record ArchivedListPage(Guid OrganizationId, Guid BoardId,
     IReadOnlyList<ArchivedListEntry> Items, Guid? NextCursor);
 

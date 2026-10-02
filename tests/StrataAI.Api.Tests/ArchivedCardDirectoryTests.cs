@@ -27,6 +27,7 @@ public sealed partial class ApiHostTests
         using var active = await Mutate(owner, HttpMethod.Post, $"/lists/{list}/cards", new { title = "Active card" });
         Assert.Equal(HttpStatusCode.Created, active.StatusCode);
         var first = await owner.GetFromJsonAsync<JsonElement>($"/boards/{board}/archived-cards", ct);
+        Assert.True(first.GetProperty("canDelete").GetBoolean());
         Assert.Equal(50, first.GetProperty("items").GetArrayLength());
         var cursor = first.GetProperty("nextCursor").GetGuid();
         var second = await owner.GetFromJsonAsync<JsonElement>($"/boards/{board}/archived-cards?after={cursor}", ct);

@@ -7,7 +7,7 @@ const org = '10000000-0000-4000-8000-000000000001'; const board = '10000000-0000
 const list = { id: '20000000-0000-4000-8000-000000000001', organizationId: org, boardId: board, name: 'Planning', rank: '500', version: 1, lifecycleState: 'active' };
 const card = { id: '30000000-0000-4000-8000-000000000001', organizationId: org, boardId: board, listId: list.id,
   title: 'Review budget', description: null, rank: '500', version: 2, lifecycleState: 'archived' };
-const row = { card, list }; const page = { organizationId: org, boardId: board, items: [row], nextCursor: null };
+const row = { card, list }; const page = { organizationId: org, boardId: board, items: [row], nextCursor: null, canDelete: true };
 const ack = { ...card, version: 3, lifecycleState: 'active', description: 'Detail stays out of archive UI' };
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 function mount(fetch: ReturnType<typeof vi.fn>) {
@@ -57,6 +57,7 @@ it.each([{ ...ack, listId: 'other' }, { ...ack, boardId: 'other' }, { ...ack, ra
   expect(screen.queryByText('Card restore acknowledged. Current archived Cards are being checked.')).not.toBeInTheDocument();
 });
 it.each([{ ...page, organizationId: 'other' }, { ...page, items: [row, row] }, { ...page, nextCursor: card.id },
+  { ...page, canDelete: undefined }, { ...page, canDelete: 'true' },
   { ...page, items: [{ ...row, card: { ...card, description: 'Private detail' } }] },
   { ...page, items: [{ ...row, list: { ...list, lifecycleState: 'deleted' } }] }])('fails closed on invalid discovery %j', async value => {
   mount(vi.fn().mockResolvedValue(reply(value))); await screen.findByText('Unable to confirm current archived Cards. Please check again.');
@@ -112,4 +113,77 @@ it('bounds a hung acknowledgment body and preserves the same request after its d
   const writes = fetch.mock.calls.map(([, init]) => init).filter((init): init is RequestInit => init?.method === 'POST'); expect(writes).toHaveLength(2);
   expect(writes[1].body).toBe(writes[0].body);
   expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
+});
+async function reviewDeletion() { fireEvent.click(await screen.findByRole('button', { name: 'Permanently delete Review budget card' })); }
+function confirmDeletion() {
+  fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm permanent deletion' }));
+}
+it('requires explicit irreversible consent and sends the reviewed deletion without a request body', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply({ ...ack, lifecycleState: 'deleted' }))
+    .mockResolvedValue(reply({ ...page, items: [] })); mount(fetch); await reviewDeletion();
+  expect(screen.getByText('Permanently delete Review budget from Planning?')).toBeInTheDocument();
+  expect(screen.getByText('This cannot be undone. This Card can no longer be restored or used.')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled(); expect(fetch).toHaveBeenCalledOnce();
+  confirmDeletion(); await screen.findByText('No archived cards on this page.');
+  expect(fetch.mock.calls[1][0]).toBe(`/cards/${card.id}?version=2&confirmed=true`); expect(fetch.mock.calls[1][1].method).toBe('DELETE');
+  expect(fetch.mock.calls[1][1].body).toBeUndefined(); expect(fetch.mock.calls[1][1].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Check current archived cards' })).toHaveFocus());
+});
+it('lets contributors restore but hides permanent deletion when current capability is false', async () => {
+  mount(vi.fn().mockResolvedValue(reply({ ...page, canDelete: false })));
+  expect(await screen.findByRole('button', { name: 'Restore Review budget card' })).toBeEnabled();
+  expect(screen.queryByRole('button', { name: 'Permanently delete Review budget card' })).not.toBeInTheDocument();
+});
+it('allows reviewed administrative deletion under an archived nondeleted parent', async () => {
+  mount(vi.fn().mockResolvedValue(reply({ ...page, items: [{ ...row, list: { ...list, lifecycleState: 'archived' } }] })));
+  await reviewDeletion(); fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeEnabled();
+});
+it('preserves original confirmation/version/key after a lost committed deletion removes its row', async () => {
+  const writes: { path: string; init: RequestInit }[] = []; let reads = 0;
+  const fetch = vi.fn((path: string, init: RequestInit) => {
+    if (init.method === 'DELETE') { writes.push({ path, init }); return writes.length === 1 ? Promise.reject(new Error('Lost')) : Promise.resolve(reply({ ...ack, lifecycleState: 'deleted' })); }
+    return Promise.resolve(reply(reads++ === 0 ? page : { ...page, items: [] }));
+  }); mount(fetch); await reviewDeletion(); confirmDeletion();
+  const retry = await screen.findByRole('button', { name: 'Retry this deletion' }); await waitFor(() => expect(retry).toBeEnabled());
+  expect(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' })).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Cancel deletion' })).not.toBeInTheDocument();
+  fireEvent.click(retry); await screen.findByText('No archived cards on this page.');
+  expect(writes).toHaveLength(2); expect(writes[1].path).toBe(writes[0].path); expect(writes[1].init.body).toBeUndefined();
+  expect(new Headers(writes[1].init.headers).get('Idempotency-Key')).toBe(new Headers(writes[0].init.headers).get('Idempotency-Key'));
+});
+it('invalidates deletion consent on a live revision and resets it on fresh review', async () => {
+  let invalidate!: () => void; vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  mount(vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValue(reply({ ...page, items: [{ ...row, card: { ...card, version: 3 } }] })));
+  await reviewDeletion(); fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  await act(async () => { invalidate(); });
+  await screen.findByText('This Card or its parent List changed. Cancel this review and check the current archive before deletion.');
+  expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel deletion' })); await reviewDeletion();
+  expect(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' })).not.toBeChecked();
+});
+it('aborts and fences a pending deletion when editing remains allowed but administration is revoked', async () => {
+  let invalidate!: () => void; let resolve!: (response: Response) => void; let signal!: AbortSignal; let reads = 0;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  mount(vi.fn((_path: string, init: RequestInit) => {
+    if (init.method === 'DELETE') { signal = init.signal!; return new Promise<Response>(done => { resolve = done; }); }
+    return Promise.resolve(reply(reads++ === 0 ? page : { ...page, canDelete: false }));
+  })); await reviewDeletion(); confirmDeletion(); await act(async () => { invalidate(); });
+  await screen.findByText('Permanent Card deletion is unavailable.'); expect(signal.aborted).toBe(true);
+  await act(async () => { resolve(reply({ ...ack, lifecycleState: 'deleted' })); });
+  expect(screen.queryByRole('button', { name: 'Retry this deletion' })).not.toBeInTheDocument();
+  expect(screen.queryByText('Card deletion acknowledged. Current archived Cards are being checked.')).not.toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: 'Restore Review budget card' })).toBeEnabled();
+});
+it('keeps a completed acknowledgment when the following page has only contributor capability', async () => {
+  mount(vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply({ ...ack, lifecycleState: 'deleted' }))
+    .mockResolvedValue(reply({ ...page, canDelete: false, items: [] })));
+  await reviewDeletion(); confirmDeletion(); await screen.findByText('Card deletion acknowledged. Current archived Cards are being checked.');
+  expect(screen.queryByText('Permanent Card deletion is unavailable.')).not.toBeInTheDocument();
+});
+it('rejects restore-shaped deletion acknowledgment and preserves the delete intent', async () => {
+  mount(vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply(ack)).mockResolvedValue(reply(page)));
+  await reviewDeletion(); confirmDeletion(); await screen.findByRole('button', { name: 'Retry this deletion' });
+  expect(screen.queryByText('Card deletion acknowledged. Current archived Cards are being checked.')).not.toBeInTheDocument();
 });
