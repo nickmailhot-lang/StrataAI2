@@ -140,6 +140,22 @@ actors; the required exact-image fixture covers two pages, removal reflected at
 the next Card revision, invalid cursors and revoked editors. Strict compilation,
 shell syntax and diff checks passed; execution awaits Linux CI.
 
+Card details now expose an editing picker with explicit Add/Remove buttons,
+named colors, bounded next-page navigation and a reload action. Options are
+usable only for the displayed Card revision. A confirmed change refreshes the
+Board and returns focus after refresh completes. Unknown outcomes retain their
+original label/action/Card revision/key outside the conditional Card body, so a
+newer snapshot does not replace an unresolved intent. Recovery holds the parent
+dialog open and blocks competing work; fresh Board permission loss clears the
+intent and fences late responses. Definite conflicts discard stale choices and
+require a fresh read instead of silently resubmitting against a new revision.
+
+Picker validation: seven new component cases plus Board tests passed (31 focused
+tests), typecheck and lint passed. The two desktop/mobile browser cases now add
+through the UI, lose the first persisted assignment acknowledgment, compare the
+same retry URL/key, recover focus, and remove through the UI. These runtime
+scenarios await CI and are not yet acceptance evidence.
+
 This is a foundation, not PRD-10 closure. Accessible label administration, filtering, relative reorder
 controls, copy/move metadata reconciliation, and exact-image concurrency,
 rollback, telemetry, and browser acceptance remain required.

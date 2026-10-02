@@ -15,7 +15,7 @@ for (const width of [1280, 390]) {
     expect(listReply.status()).toBe(201); const list = (await listReply.json()).id;
     const cardReply = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Labeled work' } });
     expect(cardReply.status()).toBe(201); const card = (await cardReply.json()).id;
-    const labels: string[] = []; let version = 1;
+    const labels: string[] = [];
     await page.goto(`/app/${org}/boards/${board}`);
     const attempts: { key: string | undefined; body: string | null }[] = [];
     await page.route(`**/boards/${board}/labels`, async route => {
@@ -45,10 +45,24 @@ for (const width of [1280, 390]) {
         expect(created.status()).toBe(201); id = (await created.json()).id;
       }
       labels.push(id);
-      const assigned = await context.request.put(`/cards/${card}/labels/${id}?version=${version}`, { headers });
-      expect(assigned.status()).toBe(200); version = (await assigned.json()).card.version;
     }
     const path = `/app/${org}/boards/${board}/cards/${card}`;
+    await page.goto(path);
+    const assignmentAttempts: { url: string; key: string | undefined }[] = [];
+    await page.route(`**/cards/${card}/labels/${labels[0]}?*`, async route => {
+      assignmentAttempts.push({ url: route.request().url(), key: route.request().headers()['idempotency-key'] });
+      const reply = await route.fetch(); expect(reply.status()).toBe(200);
+      if (assignmentAttempts.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
+    });
+    const edit = page.getByRole('button', { name: 'Edit Card labels', exact: true });
+    await edit.focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Add label Priority', exact: true }).focus(); await page.keyboard.press('Enter');
+    const retryAssignment = page.getByRole('button', { name: 'Retry label change' }); await expect(retryAssignment).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
+    await retryAssignment.focus(); await page.keyboard.press('Enter'); await expect(edit).toBeFocused();
+    expect(assignmentAttempts).toHaveLength(2); expect(assignmentAttempts[0]).toEqual(assignmentAttempts[1]);
+    await edit.focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Add label blue', exact: true }).focus(); await page.keyboard.press('Enter'); await expect(edit).toBeFocused();
     await page.goto(`/app/${org}/boards/${board}`);
     const face = page.getByRole('link').filter({ hasText: 'Labeled work' });
     await expect(face.getByLabel('Priority, red', { exact: true })).toBeVisible();
@@ -62,6 +76,10 @@ for (const width of [1280, 390]) {
     await expect(details.getByText('blue label', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Hide labels', exact: true }).focus(); await page.keyboard.press('Enter');
     await expect(details.getByLabel('Priority, red', { exact: true })).toHaveCount(0);
+    await edit.focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Remove label blue', exact: true }).focus(); await page.keyboard.press('Enter'); await expect(edit).toBeFocused();
+    const remaining = await context.request.get(`/cards/${card}/labels`); expect(remaining.status()).toBe(200);
+    const remainingItems = (await remaining.json()).items; expect(remainingItems).toHaveLength(1); expect(remainingItems[0].id).toBe(labels[0]);
     for (const id of labels) expect((await context.request.delete(`/labels/${id}?version=1&confirmed=true`, { headers })).status()).toBe(200);
     await page.reload(); await show.focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('No labels assigned.', { exact: true })).toBeVisible();
