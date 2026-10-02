@@ -6,6 +6,12 @@ internal sealed class InMemoryWatchSubscriptionStore : IWatchSubscriptionStore
 {
     private readonly object _gate = new();
     private readonly Dictionary<(Guid Organization, Guid User, string Type, Guid Entity), WatchSubscription> _rows = new();
+    public Task<IReadOnlyList<Guid>> ListActivityCandidatesAsync(CardWatchActivity scope, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested(); lock (_gate)
+            return Task.FromResult<IReadOnlyList<Guid>>(_rows.Values.Where(scope.Matches).Select(w => w.UserId)
+                .Distinct().OrderBy(id => id.ToString("N"), StringComparer.Ordinal).ToArray());
+    }
     public Task<WatchSubscription?> FindAsync(Guid organizationId, Guid userId, string entityType, Guid entityId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested(); lock (_gate)

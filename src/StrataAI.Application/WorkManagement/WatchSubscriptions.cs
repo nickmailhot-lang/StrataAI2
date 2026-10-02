@@ -12,6 +12,9 @@ public sealed record WatchState(Guid OrganizationId, Guid BoardId, Guid UserId, 
 
 public interface IWatchSubscriptionStore
 {
+    // Unbounded, deduplicated candidates for internal fan-out only. Caller owns
+    // the Card's Board gate and must recheck account/membership/view eligibility.
+    Task<IReadOnlyList<Guid>> ListActivityCandidatesAsync(CardWatchActivity scope, CancellationToken ct);
     Task<WatchSubscription?> FindAsync(Guid organizationId, Guid userId, string entityType, Guid entityId, CancellationToken ct);
     Task<WatchSubscription?> SetAsync(Guid organizationId, Guid userId, string entityType, Guid entityId,
         bool watching, long expectedVersion, DateTimeOffset now, CancellationToken ct);

@@ -8,6 +8,23 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed class PostgresWatchSubscriptionStore(PostgresConnectionFactory connections) : IWatchSubscriptionStore
 {
     private const string Columns = "id,tenant_id,user_id,entity_type,entity_id,watching,created_at,updated_at,version";
+    public async Task<IReadOnlyList<Guid>> ListActivityCandidatesAsync(CardWatchActivity scope, CancellationToken ct)
+    {
+        if (!connections.HasCommandScope(scope.OrganizationId))
+            throw new InvalidOperationException("Watch activity selection requires the originating command transaction.");
+        await using var session = await connections.OpenTenantSessionAsync(scope.OrganizationId, ct);
+        await using var query = new NpgsqlCommand("""
+            SELECT DISTINCT user_id FROM watch_subscriptions WHERE tenant_id=@tenant AND watching
+              AND ((entity_type='CARD' AND entity_id=@card) OR (entity_type='LIST' AND entity_id=@list)
+                OR (entity_type='BOARD' AND entity_id=@board)) ORDER BY user_id;
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", scope.OrganizationId); query.Parameters.AddWithValue("board", scope.BoardId);
+        query.Parameters.AddWithValue("list", scope.ListId); query.Parameters.AddWithValue("card", scope.CardId);
+        var users = new List<Guid>();
+        await using var reader = await query.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct)) users.Add(reader.GetGuid(0));
+        return users;
+    }
     public async Task<WatchSubscription?> FindAsync(Guid organizationId, Guid userId, string entityType, Guid entityId, CancellationToken ct)
     {
         await using var session = await connections.OpenTenantSessionAsync(organizationId, ct);

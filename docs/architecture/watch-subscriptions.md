@@ -107,3 +107,28 @@ Runtime rerun evidence is pending; the initial subscription full gate was failed
 Recipient selection/fan-out for relevant activity, event-time List/Board scope rules,
 mentions/reminders and private notification realtime events remain required.
 PRD-17 stays open until all functional and acceptance requirements are proven.
+
+## Card activity selection contract
+
+`CardWatchActivity.Capture` binds the triggering Card event to the exact persisted
+Card revision after mutation. Configured activity is Card create, update, move,
+archive, restore, member addition/removal and label addition/removal. Deletion,
+other entities, unknown activity and watch changes are excluded. Archive requires
+the archived Card revision; other configured events require its active revision.
+This is the current application policy, not a user-configurable settings surface.
+
+A Card move uses its destination List when the event is recorded. A source List
+watch alone does not receive that move; a direct Card watch remains applicable,
+and a destination List or current Board watch applies. Card creation uses its
+created List and Board. Overlapping subscriptions select each user once. Selection
+has no inbox-style 50-recipient cap: every matching candidate must be considered.
+
+The internal store query selects candidates only. It exposes no endpoint and is
+not authorization evidence. PostgreSQL requires the owning command transaction;
+the caller must hold the current Board gate and recheck active account, email
+policy, Organization membership and Board view access before notification intent
+creation. Self-suppression, assignment/watch dedupe, event persistence and intents
+must share that transaction. The new candidate contract is not yet connected to
+notification production. Domain tests cover revision mismatch, relevant event
+selection, movement, overlap, unwatch, tenant isolation and 75 additional watchers;
+Linux execution evidence is pending.
