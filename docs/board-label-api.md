@@ -83,6 +83,22 @@ and production build passed. Two browser cases at 1280px and 390px were collecte
 for keyboard expansion and persisted label deletion; their runtime execution
 awaits exact-image CI.
 
+The Board toolbar now provides a label creation dialog to current editors on
+active Boards. It permits blank names, exposes the fixed palette through named
+keyboard-selectable options, and validates the returned definition against the
+submitted name/color and current scope. Unknown outcomes preserve the original
+body and UUID key; the pending dialog hides editable fields and disables cancel
+until the same intent is resolved. Other Board actions are held during recovery.
+Permission loss aborts the request and clears recovery, and an epoch check blocks
+late acknowledgments or failures from restoring revoked state. Focus returns to
+Board refresh after the dialog exits.
+
+Creation validation: eight component cases and the existing Board cases passed
+(32 focused tests). The two collected browser cases now create a label using
+keyboard controls, lose the first actual server acknowledgement, retry the same
+key/body, assert one persisted definition and focus recovery, then inspect Card
+labels and persisted deletion. Browser runtime execution remains pending CI.
+
 This is a foundation, not PRD-10 closure. Public
 Card indicators, accessible label administration, filtering, relative reorder
 controls, copy/move metadata reconciliation, and exact-image concurrency,

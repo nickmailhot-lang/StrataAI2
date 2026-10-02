@@ -16,9 +16,35 @@ for (const width of [1280, 390]) {
     const cardReply = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Labeled work' } });
     expect(cardReply.status()).toBe(201); const card = (await cardReply.json()).id;
     const labels: string[] = []; let version = 1;
+    await page.goto(`/app/${org}/boards/${board}`);
+    const attempts: { key: string | undefined; body: string | null }[] = [];
+    await page.route(`**/boards/${board}/labels`, async route => {
+      if (route.request().method() !== 'POST') return route.continue();
+      attempts.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
+      const reply = await route.fetch(); expect(reply.status()).toBe(201);
+      if (attempts.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
+    });
+    await page.getByRole('button', { name: 'Create label', exact: true }).focus(); await page.keyboard.press('Enter');
+    await page.getByLabel('Label name (optional)').fill('Priority');
+    await page.getByRole('combobox', { name: 'Label color' }).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('option', { name: 'Red', exact: true }).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Create', exact: true }).focus(); await page.keyboard.press('Enter');
+    const retry = page.getByRole('button', { name: 'Retry label creation' }); await expect(retry).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeDisabled();
+    await retry.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
+    expect(attempts).toHaveLength(2); expect(attempts[0]).toEqual(attempts[1]); expect(attempts[0].key).toMatch(/^[0-9a-f-]{36}$/);
     for (const [name, color] of [['Priority', 'red'], ['', 'blue']]) {
-      const created = await context.request.post(`/boards/${board}/labels`, { headers, data: { name, color } });
-      expect(created.status()).toBe(201); const id = (await created.json()).id; labels.push(id);
+      let id: string;
+      if (name === 'Priority') {
+        const directory = await context.request.get(`/boards/${board}/labels`); expect(directory.status()).toBe(200);
+        const items = (await directory.json()).items; expect(items).toHaveLength(1); expect(items[0].name).toBe('Priority'); expect(items[0].color).toBe('red'); id = items[0].id;
+      } else {
+        const created = await context.request.post(`/boards/${board}/labels`, { headers, data: { name, color } });
+        expect(created.status()).toBe(201); id = (await created.json()).id;
+      }
+      labels.push(id);
       const assigned = await context.request.put(`/cards/${card}/labels/${id}?version=${version}`, { headers });
       expect(assigned.status()).toBe(200); version = (await assigned.json()).card.version;
     }
