@@ -1,5 +1,8 @@
 namespace StrataAI.Application.WorkManagement;
 
+public sealed record BoardCardFilter(string Keyword, IReadOnlyList<Guid> LabelIds, bool MatchAll);
+public sealed record BoardCardFilterPage(Guid OrganizationId, Guid BoardId, IReadOnlyList<CardRecord> Items, Guid? NextCursor);
+
 public sealed record CardLabelChange(CardRecord Card, Guid LabelId, bool Assigned, bool Changed);
 public sealed record CardLabelOption(BoardLabelRecord Label, bool Assigned);
 public sealed record CardLabelOptionsPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,

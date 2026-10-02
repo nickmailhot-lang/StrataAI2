@@ -2,6 +2,7 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementStore
 {
+    Task<IReadOnlyList<CardRecord>> FilterBoardCardsAsync(Guid boardId, BoardCardFilter filter, Guid? after, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CardLabelOption>> ListCardLabelOptionsAsync(Guid cardId, Guid? after, CancellationToken cancellationToken = default);
     Task<BoardLabelRecord?> MoveLabelAsync(Guid labelId, Guid? beforeLabelId, long version, DateTimeOffset now, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<BoardLabelRecord>> ListCardLabelsAsync(Guid cardId, Guid? after, CancellationToken cancellationToken = default);

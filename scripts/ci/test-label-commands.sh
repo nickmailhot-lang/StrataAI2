@@ -184,4 +184,40 @@ test "$(get owner "/cards/$card/label-options")" = 200
 jq -e --arg id "$option_id" '.cardVersion==12 and ([.items[]|select(.label.id==$id and .assigned==false)]|length)==1' "$scratch/response.json" >/dev/null
 test "$(get owner "/cards/$card/label-options?after=invalid")" = 400
 test "$(get editor "/cards/$card/label-options")" = 404
-echo 'Label commands: exact-image CRUD, admission, retry identity, atomic audit rollback and association removal, Card revisions, and observed post-wait receipt authorization passed.'
+# PRD-10/16 filtering uses all associations, rather than the six face indicators.
+filter_label=$(admin "SELECT l.id FROM board_labels l JOIN card_labels a ON a.label_id=l.id AND a.tenant_id=l.tenant_id AND a.board_id=l.board_id WHERE a.card_id='$card' AND l.status='ACTIVE' ORDER BY l.rank DESC,l.id DESC LIMIT 1;")
+test "$(get owner "/boards/$board/cards?labels=$filter_label&keyword=Retained&match=all")" = 200
+jq -e --arg card "$card" --arg org "$org" --arg board "$board" '.organizationId==$org and .boardId==$board and (.items|length)==1 and .items[0].id==$card and .nextCursor==null' "$scratch/response.json" >/dev/null
+test "$(get owner "/boards/$board/cards?labels=$filter_label&keyword=absent&match=all")" = 200
+jq -e '.items==[]' "$scratch/response.json" >/dev/null
+test "$(get owner "/boards/$board/cards?labels=$filter_label&keyword=absent&match=any")" = 200
+jq -e --arg card "$card" '(.items|length)==1 and .items[0].id==$card' "$scratch/response.json" >/dev/null
+test "$(get owner "/boards/$board/cards?labels=$filter_label,11111111-1111-1111-1111-111111111199&match=all")" = 200
+jq -e '.items==[]' "$scratch/response.json" >/dev/null
+test "$(get owner "/boards/$board/cards?labels=$option_id")" = 200
+jq -e '.items==[]' "$scratch/response.json" >/dev/null
+test "$(get outsider "/boards/$board/cards?labels=invalid&match=invalid")" = 404
+test "$(get owner "/boards/$board/cards?after=invalid")" = 400
+test "$(get owner "/boards/$board/cards?labels=$filter_label,$filter_label")" = 400
+filter_list=$(admin "SELECT list_id FROM cards WHERE id='$card';")
+admin "INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+ SELECT gen_random_uuid(),'$org','$board','$filter_list','Filter result 100%_ '||i,lpad((i*1000)::text,30,'0'),now(),now() FROM generate_series(1,52) i;" >/dev/null
+test "$(get owner "/boards/$board/cards?keyword=100%25_")" = 200
+jq -e '(.items|length)==50 and .nextCursor==.items[-1].id' "$scratch/response.json" >/dev/null
+filter_cursor=$(jq -r '.nextCursor' "$scratch/response.json"); cp "$scratch/response.json" "$scratch/filter-first.json"
+test "$(get owner "/boards/$board/cards?keyword=100%25_&after=$filter_cursor")" = 200
+jq -e '(.items|length)==2 and .nextCursor==null' "$scratch/response.json" >/dev/null
+jq -se '([.[0].items[].id,.[1].items[].id]|unique|length)==52' "$scratch/filter-first.json" "$scratch/response.json" >/dev/null
+admin "UPDATE board_lists SET lifecycle_state='ARCHIVED' WHERE id='$filter_list';" >/dev/null
+test "$(get owner "/boards/$board/cards?keyword=100%25_")" = 200
+jq -e '.items==[]' "$scratch/response.json" >/dev/null
+admin "UPDATE board_lists SET lifecycle_state='ACTIVE' WHERE id='$filter_list'; UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$editor';" >/dev/null
+hold; get editor "/boards/$board/cards?keyword=100%25_" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$editor';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh 'Filter result|Retained Card|"items"' "$scratch/response.json"
+hold; get owner "/boards/$board/cards?keyword=100%25_" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE sessions SET revoked_at=now() WHERE user_id='$owner' AND revoked_at IS NULL;"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
+scripts/ci/assert-file-excludes.sh 'Filter result|Retained Card|"items"' "$scratch/response.json"
+echo 'Label commands: exact-image CRUD, admission, retry identity, atomic audit rollback and association removal, Card revisions, full-association bounded ANY/ALL filters, and observed post-wait authorization passed.'
