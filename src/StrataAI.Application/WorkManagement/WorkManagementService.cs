@@ -6,7 +6,7 @@ namespace StrataAI.Application.WorkManagement;
 public sealed partial class WorkManagementService(
     IWorkManagementStore store,
     IOrganizationStore organizationStore,
-    IClock clock, IWorkEventStore events) : IWorkManagementService, IWorkBoardAuthorization
+    IClock clock, IWorkEventStore events, StrataAI.Application.Identity.IdentityPolicy identityPolicy) : IWorkManagementService, IWorkBoardAuthorization
 {
     public async Task<WorkOperation<BoardSyncScope>> GetSyncScopeAsync(Guid boardId, Guid? actorId,
         CancellationToken cancellationToken = default)

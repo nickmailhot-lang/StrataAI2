@@ -1,5 +1,9 @@
 namespace StrataAI.Application.WorkManagement;
 
+public sealed record AssignableBoardMember(Guid UserId, string DisplayName);
+public sealed record AssignableBoardMemberPage(Guid OrganizationId, Guid BoardId,
+    IReadOnlyList<AssignableBoardMember> Items, Guid? NextCursor);
+
 public sealed record BoardCardFilter(string Keyword, IReadOnlyList<Guid> LabelIds, bool MatchAll);
 public sealed record BoardCardFilterPage(Guid OrganizationId, Guid BoardId, IReadOnlyList<CardRecord> Items, Guid? NextCursor);
 

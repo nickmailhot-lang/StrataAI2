@@ -26,6 +26,7 @@ public sealed class BoardSharingTelemetry
         {
             ("/boards/{boardId:guid}", "GET") => "board_read",
             ("/boards/{boardId:guid}/cards", "GET") => "board_filter_read",
+            ("/boards/{boardId:guid}/assignable-members", "GET") => "assignable_member_read",
             ("/boards/{boardId:guid}/labels", "GET") => "label_read",
             ("/boards/{boardId:guid}/labels", "POST") => "label_create",
             ("/labels/{labelId:guid}", "PATCH") => "label_update",

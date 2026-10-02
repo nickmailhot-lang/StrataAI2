@@ -3,7 +3,7 @@ using StrataAI.Application.Organizations;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed partial class InMemoryWorkManagementStore : IWorkManagementStore
+internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore organizations) : IWorkManagementStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<Guid, BoardRecord> _boards = [];

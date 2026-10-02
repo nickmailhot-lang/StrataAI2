@@ -405,6 +405,9 @@ jobs:
       - name: Transactional labels, atomic association removal and post-wait receipt authorization
         run: scripts/ci/test-label-commands.sh
 
+      - name: Bounded assignable Board members and post-wait revocation through exact release images
+        run: scripts/ci/test-assignable-board-members.sh
+
       - name: Atomic Work events and leased Worker readiness against exact release images
         run: scripts/ci/test-work-events.sh
 

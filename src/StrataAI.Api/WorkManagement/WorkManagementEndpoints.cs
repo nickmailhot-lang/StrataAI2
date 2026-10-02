@@ -9,6 +9,7 @@ public static partial class WorkManagementEndpoints
     {
         MapLabelEndpoints(app);
         MapBoardCardFilterEndpoints(app);
+        MapAssignableBoardMembersEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
             async (
