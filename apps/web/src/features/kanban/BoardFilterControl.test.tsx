@@ -1,7 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import type { ComponentProps } from 'react';
 import { BoardFilterControl } from './BoardFilterControl';
 import type { BoardSnapshot } from '../../api/workManagement';
+import { filteredBoardCanvas } from './boardFilterCanvas';
 const board = '11111111-1111-1111-1111-111111111111', org = '22222222-2222-2222-2222-222222222222';
 const actor = '33333333-3333-3333-3333-333333333333', list = '44444444-4444-4444-4444-444444444444';
 const label = { id: '55555555-5555-5555-5555-555555555555', organizationId: org, boardId: board, name: 'Priority', color: 'red', deleted: false };
@@ -12,7 +14,7 @@ const response = (value: unknown, status = 200) => new Response(JSON.stringify(v
 const choices = (items = [label], nextCursor: string | null = null) => response({ organizationId: org, boardId: board, items, nextCursor });
 const results = (items = [card], nextCursor: string | null = null) => response({ organizationId: org, boardId: board, items, nextCursor });
 const storage = (id = actor) => `strataai:board-filter:v1:${id}:${org}:${board}`;
-function mount(p = props()) { return render(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>); }
+function mount(p: ComponentProps<typeof BoardFilterControl> = props()) { return render(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>); }
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' })); await screen.findByRole('checkbox', { name: 'Priority (red)' }); }
 beforeEach(() => sessionStorage.clear()); afterEach(() => vi.unstubAllGlobals());
 it('lets a viewer apply canonical label and keyword predicates and persists only criteria under their identity', async () => {
@@ -85,4 +87,50 @@ it('ignores invalid saved criteria and explains empty choices and results', asyn
   await screen.findByText('No labels on this choice page. Use a keyword, or reload choices.');
   expect(screen.getByLabelText('Card keyword')).toHaveValue(''); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
   await screen.findByText('No Cards match these filters.');
+});
+it('projects a fresh bounded page onto canonical Lists, restores it for the admitted actor, and clears it', async () => {
+  const other = { ...card, id: '77777777-7777-7777-7777-777777777777', title: 'Other Card' };
+  const canonical = { ...snapshot, lists: [{ ...snapshot.lists[0], cards: [other, card] }, { list: { ...snapshot.lists[0].list, id: org, name: 'Empty List' }, cards: [] }] };
+  const onCanvasChange = vi.fn(); const p = { ...props(), snapshot: canonical, onCanvasChange };
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices())
+    .mockResolvedValueOnce(results()).mockResolvedValueOnce(results())
+    .mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(results()));
+  const view = mount(p); await open(); fireEvent.click(screen.getByRole('checkbox', { name: 'Priority (red)' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Show this page on Board' }));
+  await screen.findByText('Filtered Board: 1 matching Cards on this page.');
+  const page = onCanvasChange.mock.calls.at(-1)![0];
+  expect(filteredBoardCanvas(canonical, page).lists.map(l => l.cards.map(c => c.id))).toEqual([[card.id], []]);
+  expect(canonical.lists[0].cards).toEqual([other, card]);
+  expect(JSON.parse(sessionStorage.getItem(storage())!)).toEqual({ keyword: '', labels: [label.id], match: 'all', canvas: true });
+  view.unmount(); const restored = mount(p);
+  await screen.findByText('Filtered Board: 1 matching Cards on this page.');
+  fireEvent.click(screen.getByRole('button', { name: 'Clear Board filters' }));
+  await waitFor(() => expect(onCanvasChange).toHaveBeenLastCalledWith(undefined));
+  expect(sessionStorage.getItem(storage())).toBeNull(); restored.unmount();
+});
+it('never restores another actor’s saved canvas predicates', async () => {
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Private criteria', labels: [label.id], match: 'all', canvas: true }));
+  const fetch = vi.fn().mockResolvedValueOnce(response({ id: org })).mockResolvedValueOnce(choices()); vi.stubGlobal('fetch', fetch);
+  const onCanvasChange = vi.fn(); mount({ ...props(), onCanvasChange });
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+  expect(fetch.mock.calls.some(call => String(call[0]).includes('/cards?'))).toBe(false);
+  expect(onCanvasChange).toHaveBeenLastCalledWith(undefined);
+  expect(screen.queryByText(/Filtered Board:/)).not.toBeInTheDocument();
+});
+it('refreshes canonical state rather than projecting a Card from a newer result revision', async () => {
+  const canonical = { ...snapshot, lists: [{ ...snapshot.lists[0], cards: [card] }] };
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(results([{ ...card, version: 4 }])));
+  const p = { ...props(), snapshot: canonical, onCanvasChange: vi.fn() }; mount(p); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await waitFor(() => expect(p.onRefresh).toHaveBeenCalledOnce());
+  expect(screen.queryByRole('button', { name: 'Show this page on Board' })).not.toBeInTheDocument();
+  expect(p.onCanvasChange).toHaveBeenLastCalledWith(undefined);
+});
+it('keeps all Lists and canonical order and hides results from a superseded snapshot', () => {
+  const second = { ...card, id: actor, title: 'Second' };
+  const canonical = { ...snapshot, lists: [{ ...snapshot.lists[0], cards: [card, second] }] };
+  expect(filteredBoardCanvas(canonical, { snapshot: canonical, items: [second, card] }).lists[0].cards).toEqual([card, second]);
+  expect(filteredBoardCanvas({ ...canonical }, { snapshot: canonical, items: [card] }).lists[0].cards).toEqual([]);
+  expect(filteredBoardCanvas(canonical, { snapshot: canonical, items: [{ ...card, listId: actor }] }).lists[0].cards).toEqual([]);
 });

@@ -30,6 +30,7 @@ import { CardLabelIndicators } from './CardLabelIndicators';
 import { LabelCreateControl } from './LabelCreateControl';
 import { LabelManageControl } from './LabelManageControl';
 import { BoardFilterControl } from './BoardFilterControl';
+import { filteredBoardCanvas, type BoardCanvasFilter } from './boardFilterCanvas';
 import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardArchiveControl } from './CardArchiveControl';
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
@@ -81,6 +82,8 @@ function BoardContent() {
   const key = `${organizationId}/${boardId}`;
   const [loaded, setLoaded] = useState<Loaded>();
   const [reload, setReload] = useState(0);
+  const [canvasFilter, setCanvasFilter] = useState<BoardCanvasFilter>();
+  const refreshFilteredBoard = useCallback(() => { setSnapshotReading(true); setReload(value => value + 1); }, []);
   const [creation, setCreation] = useState<Creation>();
   const [operationBusy, setBusy] = useState(false);
   const [archiveRecovery, setArchiveRecovery] = useState(false);
@@ -468,8 +471,8 @@ function BoardContent() {
         </Stack>
       </Stack>
       {saved && <Typography role="status">Changes saved.</Typography>}
-      <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
-        onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
+      <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0 || !!cardId || !!creation}
+        onRefresh={refreshFilteredBoard} onCanvasChange={setCanvasFilter} />
       {snapshot.board.lifecycleState !== "active" && (
         <Alert severity="info">
           This board is archived. Editing is unavailable.
@@ -523,12 +526,12 @@ function BoardContent() {
           pb: 2,
         }}
       >
-        {previewListMove(previewCardMove(snapshot, movePreview), listPreview).lists.map((column) => (
+        {(canvasFilter ? filteredBoardCanvas(snapshot, canvasFilter) : previewListMove(previewCardMove(snapshot, movePreview), listPreview)).lists.map((column) => (
           <ListDragColumn
             key={column.list.id}
             id={column.list.id} name={column.list.name}
             disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id) || renameRecovery.has(column.list.id)}
-            available={snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
+            available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
           >
             <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
             <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
@@ -540,7 +543,7 @@ function BoardContent() {
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             </Stack>
             {snapshot.access.canMove && snapshot.board.lifecycleState === "active" && column.list.lifecycleState === "active" && <ListPositionControls
-              list={column.list} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || renameRecovery.has(column.list.id)} onBusyChange={setBusy}
+              list={column.list} snapshot={snapshot} disabled={!!canvasFilter || busy || snapshotReading || !!loadError || renameRecovery.has(column.list.id)} onBusyChange={setBusy}
               onPreview={setListPreview}
               onRecoveryChange={updateListRecovery}
               dropRequest={listDrop?.listId === column.list.id ? listDrop : undefined}
@@ -549,7 +552,7 @@ function BoardContent() {
               {column.cards.map((item) => (
                 <CardDragItem key={item.id} id={item.id} title={item.title}
                   disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId}
-                  available={snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(item.version) && item.version > 0}>
+                  available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(item.version) && item.version > 0}>
                 <Card
                   key={item.id}
                   component={Link}
@@ -574,9 +577,9 @@ function BoardContent() {
                 </CardDragItem>
               ))}
             </Stack>
-            {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && <CardListEndTarget id={column.list.id} name={column.list.name} disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId} />}
+            {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && <CardListEndTarget id={column.list.id} name={column.list.name} disabled={!!canvasFilter || busy || snapshotReading || !!loadError || cardRecovery || !!cardId} />}
             {column.cards.length === 0 && (
-              <Typography sx={{ my: 2 }}>No cards yet.</Typography>
+              <Typography sx={{ my: 2 }}>{canvasFilter ? 'No matching Cards on this page.' : 'No cards yet.'}</Typography>
             )}
             {editable && column.list.lifecycleState === "active" && (
               <Button
@@ -590,7 +593,7 @@ function BoardContent() {
             )}
           </ListDragColumn>
         ))}
-        {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && <ListEndTarget disabled={busy || snapshotReading || !!loadError} />}
+        {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && <ListEndTarget disabled={!!canvasFilter || busy || snapshotReading || !!loadError} />}
       </Box>
       </DndContext>
       {cardDrop && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && (() => {

@@ -60,19 +60,21 @@ lifecycle, Card identity/version/rank and cursor shape before displaying content
 Denied reads clear results and refresh Board admission with safe local messages.
 
 Applied criteria persist in sessionStorage under current `/me` identity,
-Organization and Board IDs. Reopening the filter dialog after navigation or page
-reload restores those criteria for an explicit Apply; results themselves are
-never stored. A different signed-in identity gets a different storage key. Clear
+Organization and Board IDs. Reopening the filter dialog restores criteria for an
+explicit Apply. Choosing Show this page on Board also stores the canvas mode;
+navigation or reload restores that mode only after a fresh `/me` admission and
+server filter read. Results themselves are never stored. A different signed-in
+identity gets a different storage key. Clear
 filters removes the saved criteria. Unavailable browser storage degrades to the
 current in-memory draft. Invalid stored criteria are ignored. Anonymous filtering
 remains pending: the current dialog requires authentication and explains denial.
 
-Ten filter component cases and 24 Board cases passed locally (34 focused tests),
+Fourteen filter component cases and 24 Board cases passed locally (38 focused tests),
 plus typecheck, lint and production build. Desktop/mobile keyboard browser cases
 now include ALL empty results, ANY matching, criterion restoration after refresh,
 and clearing. Collection passed; execution against exact images remains pending.
 
-Neither PRD-10 nor PRD-16 is complete. The remaining filters, canvas integration, event/reconnect
+Neither PRD-10 nor PRD-16 is complete. The remaining filters, event/reconnect
 acceptance and performance evidence must be implemented and verified before
 closure.
 
@@ -88,3 +90,15 @@ Card response is mocked. Board archival must close the filter and reject its
 server read. The fixture always restores Worker scope and closes its browser
 context. This scenario has collected successfully; runtime execution is pending
 CI and is not yet two-client/reconnect acceptance evidence.
+
+The filtered canvas keeps all canonical List columns and their Card ordering,
+showing only the current bounded result page. Each result must match its
+canonical parent, version, title, description and rank; a mismatched revision
+requests a fresh Board read. Pending or superseded pages show no Cards until
+rechecked, including after Board events and reconnect recovery. Clear restores
+the complete canonical canvas. List operations retain their full List scope,
+which the filtered state explains. Reordering is disabled while filtering;
+Card details retain the canonical movement controls. The required phone-client
+browser scenario also covers canvas projection, persistence after reload,
+assignment removal by the desktop client and restoration after Clear. Collection
+passed; exact-image runtime acceptance remains pending.
