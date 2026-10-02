@@ -25,8 +25,9 @@ framework or deployable process was added.
 The API-host regression covers internal-only, Portal-only, unrelated scope,
 independent dual grants, removal of internal membership without removing Portal
 access, inactive Organization, invalid input, minimal response fields and logout.
-The solution builds with zero warnings/errors; Windows Application Control
-prevents local test execution, so Linux execution remains required.
+The solution builds with zero warnings/errors. The unfiltered Linux API-host
+suite passed in CI for commits `5d1d894` and `2bdb260`, including this regression.
+Windows Application Control prevents local test execution.
 
 InternalAppShell and PortalShell now withhold protected navigation/content until
 the requested current surface read succeeds with matching Organization/surface.
@@ -57,4 +58,7 @@ It then proves Portal revocation after an observed Portal-row lock wait,
 internal removal after an observed member-row lock wait, and original-session
 revocation during a parent lock wait for both surfaces. Each denied response
 retains the safe existing problem contract. Shell syntax and diff checks pass;
-these new lock-wait assertions still require Linux execution.
+the exact-image admission/member-directory step passed in
+[CI 36973459452](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36973459452)
+at commit `dd59b2d`. Its browser suite was still running at this evidence update;
+that scoped step is not proof of a completed required-ci/release gate.

@@ -53,6 +53,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Verify feature HTTP requests retain the shared Problem boundary
+        run: node --test tests/web-architecture.test.mjs
+
       - name: Unit and component tests
         run: npm test
 

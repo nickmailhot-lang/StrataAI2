@@ -28,3 +28,10 @@ Existing invitation-correction and recovery-deadline tests remain required.
 Typecheck/lint, the focused 66-test set and all 330 web tests across 34 files
 passed. Exact-image verification remains required before this change is
 considered release evidence.
+
+ESLint rejects direct browser `fetch` references in production feature code,
+including `window`, `globalThis`, `self` and request aliases. Only `apiFetch.ts`
+and isolated test files are exempt. CI runs deliberate bypass fixtures against
+the real ESLint configuration, requiring errors for those bypasses and allowing
+the shared transport and normal feature imports. This protects the boundary as
+new feature clients are added.
