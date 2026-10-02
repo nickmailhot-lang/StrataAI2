@@ -70,15 +70,15 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 nameof(organizationId));
         }
 
-        if (_identityCommandSession.Value is not null)
-            throw new InvalidOperationException("An Identity command cannot acquire an Organization session.");
-
         if (_commandSession.Value is { } commandSession)
         {
             if (commandSession.OrganizationId != organizationId)
                 throw new InvalidOperationException("A command cannot change its Organization transaction scope.");
             return commandSession.Borrow();
         }
+
+        if (_identityCommandSession.Value is not null)
+            throw new InvalidOperationException("An Identity command cannot acquire an Organization session.");
 
         var connection = await OpenConnectionAsync(cancellationToken);
         NpgsqlTransaction? transaction = null;
@@ -109,6 +109,31 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
 
     internal bool HasCommandScope(Guid organizationId) => _commandSession.Value?.OrganizationId == organizationId;
     internal bool HasIdentityCommandScope => _identityCommandSession.Value is not null;
+
+    // Only lifecycle cleanup of previously locked Organization parents borrows
+    // this scope. It uses the same identity transaction/connection and restores
+    // RLS context; it neither creates nor commits a nested tenant transaction.
+    internal async Task ExecuteIdentityOrganizationCleanupAsync(Guid organizationId, Func<Task> operation,
+        CancellationToken cancellationToken)
+    {
+        if (organizationId == Guid.Empty || _commandSession.Value is not null || _identityCommandSession.Value is not { } identity
+            || identity.Transaction is null) throw new InvalidOperationException("Organization cleanup requires its owning identity transaction.");
+        async Task SetTenant(string value, CancellationToken ct)
+        {
+            await using var command = new NpgsqlCommand("SELECT set_config('app.tenant_id',@tenant,true);", identity.Connection, identity.Transaction);
+            command.Parameters.AddWithValue("tenant", value); await command.ExecuteScalarAsync(ct);
+        }
+        await using var readScope = new NpgsqlCommand("SELECT current_setting('app.tenant_id',true);", identity.Connection, identity.Transaction);
+        var previous = await readScope.ExecuteScalarAsync(cancellationToken) as string ?? "";
+        await SetTenant(organizationId.ToString(), cancellationToken);
+        _commandSession.Value = new TenantDbSession(identity.Connection, identity.Transaction, organizationId, ownsResources: false);
+        try { await operation(); }
+        finally
+        {
+            _commandSession.Value = null;
+            await SetTenant(previous, CancellationToken.None);
+        }
+    }
 
     // Global identity reads borrow command locks only when a command owns the transaction.
     // Creating a discovery transaction here would also change FOR SHARE admission and

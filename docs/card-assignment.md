@@ -223,3 +223,36 @@ See board-filtering.md for bounds, policy and verification scope. Filter UI and
 realtime acceptance remain outstanding. Card-face commit bef50bf passed Linux
 .NET/web/PostgreSQL/source gates and image build in run 37050782576; its complete
 runtime/security/required-ci gate remains pending.
+
+Account deactivation now clears persisted assignments across every membership
+Organization, including inactive membership routes and archived parents. The
+internal admission hint read includes all membership roles/statuses, without
+changing the public active Organization directory. PostgreSQL locks canonical
+Organization parents in UUID order before the actor account/session locks, and
+rejects newly discovered unplanned routes after a wait. Owner-continuity checks
+still apply only to current active Owner memberships. Removed membership/user
+rows remain stable historical references.
+
+After successful account/session deactivation, cleanup removes that user's
+associations and increments each affected Card once, retaining other assignees.
+It appends Card removal audit/events/durable delivery jobs through the existing
+writers. An internal lifecycle-only scope lends the already owning identity
+connection/transaction to one previously locked Organization at a time,
+restoring RLS context afterward. Borrowed tenant commits are no-ops; nested
+command transactions and unscoped identity-to-tenant sessions remain forbidden.
+Account/session state, identity audit/event, Card cleanup, work audit/event/job
+and the keyed receipt share one PostgreSQL commit/rollback boundary. Completed
+deactivation receipts do not rerun cleanup or increment revisions again.
+The Demo path uses its existing shared account/Organization gate and supplies
+behavioral parity; it is not PostgreSQL rollback evidence.
+
+New keyed/unkeyed host cases cover Member/Admin/removed membership routes,
+active/archived Cards and Boards, other assignees, historical rows, physical
+removal/no-op checks and exact retries. The required release fixture seeds
+assignments across active and removed membership Organizations, fails precisely
+at Card cleanup audit insertion after identity state/event writes, and verifies
+whole-state rollback before retrying the original key. It also checks physical
+removal, revision/event counts, retained users/members and no duplicate changes
+on receipt replay. Strict .NET compilation and fixture syntax passed locally;
+new Linux host and exact-image execution remain pending CI. Notifications and
+the full remaining ticket acceptance evidence remain outstanding.

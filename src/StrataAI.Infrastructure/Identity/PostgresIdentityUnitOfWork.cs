@@ -10,7 +10,7 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
     IAccountDeactivationOwnership ownership) : IIdentityUnitOfWork
 {
     public async Task<IdentityOperation<bool>> ExecuteDeactivationAsync(Guid actorId,
-        Func<Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default)
+        Func<Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default, string correlationId = "")
     {
         try
         {
@@ -25,7 +25,9 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
                 var error = await ownership.CheckAsync(plan, cancellationToken);
                 if (error is not null) return IdentityOperation<bool>.Failure(error);
                 if (!await actors.VerifyAsync(actorId, cancellationToken)) return IdentityOperation<bool>.Failure("session_unavailable");
-                return await operation();
+                var result = await operation();
+                if (result.Succeeded) await ownership.CleanupAssignmentsAsync(plan, correlationId, cancellationToken);
+                return result;
             }, result => result.Succeeded, cancellationToken);
         }
         catch (NpgsqlException exception)
@@ -56,7 +58,9 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
                     var error = await ownership.CheckAsync(plan, cancellationToken);
                     if (error is not null) return IdentityOperation<bool>.Failure(error);
                     if (!await actors.VerifyAsync(actor, cancellationToken)) return IdentityOperation<bool>.Failure("session_unavailable");
-                    return await operation(actor);
+                    var result = await operation(actor);
+                    if (result.Succeeded) await ownership.CleanupAssignmentsAsync(plan, correlationId, cancellationToken);
+                    return result;
                 }, cancellationToken);
             }, result => result.Succeeded, cancellationToken);
         }

@@ -9,6 +9,7 @@ cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null || true
+  admin 'DROP POLICY IF EXISTS assignment_deactivation_failure ON audit_events;' >/dev/null || true
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -302,6 +303,45 @@ test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND user
 test "$(admin "SELECT version FROM cards WHERE id='$card';")" = 10
 test "$(admin "SELECT version FROM cards WHERE id='$foreign_card';")" = 2
 test "$(admin "SELECT count(*) FROM users WHERE id='$member' AND status='ACTIVE';")" = 1
+admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
+test "$(request owner PUT "$member_path?version=10" 11111111-1111-1111-1111-111111111153 '{}')" = 200
+admin "INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by) VALUES('$org','$second_board','$archived_card','$member','$owner');
+ UPDATE cards SET version=5 WHERE id='$archived_card';
+ UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$member';
+ UPDATE organization_members SET role='ADMIN' WHERE tenant_id='$foreign_org' AND user_id='$member';" >/dev/null
+curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/member.credentials")" "$base/auth/login" >/dev/null
+account_state() { admin "SELECT md5(jsonb_build_object(
+ 'user',(SELECT to_jsonb(u) FROM users u WHERE id='$member'),
+ 'sessions',(SELECT jsonb_agg(jsonb_build_object('id',id,'revoked',revoked_at) ORDER BY id) FROM sessions WHERE user_id='$member'),
+ 'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id IN ('$org','$foreign_org')),
+ 'associations',(SELECT jsonb_agg(to_jsonb(a) ORDER BY tenant_id,card_id,user_id) FROM card_members a WHERE tenant_id IN ('$org','$foreign_org')),
+ 'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$member' OR tenant_id IN ('$org','$foreign_org')),
+ 'identity_events',(SELECT count(*) FROM identity_events WHERE user_id='$member'),
+ 'work_events',(SELECT count(*) FROM work_events WHERE tenant_id IN ('$org','$foreign_org')),
+ 'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id IN ('$org','$foreign_org')),
+ 'receipts',(SELECT count(*) FROM identity_revocation_replays WHERE user_id='$member'))::text);"; }
+deactivation_key=11111111-1111-1111-1111-111111111154
+before=$(account_state)
+# Fail specifically inside Card cleanup after the account/session/identity event
+# changes, proving those earlier writes share the same rollback/commit boundary.
+admin "CREATE POLICY assignment_deactivation_failure ON audit_events AS RESTRICTIVE FOR INSERT TO strataai_api_runtime WITH CHECK(event_type <> 'CARD_MEMBER_REMOVED');" >/dev/null
+test "$(request member POST /me/deactivate "$deactivation_key" '{}')" = 503
+admin 'DROP POLICY assignment_deactivation_failure ON audit_events;' >/dev/null
+test "$before" = "$(account_state)"
+test "$(request member POST /me/deactivate "$deactivation_key" '{}')" = 204
+test "$(admin "SELECT count(*) FROM card_members WHERE user_id='$member' AND tenant_id IN ('$org','$foreign_org');")" = 0
+test "$(admin "SELECT version FROM cards WHERE id='$card';")" = 12
+test "$(admin "SELECT version FROM cards WHERE id='$archived_card';")" = 6
+test "$(admin "SELECT version FROM cards WHERE id='$foreign_card';")" = 3
+test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card' AND user_id='$owner';")" = 1
+test "$(admin "SELECT count(*) FROM users WHERE id='$member' AND status='DEACTIVATED';")" = 1
+test "$(admin "SELECT count(*) FROM organization_members WHERE user_id='$member' AND tenant_id IN ('$org','$foreign_org');")" = 2
+test "$(admin "SELECT count(*) FROM work_events WHERE actor_id='$member' AND event_type='CARD_MEMBER_REMOVED' AND entity_id IN ('$card','$archived_card','$foreign_card');")" = 3
+test "$(admin "SELECT count(*) FROM identity_revocation_replays WHERE user_id='$member' AND key_id='$deactivation_key';")" = 1
+after=$(account_state)
+test "$(request member POST /me/deactivate "$deactivation_key" '{}')" = 204
+test "$after" = "$(account_state)"
+test "$(get member /me)" = 401
 admin "UPDATE boards SET lifecycle_state='ARCHIVED',version=version+1 WHERE id='$board';" >/dev/null
 test "$(get owner "$path")" = 404
 echo 'Assignable Board members and Card assignments: scoped choices, 50+2 pages, atomic rollback, exact retry, revisions, multiple assignees and post-wait revocation passed.'

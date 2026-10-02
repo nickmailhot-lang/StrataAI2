@@ -1,17 +1,20 @@
 using Npgsql;
 using StrataAI.Application.Identity;
+using StrataAI.Application.Organizations;
+using StrataAI.Application.Common;
+using StrataAI.Application.WorkManagement;
 using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Identity;
 
 internal sealed class PostgresAccountDeactivationOwnership(PostgresConnectionFactory connections,
-    IdentityPolicy policy) : IAccountDeactivationOwnership
+    IdentityPolicy policy, IOrganizationStore organizations, IWorkManagementStore work, IWorkEventStore events, IClock clock) : IAccountDeactivationOwnership
 {
     public async Task<AccountOwnershipPlan> PrepareAsync(Guid userId, CancellationToken cancellationToken)
     {
         RequireScope();
         await using var root = await connections.OpenRoutingSessionAsync(cancellationToken);
-        var ids = await ReadRoutesAsync(root, userId, cancellationToken);
+        var ids = await organizations.ListMembershipOrganizationIdsAsync(userId, cancellationToken);
         var complete = true;
         try
         {
@@ -39,7 +42,7 @@ internal sealed class PostgresAccountDeactivationOwnership(PostgresConnectionFac
         await using var root = await connections.OpenRoutingSessionAsync(cancellationToken);
         // Called after the actor lock. A grant committed during admission may
         // add an unplanned parent: reject atomically, never acquire it late.
-        if ((await ReadRoutesAsync(root, plan.UserId, cancellationToken)).Except(plan.OrganizationIds).Any())
+        if ((await organizations.ListMembershipOrganizationIdsAsync(plan.UserId, cancellationToken)).Except(plan.OrganizationIds).Any())
             return "ownership_changed";
         var ownerSets = new List<IReadOnlyList<Guid>>();
         try
@@ -80,21 +83,25 @@ internal sealed class PostgresAccountDeactivationOwnership(PostgresConnectionFac
             ? "organization_owner_required" : null;
     }
 
-    private static async Task<Guid[]> ReadRoutesAsync(RoutingDbSession root, Guid userId, CancellationToken cancellationToken)
-    {
-        await root.SetLookupAsync(RoutingLookup.OrganizationUser, userId.ToString(), cancellationToken);
-        var ids = new List<Guid>();
-        await using var routes = new NpgsqlCommand("SELECT tenant_id FROM user_organization_access WHERE user_id=@user AND role='OWNER' AND status='ACTIVE' ORDER BY tenant_id;", root.Connection, root.Transaction);
-        routes.Parameters.AddWithValue("user", userId);
-        await using var rows = await routes.ExecuteReaderAsync(cancellationToken);
-        while (await rows.ReadAsync(cancellationToken)) ids.Add(rows.GetGuid(0));
-        return ids.ToArray();
-    }
     private static async Task SetTenantAsync(RoutingDbSession root, Guid? id, CancellationToken cancellationToken)
     {
         await using var scope = new NpgsqlCommand("SELECT set_config('app.tenant_id',@tenant,true);", root.Connection, root.Transaction);
         scope.Parameters.AddWithValue("tenant", id?.ToString() ?? "");
         await scope.ExecuteScalarAsync(cancellationToken);
+    }
+    public async Task CleanupAssignmentsAsync(AccountOwnershipPlan plan, string correlationId, CancellationToken cancellationToken)
+    {
+        RequireScope(); if (!plan.Complete) throw new InvalidOperationException("Unplanned Organization cleanup is forbidden.");
+        var now = clock.UtcNow;
+        foreach (var org in plan.OrganizationIds)
+            await connections.ExecuteIdentityOrganizationCleanupAsync(org, async () =>
+            {
+                foreach (var card in await work.RemoveOrganizationCardMemberAssignmentsAsync(org, plan.UserId, now, cancellationToken))
+                {
+                    await work.AppendAuditAsync(org, plan.UserId, "CARD_MEMBER_REMOVED", "Card", card.Id, correlationId, cancellationToken);
+                    await events.AppendAsync(new(Guid.NewGuid(), org, card.BoardId, plan.UserId, "CARD_MEMBER_REMOVED", "Card", card.Id, card.Version, correlationId, now), cancellationToken);
+                }
+            }, cancellationToken);
     }
     private void RequireScope()
     {

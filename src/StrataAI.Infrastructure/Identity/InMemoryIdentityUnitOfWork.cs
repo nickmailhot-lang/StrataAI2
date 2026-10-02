@@ -8,7 +8,7 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
 {
     private readonly SemaphoreSlim _gate = gate.Commands;
     public async Task<IdentityOperation<bool>> ExecuteDeactivationAsync(Guid actorId,
-        Func<Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default)
+        Func<Task<IdentityOperation<bool>>> operation, CancellationToken cancellationToken = default, string correlationId = "")
     {
         await _gate.WaitAsync(cancellationToken);
         try
@@ -16,7 +16,10 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
             if (!await actors.VerifyAsync(actorId, cancellationToken)) return IdentityOperation<bool>.Failure("session_unavailable");
             var plan = await ownership.PrepareAsync(actorId, cancellationToken);
             var error = await ownership.CheckAsync(plan, cancellationToken);
-            return error is null ? await operation() : IdentityOperation<bool>.Failure(error);
+            if (error is not null) return IdentityOperation<bool>.Failure(error);
+            var result = await operation();
+            if (result.Succeeded) await ownership.CleanupAssignmentsAsync(plan, correlationId, cancellationToken);
+            return result;
         }
         finally { _gate.Release(); }
     }
@@ -31,7 +34,10 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
                 if (kind != IdentityRevocationKind.Deactivate) return await operation(actor);
                 var plan = await ownership.PrepareAsync(actor, cancellationToken);
                 var error = await ownership.CheckAsync(plan, cancellationToken);
-                return error is null ? await operation(actor) : IdentityOperation<bool>.Failure(error);
+                if (error is not null) return IdentityOperation<bool>.Failure(error);
+                var result = await operation(actor);
+                if (result.Succeeded) await ownership.CleanupAssignmentsAsync(plan, correlationId, cancellationToken);
+                return result;
             }, cancellationToken);
         }
         finally { _gate.Release(); }

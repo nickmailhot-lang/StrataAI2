@@ -102,6 +102,6 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
                 ? commands.ExecuteRevocationAsync(userId, hash, key, IdentityRevocationKind.Deactivate, correlationId,
                     actor => inner.DeactivateAsync(actor, correlationId, cancellationToken), cancellationToken)
                 : Task.FromResult(IdentityOperation<bool>.Failure("session_unavailable"))
-            : commands.ExecuteDeactivationAsync(userId, () => inner.DeactivateAsync(userId, correlationId, cancellationToken), cancellationToken);
+            : commands.ExecuteDeactivationAsync(userId, () => inner.DeactivateAsync(userId, correlationId, cancellationToken), cancellationToken, correlationId);
 
 }

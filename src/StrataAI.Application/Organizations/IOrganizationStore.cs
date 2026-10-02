@@ -2,6 +2,9 @@ namespace StrataAI.Application.Organizations;
 
 public interface IOrganizationStore
 {
+    // Internal lifecycle admission hints, including inactive memberships. They
+    // are not an authorized Organization-directory response.
+    Task<IReadOnlyList<Guid>> ListMembershipOrganizationIdsAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<OrganizationMemberSummary>> ListActiveMembersAsync(Guid organizationId,
         Guid? after, CancellationToken cancellationToken = default, Guid? userId = null,
         IReadOnlyCollection<Guid>? userIds = null);

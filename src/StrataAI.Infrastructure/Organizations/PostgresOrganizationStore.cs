@@ -132,6 +132,17 @@ internal sealed class PostgresOrganizationStore(
             1);
     }
 
+    public async Task<IReadOnlyList<Guid>> ListMembershipOrganizationIdsAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await routing.SetLookupAsync(RoutingLookup.OrganizationUser, userId.ToString(), cancellationToken);
+        await using var command = new NpgsqlCommand("SELECT tenant_id FROM user_organization_access WHERE user_id=@user ORDER BY tenant_id;", routing.Connection, routing.Transaction);
+        command.Parameters.AddWithValue("user", userId); var result = new List<Guid>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) result.Add(reader.GetGuid(0));
+        return result;
+    }
+
     public async Task<IReadOnlyList<OrganizationSummary>> ListOrganizationsForUserAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
