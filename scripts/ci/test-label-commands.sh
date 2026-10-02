@@ -58,11 +58,32 @@ test "$(request editor PATCH "/labels/$label" 11111111-1111-1111-1111-1111111111
 jq -e '.name=="" and .color=="green" and .version==2' "$scratch/response.json" >/dev/null
 test "$(request editor PATCH "/labels/$label" 11111111-1111-1111-1111-111111111104 '{"name":"Stale","color":"red","version":1}')" = 409
 test "$(request editor DELETE "/labels/$label?version=2&confirmed=true" 11111111-1111-1111-1111-111111111105 '{}')" = 404
-# Cards and associations are seeded only to test atomic removal, not assignment APIs.
+# An archived Card association is seeded; active Card assignment uses the API.
 list=$(admin "INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at) VALUES(gen_random_uuid(),'$org','$board','Label Cards','500000000000000000000000000000',now(),now()) RETURNING id;")
 admin "INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,lifecycle_state,created_at,updated_at,archived_at,version)
  SELECT gen_random_uuid(),'$org','$board','$list','Retained Card',lpad(i::text,30,'0'),CASE i WHEN 1 THEN 'ACTIVE' ELSE 'ARCHIVED' END,now(),now(),CASE i WHEN 2 THEN now() END,7 FROM generate_series(1,2) i;
- INSERT INTO card_labels(tenant_id,board_id,card_id,label_id) SELECT tenant_id,board_id,id,'$label' FROM cards WHERE board_id='$board';" >/dev/null
+ INSERT INTO card_labels(tenant_id,board_id,card_id,label_id) SELECT tenant_id,board_id,id,'$label' FROM cards WHERE board_id='$board' AND lifecycle_state='ARCHIVED';" >/dev/null
+card=$(admin "SELECT id FROM cards WHERE board_id='$board' AND lifecycle_state='ACTIVE';")
+assignment_key=11111111-1111-1111-1111-111111111107
+before=$(state)
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(request editor PUT "/cards/$card/labels/$label?version=7" "$assignment_key" '{}')" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+test "$(request editor PUT "/cards/$card/labels/$label?version=7" "$assignment_key" '{}')" = 200
+jq -e --arg label "$label" '.labelId==$label and .assigned==true and .changed==true and .card.version==8' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/assignment-receipt.json"; after_assignment=$(state)
+test "$(request editor PUT "/cards/$card/labels/$label?version=7" "$assignment_key" '{}')" = 200
+cmp "$scratch/response.json" "$scratch/assignment-receipt.json"; test "$after_assignment" = "$(state)"
+test "$(request editor PUT "/cards/$card/labels/$label?version=8" 11111111-1111-1111-1111-111111111108 '{}')" = 200
+jq -e '.changed==false and .card.version==8' "$scratch/response.json" >/dev/null
+# A new no-op request stores its receipt, but creates no extra LABEL_ADDED event.
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='LABEL_ADDED';")" = 1
+test "$(request editor DELETE "/cards/$card/labels/$label?version=7" 11111111-1111-1111-1111-111111111109 '{}')" = 409
+test "$(request editor DELETE "/cards/$card/labels/$label?version=8" 11111111-1111-1111-1111-111111111110 '{}')" = 200
+jq -e '.assigned==false and .changed==true and .card.version==9' "$scratch/response.json" >/dev/null
+test "$(request editor PUT "/cards/$card/labels/$label?version=9" 11111111-1111-1111-1111-111111111111 '{}')" = 200
+jq -e '.assigned==true and .card.version==10' "$scratch/response.json" >/dev/null
 before=$(state); delete_key=11111111-1111-1111-1111-111111111106
 test "$(request owner DELETE "/labels/$label?version=2" "$delete_key" '{}')" = 400
 test "$before" = "$(state)"
@@ -74,7 +95,7 @@ test "$(request owner DELETE "/labels/$label?version=2&confirmed=true" "$delete_
 jq -e '.deleted==true and .version==3' "$scratch/response.json" >/dev/null
 cp "$scratch/response.json" "$scratch/delete-receipt.json"
 test "$(admin "SELECT count(*) FROM card_labels WHERE board_id='$board';")" = 0
-test "$(admin "SELECT count(*) FROM cards WHERE board_id='$board' AND version=8 AND title='Retained Card' AND lifecycle_state IN ('ACTIVE','ARCHIVED');")" = 2
+test "$(admin "SELECT count(*) FROM cards WHERE board_id='$board' AND title='Retained Card' AND ((lifecycle_state='ACTIVE' AND version=11) OR (lifecycle_state='ARCHIVED' AND version=8));")" = 2
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$label' AND event_type='LABEL_DELETED';")" = 1
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$label' AND event_type='LABEL_DELETED';")" = 1
 after=$(state)

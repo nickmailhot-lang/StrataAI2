@@ -29,6 +29,8 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/labels", "POST") => "label_create",
             ("/labels/{labelId:guid}", "PATCH") => "label_update",
             ("/labels/{labelId:guid}", "DELETE") => "label_delete",
+            ("/cards/{cardId:guid}/labels/{labelId:guid}", "PUT") => "card_label_assign",
+            ("/cards/{cardId:guid}/labels/{labelId:guid}", "DELETE") => "card_label_remove",
             ("/boards/{boardId:guid}/members", "GET") => "member_read",
             ("/boards/{boardId:guid}/members/{targetUserId:guid}", "PATCH") => "member_role",
             ("/boards/{boardId:guid}/members/{targetUserId:guid}", "DELETE") => "member_remove",

@@ -6,6 +6,17 @@ public static partial class WorkManagementEndpoints
 {
     private static void MapLabelEndpoints(WebApplication app)
     {
+        foreach (var assigned in new[] { true, false })
+        {
+            app.MapMethods("/cards/{cardId:guid}/labels/{labelId:guid}", [assigned ? "PUT" : "DELETE"],
+                async (Guid cardId, Guid labelId, long version, HttpContext context, IWorkManagementService service, CancellationToken ct) =>
+                {
+                    var actor = GetUserId(context);
+                    if (actor is null) return Results.Unauthorized();
+                    var result = await service.SetCardLabelAsync(cardId, labelId, actor.Value, assigned, version, context.TraceIdentifier, ct);
+                    return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+                }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+        }
         app.MapGet("/boards/{boardId:guid}/labels", async (Guid boardId, string? after, HttpContext context, IWorkManagementService service, CancellationToken ct) =>
         {
             var actor = GetUserId(context);

@@ -6,6 +6,40 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class PostgresWorkManagementStore
 {
+    public async Task<CardLabelChange?> SetCardLabelAsync(Guid cardId, Guid labelId, bool assigned, long version, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        var card = await FindCardAsync(cardId, cancellationToken);
+        if (card is null) return null;
+        if (!connectionFactory.HasCommandScope(card.OrganizationId)) throw new InvalidOperationException("Card label assignment requires the owning command transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(card.OrganizationId, cancellationToken);
+        NpgsqlCommand Query(string sql)
+        {
+            var command = new NpgsqlCommand(sql, session.Connection, session.Transaction);
+            command.Parameters.AddWithValue("tenant", card.OrganizationId); command.Parameters.AddWithValue("board", card.BoardId);
+            command.Parameters.AddWithValue("card", cardId); command.Parameters.AddWithValue("label", labelId);
+            command.Parameters.AddWithValue("version", version); command.Parameters.AddWithValue("now", now);
+            return command;
+        }
+        // The Board gate is already held. Lock the current Card and reject stale
+        // revisions before touching an association, even for an idempotent no-op.
+        await using (var current = Query("SELECT version FROM cards WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND lifecycle_state='ACTIVE' FOR UPDATE;"))
+            if (await current.ExecuteScalarAsync(cancellationToken) is not long currentVersion || currentVersion != version) return null;
+        await using (var currentLabel = Query("SELECT id FROM board_labels WHERE tenant_id=@tenant AND board_id=@board AND id=@label AND status='ACTIVE';"))
+            if (await currentLabel.ExecuteScalarAsync(cancellationToken) is null) return null;
+        int count;
+        await using (var change = Query(assigned
+            ? "INSERT INTO card_labels(tenant_id,board_id,card_id,label_id,created_at,updated_at) VALUES(@tenant,@board,@card,@label,@now,@now) ON CONFLICT(tenant_id,card_id,label_id) DO NOTHING;"
+            : "DELETE FROM card_labels WHERE tenant_id=@tenant AND board_id=@board AND card_id=@card AND label_id=@label;"))
+            count = await change.ExecuteNonQueryAsync(cancellationToken);
+        if (count > 0)
+        {
+            await using var update = Query("UPDATE cards SET version=version+1,updated_at=@now WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version RETURNING id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version;");
+            await using var reader = await update.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken)) throw new InvalidOperationException("Locked Card revision changed unexpectedly.");
+            card = ReadCard(reader);
+        }
+        return new(card, labelId, assigned, count > 0);
+    }
     private const string LabelColumns = "id,tenant_id,board_id,name,color,rank,status,created_at,updated_at,version";
     private static BoardLabelRecord ReadLabel(NpgsqlDataReader reader) => new(reader.GetGuid(0), reader.GetGuid(1), reader.GetGuid(2),
         reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetString(6) == "DELETED",

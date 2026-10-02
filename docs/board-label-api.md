@@ -36,7 +36,19 @@ identical receipts, changed fingerprints, stale writes, malformed cursors, and
 observed Board lock waits with lifecycle and session revocation. Its runtime
 execution is pending CI; merely adding the fixture is not acceptance evidence.
 
-This is a foundation, not PRD-10 closure. Card assignment/removal APIs, public
+Card assignment/removal commands now use PUT/DELETE
+`/cards/{cardId}/labels/{labelId}?version={cardVersion}`. They require an active
+Card and parent List, an active same-Board label, and current editing permission.
+The Card revision advances only when the association changes. Fresh no-op
+requests still require the current revision and store their own retry receipt;
+they do not add duplicate events. LABEL_ADDED/LABEL_REMOVED events identify the
+Card and its revision without copying label content. Historical association
+receipts recheck current Card/parent/label scope before returning prior data.
+Both demo and PostgreSQL definition deletion reconcile affected Card revisions.
+Two new host regressions and an extended exact-image fixture cover this behavior;
+local strict compilation passes, with runtime execution pending CI.
+
+This is a foundation, not PRD-10 closure. Association reads and public
 Card indicators, accessible label administration, filtering, relative reorder
 controls, copy/move metadata reconciliation, and exact-image concurrency,
 rollback, telemetry, and browser acceptance remain required.

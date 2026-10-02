@@ -5,6 +5,19 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed partial class InMemoryWorkManagementStore
 {
     private readonly Dictionary<Guid, BoardLabelRecord> _labels = [];
+    private readonly HashSet<(Guid CardId, Guid LabelId)> _cardLabels = [];
+    public Task<CardLabelChange?> SetCardLabelAsync(Guid cardId, Guid labelId, bool assigned, long version, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            if (!_cards.TryGetValue(cardId, out var card) || card.Version != version || card.LifecycleState != WorkItemLifecycleState.Active
+                || !_labels.TryGetValue(labelId, out var label) || label.Deleted || label.BoardId != card.BoardId || label.OrganizationId != card.OrganizationId)
+                return Task.FromResult<CardLabelChange?>(null);
+            var changed = assigned ? _cardLabels.Add((cardId, labelId)) : _cardLabels.Remove((cardId, labelId));
+            if (changed) { card = card with { Version = card.Version + 1, UpdatedAt = now }; _cards[cardId] = card; }
+            return Task.FromResult<CardLabelChange?>(new(card, labelId, assigned, changed));
+        }
+    }
     public Task<IReadOnlyList<BoardLabelRecord>> ListLabelsAsync(Guid boardId, Guid? after, CancellationToken cancellationToken = default)
     {
         lock (_sync) return Task.FromResult<IReadOnlyList<BoardLabelRecord>>(_labels.Values.Where(label => label.BoardId == boardId
@@ -39,6 +52,12 @@ internal sealed partial class InMemoryWorkManagementStore
         {
             if (!_labels.TryGetValue(labelId, out var label) || label.Deleted || label.Version != version) return Task.FromResult<BoardLabelRecord?>(null);
             var deleted = label with { Deleted = true, UpdatedAt = now, Version = version + 1 };
+            foreach (var association in _cardLabels.Where(item => item.LabelId == labelId).ToArray())
+            {
+                _cardLabels.Remove(association);
+                if (_cards.TryGetValue(association.CardId, out var card) && card.LifecycleState != WorkItemLifecycleState.Deleted)
+                    _cards[card.Id] = card with { Version = card.Version + 1, UpdatedAt = now };
+            }
             _labels[labelId] = deleted; return Task.FromResult<BoardLabelRecord?>(deleted);
         }
     }
