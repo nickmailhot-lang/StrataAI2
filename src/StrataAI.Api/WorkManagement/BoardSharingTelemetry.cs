@@ -33,6 +33,17 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/invitations", "POST") => "invitation_create",
             ("/boards/{boardId:guid}/invitations/{invitationId:guid}", "DELETE") => "invitation_revoke",
             ("/lists/{listId:guid}", "PATCH") => "list_update",
+            ("/boards/{boardId:guid}/lists", "POST") => "list_create",
+            ("/boards/{boardId:guid}/archived-lists", "GET") => "archived_list_read",
+            ("/boards/{boardId:guid}/archived-cards", "GET") => "archived_card_read",
+            ("/lists/{listId:guid}/archive", "POST") => "list_archive",
+            ("/lists/{listId:guid}/restore", "POST") => "list_restore",
+            ("/lists/{listId:guid}", "DELETE") => "list_delete",
+            ("/lists/{listId:guid}/cards", "POST") => "card_create",
+            ("/cards/{cardId:guid}", "PATCH") => "card_update",
+            ("/cards/{cardId:guid}/archive", "POST") => "card_archive",
+            ("/cards/{cardId:guid}/restore", "POST") => "card_restore",
+            ("/cards/{cardId:guid}", "DELETE") => "card_delete",
             ("/cards/{cardId:guid}/move", "POST") => "card_move",
             _ => null,
         };
@@ -49,7 +60,10 @@ public sealed class BoardSharingTelemetry
                 or "version_conflict" or "idempotency_key_reused" or "idempotency_key_expired"
                 or "invalid_idempotency_key" or "insufficient_permission"
                 or "list_not_found" or "card_not_found" or "invalid_list_name" or "invalid_rank"
-                or "invalid_move_position" or "rank_space_exhausted" => code,
+                or "invalid_move_position" or "rank_space_exhausted"
+                or "invalid_lifecycle_transition" or "delete_confirmation_required"
+                or "deletion_impact_required" or "deletion_impact_changed"
+                or "invalid_archive_cursor" or "invalid_card_title" => code,
             _ => "other_error",
         };
     }

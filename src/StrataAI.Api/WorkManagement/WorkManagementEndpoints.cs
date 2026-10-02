@@ -416,7 +416,7 @@ public static class WorkManagementEndpoints
                             result.Value)
                         : ErrorFor(result.ErrorCode);
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPatch(
                 "/lists/{listId:guid}",
@@ -474,7 +474,7 @@ public static class WorkManagementEndpoints
                             context.TraceIdentifier,
                             cancellationToken, confirmed is true, containedCardCount));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPost(
                 "/lists/{listId:guid}/cards",
@@ -506,7 +506,7 @@ public static class WorkManagementEndpoints
                             result.Value)
                         : ErrorFor(result.ErrorCode);
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPatch(
                 "/cards/{cardId:guid}",
@@ -533,7 +533,7 @@ public static class WorkManagementEndpoints
                             context.TraceIdentifier,
                             cancellationToken));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPost(
                 "/cards/{cardId:guid}/move",
@@ -590,7 +590,7 @@ public static class WorkManagementEndpoints
                             context.TraceIdentifier,
                             cancellationToken, confirmed is true));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
     }
 
     private static void MapListLifecycle(
@@ -622,7 +622,7 @@ public static class WorkManagementEndpoints
                             context.TraceIdentifier,
                             cancellationToken));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
     }
 
     private static void MapCardLifecycle(
@@ -654,7 +654,7 @@ public static class WorkManagementEndpoints
                             context.TraceIdentifier,
                             cancellationToken));
                 })
-            .RequireAuthorization();
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
     }
 
     private static bool TryMemberVersion(HttpContext context, out long? version)
