@@ -383,12 +383,22 @@ internal sealed class InMemoryWorkManagementStore : IWorkManagementStore
 
     public Task<BoardListRecord?> FindListAsync(
         Guid listId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         lock (_sync)
         {
             _lists.TryGetValue(listId, out var list);
-            return Task.FromResult<BoardListRecord?>(list);
+            return Task.FromResult<BoardListRecord?>(includeDeleted || list?.LifecycleState != WorkItemLifecycleState.Deleted ? list : null);
+        }
+    }
+
+    public Task<long> CountContainedCardsAsync(Guid listId, CancellationToken cancellationToken = default)
+    {
+        lock (_sync)
+        {
+            return Task.FromResult(_lists.TryGetValue(listId, out var list) ? _cards.Values.LongCount(c =>
+                c.OrganizationId == list.OrganizationId && c.BoardId == list.BoardId && c.ListId == listId
+                && c.LifecycleState != WorkItemLifecycleState.Deleted) : 0);
         }
     }
 

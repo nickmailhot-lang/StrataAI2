@@ -105,7 +105,9 @@ public interface IWorkManagementStore
 
     Task<BoardListRecord?> FindListAsync(
         Guid listId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, bool includeDeleted = false);
+
+    Task<long> CountContainedCardsAsync(Guid listId, CancellationToken cancellationToken = default);
 
     Task<BoardListRecord?> UpdateListAsync(
         Guid listId,

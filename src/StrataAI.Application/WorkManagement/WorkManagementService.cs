@@ -573,7 +573,7 @@ public sealed class WorkManagementService(
         WorkItemLifecycleState nextState,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool deletionConfirmed = false, long? expectedContainedCardCount = null)
     {
         var list = await store.FindListAsync(listId, cancellationToken);
         if (list is null)
@@ -596,6 +596,17 @@ public sealed class WorkManagementService(
         {
             return WorkOperation<BoardListRecord>.Failure(
                 "invalid_lifecycle_transition");
+        }
+
+        if (list.Version != expectedVersion) return WorkOperation<BoardListRecord>.Failure("version_conflict");
+        if (nextState == WorkItemLifecycleState.Deleted)
+        {
+            if (!deletionConfirmed) return WorkOperation<BoardListRecord>.Failure("delete_confirmation_required");
+            if (expectedContainedCardCount is null or < 0) return WorkOperation<BoardListRecord>.Failure("deletion_impact_required");
+            // The owning command holds the Board gate, so card moves/lifecycle
+            // commands cannot change this impact between review and deletion.
+            if (await store.CountContainedCardsAsync(listId, cancellationToken) != expectedContainedCardCount)
+                return WorkOperation<BoardListRecord>.Failure("deletion_impact_changed");
         }
 
         var updated = await store.SetListLifecycleAsync(

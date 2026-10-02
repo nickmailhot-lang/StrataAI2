@@ -443,6 +443,8 @@ public static class WorkManagementEndpoints
                 async (
                     Guid listId,
                     long version,
+                    bool? confirmed,
+                    long? containedCardCount,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -460,7 +462,7 @@ public static class WorkManagementEndpoints
                             WorkItemLifecycleState.Deleted,
                             version,
                             context.TraceIdentifier,
-                            cancellationToken));
+                            cancellationToken, confirmed is true, containedCardCount));
                 })
             .RequireAuthorization();
 
@@ -728,6 +730,9 @@ public static class WorkManagementEndpoints
                 errorCode,
                 "The Board background is invalid."),
             "invalid_archive_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode, "The archive cursor must be a nonempty UUID."),
+            "delete_confirmation_required" => Problem(StatusCodes.Status400BadRequest, errorCode, "Explicit permanent-deletion confirmation is required."),
+            "deletion_impact_required" => Problem(StatusCodes.Status400BadRequest, errorCode, "Review the current contained-card impact before deletion."),
+            "deletion_impact_changed" => Problem(StatusCodes.Status409Conflict, errorCode, "The contained-card impact changed. Review the current archive before deletion."),
             "invalid_list_name" => Problem(
                 StatusCodes.Status400BadRequest,
                 errorCode,

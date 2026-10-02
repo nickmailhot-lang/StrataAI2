@@ -8,6 +8,7 @@ admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X 
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
+  admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null || true
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -101,3 +102,46 @@ admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$board';" >/dev/null
 test "$(get owner "/boards/$board/archived-lists")" = 200
 test "$before" = "$(state)"
 echo 'Archived Lists: bounded UUID paging, complete contained-card counts, active/deleted exclusion, unchanged state/receipts, current admin authority, post-wait membership/session/parent rejection passed.'
+
+# PRD-07-FR-010/011 / PRD-18-FR-007/009: explicit current deletion consent.
+target=$(head -n 1 "$scratch/expected.ids")
+delete_key=$(cat /proc/sys/kernel/random/uuid)
+delete_list() {
+  curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+    -H "Idempotency-Key: $delete_key" -X DELETE -o "$scratch/deleted.json" -w '%{http_code}' "$base/lists/$target?version=1$1"
+}
+for query in '' '&confirmed=false&containedCardCount=2' '&confirmed=true' '&confirmed=true&containedCardCount=-1'; do
+  test "$(delete_list "$query")" = 400
+  test "$before" = "$(state)"
+done
+test "$(delete_list '&confirmed=true&containedCardCount=1')" = 409
+jq -e '.code=="deletion_impact_changed"' "$scratch/deleted.json" >/dev/null
+test "$before" = "$(state)"
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(delete_list '&confirmed=true&containedCardCount=2')" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+test "$(delete_list '&confirmed=true&containedCardCount=2')" = 200
+jq -e --arg target "$target" '.id==$target and .lifecycleState=="deleted" and .version==2' "$scratch/deleted.json" >/dev/null
+cp "$scratch/deleted.json" "$scratch/receipt.json"
+deleted_state=$(state)
+test "$(delete_list '&confirmed=true&containedCardCount=2')" = 200
+cmp "$scratch/receipt.json" "$scratch/deleted.json"
+test "$deleted_state" = "$(state)"
+test "$(delete_list '&confirmed=true&containedCardCount=1')" = 409
+jq -e '.code=="idempotency_key_reused"' "$scratch/deleted.json" >/dev/null
+test "$deleted_state" = "$(state)"
+admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+test "$(delete_list '&confirmed=true&containedCardCount=2')" = 404
+scripts/ci/assert-file-excludes.sh 'Archived fixture|Contained fixture|lifecycleState|version' "$scratch/deleted.json"
+admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+test "$deleted_state" = "$(state)"
+test "$(get owner "/boards/$board/archived-lists")" = 200
+jq -e --arg target "$target" 'all(.items[];.list.id!=$target)' "$scratch/response.json" >/dev/null
+admin "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='$board';" >/dev/null
+test "$(delete_list '&confirmed=true&containedCardCount=2')" = 404
+admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$board';" >/dev/null
+test "$(delete_list '&confirmed=true&containedCardCount=2')" = 200
+cmp "$scratch/receipt.json" "$scratch/deleted.json"
+test "$deleted_state" = "$(state)"
+echo 'List deletion: explicit confirmation/current impact, full rollback, non-reapplying historical receipt, changed-intent rejection, fresh authority and tombstone exclusion passed.'

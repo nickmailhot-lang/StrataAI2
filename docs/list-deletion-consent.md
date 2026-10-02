@@ -1,0 +1,38 @@
+# Permanent List deletion consent (PRD-07 / PRD-18)
+
+`DELETE /lists/{id}?version={reviewedVersion}&confirmed=true&containedCardCount={reviewedCount}`
+requires current administration authority and an active Organization/Board, an
+archived List, its current version, explicit confirmation and the current count
+of contained active/archived cards. Deleted cards are excluded from this impact
+count, exactly as in archive discovery. Missing confirmation/impact returns a
+stable 400 code; changed impact returns `deletion_impact_changed` (409). Denied
+callers receive the existing minimal unavailable response before protected
+validation or counting. Failed consent changes no List/card/audit/event/job/receipt.
+
+The Board gate serializes legal card movement and lifecycle commands while the
+server checks impact and deletes the List. The List tombstone makes the parent
+irreversible and excludes it from active/archived discovery and restoration.
+Contained card records stay associated for historical integrity; they cannot be
+edited, moved or restored through a deleted parent. Product deletion is not a
+claim that retained database/backup bytes have been physically erased.
+
+Confirmation and reviewed impact are part of the keyed deletion fingerprint.
+Archive/restore fingerprints retain their existing format. A deletion-only typed
+route can find the tombstone to authorize recovery of the same committed receipt,
+without reapplying the mutation. Normal List lookup excludes tombstones. Replay
+still requires current administration, active parent scope and the original
+actor/key/fingerprint; changed consent, removed membership or parent archive
+cannot recover protected historical data. No new tombstone disclosure endpoint
+is exposed.
+
+Host checks cover missing/negative/changed impact, unchanged archived data,
+same-intent recovery, changed-key reuse, outsider and inactive-parent denial and
+irreversibility. Required exact-image PostgreSQL checks also revoke audit writes
+to prove rollback of claim/mutation/audit, then recover the same key without
+additional product effects and reauthorize after grant/parent changes. Local
+build and shell syntax pass; actual Linux execution remains required.
+
+The reviewed permanent-delete UI and its irreversible contained-card disclosure
+still need implementation and browser proof. Archived-card browsing and the
+remaining PRD-07/18 requirements also remain open. The retention/purge policy
+must be completed under the wider retention tickets before their criteria close.

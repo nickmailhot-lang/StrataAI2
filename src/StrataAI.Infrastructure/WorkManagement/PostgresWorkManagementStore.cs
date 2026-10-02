@@ -818,11 +818,11 @@ internal sealed class PostgresWorkManagementStore(
 
     public async Task<BoardListRecord?> FindListAsync(
         Guid listId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         var route = await ResolveListRouteAsync(
             listId,
-            cancellationToken);
+            cancellationToken, includeDeleted);
 
         if (route is null)
         {
@@ -850,6 +850,17 @@ internal sealed class PostgresWorkManagementStore(
         return await reader.ReadAsync(cancellationToken)
             ? ReadList(reader)
             : null;
+    }
+
+    public async Task<long> CountContainedCardsAsync(Guid listId, CancellationToken cancellationToken = default)
+    {
+        var route = await ResolveListRouteAsync(listId, cancellationToken);
+        if (route is null) return 0;
+        await using var session = await connectionFactory.OpenTenantSessionAsync(route.Value.TenantId, cancellationToken);
+        await using var command = new NpgsqlCommand("SELECT count(*) FROM cards WHERE tenant_id=@tenant AND board_id=@board AND list_id=@list AND lifecycle_state<>'DELETED';", session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", route.Value.TenantId); command.Parameters.AddWithValue("board", route.Value.BoardId);
+        command.Parameters.AddWithValue("list", listId);
+        return (long)(await command.ExecuteScalarAsync(cancellationToken))!;
     }
 
     public async Task<BoardListRecord?> UpdateListAsync(
@@ -1419,7 +1430,7 @@ internal sealed class PostgresWorkManagementStore(
 
     private async Task<(Guid TenantId, Guid BoardId)?> ResolveListRouteAsync(
         Guid listId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, bool includeDeleted = false)
     {
         await using var routing =
             await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
@@ -1429,10 +1440,11 @@ internal sealed class PostgresWorkManagementStore(
             SELECT tenant_id, board_id
             FROM list_routes
             WHERE list_id = @list_id
-              AND lifecycle_state <> 'DELETED';
+              AND (@include_deleted OR lifecycle_state <> 'DELETED');
             """,
             routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("list_id", listId);
+        command.Parameters.AddWithValue("include_deleted", includeDeleted);
 
         await using var reader =
             await command.ExecuteReaderAsync(cancellationToken);
