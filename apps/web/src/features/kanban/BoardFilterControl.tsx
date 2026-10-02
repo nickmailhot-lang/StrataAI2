@@ -42,13 +42,13 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     epoch.current++; pending.current?.abort(); pending.current = undefined;
     setLabels([]); setLabelCursor(null); setResult(undefined); setIdentity(undefined); setApplied(undefined); setLoading(false); setLabelLoading(false);
     setNotice(undefined); setLabelNotice(undefined);
-    setCriteria(empty()); setOpen(false);
+    setCriteria(empty()); setOpen(false); setCursor(undefined);
     setCanvasMode(false);
   }, [org, board, available]);
   async function loadLabels(after?: string, opening = false, restoring = false) {
     if (!available || disabled || pending.current) return;
     const controller = new AbortController(); pending.current = controller; const ticket = epoch.current;
-    if (opening) { setCanvasMode(false); setOpen(!restoring); setCriteria(empty()); setIdentity(undefined); setResult(undefined); setApplied(undefined); setNotice(undefined); }
+    if (opening) { setCanvasMode(false); setOpen(!restoring); setCriteria(empty()); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCursor(undefined); setNotice(undefined); }
     setLabelLoading(true); setLabelNotice(undefined); setLabels([]); setLabelCursor(null);
     try {
       if (opening) {
@@ -84,7 +84,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
         void loadLabels(undefined, true, true);
     } catch { /* Optional storage. */ }
   });
-  useEffect(() => { restoreSavedCanvas(); }, [org, board, available, disabled]);
+  useEffect(() => { restoreSavedCanvas(); }, [org, board, available, disabled, identity]);
   const refreshChoices = useEffectEvent(() => {
     if (!open || !identity || disabled || !available) return;
     epoch.current++; pending.current?.abort(); pending.current = undefined;

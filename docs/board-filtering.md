@@ -69,7 +69,7 @@ filters removes the saved criteria. Unavailable browser storage degrades to the
 current in-memory draft. Invalid stored criteria are ignored. Anonymous filtering
 remains pending: the current dialog requires authentication and explains denial.
 
-Fourteen filter component cases and 24 Board cases passed locally (38 focused tests),
+Fifteen filter component cases and 24 Board cases passed locally (39 focused tests),
 plus typecheck, lint and production build. Desktop/mobile keyboard browser cases
 now include ALL empty results, ANY matching, criterion restoration after refresh,
 and clearing. Collection passed; execution against exact images remains pending.

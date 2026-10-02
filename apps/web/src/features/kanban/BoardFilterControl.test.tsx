@@ -118,6 +118,23 @@ it('never restores another actor’s saved canvas predicates', async () => {
   expect(onCanvasChange).toHaveBeenLastCalledWith(undefined);
   expect(screen.queryByText(/Filtered Board:/)).not.toBeInTheDocument();
 });
+it('restores the new Board’s saved canvas after changing scope in the mounted control', async () => {
+  const nextBoard = '99999999-9999-9999-9999-999999999999';
+  const criteria = { keyword: '', labels: [], match: 'all', canvas: true };
+  sessionStorage.setItem(storage(), JSON.stringify(criteria));
+  sessionStorage.setItem(`strataai:board-filter:v1:${actor}:${org}:${nextBoard}`, JSON.stringify(criteria));
+  const fetch = vi.fn().mockImplementation(async (url: string) => {
+    if (url === '/me') return response({ id: actor });
+    const currentBoard = url.includes(nextBoard) ? nextBoard : board;
+    return response({ organizationId: org, boardId: currentBoard, items: [], nextCursor: null });
+  }); vi.stubGlobal('fetch', fetch);
+  const onCanvasChange = vi.fn(); const p = { ...props(), onCanvasChange }; const view = mount(p);
+  await screen.findByText('Filtered Board: 0 matching Cards on this page.');
+  const nextSnapshot = { ...snapshot, board: { ...snapshot.board, id: nextBoard } };
+  view.rerender(<MemoryRouter><BoardFilterControl {...p} snapshot={nextSnapshot} /></MemoryRouter>);
+  await waitFor(() => expect(onCanvasChange).toHaveBeenLastCalledWith({ snapshot: nextSnapshot, items: [] }));
+  await waitFor(() => expect(fetch.mock.calls.some(call => String(call[0]).includes(`${nextBoard}/cards?`))).toBe(true));
+});
 it('refreshes canonical state rather than projecting a Card from a newer result revision', async () => {
   const canonical = { ...snapshot, lists: [{ ...snapshot.lists[0], cards: [card] }] };
   vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(results([{ ...card, version: 4 }])));
