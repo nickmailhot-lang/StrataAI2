@@ -71,3 +71,42 @@ Card assignment/notification producer/account cleanup fixture and the live
 write/lifecycle scope fixture passed. This proves those scoped runtime checks,
 including the previously repaired event count and archived-Organization admission;
 the complete required-CI gate and the new inbox consumer checks remain pending.
+
+## Internal notification center
+
+The MUI center is available at `/app/{organizationId}/notifications` through the
+desktop navigation and the header button on mobile. Each bounded page replaces
+the preceding one. It shows assignment type, read/unread text, recipient-local
+dates and the affected Card link. It supports single-row read and explicit bulk
+selection of the current page; it does not claim a global unread count.
+
+Every refresh reads `/me` before validating the recipient, Organization, safe
+entity links and timestamp/UUID seek ordering. Sub-millisecond timestamp precision
+is preserved. Read acknowledgments must match every original selected ID exactly.
+An uncertain response retains the original recipient, selection and retry key,
+even after a newer page is loaded. New writes are disabled until that intent is
+confirmed or retired. Access loss, account change and Organization navigation
+retire private data and fence late responses. The center refreshes every ten
+seconds while visible and on window focus; profile events also invalidate it.
+It does not claim notification-specific SignalR delivery.
+
+Twenty-three validation/component scenarios cover precision, paging, safe links,
+recipient scope, read acknowledgments, exact retry after response loss, account
+switch, denied access, periodic HTTP recovery, rejected selections, keyboard focus
+and late-response cancellation. A new
+release browser scenario uses real producer assignments, desktop and 390px phone
+views, a committed read with a lost acknowledgment, same-key recovery, selected
+bulk read, automatic cross-client refresh and Board membership removal. Browser
+collection passed; runtime execution is pending CI.
+
+Commit ec6b142 repairs retry-key admission for both Organization inbox read
+routes. Linux host tests, PostgreSQL checks, web quality, image builds and scans
+passed on run 37059359898; its container gate remains pending. Watching,
+mentions, reminders, required notification events and performance evidence still
+remain before PRD-17/PRD-11 closure.
+
+Subsequent run 37059359898 observation confirms the exact-image bounded Board
+member/Card assignment/notification inbox fixture passed, including read-update
+rollback, recipient admission after observed lock waits and bulk paging/replay.
+The live database write/lifecycle fixture also passed. Identity mail and browser
+checks were still running; this does not assert a completed required-CI gate.

@@ -27,6 +27,7 @@ import { InvitationLinkPage } from "../features/auth/InvitationLinkPage";
 import { PortalShell } from "../portal/PortalShell";
 import { appTheme } from "../theme/appTheme";
 import { BuildIdentityFooter } from './BuildIdentityFooter';
+import { NotificationCenterPage } from '../features/notifications/NotificationCenterPage';
 
 const routes = [
   { path: "/app", element: <OrganizationHome /> },
@@ -50,6 +51,7 @@ const routes = [
     children: [
       { index: true, element: <OrganizationHome /> },
       { path: "settings", element: <OrganizationSettingsPage /> },
+      { path: "notifications", element: <NotificationCenterPage /> },
       { path: "members", element: <OrganizationMembersPage /> },
       { path: "invite", element: <OrganizationInvitationPage /> },
       { path: "boards/:boardId/invite", element: <BoardInvitationPage /> },

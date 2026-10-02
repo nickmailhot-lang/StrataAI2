@@ -665,6 +665,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     await waitFor(() => expect(retry).toBeEnabled()); expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
     expect(screen.getByText('This card is unavailable in this board.')).toBeInTheDocument();
     fireEvent.click(retry); await waitFor(() => expect(router.state.location.pathname).toBe('/app/org-1/boards/board-1'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 5_000 });
     await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toHaveFocus());
     expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));

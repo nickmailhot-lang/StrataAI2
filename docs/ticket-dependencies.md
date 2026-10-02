@@ -19,7 +19,7 @@ A dependency-first traversal of strongly connected components produces the group
 
 The architecture foundation is already adopted and is being implemented alongside its dependent product contracts. Group order describes the issue graph, not an instruction to discard or rebuild that foundation.
 
-In particular, PRD-11 depends on PRD-16 and PRD-17; PRD-17 depends on PRD-11, PRD-12, PRD-15 and PRD-22; PRD-12 depends on PRD-17. Assignment persistence, editing, previews and member filtering are producer slices. Assignment recipient intent, the notification center, watch relationships, date reminders and mentions still need their respective contracts and runtime evidence. Existing content-free Work invalidation events do not prove notification delivery.
+In particular, PRD-11 depends on PRD-16 and PRD-17; PRD-17 depends on PRD-11, PRD-12, PRD-15 and PRD-22; PRD-12 depends on PRD-17. Assignment persistence, editing, previews and member filtering are producer slices. Atomic assignment recipient intent, the authorized inbox/read commands and the MUI notification center now have implementations and scoped tests; the latest complete runtime gate remains pending. Watch relationships, date reminders, mentions and required notification events still need implementation and runtime evidence. Existing content-free Work invalidation events do not prove notification delivery.
 
 ## Complete canonical inventory
 

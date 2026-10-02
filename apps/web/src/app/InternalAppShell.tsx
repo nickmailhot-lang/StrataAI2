@@ -5,6 +5,7 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import MeetingRoomOutlinedIcon from "@mui/icons-material/MeetingRoomOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import ViewKanbanOutlinedIcon from "@mui/icons-material/ViewKanbanOutlined";
+import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
 import {
   AppBar,
   Box,
@@ -28,7 +29,7 @@ const drawerWidth = 248;
 type NavigationItem = {
   label: string;
   icon: ReactNode;
-  destination?: "home" | "organization";
+  destination?: "home" | "organization" | "notifications";
 };
 
 const navigation: NavigationItem[] = [
@@ -43,6 +44,7 @@ const navigation: NavigationItem[] = [
     destination: "organization",
   },
   { label: "Meetings", icon: <MeetingRoomOutlinedIcon /> },
+  { label: "Notifications", icon: <NotificationsOutlinedIcon />, destination: "notifications" },
   { label: "Correspondence", icon: <EmailOutlinedIcon /> },
   { label: "Documents", icon: <DescriptionOutlinedIcon /> },
   { label: "Owners & Units", icon: <GroupsOutlinedIcon /> },
@@ -108,6 +110,11 @@ function InternalLayout() {
               <SettingsOutlinedIcon />
             </IconButton>
           </Tooltip>
+          <Tooltip title="Notifications">
+            <IconButton component={Link} to={`/app/${organizationId}/notifications`} color="inherit" aria-label="Open notifications">
+              <NotificationsOutlinedIcon />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
 
@@ -130,7 +137,7 @@ function InternalLayout() {
               key={item.label}
               component={Link}
               to={
-                item.destination === "home" ? "/app" : `/app/${organizationId}`
+                item.destination === "home" ? "/app" : item.destination === "notifications" ? `/app/${organizationId}/notifications` : `/app/${organizationId}`
               }
               disabled={!item.destination}
             >
