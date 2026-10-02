@@ -10,7 +10,7 @@ internal sealed class PostgresIdentityTokenConsumptionReplayStore(PostgresConnec
     public async Task<IdentityTokenConsumptionReplay?> ReadAsync(Guid userId, Guid key, IdentityTokenPurpose purpose, CancellationToken cancellationToken)
     {
         RequireScope();
-        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             SELECT COALESCE(password_reset_token_id,verification_token_id),key_version,fingerprint,consumed_at,expires_at
@@ -24,7 +24,7 @@ internal sealed class PostgresIdentityTokenConsumptionReplayStore(PostgresConnec
     public async Task SaveAsync(Guid userId, Guid key, IdentityTokenPurpose purpose, IdentityTokenConsumptionReplay replay, CancellationToken cancellationToken)
     {
         RequireScope();
-        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             INSERT INTO identity_token_consumption_replays(user_id,key_id,operation,key_version,fingerprint,

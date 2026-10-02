@@ -110,6 +110,18 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
     internal bool HasCommandScope(Guid organizationId) => _commandSession.Value?.OrganizationId == organizationId;
     internal bool HasIdentityCommandScope => _identityCommandSession.Value is not null;
 
+    // Global identity reads borrow command locks only when a command owns the transaction.
+    // Creating a discovery transaction here would also change FOR SHARE admission and
+    // suppress the identity store's explicitly owned write transaction/commit.
+    internal async Task<RoutingDbSession> OpenGlobalSessionAsync(CancellationToken cancellationToken)
+    {
+        if (_commandSession.Value is { } session)
+            return new RoutingDbSession(session.Connection, session.Transaction, ownsConnection: false);
+        if (_identityCommandSession.Value is { } identity)
+            return new RoutingDbSession(identity.Connection, identity.Transaction, ownsConnection: false);
+        return new RoutingDbSession(await OpenConnectionAsync(cancellationToken), null, ownsConnection: true);
+    }
+
     internal async Task<RoutingDbSession> OpenRoutingSessionAsync(CancellationToken cancellationToken)
     {
         if (_commandSession.Value is { } session)

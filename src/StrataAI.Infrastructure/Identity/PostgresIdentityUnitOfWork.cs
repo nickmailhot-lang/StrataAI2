@@ -17,7 +17,7 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
             return await connections.ExecuteIdentityCommandAsync(async () =>
             {
                 var plan = await ownership.PrepareAsync(actorId, cancellationToken);
-                await using var root = await connections.OpenRoutingSessionAsync(cancellationToken);
+                await using var root = await connections.OpenGlobalSessionAsync(cancellationToken);
                 await using var account = new NpgsqlCommand("SELECT id FROM users WHERE id=@actor FOR UPDATE;", root.Connection, root.Transaction);
                 account.Parameters.AddWithValue("actor", actorId);
                 if (await account.ExecuteScalarAsync(cancellationToken) is null || !await actors.VerifyAsync(actorId, cancellationToken))
@@ -44,7 +44,7 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
             {
                 if (kind != IdentityRevocationKind.Deactivate || key == Guid.Empty)
                     return await revocations.ExecuteAsync(expectedActor, sessionHash, key, kind, operation, cancellationToken);
-                await using var root = await connections.OpenRoutingSessionAsync(cancellationToken);
+                await using var root = await connections.OpenGlobalSessionAsync(cancellationToken);
                 await using var route = new NpgsqlCommand("SELECT user_id FROM sessions WHERE token_hash=@hash;", root.Connection, root.Transaction);
                 route.Parameters.AddWithValue("hash", sessionHash);
                 if (await route.ExecuteScalarAsync(cancellationToken) is not Guid subject || (expectedActor != Guid.Empty && expectedActor != subject))
@@ -134,7 +134,7 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
         {
             return await connections.ExecuteIdentityCommandAsync(async () =>
             {
-                await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+                await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
                 await using var gate = new NpgsqlCommand("SELECT id FROM users WHERE id=@actor FOR UPDATE;", session.Connection, session.Transaction);
                 gate.Parameters.AddWithValue("actor", actorId);
                 if (await gate.ExecuteScalarAsync(cancellationToken) is null || !await actors.VerifyAsync(actorId, cancellationToken))

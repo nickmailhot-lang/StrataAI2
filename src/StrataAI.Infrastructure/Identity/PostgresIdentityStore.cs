@@ -12,7 +12,7 @@ internal sealed class PostgresIdentityStore(
     {
         if (!connectionFactory.HasIdentityCommandScope) throw new InvalidOperationException("Token retry proof requires an owning identity transaction.");
         var table = purpose switch { IdentityTokenPurpose.ResetPassword => "password_reset_tokens", IdentityTokenPurpose.VerifyEmail => "email_verification_tokens", _ => throw new ArgumentOutOfRangeException(nameof(purpose)) };
-        await using var session = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         // Freeze the current user first, then the original token. Reread wall-clock expiry after the token wait.
         await using var route = new NpgsqlCommand($"SELECT u.id FROM users u JOIN {table} t ON t.user_id=u.id WHERE t.token_hash=@hash FOR UPDATE OF u;", session.Connection, session.Transaction);
         route.Parameters.AddWithValue("hash", tokenHash);
@@ -34,7 +34,7 @@ internal sealed class PostgresIdentityStore(
     public async Task<RevocationSessionProof?> FindRevocationSessionProofAsync(string tokenHash, CancellationToken cancellationToken = default)
     {
         if (!connectionFactory.HasIdentityCommandScope) throw new InvalidOperationException("Revocation proof requires an identity transaction.");
-        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var lookup = new NpgsqlCommand("SELECT user_id FROM sessions WHERE token_hash=@hash;", routing.Connection, routing.Transaction);
         lookup.Parameters.AddWithValue("hash", tokenHash);
         if (await lookup.ExecuteScalarAsync(cancellationToken) is not Guid userId) return null;
@@ -65,7 +65,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var ownedTransaction = routing.Transaction is null
             ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
         var connection = routing.Connection;
@@ -115,7 +115,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             $"SELECT {UserColumns} FROM users WHERE id = @id" + (routing.Transaction is null ? ";" : " FOR SHARE;"),
             routing.Connection, routing.Transaction);
@@ -135,7 +135,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             UPDATE users
@@ -156,7 +156,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO sessions(id, user_id, token_hash, created_at, expires_at)
@@ -177,7 +177,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             $"""
             SELECT
@@ -215,7 +215,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             UPDATE sessions
@@ -255,7 +255,7 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset usedAt,
         CancellationToken cancellationToken = default)
     {
-        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var ownedTransaction = routing.Transaction is null
             ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
         var connection = routing.Connection;
@@ -358,7 +358,7 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset usedAt,
         CancellationToken cancellationToken = default)
     {
-        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var ownedTransaction = routing.Transaction is null
             ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
         var connection = routing.Connection;
@@ -438,7 +438,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             $"""
             UPDATE users
@@ -477,7 +477,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var ownedTransaction = routing.Transaction is null
             ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
         var transaction = routing.Transaction ?? ownedTransaction!;
@@ -521,7 +521,7 @@ internal sealed class PostgresIdentityStore(
     {
         if (!connectionFactory.HasIdentityCommandScope)
             throw new InvalidOperationException("Identity replay requires a global identity command scope.");
-        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var head = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             SELECT COALESCE((SELECT last_sequence FROM identity_event_streams WHERE user_id=@user),0);
@@ -568,7 +568,7 @@ internal sealed class PostgresIdentityStore(
     {
         if (!connectionFactory.HasIdentityCommandScope)
             throw new InvalidOperationException("Identity events require a global identity command scope.");
-        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         if (routing.Transaction is null)
             throw new InvalidOperationException("Identity events require an owning command transaction.");
         await using var command = new NpgsqlCommand("""
@@ -598,7 +598,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken = default)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             INSERT INTO audit_events(
@@ -628,7 +628,7 @@ internal sealed class PostgresIdentityStore(
         CancellationToken cancellationToken)
     {
         await using var routing =
-            await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+            await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         // A sign-in command locks the current account before checking its password/status.
         // Password reset/deactivation then serialize before session issuance or after its commit.
         var query = routing.Transaction is null ? sql : sql.TrimEnd(';') + " FOR UPDATE;";
@@ -648,7 +648,7 @@ internal sealed class PostgresIdentityStore(
         IdentityTokenPurpose purpose,
         CancellationToken cancellationToken)
     {
-        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var ownedTransaction = routing.Transaction is null
             ? await routing.Connection.BeginTransactionAsync(cancellationToken) : null;
         var connection = routing.Connection;
@@ -710,7 +710,7 @@ internal sealed class PostgresIdentityStore(
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
-        await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
+        await using var routing = await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         return await FindTokenSubjectAsync(tableName, tokenHash, now, routing.Connection, routing.Transaction, cancellationToken);
     }
 

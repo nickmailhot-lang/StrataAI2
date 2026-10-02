@@ -7,7 +7,7 @@ internal sealed class PostgresIdentityLoginReplayStore(PostgresConnectionFactory
 {
     public async Task<IdentityLoginReplay?> ReadAsync(Guid userId, Guid key, CancellationToken cancellationToken)
     {
-        RequireScope(); await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        RequireScope(); await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             SELECT session_id,key_version,fingerprint,expires_at FROM identity_login_replays WHERE user_id=@user AND key_id=@key;
@@ -20,7 +20,7 @@ internal sealed class PostgresIdentityLoginReplayStore(PostgresConnectionFactory
     }
     public async Task SaveAsync(Guid userId, Guid key, IdentityLoginReplay replay, CancellationToken cancellationToken)
     {
-        RequireScope(); await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        RequireScope(); await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             INSERT INTO identity_login_replays(user_id,key_id,session_id,key_version,fingerprint,expires_at)

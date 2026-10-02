@@ -10,7 +10,7 @@ internal sealed class PostgresIdentityRegistrationReplayStore(PostgresConnection
     public async Task<IdentityRegistrationReplay?> ReadAsync(Guid userId, Guid key, CancellationToken cancellationToken)
     {
         RequireScope();
-        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             SELECT key_version,fingerprint,verification_token_id,verification_source,verification_key_version,expires_at
@@ -39,7 +39,7 @@ internal sealed class PostgresIdentityRegistrationReplayStore(PostgresConnection
             RegistrationVerificationSource.EmailDelivery => "EMAIL_DELIVERY",
             _ => throw new ArgumentOutOfRangeException(nameof(replay)),
         };
-        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             INSERT INTO identity_registration_replays(user_id,key_id,key_version,fingerprint,

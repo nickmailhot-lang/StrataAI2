@@ -9,7 +9,7 @@ internal sealed class PostgresIdentityRevocationReplayStore(PostgresConnectionFa
     public async Task<IdentityRevocationReceipt?> ReadAsync(Guid userId, Guid key, CancellationToken cancellationToken)
     {
         RequireScope();
-        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var subject = new NpgsqlCommand("SELECT set_config('app.identity_subject',@subject,true);", session.Connection, session.Transaction);
         subject.Parameters.AddWithValue("subject", userId.ToString());
         await subject.ExecuteNonQueryAsync(cancellationToken);
@@ -27,7 +27,7 @@ internal sealed class PostgresIdentityRevocationReplayStore(PostgresConnectionFa
     public async Task SaveAsync(Guid userId, Guid key, IdentityRevocationReceipt receipt, CancellationToken cancellationToken)
     {
         RequireScope();
-        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             DELETE FROM identity_revocation_replays WHERE user_id=@user AND key_id=@key AND expires_at<=clock_timestamp();

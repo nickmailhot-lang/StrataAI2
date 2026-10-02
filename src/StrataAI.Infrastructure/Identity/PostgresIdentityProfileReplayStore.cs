@@ -10,7 +10,7 @@ internal sealed class PostgresIdentityProfileReplayStore(PostgresConnectionFacto
     public async Task<IdentityProfileReplay?> ReadAsync(Guid userId, Guid key, CancellationToken cancellationToken)
     {
         RequireScope();
-        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var subject = new NpgsqlCommand("SELECT set_config('app.identity_subject',@subject,true);", session.Connection, session.Transaction);
         subject.Parameters.AddWithValue("subject", userId.ToString());
         await subject.ExecuteNonQueryAsync(cancellationToken);
@@ -32,7 +32,7 @@ internal sealed class PostgresIdentityProfileReplayStore(PostgresConnectionFacto
     {
         RequireScope();
         if (replay.Profile.Id != userId) throw new InvalidOperationException("Profile replay subject differs.");
-        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT set_config('app.identity_subject',@subject,true);
             INSERT INTO identity_profile_replays(user_id,key_id,fingerprint,result_json)
