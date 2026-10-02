@@ -53,5 +53,10 @@ public sealed partial class ApiHostTests
         Assert.True(board.Succeeded); var preview = Assert.Single(board.Value!.CardMembers!).Value;
         Assert.Equal(52, preview.Total); Assert.Equal(6, preview.Items.Count); Assert.Equal(54, preview.CardVersion);
         Assert.Equal(ids.Skip(1).Order().Take(6), preview.Items.Select(i => i.UserId));
+        var beyondPreview = ids.Skip(1).Order().Last();
+        var matching = await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, null, [], "all", cancellationToken: ct, memberIds: [beyondPreview]);
+        Assert.True(matching.Succeeded); Assert.Equal(card.Id, Assert.Single(matching.Value!.Items).Id);
+        var ineligible = await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, null, [], "all", cancellationToken: ct, memberIds: [ids[0]]);
+        Assert.True(ineligible.Succeeded); Assert.Empty(ineligible.Value!.Items);
     }
 }

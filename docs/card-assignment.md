@@ -214,3 +214,12 @@ Nine indicator cases and 25 Board cases passed in the final serial local run.
 An earlier concurrent run had one archive-recovery dialog/focus timing failure;
 the unchanged assertion passed in the serial run. Linux browser execution
 remains required evidence for that interaction.
+
+PRD-11/16 now share server member filtering via the Board Cards `members` query
+parameter. It matches all persisted eligible assignments, including assignees
+beyond the six-entry preview, combines with keyword/labels under ANY/ALL, and
+requires current Organization membership to protect assignment inference.
+See board-filtering.md for bounds, policy and verification scope. Filter UI and
+realtime acceptance remain outstanding. Card-face commit bef50bf passed Linux
+.NET/web/PostgreSQL/source gates and image build in run 37050782576; its complete
+runtime/security/required-ci gate remains pending.

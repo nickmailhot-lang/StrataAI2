@@ -35,6 +35,12 @@ public sealed partial class ApiHostTests
         Assert.Equal(new[] { card }, await Read("keyword=DESCRIPTION"));
         Assert.Empty(await Read($"keyword=absent&labels={labels[7]}&match=all"));
         Assert.Equal(2, (await Read($"keyword=absent&labels={labels[7]}&match=any")).Length);
+        var actor = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        using var memberAssign = await Mutate(owner, HttpMethod.Put, $"/cards/{other}/members/{actor}?version=2", new { }); Assert.Equal(HttpStatusCode.OK, memberAssign.StatusCode);
+        Assert.Empty(await Read($"members={actor}&labels={labels[0]}&match=all"));
+        Assert.Equal(new[] { card, other }.Order(), (await Read($"members={actor}&labels={labels[0]}&match=any")).Order());
+        Assert.Equal(new[] { other }, await Read($"members={actor}&labels={labels[7]}&match=all"));
+        using var invalidMembers = await owner.GetAsync($"/boards/{board}/cards?members=bad", ct); Assert.Equal(HttpStatusCode.BadRequest, invalidMembers.StatusCode);
         // A foreign/missing label is an unsatisfied predicate, never a discovery lookup.
         var foreignBoard = await TelemetryBoard(owner, ct);
         using var foreignReply = await Mutate(owner, HttpMethod.Post, $"/boards/{foreignBoard}/labels", new { name = "Other Board metadata", color = "red" });
@@ -46,9 +52,12 @@ public sealed partial class ApiHostTests
         Assert.Empty(await Read($"labels={labels[7]}"));
         using var outsider = app.CreateClient(); await RegisterAndLogin(outsider);
         using var denied = await outsider.GetAsync($"/boards/{board}/cards?labels=invalid&match=invalid", ct); Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        using var publish = await Mutate(owner, HttpMethod.Patch, $"/boards/{board}/visibility", new { visibility = "PUBLIC", version = 1 }); Assert.Equal(HttpStatusCode.OK, publish.StatusCode);
+        using var publicMembers = await outsider.GetAsync($"/boards/{board}/cards?members={actor}", ct); Assert.Equal(HttpStatusCode.NotFound, publicMembers.StatusCode);
+        Assert.DoesNotContain("Other Card", await publicMembers.Content.ReadAsStringAsync(ct));
         using var archive = await Mutate(owner, HttpMethod.Post, $"/lists/{list}/archive", new { version = 1 }); Assert.Equal(HttpStatusCode.OK, archive.StatusCode);
         Assert.Empty(await Read(""));
-        using var boardArchive = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/archive", new { version = 1 }); Assert.Equal(HttpStatusCode.OK, boardArchive.StatusCode);
+        using var boardArchive = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/archive", new { version = 2 }); Assert.Equal(HttpStatusCode.OK, boardArchive.StatusCode);
         using var unavailable = await owner.GetAsync($"/boards/{board}/cards", ct); Assert.Equal(HttpStatusCode.NotFound, unavailable.StatusCode);
     }
 

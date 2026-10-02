@@ -102,3 +102,28 @@ Card details retain the canonical movement controls. The required phone-client
 browser scenario also covers canvas projection, persistence after reload,
 assignment removal by the desktop client and restoration after Clear. Collection
 passed; exact-image runtime acceptance remains pending.
+
+The server filter accepts `members=uuid,uuid` (at most 25 distinct nonzero user
+IDs) alongside keyword/labels. In ALL mode every selected assignee, label and
+nonempty keyword must match; ANY mode matches any selected predicate. Member
+matches query persisted Card associations rather than Card-face previews, with
+same-tenant/Board joins and active Board membership, Organization membership,
+account and configured email-verification eligibility before matching and the
+51-row Card seek limit. Missing, foreign and departed members are unsatisfied
+predicates rather than profile lookups. Member predicates require current
+Organization membership; PUBLIC visitors outside the Organization cannot infer
+assignments from result membership. Existing keyword/label-only reads retain
+their current admitted visibility behavior. Validation follows Board admission;
+the existing owning Board transaction and final session verification protect
+post-wait reads. Fixed filter telemetry contains no selected user IDs.
+
+Host coverage includes 50+2 Card pages, zero/multiple assignees, member/keyword
+and member/label ANY/ALL combinations, an assignee beyond six preview entries,
+inactive accounts, departed membership, archived Lists, invalid input and PUBLIC
+visitor privacy. The required release fixture adds persisted-association matching
+beyond the preview, combined predicates, actual PostgreSQL 50+2 Card pages,
+validation/privacy and observed membership/session revocation waits through the
+release web proxy. Strict .NET compilation and shell syntax passed locally;
+execution of these new checks awaits Linux CI. Member selection in the MUI
+filter, stored member criteria and two-client filter acceptance remain required
+work; this does not complete PRD-16 or PRD-11.

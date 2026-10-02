@@ -126,6 +126,33 @@ jq -e '.cardMembers==null' "$scratch/public-preview.json" >/dev/null
 curl --max-time 60 --fail --silent --show-error "$base/boards/$board" > "$scratch/anonymous-preview.json"
 jq -e '.cardMembers==null' "$scratch/anonymous-preview.json" >/dev/null
 admin "UPDATE boards SET visibility='PRIVATE' WHERE id='$board';" >/dev/null
+beyond_preview=$(admin "SELECT m.user_id FROM board_members m JOIN users u ON u.id=m.user_id
+ WHERE m.tenant_id='$org' AND m.board_id='$board' AND m.status='ACTIVE' AND u.status='ACTIVE'
+ AND u.display_name LIKE 'Assignment seeded %' AND u.display_name NOT IN ('Assignment seeded 52','Assignment seeded 53') ORDER BY m.user_id DESC LIMIT 1;")
+test "$(get owner "/boards/$board/cards?members=$beyond_preview" beyond-preview-filter)" = 200
+jq -e --arg card "$paged_card" '(.items|length)==1 and .items[0].id==$card' "$scratch/beyond-preview-filter.json" >/dev/null
+test "$(get owner "/boards/$board/cards?members=$owner,$member&match=all" member-all)" = 200
+jq -e '(.items|length)==2' "$scratch/member-all.json" >/dev/null
+test "$(get owner "/boards/$board/cards?members=$member&keyword=absent&match=all")" = 200
+jq -e '(.items|length)==0' "$scratch/response.json" >/dev/null
+test "$(get owner "/boards/$board/cards?members=$member&keyword=absent&match=any")" = 200
+jq -e '(.items|length)==2' "$scratch/response.json" >/dev/null
+test "$(get owner "/boards/$board/cards?members=$owner,$owner")" = 400
+test "$(get outsider "/boards/$board/cards?members=bad")" = 404
+admin "UPDATE boards SET visibility='PUBLIC' WHERE id='$board';" >/dev/null
+test "$(get outsider "/boards/$board/cards?members=$owner")" = 404
+scripts/ci/assert-file-excludes.sh '"items"|Retained assignment|Paged assignee' "$scratch/response.json"
+admin "UPDATE boards SET visibility='PRIVATE' WHERE id='$board';
+ WITH seed AS (
+ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,version,created_at,updated_at)
+ SELECT gen_random_uuid(),'$org','$board','$list','Member filter paging '||n,lpad(n::text,30,'0'),2,now(),now() FROM generate_series(1,52) n RETURNING id
+ ) INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by) SELECT '$org','$board',id,'$owner','$owner' FROM seed;" >/dev/null
+test "$(get owner "/boards/$board/cards?members=$owner&keyword=Member%20filter%20paging&match=all" member-filter-first)" = 200
+jq -e '(.items|length)==50 and .nextCursor==.items[-1].id' "$scratch/member-filter-first.json" >/dev/null
+member_filter_cursor=$(jq -r '.nextCursor' "$scratch/member-filter-first.json")
+test "$(get owner "/boards/$board/cards?members=$owner&keyword=Member%20filter%20paging&match=all&after=$member_filter_cursor" member-filter-second)" = 200
+jq -e '(.items|length)==2 and .nextCursor==null' "$scratch/member-filter-second.json" >/dev/null
+jq -se '([.[].items[].id]|length)==52 and ([.[].items[].id]|unique|length)==52' "$scratch/member-filter-first.json" "$scratch/member-filter-second.json" >/dev/null
 after=$(state)
 test "$(request owner DELETE "$member_path?version=2" 11111111-1111-1111-1111-111111111143 '{}')" = 409
 test "$after" = "$(state)"
@@ -159,6 +186,16 @@ blocked() {
   echo 'Expected assignment directory Board lock wait was not observed.' >&2; return 1
 }
 release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; rm "$scratch/gate.in" "$scratch/gate.log"; }
+hold; get member "/boards/$board/cards?members=$owner" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh '"items"|Retained assignment|Member filter paging' "$scratch/response.json"
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
+hold; get member "/boards/$board/cards?members=$owner" > "$scratch/status" & request_pid=$!
+blocked; release "DELETE FROM sessions WHERE user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
+scripts/ci/assert-file-excludes.sh '"items"|Retained assignment|Member filter paging' "$scratch/response.json"
+curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/member.credentials")" "$base/auth/login" >/dev/null
 hold; get member "/boards/$board" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
