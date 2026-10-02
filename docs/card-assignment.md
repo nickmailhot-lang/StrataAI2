@@ -104,3 +104,25 @@ separate global identity transaction and still needs corresponding cleanup.
 The assignment/Board-departure command commit 2bb05d7 passed Linux .NET host,
 web and PostgreSQL source checks in run 37045729473. Its image/runtime evidence
 is still pending; this does not verify the newer Organization cleanup.
+
+Authenticated current Organization members with view permission can now read
+`GET /cards/{cardId}/members?after=uuid` for an active Card/List/Board. The page
+contains Organization/Board/Card IDs, canonical Card revision, edit capability,
+up to 50 assignees and a UUID seek cursor. Each item contains only user ID,
+display name, assigning actor ID and assignment timestamp. Current target
+Board/Organization/account eligibility is applied before the PostgreSQL page
+limit, so an ineligible account cannot occupy a slot or be surfaced even before
+account-deactivation cleanup is complete. PUBLIC visitors outside the
+Organization and anonymous users cannot access this detailed member read.
+Fresh Board admission and final session verification protect reads after waits;
+cursor validation follows admission. The fixed `card_member_read` instrument
+has no person or Card-content dimensions.
+
+Host coverage checks scoped attribution without email/admin fields, removal,
+anonymous/PUBLIC/private denial, archived parents and 50+2 paging after account
+eligibility changes. The required release-image fixture also reads persisted
+associations through the web proxy, checks 50+2 pages and observes membership and
+session revocation during Card-assignee read lock waits. Local strict
+compilation and shell syntax passed; these new read checks await Linux execution.
+Organization cleanup commit b677ccb passed Linux .NET host, web, PostgreSQL and
+source gates in run 37046379129; complete runtime CI is still in progress.

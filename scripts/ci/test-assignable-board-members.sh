@@ -56,7 +56,7 @@ for id in "$list" "$card"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
 member_path="/cards/$card/members/$member"
 key=11111111-1111-1111-1111-111111111141
 state() { admin "SELECT md5(jsonb_build_object(
- 'board_members',(SELECT jsonb_agg(to_jsonb(b) ORDER BY user_id) FROM board_members b WHERE tenant_id='$org'),
+ 'board_members',(SELECT jsonb_agg(to_jsonb(b) ORDER BY board_id,user_id) FROM board_members b WHERE tenant_id='$org'),
  'organization_members',(SELECT jsonb_agg(to_jsonb(o) ORDER BY user_id) FROM organization_members o WHERE tenant_id='$org'),
  'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY card_id,user_id) FROM card_members m WHERE tenant_id='$org'),
  'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id='$org'),
@@ -86,6 +86,24 @@ cmp "$scratch/response.json" "$scratch/assignment-receipt.json"; test "$after" =
 test "$(request owner PUT "/cards/$card/members/$owner?version=2" 11111111-1111-1111-1111-111111111142 '{}')" = 200
 jq -e '.card.version==3 and .changed==true' "$scratch/response.json" >/dev/null
 test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card';")" = 2
+test "$(get owner "/cards/$card/members")" = 200
+jq -e --arg card "$card" --arg owner "$owner" '.cardId==$card and .cardVersion==3 and .canEdit==true and (.items|length)==2 and .nextCursor==null
+ and all(.items[];.assignedBy==$owner and (keys|sort)==["assignedAt","assignedBy","displayName","userId"])' "$scratch/response.json" >/dev/null
+test "$(get outsider "/cards/$card/members?after=bad")" = 404
+test "$(get owner "/cards/$card/members?after=bad")" = 400
+paged_card=$(admin 'SELECT gen_random_uuid();')
+admin "INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,version,created_at,updated_at)
+ VALUES('$paged_card','$org','$board','$list','Paged assignee Card','700000000000000000000000000000',53,now(),now());
+ INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by)
+ SELECT m.tenant_id,m.board_id,'$paged_card',m.user_id,'$owner' FROM board_members m
+ JOIN organization_members o ON o.tenant_id=m.tenant_id AND o.user_id=m.user_id JOIN users u ON u.id=m.user_id
+ WHERE m.tenant_id='$org' AND m.board_id='$board' AND m.status='ACTIVE' AND o.status='ACTIVE' AND u.status='ACTIVE';" >/dev/null
+test "$(get owner "/cards/$paged_card/members" card-first)" = 200
+jq -e '.cardVersion==53 and (.items|length)==50 and .nextCursor==.items[-1].userId' "$scratch/card-first.json" >/dev/null
+assignee_cursor=$(jq -r '.nextCursor' "$scratch/card-first.json")
+test "$(get owner "/cards/$paged_card/members?after=$assignee_cursor" card-second)" = 200
+jq -e '(.items|length)==2 and .nextCursor==null' "$scratch/card-second.json" >/dev/null
+jq -se '([.[].items[].userId]|length)==52 and ([.[].items[].userId]|unique|length)==52' "$scratch/card-first.json" "$scratch/card-second.json" >/dev/null
 after=$(state)
 test "$(request owner DELETE "$member_path?version=2" 11111111-1111-1111-1111-111111111143 '{}')" = 409
 test "$after" = "$(state)"
@@ -112,6 +130,11 @@ blocked() {
   echo 'Expected assignment directory Board lock wait was not observed.' >&2; return 1
 }
 release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; rm "$scratch/gate.in" "$scratch/gate.log"; }
+hold; get member "/cards/$card/members" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|assignedBy|cardVersion' "$scratch/response.json"
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
 hold; get member "$path" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
@@ -125,6 +148,11 @@ hold; get member "$path" > "$scratch/status" & request_pid=$!
 blocked; release "DELETE FROM sessions WHERE user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
 scripts/ci/assert-file-excludes.sh '"items"|Assignment seeded|displayName' "$scratch/response.json"
+curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/member.credentials")" "$base/auth/login" >/dev/null
+hold; get member "/cards/$card/members" > "$scratch/status" & request_pid=$!
+blocked; release "DELETE FROM sessions WHERE user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
+scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|assignedBy|cardVersion' "$scratch/response.json"
 departure_key=11111111-1111-1111-1111-111111111147
 departure_version=$(admin "SELECT version FROM board_members WHERE board_id='$board' AND user_id='$member';")
 departure_path="/boards/$board/members/$member?version=$departure_version"
