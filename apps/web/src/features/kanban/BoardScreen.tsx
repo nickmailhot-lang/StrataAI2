@@ -152,6 +152,7 @@ function BoardContent() {
   const boardRefresh = useRef<HTMLButtonElement>(null);
   const queuedRefresh = useRef(false);
   const [liveStatus, setLiveStatus] = useState<LiveStatus>("connecting");
+  const [reconnectSequence, setReconnectSequence] = useState(0);
   const accessEpoch = useRef(0);
   const [failure, setFailure] = useState<{ cardId?: string; error: Error }>();
   const [acknowledged, setAcknowledged] = useState<WorkCard>();
@@ -240,6 +241,7 @@ function BoardContent() {
       boardId,
       invalidate: () => invalidate(),
       status: setLiveStatus,
+      reconnected: () => setReconnectSequence(value => value + 1),
     });
   }, [organizationId, boardId, subscribed]);
   const retrySnapshot = Boolean(snapshot && loadError);
@@ -697,7 +699,7 @@ function BoardContent() {
               disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || cardRecovery || checklistRecovery}
               unavailable={snapshotReading || !!loadError} onBusyChange={setBusy} onRecoveryChange={setReminderRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
-            {cardId && <CardChecklists organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+            {cardId && <CardChecklists reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <ChecklistCreateControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}

@@ -83,3 +83,22 @@ per-user rate partitions. Their execution awaits Linux CI because Windows
 Application Control prevents local .NET test execution. Collector/export,
 operator dashboards, Checklist-specific realtime reconnect observations, render
 exceptions and full performance/capacity acceptance remain incomplete.
+
+Checklist reconnect observations now use an explicit completed transport-recovery
+callback from the existing durable Board stream. After an established stream
+loses transport (SDK reconnect or controller restart), the callback runs once
+when scoped cursor validation accepts a non-pending, non-reset page. Normal
+Worker pending/reset transitions do not increment it. Initial connection and
+failed initial starts do not count. Disposed streams suppress callbacks, and
+observer errors do not break recovery. BoardScreen passes only a local sequence
+counter into the Checklist disclosure; open views report fixed realtime/reconnect
+observations, closed views and newly selected Cards do not replay prior episodes.
+Coalesced counts are bounded to 100. Eight Checklist disclosure tests and thirteen
+stream tests pass. Collector/export/dashboard and render-exception coverage
+remain incomplete; no claim of complete PRD-13 telemetry or release acceptance.
+
+Subsequent executed server proof: Linux run 37107129291 at b99c988 completed
+source-quality, web, .NET and PostgreSQL gates successfully. Decoded job
+111157751220 confirms 246 Domain and 249 API-host tests passed unfiltered,
+including the new client telemetry cases. Build-once images and mandatory
+container/security/release gates are still pending; this is source/host evidence.

@@ -20,6 +20,23 @@ const items = { ...scope, cardVersion: 4, canEdit: false, summary, items: [
 const props = { ...scope, version: 4, unavailable: false, onRefresh: vi.fn() };
 const respond = (value: unknown) => new Response(JSON.stringify(value), { status: 200, headers: { 'Content-Type': 'application/json' } });
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
+it('reports completed transport recovery only while disclosure is open and does not replay old episodes across Card scope', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockImplementation(async () => respond(page)));
+  const view = render(<CardChecklists {...props} reconnectSequence={4} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Show checklists' }));
+  await screen.findByRole('heading', { name: 'Preparations' });
+  expect(vi.mocked(checklistEvent).mock.calls.filter(([action]) => action === 'realtime')).toHaveLength(0);
+  view.rerender(<CardChecklists {...props} reconnectSequence={5} />);
+  view.rerender(<CardChecklists {...props} reconnectSequence={5} unavailable />);
+  expect(vi.mocked(checklistEvent).mock.calls.filter(([action]) => action === 'realtime')).toEqual([['realtime', 'reconnect']]);
+  fireEvent.click(screen.getByRole('button', { name: 'Hide checklists' }));
+  view.rerender(<CardChecklists {...props} reconnectSequence={6} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Show checklists' }));
+  await screen.findByRole('heading', { name: 'Preparations' });
+  expect(vi.mocked(checklistEvent).mock.calls.filter(([action]) => action === 'realtime')).toHaveLength(1);
+  view.rerender(<CardChecklists {...props} cardId={id(90)} reconnectSequence={7} />);
+  expect(vi.mocked(checklistEvent).mock.calls.filter(([action]) => action === 'realtime')).toHaveLength(1);
+});
 it('preserves expanded item intent across revision/access refresh but removes old content before reading current state', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(respond(page)).mockResolvedValueOnce(respond(items))
     .mockResolvedValueOnce(respond({ ...page, cardVersion: 5 }))

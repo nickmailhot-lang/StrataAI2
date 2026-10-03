@@ -125,6 +125,7 @@ export function watchBoard(options: {
   boardId: string;
   invalidate: () => void;
   status: (value: LiveStatus) => void;
+  reconnected?: () => void;
   connection?: ReturnType<typeof createBoardConnection>;
 }) {
   let connection: ReturnType<typeof createBoardConnection>;
@@ -150,6 +151,7 @@ export function watchBoard(options: {
   let subscription: { dispose(): void } | undefined;
   let retry: ReturnType<typeof setTimeout> | undefined;
   let refresh: ReturnType<typeof setTimeout> | undefined;
+  let established = false, transportRecovery = false;
   const invalidate = () => {
     if (disposed || refresh !== undefined) return;
     refresh = setTimeout(() => {
@@ -161,6 +163,7 @@ export function watchBoard(options: {
     if (!disposed) options.status(value);
   };
   const failed = () => {
+    if (established) transportRecovery = true;
     connected = false;
     report("polling");
     invalidate();
@@ -197,6 +200,11 @@ export function watchBoard(options: {
               invalidate();
             pending = accepted.pending;
             resetting = accepted.reset;
+            if (!pending && !resetting) {
+              const recovered = established && transportRecovery;
+              established = true; transportRecovery = false;
+              if (recovered) { try { options.reconnected?.(); } catch { /* Observers cannot break durable recovery. */ } }
+            }
             report(pending || resetting ? "recovering" : "live");
           } catch {
             failStream();
@@ -249,6 +257,7 @@ export function watchBoard(options: {
   });
   connection.onreconnected(() => {
     if (!disposed) {
+      if (established) transportRecovery = true;
       subscribe();
       invalidate();
     }

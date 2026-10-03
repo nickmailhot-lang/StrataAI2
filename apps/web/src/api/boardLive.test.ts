@@ -150,18 +150,32 @@ describe("PRD-22 browser stream recovery", () => {
   afterEach(() => vi.useRealTimers());
   function mount(fake = fakeConnection()) {
     const invalidate = vi.fn(),
-      status = vi.fn();
+      status = vi.fn(), reconnected = vi.fn();
     const stop = watchBoard({
       organizationId: org,
       boardId: board,
       invalidate,
       status,
+      reconnected,
       connection: fake.connection as unknown as ReturnType<
         typeof createBoardConnection
       >,
     });
-    return { ...fake, stop, invalidate, status };
+    return { ...fake, stop, invalidate, status, recovered: reconnected };
   }
+  it('reports transport recovery only after an established stream resumes validated non-pending pages', async () => {
+    const live = mount(); await vi.advanceTimersByTimeAsync(0);
+    live.next(page('1')); expect(live.recovered).not.toHaveBeenCalled();
+    live.next({ ...page('1'), pending: true }); live.next(page('1'));
+    expect(live.recovered).not.toHaveBeenCalled();
+    live.reconnecting(); live.reconnected();
+    live.next({ ...page('1'), pending: true }); expect(live.recovered).not.toHaveBeenCalled();
+    live.next(page('1')); live.next(page('1')); expect(live.recovered).toHaveBeenCalledOnce();
+    live.recovered.mockImplementation(() => { throw new Error('Observer failure'); });
+    live.reconnecting(); live.reconnected(); live.next(page('1'));
+    expect(live.recovered).toHaveBeenCalledTimes(2); expect(live.status).toHaveBeenLastCalledWith('live');
+    live.stop(); live.reconnected(); expect(live.recovered).toHaveBeenCalledTimes(2);
+  });
   it("coalesces duplicate events and resumes the accepted cursor after reconnect", async () => {
     const live = mount();
     await vi.advanceTimersByTimeAsync(0);

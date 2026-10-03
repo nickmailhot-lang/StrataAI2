@@ -97,3 +97,16 @@ into scratch before publishing the final file. The exact expression now produces
 valid JSON and expected millisecond conversion locally; shell syntax also passes.
 The mandatory capacity/browser/release gates remain required and unproven.
 Full local web regression after client instrumentation and callback repair: 869 passed across 66 files; zero failures. This is local web evidence, not Linux host/image acceptance.
+
+Completed transport-recovery observation is now explicit in the existing Board
+stream, distinct from ordinary pending/reset delivery states. Checklist disclosure
+reports it only while open, with no identity/scope/event fields. Focused stream
+and disclosure regression: 21 passed. This follows the 869-test full-suite result
+above; executed latest-image proof remains pending CI. Collector/export/dashboard
+and render-exception coverage still prevent full telemetry acceptance.
+
+Linux run 37107129291 at b99c988 subsequently passed source-quality/web/.NET/
+PostgreSQL gates. Job 111157751220 executed 246 Domain and 249 API-host tests,
+including client batch/authentication/CSRF/bounds/listener/rate-limit regressions.
+Images are still building; no successful full release acceptance is claimed.
+Latest focused Board screen/disclosure/stream regression: 48 tests passed across four files. Typecheck, lint and production build passed after the reconnect change.

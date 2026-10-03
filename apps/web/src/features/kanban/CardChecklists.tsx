@@ -1,10 +1,10 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Alert, Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { checklistEvent, checklistResult } from './checklistTelemetry';
 import { parseChecklistItemPage, parseChecklistPage, type ChecklistItemPage, type ChecklistPage, type ChecklistScope, type ChecklistSummary } from './checklists';
 
-type Props = ChecklistScope & { version: number; unavailable: boolean; onRefresh: () => void };
+type Props = ChecklistScope & { version: number; unavailable: boolean; onRefresh: () => void; reconnectSequence?: number };
 type Disclosures = { openItems: Set<string>; onItemToggle: (id: string) => void };
 function usePage(props: Props, open: boolean, cursor: string | undefined, attempt: number, checklistId?: string) {
   const [result, setResult] = useState<ChecklistPage | ChecklistItemPage>();
@@ -42,6 +42,13 @@ export function CardChecklists(props: Props) {
 }
 function ChecklistDisclosure(props: Props) {
   const [open, setOpen] = useState(false); const region = useId();
+  const previousReconnect = useRef(props.reconnectSequence ?? 0);
+  useEffect(() => {
+    const current = props.reconnectSequence ?? 0;
+    if (open && Number.isSafeInteger(current) && current > previousReconnect.current)
+      for (let index = 0; index < Math.min(current - previousReconnect.current, 100); index++) checklistEvent('realtime', 'reconnect');
+    previousReconnect.current = current;
+  }, [open, props.reconnectSequence]);
   const [openItems, setOpenItems] = useState<Set<string>>(() => new Set());
   function onItemToggle(id: string) { setOpenItems(previous => { const next = new Set(previous); if (next.has(id)) next.delete(id); else next.add(id); return next; }); }
   return <Box sx={{ my: 2 }}>
