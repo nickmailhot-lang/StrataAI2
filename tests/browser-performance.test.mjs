@@ -64,3 +64,19 @@ test('reporter waits for attachment collection and ignores unrelated payloads', 
   assert.equal(reporter.entries.length, 1); assert.equal(reporter.entries[0].status, 'failed');
   assert.ok(!JSON.stringify(reporter.entries).includes('private'));
 });
+
+test('checklist evidence retains paging and mutation samples, rejects malformed data and strips content', () => {
+  const value = { ...sample, fixture: { ...fixture, lists: 3, cards: 50, samples: 20, assets: 'warm', checklists: 2, items: 63, pageSize: 50, cardId: 'private-id' },
+    usableMs: 600, detailMs: 150, itemPageMs: 30, nextItemPageMs: 25, mutationP95Ms: 49,
+    mutationSamplesMs: Array.from({ length: 20 }, (_, index) => index + 31), itemText: 'private-text' };
+  const entry = performanceEntry('checklist-performance.json', value, 'failed');
+  assert.equal(entry.metric, 'normal-desktop-checklist'); assert.equal(entry.status, 'failed');
+  assert.equal(entry.fixture.items, 63); assert.equal(entry.fixture.pageSize, 50);
+  assert.equal(entry.itemPageMs, 30); assert.equal(entry.nextItemPageMs, 25);
+  assert.deepEqual(entry.budgetsMs, { usable: 1500, feedback: 100, detail: 200, mutationP95: 500 });
+  assert.ok(!JSON.stringify(entry).includes('private'));
+  for (const invalid of [{ ...value, fixture: { ...value.fixture, items: 0 } },
+    { ...value, fixture: { ...value.fixture, pageSize: 63 } }, { ...value, mutationSamplesMs: [50] },
+    { ...value, mutationP95Ms: 1 }, { ...value, itemPageMs: Infinity }, { ...value, nextItemPageMs: -1 }])
+    assert.equal(performanceEntry('checklist-performance.json', invalid, 'passed'), undefined);
+});

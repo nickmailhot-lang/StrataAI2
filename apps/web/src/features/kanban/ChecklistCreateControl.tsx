@@ -63,6 +63,7 @@ function CreateControl(props: ChecklistCreateProps) {
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
   }
   return <Stack component="section" aria-label="Create checklist" spacing={1} sx={{ my: 2 }}>
+    {busy && <Typography role="status">{draft ? 'Creating checklist…' : 'Checking checklist access…'}</Typography>}
     {notice && <Typography role="status">{notice}</Typography>}
     {!draft ? <Button ref={action} disabled={disabled} onClick={() => void review()}>Add checklist</Button>
       : props.unavailable ? <Typography>Checking current Card access…</Typography> : <>

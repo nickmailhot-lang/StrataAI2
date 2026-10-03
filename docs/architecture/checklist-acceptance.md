@@ -2,7 +2,7 @@
 
 The authoritative requirements are GitHub issue #14. This audit preserves the
 full ticket scope; implementing command controls is not sufficient for closure.
-It was refreshed after item ordering commit `160afed`.
+It includes the source, interaction and measurement coverage added after item ordering.
 
 ## Functional requirements
 
@@ -27,7 +27,7 @@ It was refreshed after item ordering commit `160afed`.
 | TC-09 disconnect recovery | Shared Board event delivery/replay infrastructure; content-free Card aggregate events; collaboration cases now close the actual proxied socket, reject reconnects, recover missed completion through HTTP events and observe another change after reconnect without page navigation | Execute the new real-image cases; authored/discovered cases are not passing evidence |
 | TC-10 lifecycle | Host/image Card/List archive/restore/delete retains exact children, fences writes and prior receipts; List copy excludes tombstones; four new Card/List desktop/mobile browser cases hold a committed rename acknowledgment across archive/restore/delete, check read-only retention/replay fencing and restored original receipt, and remove deleted scope | Execute the new real-image cases; shared PRD-18 retention work remains separate unfinished scope |
 | TC-11/12 keyboard/mobile | Accessible MUI names/status/progress, component focus tests; new 1280/390px browser cases authored | Execute full WCAG/keyboard cases; verify Board scroll/context preservation for Checklist interactions |
-| TC-13 large data/performance | Bounded 50+1 seek pages and full 63-row aggregate/copy/cascade fixtures; shared normal Board performance evidence | Checklist-specific feedback/mutation/cached-detail measurements and documented 200-List/5000-Card/100000-archived-Card capacity evidence |
+| TC-13 large data/performance | Bounded 50+1 seek pages and full 63-row aggregate/copy/cascade fixtures; shared normal Board performance evidence; new normal Checklist benchmark asserts 50/13 item pages with full progress and measures 50-Card Board readiness, cached detail, creation feedback and 20 actual completion mutations | Execute the Checklist benchmark against exact images, retain measurements with unchanged 1500/200/100/500 ms budgets; documented 200-List/5000-Card/100000-archived-Card capacity evidence remains |
 
 ## Events, telemetry and shared dependencies
 
@@ -52,3 +52,14 @@ known earlier label/assignee keyboard failures have a repair on main pending
 execution. No full release-green or PRD-13 closure is claimed. Future updates must
 replace pending entries with authoritative executed evidence, not infer success
 from compilation, test discovery or a narrow passing stage.
+
+The Checklist benchmark holds creation before server submission and measures the
+first rendered pending status/disabled submit control from the captured submit
+event. This measures immediate feedback, not optimistic server success. It then
+allows the actual request and checks its canonical revision. Twenty alternating
+completion commands must each change Card/Checklist/item revisions; p95 includes
+real HTTP and acknowledgment parsing. Item-page latency is recorded separately
+without inventing a ticket budget. Retained evidence includes only fixed fixture
+sizes, timings, sample arrays, budgets and executed status, never object IDs or
+Checklist text. Seven reporter tests and ten creation-control tests pass locally;
+the benchmark is discovered, not yet executed. Capacity and telemetry remain open.

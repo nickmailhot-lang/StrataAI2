@@ -29,15 +29,20 @@ export function performanceEntry(name, value, status) {
     return { metric: 'desktop-list-feedback', status, fixture: { lists: 2, cards: 0, viewport: '1280x844' },
       feedbackObserved: feedback !== null, feedbackMs: feedback, budgetsMs: { feedback: 100 } };
   }
-  if (name !== 'kanban-performance.json' || value.fixture.lists !== 3 || value.fixture.cards !== 50
+  const checklist = name === 'checklist-performance.json';
+  if ((!checklist && name !== 'kanban-performance.json') || value.fixture.lists !== 3 || value.fixture.cards !== 50
     || value.fixture.samples !== 20 || value.fixture.assets !== 'warm'
     || ![value.usableMs, value.detailMs, value.mutationP95Ms].every(duration)
     || !Array.isArray(value.mutationSamplesMs) || value.mutationSamplesMs.length !== 20
     || !value.mutationSamplesMs.every(duration)) return undefined;
   const p95 = [...value.mutationSamplesMs].sort((a, b) => a - b)[18];
   if (p95 !== value.mutationP95Ms) return undefined;
-  return { metric: 'normal-desktop-kanban', status,
-    fixture: { lists: 3, cards: 50, samples: 20, viewport: '1280x844', assets: 'warm' },
+  if (checklist && (value.fixture.checklists !== 2 || value.fixture.items !== 63 || value.fixture.pageSize !== 50
+    || ![value.itemPageMs, value.nextItemPageMs].every(duration))) return undefined;
+  return { metric: checklist ? 'normal-desktop-checklist' : 'normal-desktop-kanban', status,
+    fixture: { lists: 3, cards: 50, samples: 20, viewport: '1280x844', assets: 'warm',
+      ...(checklist ? { checklists: 2, items: 63, pageSize: 50 } : {}) },
+    ...(checklist ? { itemPageMs: value.itemPageMs, nextItemPageMs: value.nextItemPageMs } : {}),
     usableMs: value.usableMs, detailMs: value.detailMs, feedbackObserved: feedback !== null, feedbackMs: feedback,
     mutationP95Ms: value.mutationP95Ms, mutationSamplesMs: [...value.mutationSamplesMs],
     budgetsMs: { usable: 1500, feedback: 100, detail: 200, mutationP95: 500 } };
@@ -51,7 +56,7 @@ export default class PerformanceReporter {
   }
   async collect(result) {
     for (const attachment of result.attachments) {
-      if (!['kanban-performance.json', 'list-feedback-performance.json', 'card-dates-performance.json'].includes(attachment.name)
+      if (!['kanban-performance.json', 'list-feedback-performance.json', 'card-dates-performance.json', 'checklist-performance.json'].includes(attachment.name)
         || attachment.contentType !== 'application/json') continue;
       try {
         const body = attachment.body ?? await readFile(attachment.path);
