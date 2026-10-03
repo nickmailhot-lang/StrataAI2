@@ -19,11 +19,22 @@ public static partial class WorkManagementEndpoints
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         if (!app.Services.GetRequiredService<AttachmentUploadAvailability>().Enabled) return;
-        async Task<IResult> Download(Guid cardId, Guid attachmentId, HttpContext context, AttachmentDownloadService service,
+        app.MapGet("/cards/{cardId:guid}/attachments/{attachmentId:guid}/download-options", async (Guid cardId, Guid attachmentId,
+            HttpContext context, AttachmentDownloadAdmissionService admission, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            context.Response.Headers.CacheControl = "private, no-store";
+            var result = await admission.AdmitAsync(cardId, attachmentId, actor.Value, ct);
+            return result.Succeeded && result.Value is { } value
+                ? Results.Ok(new AttachmentDownloadOptions(value.Card.OrganizationId, value.Card.BoardId, value.Card.Id,
+                    value.Card.Version, value.File.Metadata.Id, value.File.Metadata.Version, actor.Value)) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+        async Task<IResult> Download(Guid cardId, Guid attachmentId, Guid? actorId, long? attachmentVersion, HttpContext context, AttachmentDownloadService service,
             AttachmentDownloadAdmissionService admission, CancellationToken ct)
         {
             var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
-            var result = await service.PrepareAsync(cardId, attachmentId, actor.Value, ct);
+            if (actorId is { } expectedActor && expectedActor != actor.Value) return ErrorFor("card_not_found");
+            var result = await service.PrepareAsync(cardId, attachmentId, actor.Value, ct, attachmentVersion);
             return result.Succeeded && result.Value is not null
                 ? new AttachmentDownloadResult(result.Value, admission, actor.Value) : ErrorFor(result.ErrorCode);
         }

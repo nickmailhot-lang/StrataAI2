@@ -45,8 +45,17 @@ public sealed partial class ApiHostTests
         using var created = await member.SendAsync(upload, ct); Assert.Equal(HttpStatusCode.OK, created.StatusCode);
         var file = (await created.Content.ReadFromJsonAsync<AttachmentChange>(ct))!.Attachment;
         var path = $"/cards/{card.Id}/attachments/{file.Id}/download";
+        using var pendingOptions = await member.GetAsync(path + "-options", ct); Assert.Equal(HttpStatusCode.NotFound, pendingOptions.StatusCode);
         using var pending = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, pending.StatusCode); Assert.Equal(0, objects.Reads);
         var metadata = Assert.IsType<DownloadMetadata>(app.Services.GetRequiredService<IAttachmentMetadataStore>()); metadata.Clean = true;
+        var options = (await member.GetFromJsonAsync<AttachmentDownloadOptions>(path + "-options", ct))!;
+        Assert.Equal(f.Organization, options.OrganizationId); Assert.Equal(f.Board, options.BoardId); Assert.Equal(card.Id, options.CardId);
+        Assert.Equal(2, options.CardVersion); Assert.Equal(file.Id, options.AttachmentId); Assert.Equal(2, options.AttachmentVersion); Assert.Equal(f.Recipient, options.ActorId);
+        Assert.Equal(0, objects.Reads);
+        using var wrongActor = await member.GetAsync(path + $"?actorId={f.Owner}&attachmentVersion=2", ct); Assert.Equal(HttpStatusCode.NotFound, wrongActor.StatusCode);
+        using var wrongVersion = await member.GetAsync(path + $"?actorId={f.Recipient}&attachmentVersion=1", ct); Assert.Equal(HttpStatusCode.NotFound, wrongVersion.StatusCode);
+        Assert.Equal(0, objects.Reads);
+        using var outsiderOptions = await outsider.GetAsync(path + "-options", ct); Assert.Equal(HttpStatusCode.NotFound, outsiderOptions.StatusCode);
         using var outside = await outsider.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, outside.StatusCode);
         using var unauthenticated = await anonymous.GetAsync(path, ct); Assert.Equal(HttpStatusCode.Unauthorized, unauthenticated.StatusCode); Assert.Equal(0, objects.Reads);
         using var request = new HttpRequestMessage(HttpMethod.Get, path); request.Headers.Range = new(0, 0);

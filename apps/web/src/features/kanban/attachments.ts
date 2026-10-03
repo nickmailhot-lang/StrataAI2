@@ -15,6 +15,13 @@ export type AttachmentPage = AttachmentScope & { cardVersion: number; canEdit: b
 export type AttachmentChange = AttachmentScope & { cardVersion: number; attachment: UrlAttachment };
 export type FileAttachmentChange = AttachmentScope & { cardVersion: number; attachment: FileAttachment };
 export type AttachmentUploadOptions = AttachmentScope & { cardVersion: number; maximumBytes: number; allowedMimeTypes: string[] };
+export type AttachmentDownloadOptions = AttachmentScope & { cardVersion: number; attachmentId: string; attachmentVersion: number; actorId: string };
+export function parseAttachmentDownloadOptions(value: unknown, scope: AttachmentScope, cardVersion: number, file: FileAttachment, actor: string): AttachmentDownloadOptions {
+  const row = scopeRecord(value, scope); exact(row, ['organizationId', 'boardId', 'cardId', 'cardVersion', 'attachmentId', 'attachmentVersion', 'actorId']);
+  if (!revision(cardVersion) || row.cardVersion !== cardVersion || !same(row.attachmentId, file.id)
+    || file.scanStatus !== 2 || row.attachmentVersion !== file.version || !same(row.actorId, actor)) throw invalid();
+  return row as AttachmentDownloadOptions;
+}
 const invalid = () => new Error('Invalid attachment response');
 const same = (value: unknown, expected: string) => notificationUuid(value) && notificationUuid(expected) && value.toLowerCase() === expected.toLowerCase();
 const revision = (value: unknown): value is number => Number.isSafeInteger(value) && Number(value) > 0;

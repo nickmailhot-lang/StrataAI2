@@ -5,6 +5,9 @@ using StrataAI.Domain.WorkManagement;
 
 namespace StrataAI.Application.WorkManagement;
 
+public sealed record AttachmentDownloadOptions(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
+    Guid AttachmentId, long AttachmentVersion, Guid ActorId);
+
 // A server-only snapshot for controlled delivery, never a bearer credential.
 // Every use requires current authorization again after provider preparation.
 public sealed class AttachmentDownloadAdmission
@@ -30,9 +33,10 @@ public sealed class AttachmentDownloadAdmissionService(IWorkManagementStore work
         return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "card_not_found",
             () => AttachmentAdmission.CheckAsync(work, organizations, boards, hint, actor, false, ct), async () =>
             {
+                var current = await work.FindCardAsync(cardId, ct);
                 var file = await attachments.FindFileAttachmentAsync(hint.OrganizationId, cardId, attachmentId, ct);
-                return IsDeliverable(file, hint, attachmentId)
-                    ? WorkOperation<AttachmentDownloadAdmission>.Success(new(actor, hint, file!, clock.UtcNow))
+                return current is not null && IsDeliverable(file, current, attachmentId)
+                    ? WorkOperation<AttachmentDownloadAdmission>.Success(new(actor, current, file!, clock.UtcNow))
                     : WorkOperation<AttachmentDownloadAdmission>.Failure("card_not_found");
             }, ct);
     }
