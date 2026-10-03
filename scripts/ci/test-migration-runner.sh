@@ -215,8 +215,8 @@ fi
 query "UPDATE attachments SET deleted_at=now(),updated_at=now(),version=version+1 WHERE id='04200000-0000-0000-0000-000000000003';" >/dev/null
 test "$(query "SELECT sha256 IS NULL AND deleted_at IS NOT NULL AND scan_status='PENDING' AND version=2 FROM attachments WHERE id='04200000-0000-0000-0000-000000000003'")" = t
 cp db/migrations/043_attachment_upload_intents.sql "$scratch/migrations/"
-scripts/ci/apply-migrations.sh "$scratch/migrations"
-scripts/ci/apply-migrations.sh "$scratch/migrations"
+run
+run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 43
 test "$(query "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='attachment_upload_intents'::regclass")" = t
 cat > "$scratch/migrations/044_serialization_fixture.sql" <<'SQL'
