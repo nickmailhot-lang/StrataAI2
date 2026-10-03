@@ -510,3 +510,14 @@ actual badges/profile admission, cached detail and 20 date commands using the
 existing <1500/<200/p95 <500 ms budgets. It retains numeric samples in the
 existing revision-bound performance artifact without personal content. See
 `docs/kanban-performance.md` for fixture conditions and pending CI status.
+
+The first exact-image dated-Board performance result (fc3360c, run 37090787467)
+measured 974.45 ms usable readiness and 36.50 ms date mutation p95, both within
+budget. Cached detail measured 221.42 ms and failed the unchanged 200 ms target.
+The repair memoizes unchanged Card faces separately from drag availability so
+opening detail does not recompute 50 dated faces, and removes the Card detail
+fade for immediate cached interaction. Canonical Card/preview changes still
+update the face; date-context changes reach badge consumers; focus restoration
+and current admission rules remain enforced. Existing Board/date regression,
+strict web checks and exact-image performance will verify the repair. This is
+not a performance acceptance claim; the mandatory budgets remain unchanged.

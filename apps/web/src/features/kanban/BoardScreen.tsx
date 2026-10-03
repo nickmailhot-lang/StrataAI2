@@ -3,8 +3,6 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -25,15 +23,14 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardDateDisplay } from './CardDateDisplay';
-import { BoardDateProvider, CardDueBadge, cardDueDescriptionId } from './BoardDateBadges';
+import { BoardDateProvider } from './BoardDateBadges';
+import { BoardCardLink } from './BoardCardLink';
 import { CardDateEditor } from './CardDateEditor';
 import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
 import { WatchControl } from '../notifications/WatchControl';
 import { CardLabelPicker } from './CardLabelPicker';
 import { CardMemberPicker } from './CardMemberPicker';
-import { CardMemberIndicators } from './CardMemberIndicators';
-import { CardLabelIndicators } from './CardLabelIndicators';
 import { LabelCreateControl } from './LabelCreateControl';
 import { LabelManageControl } from './LabelManageControl';
 import { BoardFilterControl } from './BoardFilterControl';
@@ -581,29 +578,8 @@ function BoardContent() {
                 <CardDragItem key={item.id} id={item.id} title={item.title}
                   disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId}
                   available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(item.version) && item.version > 0}>
-                <Card
-                  key={item.id}
-                  component={Link}
-                  aria-label={item.title}
-                  aria-describedby={item.dueAt ? cardDueDescriptionId(item.id) : undefined}
-                  ref={(node: HTMLAnchorElement | null) => {
-                    if (node) cardLinks.current.set(item.id, node);
-                    else cardLinks.current.delete(item.id);
-                  }}
-                  to={`${boardPath}/cards/${item.id}`}
-                  state={{ cardOverlay: true }}
-                  sx={{
-                    display: 'block',
-                    color: "inherit",
-                    textDecoration: "none",
-                    "&:focus-visible": {
-                      outline: "3px solid",
-                      outlineColor: "primary.main",
-                    },
-                  }}
-                >
-                  <CardContent>{item.title}<CardLabelIndicators preview={snapshot.cardLabels?.[item.id]} /><CardMemberIndicators version={item.version} preview={snapshotReading || loadError ? undefined : snapshot.cardMembers?.[item.id]} /><CardDueBadge card={item} /></CardContent>
-                </Card>
+                <BoardCardLink card={item} boardPath={boardPath} links={cardLinks.current}
+                  labels={snapshot.cardLabels?.[item.id]} members={snapshotReading || loadError ? undefined : snapshot.cardMembers?.[item.id]} />
                 </CardDragItem>
               ))}
             </Stack>
@@ -671,6 +647,7 @@ function BoardContent() {
       </Dialog>
       <Dialog
         open={Boolean(cardId)}
+        transitionDuration={0}
         disableRestoreFocus
         slotProps={{ transition: { onExited: () => {
           (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });
