@@ -9,6 +9,37 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class AttachmentPreviewStorageRecoveryTests
 {
+    [Theory]
+    [InlineData(AttachmentPreviewLoadStatus.Applied)]
+    [InlineData(AttachmentPreviewLoadStatus.Superseded)]
+    public async Task Delivery_replay_has_no_decoder_provider_or_second_publication(AttachmentPreviewLoadStatus status)
+    {
+        var f = new Fixture(); f.Intent.Status = status;
+        var publication = new Publication(AttachmentPreviewCompletion.Applied);
+        await new AttachmentPreviewDeliveryHandler(f.Intent, f.Coordinator, publication).ExecuteAsync(f.Job, TestContext.Current.CancellationToken);
+        Assert.Equal(0, f.Storage.SourceReads); Assert.Equal(0, f.Storage.ArtifactReads);
+        Assert.Equal(0, f.Generator.Calls); Assert.Equal(0, publication.Calls);
+    }
+    [Theory]
+    [InlineData(AttachmentPreviewCompletion.Applied)]
+    [InlineData(AttachmentPreviewCompletion.Superseded)]
+    [InlineData(AttachmentPreviewCompletion.LeaseLost)]
+    public async Task Delivery_submits_only_verified_private_artifact_and_requires_final_publication_fence(AttachmentPreviewCompletion completion)
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var f = new Fixture(); var publication = new Publication(completion);
+        var handler = new AttachmentPreviewDeliveryHandler(f.Intent, f.Coordinator, publication);
+        if (completion == AttachmentPreviewCompletion.LeaseLost)
+        {
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => handler.ExecuteAsync(f.Job, TestContext.Current.CancellationToken));
+            Assert.Equal("Attachment preview delivery is unavailable.", error.Message);
+        }
+        else await handler.ExecuteAsync(f.Job, TestContext.Current.CancellationToken);
+        Assert.Equal(1, publication.Calls); Assert.Equal(f.Intent.Output, publication.Output!.Measurement);
+        Assert.Equal(new(f.Job.OrganizationId, f.Job.Id), publication.Output.Reference);
+        Assert.Equal(1, f.Storage.Writes); Assert.True(f.Storage.ArtifactReads >= 2);
+        Assert.NotNull(f.Intent.Output); Assert.Equal(0, f.Storage.Deletes);
+    }
     [Fact]
     public async Task Private_output_is_declared_before_write_and_independently_verified_before_return()
     {
@@ -69,10 +100,11 @@ public sealed class AttachmentPreviewStorageRecoveryTests
     [Theory]
     [InlineData(AttachmentPreviewLoadStatus.LeaseLost)]
     [InlineData(AttachmentPreviewLoadStatus.Superseded)]
+    [InlineData(AttachmentPreviewLoadStatus.Applied)]
     public async Task Withdrawn_initial_admission_never_reads_private_provider_bytes(AttachmentPreviewLoadStatus status)
     {
         var f = new Fixture(); f.Intent.Status = status;
-        if (status == AttachmentPreviewLoadStatus.Superseded) Assert.Null(await f.Run());
+        if (status is AttachmentPreviewLoadStatus.Superseded or AttachmentPreviewLoadStatus.Applied) Assert.Null(await f.Run());
         else await Assert.ThrowsAsync<InvalidOperationException>(() => f.Run());
         Assert.Equal(0, f.Storage.SourceReads); Assert.Equal(0, f.Storage.ArtifactReads);
         Assert.Equal(0, f.Generator.Calls); Assert.Equal(0, f.Storage.Writes);
@@ -173,6 +205,18 @@ public sealed class AttachmentPreviewStorageRecoveryTests
             ct.ThrowIfCancellationRequested(); Declarations++; Assert.Equal(source, original); Assert.Equal("image/png", mime);
             if (Output is not null && Output != output) return Task.FromResult(AttachmentPreviewDeclaration.Conflict);
             Output = output; return Task.FromResult(AttachmentPreviewDeclaration.Declared);
+        }
+    }
+    private sealed class Publication(AttachmentPreviewCompletion result) : IAttachmentPreviewPublicationStore
+    {
+        public int Calls { get; private set; }
+        public AttachmentPreviewStoredOutput? Output { get; private set; }
+        public Task<AttachmentPreviewCompletion> FinishAsync(ClaimedBackgroundJob job, AttachmentPreviewAttempt attempt,
+            AttachmentPreviewStoredOutput output, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested(); Calls++; Output = output;
+            Assert.Equal(job.Id, output.Reference.AttachmentId); Assert.Equal(job.OrganizationId, output.Reference.OrganizationId);
+            return Task.FromResult(result);
         }
     }
     private sealed class Generator : IAttachmentImagePreviewGenerator

@@ -21,7 +21,7 @@ public sealed class AttachmentPreviewStorageRecovery(IAttachmentPreviewIntentSto
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
         deadline.CancelAfter(TimeSpan.FromSeconds(55)); var token = deadline.Token;
         var admitted = await intents.LoadAsync(job, attempt, token);
-        if (admitted.Status == AttachmentPreviewLoadStatus.Superseded)
+        if (admitted.Status is AttachmentPreviewLoadStatus.Superseded or AttachmentPreviewLoadStatus.Applied)
         {
             if (admitted.Source is not null || admitted.VerifiedMimeType is not null || admitted.DeclaredOutput is not null) throw Unavailable();
             return null;
@@ -34,7 +34,7 @@ public sealed class AttachmentPreviewStorageRecovery(IAttachmentPreviewIntentSto
         {
             token.ThrowIfCancellationRequested();
             var current = await intents.LoadAsync(job, attempt, token);
-            if (current.Status == AttachmentPreviewLoadStatus.Superseded)
+            if (current.Status is AttachmentPreviewLoadStatus.Superseded or AttachmentPreviewLoadStatus.Applied)
             {
                 if (current.Source is not null || current.VerifiedMimeType is not null || current.DeclaredOutput is not null) throw Unavailable();
                 return false;
@@ -70,7 +70,7 @@ public sealed class AttachmentPreviewStorageRecovery(IAttachmentPreviewIntentSto
             if (output is not null && generated != output) throw Unavailable();
             output = generated; token.ThrowIfCancellationRequested();
             var declaration = await intents.DeclareAsync(job, attempt, source, mime, output, token);
-            if (declaration == AttachmentPreviewDeclaration.Superseded) return null;
+            if (declaration is AttachmentPreviewDeclaration.Superseded or AttachmentPreviewDeclaration.Applied) return null;
             if (declaration != AttachmentPreviewDeclaration.Declared) throw Unavailable();
             if (!await StillAdmitted(output)) return null;
             // A previous write may have committed even when the client saw a

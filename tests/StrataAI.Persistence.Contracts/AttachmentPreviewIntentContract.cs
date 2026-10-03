@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Security.Cryptography;
 using Npgsql;
 using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.WorkManagement;
@@ -81,7 +82,8 @@ internal static class AttachmentPreviewIntentContract
             catch (PostgresException error) when (error.SqlState == PostgresErrorCodes.InsufficientPrivilege) { }
         }
 
-        var output = new AttachmentPreviewMeasurement(70, new string('b', 64), 1, 1);
+        var encoded = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==");
+        var output = new AttachmentPreviewMeasurement(encoded.Length, Convert.ToHexStringLower(SHA256.HashData(encoded)), 1, 1);
         var source = loaded.Source!;
         Require(await store.DeclareAsync(job, attempt, new(source.Reference, source.SizeBytes, new string('c', 64)), "image/png", output, ct)
             == AttachmentPreviewDeclaration.LeaseLost, "Preview declaration accepted forged source integrity.");
@@ -171,6 +173,7 @@ internal static class AttachmentPreviewIntentContract
             await using var restore = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ACTIVE',archived_at=NULL WHERE id=@card AND tenant_id=@tenant;", admin);
             restore.Parameters.AddWithValue("card", original.CardId); restore.Parameters.AddWithValue("tenant", organization); await restore.ExecuteNonQueryAsync(ct);
         }
+        await AttachmentPreviewPublicationContract.RunAsync(admin,api,worker,job,attempt,output,store,bytes,encoded,foreignOrganization,ct);
         Require(await queue.CompleteAsync(organization, id, job.LeaseId, job.WorkerId, ct), "Preview fixture could not release its claim.");
         Require(await store.LoadAsync(job, attempt, ct) is { Status: AttachmentPreviewLoadStatus.LeaseLost, Source: null, DeclaredOutput: null },
             "Completed preview claim disclosed measurements.");

@@ -238,4 +238,11 @@ for role in api worker; do
  test "$("$role" "SELECT has_table_privilege(current_user,'attachment_previews','SELECT') OR has_table_privilege(current_user,'attachment_previews','INSERT') OR has_table_privilege(current_user,'attachment_previews','UPDATE') OR has_table_privilege(current_user,'attachment_previews','DELETE')")" = f
 done
 
+# Publication has its own fenced Worker capability. The renamed source helper
+# must not retain the old Worker grant across an upgrade.
+test "$(worker "SELECT has_function_privilege(current_user,'finish_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,integer,integer)','EXECUTE') AND NOT has_function_privilege(current_user,'load_attachment_preview_source(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint)','EXECUTE')")" = t
+test "$(api "SELECT has_function_privilege(current_user,'finish_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,integer,integer)','EXECUTE') OR has_function_privilege(current_user,'load_attachment_preview_source(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint)','EXECUTE')")" = f
+for role in api worker; do
+ test "$("$role" "SELECT has_table_privilege(current_user,'attachment_preview_publications','SELECT') OR has_table_privilege(current_user,'attachment_preview_publications','INSERT') OR has_table_privilege(current_user,'attachment_preview_publications','UPDATE') OR has_table_privilege(current_user,'attachment_preview_publications','DELETE')")" = f
+done
 echo 'Real runtime logins reject elevation and enforce service-specific grants.'

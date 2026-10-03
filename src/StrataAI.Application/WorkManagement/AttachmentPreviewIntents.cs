@@ -49,10 +49,10 @@ public sealed record AttachmentPreviewMeasurement
     public int Height { get; }
 }
 
-public enum AttachmentPreviewLoadStatus { Ready, Superseded, LeaseLost }
+public enum AttachmentPreviewLoadStatus { Ready, Superseded, LeaseLost, Applied }
 public sealed record AttachmentPreviewLoad(AttachmentPreviewLoadStatus Status, AttachmentScanRequest? Source = null,
     string? VerifiedMimeType = null, AttachmentPreviewMeasurement? DeclaredOutput = null);
-public enum AttachmentPreviewDeclaration { Declared, Conflict, Superseded, LeaseLost }
+public enum AttachmentPreviewDeclaration { Declared, Conflict, Superseded, LeaseLost, Applied }
 
 public interface IAttachmentPreviewIntentStore
 {

@@ -5,12 +5,12 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-public sealed class PostgresAttachmentPreviewIntentStore(PostgresConnectionFactory connections) : IAttachmentPreviewIntentStore
+public sealed class PostgresAttachmentPreviewIntentStore(PostgresConnectionFactory connections) : IAttachmentPreviewIntentStore, IAttachmentPreviewPublicationStore
 {
     private static void Validate(ClaimedBackgroundJob job, AttachmentPreviewAttempt attempt)
     {
         if (job.JobType != AttachmentPreviewJobs.Type || job.ServiceIdentity != AttachmentPreviewJobs.Service
-            || job.Id == Guid.Empty || job.OrganizationId == Guid.Empty || job.ActorId == Guid.Empty
+            || job.Id == Guid.Empty || job.Id == attempt.AttachmentId || job.OrganizationId == Guid.Empty || job.ActorId == Guid.Empty
             || job.WorkerId == Guid.Empty || job.LeaseId == Guid.Empty || job.AttemptCount < 1
             || attempt != AttachmentPreviewAttempt.Parse(job.SafeMetadataJson)) throw Unavailable();
     }
@@ -34,7 +34,7 @@ public sealed class PostgresAttachmentPreviewIntentStore(PostgresConnectionFacto
             var status = row.GetString(0) switch
             {
                 "READY" => AttachmentPreviewLoadStatus.Ready, "SUPERSEDED" => AttachmentPreviewLoadStatus.Superseded,
-                "LEASE_LOST" => AttachmentPreviewLoadStatus.LeaseLost, _ => throw Unavailable()
+                "LEASE_LOST" => AttachmentPreviewLoadStatus.LeaseLost, "APPLIED" => AttachmentPreviewLoadStatus.Applied, _ => throw Unavailable()
             };
             if (status == AttachmentPreviewLoadStatus.Ready)
             {
@@ -76,9 +76,33 @@ public sealed class PostgresAttachmentPreviewIntentStore(PostgresConnectionFacto
         {
             "DECLARED" => AttachmentPreviewDeclaration.Declared, "CONFLICT" => AttachmentPreviewDeclaration.Conflict,
             "SUPERSEDED" => AttachmentPreviewDeclaration.Superseded, "LEASE_LOST" => AttachmentPreviewDeclaration.LeaseLost,
+            "APPLIED" => AttachmentPreviewDeclaration.Applied,
             _ => throw Unavailable()
         };
         if (result == AttachmentPreviewDeclaration.Declared) await session.CommitAsync(ct);
+        return result;
+    }
+    public async Task<AttachmentPreviewCompletion> FinishAsync(ClaimedBackgroundJob job, AttachmentPreviewAttempt attempt,
+        AttachmentPreviewStoredOutput output, CancellationToken ct)
+    {
+        Validate(job, attempt); ArgumentNullException.ThrowIfNull(output);
+        if (output.Reference.OrganizationId != job.OrganizationId || output.Reference.AttachmentId != job.Id
+            || output.Measurement is null) throw Unavailable();
+        ct.ThrowIfCancellationRequested();
+        await using var session = await connections.OpenTenantSessionAsync(job.OrganizationId, ct);
+        await using var query = new NpgsqlCommand("""
+            SELECT public.finish_attachment_preview(@job,@tenant,@actor,@worker,@lease,@attachment,@card,@version,
+                @size,@digest,@width,@height);
+            """, session.Connection, session.Transaction);
+        AddClaim(query, job, attempt); query.Parameters.AddWithValue("size", output.Measurement.SizeBytes);
+        query.Parameters.AddWithValue("digest", output.Measurement.Sha256); query.Parameters.AddWithValue("width", output.Measurement.Width);
+        query.Parameters.AddWithValue("height", output.Measurement.Height);
+        var result = await query.ExecuteScalarAsync(ct) switch
+        {
+            "APPLIED" => AttachmentPreviewCompletion.Applied, "SUPERSEDED" => AttachmentPreviewCompletion.Superseded,
+            "LEASE_LOST" => AttachmentPreviewCompletion.LeaseLost, _ => throw Unavailable()
+        };
+        if (result != AttachmentPreviewCompletion.LeaseLost) await session.CommitAsync(ct);
         return result;
     }
 }

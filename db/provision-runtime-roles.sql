@@ -68,6 +68,8 @@ GRANT EXECUTE ON FUNCTION public.load_attachment_scan(uuid,uuid,uuid,uuid,uuid,u
  public.finish_attachment_scan(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.load_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint),
  public.declare_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text,bigint,text,integer,integer) TO strataai_worker_runtime;
+REVOKE ALL ON FUNCTION public.load_attachment_preview_source(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint) FROM strataai_api_runtime,strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.finish_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,integer,integer) TO strataai_worker_runtime;
 GRANT SELECT,INSERT ON invitation_mail_intents TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION public.load_invitation_mail(uuid,uuid,uuid,uuid,uuid,boolean), public.finish_invitation_mail(uuid,uuid,uuid,uuid,uuid,text,text,uuid) TO strataai_worker_runtime;
 COMMIT;
