@@ -31,6 +31,24 @@ async function open() { fireEvent.click(screen.getByRole('button', { name: 'Due 
 function choose() { fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Reminder interval' }));
   fireEvent.click(screen.getByRole('option', { name: '1 hour before' })); }
 
+it('accepts personal reminder opening during admission and defers private reads', async () => {
+  const fetcher = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(initial)); vi.stubGlobal('fetch', fetcher);
+  const view = render(<CardReminderControl {...props} unavailable />);
+  const trigger = screen.getByRole('button', { name: 'Due reminder' }); trigger.focus(); expect(trigger).toHaveFocus(); fireEvent.click(trigger);
+  expect(screen.getByText('Checking current Card access…')).toBeVisible(); expect(fetcher).not.toHaveBeenCalled();
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  view.rerender(<CardReminderControl {...props} />); await screen.findByText('You have no active due reminder.');
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+it('cancels a deferred personal opening on explicit closure or Card scope change', async () => {
+  const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher); const view = render(<CardReminderControl {...props} unavailable />);
+  fireEvent.click(screen.getByRole('button', { name: 'Due reminder' })); fireEvent.click(screen.getByRole('button', { name: 'Close reminder' }));
+  view.rerender(<CardReminderControl {...props} />); expect(fetcher).not.toHaveBeenCalled();
+  view.rerender(<CardReminderControl {...props} unavailable />); fireEvent.click(screen.getByRole('button', { name: 'Due reminder' }));
+  view.rerender(<CardReminderControl {...props} card={{ ...card, id: other }} />);
+  expect(fetcher).not.toHaveBeenCalled(); expect(screen.getByRole('button', { name: 'Due reminder' })).toBeVisible();
+});
+
 it.each([false, true])('retains save/recovery focus across live checks without stealing navigation (lost=%s)', async lost => {
   const fetcher = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(initial))
     .mockResolvedValueOnce(reply(profile));
@@ -42,7 +60,9 @@ it.each([false, true])('retains save/recovery focus across live checks without s
   fireEvent.click(screen.getByRole('button', { name: 'Save due reminder' }));
   const action = await screen.findByRole('button', { name: lost ? 'Retry reminder change' : 'Due reminder' });
   await waitFor(() => expect(action).toHaveFocus());
-  view.rerender(ui(true)); expect(action).toBeDisabled(); action.blur();
+  view.rerender(ui(true));
+  if (lost) { expect(action).toBeDisabled(); action.blur(); }
+  else { expect(action).toBeEnabled(); expect(action).toHaveFocus(); }
   view.rerender(ui(false)); await waitFor(() => expect(action).toHaveFocus());
   screen.getByRole('button', { name: 'Other control' }).focus();
   view.rerender(ui(true)); view.rerender(ui(false));

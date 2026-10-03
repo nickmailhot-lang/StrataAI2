@@ -15,6 +15,7 @@ export function CardReminderControl(props: Props) {
 }
 function ReminderControl(props: Props) {
   const [open, setOpen] = useState(false), [current, setCurrent] = useState<ReminderState>();
+  const [openingPending, setOpeningPending] = useState(false);
   const [interval, setChoice] = useState<ReminderInterval | ''>(''); const [intent, setIntent] = useState<Intent>();
   const [notice, setNotice] = useState<string>(); const [blocked, setBlocked] = useState(false); const [busy, setBusy] = useState(false);
   const [now, setNow] = useState(Date.now()); const mounted = useRef(false);
@@ -26,6 +27,10 @@ function ReminderControl(props: Props) {
     callbacks.current.onBusyChange(false); callbacks.current.onRecoveryChange(false); }; }, []);
   useEffect(() => { props.onRecoveryChange(!!intent || blocked); }, [intent, blocked, props.onRecoveryChange]);
   const refreshRead = useEffectEvent(() => void read());
+  const admitOpening = useEffectEvent(() => {
+    if (openingPending && !props.unavailable && !props.disabled && !pending.current) void read();
+  });
+  useEffect(() => { admitOpening(); }, [openingPending, props.unavailable, props.disabled, busy]);
   useEffect(() => {
     if (!open) { refreshNeeded.current = false; return; }
     if (intent || blocked || pending.current?.write) return;
@@ -52,6 +57,7 @@ function ReminderControl(props: Props) {
   const options = current?.options.filter(option => dateInstantTicks(option.triggerAt) > BigInt(now) * 10000n) ?? [];
   async function read() {
     if (pending.current || props.disabled || props.unavailable || intent) return;
+    setOpeningPending(false);
     refreshNeeded.current = false;
     const operation = { controller: new AbortController(), write: false }; pending.current = operation;
     setOpen(true); setBusy(true); setCurrent(undefined); setNotice(undefined); setBlocked(false);
@@ -113,12 +119,13 @@ function ReminderControl(props: Props) {
   }
   return <Stack component="section" aria-label="Personal due reminder" spacing={1} sx={{ my: 2 }}>
     {notice && <Typography role="status">{notice}</Typography>}
-    {!open ? <Button ref={action} {...actionFocus} disabled={disabled} onClick={() => { focusRequested.current = false; void read(); }}>Due reminder</Button> : <>
+    {!open ? <Button ref={action} {...actionFocus} onClick={() => { focusRequested.current = false; setOpen(true); setOpeningPending(true); }}>Due reminder</Button> : <>
       {intent ? <>
         <Typography>Recover the original reminder change before choosing another interval.</Typography>
         <Button ref={action} {...actionFocus} disabled={disabled} onClick={() => void save()}>Retry reminder change</Button>
         <Button disabled={busy} onClick={props.onRefresh}>Check current Card</Button>
-      </> : props.unavailable ? <Typography role="status">Checking current Card access…</Typography> : <>
+      </> : props.unavailable || openingPending ? <><Typography role="status">Checking current Card access…</Typography>
+        {openingPending && <Button onClick={() => { setOpen(false); setOpeningPending(false); focusRequested.current = true; }}>Close reminder</Button>}</> : <>
         {current && !outdated && !blocked && <>
           <Typography>{!current.reminder?.enabled ? 'You have no active due reminder.' : current.reminder.status === 'SUSPENDED'
             ? 'Your reminder is waiting for an available due time.' : current.reminder.status === 'FIRED' ? 'Your due reminder was delivered.' : 'Your due reminder is scheduled.'}</Typography>

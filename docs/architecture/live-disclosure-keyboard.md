@@ -71,3 +71,14 @@ scope/closure cancellation regressions. Type checking, lint and production build
 passed; five affected browser scenarios were discovered. These repairs still
 require execution against their exact release images. They do not establish that
 the other reported drag, option activation or notification failures are fixed.
+
+Run 37099065647 completed with 75 passing, five failing and one skipped general
+browser cases. The phone Reminder opener resolved during temporary native
+disable, leaving no personal choice loaded. Its generic opener now accepts
+opening intent while admission is pending, shows a checking status and defers
+private account/reminder reads. Explicit closure and Card scope changes cancel
+that intent. Reminder mutation/recovery controls retain their existing admission
+and original-command checks. All 29 Reminder tests and production build passed
+locally; type checking and lint passed. Exact-image browser execution is pending.
+The same run's initial archived-Card deletion-review focus failure is still under
+investigation; it is not a deletion-command or backend acceptance failure.
