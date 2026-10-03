@@ -48,6 +48,44 @@ internal static class CardCoverCommandContract
         var fileVersion = await Scalar<long>("SELECT version FROM attachments WHERE tenant_id=@tenant AND id=@file;");
         var input = new SetCardCoverInput(file, initial!.CardVersion, fileVersion);
         var baseline = await Snapshot();
+        // Disposable metadata is deliberately not a Worker publication. Prove
+        // that eligibility is applied before the SQL page limit: 1,000 newer
+        // Clean images without committed previews must not hide this genuine
+        // published source, disclose their names, or cause provider probes.
+        Guid[] unpublished;
+        await using (var seed = new NpgsqlCommand("""
+            WITH source AS (SELECT * FROM attachments WHERE tenant_id=@tenant AND id=@file),
+             fixtures AS MATERIALIZED (SELECT gen_random_uuid() id,clock_timestamp() fixture_time FROM generate_series(1,1000))
+            INSERT INTO attachments
+            SELECT populated.* FROM source a CROSS JOIN fixtures f CROSS JOIN LATERAL
+             jsonb_populate_record(NULL::attachments,to_jsonb(a)||jsonb_build_object(
+              'id',f.id,'display_name','Unpublished cover capacity fixture',
+              'storage_key','attachments/'||replace(@tenant::text,'-','')||'/'||replace(f.id::text,'-',''),
+              'created_at',f.fixture_time,'updated_at',f.fixture_time,'scanned_at',f.fixture_time)) populated
+            RETURNING id;
+            """, admin))
+        {
+            seed.Parameters.AddWithValue("tenant", tenant); seed.Parameters.AddWithValue("file", file);
+            var inserted = new List<Guid>();
+            await using var rows = await seed.ExecuteReaderAsync(ct);
+            while (await rows.ReadAsync(ct)) inserted.Add(rows.GetGuid(0));
+            unpublished = inserted.ToArray();
+        }
+        try
+        {
+            Require(unpublished.Length == 1000, "Cover capacity fixture did not create its bounded input.");
+            var bounded = (await service.ListCandidatesAsync(card, actor, null, ct)).Value;
+            Require(bounded is not null && bounded.Items.Count <= 50 && bounded.Items.Any(x => x.AttachmentId == file)
+                && bounded.Items.All(x => !unpublished.Contains(x.AttachmentId)) && providerReads() == initialReads,
+                "Unpublished cover metadata starved eligible paging, disclosed candidates or reached provider I/O.");
+        }
+        finally
+        {
+            await using var cleanup = new NpgsqlCommand("DELETE FROM attachments WHERE tenant_id=@tenant AND card_id=@card AND id=ANY(@ids);", admin);
+            cleanup.Parameters.AddWithValue("tenant", tenant); cleanup.Parameters.AddWithValue("card", card); cleanup.Parameters.AddWithValue("ids", unpublished);
+            Require(await cleanup.ExecuteNonQueryAsync(ct) == unpublished.Length, "Cover capacity fixture did not remove its own metadata.");
+        }
+        Require(await Snapshot() == baseline, "Cover candidate capacity read changed canonical command effects.");
         var candidates = (await service.ListCandidatesAsync(card, actor, null, ct)).Value;
         Require(candidates is { CanEdit: true, IsPublic: false } && candidates.CardVersion == initial.CardVersion
             && candidates.Items.Count <= 50 && candidates.Items.Any(x => x.AttachmentId == file && x.AttachmentVersion == fileVersion),

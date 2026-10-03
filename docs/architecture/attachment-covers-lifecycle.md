@@ -451,3 +451,13 @@ without reconsent. Publication, cover replies and provider delivery in those
 scenarios are explicitly simulated, and the unchanged canonical backing Card is
 asserted. Registration is not execution evidence. Full genuine upload-through-
 Worker publication and native cover delivery/lifecycle acceptance remain open.
+
+The restricted cover command contract now adds 1,000 newer disposable Clean
+image metadata rows without preview publication, reads through the actual
+candidate adapter, and requires that the genuine published source remains
+visible while all unpublished names are excluded and provider reads remain
+unchanged. It deletes only its own fixture rows and verifies canonical command
+effects are unchanged. This tests eligibility before the SQL limit; it does not
+claim a real object/Worker publication for those seeded rows or a measured
+large-Board performance result. Local solution compilation passes; actual new
+PostgreSQL execution is pending CI.
