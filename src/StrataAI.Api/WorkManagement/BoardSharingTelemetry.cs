@@ -39,6 +39,7 @@ public sealed class BoardSharingTelemetry
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items/{itemId:guid}", "PATCH") => "checklist_item_update",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/position", "PATCH") => "checklist_position",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items/{itemId:guid}/position", "PATCH") => "checklist_item_position",
+            ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items/{itemId:guid}", "DELETE") => "checklist_item_delete",
             ("/cards/{cardId:guid}/checklists", "GET") => "checklist_read",
             ("/cards/{cardId:guid}/checklists", "POST") => "checklist_create",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}", "PATCH") => "checklist_rename",

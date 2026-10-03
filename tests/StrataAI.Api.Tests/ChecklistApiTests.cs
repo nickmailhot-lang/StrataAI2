@@ -9,6 +9,54 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_13_Item_deletion_requires_admin_confirmation_retains_history_and_supports_safe_retry()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Delete Card", null, null, DateTimeOffset.UtcNow, ct);
+        var parentPath = $"/cards/{card.Id}/checklists";
+        using var created = await Mutate(owner, HttpMethod.Post, parentPath, new CreateChecklistInput("Items", 1));
+        var checklist = (await created.Content.ReadFromJsonAsync<ChecklistChange>(ct))!.Checklist;
+        var itemPath = $"{parentPath}/{checklist.Id}/items";
+        var createKey = Guid.NewGuid().ToString();
+        using var added = await Mutate(member, HttpMethod.Post, itemPath, new CreateChecklistItemInput("Historical text", 2, 1), createKey);
+        var first = (await added.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        var path = $"{itemPath}/{first.Item.Id}";
+        using var completed = await Mutate(member, HttpMethod.Patch, path, new UpdateChecklistItemInput("Historical text", true, 3, 2, 1));
+        var done = (await completed.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        var input = new DeleteChecklistItemInput(true, 4, 3, 2); var key = Guid.NewGuid().ToString();
+        using var denied = await Mutate(member, HttpMethod.Delete, path, input);
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        using var unconfirmed = await Mutate(owner, HttpMethod.Delete, path, input with { Confirmed = false });
+        Assert.Equal(HttpStatusCode.BadRequest, unconfirmed.StatusCode);
+        Assert.Equal(4, (await store.FindCardAsync(card.Id, ct))!.Version);
+        using var deleted = await Mutate(owner, HttpMethod.Delete, path, input, key);
+        Assert.Equal(HttpStatusCode.OK, deleted.StatusCode);
+        var tombstone = (await deleted.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        Assert.True(tombstone.Changed); Assert.Equal(5, tombstone.CardVersion); Assert.Equal(4, tombstone.Checklist.Version); Assert.Equal(3, tombstone.Item.Version);
+        Assert.NotNull(tombstone.Item.DeletedAt); Assert.Equal(tombstone.Item.UpdatedAt, tombstone.Item.DeletedAt);
+        Assert.Equal(done.Item.Text, tombstone.Item.Text); Assert.Equal(done.Item.Rank, tombstone.Item.Rank);
+        Assert.Equal(done.Item.CompletedBy, tombstone.Item.CompletedBy); Assert.Equal(done.Item.CompletedAt, tombstone.Item.CompletedAt);
+        var page = (await member.GetFromJsonAsync<ChecklistItemPage>(itemPath, ct))!;
+        Assert.Empty(page.Items); Assert.Equal(0, page.Summary.Total); Assert.Equal(0, page.Summary.Percent);
+        using var replay = await Mutate(owner, HttpMethod.Delete, path, input, key);
+        Assert.Equal(await deleted.Content.ReadAsStringAsync(ct), await replay.Content.ReadAsStringAsync(ct));
+        using var noop = await Mutate(owner, HttpMethod.Delete, path, new DeleteChecklistItemInput(true, 5, 4, 3));
+        var unchanged = (await noop.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        Assert.False(unchanged.Changed); Assert.Equal(tombstone.Item, unchanged.Item); Assert.Equal(5, unchanged.CardVersion);
+        using var hiddenCreateReplay = await Mutate(member, HttpMethod.Post, itemPath, new CreateChecklistItemInput("Historical text", 2, 1), createKey);
+        Assert.Equal(HttpStatusCode.NotFound, hiddenCreateReplay.StatusCode);
+        using var cannotEdit = await Mutate(owner, HttpMethod.Patch, path, new UpdateChecklistItemInput("Resurrect", false, 5, 4, 3));
+        Assert.Equal(HttpStatusCode.NotFound, cannotEdit.StatusCode);
+        using var archived = await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/archive", new { version = (await store.FindBoardAsync(f.Board, ct))!.Version });
+        Assert.Equal(HttpStatusCode.OK, archived.StatusCode);
+        using var staleReplay = await Mutate(owner, HttpMethod.Delete, path, input, key);
+        Assert.Equal(HttpStatusCode.NotFound, staleReplay.StatusCode);
+    }
+
+    [Fact]
     public async Task PRD_13_Checklist_and_item_positions_are_parent_scoped_CAS_retry_safe_and_noop_preserving()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();

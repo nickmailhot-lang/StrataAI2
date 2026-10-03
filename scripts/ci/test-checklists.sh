@@ -218,6 +218,32 @@ before=$(state)
 test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":11}')" = 409
 jq -e '.code=="rank_space_exhausted"' "$scratch/response.json" >/dev/null
 test "$before" = "$(state)"
+deleteKey=$(uuid); deleteInput='{"confirmed":true,"cardVersion":11,"checklistVersion":10,"version":6}'
+before=$(state)
+test "$(request member DELETE "$editPath" "$(uuid)" "$deleteInput")" = 404
+test "$(request owner DELETE "$editPath" "$(uuid)" "$(jq -c '.confirmed=false' <<< "$deleteInput")")" = 400
+for table in work_events background_jobs; do
+  admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+  test "$(request owner DELETE "$editPath" "$deleteKey" "$deleteInput")" = 503
+  test "$before" = "$(state)"
+  admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+done
+test "$(request owner DELETE "$editPath" "$deleteKey" "$deleteInput")" = 200
+jq -e '.changed and .cardVersion==12 and .checklist.version==11 and .item.version==7 and .item.deletedAt!=null and .item.deletedAt==.item.updatedAt and .item.text=="Pack supplies"' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/deleted.json"
+after=$(state)
+test "$(request owner DELETE "$editPath" "$deleteKey" "$deleteInput")" = 200
+cmp "$scratch/deleted.json" "$scratch/response.json"
+test "$after" = "$(state)"
+test "$(request member POST "$itemPath" "$itemKey" "$itemInput")" = 404
+test "$(request owner PATCH "$editPath" "$(uuid)" '{"text":"Resurrect","completed":false,"cardVersion":12,"checklistVersion":11,"version":7}')" = 404
+test "$(request owner DELETE "$editPath" "$(uuid)" '{"confirmed":true,"cardVersion":12,"checklistVersion":11,"version":7}')" = 200
+jq -e '.changed==false and .cardVersion==12 and .item.version==7' "$scratch/response.json" >/dev/null
+test "$(read_page member "$itemPath")" = 200
+jq -e '.summary.completed==1 and .summary.total==62' "$scratch/page.json" >/dev/null
+test "$(admin "SELECT count(*) FROM checklist_items WHERE tenant_id='$org' AND id='$item' AND deleted_at IS NOT NULL;")" = 1
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_DELETED';")" = 1
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_DELETED';")" = 1
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 test "$(read_page member "$path?after=$cursor")" = 404
 test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 404
@@ -231,5 +257,6 @@ test "$(read_page owner "$path")" = 200
 jq -e '.canEdit==false' "$scratch/page.json" >/dev/null
 before=$(state)
 test "$(request owner POST "$path" "$key" "$payload")" = 404
+test "$(request owner DELETE "$editPath" "$deleteKey" "$deleteInput")" = 404
 test "$before" = "$(state)"
 echo 'Checklist creation, canonical reads/progress, retry recovery, atomic rollback, rank exhaustion and lifecycle admission passed.'

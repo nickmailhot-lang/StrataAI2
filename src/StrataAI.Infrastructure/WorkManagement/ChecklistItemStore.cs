@@ -7,9 +7,9 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed partial class InMemoryWorkManagementStore
 {
     private readonly Dictionary<Guid, ChecklistItemRecord> _checklistItems = [];
-    public Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct)
+    public Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct, bool includeDeleted = false)
     {
-        lock (_sync) return Task.FromResult(_checklistItems.TryGetValue(item, out var value) && value.OrganizationId == organization && value.ChecklistId == checklist && value.DeletedAt is null ? value : null);
+        lock (_sync) return Task.FromResult(_checklistItems.TryGetValue(item, out var value) && value.OrganizationId == organization && value.ChecklistId == checklist && (includeDeleted || value.DeletedAt is null) ? value : null);
     }
     public Task<ChecklistItemRecord?> UpdateItemAsync(Guid organization, Guid checklist, Guid item, string text, bool completed, DateTimeOffset? completedAt, Guid? completedBy, long version, DateTimeOffset now, CancellationToken ct)
     {
@@ -60,12 +60,13 @@ internal sealed partial class PostgresWorkManagementStore
     private static ChecklistItemRecord ReadChecklistItem(NpgsqlDataReader row) => new(row.GetGuid(0), row.GetGuid(1), row.GetGuid(2), row.GetString(3), row.GetString(4),
         row.GetBoolean(5), row.IsDBNull(6) ? null : row.GetFieldValue<DateTimeOffset>(6), row.IsDBNull(7) ? null : row.GetGuid(7),
         row.GetFieldValue<DateTimeOffset>(8), row.GetFieldValue<DateTimeOffset>(9), row.GetInt64(10), row.IsDBNull(11) ? null : row.GetFieldValue<DateTimeOffset>(11));
-    public async Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct)
+    public async Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct, bool includeDeleted = false)
     {
         if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Checklist item reads require the owning scope.");
         await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
-        await using var query = new NpgsqlCommand($"SELECT {ChecklistItemColumns} FROM checklist_items i WHERE i.tenant_id=@tenant AND i.checklist_id=@checklist AND i.id=@id AND i.deleted_at IS NULL;", session.Connection, session.Transaction);
+        await using var query = new NpgsqlCommand($"SELECT {ChecklistItemColumns} FROM checklist_items i WHERE i.tenant_id=@tenant AND i.checklist_id=@checklist AND i.id=@id AND (@deleted OR i.deleted_at IS NULL);", session.Connection, session.Transaction);
         query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("checklist", checklist); query.Parameters.AddWithValue("id", item);
+        query.Parameters.AddWithValue("deleted", includeDeleted);
         await using var reader = await query.ExecuteReaderAsync(ct); return await reader.ReadAsync(ct) ? ReadChecklistItem(reader) : null;
     }
     public async Task<ChecklistItemRecord?> UpdateItemAsync(Guid organization, Guid checklist, Guid item, string text, bool completed, DateTimeOffset? completedAt, Guid? completedBy, long version, DateTimeOffset now, CancellationToken ct)

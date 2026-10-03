@@ -55,7 +55,8 @@ public sealed partial class ChecklistService
             async receipt => (receipt is null || receipt.OrganizationId == hint.OrganizationId && receipt.BoardId == hint.BoardId &&
                 receipt.CardId == cardId && receipt.Checklist.Id == checklistId && receipt.Checklist.CardId == cardId &&
                 receipt.Checklist.OrganizationId == hint.OrganizationId && receipt.Item.ChecklistId == checklistId && receipt.Item.OrganizationId == hint.OrganizationId)
-                && await Admit(hint, actor, true, ct) && await checklists.FindAsync(hint.OrganizationId, cardId, checklistId, ct) is not null,
+                && await Admit(hint, actor, true, ct) && await checklists.FindAsync(hint.OrganizationId, cardId, checklistId, ct) is not null
+                && (receipt is null || await checklists.FindItemAsync(hint.OrganizationId, checklistId, receipt.Item.Id, ct) is not null),
             async () =>
             {
                 if (input.CardVersion < 1 || input.ChecklistVersion < 1) return WorkOperation<ChecklistItemChange>.Failure("invalid_checklist_version");

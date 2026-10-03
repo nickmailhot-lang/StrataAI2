@@ -21,7 +21,8 @@ public interface IChecklistStore
     Task<string> PositionRankAsync(Guid organization, Guid parent, Guid moving, string currentRank, Guid? before, bool item, CancellationToken ct);
     Task<ChecklistRecord?> UpdateRankAsync(Guid organization, Guid card, Guid checklist, string rank, long version, DateTimeOffset now, CancellationToken ct);
     Task<ChecklistItemRecord?> UpdateItemRankAsync(Guid organization, Guid checklist, Guid item, string rank, long version, DateTimeOffset now, CancellationToken ct);
-    Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct);
+    Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct, bool includeDeleted = false);
+    Task<ChecklistItemRecord?> DeleteItemAsync(Guid organization, Guid checklist, Guid item, long version, DateTimeOffset now, CancellationToken ct);
     Task<ChecklistItemRecord?> UpdateItemAsync(Guid organization, Guid checklist, Guid item, string text, bool completed, DateTimeOffset? completedAt, Guid? completedBy, long version, DateTimeOffset now, CancellationToken ct);
     Task<ChecklistSummary?> GetSummaryAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct);
     Task<IReadOnlyList<ChecklistItemRecord>> ListItemsAsync(Guid organization, Guid checklist, string? afterRank, Guid? afterId, CancellationToken ct);
@@ -75,7 +76,8 @@ public sealed partial class ChecklistService(IWorkManagementStore work, ICheckli
             WorkCommand.Create(actor, context.IdempotencyKey, "ChecklistCreate", cardId, input, "card_not_found"),
             async receipt => (receipt is null || receipt.OrganizationId == hint.OrganizationId && receipt.BoardId == hint.BoardId &&
                 receipt.CardId == cardId && receipt.Checklist.OrganizationId == hint.OrganizationId && receipt.Checklist.CardId == cardId)
-                && await Admit(hint, actor, true, ct), async () =>
+                && await Admit(hint, actor, true, ct)
+                && (receipt is null || await checklists.FindAsync(hint.OrganizationId, cardId, receipt.Checklist.Id, ct) is not null), async () =>
             {
                 if (input.CardVersion < 1) return WorkOperation<ChecklistChange>.Failure("invalid_checklist_version");
                 string title;

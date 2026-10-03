@@ -148,3 +148,15 @@ exact-image fixture checks real rank ordering, post-update event/queue rollback,
 retry recovery, empty ordering space and unchanged completion/count data.
 Strict build and shell checks pass; Linux execution of this increment is pending.
 Deletion, public views, copy/retention, MUI and remaining acceptance are unfinished.
+
+Item DELETE requires explicit confirmation, current Card/Checklist/item revisions,
+and elevated Board administration on active parents. It tombstones the item,
+preserves text/rank/completion attribution, advances all three revisions and
+commits audit/event/outbox/receipt atomically. Active counts/read pages exclude
+tombstones. Confirmed deletion of an already deleted item with current revisions
+is a no-op; original-key replay requires fresh admin and active parent admission.
+Other mutation receipts cannot disclose a newly deleted child. Source and mandatory
+exact-image tests cover contributor denial, confirmation, retained history,
+no-op/replay, late event/queue rollback, authoritative counts and archive denial.
+Strict build and shell checks pass; Linux execution is pending. Checklist aggregate
+delete/cascade and wider lifecycle/copy/public/MUI acceptance are unfinished.
