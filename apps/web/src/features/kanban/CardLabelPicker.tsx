@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
+import { ownsRecoveryFocus } from './focusRecovery';
 
 type Option = { label: { id: string; name: string; color: string }; assigned: boolean };
 type Page = { items: Option[]; nextCursor: string | null; cardVersion: number };
@@ -20,12 +21,12 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
   const current = page && page.cardVersion === card?.version;
   useEffect(() => {
     if (restoreFocus.current && !busy && !disabled && activeCard
-      && (document.activeElement === document.body || document.activeElement === trigger.current))
+      && ownsRecoveryFocus(document.activeElement, trigger.current))
       trigger.current?.focus({ preventScroll: true });
   }, [busy, disabled, activeCard]);
   useEffect(() => {
     if (intent && recoverFocus.current && !busy && !disabled && activeCard
-      && (document.activeElement === document.body || document.activeElement === retryTrigger.current))
+      && ownsRecoveryFocus(document.activeElement, retryTrigger.current))
       retryTrigger.current?.focus({ preventScroll: true });
   }, [intent, busy, disabled, activeCard]);
   useEffect(() => { onRecoveryChange(!!intent); return () => onRecoveryChange(false); }, [intent, onRecoveryChange]);
@@ -87,13 +88,13 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
   return <Box sx={{ mt: 2 }}>
     <Button ref={trigger} disabled={busy || disabled || !!intent || denied || !activeCard} aria-expanded={open}
       onFocus={() => { restoreFocus.current = true; }}
-      onBlur={event => { if (event.relatedTarget !== null) restoreFocus.current = false; }}
+      onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, trigger.current)) restoreFocus.current = false; }}
       onClick={() => { restoreFocus.current = false; void load(); }}>Edit Card labels</Button>
     {open && <Stack component="section" aria-label="Edit Card labels" spacing={1}>
       {busy && <Typography role="status">Updating label options…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
       {intent ? <><Typography>{intent.assigned ? 'Add' : 'Remove'} {intent.name}</Typography><Button ref={retryTrigger} disabled={busy || disabled} onFocus={() => { recoverFocus.current = true; }}
-        onBlur={event => { if (event.relatedTarget !== null) recoverFocus.current = false; }} onClick={() => void change()}>Retry label change</Button></> : <>
+        onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, retryTrigger.current)) recoverFocus.current = false; }} onClick={() => void change()}>Retry label change</Button></> : <>
         {current && !notice && page.items.map(option => <Stack key={option.label.id} direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
           <Typography>{option.label.name || 'Unnamed label'} ({option.label.color})</Typography>
           <Button disabled={busy || disabled} onClick={() => void change(option)} aria-label={`${option.assigned ? 'Remove' : 'Add'} label ${option.label.name || option.label.color}`}>{option.assigned ? 'Remove' : 'Add'}</Button>

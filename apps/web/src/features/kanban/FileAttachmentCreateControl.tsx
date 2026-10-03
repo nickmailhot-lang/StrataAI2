@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { ownsRecoveryFocus } from './focusRecovery';
 import { Alert, Button, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
@@ -123,7 +124,7 @@ function FileControl(props: UrlAttachmentCreateProps) {
           slotProps={{ inputLabel: { shrink: true }, htmlInput: { accept: draft.options.allowedMimeTypes.join(',') } }}
           onChange={event => { setDraft({ ...draft, file: (event.target as HTMLInputElement).files?.[0] }); setNotice(undefined); }} />
         {!blocked && <Button ref={action} disabled={disabled || !draft.file || !intent && conflict} onClick={() => void save()}
-          onBlur={event => { if (event.relatedTarget !== null) focusRequested.current = false; }}>
+          onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, action.current)) focusRequested.current = false; }}>
           {intent ? 'Retry original file upload' : 'Upload selected file'}
         </Button>}
         {(!intent || blocked) && <Button ref={blocked ? action : undefined} disabled={busy || props.disabled || props.unavailable}

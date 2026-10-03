@@ -71,15 +71,19 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
     await page.evaluate(() => {
       const state = window as Window & { checklistFeedback?: Promise<number> };
       state.checklistFeedback = new Promise(resolve => {
-        const form = document.querySelector('[aria-label="Create checklist"] form');
         const timer = setTimeout(() => resolve(Infinity), 5000);
-        form?.addEventListener('submit', () => {
+        // The access gate can replace a form before activation. Observe the
+        // actual submission on the stable document rather than a retired node.
+        document.addEventListener('submit', event => {
+          if (!(event.target instanceof HTMLFormElement) || !event.target.closest('[aria-label="Create checklist"]')) {
+            clearTimeout(timer); resolve(Infinity); return;
+          }
           const began = performance.now();
           const frame = () => {
             const region = document.querySelector('[aria-label="Create checklist"]');
             const status = region?.querySelector('[role="status"]');
             const button = region?.querySelector<HTMLButtonElement>('button[type="submit"]');
-            if (status?.textContent === 'Creating checklist…' && button?.disabled) {
+            if (status?.textContent === 'Creating checklist…' && (!button || button.disabled)) {
               requestAnimationFrame(() => { clearTimeout(timer); resolve(performance.now() - began); });
             } else if (performance.now() - began >= 2000) { clearTimeout(timer); resolve(Infinity); }
             else requestAnimationFrame(frame);

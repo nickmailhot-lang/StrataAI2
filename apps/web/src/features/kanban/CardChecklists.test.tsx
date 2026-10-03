@@ -106,10 +106,30 @@ it('rejects a revision mismatch and does not display server error content', asyn
   render(<CardChecklists {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show checklists' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load current checklists');
   expect(screen.queryByRole('heading', { name: 'Preparations' })).not.toBeInTheDocument();
+  expect(props.onRefresh).toHaveBeenCalledOnce();
   fireEvent.click(screen.getByRole('button', { name: 'Retry checklist read' }));
   await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('checklists are unavailable'));
   expect(screen.queryByText('Secret SQL details')).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Refresh Board' })); expect(props.onRefresh).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh Board' })); expect(props.onRefresh).toHaveBeenCalledTimes(2);
+});
+it('readmits a newer scoped revision once across access refresh and then renders only the current page', async () => {
+  const fetch = vi.fn().mockImplementation(async () => respond({ ...page, cardVersion: 5 })); vi.stubGlobal('fetch', fetch);
+  const view = render(<CardChecklists {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show checklists' }));
+  await screen.findByRole('alert'); expect(props.onRefresh).toHaveBeenCalledOnce();
+  view.rerender(<CardChecklists {...props} unavailable />); view.rerender(<CardChecklists {...props} />);
+  await screen.findByRole('alert'); expect(fetch).toHaveBeenCalledTimes(2); expect(props.onRefresh).toHaveBeenCalledOnce();
+  expect(screen.queryByRole('heading', { name: 'Preparations' })).not.toBeInTheDocument();
+  view.rerender(<CardChecklists {...props} version={5} />);
+  expect(await screen.findByRole('heading', { name: 'Preparations' })).toBeVisible(); expect(props.onRefresh).toHaveBeenCalledOnce();
+});
+it('rejects an older or foreign page without using it to invalidate the current parent', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(respond({ ...page, cardVersion: 3 }))
+    .mockResolvedValueOnce(respond({ ...page, boardId: id(90), cardVersion: 5 })); vi.stubGlobal('fetch', fetch);
+  render(<CardChecklists {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show checklists' }));
+  await screen.findByRole('alert'); expect(props.onRefresh).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Retry checklist read' }));
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+  expect(screen.queryByRole('heading', { name: 'Preparations' })).not.toBeInTheDocument(); expect(props.onRefresh).not.toHaveBeenCalled();
 });
 it('uses bounded seek pagination and preserves full progress on later item pages', async () => {
   const first = { ...items, summary: { ...summary, completed: 0, total: 51, percent: 0 }, items: Array.from({ length: 50 }, (_, n) => ({ ...items.items[1], id: id(n + 20), rank: rank(n + 1), text: `Task ${n + 1}` })),

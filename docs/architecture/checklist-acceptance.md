@@ -147,3 +147,7 @@ not used as evidence. The same image's pinned Collector config and ingestion
 checks passed with all six fixed/privacy flags true in artifact 11269482094.
 Actual browser/keyboard/recovery/capacity budgets and all remaining full-ticket
 requirements still govern closure; the run is still in its browser stage.
+
+## Browser regression repair evidence
+
+Run 37139663138 completed with failures in both checklist read widths and feedback observation. A fully parsed, same-scope checklist page with a newer Card revision now requests a bounded parent re-admission and withholds the mismatched contents. Repeating the same mismatch across temporary access refresh does not create an automatic refresh loop; older and foreign pages do not invalidate the current parent. Component cases verify recovery after the authoritative parent revision advances and refusal of older/foreign pages. The browser feedback observer now follows the actual form submission on the stable document across form replacement and requires immediate busy status plus a disabled or removed resubmit control. The original 100 ms feedback, 200 ms detail, 1500 ms usability and 500 ms mutation p95 budgets remain enforced. Local full web validation passes 959 tests in 73 files plus typecheck/lint/build. Updated browser scenarios are discovered but their repaired exact-image execution is pending; PRD-13 remains open.

@@ -102,11 +102,12 @@ for (const width of [1280, 390]) {
       await expect(filters.getByRole('checkbox', { name: 'Priority (red)', exact: true })).toBeEnabled();
       await filters.getByRole('checkbox', { name: 'Priority (red)', exact: true }).press('Space');
       await filters.getByLabel('Card keyword').fill('absent');
-      await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
+      const apply = filters.getByRole('button', { name: 'Apply filters', exact: true });
+      await expect(apply).toBeEnabled(); await apply.press('Enter');
       await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
       await filters.getByRole('combobox', { name: 'Match filters' }).press('Enter');
       await page.getByRole('option', { name: 'Match ANY', exact: true }).press('Enter');
-      await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
+      await expect(apply).toBeEnabled(); await apply.press('Enter');
       await expect(filters.getByRole('link', { name: 'Labeled work — Planning', exact: true })).toBeVisible();
       await page.reload(); await expect(filterButton).toBeEnabled(); await filterButton.press('Enter');
       await expect(filters.getByLabel('Card keyword')).toHaveValue('absent');

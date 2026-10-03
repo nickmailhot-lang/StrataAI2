@@ -1,15 +1,17 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import { Alert, Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { checklistEvent, checklistResult } from './checklistTelemetry';
 import { parseChecklistItemPage, parseChecklistPage, type ChecklistItemPage, type ChecklistPage, type ChecklistScope, type ChecklistSummary } from './checklists';
 
-type Props = ChecklistScope & { version: number; unavailable: boolean; onRefresh: () => void; reconnectSequence?: number };
+type Props = ChecklistScope & { version: number; unavailable: boolean; onRefresh: () => void; reconnectSequence?: number;
+  onRevisionMismatch?: (version: number) => void };
 type Disclosures = { openItems: Set<string>; onItemToggle: (id: string) => void };
 function usePage(props: Props, open: boolean, cursor: string | undefined, attempt: number, checklistId?: string) {
   const [result, setResult] = useState<ChecklistPage | ChecklistItemPage>();
   const [error, setError] = useState<string>(); const [loading, setLoading] = useState(false);
   const { organizationId, boardId, cardId, version, unavailable } = props;
+  const refreshRevision = useEffectEvent((actual: number) => props.onRevisionMismatch?.(actual));
   useEffect(() => {
     if (!open || unavailable) return;
     let active = true; const controller = new AbortController();
@@ -21,7 +23,7 @@ function usePage(props: Props, open: boolean, cursor: string | undefined, attemp
     void boundedWorkRead(signal => workRequest<unknown>(path, { signal }), controller.signal).then(value => {
       if (!active) return;
       const page = checklistId ? parseChecklistItemPage(value, scope, checklistId, cursor) : parseChecklistPage(value, scope, cursor);
-      if (page.cardVersion !== version) throw new WorkRequestError(409, null);
+      if (page.cardVersion !== version) { refreshRevision(page.cardVersion); throw new WorkRequestError(409, null); }
       checklistResult(action, true, started);
       setResult(page);
     }).catch(reason => {
@@ -42,6 +44,16 @@ export function CardChecklists(props: Props) {
 }
 function ChecklistDisclosure(props: Props) {
   const [open, setOpen] = useState(false); const region = useId();
+  // A current, scoped checklist read can discover a mutation before Board
+  // delivery. Readmit the parent once per observed revision; a repeated bad
+  // response must not create an automatic refresh loop or expose stale items.
+  const lastMismatch = useRef<string | undefined>(undefined);
+  function refreshRevision(actual: number) {
+    if (actual <= props.version) return;
+    const mismatch = `${props.version}/${actual}`;
+    if (lastMismatch.current === mismatch) return;
+    lastMismatch.current = mismatch; props.onRefresh();
+  }
   const previousReconnect = useRef(props.reconnectSequence ?? 0);
   useEffect(() => {
     const current = props.reconnectSequence ?? 0;
@@ -57,7 +69,7 @@ function ChecklistDisclosure(props: Props) {
     </Button>
     {open && <Stack id={region} component="section" aria-label="Card checklists" spacing={2}>
       {props.unavailable ? <Typography role="status">Checking current Card access…</Typography>
-        : <ChecklistContent key={props.version} {...props} openItems={openItems} onItemToggle={onItemToggle} />}
+        : <ChecklistContent key={props.version} {...props} onRevisionMismatch={refreshRevision} openItems={openItems} onItemToggle={onItemToggle} />}
     </Stack>}
   </Box>;
 }

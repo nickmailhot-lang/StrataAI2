@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { Dialog } from '@mui/material';
 import { workRequest } from '../../api/workManagement';
 import { FileAttachmentDownloadControl } from './FileAttachmentDownloadControl';
 import { parseAttachmentDownloadOptions, type FileAttachment } from './attachments';
@@ -63,6 +64,20 @@ it('preserves focus that the user moved while current access was being checked',
   render(<><FileAttachmentDownloadControl {...props} /><button>Another action</button></>); await check();
   await act(async () => { await Promise.resolve(); }); const other = screen.getByRole('button', { name: 'Another action' }); other.focus();
   await act(async () => { resolve(options); }); await screen.findByRole('link'); expect(other).toHaveFocus();
+});
+
+it('restores owned keyboard focus from the same MUI Dialog fallback after a disabled review', async () => {
+  let resolve!: (value: unknown) => void;
+  vi.mocked(workRequest).mockImplementationOnce(() => new Promise(value => { resolve = value; }))
+    .mockResolvedValueOnce(options).mockResolvedValueOnce(profile);
+  render(<Dialog open transitionDuration={0}><FileAttachmentDownloadControl {...props} /></Dialog>);
+  const review = screen.getByRole('button', { name: 'Check file download access' });
+  await act(async () => review.focus()); fireEvent.click(review);
+  await waitFor(() => expect(workRequest).toHaveBeenCalledOnce());
+  const dialog = screen.getByRole('dialog'); await act(async () => dialog.focus());
+  expect(dialog).toHaveFocus();
+  await act(async () => resolve(profile));
+  expect(await screen.findByRole('link')).toHaveFocus();
 });
 
 it('removes admitted links on Card revision changes and ignores old scope requests', async () => {

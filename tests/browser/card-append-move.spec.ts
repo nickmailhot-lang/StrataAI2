@@ -87,6 +87,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByRole('region', { name: 'Complete', exact: true }).getByRole('link', { name: 'Move this card', exact: true })).toBeFocused();
       if (viewport.width === 390) {
         await page.unroute(`**/cards/${card}/move`);
+        // The recovered move and overlay focus have been asserted. Begin the
+        // independent drag scenario after its persisted event has drained and
+        // the new page's initial/reconnect reads have completed.
+        await waitForBoardDelivery(context.request, board);
+        const dragReads = trackBoardReads(page, board, `/app/${org}/boards/${board}`);
+        await page.reload(); await expect.poll(dragReads).toBeGreaterThanOrEqual(2);
         const dragHandle = page.getByRole('button', { name: 'Drag Move this card card', exact: true });
         await expect(dragHandle).toBeEnabled();
         const beforeDrag = await (await context.request.get(`/boards/${board}`)).json();

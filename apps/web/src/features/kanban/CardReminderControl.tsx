@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useRef, useState, type FocusEvent } from 're
 import { Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type WorkCard } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
+import { ownsRecoveryFocus } from './focusRecovery';
 import { cardDates, dateInstantTicks } from './cardDates';
 import { parseReminderState, type ReminderInterval, type ReminderState } from './cardReminder';
 
@@ -44,12 +45,12 @@ function ReminderControl(props: Props) {
   }, [props.unavailable, props.disabled, props.card.version, current, open, intent, blocked, busy]);
   useEffect(() => { if (!open) return; const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, [open]);
   useEffect(() => { if (focusRequested.current && !busy && !props.disabled && !props.unavailable
-    && (document.activeElement === document.body || document.activeElement === action.current)) {
+    && ownsRecoveryFocus(document.activeElement, action.current)) {
     action.current?.focus({ preventScroll: true });
   } }, [busy, props.disabled, props.unavailable, open, intent, blocked]);
   const actionFocus = {
     onFocus: () => { focusRequested.current = true; },
-    onBlur: (event: FocusEvent<HTMLButtonElement>) => { if (event.relatedTarget !== null) focusRequested.current = false; },
+    onBlur: (event: FocusEvent<HTMLButtonElement>) => { if (!ownsRecoveryFocus(event.relatedTarget, action.current)) focusRequested.current = false; },
   };
   const path = `/cards/${encodeURIComponent(props.card.id)}/reminders`;
   const outdated = !!current && current.cardVersion !== props.card.version;

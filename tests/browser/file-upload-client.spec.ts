@@ -1,6 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
 import { createHash, randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
 
 // Native browser/file/keyboard client proof against the exact web image.
 // File-provider replies are simulated; this does not claim S3 publication.
@@ -36,29 +38,35 @@ for (const width of [1280, 390]) {
       if (attempts.length === 1) await route.fulfill({ status: 503, json: { code: 'work_storage_unavailable', detail: 'Never expose this provider diagnostic.' } });
       else await route.fulfill({ json: { ...scope, cardVersion: 2, attachment } });
     });
-    await page.goto(`/app/${org}/boards/${board}/cards/${card}`);
-    const add = page.getByRole('button', { name: 'Add file attachment', exact: true }); await expect(add).toBeEnabled(); await add.press('Enter');
-    const file = page.getByLabel('File to attach', { exact: true }); await expect(file).toBeEnabled(); await expect(file).toBeFocused();
-    await file.setInputFiles({ name: 'Résumé.png', mimeType: 'image/png', buffer: bytes });
-    await page.getByRole('button', { name: 'Upload selected file', exact: true }).press('Enter');
-    const retry = page.getByRole('button', { name: 'Retry original file upload', exact: true }); await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
-    await expect(file).toBeDisabled(); await expect(page.getByRole('button', { name: 'Add link attachment', exact: true })).toBeDisabled();
-    expect(attempts).toHaveLength(1); expect(attempts[0].bytes.equals(bytes)).toBe(true);
-    expect(attempts[0].headers['x-strataai-request']).toBe('1'); expect(attempts[0].headers['content-type']).toBe('application/octet-stream');
-    expect(attempts[0].headers['x-attachment-sha256']).toBe(createHash('sha256').update(bytes).digest('hex'));
-    expect(Buffer.from(attempts[0].headers['x-attachment-name'], 'base64').toString('utf8')).toBe('Résumé.png');
-    expect(attempts[0].headers['x-attachment-size']).toBe(String(bytes.length)); expect(attempts[0].headers['x-card-version']).toBe('1');
-    expect(attempts[0].headers['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
-    await retry.press('Enter'); await expect(page.getByText('File attached. Safety scan pending.', { exact: true })).toBeVisible();
-    await expect(add).toBeEnabled(); await expect(add).toBeFocused(); expect(attempts).toHaveLength(2);
-    expect(attempts[1].bytes.equals(attempts[0].bytes)).toBe(true);
-    for (const name of ['idempotency-key', 'x-attachment-name', 'x-attachment-size', 'x-attachment-sha256', 'x-card-version'])
-      expect(attempts[1].headers[name]).toBe(attempts[0].headers[name]);
-    await page.getByRole('button', { name: 'Show attachments', exact: true }).press('Enter');
-    await expect(page.getByText('Safety scan pending. File access is unavailable.', { exact: true })).toBeVisible();
-    await expect(page.getByText('Résumé.png (9 bytes)', { exact: true })).toBeVisible();
-    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-    // The simulated file replies must not be misreported as persisted files.
-    const actual = await (await context.request.get(path)).json(); expect(actual.cardVersion).toBe(1); expect(actual.items).toEqual([]);
+    const restoreWorker = scopedBoardWorker(org);
+    try {
+      await waitForBoardDelivery(context.request, board);
+      const cardPath = `/app/${org}/boards/${board}/cards/${card}`;
+      const reads = trackBoardReads(page, board, cardPath);
+      await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      const add = page.getByRole('button', { name: 'Add file attachment', exact: true }); await expect(add).toBeEnabled(); await add.press('Enter');
+      const file = page.getByLabel('File to attach', { exact: true }); await expect(file).toBeEnabled(); await expect(file).toBeFocused();
+      await file.setInputFiles({ name: 'Résumé.png', mimeType: 'image/png', buffer: bytes });
+      await page.getByRole('button', { name: 'Upload selected file', exact: true }).press('Enter');
+      const retry = page.getByRole('button', { name: 'Retry original file upload', exact: true }); await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
+      await expect(file).toBeDisabled(); await expect(page.getByRole('button', { name: 'Add link attachment', exact: true })).toBeDisabled();
+      expect(attempts).toHaveLength(1); expect(attempts[0].bytes.equals(bytes)).toBe(true);
+      expect(attempts[0].headers['x-strataai-request']).toBe('1'); expect(attempts[0].headers['content-type']).toBe('application/octet-stream');
+      expect(attempts[0].headers['x-attachment-sha256']).toBe(createHash('sha256').update(bytes).digest('hex'));
+      expect(Buffer.from(attempts[0].headers['x-attachment-name'], 'base64').toString('utf8')).toBe('Résumé.png');
+      expect(attempts[0].headers['x-attachment-size']).toBe(String(bytes.length)); expect(attempts[0].headers['x-card-version']).toBe('1');
+      expect(attempts[0].headers['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
+      await retry.press('Enter'); await expect(page.getByText('File attached. Safety scan pending.', { exact: true })).toBeVisible();
+      await expect(add).toBeEnabled(); await expect(add).toBeFocused(); expect(attempts).toHaveLength(2);
+      expect(attempts[1].bytes.equals(attempts[0].bytes)).toBe(true);
+      for (const name of ['idempotency-key', 'x-attachment-name', 'x-attachment-size', 'x-attachment-sha256', 'x-card-version'])
+        expect(attempts[1].headers[name]).toBe(attempts[0].headers[name]);
+      await page.getByRole('button', { name: 'Show attachments', exact: true }).press('Enter');
+      await expect(page.getByText('Safety scan pending. File access is unavailable.', { exact: true })).toBeVisible();
+      await expect(page.getByText('Résumé.png (9 bytes)', { exact: true })).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      // The simulated file replies must not be misreported as persisted files.
+      const actual = await (await context.request.get(path)).json(); expect(actual.cardVersion).toBe(1); expect(actual.items).toEqual([]);
+    } finally { restoreWorker(); }
   });
 }

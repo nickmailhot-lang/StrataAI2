@@ -1,6 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
 import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
 
 // Actual native browser download against the immutable web image. File/scan
 // provider responses are explicitly simulated; persisted file delivery has
@@ -34,18 +36,24 @@ for (const width of [1280, 390]) {
       return route.fulfill({ headers: { 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="native-client-proof.pdf"',
         'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' }, body: bytes });
     });
-    await page.goto(`/app/${org}/boards/${board}/cards/${card}`);
-    await page.getByRole('button', { name: 'Show attachments', exact: true }).press('Enter');
-    const review = page.getByRole('button', { name: 'Check file download access', exact: true }); await expect(review).toBeEnabled();
-    expect(downloaded).toBe(false); await review.press('Enter');
-    const link = page.getByRole('link', { name: 'Download Résumé.pdf (opens in a new tab)', exact: true });
-    await expect(link).toBeFocused(); await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-    const native = page.waitForEvent('download'); await link.press('Enter'); const result = await native;
-    expect(await result.failure()).toBeNull(); expect(result.suggestedFilename()).toBe('native-client-proof.pdf');
-    const stream = await result.createReadStream(); expect(stream).not.toBeNull(); const chunks: Buffer[] = [];
-    for await (const chunk of stream!) chunks.push(Buffer.from(chunk)); expect(Buffer.concat(chunks).equals(bytes)).toBe(true);
-    expect(downloaded).toBe(true); await expect(page.getByText('Download requested. Your browser will report whether it completes.', { exact: true })).toBeVisible();
-    const actual = await (await context.request.get(path)).json(); expect(actual.cardVersion).toBe(1); expect(actual.items).toEqual([]);
+    const restoreWorker = scopedBoardWorker(org);
+    try {
+      await waitForBoardDelivery(context.request, board);
+      const cardPath = `/app/${org}/boards/${board}/cards/${card}`;
+      const reads = trackBoardReads(page, board, cardPath);
+      await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      await page.getByRole('button', { name: 'Show attachments', exact: true }).press('Enter');
+      const review = page.getByRole('button', { name: 'Check file download access', exact: true }); await expect(review).toBeEnabled();
+      expect(downloaded).toBe(false); await review.press('Enter');
+      const link = page.getByRole('link', { name: 'Download Résumé.pdf (opens in a new tab)', exact: true });
+      await expect(link).toBeFocused(); await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      const native = page.waitForEvent('download'); await link.press('Enter'); const result = await native;
+      expect(await result.failure()).toBeNull(); expect(result.suggestedFilename()).toBe('native-client-proof.pdf');
+      const stream = await result.createReadStream(); expect(stream).not.toBeNull(); const chunks: Buffer[] = [];
+      for await (const chunk of stream!) chunks.push(Buffer.from(chunk)); expect(Buffer.concat(chunks).equals(bytes)).toBe(true);
+      expect(downloaded).toBe(true); await expect(page.getByText('Download requested. Your browser will report whether it completes.', { exact: true })).toBeVisible();
+      const actual = await (await context.request.get(path)).json(); expect(actual.cardVersion).toBe(1); expect(actual.items).toEqual([]);
+    } finally { restoreWorker(); }
   });
 }

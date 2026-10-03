@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button, Link, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
+import { ownsRecoveryFocus } from './focusRecovery';
 import { parseAttachmentDownloadOptions, type AttachmentDownloadOptions, type AttachmentScope, type FileAttachment } from './attachments';
 
 type Props = AttachmentScope & { version: number; file: FileAttachment; onRefresh: () => void };
@@ -24,7 +25,7 @@ function Download(props: Props) {
   }, [options]);
   useLayoutEffect(() => {
     if (busy || !focus.current) return;
-    if (document.activeElement === document.body || document.activeElement === review.current || document.activeElement === link.current) {
+    if (ownsRecoveryFocus(document.activeElement, review.current) || document.activeElement === link.current) {
       (options ? link.current : review.current)?.focus({ preventScroll: true }); focus.current = false;
     }
   }, [busy, options]);
@@ -51,7 +52,7 @@ function Download(props: Props) {
   }
   if (props.file.scanStatus !== 2) return null;
   return <Stack spacing={0.5}>
-    <Button ref={review} disabled={busy} onBlur={event => { if (event.relatedTarget !== null) focus.current = false; }} onClick={() => { void check(); }}>
+    <Button ref={review} disabled={busy} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, review.current)) focus.current = false; }} onClick={() => { void check(); }}>
       {busy ? 'Checking file download…' : 'Check file download access'}
     </Button>
     {busy && <Button onClick={() => { pending.current?.abort(); pending.current = undefined; setBusy(false); setNotice('Download review stopped.'); }}>Stop download review</Button>}
