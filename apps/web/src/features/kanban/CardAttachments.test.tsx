@@ -11,6 +11,17 @@ const props = { ...scope, version: 4, unavailable: false, onRefresh: vi.fn() };
 const respond = (value: unknown) => new Response(JSON.stringify(value), { status: 200, headers: { 'Content-Type': 'application/json' } });
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 
+it.each([[1, 'Safety scan pending. File access is unavailable.'], [2, 'Safety scan complete.'],
+  [3, 'File rejected by the safety scan. File access is unavailable.'], [4, 'Safety scan failed. File access is unavailable.']])('renders admitted file metadata and textual scan status %s without fetching or linking private bytes', async (scanStatus, status) => {
+    const file = { ...item, kind: 0, displayName: 'Original document.pdf', mimeType: 'application/pdf', sizeBytes: 100003, url: null,
+      scanStatus, scannedAt: scanStatus === 1 ? null : now, version: scanStatus === 1 ? 1 : 2 };
+    const fetch = vi.fn().mockResolvedValue(respond({ ...page, items: [file] })); vi.stubGlobal('fetch', fetch);
+    const view = render(<CardAttachments {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
+    expect(await screen.findByText(String(status))).toBeVisible(); expect(screen.getByText(/Original document.pdf/)).toBeVisible();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument(); expect(view.container.querySelector('img')).toBeNull(); expect(fetch).toHaveBeenCalledOnce();
+    view.rerender(<CardAttachments {...props} unavailable />); expect(screen.queryByText(/Original document.pdf/)).not.toBeInTheDocument();
+  });
+
 it('loads only on explicit disclosure and renders a safe external link without fetching its target', async () => {
   const fetch = vi.fn().mockResolvedValue(respond(page)); vi.stubGlobal('fetch', fetch);
   render(<CardAttachments {...props} />); expect(fetch).not.toHaveBeenCalled();

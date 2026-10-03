@@ -57,9 +57,14 @@ function AttachmentContent(props: Props & { returnToToggle: () => void }) {
     {!loading && page && <>
       {!page.canEdit && <Typography>Read-only attachments.</Typography>}
       {page.items.length === 0 && <Typography>No attachments on this page.</Typography>}
-      {page.items.map(item => <Link key={item.id} href={attachmentUrl(item.url)} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
+      {page.items.map(item => item.kind === 1 ? <Link key={item.id} href={attachmentUrl(item.url)} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
         {item.displayName} (opens in a new tab)
-      </Link>)}
+      </Link> : <Stack key={item.id} spacing={0.5}>
+        <Typography>{item.displayName} ({item.sizeBytes.toLocaleString()} bytes)</Typography>
+        <Typography>{item.scanStatus === 1 ? 'Safety scan pending. File access is unavailable.'
+          : item.scanStatus === 3 ? 'File rejected by the safety scan. File access is unavailable.'
+            : item.scanStatus === 4 ? 'Safety scan failed. File access is unavailable.' : 'Safety scan complete.'}</Typography>
+      </Stack>)}
     </>}
     <Stack direction="row" spacing={1}>
       <Button ref={first} disabled={loading || !cursor || error} onFocus={trackFocus} onBlur={trackBlur}
