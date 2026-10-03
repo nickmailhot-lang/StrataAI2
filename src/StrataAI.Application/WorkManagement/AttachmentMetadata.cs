@@ -1,4 +1,5 @@
 using StrataAI.Domain.WorkManagement;
+using System.Text.Json.Serialization;
 
 namespace StrataAI.Application.WorkManagement;
 
@@ -11,7 +12,7 @@ public sealed record AttachmentMetadata(Guid Id, Guid OrganizationId, Guid CardI
 
 // Private Application/Worker record. Never serialize the integrity request into
 // normal attachment pages/receipts or admit it from an HTTP request body.
-public sealed record AttachmentFileRecord(AttachmentMetadata Metadata, AttachmentScanRequest Integrity);
+public sealed record AttachmentFileRecord(AttachmentMetadata Metadata, [property: JsonIgnore] AttachmentScanRequest Integrity);
 
 public interface IAttachmentMetadataStore
 {

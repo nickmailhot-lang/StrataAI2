@@ -401,3 +401,29 @@ PostgreSQL adapter command execution, file upload authorization/current parent
 CAS, original intent/outbox/scan job and compensating/orphan lifecycle remain
 required. These primitives perform no object I/O, scan dispatch, status mutation
 or HTTP binary exposure by themselves.
+
+Executed policy evidence at 88a3581: .NET-quality job 111182204090 in run
+37115777924 passed all 355 Domain/Application/Infrastructure and 265 API cases,
+zero skips, including all 19 byte-classification/policy cases. Web/PostgreSQL and
+immutable image build passed; remaining security/container/browser gates are
+tracked separately from source proof.
+
+`AttachmentUploadReader` now prepares a non-seeking request stream after admission:
+it reads at most 256 actual prefix bytes (or one byte beyond a smaller configured
+size limit), applies server policy, and replays those bytes exactly once before
+the untouched remainder. It never trusts source Length, seeks or buffers the whole
+file. The private prefix is zeroed when replay finishes, validation/fault/cancel
+fails or the wrapper retires early. The original stream remains caller-owned.
+Pre-cancellation consumes nothing; actual cancellation propagates; other source
+failures return a fixed safe source-unavailable code. Six new cases compile for
+short/chunked/long sources, full byte/digest preservation, no duplicated prefix,
+bounded oversize reads, unknown type, ownership/zeroing, faults/cancellation and
+early disposal. Build/diff checks pass; Linux execution is pending.
+
+Private file-record Integrity is also ignored by JSON serialization, with explicit
+projection tests excluding both derived key and digest even on accidental record
+serialization. No HTTP action binds this record as input. Full upload orchestration
+must still persist/admit original intent before invoking the reader, retain private
+object compensation/reconciliation and atomically publish metadata/scan job/current
+Card CAS/audit/events afterward. File endpoint/provider registration, scanner Worker
+and controlled delivery remain unimplemented; these additions do not close tickets.

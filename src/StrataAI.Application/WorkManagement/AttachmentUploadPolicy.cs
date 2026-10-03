@@ -12,7 +12,7 @@ public interface IAttachmentFileTypeInspector
 }
 public sealed class AttachmentUploadValidationException(string code) : Exception("Attachment file validation is unavailable.")
 {
-    public string Code { get; } = code is "attachment_type_not_allowed" or "attachment_too_large" or "attachment_integrity_invalid"
+    public string Code { get; } = code is "attachment_type_not_allowed" or "attachment_too_large" or "attachment_integrity_invalid" or "attachment_source_unavailable"
         ? code : throw new ArgumentException("A fixed attachment validation code is required.", nameof(code));
 }
 public sealed class AttachmentUploadPolicy

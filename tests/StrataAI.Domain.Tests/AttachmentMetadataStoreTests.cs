@@ -90,6 +90,8 @@ public sealed class AttachmentMetadataStoreTests
         var file = await store.FindFileAttachmentAsync(parent.Organization, parent.Card.Id, row.Id, ct); Assert.NotNull(file);
         Assert.Equal(row, file.Metadata); Assert.Equal(reference, file.Integrity.Reference); Assert.Equal(measured.Sha256, file.Integrity.Sha256); Assert.Equal(128, file.Integrity.SizeBytes);
         using var json = JsonDocument.Parse(JsonSerializer.Serialize(row)); Assert.False(json.RootElement.TryGetProperty("StorageKey", out _)); Assert.False(json.RootElement.TryGetProperty("Sha256", out _)); Assert.False(json.RootElement.TryGetProperty("Integrity", out _));
+        using var privateJson = JsonDocument.Parse(JsonSerializer.Serialize(file)); Assert.False(privateJson.RootElement.TryGetProperty("Integrity", out _));
+        Assert.DoesNotContain(reference.ObjectKey, privateJson.RootElement.GetRawText()); Assert.DoesNotContain(measured.Sha256, privateJson.RootElement.GetRawText());
         Assert.Null(await store.FindFileAttachmentAsync(other.Organization, parent.Card.Id, row.Id, ct));
         Assert.Null(await store.FindFileAttachmentAsync(parent.Organization, other.Card.Id, row.Id, ct));
         var sameTenantCard = await services.GetRequiredService<IWorkManagementStore>().CreateCardAsync(parent.Card.ListId, Guid.NewGuid(), "Other Card", null, null, Now, ct);
