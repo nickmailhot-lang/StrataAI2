@@ -186,3 +186,9 @@ explicit disclosure/hide and WCAG checks. Discovery is not executed acceptance;
 CI must run them against the immutable images. Production URL transaction fixture,
 latest required-ci and the complete attachment file/storage/scanner/cover/lifecycle/
 performance matrix remain open. No binary upload or scanner capability is exposed.
+
+Final local regression for the URL creation increment: all 901 tests across
+69 web files pass; typecheck/lint pass. Linux web-quality job 111172347596 in run
+37112277658 at f87f70b also passed all 901 tests/69 files, with PostgreSQL job
+111172347727 passing. The latest .NET/image/browser and exact-image URL fixture
+remain separately pending; source web success does not close any full ticket.
