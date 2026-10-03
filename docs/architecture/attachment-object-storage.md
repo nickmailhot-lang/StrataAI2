@@ -90,6 +90,13 @@ SigV4 scheme, without depending on typed parsing. This retains the signing
 requirement; provider implementation is unchanged. Execution of this correction
 remains pending, so signed transport/embedded-error proof is not yet accepted.
 
+Executed correction evidence at 92dba62: .NET-quality job 111180631021 in run
+37115220262 passed 336 Domain/Application/Infrastructure and 265 API cases,
+zero skips, including both official-SDK intercepted transport cases. Web and
+PostgreSQL also passed. This proves the isolated signing/serialization and
+embedded-error contract; it does not prove a deployed managed bucket or full
+required-ci, whose immutable image/container/browser stages are separate.
+
 Remaining integration: runtime provider/client registration and readiness,
 credential/region/prefix policy diagnostics, managed-bucket transport acceptance,
 file upload authorization/admission/type inspection/idempotency and compensation,

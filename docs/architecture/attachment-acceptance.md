@@ -337,3 +337,42 @@ The later two real-SDK transport cases failed at typed Authorization before any
 upload in b410687 job 111179958841. They now require raw signature header presence
 and the same SigV4 scheme instead; correction execution and complete release gates
 remain pending. No signing acceptance is inferred from compile-only correction.
+
+Executed official-SDK transport correction at 92dba62: .NET job 111180631021
+in run 37115220262 passed all 336 Domain/Application/Infrastructure and 265 API
+cases, zero skips, including both signed/conditional/encrypted transport and
+embedded HTTP-200 error cases. Web/PostgreSQL also passed. Managed cloud/IAM,
+runtime configuration and complete release gates remain separate/incomplete.
+
+The Application upload policy now accepts only an explicitly configured,
+nonempty canonical subset of PNG/JPEG/WebP/PDF and positive size ceiling up to
+the 1 GiB storage bound. Invalid/duplicate/oversized configuration fails rather
+than broadening allowed types. `IAttachmentFileTypeInspector` inspects at most
+256 actual bytes; no client MIME or filename is an input. Infrastructure recognizes
+bounded initial signatures/headers, including PNG IHDR shape with initial 32,768
+axis/40-million-pixel bounds, JPEG start markers, WebP RIFF/format/chunk tags and
+PDF version/newline. Unknown/active SVG/HTML/executable/archive/spoofed/truncated
+prefixes cannot pass this initial policy. WebP's declared total size must fit the
+policy and later match the measured complete object. Format references:
+[PNG specification](https://www.w3.org/TR/png-3/),
+[WebP container](https://developers.google.com/speed/webp/docs/riff_container),
+[PDF specification resource](https://pdfa.org/resource/iso-32000-2/).
+
+Before metadata publication, measured receipt checks require the original typed
+Organization/attachment reference, positive bounded actual size, canonical SHA-256
+and matching declared container length where present. Failures use fixed codes
+without byte/provider details. Nineteen policy/classification cases compile for
+supported types, restricted configuration, unknown/spoofed headers, bounded prefix,
+initial image shape, container length, foreign tenant receipt, malformed digest/
+size and fail-closed settings. Build/diff checks pass; Linux execution is pending.
+
+This is bounded initial classification, not complete structural parsing, malware
+proof or safe preview eligibility. Header-only test fixtures intentionally make
+no claim of valid complete image/PDF bytes. Worker image decoding/format validation
+must still apply equivalent resource bounds to all image types before previews;
+malware scanning must consume/verify full bytes. File download must use controlled
+current authorization, nosniff and safe disposition. Upload orchestration must
+persist an original-intent record before provider writes and reconcile private
+objects on metadata/type-integrity failure, without deleting ambiguous duplicate
+identities. Runtime policy/provider registration and upload/Worker endpoints are
+still absent; no acceptance is inferred from these unexposed primitives alone.
