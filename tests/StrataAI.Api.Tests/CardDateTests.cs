@@ -11,6 +11,63 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Date_commands_reschedule_personal_reminders_once_per_generation_and_suspend_on_completion_or_clear()
+    {
+        var ct = TestContext.Current.CancellationToken; var publisher = new ReminderPublisher();
+        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<ICardReminderJobPublisher>(publisher));
+        using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        var f = await NotificationFixture(app, owner, recipient, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var reminders = app.Services.GetRequiredService<ICardReminderStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Scheduled dates", null, null, DateTimeOffset.UtcNow, ct);
+        var due = DateTimeOffset.UtcNow.AddDays(2); var path = $"/cards/{card.Id}/dates";
+        var input = new CardDatesInput(null, due.ToString("O"), "UTC", true, false, 1);
+        using var initial = await Mutate(owner, HttpMethod.Patch, path, input);
+        Assert.Equal(HttpStatusCode.OK, initial.StatusCode);
+        card = (await work.FindCardAsync(card.Id, ct))!;
+        var personal = await reminders.SetAsync(card, f.Recipient, "1_HOUR", true, 0, DateTimeOffset.UtcNow, ct);
+        var disabled = await reminders.SetAsync(card, f.Owner, "AT_DUE", false, 0, DateTimeOffset.UtcNow, ct);
+        Assert.NotNull(personal); Assert.NotNull(disabled); Assert.Empty(publisher.Jobs);
+        input = input with { DueAt = due.AddDays(1).ToString("O"), Version = 2 };
+        var key = Guid.NewGuid().ToString();
+        using var changed = await Mutate(owner, HttpMethod.Patch, path, input, key);
+        Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
+        var scheduled = (await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct))!;
+        Assert.Equal(personal.Id, scheduled.Id); Assert.Equal(2, scheduled.Generation); Assert.Equal("SCHEDULED", scheduled.Status);
+        Assert.Equal(scheduled.DueAt!.Value.AddHours(-1), scheduled.TriggerAt);
+        var job = Assert.Single(publisher.Jobs);
+        Assert.Equal(new CardReminderAttempt(scheduled.Id, scheduled.Generation), CardReminderAttempt.Parse(job.SafeMetadataJson));
+        Assert.Equal(scheduled.TriggerAt, job.AvailableAt); Assert.Equal(f.Owner, job.ActorId);
+        using var replay = await Mutate(owner, HttpMethod.Patch, path, input, key);
+        Assert.Equal(await changed.Content.ReadAsStringAsync(ct), await replay.Content.ReadAsStringAsync(ct));
+        using var noop = await Mutate(owner, HttpMethod.Patch, path, input with { Version = 3 });
+        Assert.Equal(HttpStatusCode.OK, noop.StatusCode); Assert.Single(publisher.Jobs);
+        Assert.Equal(scheduled, await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct));
+        using var completed = await Mutate(owner, HttpMethod.Patch, path, input with { DueComplete = true, Version = 3 });
+        Assert.Equal(HttpStatusCode.OK, completed.StatusCode);
+        var suspended = (await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct))!;
+        Assert.Equal(3, suspended.Generation); Assert.True(suspended.Enabled); Assert.Equal("SUSPENDED", suspended.Status);
+        Assert.Null(suspended.TriggerAt); Assert.Single(publisher.Jobs);
+        using var reopened = await Mutate(owner, HttpMethod.Patch, path, input with { Version = 4 });
+        Assert.Equal(HttpStatusCode.OK, reopened.StatusCode); Assert.Equal(2, publisher.Jobs.Count);
+        Assert.NotEqual(publisher.Jobs[0].IdempotencyKey, publisher.Jobs[1].IdempotencyKey);
+        Assert.Equal(4, (await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct))!.Generation);
+        using var clear = await Mutate(owner, HttpMethod.Patch, path, new CardDatesInput(null, null, null, false, false, 5));
+        Assert.Equal(HttpStatusCode.OK, clear.StatusCode);
+        var cleared = (await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct))!;
+        Assert.Equal(5, cleared.Generation); Assert.Null(cleared.DueAt); Assert.Null(cleared.TriggerAt);
+        Assert.Equal("SUSPENDED", cleared.Status); Assert.Equal(2, publisher.Jobs.Count);
+        Assert.Equal(disabled, await reminders.FindAsync(f.Organization, f.Owner, card.Id, ct));
+    }
+
+    private sealed class ReminderPublisher : ICardReminderJobPublisher
+    {
+        public List<StrataAI.Application.BackgroundJobs.NewBackgroundJob> Jobs { get; } = [];
+        public Task PublishAsync(CardReminder reminder, Guid actorId, string correlationId, CancellationToken ct)
+        { Jobs.Add(CardReminderJobs.Create(reminder, actorId, correlationId)); return Task.CompletedTask; }
+    }
+
+    [Fact]
     public async Task Card_dates_roundtrip_replay_noop_completion_clear_and_current_scope_admission()
     {
         var json = new JsonSerializerOptions(JsonSerializerDefaults.Web);

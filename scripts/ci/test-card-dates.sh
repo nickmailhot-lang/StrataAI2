@@ -4,7 +4,7 @@ test "${CI:-}" = true || { echo 'Disposable Card date fixtures may run only in C
 base=http://localhost:8088
 scratch=$(mktemp -d)
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
-cleanup() { admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null || true; rm -rf "$scratch"; }
+cleanup() { admin 'GRANT INSERT ON card_assignment_notifications, background_jobs TO strataai_api_runtime;' >/dev/null || true; rm -rf "$scratch"; }
 trap cleanup EXIT
 trap 'echo "Card date check failed at line $LINENO" >&2' ERR
 uuid() { cat /proc/sys/kernel/random/uuid; }
@@ -24,6 +24,7 @@ admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES
 request() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -X "$2" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $4" -d "$5" -o "$scratch/response.json" -w '%{http_code}' "$base$3"; }
 state() { admin "SELECT md5(jsonb_build_object(
  'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$org' AND id='$card'),
+ 'reminders',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM card_reminders r WHERE tenant_id='$org'),
  'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
@@ -80,3 +81,42 @@ before=$(state)
 test "$(request member PATCH "$path" "$memberKey" '{"version":9,"dueHasTime":false,"dueComplete":false}')" = 404
 test "$before" = "$(state)"
 echo 'Card dates, UTC/DST, retry recovery, no-op, completion, clear, archive preservation, rollback and private replay passed.'
+
+# Until personal configuration endpoints are implemented, seed one explicit
+# recipient choice. All following scheduling runs through the real date API.
+card=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"title":"Reminder rescheduling"}' "$base/lists/$list/cards" | jq -r '.id')
+path="/cards/$card/dates"
+due=$(date -u -d '+2 days' '+%Y-%m-%dT%H:%M:%SZ')
+payload=$(jq -nc --arg due "$due" '{dueAt:$due,dueTimezone:"UTC",dueHasTime:true,dueComplete:false,version:1}')
+test "$(request owner PATCH "$path" "$(uuid)" "$payload")" = 200
+reminder=$(uuid)
+admin "INSERT INTO card_reminders(tenant_id,id,user_id,card_id,interval_code,enabled,due_at,trigger_at,status,generation,version,created_at,updated_at)
+ SELECT tenant_id,'$reminder','$member',id,'1_HOUR',true,due_at,due_at-interval '1 hour','SCHEDULED',1,1,clock_timestamp(),clock_timestamp()
+ FROM cards WHERE tenant_id='$org' AND id='$card';" >/dev/null
+due=$(date -u -d '+3 days' '+%Y-%m-%dT%H:%M:%SZ')
+payload=$(jq -nc --arg due "$due" '{dueAt:$due,dueTimezone:"UTC",dueHasTime:true,dueComplete:false,version:2}')
+key=$(uuid); before=$(state)
+admin 'REVOKE INSERT ON background_jobs FROM strataai_api_runtime;' >/dev/null
+test "$(request owner PATCH "$path" "$key" "$payload")" = 503
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON background_jobs TO strataai_api_runtime;' >/dev/null
+test "$(request owner PATCH "$path" "$key" "$payload")" = 200
+cp "$scratch/response.json" "$scratch/reminder-change.json"
+test "$(admin "SELECT generation=2 AND version=2 AND enabled AND status='SCHEDULED' AND due_at='$due' AND trigger_at=due_at-interval '1 hour' FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND service_identity='card-reminder-delivery' AND safe_metadata=jsonb_build_object('reminderId','$reminder'::uuid,'generation',2) AND available_at='$due'::timestamptz-interval '1 hour';")" = 1
+after=$(state)
+test "$(request owner PATCH "$path" "$key" "$payload")" = 200
+cmp "$scratch/reminder-change.json" "$scratch/response.json"
+test "$after" = "$(state)"
+test "$(request owner PATCH "$path" "$(uuid)" "$(jq -c '.version=3' <<< "$payload")")" = 200
+test "$(admin "SELECT version=3 FROM cards WHERE tenant_id='$org' AND id='$card';")" = t
+test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$reminder';")" = 1
+test "$(admin "SELECT generation=2 AND version=2 FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(request owner PATCH "$path" "$(uuid)" "$(jq -c '.version=3 | .dueComplete=true' <<< "$payload")")" = 200
+test "$(admin "SELECT generation=3 AND enabled AND status='SUSPENDED' AND trigger_at IS NULL FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(request owner PATCH "$path" "$(uuid)" "$(jq -c '.version=4' <<< "$payload")")" = 200
+test "$(admin "SELECT generation=4 AND status='SCHEDULED' FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(request owner PATCH "$path" "$(uuid)" '{"version":5,"dueHasTime":false,"dueComplete":false}')" = 200
+test "$(admin "SELECT generation=5 AND enabled AND status='SUSPENDED' AND due_at IS NULL AND trigger_at IS NULL FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$reminder';")" = 2
+echo 'Date-command Reminder generations, canonical future jobs, replay/no-op, completion/reopen/clear and publication rollback passed.'

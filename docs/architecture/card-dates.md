@@ -226,9 +226,8 @@ are withheld. The inbox supports a text-labeled due reminder and self reminders
 only for REMINDER_FIRED; ordinary self activity remains suppressed.
 
 The production Worker composes the handler/store using the existing explicit
-Organization job scope and verification policy. The API still publishes no
-CARD_REMINDER jobs: configuration endpoints and Card lifecycle/date scheduling
-integration are the next work, followed by MUI controls and exact-image browser
+Organization job scope and verification policy. Personal configuration endpoints
+and Card lifecycle scheduling integration are the next work, followed by MUI controls and exact-image browser
 acceptance. This is not full PRD-12/17 completion.
 
 The mandatory PostgreSQL fixture uses a non-bypass restricted role and exercises
@@ -247,3 +246,24 @@ from the catalog and preserves the read-time constraint. The existing fixture's
 rejection of read_at before created_at remains mandatory; new Reminder delivery
 checks must still execute after it passes. The failed commit produced no accepted
 release bundle or proven database delivery result.
+
+Date commands now invoke Reminder rescheduling inside their owning transaction
+after the canonical Card date update. Production publication verifies the exact
+persisted personal generation and borrows the same PostgreSQL session. Changes
+to due time reschedule every enabled choice; completion, a cleared due time or
+an unavailable interval suspend the choice and supersede old jobs. Reopening
+with a future available interval publishes a new generation. No-op and receipt
+replay do not publish another job. Start/context-only edits preserve an already
+queued due attempt. Demo publication keeps a validated host-local queue and never
+uses production providers; it does not yet execute Reminder delivery.
+
+The API regression seeds an existing explicit personal choice and exercises
+reschedule/replay/no-op/completion/reopen/clear. The mandatory exact-image date
+fixture additionally forces background-job publication to fail and checks that
+Card, Reminder generation, events, jobs, notifications and receipt all roll back,
+then recovers with the original key and verifies canonical future job metadata.
+Strict solution build and shell syntax passed locally. Linux source/API and
+exact-image execution remain required before these new checks are called passed.
+Personal GET/set/cancel configuration, private scheduling audit/events,
+archive/restore integration and MUI controls are still incomplete. PRD-12/17
+remain open.

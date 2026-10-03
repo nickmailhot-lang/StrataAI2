@@ -5,7 +5,7 @@ namespace StrataAI.Application.WorkManagement;
 
 public sealed class CardDateService(IWorkManagementStore work, ICardDateStore dates, IWorkBoardAuthorization boards,
     IWorkManagementUnitOfWork transactions, IWorkCommandContext context, ICommandActorAuthorization actors,
-    IClock clock, IWorkEventStore events, CardWatchNotificationProducer notifications)
+    IClock clock, IWorkEventStore events, CardWatchNotificationProducer notifications, CardReminderScheduling reminders)
 {
     public async Task<WorkOperation<CardDateChange>> SetAsync(Guid cardId, Guid actor, CardDatesInput input,
         string correlationId, CancellationToken ct = default)
@@ -37,6 +37,7 @@ public sealed class CardDateService(IWorkManagementStore work, ICardDateStore da
                 if (old == normalized) return WorkOperation<CardDateChange>.Success(new(current, false));
                 var updated = await dates.SetDatesAsync(hint.OrganizationId, hint.BoardId, cardId, normalized!, input.Version, clock.UtcNow, ct);
                 if (updated is null) return WorkOperation<CardDateChange>.Failure("version_conflict");
+                await reminders.RescheduleAsync(current, updated, actor, correlationId, ct);
                 async Task Publish(string type)
                 {
                     await work.AppendAuditAsync(updated.OrganizationId, actor, type, "Card", cardId, correlationId, ct);
