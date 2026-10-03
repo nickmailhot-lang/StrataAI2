@@ -412,3 +412,20 @@ and anonymous PUBLIC snapshots and ensure the source identity is absent from
 serialized Board data. Local solution compilation passes; new projection Linux
 execution is pending. The browser model admits this optional hint for upcoming
 cover rendering.
+
+All f0c82ce source gates pass (web, managed, PostgreSQL and source-quality);
+immutable image build remains live.
+
+MUI CardCoverControl now reviews current Internal actor, exact Card cover and
+bounded candidate page, checks actor again, and offers selection/removal. PUBLIC
+selection requires a fresh visible warning/checkbox; removal keeps the source
+attachment and requires no selection consent. A staged command captures actor,
+original Card/File revisions, consent and retry key. Uncertain/malformed replies
+retain only the exact original retry across newer snapshots; conclusive denials
+require explicit discard/fresh review. Unavailable contexts hide source names,
+and keyboard recovery respects the current MUI focus owner. The Board integrates
+cover recovery into its competing mutation/close guards while leaving that
+original retry available. Ten control scenarios and the existing 29 Board tests
+pass locally; a new Board recovery integration scenario separately passes. Web
+typecheck and lint pass. Actual new Linux/native release coverage is pending;
+cover image rendering and remaining full PRD acceptance remain open.

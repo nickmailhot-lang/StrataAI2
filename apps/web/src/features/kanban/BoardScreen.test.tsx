@@ -832,4 +832,40 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
   });
 
+  it('fences competing Card changes for an unresolved cover receipt and permits only its original retry after a newer snapshot', async () => {
+    const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+    const org = uuid(1), board = uuid(2), card = uuid(3), file = uuid(4), actor = uuid(8);
+    let current = structuredClone(fixture); current.board.id = board; current.board.organizationId = org;
+    current.lists[0].list.id = uuid(6); current.lists[0].cards[0].id = card;
+    const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
+    const scope = { organizationId: org, boardId: board, cardId: card }; const writes: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+      const path = String(input);
+      if (path.endsWith('/me')) return response(profile);
+      if (options?.method === 'PUT' && path.endsWith('/cover')) {
+        writes.push(options); current = structuredClone(current); current.lists[0].cards[0].version = 4;
+        current.lists[0].cards[0].hasCover = true;
+        return writes.length === 1 ? response({ code: 'work_storage_unavailable' }, 503)
+          : response({ ...scope, cardVersion: 4, attachmentId: file, attachmentVersion: 3, changed: true });
+      }
+      if (path.endsWith('/cover')) return response({ ...scope, cardVersion: 3, attachmentId: null, attachmentVersion: null, canEdit: true, isPublic: false });
+      if (path.endsWith('/cover/candidates')) return response({ ...scope, cardVersion: 3, items: [{ attachmentId: file, attachmentVersion: 3,
+        displayName: 'Site image.png', createdAt: '2026-10-03T08:00:00.123456Z' }], nextCursor: null, canEdit: true, isPublic: false });
+      return response(current);
+    }));
+    mount(`/app/${org}/boards/${board}/cards/${card}`);
+    const review = await screen.findByRole('button', { name: 'Review Card cover' }); await waitFor(() => expect(review).toBeEnabled()); fireEvent.click(review);
+    fireEvent.click(await screen.findByRole('button', { name: 'Use Site image.png as cover' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Card cover' }));
+    const retry = await screen.findByRole('button', { name: 'Retry original cover change' }); await waitFor(() => expect(retry).toBeEnabled());
+    for (const name of ['Add checklist', 'Save card', 'Add link attachment', 'Manage attachments', 'Close'])
+      expect(screen.getByRole('button', { name })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Discard cover review and load latest' })).not.toBeInTheDocument();
+    fireEvent.click(retry); await screen.findByText('Card cover updated.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Add checklist' })).toBeEnabled());
+    expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
+    expect(JSON.parse(writes[0].body as string)).toEqual({ attachmentId: file, attachmentVersion: 3, cardVersion: 3, publicVisibilityConfirmed: false });
+    expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
+  });
+
 });
