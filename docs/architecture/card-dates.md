@@ -399,3 +399,27 @@ existing one-second idle/pass delay remains. The fixture's 60-second check is
 unchanged. Safe queue/status aggregates are captured on failure before cleanup,
 without personal IDs or metadata. The throughput change and actual delivery need
 the next exact-image result; no successful fire is claimed from the failed run.
+
+Board administrators now reach the MUI timezone settings page from the Board.
+The page loads fresh profile/Board admission, validates the scoped active Board
+and revision, and rechecks the same actor plus current administration before
+every command or retry. Unknown results hide replacement settings and navigation,
+preserving the original body/key/revision. An acknowledged older receipt is
+followed by a new canonical read, so it cannot overwrite a newer policy. Live
+invalidation removes stale drafts and rechecks policy; conflicts and access loss
+require fresh admission. Bounded reads and abort fences retire late chains.
+
+Sixteen policy unit cases and the existing Board/date-display regressions passed
+locally (48 cases together), covering loss/recovery, changed actor, revoked access,
+conflict, clearing, invalid scope/zone, live drafts, stalled reads and retirement.
+Desktop/phone release scenarios now exercise keyboard save/retry, another client's
+policy update, live date display without reload, clearing and unchanged UTC/profile
+state. Both policy and Reminder browser cases enforce axe WCAG 2.2 AA tagged
+checks, using a pinned test-only dependency. The first local desktop axe check
+found links directly inside the application's navigation list. MUI ListItem
+wrappers correct that shared semantic structure while retaining the existing
+layout. A production web build served locally with mocked admission passed zero
+tagged axe violations, keyboard recovery/focus and no horizontal overflow at
+1280 and 390 px. This diagnostic does not prove release API/Worker or live delivery;
+the mandatory exact-image scenarios still need CI. Organization lifecycle and
+remaining PRD-wide acceptance stay open.

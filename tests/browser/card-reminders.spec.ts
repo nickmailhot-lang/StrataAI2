@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import AxeBuilder from '@axe-core/playwright';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) {
@@ -32,6 +33,7 @@ for (const width of [1280, 390]) {
       }
       const region = page.getByRole('region', { name: 'Personal due reminder' });
       const peerRegion = peer.getByRole('region', { name: 'Personal due reminder' });
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const attempts: { key: string | undefined; body: string | null }[] = [];
       await page.route(`**/cards/${card}/reminders`, async intercepted => {
         if (intercepted.request().method() !== 'POST') { await intercepted.continue(); return; }
@@ -62,6 +64,7 @@ for (const width of [1280, 390]) {
       await expect(region.getByRole('button', { name: 'Cancel due reminder' })).toHaveCount(0);
       const canonical = await context.request.get(`/cards/${card}/reminders`); expect(canonical.status()).toBe(200);
       expect((await canonical.json()).reminder).toMatchObject({ status: 'CANCELLED', enabled: false, version: 2, generation: 2, cardId: card });
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await peer.close();
     } finally { restoreWorker(); }
   });

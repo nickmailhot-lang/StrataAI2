@@ -13,6 +13,7 @@ import {
   Drawer,
   IconButton,
   List,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -133,8 +134,8 @@ function InternalLayout() {
         <Toolbar />
         <List aria-label="Internal application navigation">
           {navigation.map((item) => (
+            <ListItem key={item.label} disablePadding>
             <ListItemButton
-              key={item.label}
               component={Link}
               to={
                 item.destination === "home" ? "/app" : item.destination === "notifications" ? `/app/${organizationId}/notifications` : `/app/${organizationId}`
@@ -144,6 +145,7 @@ function InternalLayout() {
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.label} />
             </ListItemButton>
+            </ListItem>
           ))}
         </List>
         <Divider />
