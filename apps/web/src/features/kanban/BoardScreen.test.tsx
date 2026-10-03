@@ -80,7 +80,8 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
         return response({ organizationId: org, boardId: board, cardId: card, cardVersion: 4, attachment: {
           id: '55555555-5555-4555-8555-555555555555', organizationId: org, cardId: card, uploaderId: actor, kind: 0,
           displayName: 'Document.pdf', mimeType: 'application/pdf', sizeBytes: 9, url: null, scanStatus: 1, scannedAt: null,
-          createdAt: '2026-10-03T08:00:00.123456Z', updatedAt: '2026-10-03T08:00:00.123456Z', version: 1, deletedAt: null } });
+          createdAt: '2026-10-03T08:00:00.123456Z', updatedAt: '2026-10-03T08:00:00.123456Z', version: 1, deletedAt: null,
+          lifecycleState: 0, archivedAt: null, deletedBy: null } });
       }
       return response(current);
     }));
@@ -770,7 +771,8 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const receipt = { organizationId: org, boardId: board, cardId: card, cardVersion: 4, attachment: {
       id: uuid(4), organizationId: org, cardId: card, uploaderId: actor, kind: 1, displayName: 'Reference',
       url: 'https://example.test/reference', mimeType: null, sizeBytes: null, scanStatus: 0, scannedAt: null,
-      createdAt: '2026-10-03T08:00:00.123456Z', updatedAt: '2026-10-03T08:00:00.123456Z', version: 1, deletedAt: null } };
+      createdAt: '2026-10-03T08:00:00.123456Z', updatedAt: '2026-10-03T08:00:00.123456Z', version: 1, deletedAt: null,
+      lifecycleState: 0, archivedAt: null, deletedBy: null } };
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       const path = String(input);
       if (path.endsWith('/me')) return response(profile);
