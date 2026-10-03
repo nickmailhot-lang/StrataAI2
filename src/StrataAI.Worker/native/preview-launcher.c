@@ -64,6 +64,9 @@ int main(int argc, char **argv) {
     if (!bad) bad = (int)syscall(SYS_landlock_restrict_self, ruleset, 0);
     close(ruleset);
     if (bad) return fail(68);
+    /* Fixed progress marker only; never a path, provider or source value. */
+    const unsigned char stage[] = { 'S', 'A', 'P', 'R', 'V', 'S', 'T', 'G', 4 };
+    if (write(STDERR_FILENO, stage, sizeof(stage)) != (ssize_t)sizeof(stage)) return fail(69);
     char *const command[] = { "/usr/share/dotnet/dotnet", "/app/StrataAI.Worker.dll", "--decode-private-attachment-preview", NULL };
     execv(command[0], command);
     return fail(69);

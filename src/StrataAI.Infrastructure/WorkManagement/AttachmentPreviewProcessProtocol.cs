@@ -48,7 +48,21 @@ public static class AttachmentPreviewProcessProtocol
         if (bytes.IndexOf("setpriv:"u8) >= 0) return AttachmentPreviewFailureStage.RuntimePrivileges;
         if (bytes.IndexOf("Failed to create CoreCLR"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeInitialize;
         if (bytes.IndexOf("error while loading shared libraries:"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeLoader;
-        return AttachmentPreviewFailureStage.None;
+        var stage = AttachmentPreviewFailureStage.None;
+        for (var offset = 0; offset <= bytes.Length - 9; offset++)
+            if (bytes.Slice(offset, 8).SequenceEqual("SAPRVSTG"u8)
+                && (AttachmentPreviewFailureStage)bytes[offset + 8] is AttachmentPreviewFailureStage.RuntimeLaunch
+                    or AttachmentPreviewFailureStage.Environment or AttachmentPreviewFailureStage.Scratch
+                    or AttachmentPreviewFailureStage.Capabilities or AttachmentPreviewFailureStage.Source
+                    or AttachmentPreviewFailureStage.RasterDecode)
+                stage = (AttachmentPreviewFailureStage)bytes[offset + 8];
+        return stage;
+    }
+
+    private static void ReportStage(AttachmentPreviewFailureStage stage)
+    {
+        Span<byte> marker = stackalloc byte[9]; "SAPRVSTG"u8.CopyTo(marker); marker[8] = (byte)stage;
+        using var pipe = Console.OpenStandardError(); pipe.Write(marker); pipe.Flush();
     }
 
     public static async Task WriteSourceAsync(Stream pipe, AttachmentScanRequest request, string mime, Stream source, CancellationToken ct)
@@ -82,6 +96,7 @@ public static class AttachmentPreviewProcessProtocol
         var stage = AttachmentPreviewFailureStage.Environment;
         try
         {
+            ReportStage(stage);
             if (!OperatingSystem.IsLinux()) throw new AttachmentImagePreviewException("preview_decoder_unavailable");
             var allowedEnvironment = new HashSet<string>(StringComparer.Ordinal)
             { "DOTNET_EnableDiagnostics", "DOTNET_GCHeapHardLimit", "DOTNET_GCRegionRange", "DOTNET_gcServer", "DOTNET_PROCESSOR_COUNT" };
@@ -90,6 +105,7 @@ public static class AttachmentPreviewProcessProtocol
             // Create an owned anonymous staging inode before filesystem
             // restriction. No request bytes have been read at this point.
             stage = AttachmentPreviewFailureStage.Scratch;
+            ReportStage(stage);
             var path = Path.Combine(Environment.CurrentDirectory, $"strata-preview-{Guid.NewGuid():N}.tmp");
             using var source = new FileStream(path, new FileStreamOptions
             {
@@ -99,8 +115,10 @@ public static class AttachmentPreviewProcessProtocol
             });
             File.Delete(path);
             stage = AttachmentPreviewFailureStage.Capabilities;
+            ReportStage(stage);
             LinuxAttachmentPreviewContainment.Apply();
             stage = AttachmentPreviewFailureStage.Source;
+            ReportStage(stage);
             var header = new byte[49]; await input.ReadExactlyAsync(header);
             if (!header.AsSpan(0, 8).SequenceEqual(Magic)) throw new AttachmentImagePreviewException("preview_image_invalid");
             var mime = header[8] switch { 1 => "image/png", 2 => "image/jpeg", 3 => "image/webp", _ => throw new AttachmentImagePreviewException("preview_type_unsupported") };
@@ -121,6 +139,7 @@ public static class AttachmentPreviewProcessProtocol
                     throw new AttachmentImagePreviewException("preview_source_unavailable");
                 await source.FlushAsync(); source.Position = 0;
                 stage = AttachmentPreviewFailureStage.RasterDecode;
+                ReportStage(stage);
                 using var preview = new SkiaAttachmentImagePreviewDecoder(new()).Decode(source, mime, CancellationToken.None);
                 var result = new byte[ResultHeaderSize]; Magic.CopyTo(result);
                 BinaryPrimitives.WriteInt32LittleEndian(result.AsSpan(10), preview.Width);

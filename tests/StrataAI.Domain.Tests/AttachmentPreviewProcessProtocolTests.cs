@@ -142,4 +142,17 @@ public sealed class AttachmentPreviewProcessProtocolTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             AttachmentPreviewProcessProtocol.DrainRuntimeFailureAsync(pipe, cancelled.Token));
     }
+
+    [Fact]
+    public async Task Last_recognized_fixed_child_progress_survives_an_unrecognized_abort_report()
+    {
+        var bytes = "SAPRVSTG"u8.ToArray().Concat(new[] {(byte)AttachmentPreviewFailureStage.RuntimeLaunch})
+            .Concat("SAPRVSTG"u8.ToArray()).Concat(new[] {(byte)AttachmentPreviewFailureStage.Source})
+            .Concat("SAPRVSTG"u8.ToArray()).Concat(new byte[] {255})
+            .Concat(Encoding.UTF8.GetBytes("unrecognized private details")).ToArray();
+        using var pipe = new MemoryStream(bytes);
+        Assert.Equal(AttachmentPreviewFailureStage.Source,
+            await AttachmentPreviewProcessProtocol.DrainRuntimeFailureAsync(pipe, TestContext.Current.CancellationToken));
+        Assert.Equal(pipe.Length, pipe.Position);
+    }
 }
