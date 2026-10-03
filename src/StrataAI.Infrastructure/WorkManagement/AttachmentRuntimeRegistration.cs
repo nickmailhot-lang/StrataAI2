@@ -19,7 +19,7 @@ public static class AttachmentRuntimeRegistration
         try { _ = provider.GetRequiredService<S3AttachmentObjectStorage>(); }
         catch (Exception error) when (error is not (OutOfMemoryException or StackOverflowException or AccessViolationException))
         {
-            // Resolve credentials/client at startup, before readiness routing;
+            // Resolve the client at startup, before readiness routing;
             // constructor/provider errors must not turn /readyz into a 500 or
             // disclose credential-chain diagnostics in host startup logs.
             throw new InvalidOperationException("Attachment runtime initialization is unavailable.");
