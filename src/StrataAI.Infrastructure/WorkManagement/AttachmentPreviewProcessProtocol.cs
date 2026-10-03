@@ -60,6 +60,7 @@ public static class AttachmentPreviewProcessProtocol
                 UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite
             });
             File.Delete(path);
+            stage = AttachmentPreviewFailureStage.Capabilities;
             LinuxAttachmentPreviewContainment.Apply();
             stage = AttachmentPreviewFailureStage.Source;
             var header = new byte[49]; await input.ReadExactlyAsync(header);

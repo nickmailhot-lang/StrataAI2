@@ -98,6 +98,19 @@ public sealed class AttachmentPreviewProcessProtocolTests
     }
 
     [Fact]
+    public async Task Failure_stage_is_a_closed_enum_and_cannot_contain_private_diagnostics()
+    {
+        var frame = Frame([], length: 0); frame[8] = 1; frame.AsSpan(10).Clear(); frame[10] = (byte)AttachmentPreviewFailureStage.FileSystemProbe;
+        using var known = new MemoryStream(frame);
+        var error = await Assert.ThrowsAsync<AttachmentImagePreviewException>(() => AttachmentPreviewProcessProtocol.ReadResultAsync(known, TestContext.Current.CancellationToken));
+        Assert.Equal("preview_decoder_unavailable", error.Code); Assert.Equal(AttachmentPreviewFailureStage.FileSystemProbe, error.Stage); Assert.Null(error.InnerException);
+        frame[10] = 255; using var unknown = new MemoryStream(frame);
+        var refused = await Assert.ThrowsAsync<AttachmentImagePreviewException>(() => AttachmentPreviewProcessProtocol.ReadResultAsync(unknown, TestContext.Current.CancellationToken));
+        Assert.Equal(AttachmentPreviewFailureStage.None, refused.Stage);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new AttachmentImagePreviewException("preview_decoder_unavailable", (AttachmentPreviewFailureStage)255));
+    }
+
+    [Fact]
     public async Task Precancelled_source_and_result_operations_propagate_cancellation()
     {
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel(); using var pipe = new MemoryStream(); using var source = new MemoryStream(Png);
