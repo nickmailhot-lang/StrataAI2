@@ -8,7 +8,7 @@ for (const width of [1280, 390]) {
     const headers = { 'X-StrataAI-Request': '1' };
     const recipient = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
     const email = `checklist-peer-${width}-${Date.now()}@example.test`;
-    let restoreWorker = () => {}; let unavailable = false; let socket: WebSocketRoute | undefined;
+    let restoreWorker = () => {}; let releaseConflict = () => {}; let unavailable = false; let socket: WebSocketRoute | undefined;
     await recipient.routeWebSocket('**/boards/live*', route => {
       if (unavailable) { route.close({ code: 1013 }); return; }
       socket = route; route.connectToServer();
@@ -32,36 +32,49 @@ for (const width of [1280, 390]) {
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
       const route = `/app/${org}/boards/${board}/cards/${card}`; const peer = await recipient.newPage(); await page.goto(route); await peer.goto(route);
       for (const target of [page, peer]) await expect(target.getByText('Live updates connected.', { exact: true })).toBeVisible();
-      async function edit(target: Page) {
+      async function edit(target: Page, text = 'Initial preparation') {
         const manage = target.getByRole('button', { name: 'Manage checklists', exact: true }); await expect(manage).toBeEnabled(); await manage.press('Enter');
         await target.getByRole('button', { name: 'Manage items in Preparations', exact: true }).press('Enter');
         const review = target.getByRole('button', { name: 'Review checklist items', exact: true }); await expect(review).toBeEnabled(); await review.press('Enter');
-        await target.getByRole('button', { name: 'Edit item: Initial preparation', exact: true }).press('Enter');
+        await target.getByRole('button', { name: `Edit item: ${text}`, exact: true }).press('Enter');
       }
       const show = peer.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
       await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible();
       await edit(peer); const dirty = peer.getByRole('textbox', { name: 'Checklist item text' }); await dirty.fill('Contributor dirty draft'); await peer.getByRole('checkbox', { name: 'Item complete', exact: true }).press('Space');
-      await edit(page); await page.getByRole('textbox', { name: 'Checklist item text' }).fill('Owner canonical change'); await page.getByRole('button', { name: 'Save checklist item', exact: true }).press('Enter');
+      await edit(page); await page.getByRole('textbox', { name: 'Checklist item text' }).fill('Owner canonical change');
+      const path = `/cards/${card}/checklists/${checklist.id}/items`;
+      let held = false; const competing = new Promise<void>(resolve => { releaseConflict = resolve; });
+      await peer.route(`**${path}/${item.id}`, async intercepted => {
+        if (intercepted.request().method() !== 'PATCH') { await intercepted.continue(); return; }
+        expect(intercepted.request().postDataJSON()).toEqual({ text: 'Contributor dirty draft', completed: true, cardVersion: 3, checklistVersion: 2, version: 1 });
+        held = true; await competing; const response = await intercepted.fetch(); expect(response.status()).toBe(409); await intercepted.fulfill({ response });
+      });
+      await peer.getByRole('button', { name: 'Save checklist item', exact: true }).press('Enter'); await expect.poll(() => held).toBe(true);
+      await page.getByRole('button', { name: 'Save checklist item', exact: true }).press('Enter');
       await expect(page.getByText('Checklist item saved.', { exact: true })).toBeVisible();
+      releaseConflict(); await expect(peer.getByText('This item change is unavailable. Your text and completion choice are preserved. Load the current Card and checklist before reviewing another change.', { exact: true })).toBeVisible();
+      await peer.unroute(`**${path}/${item.id}`);
       await expect(peer.getByText('This Card changed elsewhere. Your item text and completion choice are preserved.', { exact: true })).toBeVisible({ timeout: 20_000 });
       await expect(dirty).toHaveValue('Contributor dirty draft'); await expect(peer.getByRole('checkbox', { name: 'Item complete', exact: true })).toBeChecked(); await expect(peer.getByRole('button', { name: 'Save checklist item', exact: true })).toBeDisabled();
-      const path = `/cards/${card}/checklists/${checklist.id}/items`;
       const canonical = await context.request.get(path); expect(canonical.status()).toBe(200); const state = await canonical.json(); expect(state.cardVersion).toBe(4); expect(state.items[0].text).toBe('Owner canonical change'); expect(state.items[0].completed).toBe(false);
+      await peer.getByRole('button', { name: 'Discard item review and load latest', exact: true }).press('Enter');
+      await edit(peer, 'Owner canonical change'); await expect(dirty).toHaveValue('Owner canonical change');
+      await dirty.fill('Draft during socket outage'); await peer.getByRole('checkbox', { name: 'Item complete', exact: true }).press('Space');
       expect(socket).toBeDefined(); unavailable = true; await socket!.close({ code: 1012 });
       const missed = await context.request.patch(`${path}/${item.id}`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { text: 'Recovered during socket outage', completed: true, cardVersion: 4, checklistVersion: 3, version: 2 } }); expect(missed.status()).toBe(200);
       await expect(peer.getByText('1 of 1 items complete (100%)', { exact: true })).toBeVisible({ timeout: 20_000 });
-      await expect(dirty).toHaveValue('Contributor dirty draft'); const showItems = peer.getByRole('button', { name: 'Show items in Preparations', exact: true }); await expect(showItems).toBeEnabled(); await showItems.press('Enter');
+      await expect(dirty).toHaveValue('Draft during socket outage'); const showItems = peer.getByRole('button', { name: 'Show items in Preparations', exact: true }); await expect(showItems).toBeEnabled(); await showItems.press('Enter');
       await expect(peer.getByText('Complete: Recovered during socket outage', { exact: true })).toBeVisible();
       unavailable = false; await expect(peer.getByText('Live updates connected.', { exact: true })).toBeVisible({ timeout: 45_000 });
       const pushed = await context.request.patch(`${path}/${item.id}`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { text: 'After socket reconnect', completed: false, cardVersion: 5, checklistVersion: 4, version: 3 } }); expect(pushed.status()).toBe(200);
-      await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible({ timeout: 20_000 }); await expect(dirty).toHaveValue('Contributor dirty draft');
+      await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible({ timeout: 20_000 }); await expect(dirty).toHaveValue('Draft during socket outage');
       await expect(peer.getByRole('button', { name: 'Save checklist item', exact: true })).toBeDisabled();
       expect((await new AxeBuilder({ page: peer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const removal = await context.request.delete(`/boards/${board}/members/${actor}`, { headers: { ...headers, 'If-Match': `"${membershipVersion}"`, 'Idempotency-Key': crypto.randomUUID() } }); expect(removal.status()).toBe(204);
       await expect(peer.getByRole('heading', { name: 'Checklist collaboration Board', exact: true })).toHaveCount(0, { timeout: 20_000 }); await expect(dirty).toHaveCount(0);
-      await expect(peer.getByText('Contributor dirty draft', { exact: true })).toHaveCount(0); expect((await recipient.request.get(path)).status()).toBe(404);
+      await expect(peer.getByText('Draft during socket outage', { exact: true })).toHaveCount(0); expect((await recipient.request.get(path)).status()).toBe(404);
       const denied = await recipient.request.patch(`${path}/${item.id}`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { text: 'Unauthorized draft', completed: true, cardVersion: 6, checklistVersion: 5, version: 4 } }); expect(denied.status()).toBe(404);
       const unchanged = await context.request.get(path); expect(unchanged.status()).toBe(200); expect((await unchanged.json()).items[0].text).toBe('After socket reconnect');
-    } finally { await recipient.close(); restoreWorker(); }
+    } finally { releaseConflict(); await recipient.close(); restoreWorker(); }
   });
 }
