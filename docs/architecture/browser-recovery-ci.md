@@ -103,3 +103,28 @@ an unresolved copy continues to retain its original version, body and key.
 The 61 existing/focused movement, copy and Board tests plus the new drop regression
 passed locally, as did typecheck, lint and production build. Exact-image acceptance
 is still pending; these changes do not close a ticket.
+
+CI 37147498536 (c59cdb8) completed with 96 passing, nine failing and one
+skipped browser scenarios. Failures cover desktop filter keyword retention,
+Reminder retry/focus, phone checklist collaboration, checklist feedback
+observation, native download focus, live label focus and URL creation readiness.
+The raw Reminder replay acknowledgment is valid UTC with the original successful
+version/generation. Its apparent nonzero timezone offset in an initial diagnostic
+read came from PowerShell's JSON date conversion, not the API. Network evidence
+contains the original routed POST's successful upstream response but no retry
+POST from the browser: readiness must be checked again after peer delivery.
+
+Filter handlers now capture primitive field/checkbox values before functional
+state updates. File review and Reminder/label writes park focus in the same MUI
+Dialog before disabling the actually focused activating button; asynchronous
+restoration still refuses another control or dialog chosen by the user. The
+actual Dialog regression no longer manually supplies that fallback. Keyboard
+fixtures wait for enabled admission immediately before Reminder retry, URL
+creation and checklist management/item selection.
+
+Checklist feedback observation starts at the user's enabled keyboard/click
+activation on the stable document, observes the actual busy status and disabled
+submit control, and waits for a paint. Unrelated form submissions cannot consume
+the observer. Missing feedback still fails; the 100ms feedback, 200ms detail,
+1500ms usable Board and 500ms mutation p95 budgets remain unchanged. Browser
+discovery is not execution evidence and none of these repairs closes a ticket.

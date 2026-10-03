@@ -25,7 +25,7 @@ for (const width of [1280, 390]) {
     await title.fill('External reference'); await url.fill('javascript:alert(1)');
     const create = page.getByRole('button', { name: 'Create link attachment', exact: true }); await expect(create).toBeEnabled(); await create.press('Enter');
     await expect(page.getByText('Enter an HTTP(S) link without embedded credentials.', { exact: true })).toBeVisible(); expect(writes).toHaveLength(0);
-    await url.fill('https://example.test/reference?q=1#section'); await create.press('Enter');
+    await url.fill('https://example.test/reference?q=1#section'); await expect(create).toBeEnabled(); await create.press('Enter');
     const retry = page.getByRole('button', { name: 'Retry link attachment creation', exact: true }); await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
     await expect(title).toHaveValue('External reference'); await expect(url).toHaveValue('https://example.test/reference?q=1#section');
     await expect(title).toBeDisabled(); await expect(page.getByRole('button', { name: 'Add checklist', exact: true })).toBeDisabled(); expect(writes).toHaveLength(1);

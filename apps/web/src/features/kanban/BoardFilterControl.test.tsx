@@ -61,6 +61,20 @@ it('restores valid criteria and does not reuse another signed-in user’s criter
   await open(); expect(screen.getByLabelText('Card keyword')).toHaveValue(''); expect(screen.getByRole('checkbox')).not.toBeChecked();
   expect(screen.getByText('0 selected assignees')).toBeInTheDocument();
 });
+it('retains keyword and checkbox values through batched controlled updates before applying', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(results([]));
+  vi.stubGlobal('fetch', fetch); mount(); await open();
+  act(() => {
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Priority (red)' }));
+    fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: 'absent' } });
+  });
+  expect(screen.getByLabelText('Card keyword')).toHaveValue('absent');
+  expect(screen.getByRole('checkbox', { name: 'Priority (red)' })).toBeChecked();
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await screen.findByText('No Cards match these filters.');
+  const query = new URL(fetch.mock.calls[2][0], 'https://example.test').searchParams;
+  expect(query.get('keyword')).toBe('absent'); expect(query.get('labels')).toBe(label.id);
+});
 it('keeps selected IDs while paging label choices', async () => {
   const extra = Array.from({ length: 49 }, (_, i) => ({ ...label, id: `88888888-8888-8888-8888-${String(i + 1).padStart(12, '0')}`, name: `Label ${i}` }));
   const next = { ...label, id: '99999999-9999-9999-9999-999999999999', name: 'Next choice' };

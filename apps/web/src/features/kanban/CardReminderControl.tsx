@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent, useRef, useState, type FocusEvent } from 're
 import { Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type WorkCard } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
-import { ownsRecoveryFocus } from './focusRecovery';
+import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import { cardDates, dateInstantTicks } from './cardDates';
 import { parseReminderState, type ReminderInterval, type ReminderState } from './cardReminder';
 
@@ -80,7 +80,7 @@ function ReminderControl(props: Props) {
       props.onRefresh();
     } } finally { if (mounted.current && pending.current === operation) { pending.current = undefined; setBusy(false); } }
   }
-  async function save(remove = false) {
+  async function save(remove = false, source?: HTMLButtonElement) {
     if (pending.current || props.disabled || props.unavailable || blocked || !current || !current.canChange || !intent && outdated) return;
     if (!intent && !remove && !options.some(option => option.code === interval)) return;
     const command: Intent = intent ?? {
@@ -91,6 +91,7 @@ function ReminderControl(props: Props) {
       path: remove ? `${path}?cardVersion=${current.cardVersion}&version=${current.reminder?.version ?? 0}` : path,
       ...(remove ? {} : { body: JSON.stringify({ intervalCode: interval, enabled: true, cardVersion: current.cardVersion, version: current.reminder?.version ?? 0 }) }),
     };
+    parkRecoveryFocus(source ?? null);
     const operation = { controller: new AbortController(), write: true }; pending.current = operation;
     setBusy(true); props.onBusyChange(true); setNotice(undefined);
     try {
@@ -123,7 +124,7 @@ function ReminderControl(props: Props) {
     {!open ? <Button ref={action} {...actionFocus} onClick={() => { focusRequested.current = false; setOpen(true); setOpeningPending(true); }}>Due reminder</Button> : <>
       {intent ? <>
         <Typography>Recover the original reminder change before choosing another interval.</Typography>
-        <Button ref={action} {...actionFocus} disabled={disabled} onClick={() => void save()}>Retry reminder change</Button>
+        <Button ref={action} {...actionFocus} disabled={disabled} onClick={event => void save(false, event.currentTarget)}>Retry reminder change</Button>
         <Button disabled={busy} onClick={props.onRefresh}>Check current Card</Button>
       </> : props.unavailable || openingPending ? <><Typography role="status">Checking current Card access…</Typography>
         {openingPending && <Button onClick={() => { setOpen(false); setOpeningPending(false); focusRequested.current = true; }}>Close reminder</Button>}</> : <>
@@ -137,8 +138,8 @@ function ReminderControl(props: Props) {
             <MenuItem value="">Choose an interval</MenuItem>{options.map(option => <MenuItem key={option.code} value={option.code}>{option.label}</MenuItem>)}
           </TextField> : <Typography>{current.canChange ? 'No future reminder intervals are available. Set a future due date or reopen the due date to choose one.'
             : 'Reminder changes are unavailable in this Organization.'}</Typography>}
-          <Button disabled={disabled || !current.canChange || !options.some(option => option.code === interval)} onClick={() => void save()}>Save due reminder</Button>
-          {current.reminder?.enabled && <Button disabled={disabled || !current.canChange} onClick={() => void save(true)}>Cancel due reminder</Button>}
+          <Button disabled={disabled || !current.canChange || !options.some(option => option.code === interval)} onClick={event => void save(false, event.currentTarget)}>Save due reminder</Button>
+          {current.reminder?.enabled && <Button disabled={disabled || !current.canChange} onClick={event => void save(true, event.currentTarget)}>Cancel due reminder</Button>}
         </>}
         {outdated && <Typography role="status">The Card changed. Load your current reminder before choosing an interval.</Typography>}
         <Button ref={blocked ? action : undefined} {...(blocked ? actionFocus : {})} disabled={disabled} onClick={() => { focusRequested.current = false; void read(); }}>Load current reminder</Button>

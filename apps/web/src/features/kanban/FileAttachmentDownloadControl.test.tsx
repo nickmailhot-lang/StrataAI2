@@ -74,7 +74,7 @@ it('restores owned keyboard focus from the same MUI Dialog fallback after a disa
   const review = screen.getByRole('button', { name: 'Check file download access' });
   await act(async () => review.focus()); fireEvent.click(review);
   await waitFor(() => expect(workRequest).toHaveBeenCalledOnce());
-  const dialog = screen.getByRole('dialog'); await act(async () => dialog.focus());
+  const dialog = screen.getByRole('dialog');
   expect(dialog).toHaveFocus();
   await act(async () => resolve(profile));
   expect(await screen.findByRole('link')).toHaveFocus();

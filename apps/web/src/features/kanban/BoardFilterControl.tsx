@@ -197,15 +197,15 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     <Dialog open={open && available} onClose={close} fullWidth maxWidth="sm">
       <DialogTitle>Filter Board Cards</DialogTitle>
       <DialogContent>{openingPending ? <Typography role="status">Checking current Board access…</Typography> : <Stack spacing={2}>
-        <TextField label="Card keyword" value={criteria.keyword} onChange={e => setCriteria(c => ({ ...c, keyword: e.target.value }))} disabled={disabled || labelLoading || !identity} slotProps={{ htmlInput: { maxLength: 160 } }} />
-        <TextField select label="Match filters" value={criteria.match} onChange={e => setCriteria(c => ({ ...c, match: e.target.value as Criteria['match'] }))} disabled={disabled || labelLoading || !identity}>
+        <TextField label="Card keyword" value={criteria.keyword} onChange={e => { const keyword = e.target.value; setCriteria(c => ({ ...c, keyword })); }} disabled={disabled || labelLoading || !identity} slotProps={{ htmlInput: { maxLength: 160 } }} />
+        <TextField select label="Match filters" value={criteria.match} onChange={e => { const match = e.target.value as Criteria['match']; setCriteria(c => ({ ...c, match })); }} disabled={disabled || labelLoading || !identity}>
           <MenuItem value="all">Match ALL</MenuItem><MenuItem value="any">Match ANY</MenuItem>
         </TextField>
         <Typography>Choose up to 25 labels. Selected labels stay selected when you change choice pages.</Typography>
         {labelLoading && <Typography role="status">Loading filter choices…</Typography>}
         {labelNotice && <Alert severity="warning">{labelNotice}</Alert>}
         {!labelLoading && !labelNotice && identity && labels.length === 0 && <Typography>No labels on this choice page. Use a keyword, or reload choices.</Typography>}
-        {labels.map(l => <FormControlLabel key={l.id} label={`${l.name || 'Unnamed label'} (${l.color})`} control={<Checkbox checked={criteria.labels.includes(l.id)} disabled={disabled || labelLoading || (!criteria.labels.includes(l.id) && criteria.labels.length >= 25)} onChange={e => setCriteria(c => ({ ...c, labels: e.target.checked ? [...c.labels, l.id] : c.labels.filter(id => id !== l.id) }))} />} />)}
+        {labels.map(l => <FormControlLabel key={l.id} label={`${l.name || 'Unnamed label'} (${l.color})`} control={<Checkbox checked={criteria.labels.includes(l.id)} disabled={disabled || labelLoading || (!criteria.labels.includes(l.id) && criteria.labels.length >= 25)} onChange={e => { const checked = e.target.checked; setCriteria(c => ({ ...c, labels: checked ? [...c.labels, l.id] : c.labels.filter(id => id !== l.id) })); }} />} />)}
         <Typography>{criteria.labels.length} selected labels</Typography>
         {snapshot.cardMembers !== null && <>
           <Typography>Choose up to 25 assignees. Selections stay selected when you change choice pages.</Typography>
@@ -213,7 +213,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
           {memberLoading && <Typography role="status">Loading assignee choices…</Typography>}
           {memberNotice && <Alert severity="warning">{memberNotice}</Alert>}
           {!disabled && !memberLoading && members.map(m => <FormControlLabel key={m.userId} label={m.displayName.trim() || 'Unnamed member'} control={<Checkbox checked={criteria.members.includes(m.userId)}
-            disabled={disabled || (!criteria.members.includes(m.userId) && criteria.members.length >= 25)} onChange={e => setCriteria(c => ({ ...c, members: e.target.checked ? [...c.members, m.userId] : c.members.filter(id => id !== m.userId) }))} />} />)}
+            disabled={disabled || (!criteria.members.includes(m.userId) && criteria.members.length >= 25)} onChange={e => { const checked = e.target.checked; setCriteria(c => ({ ...c, members: checked ? [...c.members, m.userId] : c.members.filter(id => id !== m.userId) })); }} />} />)}
           {memberOpen && !memberLoading && !memberNotice && members.length === 0 && <Typography>No eligible assignees on this choice page.</Typography>}
           {memberCursor && <Button disabled={disabled || memberLoading} onClick={() => void loadMembers(memberCursor)}>Next assignee choices</Button>}
           <Typography>{criteria.members.length} selected assignees</Typography>

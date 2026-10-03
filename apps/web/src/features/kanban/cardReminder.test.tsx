@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { Dialog } from '@mui/material';
 import { CardReminderControl } from './CardReminderControl';
 import { parseReminderState, type ReminderState } from './cardReminder';
 
@@ -77,6 +78,24 @@ it('validates scoped personal data and exact UTC interval arithmetic without los
     reminder: { ...scheduled.reminder!, dueAt: due, triggerAt: '2030-01-02T11:00:00.123456Z' } };
   expect(parseReminderState(precise, { ...scope, dueAt: due }).reminder?.triggerAt).toBe('2030-01-02T11:00:00.123456Z');
   expect(() => parseReminderState({ ...precise, reminder: { ...precise.reminder, triggerAt: '2030-01-02T11:00:00.123455Z' } }, { ...scope, dueAt: due })).toThrow();
+});
+it('parks a focused retry in the real dialog before disabling it and restores its acknowledged action', async () => {
+  let resolve!: (value: Response) => void;
+  const fetcher = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(initial))
+    .mockResolvedValueOnce(reply(profile)).mockRejectedValueOnce(new Error('Lost response'))
+    .mockResolvedValueOnce(reply(profile)).mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }));
+  vi.stubGlobal('fetch', fetcher);
+  render(<Dialog open transitionDuration={0}><CardReminderControl {...props} /><button>Other control</button></Dialog>);
+  await open(); choose();
+  const save = screen.getByRole('button', { name: 'Save due reminder' });
+  await act(async () => save.focus()); fireEvent.click(save);
+  const retry = await screen.findByRole('button', { name: 'Retry reminder change' });
+  await waitFor(() => expect(retry).toHaveFocus()); fireEvent.click(retry);
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(6));
+  expect(screen.getByRole('dialog')).toHaveFocus();
+  await act(async () => resolve(reply({ ...scheduled, changed: true })));
+  await screen.findByText('Due reminder saved.');
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Due reminder' })).toHaveFocus());
 });
 it.each([
   { ...scheduled, userId: other }, { ...scheduled, organizationId: other }, { ...scheduled, boardId: other },

@@ -72,12 +72,16 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
       const state = window as Window & { checklistFeedback?: Promise<number> };
       state.checklistFeedback = new Promise(resolve => {
         const timer = setTimeout(() => resolve(Infinity), 5000);
-        // The access gate can replace a form before activation. Observe the
-        // actual submission on the stable document rather than a retired node.
-        document.addEventListener('submit', event => {
-          if (!(event.target instanceof HTMLFormElement) || !event.target.closest('[aria-label="Create checklist"]')) {
-            clearTimeout(timer); resolve(Infinity); return;
-          }
+        // Measure from the user's actual keyboard/click activation. Admission
+        // may replace the form; unrelated submissions must not consume this
+        // observer or turn missing feedback into a successful measurement.
+        const activate = (event: Event) => {
+          if (event instanceof KeyboardEvent && !['Enter', ' '].includes(event.key)) return;
+          if (!(event.target instanceof Element)) return;
+          const activated = event.target.closest<HTMLButtonElement>('button[type="submit"]');
+          if (!activated || activated.disabled || !activated.closest('[aria-label="Create checklist"]')) return;
+          document.removeEventListener('keydown', activate, true);
+          document.removeEventListener('click', activate, true);
           const began = performance.now();
           const frame = () => {
             const region = document.querySelector('[aria-label="Create checklist"]');
@@ -88,10 +92,13 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
             } else if (performance.now() - began >= 2000) { clearTimeout(timer); resolve(Infinity); }
             else requestAnimationFrame(frame);
           }; requestAnimationFrame(frame);
-        }, { capture: true, once: true });
+        };
+        document.addEventListener('keydown', activate, true);
+        document.addEventListener('click', activate, true);
       });
     });
-    await page.getByRole('button', { name: 'Create checklist', exact: true }).press('Enter');
+    const create = page.getByRole('button', { name: 'Create checklist', exact: true });
+    await expect(create).toBeEnabled(); await create.press('Enter');
     const feedbackMs = await page.evaluate(() => (window as Window & { checklistFeedback: Promise<number> }).checklistFeedback);
     await expect.poll(() => held).toBe(true);
     const created = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === path);

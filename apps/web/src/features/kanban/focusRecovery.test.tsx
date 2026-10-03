@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { Dialog } from '@mui/material';
-import { ownsRecoveryFocus } from './focusRecovery';
+import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 
 it('recognizes the installed MUI Dialog fallback but preserves other controls and dialogs', () => {
   render(<><Dialog open transitionDuration={0}><button>Owned action</button><button>Another action</button></Dialog>
@@ -12,4 +12,14 @@ it('recognizes the installed MUI Dialog fallback but preserves other controls an
   expect(ownsRecoveryFocus(null, owner)).toBe(true);
   expect(ownsRecoveryFocus(screen.getByRole('button', { name: 'Another action' }), owner)).toBe(false);
   expect(ownsRecoveryFocus(screen.getByTestId('other-dialog'), owner)).toBe(false);
+});
+
+it('parks only the activated owner in its own dialog and preserves subsequent user navigation', () => {
+  render(<Dialog open transitionDuration={0}><button>Owned action</button><button>Another action</button></Dialog>);
+  const owner = screen.getByRole('button', { name: 'Owned action' });
+  const other = screen.getByRole('button', { name: 'Another action' });
+  owner.focus(); parkRecoveryFocus(owner);
+  expect(screen.getByRole('dialog')).toHaveFocus();
+  other.focus(); parkRecoveryFocus(owner);
+  expect(other).toHaveFocus(); expect(ownsRecoveryFocus(document.activeElement, owner)).toBe(false);
 });

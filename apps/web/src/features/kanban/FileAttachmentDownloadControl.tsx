@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button, Link, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
-import { ownsRecoveryFocus } from './focusRecovery';
+import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import { parseAttachmentDownloadOptions, type AttachmentDownloadOptions, type AttachmentScope, type FileAttachment } from './attachments';
 
 type Props = AttachmentScope & { version: number; file: FileAttachment; onRefresh: () => void };
@@ -31,6 +31,7 @@ function Download(props: Props) {
   }, [busy, options]);
   async function check() {
     if (pending.current || props.file.scanStatus !== 2) return;
+    parkRecoveryFocus(review.current);
     const controller = new AbortController(); pending.current = controller; focus.current = true;
     setBusy(true); setOptions(undefined); setFailed(false); setNotice(undefined);
     try {

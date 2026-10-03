@@ -34,9 +34,11 @@ for (const width of [1280, 390]) {
       for (const target of [page, peer]) await expect(target.getByText('Live updates connected.', { exact: true })).toBeVisible();
       async function edit(target: Page, text = 'Initial preparation') {
         const manage = target.getByRole('button', { name: 'Manage checklists', exact: true }); await expect(manage).toBeEnabled(); await manage.press('Enter');
-        await target.getByRole('button', { name: 'Manage items in Preparations', exact: true }).press('Enter');
+        const items = target.getByRole('button', { name: 'Manage items in Preparations', exact: true });
+        await expect(items).toBeEnabled(); await items.press('Enter');
         const review = target.getByRole('button', { name: 'Review checklist items', exact: true }); await expect(review).toBeEnabled(); await review.press('Enter');
-        await target.getByRole('button', { name: `Edit item: ${text}`, exact: true }).press('Enter');
+        const item = target.getByRole('button', { name: `Edit item: ${text}`, exact: true });
+        await expect(item).toBeEnabled(); await item.press('Enter');
       }
       const show = peer.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
       await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible();

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
-import { ownsRecoveryFocus } from './focusRecovery';
+import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 
 type Option = { label: { id: string; name: string; color: string }; assigned: boolean };
 type Page = { items: Option[]; nextCursor: string | null; cardVersion: number };
@@ -68,9 +68,10 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
     } catch (error) { if (ticket === epoch.current) failure(error); }
     finally { if (ticket === epoch.current) { controller.current = undefined; setBusy(false); onBusyChange(false); } }
   }
-  async function change(option?: Option) {
+  async function change(option?: Option, source?: HTMLButtonElement) {
     if (!admitted || disabled || controller.current || denied || (!intent && (!option || !current || !activeCard))) return;
     const command = intent ?? { labelId: option!.label.id, name: option!.label.name || `${option!.label.color} label`, assigned: !option!.assigned, version: page!.cardVersion, key: crypto.randomUUID() };
+    parkRecoveryFocus(source ?? null);
     const ticket = epoch.current; setBusy(true); onBusyChange(true); setNotice(undefined);
     try {
       const value = await request(`/cards/${encodeURIComponent(cardId)}/labels/${encodeURIComponent(command.labelId)}?version=${command.version}`, {
@@ -94,10 +95,10 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
       {busy && <Typography role="status">Updating label options…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
       {intent ? <><Typography>{intent.assigned ? 'Add' : 'Remove'} {intent.name}</Typography><Button ref={retryTrigger} disabled={busy || disabled} onFocus={() => { recoverFocus.current = true; }}
-        onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, retryTrigger.current)) recoverFocus.current = false; }} onClick={() => void change()}>Retry label change</Button></> : <>
+        onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, retryTrigger.current)) recoverFocus.current = false; }} onClick={event => void change(undefined, event.currentTarget)}>Retry label change</Button></> : <>
         {current && !notice && page.items.map(option => <Stack key={option.label.id} direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
           <Typography>{option.label.name || 'Unnamed label'} ({option.label.color})</Typography>
-          <Button disabled={busy || disabled} onClick={() => void change(option)} aria-label={`${option.assigned ? 'Remove' : 'Add'} label ${option.label.name || option.label.color}`}>{option.assigned ? 'Remove' : 'Add'}</Button>
+          <Button disabled={busy || disabled} onClick={event => void change(option, event.currentTarget)} aria-label={`${option.assigned ? 'Remove' : 'Add'} label ${option.label.name || option.label.color}`}>{option.assigned ? 'Remove' : 'Add'}</Button>
         </Stack>)}
         {current && page.items.length === 0 && <Typography>No Board labels available.</Typography>}
         {!current && !busy && !notice && <Typography>Reload label options for the current Card.</Typography>}
