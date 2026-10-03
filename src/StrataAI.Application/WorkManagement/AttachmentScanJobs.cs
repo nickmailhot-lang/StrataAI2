@@ -21,7 +21,7 @@ public sealed record AttachmentScanAttempt(Guid AttachmentId, Guid CardId, long 
                 || !root.TryGetProperty("cardId", out var card) || card.ValueKind != JsonValueKind.String
                 || !Guid.TryParseExact(card.GetString(), "D", out var parent) || parent == Guid.Empty
                 || !root.TryGetProperty("version", out var version) || version.ValueKind != JsonValueKind.Number
-                || !version.TryGetInt64(out var revision) || revision < 1) throw Invalid();
+                || !version.TryGetInt64(out var revision) || revision < 1 || revision == long.MaxValue) throw Invalid();
             return new(id, parent, revision);
         }
         catch (JsonException) { throw Invalid(); }
@@ -52,7 +52,7 @@ public static class AttachmentScanJobs
             || metadata.Id != upload.Id || metadata.OrganizationId != upload.OrganizationId || metadata.CardId != upload.CardId
             || metadata.UploaderId != actor || metadata.DisplayName != upload.DisplayName || metadata.Kind != AttachmentKind.File
             || metadata.ScanStatus != AttachmentScanStatus.Pending || metadata.ScannedAt is not null || metadata.DeletedAt is not null
-            || metadata.Version < 1 || metadata.CreatedAt < upload.StoredAt || metadata.UpdatedAt != metadata.CreatedAt
+            || metadata.Version < 1 || metadata.Version == long.MaxValue || metadata.CreatedAt < upload.StoredAt || metadata.UpdatedAt != metadata.CreatedAt
             || metadata.CreatedAt > upload.PublishedAt || metadata.MimeType != upload.VerifiedMimeType
             || metadata.SizeBytes != upload.ExpectedSizeBytes || integrity.Reference.OrganizationId != upload.OrganizationId
             || integrity.Reference.AttachmentId != upload.Id || integrity.SizeBytes != upload.ExpectedSizeBytes

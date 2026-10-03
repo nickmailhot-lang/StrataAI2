@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Cryptography;
+using System.Text.Json;
 using Npgsql;
 using StrataAI.Application.Identity;
+using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.Runtime;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Domain.WorkManagement;
@@ -15,6 +18,10 @@ var adminConnection = Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_ADMI
     ?? throw new InvalidOperationException("Contract admin connection is required.");
 var apiConnection = Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_API_CONNECTION")
     ?? throw new InvalidOperationException("Contract restricted API connection is required.");
+var workerConnection=Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_WORKER_CONNECTION")
+    ?? throw new InvalidOperationException("Contract restricted Worker connection is required.");
+var fixtureBytes=Enumerable.Range(0,128).Select(index=>(byte)index).ToArray();
+var fixtureDigest=Convert.ToHexStringLower(SHA256.HashData(fixtureBytes));
 var ct = CancellationToken.None;
 var now = AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
 var organization = Guid.NewGuid(); var foreignOrganization = Guid.NewGuid(); var user = Guid.NewGuid(); var foreignUser = Guid.NewGuid();
@@ -63,7 +70,7 @@ Task<AttachmentUploadRecord?> Find(Guid tenant, Guid actor, Guid key) => InScope
 Task<AttachmentUploadRecord?> Change(AttachmentUploadIntent value, long version, AttachmentUploadChange change) =>
     InScope(value.OrganizationId,() => store.TryChangeUploadAsync(value.OrganizationId,value.CardId,value.UploaderId,value.Id,version,change,ct));
 AttachmentUploadIntent Intent(Guid? retry = null) => AttachmentUploadIntent.Prepare(Guid.NewGuid(),organization,card,user,retry ?? Guid.NewGuid(),1,
-    "Contract image",128,new string('a',64),now.AddHours(1),now);
+    "Contract image",128,fixtureDigest,now.AddHours(1),now);
 try
 {
     await Seed(organization,user,board,list,card); await Seed(foreignOrganization,foreignUser,foreignBoard,foreignList,foreignCard);
@@ -84,7 +91,7 @@ try
     Require(await Change(value,4,new(AttachmentUploadAction.StartWrite,now.AddSeconds(3),Guid.NewGuid(),now.AddMinutes(5))) is null,"Unknown outcome started another writer.");
     Require(await Change(value,4,new(AttachmentUploadAction.ConfirmMissing,now.AddSeconds(3))) is { Version:5,State:AttachmentUploadState.Prepared },"Verified absence did not restore original intent.");
     var replacement = Guid.NewGuid(); await Change(value,5,new(AttachmentUploadAction.StartWrite,now.AddSeconds(4),replacement,now.AddMinutes(5)));
-    var measured = new StoredAttachmentObject(new(organization,value.Id),128,new string('a',64));
+    var measured = new StoredAttachmentObject(new(organization,value.Id),128,fixtureDigest);
     Require(await Change(value,6,new(AttachmentUploadAction.RecordStored,now.AddSeconds(5),nonce,Measured:measured,VerifiedMimeType:"image/png")) is null,"Stale writer callback accepted.");
     var stored = await Change(value,6,new(AttachmentUploadAction.RecordStored,now.AddSeconds(5),replacement,Measured:measured,VerifiedMimeType:"image/png"));
     Require(stored is { Version:7,State:AttachmentUploadState.Stored,WriteLeaseId:null },"Verified stored upload failed.");
@@ -138,10 +145,19 @@ try
     Require(tombstone is { Version:5,State:AttachmentUploadState.Abandoned } && tombstone.StoredAt==recovered!.StoredAt
         && tombstone.VerifiedMimeType=="image/png" && tombstone.ExpectedSha256==reconciled.ExpectedSha256,"Stored upload tombstone lost private reconciliation identity.");
     Require(await Change(reconciled,5,new(AttachmentUploadAction.ConfirmMissing,now.AddSeconds(4))) is null,"Stored tombstone was resurrected.");
+    await AttachmentWorkerContract.RunAsync(admin,workerConnection,provider,organization,foreignOrganization,value,
+        fixtureBytes,fixtureDigest,ct);
     Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, metadata/scan-job rollback and retained expiry passed.");
 }
 finally
 {
+    // Successful Worker effects include append-only audit. Keep that evidence
+    // and its referenced parents until the isolated CI database is torn down.
+    await using var retained=new NpgsqlCommand("SELECT EXISTS(SELECT 1 FROM audit_events WHERE tenant_id=ANY(@tenants));",admin);
+    retained.Parameters.AddWithValue("tenants",new[] {organization,foreignOrganization});
+    var hasAudit=await retained.ExecuteScalarAsync(ct) is true;
+    if(!hasAudit)
+    {
     await using var cleanup = new NpgsqlCommand("""
         DELETE FROM attachment_upload_intents WHERE tenant_id=ANY(@tenants);
         DELETE FROM background_jobs WHERE tenant_id=ANY(@tenants);
@@ -152,6 +168,7 @@ finally
         """,admin);
     cleanup.Parameters.AddWithValue("tenants",new[] { organization,foreignOrganization }); cleanup.Parameters.AddWithValue("users",new[] { user,foreignUser });
     await cleanup.ExecuteNonQueryAsync(ct);
+    }
 }
 
 sealed class NoActorFixture : ICommandActorAuthorization

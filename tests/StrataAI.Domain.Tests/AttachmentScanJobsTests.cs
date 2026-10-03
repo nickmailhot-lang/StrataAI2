@@ -35,7 +35,7 @@ public sealed class AttachmentScanJobsTests
     [Theory]
     [InlineData("prepared")][InlineData("no_publish")][InlineData("expired")][InlineData("wrong_actor")]
     [InlineData("foreign_card")][InlineData("foreign_tenant")][InlineData("clean")][InlineData("deleted")]
-    [InlineData("wrong_digest")][InlineData("wrong_size")][InlineData("wrong_type")][InlineData("future_metadata")]
+    [InlineData("wrong_digest")][InlineData("wrong_size")][InlineData("wrong_type")][InlineData("future_metadata")][InlineData("max_revision")]
     public void Unpublished_or_mismatched_private_metadata_cannot_create_a_scan_job(string mutation)
     {
         var (upload,file)=Published(); var actor=upload.UploaderId;
@@ -53,6 +53,7 @@ public sealed class AttachmentScanJobsTests
             case "wrong_size": file=file with {Integrity=new(file.Integrity.Reference,129,file.Integrity.Sha256)}; break;
             case "wrong_type": file=file with {Metadata=file.Metadata with {MimeType="image/jpeg"}}; break;
             case "future_metadata": file=file with {Metadata=file.Metadata with {CreatedAt=Now.AddMinutes(3),UpdatedAt=Now.AddMinutes(3)}}; break;
+            case "max_revision": file=file with {Metadata=file.Metadata with {Version=long.MaxValue}}; break;
         }
         Assert.Throws<InvalidOperationException>(() => AttachmentScanJobs.Create(upload,file,actor,"scan"));
     }
@@ -61,6 +62,7 @@ public sealed class AttachmentScanJobsTests
     [InlineData("{\"attachmentId\":\"00000000-0000-0000-0000-000000000000\",\"cardId\":\"11111111-1111-1111-1111-111111111111\",\"version\":1}")]
     [InlineData("{\"attachmentId\":\"11111111-1111-1111-1111-111111111111\",\"cardId\":\"00000000-0000-0000-0000-000000000000\",\"version\":1}")]
     [InlineData("{\"attachmentId\":\"11111111-1111-1111-1111-111111111111\",\"cardId\":\"11111111-1111-1111-1111-111111111111\",\"version\":0}")]
+    [InlineData("{\"attachmentId\":\"11111111-1111-1111-1111-111111111111\",\"cardId\":\"11111111-1111-1111-1111-111111111111\",\"version\":9223372036854775807}")]
     [InlineData("{\"attachmentId\":\"11111111-1111-1111-1111-111111111111\",\"cardId\":\"11111111-1111-1111-1111-111111111111\",\"version\":\"1\"}")]
     [InlineData("{\"attachmentId\":\"11111111-1111-1111-1111-111111111111\",\"cardId\":\"11111111-1111-1111-1111-111111111111\",\"version\":1,\"sha256\":\"private\"}")]
     [InlineData("{\"attachmentId\":\"11111111-1111-1111-1111-111111111111\",\"cardId\":\"11111111-1111-1111-1111-111111111111\",\"version\":1,\"version\":2}")]

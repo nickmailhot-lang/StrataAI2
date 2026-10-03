@@ -201,6 +201,7 @@ jobs:
         env:
           STRATAAI_CONTRACT_ADMIN_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=postgres;Password=postgres
           STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password
+          STRATAAI_CONTRACT_WORKER_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password
         run: |
           dotnet restore tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --locked-mode
           dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --configuration Release --no-restore

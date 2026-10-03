@@ -64,6 +64,8 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON organizations,boards,board_lists,cards,orga
 GRANT SELECT,INSERT,UPDATE ON checklists,checklist_items TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON attachments TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON attachment_upload_intents TO strataai_api_runtime;
+GRANT EXECUTE ON FUNCTION public.load_attachment_scan(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint),
+ public.finish_attachment_scan(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text) TO strataai_worker_runtime;
 GRANT SELECT,INSERT ON invitation_mail_intents TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION public.load_invitation_mail(uuid,uuid,uuid,uuid,uuid,boolean), public.finish_invitation_mail(uuid,uuid,uuid,uuid,uuid,text,text,uuid) TO strataai_worker_runtime;
 COMMIT;
