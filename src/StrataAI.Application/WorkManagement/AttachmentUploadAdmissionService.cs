@@ -84,6 +84,51 @@ public sealed class AttachmentUploadAdmissionService(IWorkManagementStore work, 
         AttachmentUploadRecord writer, CancellationToken ct = default)
         => ChangeWriterAsync(cardId, actor, writer, null, null, unknown: true, ct);
 
+    public Task<WorkOperation<AttachmentUploadRecord>> ExpireWriterAsync(Guid cardId, Guid actor, AttachmentUploadRecord snapshot, CancellationToken ct)
+        => ReconcileAsync(cardId, actor, snapshot, AttachmentUploadAction.ExpiredWriter, null, null, ct);
+    // Only a successful private provider lookup proving absence may call this.
+    public Task<WorkOperation<AttachmentUploadRecord>> ConfirmMissingAsync(Guid cardId, Guid actor, AttachmentUploadRecord snapshot, CancellationToken ct)
+        => ReconcileAsync(cardId, actor, snapshot, AttachmentUploadAction.ConfirmMissing, null, null, ct);
+    public Task<WorkOperation<AttachmentUploadRecord>> RecordReconciledAsync(Guid cardId, Guid actor, AttachmentUploadRecord snapshot,
+        AttachmentFileTypeProbe probe, StoredAttachmentObject measured, CancellationToken ct)
+        => ReconcileAsync(cardId, actor, snapshot, AttachmentUploadAction.RecordReconciled, probe, measured, ct);
+
+    private async Task<WorkOperation<AttachmentUploadRecord>> ReconcileAsync(Guid cardId, Guid actor, AttachmentUploadRecord snapshot,
+        AttachmentUploadAction action, AttachmentFileTypeProbe? probe, StoredAttachmentObject? measured, CancellationToken ct)
+    {
+        var hint = await work.FindCardAsync(cardId, ct);
+        if (hint is null) return WorkOperation<AttachmentUploadRecord>.Failure("card_not_found");
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "card_not_found",
+            () => AttachmentAdmission.CheckAsync(work, organizations, boards, hint, actor, true, ct), async () =>
+            {
+                if (snapshot is null || snapshot.OrganizationId != hint.OrganizationId || snapshot.CardId != cardId || snapshot.UploaderId != actor)
+                    return WorkOperation<AttachmentUploadRecord>.Failure("attachment_upload_unavailable");
+                var value = await uploads.FindUploadByRetryAsync(hint.OrganizationId, actor, snapshot.RetryKey, ct);
+                if (value is null || value.Id != snapshot.Id || value.CardId != cardId || value.Version != snapshot.Version || value.State != snapshot.State)
+                    return WorkOperation<AttachmentUploadRecord>.Failure("attachment_upload_unavailable");
+                var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
+                if (action == AttachmentUploadAction.ExpiredWriter)
+                {
+                    if (value.State != AttachmentUploadState.Writing || value.WriteLeaseId != snapshot.WriteLeaseId || value.WriteLeaseUntil is null
+                        || value.WriteLeaseUntil > now) return WorkOperation<AttachmentUploadRecord>.Failure("attachment_upload_in_progress");
+                }
+                else if (value.State != AttachmentUploadState.Reconcile || value.ExpiresAt <= now)
+                    return WorkOperation<AttachmentUploadRecord>.Failure("attachment_upload_unavailable");
+                if (action == AttachmentUploadAction.RecordReconciled)
+                {
+                    if (probe is null || measured is null) return WorkOperation<AttachmentUploadRecord>.Failure("attachment_integrity_invalid");
+                    try { policy.RequireMeasuredFile(new(hint.OrganizationId, value.Id), probe, measured); }
+                    catch (AttachmentUploadValidationException error) { return WorkOperation<AttachmentUploadRecord>.Failure(error.Code); }
+                    if (measured.SizeBytes != value.ExpectedSizeBytes || measured.Sha256 != value.ExpectedSha256)
+                        return WorkOperation<AttachmentUploadRecord>.Failure("attachment_integrity_invalid");
+                }
+                var changed = await uploads.TryChangeUploadAsync(hint.OrganizationId, cardId, actor, value.Id, value.Version,
+                    new(action, now, Measured: measured, VerifiedMimeType: probe?.MimeType), ct);
+                return changed is null ? WorkOperation<AttachmentUploadRecord>.Failure("attachment_upload_unavailable")
+                    : WorkOperation<AttachmentUploadRecord>.Success(changed);
+            }, ct);
+    }
+
     // These are server callbacks after provider I/O. Never replace a canonical
     // measurement with caller claims, reset an ambiguous write to Prepared, or
     // roll back an already-committed Stored result after a lost acknowledgment.

@@ -187,7 +187,7 @@ internal static class AttachmentPublicationContract
                 VALUES(@id,@tenant,@board,@list,'Publication edge',@rank,@at,@at);
                 """, admin);
             insert.Parameters.AddWithValue("id", id); insert.Parameters.AddWithValue("tenant", tenant); insert.Parameters.AddWithValue("board", board);
-            insert.Parameters.AddWithValue("list", list); insert.Parameters.AddWithValue("rank", (edgeSequence++).ToString(System.Globalization.CultureInfo.InvariantCulture) + new string('0', 29));
+            insert.Parameters.AddWithValue("list", list); insert.Parameters.AddWithValue("rank", (edgeSequence++).ToString(System.Globalization.CultureInfo.InvariantCulture).PadRight(30, '0'));
             insert.Parameters.AddWithValue("at", at); await insert.ExecuteNonQueryAsync(ct); return id;
         }
         foreach (var archive in new[] { false, true })
@@ -235,6 +235,8 @@ internal static class AttachmentPublicationContract
         Require((await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-revoked-replay", ct)).ErrorCode == "card_not_found", "Revoked member recovered publication receipt.");
         Require((await admission.PrepareAsync(card, user, admissionKey, admissionInput, ct)).ErrorCode == "card_not_found", "Revoked member recovered upload intent.");
         await Effects(2, 1);
+        await AttachmentFileUploadContract.RunAsync(admin, provider, tenant, secondOwner, EdgeCard,
+            () => clock.UtcNow, value => clock.UtcNow = value, ct);
         // Keep immutable audit and its parents until isolated CI DB teardown.
         Console.WriteLine("Restricted Application file publication: current scope, original Card CAS, expiry, audit/actor rollback, metadata/intent/scan-job/event atomicity and private authorized receipts passed.");
     }
