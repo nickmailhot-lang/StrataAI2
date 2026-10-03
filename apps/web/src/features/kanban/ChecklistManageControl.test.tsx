@@ -15,7 +15,7 @@ const props = () => ({ ...scope, version: 4, editable: true, disabled: false, un
   onBusyChange: vi.fn(), onRecoveryChange: vi.fn(), onRefresh: vi.fn() });
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
 async function review(title = 'New preparation') {
-  fireEvent.click(screen.getByRole('button', { name: 'Rename a checklist' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Manage checklists' }));
   fireEvent.click(await screen.findByRole('button', { name: 'Rename Preparations' }));
   fireEvent.change(screen.getByRole('textbox', { name: /Checklist title/ }), { target: { value: title } });
 }
@@ -26,7 +26,7 @@ it('reviews server edit admission and writes scoped Card/Checklist revisions', a
   const writes = vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'PATCH'); expect(writes).toHaveLength(1);
   expect(writes[0][0]).toBe(`/cards/${scope.cardId}/checklists/${checklist.id}`);
   expect(JSON.parse(writes[0][1]!.body as string)).toEqual({ title: 'New preparation', cardVersion: 4, version: 2 });
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Rename a checklist' })).toHaveFocus());
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Manage checklists' })).toHaveFocus());
   expect(p.onBusyChange).toHaveBeenLastCalledWith(false);
 });
 it('accepts a canonical unchanged rename without inventing revision changes', async () => {
@@ -53,7 +53,7 @@ it('retains original body/key, chosen child and actor after an unconfirmed renam
 });
 it.each([{ canEdit: false }, { cardVersion: 5 }, { boardId: id(90) }])('rejects stale, foreign or read-only selection without offering protected editing (%j)', async change => {
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : { ...page, ...change });
-  render(<ChecklistManageControl {...props()} />); fireEvent.click(screen.getByRole('button', { name: 'Rename a checklist' }));
+  render(<ChecklistManageControl {...props()} />); fireEvent.click(screen.getByRole('button', { name: 'Manage checklists' }));
   expect(await screen.findByText('Unable to review current checklists. Refresh the Card and try again.')).toBeVisible();
   expect(screen.queryByRole('button', { name: 'Rename Preparations' })).not.toBeInTheDocument();
 });
@@ -84,8 +84,8 @@ it('paginates the review and retains full child revision for a later-page select
   const cursor = `${scope.cardId}/${rank(50)}/${id(69)}`;
   const later = { ...checklist, id: id(70), rank: rank(51), title: 'Later checklist', version: 7 };
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : path.includes('?after=') ? { ...page, items: [{ ...page.items[0], checklist: later }] } : { ...page, items: rows, nextCursor: cursor });
-  render(<ChecklistManageControl {...props()} />); fireEvent.click(screen.getByRole('button', { name: 'Rename a checklist' }));
-  fireEvent.click(await screen.findByRole('button', { name: 'Next checklists to rename' }));
+  render(<ChecklistManageControl {...props()} />); fireEvent.click(screen.getByRole('button', { name: 'Manage checklists' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Next checklists to manage' }));
   fireEvent.click(await screen.findByRole('button', { name: 'Rename Later checklist' })); expect(screen.getByRole('textbox')).toHaveValue('Later checklist');
   expect(vi.mocked(workRequest).mock.calls.some(([path]) => path.endsWith(`?after=${encodeURIComponent(cursor)}`))).toBe(true);
 });
@@ -108,4 +108,53 @@ it('blocks a changed actor before sending a reviewed rename', async () => {
   expect(await screen.findByText(/This checklist rename is unavailable/)).toBeVisible();
   expect(vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'PATCH')).toHaveLength(0);
   expect(screen.getByRole('textbox')).toHaveValue('New preparation');
+});
+const deletion = () => ({ ...scope, changed: true, cardVersion: 5, deletedItems: 63,
+  checklist: { ...checklist, version: 3, deletedAt: now } });
+const deletePage = { ...page, items: [{ ...page.items[0], total: 63 }] };
+async function reviewDeletion() {
+  fireEvent.click(screen.getByRole('button', { name: 'Manage checklists' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Delete Preparations' }));
+}
+it('requires explicit confirmation and acknowledges the reviewed complete cascade count', async () => {
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'DELETE' ? deletion() : deletePage);
+  const p = props(); render(<ChecklistManageControl {...p} canAdminister />); await reviewDeletion();
+  expect(screen.getByRole('alert')).toHaveTextContent('63 active items');
+  const save = screen.getByRole('button', { name: 'Delete confirmed checklist' }); expect(save).toBeDisabled();
+  fireEvent.click(save); expect(vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'DELETE')).toHaveLength(0);
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Confirm checklist deletion' })); fireEvent.click(save);
+  expect(await screen.findByText('Checklist deleted.')).toBeVisible();
+  const writes = vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'DELETE'); expect(writes).toHaveLength(1);
+  expect(JSON.parse(writes[0][1]!.body as string)).toEqual({ confirmed: true, cardVersion: 4, version: 2 });
+});
+it('omits deletion for contributors and disables reviewed deletion after administration is lost', async () => {
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : deletePage);
+  const p = props(); const view = render(<ChecklistManageControl {...p} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Manage checklists' })); await screen.findByRole('button', { name: 'Rename Preparations' });
+  expect(screen.queryByRole('button', { name: 'Delete Preparations' })).not.toBeInTheDocument();
+  view.rerender(<ChecklistManageControl {...p} canAdminister />); fireEvent.click(screen.getByRole('button', { name: 'Delete Preparations' }));
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Confirm checklist deletion' }));
+  view.rerender(<ChecklistManageControl {...p} canAdminister={false} />);
+  expect(screen.getByRole('button', { name: 'Delete confirmed checklist' })).toBeDisabled();
+});
+it('retains confirmed deletion input and retry key after the committed acknowledgment is lost', async () => {
+  let writeCount = 0; vi.mocked(workRequest).mockImplementation(async (path, options) => {
+    if (path === '/me') return profile; if (options?.method !== 'DELETE') return deletePage;
+    if (++writeCount === 1) throw new WorkRequestError(0, null); return deletion();
+  });
+  const p = props(); const view = render(<ChecklistManageControl {...p} canAdminister />); await reviewDeletion();
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Confirm checklist deletion' })); fireEvent.click(screen.getByRole('button', { name: 'Delete confirmed checklist' }));
+  const retry = await screen.findByRole('button', { name: 'Retry checklist deletion' }); await waitFor(() => expect(retry).toHaveFocus());
+  view.rerender(<ChecklistManageControl {...p} canAdminister version={5} unavailable />); expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  view.rerender(<ChecklistManageControl {...p} canAdminister version={5} />);
+  expect(screen.getByRole('checkbox')).toBeDisabled(); fireEvent.click(screen.getByRole('button', { name: 'Retry checklist deletion' })); await screen.findByText('Checklist deleted.');
+  const writes = vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'DELETE');
+  expect(writes).toHaveLength(2); expect(writes[1][1]!.body).toBe(writes[0][1]!.body); expect(writes[1][1]!.headers).toEqual(writes[0][1]!.headers);
+});
+it.each([{ deletedItems: 62 }, { cardVersion: 6 }, { checklist: { ...deletion().checklist, deletedAt: null } },
+  { checklist: { ...deletion().checklist, title: 'Foreign title' } }])('keeps noncanonical deletion acknowledgments unresolved (%j)', async change => {
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'DELETE' ? { ...deletion(), ...change } : deletePage);
+  render(<ChecklistManageControl {...props()} canAdminister />); await reviewDeletion();
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Confirm checklist deletion' })); fireEvent.click(screen.getByRole('button', { name: 'Delete confirmed checklist' }));
+  expect(await screen.findByRole('button', { name: 'Retry checklist deletion' })).toBeEnabled(); expect(screen.queryByText('Checklist deleted.')).not.toBeInTheDocument();
 });

@@ -307,3 +307,22 @@ The complete GitHub issue snapshot was re-analyzed after this increment: 92
 canonical tickets, 7 dependency groups and 3 cyclic groups. All requirement body
 digests match the checked dependency map; 91 canonical issues remain open. These
 counts describe the full unchanged objective and do not assert acceptance.
+
+MUI Checklist management now offers administrator-only deletion after a current
+paged review. The confirmation shows the full active-item count and requires an
+explicit checkbox before submitting current Card/Checklist revisions. Loss of
+administration disables confirmation/submission/retry. Unconfirmed deletion
+retains the original actor, confirmed body, revisions and key; acknowledgment must
+identify the same retained Checklist tombstone, title/rank/creation time, exact
+revision advances and complete reviewed cascade count. Definite denials require
+fresh review. Access re-admission hides the confirmation and focus recovers on
+the original retry control. Other mutation locks remain held during recovery.
+
+The 75 focused Checklist tests passed, followed by all 22 management tests after
+the management entry/paging labels were updated. Typecheck/lint and production
+build are checked. Two additional mandatory desktop/390px browser cases perform
+keyboard confirmation, lose a real committed DELETE response, recover the exact
+original request, observe live removal in a second session, verify hidden item
+reads and run WCAG checks. All four Checklist browser cases are discovered;
+exact-image execution remains pending. Ordering and item mutation controls remain
+unfinished, and wider PRD/architecture acceptance remains open.

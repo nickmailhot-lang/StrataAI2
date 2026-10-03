@@ -26,12 +26,13 @@ function instant(value: unknown): bigint {
   if (typeof value !== 'string') throw invalid();
   return dateInstantTicks(value);
 }
-function lifecycle(row: Record<string, unknown>) {
-  if (!notificationUuid(row.id) || !rank(row.rank) || !version(row.version) || row.deletedAt !== null ||
+function lifecycle(row: Record<string, unknown>, deleted = false) {
+  if (!notificationUuid(row.id) || !rank(row.rank) || !version(row.version) || (!deleted && row.deletedAt !== null) ||
     instant(row.updatedAt) < instant(row.createdAt)) throw invalid();
+  if (deleted && (row.deletedAt === null || instant(row.deletedAt) !== instant(row.updatedAt))) throw invalid();
 }
-function checklist(value: unknown, scope: ChecklistScope): Checklist {
-  const row = record(value); lifecycle(row);
+function checklist(value: unknown, scope: ChecklistScope, deleted = false): Checklist {
+  const row = record(value); lifecycle(row, deleted);
   if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.cardId, scope.cardId) || !text(row.title, 160)) throw invalid();
   return row as Checklist;
 }
@@ -107,4 +108,13 @@ export function parseChecklistRenamed(value: unknown, scope: ChecklistScope, bef
     instant(child.createdAt) !== instant(before.createdAt) || instant(child.updatedAt) < instant(before.updatedAt) ||
     !changed && instant(child.updatedAt) !== instant(before.updatedAt)) throw invalid();
   return row as ChecklistChange;
+}
+export function parseChecklistDeleted(value: unknown, scope: ChecklistScope, before: Checklist, total: number, cardVersion: number): ChecklistChange & { deletedItems: number } {
+  const row = record(value); const child = checklist(row.checklist, scope, true);
+  if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.boardId, scope.boardId) || !sameId(row.cardId, scope.cardId) ||
+    !version(cardVersion) || !version(row.cardVersion) || row.cardVersion !== cardVersion + 1 || row.changed !== true ||
+    !sameId(child.id, before.id) || child.title !== before.title || child.version !== before.version + 1 || child.rank !== before.rank ||
+    instant(child.createdAt) !== instant(before.createdAt) || instant(child.updatedAt) < instant(before.updatedAt) ||
+    !count(total) || row.deletedItems !== total) throw invalid();
+  return row as ChecklistChange & { deletedItems: number };
 }

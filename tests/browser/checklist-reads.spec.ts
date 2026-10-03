@@ -55,7 +55,7 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: 'Create checklist', exact: true }).press('Enter');
       const retry = page.getByRole('button', { name: 'Retry checklist creation', exact: true }); await expect(retry).toBeEnabled();
       await expect(retry).toBeFocused(); await expect(page.getByRole('textbox', { name: /New checklist title/ })).toBeDisabled();
-      await expect(page.getByRole('button', { name: 'Rename a checklist', exact: true })).toBeDisabled();
+      await expect(page.getByRole('button', { name: 'Manage checklists', exact: true })).toBeDisabled();
       await expect(page.getByRole('button', { name: 'Edit dates', exact: true })).toBeDisabled();
       await retry.press('Enter'); await expect(page.getByText('Checklist created.', { exact: true })).toBeVisible();
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
@@ -74,7 +74,7 @@ for (const width of [1280, 390]) {
         const response = await intercepted.fetch(); expect(response.status()).toBe(200);
         if (dropRename) { dropRename = false; await intercepted.abort('failed'); } else await intercepted.fulfill({ response });
       });
-      const rename = page.getByRole('button', { name: 'Rename a checklist', exact: true }); await expect(rename).toBeEnabled(); await rename.press('Enter');
+      const rename = page.getByRole('button', { name: 'Manage checklists', exact: true }); await expect(rename).toBeEnabled(); await rename.press('Enter');
       await page.getByRole('button', { name: 'Rename Follow-up preparation', exact: true }).press('Enter');
       await page.getByRole('textbox', { name: /^Checklist title/ }).fill('Follow-up ready');
       await page.getByRole('button', { name: 'Save checklist title', exact: true }).press('Enter');

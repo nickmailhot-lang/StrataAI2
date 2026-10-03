@@ -706,6 +706,7 @@ function BoardContent() {
               onBusyChange={setBusy} onRecoveryChange={setChecklistCreateRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <ChecklistManageControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              canAdminister={snapshot.access.canAdminister}
               cardId={card.id} version={card.version} editable={Boolean(editable)} unavailable={snapshotReading || !!loadError}
               disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistCreateRecovery}
               onBusyChange={setBusy} onRecoveryChange={setChecklistManageRecovery}
