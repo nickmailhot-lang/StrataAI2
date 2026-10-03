@@ -1,11 +1,18 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 using Npgsql;
+using StrataAI.Application.Common;
+using StrataAI.Application.Identity;
+using StrataAI.Application.Runtime;
 using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.WorkManagement;
+using StrataAI.Infrastructure.Organizations;
+using StrataAI.Infrastructure.Identity;
 
 internal static class AttachmentPreviewActivationContract
 {
@@ -101,8 +108,32 @@ internal static class AttachmentPreviewActivationContract
             Require(await state.ExecuteScalarAsync(ct) is true,"Capable Worker did not recover terminal preview expiry.");
         }
         var intents=new PostgresAttachmentPreviewIntentStore(worker);
-        var admission=apiServices.GetRequiredService<AttachmentDownloadAdmissionService>();
         objects.ApiConnections=apiServices.GetRequiredService<PostgresConnectionFactory>();
+        // The persistence-only provider deliberately has no session/Board
+        // authorization services. A separate restricted read provider composes
+        // real current membership/Board gates, with explicitly synthetic actor
+        // proof. Never replace the original fixture's no-actor sentinel.
+        var readServices=new ServiceCollection();var runtime=new RuntimeDescriptor(RuntimeMode.Production,"contract","contract");
+        readServices.AddLogging();readServices.AddSingleton(objects.ApiConnections);
+        readServices.AddSingleton<IClock,SystemClock>();readServices.AddSingleton<ICommandActorAuthorization>(new ReadActor(job.ActorId));
+        readServices.AddSingleton<IWorkCommandContext,ReadContext>();readServices.AddSingleton<PostgresBackgroundJobStore>();
+        var configuration=new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>
+        {
+            ["STRATAAI_AUTH_RETRY_CURRENT_KEY"]="contract",
+            ["STRATAAI_AUTH_RETRY_KEYS"]=JsonSerializer.Serialize(new Dictionary<string,string>{["contract"]=Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))})
+        }).Build();
+        readServices.AddStrataAiIdentity(configuration,runtime);readServices.AddStrataAiOrganizations(runtime);readServices.AddStrataAiWorkManagement(runtime);
+        await using var readProvider=readServices.BuildServiceProvider();
+        await using(var grant=new NpgsqlCommand("""
+            INSERT INTO public.board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+            SELECT gen_random_uuid(),tenant_id,board_id,@actor,'MEMBER','ACTIVE',clock_timestamp(),clock_timestamp()
+            FROM public.cards WHERE id=@card AND tenant_id=@tenant ON CONFLICT(board_id,user_id) DO NOTHING;
+            """,admin))
+        {
+            grant.Parameters.AddWithValue("actor",job.ActorId);grant.Parameters.AddWithValue("card",card);grant.Parameters.AddWithValue("tenant",organization);
+            await grant.ExecuteNonQueryAsync(ct);
+        }
+        var admission=readProvider.GetRequiredService<AttachmentDownloadAdmissionService>();
         var loadedPreview=await intents.LoadAsync(preview,reference,ct);
         var declaredBytes=Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==");
         Require(loadedPreview.Source is not null && await intents.DeclareAsync(preview,reference,loadedPreview.Source,"image/png",
@@ -145,7 +176,7 @@ internal static class AttachmentPreviewActivationContract
         Require(!(await admission.RevalidatePreviewAsync(admitted.Value!,job.ActorId,ct)).Succeeded,"Stale preview snapshot remained authorized.");
         var renamed=await admission.AdmitPreviewAsync(card,source,job.ActorId,ct);
         Require(renamed.Succeeded,"Unchanged immutable source could not re-admit a later File revision.");
-        await Scalar<int>("UPDATE public.attachments SET deleted_at=clock_timestamp(),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
+        await Scalar<int>("UPDATE public.attachments SET deleted_at=clock_timestamp(),updated_at=clock_timestamp(),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
         reads=objects.Reads;
         Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct)).Succeeded && objects.Reads==reads,"Deleted original retained preview delivery.");
         Console.WriteLine("Restricted preview reads: committed receipt, source-bound integrity, private namespace, forced RLS, foreign actor/Card/stale revision refusal, full staging outside DB, corruption, changed revision and deletion passed.");
@@ -190,6 +221,12 @@ internal static class AttachmentPreviewActivationContract
         public async Task<AttachmentScannerVerdict> ScanAsync(Stream source,CancellationToken ct)
         {await source.CopyToAsync(Stream.Null,ct);return Verdict;}
     }
+    private sealed class ReadActor(Guid actor):ICommandActorAuthorization
+    {
+        public Task<bool> VerifyAsync(Guid actorId,CancellationToken cancellationToken=default)
+        {cancellationToken.ThrowIfCancellationRequested();return Task.FromResult(actorId==actor);}
+    }
+    private sealed class ReadContext:IWorkCommandContext {public Guid? IdempotencyKey=>null;}
     private sealed class Generator : IAttachmentImagePreviewGenerator
     {
         public int Calls {get;private set;}
