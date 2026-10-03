@@ -830,6 +830,8 @@ public static partial class WorkManagementEndpoints
                 StatusCodes.Status404NotFound,
                 errorCode,
                 "The List was not found."),
+            "checklist_not_found" => Problem(
+                StatusCodes.Status404NotFound, errorCode, "The requested checklist is unavailable."),
             "card_not_found" => Problem(
                 StatusCodes.Status404NotFound,
                 errorCode,

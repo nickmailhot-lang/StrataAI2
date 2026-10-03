@@ -13,12 +13,15 @@ public sealed record ChecklistSummary(ChecklistRecord Checklist, long Completed,
 public sealed record ChecklistPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
     IReadOnlyList<ChecklistSummary> Items, string? NextCursor, bool CanEdit);
 public sealed record CreateChecklistInput(string? Title, long CardVersion);
+public sealed record RenameChecklistInput(string? Title, long CardVersion, long Version);
 public sealed record ChecklistChange(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion, ChecklistRecord Checklist, bool Changed);
 public interface IChecklistStore
 {
     Task<IReadOnlyList<ChecklistSummary>> ListAsync(Guid organization, Guid card, string? afterRank, Guid? afterId, CancellationToken ct);
     Task<string> NextRankAsync(Guid organization, Guid card, CancellationToken ct);
     Task<ChecklistRecord> CreateAsync(Guid organization, Guid card, string title, string rank, DateTimeOffset now, CancellationToken ct);
+    Task<ChecklistRecord?> FindAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct);
+    Task<ChecklistRecord?> RenameAsync(Guid organization, Guid card, Guid checklist, string title, long version, DateTimeOffset now, CancellationToken ct);
 }
 
 public sealed class ChecklistService(IWorkManagementStore work, IChecklistStore checklists, IWorkBoardAuthorization boards,
@@ -83,6 +86,41 @@ public sealed class ChecklistService(IWorkManagementStore work, IChecklistStore 
                     "Card", cardId, updated.Version, correlationId, clock.UtcNow), ct);
                 if (!await actors.VerifyAsync(actor, ct)) return WorkOperation<ChecklistChange>.Failure("session_unavailable");
                 return WorkOperation<ChecklistChange>.Success(new(hint.OrganizationId, hint.BoardId, cardId, updated.Version, created, true));
+            }, ct);
+    }
+    public async Task<WorkOperation<ChecklistChange>> RenameAsync(Guid cardId, Guid checklistId, Guid actor, RenameChecklistInput input, string correlationId, CancellationToken ct = default)
+    {
+        var hint = await work.FindCardAsync(cardId, ct);
+        if (hint is null) return WorkOperation<ChecklistChange>.Failure("card_not_found");
+        return await transactions.ExecuteAsync(hint.OrganizationId,
+            WorkCommand.Create(actor, context.IdempotencyKey, "ChecklistRename", checklistId, new { cardId, input }, "checklist_not_found"),
+            async receipt => (receipt is null || receipt.OrganizationId == hint.OrganizationId && receipt.BoardId == hint.BoardId &&
+                receipt.CardId == cardId && receipt.Checklist.Id == checklistId && receipt.Checklist.OrganizationId == hint.OrganizationId && receipt.Checklist.CardId == cardId)
+                && await Admit(hint, actor, true, ct) && await checklists.FindAsync(hint.OrganizationId, cardId, checklistId, ct) is not null,
+            async () =>
+            {
+                if (input.CardVersion < 1 || input.Version < 1) return WorkOperation<ChecklistChange>.Failure("invalid_checklist_version");
+                var current = await work.FindCardAsync(cardId, ct);
+                var child = await checklists.FindAsync(hint.OrganizationId, cardId, checklistId, ct);
+                if (current is null || child is null) return WorkOperation<ChecklistChange>.Failure("checklist_not_found");
+                if (current.Version != input.CardVersion || child.Version != input.Version) return WorkOperation<ChecklistChange>.Failure("version_conflict");
+                string title;
+                try { title = new Checklist(checklistId, hint.OrganizationId, cardId, input.Title!, child.Rank, clock.UtcNow).Title; }
+                catch (ArgumentException) { return WorkOperation<ChecklistChange>.Failure("invalid_checklist_title"); }
+                if (title == child.Title)
+                {
+                    if (!await actors.VerifyAsync(actor, ct)) return WorkOperation<ChecklistChange>.Failure("session_unavailable");
+                    return WorkOperation<ChecklistChange>.Success(new(hint.OrganizationId, hint.BoardId, cardId, current.Version, child, false));
+                }
+                var updated = await work.UpdateCardAsync(cardId, current.Title, current.Description, current.Version, clock.UtcNow, ct);
+                if (updated is null) return WorkOperation<ChecklistChange>.Failure("version_conflict");
+                var renamed = await checklists.RenameAsync(hint.OrganizationId, cardId, checklistId, title, child.Version, clock.UtcNow, ct);
+                if (renamed is null) return WorkOperation<ChecklistChange>.Failure("version_conflict");
+                await work.AppendAuditAsync(hint.OrganizationId, actor, "CHECKLIST_UPDATED", "Checklist", checklistId, correlationId, ct);
+                await events.AppendAsync(new(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor, "CHECKLIST_UPDATED",
+                    "Card", cardId, updated.Version, correlationId, clock.UtcNow), ct);
+                if (!await actors.VerifyAsync(actor, ct)) return WorkOperation<ChecklistChange>.Failure("session_unavailable");
+                return WorkOperation<ChecklistChange>.Success(new(hint.OrganizationId, hint.BoardId, cardId, updated.Version, renamed, true));
             }, ct);
     }
     private async Task<bool> Admit(CardRecord hint, Guid actor, bool editing, CancellationToken ct)

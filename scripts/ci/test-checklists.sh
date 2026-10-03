@@ -65,6 +65,27 @@ test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type='CHECKLIST_CREATED' AND entity_type='Checklist' AND entity_id='$checklist';")" = 1
 test "$(read_page member "$path")" = 200
 jq -e '.canEdit and .cardVersion==2 and (.items|length)==1 and .items[0].completed==0 and .items[0].total==0 and .items[0].percent==0' "$scratch/page.json" >/dev/null
+renamePath="$path/$checklist"; renameKey=$(uuid); renameInput='{"title":" Revised preparations ","cardVersion":2,"version":1}'
+before=$(state)
+test "$(request outsider PATCH "$renamePath" "$(uuid)" "$renameInput")" = 404
+test "$(request owner PATCH "$renamePath" "$(uuid)" '{"title":" ","cardVersion":2,"version":1}')" = 400
+admin 'REVOKE INSERT ON work_events FROM strataai_api_runtime;' >/dev/null
+test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 503
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON work_events TO strataai_api_runtime;' >/dev/null
+test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 200
+jq -e '.changed and .cardVersion==3 and .checklist.title=="Revised preparations" and .checklist.version==2' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/renamed.json"
+after=$(state)
+test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 200
+cmp "$scratch/renamed.json" "$scratch/response.json"
+test "$after" = "$(state)"
+test "$(request owner PATCH "$renamePath" "$(uuid)" "$renameInput")" = 409
+test "$after" = "$(state)"
+test "$(request owner PATCH "$renamePath" "$(uuid)" '{"title":" Revised preparations ","cardVersion":3,"version":2}')" = 200
+jq -e '.changed==false and .cardVersion==3 and .checklist.version==2' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_UPDATED';")" = 1
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type='CHECKLIST_UPDATED';")" = 1
 # Canonical child rows exercise aggregate progress across a bounded checklist
 # page, including deleted-item exclusion and an empty sibling's zero progress.
 admin "INSERT INTO checklist_items(id,tenant_id,checklist_id,text,rank,completed,completed_at,completed_by,created_at,updated_at,deleted_at)
@@ -83,11 +104,12 @@ test "$(read_page owner "$path?after=malformed")" = 400
 # A valid but exhausted tail must fail before advancing the aggregate revision.
 admin "UPDATE checklists SET rank='999999999999999999999999999998' WHERE id='$checklist';" >/dev/null
 before=$(state)
-test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":2}')" = 409
+test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":3}')" = 409
 jq -e '.code=="rank_space_exhausted"' "$scratch/response.json" >/dev/null
 test "$before" = "$(state)"
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 test "$(read_page member "$path?after=$cursor")" = 404
+test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 404
 version=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
 test "$(request owner POST "/boards/$board/archive" "$(uuid)" "{\"version\":$version}")" = 200
 test "$(read_page owner "$path")" = 200

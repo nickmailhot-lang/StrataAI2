@@ -94,3 +94,15 @@ The bf2ab79 PostgreSQL job passed the checklist storage, migration recovery and
 runtime-role fixtures; the strict local solution build has zero warnings/errors.
 Item editing/completion, checklist editing/reorder/delete, public views, copy and
 retention integration, MUI and full performance evidence remain unfinished.
+
+Checklist rename is exposed as PATCH `/cards/{cardId}/checklists/{checklistId}`.
+Both Card and Checklist revisions must match. Normalized no-op titles preserve
+both rows and emit no audit/event; a changed title advances both revisions and
+publishes CHECKLIST_UPDATED as a Card aggregate invalidation atomically. Child
+lookup is scoped to the admitted tenant and Card; wrong-parent IDs receive the
+same stable unavailable response. Retry receipts recheck current parent, child
+and edit access. A source API case exercises no-op preservation, stale individual
+revisions, concurrent clients (one winner), wrong-parent IDs and revoked replay.
+The exact-image fixture forces the event insert to fail after both updates,
+checks whole-command rollback, retries the original key and verifies replay and
+no-op event/audit counts. Linux execution remains pending for this increment.

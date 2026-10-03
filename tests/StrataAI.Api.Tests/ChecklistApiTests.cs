@@ -9,6 +9,54 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_13_Checklist_rename_checks_both_revisions_preserves_noops_and_rechecks_replays()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient(); using var outsider = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct); await RegisterAndLogin(outsider);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Checklist Card", "Retained", null, DateTimeOffset.UtcNow, ct);
+        var parentPath = $"/cards/{card.Id}/checklists";
+        using var created = await Mutate(owner, HttpMethod.Post, parentPath, new CreateChecklistInput("Original", 1));
+        var first = (await created.Content.ReadFromJsonAsync<ChecklistChange>(ct))!;
+        var path = $"{parentPath}/{first.Checklist.Id}"; var input = new RenameChecklistInput(" Original ", 2, 1);
+        using var denied = await Mutate(outsider, HttpMethod.Patch, path, input);
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        using var invalid = await Mutate(owner, HttpMethod.Patch, path, input with { Title = " " });
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        var before = await store.FindCardAsync(card.Id, ct);
+        using var noop = await Mutate(member, HttpMethod.Patch, path, input);
+        var unchanged = (await noop.Content.ReadFromJsonAsync<ChecklistChange>(ct))!;
+        Assert.False(unchanged.Changed); Assert.Equal(first.Checklist, unchanged.Checklist); Assert.Equal(before, await store.FindCardAsync(card.Id, ct));
+        input = input with { Title = "Renamed" }; var key = Guid.NewGuid().ToString();
+        using var renamed = await Mutate(member, HttpMethod.Patch, path, input, key);
+        Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
+        var change = (await renamed.Content.ReadFromJsonAsync<ChecklistChange>(ct))!;
+        Assert.True(change.Changed); Assert.Equal(3, change.CardVersion); Assert.Equal(2, change.Checklist.Version);
+        Assert.Equal(first.Checklist.Rank, change.Checklist.Rank); Assert.Equal(first.Checklist.CreatedAt, change.Checklist.CreatedAt);
+        using var replay = await Mutate(member, HttpMethod.Patch, path, input, key);
+        Assert.Equal(await renamed.Content.ReadAsStringAsync(ct), await replay.Content.ReadAsStringAsync(ct));
+        foreach (var staleInput in new[] { input with { CardVersion = 3 }, input with { Version = 2 }, input })
+        {
+            using var stale = await Mutate(owner, HttpMethod.Patch, path, staleInput);
+            Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        }
+        var another = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Other Card", null, null, DateTimeOffset.UtcNow, ct);
+        using var wrongParent = await Mutate(owner, HttpMethod.Patch, $"/cards/{another.Id}/checklists/{first.Checklist.Id}", new RenameChecklistInput("Wrong parent", 1, 2));
+        Assert.Equal(HttpStatusCode.NotFound, wrongParent.StatusCode);
+        var responses = await Task.WhenAll(Mutate(owner, HttpMethod.Patch, path, new RenameChecklistInput("Concurrent A", 3, 2)),
+            Mutate(member, HttpMethod.Patch, path, new RenameChecklistInput("Concurrent B", 3, 2)));
+        try { Assert.Single(responses, response => response.StatusCode == HttpStatusCode.OK); Assert.Single(responses, response => response.StatusCode == HttpStatusCode.Conflict); }
+        finally { foreach (var response in responses) response.Dispose(); }
+        var current = (await owner.GetFromJsonAsync<ChecklistPage>(parentPath, ct))!;
+        Assert.Equal(4, current.CardVersion); Assert.Equal(3, Assert.Single(current.Items).Checklist.Version);
+        using var removed = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
+        Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
+        using var lostReplay = await Mutate(member, HttpMethod.Patch, path, input, key);
+        Assert.Equal(HttpStatusCode.NotFound, lostReplay.StatusCode);
+    }
+
+    [Fact]
     public async Task PRD_13_Checklist_creation_is_authorized_CAS_retry_safe_and_empty_progress_is_zero()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
