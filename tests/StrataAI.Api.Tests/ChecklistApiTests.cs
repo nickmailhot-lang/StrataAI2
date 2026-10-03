@@ -8,6 +8,65 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PRD_13_List_copy_preserves_all_active_checklist_content_with_independent_ids(bool crossBoard)
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>(); var children = app.Services.GetRequiredService<IChecklistStore>();
+        var now = DateTimeOffset.UtcNow;
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Copy children", null, null, now, ct);
+        var checklist = await children.CreateAsync(f.Organization, card.Id, "Ordered history", RankToken.After(null), now, ct);
+        var originals = new List<ChecklistItemRecord>(); string? rank = null;
+        for (var index = 0; index < 63; index++)
+        {
+            rank = RankToken.After(rank);
+            originals.Add(await children.CreateItemAsync(f.Organization, checklist.Id, $"Item {index}", rank, now, ct));
+        }
+        originals[0] = (await children.UpdateItemAsync(f.Organization, checklist.Id, originals[0].Id, originals[0].Text, true, now, f.Owner, 1, now, ct))!;
+        var deletedItem = await children.DeleteItemAsync(f.Organization, checklist.Id, originals[^1].Id, 1, now, ct);
+        var removed = await children.CreateAsync(f.Organization, card.Id, "Deleted parent", RankToken.After(checklist.Rank), now, ct);
+        await children.CreateItemAsync(f.Organization, removed.Id, "Hidden descendant", RankToken.After(null), now, ct);
+        await children.DeleteAsync(f.Organization, card.Id, removed.Id, 1, f.Owner, "copy-fixture", now, ct);
+        var destination = f.Board;
+        if (crossBoard)
+        {
+            using var board = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "Destination", visibility = "PRIVATE" });
+            destination = (await board.Content.ReadFromJsonAsync<BoardRecord>(ct))!.Id;
+        }
+        var key = Guid.NewGuid().ToString(); var input = new { destinationBoardId = destination, name = "Checklist copy", version = 1 };
+        using var copied = await Mutate(owner, HttpMethod.Post, $"/lists/{f.List}/copy", input, key);
+        Assert.Equal(HttpStatusCode.Created, copied.StatusCode);
+        var list = (await copied.Content.ReadFromJsonAsync<BoardListRecord>(ct))!;
+        var snapshot = (await owner.GetFromJsonAsync<BoardSnapshot>($"/boards/{destination}", ct))!;
+        var copy = Assert.Single(Assert.Single(snapshot.Lists, entry => entry.List.Id == list.Id).Cards);
+        var page = (await owner.GetFromJsonAsync<ChecklistPage>($"/cards/{copy.Id}/checklists", ct))!;
+        var parent = Assert.Single(page.Items).Checklist;
+        Assert.NotEqual(checklist.Id, parent.Id); Assert.Equal(checklist.Title, parent.Title); Assert.Equal(checklist.Rank, parent.Rank);
+        Assert.Equal(1, parent.Version); Assert.Equal(copy.Id, parent.CardId); Assert.Equal(1, copy.Version);
+        var itemPath = $"/cards/{copy.Id}/checklists/{parent.Id}/items";
+        var first = (await owner.GetFromJsonAsync<ChecklistItemPage>(itemPath, ct))!;
+        Assert.Equal(62, first.Summary.Total); Assert.Equal(0, first.Summary.Completed); Assert.Equal(0, first.Summary.Percent); Assert.Equal(50, first.Items.Count);
+        var second = (await owner.GetFromJsonAsync<ChecklistItemPage>($"{itemPath}?after={first.NextCursor}", ct))!;
+        Assert.Equal(12, second.Items.Count); Assert.Null(second.NextCursor);
+        var rows = first.Items.Concat(second.Items).ToArray();
+        for (var index = 0; index < rows.Length; index++)
+        {
+            var row = rows[index]; var original = originals[index];
+            Assert.NotEqual(original.Id, row.Id); Assert.Equal(parent.Id, row.ChecklistId); Assert.Equal(1, row.Version);
+            Assert.Equal(original.Text, row.Text); Assert.Equal(original.Rank, row.Rank); Assert.False(row.Completed);
+            Assert.Null(row.CompletedAt); Assert.Null(row.CompletedBy); Assert.Null(row.DeletedAt);
+            Assert.Equal(original, await children.FindItemAsync(f.Organization, checklist.Id, original.Id, ct));
+        }
+        Assert.Equal(deletedItem, await children.FindItemAsync(f.Organization, checklist.Id, originals[^1].Id, ct, true));
+        using var replay = await Mutate(owner, HttpMethod.Post, $"/lists/{f.List}/copy", input, key);
+        Assert.Equal(await copied.Content.ReadAsStringAsync(ct), await replay.Content.ReadAsStringAsync(ct));
+        Assert.Equal(62, (await owner.GetFromJsonAsync<ChecklistItemPage>(itemPath, ct))!.Summary.Total);
+    }
+
     [Fact]
     public async Task PRD_13_Public_checklist_reads_follow_current_visibility_and_never_grant_editing()
     {

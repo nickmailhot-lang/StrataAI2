@@ -152,6 +152,34 @@ cp "$scratch/page.json" "$scratch/items-first.json"
 test "$(read_page owner "$itemPath?after=$itemCursor")" = 200
 jq -e '(.items|length)==13 and .nextCursor==null and .summary.total==63 and .summary.completed==1 and all(.items[];.deletedAt==null)' "$scratch/page.json" >/dev/null
 jq -se '[.[].items[].id] | length==63 and (unique|length)==63' "$scratch/items-first.json" "$scratch/page.json" >/dev/null
+# Copy the complete child graph inside the List transaction, beyond GET page size.
+# Every copied item starts incomplete; deleted children are excluded.
+copyKey=$(uuid); copyInput=$(jq -nc --arg board "$board" '{destinationBoardId:$board,name:"Checklist graph copy",version:1}')
+copyPath="/lists/$list/copy"
+before=$(state)
+parentCounts=$(admin "SELECT (SELECT count(*) FROM cards WHERE tenant_id='$org')||'/'||(SELECT count(*) FROM board_lists WHERE tenant_id='$org');")
+for table in checklists checklist_items audit_events work_events background_jobs; do
+  admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+  test "$(request owner POST "$copyPath" "$copyKey" "$copyInput")" = 503
+  test "$before" = "$(state)"
+  test "$parentCounts" = "$(admin "SELECT (SELECT count(*) FROM cards WHERE tenant_id='$org')||'/'||(SELECT count(*) FROM board_lists WHERE tenant_id='$org');")"
+  admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+done
+test "$(request owner POST "$copyPath" "$copyKey" "$copyInput")" = 201
+cp "$scratch/response.json" "$scratch/list-copy.json"
+copiedList=$(jq -r '.id' "$scratch/response.json")
+copiedCard=$(admin "SELECT id FROM cards WHERE tenant_id='$org' AND list_id='$copiedList';")
+copiedChecklist=$(admin "SELECT id FROM checklists WHERE tenant_id='$org' AND card_id='$copiedCard' AND title='Revised preparations';")
+test "$copiedCard" != "$card"; test "$copiedChecklist" != "$checklist"
+test "$(admin "SELECT count(*) FROM checklists WHERE tenant_id='$org' AND card_id='$copiedCard' AND version=1 AND deleted_at IS NULL;")" = 63
+test "$(admin "SELECT count(*) FROM checklist_items WHERE tenant_id='$org' AND checklist_id='$copiedChecklist' AND version=1 AND NOT completed AND completed_at IS NULL AND completed_by IS NULL AND deleted_at IS NULL;")" = 63
+test "$(admin "SELECT count(*) FROM checklist_items s JOIN checklist_items d ON d.tenant_id=s.tenant_id AND d.rank=s.rank AND d.text=s.text AND d.id<>s.id WHERE s.tenant_id='$org' AND s.checklist_id='$checklist' AND s.deleted_at IS NULL AND d.checklist_id='$copiedChecklist';")" = 63
+test "$(read_page owner "/cards/$copiedCard/checklists/$copiedChecklist/items")" = 200
+jq -e '.cardVersion==1 and .summary.total==63 and .summary.completed==0 and .summary.percent==0 and (.items|length)==50 and .nextCursor!=null' "$scratch/page.json" >/dev/null
+after=$(state)
+test "$(request owner POST "$copyPath" "$copyKey" "$copyInput")" = 201
+cmp "$scratch/list-copy.json" "$scratch/response.json"
+test "$after" = "$(state)"
 item=$(jq -r '.item.id' "$scratch/item-created.json")
 editPath="$itemPath/$item"; completeKey=$(uuid); completeInput='{"text":" Pack supplies ","completed":true,"cardVersion":4,"checklistVersion":3,"version":1}'
 before=$(state)

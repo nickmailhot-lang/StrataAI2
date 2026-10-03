@@ -199,3 +199,19 @@ discovery. Source API coverage uses real visibility/archive commands; mandatory
 exact-image coverage checks public/outsider reads, denied writes, read-only state,
 private retraction and unchanged child/audit/event/receipt state during reads.
 Strict compilation is checked locally; Linux execution remains required.
+
+PRD-07 List copy includes every active Checklist and its active items for every
+retained copied Card, including archived Cards, without using UI pagination.
+The source graph is unchanged. Copies preserve titles, text and ranks, receive
+new IDs, creation/update timestamps and revision 1, and omit deleted children.
+Copied items start incomplete with null completion attribution and 0% progress:
+completion belongs to the original task's history and is not attributed to a
+newly created task. This explicitly chosen policy concerns checklist completion;
+the established Card-date copy policy remains separately defined in PRD-12.
+Same-Board and same-Organization cross-Board copies follow the existing source
+and destination edit admission. Checklist graph writes share the List/Card/label
+copy transaction, root LIST_COPIED audit/event/outbox and original retry receipt.
+Source cases cover both Board contexts and a 62-item graph after child deletion;
+mandatory exact-image coverage copies 63 Checklists/63 items, forces child and
+late audit/event/queue failures, and checks total rollback and retry recovery.
+No new service, migration or database grants are needed. Linux execution pending.

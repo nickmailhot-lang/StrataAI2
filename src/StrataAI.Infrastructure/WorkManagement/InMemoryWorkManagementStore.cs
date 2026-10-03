@@ -437,6 +437,16 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
               foreach (var label in labelMap.Values) _labels.TryAdd(label.Id, label);
               var cardMap = sourceCards.Select((item, index) => (item.Id, Copy: cards[index].Id)).ToDictionary(item => item.Id, item => item.Copy);
               foreach (var association in associations) _cardLabels.Add((cardMap[association.CardId], labelMap[association.LabelId].Id));
+            foreach (var checklist in _checklists.Values.Where(item => item.OrganizationId == source.OrganizationId && sourceIds.Contains(item.CardId) && item.DeletedAt is null).ToArray())
+            {
+                var child = checklist with { Id = Guid.NewGuid(), CardId = cardMap[checklist.CardId], CreatedAt = createdAt, UpdatedAt = createdAt, Version = 1 };
+                _checklists.Add(child.Id, child);
+                foreach (var item in _checklistItems.Values.Where(item => item.OrganizationId == source.OrganizationId && item.ChecklistId == checklist.Id && item.DeletedAt is null).ToArray())
+                {
+                    var copy = item with { Id = Guid.NewGuid(), ChecklistId = child.Id, Completed = false, CompletedAt = null, CompletedBy = null, CreatedAt = createdAt, UpdatedAt = createdAt, Version = 1 };
+                    _checklistItems.Add(copy.Id, copy);
+                }
+            }
             return Task.FromResult(copied);
         }
     }

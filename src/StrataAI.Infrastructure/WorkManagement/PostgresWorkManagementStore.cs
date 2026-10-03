@@ -912,6 +912,19 @@ internal sealed partial class PostgresWorkManagementStore(
             SELECT copied_id, tenant_id, @destination_board_id, @id, title, description, rank, lifecycle_state, @created_at, @created_at, 1,
                 CASE WHEN lifecycle_state = 'ARCHIVED' THEN @created_at ELSE NULL END, start_at, due_at, due_timezone, due_has_time, due_complete
             FROM mapped RETURNING id
+            ), mapped_checklists AS MATERIALIZED (
+              SELECT c.*,m.copied_id AS copied_card_id,gen_random_uuid() AS copied_id
+              FROM checklists c JOIN mapped m ON m.id=c.card_id AND m.tenant_id=c.tenant_id
+              JOIN inserted i ON i.id=m.copied_id WHERE c.tenant_id=@tenant_id AND c.deleted_at IS NULL
+            ), inserted_checklists AS (
+              INSERT INTO checklists(id,tenant_id,card_id,title,rank,created_at,updated_at,version)
+              SELECT copied_id,tenant_id,copied_card_id,title,rank,@created_at,@created_at,1 FROM mapped_checklists RETURNING id
+            ), inserted_items AS (
+              INSERT INTO checklist_items(id,tenant_id,checklist_id,text,rank,completed,completed_at,completed_by,created_at,updated_at,version)
+              SELECT gen_random_uuid(),c.tenant_id,c.copied_id,i.text,i.rank,false,NULL,NULL,@created_at,@created_at,1
+              FROM mapped_checklists c JOIN inserted_checklists parent ON parent.id=c.copied_id
+              JOIN checklist_items i ON i.tenant_id=c.tenant_id AND i.checklist_id=c.id
+              WHERE i.deleted_at IS NULL RETURNING id
             )
             INSERT INTO card_labels(tenant_id,board_id,card_id,label_id,created_at,updated_at,version)
             SELECT @tenant_id,@destination_board_id,m.copied_id,labels.destination_id,@created_at,@created_at,1
