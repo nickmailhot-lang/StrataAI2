@@ -387,3 +387,15 @@ unchanged UTC Card/Reminder state. Desktop/phone browser scenarios check applied
 policy and clearing against persisted API state. Those new API/database/browser
 cases require Linux exact-image results; administrator MUI configuration and
 dedicated live-policy/accessibility scenarios remain outstanding. No ticket closes.
+
+The first actual release-Worker fixture (run 37085562302) failed its existing
+60-second successful-job check. The fixture queues the lifecycle events for 76
+chosen Cards before the new due Reminder. The Organization Worker previously
+processed only one job per Organization before a one-second sleep, imposing a
+delay on each ready event in that backlog. It now drains at most 32 jobs or 250 ms
+per Organization per pass before proceeding to the next Organization. Every job
+retains independent claim/lease/acknowledgment and store-level retry backoff; the
+existing one-second idle/pass delay remains. The fixture's 60-second check is
+unchanged. Safe queue/status aggregates are captured on failure before cleanup,
+without personal IDs or metadata. The throughput change and actual delivery need
+the next exact-image result; no successful fire is claimed from the failed run.

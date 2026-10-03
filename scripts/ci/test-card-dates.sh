@@ -10,7 +10,16 @@ cleanup() {
   rm -rf "$scratch"
 }
 trap cleanup EXIT
-trap 'echo "Card date check failed at line $LINENO" >&2' ERR
+failure() {
+  echo "Card date check failed at line $1" >&2
+  if test "$worker_scoped" = true; then
+    # Safe aggregates survive Worker cleanup without exposing personal IDs,
+    # message bodies, queue metadata or credentials in workflow logs.
+    admin "SELECT job_type,state,last_error_code,count(*),max(attempt_count),count(*) FILTER(WHERE available_at<=clock_timestamp()) FROM background_jobs WHERE tenant_id='$org' GROUP BY job_type,state,last_error_code ORDER BY job_type,state;" >&2 || true
+    admin "SELECT status,count(*) FROM card_reminders WHERE tenant_id='$org' GROUP BY status ORDER BY status;" >&2 || true
+  fi
+}
+trap 'failure "$LINENO"' ERR
 uuid() { cat /proc/sys/kernel/random/uuid; }
 for actor in owner member outsider; do
   jq -nc --arg email "dates-$actor-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"dates-fixture-battery-horse",displayName:"Dates fixture"}' > "$scratch/$actor.credentials"
