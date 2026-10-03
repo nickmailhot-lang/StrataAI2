@@ -249,3 +249,19 @@ next cursors must identify the actual final row of a full 50-row page. Malformed
 foreign or internally inconsistent data is rejected before UI use. Thirty-eight
 focused cases exercise this boundary; typecheck, lint and production build pass.
 This boundary prepares the MUI implementation; it does not complete that UI.
+
+Card detail now offers lazy MUI Checklist/item disclosures with named keyboard
+controls, bounded next/first pages, text completion status and accessible progress.
+Opening Card detail alone sends no new Checklist request. Reads use the shared
+same-origin bounded transport and validated response boundary; mismatched Card
+revisions are rejected. Access re-admission immediately hides data and cancels
+pending reads; a refreshed Card revision reloads an open disclosure. Fixed error
+messages offer safe retry and Board refresh. This is the read surface; create,
+edit/reorder/delete and mutation recovery controls remain required.
+
+Forty-three focused reader/response tests and all 26 Board tests pass locally;
+typecheck, lint and production build pass. Two mandatory browser cases are
+registered for desktop/390px keyboard reads, full-page WCAG checks and two-session
+CHECKLIST_ITEM_COMPLETED refresh through the real API/outbox/live layer. Listing
+those cases confirms discovery only; actual exact-image browser execution is
+pending, including existing cached-detail/performance budgets.

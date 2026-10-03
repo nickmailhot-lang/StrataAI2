@@ -22,6 +22,7 @@ import {
   type WorkCard,
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
+import { CardChecklists } from './CardChecklists';
 import { CardDateDisplay } from './CardDateDisplay';
 import { BoardDateProvider } from './BoardDateBadges';
 import { BoardCardLink } from './BoardCardLink';
@@ -691,6 +692,9 @@ function BoardContent() {
               disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || cardRecovery}
               unavailable={snapshotReading || !!loadError} onBusyChange={setBusy} onRecoveryChange={setReminderRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
+            {cardId && <CardChecklists organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardLabels key={`labels-${card.id}`} organizationId={snapshot.board.organizationId}
               boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
