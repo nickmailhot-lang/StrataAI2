@@ -104,3 +104,31 @@ durable metadata/digest/scan-job publication, scanner provider, Worker lease/CAS
 outbox, controlled delivery, preview/cover, tombstone/retention reconciliation and
 the complete security/browser/accessibility/performance matrix. No binary upload
 or download endpoint is enabled by this adapter alone. No ticket is closed.
+
+### Local ClamAV transport foundation
+
+`ClamAvAttachmentMalwareScanner` implements the official [ClamD INSTREAM
+protocol](https://docs.clamav.net/manual/Usage/ClamdProtocol.html) over an
+operator-owned Unix domain socket. The production Worker image runs Linux.
+There is no plaintext TCP fallback: ClamD TCP provides neither authentication
+nor encryption. Operators must mount the private scanner socket into the Worker
+with permission restricted to its runtime identity and provision/update the
+external scanner independently; the three application images are unchanged.
+
+The adapter streams 64 KiB chunks with four-byte network-order lengths and a
+zero-length terminator, bounds bytes to 1 GiB, and accepts only a bounded
+NUL-terminated printable response. Exact `stream: OK` is Clean; a nonempty
+`stream: … FOUND` is Infected. Errors, missing sockets, oversized/malformed
+responses and the configured 100 ms–30 s total deadline are Unavailable.
+Caller cancellation propagates. It does not dispose the caller's stream,
+retain/log signature text, pass names/paths to the daemon, or publish a verdict.
+The existing quarantine coordinator still proves full-stream size/digest before
+the lease-fenced database adapter can commit metadata, audit and outbox effects.
+
+Fourteen tests exercise real Unix socket framing, complete multi-chunk bytes,
+fragmented responses, clean/infected/error/EOF/malformed/oversized responses,
+deadline, cancellation, missing sockets and invalid paths. Warning-as-error
+compilation passes locally; execution is pending Linux CI. These fixtures emulate
+the daemon protocol; they do not prove deployed ClamAV, fresh signatures, scanner
+limits, mounted socket permissions or production provider readiness. Runtime
+registration and deployment acceptance remain open.
