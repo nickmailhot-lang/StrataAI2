@@ -5,7 +5,7 @@ base=http://localhost:8088
 scratch=$(mktemp -d)
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
-  admin 'GRANT INSERT ON checklists, checklist_items, work_events, background_jobs TO strataai_api_runtime;' >/dev/null || true
+  admin 'GRANT INSERT ON checklists, checklist_items, audit_events, work_events, background_jobs TO strataai_api_runtime;' >/dev/null || true
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -244,6 +244,36 @@ jq -e '.summary.completed==1 and .summary.total==62' "$scratch/page.json" >/dev/
 test "$(admin "SELECT count(*) FROM checklist_items WHERE tenant_id='$org' AND id='$item' AND deleted_at IS NOT NULL;")" = 1
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_DELETED';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_DELETED';")" = 1
+cascadePath="$path/$checklist"; cascadeKey=$(uuid); cascadeInput='{"confirmed":true,"cardVersion":12,"version":11}'
+oldTombstones=$(admin "SELECT md5(jsonb_agg(to_jsonb(i) ORDER BY id)::text) FROM checklist_items i WHERE tenant_id='$org' AND checklist_id='$checklist' AND deleted_at IS NOT NULL;")
+before=$(state)
+test "$(request member DELETE "$cascadePath" "$(uuid)" "$cascadeInput")" = 404
+test "$(request owner DELETE "$cascadePath" "$(uuid)" "$(jq -c '.confirmed=false' <<< "$cascadeInput")")" = 400
+for table in audit_events work_events background_jobs; do
+  admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+  test "$(request owner DELETE "$cascadePath" "$cascadeKey" "$cascadeInput")" = 503
+  test "$before" = "$(state)"
+  admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+done
+test "$(request owner DELETE "$cascadePath" "$cascadeKey" "$cascadeInput")" = 200
+jq -e '.changed and .cardVersion==13 and .checklist.version==12 and .checklist.deletedAt!=null and .deletedItems==62' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/cascade.json"
+after=$(state)
+test "$(request owner DELETE "$cascadePath" "$cascadeKey" "$cascadeInput")" = 200
+cmp "$scratch/cascade.json" "$scratch/response.json"
+test "$after" = "$(state)"
+test "$(admin "SELECT count(*) FROM checklist_items WHERE tenant_id='$org' AND checklist_id='$checklist' AND deleted_at IS NULL;")" = 0
+test "$(admin "SELECT md5(jsonb_agg(to_jsonb(i) ORDER BY id)::text) FROM checklist_items i WHERE tenant_id='$org' AND checklist_id='$checklist' AND (id='$item' OR rank=lpad('64000',30,'0'));")" = "$oldTombstones"
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_DELETED';")" = 63
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type='CHECKLIST_DELETED' AND entity_id='$checklist';")" = 1
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_DELETED';")" = 1
+test "$(read_page owner "$itemPath")" = 404
+test "$(request owner POST "$path" "$key" "$payload")" = 404
+test "$(request owner DELETE "$editPath" "$deleteKey" "$deleteInput")" = 404
+test "$(request owner DELETE "$cascadePath" "$(uuid)" '{"confirmed":true,"cardVersion":13,"version":12}')" = 200
+jq -e '.changed==false and .cardVersion==13 and .deletedItems==0' "$scratch/response.json" >/dev/null
+test "$(read_page member "$path")" = 200
+jq -e '(.items|length)==50 and all(.items[];.checklist.deletedAt==null)' "$scratch/page.json" >/dev/null
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 test "$(read_page member "$path?after=$cursor")" = 404
 test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 404
@@ -258,5 +288,6 @@ jq -e '.canEdit==false' "$scratch/page.json" >/dev/null
 before=$(state)
 test "$(request owner POST "$path" "$key" "$payload")" = 404
 test "$(request owner DELETE "$editPath" "$deleteKey" "$deleteInput")" = 404
+test "$(request owner DELETE "$cascadePath" "$cascadeKey" "$cascadeInput")" = 404
 test "$before" = "$(state)"
 echo 'Checklist creation, canonical reads/progress, retry recovery, atomic rollback, rank exhaustion and lifecycle admission passed.'

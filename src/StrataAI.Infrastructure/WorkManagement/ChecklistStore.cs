@@ -7,10 +7,10 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed partial class InMemoryWorkManagementStore : IChecklistStore
 {
     private readonly Dictionary<Guid, ChecklistRecord> _checklists = [];
-    public Task<ChecklistRecord?> FindAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct)
+    public Task<ChecklistRecord?> FindAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct, bool includeDeleted = false)
     {
         lock (_sync) return Task.FromResult(_checklists.TryGetValue(checklist, out var value) && value.OrganizationId == organization &&
-            value.CardId == card && value.DeletedAt is null ? value : null);
+            value.CardId == card && (includeDeleted || value.DeletedAt is null) ? value : null);
     }
     public Task<ChecklistRecord?> RenameAsync(Guid organization, Guid card, Guid checklist, string title, long version, DateTimeOffset now, CancellationToken ct)
     {
@@ -51,12 +51,13 @@ internal sealed partial class PostgresWorkManagementStore : IChecklistStore
     private const string ChecklistColumns = "c.id,c.tenant_id,c.card_id,c.title,c.rank,c.created_at,c.updated_at,c.version,c.deleted_at";
     private static ChecklistRecord ReadChecklist(NpgsqlDataReader row) => new(row.GetGuid(0), row.GetGuid(1), row.GetGuid(2), row.GetString(3), row.GetString(4),
         row.GetFieldValue<DateTimeOffset>(5), row.GetFieldValue<DateTimeOffset>(6), row.GetInt64(7), row.IsDBNull(8) ? null : row.GetFieldValue<DateTimeOffset>(8));
-    public async Task<ChecklistRecord?> FindAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct)
+    public async Task<ChecklistRecord?> FindAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct, bool includeDeleted = false)
     {
         if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Checklist reads require the owning scope.");
         await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
-        await using var query = new NpgsqlCommand($"SELECT {ChecklistColumns} FROM checklists c WHERE c.tenant_id=@tenant AND c.card_id=@card AND c.id=@id AND c.deleted_at IS NULL;", session.Connection, session.Transaction);
+        await using var query = new NpgsqlCommand($"SELECT {ChecklistColumns} FROM checklists c WHERE c.tenant_id=@tenant AND c.card_id=@card AND c.id=@id AND (@deleted OR c.deleted_at IS NULL);", session.Connection, session.Transaction);
         query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("card", card); query.Parameters.AddWithValue("id", checklist);
+        query.Parameters.AddWithValue("deleted", includeDeleted);
         await using var reader = await query.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? ReadChecklist(reader) : null;
     }

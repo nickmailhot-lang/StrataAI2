@@ -160,3 +160,25 @@ exact-image tests cover contributor denial, confirmation, retained history,
 no-op/replay, late event/queue rollback, authoritative counts and archive denial.
 Strict build and shell checks pass; Linux execution is pending. Checklist aggregate
 delete/cascade and wider lifecycle/copy/public/MUI acceptance are unfinished.
+
+Whole-checklist DELETE now requires explicit confirmation, elevated Board
+administration and current Card/Checklist revisions on active parents. It
+retains the Checklist tombstone and cascades to every active item, preserving
+content/completion attribution and existing tombstones. PostgreSQL performs the
+cascade and per-item audit in a scoped data-modifying statement without returning
+an unbounded item collection. One CHECKLIST_DELETED Card aggregate invalidation
+covers the cascade; individual direct item deletion still publishes its own
+CHECKLIST_ITEM_DELETED event. Card revision, parent/child tombstones, item and
+Checklist audits, event/outbox and retry receipt share the owning transaction.
+The acknowledgement reports the active items actually deleted. Current-revision
+repeat deletion is a no-op, while original-key replay retains its original count.
+Child reads and earlier child mutation receipts are unavailable after cascade.
+
+A source API case creates 63 items, completes one and separately deletes another,
+then checks a 62-item cascade, retained attribution/old tombstone, contributor and
+confirmation denial, no-op/replay and hidden child receipts. Mandatory exact-image
+coverage forces audit/event/queue failures after cascade writes and checks complete
+rollback, original-key recovery, per-item audit counts, old tombstone preservation
+and archive replay denial. Strict build and shell syntax pass; Linux execution of
+these new cases is pending. Public read, copy/move/parent-retention integration,
+MUI/realtime/accessibility and full performance acceptance remain unfinished.

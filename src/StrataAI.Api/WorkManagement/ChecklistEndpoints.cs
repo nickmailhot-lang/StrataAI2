@@ -6,6 +6,12 @@ public static partial class WorkManagementEndpoints
 {
     private static void MapChecklistEndpoints(WebApplication app)
     {
+        app.MapDelete("/cards/{cardId:guid}/checklists/{checklistId:guid}", async (Guid cardId, Guid checklistId, [Microsoft.AspNetCore.Mvc.FromBody] DeleteChecklistInput input, HttpContext context, ChecklistService service, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            var result = await service.DeleteAsync(cardId, checklistId, actor.Value, input, context.TraceIdentifier, ct);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         app.MapDelete("/cards/{cardId:guid}/checklists/{checklistId:guid}/items/{itemId:guid}", async (Guid cardId, Guid checklistId, Guid itemId, [Microsoft.AspNetCore.Mvc.FromBody] DeleteChecklistItemInput input, HttpContext context, ChecklistService service, CancellationToken ct) =>
         {
             var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();

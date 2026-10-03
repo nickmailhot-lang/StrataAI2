@@ -30,7 +30,8 @@ public interface IChecklistStore
     Task<ChecklistItemRecord> CreateItemAsync(Guid organization, Guid checklist, string text, string rank, DateTimeOffset now, CancellationToken ct);
     Task<string> NextRankAsync(Guid organization, Guid card, CancellationToken ct);
     Task<ChecklistRecord> CreateAsync(Guid organization, Guid card, string title, string rank, DateTimeOffset now, CancellationToken ct);
-    Task<ChecklistRecord?> FindAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct);
+    Task<ChecklistRecord?> FindAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct, bool includeDeleted = false);
+    Task<ChecklistDeletionStoreResult?> DeleteAsync(Guid organization, Guid card, Guid checklist, long version, Guid actor, string correlationId, DateTimeOffset now, CancellationToken ct);
     Task<ChecklistRecord?> RenameAsync(Guid organization, Guid card, Guid checklist, string title, long version, DateTimeOffset now, CancellationToken ct);
 }
 
