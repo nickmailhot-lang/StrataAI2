@@ -2,9 +2,13 @@
 set -euo pipefail
 test "${CI:-}" = true || { echo 'Disposable Card date fixtures may run only in CI.' >&2; exit 1; }
 base=http://localhost:8088
-scratch=$(mktemp -d)
+scratch=$(mktemp -d); worker_scoped=false
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
-cleanup() { admin 'GRANT INSERT ON card_assignment_notifications, background_jobs TO strataai_api_runtime;' >/dev/null || true; rm -rf "$scratch"; }
+cleanup() {
+  admin 'GRANT INSERT ON card_assignment_notifications, background_jobs TO strataai_api_runtime;' >/dev/null || true
+  if test "$worker_scoped" = true; then docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null || true; fi
+  rm -rf "$scratch"
+}
 trap cleanup EXIT
 trap 'echo "Card date check failed at line $LINENO" >&2' ERR
 uuid() { cat /proc/sys/kernel/random/uuid; }
@@ -181,6 +185,37 @@ test "$(request owner POST "/lists/$list/archive" "$listArchiveKey" '{"version":
 test "$after" = "$(state)"
 test "$(admin "SELECT version=9 FROM cards WHERE tenant_id='$org' AND id='$card';")" = t
 test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$reminder';")" = 6
+# Exercise the complete production path: explicit personal choice -> canonical
+# future outbox job -> leased release Worker -> one private in-app notification.
+fireOwner=$(jq -r '.user.id' "$scratch/owner.user")
+[[ "$fireOwner" =~ ^[0-9a-fA-F-]{36}$ ]]
+# The release Worker requires verified recipients by default. Provision the
+# disposable account accordingly; do not relax the production delivery policy.
+admin "UPDATE users SET email_verified=true,version=version+1,updated_at=now() WHERE id='$fireOwner';" >/dev/null
+fireCard=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"title":"Worker due reminder"}' "$base/lists/$list/cards" | jq -r '.id')
+firePath="/cards/$fireCard/reminders"; fireDue=$(date -u -d '+20 seconds' '+%Y-%m-%dT%H:%M:%SZ')
+test "$(request owner PATCH "/cards/$fireCard/dates" "$(uuid)" "$(jq -nc --arg due "$fireDue" '{dueAt:$due,dueTimezone:"UTC",dueHasTime:true,dueComplete:false,version:1}')")" = 200
+fireKey=$(uuid); fireChoice='{"intervalCode":"AT_DUE","enabled":true,"cardVersion":2,"version":0}'
+test "$(request owner POST "$firePath" "$fireKey" "$fireChoice")" = 200
+fireReminder=$(jq -r '.reminder.id' "$scratch/response.json")
+cp "$scratch/response.json" "$scratch/fire-created.json"
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND card_id='$fireCard';")" = 0
+export STRATAAI_TEST_EVENT_ORGANIZATION_ID="$org"; worker_scoped=true
+docker compose -f compose.release.yml -f scripts/ci/compose.work-event-test.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
+for ((attempt=0;attempt<60;attempt++)); do
+  if test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$fireReminder' AND state='SUCCEEDED';")" = 1; then break; fi
+  sleep 1
+done
+test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$fireReminder' AND state='SUCCEEDED';")" = 1
+test "$(admin "SELECT generation=1 AND version=2 AND status='FIRED' FROM card_reminders WHERE tenant_id='$org' AND id='$fireReminder';")" = t
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND card_id='$fireCard' AND notification_type='REMINDER_FIRED' AND actor_id=recipient_id;")" = 1
+curl --fail --silent --show-error -b "$scratch/owner.cookies" "$base$firePath" | jq -e '.reminder.status=="FIRED" and .reminder.version==2 and .reminder.generation==1' >/dev/null
+curl --fail --silent --show-error -b "$scratch/owner.cookies" "$base/organizations/$org/notifications" | jq -e --arg card "$fireCard" '.items | any(.entityId==$card and .type=="REMINDER_FIRED")' >/dev/null
+test "$(request owner POST "$firePath" "$fireKey" "$fireChoice")" = 200
+cmp "$scratch/fire-created.json" "$scratch/response.json"
+test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$fireReminder';")" = 1
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_type='Reminder' AND entity_id='$fireReminder' AND event_type='REMINDER_FIRED' AND ready;")" = 1
+test "$(admin "SELECT version=2 AND lifecycle_state='ACTIVE' FROM cards WHERE tenant_id='$org' AND id='$fireCard';")" = t
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 before=$(state)
 test "$(request member POST "$reminderPath" "$reminderKey" "$choice")" = 404
@@ -189,3 +224,4 @@ echo 'Date-command Reminder generations, canonical future jobs, replay/no-op, co
 echo 'Personal Reminder configuration, recipient privacy, stable cancellation, private events and revoked replay passed.'
 echo 'Card archive/restore Reminder suspension, future generation renewal and archive receipt deduplication passed.'
 echo 'List/Board archive contexts, all 76 chosen Cards, selective renewal, cancelled-choice preservation and lifecycle publication rollback passed.'
+echo 'Real release Worker Reminder delivery, self inbox, canonical FIRED revision and post-delivery receipt deduplication passed.'

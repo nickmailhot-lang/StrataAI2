@@ -328,3 +328,20 @@ Cards, private cancellation, selective renewal and a forced publication failure
 that must roll back the List and all Reminder changes. Local strict build and
 shell syntax passed; the new source/container cases need their Linux run.
 Organization lifecycle commands and MUI configuration remain outstanding.
+
+The Card detail now includes explicit personal Reminder configuration in MUI.
+It reads the current account and private choice on demand, checks both Card and
+Reminder revisions, and retains the original body and idempotency key after an
+uncertain response. Account changes, access revocation and live invalidations
+force fresh admission; an expired interval cannot be submitted. Personal live
+updates are re-read even when the Card revision has not changed. Local validation
+passed 25 Reminder tests, including expiry, conflict and revoked-access recovery.
+
+Mandatory desktop and phone keyboard scenarios now exercise two live clients,
+lost acknowledgment recovery and cancellation without reloading. The date
+container fixture also provisions a verified disposable recipient, configures a
+future Reminder through the API, and checks actual delivery by the unchanged
+release Worker image, one self notification, canonical FIRED revision and
+post-delivery receipt replay. These new browser and Worker scenarios require
+their own exact-image CI result. Organization lifecycle, Board timezone policy
+and full PRD-12 acceptance remain outstanding; the ticket remains open.

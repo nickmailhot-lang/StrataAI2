@@ -11,6 +11,7 @@ function instant(text: string): bigint {
   return BigInt(milliseconds) * 10000n + BigInt((match[2] ?? '').padEnd(7, '0'));
 }
 export function sameDateInstant(left: string, right: string): boolean { return instant(left) === instant(right); }
+export function dateInstantTicks(value: string): bigint { return instant(value); }
 export function dateTimezone(zone: string): string {
   if (!zone || zone.length > 100 || zone.trim() !== zone) throw new Error('Invalid date timezone');
   new Intl.DateTimeFormat('en', { timeZone: zone }).format(0);
