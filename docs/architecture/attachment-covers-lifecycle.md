@@ -343,3 +343,11 @@ unavailable exclusion, seek boundaries, stale Card revision, archive withdrawal
 and restoration with current File version. HTTP checks cover no-store, current
 member, anonymous/foreign/revoked refusal and malformed cursor. Local compilation
 passes; actual new Linux execution remains pending.
+
+The reordered e27a7da run passes scan activation, cover commands and protected
+preview reads. A later scan recovery fixture also uses the shared queue; cover
+commands now deliver their six genuine outbox jobs through the restricted
+PostgresWorkEventDeliveryStore/Worker handler and lease acknowledgment. Four
+cover changes must have event-feed readiness. This validates delivery while
+preserving canonical jobs rather than deleting or rescheduling fixture effects.
+The complete Linux job and candidate assertions still await passing CI.
