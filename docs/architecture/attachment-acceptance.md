@@ -104,3 +104,24 @@ store constructor. Its production scope-refusal case and 280 prior Domain cases
 passed; PostgreSQL and web jobs passed. The fixture now registers Demo identity
 and its clock using the existing registrations. Pagination/scope/identity
 assertions are unchanged; repaired execution remains pending.
+
+The internal URL command/read API now wraps the metadata primitives with current
+Organization membership and Board view/edit admission under parent locks.
+GET /cards/{id}/attachments returns 50 newest-first metadata records and a Card-
+bound timestamp/ID cursor; malformed cursors are evaluated only after admission.
+POST /cards/{id}/attachments/url accepts title, URL and expected Card revision;
+it reuses Domain validation, retains actor/intent retry receipts, increments Card
+version without changing other fields, and writes metadata/audit/content-free
+Card invalidation plus Worker outbox in the existing production transaction.
+Replay revalidates current admission and the referenced active metadata. Public
+visibility alone grants no internal attachment read. Anonymous reads require
+sign-in; public/Owner Portal safe projections are unfinished. Archived parents
+retain read-only metadata, while deleted parents refuse disclosure and creation.
+
+Eight new API-host cases compile for canonical receipt/replay/key reuse and stale
+CAS, card-field preservation, invalid URL schemes/credentials without effects,
+revocation, 50+13 paging and Card-bound cursors, public nonmember denial, anonymous
+denial, archived/deleted Card/List parent handling and retained metadata history.
+Warning-as-error build passes; execution and production rollback/outbox evidence
+are pending CI. No client attachment UI, upload/provider/scanner/download/cover
+or complete FR/AC/TC acceptance is claimed.
