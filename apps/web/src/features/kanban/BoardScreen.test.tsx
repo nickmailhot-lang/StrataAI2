@@ -723,4 +723,39 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(JSON.parse(writes[0].body as string)).toEqual({ destinationBoardId: board, name: 'Planning copy', version: 1 });
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
   });
+  it('fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot', async () => {
+    const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+    const org = uuid(1), board = uuid(2), card = uuid(3), actor = uuid(8);
+    let current = structuredClone(fixture);
+    current.board.id = board; current.board.organizationId = org;
+    current.lists[0].list.id = uuid(6); current.lists[0].cards[0].id = card;
+    const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
+    const writes: RequestInit[] = [];
+    const receipt = { organizationId: org, boardId: board, cardId: card, cardVersion: 4, attachment: {
+      id: uuid(4), organizationId: org, cardId: card, uploaderId: actor, kind: 1, displayName: 'Reference',
+      url: 'https://example.test/reference', mimeType: null, sizeBytes: null, scanStatus: 0, scannedAt: null,
+      createdAt: '2026-10-03T08:00:00.123456Z', updatedAt: '2026-10-03T08:00:00.123456Z', version: 1, deletedAt: null } };
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+      const path = String(input);
+      if (path.endsWith('/me')) return response(profile);
+      if (path.endsWith('/attachments/url')) {
+        writes.push(options!); current = structuredClone(current); current.lists[0].cards[0].version = 4;
+        return writes.length === 1 ? response({ code: 'work_storage_unavailable' }, 503) : response(receipt);
+      }
+      return response(current);
+    }));
+    mount(`/app/${org}/boards/${board}/cards/${card}`);
+    const add = await screen.findByRole('button', { name: 'Add link attachment' }); await waitFor(() => expect(add).toBeEnabled()); fireEvent.click(add);
+    fireEvent.change(await screen.findByLabelText(/New link attachment title/), { target: { value: 'Reference' } });
+    fireEvent.change(screen.getByLabelText(/Attachment URL/), { target: { value: 'https://example.test/reference' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create link attachment' }));
+    const retry = await screen.findByRole('button', { name: 'Retry link attachment creation' }); await waitFor(() => expect(retry).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Add checklist' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Save card' })).toBeDisabled();
+    expect(writes).toHaveLength(1); fireEvent.click(retry); await screen.findByText('Link attachment created.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Add checklist' })).toBeEnabled());
+    expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
+    expect(JSON.parse(writes[0].body as string)).toEqual({ title: 'Reference', url: 'https://example.test/reference', cardVersion: 3 });
+    expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
+  });
+
 });

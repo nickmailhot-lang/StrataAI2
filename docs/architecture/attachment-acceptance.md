@@ -161,3 +161,28 @@ closed. No command is emitted by this read-only panel. URL creation UI and all f
 capabilities remain incomplete. All 46 focused panel/codec/Board cases pass;
 typecheck/lint pass. Full web regression is running. Real browser keyboard/mobile,
 context/performance and latest immutable-image proof remain pending.
+
+The MUI URL creation control is now integrated in active Card/List detail. It
+requires explicit profile/revision review, validates a bounded plain-text title
+and credential-free HTTP(S) URL, pins the actor/title/URL/Card revision/retry key,
+and validates the complete acknowledged scope/actor/intent before success. Dirty
+fields survive a newer snapshot and require explicit discard for a new review.
+Unconfirmed outcomes keep immutable original intent; retries are explicit, check
+the same signed-in actor and never retarget a newer version. Definite rejection
+blocks preserved fields until discard. Drafts hide during re-admission; navigation
+aborts work and retires scope. Global attachment recovery blocks other mutations
+while its own original retry remains enabled. All eight focused creation cases
+pass. A Board integration case proves competing saves/Checklist creation blocked
+and two identical original commands across newer snapshot; its corrected Save
+card locator passes. Existing 26 Board cases passed in the same focused run.
+Typecheck/lint pass. The previous full read-panel suite passed 892 cases; the
+updated full creation suite is running.
+
+Two release browser scenarios at desktop 1280/mobile 390 are discovered. They
+require keyboard creation, local unsafe-URL refusal, a real committed command
+whose reply is replaced with 503, identical original retry with one canonical
+metadata row/Card increment, recovery focus, interlocks, safe link attributes,
+explicit disclosure/hide and WCAG checks. Discovery is not executed acceptance;
+CI must run them against the immutable images. Production URL transaction fixture,
+latest required-ci and the complete attachment file/storage/scanner/cover/lifecycle/
+performance matrix remain open. No binary upload or scanner capability is exposed.
