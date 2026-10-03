@@ -14,6 +14,7 @@ using StrataAI.Infrastructure.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMetrics();
+builder.Services.AddStrataAiOperatorMetrics(builder.Configuration, typeof(Program).Assembly);
 builder.Services.AddSingleton<BoardSharingTelemetry>();
 builder.Services.AddSingleton<ChecklistClientTelemetry>();
 // Transport connection tokens appear in request query strings. Retain warnings

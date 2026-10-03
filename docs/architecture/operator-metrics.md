@@ -1,0 +1,44 @@
+# API operator metrics export (ARCH-08, partial)
+
+The existing native `StrataAI.BoardSharing` and `StrataAI.ChecklistClient` meters
+can now export through OpenTelemetry .NET 1.19.1 using OTLP HTTP/protobuf.
+The API registers the exporter only when `STRATAAI_METRICS_OTLP_ENDPOINT` is
+explicitly configured. `compose.release.yml` forwards this setting and optional
+`STRATAAI_METRICS_OTLP_HEADERS` from external operator configuration. Nothing in
+the immutable images embeds a collector address or credential.
+
+Set the endpoint to an operator-controlled receiver's full metrics URL, for
+example `http://collector:4318/v1/metrics` on a private deployment network or an
+HTTPS endpoint. Optional headers use the OTLP exporter's header format; keep
+credentials in deployment secret configuration. URI user info, query, fragment,
+non-HTTP schemes, relative URLs, excessive URL length and a missing `/v1/metrics`
+suffix are rejected with a generic startup error. An unset endpoint leaves native
+instruments available without starting an exporter or assuming a localhost
+receiver. Standard OTEL environment variables do not implicitly enable this path.
+
+The exporter sends cumulative counters/histograms every ten seconds, with a
+three-second export/HTTP timeout and no HTTP redirects. Collector availability
+is not a core application readiness dependency. Collection uses the existing
+bounded labels; resource metadata is limited to fixed service name/namespace and
+embedded build revision/version. No resource detectors, automatic HTTP/database
+instrumentation, application logs or traces are registered by this change.
+Request URLs, SQL, host identity, tenant/actor/object IDs, keys and business
+content are not intentionally exported. Client observations remain untrusted and
+are not authoritative audit records.
+
+`OperatorMetricsTests` compiles eight cases covering disabled/invalid settings,
+actual OTLP serialization/transport into an isolated test HTTP handler, inclusion
+of both Checklist metric types/fixed resource identity, exclusion of an unrelated
+Meter, and collector failure without a thrown product exception. This transport
+fixture does not prove a deployed collector can ingest or retain the data, nor
+that dashboards/alerts work. Local warning-as-error build, locked restore and
+NuGet vulnerability audit pass; Linux test execution is pending. Windows
+Application Control prevents local .NET execution and has not been bypassed.
+
+Remaining work includes exact-image collector ingestion and retained evidence,
+operator dashboards/alerts, Worker/backlog/provider/database/backup instruments,
+tracing/correlation, encrypted backup/restore proof and full ARCH-08 acceptance.
+This export foundation does not close ARCH-08 or PRD-13.
+
+References: [official exporter contract](https://opentelemetry.io/docs/languages/dotnet/exporters/)
+and [pinned 1.19.1 OTLP options](https://github.com/open-telemetry/opentelemetry-dotnet/blob/core-1.19.1/src/OpenTelemetry.Exporter.OpenTelemetryProtocol/README.md).

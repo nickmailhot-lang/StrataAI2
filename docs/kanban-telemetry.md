@@ -102,3 +102,9 @@ source-quality, web, .NET and PostgreSQL gates successfully. Decoded job
 111157751220 confirms 246 Domain and 249 API-host tests passed unfiltered,
 including the new client telemetry cases. Build-once images and mandatory
 container/security/release gates are still pending; this is source/host evidence.
+
+API operator export is now explicitly configurable through OTLP HTTP/protobuf;
+see `docs/architecture/operator-metrics.md` for bounded scope, configuration and
+remaining collector/dashboard/Worker evidence. Export tests compile; execution
+and deployed ingestion remain pending. This supersedes the absence of an export
+path above, without claiming full telemetry acceptance.

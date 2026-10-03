@@ -110,3 +110,12 @@ PostgreSQL gates. Job 111157751220 executed 246 Domain and 249 API-host tests,
 including client batch/authentication/CSRF/bounds/listener/rate-limit regressions.
 Images are still building; no successful full release acceptance is claimed.
 Latest focused Board screen/disclosure/stream regression: 48 tests passed across four files. Typecheck, lint and production build passed after the reconnect change.
+
+Configured OTLP export now connects the two existing API meters to an optional
+operator receiver, using only fixed service/build resource metadata. Eight new
+configuration/transport/exclusion/outage tests compile; see the operator metrics
+document for pending deployed collector/dashboard proof. Run 37106945461 at
+3962bbf failed a separate definite-conflict recovery callback assertion before
+React's effect; the unchanged true assertion now awaits that effect. All 42
+Checklist manager tests pass locally. Source gates at 5d592d1 passed; its
+container/security stages are live. No release acceptance or closure is claimed.
