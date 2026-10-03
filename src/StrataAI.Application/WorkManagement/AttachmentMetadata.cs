@@ -32,6 +32,9 @@ public interface IAttachmentMetadataStore
     Task<AttachmentMetadata> CreateFileAttachmentAsync(StoredAttachmentObject measured, Guid card, Guid uploader,
         string displayName, string verifiedMimeType, DateTimeOffset now, CancellationToken ct);
     Task<AttachmentFileRecord?> FindFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct);
+    // Separate protected archive review. Ordinary file lookup stays Active-only.
+    Task<AttachmentFileRecord?> FindArchivedFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+        => Task.FromResult<AttachmentFileRecord?>(null);
     Task<AttachmentMetadata?> FindAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct);
     // Includes tombstones only inside explicitly authorized lifecycle commands.
     Task<AttachmentMetadata?> FindLifecycleAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct);

@@ -28,10 +28,14 @@ internal sealed partial class InMemoryWorkManagementStore : IAttachmentMetadataS
         }
     }
     public Task<AttachmentFileRecord?> FindFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+        => FindFileAsync(organization, card, attachment, AttachmentLifecycleState.Active, ct);
+    public Task<AttachmentFileRecord?> FindArchivedFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+        => FindFileAsync(organization, card, attachment, AttachmentLifecycleState.Archived, ct);
+    private Task<AttachmentFileRecord?> FindFileAsync(Guid organization, Guid card, Guid attachment, AttachmentLifecycleState state, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         lock (_sync) return Task.FromResult(_attachmentMetadata.TryGetValue(attachment, out var value)
-            && value.OrganizationId == organization && value.CardId == card && value.Kind == AttachmentKind.File && value.DeletedAt is null && value.LifecycleState == AttachmentLifecycleState.Active
+            && value.OrganizationId == organization && value.CardId == card && value.Kind == AttachmentKind.File && value.DeletedAt is null && value.LifecycleState == state
             && _attachmentIntegrity.TryGetValue(attachment, out var integrity) ? new AttachmentFileRecord(value, integrity) : null);
     }
 
@@ -74,7 +78,8 @@ internal sealed partial class PostgresWorkManagementStore : IAttachmentMetadataS
         if (!connectionFactory.HasCommandScope(file.OrganizationId))
             throw new InvalidOperationException("Preview reads require the owning scope.");
         if (source.Integrity.Reference.IsPreview || source.Integrity.Reference.OrganizationId != file.OrganizationId
-            || source.Integrity.Reference.AttachmentId != file.Id) return null;
+            || source.Integrity.Reference.AttachmentId != file.Id
+            || file.LifecycleState is not (AttachmentLifecycleState.Active or AttachmentLifecycleState.Archived)) return null;
         await using var session = await connectionFactory.OpenTenantSessionAsync(file.OrganizationId, ct);
         await using var query = new NpgsqlCommand("""
             SELECT m.id,m.output_size_bytes,m.output_sha256,m.width,m.height
@@ -83,13 +88,14 @@ internal sealed partial class PostgresWorkManagementStore : IAttachmentMetadataS
             JOIN attachments a ON a.id=m.attachment_id AND a.tenant_id=m.tenant_id AND a.card_id=m.card_id
             WHERE m.tenant_id=@tenant AND m.card_id=@card AND m.attachment_id=@file AND m.policy_version=1
               AND p.attachment_version=m.source_version+1 AND a.version>=p.attachment_version AND a.version=@version
-              AND a.kind='FILE' AND a.scan_status='CLEAN' AND a.deleted_at IS NULL AND a.lifecycle_state='ACTIVE'
+              AND a.kind='FILE' AND a.scan_status='CLEAN' AND a.deleted_at IS NULL AND a.lifecycle_state=@state
               AND a.storage_key=@key AND a.sha256=@digest AND a.size_bytes=@size AND a.mime_type=@mime
               AND m.source_sha256=a.sha256 AND m.source_size_bytes=a.size_bytes AND m.source_mime_type=a.mime_type
             ORDER BY m.source_version DESC LIMIT 1;
             """, session.Connection, session.Transaction);
         query.Parameters.AddWithValue("tenant", file.OrganizationId); query.Parameters.AddWithValue("card", file.CardId);
         query.Parameters.AddWithValue("file", file.Id); query.Parameters.AddWithValue("version", file.Version);
+        query.Parameters.AddWithValue("state", file.LifecycleState == AttachmentLifecycleState.Archived ? "ARCHIVED" : "ACTIVE");
         query.Parameters.AddWithValue("key", source.Integrity.Reference.ObjectKey); query.Parameters.AddWithValue("digest", source.Integrity.Sha256);
         query.Parameters.AddWithValue("size", source.Integrity.SizeBytes); query.Parameters.AddWithValue("mime", file.MimeType ?? "");
         await using var row = await query.ExecuteReaderAsync(ct);
@@ -135,6 +141,10 @@ internal sealed partial class PostgresWorkManagementStore : IAttachmentMetadataS
         return ReadAttachmentMetadata(reader);
     }
     public async Task<AttachmentFileRecord?> FindFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+        => await FindFileAsync(organization, card, attachment, "ACTIVE", ct);
+    public async Task<AttachmentFileRecord?> FindArchivedFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+        => await FindFileAsync(organization, card, attachment, "ARCHIVED", ct);
+    private async Task<AttachmentFileRecord?> FindFileAsync(Guid organization, Guid card, Guid attachment, string state, CancellationToken ct)
     {
         if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Attachment reads require the owning scope.");
         var reference = new AttachmentObjectReference(organization, attachment);
@@ -142,10 +152,11 @@ internal sealed partial class PostgresWorkManagementStore : IAttachmentMetadataS
         await using var query = new NpgsqlCommand($"""
             SELECT {AttachmentMetadataColumns},a.sha256 FROM attachments a
             WHERE a.tenant_id=@tenant AND a.card_id=@card AND a.id=@id AND a.kind='FILE'
-              AND a.deleted_at IS NULL AND a.lifecycle_state='ACTIVE' AND a.sha256 IS NOT NULL AND a.storage_key=@key;
+              AND a.deleted_at IS NULL AND a.lifecycle_state=@state AND a.sha256 IS NOT NULL AND a.storage_key=@key;
             """, session.Connection, session.Transaction);
         query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("card", card);
         query.Parameters.AddWithValue("id", attachment); query.Parameters.AddWithValue("key", reference.ObjectKey);
+        query.Parameters.AddWithValue("state", state);
         await using var reader = await query.ExecuteReaderAsync(ct);
         if (!await reader.ReadAsync(ct)) return null;
         var metadata = ReadAttachmentMetadata(reader);

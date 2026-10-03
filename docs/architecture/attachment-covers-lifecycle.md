@@ -214,3 +214,19 @@ deletion consent, retained restoration history and accessibility assertions.
 Local discovery confirms registration only; native execution and release
 performance evidence remain pending. Cover selection/clearing, protected
 Archived file review and selected public derivative admission remain open scope.
+
+Protected archive delivery now has separate scoped original/preview options and
+byte routes. Ordinary routes remain Active-only. Archive source lookup requires
+Archived state and exact tenant/Card identity; existing Clean scan, immutable
+publication receipt, original identity/integrity, current Internal membership,
+owning Board access, deadline and actor/revision guards remain required. Full
+provider staging still occurs outside database scope, with post-stage and final
+stream fences. Restoring or deleting the source invalidates the admitted archive
+snapshot. The retained preview receipt may serve authorized archive review but
+does not permit new Archived preview production or ordinary/public disclosure.
+
+New HTTP coverage checks Active/Pending/foreign/stale refusal without provider
+reads, protected original bytes and safe headers, and restoration during staging.
+Restricted PostgreSQL preview coverage checks committed receipt reuse, separate
+ordinary/archive admission, foreign/stale refusal, staged restoration withdrawal
+and Deleted refusal. Compilation passes locally; Linux execution remains pending.

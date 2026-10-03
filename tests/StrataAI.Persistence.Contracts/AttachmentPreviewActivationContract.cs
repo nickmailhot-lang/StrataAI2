@@ -194,9 +194,31 @@ internal static class AttachmentPreviewActivationContract
             return file;
         }
         await AttachmentPreviewBackfillContract.RunAsync(admin,worker,objects.ApiConnections!,organization,source,PublishLegacyClean,ct);
+        Require(!(await admission.AdmitPreviewAsync(card,source,job.ActorId,ct,archiveReview:true)).Succeeded,
+            "Archive review admitted an Active source.");
+        await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
+        reads=objects.Reads;
+        Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct)).Succeeded && objects.Reads==reads,
+            "Archived source retained ordinary preview delivery.");
+        var archived=await admission.AdmitPreviewAsync(card,source,job.ActorId,ct,archiveReview:true);
+        Require(archived.Value is not null && archived.Value.Preview==renamed.Value!.Preview,
+            "Archive review lost the original committed immutable preview receipt.");
+        Require(!(await previewRead.PrepareAsync(card,source,Guid.NewGuid(),ct,archiveReview:true)).Succeeded
+            && !(await previewRead.PrepareAsync(card,source,job.ActorId,ct,1,archiveReview:true)).Succeeded && objects.Reads==reads,
+            "Foreign/stale archive review reached provider bytes.");
+        var archivedContent=await previewRead.PrepareAsync(card,source,job.ActorId,ct,archiveReview:true);
+        Require(archivedContent.Value is not null,"Current protected archive review refused committed preview bytes.");
+        await archivedContent.Value!.DisposeAsync();
+        objects.AfterRead=async ()=>await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ACTIVE',updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
+        Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct,archiveReview:true)).Succeeded,
+            "Restoration during staging retained an archive delivery snapshot.");
+        Require(!(await admission.RevalidatePreviewAsync(archived.Value!,job.ActorId,ct)).Succeeded,
+            "Restored source retained an old protected archive preview grant.");
         await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant; UPDATE public.attachments SET lifecycle_state='DELETED',deleted_by=uploader_id,deleted_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
         reads=objects.Reads;
         Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct)).Succeeded && objects.Reads==reads,"Deleted original retained preview delivery.");
+        Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct,archiveReview:true)).Succeeded && objects.Reads==reads,
+            "Deleted original retained protected archive preview delivery.");
         Console.WriteLine("Restricted preview reads: committed receipt, source-bound integrity, private namespace, forced RLS, foreign actor/Card/stale revision refusal, full staging outside DB, corruption, changed revision and deletion passed.");
 
         async Task NoPreview(string mime,AttachmentScannerVerdict verdict)

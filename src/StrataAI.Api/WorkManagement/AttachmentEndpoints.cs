@@ -52,6 +52,7 @@ public static partial class WorkManagementEndpoints
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         if (!app.Services.GetRequiredService<AttachmentUploadAvailability>().Enabled) return;
+        MapArchivedAttachmentDelivery(app);
         app.MapGet("/cards/{cardId:guid}/attachments/{attachmentId:guid}/preview-options", async (Guid cardId, Guid attachmentId,
             HttpContext context, AttachmentDownloadAdmissionService admission, CancellationToken ct) =>
         {
@@ -124,6 +125,59 @@ public static partial class WorkManagementEndpoints
             if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = policy.MaximumBytes;
             var result = await service.UploadAsync(cardId, actor.Value, key, input, context.Request.Body, context.TraceIdentifier, ct);
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+    }
+
+    private static void MapArchivedAttachmentDelivery(WebApplication app)
+    {
+        async Task<IResult> Options(Guid cardId, Guid attachmentId, HttpContext context,
+            AttachmentDownloadAdmissionService admission, CancellationToken ct, bool preview)
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            context.Response.Headers.CacheControl = "private, no-store";
+            AttachmentDownloadAdmission? value;
+            string? error;
+            if (preview)
+            {
+                var result = await admission.AdmitPreviewAsync(cardId, attachmentId, actor.Value, ct, archiveReview: true);
+                value = result.Value?.Source; error = result.ErrorCode;
+            }
+            else
+            {
+                var result = await admission.AdmitAsync(cardId, attachmentId, actor.Value, ct, archiveReview: true);
+                value = result.Value; error = result.ErrorCode;
+            }
+            return value is not null ? Results.Ok(new AttachmentDownloadOptions(value.Card.OrganizationId,
+                value.Card.BoardId, value.Card.Id, value.Card.Version, value.File.Metadata.Id,
+                value.File.Metadata.Version, actor.Value)) : ErrorFor(error);
+        }
+        app.MapGet("/cards/{cardId:guid}/attachments/archive/{attachmentId:guid}/download-options",
+            (Guid cardId, Guid attachmentId, HttpContext context, AttachmentDownloadAdmissionService admission, CancellationToken ct)
+                => Options(cardId, attachmentId, context, admission, ct, false))
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+        app.MapGet("/cards/{cardId:guid}/attachments/archive/{attachmentId:guid}/preview-options",
+            (Guid cardId, Guid attachmentId, HttpContext context, AttachmentDownloadAdmissionService admission, CancellationToken ct)
+                => Options(cardId, attachmentId, context, admission, ct, true))
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+        app.MapGet("/cards/{cardId:guid}/attachments/archive/{attachmentId:guid}/download", async (Guid cardId, Guid attachmentId,
+            Guid? actorId, long? attachmentVersion, HttpContext context, AttachmentDownloadService service,
+            AttachmentDownloadAdmissionService admission, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            if (actorId is { } expected && expected != actor.Value) return ErrorFor("card_not_found");
+            var result = await service.PrepareAsync(cardId, attachmentId, actor.Value, ct, attachmentVersion, archiveReview: true);
+            return result.Succeeded && result.Value is not null
+                ? new AttachmentDownloadResult(result.Value, admission, actor.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+        app.MapGet("/cards/{cardId:guid}/attachments/archive/{attachmentId:guid}/preview", async (Guid cardId, Guid attachmentId,
+            Guid? actorId, long? attachmentVersion, HttpContext context, AttachmentPreviewReadService service,
+            AttachmentDownloadAdmissionService admission, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            if (actorId is { } expected && expected != actor.Value) return ErrorFor("card_not_found");
+            var result = await service.PrepareAsync(cardId, attachmentId, actor.Value, ct, attachmentVersion, archiveReview: true);
+            return result.Succeeded && result.Value is not null
+                ? new AttachmentPreviewResult(result.Value, admission, actor.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
     }
 }

@@ -39,6 +39,47 @@ public sealed partial class ApiHostTests
             return file is null || !Clean ? file : file with { Metadata = file.Metadata with {
                 ScanStatus = AttachmentScanStatus.Clean, ScannedAt = file.Metadata.UpdatedAt, Version = PublishedPreview is null ? 2 : 3 } };
         }
+        public async Task<AttachmentFileRecord?> FindArchivedFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+        {
+            var file = await inner.FindArchivedFileAttachmentAsync(organization, card, attachment, ct);
+            return file is null || !Clean ? file : file with { Metadata = file.Metadata with {
+                ScanStatus = AttachmentScanStatus.Clean, ScannedAt = file.Metadata.UpdatedAt } };
+        }
+    }
+
+    [Fact]
+    public async Task PRD_14_Archive_delivery_is_separate_and_refuses_restoration_during_byte_preparation()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects(); await using var app = UploadFactory(objects, downloads: true);
+        using var owner = app.CreateClient(); using var member = app.CreateClient(); using var outsider = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct); await RegisterAndLogin(outsider);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Archive review", null, null, DateTimeOffset.UtcNow, ct);
+        var bytes = new byte[512]; "%PDF-1.7\n"u8.CopyTo(bytes);
+        using var upload = FileRequest($"/cards/{card.Id}/attachments", bytes, Guid.NewGuid(), "Retained.pdf");
+        using var created = await member.SendAsync(upload, ct); Assert.Equal(HttpStatusCode.OK, created.StatusCode);
+        var file = (await created.Content.ReadFromJsonAsync<AttachmentChange>(ct))!.Attachment;
+        var path = $"/cards/{card.Id}/attachments/archive/{file.Id}/download";
+        using var active = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, active.StatusCode); Assert.Equal(0, objects.Reads);
+        using var archive = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/attachments/{file.Id}/archive", new { cardVersion = 2, version = 1 });
+        Assert.Equal(HttpStatusCode.OK, archive.StatusCode);
+        using var pending = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, pending.StatusCode); Assert.Equal(0, objects.Reads);
+        Assert.IsType<DownloadMetadata>(app.Services.GetRequiredService<IAttachmentMetadataStore>()).Clean = true;
+        using var ordinary = await member.GetAsync($"/cards/{card.Id}/attachments/{file.Id}/download", ct); Assert.Equal(HttpStatusCode.NotFound, ordinary.StatusCode);
+        using var outside = await outsider.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, outside.StatusCode); Assert.Equal(0, objects.Reads);
+        var options = (await member.GetFromJsonAsync<AttachmentDownloadOptions>(path + "-options", ct))!;
+        Assert.Equal(3, options.CardVersion); Assert.Equal(2, options.AttachmentVersion); Assert.Equal(f.Recipient, options.ActorId);
+        using var wrong = await member.GetAsync(path + "?attachmentVersion=1", ct); Assert.Equal(HttpStatusCode.NotFound, wrong.StatusCode); Assert.Equal(0, objects.Reads);
+        using var delivered = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.OK, delivered.StatusCode);
+        Assert.Equal(bytes, await delivered.Content.ReadAsByteArrayAsync(ct)); Assert.True(delivered.Headers.CacheControl!.Private); Assert.True(delivered.Headers.CacheControl.NoStore);
+        objects.AfterReadClosed = async () => {
+            using var restore = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/attachments/{file.Id}/restore", new { cardVersion = 3, version = 2 });
+            Assert.Equal(HttpStatusCode.OK, restore.StatusCode);
+        };
+        using var withdrawn = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, withdrawn.StatusCode); Assert.Null(withdrawn.Content.Headers.ContentDisposition);
+        var reads = objects.Reads;
+        using var retry = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, retry.StatusCode); Assert.Equal(reads, objects.Reads);
     }
 
     [Fact]

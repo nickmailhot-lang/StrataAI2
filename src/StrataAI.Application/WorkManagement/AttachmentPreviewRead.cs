@@ -30,14 +30,14 @@ public sealed class AttachmentPreviewContent : IAsyncDisposable
 public sealed class AttachmentPreviewReadService(AttachmentDownloadAdmissionService admission, IAttachmentDownloadPreparer preparer)
 {
     public async Task<WorkOperation<AttachmentPreviewContent>> PrepareAsync(Guid card, Guid attachment, Guid actor,
-        CancellationToken ct = default, long? attachmentVersion = null)
+        CancellationToken ct = default, long? attachmentVersion = null, bool archiveReview = false)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
         deadline.CancelAfter(TimeSpan.FromSeconds(55));
         Stream? prepared = null;
         try
         {
-            var admitted = await admission.AdmitPreviewAsync(card, attachment, actor, deadline.Token);
+            var admitted = await admission.AdmitPreviewAsync(card, attachment, actor, deadline.Token, archiveReview);
             if (!admitted.Succeeded || admitted.Value is null)
                 return WorkOperation<AttachmentPreviewContent>.Failure(admitted.ErrorCode ?? "card_not_found");
             if (attachmentVersion is { } version && version != admitted.Value.Source.File.Metadata.Version)

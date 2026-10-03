@@ -23,14 +23,14 @@ public sealed class AttachmentDownloadContent : IAsyncDisposable
 public sealed class AttachmentDownloadService(AttachmentDownloadAdmissionService admission, IAttachmentDownloadPreparer preparer)
 {
     public async Task<WorkOperation<AttachmentDownloadContent>> PrepareAsync(Guid card, Guid attachment, Guid actor,
-        CancellationToken ct = default, long? attachmentVersion = null)
+        CancellationToken ct = default, long? attachmentVersion = null, bool archiveReview = false)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
         deadline.CancelAfter(TimeSpan.FromSeconds(55));
         Stream? prepared = null;
         try
         {
-            var admitted = await admission.AdmitAsync(card, attachment, actor, deadline.Token);
+            var admitted = await admission.AdmitAsync(card, attachment, actor, deadline.Token, archiveReview);
             if (!admitted.Succeeded || admitted.Value is null)
                 return WorkOperation<AttachmentDownloadContent>.Failure(admitted.ErrorCode ?? "card_not_found");
             if (attachmentVersion is { } version && version != admitted.Value.File.Metadata.Version)
