@@ -166,6 +166,9 @@ jobs:
       - name: Verify Attachment metadata isolation, parent identity and quarantine constraints
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-attachment-storage.sql
 
+      - name: Verify durable upload identity, tenant isolation and publication transitions
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-upload-intent-storage.sql
+
       - name: Verify private Reminder delivery, eligibility, leases and atomic effects
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-reminder-delivery.sql
 
