@@ -27,6 +27,14 @@ export const appTheme = createTheme({
   },
   components: {
     MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '&.Mui-focusVisible': {
+            outline: '2px solid currentColor',
+            outlineOffset: '3px',
+          },
+        },
+      },
       defaultProps: {
         disableRipple: false,
       },

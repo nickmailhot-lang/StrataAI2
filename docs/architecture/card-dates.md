@@ -445,3 +445,11 @@ chosen Cards. Strict local build and shell syntax pass; these new cases require
 Linux CI. This extends the existing deletion request, not a claim of completed
 Organization archive/restore or final deletion/retention behavior. Those lifecycle
 features and remaining ticket acceptance are still open.
+
+Keyboard-visible MUI ButtonBase focus now has a persistent two-pixel outline
+using the control's current text color, with a three-pixel offset. This preserves
+the inherited white focus color on the dark application bar and dark focus color
+on light surfaces. The policy release scenario checks the actual computed outline
+after keyboard acknowledgment recovery in addition to active-element focus and
+axe checks. These checks cover an indicator that a DOM focus assertion alone
+cannot establish.

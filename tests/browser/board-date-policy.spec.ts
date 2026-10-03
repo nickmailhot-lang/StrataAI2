@@ -48,6 +48,10 @@ for (const width of [1280, 390]) {
       await expect(dates).toContainText('Due Jan 2, 2040'); await expect(dates).toContainText('Board timezone policy.');
       await retry.press('Enter'); await expect(input).toHaveValue('Pacific/Honolulu');
       await expect(page.getByRole('button', { name: 'Save timezone policy' })).toBeFocused();
+      const focusRing = await page.getByRole('button', { name: 'Save timezone policy' }).evaluate(element => {
+        const style = getComputedStyle(element); return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) };
+      });
+      expect(focusRing.style).toBe('solid'); expect(focusRing.width).toBeGreaterThanOrEqual(2);
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
       expect(JSON.parse(attempts[0].body!)).toEqual({ timezone: 'Pacific/Honolulu', version: 1 });
       expect(attempts[0].key).toMatch(/^[0-9a-f-]{36}$/);
