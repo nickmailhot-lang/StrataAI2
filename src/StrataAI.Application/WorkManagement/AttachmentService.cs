@@ -67,21 +67,6 @@ public sealed class AttachmentService(IWorkManagementStore work, IAttachmentMeta
                 return WorkOperation<AttachmentChange>.Success(new(hint.OrganizationId, hint.BoardId, cardId, updated.Version, attachment));
             }, ct);
     }
-    private async Task<bool> Admit(CardRecord hint, Guid actor, bool editing, CancellationToken ct)
-    {
-        if (!(editing ? await work.AcquireCommandScopeAsync(hint.OrganizationId, actor, hint.BoardId, ct)
-            : await work.AcquireBoardReadScopeAsync(hint.OrganizationId, actor, hint.BoardId, ct))) return false;
-        // Internal metadata stays behind current Organization membership. Public
-        // and Owner Portal delivery require their own explicit safe projections.
-        if ((await organizations.FindMembershipAsync(hint.OrganizationId, actor, ct)) is not { Active: true }) return false;
-        var scope = await boards.GetSyncScopeAsync(hint.BoardId, actor, ct);
-        if (scope.Value is null || !scope.Value.Access.CanView || scope.Value.Board.OrganizationId != hint.OrganizationId
-            || editing && (!scope.Value.Access.CanEdit || scope.Value.Board.LifecycleState != BoardLifecycleState.Active)) return false;
-        var card = await work.FindCardAsync(hint.Id, ct);
-        if (card is null || card.OrganizationId != hint.OrganizationId || card.BoardId != hint.BoardId || card.ListId != hint.ListId
-            || editing && card.LifecycleState != WorkItemLifecycleState.Active) return false;
-        var list = await work.FindListAsync(card.ListId, ct);
-        return list is not null && list.OrganizationId == hint.OrganizationId && list.BoardId == hint.BoardId
-            && (!editing || list.LifecycleState == WorkItemLifecycleState.Active);
-    }
+    private Task<bool> Admit(CardRecord hint, Guid actor, bool editing, CancellationToken ct) =>
+        AttachmentAdmission.CheckAsync(work, organizations, boards, hint, actor, editing, ct);
 }

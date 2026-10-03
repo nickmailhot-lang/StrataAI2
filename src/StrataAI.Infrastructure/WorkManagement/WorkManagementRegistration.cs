@@ -53,6 +53,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<IChecklistStore>(provider => (IChecklistStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<ChecklistService>();
         services.AddSingleton<AttachmentService>();
+        services.AddSingleton<AttachmentFilePublicationService>();
         services.AddSingleton<IAttachmentMetadataStore>(provider => (IAttachmentMetadataStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<IAttachmentUploadIntentStore>(provider => (IAttachmentUploadIntentStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<IBoardDatePolicyStore>(provider => (IBoardDatePolicyStore)provider.GetRequiredService<IWorkManagementStore>());

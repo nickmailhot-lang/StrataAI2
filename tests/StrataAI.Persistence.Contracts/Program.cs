@@ -12,8 +12,9 @@ using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.WorkManagement;
 
 // Mandatory CI executable against real PostgreSQL and the restricted API login.
-// It exercises persistence/transactions only; it is not HTTP authorization or
-// proof of provider bytes, current Card CAS, events or scanner job publication.
+// It exercises persistence, Application file publication and Worker delivery.
+// Actor admission and object/scanner fixtures are synthetic: this is not HTTP
+// session authorization or deployed object-storage/antivirus acceptance.
 var adminConnection = Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_ADMIN_CONNECTION")
     ?? throw new InvalidOperationException("Contract admin connection is required.");
 var apiConnection = Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_API_CONNECTION")
@@ -147,6 +148,7 @@ try
     Require(await Change(reconciled,5,new(AttachmentUploadAction.ConfirmMissing,now.AddSeconds(4))) is null,"Stored tombstone was resurrected.");
     await AttachmentWorkerContract.RunAsync(admin,workerConnection,provider,organization,foreignOrganization,value,
         fixtureBytes,fixtureDigest,ct);
+    await AttachmentPublicationContract.RunAsync(admin,apiConnection,ct);
     Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, metadata/scan-job rollback and retained expiry passed.");
 }
 finally
