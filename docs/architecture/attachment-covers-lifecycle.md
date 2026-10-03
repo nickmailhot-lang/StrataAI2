@@ -274,3 +274,13 @@ without reselection. Migration repeat/upgrade and runtime readiness include 053.
 Local compilation and script syntax pass; actual Linux execution is pending.
 Application cover commands/read projection, lifecycle clearing, selected public
 derivative admission and MUI cover controls remain subsequent acceptance work.
+
+The first 053 Linux run exposed a deferred-trigger privilege error: Worker scan
+publication left its private function before the constraint trigger ran, so the
+restricted Worker could not read Cards at commit. Forward migration 054 assigns
+only this trigger its owner's guard capability. It accepts no caller arguments,
+uses the already-admitted immutable row identity, has a fixed search path,
+returns no metadata and remains revoked from PUBLIC. Worker general Card read
+privileges remain unchanged. Existing restricted Worker permission/refusal tests
+and actual scan/preview transactions must still pass. Readiness and migration
+repeat verification include 054; new Linux execution remains pending.
