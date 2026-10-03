@@ -12,10 +12,10 @@ public static class LinuxAttachmentPreviewContainment
 
     public static void Apply()
     {
-        if (!Supported || IsRoot) throw Unavailable();
+        if (!Supported || IsRoot) throw Unavailable(AttachmentPreviewFailureStage.Capabilities);
         var parent = GetParentPid();
         if (Prctl(38, 1, 0, 0, 0) != 0 || Prctl(4, 0, 0, 0, 0) != 0
-            || Prctl(1, 9, 0, 0, 0) != 0 || GetParentPid() != parent) throw Unavailable();
+            || Prctl(1, 9, 0, 0, 0) != 0 || GetParentPid() != parent) throw Unavailable(AttachmentPreviewFailureStage.Capabilities);
         Limit(9, 1073741824); // RLIMIT_AS: native + managed address space, 1 GiB.
         Limit(0, 10); // RLIMIT_CPU: hard CPU deadline, not cooperative cancellation.
         Limit(4, 0); // RLIMIT_CORE: no source-containing core dumps.
@@ -27,7 +27,7 @@ public static class LinuxAttachmentPreviewContainment
         var status = File.ReadAllLines("/proc/self/status");
         foreach (var name in new[] { "CapEff:", "CapPrm:", "CapInh:", "CapAmb:" })
             if (!status.Any(line => line.StartsWith(name, StringComparison.Ordinal)
-                && line[name.Length..].Trim() == "0000000000000000")) throw Unavailable();
+                && line[name.Length..].Trim() == "0000000000000000")) throw Unavailable(AttachmentPreviewFailureStage.Capabilities);
 
         // x64 syscall ABI only, including refusal of the x32 ABI. Synchronize
         // the filter onto all existing CLR threads; future threads inherit it.
@@ -57,28 +57,28 @@ public static class LinuxAttachmentPreviewContainment
                 Marshal.StructureToPtr(filters[index], allocation + index * Marshal.SizeOf<Filter>(), false);
             var program = new FilterProgram { Length = checked((ushort)filters.Count), Instructions = allocation };
             // seccomp(SECCOMP_SET_MODE_FILTER, SECCOMP_FILTER_FLAG_TSYNC, ...).
-            if (Seccomp(317, 1, 1, ref program) != 0) throw Unavailable();
+            if (Seccomp(317, 1, 1, ref program) != 0) throw Unavailable(AttachmentPreviewFailureStage.SyscallFilter);
         }
         finally { Marshal.FreeHGlobal(allocation); }
 
         // Check the active kernel boundary without generating external traffic,
         // executing a process or allocating/committing a giant image buffer.
-        if (ProbeSocket(2, 1, 0) != -1 || Marshal.GetLastPInvokeError() != 1) throw Unavailable();
-        if (ProbeExec(59, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero) != -1 || Marshal.GetLastPInvokeError() != 1) throw Unavailable();
+        if (ProbeSocket(2, 1, 0) != -1 || Marshal.GetLastPInvokeError() != 1) throw Unavailable(AttachmentPreviewFailureStage.NetworkProbe);
+        if (ProbeExec(59, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero) != -1 || Marshal.GetLastPInvokeError() != 1) throw Unavailable(AttachmentPreviewFailureStage.ExecutionProbe);
         var address = ProbeMap(IntPtr.Zero, 1073745920, 0, 0x22, -1, 0);
-        if (address != new IntPtr(-1)) { Unmap(address, 1073745920); throw Unavailable(); }
-        if (Marshal.GetLastPInvokeError() != 12) throw Unavailable();
+        if (address != new IntPtr(-1)) { Unmap(address, 1073745920); throw Unavailable(AttachmentPreviewFailureStage.AddressSpaceProbe); }
+        if (Marshal.GetLastPInvokeError() != 12) throw Unavailable(AttachmentPreviewFailureStage.AddressSpaceProbe);
         var outside = Open("/etc/passwd", 0);
-        if (outside != -1) { Close(outside); throw Unavailable(); }
-        if (Marshal.GetLastPInvokeError() != 13) throw Unavailable();
+        if (outside != -1) { Close(outside); throw Unavailable(AttachmentPreviewFailureStage.FileSystemProbe); }
+        if (Marshal.GetLastPInvokeError() != 13) throw Unavailable(AttachmentPreviewFailureStage.FileSystemProbe);
     }
 
     private static void Limit(int resource, ulong maximum)
     {
         var value = new ResourceLimit { Soft = maximum, Hard = maximum };
-        if (SetLimit(resource, ref value) != 0) throw Unavailable();
+        if (SetLimit(resource, ref value) != 0) throw Unavailable(AttachmentPreviewFailureStage.ResourceBounds);
     }
-    private static AttachmentImagePreviewException Unavailable() => new("preview_decoder_unavailable");
+    private static AttachmentImagePreviewException Unavailable(AttachmentPreviewFailureStage stage = AttachmentPreviewFailureStage.None) => new("preview_decoder_unavailable", stage);
     [StructLayout(LayoutKind.Sequential)] private struct ResourceLimit { public ulong Soft; public ulong Hard; }
     [StructLayout(LayoutKind.Sequential)] private readonly struct Filter(ushort code, byte yes, byte no, uint value)
     { public readonly ushort Code = code; public readonly byte Yes = yes; public readonly byte No = no; public readonly uint Value = value; }

@@ -32,7 +32,7 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             throw new AttachmentImagePreviewException("preview_type_unsupported");
         if (!LinuxAttachmentPreviewContainment.Supported || !File.Exists(executable.DotnetHost)
             || executable.DotnetHost != "/usr/share/dotnet/dotnet" || executable.Assembly != "/app/StrataAI.Worker.dll"
-            || !File.Exists(executable.Assembly) || !File.Exists("/usr/bin/setpriv") || !File.Exists("/app/strata-preview-launcher")) throw Unavailable();
+            || !File.Exists(executable.Assembly) || !File.Exists("/usr/bin/setpriv") || !File.Exists("/app/strata-preview-launcher")) throw Unavailable(AttachmentPreviewFailureStage.Invocation);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct); deadline.CancelAfter(TimeSpan.FromSeconds(30));
         var acquired = false; Process? child = null; Task<AttachmentPreviewImage>? result = null; Task[] pending = []; var transferred = false; string? scratch = null;
         try
@@ -71,7 +71,13 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (AttachmentImagePreviewException) { throw; }
         catch (Exception error) when (error is not (OutOfMemoryException or StackOverflowException or AccessViolationException))
-        { throw Unavailable(); }
+        {
+            var stage = child is null ? AttachmentPreviewFailureStage.Invocation : AttachmentPreviewFailureStage.RuntimeLaunch;
+            if (child?.HasExited == true) stage = child.ExitCode switch
+            { 65 => AttachmentPreviewFailureStage.Invocation, 66 => AttachmentPreviewFailureStage.ResourceBounds,
+                67 or 68 => AttachmentPreviewFailureStage.FileSystemRules, _ => stage };
+            throw Unavailable(stage);
+        }
         finally
         {
             await deadline.CancelAsync();
@@ -115,5 +121,5 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
         }
         finally { CryptographicOperations.ZeroMemory(buffer); }
     }
-    private static AttachmentImagePreviewException Unavailable() => new("preview_decoder_unavailable");
+    private static AttachmentImagePreviewException Unavailable(AttachmentPreviewFailureStage stage = AttachmentPreviewFailureStage.None) => new("preview_decoder_unavailable", stage);
 }

@@ -50,6 +50,11 @@ internal static class AttachmentPreviewRuntimeVerification
             Console.WriteLine("Worker isolated preview runtime verified using a fixed public PNG fixture, integrity refusal and recovery.");
             return 0;
         }
+        catch (AttachmentImagePreviewException error)
+        {
+            Console.Error.WriteLine($"Worker preview runtime verification failed at fixed stage {error.Stage} ({error.Code}).");
+            return 1;
+        }
         catch (Exception error) when (error is not (OutOfMemoryException or StackOverflowException or AccessViolationException))
         {
             // Native loader exceptions can include machine paths. CI needs only

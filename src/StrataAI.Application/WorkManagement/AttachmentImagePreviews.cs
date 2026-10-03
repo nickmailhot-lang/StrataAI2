@@ -12,8 +12,12 @@ public sealed class AttachmentImagePreviewPolicy(int maximumDimension = 32768, l
     public int MaximumOutputBytes { get; } = maximumOutputBytes is >= 1 and <= 8388608 ? maximumOutputBytes : throw new ArgumentOutOfRangeException(nameof(maximumOutputBytes));
 }
 
-public sealed class AttachmentImagePreviewException(string code) : Exception("Attachment image preview is unavailable.")
+public enum AttachmentPreviewFailureStage
+{ None, Invocation, ResourceBounds, FileSystemRules, RuntimeLaunch, Scratch, Environment, Capabilities, SyscallFilter, NetworkProbe, ExecutionProbe, AddressSpaceProbe, FileSystemProbe, Source, RasterDecode }
+
+public sealed class AttachmentImagePreviewException(string code, AttachmentPreviewFailureStage stage = AttachmentPreviewFailureStage.None) : Exception("Attachment image preview is unavailable.")
 {
+    [JsonIgnore] public AttachmentPreviewFailureStage Stage { get; } = Enum.IsDefined(stage) ? stage : throw new ArgumentOutOfRangeException(nameof(stage));
     public string Code { get; } = code is "preview_type_unsupported" or "preview_source_unavailable" or "preview_image_invalid"
         or "preview_dimensions_exceeded" or "preview_output_exceeded" or "preview_decoder_unavailable"
         ? code : throw new ArgumentException("A fixed image preview failure code is required.", nameof(code));

@@ -41,6 +41,7 @@ public static class AttachmentPreviewProcessProtocol
 
     public static async Task<int> RunChildAsync(Stream input, Stream output)
     {
+        var stage = AttachmentPreviewFailureStage.Environment;
         try
         {
             if (!OperatingSystem.IsLinux()) throw new AttachmentImagePreviewException("preview_decoder_unavailable");
@@ -50,6 +51,7 @@ public static class AttachmentPreviewProcessProtocol
                 throw new AttachmentImagePreviewException("preview_decoder_unavailable");
             // Create an owned anonymous staging inode before filesystem
             // restriction. No request bytes have been read at this point.
+            stage = AttachmentPreviewFailureStage.Scratch;
             var path = Path.Combine(Environment.CurrentDirectory, $"strata-preview-{Guid.NewGuid():N}.tmp");
             using var source = new FileStream(path, new FileStreamOptions
             {
@@ -59,6 +61,7 @@ public static class AttachmentPreviewProcessProtocol
             });
             File.Delete(path);
             LinuxAttachmentPreviewContainment.Apply();
+            stage = AttachmentPreviewFailureStage.Source;
             var header = new byte[49]; await input.ReadExactlyAsync(header);
             if (!header.AsSpan(0, 8).SequenceEqual(Magic)) throw new AttachmentImagePreviewException("preview_image_invalid");
             var mime = header[8] switch { 1 => "image/png", 2 => "image/jpeg", 3 => "image/webp", _ => throw new AttachmentImagePreviewException("preview_type_unsupported") };
@@ -78,6 +81,7 @@ public static class AttachmentPreviewProcessProtocol
                 if (copied != length || !CryptographicOperations.FixedTimeEquals(hash.GetHashAndReset(), header.AsSpan(17, 32)))
                     throw new AttachmentImagePreviewException("preview_source_unavailable");
                 await source.FlushAsync(); source.Position = 0;
+                stage = AttachmentPreviewFailureStage.RasterDecode;
                 using var preview = new SkiaAttachmentImagePreviewDecoder(new()).Decode(source, mime, CancellationToken.None);
                 var result = new byte[ResultHeaderSize]; Magic.CopyTo(result);
                 BinaryPrimitives.WriteInt32LittleEndian(result.AsSpan(10), preview.Width);
@@ -92,6 +96,7 @@ public static class AttachmentPreviewProcessProtocol
         {
             var result = new byte[ResultHeaderSize]; Magic.CopyTo(result); result[8] = 1;
             result[9] = (byte)Math.Max(0, Array.IndexOf(FailureCodes, (error as AttachmentImagePreviewException)?.Code ?? "preview_decoder_unavailable"));
+            result[10] = (byte)(error is AttachmentImagePreviewException { Stage: not AttachmentPreviewFailureStage.None } known ? known.Stage : stage);
             try { await output.WriteAsync(result); await output.FlushAsync(); } catch (IOException) { }
             return 1;
         }
@@ -103,9 +108,9 @@ public static class AttachmentPreviewProcessProtocol
         if (!header.AsSpan(0, 8).SequenceEqual(Magic)) throw new AttachmentImagePreviewException("preview_decoder_unavailable");
         if (header[8] == 1)
         {
-            if (header[9] >= FailureCodes.Length || header.AsSpan(10).ContainsAnyExcept((byte)0))
+            if (header[9] >= FailureCodes.Length || !Enum.IsDefined((AttachmentPreviewFailureStage)header[10]) || header.AsSpan(11).ContainsAnyExcept((byte)0))
                 throw new AttachmentImagePreviewException("preview_decoder_unavailable");
-            await RequireEndAsync(pipe, ct); throw new AttachmentImagePreviewException(FailureCodes[header[9]]);
+            await RequireEndAsync(pipe, ct); throw new AttachmentImagePreviewException(FailureCodes[header[9]], (AttachmentPreviewFailureStage)header[10]);
         }
         var width = BinaryPrimitives.ReadInt32LittleEndian(header.AsSpan(10));
         var height = BinaryPrimitives.ReadInt32LittleEndian(header.AsSpan(14));
