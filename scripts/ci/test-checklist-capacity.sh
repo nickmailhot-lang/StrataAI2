@@ -83,5 +83,6 @@ mkdir -p artifacts/capacity
 jq -nc --arg revision "$revision" --argjson board "$board_seconds" --argjson archive "$archive_seconds" --argjson last "$archive_last_seconds" --argjson items "$items_seconds" \
  '{schemaVersion:1,revision:$revision,topology:"exact release images through Nginx",status:"passed",fixture:{lists:200,activeCards:5000,archivedCards:100000,items:63,pageSize:50},
  verified:{archivePages:[50,50,1],itemPages:[50,13],fullProgressBefore:31,fullProgressAfter:32,readStateUnchanged:true,versionedCompletion:true},
- milliseconds:{board:$board*1000,archiveFirst:$archive*1000,archiveLast:$last*1000,itemsFirst:$items*1000}}' > artifacts/capacity/checklists.json
+ milliseconds:{board:($board*1000),archiveFirst:($archive*1000),archiveLast:($last*1000),itemsFirst:($items*1000)}}' > "$scratch/capacity.json"
+mv "$scratch/capacity.json" artifacts/capacity/checklists.json
 echo 'Exact-image Checklist capacity: 200 Lists, 5,000 active Cards, 100,000 archived Cards, bounded first/seek/final pages, full progress, unchanged read state and versioned completion passed.'
