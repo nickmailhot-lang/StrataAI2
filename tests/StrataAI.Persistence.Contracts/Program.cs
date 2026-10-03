@@ -1,0 +1,124 @@
+using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using StrataAI.Application.Identity;
+using StrataAI.Application.Runtime;
+using StrataAI.Application.WorkManagement;
+using StrataAI.Domain.WorkManagement;
+using StrataAI.Infrastructure.Persistence;
+using StrataAI.Infrastructure.WorkManagement;
+
+// Mandatory CI executable against real PostgreSQL and the restricted API login.
+// It exercises persistence/transactions only; it is not HTTP authorization or
+// proof of provider bytes, current Card CAS, events or scanner job publication.
+var adminConnection = Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_ADMIN_CONNECTION")
+    ?? throw new InvalidOperationException("Contract admin connection is required.");
+var apiConnection = Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_API_CONNECTION")
+    ?? throw new InvalidOperationException("Contract restricted API connection is required.");
+var ct = CancellationToken.None;
+var now = AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
+var organization = Guid.NewGuid(); var foreignOrganization = Guid.NewGuid(); var user = Guid.NewGuid(); var foreignUser = Guid.NewGuid();
+var board = Guid.NewGuid(); var foreignBoard = Guid.NewGuid(); var list = Guid.NewGuid(); var foreignList = Guid.NewGuid();
+var card = Guid.NewGuid(); var foreignCard = Guid.NewGuid();
+await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenAsync(ct);
+async Task Seed(Guid tenant, Guid actor, Guid boardId, Guid listId, Guid cardId)
+{
+    await using var tx = await admin.BeginTransactionAsync(ct);
+    await using var sql = new NpgsqlCommand("""
+        INSERT INTO organizations(id,name,created_at,updated_at) VALUES(@tenant,'Persistence contract',@at,@at);
+        INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at)
+         VALUES(@actor,@email,upper(@email),'Persistence contract','ACTIVE','unused-contract-hash',@at,@at);
+        INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(@actor,@tenant,@actor,'MEMBER','ACTIVE');
+        INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES(@board,@tenant,'Contract Board',@at,@at);
+        INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
+         VALUES(@list,@tenant,@board,'Contract List','500000000000000000000000000000',@at,@at);
+        INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+         VALUES(@card,@tenant,@board,@list,'Contract Card','500000000000000000000000000000',@at,@at);
+        """, admin, tx);
+    sql.Parameters.AddWithValue("tenant",tenant); sql.Parameters.AddWithValue("actor",actor); sql.Parameters.AddWithValue("board",boardId);
+    sql.Parameters.AddWithValue("list",listId); sql.Parameters.AddWithValue("card",cardId); sql.Parameters.AddWithValue("at",now);
+    sql.Parameters.AddWithValue("email",$"contract-{actor:N}@example.test"); await sql.ExecuteNonQueryAsync(ct); await tx.CommitAsync(ct);
+}
+void Require(bool condition, string invariant) { if (!condition) throw new InvalidOperationException(invariant); }
+var services = new ServiceCollection(); services.AddLogging(); services.AddSingleton(new PostgresConnectionFactory(apiConnection));
+services.AddSingleton<ICommandActorAuthorization, NoActorFixture>();
+services.AddStrataAiWorkManagement(new(RuntimeMode.Production,"contract","contract"));
+await using var provider = services.BuildServiceProvider(); var store = provider.GetRequiredService<IAttachmentUploadIntentStore>();
+var metadata = provider.GetRequiredService<IAttachmentMetadataStore>(); var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>();
+async Task<T?> InScope<T>(Guid tenant, Func<Task<T>> operation)
+{
+    var result = await unit.ExecuteReadAsync(tenant,null,"contract_scope",() => Task.FromResult(true),
+        async () => WorkOperation<T>.Success(await operation()),ct);
+    Require(result.Succeeded,"Restricted persistence operation failed."); return result.Value;
+}
+Task<AttachmentUploadRecord?> Find(Guid tenant, Guid actor, Guid key) => InScope(tenant,() => store.FindUploadByRetryAsync(tenant,actor,key,ct));
+Task<AttachmentUploadRecord?> Change(AttachmentUploadIntent value, long version, AttachmentUploadChange change) =>
+    InScope(value.OrganizationId,() => store.TryChangeUploadAsync(value.OrganizationId,value.CardId,value.UploaderId,value.Id,version,change,ct));
+AttachmentUploadIntent Intent(Guid? retry = null) => AttachmentUploadIntent.Prepare(Guid.NewGuid(),organization,card,user,retry ?? Guid.NewGuid(),1,
+    "Contract image",128,new string('a',64),now.AddHours(1),now);
+try
+{
+    await Seed(organization,user,board,list,card); await Seed(foreignOrganization,foreignUser,foreignBoard,foreignList,foreignCard);
+    var value = Intent(); var prepared = await InScope(organization,() => store.PrepareUploadAsync(value,ct));
+    Require(prepared is { Version:1, State:AttachmentUploadState.Prepared },"Prepared upload persistence shape failed.");
+    Require(await InScope(organization,() => store.PrepareUploadAsync(Intent(value.RetryKey),ct)) is null,"Upload retry was duplicated.");
+    Require(await Find(foreignOrganization,user,value.RetryKey) is null && await Find(organization,foreignUser,value.RetryKey) is null,"Upload discovery widened scope.");
+    foreach (var scope in new[] { (foreignOrganization,card,user),(organization,foreignCard,user),(organization,card,foreignUser) })
+        Require(await InScope(scope.Item1,() => store.TryChangeUploadAsync(scope.Item1,scope.Item2,scope.Item3,value.Id,1,new(AttachmentUploadAction.Abandon,now),ct)) is null,"Upload CAS widened scope.");
+    var contenders = await Task.WhenAll(Enumerable.Range(0,8).Select(_ => Change(value,1,new(AttachmentUploadAction.StartWrite,now,Guid.NewGuid(),now.AddMinutes(5)))));
+    Require(contenders.Count(x => x is not null)==1,"Concurrent upload claims had multiple writers.");
+    var writing = contenders.Single(x => x is not null)!; var nonce = writing.WriteLeaseId!.Value;
+    Require(await Change(value,2,new(AttachmentUploadAction.UnknownWrite,now,Guid.NewGuid())) is null,"Wrong writer nonce accepted.");
+    var renewed = await Change(value,2,new(AttachmentUploadAction.RenewWrite,now.AddSeconds(1),nonce,now.AddMinutes(6)));
+    Require(renewed is { Version:3 },"Upload writer renewal failed.");
+    Require(await Change(value,3,new(AttachmentUploadAction.RenewWrite,now.AddSeconds(2),nonce,now.AddMinutes(6))) is null,"Unchanged renewal advanced revision.");
+    var unknown = await Change(value,3,new(AttachmentUploadAction.UnknownWrite,now.AddSeconds(2),nonce)); Require(unknown is { Version:4,State:AttachmentUploadState.Reconcile },"Unknown outcome was lost.");
+    Require(await Change(value,4,new(AttachmentUploadAction.StartWrite,now.AddSeconds(3),Guid.NewGuid(),now.AddMinutes(5))) is null,"Unknown outcome started another writer.");
+    Require(await Change(value,4,new(AttachmentUploadAction.ConfirmMissing,now.AddSeconds(3))) is { Version:5,State:AttachmentUploadState.Prepared },"Verified absence did not restore original intent.");
+    var replacement = Guid.NewGuid(); await Change(value,5,new(AttachmentUploadAction.StartWrite,now.AddSeconds(4),replacement,now.AddMinutes(5)));
+    var measured = new StoredAttachmentObject(new(organization,value.Id),128,new string('a',64));
+    Require(await Change(value,6,new(AttachmentUploadAction.RecordStored,now.AddSeconds(5),nonce,Measured:measured,VerifiedMimeType:"image/png")) is null,"Stale writer callback accepted.");
+    var stored = await Change(value,6,new(AttachmentUploadAction.RecordStored,now.AddSeconds(5),replacement,Measured:measured,VerifiedMimeType:"image/png"));
+    Require(stored is { Version:7,State:AttachmentUploadState.Stored,WriteLeaseId:null },"Verified stored upload failed.");
+    Require(await Change(value,7,new(AttachmentUploadAction.Publish,now.AddSeconds(6))) is null,"Upload published without matching quarantine.");
+    var rolledBack = await unit.ExecuteReadAsync<AttachmentUploadRecord?>(organization,null,"contract_scope",() => Task.FromResult(true),async () =>
+    {
+        await metadata.CreateFileAttachmentAsync(measured,card,user,value.DisplayName,"image/png",now.AddSeconds(5),ct);
+        Require(await store.TryChangeUploadAsync(organization,card,user,value.Id,7,new(AttachmentUploadAction.Publish,now.AddSeconds(6)),ct) is { Version:8 },"Atomic publication failed.");
+        return WorkOperation<AttachmentUploadRecord?>.Failure("intentional_contract_rollback");
+    },ct);
+    Require(!rolledBack.Succeeded && await Find(organization,user,value.RetryKey) is { Version:7,State:AttachmentUploadState.Stored },"Publication rollback lost stored intent.");
+    Require(await InScope(organization,() => metadata.FindFileAttachmentAsync(organization,card,value.Id,ct)) is null,"Publication rollback retained metadata.");
+    var published = await InScope(organization,async () =>
+    {
+        await metadata.CreateFileAttachmentAsync(measured,card,user,value.DisplayName,"image/png",now.AddSeconds(5),ct);
+        return await store.TryChangeUploadAsync(organization,card,user,value.Id,7,new(AttachmentUploadAction.Publish,now.AddSeconds(6)),ct);
+    });
+    Require(published is { Version:8,State:AttachmentUploadState.Published } && published.ExpectedSha256==value.ExpectedSha256,"Atomic publication persistence failed.");
+    Require(await Change(value,8,new(AttachmentUploadAction.Abandon,now.AddSeconds(7))) is null,"Published upload was abandoned.");
+    var expiry = Intent(); await InScope(organization,() => store.PrepareUploadAsync(expiry,ct));
+    await Change(expiry,1,new(AttachmentUploadAction.StartWrite,now,Guid.NewGuid(),now.AddMinutes(5)));
+    Require(await Change(expiry,2,new(AttachmentUploadAction.ExpiredWriter,now.AddMinutes(4))) is null,"Active writer reconciled prematurely.");
+    await Change(expiry,2,new(AttachmentUploadAction.ExpiredWriter,now.AddHours(1)));
+    Require(await Change(expiry,3,new(AttachmentUploadAction.ConfirmMissing,now.AddHours(1))) is null,"Expired upload admitted another writer.");
+    Require(await Change(expiry,3,new(AttachmentUploadAction.Abandon,now.AddHours(1))) is { State:AttachmentUploadState.Abandoned },"Expired intent was not retained.");
+    Require(await InScope(organization,() => store.PrepareUploadAsync(Intent(expiry.RetryKey),ct)) is null,"Abandoned retry identity reused.");
+    Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, publication rollback and retained expiry passed.");
+}
+finally
+{
+    await using var cleanup = new NpgsqlCommand("""
+        DELETE FROM attachment_upload_intents WHERE tenant_id=ANY(@tenants);
+        DELETE FROM attachments WHERE tenant_id=ANY(@tenants);
+        DELETE FROM cards WHERE tenant_id=ANY(@tenants); DELETE FROM board_lists WHERE tenant_id=ANY(@tenants);
+        DELETE FROM boards WHERE tenant_id=ANY(@tenants); DELETE FROM organization_members WHERE tenant_id=ANY(@tenants);
+        DELETE FROM organizations WHERE id=ANY(@tenants); DELETE FROM users WHERE id=ANY(@users);
+        """,admin);
+    cleanup.Parameters.AddWithValue("tenants",new[] { organization,foreignOrganization }); cleanup.Parameters.AddWithValue("users",new[] { user,foreignUser });
+    await cleanup.ExecuteNonQueryAsync(ct);
+}
+
+sealed class NoActorFixture : ICommandActorAuthorization
+{
+    public Task<bool> VerifyAsync(Guid actorId,CancellationToken cancellationToken=default) =>
+        throw new InvalidOperationException("Persistence fixture must not claim HTTP actor authorization.");
+}
