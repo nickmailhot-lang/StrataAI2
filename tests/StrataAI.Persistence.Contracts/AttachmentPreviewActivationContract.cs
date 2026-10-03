@@ -142,7 +142,15 @@ internal static class AttachmentPreviewActivationContract
         }
         var admission=readProvider.GetRequiredService<AttachmentDownloadAdmissionService>();
         var loadedPreview=await intents.LoadAsync(preview,reference,ct);
-        var declaredBytes=Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==");
+        byte[] declaredBytes;
+        using(var raster=new MemoryStream(bytes,writable:false))
+        using(var normalized=new SkiaAttachmentImagePreviewDecoder(new()).Decode(raster,"image/png",ct))
+        {
+            using var encoded=new MemoryStream(); await normalized.Bytes.CopyToAsync(encoded,ct); declaredBytes=encoded.ToArray();
+            Require(normalized.Width==1 && normalized.Height==1 && !declaredBytes.SequenceEqual(bytes)
+                && !System.Text.Encoding.UTF8.GetString(declaredBytes).Contains("PRIVATE-SOURCE-PAYLOAD-MUST-NOT-BECOME-COVER",StringComparison.Ordinal),
+                "Real raster normalization retained original/private source bytes.");
+        }
         Require(loadedPreview.Source is not null && await intents.DeclareAsync(preview,reference,loadedPreview.Source,"image/png",
             new(declaredBytes.Length,Convert.ToHexStringLower(SHA256.HashData(declaredBytes)),1,1),ct)==AttachmentPreviewDeclaration.Declared,
             "Read fixture could not declare an unpublished private preview.");
@@ -172,7 +180,7 @@ internal static class AttachmentPreviewActivationContract
         await using(var owned=content.Value!)
         {
             using var copied=new MemoryStream();await owned.Bytes.CopyToAsync(copied,ct);
-            Require(copied.ToArray().SequenceEqual(Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==")),
+            Require(copied.ToArray().SequenceEqual(declaredBytes),
                 "Preview read delivered different or original bytes.");
         }
         objects.Corrupt=true;
@@ -301,7 +309,7 @@ internal static class AttachmentPreviewActivationContract
         {
             ct.ThrowIfCancellationRequested();Calls++;
             if(mime!="image/png" || !source.CanSeek || source.CanWrite)throw new InvalidOperationException("Fixture generator source was not verified/owned.");
-            return Task.FromResult(new AttachmentPreviewImage(Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg=="),1,1));
+            return Task.FromResult(new SkiaAttachmentImagePreviewDecoder(new()).Decode(source,mime,ct));
         }
     }
     private sealed class Objects(Guid tenant,Guid original,byte[] bytes) : IAttachmentObjectStorage

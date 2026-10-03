@@ -125,19 +125,20 @@ internal static class AttachmentWorkerContract
         // Publish another original intent/FILE/job through the actual adapters.
         var uploads=apiServices.GetRequiredService<IAttachmentUploadIntentStore>(); var metadata=apiServices.GetRequiredService<IAttachmentMetadataStore>();
         var publisher=apiServices.GetRequiredService<IAttachmentScanJobPublisher>(); var unit=apiServices.GetRequiredService<IWorkManagementUnitOfWork>();
-        async Task<Guid> PublishPending(string mime="image/png")
+        async Task<Guid> PublishPending(string mime="image/png",byte[]? content=null)
         {
+            var measuredBytes=content??bytes; var measuredDigest=content is null?digest:Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(content));
             var at=AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow); var id=Guid.NewGuid();
             await using var parent=new NpgsqlCommand("SELECT version FROM public.cards WHERE tenant_id=@tenant AND id=@card;",admin);
             parent.Parameters.AddWithValue("tenant",organization); parent.Parameters.AddWithValue("card",original.CardId);
             var revision=(long)(await parent.ExecuteScalarAsync(ct))!;
-            var value=AttachmentUploadIntent.Prepare(id,organization,original.CardId,original.UploaderId,Guid.NewGuid(),revision,"Worker retry fixture",bytes.Length,digest,at.AddHours(1),at);
+            var value=AttachmentUploadIntent.Prepare(id,organization,original.CardId,original.UploaderId,Guid.NewGuid(),revision,"Worker retry fixture",measuredBytes.Length,measuredDigest,at.AddHours(1),at);
             var result=await unit.ExecuteReadAsync(organization,null,"worker_fixture",()=>Task.FromResult(true),async()=>
             {
                 Require(await uploads.PrepareUploadAsync(value,ct) is not null,"Retry fixture intent was not prepared."); var nonce=Guid.NewGuid();
                 await uploads.TryChangeUploadAsync(organization,value.CardId,value.UploaderId,id,1,new(AttachmentUploadAction.StartWrite,at,nonce,at.AddMinutes(5)),ct);
-                await uploads.TryChangeUploadAsync(organization,value.CardId,value.UploaderId,id,2,new(AttachmentUploadAction.RecordStored,at,nonce,Measured:new(new(organization,id),bytes.Length,digest),VerifiedMimeType:mime),ct);
-                await metadata.CreateFileAttachmentAsync(new(new(organization,id),bytes.Length,digest),value.CardId,value.UploaderId,value.DisplayName,mime,at,ct);
+                await uploads.TryChangeUploadAsync(organization,value.CardId,value.UploaderId,id,2,new(AttachmentUploadAction.RecordStored,at,nonce,Measured:new(new(organization,id),measuredBytes.Length,measuredDigest),VerifiedMimeType:mime),ct);
+                await metadata.CreateFileAttachmentAsync(new(new(organization,id),measuredBytes.Length,measuredDigest),value.CardId,value.UploaderId,value.DisplayName,mime,at,ct);
                 var committed=await uploads.TryChangeUploadAsync(organization,value.CardId,value.UploaderId,id,3,new(AttachmentUploadAction.Publish,at),ct);
                 var file=await metadata.FindFileAttachmentAsync(organization,value.CardId,id,ct);
                 Require(committed is not null && file is not null && await publisher.PublishScanAsync(committed,file,value.UploaderId,"scan-worker-retry",ct),"Retry fixture scan publication failed.");
@@ -213,7 +214,9 @@ internal static class AttachmentWorkerContract
         await handler.ExecuteAsync(removedJob!,ct);
         Require(scanner.Calls==providerCalls && storage.Opens==objectReads,"Deactivated file was read by the scanner.");
         Require(await queue.CompleteAsync(organization,removedJob!.Id,removedJob.LeaseId,workerId,ct),"Superseded scan could not be acknowledged.");
-        await AttachmentPreviewActivationContract.RunAsync(admin,worker,queue,mime=>PublishPending(mime),organization,original.CardId,bytes,apiServices,ct);
+        var rasterBytes=Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==")
+            .Concat(System.Text.Encoding.UTF8.GetBytes("PRIVATE-SOURCE-PAYLOAD-MUST-NOT-BECOME-COVER")).ToArray();
+        await AttachmentPreviewActivationContract.RunAsync(admin,worker,queue,mime=>PublishPending(mime,rasterBytes),organization,original.CardId,rasterBytes,apiServices,ct);
         await AttachmentScanRecoveryContract.RunAsync(admin,worker,api,organization,original.CardId,mime=>PublishPending(mime),
             claim=>new AttachmentScanDeliveryHandler(new PostgresAttachmentScanDeliveryStore(worker),new(storage,new FixtureScanner())).ExecuteAsync(claim,ct),
             ()=>storage.Opens,ct);

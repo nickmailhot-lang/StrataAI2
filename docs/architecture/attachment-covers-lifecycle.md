@@ -461,3 +461,20 @@ effects are unchanged. This tests eligibility before the SQL limit; it does not
 claim a real object/Worker publication for those seeded rows or a measured
 large-Board performance result. Local solution compilation passes; actual new
 PostgreSQL execution is pending CI.
+
+0126844 PostgreSQL execution found that the capacity fixture copied a restored
+source's private lifecycle revision. 0795984 resets new rows to zero lifecycle
+count and empty archive/deletion history, preserving all production INSERT
+guards; corrected Linux execution remains pending.
+
+The preview activation contract now uses an actual PNG source with a private
+trailing sentinel and the real Skia decoder in its Worker handler wrapper. Its
+published output measurement and subsequent preview/cover delivery must match
+the normalized PNG, differ from original bytes and exclude the sentinel. The
+restricted upload-intent adapter, scan/preview handlers, immutable publication,
+Card cover commands and current-viewer delivery remain the actual production
+components. Object storage and scanner verdicts remain explicit fixtures. This
+does not replace the separate isolated Worker-image codec verification or prove
+the complete managed AWS upload/browser path. The persistence executable uses
+the same pinned Linux Skia native asset already used by Domain tests; local
+warning-as-error compilation passes and new Linux execution is pending.

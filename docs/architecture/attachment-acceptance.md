@@ -3,8 +3,10 @@
 The authoritative ticket is GitHub #15. The current source includes authorized
 URL and raw-file commands, private object-storage/scanner adapters, fenced
 publication, metadata reads, controlled downloads and MUI attachment controls.
-The full ticket remains open: isolated image startup, durable previews, covers,
-deletion/reconciliation and the complete release acceptance matrix are unfinished.
+The full ticket remains open: the complete enabled-provider release workflow,
+retention/purge reconciliation and full cross-feature acceptance matrix are
+unfinished. Durable previews, covers and guarded soft deletion now have source
+implementations and scoped executed contracts; they are not full-ticket proof.
 The opening matrix describes current scope; dated evidence below is historical
 and must not be treated as proof that the current head has passed required-ci.
 
@@ -23,7 +25,7 @@ eligibility requires the same Organization and Card. This flag is a Domain
 invariant, never an authorization decision or permission to issue a URL.
 An actual cover also requires a current published verified derivative. The
 Worker now publishes verified derivatives and the API/MUI provide authorized
-preview delivery; Card cover selection is still outstanding. URL
+preview delivery, cover selection/removal and current Card cover display. URL
 attachments are untrusted absolute HTTP(S) metadata with no embedded credentials,
 no binary storage/MIME/size and no scan/download/cover status. No URL is fetched.
 Bounds are 255 characters for display name, 2048 for the canonical encoded URL,
@@ -43,18 +45,20 @@ digests and scanner/provider details; authorization precedes disclosure.
 | FR-004 object storage | Official managed S3 adapter, private-owner/policy validation, non-overwrite multipart storage, explicit readiness/configuration refusal; no database BLOB; SDK transport/private-file contracts | Release-image enabled provider workflow, orphan/retention reconciliation and documented operator configuration/smoke evidence |
 | FR-005 controlled downloads | Current Clean/scoped admission, time-bound snapshot, SHA-verified anonymous staging, final/periodic rights checks, private forced-download headers and MUI browser-owned delivery; managed/API/PostgreSQL contracts | Full enabled-file browser/provider acceptance and deletion/cover/reconciliation interactions |
 | FR-006 scanning/quarantine | Separate Worker job, scope-only payload, restricted lease-bound SQL capability, complete-byte ClamAV protocol and atomic verdict/Card/audit/event persistence; fail-closed Pending/Rejected/Failed delivery | Final-attempt crash reconciliation/rescan, remaining mutation races and complete enabled image/operator coverage |
-| FR-007 previews | Raw bounded PNG/JPEG/WebP transform cases execute in Linux; isolated private-pipe generator is implemented but its exact-image child aborts before managed admission | Repair isolated runtime, durable derivative jobs/private persistence/fenced publication, current-authorized delivery and accessible MUI viewer |
-| FR-008 cover | Domain eligibility rejects URL/unsafe/deleted/foreign-Card/foreign-Organization metadata | Current verified derivative prerequisite; Card cover reference, atomic versioned command/FK, authorization, UI/realtime |
-| FR-009 deletion | Domain tombstone disables eligibility and retains history; no deletion route is exposed | PRD-18 archive/elevated-rights/confirmation preconditions, parent-version checks, atomic cover clearing, audit/event, retention and purge reconciliation |
+| FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer | Complete actual enabled-provider release/browser pipeline and cross-feature acceptance matrix |
+| FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display | Full native execution, real provider/upload-through-Worker integration, concurrency/reconnect and unchanged capacity/performance acceptance |
+| FR-009 deletion | Guarded archive/restore/elevated confirmed soft deletion; current parent/source versions; atomic selected-cover clearing; audit/events; restore does not reselect | Full enabled-provider/browser lifecycle matrix and retention/purge reconciliation |
 | FR-010 untrusted MIME/name | Canonical raw transport validation; server byte classification/full size/SHA checks; quarantine; safe opaque downloads; strict raw image decoder; forged-input/API/provider cases | Successful isolated image admission/publication plus full enabled release/security regression matrix |
 
 Domain, managed provider, API and restricted PostgreSQL tests now cover the
 implemented foundations described above; the dated job evidence below identifies
 their executed scope. Local compilation passes, but local .NET execution remains
 blocked by Windows Application Control. The latest executed environment-policy
-head 6a5f0c9 passed 517 Domain and 270 API tests with zero failures/skips; its
-isolated image fixture still failed and full required-ci was not green. Newer
-heads require their own exact-image results. Source capabilities and simulated
+head 1d4086c passes Linux managed/API, web and restricted PostgreSQL source gates;
+its full immutable-image/release gate remains pending. Historical 6a5f0c9 had an
+isolated-image failure that was subsequently repaired and verified in exact
+Worker images; that dated failure is not the current implementation state.
+Newer heads require their own exact-image results. Source capabilities and simulated
 provider/browser evidence do not prove the complete configured file lifecycle.
 
 All AC-ATTACH-14-01/02/03 and TC-01 through TC-13 remain incomplete until their
