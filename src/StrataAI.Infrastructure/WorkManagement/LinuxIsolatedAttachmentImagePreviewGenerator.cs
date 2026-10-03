@@ -35,6 +35,7 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             || !File.Exists(executable.Assembly) || !File.Exists("/usr/bin/setpriv") || !File.Exists("/app/strata-preview-launcher")) throw Unavailable(AttachmentPreviewFailureStage.Invocation);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct); deadline.CancelAfter(TimeSpan.FromSeconds(30));
         var acquired = false; Process? child = null; Task<AttachmentPreviewImage>? result = null; Task[] pending = []; var transferred = false; string? scratch = null;
+        Task<AttachmentPreviewFailureStage>? diagnostics = null;
         try
         {
             await _slots.WaitAsync(deadline.Token); acquired = true;
@@ -63,7 +64,8 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             child = Process.Start(start) ?? throw Unavailable();
             result = AttachmentPreviewProcessProtocol.ReadResultAsync(child.StandardOutput.BaseStream, deadline.Token);
             var writer = WriteAndCloseAsync(child.StandardInput.BaseStream, request, verifiedMimeType, verifiedSource, deadline.Token);
-            pending = [result, writer, DrainDiagnosticsAsync(child.StandardError.BaseStream, deadline.Token), child.WaitForExitAsync(deadline.Token)];
+            diagnostics = DrainDiagnosticsAsync(child.StandardError.BaseStream, deadline.Token);
+            pending = [result, writer, diagnostics, child.WaitForExitAsync(deadline.Token)];
             await Task.WhenAll(pending).WaitAsync(deadline.Token);
             if (child.ExitCode != 0) throw Unavailable();
             transferred = true; return await result;
@@ -75,7 +77,9 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             var stage = child is null ? AttachmentPreviewFailureStage.Invocation : AttachmentPreviewFailureStage.RuntimeLaunch;
             if (child?.HasExited == true) stage = child.ExitCode switch
             { 65 => AttachmentPreviewFailureStage.Invocation, 66 => AttachmentPreviewFailureStage.ResourceBounds,
-                67 or 68 => AttachmentPreviewFailureStage.FileSystemRules, _ => stage };
+                67 or 68 => AttachmentPreviewFailureStage.FileSystemRules, 69 => AttachmentPreviewFailureStage.RuntimeExec, _ => stage };
+            if (diagnostics?.IsCompletedSuccessfully == true && diagnostics.Result != AttachmentPreviewFailureStage.None)
+                stage = diagnostics.Result;
             throw Unavailable(stage);
         }
         finally
@@ -108,14 +112,25 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
         try { await AttachmentPreviewProcessProtocol.WriteSourceAsync(pipe, request, mime, source, ct); }
         finally { await pipe.DisposeAsync(); }
     }
-    private static async Task DrainDiagnosticsAsync(Stream pipe, CancellationToken ct)
+    private static async Task<AttachmentPreviewFailureStage> DrainDiagnosticsAsync(Stream pipe, CancellationToken ct)
     {
-        var buffer = new byte[1024]; var count = 0;
+        var buffer = new byte[4097]; var count = 0;
         try
         {
             while (true)
             {
-                var read = await pipe.ReadAsync(buffer, ct); if (read == 0) return;
+                var read = await pipe.ReadAsync(buffer.AsMemory(count), ct);
+                if (read == 0)
+                {
+                    // Recognize only fixed runtime failure classes. Never
+                    // convert arbitrary diagnostics into a string or log them.
+                    var bytes = buffer.AsSpan(0, count);
+                    if (bytes.IndexOf("GC heap initialization failed"u8) >= 0 || bytes.IndexOf("HRESULT: 0x8007000E"u8) >= 0)
+                        return AttachmentPreviewFailureStage.RuntimeMemory;
+                    if (bytes.IndexOf("Couldn't find a valid ICU package"u8) >= 0 || bytes.IndexOf("No usable version of libssl"u8) >= 0)
+                        return AttachmentPreviewFailureStage.RuntimeLibrary;
+                    return AttachmentPreviewFailureStage.None;
+                }
                 count += read; if (count > 4096) throw Unavailable();
             }
         }
