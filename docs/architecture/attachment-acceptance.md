@@ -304,3 +304,21 @@ now synchronizes eight distinct adapters per object across 16 rounds, requires
 exactly one winner and matches its digest to the complete final bytes, while
 retaining cleanup/idempotent deletion checks. Build/diff checks pass; executed
 Linux proof of the repair and latest required-ci remain pending.
+
+Executed repair evidence at 92f7a9e: .NET-quality job 111177642115 in run
+37114177223 passed all 315 Domain/Application/Infrastructure and 265 API cases,
+zero skips, including the strengthened eight-adapter/16-round publication race
+regression. Web, PostgreSQL, immutable image build and security jobs passed;
+container/browser integration is still running. This corrects the proven prior
+race without waiving its acceptance test.
+
+The initial managed production adapter now selects AWS S3 behind the same
+Application interface, using the official locked vendor SDK only in
+Infrastructure. It checks private bucket policy/public-access/ownership before
+each operation, includes expected bucket owner and generated tenant key, streams
+bounded private multipart bytes with measured SHA-256, refuses identity overwrite
+on completion, preserves committed objects after unknown outcomes, retires SDK
+responses and attempts bounded unpublished-part cleanup. Configuration and
+adapter contract cases compile; build/locked restore/vulnerability audit pass.
+Execution, runtime registration and real provider integration remain pending.
+See [provider decision and integration limits](attachment-object-storage.md).
