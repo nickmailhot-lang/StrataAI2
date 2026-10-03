@@ -145,6 +145,27 @@ internal static class AttachmentWorkerContract
             },ct);
             Require(result.Succeeded,"Retry fixture transaction failed."); return id;
         }
+        // Guarded lifecycle revisions must not strand a canonical Pending scan.
+        foreach(var restoreBeforeScan in new[]{false,true})
+        {
+            var lifecycleFile=await PublishPending(); var lifecycleJob=await queue.ClaimAsync(organization,workerId,ct);
+            Require(lifecycleJob is not null && AttachmentScanAttempt.Parse(lifecycleJob.SafeMetadataJson).AttachmentId==lifecycleFile,"Lifecycle scan fixture was not claimed.");
+            await using(var change=new NpgsqlCommand("UPDATE attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE tenant_id=@tenant AND id=@file;"+(restoreBeforeScan?" UPDATE attachments SET lifecycle_state='ACTIVE',version=version+1 WHERE tenant_id=@tenant AND id=@file;":""),admin))
+            {change.Parameters.AddWithValue("tenant",organization);change.Parameters.AddWithValue("file",lifecycleFile);await change.ExecuteNonQueryAsync(ct);}
+            var lifecycleAttempt=AttachmentScanAttempt.Parse(lifecycleJob!.SafeMetadataJson);
+            Require(await delivery.LoadAsync(lifecycleJob,lifecycleAttempt,ct) is {Status:AttachmentScanLoadStatus.Ready},"Archive/restore stranded a canonical Pending scan.");
+            await handler.ExecuteAsync(lifecycleJob,ct);providerCalls=scanner.Calls;objectReads=storage.Opens;
+            await handler.ExecuteAsync(lifecycleJob,ct);
+            Require(scanner.Calls==providerCalls && storage.Opens==objectReads,"Lifecycle scan replay repeated provider I/O.");
+            await using(var verify=new NpgsqlCommand("SELECT scan_status='CLEAN' AND version=@version AND lifecycle_revision=@count AND lifecycle_state=@state AND archived_at IS NOT NULL FROM attachments WHERE tenant_id=@tenant AND id=@file;",admin))
+            {
+                verify.Parameters.AddWithValue("tenant",organization);verify.Parameters.AddWithValue("file",lifecycleFile);
+                verify.Parameters.AddWithValue("version",restoreBeforeScan?4L:3L);verify.Parameters.AddWithValue("count",restoreBeforeScan?2L:1L);
+                verify.Parameters.AddWithValue("state",restoreBeforeScan?"ACTIVE":"ARCHIVED");
+                Require(await verify.ExecuteScalarAsync(ct) is true,"Lifecycle scan lost history, state or current revision.");
+            }
+            Require(await queue.CompleteAsync(organization,lifecycleJob.Id,lifecycleJob.LeaseId,workerId,ct),"Lifecycle scan could not be acknowledged.");
+        }
         var retryFile=await PublishPending(); scanner.Verdict=AttachmentScannerVerdict.Unavailable;
         for(var number=1;number<=5;number++)
         {

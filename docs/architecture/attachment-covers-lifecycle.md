@@ -142,3 +142,42 @@ synthetic; API tests supply separate HTTP/session evidence. Compilation passes
 with zero warnings/errors; actual new Linux command execution is pending CI.
 Selected cover persistence/clearing, protected archive original/preview review,
 cover derivative admission and native MUI lifecycle/cover controls remain open.
+
+The command commit c8aab6a passed its actual PostgreSQL job, including the injected
+audit/final actor complete rollback and exactly-once committed lifecycle effects.
+Its web job also passed; managed/exact-image release checks remain pending.
+
+Migration 052 prevents lifecycle changes from stranding Pending scan jobs. A
+private server-maintained lifecycle revision count advances only with a valid
+archive/restore/delete transition; direct caller mutation is refused. Scan source
+generation is the current File revision minus this guarded count. The original
+immutable job reference and exact lease remain unchanged, and unrelated metadata
+revision changes still supersede the original scan. Verdict publication compares
+the locked current File revision, advances it once and retains lifecycle/history.
+Terminal replay requires the original committed scan audit/event evidence and
+returns no integrity or provider work. Exhausted scan recovery uses the same
+generation binding and current revision CAS. Preview enqueue after successful
+scanning uses the actual current Clean Active revision. Loader gates include
+current nondeleted Organization/Board/List/Card context; Archived quarantine can
+finish scanning without enabling normal file or preview delivery.
+
+The forward migration initializes genuine Pending lifecycle histories only when
+retained canonical archive/restore audit counts exactly account for the revision
+delta; it does not invent Deleted history or treat arbitrary stale changes as
+lifecycle revisions. Restricted Worker tests exercise both Archived and restored
+Pending scan completion/replay. Recovery tests now exercise Archived and restored
+exhausted sources while retaining their existing unrelated-stale/deleted/live
+refusal and late full rollback checks. Runtime readiness and migration-runner
+repeat/upgrade/count protection checks include 052. Actual new Linux execution
+remains pending; local solution compilation and shell syntax pass.
+
+Client lifecycle admission uses separate archive pages and ordinary Active pages.
+Archive cursors include the collection and Card identity, retain microsecond/tied
+UUID order and require the final row of a bounded 50-item page. Strict command
+receipts bind scope, original identity/variant/scan evidence, both next revisions,
+retained history, server timestamps, changed/no-op and deletion actor. Deleted
+receipts cannot be admitted as restored metadata or archive entries, and private
+object/integrity/delivery fields are refused. Seven lifecycle cases plus the
+existing attachment admission cases pass locally (36 tests across 3 files).
+Typecheck, lint and production build pass. Native lifecycle controls and their
+browser/accessibility/performance evidence remain subsequent acceptance work.

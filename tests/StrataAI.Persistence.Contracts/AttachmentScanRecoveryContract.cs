@@ -76,6 +76,8 @@ internal static class AttachmentScanRecoveryContract
             "Normal queue did not establish exhausted terminal expiry.");
         foreach(var entry in new[]{expired,removed,stale,clean})
             await Scalar<int>("UPDATE public.background_jobs SET attempt_count=max_attempts,lease_expires_at=clock_timestamp()-interval '1 second',version=version+1 WHERE id=@job AND tenant_id=@tenant RETURNING 1;",entry.Job.Id);
+        await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;",file:expired.File);
+        await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant; UPDATE public.attachments SET lifecycle_state='ACTIVE',version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;",file:queuedExpiry.File);
         await Scalar<int>("UPDATE public.background_jobs SET attempt_count=max_attempts,lease_expires_at=clock_timestamp()+interval '1 day',version=version+1 WHERE id=@job AND tenant_id=@tenant RETURNING 1;",liveFinal.Job.Id);
         await Scalar<int>("UPDATE public.background_jobs SET lease_expires_at=clock_timestamp()-interval '1 second',version=version+1 WHERE id=@job AND tenant_id=@tenant RETURNING 1;",nonFinal.Job.Id);
         await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant; UPDATE public.attachments SET lifecycle_state='DELETED',deleted_by=uploader_id,deleted_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;",file:removed.File);
@@ -110,7 +112,9 @@ internal static class AttachmentScanRecoveryContract
         for(var pass=0;pass<8;pass++)await store.RecoverPageAsync(tenant,32,ct);
         foreach(var entry in new[]{expired,queuedExpiry})
         {
-            Require(await Scalar<bool>("SELECT scan_status='FAILED' AND scanned_at IS NOT NULL AND version=2 FROM public.attachments WHERE id=@file AND tenant_id=@tenant;",file:entry.File),
+            Require(await Scalar<bool>("SELECT scan_status='FAILED' AND scanned_at IS NOT NULL AND archived_at IS NOT NULL AND "
+                +(entry.File==expired.File?"version=3 AND lifecycle_revision=1 AND lifecycle_state='ARCHIVED'":"version=4 AND lifecycle_revision=2 AND lifecycle_state='ACTIVE'")
+                +" FROM public.attachments WHERE id=@file AND tenant_id=@tenant;",file:entry.File),
                 "Exhausted quarantine remained Pending.");
             Require(await Scalar<bool>("SELECT state='FAILED' AND attempt_count=max_attempts AND lease_id IS NULL AND worker_id IS NULL AND lease_expires_at IS NULL FROM public.background_jobs WHERE id=@job;",entry.Job.Id),
                 "Recovery did not retain terminal job state.");

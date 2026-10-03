@@ -12,6 +12,12 @@ export type FileAttachment = Omit<UrlAttachment, 'kind' | 'mimeType' | 'sizeByte
   kind: 0; mimeType: 'image/png' | 'image/jpeg' | 'image/webp' | 'application/pdf'; sizeBytes: number; url: null;
 } & ({ scanStatus: 1; scannedAt: null } | { scanStatus: 2 | 3 | 4; scannedAt: string });
 export type AttachmentMetadata = UrlAttachment | FileAttachment;
+type StateMetadata<T, State extends 1 | 2> = T extends AttachmentMetadata ? Omit<T, 'lifecycleState' | 'archivedAt' | 'deletedAt' | 'deletedBy'> & {
+  lifecycleState: State; archivedAt: string; deletedAt: State extends 2 ? string : null; deletedBy: State extends 2 ? string : null;
+} : never;
+export type ArchivedAttachment = StateMetadata<AttachmentMetadata, 1>;
+export type DeletedAttachment = StateMetadata<AttachmentMetadata, 2>;
+export type LifecycleAttachment = AttachmentMetadata | ArchivedAttachment | DeletedAttachment;
 export type AttachmentPage = AttachmentScope & { cardVersion: number; canEdit: boolean; items: AttachmentMetadata[]; nextCursor: string | null };
 export type AttachmentChange = AttachmentScope & { cardVersion: number; attachment: UrlAttachment };
 export type FileAttachmentChange = AttachmentScope & { cardVersion: number; attachment: FileAttachment };
@@ -45,17 +51,21 @@ export function attachmentUrl(value: unknown): string {
   if (!['http:', 'https:'].includes(url.protocol) || !url.hostname || url.username || url.password || url.href.length > 2048) throw invalid();
   return url.href;
 }
-function metadata(value: unknown, scope: AttachmentScope): AttachmentMetadata {
+export function parseLifecycleAttachmentMetadata(value: unknown, scope: AttachmentScope, state: 0 | 1 | 2): LifecycleAttachment {
   const row = record(value);
   exact(row, ['id', 'organizationId', 'cardId', 'uploaderId', 'kind', 'displayName', 'mimeType', 'sizeBytes', 'url', 'scanStatus', 'scannedAt', 'createdAt', 'updatedAt', 'version', 'deletedAt', 'lifecycleState', 'archivedAt', 'deletedBy']);
   if (!notificationUuid(row.id) || !notificationUuid(row.uploaderId) || !same(row.organizationId, scope.organizationId) || !same(row.cardId, scope.cardId)
-    || !revision(row.version) || row.deletedAt !== null || row.lifecycleState !== 0 || row.deletedBy !== null
+    || !revision(row.version) || row.lifecycleState !== state
     || typeof row.displayName !== 'string' || !row.displayName || row.displayName.trim() !== row.displayName || row.displayName.length > 255 || /[\p{Cc}\p{Cf}]/u.test(row.displayName)) throw invalid();
   const created = instant(row.createdAt); const updated = instant(row.updatedAt);
   if (updated < created || created % 10n !== 0n || updated % 10n !== 0n) throw invalid();
+  if (state === 2) {
+    if (!notificationUuid(row.deletedBy) || row.version < 3 || instant(row.deletedAt) !== updated) throw invalid();
+  } else if (row.deletedAt !== null || row.deletedBy !== null) throw invalid();
+  if (state !== 0 && row.archivedAt === null) throw invalid();
   if (row.archivedAt !== null) {
     const archived = instant(row.archivedAt);
-    if (row.version < 3 || archived < created || archived > updated || archived % 10n !== 0n) throw invalid();
+    if (row.version < (state === 1 ? 2 : 3) || archived < created || archived > updated || archived % 10n !== 0n) throw invalid();
   }
   if (row.kind === 1) {
     if (row.scanStatus !== 0 || row.mimeType !== null || row.sizeBytes !== null || row.scannedAt !== null) throw invalid();
@@ -69,7 +79,10 @@ function metadata(value: unknown, scope: AttachmentScope): AttachmentMetadata {
       if (row.version < 2 || scanned < created || scanned > updated || scanned % 10n !== 0n) throw invalid();
     } else throw invalid();
   } else throw invalid();
-  return row as AttachmentMetadata;
+  return row as LifecycleAttachment;
+}
+function metadata(value: unknown, scope: AttachmentScope): AttachmentMetadata {
+  return parseLifecycleAttachmentMetadata(value, scope, 0) as AttachmentMetadata;
 }
 function scopeRecord(value: unknown, scope: AttachmentScope) {
   const row = record(value);

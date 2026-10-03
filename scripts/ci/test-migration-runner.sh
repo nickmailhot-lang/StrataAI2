@@ -280,37 +280,53 @@ test "$(query "SELECT count(*)=3 FROM pg_indexes WHERE tablename='attachments' A
 if query "UPDATE attachments SET lifecycle_state='ACTIVE',deleted_at=NULL,version=version+1 WHERE id='04200000-0000-0000-0000-000000000003';" >/dev/null; then
  echo 'Legacy deleted attachment was restored'; exit 1
 fi
-cat > "$scratch/migrations/052_serialization_fixture.sql" <<'SQL'
+cp db/migrations/052_attachment_lifecycle_scan.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 52
+test "$(query "SELECT lifecycle_revision=0 AND lifecycle_state='DELETED' AND version=2 FROM attachments WHERE id='04200000-0000-0000-0000-000000000003'")" = t
+query 'DO $$ DECLARE target uuid; prior bigint; BEGIN
+ SELECT id,version INTO target,prior FROM attachments WHERE deleted_at IS NULL LIMIT 1;
+ IF target IS NULL THEN RAISE EXCEPTION '\''Lifecycle count fixture missing'\''; END IF;
+ UPDATE attachments SET lifecycle_state='\''ARCHIVED'\'',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=target;
+ UPDATE attachments SET lifecycle_state='\''ACTIVE'\'',version=version+1 WHERE id=target;
+ IF NOT EXISTS(SELECT 1 FROM attachments WHERE id=target AND lifecycle_revision=2 AND version=prior+2) THEN RAISE EXCEPTION '\''Lifecycle count was not maintained'\''; END IF;
+ BEGIN
+  UPDATE attachments SET lifecycle_revision=lifecycle_revision+1 WHERE id=target;
+  RAISE EXCEPTION '\''Lifecycle count was caller mutable'\'';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+END $$;'
+cat > "$scratch/migrations/053_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('052_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('053_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='052_serialization_fixture'")" = 1
-cat > "$scratch/migrations/053_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='053_serialization_fixture'")" = 1
+cat > "$scratch/migrations/054_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('053_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('054_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='053_failure_fixture'")" = 0
-rm "$scratch/migrations/053_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='054_failure_fixture'")" = 0
+rm "$scratch/migrations/054_failure_fixture.sql"
 run
-cat > "$scratch/migrations/054_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/055_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='054_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/054_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='055_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/055_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'
