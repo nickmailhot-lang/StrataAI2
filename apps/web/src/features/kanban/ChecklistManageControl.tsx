@@ -4,6 +4,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { checklistPosition, parseChecklistDeleted, parseChecklistItemCreated, parseChecklistPage, parseChecklistPositioned, parseChecklistRenamed, type Checklist, type ChecklistPage, type ChecklistPosition } from './checklists';
 import type { ChecklistCreateProps } from './ChecklistCreateControl';
+import { ChecklistItemManageControl } from './ChecklistItemManageControl';
 
 type Props = ChecklistCreateProps & { canAdminister?: boolean };
 type Draft = { actor: string; checklist: Checklist; title: string; cardVersion: number; kind: 'rename' | 'delete' | 'move' | 'addItem'; total: number; confirmed: boolean; position?: ChecklistPosition; destination?: string; text?: string };
@@ -14,17 +15,18 @@ export function ChecklistManageControl(props: Props) {
 function ManageControl(props: Props) {
   const [selection, setSelection] = useState<{ page: ChecklistPage; actor: string; cursor?: string }>();
   const [draft, setDraft] = useState<Draft>(); const [busy, setBusy] = useState(false);
+  const [itemReview, setItemReview] = useState<{ checklist: Checklist; actor: string }>();
   const [intent, setIntent] = useState<Intent>(); const [blocked, setBlocked] = useState(false); const [notice, setNotice] = useState<string>();
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const callbacks = useRef(props); callbacks.current = props;
   const action = useRef<HTMLButtonElement>(null); const requestedFocus = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); callbacks.current.onBusyChange(false); callbacks.current.onRecoveryChange(false); }; }, []);
-  useEffect(() => { props.onRecoveryChange(!!intent || blocked); }, [intent, blocked, props.onRecoveryChange]);
+  useEffect(() => { if (!itemReview) props.onRecoveryChange(!!intent || blocked); }, [intent, blocked, itemReview, props.onRecoveryChange]);
   useEffect(() => {
     if (requestedFocus.current && !busy && !props.disabled && !props.unavailable && action.current && !action.current.disabled) {
       action.current.focus({ preventScroll: true }); requestedFocus.current = !!intent || blocked;
     }
-  }, [busy, props.disabled, props.unavailable, intent, blocked, draft]);
+  }, [busy, props.disabled, props.unavailable, intent, blocked, draft, itemReview]);
   const disabled = busy || props.disabled || props.unavailable || !props.editable;
   const conflict = !!draft && draft.cardVersion !== props.version;
   async function load(cursor?: string) {
@@ -93,6 +95,7 @@ function ManageControl(props: Props) {
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
   }
   function discard() { setDraft(undefined); setSelection(undefined); setBlocked(false); setNotice(undefined); requestedFocus.current = true; props.onRefresh(); }
+  if (itemReview) return <ChecklistItemManageControl {...props} {...itemReview} onClose={message => { setItemReview(undefined); setSelection(undefined); setBlocked(false); setNotice(message); requestedFocus.current = true; }} />;
   return <Stack component="section" aria-label="Manage checklists" spacing={1} sx={{ my: 2 }}>
     {notice && <Typography role="status">{notice}</Typography>}
     {props.unavailable ? <Typography>Checking current Card access…</Typography> : draft ? <>
@@ -132,6 +135,8 @@ function ManageControl(props: Props) {
           onClick={() => setDraft({ actor: selection.actor, checklist, title: checklist.title, cardVersion: selection.page.cardVersion, kind: 'move', total, confirmed: false })}>Move {checklist.title}</Button>
         <Button disabled={disabled || selection.page.cardVersion !== props.version}
           onClick={() => setDraft({ actor: selection.actor, checklist, title: checklist.title, cardVersion: selection.page.cardVersion, kind: 'addItem', total, confirmed: false, text: '' })}>Add item to {checklist.title}</Button>
+        <Button disabled={disabled || selection.page.cardVersion !== props.version}
+          onClick={() => setItemReview({ actor: selection.actor, checklist })}>Manage items in {checklist.title}</Button>
         {props.canAdminister && <Button disabled={disabled || selection.page.cardVersion !== props.version}
           onClick={() => setDraft({ actor: selection.actor, checklist, title: checklist.title, cardVersion: selection.page.cardVersion, kind: 'delete', total, confirmed: false })}>Delete {checklist.title}</Button>}
       </Stack>)}

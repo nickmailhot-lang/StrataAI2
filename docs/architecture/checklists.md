@@ -366,3 +366,31 @@ Two new desktop/mobile exact-image browser cases were discovered for keyboard
 creation, accessibility, committed/lost response recovery and second-session
 progress/contents. Browser execution remains pending CI. Editing/completion,
 deletion and ordering of individual items remain unfinished.
+### Item editing and completion controls
+
+The MUI manager now provides a bounded item review and an editor for normalized
+multiline text plus explicit completion/uncompletion. Each review checks the
+current actor, edit admission, Card revision and Checklist revision; later-page
+selection retains the chosen item's own revision. Item drafts live outside the
+revision-keyed read disclosure so live updates cannot discard dirty choices or
+an unconfirmed command.
+
+Response validation preserves parent identity/title/rank, item identity/rank/
+creation time and checks all three revision increments (or exact no-op state).
+A new completion must record the reviewed actor and mutation time. A text-only
+edit on a completed item must preserve the original completer/time, while an
+uncompletion clears both. Changed parent/item timestamps must acknowledge the
+same aggregate mutation. Definite conflicts retain dirty text/completion for
+review; unknown/lost/malformed responses retain the original actor/body/key.
+The parent manager owns recovery locks and returns keyboard focus after the
+original acknowledgment or explicit abandonment of a non-pending review.
+
+Local verification: 99 focused parser/root-manager/item-manager tests passed,
+including later-page item revisions, completion history, original retries,
+actor changes, conflicts, malformed acknowledgments and integrated recovery/
+focus. Type checking, lint and production build passed. Two desktop/mobile
+exact-image browser cases were discovered for combined text/completion with a
+lost committed response, retained completion history on text edits,
+uncompletion, accessibility and another session's live aggregate progress.
+Browser execution is pending CI. Individual item deletion and ordering UI and
+the remaining full PRD acceptance are still required.

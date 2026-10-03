@@ -14,6 +14,28 @@ const ack = (title = 'New preparation') => ({ ...scope, changed: title !== check
 const props = () => ({ ...scope, version: 4, editable: true, disabled: false, unavailable: false,
   onBusyChange: vi.fn(), onRecoveryChange: vi.fn(), onRefresh: vi.fn() });
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+it('owns item recovery through the manager and returns focus only after its original acknowledgment', async () => {
+  const child = { id: id(5), organizationId: scope.organizationId, checklistId: checklist.id, text: 'Prepare', rank: rank(1),
+    completed: false, completedBy: null, completedAt: null, createdAt: now, updatedAt: now, version: 3, deletedAt: null };
+  let writes = 0; vi.mocked(workRequest).mockImplementation(async (path, options) => {
+    if (path === '/me') return profile;
+    if (options?.method === 'PATCH') {
+      if (++writes === 1) throw new WorkRequestError(0, null);
+      return { ...scope, cardVersion: 5, changed: true, checklist: { ...checklist, version: 3 },
+        item: { ...child, version: 4, completed: true, completedAt: now, completedBy: profile.id } };
+    }
+    return path.endsWith('/items') ? { ...scope, cardVersion: 4, canEdit: true, summary: { checklist, total: 1, completed: 0, percent: 0 }, items: [child], nextCursor: null } : page;
+  });
+  const p = props(); render(<ChecklistManageControl {...p} />); fireEvent.click(screen.getByRole('button', { name: 'Manage checklists' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Manage items in Preparations' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Review checklist items' })); fireEvent.click(await screen.findByRole('button', { name: 'Edit item: Prepare' }));
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Item complete' })); fireEvent.click(screen.getByRole('button', { name: 'Save checklist item' }));
+  const retry = await screen.findByRole('button', { name: 'Retry checklist item change' });
+  await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true)); expect(screen.queryByRole('button', { name: 'Manage checklists' })).not.toBeInTheDocument();
+  fireEvent.click(retry); await screen.findByText('Checklist item saved.');
+  await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Manage checklists' })).toHaveFocus());
+});
 const sibling = { ...checklist, id: id(6), title: 'Execution', rank: rank(10) };
 const movePage = { ...page, items: [page.items[0], { ...page.items[0], checklist: sibling }] };
 const moved = (changed = true) => ({ ...scope, changed, cardVersion: changed ? 5 : 4,

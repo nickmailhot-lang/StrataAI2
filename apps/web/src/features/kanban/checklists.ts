@@ -152,3 +152,18 @@ export function parseChecklistItemCreated(value: unknown, scope: ChecklistScope,
     instant(added.createdAt) < instant(before.updatedAt)) throw invalid();
   return row as ChecklistItemChange;
 }
+export function parseChecklistItemEdited(value: unknown, scope: ChecklistScope, parent: Checklist, before: ChecklistItem,
+  text: string, completed: boolean, actor: string, cardVersion: number): ChecklistItemChange {
+  const row = record(value); const child = checklist(row.checklist, scope); const updated = item(row.item, scope, parent.id);
+  const changed = text !== before.text || completed !== before.completed;
+  if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.boardId, scope.boardId) || !sameId(row.cardId, scope.cardId) ||
+    !version(cardVersion) || !version(row.cardVersion) || row.cardVersion !== cardVersion + Number(changed) || row.changed !== changed ||
+    !sameId(child.id, parent.id) || child.title !== parent.title || child.rank !== parent.rank || child.version !== parent.version + Number(changed) ||
+    instant(child.createdAt) !== instant(parent.createdAt) || instant(child.updatedAt) < instant(parent.updatedAt) ||
+    !sameId(updated.id, before.id) || updated.rank !== before.rank || updated.text !== text || updated.completed !== completed ||
+    updated.version !== before.version + Number(changed) || instant(updated.createdAt) !== instant(before.createdAt) || instant(updated.updatedAt) < instant(before.updatedAt) ||
+    (changed ? instant(child.updatedAt) !== instant(updated.updatedAt) : instant(child.updatedAt) !== instant(parent.updatedAt) || instant(updated.updatedAt) !== instant(before.updatedAt)) ||
+    completed && (before.completed ? !sameId(updated.completedBy, before.completedBy!) || instant(updated.completedAt) !== instant(before.completedAt)
+      : !sameId(updated.completedBy, actor) || instant(updated.completedAt) !== instant(updated.updatedAt))) throw invalid();
+  return row as ChecklistItemChange;
+}
