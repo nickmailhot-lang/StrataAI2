@@ -73,8 +73,9 @@ require execution against their exact release images. They do not establish that
 the other reported drag, option activation or notification failures are fixed.
 
 Run 37099065647 completed with 75 passing, five failing and one skipped general
-browser cases. The phone Reminder opener resolved during temporary native
-disable, leaving no personal choice loaded. Its generic opener now accepts
+browser cases. The phone Reminder case failed to load its initial personal
+choice during live updates; the opener previously rejected actions while
+admission was pending. Its generic opener now accepts
 opening intent while admission is pending, shows a checking status and defers
 private account/reminder reads. Explicit closure and Card scope changes cancel
 that intent. Reminder mutation/recovery controls retain their existing admission
@@ -82,3 +83,15 @@ and original-command checks. All 29 Reminder tests and production build passed
 locally; type checking and lint passed. Exact-image browser execution is pending.
 The same run's initial archived-Card deletion-review focus failure is still under
 investigation; it is not a deletion-command or backend acceptance failure.
+
+The retained archived-Card trace shows the review trigger disabled at the first
+focus assertion, then enabled but inactive. Opening deletion review now retains
+only the requested Card ID through the ongoing archive read. The trigger stays
+focusable; a checking dialog offers cancellation and contains no confirmation or
+old Card details. Once admitted, the current entry and deletion capability must
+still exist before displaying the fresh review with unchecked consent. Closure,
+denial and disappearance cancel the pending review. The mutation guard and
+explicit confirmation remain unchanged. All 33 archive component tests passed,
+including four new deferred-review regressions, plus type checking, lint and
+production build. Two browser cases were discovered; exact-image execution is
+pending, so the archived-Card failure is not yet declared resolved.

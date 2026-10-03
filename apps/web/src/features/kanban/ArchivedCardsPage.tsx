@@ -41,6 +41,7 @@ function Archive({ org, board }: { org: string; board: string }) {
   const [history, setHistory] = useState<(string | null)[]>([]); const [selected, setSelected] = useState<Entry>();
   const [intent, setIntent] = useState<Intent>(); const [writing, setWriting] = useState(false); const [conflict, setConflict] = useState(false);
   const [deleting, setDeleting] = useState(false); const [confirmed, setConfirmed] = useState(false);
+  const [pendingDeletionReview, setPendingDeletionReview] = useState<string>();
   const [subscribed, setSubscribed] = useState(false); const [live, setLive] = useState<LiveStatus>('connecting'); const [retryRead, setRetryRead] = useState(false);
   const position = useRef<{ cursor: string | null; history: (string | null)[] }>({ cursor: null, history: [] });
   const read = useRef<AbortController | undefined>(undefined); const write = useRef<AbortController | undefined>(undefined);
@@ -62,6 +63,13 @@ function Archive({ org, board }: { org: string; board: string }) {
   }
   useEffect(() => { if (!reading && !writing && !selected && focusRequested.current) restoreFocus(); }, [reading, writing, selected]);
   const current = page?.items.find(e => e.card.id === selected?.card.id);
+  useEffect(() => {
+    if (!pendingDeletionReview || reading || !ready || writing || intent) return;
+    const entry = page?.items.find(e => e.card.id === pendingDeletionReview);
+    setPendingDeletionReview(undefined);
+    if (!entry || !page?.canDelete) { setNotice('Permanent Card deletion is unavailable.'); return; }
+    reviewingDeletion.current = true; setSelected(entry); setDeleting(true); setConfirmed(false); setConflict(false); setNotice(undefined);
+  }, [pendingDeletionReview, page, reading, ready, writing, intent]);
   const changed = !!selected && !intent && (!current || current.card.version !== selected.card.version
     || current.card.title !== selected.card.title || current.card.rank !== selected.card.rank || current.card.listId !== selected.card.listId
     || current.list.version !== selected.list.version || current.list.name !== selected.list.name
@@ -70,6 +78,7 @@ function Archive({ org, board }: { org: string; board: string }) {
     reviewingDeletion.current = false;
     write.current?.abort(); write.current = undefined; setWriting(false);
     setPage(undefined); setSelected(undefined); setIntent(undefined); setReady(false); setSubscribed(false);
+    setPendingDeletionReview(undefined);
     queued.current = false; setRetryRead(false); setNotice(undefined); setError('Archived Card access is unavailable.');
   }
   async function load(cursor: string | null, trail: (string | null)[]) {
@@ -152,16 +161,19 @@ function Archive({ org, board }: { org: string; board: string }) {
       {e.list.lifecycleState === 'archived' && <Typography>Restore the parent List before restoring this Card.</Typography>}
       <Button disabled={!ready || reading || writing || !!intent || e.list.lifecycleState !== 'active'} aria-label={`Restore ${e.card.title} card`}
         onClick={() => { reviewingDeletion.current = false; setSelected(e); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined); }}>Restore Card</Button>
-      {page.canDelete && <Button color="error" disabled={!ready || reading || writing || !!intent} aria-label={`Permanently delete ${e.card.title} card`}
-        onClick={() => { reviewingDeletion.current = true; setSelected(e); setDeleting(true); setConfirmed(false); setConflict(false); setNotice(undefined); }}>Permanently delete Card</Button>}
+      {page.canDelete && <Button color="error" disabled={writing || !!intent} aria-label={`Permanently delete ${e.card.title} card`}
+        onClick={() => { setPendingDeletionReview(e.card.id); setConfirmed(false); setNotice(undefined); }}>Permanently delete Card</Button>}
     </Paper>)}
     {ready && page?.items.length === 0 && <Typography>No archived cards on this page.</Typography>}
     <Stack direction="row" spacing={1}>
       <Button disabled={!ready || reading || writing || !!intent || history.length === 0} onClick={() => void load(history.at(-1)!, history.slice(0, -1))}>Previous archived cards</Button>
       <Button disabled={!ready || reading || writing || !!intent || !page?.nextCursor} onClick={() => void load(page!.nextCursor, [...history, position.current.cursor])}>Next archived cards</Button>
     </Stack>
-  </Stack><Dialog open={!!selected} onClose={() => { if (!writing && !intent) { reviewingDeletion.current = false; setSelected(undefined); } }} fullWidth maxWidth="sm"
+  </Stack><Dialog open={!!selected || !!pendingDeletionReview} onClose={() => { if (!writing && !intent) { reviewingDeletion.current = false; setPendingDeletionReview(undefined); setSelected(undefined); } }} fullWidth maxWidth="sm"
     disableRestoreFocus slotProps={{ transition: { onExited: restoreFocus } }}>
+    {pendingDeletionReview && <><DialogTitle>Checking current archived Card</DialogTitle><DialogContent>
+      <Typography role="status">Checking current Card and deletion access…</Typography>
+    </DialogContent><DialogActions><Button onClick={() => setPendingDeletionReview(undefined)}>Cancel deletion review</Button></DialogActions></>}
     {selected && <><DialogTitle>{deleting ? 'Permanently delete Card' : 'Restore Card'}</DialogTitle><DialogContent>
       {deleting ? <>
         <Typography sx={{ overflowWrap: 'anywhere' }}>Permanently delete {selected?.card.title} from {selected?.list.name}?</Typography>

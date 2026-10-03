@@ -130,6 +130,32 @@ it('bounds a hung acknowledgment body and preserves the same request after its d
   expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
 });
 async function reviewDeletion() { fireEvent.click(await screen.findByRole('button', { name: 'Permanently delete Review budget card' })); }
+it('defers deletion review during live admission and requires fresh unchecked consent', async () => {
+  let invalidate!: () => void; let resolve!: (value: Response) => void;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })); mount(fetch);
+  const trigger = await screen.findByRole('button', { name: 'Permanently delete Review budget card' });
+  await act(async () => invalidate()); expect(trigger).toBeEnabled(); trigger.focus(); expect(trigger).toHaveFocus(); fireEvent.click(trigger);
+  expect(screen.getByRole('dialog')).toHaveTextContent('Checking current Card and deletion access…');
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(2);
+  await act(async () => resolve(reply({ ...page, items: [{ ...row, card: { ...card, title: 'Current budget', version: 3 } }] })));
+  expect(await screen.findByText('Permanently delete Current budget from Planning?')).toBeVisible();
+  expect(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' })).not.toBeChecked();
+  expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled();
+  expect(fetch.mock.calls.every(call => !call[1].method || call[1].method === 'GET')).toBe(true);
+});
+it.each(['closed', 'denied', 'removed'])('does not revive deferred deletion review after %s', async outcome => {
+  let invalidate!: () => void; let resolve!: (value: Response) => void;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })); mount(fetch);
+  await screen.findByRole('button', { name: 'Permanently delete Review budget card' });
+  await act(async () => invalidate()); await reviewDeletion();
+  if (outcome === 'closed') fireEvent.click(screen.getByRole('button', { name: 'Cancel deletion review' }));
+  await act(async () => resolve(reply(outcome === 'denied' ? { ...page, canDelete: false } : outcome === 'removed' ? { ...page, items: [] } : page)));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.queryByRole('button', { name: 'Confirm permanent deletion' })).not.toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
 function confirmDeletion() {
   fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' }));
   fireEvent.click(screen.getByRole('button', { name: 'Confirm permanent deletion' }));
