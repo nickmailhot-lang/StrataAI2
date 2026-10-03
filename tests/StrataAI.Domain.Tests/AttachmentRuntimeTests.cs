@@ -31,6 +31,7 @@ public sealed class AttachmentRuntimeTests
     public async Task ARCH_07_Worker_wiring_registers_managed_storage_scanner_and_exact_handler()
     {
         var services = new ServiceCollection();
+        services.AddSingleton(new AttachmentPreviewWorkerProcess("/usr/share/dotnet/dotnet", "/app/StrataAI.Worker.dll"));
         services.AddSingleton<IAmazonS3>(new Client());
         services.AddSingleton(_ => new PostgresConnectionFactory("Host=localhost;Database=fixture;Username=fixture;Password=fixture"));
         Assert.True(services.AddAttachmentRuntime(Config(Settings()), Production, worker: true));
@@ -41,7 +42,8 @@ public sealed class AttachmentRuntimeTests
         var handler = Assert.IsType<AttachmentScanDeliveryHandler>(Assert.Single(provider.GetServices<IBackgroundJobHandler>()));
         Assert.Equal(AttachmentScanJobs.Type, handler.JobType); Assert.Equal(AttachmentScanJobs.Service, handler.ServiceIdentity);
         Assert.NotNull(provider.GetRequiredService<AttachmentQuarantineScanner>());
-        Assert.IsType<SkiaAttachmentImagePreviewDecoder>(provider.GetRequiredService<IAttachmentImagePreviewDecoder>());
+        Assert.IsType<LinuxIsolatedAttachmentImagePreviewGenerator>(provider.GetRequiredService<IAttachmentImagePreviewGenerator>());
+        Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentImagePreviewDecoder));
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentDownloadPreparer));
         Assert.Equal(20971520, provider.GetRequiredService<AttachmentUploadPolicy>().MaximumBytes);
         Assert.Equal(4, provider.GetRequiredService<AttachmentUploadPolicy>().AllowedMimeTypes.Count);
@@ -58,6 +60,7 @@ public sealed class AttachmentRuntimeTests
         Assert.Contains(services, s => s.ServiceType == typeof(IAttachmentDownloadPreparer) && s.ImplementationType == typeof(PrivateAttachmentDownloadPreparer));
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentMalwareScanner) || s.ServiceType == typeof(IAttachmentScanDeliveryStore));
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentImagePreviewDecoder));
+        Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentImagePreviewGenerator));
     }
 
     [Theory]

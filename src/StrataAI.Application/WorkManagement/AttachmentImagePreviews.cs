@@ -27,6 +27,14 @@ public interface IAttachmentImagePreviewDecoder
     AttachmentPreviewImage Decode(Stream verifiedSource, string verifiedMimeType, CancellationToken ct);
 }
 
+public interface IAttachmentImagePreviewGenerator
+{
+    // Server-owned integrity claims and a caller-owned, seekable, verified
+    // private source. This transformation is not a job capability or grant.
+    Task<AttachmentPreviewImage> GenerateAsync(AttachmentScanRequest request, string verifiedMimeType,
+        Stream verifiedSource, CancellationToken ct);
+}
+
 public sealed class AttachmentPreviewImage : IDisposable
 {
     private readonly byte[] _bytes;

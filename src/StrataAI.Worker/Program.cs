@@ -10,11 +10,18 @@ using StrataAI.Infrastructure.Onboarding;
 using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.WorkManagement;
 
+if (args.Contains("--decode-private-attachment-preview", StringComparer.Ordinal))
+{
+    Environment.ExitCode = args.Length == 1
+        ? await AttachmentPreviewProcessProtocol.RunChildAsync(Console.OpenStandardInput(), Console.OpenStandardOutput()) : 2;
+    return;
+}
+
 // Release-image verification is an explicit command, before configuration,
 // host startup, credentials, database connections or any durable job execution.
 if (args.Contains("--verify-attachment-preview-runtime", StringComparer.Ordinal))
 {
-    Environment.ExitCode = args.Length == 1 ? AttachmentPreviewRuntimeVerification.Run() : 2;
+    Environment.ExitCode = args.Length == 1 ? await AttachmentPreviewRuntimeVerification.RunAsync() : 2;
     return;
 }
 
@@ -23,6 +30,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<IClock, SystemClock>();
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
 var attachmentsEnabled = builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: true);
+if (attachmentsEnabled) builder.Services.AddSingleton(AttachmentPreviewRuntimeVerification.CurrentExecutable());
 builder.Services.AddHostedService<WorkerHeartbeat>();
 
 if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))
