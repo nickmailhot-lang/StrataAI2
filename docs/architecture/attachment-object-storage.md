@@ -59,7 +59,7 @@ work. This primitive does not authorize a user, publish a clean verdict or clear
 a cover. Requests need bounded caller cancellation/provider timeouts when wired
 into the upload and Worker workflows.
 
-Fifteen initial adapter cases plus endpoint/privacy refinements compile against
+Nineteen adapter cases compile against
 the real vendor SDK types using a substituted SDK client. They cover multi-part
 non-seeking byte/digest measurement, expected owner/scope on all calls, source/
 response ownership, duplicate identity, commit-with-lost-reply preservation,
@@ -68,6 +68,17 @@ privacy outage, source/part failure, cancellation and invalid limits/configurati
 These are adapter contract tests, not executed real-bucket or transport proof.
 Locked restore, warning-as-error build and dependency vulnerability audit pass;
 Linux execution and immutable-image security gates remain pending.
+
+Two additional transport cases use the actual official SDK's signing,
+serialization and response pipeline, substituting only its final HttpClient
+handler. They require HTTPS regional bucket addressing, signed requests, expected
+owner on all calls, private bucket checks, server encryption/MIME with no ACL,
+generated tenant key, part bytes, ordered completion XML and If-None-Match. They
+also require an embedded error in an HTTP-200 completion response to remain a
+fixed unavailable failure with part-only cleanup. Fixture credentials and private
+response bytes remain within the intercepted in-memory transport; no network or
+cloud account is used. The two cases compile but execution is pending Linux CI;
+they do not prove real bucket/IAM/credential/readiness acceptance.
 
 Remaining integration: runtime provider/client registration and readiness,
 credential/region/prefix policy diagnostics, managed-bucket transport acceptance,

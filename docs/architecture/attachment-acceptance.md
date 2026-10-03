@@ -322,3 +322,10 @@ responses and attempts bounded unpublished-part cleanup. Configuration and
 adapter contract cases compile; build/locked restore/vulnerability audit pass.
 Execution, runtime registration and real provider integration remain pending.
 See [provider decision and integration limits](attachment-object-storage.md).
+
+Two official-SDK transport cases now compile with an intercepted HttpClient,
+checking real signing/serialization/private scope/encryption/conditional headers
+and embedded HTTP-200 completion errors. They make no cloud/network calls.
+Execution is separately pending; no managed bucket or runtime capability is
+claimed from compilation. Locked restore/build/audit and current source checks
+remain documented separately from image/browser gates.
