@@ -14,6 +14,7 @@ public static class SecurityRateLimits
         {
             options.AddPolicy("auth", context => CreatePartition(context, authPermits, false));
             options.AddPolicy("invitation", context => CreatePartition(context, invitationPermits, true));
+            options.AddPolicy("client-events", context => CreatePartition(context, 64, true));
             options.OnRejected = async (rejected, cancellationToken) =>
             {
                 var seconds = rejected.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)

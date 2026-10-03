@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { Alert, Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { checklistEvent, checklistResult } from './checklistTelemetry';
 import { parseChecklistItemPage, parseChecklistPage, type ChecklistItemPage, type ChecklistPage, type ChecklistScope, type ChecklistSummary } from './checklists';
 
 type Props = ChecklistScope & { version: number; unavailable: boolean; onRefresh: () => void };
@@ -12,6 +13,8 @@ function usePage(props: Props, open: boolean, cursor: string | undefined, attemp
   useEffect(() => {
     if (!open || unavailable) return;
     let active = true; const controller = new AbortController();
+    const action = checklistId ? 'item_read' : 'read'; const started = performance.now();
+    checklistEvent(action, 'use');
     setResult(undefined); setError(undefined); setLoading(true);
     const scope = { organizationId, boardId, cardId };
     const path = `/cards/${encodeURIComponent(cardId)}/checklists${checklistId ? `/${encodeURIComponent(checklistId)}/items` : ''}${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`;
@@ -19,9 +22,13 @@ function usePage(props: Props, open: boolean, cursor: string | undefined, attemp
       if (!active) return;
       const page = checklistId ? parseChecklistItemPage(value, scope, checklistId, cursor) : parseChecklistPage(value, scope, cursor);
       if (page.cardVersion !== version) throw new WorkRequestError(409, null);
+      checklistResult(action, true, started);
       setResult(page);
     }).catch(reason => {
       if (!active) return;
+      checklistResult(action, false, started);
+      if (reason instanceof WorkRequestError && reason.status === 409) checklistEvent(action, 'conflict');
+      if (!(reason instanceof WorkRequestError)) checklistEvent(action, 'exception');
       setError(reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)
         ? 'These checklists are unavailable. Refresh the Board to check your access.'
         : 'Unable to load current checklists. Refresh the Board or try again.');
@@ -38,7 +45,7 @@ function ChecklistDisclosure(props: Props) {
   const [openItems, setOpenItems] = useState<Set<string>>(() => new Set());
   function onItemToggle(id: string) { setOpenItems(previous => { const next = new Set(previous); if (next.has(id)) next.delete(id); else next.add(id); return next; }); }
   return <Box sx={{ my: 2 }}>
-    <Button aria-expanded={open} aria-controls={region} onClick={() => { if (open) setOpenItems(new Set()); setOpen(value => !value); }}>
+    <Button aria-expanded={open} aria-controls={region} onClick={() => { if (!open) checklistEvent('disclosure', 'open'); if (open) setOpenItems(new Set()); setOpen(value => !value); }}>
       {open ? 'Hide checklists' : 'Show checklists'}
     </Button>
     {open && <Stack id={region} component="section" aria-label="Card checklists" spacing={2}>
@@ -53,7 +60,7 @@ function ChecklistContent(props: Props & Disclosures) {
   const page = result && !('summary' in result) ? result : undefined;
   return <>
     {loading && <Typography role="status">Loading checklists…</Typography>}
-    {error && <ReadError message={error} retry={() => setAttempt(value => value + 1)} refresh={props.onRefresh} />}
+    {error && <ReadError message={error} retry={() => { checklistEvent('read', 'retry'); setAttempt(value => value + 1); }} refresh={props.onRefresh} />}
     {page && <>
       {!page.canEdit && <Typography>Read-only checklists.</Typography>}
       {page.items.length === 0 && <Typography>No checklists on this page.</Typography>}
@@ -73,12 +80,12 @@ function ChecklistItems(props: Props & { summary: ChecklistSummary; open: boolea
     <Typography id={heading} component="h3" variant="subtitle1">{checklist.title}</Typography>
     <Typography>{progress.completed} of {progress.total} items complete ({Number(progress.percent.toFixed(1))}%)</Typography>
     <LinearProgress variant="determinate" value={progress.percent} aria-label={`Progress for ${checklist.title}`} />
-    <Button aria-expanded={open} aria-controls={region} onClick={() => { setCursor(undefined); props.onToggle(); }}>
+    <Button aria-expanded={open} aria-controls={region} onClick={() => { if (!open) checklistEvent('item_disclosure', 'open'); setCursor(undefined); props.onToggle(); }}>
       {open ? `Hide items in ${checklist.title}` : `Show items in ${checklist.title}`}
     </Button>
     {open && <Stack id={region} spacing={1}>
       {loading && <Typography role="status">Loading checklist items…</Typography>}
-      {error && <ReadError message={error} retry={() => setAttempt(value => value + 1)} refresh={props.onRefresh} />}
+      {error && <ReadError message={error} retry={() => { checklistEvent('item_read', 'retry'); setAttempt(value => value + 1); }} refresh={props.onRefresh} />}
       {page && <>
         {page.items.length === 0 && <Typography>No items on this page.</Typography>}
         {page.items.map(item => <Typography key={item.id}>{item.completed ? 'Complete' : 'Incomplete'}: {item.text}</Typography>)}

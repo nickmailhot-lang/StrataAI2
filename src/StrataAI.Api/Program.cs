@@ -15,6 +15,7 @@ using StrataAI.Infrastructure.WorkManagement;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMetrics();
 builder.Services.AddSingleton<BoardSharingTelemetry>();
+builder.Services.AddSingleton<ChecklistClientTelemetry>();
 // Transport connection tokens appear in request query strings. Retain warnings
 // without logging request-start URLs at the default Information level.
 builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
@@ -147,6 +148,7 @@ app.MapOrganizationEndpoints();
 app.MapInvitationEndpoints(runtime);
 app.MapWorkManagementEndpoints();
 app.MapWorkSynchronizationEndpoints();
+app.MapChecklistClientTelemetry();
 app.MapHub<WorkRealtimeHub>("/boards/live", options =>
 {
     options.ApplicationMaxBufferSize = 131072;

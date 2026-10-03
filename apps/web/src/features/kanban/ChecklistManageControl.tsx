@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { checklistEvent, checklistResult, type ChecklistAction } from './checklistTelemetry';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { checklistPosition, parseChecklistDeleted, parseChecklistItemCreated, parseChecklistPage, parseChecklistPositioned, parseChecklistRenamed, type Checklist, type ChecklistPage, type ChecklistPosition } from './checklists';
 import type { ChecklistCreateProps } from './ChecklistCreateControl';
@@ -57,6 +58,8 @@ function ManageControl(props: Props) {
     if (!intent && draft.kind === 'addItem' && (!text || text.length > 2000 || text.includes('\0'))) { setNotice('Enter item text of 1 to 2000 characters.'); return; }
     if (!intent && (!title || title.length > 160 || title.includes('\0'))) { setNotice('Enter a checklist title of 1 to 160 characters.'); return; }
     const command = intent ?? { ...draft, title, text, key: crypto.randomUUID() };
+    const telemetryAction: ChecklistAction = command.kind === 'move' ? 'position' : command.kind === 'addItem' ? 'item_create' : command.kind; const started = performance.now();
+    checklistEvent(telemetryAction, intent ? 'retry' : 'use');
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
     try {
       const value = await boundedWorkRead(async signal => {
@@ -74,11 +77,15 @@ function ManageControl(props: Props) {
         : command.kind === 'move' ? parseChecklistPositioned(value, props, command.checklist, command.position!, command.cardVersion)
           : command.kind === 'addItem' ? parseChecklistItemCreated(value, props, command.checklist, command.text!, command.cardVersion)
             : parseChecklistRenamed(value, props, command.checklist, command.title, command.cardVersion);
+      checklistResult(telemetryAction, true, started);
       setIntent(undefined); setDraft(undefined); setSelection(undefined); setBlocked(false);
       setNotice(command.kind === 'addItem' ? 'Checklist item added.' : command.kind === 'delete' ? 'Checklist deleted.' : command.kind === 'move' ? ack.changed ? 'Checklist moved.' : 'Checklist position is unchanged.'
         : ack.changed ? 'Checklist renamed.' : 'Checklist title is unchanged.'); requestedFocus.current = true; props.onRefresh();
     } catch (error) {
       if (!mounted.current || pending.current !== controller) return;
+      checklistResult(telemetryAction, false, started);
+      if (error instanceof WorkRequestError && error.status === 409) checklistEvent(telemetryAction, 'conflict');
+      if (!(error instanceof WorkRequestError)) checklistEvent(telemetryAction, 'exception');
       requestedFocus.current = true;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
         setIntent(undefined); setBlocked(true); setNotice(command.kind === 'addItem'

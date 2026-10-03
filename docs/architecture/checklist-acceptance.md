@@ -77,3 +77,23 @@ with the exact commit; IDs, titles, keys and credentials are excluded. Shell
 syntax passed locally. Docker is unavailable locally, so capacity execution and
 measurements remain pending CI. This API fixture does not prove large client
 rendering, normal UI latency, production capacity or telemetry acceptance.
+
+Checklist client observations now cover disclosure, validated reads, mutation
+outcomes/timings, explicit receipt retries and caught exception/conflict categories
+through a bounded authenticated/CSRF-protected aggregate endpoint. See
+`docs/kanban-telemetry.md` for protocol and remaining operator/realtime/render
+coverage. This partial instrumentation does not close PRD-13. Latest source run
+37105725659 at cefeef3 passed .NET/PostgreSQL but failed one Checklist rename
+recovery callback assertion (864 web tests passed). The assertion now awaits the
+existing React effect; its expected value and exact original-body/key checks are
+unchanged. Image/capacity/security stages were skipped in that failed run.
+
+Capacity run 37105533441 at 55da719 passed source, image-build and security gates,
+but container job 111154138044 failed after the capacity fixture assertions at
+JSON evidence generation: jq requires parentheses around arithmetic object
+values. The uploaded evidence artifact was consequently empty and proves no
+successful capacity stage. Commit 3962bbf repairs those expressions and generates
+into scratch before publishing the final file. The exact expression now produces
+valid JSON and expected millisecond conversion locally; shell syntax also passes.
+The mandatory capacity/browser/release gates remain required and unproven.
+Full local web regression after client instrumentation and callback repair: 869 passed across 66 files; zero failures. This is local web evidence, not Linux host/image acceptance.

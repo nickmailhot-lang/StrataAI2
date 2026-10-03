@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { checklistEvent, checklistResult, type ChecklistAction } from './checklistTelemetry';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { checklistItemPosition, parseChecklistItemDeleted, parseChecklistItemEdited, parseChecklistItemPage, parseChecklistItemPositioned, type Checklist, type ChecklistItem, type ChecklistItemPage, type ChecklistPosition } from './checklists';
 import type { ChecklistCreateProps } from './ChecklistCreateControl';
@@ -49,6 +50,8 @@ export function ChecklistItemManageControl(props: Props) {
     const text = draft.text.trim();
     if (!intent && (!text || text.length > 2000 || text.includes('\0'))) { setNotice('Enter item text of 1 to 2000 characters.'); return; }
     const command = intent ?? { ...draft, text, actor: props.actor, key: crypto.randomUUID() };
+    const telemetryAction: ChecklistAction = command.kind === 'move' ? 'item_position' : command.kind === 'delete' ? 'item_delete' : 'item_update'; const started = performance.now();
+    checklistEvent(telemetryAction, intent ? 'retry' : 'use');
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
     try {
       const value = await boundedWorkRead(async signal => {
@@ -64,10 +67,14 @@ export function ChecklistItemManageControl(props: Props) {
       const ack = command.kind === 'delete' ? parseChecklistItemDeleted(value, props, command.checklist, command.item, command.cardVersion)
         : command.kind === 'move' ? parseChecklistItemPositioned(value, props, command.checklist, command.item, command.position!, command.cardVersion)
           : parseChecklistItemEdited(value, props, command.checklist, command.item, command.text, command.completed, command.actor, command.cardVersion);
+      checklistResult(telemetryAction, true, started);
       setIntent(undefined); setBlocked(false); props.onRefresh(); props.onClose(command.kind === 'move' ? ack.changed ? 'Checklist item moved.' : 'Checklist item position is unchanged.'
         : command.kind === 'delete' ? 'Checklist item deleted.' : ack.changed ? 'Checklist item saved.' : 'Checklist item is unchanged.');
     } catch (error) {
       if (!mounted.current || pending.current !== controller) return;
+      checklistResult(telemetryAction, false, started);
+      if (error instanceof WorkRequestError && error.status === 409) checklistEvent(telemetryAction, 'conflict');
+      if (!(error instanceof WorkRequestError)) checklistEvent(telemetryAction, 'exception');
       requestedFocus.current = true;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
         setIntent(undefined); setBlocked(true); setNotice(command.kind === 'move' ? 'This item move is unavailable. Load the current Card and checklist before reviewing another position.' : command.kind === 'delete'

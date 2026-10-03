@@ -191,7 +191,7 @@ it('retains original body/key, chosen child and actor after an unconfirmed renam
   await screen.findByText('Checklist renamed.');
   const calls = vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'PATCH');
   expect(calls).toHaveLength(2); expect(calls[1][0]).toBe(calls[0][0]); expect(calls[1][1]!.body).toBe(calls[0][1]!.body); expect(calls[1][1]!.headers).toEqual(calls[0][1]!.headers);
-  expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false);
+  await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false));
 });
 it.each([{ canEdit: false }, { cardVersion: 5 }, { boardId: id(90) }])('rejects stale, foreign or read-only selection without offering protected editing (%j)', async change => {
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : { ...page, ...change });

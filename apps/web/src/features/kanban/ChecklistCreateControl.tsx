@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { checklistEvent, checklistResult, type ChecklistAction } from './checklistTelemetry';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { parseChecklistCreated, type ChecklistScope } from './checklists';
 
@@ -42,6 +43,8 @@ function CreateControl(props: ChecklistCreateProps) {
     const title = draft.title.trim();
     if (!intent && (!title || title.length > 160 || title.includes('\0'))) { setNotice('Enter a checklist title of 1 to 160 characters.'); return; }
     const command = intent ?? { actor: draft.actor, title, cardVersion: draft.version, key: crypto.randomUUID() };
+    const telemetryAction: ChecklistAction = 'create'; const started = performance.now();
+    checklistEvent(telemetryAction, intent ? 'retry' : 'use');
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
     try {
       const value = await boundedWorkRead(async signal => {
@@ -52,9 +55,13 @@ function CreateControl(props: ChecklistCreateProps) {
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       parseChecklistCreated(value, props, command.title, command.cardVersion);
+      checklistResult(telemetryAction, true, started);
       setIntent(undefined); setDraft(undefined); setBlocked(false); setNotice('Checklist created.'); focusRequested.current = true; props.onRefresh();
     } catch (error) {
       if (!mounted.current || pending.current !== controller) return;
+      checklistResult(telemetryAction, false, started);
+      if (error instanceof WorkRequestError && error.status === 409) checklistEvent(telemetryAction, 'conflict');
+      if (!(error instanceof WorkRequestError)) checklistEvent(telemetryAction, 'exception');
       focusRequested.current = true;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
         setIntent(undefined); setBlocked(true); setNotice('This checklist change is unavailable. Your title is preserved. Load the current Card before reviewing another change.');

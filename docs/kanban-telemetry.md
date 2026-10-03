@@ -46,3 +46,40 @@ API-host suite; it is source/host evidence, not full release-image acceptance.
 Operator collector/export, dashboards, alerting, client exceptions,
 reconnect/conflict rates, user-visible retry events and browser timing/performance
 acceptance remain incomplete. This instrumentation does not complete PRD-06.
+
+### Checklist client observations (PRD-13, partial)
+
+Production Checklist disclosure/read and mutation controls now send best-effort
+aggregate observations to `POST /me/checklist-client-events`. Explicit mutation
+attempts and receipt retries use separate categories; success follows strict
+canonical acknowledgment parsing. Read success follows scope/version validation.
+Canceled/disposed responses do not report success or failure. Fixed exception
+and conflict categories contain no exception message or object. Timings include
+current-actor verification and validated acknowledgment, rather than HTTP alone.
+
+The queue retains at most 120 observations, sends at most 20 every five seconds,
+aggregates non-result counts up to 100, aborts transport after three seconds and
+drops failed batches without retry. It uses the existing same-origin cookie/CSRF
+path, with no new dependency. Server admission requires authentication, CSRF and
+a separate 64-request/minute per-user limiter. Bodies are bounded to 8192 bytes,
+even without Content-Length. The entire batch is validated before measurement;
+unknown/duplicate properties and invalid types/categories/counts/timings fail
+closed. The protocol excludes content, identities, scope, retry keys and errors.
+
+Native Meter `StrataAI.ChecklistClient` provides counter
+`strataai.checklist.client.events` and duration histogram
+`strataai.checklist.client.duration` (seconds), tagged only by fixed `action` and
+`kind`. These are untrusted client observations, not authoritative audit records
+or a reliable denominator for product success rates. Listener failures cannot
+change successful API responses. Existing server-side request/permission metrics
+remain the authoritative HTTP observations.
+
+Four queue tests and creation-control assertions cover safe batching, bounded
+storage/transport, dropped failures, disabled mode, canonical success, malformed
+acknowledgment failure and explicit original-intent retry. The focused 96 web
+tests pass; typecheck/lint/production build pass. New host tests compile, including
+whole-batch rejection, authentication/CSRF, body bounds, listener isolation and
+per-user rate partitions. Their execution awaits Linux CI because Windows
+Application Control prevents local .NET test execution. Collector/export,
+operator dashboards, Checklist-specific realtime reconnect observations, render
+exceptions and full performance/capacity acceptance remain incomplete.

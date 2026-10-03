@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { CardChecklists } from './CardChecklists';
+import { checklistEvent, checklistResult } from './checklistTelemetry';
+vi.mock('./checklistTelemetry', () => ({ checklistEvent: vi.fn(), checklistResult: vi.fn() }));
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const rank = (n: number) => String(n).padStart(30, '0');
@@ -58,8 +60,13 @@ it('never renders foreign content and retries through the same safe read boundar
   render(<CardChecklists {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show checklists' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load current checklists');
   expect(screen.queryByText('Protected foreign title')).not.toBeInTheDocument();
+  expect(checklistEvent).toHaveBeenCalledWith('disclosure', 'open');
+  expect(checklistEvent).toHaveBeenCalledWith('read', 'exception');
+  expect(checklistResult).toHaveBeenCalledExactlyOnceWith('read', false, expect.any(Number));
   fireEvent.click(screen.getByRole('button', { name: 'Retry checklist read' }));
   expect(await screen.findByRole('heading', { name: 'Preparations' })).toBeVisible(); expect(fetch).toHaveBeenCalledTimes(2);
+  expect(checklistEvent).toHaveBeenCalledWith('read', 'retry');
+  expect(vi.mocked(checklistResult).mock.calls.map(call => call.slice(0, 2))).toEqual([['read', false], ['read', true]]);
 });
 it('cancels in-flight reads and clears contents during access re-admission', async () => {
   let resolve: (value: Response) => void = () => {}; let signal: AbortSignal | undefined;
