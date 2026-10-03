@@ -93,6 +93,27 @@ internal static class AttachmentPublicationContract
         Require(race.Succeeded, "Concurrent writer fixture preparation failed.");
         var contenders = await Task.WhenAll(Enumerable.Range(0, 2).Select(_ => admission.ClaimAsync(card, user, race.Value!.Id, raceKey, 1, ct)));
         Require(contenders.Count(value => value.Succeeded) == 1, "Concurrent authorized upload claims had multiple writers.");
+        var measuredWriter = new StoredAttachmentObject(new(tenant, writer.Value.Id), 128, digest);
+        Require((await admission.RecordStoredAsync(card, user, writer.Value, null!, null!, ct)).ErrorCode == "attachment_integrity_invalid",
+            "Missing measurement was interpreted as an unknown-write action.");
+        foreach (var bad in new[] { measuredWriter with { SizeBytes = 129 }, measuredWriter with { Sha256 = new string('b', 64) },
+            measuredWriter with { Reference = new(tenant, Guid.NewGuid()) } })
+            Require((await admission.RecordStoredAsync(card, user, writer.Value, new("image/png"), bad, ct)).ErrorCode == "attachment_integrity_invalid",
+                "Measured completion accepted mismatched original integrity/scope.");
+        actor.Calls = 0; actor.DenyAt = 2;
+        Require((await admission.RecordStoredAsync(card, user, writer.Value, new("image/png"), measuredWriter, ct)).ErrorCode == "session_unavailable",
+            "Measured completion ignored final actor refusal.");
+        actor.DenyAt = int.MaxValue;
+        Require((await admission.PrepareAsync(card, user, admissionKey, admissionInput, ct)).Value == writer.Value,
+            "Final actor refusal retained tentative measurement.");
+        var verified = await admission.RecordStoredAsync(card, user, writer.Value, new("image/png"), measuredWriter, ct);
+        Require(verified.Succeeded && verified.Value is { State: AttachmentUploadState.Stored, Version: 3, WriteLeaseId: null }, "Measured callback did not retain Stored truth.");
+        Require((await admission.MarkUnknownWriteAsync(card, user, writer.Value, ct)).ErrorCode == "attachment_upload_unavailable",
+            "Late unknown callback reverted committed Stored measurement.");
+        var raceWriter = contenders.Single(value => value.Succeeded).Value!;
+        var unknown = await admission.MarkUnknownWriteAsync(card, user, raceWriter, ct);
+        Require(unknown.Succeeded && unknown.Value is { State: AttachmentUploadState.Reconcile, Version: 3, WriteLeaseId: null }, "Unknown provider result was not retained for reconciliation.");
+        Require((await admission.ClaimAsync(card, user, raceWriter.Id, raceKey, 3, ct)).ErrorCode == "attachment_upload_in_progress", "Unknown provider result authorized a replacement writer.");
         async Task<AttachmentUploadIntent> Stored(long originalVersion = 1, Guid? targetCard = null)
         {
             var parent = targetCard ?? card;

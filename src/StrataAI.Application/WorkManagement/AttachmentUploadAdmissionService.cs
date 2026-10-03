@@ -75,4 +75,49 @@ public sealed class AttachmentUploadAdmissionService(IWorkManagementStore work, 
                     : WorkOperation<AttachmentUploadRecord>.Success(claimed);
             }, ct);
     }
+
+    public Task<WorkOperation<AttachmentUploadRecord>> RecordStoredAsync(Guid cardId, Guid actor,
+        AttachmentUploadRecord writer, AttachmentFileTypeProbe probe, StoredAttachmentObject measured, CancellationToken ct = default)
+        => ChangeWriterAsync(cardId, actor, writer, probe, measured, unknown: false, ct);
+
+    public Task<WorkOperation<AttachmentUploadRecord>> MarkUnknownWriteAsync(Guid cardId, Guid actor,
+        AttachmentUploadRecord writer, CancellationToken ct = default)
+        => ChangeWriterAsync(cardId, actor, writer, null, null, unknown: true, ct);
+
+    // These are server callbacks after provider I/O. Never replace a canonical
+    // measurement with caller claims, reset an ambiguous write to Prepared, or
+    // roll back an already-committed Stored result after a lost acknowledgment.
+    private async Task<WorkOperation<AttachmentUploadRecord>> ChangeWriterAsync(Guid cardId, Guid actor,
+        AttachmentUploadRecord writer, AttachmentFileTypeProbe? probe, StoredAttachmentObject? measured, bool unknown, CancellationToken ct)
+    {
+        var hint = await work.FindCardAsync(cardId, ct);
+        if (hint is null) return WorkOperation<AttachmentUploadRecord>.Failure("card_not_found");
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "card_not_found",
+            () => AttachmentAdmission.CheckAsync(work, organizations, boards, hint, actor, true, ct), async () =>
+            {
+                if (writer is null || writer.OrganizationId != hint.OrganizationId || writer.CardId != cardId || writer.UploaderId != actor
+                    || writer.State != AttachmentUploadState.Writing || writer.WriteLeaseId is null || writer.WriteLeaseId == Guid.Empty)
+                    return WorkOperation<AttachmentUploadRecord>.Failure("attachment_upload_unavailable");
+                var current = await uploads.FindUploadByRetryAsync(hint.OrganizationId, actor, writer.RetryKey, ct);
+                if (current is null || current.Id != writer.Id || current.CardId != cardId || current.Version != writer.Version
+                    || current.State != AttachmentUploadState.Writing || current.WriteLeaseId != writer.WriteLeaseId)
+                    return WorkOperation<AttachmentUploadRecord>.Failure("attachment_upload_unavailable");
+                var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
+                AttachmentUploadChange change;
+                if (unknown)
+                    change = new(AttachmentUploadAction.UnknownWrite, now, writer.WriteLeaseId);
+                else
+                {
+                    if (measured is null || probe is null) return WorkOperation<AttachmentUploadRecord>.Failure("attachment_integrity_invalid");
+                    try { policy.RequireMeasuredFile(new(hint.OrganizationId, writer.Id), probe, measured); }
+                    catch (AttachmentUploadValidationException error) { return WorkOperation<AttachmentUploadRecord>.Failure(error.Code); }
+                    if (measured.SizeBytes != current.ExpectedSizeBytes || measured.Sha256 != current.ExpectedSha256)
+                        return WorkOperation<AttachmentUploadRecord>.Failure("attachment_integrity_invalid");
+                    change = new(AttachmentUploadAction.RecordStored, now, writer.WriteLeaseId, Measured: measured, VerifiedMimeType: probe.MimeType);
+                }
+                var changed = await uploads.TryChangeUploadAsync(hint.OrganizationId, cardId, actor, writer.Id, writer.Version, change, ct);
+                return changed is null ? WorkOperation<AttachmentUploadRecord>.Failure("attachment_upload_unavailable")
+                    : WorkOperation<AttachmentUploadRecord>.Success(changed);
+            }, ct);
+    }
 }
