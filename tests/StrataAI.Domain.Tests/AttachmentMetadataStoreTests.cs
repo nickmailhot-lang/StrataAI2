@@ -1,6 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using StrataAI.Application.Common;
+using StrataAI.Infrastructure.Identity;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Runtime;
 using StrataAI.Application.WorkManagement;
@@ -18,6 +21,8 @@ public sealed class AttachmentMetadataStoreTests
     private static ServiceProvider Demo()
     {
         var services = new ServiceCollection(); var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
+        services.AddSingleton<IClock, SystemClock>();
+        services.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
         return services.BuildServiceProvider();
     }

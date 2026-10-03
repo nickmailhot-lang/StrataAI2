@@ -97,3 +97,10 @@ cursor pairs and unscoped production calls. They compile; execution is pending
 Linux CI. These primitives are deliberately not exposed through HTTP yet: current
 permission/lifecycle admission, Card CAS, replay receipts and atomic audit/outbox
 must wrap them before a user-facing URL attachment command or read is enabled.
+
+Run 37110453074 at 396b24f failed two new Demo store cases before assertions:
+the isolated fixture omitted identity services required by the Organization
+store constructor. Its production scope-refusal case and 280 prior Domain cases
+passed; PostgreSQL and web jobs passed. The fixture now registers Demo identity
+and its clock using the existing registrations. Pagination/scope/identity
+assertions are unchanged; repaired execution remains pending.
