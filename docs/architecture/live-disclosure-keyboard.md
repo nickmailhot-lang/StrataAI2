@@ -144,3 +144,14 @@ Reminder failures in that run have later main repairs pending execution.
 Source stages for commit 4522155 passed web/.NET/PostgreSQL, immutable image
 build and security in run 37104844850; its container integration is still live.
 These stage successes do not prove an overall green release or later commits.
+
+Linux source run 37108766526 at 14c58bd passed 246 Domain and 257 API-host tests
+(including actual SDK exporter transport), but web failed one returned-refresh
+focus case (870 passed). The Notification inbox focus effect consumed its target
+before focusing an already-focused Refresh button; no new focus event restored
+the marker. It now retains the marker until explicit focus departure/guarded
+outside navigation. A deterministic regression holds the already-focused case,
+blurs to body on a later cycle and checks restoration with exactly one POST. It
+fails against the prior behavior and passes with the change. All 16 notification
+component tests, typecheck and lint pass; full local regression is running.
+Container/image stages were skipped in that failed source run.

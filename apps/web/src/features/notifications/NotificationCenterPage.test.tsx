@@ -99,6 +99,23 @@ it('preserves returned refresh focus through later automatic inbox reads', async
   await act(async () => resolve(response(data([{ ...item(), readAt: '2026-10-02T11:00:00Z' }]))));
   await waitFor(() => expect(refresh).toHaveFocus()); expect(fetch.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
 });
+it('retains refresh intent when a completed read focuses an already focused control and later disablement blurs to body', async () => {
+  let read = false;
+  const fetch = vi.fn().mockImplementation(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    if (options?.method === 'POST') { read = true; return response({ organizationId: org, items: [{ id: id(1), readAt: '2026-10-02T11:00:00Z' }] }); }
+    return response(data([{ ...item(), readAt: read ? '2026-10-02T11:00:00Z' : null }]));
+  });
+  vi.stubGlobal('fetch', fetch); mount(); fireEvent.click(await screen.findByRole('button', { name: 'Mark read' }));
+  await screen.findByText('0 unread on this page.');
+  const refresh = screen.getByRole('button', { name: 'Refresh notifications' }); await waitFor(() => expect(refresh).toHaveFocus());
+  fireEvent(window, new Event('focus')); await waitFor(() => expect(fetch).toHaveBeenCalledTimes(8));
+  await screen.findByText('0 unread on this page.'); await waitFor(() => expect(refresh).toHaveFocus());
+  act(() => refresh.blur()); expect(document.body).toHaveFocus();
+  fireEvent(window, new Event('focus')); await waitFor(() => expect(fetch).toHaveBeenCalledTimes(10));
+  await waitFor(() => expect(refresh).toHaveFocus());
+  expect(fetch.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
+});
 it('replaces fifty-item pages and clears the selection at a seek boundary', async () => {
   const items = Array.from({ length: 50 }, (_, n) => item(51 - n)); const cursor = `${items[49].createdAt}/${items[49].id}`;
   const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data(items, cursor)))

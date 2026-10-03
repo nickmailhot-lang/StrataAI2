@@ -85,7 +85,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
       && document.activeElement !== retry.current && !list.current?.contains(document.activeElement)) {
       focusTarget.current = undefined; return;
     }
-    const target = focusTarget.current; focusTarget.current = undefined;
+    const target = focusTarget.current;
     if (target === 'retry' && retry.current && !retry.current.disabled) { retry.current.focus({ preventScroll: true }); return; }
     const element = Array.from(list.current?.querySelectorAll<HTMLElement>('[data-notification-focus]') ?? [])
       .find(node => node.dataset.notificationFocus === target && !((node instanceof HTMLButtonElement || node instanceof HTMLInputElement) && node.disabled));
