@@ -34,6 +34,9 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/cards", "GET") => "board_filter_read",
             ("/boards/{boardId:guid}/assignable-members", "GET") => "assignable_member_read",
             ("/cards/{cardId:guid}/members", "GET") => "card_member_read",
+            ("/cards/{cardId:guid}/attachments", "GET") => "attachment_read",
+            ("/cards/{cardId:guid}/attachments", "POST") => "attachment_file_create",
+            ("/cards/{cardId:guid}/attachments/url", "POST") => "attachment_url_create",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", "GET") => "checklist_item_read",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", "POST") => "checklist_item_create",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items/{itemId:guid}", "PATCH") => "checklist_item_update",
@@ -95,6 +98,9 @@ public sealed class BoardSharingTelemetry
                 or "card_reminder_not_found" or "invalid_card_reminder_version" or "invalid_card_reminder_interval"
                 or "invalid_checklist_item_text" or "checklist_item_not_found" or "checklist_not_found" or "invalid_checklist_cursor" or "invalid_checklist_title" or "invalid_checklist_version"
                 or "session_unavailable" or "work_storage_unavailable" or "invitation_storage_unavailable"
+                or "invalid_attachment_cursor" or "invalid_attachment_version" or "invalid_attachment_url" or "invalid_attachment_upload"
+                or "attachment_too_large" or "attachment_type_not_allowed" or "attachment_integrity_invalid" or "attachment_source_unavailable"
+                or "attachment_upload_in_progress" or "attachment_upload_unavailable"
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"
                 or "invalid_board_member_cursor" or "invalid_invitation_cursor" or "invalid_email"
                 or "invalid_invitation_role" or "member_not_eligible" or "sole_board_admin"

@@ -11,6 +11,15 @@ public sealed class AttachmentUploadAdmissionService(IWorkManagementStore work, 
     IWorkBoardAuthorization boards, IAttachmentUploadIntentStore uploads, IWorkManagementUnitOfWork transactions,
     IClock clock, AttachmentUploadPolicy policy)
 {
+    public async Task<WorkOperation<bool>> CheckRequestAsync(Guid cardId, Guid actor, CancellationToken ct)
+    {
+        var hint = await work.FindCardAsync(cardId, ct);
+        if (hint is null) return WorkOperation<bool>.Failure("card_not_found");
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "card_not_found",
+            () => AttachmentAdmission.CheckAsync(work, organizations, boards, hint, actor, true, ct),
+            () => Task.FromResult(WorkOperation<bool>.Success(true)), ct);
+    }
+
     public async Task<WorkOperation<AttachmentUploadRecord>> PrepareAsync(Guid cardId, Guid actor, Guid retryKey,
         PrepareAttachmentUploadInput input, CancellationToken ct = default)
     {
