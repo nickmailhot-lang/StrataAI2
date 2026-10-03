@@ -22,6 +22,14 @@ public sealed partial class ApiHostTests
         using var response = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.OK, response.StatusCode); Assert.True(response.Headers.CacheControl!.NoStore);
         var view = (await response.Content.ReadFromJsonAsync<CardCoverView>(ct))!;
         Assert.Equal(card.Id, view.CardId); Assert.True(view.CanEdit); Assert.Null(view.AttachmentId); Assert.Null(view.AttachmentVersion);
+        var candidatePath = path + "/candidates";
+        using var candidateResponse = await member.GetAsync(candidatePath, ct); Assert.Equal(HttpStatusCode.OK, candidateResponse.StatusCode);
+        Assert.True(candidateResponse.Headers.CacheControl!.NoStore);
+        var candidates = (await candidateResponse.Content.ReadFromJsonAsync<CardCoverCandidatePage>(ct))!;
+        Assert.Equal(card.Id, candidates.CardId); Assert.True(candidates.CanEdit); Assert.Empty(candidates.Items); Assert.Null(candidates.NextCursor);
+        using var invalidCursor = await member.GetAsync(candidatePath + "?after=malformed", ct); Assert.Equal(HttpStatusCode.BadRequest, invalidCursor.StatusCode);
+        using var anonymousCandidates = await anonymous.GetAsync(candidatePath, ct); Assert.Equal(HttpStatusCode.Unauthorized, anonymousCandidates.StatusCode);
+        using var foreignCandidates = await outsider.GetAsync(candidatePath, ct); Assert.Equal(HttpStatusCode.NotFound, foreignCandidates.StatusCode);
         using var invalid = await Mutate(member, HttpMethod.Put, path, new { attachmentId = Guid.Empty, cardVersion = 1, attachmentVersion = 1 });
         Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
         var key = Guid.NewGuid().ToString(); var empty = new { attachmentId = (Guid?)null, cardVersion = 1, attachmentVersion = (long?)null };
@@ -35,5 +43,6 @@ public sealed partial class ApiHostTests
         using var revoked = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { }); Assert.Equal(HttpStatusCode.NoContent, revoked.StatusCode);
         using var revokedRetry = await Mutate(member, HttpMethod.Put, path, empty, key); Assert.Equal(HttpStatusCode.NotFound, revokedRetry.StatusCode);
         using var revokedRead = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, revokedRead.StatusCode);
+        using var revokedCandidates = await member.GetAsync(candidatePath, ct); Assert.Equal(HttpStatusCode.NotFound, revokedCandidates.StatusCode);
     }
 }

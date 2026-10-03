@@ -329,3 +329,17 @@ scan-only fixture then claimed one of its genuine work-event delivery jobs.
 The fixture now runs cover commands after all scan-only queue assertions,
 preserving real outbox publication and production queue ordering. The whole
 PostgreSQL job still requires a new passing run.
+
+Private GET /cards/{cardId}/cover/candidates now exposes at most 50 eligible
+File choices and a revision-bound seek cursor. PostgreSQL applies current
+Active/Clean image state and committed, source-bound immutable preview proof
+before LIMIT 51; one EXISTS query avoids provider reads and per-row lookups.
+Only source ID/version, display name and creation time are projected. Unsupported
+providers expose no choices. The owning read scope rechecks current membership
+and parent authority; a cursor from another Card/revision is refused. PUBLIC
+visibility is shown for confirmation, while this metadata route remains Internal.
+Real restricted PostgreSQL assertions cover published candidates, URL/foreign/
+unavailable exclusion, seek boundaries, stale Card revision, archive withdrawal
+and restoration with current File version. HTTP checks cover no-store, current
+member, anonymous/foreign/revoked refusal and malformed cursor. Local compilation
+passes; actual new Linux execution remains pending.

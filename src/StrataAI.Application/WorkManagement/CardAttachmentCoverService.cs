@@ -1,3 +1,4 @@
+using System.Globalization;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
@@ -10,6 +11,40 @@ public sealed class CardAttachmentCoverService(IWorkManagementStore work, IAttac
     IWorkManagementUnitOfWork transactions, IWorkCommandContext context, ICommandActorAuthorization actors,
     IClock clock, IWorkEventStore events)
 {
+    public async Task<WorkOperation<CardCoverCandidatePage>> ListCandidatesAsync(Guid cardId, Guid actor, string? after, CancellationToken ct = default)
+    {
+        var hint = await work.FindCardAsync(cardId, ct);
+        if (hint is null) return WorkOperation<CardCoverCandidatePage>.Failure("card_not_found");
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "card_not_found", () => Admit(hint, actor, false, ct), async () =>
+        {
+            var current = await work.FindCardAsync(cardId, ct);
+            if (current is null) return WorkOperation<CardCoverCandidatePage>.Failure("card_not_found");
+            DateTimeOffset? created = null; Guid? beforeId = null;
+            if (after is not null)
+            {
+                var parts = after.Length <= 160 ? after.Split('/') : [];
+                if (parts.Length != 4 || !Guid.TryParseExact(parts[0], "D", out var parent) || parent != cardId
+                    || !long.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var version) || version < 1
+                    || !long.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out var ticks)
+                    || ticks < DateTimeOffset.MinValue.Ticks || ticks > DateTimeOffset.MaxValue.Ticks || ticks % 10 != 0
+                    || !Guid.TryParseExact(parts[3], "D", out var id) || id == Guid.Empty)
+                    return WorkOperation<CardCoverCandidatePage>.Failure("invalid_attachment_cursor");
+                if (version != current.Version) return WorkOperation<CardCoverCandidatePage>.Failure("version_conflict");
+                created = new(ticks, TimeSpan.Zero); beforeId = id;
+            }
+            var rows = await covers.ListCandidatesAsync(hint.OrganizationId, cardId, created, beforeId, ct);
+            if (!await Admit(hint, actor, false, ct)) return WorkOperation<CardCoverCandidatePage>.Failure("card_not_found");
+            var scope = (await boards.GetSyncScopeAsync(hint.BoardId, actor, ct)).Value;
+            var list = await work.FindListAsync(hint.ListId, ct);
+            var canEdit = scope?.Access.CanEdit == true && scope.Board.LifecycleState == BoardLifecycleState.Active
+                && current.LifecycleState == WorkItemLifecycleState.Active && list?.LifecycleState == WorkItemLifecycleState.Active
+                && (await organizations.FindOrganizationAsync(hint.OrganizationId, ct))?.Status == OrganizationStatus.Active;
+            var items = rows.Take(50).ToArray();
+            var cursor = rows.Count > 50 ? $"{cardId:D}/{current.Version.ToString(CultureInfo.InvariantCulture)}/{items[^1].CreatedAt.UtcTicks.ToString(CultureInfo.InvariantCulture)}/{items[^1].AttachmentId:D}" : null;
+            return WorkOperation<CardCoverCandidatePage>.Success(new(hint.OrganizationId, hint.BoardId, cardId, current.Version, items, cursor,
+                canEdit, scope?.Board.Visibility == BoardVisibility.Public));
+        }, ct);
+    }
     public async Task<WorkOperation<CardCoverView>> ReadAsync(Guid cardId, Guid actor, CancellationToken ct = default)
     {
         var hint = await work.FindCardAsync(cardId, ct);

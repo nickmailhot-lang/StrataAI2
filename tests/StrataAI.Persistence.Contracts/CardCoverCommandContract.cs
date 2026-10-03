@@ -48,6 +48,23 @@ internal static class CardCoverCommandContract
         var fileVersion = await Scalar<long>("SELECT version FROM attachments WHERE tenant_id=@tenant AND id=@file;");
         var input = new SetCardCoverInput(file, initial!.CardVersion, fileVersion);
         var baseline = await Snapshot();
+        var candidates = (await service.ListCandidatesAsync(card, actor, null, ct)).Value;
+        Require(candidates is { CanEdit: true, IsPublic: false } && candidates.CardVersion == initial.CardVersion
+            && candidates.Items.Count <= 50 && candidates.Items.Any(x => x.AttachmentId == file && x.AttachmentVersion == fileVersion),
+            "Published same-Card cover source was absent from bounded private candidates.");
+        var ids = candidates!.Items.Select(x => x.AttachmentId).ToArray();
+        await using (var eligible = new NpgsqlCommand("SELECT count(*) FROM attachments WHERE id=ANY(@ids) AND tenant_id=@tenant AND card_id=@card AND kind='FILE' AND scan_status='CLEAN' AND lifecycle_state='ACTIVE';", admin))
+        {
+            eligible.Parameters.AddWithValue("ids", ids); eligible.Parameters.AddWithValue("tenant", tenant); eligible.Parameters.AddWithValue("card", card);
+            Require((long)(await eligible.ExecuteScalarAsync(ct))! == ids.Length, "Candidate page included URL/foreign/unavailable metadata.");
+        }
+        var sourceCandidate = candidates.Items.Single(x => x.AttachmentId == file);
+        var seek = $"{card:D}/{initial.CardVersion}/{sourceCandidate.CreatedAt.UtcTicks}/{file:D}";
+        var tail = (await service.ListCandidatesAsync(card, actor, seek, ct)).Value;
+        Require(tail is not null && tail.Items.All(x => x.AttachmentId != file), "Cover seek cursor repeated its boundary source.");
+        Require((await service.ListCandidatesAsync(card, actor, "malformed", ct)).ErrorCode == "invalid_attachment_cursor"
+            && !(await service.ListCandidatesAsync(card, Guid.NewGuid(), null, ct)).Succeeded
+            && await Snapshot() == baseline, "Cover candidate refusal retained effects or widened current authority.");
         var stale = await service.SetAsync(card, actor, input with { AttachmentVersion = fileVersion + 1 }, "cover-stale", ct);
         Require(stale.ErrorCode == "version_conflict" && await Snapshot() == baseline, "Stale cover command retained effects.");
         context.IdempotencyKey = Guid.NewGuid();
@@ -78,6 +95,8 @@ internal static class CardCoverCommandContract
             && selected.Value.AttachmentId == file && selected.Value.AttachmentVersion == fileVersion, "Cover selection lost source/Card revision binding.");
         Require(await Scalar<long>("SELECT version FROM attachments WHERE tenant_id=@tenant AND id=@file;") == fileVersion, "Cover selection advanced immutable source revision.");
         var committed = await Snapshot();
+        Require((await service.ListCandidatesAsync(card, actor, seek, ct)).ErrorCode == "version_conflict" && await Snapshot() == committed,
+            "Cover candidate cursor survived a different Card revision.");
         Require((await service.SetAsync(card, actor, input, "cover-original-retry", ct)).Value == selected.Value && await Snapshot() == committed,
             "Cover original retry repeated effects or changed its acknowledgment.");
         Require((await service.SetAsync(card, actor, new(null, selected.Value!.CardVersion, null), "cover-key-reuse", ct)).ErrorCode == "idempotency_key_reused"
@@ -103,6 +122,8 @@ internal static class CardCoverCommandContract
             && archived.Value.Attachment.Version == fileVersion + 1, "Archive cover clear consumed extra Card or File revisions.");
         var cleared = (await service.ReadAsync(card, actor, ct)).Value;
         Require(cleared is { AttachmentId: null }, "Archive retained the selected cover.");
+        Require((await service.ListCandidatesAsync(card, actor, null, ct)).Value?.Items.All(x => x.AttachmentId != file) == true,
+            "Archived source remained an eligible cover candidate.");
         Require(await Scalar<long>("SELECT count(*) FROM audit_events WHERE tenant_id=@tenant;") == auditCount + 2
             && await Scalar<long>("SELECT count(*) FROM work_events WHERE tenant_id=@tenant;") == eventCount + 2, "Archive/cover clear lost its two canonical effects.");
         committed = await Snapshot();
@@ -114,6 +135,8 @@ internal static class CardCoverCommandContract
         context.IdempotencyKey = Guid.NewGuid();
         var restored = await lifecycle.RestoreAsync(card, file, actor, new(archived.Value!.CardVersion, fileVersion + 1), "cover-source-restore", ct);
         Require(restored.Succeeded && (await service.ReadAsync(card, actor, ct)).Value is { AttachmentId: null }, "Restoration silently reselected the old cover.");
+        Require((await service.ListCandidatesAsync(card, actor, null, ct)).Value?.Items.Any(x => x.AttachmentId == file && x.AttachmentVersion == fileVersion + 2) == true,
+            "Restored immutable published source did not return with its current candidate revision.");
         await Scalar<int>("UPDATE boards SET visibility='PUBLIC',version=version+1,updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND id=(SELECT board_id FROM cards WHERE id=@card AND tenant_id=@tenant) RETURNING 1;");
         try
         {

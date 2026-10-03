@@ -39,6 +39,33 @@ internal sealed partial class InMemoryWorkManagementStore : ICardAttachmentCover
 
 internal sealed partial class PostgresWorkManagementStore : ICardAttachmentCoverStore
 {
+    public async Task<IReadOnlyList<CardCoverCandidate>> ListCandidatesAsync(Guid organization, Guid card,
+        DateTimeOffset? beforeCreatedAt, Guid? beforeId, CancellationToken ct)
+    {
+        AttachmentMetadataMapping.RequireCursor(beforeCreatedAt, beforeId);
+        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Cover candidates require the owning scope.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
+        await using var query = new NpgsqlCommand("""
+            SELECT a.id,a.version,a.display_name,a.created_at FROM attachments a
+            WHERE a.tenant_id=@tenant AND a.card_id=@card AND a.kind='FILE'
+             AND a.lifecycle_state='ACTIVE' AND a.deleted_at IS NULL AND a.scan_status='CLEAN' AND a.scanned_at IS NOT NULL
+             AND a.version>=3 AND a.mime_type IN ('image/png','image/jpeg','image/webp')
+             AND (@created IS NULL OR (a.created_at,a.id)<(@created,@before))
+             AND EXISTS (
+              SELECT 1 FROM attachment_previews m JOIN attachment_preview_publications p ON p.id=m.id AND p.tenant_id=m.tenant_id
+              WHERE m.tenant_id=a.tenant_id AND m.card_id=a.card_id AND m.attachment_id=a.id AND m.policy_version=1
+               AND p.attachment_version=m.source_version+1 AND a.version>=p.attachment_version
+               AND m.source_sha256=a.sha256 AND m.source_size_bytes=a.size_bytes AND m.source_mime_type=a.mime_type
+               AND m.output_size_bytes BETWEEN 45 AND 8388608 AND m.width BETWEEN 1 AND 1024 AND m.height BETWEEN 1 AND 1024)
+            ORDER BY a.created_at DESC,a.id DESC LIMIT 51;
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("card", card);
+        query.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, (object?)beforeCreatedAt ?? DBNull.Value);
+        query.Parameters.AddWithValue("before", NpgsqlDbType.Uuid, (object?)beforeId ?? DBNull.Value);
+        var rows = new List<CardCoverCandidate>(); await using var reader = await query.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct)) rows.Add(new(reader.GetGuid(0), reader.GetInt64(1), reader.GetString(2), reader.GetFieldValue<DateTimeOffset>(3)));
+        return rows;
+    }
     public async Task<Guid?> FindSelectedAsync(Guid organization, Guid card, CancellationToken ct)
     {
         if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Cover reads require the owning scope.");
