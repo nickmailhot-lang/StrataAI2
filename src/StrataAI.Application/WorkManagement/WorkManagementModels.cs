@@ -94,6 +94,9 @@ public sealed record CardRecord(
     DateTimeOffset UpdatedAt,
     long Version)
 {
+    // Snapshot-only display hint, never a File identity or delivery grant.
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public bool? HasCover { get; init; }
     public DateTimeOffset? StartAt { get; init; }
     public DateTimeOffset? DueAt { get; init; }
     public string? DueTimezone { get; init; }

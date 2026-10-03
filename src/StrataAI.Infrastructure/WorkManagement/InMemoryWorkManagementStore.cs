@@ -169,6 +169,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                                     card.ListId == list.Id &&
                                     card.LifecycleState == WorkItemLifecycleState.Active)
                                 .OrderBy(card => card.Rank, StringComparer.Ordinal)
+                                .Select(card => card with { HasCover = _cardCovers.ContainsKey(card.Id) })
                                 .ToArray()))
                 .ToArray();
 

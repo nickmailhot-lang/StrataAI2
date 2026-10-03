@@ -458,7 +458,7 @@ internal sealed partial class PostgresWorkManagementStore(
                 """
                 SELECT
                     id, tenant_id, board_id, list_id, title, description,
-                    rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete
+                    rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete, cover_attachment_id IS NOT NULL
                 FROM cards
                 WHERE board_id = @board_id
                   AND lifecycle_state = 'ACTIVE'
@@ -473,7 +473,7 @@ internal sealed partial class PostgresWorkManagementStore(
 
             while (await reader.ReadAsync(cancellationToken))
             {
-                var card = ReadCard(reader);
+                var card = ReadCard(reader) with { HasCover = reader.GetBoolean(16) };
                 if (cardsByList.TryGetValue(card.ListId, out var bucket))
                 {
                     bucket.Add(card);

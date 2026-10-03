@@ -1,5 +1,6 @@
 import { apiFetch } from "./apiFetch";
 export type WorkCard = {
+  hasCover?: boolean;
   startAt?: string | null;
   dueAt?: string | null;
   dueTimezone?: string | null;

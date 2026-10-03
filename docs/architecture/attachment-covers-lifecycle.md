@@ -396,3 +396,19 @@ timestamps and descending Card/revision-bound seek pages. Unexpected provider
 fields or stale/foreign receipts are refused. Five local adversarial contract
 tests, web typecheck and lint pass. This is preparation for the MUI controls and
 cover projection, not evidence that those UI/native requirements are complete.
+
+The a81b6cc managed job also passes, including the new selected-cover HTTP
+scenario. Web/PostgreSQL/managed/source quality are all green for that exact
+commit; build-once images are running, so the full release gate is not yet green.
+
+Board snapshots now include only a nullable snapshot-specific HasCover boolean
+for visible Cards. PostgreSQL reads it with the existing Card page in one query;
+Demo projects its stored selection without changing persistent Card records.
+Ordinary mutation/read receipts omit the optional display hint. No attachment
+ID, provider key, publication digest or image URL is added to generic Card DTOs;
+the Card-scoped delivery route still performs independent current admission.
+Restricted projection checks cover unset/selected/removed hints for Internal
+and anonymous PUBLIC snapshots and ensure the source identity is absent from
+serialized Board data. Local solution compilation passes; new projection Linux
+execution is pending. The browser model admits this optional hint for upcoming
+cover rendering.

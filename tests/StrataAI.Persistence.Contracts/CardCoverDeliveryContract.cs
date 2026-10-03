@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 using Npgsql;
 using StrataAI.Application.Common;
 using StrataAI.Application.Organizations;
@@ -40,6 +41,17 @@ internal static class CardCoverDeliveryContract
         }
         Task Visibility(string visibility) => Scalar<int>("UPDATE boards SET visibility='" + visibility
             + "',version=version+1,updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND id=(SELECT board_id FROM cards WHERE id=@card AND tenant_id=@tenant) RETURNING 1;");
+        async Task Projection(Guid? viewer, bool expectedCover)
+        {
+            var boardId = await Scalar<Guid>("SELECT board_id FROM cards WHERE tenant_id=@tenant AND id=@card;");
+            var snapshot = (await provider.GetRequiredService<IWorkManagementService>().GetBoardAsync(boardId, viewer, ct)).Value;
+            Require(snapshot is not null && snapshot.Lists.SelectMany(x => x.Cards).Single(x => x.Id == card).HasCover == expectedCover,
+                "Authorized Board snapshot lost its current bounded cover display hint.");
+            var json = JsonSerializer.Serialize(snapshot);
+            Require(!json.Contains(file.ToString(), StringComparison.OrdinalIgnoreCase) && !json.Contains("cover_attachment_id", StringComparison.Ordinal),
+                "Board cover projection exposed the private source identity.");
+        }
+        await Projection(actor, false);
         var before = reads();
         Require(!(await service.PrepareAsync(card, actor, ct)).Succeeded && !(await service.PrepareAsync(card, null, ct)).Succeeded && reads() == before,
             "An unselected cover reached private provider bytes.");
@@ -60,6 +72,7 @@ internal static class CardCoverDeliveryContract
             await using (var content = privateContent.Value!)
             { using var output = new MemoryStream(); await content.Bytes.CopyToAsync(output, ct); Require(output.ToArray().SequenceEqual(expected), "Cover exposed original or different bytes."); }
             await Visibility("PUBLIC");
+            await Projection(null, true);
             var publicGrant = (await admission.AdmitAsync(card, null, ct)).Value;
             Require(publicGrant is { ActorId: null } && publicGrant.File.Metadata.Id == file, "PUBLIC cover fabricated an actor or lost current selection.");
             before = reads();
@@ -108,6 +121,7 @@ internal static class CardCoverDeliveryContract
                 finally { await Scalar<int>("UPDATE " + table + " SET lifecycle_state='ACTIVE',version=version+1,updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND " + where + " RETURNING 1;"); }
             }
             await Select(false);
+            await Projection(null, false);
             await Scalar<int>("UPDATE attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE tenant_id=@tenant AND id=@file RETURNING 1;");
             before = reads();
             Require(!(await service.PrepareAsync(card, null, ct)).Succeeded && reads() == before, "Archived/cleared source retained public cover bytes.");
