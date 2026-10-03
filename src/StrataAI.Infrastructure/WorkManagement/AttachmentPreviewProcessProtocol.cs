@@ -13,6 +13,44 @@ public static class AttachmentPreviewProcessProtocol
     private static readonly string[] FailureCodes = ["preview_decoder_unavailable", "preview_type_unsupported",
         "preview_source_unavailable", "preview_image_invalid", "preview_dimensions_exceeded", "preview_output_exceeded"];
 
+    // Retain only a bounded prefix, return only a fixed category, and drain the
+    // remaining pipe so a longer fail-fast report cannot deadlock the child.
+    // No arbitrary diagnostic string is created, returned or logged.
+    public static async Task<AttachmentPreviewFailureStage> DrainRuntimeFailureAsync(Stream pipe, CancellationToken ct)
+    {
+        var buffer = new byte[4096]; var count = 0; var classified = false;
+        var stage = AttachmentPreviewFailureStage.None;
+        try
+        {
+            while (true)
+            {
+                var read = await pipe.ReadAsync(classified ? buffer : buffer.AsMemory(count), ct);
+                if (!classified) count += read;
+                if (!classified && (read == 0 || count == buffer.Length))
+                {
+                    stage = ClassifyRuntimeFailure(buffer.AsSpan(0, count));
+                    classified = true;
+                }
+                if (classified) CryptographicOperations.ZeroMemory(buffer);
+                if (read == 0) return stage;
+            }
+        }
+        finally { CryptographicOperations.ZeroMemory(buffer); }
+    }
+
+    private static AttachmentPreviewFailureStage ClassifyRuntimeFailure(ReadOnlySpan<byte> bytes)
+    {
+        if (bytes.IndexOf("Failed to create RW mapping for RX memory"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeMapping;
+        if (bytes.IndexOf("GC heap initialization failed"u8) >= 0 || bytes.IndexOf("HRESULT: 0x8007000E"u8) >= 0
+            || bytes.IndexOf("Out of memory."u8) >= 0) return AttachmentPreviewFailureStage.RuntimeMemory;
+        if (bytes.IndexOf("Couldn't find a valid ICU package"u8) >= 0 || bytes.IndexOf("No usable version of libssl"u8) >= 0)
+            return AttachmentPreviewFailureStage.RuntimeLibrary;
+        if (bytes.IndexOf("setpriv:"u8) >= 0) return AttachmentPreviewFailureStage.RuntimePrivileges;
+        if (bytes.IndexOf("Failed to create CoreCLR"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeInitialize;
+        if (bytes.IndexOf("error while loading shared libraries:"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeLoader;
+        return AttachmentPreviewFailureStage.None;
+    }
+
     public static async Task WriteSourceAsync(Stream pipe, AttachmentScanRequest request, string mime, Stream source, CancellationToken ct)
     {
         var header = new byte[49]; Magic.CopyTo(header);

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Security.Cryptography;
 using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
@@ -64,7 +63,7 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             child = Process.Start(start) ?? throw Unavailable();
             result = AttachmentPreviewProcessProtocol.ReadResultAsync(child.StandardOutput.BaseStream, deadline.Token);
             var writer = WriteAndCloseAsync(child.StandardInput.BaseStream, request, verifiedMimeType, verifiedSource, deadline.Token);
-            diagnostics = DrainDiagnosticsAsync(child.StandardError.BaseStream, deadline.Token);
+            diagnostics = AttachmentPreviewProcessProtocol.DrainRuntimeFailureAsync(child.StandardError.BaseStream, deadline.Token);
             pending = [result, writer, diagnostics, child.WaitForExitAsync(deadline.Token)];
             await Task.WhenAll(pending).WaitAsync(deadline.Token);
             if (child.ExitCode != 0) throw Unavailable();
@@ -113,33 +112,6 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
     {
         try { await AttachmentPreviewProcessProtocol.WriteSourceAsync(pipe, request, mime, source, ct); }
         finally { await pipe.DisposeAsync(); }
-    }
-    private static async Task<AttachmentPreviewFailureStage> DrainDiagnosticsAsync(Stream pipe, CancellationToken ct)
-    {
-        var buffer = new byte[4097]; var count = 0;
-        try
-        {
-            while (true)
-            {
-                var read = await pipe.ReadAsync(buffer.AsMemory(count), ct);
-                if (read == 0)
-                {
-                    // Recognize only fixed runtime failure classes. Never
-                    // convert arbitrary diagnostics into a string or log them.
-                    var bytes = buffer.AsSpan(0, count);
-                    if (bytes.IndexOf("GC heap initialization failed"u8) >= 0 || bytes.IndexOf("HRESULT: 0x8007000E"u8) >= 0)
-                        return AttachmentPreviewFailureStage.RuntimeMemory;
-                    if (bytes.IndexOf("Couldn't find a valid ICU package"u8) >= 0 || bytes.IndexOf("No usable version of libssl"u8) >= 0)
-                        return AttachmentPreviewFailureStage.RuntimeLibrary;
-                    if (bytes.IndexOf("setpriv:"u8) >= 0) return AttachmentPreviewFailureStage.RuntimePrivileges;
-                    if (bytes.IndexOf("Failed to create CoreCLR"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeInitialize;
-                    if (bytes.IndexOf("error while loading shared libraries:"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeLoader;
-                    return AttachmentPreviewFailureStage.None;
-                }
-                count += read; if (count > 4096) throw Unavailable();
-            }
-        }
-        finally { CryptographicOperations.ZeroMemory(buffer); }
     }
     private static AttachmentImagePreviewException Unavailable(AttachmentPreviewFailureStage stage = AttachmentPreviewFailureStage.None) => new("preview_decoder_unavailable", stage);
 }

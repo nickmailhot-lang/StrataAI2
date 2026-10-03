@@ -118,4 +118,28 @@ public sealed class AttachmentPreviewProcessProtocolTests
         using var result = new MemoryStream(Frame(Png));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => AttachmentPreviewProcessProtocol.ReadResultAsync(result, cancelled.Token));
     }
+
+    [Fact]
+    public async Task Long_runtime_reports_are_drained_without_losing_the_bounded_failure_category()
+    {
+        // A fail-fast stack can exceed the retained prefix. Private trailing
+        // details must not change the fixed category or remain in the pipe.
+        var bytes = Encoding.UTF8.GetBytes("Out of memory.\n" + new string('x', 65536));
+        using var pipe = new MemoryStream(bytes);
+        Assert.Equal(AttachmentPreviewFailureStage.RuntimeMemory,
+            await AttachmentPreviewProcessProtocol.DrainRuntimeFailureAsync(pipe, TestContext.Current.CancellationToken));
+        Assert.Equal(pipe.Length, pipe.Position); Assert.True(pipe.CanRead);
+    }
+
+    [Fact]
+    public async Task Unknown_diagnostics_and_failure_phrases_outside_the_retained_prefix_are_not_returned()
+    {
+        using var pipe = new MemoryStream(Encoding.UTF8.GetBytes(new string('x', 8192) + "Out of memory."));
+        Assert.Equal(AttachmentPreviewFailureStage.None,
+            await AttachmentPreviewProcessProtocol.DrainRuntimeFailureAsync(pipe, TestContext.Current.CancellationToken));
+        Assert.Equal(pipe.Length, pipe.Position);
+        using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            AttachmentPreviewProcessProtocol.DrainRuntimeFailureAsync(pipe, cancelled.Token));
+    }
 }
