@@ -59,7 +59,8 @@ internal static class CardCoverCommandContract
             INSERT INTO attachments
             SELECT populated.* FROM source a CROSS JOIN fixtures f CROSS JOIN LATERAL
              jsonb_populate_record(NULL::attachments,to_jsonb(a)||jsonb_build_object(
-              'id',f.id,'display_name','Unpublished cover capacity fixture',
+              'id',f.id,'display_name','Unpublished cover capacity fixture','lifecycle_revision',0,
+              'lifecycle_state','ACTIVE','archived_at',NULL,'deleted_at',NULL,'deleted_by',NULL,
               'storage_key','attachments/'||replace(@tenant::text,'-','')||'/'||replace(f.id::text,'-',''),
               'created_at',f.fixture_time,'updated_at',f.fixture_time,'scanned_at',f.fixture_time)) populated
             RETURNING id;
