@@ -37,6 +37,11 @@ state() { admin "SELECT md5(jsonb_build_object(
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
 path="/cards/$card/attachments"; key=$(uuid)
+# Default release binary delivery remains disabled, but both file paths must
+# reach the exact API image rather than succeeding with the SPA index.
+download_id=$(uuid)
+test "$(read_page owner "$path/$download_id/download")" = 404
+test "$(read_page owner "/attachments/$download_id/download?cardId=$card")" = 404
 payload='{"title":" Link ","url":"https://example.test/private-attachment?q=1#section","cardVersion":1}'
 test "$(request owner POST "$path/url" "$key" "$payload")" = 200
 cp "$scratch/response.json" "$scratch/receipt.json"
