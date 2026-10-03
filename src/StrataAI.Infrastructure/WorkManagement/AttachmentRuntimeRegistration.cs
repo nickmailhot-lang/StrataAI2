@@ -58,6 +58,8 @@ public static class AttachmentRuntimeRegistration
         ClamAvAttachmentMalwareScanner? scanner = null;
         if (worker)
         {
+            services.AddSingleton(new AttachmentImagePreviewPolicy());
+            services.AddSingleton<IAttachmentImagePreviewDecoder, SkiaAttachmentImagePreviewDecoder>();
             if (string.IsNullOrWhiteSpace(configuration["STRATAAI_WORKER_ORGANIZATION_IDS"]))
                 throw new InvalidOperationException("Attachment scanning requires explicit Worker Organization scope.");
             scanner = new ClamAvAttachmentMalwareScanner(configuration["STRATAAI_ATTACHMENT_SCANNER_SOCKET"] ?? "", TimeSpan.FromSeconds(30));
