@@ -10,7 +10,7 @@ INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,p
  VALUES('04000000-0000-0000-0000-000000000041','checklist-storage@example.test','CHECKLIST-STORAGE@EXAMPLE.TEST','Checklist fixture','ACTIVE',true,'unused-checklist-hash',now(),now()),
  ('04000000-0000-0000-0000-000000000042','checklist-foreign@example.test','CHECKLIST-FOREIGN@EXAMPLE.TEST','Foreign fixture','ACTIVE',true,'unused-checklist-hash',now(),now());
 INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES
- (gen_random_uuid(),'04000000-0000-0000-000000000001','04000000-0000-0000-0000-000000000041','MEMBER','ACTIVE'),
+ (gen_random_uuid(),'04000000-0000-0000-0000-000000000001','04000000-0000-0000-0000-000000000041','MEMBER','ACTIVE'),
  (gen_random_uuid(),'04000000-0000-0000-0000-000000000002','04000000-0000-0000-0000-000000000042','MEMBER','ACTIVE');
 INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES
  ('04000000-0000-0000-0000-000000000011','04000000-0000-0000-0000-000000000001','A Board',now(),now()),
