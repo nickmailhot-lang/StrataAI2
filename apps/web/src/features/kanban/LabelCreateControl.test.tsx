@@ -25,7 +25,7 @@ it('retains the exact key and body after a lost acknowledgement', async () => {
   open(); fireEvent.click(screen.getByRole('button', { name: 'Create' }));
   const retry = await screen.findByRole('button', { name: 'Retry label creation' });
   expect(screen.queryByLabelText('Label name (optional)')).not.toBeInTheDocument(); expect(screen.getByText('Cancel')).toBeDisabled();
-  expect(p.onRecoveryChange).toHaveBeenCalledWith(true); fireEvent.click(retry);
+  await waitFor(() => expect(p.onRecoveryChange).toHaveBeenCalledWith(true)); fireEvent.click(retry);
   await waitFor(() => expect(p.onRefresh).toHaveBeenCalled());
   expect(fetch.mock.calls[0][1].body).toBe(fetch.mock.calls[1][1].body);
   expect(new Headers(fetch.mock.calls[0][1].headers).get('Idempotency-Key')).toBe(new Headers(fetch.mock.calls[1][1].headers).get('Idempotency-Key'));

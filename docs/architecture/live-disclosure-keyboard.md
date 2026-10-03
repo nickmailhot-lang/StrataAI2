@@ -104,3 +104,11 @@ No permission or consent assertion was changed. A full default local run passed
 loading. The unchanged full suite then passed all 863 tests across 65 files with
 two workers and the subscription correction. The failed CI run produced no
 release bundle; the correction still requires fresh source and image CI.
+
+Run 37104084980 also failed source tests (862 passed, one failed), in an existing
+label creation recovery fixture that asserted its passive recovery callback
+immediately after discovering the retry button. That fixture now waits for the
+same callback assertion before retrying; original body/key and disabled-cancel
+assertions remain unchanged. All eight label creation tests pass locally. The
+prior full 863-test pass precedes this test-only synchronization correction;
+fresh full source/image CI remains authoritative.
