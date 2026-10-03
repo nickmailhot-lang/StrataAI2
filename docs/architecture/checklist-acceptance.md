@@ -27,7 +27,7 @@ It includes the source, interaction and measurement coverage added after item or
 | TC-09 disconnect recovery | Shared Board event delivery/replay infrastructure; content-free Card aggregate events; collaboration cases now close the actual proxied socket, reject reconnects, recover missed completion through HTTP events and observe another change after reconnect without page navigation | Execute the new real-image cases; authored/discovered cases are not passing evidence |
 | TC-10 lifecycle | Host/image Card/List archive/restore/delete retains exact children, fences writes and prior receipts; List copy excludes tombstones; four new Card/List desktop/mobile browser cases hold a committed rename acknowledgment across archive/restore/delete, check read-only retention/replay fencing and restored original receipt, and remove deleted scope | Execute the new real-image cases; shared PRD-18 retention work remains separate unfinished scope |
 | TC-11/12 keyboard/mobile | Accessible MUI names/status/progress, component focus tests; new 1280/390px browser cases authored | Execute full WCAG/keyboard cases; verify Board scroll/context preservation for Checklist interactions |
-| TC-13 large data/performance | Bounded 50+1 seek pages and full 63-row aggregate/copy/cascade fixtures; shared normal Board performance evidence; new normal Checklist benchmark asserts 50/13 item pages with full progress and measures 50-Card Board readiness, cached detail, creation feedback and 20 actual completion mutations | Execute the Checklist benchmark against exact images, retain measurements with unchanged 1500/200/100/500 ms budgets; documented 200-List/5000-Card/100000-archived-Card capacity evidence remains |
+| TC-13 large data/performance | Bounded 50+1 seek pages and full 63-row aggregate/copy/cascade fixtures; shared normal Board performance evidence; new normal Checklist benchmark asserts 50/13 item pages with full progress and measures 50-Card Board readiness, cached detail, creation feedback and 20 actual completion mutations; new mandatory image capacity fixture seeds 200 Lists/5000 active Cards/100000 archived Cards and exercises actual API reads/seek pages/completion | Execute both fixtures against exact images and retain evidence; unchanged normal 1500/200/100/500 ms budgets; large client/scroll/context behavior still needs verification |
 
 ## Events, telemetry and shared dependencies
 
@@ -63,3 +63,17 @@ without inventing a ticket budget. Retained evidence includes only fixed fixture
 sizes, timings, sample arrays, budgets and executed status, never object IDs or
 Checklist text. Seven reporter tests and ten creation-control tests pass locally;
 the benchmark is discovered, not yet executed. Capacity and telemetry remain open.
+
+`scripts/ci/test-checklist-capacity.sh` is a separate mandatory container stage
+using the already-built release API/PostgreSQL/Nginx topology. It creates an
+isolated authenticated owner/Organization/Board through API, then seeds canonical
+disposable scale rows directly in PostgreSQL. Seeding is not audited-command
+acceptance evidence. It asserts all 200 Lists and 5000 active Cards in the Board
+snapshot, 100000 archived Cards in the Organization, bounded first/second/final
+archive seek pages, 50/13 Checklist item pages, whole-Checklist progress,
+unchanged protected/audit/event/receipt state after reads and one actual
+versioned completion. Fixed-scope timings and results are retained for 90 days
+with the exact commit; IDs, titles, keys and credentials are excluded. Shell
+syntax passed locally. Docker is unavailable locally, so capacity execution and
+measurements remain pending CI. This API fixture does not prove large client
+rendering, normal UI latency, production capacity or telemetry acceptance.

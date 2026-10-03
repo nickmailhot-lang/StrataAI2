@@ -426,6 +426,18 @@ jobs:
       - name: Authorized checklist creation, ordered progress and atomic rollback against exact release images
         run: scripts/ci/test-checklists.sh
 
+      - name: Checklist reads and mutation at supported Board and archive capacity
+        run: scripts/ci/test-checklist-capacity.sh
+
+      - name: Retain fixed-scope Checklist capacity measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: checklist-capacity-${{ github.sha }}
+          path: artifacts/capacity/checklists.json
+          if-no-files-found: ignore
+          retention-days: 90
+
       - name: Atomic Work events and leased Worker readiness against exact release images
         run: scripts/ci/test-work-events.sh
 
