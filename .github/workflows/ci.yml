@@ -273,12 +273,34 @@ jobs:
         run: |
           timeout --signal=TERM --kill-after=5s 30s docker run --rm \
             --network none --read-only --user 0:0 \
-            --cap-drop ALL --cap-add SETUID --cap-add SETGID --cap-add SETPCAP \
+            --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add SETPCAP \
             --security-opt no-new-privileges \
             --memory 512m --memory-swap 512m --cpus 1 --pids-limit 96 \
             --tmpfs /tmp:rw,noexec,nosuid,size=64m \
             --env DOTNET_EnableDiagnostics=0 \
             "strataai-worker:${GITHUB_SHA}" --verify-attachment-preview-runtime
+
+      - name: Refuse root preview setup without scratch ownership capability
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          report=$(mktemp)
+          trap 'rm -f "$report"' EXIT
+          set +e
+          timeout --signal=TERM --kill-after=5s 30s docker run --rm \
+            --network none --read-only --user 0:0 \
+            --cap-drop ALL --cap-add SETUID --cap-add SETGID --cap-add SETPCAP \
+            --security-opt no-new-privileges \
+            --memory 512m --memory-swap 512m --cpus 1 --pids-limit 96 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --env DOTNET_EnableDiagnostics=0 \
+            "strataai-worker:${GITHUB_SHA}" --verify-attachment-preview-runtime >"$report" 2>&1
+          code=$?
+          set -e
+          test "$code" -eq 1
+          grep -Fxq 'Worker preview runtime verification failed at fixed stage Scratch (preview_decoder_unavailable).' "$report"
+          echo 'Root preview setup refuses missing scratch ownership capability.'
 
       - name: Export exact built images
         shell: bash

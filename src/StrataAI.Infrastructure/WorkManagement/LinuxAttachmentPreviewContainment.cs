@@ -95,6 +95,6 @@ public static class LinuxAttachmentPreviewContainment
     [DllImport("libc", EntryPoint = "open", SetLastError = true)] private static extern int Open([MarshalAs(UnmanagedType.LPUTF8Str)] string path, int flags);
     [DllImport("libc", EntryPoint = "close")] private static extern int Close(int descriptor);
     public static void AssignScratchOwner(string path)
-    { if (!Supported || Chown(path, 1654, 1654) != 0) throw Unavailable(); }
+    { if (!Supported || Chown(path, 1654, 1654) != 0) throw Unavailable(AttachmentPreviewFailureStage.Scratch); }
     [DllImport("libc", EntryPoint = "chown")] private static extern int Chown([MarshalAs(UnmanagedType.LPUTF8Str)] string path, uint user, uint group);
 }
