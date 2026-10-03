@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button, Link, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
@@ -22,7 +22,7 @@ function Download(props: Props) {
     }, 60000);
     return () => window.clearTimeout(timer);
   }, [options]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (busy || !focus.current) return;
     if (document.activeElement === document.body || document.activeElement === review.current || document.activeElement === link.current) {
       (options ? link.current : review.current)?.focus({ preventScroll: true }); focus.current = false;

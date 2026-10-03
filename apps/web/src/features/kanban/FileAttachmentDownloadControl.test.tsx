@@ -57,6 +57,14 @@ it('stops a stalled review and ignores its late result', async () => {
   await act(async () => { resolve(profile); }); expect(screen.queryByRole('link')).toBeNull(); expect(workRequest).toHaveBeenCalledOnce();
 });
 
+it('preserves focus that the user moved while current access was being checked', async () => {
+  let resolve!: (value: unknown) => void;
+  vi.mocked(workRequest).mockResolvedValueOnce(profile).mockImplementationOnce(() => new Promise(value => { resolve = value; })).mockResolvedValueOnce(profile);
+  render(<><FileAttachmentDownloadControl {...props} /><button>Another action</button></>); await check();
+  await act(async () => { await Promise.resolve(); }); const other = screen.getByRole('button', { name: 'Another action' }); other.focus();
+  await act(async () => { resolve(options); }); await screen.findByRole('link'); expect(other).toHaveFocus();
+});
+
 it('removes admitted links on Card revision changes and ignores old scope requests', async () => {
   admit(); const view = render(<FileAttachmentDownloadControl {...props} />); await check(); await screen.findByRole('link');
   view.rerender(<FileAttachmentDownloadControl {...props} version={5} />); expect(screen.queryByRole('link')).toBeNull();
