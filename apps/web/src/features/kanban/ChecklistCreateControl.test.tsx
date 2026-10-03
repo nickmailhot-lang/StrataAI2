@@ -39,7 +39,7 @@ it('retries exactly the original body and key despite a newer snapshot and tempo
   const p = props(); const view = render(<ChecklistCreateControl {...p} />); await review();
   fireEvent.click(screen.getByRole('button', { name: 'Create checklist' }));
   await screen.findByRole('button', { name: 'Retry checklist creation' });
-  expect(screen.getByLabelText(/New checklist title/)).toBeDisabled(); expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true);
+  expect(screen.getByLabelText(/New checklist title/)).toBeDisabled(); await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true));
   view.rerender(<ChecklistCreateControl {...p} version={5} unavailable />);
   expect(screen.queryByLabelText(/New checklist title/)).not.toBeInTheDocument();
   view.rerender(<ChecklistCreateControl {...p} version={5} />);
@@ -48,7 +48,7 @@ it('retries exactly the original body and key despite a newer snapshot and tempo
   await screen.findByText('Checklist created.');
   const calls = vi.mocked(workRequest).mock.calls.filter(([path]) => path.endsWith('/checklists'));
   expect(calls).toHaveLength(2); expect(calls[1][1]!.body).toBe(calls[0][1]!.body); expect(calls[1][1]!.headers).toEqual(calls[0][1]!.headers);
-  expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false);
+  await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false));
   expect(vi.mocked(checklistEvent).mock.calls).toEqual([['create', 'use'], ['create', 'retry']]);
   expect(vi.mocked(checklistResult).mock.calls.map(call => call.slice(0, 2))).toEqual([['create', false], ['create', true]]);
 });

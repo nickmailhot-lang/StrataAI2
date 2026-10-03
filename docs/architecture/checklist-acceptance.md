@@ -122,3 +122,15 @@ document for pending deployed collector/dashboard proof. Run 37106945461 at
 React's effect; the unchanged true assertion now awaits that effect. All 42
 Checklist manager tests pass locally. Source gates at 5d592d1 passed; its
 container/security stages are live. No release acceptance or closure is claimed.
+
+Run 37110958673 at bfa4ba5 passed PostgreSQL and .NET but failed the Checklist
+create original-intent retry fixture's recovery callback assertion immediately
+after the retry control appeared (871 web cases passed). The callback is delivered
+by a React effect, so the same true/false assertions now await delivery. Exact
+body/key, scope re-admission, newer version, telemetry and actual POST count
+assertions remain intact. No timeout increase or production retry change is made.
+Focused execution is pending.
+
+All 10 focused Checklist create cases pass after awaiting the same recovery
+callback assertions. The retry case still proves two actual commands with
+identical original body/key across newer snapshot and temporary re-admission.
