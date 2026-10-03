@@ -19,6 +19,10 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
     IOrganizationStore organizations, IWorkBoardAuthorization boards, IWorkManagementUnitOfWork transactions,
     IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events)
 {
+    // Durable recovery must never retain former comment plaintext. The body is
+    // hydrated only from the currently admitted row at the recorded revision.
+    public sealed record Receipt(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
+        Guid CommentId, long CommentVersion, Guid AuthorId, bool Changed);
     public async Task<WorkOperation<CardCommentPage>> ListAsync(Guid cardId, Guid actor, string? after, CancellationToken ct = default)
     {
         var hint = await work.FindCardAsync(cardId, ct);
@@ -62,7 +66,7 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
         var hint = await work.FindCardAsync(cardId, ct);
         if (hint is null) return WorkOperation<CardCommentChange>.Failure("card_not_found");
         var type = deleting ? "COMMENT_DELETED" : commentId.HasValue ? "COMMENT_EDITED" : "COMMENT_ADDED";
-        return await transactions.ExecuteAsync(hint.OrganizationId,
+        var result = await transactions.ExecuteAsync<Receipt>(hint.OrganizationId,
             WorkCommand.Create(actor, context.IdempotencyKey, type, commentId ?? cardId, new { cardId, input }, "comment_not_found"),
             async receipt =>
             {
@@ -70,51 +74,61 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                 if (commentId is { } requested && (await comments.FindAsync(hint.OrganizationId, cardId, requested, ct))?.AuthorId != actor) return false;
                 if (receipt is null) return true;
                 if (receipt.OrganizationId != hint.OrganizationId || receipt.BoardId != hint.BoardId || receipt.CardId != cardId
-                    || receipt.Comment.OrganizationId != hint.OrganizationId || receipt.Comment.CardId != cardId || receipt.Comment.AuthorId != actor
-                    || commentId is { } child && receipt.Comment.Id != child) return false;
+                    || receipt.AuthorId != actor || commentId is { } child && receipt.CommentId != child) return false;
                 // Never replay a former body after an edit or redaction. A newer
                 // unrelated Card version does not invalidate an exact receipt.
-                return await comments.FindAsync(hint.OrganizationId, cardId, receipt.Comment.Id, ct) == receipt.Comment;
+                var row = await comments.FindAsync(hint.OrganizationId, cardId, receipt.CommentId, ct);
+                return row is not null && row.AuthorId == receipt.AuthorId && row.Version == receipt.CommentVersion
+                    && await Admit(hint, actor, true, ct) && await actors.VerifyAsync(actor, ct);
             }, async () =>
             {
                 if (cardVersion < 1 || commentId == Guid.Empty || commentId.HasValue && commentVersion is not > 0)
-                    return WorkOperation<CardCommentChange>.Failure("invalid_comment_version");
-                if (deleting && !confirmed) return WorkOperation<CardCommentChange>.Failure("comment_delete_confirmation_required");
+                    return WorkOperation<Receipt>.Failure("invalid_comment_version");
+                if (deleting && !confirmed) return WorkOperation<Receipt>.Failure("comment_delete_confirmation_required");
                 var current = await work.FindCardAsync(cardId, ct);
                 var child = commentId is { } id ? await comments.FindAsync(hint.OrganizationId, cardId, id, ct) : null;
-                if (current is null || commentId.HasValue && (child is null || child.AuthorId != actor)) return WorkOperation<CardCommentChange>.Failure("comment_not_found");
+                if (current is null || commentId.HasValue && (child is null || child.AuthorId != actor)) return WorkOperation<Receipt>.Failure("comment_not_found");
                 if (current.Version != cardVersion || child is not null && child.Version != commentVersion)
-                    return WorkOperation<CardCommentChange>.Failure("version_conflict");
+                    return WorkOperation<Receipt>.Failure("version_conflict");
                 string? normalized = null;
                 if (!deleting)
                 {
-                    if (child?.DeletedAt is not null) return WorkOperation<CardCommentChange>.Failure("comment_not_found");
+                    if (child?.DeletedAt is not null) return WorkOperation<Receipt>.Failure("comment_not_found");
                     try { normalized = CardComment.RequireContent(content!); }
-                    catch (ArgumentException) { return WorkOperation<CardCommentChange>.Failure("invalid_comment_content"); }
+                    catch (ArgumentException) { return WorkOperation<Receipt>.Failure("invalid_comment_content"); }
                 }
                 if (child is not null && (deleting ? child.DeletedAt is not null : child.Content == normalized))
                     return await Complete(hint, actor, current.Version, child, false, ct);
                 var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
                 if (current.Version == long.MaxValue || now < current.UpdatedAt || child is not null && (child.Version == long.MaxValue || now < child.UpdatedAt))
-                    return WorkOperation<CardCommentChange>.Failure("version_conflict");
+                    return WorkOperation<Receipt>.Failure("version_conflict");
                 var updated = await work.UpdateCardAsync(cardId, current.Title, current.Description, cardVersion, now, ct);
-                if (updated is null) return WorkOperation<CardCommentChange>.Failure("version_conflict");
+                if (updated is null) return WorkOperation<Receipt>.Failure("version_conflict");
                 var changed = child is null ? await comments.CreateAsync(Guid.NewGuid(), hint.OrganizationId, cardId, actor, normalized!, now, ct)
                     : deleting ? await comments.DeleteAsync(hint.OrganizationId, cardId, child.Id, actor, child.Version, now, ct)
                     : await comments.EditAsync(hint.OrganizationId, cardId, child.Id, actor, child.Version, normalized!, now, ct);
-                if (changed is null) return WorkOperation<CardCommentChange>.Failure("version_conflict");
+                if (changed is null) return WorkOperation<Receipt>.Failure("version_conflict");
                 await work.AppendAuditAsync(hint.OrganizationId, actor, type, "Comment", changed.Id, correlationId, ct);
                 // Content-free Card invalidation; activity/mention projections
                 // require their own additional producer and disclosure policy.
                 await events.AppendAsync(new(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor, type, "Card", cardId, updated.Version, correlationId, now), ct);
                 return await Complete(hint, actor, updated.Version, changed, true, ct);
             }, ct);
+        if (!result.Succeeded || result.Value is null) return WorkOperation<CardCommentChange>.Failure(result.ErrorCode ?? "comment_not_found");
+        var receipt = result.Value;
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "comment_not_found", () => Admit(hint, actor, true, ct), async () =>
+        {
+            var row = await comments.FindAsync(hint.OrganizationId, cardId, receipt.CommentId, ct);
+            if (row is null || row.AuthorId != actor || row.Version != receipt.CommentVersion)
+                return WorkOperation<CardCommentChange>.Failure("comment_not_found");
+            return WorkOperation<CardCommentChange>.Success(new(receipt.OrganizationId, receipt.BoardId, cardId, receipt.CardVersion, row, receipt.Changed));
+        }, ct);
     }
-    private async Task<WorkOperation<CardCommentChange>> Complete(CardRecord hint, Guid actor, long version, CardCommentRecord comment, bool changed, CancellationToken ct)
+    private async Task<WorkOperation<Receipt>> Complete(CardRecord hint, Guid actor, long version, CardCommentRecord comment, bool changed, CancellationToken ct)
     {
-        if (!await Admit(hint, actor, true, ct)) return WorkOperation<CardCommentChange>.Failure("comment_not_found");
-        if (!await actors.VerifyAsync(actor, ct)) return WorkOperation<CardCommentChange>.Failure("session_unavailable");
-        return WorkOperation<CardCommentChange>.Success(new(hint.OrganizationId, hint.BoardId, hint.Id, version, comment, changed));
+        if (!await Admit(hint, actor, true, ct)) return WorkOperation<Receipt>.Failure("comment_not_found");
+        if (!await actors.VerifyAsync(actor, ct)) return WorkOperation<Receipt>.Failure("session_unavailable");
+        return WorkOperation<Receipt>.Success(new(hint.OrganizationId, hint.BoardId, hint.Id, version, comment.Id, comment.Version, actor, changed));
     }
     private async Task<bool> Admit(CardRecord hint, Guid actor, bool writing, CancellationToken ct)
     {

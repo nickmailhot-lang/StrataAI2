@@ -151,3 +151,27 @@ Compilation passes; new runtime execution is pending Linux CI. No HTTP route,
 mentions or complete activity projection is exposed by this producer slice.
 Durable receipt retention/redaction needs an explicit policy before full release;
 receipt admission prevents body replay but does not erase stored former receipts.
+
+9755d1b passes the Linux Domain test step, including the three actual Demo
+Application producer cases. The shared Demo rollback cases also pass on
+851bb0c; PostgreSQL and web quality pass on that commit. API/image gates remain
+live and are not represented as a fully green release.
+
+Authenticated GET/POST/PATCH/DELETE comment routes now use the shared Problem,
+retry-key and session boundaries, no-store responses and content-free bounded
+operator tags. API-host tests exercise real login/membership, author refusal,
+invalid/stale input, confirmation, normalization, original replay, retained
+redaction, archive/restore and membership revocation. Compilation passes; these
+new HTTP tests await Linux execution. MUI, mentions and complete activity remain
+unfinished, and no full acceptance criterion is closed.
+
+The receipt retention risk identified above is now addressed for new comment
+commands: receipts contain IDs/revisions/changed status only, never comment
+plaintext. Responses hydrate the current row at the recorded comment revision
+through a separate currently authorized read. Edits/deletion or scope/session
+loss refuse old recovery; unrelated newer Card versions preserve the original
+receipt version. A change between commit and hydration can yield a stable
+unavailable response; the same original key remains the recovery mechanism.
+Tests inspect the actual retained Demo receipt and serialization round trip.
+No HTTP comment commands existed before this body-free receipt change, so no
+historical externally submitted comment body receipts require migration.

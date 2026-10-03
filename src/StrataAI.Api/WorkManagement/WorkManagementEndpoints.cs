@@ -16,6 +16,7 @@ public static partial class WorkManagementEndpoints
         MapCardDateEndpoints(app);
         MapCardReminderEndpoints(app);
         MapChecklistEndpoints(app);
+        MapCardCommentEndpoints(app);
         MapAttachmentEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
@@ -765,6 +766,11 @@ public static partial class WorkManagementEndpoints
             "attachment_upload_in_progress" => Problem(409, errorCode, "The original upload is still being processed. Retry the same request later."),
             "attachment_upload_unavailable" => Problem(409, errorCode, "Unable to resume this upload. Check the current Card before starting another change."),
             "invalid_checklist_cursor" => Problem(400, errorCode, "Use the continuation cursor for this Card."),
+            "invalid_comment_cursor" => Problem(400, errorCode, "Use the continuation cursor for this Card."),
+            "invalid_comment_version" => Problem(400, errorCode, "Use the current Card and comment revisions."),
+            "invalid_comment_content" => Problem(400, errorCode, "Comment text must be nonblank, valid Unicode and at most 10000 characters."),
+            "comment_delete_confirmation_required" => Problem(400, errorCode, "Confirm removal of this comment body."),
+            "comment_not_found" => Problem(404, errorCode, "The requested comment action is unavailable."),
             "invalid_checklist_version" => Problem(400, errorCode, "Use the current Card revision."),
             "invalid_checklist_title" => Problem(400, errorCode, "Checklist title is required and must fit its limit."),
             "invalid_card_date_version" => Problem(400, errorCode, "Use the current Card revision."),

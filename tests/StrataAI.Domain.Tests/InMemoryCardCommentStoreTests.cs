@@ -120,6 +120,14 @@ public sealed class InMemoryCardCommentStoreTests
         Assert.True(created.Succeeded); var row = created.Value!; Assert.Equal(2, row.CardVersion); Assert.Equal(1, row.Comment.Version);
         Assert.Equal("First\n🙂", row.Comment.Content);
         Assert.Equal(row, (await service.CreateAsync(parent.Card.Id, parent.User, input, "comment-retry", ct)).Value);
+        var retained = await services.GetRequiredService<IWorkManagementUnitOfWork>().ExecuteAsync<CardCommentService.Receipt>(parent.Org,
+            WorkCommand.Create(parent.User, key, "COMMENT_ADDED", parent.Card.Id, new { cardId = parent.Card.Id, input }, "fixture_denied"),
+            _ => Task.FromResult(true), () => throw new InvalidOperationException("Committed receipt was lost."), ct);
+        Assert.True(retained.Succeeded); Assert.Equal(row.Comment.Id, retained.Value!.CommentId);
+        var retainedJson = System.Text.Json.JsonSerializer.Serialize(retained);
+        Assert.DoesNotContain("First", retainedJson); Assert.DoesNotContain("Content", retainedJson);
+        var recoveredReceipt = System.Text.Json.JsonSerializer.Deserialize<WorkOperation<CardCommentService.Receipt>>(retainedJson);
+        Assert.Equal(retained, recoveredReceipt);
         context.IdempotencyKey = Guid.NewGuid();
         var noop = await service.EditAsync(parent.Card.Id, row.Comment.Id, parent.User, new("First\n🙂", 2, 1), "comment-test", ct);
         Assert.True(noop.Succeeded); Assert.False(noop.Value!.Changed); Assert.Equal(2, noop.Value.CardVersion);
