@@ -138,3 +138,26 @@ accounts/URLs/scopes/bodies stay in disposable scratch; no raw response is a
 retained artifact. Shell syntax passes; actual immutable-image execution remains
 pending CI. The fixture is a production transaction proof requirement, not a
 substitute for the full upload/scanning/cover/client acceptance matrix.
+
+Run 37110818558 at 2fe518d passed all 283 Domain and 257 API-host tests,
+including the three repaired metadata store cases. Run 37110854018 at ea9a245
+passed all 283 Domain and 265 API-host cases, including the eight URL command/read
+cases. PostgreSQL/web/source gates passed for each; immutable-image stages are
+still running. Later bfa4ba5 passed .NET/PostgreSQL but failed the separate
+Checklist create passive-effect assertion, repaired at bd05d37 with all 10
+focused cases passing. The exact-image URL fixture is still unexecuted.
+
+The MUI Card detail now has an explicit attachment disclosure with bounded reads,
+scope/revision validation before display, abort/disclosure fencing during access
+checks, safe plain-text external URL links with noopener/noreferrer/no-referrer,
+read-only indication, cursor paging and explicit retry/refresh. No URL is fetched
+for a preview. The response codec rejects unexpected private fields, binary kinds
+and delivery state until those paths exist; it keeps .NET timestamp cursor precision
+with bigint and rejects scope/actor/intent/version mismatches, stale/deleted rows,
+unsafe links, invalid ordering/ties/duplicates/continuations and excessive pages.
+Current URL enum ordinals are explicit (kind 1, scan status 0), matching the API's
+existing numeric contract for these newly added Domain enums. Unknown states fail
+closed. No command is emitted by this read-only panel. URL creation UI and all file
+capabilities remain incomplete. All 46 focused panel/codec/Board cases pass;
+typecheck/lint pass. Full web regression is running. Real browser keyboard/mobile,
+context/performance and latest immutable-image proof remain pending.

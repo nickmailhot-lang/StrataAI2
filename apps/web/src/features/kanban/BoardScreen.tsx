@@ -23,6 +23,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardChecklists } from './CardChecklists';
+import { CardAttachments } from './CardAttachments';
 import { ChecklistCreateControl } from './ChecklistCreateControl';
 import { ChecklistManageControl } from './ChecklistManageControl';
 import { CardDateDisplay } from './CardDateDisplay';
@@ -699,6 +700,9 @@ function BoardContent() {
               disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || cardRecovery || checklistRecovery}
               unavailable={snapshotReading || !!loadError} onBusyChange={setBusy} onRecoveryChange={setReminderRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
+            {cardId && <CardAttachments organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardChecklists reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
