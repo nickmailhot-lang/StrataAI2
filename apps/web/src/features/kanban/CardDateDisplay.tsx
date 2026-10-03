@@ -3,7 +3,7 @@ import { Alert, Button, Chip, Stack, Typography } from '@mui/material';
 import { CalendarToday, CheckCircle, Schedule, Warning } from '@mui/icons-material';
 import { boundedWorkRead, workRequest, type WorkCard } from '../../api/workManagement';
 import { isNotificationProfile, type NotificationProfile } from '../notifications/notificationInbox';
-import { cardDates, cardDueState, dateTimezone, formatCardDate, type DueState } from './cardDates';
+import { cardDates, cardDueState, dateTimezone, formatCardDate, nextCardDateWake, type DueState } from './cardDates';
 
 type Props = { card: WorkCard; organizationId: string; boardId: string; unavailable: boolean; boardTimezone?: string | null; onRefresh: () => void };
 const labels: Record<DueState, string> = { UPCOMING: 'Upcoming', DUE_SOON: 'Due soon', DUE_TODAY: 'Due today', OVERDUE: 'Overdue', COMPLETE: 'Complete' };
@@ -37,6 +37,13 @@ function CurrentDates({ card, boardTimezone, onRefresh }: Props) {
     const timer = setInterval(check, 30_000); window.addEventListener('focus', check); document.addEventListener('visibilitychange', check);
     return () => { active = false; controller?.abort(); clearInterval(timer); window.removeEventListener('focus', check); document.removeEventListener('visibilitychange', check); };
   }, [attempt]);
+  useEffect(() => {
+    if (!profile) return;
+    let zone: string;
+    try { zone = dateTimezone(boardTimezone ?? profile.timezone); } catch { return; }
+    const timer = setTimeout(() => setNow(Date.now()), nextCardDateWake([card], zone, now));
+    return () => clearTimeout(timer);
+  }, [profile, boardTimezone, card, now]);
   if (error) return <Alert severity="warning">Dates are unavailable. <Button onClick={() => { refresh.current(); setAttempt(value => value + 1); }}>Refresh dates</Button></Alert>;
   if (!profile) return <Typography role="status">Loading dates…</Typography>;
   try {

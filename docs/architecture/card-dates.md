@@ -453,3 +453,46 @@ on light surfaces. The policy release scenario checks the actual computed outlin
 after keyboard acknowledgment recovery in addition to active-element focus and
 axe checks. These checks cover an indicator that a DOM focus assertion alone
 cannot establish.
+
+Board canvas Cards now show due-state badges with text and icons and expose the
+status as the Card link's accessible description, preserving its title as the
+accessible name. One bounded viewer-profile read is shared across the Board;
+Boards without due dates add no profile read. Effective display uses Board policy
+or the signed-in account's configured timezone. Failed/invalid profile reads,
+invalid policy and stale Board admission withhold status rather than guessing a
+timezone. Anonymous date-status display is not claimed by this implementation.
+An account switch requests fresh Board admission before showing status again.
+Profile changes are checked on focus/visibility and a 30-second heartbeat.
+
+The display clock belongs to the date context, avoiding Board/DnD parent clock
+updates. It wakes at due, 24-hour and local-midnight boundaries, with a bounded
+heartbeat for DST and wall-clock changes. Canonical UTC dates, completion and
+Reminder scheduling remain unchanged. Unit cases cover shared reads, effective
+calendar policy, status descriptions, failed/revoked/stalled reads, account
+changes, retirement and idle clock boundaries. Desktop/phone release scenarios
+now assert a fourth client's live canvas status under policy changes, completion
+and clearing without reload and enforce tagged axe checks on that canvas.
+The browser's fixed viewer clock leaves server/Worker timers real. Its setup
+uses an explicitly timed UTC instant, matching server normalization; completion
+submits the full canonical date payload. Exact-image browser execution and broad
+Board virtualization/performance acceptance still require evidence.
+Card detail uses the same boundary clock. Wake calculations retain canonical
+fractional ticks when determining the first representable display millisecond;
+the 24-hour boundary cannot fire early after rounding a sub-millisecond due time.
+
+Runs 37088203149 and 37088527593 passed source/PostgreSQL/image/security gates
+and exercised successful production Worker Reminder delivery within the unchanged
+60-second deadline. Private GET/inbox, self-notification and original receipt
+checks passed before a fixture queried the nonexistent `ready` column. The
+assertion now checks the schema's `ready_at IS NOT NULL`. Those failed runs prove
+that delivery slice, not the later policy/Organization rollback checks or the
+complete release gate; the corrected run must finish for those claims.
+
+Local verification for the canvas/boundary change passed 36 date/badge/display
+unit cases, the focused Board live-completion/clear integration case and the
+existing 25 Board regressions. Typecheck, lint, production build and release
+browser scenario parsing pass. The local production preview with mocked reads
+passed zero tagged axe violations, keyboard Card descriptions, policy recheck
+and no page overflow at 1280 and 390 px; the phone layout was inspected visually.
+This diagnostic does not prove real release API/Worker/live acceptance. The
+mandatory browser scenarios and the full exact-image gate remain pending.

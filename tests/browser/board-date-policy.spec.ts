@@ -19,11 +19,20 @@ for (const width of [1280, 390]) {
     const cardResponse = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Policy Card' } });
     expect(cardResponse.status()).toBe(201); const card = (await cardResponse.json()).id;
     expect((await context.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
-      data: { dueAt: '2040-01-03T08:00:00Z', dueTimezone: 'UTC', dueHasTime: false, dueComplete: false, version: 1 } })).status()).toBe(200);
+      data: { dueAt: '2040-01-03T08:00:00Z', dueTimezone: 'UTC', dueHasTime: true, dueComplete: false, version: 1 } })).status()).toBe(200);
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request, board);
       const boardPath = `/app/${org}/boards/${board}`, policyPath = `${boardPath}/date-policy`;
+      const canvasPeer = await context.newPage(); await canvasPeer.setViewportSize({ width, height: 844 });
+      // Fix only this viewer's wall clock; server dates and release Worker timers
+      // stay real. This instant crosses calendar days between UTC and Honolulu.
+      await canvasPeer.clock.setFixedTime(new Date('2040-01-02T23:00:00Z'));
+      await canvasPeer.goto(boardPath);
+      const canvasCard = canvasPeer.getByRole('link', { name: 'Policy Card', exact: true });
+      await expect(canvasCard).toHaveAccessibleDescription('Due soon');
+      await expect(canvasPeer.getByText('Live updates connected.', { exact: true })).toBeVisible();
+      expect((await new AxeBuilder({ page: canvasPeer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const datesPeer = await context.newPage(); await datesPeer.setViewportSize({ width, height: 844 });
       await datesPeer.goto(`${boardPath}/cards/${card}`);
       const dates = datesPeer.getByRole('region', { name: 'Card dates', exact: true });
@@ -46,6 +55,7 @@ for (const width of [1280, 390]) {
       const retry = page.getByRole('button', { name: 'Retry timezone change' }); await expect(retry).toBeEnabled();
       await expect(input).toHaveCount(0); await expect(page.getByRole('link', { name: 'Back to Board' })).toHaveAttribute('aria-disabled', 'true');
       await expect(dates).toContainText('Due Jan 2, 2040'); await expect(dates).toContainText('Board timezone policy.');
+      await expect(canvasCard).toHaveAccessibleDescription('Due today');
       await retry.press('Enter'); await expect(input).toHaveValue('Pacific/Honolulu');
       await expect(page.getByRole('button', { name: 'Save timezone policy' })).toBeFocused();
       const focusRing = await page.getByRole('button', { name: 'Save timezone policy' }).evaluate(element => {
@@ -61,6 +71,7 @@ for (const width of [1280, 390]) {
       await peerInput.press('ControlOrMeta+A'); await peerInput.pressSequentially('UTC');
       await policyPeer.getByRole('button', { name: 'Save timezone policy' }).press('Enter');
       await expect(input).toHaveValue('UTC'); await expect(dates).toContainText('Due Jan 3, 2040');
+      await expect(canvasCard).toHaveAccessibleDescription('Due soon');
       await input.press('ControlOrMeta+A'); await input.press('Backspace');
       await page.getByRole('button', { name: 'Save timezone policy' }).press('Enter');
       await expect(input).toHaveValue(''); await expect(peerInput).toHaveValue('');
@@ -70,9 +81,17 @@ for (const width of [1280, 390]) {
       expect(current.lists[0].cards[0]).toMatchObject({ id: card, version: 2 });
       expect(Date.parse(current.lists[0].cards[0].dueAt)).toBe(Date.parse('2040-01-03T08:00:00Z'));
       expect((await (await context.request.get('/me')).json()).timezone).toBe('UTC');
+      expect((await context.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+        data: { version: 2, dueAt: '2040-01-03T08:00:00Z', dueTimezone: 'UTC', dueHasTime: true, dueComplete: true } })).status()).toBe(200);
+      await expect(canvasCard).toHaveAccessibleDescription('Complete');
+      expect((await context.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+        data: { version: 3, dueHasTime: false, dueComplete: false } })).status()).toBe(200);
+      await expect(canvasCard).not.toHaveAttribute('aria-describedby');
+      await expect(canvasCard).not.toContainText('Complete');
+      expect((await new AxeBuilder({ page: canvasPeer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-      await policyPeer.close(); await datesPeer.close();
+      await canvasPeer.close(); await policyPeer.close(); await datesPeer.close();
     } finally { restoreWorker(); }
   });
 }

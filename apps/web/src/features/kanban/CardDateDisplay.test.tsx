@@ -7,6 +7,17 @@ const card: WorkCard = { id: 'card', title: 'Card', description: null, rank: 'ra
   startAt: null, dueAt: '2026-10-03T08:00:00Z', dueTimezone: 'UTC', dueHasTime: false, dueComplete: true };
 const props = () => ({ card, organizationId: 'org', boardId: 'board', unavailable: false, onRefresh: vi.fn() });
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+it('updates an idle Card to overdue just after its due instant without another profile read', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-03T07:59:59Z'));
+  try {
+    vi.mocked(workRequest).mockResolvedValue({ ...profile, timezone: 'UTC' });
+    render(<CardDateDisplay {...props()} card={{ ...card, dueComplete: false }} />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    expect(screen.getByRole('region', { name: 'Card dates' })).toHaveTextContent('Due today');
+    await act(async () => { await vi.advanceTimersByTimeAsync(1001); });
+    expect(screen.getByRole('region', { name: 'Card dates' })).toHaveTextContent('Overdue'); expect(workRequest).toHaveBeenCalledOnce();
+  } finally { vi.useRealTimers(); }
+});
 it('applies the current Board timezone policy and clearing it restores the viewing account timezone', async () => {
   vi.mocked(workRequest).mockResolvedValue(profile);
   const p = props(); const { rerender } = render(<CardDateDisplay {...p} boardTimezone="UTC" />);

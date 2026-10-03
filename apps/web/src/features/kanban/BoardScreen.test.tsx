@@ -63,6 +63,24 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it('updates canvas due descriptions on live completion and removes them when dates clear', async () => {
+    let invalidate = () => {};
+    vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+    const dated = structuredClone(fixture);
+    Object.assign(dated.lists[0].cards[0], { startAt: null, dueAt: '2040-01-03T08:00:00Z', dueTimezone: 'UTC', dueHasTime: true, dueComplete: false });
+    const profile = { id: '22222222-2222-2222-2222-222222222222', version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
+    let current = dated;
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => response(String(input).endsWith('/me') ? profile : current)));
+    mount();
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Inspect roof' })).toHaveAccessibleDescription('Upcoming'));
+    current = structuredClone(dated); Object.assign(current.lists[0].cards[0], { dueComplete: true, version: 4 });
+    act(() => invalidate());
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Inspect roof' })).toHaveAccessibleDescription('Complete'));
+    current = structuredClone(dated); Object.assign(current.lists[0].cards[0], { dueAt: null, dueTimezone: null, dueHasTime: false, dueComplete: false, version: 5 });
+    act(() => invalidate());
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Inspect roof' })).not.toHaveAttribute('aria-describedby'));
+    expect(screen.queryByText('Complete')).not.toBeInTheDocument();
+  });
   it("hides assignee names while refreshing and clears them on revoked Board access", async () => {
     let invalidate = () => {}; let finish!: (value: Response) => void;
     vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });

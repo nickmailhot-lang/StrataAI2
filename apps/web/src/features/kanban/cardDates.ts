@@ -47,6 +47,25 @@ export function cardDueState(dates: CardDates, viewingTimezone: string, now = Da
   if (due - current <= 24n * 60n * 60n * 10000000n) return 'DUE_SOON';
   return 'UPCOMING';
 }
+// Wake at due/24-hour boundaries and local midnight. A bounded heartbeat also
+// catches wall-clock changes and DST without constructing a guessed UTC day.
+export function nextCardDateWake(cards: Pick<WorkCard, 'dueAt' | 'dueComplete'>[], timezone: string, now: number): number {
+  let delay = 30_000;
+  for (const card of cards) {
+    if (!card.dueAt || card.dueComplete) continue;
+    let ticks: bigint;
+    try { ticks = instant(card.dueAt); } catch { continue; }
+    const milliseconds = ticks / 10000n, remainder = ticks % 10000n;
+    const firstAfter = Number(milliseconds + (remainder < 0n ? 0n : 1n));
+    const atOrAfter = Number(milliseconds + (remainder > 0n ? 1n : 0n));
+    for (const boundary of [firstAfter, atOrAfter - 86_400_000])
+      if (boundary > now) delay = Math.min(delay, boundary - now);
+  }
+  const parts = new Intl.DateTimeFormat('en', { timeZone: timezone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(now);
+  const part = (name: string) => Number(parts.find(value => value.type === name)!.value);
+  const midnight = (86_400 - part('hour') * 3600 - part('minute') * 60 - part('second')) * 1000 - now % 1000;
+  return Math.max(1, Math.min(delay, midnight));
+}
 export function formatCardDate(value: string, timed: boolean, locale: string, zone: string): string {
   instant(value);
   return new Intl.DateTimeFormat(locale, { timeZone: dateTimezone(zone), dateStyle: 'medium', ...(timed ? { timeStyle: 'short' as const } : {}) }).format(new Date(value));

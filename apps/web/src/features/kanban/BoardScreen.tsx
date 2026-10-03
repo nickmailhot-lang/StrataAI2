@@ -25,6 +25,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardDateDisplay } from './CardDateDisplay';
+import { BoardDateProvider, CardDueBadge, cardDueDescriptionId } from './BoardDateBadges';
 import { CardDateEditor } from './CardDateEditor';
 import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
@@ -500,6 +501,8 @@ function BoardContent() {
           No lists yet.{editable && " Add a list to begin."}
         </Typography>
       )}
+      <BoardDateProvider key={`${snapshot.board.organizationId}/${snapshot.board.id}`} snapshot={snapshot} unavailable={snapshotReading || !!loadError}
+        onRevalidate={() => { setSnapshotReading(true); setReload(value => value + 1); }}>
       <DndContext sensors={sensors} autoScroll={{ canScroll: element => element.hasAttribute('data-kanban-scroll') }} collisionDetection={args => {
         const movingCard = String(args.active.id).startsWith('card:');
         const droppableContainers = args.droppableContainers.filter(value => {
@@ -582,6 +585,7 @@ function BoardContent() {
                   key={item.id}
                   component={Link}
                   aria-label={item.title}
+                  aria-describedby={item.dueAt ? cardDueDescriptionId(item.id) : undefined}
                   ref={(node: HTMLAnchorElement | null) => {
                     if (node) cardLinks.current.set(item.id, node);
                     else cardLinks.current.delete(item.id);
@@ -598,7 +602,7 @@ function BoardContent() {
                     },
                   }}
                 >
-                  <CardContent>{item.title}<CardLabelIndicators preview={snapshot.cardLabels?.[item.id]} /><CardMemberIndicators version={item.version} preview={snapshotReading || loadError ? undefined : snapshot.cardMembers?.[item.id]} /></CardContent>
+                  <CardContent>{item.title}<CardLabelIndicators preview={snapshot.cardLabels?.[item.id]} /><CardMemberIndicators version={item.version} preview={snapshotReading || loadError ? undefined : snapshot.cardMembers?.[item.id]} /><CardDueBadge card={item} /></CardContent>
                 </Card>
                 </CardDragItem>
               ))}
@@ -622,6 +626,7 @@ function BoardContent() {
         {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && <ListEndTarget disabled={!!canvasFilter || busy || snapshotReading || !!loadError} />}
       </Box>
       </DndContext>
+      </BoardDateProvider>
       {cardDrop && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && (() => {
         const moved = snapshot.lists.filter(column => column.list.lifecycleState === 'active').flatMap(column => column.cards).find(value => value.id === cardDrop.cardId);
         return moved && <CardMoveControls key={`canvas-move-${moved.id}`} card={moved} snapshot={snapshot}
