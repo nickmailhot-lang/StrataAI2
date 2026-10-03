@@ -60,6 +60,11 @@ public sealed class AttachmentUploadIntentStoreTests
         Assert.Equal(value.CardVersion, published.OriginalCardVersion); Assert.Equal(value.ExpectedSha256, published.ExpectedSha256);
         Assert.Null(await Change(store, value, 4, new(AttachmentUploadAction.Abandon, Now.AddMinutes(3)), ct));
         Assert.Equal(published, await store.FindUploadByRetryAsync(value.OrganizationId, value.UploaderId, value.RetryKey, ct));
+        var privateFile=await services.GetRequiredService<IAttachmentMetadataStore>().FindFileAttachmentAsync(value.OrganizationId,value.CardId,value.Id,ct);
+        Assert.NotNull(privateFile); var jobs=services.GetRequiredService<IAttachmentScanJobPublisher>();
+        Assert.True(await jobs.PublishScanAsync(published,privateFile,value.UploaderId,"scan-first",ct));
+        Assert.False(await jobs.PublishScanAsync(published,privateFile,value.UploaderId,"scan-retry",ct));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => jobs.PublishScanAsync(published with {Version=published.Version+1},privateFile,value.UploaderId,"scan-stale",ct));
     }
     [Fact]
     public async Task Competing_claims_have_one_winner_and_external_domain_mutation_cannot_change_persisted_original_intent()
@@ -122,10 +127,13 @@ public sealed class AttachmentUploadIntentStoreTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Change(store,value,1,new(AttachmentUploadAction.Abandon,Now),cancel.Token));
         Assert.Equal(prepared,await store.FindUploadByRetryAsync(value.OrganizationId,value.UploaderId,value.RetryKey,ct));
         var productionServices = new ServiceCollection(); productionServices.AddSingleton(new PostgresConnectionFactory("Host=127.0.0.1;Port=1;Database=unused;Username=unused;Password=unused;Timeout=1"));
+        productionServices.AddSingleton<StrataAI.Infrastructure.BackgroundJobs.PostgresBackgroundJobStore>();
         productionServices.AddStrataAiWorkManagement(new RuntimeDescriptor(RuntimeMode.Production,"test","test"));
         await using var production = productionServices.BuildServiceProvider(); var pg = production.GetRequiredService<IAttachmentUploadIntentStore>();
         await Assert.ThrowsAsync<InvalidOperationException>(() => pg.PrepareUploadAsync(value,ct));
         await Assert.ThrowsAsync<InvalidOperationException>(() => pg.FindUploadByRetryAsync(value.OrganizationId,value.UploaderId,value.RetryKey,ct));
         await Assert.ThrowsAsync<InvalidOperationException>(() => Change(pg,value,1,new(AttachmentUploadAction.Abandon,Now),ct));
+        var pgJobs=production.GetRequiredService<IAttachmentScanJobPublisher>();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => pgJobs.PublishScanAsync(AttachmentUploadRecord.From(value),null!,value.UploaderId,"",ct));
     }
 }

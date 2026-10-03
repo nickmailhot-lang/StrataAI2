@@ -5,6 +5,7 @@ using StrataAI.Application.Runtime;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Domain.WorkManagement;
 using StrataAI.Infrastructure.Persistence;
+using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.WorkManagement;
 
 // Mandatory CI executable against real PostgreSQL and the restricted API login.
@@ -40,10 +41,18 @@ async Task Seed(Guid tenant, Guid actor, Guid boardId, Guid listId, Guid cardId)
 }
 void Require(bool condition, string invariant) { if (!condition) throw new InvalidOperationException(invariant); }
 var services = new ServiceCollection(); services.AddLogging(); services.AddSingleton(new PostgresConnectionFactory(apiConnection));
+services.AddSingleton<PostgresBackgroundJobStore>();
 services.AddSingleton<ICommandActorAuthorization, NoActorFixture>();
 services.AddStrataAiWorkManagement(new(RuntimeMode.Production,"contract","contract"));
 await using var provider = services.BuildServiceProvider(); var store = provider.GetRequiredService<IAttachmentUploadIntentStore>();
 var metadata = provider.GetRequiredService<IAttachmentMetadataStore>(); var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>();
+var scanJobs=provider.GetRequiredService<IAttachmentScanJobPublisher>();
+async Task<long> ScanJobCount(Guid attachment)
+{
+    await using var query=new NpgsqlCommand("SELECT count(*) FROM background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_SCAN' AND safe_metadata->>'attachmentId'=@attachment;",admin);
+    query.Parameters.AddWithValue("tenant",organization); query.Parameters.AddWithValue("attachment",attachment.ToString("D"));
+    return (long)(await query.ExecuteScalarAsync(ct))!;
+}
 async Task<T?> InScope<T>(Guid tenant, Func<Task<T>> operation)
 {
     var result = await unit.ExecuteReadAsync(tenant,null,"contract_scope",() => Task.FromResult(true),
@@ -83,17 +92,32 @@ try
     var rolledBack = await unit.ExecuteReadAsync<AttachmentUploadRecord?>(organization,null,"contract_scope",() => Task.FromResult(true),async () =>
     {
         await metadata.CreateFileAttachmentAsync(measured,card,user,value.DisplayName,"image/png",now.AddSeconds(5),ct);
-        Require(await store.TryChangeUploadAsync(organization,card,user,value.Id,7,new(AttachmentUploadAction.Publish,now.AddSeconds(6)),ct) is { Version:8 },"Atomic publication failed.");
+        var proposed=await store.TryChangeUploadAsync(organization,card,user,value.Id,7,new(AttachmentUploadAction.Publish,now.AddSeconds(6)),ct);
+        Require(proposed is {Version:8},"Atomic publication failed.");
+        var privateFile=await metadata.FindFileAttachmentAsync(organization,card,value.Id,ct);
+        Require(privateFile is not null && await scanJobs.PublishScanAsync(proposed!,privateFile,user,"scan-contract-first",ct),"Atomic scan job publication failed.");
         return WorkOperation<AttachmentUploadRecord?>.Failure("intentional_contract_rollback");
     },ct);
     Require(!rolledBack.Succeeded && await Find(organization,user,value.RetryKey) is { Version:7,State:AttachmentUploadState.Stored },"Publication rollback lost stored intent.");
     Require(await InScope(organization,() => metadata.FindFileAttachmentAsync(organization,card,value.Id,ct)) is null,"Publication rollback retained metadata.");
+    Require(await ScanJobCount(value.Id)==0,"Publication rollback retained its scan job.");
     var published = await InScope(organization,async () =>
     {
         await metadata.CreateFileAttachmentAsync(measured,card,user,value.DisplayName,"image/png",now.AddSeconds(5),ct);
-        return await store.TryChangeUploadAsync(organization,card,user,value.Id,7,new(AttachmentUploadAction.Publish,now.AddSeconds(6)),ct);
+        var proposed=await store.TryChangeUploadAsync(organization,card,user,value.Id,7,new(AttachmentUploadAction.Publish,now.AddSeconds(6)),ct);
+        var privateFile=await metadata.FindFileAttachmentAsync(organization,card,value.Id,ct);
+        Require(privateFile is not null && proposed is not null && await scanJobs.PublishScanAsync(proposed,privateFile,user,"scan-contract-first",ct),"Atomic scan job retry failed.");
+        Require(!await scanJobs.PublishScanAsync(proposed!,privateFile!,user,"scan-contract-second",ct),"Scan publication duplicated its durable identity.");
+        return proposed;
     });
     Require(published is { Version:8,State:AttachmentUploadState.Published } && published.ExpectedSha256==value.ExpectedSha256,"Atomic publication persistence failed.");
+    Require(await ScanJobCount(value.Id)==1,"Scan job was lost or duplicated.");
+    await using(var queue=new NpgsqlCommand("SELECT correlation_id,safe_metadata::text FROM background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_SCAN' AND safe_metadata->>'attachmentId'=@attachment;",admin))
+    {
+        queue.Parameters.AddWithValue("tenant",organization); queue.Parameters.AddWithValue("attachment",value.Id.ToString("D"));
+        await using var row=await queue.ExecuteReaderAsync(ct); Require(await row.ReadAsync(ct),"Scan job missing.");
+        Require(row.GetString(0)=="scan-contract-first" && AttachmentScanAttempt.Parse(row.GetString(1))==new AttachmentScanAttempt(value.Id,card,1),"Retried scan job changed original safe metadata.");
+    }
     Require(await Change(value,8,new(AttachmentUploadAction.Abandon,now.AddSeconds(7))) is null,"Published upload was abandoned.");
     var expiry = Intent(); await InScope(organization,() => store.PrepareUploadAsync(expiry,ct));
     await Change(expiry,1,new(AttachmentUploadAction.StartWrite,now,Guid.NewGuid(),now.AddMinutes(5)));
@@ -114,12 +138,13 @@ try
     Require(tombstone is { Version:5,State:AttachmentUploadState.Abandoned } && tombstone.StoredAt==recovered!.StoredAt
         && tombstone.VerifiedMimeType=="image/png" && tombstone.ExpectedSha256==reconciled.ExpectedSha256,"Stored upload tombstone lost private reconciliation identity.");
     Require(await Change(reconciled,5,new(AttachmentUploadAction.ConfirmMissing,now.AddSeconds(4))) is null,"Stored tombstone was resurrected.");
-    Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, publication rollback and retained expiry passed.");
+    Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, metadata/scan-job rollback and retained expiry passed.");
 }
 finally
 {
     await using var cleanup = new NpgsqlCommand("""
         DELETE FROM attachment_upload_intents WHERE tenant_id=ANY(@tenants);
+        DELETE FROM background_jobs WHERE tenant_id=ANY(@tenants);
         DELETE FROM attachments WHERE tenant_id=ANY(@tenants);
         DELETE FROM cards WHERE tenant_id=ANY(@tenants); DELETE FROM board_lists WHERE tenant_id=ANY(@tenants);
         DELETE FROM boards WHERE tenant_id=ANY(@tenants); DELETE FROM organization_members WHERE tenant_id=ANY(@tenants);

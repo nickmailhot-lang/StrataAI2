@@ -23,6 +23,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWatchSubscriptionStore, InMemoryWatchSubscriptionStore>();
             services.AddSingleton<ICardReminderStore, InMemoryCardReminderStore>();
             services.AddSingleton<ICardReminderJobPublisher, InMemoryCardReminderJobPublisher>();
+            services.AddSingleton<IAttachmentScanJobPublisher, InMemoryAttachmentScanJobPublisher>();
         }
         else
         {
@@ -36,6 +37,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWatchSubscriptionStore, PostgresWatchSubscriptionStore>();
             services.AddSingleton<ICardReminderStore, PostgresCardReminderStore>();
             services.AddSingleton<ICardReminderJobPublisher, PostgresCardReminderJobPublisher>();
+            services.AddSingleton<IAttachmentScanJobPublisher, PostgresAttachmentScanJobPublisher>();
         }
 
         services.AddSingleton<IWorkManagementService>(provider => new TransactionalWorkManagementService(new WorkManagementService(provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<StrataAI.Application.Organizations.IOrganizationStore>(), provider.GetRequiredService<StrataAI.Application.Common.IClock>(), provider.GetRequiredService<IWorkEventStore>(), provider.GetRequiredService<StrataAI.Application.Identity.IdentityPolicy>(), provider.GetRequiredService<IWorkNotificationStore>(), provider.GetRequiredService<CardWatchNotificationProducer>(), provider.GetRequiredService<CardReminderScheduling>(), provider.GetRequiredService<CardReminderContainerScheduling>()),
