@@ -13,8 +13,8 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='strataai_api_runtime') THEN CREATE ROLE strataai_api_runtime LOGIN; END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='strataai_worker_runtime') THEN CREATE ROLE strataai_worker_runtime LOGIN; END IF;
 END $$;
-ALTER ROLE strataai_api_runtime NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT PASSWORD :'api_password';
-ALTER ROLE strataai_worker_runtime NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT PASSWORD :'worker_password';
+ALTER ROLE strataai_api_runtime LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT PASSWORD :'api_password';
+ALTER ROLE strataai_worker_runtime LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT PASSWORD :'worker_password';
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM strataai_api_runtime,strataai_worker_runtime;
 GRANT USAGE ON SCHEMA public TO strataai_api_runtime,strataai_worker_runtime;
 GRANT SELECT ON schema_migrations TO strataai_api_runtime,strataai_worker_runtime;

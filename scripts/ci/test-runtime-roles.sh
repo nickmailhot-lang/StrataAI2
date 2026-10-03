@@ -2,6 +2,12 @@
 set -euo pipefail
 export STRATAAI_API_DB_PASSWORD='ci-api-runtime-password'
 export STRATAAI_WORKER_DB_PASSWORD='ci-worker-runtime-password'
+# Provisioning must configure existing roles, including roles created without
+# LOGIN by a migration/upgrade fixture. Do not depend on CREATE ROLE defaults.
+psql -X -v ON_ERROR_STOP=1 -c "DO \$\$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='strataai_api_runtime') THEN CREATE ROLE strataai_api_runtime; END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='strataai_worker_runtime') THEN CREATE ROLE strataai_worker_runtime; END IF;
+ END \$\$; ALTER ROLE strataai_api_runtime NOLOGIN; ALTER ROLE strataai_worker_runtime NOLOGIN;" >/dev/null
 psql -X -v ON_ERROR_STOP=1 -f db/provision-runtime-roles.sql
 api() { PGUSER=strataai_api_runtime PGPASSWORD="$STRATAAI_API_DB_PASSWORD" psql -X -At -v ON_ERROR_STOP=1 -c "$1"; }
 worker() { PGUSER=strataai_worker_runtime PGPASSWORD="$STRATAAI_WORKER_DB_PASSWORD" psql -X -At -v ON_ERROR_STOP=1 -c "$1"; }
