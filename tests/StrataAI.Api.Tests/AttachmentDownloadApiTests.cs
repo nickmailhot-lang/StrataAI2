@@ -67,6 +67,11 @@ public sealed partial class ApiHostTests
         using var pending = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, pending.StatusCode); Assert.Equal(0, objects.Reads);
         Assert.IsType<DownloadMetadata>(app.Services.GetRequiredService<IAttachmentMetadataStore>()).Clean = true;
         using var ordinary = await member.GetAsync($"/cards/{card.Id}/attachments/{file.Id}/download", ct); Assert.Equal(HttpStatusCode.NotFound, ordinary.StatusCode);
+        using var ordinaryQuery = await member.GetAsync($"/cards/{card.Id}/attachments/{file.Id}/download?archiveReview=true", ct);
+        Assert.Equal(HttpStatusCode.NotFound, ordinaryQuery.StatusCode);
+        using var wrongActor = await member.GetAsync(path + $"?actorId={f.Owner}", ct); Assert.Equal(HttpStatusCode.NotFound, wrongActor.StatusCode);
+        using var wrongCard = await member.GetAsync($"/cards/{Guid.NewGuid()}/attachments/archive/{file.Id}/download", ct); Assert.Equal(HttpStatusCode.NotFound, wrongCard.StatusCode);
+        using var pdfPreview = await member.GetAsync($"/cards/{card.Id}/attachments/archive/{file.Id}/preview", ct); Assert.Equal(HttpStatusCode.NotFound, pdfPreview.StatusCode);
         using var outside = await outsider.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, outside.StatusCode); Assert.Equal(0, objects.Reads);
         var options = (await member.GetFromJsonAsync<AttachmentDownloadOptions>(path + "-options", ct))!;
         Assert.Equal(3, options.CardVersion); Assert.Equal(2, options.AttachmentVersion); Assert.Equal(f.Recipient, options.ActorId);
@@ -80,6 +85,11 @@ public sealed partial class ApiHostTests
         using var withdrawn = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, withdrawn.StatusCode); Assert.Null(withdrawn.Content.Headers.ContentDisposition);
         var reads = objects.Reads;
         using var retry = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, retry.StatusCode); Assert.Equal(reads, objects.Reads);
+        using var archivedAgain = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/attachments/{file.Id}/archive", new { cardVersion = 4, version = 3 });
+        Assert.Equal(HttpStatusCode.OK, archivedAgain.StatusCode);
+        using var removed = await Mutate(owner, HttpMethod.Delete, $"/attachments/{file.Id}?cardId={card.Id}&cardVersion=5&version=4&confirmed=true", new { });
+        Assert.Equal(HttpStatusCode.OK, removed.StatusCode);
+        using var tombstone = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, tombstone.StatusCode); Assert.Equal(reads, objects.Reads);
     }
 
     [Fact]
