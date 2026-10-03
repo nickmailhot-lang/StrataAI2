@@ -20,7 +20,7 @@ public static class LinuxAttachmentPreviewContainment
         Limit(0, 10); // RLIMIT_CPU: hard CPU deadline, not cooperative cancellation.
         Limit(4, 0); // RLIMIT_CORE: no source-containing core dumps.
         Limit(1, 1073741824); // RLIMIT_FSIZE: staging cannot exceed original limit.
-        Limit(7, 64); // RLIMIT_NOFILE.
+        Limit(7, 256); // RLIMIT_NOFILE: includes CLR/framework assembly handles.
         Limit(6, 64); // RLIMIT_NPROC: threads/processes for the nonroot uid.
 
         // Reject nonzero capabilities even if a deployment changed uid setup.

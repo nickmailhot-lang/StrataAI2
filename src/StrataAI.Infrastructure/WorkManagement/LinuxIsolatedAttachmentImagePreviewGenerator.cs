@@ -60,17 +60,11 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             scratch = $"/tmp/strata-preview-sandbox-{Guid.NewGuid():N}";
             Directory.CreateDirectory(scratch, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             if (LinuxAttachmentPreviewContainment.IsRoot) LinuxAttachmentPreviewContainment.AssignScratchOwner(scratch);
-            var tracePublicFixture = _publicFixtureVerification && !LinuxAttachmentPreviewContainment.IsRoot && File.Exists("/usr/bin/strace");
-            var start = new ProcessStartInfo(tracePublicFixture ? "/usr/bin/strace" : "/usr/bin/setpriv")
+            var start = new ProcessStartInfo("/usr/bin/setpriv")
             {
                 UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true,
                 RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = "/tmp"
             };
-            if (tracePublicFixture)
-            {
-                foreach (var argument in new[] { "-f", "-qq", "-y", "-e", "trace=openat,mmap,mprotect,brk,ftruncate", "-e", "status=failed", "--", "/usr/bin/setpriv" })
-                    start.ArgumentList.Add(argument);
-            }
             start.ArgumentList.Add("--no-new-privs"); start.ArgumentList.Add("--inh-caps=-all"); start.ArgumentList.Add("--ambient-caps=-all");
             if (LinuxAttachmentPreviewContainment.IsRoot)
             {

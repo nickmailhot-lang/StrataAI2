@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
     if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) || prctl(PR_SET_DUMPABLE, 0, 0, 0, 0)
         || prctl(PR_SET_PDEATHSIG, SIGKILL, 0, 0, 0) || parent != getppid()
         || limit(RLIMIT_AS, 1073741824) || limit(RLIMIT_CPU, 10) || limit(RLIMIT_CORE, 0)
-        || limit(RLIMIT_FSIZE, 1073741824) || limit(RLIMIT_NOFILE, 64) || limit(RLIMIT_NPROC, 64)) return fail(66);
+        || limit(RLIMIT_FSIZE, 1073741824) || limit(RLIMIT_NOFILE, 256) || limit(RLIMIT_NPROC, 64)) return fail(66);
     /* ABI v3 includes truncate; do not silently accept a weaker filesystem
      * boundary on older kernels. No provider input is consumed on failure. */
     if (syscall(SYS_landlock_create_ruleset, NULL, 0, LANDLOCK_CREATE_RULESET_VERSION) < 3) return fail(67);
