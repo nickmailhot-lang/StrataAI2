@@ -63,6 +63,42 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it('fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot', async () => {
+    const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+    const org = uuid(1), board = uuid(2), card = uuid(3), actor = uuid(8); const file = uuid(4);
+    let current = structuredClone(fixture); current.board.id = board; current.board.organizationId = org;
+    current.lists[0].list.id = uuid(6); current.lists[0].cards[0].id = card;
+    const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
+    const metadata = { id: file, organizationId: org, cardId: card, uploaderId: actor, kind: 1, displayName: 'Reference',
+      url: 'https://example.test/', mimeType: null, sizeBytes: null, scanStatus: 0, scannedAt: null,
+      createdAt: '2026-10-03T08:00:00.123456Z', updatedAt: '2026-10-03T08:00:00.123456Z', version: 1,
+      deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null };
+    const attempts: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, request?: RequestInit) => {
+      const path = String(input); if (path === '/me') return response(profile);
+      if (path === `/cards/${card}/attachments`) return response({ organizationId: org, boardId: board, cardId: card,
+        cardVersion: current.lists[0].cards[0].version, items: [metadata], canEdit: true, nextCursor: null });
+      if (path === `/cards/${card}/attachments/${file}/archive`) {
+        attempts.push(request!); current = structuredClone(current); current.lists[0].cards[0].version = 4;
+        return attempts.length === 1 ? response({ code: 'work_storage_unavailable' }, 503)
+          : response({ organizationId: org, boardId: board, cardId: card, cardVersion: 4, changed: true,
+            attachment: { ...metadata, lifecycleState: 1, version: 2, updatedAt: '2026-10-03T08:01:00.123456Z', archivedAt: '2026-10-03T08:01:00.123456Z' } });
+      }
+      return response(current);
+    }));
+    mount(`/app/${org}/boards/${board}/cards/${card}`);
+    const manage = await screen.findByRole('button', { name: 'Manage attachments' }); await waitFor(() => expect(manage).toBeEnabled()); fireEvent.click(manage);
+    fireEvent.click(await screen.findByRole('button', { name: 'Archive attachment Reference' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm attachment archive' }));
+    const retry = await screen.findByRole('button', { name: 'Retry original attachment change' }); await waitFor(() => expect(retry).toBeEnabled());
+    for (const name of ['Add link attachment', 'Add file attachment', 'Add checklist', 'Save card', 'Close'])
+      expect(screen.getByRole('button', { name })).toBeDisabled();
+    expect(attempts).toHaveLength(1); fireEvent.click(retry); await screen.findByText('Attachment archived.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Close' })).toBeEnabled());
+    expect(attempts).toHaveLength(2); expect(attempts[1].body).toBe(attempts[0].body);
+    expect(JSON.parse(attempts[0].body as string)).toEqual({ cardVersion: 3, version: 1 });
+    expect(new Headers(attempts[1].headers).get('Idempotency-Key')).toBe(new Headers(attempts[0].headers).get('Idempotency-Key'));
+  });
   it('locks competing Card mutations during unconfirmed file upload and recovers the same original request after a newer snapshot', async () => {
     const org = '11111111-1111-4111-8111-111111111111'; const board = '22222222-2222-4222-8222-222222222222';
     const card = '33333333-3333-4333-8333-333333333333'; const actor = '44444444-4444-4444-8444-444444444444';

@@ -191,3 +191,26 @@ migration-runner contract reached the count test but its upgrade fixture contain
 only a retained legacy tombstone; the test now creates a separate Active URL row
 under that existing canonical parent rather than assuming an Active seed or
 resurrecting the tombstone. Neither failure weakens the production guards.
+
+The exact 1486a4d Linux run passes PostgreSQL migration/runtime contracts,
+including guarded lifecycle scan completion and recovery, and all 563 Domain
+and 273 API tests. Web and source security jobs also pass; immutable release
+integration is still pending. This supersedes the earlier pending execution
+notes without claiming full ticket completion.
+
+MUI attachment management now offers fresh Active and Archived reviews,
+archive/restore commands, and administrator deletion with explicit consent.
+Unconfirmed writes retain the original actor, both revisions, request payload
+and retry key across Card refreshes. Competing Card mutations remain fenced
+while the original retry stays available. Strict acknowledgments, current
+capabilities, unavailable access, bounded archive paging and owned dialog focus
+govern recovery. Ten control tests and all 29 Board screen tests pass
+locally, as do typecheck, lint and production build.
+
+Two native release scenarios are registered at desktop and mobile widths. They
+exercise keyboard lifecycle controls, actual API commits with a lost archive
+reply and identical retry, second-session live removal/restoration, irreversible
+deletion consent, retained restoration history and accessibility assertions.
+Local discovery confirms registration only; native execution and release
+performance evidence remain pending. Cover selection/clearing, protected
+Archived file review and selected public derivative admission remain open scope.
