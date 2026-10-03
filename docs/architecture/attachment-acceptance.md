@@ -125,3 +125,16 @@ denial, archived/deleted Card/List parent handling and retained metadata history
 Warning-as-error build passes; execution and production rollback/outbox evidence
 are pending CI. No client attachment UI, upload/provider/scanner/download/cover
 or complete FR/AC/TC acceptance is claimed.
+
+A mandatory exact-image CI fixture now exercises the internal URL path through
+Nginx against PostgreSQL: canonical receipt/replay/key reuse/stale Card CAS,
+validation and outsider/anonymous refusal, one audit/event/outbox, and rollback
+when INSERT is separately denied on metadata, audit, events or jobs. Each failed
+transaction must leave Card/metadata/audit/event/job/receipt state unchanged;
+then the same original key/body must succeed exactly once after repair. It also
+checks the real adapter's 50+13 cursor paging over 63 records with ties, revoked
+member replay/read refusal and archived-parent read-only retention. Fixture
+accounts/URLs/scopes/bodies stay in disposable scratch; no raw response is a
+retained artifact. Shell syntax passes; actual immutable-image execution remains
+pending CI. The fixture is a production transaction proof requirement, not a
+substitute for the full upload/scanning/cover/client acceptance matrix.

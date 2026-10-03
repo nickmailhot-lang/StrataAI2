@@ -430,6 +430,9 @@ jobs:
       - name: UTC Card dates, atomic notification rollback and private retry recovery through exact release images
         run: scripts/ci/test-card-dates.sh
 
+      - name: Authorized URL attachments, receipts, metadata paging and atomic rollback against exact release images
+        run: scripts/ci/test-attachments.sh
+
       - name: Authorized checklist creation, ordered progress and atomic rollback against exact release images
         run: scripts/ci/test-checklists.sh
 
