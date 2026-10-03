@@ -227,3 +227,33 @@ Linux execution is pending. Managed-provider selection/credentials/readiness,
 server upload policy/byte inspection, scanner Worker jobs/CAS/outbox, controlled
 delivery, compensating/orphan cleanup and complete attachment acceptance remain
 incomplete. This local interface/adapter foundation does not close PRD-14/ARCH-07.
+
+Executed Linux evidence for the local adapter at f8177cf: .NET-quality job
+111174509747 in run 37113044853 passed all 294 Domain/Application/Infrastructure
+cases and 265 API cases, with zero skips. This includes all eleven new storage
+cases. Web, PostgreSQL, immutable image build and security jobs also passed;
+exact-image container/browser integration is still running.
+
+The Application malware-scanning boundary now requires an admitted typed object
+reference, a positive bounded persisted byte count and canonical SHA-256 digest.
+`IAttachmentMalwareScanner` receives only a forward-only, non-writable private
+byte stream and cancellation, excluding display names, URLs and provider paths.
+`AttachmentQuarantineScanner` binds terminal evidence to the original request:
+Clean/Rejected require consumption of the complete expected bytes, object EOF and
+a constant-time digest match. An early Clean response, modified/truncated/overlong
+object, missing object, unknown verdict, provider timeout or stream disposal cannot
+release quarantine. Unexpected length exposes at most one extra byte. Streams are
+retired on success/failure/cancellation; fixed codes exclude provider diagnostics.
+Actual job cancellation propagates without producing a terminal verdict.
+
+Seventeen new cases compile for complete synchronous/asynchronous scanning,
+infected bytes, early verdicts, digest/length/EOF checks, missing objects, provider
+faults, unknown results, cancellation, byte-read bounds and request validation.
+Warning-as-error build passes. Linux execution remains pending for this increment.
+This boundary produces evidence only: there is no scanner provider registration,
+persisted file digest migration, scan job publication, Worker lease/CAS completion
+or HTTP upload/download capability yet. Worker must verify current persisted job
+scope and Pending record/version/digest before applying evidence atomically with
+its event/outbox. Neither a provider verdict nor this evidence grants user access
+without the existing current authorization and lifecycle checks. Full PRD-14 and
+ARCH-07 acceptance remains incomplete.
