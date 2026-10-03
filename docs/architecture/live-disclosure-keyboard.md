@@ -95,3 +95,12 @@ explicit confirmation remain unchanged. All 33 archive component tests passed,
 including four new deferred-review regressions, plus type checking, lint and
 production build. Two browser cases were discovered; exact-image execution is
 pending, so the archived-Card failure is not yet declared resolved.
+
+Source CI run 37104159265 caught a new regression-fixture setup race: the test
+invoked its mocked live invalidation before subscription initialization. The
+fixture now explicitly waits for that subscription before sending an event.
+No permission or consent assertion was changed. A full default local run passed
+862 tests and timed out one existing Board due-status assertion while still
+loading. The unchanged full suite then passed all 863 tests across 65 files with
+two workers and the subscription correction. The failed CI run produced no
+release bundle; the correction still requires fresh source and image CI.

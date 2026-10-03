@@ -135,6 +135,7 @@ it('defers deletion review during live admission and requires fresh unchecked co
   vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
   const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })); mount(fetch);
   const trigger = await screen.findByRole('button', { name: 'Permanently delete Review budget card' });
+  await waitFor(() => expect(invalidate).toBeTypeOf('function'));
   await act(async () => invalidate()); expect(trigger).toBeEnabled(); trigger.focus(); expect(trigger).toHaveFocus(); fireEvent.click(trigger);
   expect(screen.getByRole('dialog')).toHaveTextContent('Checking current Card and deletion access…');
   expect(screen.queryByRole('checkbox')).not.toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(2);
@@ -149,6 +150,7 @@ it.each(['closed', 'denied', 'removed'])('does not revive deferred deletion revi
   vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
   const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })); mount(fetch);
   await screen.findByRole('button', { name: 'Permanently delete Review budget card' });
+  await waitFor(() => expect(invalidate).toBeTypeOf('function'));
   await act(async () => invalidate()); await reviewDeletion();
   if (outcome === 'closed') fireEvent.click(screen.getByRole('button', { name: 'Cancel deletion review' }));
   await act(async () => resolve(reply(outcome === 'denied' ? { ...page, canDelete: false } : outcome === 'removed' ? { ...page, items: [] } : page)));
