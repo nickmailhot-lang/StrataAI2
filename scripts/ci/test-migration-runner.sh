@@ -247,6 +247,9 @@ run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 47
 test "$(query "SELECT prosecdef FROM pg_proc WHERE oid='finish_attachment_scan(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text,boolean)'::regprocedure")" = t
 test "$(query "SELECT NOT prosecdef FROM pg_proc WHERE oid='claim_background_job(uuid)'::regprocedure")" = t
+# The clean installation above exercised absent runtime roles. This forward
+# upgrade must also exercise the migration's existing-API-role grant branch.
+query "DO \$\$ BEGIN IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='strataai_api_runtime') THEN CREATE ROLE strataai_api_runtime; END IF; END \$\$;" >/dev/null
 cp db/migrations/048_attachment_preview_reads.sql "$scratch/migrations/"
 run
 run
