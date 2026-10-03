@@ -72,6 +72,33 @@ it('checks the fresh account before submitting an old recipient intent', async (
   await screen.findByText('Your account changed. Check notifications again.'); expect(fetch).toHaveBeenCalledTimes(3);
   expect(screen.queryByRole('region', { name: 'Notification inbox' })).not.toBeInTheDocument();
 });
+it('keeps original recovery focus through a fresh inbox read and respects navigation away', async () => {
+  let resolve!: (value: Response) => void;
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data()))
+    .mockResolvedValueOnce(response(profile)).mockRejectedValueOnce(new Error('lost'))
+    .mockResolvedValueOnce(response(profile)).mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }))
+    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data()));
+  vi.stubGlobal('fetch', fetch); mount(); fireEvent.click(await screen.findByRole('button', { name: 'Mark read' }));
+  const retry = await screen.findByRole('button', { name: 'Retry mark read' }); await waitFor(() => expect(retry).toHaveFocus());
+  fireEvent(window, new Event('focus')); await waitFor(() => expect(resolve).toBeDefined());
+  expect(retry).toBeDisabled(); retry.blur(); expect(screen.queryByRole('region', { name: 'Notification inbox' })).not.toBeInTheDocument();
+  await act(async () => resolve(response(data()))); await waitFor(() => expect(retry).toHaveFocus());
+  const navigation = screen.getByRole('link', { name: 'Open boards' }); navigation.focus();
+  fireEvent(window, new Event('focus')); await screen.findByRole('region', { name: 'Notification inbox' });
+  expect(navigation).toHaveFocus(); expect(fetch.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
+});
+it('preserves returned refresh focus through later automatic inbox reads', async () => {
+  let resolve!: (value: Response) => void;
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data()))
+    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ organizationId: org, items: [{ id: id(1), readAt: '2026-10-02T11:00:00Z' }] }))
+    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data([{ ...item(), readAt: '2026-10-02T11:00:00Z' }])))
+    .mockResolvedValueOnce(response(profile)).mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }));
+  vi.stubGlobal('fetch', fetch); mount(); fireEvent.click(await screen.findByRole('button', { name: 'Mark read' }));
+  const refresh = screen.getByRole('button', { name: 'Refresh notifications' }); await waitFor(() => expect(refresh).toHaveFocus());
+  fireEvent(window, new Event('focus')); await waitFor(() => expect(resolve).toBeDefined()); expect(refresh).toBeDisabled(); refresh.blur();
+  await act(async () => resolve(response(data([{ ...item(), readAt: '2026-10-02T11:00:00Z' }]))));
+  await waitFor(() => expect(refresh).toHaveFocus()); expect(fetch.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
+});
 it('replaces fifty-item pages and clears the selection at a seek boundary', async () => {
   const items = Array.from({ length: 50 }, (_, n) => item(51 - n)); const cursor = `${items[49].createdAt}/${items[49].id}`;
   const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data(items, cursor)))

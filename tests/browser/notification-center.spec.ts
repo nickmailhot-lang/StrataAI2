@@ -57,18 +57,18 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
       }
     });
     const read = other.getByRole('button', { name: 'Mark read', exact: true });
-    await read.focus(); await other.keyboard.press('Enter');
+    await expect(read).toBeEnabled(); await read.press('Enter');
     await expect(other.getByRole('button', { name: 'Retry mark read' })).toBeEnabled();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
-    const retry = other.getByRole('button', { name: 'Retry mark read' }); await retry.focus(); await other.keyboard.press('Enter');
+    const retry = other.getByRole('button', { name: 'Retry mark read' }); await expect(retry).toBeEnabled(); await retry.press('Enter');
     await expect(retry).toHaveCount(0);
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible(); expect(writes).toBe(2);
     await expect(other.getByRole('button', { name: 'Refresh notifications' })).toBeFocused();
     await other.unroute(`**/organizations/${org}/notifications/read`);
     await assign('Second inbox Card'); await assign('Third inbox Card');
     await expect(other.getByText('2 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
-    await other.getByRole('button', { name: 'Select unread on this page' }).focus(); await other.keyboard.press('Enter');
-    await other.getByRole('button', { name: 'Mark selected read' }).focus(); await other.keyboard.press('Enter');
+    const select = other.getByRole('button', { name: 'Select unread on this page' }); await expect(select).toBeEnabled(); await select.press('Enter');
+    const markSelected = other.getByRole('button', { name: 'Mark selected read' }); await expect(markSelected).toBeEnabled(); await markSelected.press('Enter');
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     const inbox = await context.request.get(`/organizations/${org}/notifications`); expect(inbox.status()).toBe(200);

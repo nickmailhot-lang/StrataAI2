@@ -22,10 +22,13 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
   const pending = useRef<AbortController | undefined>(undefined); const epoch = useRef(0); const mounted = useRef(false);
   const currentProfile = useRef<NotificationProfile | undefined>(undefined); const intent = useRef<ReadIntent | undefined>(undefined);
   const currentCursor = useRef<string | undefined>(undefined); const refresh = useRef<HTMLButtonElement>(null);
+  const retry = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLDivElement>(null); const focusTarget = useRef<string | undefined>(undefined);
   const path = `/organizations/${encodeURIComponent(organizationId)}/notifications`;
   const rememberFocus = () => {
     const active = document.activeElement;
+    if (active === refresh.current) focusTarget.current = 'refresh';
+    else if (active === retry.current) focusTarget.current = 'retry';
     if (active instanceof HTMLElement && list.current?.contains(active)) focusTarget.current = active.closest<HTMLElement>('[data-notification-focus]')?.dataset.notificationFocus ?? 'refresh';
   };
   const retire = useCallback((message: string) => {
@@ -36,6 +39,8 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     if (!mounted.current || pending.current) return;
     const ticket = ++epoch.current; const controller = new AbortController(); pending.current = controller;
     const active = document.activeElement;
+    if (active === refresh.current) focusTarget.current = 'refresh';
+    else if (active === retry.current) focusTarget.current = 'retry';
     if (active instanceof HTMLElement && list.current?.contains(active)) focusTarget.current = active.closest<HTMLElement>('[data-notification-focus]')?.dataset.notificationFocus ?? 'refresh';
     currentCursor.current = after; setBusy(true); setPage(undefined);
     setNotice(intent.current ? 'Unable to confirm read status. Retry the same selection to confirm it.' : undefined);
@@ -76,7 +81,12 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
   }, [subject, load]);
   useEffect(() => {
     if (busy || !focusTarget.current) return;
+    if (document.activeElement !== document.body && document.activeElement !== refresh.current
+      && document.activeElement !== retry.current && !list.current?.contains(document.activeElement)) {
+      focusTarget.current = undefined; return;
+    }
     const target = focusTarget.current; focusTarget.current = undefined;
+    if (target === 'retry' && retry.current && !retry.current.disabled) { retry.current.focus({ preventScroll: true }); return; }
     const element = Array.from(list.current?.querySelectorAll<HTMLElement>('[data-notification-focus]') ?? [])
       .find(node => node.dataset.notificationFocus === target && !((node instanceof HTMLButtonElement || node instanceof HTMLInputElement) && node.disabled));
     const control = element?.matches('input,button,a') ? element : element?.querySelector<HTMLElement>('input,button,a');
@@ -110,7 +120,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
       else if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Notifications are unavailable. Check access again or sign in.');
       else if (reason instanceof WorkRequestError && [400, 409].includes(reason.status)) {
         intent.current = undefined; setRecovery(false); setSelected([]); setNotice('The selection changed. Refresh notifications before trying again.');
-      } else { setRecovery(true); setNotice('Unable to confirm read status. Retry the same selection to confirm it.'); }
+      } else { focusTarget.current = 'retry'; setRecovery(true); setNotice('Unable to confirm read status. Retry the same selection to confirm it.'); }
     } finally {
       if (mounted.current && ticket === epoch.current) { pending.current = undefined; setBusy(false); if (reload) void load(currentCursor.current); }
     }
@@ -120,13 +130,17 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     <Typography component="h2" variant="h4">Notifications</Typography>
     <Typography>Updates automatically while this page is open. New notifications appear on the first page.</Typography>
     <Stack direction="row" useFlexGap sx={{ gap: 1, flexWrap: 'wrap' }}>
-      <Button ref={refresh} disabled={busy} onClick={() => { setSelected([]); void load(); }}>{denied ? 'Check notifications again' : 'Refresh notifications'}</Button>
+      <Button ref={refresh} disabled={busy} onFocus={() => { focusTarget.current = 'refresh'; }}
+        onBlur={event => { if (event.relatedTarget !== null) focusTarget.current = undefined; }}
+        onClick={() => { setSelected([]); void load(); }}>{denied ? 'Check notifications again' : 'Refresh notifications'}</Button>
       <Button component={Link} to={`/app/${organizationId}`}>Open boards</Button>
       {denied && <Button component={Link} to="/login">Sign in</Button>}
     </Stack>
     {busy && <Typography role="status">Checking current notifications…</Typography>}
     {notice && <Alert severity={recovery ? 'warning' : 'info'}>{notice}</Alert>}
-    {recovery && <Button disabled={busy} onClick={() => { void markRead(); }}>Retry mark read</Button>}
+    {recovery && <Button ref={retry} disabled={busy} onFocus={() => { focusTarget.current = 'retry'; }}
+      onBlur={event => { if (event.relatedTarget !== null) focusTarget.current = undefined; }}
+      onClick={() => { void markRead(); }}>Retry mark read</Button>}
     {page && profile && <Box ref={list} component="section" aria-label="Notification inbox" aria-busy={busy}>
       <Typography role="status">{unread.length} unread on this page.</Typography>
       {!page.items.length && <Typography>No notifications on this page. Card assignments from other people will appear here.</Typography>}

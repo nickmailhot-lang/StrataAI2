@@ -112,3 +112,21 @@ same callback assertion before retrying; original body/key and disabled-cancel
 assertions remain unchanged. All eight label creation tests pass locally. The
 prior full 863-test pass precedes this test-only synchronization correction;
 fresh full source/image CI remains authoritative.
+
+## Notification recovery follow-up
+
+Runs 37099704590 and 37100150518 finished with six browser failures each (76 and
+78 passing general cases respectively). The former's retained notification
+trace records a focused Mark read button followed by a separate page-level key
+press, but no notification-read POST. The fixture now sends Enter through the
+current named control, retaining keyboard activation and all original receipt,
+privacy, canonical state, focus and revocation assertions. It does not retry a
+write blindly or waive a timeout.
+
+The notification page now returns focus to its original-command retry after
+response loss, preserves retry/refresh focus through subsequent inbox reads and
+respects deliberate navigation outside the inbox. It still removes protected
+inbox content during each read and revalidates the actor before writes; focus
+changes never submit a request. All 15 notification component tests passed,
+including two refresh/navigation regressions; type checking, lint and production
+build passed. The affected real-image browser case was discovered, not executed.
