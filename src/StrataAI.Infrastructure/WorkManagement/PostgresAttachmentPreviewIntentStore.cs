@@ -60,7 +60,7 @@ public sealed class PostgresAttachmentPreviewIntentStore(PostgresConnectionFacto
         AttachmentScanRequest source, string verifiedMimeType, AttachmentPreviewMeasurement output, CancellationToken ct)
     {
         Validate(job, attempt); ArgumentNullException.ThrowIfNull(source); ArgumentNullException.ThrowIfNull(output);
-        if (source.Reference.OrganizationId != job.OrganizationId || source.Reference.AttachmentId != attempt.AttachmentId
+        if (source.Reference.IsPreview || source.Reference.OrganizationId != job.OrganizationId || source.Reference.AttachmentId != attempt.AttachmentId
             || verifiedMimeType is not ("image/png" or "image/jpeg" or "image/webp")) throw Unavailable();
         ct.ThrowIfCancellationRequested();
         await using var session = await connections.OpenTenantSessionAsync(job.OrganizationId, ct);
@@ -86,7 +86,7 @@ public sealed class PostgresAttachmentPreviewIntentStore(PostgresConnectionFacto
         AttachmentPreviewStoredOutput output, CancellationToken ct)
     {
         Validate(job, attempt); ArgumentNullException.ThrowIfNull(output);
-        if (output.Reference.OrganizationId != job.OrganizationId || output.Reference.AttachmentId != job.Id
+        if (!output.Reference.IsPreview || output.Reference.OrganizationId != job.OrganizationId || output.Reference.AttachmentId != job.Id
             || output.Measurement is null) throw Unavailable();
         ct.ThrowIfCancellationRequested();
         await using var session = await connections.OpenTenantSessionAsync(job.OrganizationId, ct);

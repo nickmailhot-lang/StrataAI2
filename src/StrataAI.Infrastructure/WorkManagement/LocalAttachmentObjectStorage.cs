@@ -120,8 +120,9 @@ public sealed class LocalAttachmentObjectStorage : IAttachmentObjectStorage
     private string ObjectPath(AttachmentObjectReference reference)
     {
         ArgumentNullException.ThrowIfNull(reference);
-        var path = Path.GetFullPath(Path.Combine(_root, "attachments", reference.OrganizationId.ToString("N"), reference.AttachmentId.ToString("N")));
-        if (!Path.GetRelativePath(_root, path).StartsWith("attachments" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        var prefix = reference.IsPreview ? "attachment-previews" : "attachments";
+        var path = Path.GetFullPath(Path.Combine(_root, prefix, reference.OrganizationId.ToString("N"), reference.AttachmentId.ToString("N")));
+        if (!Path.GetRelativePath(_root, path).StartsWith(prefix + Path.DirectorySeparatorChar, StringComparison.Ordinal))
             throw new AttachmentStorageException("object_scope_invalid");
         RejectLinks(path); RequirePrivateRoot(); return path;
     }

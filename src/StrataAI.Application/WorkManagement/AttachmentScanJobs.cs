@@ -54,7 +54,7 @@ public static class AttachmentScanJobs
             || metadata.ScanStatus != AttachmentScanStatus.Pending || metadata.ScannedAt is not null || metadata.DeletedAt is not null
             || metadata.Version < 1 || metadata.Version == long.MaxValue || metadata.CreatedAt < upload.StoredAt || metadata.UpdatedAt != metadata.CreatedAt
             || metadata.CreatedAt > upload.PublishedAt || metadata.MimeType != upload.VerifiedMimeType
-            || metadata.SizeBytes != upload.ExpectedSizeBytes || integrity.Reference.OrganizationId != upload.OrganizationId
+            || metadata.SizeBytes != upload.ExpectedSizeBytes || integrity.Reference.IsPreview || integrity.Reference.OrganizationId != upload.OrganizationId
             || integrity.Reference.AttachmentId != upload.Id || integrity.SizeBytes != upload.ExpectedSizeBytes
             || integrity.Sha256 != upload.ExpectedSha256 || upload.CardId == Guid.Empty || upload.RetryKey == Guid.Empty)
             throw new InvalidOperationException("Attachment scan publication is unavailable.");

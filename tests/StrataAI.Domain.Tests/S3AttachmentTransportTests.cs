@@ -72,11 +72,15 @@ public sealed class S3AttachmentTransportTests
         { Content = new StringContent($"<{root} xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">{body}</{root}>", Encoding.UTF8, "application/xml") };
     }
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ARCH_07_TC_01_Real_sdk_sends_private_signed_conditional_requests_and_refuses_embedded_completion_errors(bool embeddedError)
+    [InlineData(false,false)]
+    [InlineData(true,false)]
+    [InlineData(false,true)]
+    [InlineData(true,true)]
+    public async Task ARCH_07_TC_01_Real_sdk_sends_private_signed_conditional_requests_and_refuses_embedded_completion_errors(bool embeddedError,bool preview)
     {
-        var reference = new AttachmentObjectReference(Guid.NewGuid(), Guid.NewGuid()); using var transport = new Transport(reference, embeddedError);
+        var tenant=Guid.NewGuid(); var id=Guid.NewGuid();
+        var reference = preview ? AttachmentObjectReference.ForPreview(tenant,id) : new AttachmentObjectReference(tenant,id);
+        using var transport = new Transport(reference, embeddedError);
         // Non-secret fixture credentials are never sent to a network or output.
         using var client = new AmazonS3Client(new BasicAWSCredentials("fixture-access", "fixture-secret"), new AmazonS3Config
         { RegionEndpoint = RegionEndpoint.USEast1, HttpClientFactory = new Factory(transport), MaxErrorRetry = 0 });

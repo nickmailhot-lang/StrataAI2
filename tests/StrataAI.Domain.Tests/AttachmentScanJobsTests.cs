@@ -35,7 +35,7 @@ public sealed class AttachmentScanJobsTests
     [Theory]
     [InlineData("prepared")][InlineData("no_publish")][InlineData("expired")][InlineData("wrong_actor")]
     [InlineData("foreign_card")][InlineData("foreign_tenant")][InlineData("clean")][InlineData("deleted")]
-    [InlineData("wrong_digest")][InlineData("wrong_size")][InlineData("wrong_type")][InlineData("future_metadata")][InlineData("max_revision")]
+    [InlineData("wrong_digest")][InlineData("wrong_size")][InlineData("wrong_type")][InlineData("future_metadata")][InlineData("max_revision")][InlineData("preview_namespace")]
     public void Unpublished_or_mismatched_private_metadata_cannot_create_a_scan_job(string mutation)
     {
         var (upload,file)=Published(); var actor=upload.UploaderId;
@@ -51,6 +51,7 @@ public sealed class AttachmentScanJobsTests
             case "deleted": file=file with {Metadata=file.Metadata with {DeletedAt=Now.AddMinutes(1)}}; break;
             case "wrong_digest": file=file with {Integrity=new(file.Integrity.Reference,128,new string('b',64))}; break;
             case "wrong_size": file=file with {Integrity=new(file.Integrity.Reference,129,file.Integrity.Sha256)}; break;
+            case "preview_namespace": file=file with {Integrity=new(AttachmentObjectReference.ForPreview(file.Integrity.Reference.OrganizationId,file.Integrity.Reference.AttachmentId),file.Integrity.SizeBytes,file.Integrity.Sha256)}; break;
             case "wrong_type": file=file with {Metadata=file.Metadata with {MimeType="image/jpeg"}}; break;
             case "future_metadata": file=file with {Metadata=file.Metadata with {CreatedAt=Now.AddMinutes(3),UpdatedAt=Now.AddMinutes(3)}}; break;
             case "max_revision": file=file with {Metadata=file.Metadata with {Version=long.MaxValue}}; break;

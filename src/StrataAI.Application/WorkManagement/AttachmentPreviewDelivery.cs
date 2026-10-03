@@ -31,12 +31,12 @@ public sealed class AttachmentPreviewDeliveryHandler(IAttachmentPreviewIntentSto
             return;
         }
         if (loaded.Status != AttachmentPreviewLoadStatus.Ready || loaded.Source is not { } source
-            || source.Reference.OrganizationId != job.OrganizationId || source.Reference.AttachmentId != attempt.AttachmentId
+            || source.Reference.IsPreview || source.Reference.OrganizationId != job.OrganizationId || source.Reference.AttachmentId != attempt.AttachmentId
             || loaded.VerifiedMimeType is not ("image/png" or "image/jpeg" or "image/webp")) throw Unavailable();
         var stored = await recovery.EnsureStoredAsync(job, attempt, ct);
         if (stored is null) return;
         ct.ThrowIfCancellationRequested();
-        if (stored.Reference.OrganizationId != job.OrganizationId || stored.Reference.AttachmentId != job.Id
+        if (!stored.Reference.IsPreview || stored.Reference.OrganizationId != job.OrganizationId || stored.Reference.AttachmentId != job.Id
             || await publication.FinishAsync(job, attempt, stored, ct) is not (AttachmentPreviewCompletion.Applied or AttachmentPreviewCompletion.Superseded))
             throw Unavailable();
     }

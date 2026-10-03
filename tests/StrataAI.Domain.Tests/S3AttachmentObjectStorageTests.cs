@@ -12,6 +12,26 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class S3AttachmentObjectStorageTests
 {
+    [Fact]
+    public async Task Private_provider_reads_writes_and_cleanup_keep_equal_uuid_original_and_preview_objects_separate()
+    {
+        var ct=TestContext.Current.CancellationToken; using var client=new Client();
+        var store=new S3AttachmentObjectStorage(client,Bucket,Owner);
+        var tenant=Guid.NewGuid(); var id=Guid.NewGuid(); var original=new AttachmentObjectReference(tenant,id);
+        var preview=AttachmentObjectReference.ForPreview(tenant,id);
+        using(var bytes=new MemoryStream("original"u8.ToArray())) await store.WritePrivateAsync(original,bytes,bytes.Length,ct);
+        using(var bytes=new MemoryStream("preview"u8.ToArray())) await store.WritePrivateAsync(preview,bytes,bytes.Length,ct);
+        Assert.Equal(2,client.Objects.Count);
+        async Task<byte[]> Read(AttachmentObjectReference reference)
+        {
+            await using var read=await store.OpenPrivateReadAsync(reference,ct); Assert.NotNull(read);
+            using var copy=new MemoryStream(); await read.CopyToAsync(copy,ct); return copy.ToArray();
+        }
+        Assert.Equal("original"u8.ToArray(),await Read(original)); Assert.Equal("preview"u8.ToArray(),await Read(preview));
+        Assert.Null(await store.OpenPrivateReadAsync(AttachmentObjectReference.ForPreview(Guid.NewGuid(),id),ct));
+        Assert.True(await store.DeletePrivateAsync(preview,ct)); Assert.Null(await store.OpenPrivateReadAsync(preview,ct));
+        Assert.Equal("original"u8.ToArray(),await Read(original)); Assert.Single(client.Objects);
+    }
     private const string Bucket = "strataai-private-fixture", Owner = "123456789012";
     private sealed class Client(AmazonS3Config? configuration = null) : AmazonS3Client(new AnonymousAWSCredentials(), configuration ?? new AmazonS3Config { RegionEndpoint = RegionEndpoint.USEast1 })
     {
@@ -25,7 +45,7 @@ public sealed class S3AttachmentObjectStorageTests
         public readonly List<int> PartSizes = [];
         public Stream? LastRead;
         public void Scope(string bucket, string owner, string? key = null)
-        { Assert.Equal(Bucket, bucket); Assert.Equal(Owner, owner); if (key is not null) Assert.StartsWith("attachments/", key); }
+        { Assert.Equal(Bucket, bucket); Assert.Equal(Owner, owner); if (key is not null) Assert.True(key.StartsWith("attachments/",StringComparison.Ordinal) || key.StartsWith("attachment-previews/",StringComparison.Ordinal)); }
         private void Fault(string step) { if (Fail == step) throw new AmazonS3Exception("private-provider-credential-and-path") { StatusCode = HttpStatusCode.ServiceUnavailable }; }
         public override Task<GetPublicAccessBlockResponse> GetPublicAccessBlockAsync(GetPublicAccessBlockRequest request, CancellationToken ct)
         {

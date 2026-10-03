@@ -8,6 +8,29 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class AttachmentObjectStorageTests
 {
+    [Fact]
+    public async Task Original_and_preview_with_the_same_uuid_survive_restart_and_cleanup_in_separate_private_namespaces()
+    {
+        var ct=TestContext.Current.CancellationToken; using var workspace=new Workspace();
+        var tenant=Guid.NewGuid(); var id=Guid.NewGuid(); var original=new AttachmentObjectReference(tenant,id);
+        var preview=AttachmentObjectReference.ForPreview(tenant,id);
+        Assert.NotEqual(original,preview); Assert.Equal($"attachment-previews/{tenant:N}/{id:N}",preview.ObjectKey);
+        var store=new LocalAttachmentObjectStorage(workspace.Root);
+        using(var bytes=new MemoryStream("original"u8.ToArray())) await store.WritePrivateAsync(original,bytes,bytes.Length,ct);
+        using(var bytes=new MemoryStream("preview"u8.ToArray())) await store.WritePrivateAsync(preview,bytes,bytes.Length,ct);
+        var restarted=new LocalAttachmentObjectStorage(workspace.Root);
+        async Task<byte[]> Read(AttachmentObjectReference reference)
+        {
+            await using var read=await restarted.OpenPrivateReadAsync(reference,ct); Assert.NotNull(read);
+            using var copy=new MemoryStream(); await read.CopyToAsync(copy,ct); return copy.ToArray();
+        }
+        Assert.Equal("original"u8.ToArray(),await Read(original)); Assert.Equal("preview"u8.ToArray(),await Read(preview));
+        Assert.Null(await restarted.OpenPrivateReadAsync(AttachmentObjectReference.ForPreview(Guid.NewGuid(),id),ct));
+        Assert.True(await restarted.DeletePrivateAsync(preview,ct)); Assert.Null(await restarted.OpenPrivateReadAsync(preview,ct));
+        Assert.Equal("original"u8.ToArray(),await Read(original));
+        Assert.Throws<ArgumentException>(()=>AttachmentObjectReference.ForPreview(Guid.Empty,id));
+        Assert.Throws<ArgumentException>(()=>AttachmentObjectReference.ForPreview(tenant,Guid.Empty));
+    }
     private sealed class Workspace : IDisposable
     {
         private readonly string _parent = Path.GetFullPath(Path.GetTempPath());

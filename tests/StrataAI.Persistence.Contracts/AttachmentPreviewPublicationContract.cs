@@ -12,7 +12,7 @@ internal static class AttachmentPreviewPublicationContract
         PostgresAttachmentPreviewIntentStore store, byte[] sourceBytes, byte[] encodedBytes, Guid foreignOrganization, CancellationToken ct)
     {
         void Require(bool condition, string invariant) { if (!condition) throw new InvalidOperationException(invariant); }
-        var output = new AttachmentPreviewStoredOutput(new(job.OrganizationId, job.Id), measurement);
+        var output = new AttachmentPreviewStoredOutput(AttachmentObjectReference.ForPreview(job.OrganizationId, job.Id), measurement);
         async Task<T> Scalar<T>(string sql)
         {
             await using var query = new NpgsqlCommand(sql, admin);
@@ -38,6 +38,12 @@ internal static class AttachmentPreviewPublicationContract
                 "Refused preview publication retained an event.");
         }
         var wrongOutput = output with { Measurement = new(measurement.SizeBytes, new string('e', 64), measurement.Width, measurement.Height) };
+        try
+        {
+            await store.FinishAsync(job,attempt,output with {Reference=new(job.OrganizationId,job.Id)},ct);
+            throw new InvalidOperationException("Preview publication accepted an original object namespace.");
+        }
+        catch(InvalidOperationException error) when(error.Message=="Attachment preview intent is unavailable.") { }
         Require(await store.FinishAsync(job, attempt, wrongOutput, ct) == AttachmentPreviewCompletion.LeaseLost,
             "Preview publication accepted unrecorded output.");
         await NoEffects();

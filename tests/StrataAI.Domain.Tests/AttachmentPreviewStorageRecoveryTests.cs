@@ -36,7 +36,7 @@ public sealed class AttachmentPreviewStorageRecoveryTests
         }
         else await handler.ExecuteAsync(f.Job, TestContext.Current.CancellationToken);
         Assert.Equal(1, publication.Calls); Assert.Equal(f.Intent.Output, publication.Output!.Measurement);
-        Assert.Equal(new(f.Job.OrganizationId, f.Job.Id), publication.Output.Reference);
+        Assert.Equal(AttachmentObjectReference.ForPreview(f.Job.OrganizationId, f.Job.Id), publication.Output.Reference);
         Assert.Equal(1, f.Storage.Writes); Assert.True(f.Storage.ArtifactReads >= 2);
         Assert.NotNull(f.Intent.Output); Assert.Equal(0, f.Storage.Deletes);
     }
@@ -46,7 +46,7 @@ public sealed class AttachmentPreviewStorageRecoveryTests
         if (!OperatingSystem.IsLinux()) return;
         var f = new Fixture();
         var result = await f.Run();
-        Assert.Equal(new(f.Job.OrganizationId, f.Job.Id), result!.Reference);
+        Assert.Equal(AttachmentObjectReference.ForPreview(f.Job.OrganizationId, f.Job.Id), result!.Reference);
         Assert.Equal(f.Intent.Output, result.Measurement); Assert.Equal(1, f.Storage.Writes);
         Assert.Equal(1, f.Generator.Calls); Assert.Equal(1, f.Intent.Declarations);
         Assert.Equal(0, f.Storage.Deletes); Assert.Equal(1, f.Storage.SourceReads);
@@ -80,7 +80,7 @@ public sealed class AttachmentPreviewStorageRecoveryTests
     {
         if (!OperatingSystem.IsLinux()) return;
         var f = new Fixture(); await f.Run();
-        f.Storage.Values[new(f.Job.OrganizationId, f.Job.Id)][0] ^= 1;
+        f.Storage.Values[AttachmentObjectReference.ForPreview(f.Job.OrganizationId, f.Job.Id)][0] ^= 1;
         await Assert.ThrowsAsync<AttachmentStorageException>(() => f.Run());
         Assert.Equal(1, f.Storage.Writes); Assert.Equal(1, f.Generator.Calls);
         Assert.NotNull(f.Intent.Output); Assert.Equal(0, f.Storage.Deletes);
@@ -152,7 +152,7 @@ public sealed class AttachmentPreviewStorageRecoveryTests
         if (!OperatingSystem.IsLinux()) return;
         var f = new Fixture(); f.Intent.WithdrawAtLoad = 5;
         Assert.Null(await f.Run()); Assert.Equal(1, f.Storage.Writes);
-        Assert.True(f.Storage.Values.ContainsKey(new(f.Job.OrganizationId, f.Job.Id)));
+        Assert.True(f.Storage.Values.ContainsKey(AttachmentObjectReference.ForPreview(f.Job.OrganizationId, f.Job.Id)));
         Assert.NotNull(f.Intent.Output); Assert.Equal(0, f.Storage.Deletes);
     }
     [Fact]
@@ -216,6 +216,7 @@ public sealed class AttachmentPreviewStorageRecoveryTests
         {
             ct.ThrowIfCancellationRequested(); Calls++; Output = output;
             Assert.Equal(job.Id, output.Reference.AttachmentId); Assert.Equal(job.OrganizationId, output.Reference.OrganizationId);
+            Assert.True(output.Reference.IsPreview);
             return Task.FromResult(result);
         }
     }

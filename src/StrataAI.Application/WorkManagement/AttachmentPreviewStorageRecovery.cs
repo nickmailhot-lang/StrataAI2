@@ -28,7 +28,7 @@ public sealed class AttachmentPreviewStorageRecovery(IAttachmentPreviewIntentSto
         }
         RequireReady(admitted, job, attempt);
         var source = admitted.Source!; var mime = admitted.VerifiedMimeType!;
-        var artifact = new AttachmentObjectReference(job.OrganizationId, job.Id);
+        var artifact = AttachmentObjectReference.ForPreview(job.OrganizationId, job.Id);
         var output = admitted.DeclaredOutput;
         async Task<bool> StillAdmitted(AttachmentPreviewMeasurement? expected)
         {
@@ -91,7 +91,7 @@ public sealed class AttachmentPreviewStorageRecovery(IAttachmentPreviewIntentSto
     private static void RequireReady(AttachmentPreviewLoad loaded, ClaimedBackgroundJob job, AttachmentPreviewAttempt attempt)
     {
         if (loaded.Status != AttachmentPreviewLoadStatus.Ready || loaded.Source is not { } source
-            || source.Reference.OrganizationId != job.OrganizationId || source.Reference.AttachmentId != attempt.AttachmentId
+            || source.Reference.IsPreview || source.Reference.OrganizationId != job.OrganizationId || source.Reference.AttachmentId != attempt.AttachmentId
             || loaded.VerifiedMimeType is not ("image/png" or "image/jpeg" or "image/webp")) throw Unavailable();
     }
     private static InvalidOperationException Unavailable() => new("Attachment preview storage recovery is unavailable.");

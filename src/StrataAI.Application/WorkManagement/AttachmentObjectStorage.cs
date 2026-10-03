@@ -1,18 +1,21 @@
 namespace StrataAI.Application.WorkManagement;
 
-// An object reference is derived only from server-owned Organization/attachment
-// identity. No filename, request path or caller-provided key can select a file.
+// References derive only from server-owned Organization/object identity.
+// Original and preview namespaces are fixed; no caller-provided key or prefix.
 public sealed record AttachmentObjectReference
 {
-    public AttachmentObjectReference(Guid organizationId, Guid attachmentId)
+    public AttachmentObjectReference(Guid organizationId, Guid attachmentId) : this(organizationId, attachmentId, false) { }
+    private AttachmentObjectReference(Guid organizationId, Guid attachmentId, bool isPreview)
     {
         if (organizationId == Guid.Empty || attachmentId == Guid.Empty)
             throw new ArgumentException("Attachment object scope and identity are required.");
-        OrganizationId = organizationId; AttachmentId = attachmentId;
+        OrganizationId = organizationId; AttachmentId = attachmentId; IsPreview = isPreview;
     }
     public Guid OrganizationId { get; }
     public Guid AttachmentId { get; }
-    public string ObjectKey => $"attachments/{OrganizationId:N}/{AttachmentId:N}";
+    public bool IsPreview { get; }
+    public static AttachmentObjectReference ForPreview(Guid organizationId, Guid previewJobId) => new(organizationId, previewJobId, true);
+    public string ObjectKey => $"{(IsPreview ? "attachment-previews" : "attachments")}/{OrganizationId:N}/{AttachmentId:N}";
 }
 
 public sealed record StoredAttachmentObject(AttachmentObjectReference Reference, long SizeBytes, string Sha256);
