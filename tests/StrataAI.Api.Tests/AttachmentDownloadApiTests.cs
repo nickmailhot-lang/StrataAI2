@@ -24,6 +24,13 @@ public sealed partial class ApiHostTests
             => inner.CreateFileAttachmentAsync(measured, card, uploader, name, mime, at, ct);
         public Task<AttachmentMetadata?> FindAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
             => inner.FindAttachmentAsync(organization, card, attachment, ct);
+        public Task<AttachmentMetadata?> FindLifecycleAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+            => inner.FindLifecycleAttachmentAsync(organization, card, attachment, ct);
+        public Task<IReadOnlyList<AttachmentMetadata>> ListArchivedAttachmentsAsync(Guid organization, Guid card, DateTimeOffset? at, Guid? id, CancellationToken ct)
+            => inner.ListArchivedAttachmentsAsync(organization, card, at, id, ct);
+        public Task<AttachmentMetadata?> ChangeAttachmentLifecycleAsync(Guid organization, Guid card, Guid attachment, long version,
+            AttachmentLifecycleState from, AttachmentLifecycleState to, Guid actor, DateTimeOffset now, CancellationToken ct)
+            => inner.ChangeAttachmentLifecycleAsync(organization, card, attachment, version, from, to, actor, now, ct);
         public Task<IReadOnlyList<AttachmentMetadata>> ListAttachmentsAsync(Guid organization, Guid card, DateTimeOffset? at, Guid? id, CancellationToken ct)
             => inner.ListAttachmentsAsync(organization, card, at, id, ct);
         public async Task<AttachmentFileRecord?> FindFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)

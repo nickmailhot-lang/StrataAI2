@@ -38,6 +38,11 @@ public sealed class BoardSharingTelemetry
             ("/cards/{cardId:guid}/attachments", "POST") => "attachment_file_create",
             ("/cards/{cardId:guid}/attachment-upload-options", "GET") => "attachment_upload_options",
             ("/cards/{cardId:guid}/attachments/url", "POST") => "attachment_url_create",
+            ("/cards/{cardId:guid}/attachments/archive", "GET") => "attachment_archive_read",
+            ("/cards/{cardId:guid}/attachments/{attachmentId:guid}/archive", "POST") => "attachment_archive",
+            ("/cards/{cardId:guid}/attachments/{attachmentId:guid}/restore", "POST") => "attachment_restore",
+            ("/cards/{cardId:guid}/attachments/{attachmentId:guid}", "DELETE") => "attachment_delete",
+            ("/attachments/{attachmentId:guid}", "DELETE") => "attachment_delete",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", "GET") => "checklist_item_read",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", "POST") => "checklist_item_create",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items/{itemId:guid}", "PATCH") => "checklist_item_update",
@@ -99,7 +104,7 @@ public sealed class BoardSharingTelemetry
     {
         context.Items[ErrorKey] = code switch
         {
-            "board_not_found" or "organization_not_found" or "member_not_found" or "invitation_not_found"
+            "board_not_found" or "organization_not_found" or "member_not_found" or "invitation_not_found" or "attachment_not_found"
                 or "notification_not_found" or "invalid_notification_cursor" or "invalid_notification_selection"
                 or "watch_not_found" or "invalid_watch_version" or "invalid_card_dates" or "invalid_card_date_version" or "invalid_board_date_policy"
                 or "card_reminder_not_found" or "invalid_card_reminder_version" or "invalid_card_reminder_interval"

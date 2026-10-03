@@ -332,6 +332,7 @@ internal static class AttachmentPublicationContract
         await Effects(2, 1);
         await AttachmentFileUploadContract.RunAsync(admin, provider, tenant, secondOwner, EdgeCard,
             () => clock.UtcNow, value => clock.UtcNow = value, ct);
+        await AttachmentLifecycleCommandContract.RunAsync(admin, provider, tenant, secondOwner, EdgeCard, ct);
         // Keep immutable audit and its parents until isolated CI DB teardown.
         Console.WriteLine("Restricted Application file publication: current scope, original Card CAS, expiry, audit/actor rollback, metadata/intent/scan-job/event atomicity and private authorized receipts passed.");
     }

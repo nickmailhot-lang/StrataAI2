@@ -33,6 +33,12 @@ public interface IAttachmentMetadataStore
         string displayName, string verifiedMimeType, DateTimeOffset now, CancellationToken ct);
     Task<AttachmentFileRecord?> FindFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct);
     Task<AttachmentMetadata?> FindAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct);
+    // Includes tombstones only inside explicitly authorized lifecycle commands.
+    Task<AttachmentMetadata?> FindLifecycleAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct);
+    Task<IReadOnlyList<AttachmentMetadata>> ListArchivedAttachmentsAsync(Guid organization, Guid card,
+        DateTimeOffset? beforeCreatedAt, Guid? beforeId, CancellationToken ct);
+    Task<AttachmentMetadata?> ChangeAttachmentLifecycleAsync(Guid organization, Guid card, Guid attachment,
+        long version, AttachmentLifecycleState from, AttachmentLifecycleState to, Guid actor, DateTimeOffset now, CancellationToken ct);
     Task<IReadOnlyList<AttachmentMetadata>> ListAttachmentsAsync(Guid organization, Guid card,
         DateTimeOffset? beforeCreatedAt, Guid? beforeId, CancellationToken ct);
 }

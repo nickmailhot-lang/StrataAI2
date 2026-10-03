@@ -100,3 +100,45 @@ serialized-runner rollback. Runtime readiness requires migration 051. Actual new
 Linux execution is pending; command authorization/consent, atomic Card/event/audit
 effects, archive review and selected-cover clearing still require Application/API
 implementation and acceptance tests.
+
+The corrected 051 PostgreSQL job at 2149534 executed the migration/legacy upgrade,
+restricted lifecycle, preview, scan and publication contracts successfully. Its
+older storage fixture now accepts the earlier immutable-ownership refusal while
+separately testing cross-tenant INSERT RLS, and uses archive-before-delete with
+retained actor/history. The full web job identified two Board-screen receipt
+fixtures missing lifecycle fields; c8223d0 corrects these without weakening strict
+client admission. Both affected recovery tests pass locally, and c8223d0's actual
+Linux PostgreSQL and web jobs passed. Full immutable-image release remains pending.
+
+The Application/API command layer now exposes scoped archive/restore and canonical
+deletion requiring the current Card context. Each command checks current Internal
+Organization membership and Active Organization/Board/List/Card scope before
+disclosing child metadata or validating revisions/consent. Archive/restore need
+current edit rights; permanent deletion needs administration, Archived state and
+explicit true confirmation. Both Card and attachment revisions are compared;
+transitions advance each once, preserve unrelated Card fields and archive history,
+and append audit plus a content-free Card invalidation and delivery job in the
+same production transaction. A final current-authority/session check rolls the
+transaction back on refusal. Deleted tombstones cannot be restored or disclosed
+through normal reads. A same-state request with current revisions is a no-op.
+
+The original retry key and fingerprint bind Card, attachment, transition,
+revisions and consent. Replays check current authority, scope and matching current
+lifecycle before returning the original receipt. Canonical /attachments deletion
+participates in the same idempotency middleware as scoped Card commands. Separate
+archive pages seek at most 50+1 rows using the partial archive index, bind cursors
+to Card and archive collection, retain history and expose current restore/delete
+capabilities. Public nonmembers and anonymous/Owner Portal callers obtain no
+archive metadata. Native telemetry records bounded operation/error labels only.
+
+API tests cover transitions, retained history, consent/precondition/version
+refusal, contributor/admin policy, no-op, original replay/key reuse, current
+lifecycle refusal, parent archival, revocation and bounded archive pages. A real
+restricted Application contract injects audit and final actor failures and checks
+complete production rollback of File/Card/audit/event/job/sequence/retry claim;
+it then checks exactly-once committed effects, archive/restoration/history,
+deletion and replay. Actor/session admission in that database contract is explicitly
+synthetic; API tests supply separate HTTP/session evidence. Compilation passes
+with zero warnings/errors; actual new Linux command execution is pending CI.
+Selected cover persistence/clearing, protected archive original/preview review,
+cover derivative admission and native MUI lifecycle/cover controls remain open.

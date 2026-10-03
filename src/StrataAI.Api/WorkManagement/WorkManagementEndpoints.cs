@@ -751,6 +751,7 @@ public static partial class WorkManagementEndpoints
             "invalid_card_reminder_interval" => Problem(400, errorCode, "Choose an available future reminder interval."),
             "invalid_card_dates" => Problem(400, errorCode, "Use UTC instants or calendar dates with IANA timezone context and valid date order."),
             "invalid_attachment_cursor" => Problem(400, errorCode, "Use the continuation cursor for this Card."),
+            "attachment_not_found" => Problem(404, errorCode, "The attachment is unavailable."),
             "invalid_attachment_version" => Problem(400, errorCode, "Use the current Card revision."),
             "invalid_attachment_url" => Problem(400, errorCode, "Use a bounded title and an HTTP(S) link without embedded credentials."),
             "invalid_attachment_upload" => Problem(400, errorCode, "Use a file name, original size/digest/revision and an octet-stream body."),
