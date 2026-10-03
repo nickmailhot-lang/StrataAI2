@@ -251,4 +251,6 @@ test "$(api "SELECT has_function_privilege(current_user,'finish_attachment_previ
 for role in api worker; do
  test "$("$role" "SELECT has_table_privilege(current_user,'attachment_preview_publications','SELECT') OR has_table_privilege(current_user,'attachment_preview_publications','INSERT') OR has_table_privilege(current_user,'attachment_preview_publications','UPDATE') OR has_table_privilege(current_user,'attachment_preview_publications','DELETE')")" = f
 done
+test "$(worker "SELECT has_function_privilege(current_user,'finish_attachment_scan(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text,boolean)','EXECUTE')")" = t
+test "$(api "SELECT has_function_privilege(current_user,'finish_attachment_scan(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text,boolean)','EXECUTE')")" = f
 echo 'Real runtime logins reject elevation and enforce service-specific grants.'

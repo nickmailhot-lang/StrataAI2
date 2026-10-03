@@ -6,7 +6,7 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-public sealed class PostgresAttachmentScanDeliveryStore(PostgresConnectionFactory connections) : IAttachmentScanDeliveryStore
+public sealed class PostgresAttachmentScanDeliveryStore(PostgresConnectionFactory connections, bool previewEnabled = false) : IAttachmentScanDeliveryStore
 {
     private static void Validate(ClaimedBackgroundJob job,AttachmentScanAttempt attempt)
     {
@@ -63,9 +63,10 @@ public sealed class PostgresAttachmentScanDeliveryStore(PostgresConnectionFactor
             _ => throw new InvalidOperationException("Attachment scan evidence is unavailable.")
         };
         await using var session=await connections.OpenTenantSessionAsync(job.OrganizationId,ct);
-        await using var query=new NpgsqlCommand("SELECT public.finish_attachment_scan(@job,@tenant,@actor,@worker,@lease,@attachment,@card,@version,@size,@digest,@status);",session.Connection,session.Transaction);
+        await using var query=new NpgsqlCommand("SELECT public.finish_attachment_scan(@job,@tenant,@actor,@worker,@lease,@attachment,@card,@version,@size,@digest,@status,@preview);",session.Connection,session.Transaction);
         AddClaim(query,job,attempt); query.Parameters.AddWithValue("size",evidence.Request.SizeBytes);
         query.Parameters.AddWithValue("digest",evidence.Request.Sha256); query.Parameters.AddWithValue("status",status);
+        query.Parameters.AddWithValue("preview",previewEnabled);
         var result=await query.ExecuteScalarAsync(ct) switch
         {
             "APPLIED" => AttachmentScanCompletion.Applied,"SUPERSEDED" => AttachmentScanCompletion.Superseded,

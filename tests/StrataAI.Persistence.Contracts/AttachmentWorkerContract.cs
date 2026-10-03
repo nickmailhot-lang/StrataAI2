@@ -15,7 +15,7 @@ internal static class AttachmentWorkerContract
     {
         void Require(bool condition,string invariant) {if(!condition)throw new InvalidOperationException(invariant);}
         var api=apiServices.GetRequiredService<PostgresConnectionFactory>();
-        await using var worker=new PostgresConnectionFactory(workerConnection); var queue=new PostgresBackgroundJobStore(worker);
+        await using var worker=new PostgresConnectionFactory(workerConnection); var queue=new PostgresBackgroundJobStore(worker,previewJobs:true);
         var delivery=new PostgresAttachmentScanDeliveryStore(worker); var workerId=Guid.NewGuid();
         var storage=new FixtureStorage(organization,bytes); var scanner=new FixtureScanner();
         var handler=new AttachmentScanDeliveryHandler(delivery,new(storage,scanner));
@@ -125,7 +125,7 @@ internal static class AttachmentWorkerContract
         // Publish another original intent/FILE/job through the actual adapters.
         var uploads=apiServices.GetRequiredService<IAttachmentUploadIntentStore>(); var metadata=apiServices.GetRequiredService<IAttachmentMetadataStore>();
         var publisher=apiServices.GetRequiredService<IAttachmentScanJobPublisher>(); var unit=apiServices.GetRequiredService<IWorkManagementUnitOfWork>();
-        async Task<Guid> PublishPending()
+        async Task<Guid> PublishPending(string mime="image/png")
         {
             var at=AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow); var id=Guid.NewGuid();
             await using var parent=new NpgsqlCommand("SELECT version FROM public.cards WHERE tenant_id=@tenant AND id=@card;",admin);
@@ -136,8 +136,8 @@ internal static class AttachmentWorkerContract
             {
                 Require(await uploads.PrepareUploadAsync(value,ct) is not null,"Retry fixture intent was not prepared."); var nonce=Guid.NewGuid();
                 await uploads.TryChangeUploadAsync(organization,value.CardId,value.UploaderId,id,1,new(AttachmentUploadAction.StartWrite,at,nonce,at.AddMinutes(5)),ct);
-                await uploads.TryChangeUploadAsync(organization,value.CardId,value.UploaderId,id,2,new(AttachmentUploadAction.RecordStored,at,nonce,Measured:new(new(organization,id),bytes.Length,digest),VerifiedMimeType:"image/png"),ct);
-                await metadata.CreateFileAttachmentAsync(new(new(organization,id),bytes.Length,digest),value.CardId,value.UploaderId,value.DisplayName,"image/png",at,ct);
+                await uploads.TryChangeUploadAsync(organization,value.CardId,value.UploaderId,id,2,new(AttachmentUploadAction.RecordStored,at,nonce,Measured:new(new(organization,id),bytes.Length,digest),VerifiedMimeType:mime),ct);
+                await metadata.CreateFileAttachmentAsync(new(new(organization,id),bytes.Length,digest),value.CardId,value.UploaderId,value.DisplayName,mime,at,ct);
                 var committed=await uploads.TryChangeUploadAsync(organization,value.CardId,value.UploaderId,id,3,new(AttachmentUploadAction.Publish,at),ct);
                 var file=await metadata.FindFileAttachmentAsync(organization,value.CardId,id,ct);
                 Require(committed is not null && file is not null && await publisher.PublishScanAsync(committed,file,value.UploaderId,"scan-worker-retry",ct),"Retry fixture scan publication failed.");
@@ -192,6 +192,7 @@ internal static class AttachmentWorkerContract
         await handler.ExecuteAsync(removedJob!,ct);
         Require(scanner.Calls==providerCalls && storage.Opens==objectReads,"Deactivated file was read by the scanner.");
         Require(await queue.CompleteAsync(organization,removedJob!.Id,removedJob.LeaseId,workerId,ct),"Superseded scan could not be acknowledged.");
+        await AttachmentPreviewActivationContract.RunAsync(admin,worker,queue,mime=>PublishPending(mime),organization,original.CardId,bytes,ct);
         Console.WriteLine("Restricted C# Worker scan: private admission, immutable claims, late lease rollback, status/Card/audit/event effects, replay without provider I/O and bounded failure passed.");
     }
     private sealed class FixtureStorage(Guid organization,byte[] bytes) : IAttachmentObjectStorage

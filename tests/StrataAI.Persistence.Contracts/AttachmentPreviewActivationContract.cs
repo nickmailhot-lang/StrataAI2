@@ -1,0 +1,179 @@
+using System.Security.Cryptography;
+using Npgsql;
+using StrataAI.Application.BackgroundJobs;
+using StrataAI.Application.WorkManagement;
+using StrataAI.Infrastructure.BackgroundJobs;
+using StrataAI.Infrastructure.Persistence;
+using StrataAI.Infrastructure.WorkManagement;
+
+internal static class AttachmentPreviewActivationContract
+{
+    internal static async Task RunAsync(NpgsqlConnection admin,PostgresConnectionFactory worker,PostgresBackgroundJobStore capable,
+        Func<string,Task<Guid>> publish,Guid organization,Guid card,byte[] bytes,CancellationToken ct)
+    {
+        void Require(bool condition,string invariant) {if(!condition)throw new InvalidOperationException(invariant);}
+        var legacy=new PostgresBackgroundJobStore(worker); var workerId=Guid.NewGuid();
+        var source=await publish("image/png"); var objects=new Objects(organization,source,bytes);
+        var scanStore=new PostgresAttachmentScanDeliveryStore(worker,previewEnabled:true);
+        var scanner=new Scanner(); var scanHandler=new AttachmentScanDeliveryHandler(scanStore,new(objects,scanner));
+        var claim=await legacy.ClaimAsync(organization,workerId,ct);
+        Require(claim?.JobType==AttachmentScanJobs.Type,"Default Worker did not preserve legacy scan claims.");
+        var job=claim!; var attempt=AttachmentScanAttempt.Parse(job.SafeMetadataJson);
+        Require(attempt.AttachmentId==source,"Activation fixture claimed a different scan.");
+        async Task<T> Scalar<T>(string sql)
+        {
+            await using var query=new NpgsqlCommand(sql,admin);
+            query.Parameters.AddWithValue("tenant",organization); query.Parameters.AddWithValue("file",source);
+            query.Parameters.AddWithValue("card",card); query.Parameters.AddWithValue("job",job.Id);
+            return (T)(await query.ExecuteScalarAsync(ct))!;
+        }
+        const string previews="SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text;";
+        var cardVersion=await Scalar<long>("SELECT version FROM public.cards WHERE id=@card AND tenant_id=@tenant;");
+        var sequence=await Scalar<long>("SELECT last_sequence FROM public.work_event_streams WHERE tenant_id=@tenant AND board_id=(SELECT board_id FROM public.cards WHERE id=@card AND tenant_id=@tenant);");
+        var trigger=$"ci_preview_queue_expire_{job.Id:N}";
+        await using(var install=new NpgsqlCommand($"""
+            CREATE FUNCTION public.{trigger}() RETURNS trigger LANGUAGE plpgsql AS $$
+            BEGIN
+             IF NEW.job_type='ATTACHMENT_PREVIEW' AND NEW.safe_metadata->>'attachmentId'='{source:D}' THEN
+              UPDATE public.background_jobs SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE id='{job.Id:D}' AND tenant_id=NEW.tenant_id;
+             END IF; RETURN NEW;
+            END $$;
+            CREATE TRIGGER {trigger} AFTER INSERT ON public.background_jobs FOR EACH ROW EXECUTE FUNCTION public.{trigger}();
+            """,admin))await install.ExecuteNonQueryAsync(ct);
+        try
+        {
+            try {await scanHandler.ExecuteAsync(job,ct);throw new InvalidOperationException("Late preview queue lease loss committed scan effects.");}
+            catch(PostgresException error) when(error.SqlState==PostgresErrorCodes.CheckViolation && error.MessageText=="Attachment preview queue lease fence failed") { }
+            Require(await Scalar<bool>("SELECT scan_status='PENDING' AND version=1 FROM public.attachments WHERE id=@file AND tenant_id=@tenant;"),"Queue fence retained Clean verdict.");
+            Require(await Scalar<long>(previews)==0,"Queue fence retained a preview job.");
+            Require(await Scalar<long>("SELECT version FROM public.cards WHERE id=@card AND tenant_id=@tenant;")==cardVersion,"Queue fence retained Card revision.");
+            Require(await Scalar<long>("SELECT last_sequence FROM public.work_event_streams WHERE tenant_id=@tenant AND board_id=(SELECT board_id FROM public.cards WHERE id=@card AND tenant_id=@tenant);")==sequence,"Queue fence consumed event sequence.");
+            Require(await Scalar<long>("SELECT count(*) FROM public.audit_events WHERE id=@job AND tenant_id=@tenant;")==0
+                && await Scalar<long>("SELECT count(*) FROM public.work_events WHERE event_id=@job AND tenant_id=@tenant;")==0,"Queue fence retained audit/event.");
+        }
+        finally
+        {
+            await using var remove=new NpgsqlCommand($"DROP TRIGGER {trigger} ON public.background_jobs; DROP FUNCTION public.{trigger}();",admin);
+            await remove.ExecuteNonQueryAsync(ct);
+        }
+        await scanHandler.ExecuteAsync(job,ct); Require(await Scalar<long>(previews)==1,"Clean scan did not atomically enqueue preview.");
+        var beforeReads=objects.Reads;
+        await scanHandler.ExecuteAsync(job,ct);
+        Require(await Scalar<long>(previews)==1 && objects.Reads==beforeReads,"Scan replay duplicated preview publication/provider I/O.");
+        Require(await capable.CompleteAsync(organization,job.Id,job.LeaseId,workerId,ct),"Scan fixture could not acknowledge completion.");
+        var expired=Guid.NewGuid();
+        await using(var seed=new NpgsqlCommand("""
+            INSERT INTO public.background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,safe_metadata,
+             state,attempt_count,lease_id,worker_id,lease_expires_at)
+            VALUES(@id,@tenant,'ATTACHMENT_PREVIEW',@key,@actor,'attachment-private-preview','old-preview-scope',
+             jsonb_build_object('attachmentId',@file::uuid,'cardId',@card::uuid,'version',3),
+             'RUNNING',5,gen_random_uuid(),gen_random_uuid(),clock_timestamp()-interval '1 second');
+            """,admin))
+        {
+            seed.Parameters.AddWithValue("id",expired);seed.Parameters.AddWithValue("tenant",organization);
+            seed.Parameters.AddWithValue("actor",job.ActorId);seed.Parameters.AddWithValue("file",source);seed.Parameters.AddWithValue("card",card);
+            seed.Parameters.AddWithValue("key",$"attachment-preview/{source:N}/3");await seed.ExecuteNonQueryAsync(ct);
+        }
+        // Exercise the old binary's exact SQL shape: no preview setting at all.
+        await using(var session=await worker.OpenTenantSessionAsync(organization,ct))
+        await using(var old=new NpgsqlCommand("SELECT count(*) FROM public.claim_background_job(@worker);",session.Connection,session.Transaction))
+        {
+            old.Parameters.AddWithValue("worker",Guid.NewGuid());
+            Require((long)(await old.ExecuteScalarAsync(ct))! == 0,"Legacy SQL claimed a new handler type.");await session.CommitAsync(ct);
+        }
+        await using(var state=new NpgsqlCommand("SELECT state='RUNNING' AND attempt_count=5 AND version=1 FROM public.background_jobs WHERE id=@id;",admin))
+        {
+            state.Parameters.AddWithValue("id",expired);
+            Require(await state.ExecuteScalarAsync(ct) is true,"Legacy SQL expired a new handler type.");
+        }
+        // Old/default claims leave new jobs untouched, even after the capable
+        // adapter used the same pool. The context must be transaction-scoped.
+        Require(await legacy.ClaimAsync(organization,Guid.NewGuid(),ct) is null,"Default Worker consumed a preview job.");
+        Require(await Scalar<bool>("SELECT state='PENDING' AND attempt_count=0 FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text AND safe_metadata->>'version'='2';"),"Default Worker changed preview attempts.");
+        var preview=await capable.ClaimAsync(organization,workerId,ct);
+        Require(preview?.JobType==AttachmentPreviewJobs.Type,"Capable Worker did not claim preview.");
+        var reference=AttachmentPreviewAttempt.Parse(preview!.SafeMetadataJson);
+        Require(reference==new AttachmentPreviewAttempt(source,card,2) && preview.ActorId==job.ActorId,"Automatic preview references were not canonical.");
+        await using(var state=new NpgsqlCommand("SELECT state='FAILED' AND last_error_code='lease_expired' FROM public.background_jobs WHERE id=@id;",admin))
+        {
+            state.Parameters.AddWithValue("id",expired);
+            Require(await state.ExecuteScalarAsync(ct) is true,"Capable Worker did not recover terminal preview expiry.");
+        }
+        var intents=new PostgresAttachmentPreviewIntentStore(worker);
+        var generator=new Generator();
+        var handler=new AttachmentPreviewDeliveryHandler(intents,new(intents,new PrivateAttachmentDownloadPreparer(objects),generator,objects),intents);
+        await handler.ExecuteAsync(preview,ct);
+        Require(objects.Writes==1 && generator.Calls==1,"Automatic preview did not execute staged delivery.");
+        beforeReads=objects.Reads;
+        await handler.ExecuteAsync(preview,ct);
+        Require(objects.Reads==beforeReads && objects.Writes==1 && generator.Calls==1,"Automatic preview replay repeated provider I/O.");
+        Require(await capable.CompleteAsync(organization,preview.Id,preview.LeaseId,workerId,ct),"Preview could not acknowledge publication.");
+        Require(await Scalar<bool>("SELECT scan_status='CLEAN' AND version=3 FROM public.attachments WHERE id=@file AND tenant_id=@tenant;"),"Automatic preview did not publish File revision.");
+
+        async Task NoPreview(string mime,AttachmentScannerVerdict verdict)
+        {
+            source=await publish(mime); objects.Add(source,bytes); scanner.Verdict=verdict;
+            var scan=await legacy.ClaimAsync(organization,workerId,ct);
+            Require(scan?.JobType==AttachmentScanJobs.Type,"Non-image fixture did not claim scan.");
+            await scanHandler.ExecuteAsync(scan!,ct);
+            Require(await Scalar<long>(previews)==0,"Rejected/failed/unsupported original queued a preview.");
+            Require(await capable.CompleteAsync(organization,scan!.Id,scan.LeaseId,workerId,ct),"Non-preview scan was not acknowledged.");
+        }
+        await NoPreview("application/pdf",AttachmentScannerVerdict.Clean);
+        await NoPreview("image/png",AttachmentScannerVerdict.Infected);
+        source=await publish("image/png");objects.Add(source,bytes);scanner.Verdict=AttachmentScannerVerdict.Unavailable;
+        for(var number=1;number<=5;number++)
+        {
+            var failed=await legacy.ClaimAsync(organization,workerId,ct);
+            Require(failed?.JobType==AttachmentScanJobs.Type && failed.AttemptCount==number,"Unavailable scan retry claim changed.");
+            if(number<5)
+            {
+                try {await scanHandler.ExecuteAsync(failed!,ct);throw new InvalidOperationException("Unavailable scanner became terminal before final attempt.");}
+                catch(InvalidOperationException error) when(error.Message=="Attachment scan delivery is unavailable.") { }
+                Require(await capable.FailAsync(organization,failed!.Id,failed.LeaseId,workerId,"job_handler_failed",ct),"Unavailable scan lost retry lease.");
+                await using var advance=new NpgsqlCommand("UPDATE public.background_jobs SET available_at=clock_timestamp()-interval '1 second' WHERE id=@id;",admin);
+                advance.Parameters.AddWithValue("id",failed.Id);await advance.ExecuteNonQueryAsync(ct);
+            }
+            else
+            {
+                await scanHandler.ExecuteAsync(failed!,ct);
+                Require(await capable.CompleteAsync(organization,failed!.Id,failed.LeaseId,workerId,ct),"Final failed scan could not complete.");
+            }
+            Require(await Scalar<long>(previews)==0,"Unavailable scan queued a preview.");
+        }
+        Require(await Scalar<bool>("SELECT scan_status='FAILED' AND version=2 FROM public.attachments WHERE id=@file AND tenant_id=@tenant;"),"Unavailable scanner did not retain terminal Failed.");
+        Console.WriteLine("Restricted preview activation: atomic Clean enqueue, late queue lease rollback, canonical dedup, legacy/default claim and expiry exclusion, capable staged publication/replay and PDF/rejected/failed refusal passed.");
+    }
+    private sealed class Scanner : IAttachmentMalwareScanner
+    {
+        public AttachmentScannerVerdict Verdict {get;set;}=AttachmentScannerVerdict.Clean;
+        public async Task<AttachmentScannerVerdict> ScanAsync(Stream source,CancellationToken ct)
+        {await source.CopyToAsync(Stream.Null,ct);return Verdict;}
+    }
+    private sealed class Generator : IAttachmentImagePreviewGenerator
+    {
+        public int Calls {get;private set;}
+        public Task<AttachmentPreviewImage> GenerateAsync(AttachmentScanRequest request,string mime,Stream source,CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();Calls++;
+            if(mime!="image/png" || !source.CanSeek || source.CanWrite)throw new InvalidOperationException("Fixture generator source was not verified/owned.");
+            return Task.FromResult(new AttachmentPreviewImage(Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg=="),1,1));
+        }
+    }
+    private sealed class Objects(Guid tenant,Guid original,byte[] bytes) : IAttachmentObjectStorage
+    {
+        private readonly Dictionary<AttachmentObjectReference,byte[]> _values=new(){[new(tenant,original)]=bytes};
+        public int Reads {get;private set;} public int Writes {get;private set;}
+        public void Add(Guid file,byte[] content)=>_values.Add(new(tenant,file),content);
+        public Task<Stream?> OpenPrivateReadAsync(AttachmentObjectReference reference,CancellationToken ct)
+        {ct.ThrowIfCancellationRequested();if(reference.OrganizationId!=tenant)throw new InvalidOperationException("Fixture scope widened.");Reads++;return Task.FromResult<Stream?>(_values.TryGetValue(reference,out var value)?new MemoryStream(value,false):null);}
+        public async Task<StoredAttachmentObject> WritePrivateAsync(AttachmentObjectReference reference,Stream source,long maximum,CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();if(!reference.IsPreview || reference.OrganizationId!=tenant || _values.ContainsKey(reference))throw new InvalidOperationException("Fixture write is not private non-clobbering preview.");
+            using var output=new MemoryStream();await source.CopyToAsync(output,ct);var content=output.ToArray();
+            if(content.Length!=maximum)throw new InvalidOperationException("Fixture output size changed.");
+            _values.Add(reference,content);Writes++;return new(reference,content.Length,Convert.ToHexStringLower(SHA256.HashData(content)));
+        }
+        public Task<bool> DeletePrivateAsync(AttachmentObjectReference reference,CancellationToken ct)=>throw new InvalidOperationException("Preview activation cannot delete uncertain objects.");
+    }
+}

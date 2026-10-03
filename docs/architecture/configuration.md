@@ -45,11 +45,22 @@ malformed enablement and incomplete enabled configuration fail startup.
 The enabled Worker also requires explicit `STRATAAI_WORKER_ORGANIZATION_IDS` and
 an absolute `STRATAAI_ATTACHMENT_SCANNER_SOCKET`. It registers the actual
 lease-fenced PostgreSQL scan store, quarantine coordinator, ClamAV adapter and
-`ATTACHMENT_SCAN` handler in the existing Organization job processor. The API
-does not register Worker scan capabilities. Readiness checks the guarded database
+`ATTACHMENT_SCAN` handler in the existing Organization job processor. A successful
+supported-image scan atomically queues `ATTACHMENT_PREVIEW`; the enabled Worker
+registers its private intent/publication store, anonymous integrity staging,
+isolated generator, storage recovery and preview handler. The API does not register
+Worker scan/preview capabilities. Default/older Worker claims exclude preview jobs;
+only explicitly enabled Workers opt into their transaction-scoped claims.
+Readiness checks the guarded database
 and current bucket public-access/policy/ownership controls within two seconds;
 Worker additionally requires the local scanner's framed PING/PONG response.
 Provider failure returns the existing generic 503 without provider diagnostics.
+
+Original objects retain `attachments/{Organization:N}/{Attachment:N}` keys.
+Private previews use `attachment-previews/{Organization:N}/{Job:N}`. Bucket/workload
+permissions for enabled preview delivery must cover that separate namespace under
+the same private ownership/public-access controls. Server-owned identities select
+both namespaces; client filenames, paths and prefixes never select storage keys.
 
 For Linux deployment, combine the immutable-image `compose.release.yml` with
 `compose.attachments.yml`. Set `STRATAAI_ATTACHMENT_SCANNER_DIRECTORY` to an

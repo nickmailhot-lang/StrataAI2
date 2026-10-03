@@ -5,7 +5,7 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.BackgroundJobs;
 
-public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connections) : IBackgroundJobStore
+public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connections, bool previewJobs = false) : IBackgroundJobStore
 {
     // Infrastructure producers pass their EXISTING domain transaction. This
     // method never opens/commits its own connection and cannot lose publication
@@ -35,6 +35,11 @@ public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connect
     {
         ValidateIdentity(workerId);
         await using var session = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using (var capability = new NpgsqlCommand("SELECT set_config('app.attachment_preview_worker',@mode,true);", session.Connection, session.Transaction))
+        {
+            capability.Parameters.AddWithValue("mode",previewJobs ? "enabled" : "disabled");
+            await capability.ExecuteNonQueryAsync(cancellationToken);
+        }
         ClaimedBackgroundJob? job;
         await using (var command = new NpgsqlCommand("""
             SELECT id,tenant_id,job_type,actor_id,service_identity,correlation_id,safe_metadata::text,

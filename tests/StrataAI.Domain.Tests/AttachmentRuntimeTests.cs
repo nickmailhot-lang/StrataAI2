@@ -39,12 +39,17 @@ public sealed class AttachmentRuntimeTests
         Assert.IsType<S3AttachmentObjectStorage>(provider.GetRequiredService<IAttachmentObjectStorage>());
         Assert.IsType<ClamAvAttachmentMalwareScanner>(provider.GetRequiredService<IAttachmentMalwareScanner>());
         Assert.IsType<PostgresAttachmentScanDeliveryStore>(provider.GetRequiredService<IAttachmentScanDeliveryStore>());
-        var handler = Assert.IsType<AttachmentScanDeliveryHandler>(Assert.Single(provider.GetServices<IBackgroundJobHandler>()));
+        var handlers=provider.GetServices<IBackgroundJobHandler>().ToArray(); Assert.Equal(2,handlers.Length);
+        var handler = Assert.IsType<AttachmentScanDeliveryHandler>(Assert.Single(handlers,h=>h.JobType==AttachmentScanJobs.Type));
         Assert.Equal(AttachmentScanJobs.Type, handler.JobType); Assert.Equal(AttachmentScanJobs.Service, handler.ServiceIdentity);
         Assert.NotNull(provider.GetRequiredService<AttachmentQuarantineScanner>());
         Assert.IsType<LinuxIsolatedAttachmentImagePreviewGenerator>(provider.GetRequiredService<IAttachmentImagePreviewGenerator>());
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentImagePreviewDecoder));
-        Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentDownloadPreparer));
+        Assert.IsType<PrivateAttachmentDownloadPreparer>(provider.GetRequiredService<IAttachmentDownloadPreparer>());
+        var preview=Assert.IsType<AttachmentPreviewDeliveryHandler>(Assert.Single(handlers,h=>h.JobType==AttachmentPreviewJobs.Type));
+        Assert.Equal(AttachmentPreviewJobs.Service,preview.ServiceIdentity);
+        Assert.Same(provider.GetRequiredService<IAttachmentPreviewIntentStore>(),provider.GetRequiredService<IAttachmentPreviewPublicationStore>());
+        Assert.IsType<PostgresAttachmentPreviewIntentStore>(provider.GetRequiredService<IAttachmentPreviewIntentStore>());
         Assert.Equal(20971520, provider.GetRequiredService<AttachmentUploadPolicy>().MaximumBytes);
         Assert.Equal(4, provider.GetRequiredService<AttachmentUploadPolicy>().AllowedMimeTypes.Count);
         Assert.IsType<AttachmentFileTypeInspector>(provider.GetRequiredService<IAttachmentFileTypeInspector>());
@@ -61,6 +66,7 @@ public sealed class AttachmentRuntimeTests
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentMalwareScanner) || s.ServiceType == typeof(IAttachmentScanDeliveryStore));
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentImagePreviewDecoder));
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentImagePreviewGenerator));
+        Assert.DoesNotContain(services,s=>s.ServiceType==typeof(IAttachmentPreviewIntentStore) || s.ServiceType==typeof(IAttachmentPreviewPublicationStore) || s.ServiceType==typeof(AttachmentPreviewStorageRecovery));
     }
 
     [Theory]

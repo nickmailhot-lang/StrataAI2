@@ -8,6 +8,7 @@ using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.Runtime;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Infrastructure.Persistence;
+using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.Runtime;
 
 namespace StrataAI.Infrastructure.WorkManagement;
@@ -65,8 +66,15 @@ public static class AttachmentRuntimeRegistration
             services.AddSingleton(scanner);
             services.AddSingleton<IAttachmentMalwareScanner>(scanner);
             services.AddSingleton<AttachmentQuarantineScanner>();
-            services.AddSingleton<IAttachmentScanDeliveryStore, PostgresAttachmentScanDeliveryStore>();
+            services.AddSingleton<IAttachmentScanDeliveryStore>(provider => new PostgresAttachmentScanDeliveryStore(provider.GetRequiredService<PostgresConnectionFactory>(),previewEnabled:true));
             services.AddSingleton<IBackgroundJobHandler, AttachmentScanDeliveryHandler>();
+            services.AddSingleton<PostgresAttachmentPreviewIntentStore>();
+            services.AddSingleton<IAttachmentPreviewIntentStore>(provider=>provider.GetRequiredService<PostgresAttachmentPreviewIntentStore>());
+            services.AddSingleton<IAttachmentPreviewPublicationStore>(provider=>provider.GetRequiredService<PostgresAttachmentPreviewIntentStore>());
+            services.AddSingleton<AttachmentPreviewStorageRecovery>();
+            services.AddSingleton<IBackgroundJobHandler,AttachmentPreviewDeliveryHandler>();
+            services.Replace(ServiceDescriptor.Singleton<PostgresBackgroundJobStore>(provider=>new(provider.GetRequiredService<PostgresConnectionFactory>(),previewJobs:true)));
+            services.Replace(ServiceDescriptor.Singleton<IBackgroundJobStore>(provider=>provider.GetRequiredService<PostgresBackgroundJobStore>()));
         }
         // Credentials are supplied by the official SDK credential chain (for
         // example workload IAM). Never accept HTTP/custom endpoints or a local
@@ -75,7 +83,7 @@ public static class AttachmentRuntimeRegistration
         { RegionEndpoint = endpoint, UseHttp = false, MaxErrorRetry = 1 }));
         services.AddSingleton(provider => new S3AttachmentObjectStorage(provider.GetRequiredService<IAmazonS3>(), bucket, owner));
         services.AddSingleton<IAttachmentObjectStorage>(provider => provider.GetRequiredService<S3AttachmentObjectStorage>());
-        if (!worker) services.AddSingleton<IAttachmentDownloadPreparer, PrivateAttachmentDownloadPreparer>();
+        services.AddSingleton<IAttachmentDownloadPreparer, PrivateAttachmentDownloadPreparer>();
         services.Replace(ServiceDescriptor.Singleton<IRuntimeDependencyStatus>(provider =>
             new AttachmentRuntimeDependencyStatus(new ProductionRuntimeDependencyStatus(provider.GetRequiredService<PostgresConnectionFactory>()),
                 provider.GetRequiredService<S3AttachmentObjectStorage>(), scanner)));
