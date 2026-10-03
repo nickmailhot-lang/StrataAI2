@@ -18,9 +18,9 @@ internal sealed class InMemoryCardReminderStore : ICardReminderStore
                 .OrderBy(row => row.UserId.ToString("N"), StringComparer.Ordinal).ToArray());
     }
     public Task<CardReminder?> SetAsync(CardRecord card, Guid userId, string intervalCode, bool enabled,
-        long expectedVersion, DateTimeOffset now, CancellationToken ct)
+        long expectedVersion, DateTimeOffset now, CancellationToken ct, bool contextActive = true)
     {
-        ct.ThrowIfCancellationRequested(); var plan = CardReminderPlan.For(card, intervalCode, enabled, now);
+        ct.ThrowIfCancellationRequested(); var plan = CardReminderPlan.For(card, intervalCode, enabled, now, contextActive);
         lock (_gate)
         {
             var key = (card.OrganizationId, userId, card.Id); var old = _rows.GetValueOrDefault(key);

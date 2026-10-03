@@ -2,6 +2,9 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementStore
 {
+    // Internal lifecycle candidates, including archived/deleted children. No
+    // UI pagination/cap may truncate Reminder cancellation or renewal.
+    Task<IReadOnlyList<Guid>> ListReminderCandidateCardIdsAsync(Guid organizationId, Guid boardId, Guid? listId, CancellationToken ct);
     Task<IReadOnlyDictionary<Guid, CardMemberPreview>> ListCardMemberPreviewsAsync(Guid boardId, bool requireVerifiedEmail, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CardMemberOption>> ListCardMemberOptionsAsync(Guid cardId, Guid? after, bool requireVerifiedEmail, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<CardAssignee>> ListCardMembersAsync(Guid cardId, Guid? after, bool requireVerifiedEmail, CancellationToken cancellationToken = default);

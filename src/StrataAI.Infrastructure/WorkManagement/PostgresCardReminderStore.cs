@@ -27,10 +27,10 @@ internal sealed class PostgresCardReminderStore(PostgresConnectionFactory connec
         return rows;
     }
     public async Task<CardReminder?> SetAsync(CardRecord card, Guid userId, string intervalCode, bool enabled,
-        long expectedVersion, DateTimeOffset now, CancellationToken ct)
+        long expectedVersion, DateTimeOffset now, CancellationToken ct, bool contextActive = true)
     {
         if (!connections.HasCommandScope(card.OrganizationId)) throw new InvalidOperationException("Reminder changes require the owning Card transaction.");
-        var plan = CardReminderPlan.For(card, intervalCode, enabled, now);
+        var plan = CardReminderPlan.For(card, intervalCode, enabled, now, contextActive);
         var current = await FindAsync(card.OrganizationId, userId, card.Id, ct);
         if ((current?.Version ?? 0) != expectedVersion) return null;
         if (current is not null && current.IntervalCode == intervalCode && plan.Matches(current)) return current;

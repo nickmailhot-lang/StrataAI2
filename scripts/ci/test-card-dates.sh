@@ -25,6 +25,8 @@ request() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -X
 state() { admin "SELECT md5(jsonb_build_object(
  'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$org' AND id='$card'),
  'reminders',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM card_reminders r WHERE tenant_id='$org'),
+ 'lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l WHERE tenant_id='$org'),
+ 'boards',(SELECT jsonb_agg(to_jsonb(b) ORDER BY id) FROM boards b WHERE tenant_id='$org'),
  'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
@@ -89,14 +91,14 @@ due=$(date -u -d '+2 days' '+%Y-%m-%dT%H:%M:%SZ')
 payload=$(jq -nc --arg due "$due" '{dueAt:$due,dueTimezone:"UTC",dueHasTime:true,dueComplete:false,version:1}')
 test "$(request owner PATCH "$path" "$(uuid)" "$payload")" = 200
 admin "UPDATE board_members SET status='ACTIVE',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
-reminderPath="/cards/$card/reminder"; reminderKey=$(uuid)
+reminderPath="/cards/$card/reminders"; reminderKey=$(uuid)
 choice='{"intervalCode":"1_HOUR","enabled":true,"cardVersion":2,"version":0}'
-test "$(request outsider PUT "$reminderPath" "$(uuid)" "$choice")" = 404
-test "$(request member PUT "$reminderPath" "$reminderKey" "$choice")" = 200
+test "$(request outsider POST "$reminderPath" "$(uuid)" "$choice")" = 404
+test "$(request member POST "$reminderPath" "$reminderKey" "$choice")" = 200
 jq -e --arg user "$member" '.changed and .userId==$user and .cardVersion==2 and .reminder.userId==$user and .reminder.generation==1 and .reminder.status=="SCHEDULED" and (.options|length)==4' "$scratch/response.json" >/dev/null
 reminder=$(jq -r '.reminder.id' "$scratch/response.json")
 cp "$scratch/response.json" "$scratch/reminder-created.json"
-test "$(request member PUT "$reminderPath" "$reminderKey" "$choice")" = 200
+test "$(request member POST "$reminderPath" "$reminderKey" "$choice")" = 200
 cmp "$scratch/reminder-created.json" "$scratch/response.json"
 curl --fail --silent --show-error -b "$scratch/owner.cookies" "$base$reminderPath?userId=$member" | jq -e '.reminder==null' >/dev/null
 due=$(date -u -d '+3 days' '+%Y-%m-%dT%H:%M:%SZ')
@@ -131,24 +133,59 @@ jq -e --arg id "$reminder" '.changed and .reminder.id==$id and .reminder.generat
 cp "$scratch/response.json" "$scratch/reminder-cancelled.json"
 test "$(request member DELETE "$reminderPath?cardVersion=6&version=5" "$cancelKey" '{}')" = 200
 cmp "$scratch/reminder-cancelled.json" "$scratch/response.json"
-test "$(request member PUT "$reminderPath" "$(uuid)" '{"intervalCode":"1_HOUR","enabled":true,"cardVersion":6,"version":6}')" = 400
+test "$(request member POST "$reminderPath" "$(uuid)" '{"intervalCode":"1_HOUR","enabled":true,"cardVersion":6,"version":6}')" = 400
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_type='Reminder' AND entity_id='$reminder' AND event_type IN ('REMINDER_SCHEDULED','REMINDER_CANCELLED');")" = 6
 test "$(request owner PATCH "$path" "$(uuid)" "$(jq -c '.version=6' <<< "$payload")")" = 200
-test "$(request member PUT "$reminderPath" "$(uuid)" '{"intervalCode":"1_HOUR","enabled":true,"cardVersion":7,"version":6}')" = 200
+test "$(request member POST "$reminderPath" "$(uuid)" '{"intervalCode":"1_HOUR","enabled":true,"cardVersion":7,"version":6}')" = 200
 archiveKey=$(uuid)
 test "$(request owner POST "/cards/$card/archive" "$archiveKey" '{"version":7}')" = 200
 test "$(admin "SELECT generation=8 AND enabled AND status='SUSPENDED' AND trigger_at IS NULL FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
 after=$(state)
 test "$(request owner POST "/cards/$card/archive" "$archiveKey" '{"version":7}')" = 200
 test "$after" = "$(state)"
-test "$(request member PUT "$reminderPath" "$reminderKey" "$choice")" = 404
+test "$(request member POST "$reminderPath" "$reminderKey" "$choice")" = 404
 test "$(request owner POST "/cards/$card/restore" "$(uuid)" '{"version":8}')" = 200
 test "$(admin "SELECT generation=9 AND status='SCHEDULED' AND trigger_at=due_at-interval '1 hour' FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
 test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$reminder';")" = 5
+test "$(request owner POST "$reminderPath" "$(uuid)" '{"intervalCode":"1_HOUR","enabled":true,"cardVersion":9,"version":0}')" = 200
+cancelledReminder=$(jq -r '.reminder.id' "$scratch/response.json")
+test "$(request owner DELETE "$reminderPath?cardVersion=9&version=1" "$(uuid)" '{}')" = 200
+# Internal lifecycle processing must reach every chosen Card, rather than a
+# bounded UI page. Seed 76 valid personal choices for the admitted recipient.
+admin "INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,lifecycle_state,created_at,updated_at,version,due_at,due_timezone,due_has_time,due_complete)
+ SELECT gen_random_uuid(),'$org','$board','$list','Container fanout '||n,lpad((500000000000000000000000000000::numeric+n)::text,30,'0'),'ACTIVE',clock_timestamp(),clock_timestamp(),1,'$due','UTC',true,false FROM generate_series(1,76) n;
+ INSERT INTO card_reminders(tenant_id,id,user_id,card_id,interval_code,enabled,due_at,trigger_at,status,generation,version,created_at,updated_at)
+ SELECT tenant_id,gen_random_uuid(),'$member',id,'1_HOUR',true,due_at,due_at-interval '1 hour','SCHEDULED',1,1,clock_timestamp(),clock_timestamp()
+ FROM cards WHERE tenant_id='$org' AND title LIKE 'Container fanout %';" >/dev/null
+listArchiveKey=$(uuid)
+before=$(state)
+admin 'REVOKE INSERT ON background_jobs FROM strataai_api_runtime;' >/dev/null
+test "$(request owner POST "/lists/$list/archive" "$listArchiveKey" '{"version":1}')" = 503
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON background_jobs TO strataai_api_runtime;' >/dev/null
+test "$(request owner POST "/lists/$list/archive" "$listArchiveKey" '{"version":1}')" = 200
+test "$(admin "SELECT generation=10 AND status='SUSPENDED' AND trigger_at IS NULL FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(admin "SELECT count(*) FROM card_reminders r JOIN cards c ON c.tenant_id=r.tenant_id AND c.id=r.card_id WHERE r.tenant_id='$org' AND c.title LIKE 'Container fanout %' AND r.generation=2 AND r.status='SUSPENDED' AND r.trigger_at IS NULL;")" = 76
+boardVersion=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
+test "$(request owner POST "/boards/$board/archive" "$(uuid)" "{\"version\":$boardVersion}")" = 200
+boardVersion=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
+test "$(request owner POST "/boards/$board/restore" "$(uuid)" "{\"version\":$boardVersion}")" = 200
+test "$(admin "SELECT generation=10 AND status='SUSPENDED' FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(request owner POST "/lists/$list/restore" "$(uuid)" '{"version":2}')" = 200
+test "$(admin "SELECT generation=11 AND status='SCHEDULED' AND trigger_at=due_at-interval '1 hour' FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(admin "SELECT generation=2 AND NOT enabled AND status='CANCELLED' FROM card_reminders WHERE tenant_id='$org' AND id='$cancelledReminder';")" = t
+test "$(admin "SELECT count(*) FROM card_reminders r JOIN cards c ON c.tenant_id=r.tenant_id AND c.id=r.card_id WHERE r.tenant_id='$org' AND c.title LIKE 'Container fanout %' AND r.generation=3 AND r.status='SCHEDULED' AND c.version=1 AND c.lifecycle_state='ACTIVE';")" = 76
+test "$(admin "SELECT count(*) FROM background_jobs j JOIN card_reminders r ON r.tenant_id=j.tenant_id AND r.id::text=j.safe_metadata->>'reminderId' JOIN cards c ON c.tenant_id=r.tenant_id AND c.id=r.card_id WHERE j.tenant_id='$org' AND j.job_type='CARD_REMINDER' AND c.title LIKE 'Container fanout %' AND j.safe_metadata->>'generation'='3';")" = 76
+after=$(state)
+test "$(request owner POST "/lists/$list/archive" "$listArchiveKey" '{"version":1}')" = 200
+test "$after" = "$(state)"
+test "$(admin "SELECT version=9 FROM cards WHERE tenant_id='$org' AND id='$card';")" = t
+test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$reminder';")" = 6
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 before=$(state)
-test "$(request member PUT "$reminderPath" "$reminderKey" "$choice")" = 404
+test "$(request member POST "$reminderPath" "$reminderKey" "$choice")" = 404
 test "$before" = "$(state)"
 echo 'Date-command Reminder generations, canonical future jobs, replay/no-op, completion/reopen/clear and publication rollback passed.'
 echo 'Personal Reminder configuration, recipient privacy, stable cancellation, private events and revoked replay passed.'
 echo 'Card archive/restore Reminder suspension, future generation renewal and archive receipt deduplication passed.'
+echo 'List/Board archive contexts, all 76 chosen Cards, selective renewal, cancelled-choice preservation and lifecycle publication rollback passed.'

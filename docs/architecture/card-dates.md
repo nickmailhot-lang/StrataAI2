@@ -267,8 +267,8 @@ exact-image execution remain required before these new checks are called passed.
 Container archive/restore integration and MUI controls are still incomplete. PRD-12/17
 remain open.
 
-Personal configuration now has authenticated GET/PUT/DELETE endpoints at
-`/cards/{cardId}/reminder`. Every read, mutation and replay reacquires current
+Personal configuration now has authenticated GET/POST/DELETE endpoints at
+`/cards/{cardId}/reminders`. Every read, mutation and replay reacquires current
 Organization membership, Board access and active Card/List scope; the authenticated
 actor alone selects the personal row. A public viewer outside the Organization
 cannot configure a choice. Writes use both Card and Reminder revisions and an
@@ -302,3 +302,29 @@ preceding personal configuration, cancellation/recovery and private-event checks
 passed before that assertion. The expectation is corrected to NoContent; the
 following revoked-read/replay checks and new Card lifecycle case still require
 the next Linux run. The failed commit built no accepted images or release bundle.
+
+The corrected run 37082537910 passed all 231 Domain and 220 API cases, including
+revoked private Reminder replay and Card lifecycle renewal, plus web/PostgreSQL,
+image build and security checks. Its exact-image container acceptance remains
+pending, so this does not establish full release or browser completion.
+Run 37081536276's exact-image date fixture passed its real date-command generation,
+publication rollback, future job, replay/no-op and completion/reopen/clear checks.
+That earlier fixture seeded a personal choice; later personal-configuration and
+container-lifecycle acceptance must still run against their own exact images.
+
+The canonical configuration route now follows PRD-12 section 13:
+`POST/DELETE /cards/{cardId}/reminders`, with a personal GET on the same path.
+The initial singular PUT route has been replaced; tests, telemetry and the
+container fixture use the specified route/method.
+
+List and Board archive/restore/deletion commands now also reschedule their
+children inside the owning command. PostgreSQL obtains distinct chosen Card IDs
+with an uncapped tenant/Board/List query; it does not reuse a UI directory page.
+The planner receives actual parent eligibility independently of the Card's own
+archive state. Restoring a Board leaves an archived List or Card suspended and
+never re-enables an explicitly cancelled choice. The source API regression covers
+mixed contexts and replay; the mandatory exact-image fixture includes 76 chosen
+Cards, private cancellation, selective renewal and a forced publication failure
+that must roll back the List and all Reminder changes. Local strict build and
+shell syntax passed; the new source/container cases need their Linux run.
+Organization lifecycle commands and MUI configuration remain outstanding.

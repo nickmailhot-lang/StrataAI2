@@ -6,11 +6,11 @@ public sealed record CardReminder(Guid Id, Guid OrganizationId, Guid UserId, Gui
 
 public sealed record CardReminderPlan(bool Enabled, DateTimeOffset? DueAt, DateTimeOffset? TriggerAt, string Status)
 {
-    public static CardReminderPlan For(CardRecord card, string intervalCode, bool enabled, DateTimeOffset now)
+    public static CardReminderPlan For(CardRecord card, string intervalCode, bool enabled, DateTimeOffset now, bool contextActive = true)
     {
         if (!CardReminderIntervals.IsConfigured(intervalCode)) throw new ArgumentException("Unsupported reminder interval.", nameof(intervalCode));
         if (!enabled) return new(false, null, null, "CANCELLED");
-        var available = CardReminderIntervals.Find(card, intervalCode, now);
+        var available = contextActive ? CardReminderIntervals.Find(card, intervalCode, now) : null;
         return available is null ? new(true, card.DueAt?.ToUniversalTime(), null, "SUSPENDED")
             : new(true, card.DueAt!.Value.ToUniversalTime(), available.TriggerAt, "SCHEDULED");
     }
@@ -27,5 +27,5 @@ public interface ICardReminderStore
     Task<CardReminder?> FindAsync(Guid organizationId, Guid userId, Guid cardId, CancellationToken ct);
     Task<IReadOnlyList<CardReminder>> ListEnabledForCardAsync(Guid organizationId, Guid cardId, CancellationToken ct);
     Task<CardReminder?> SetAsync(CardRecord card, Guid userId, string intervalCode, bool enabled,
-        long expectedVersion, DateTimeOffset now, CancellationToken ct);
+        long expectedVersion, DateTimeOffset now, CancellationToken ct, bool contextActive = true);
 }

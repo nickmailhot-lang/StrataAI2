@@ -38,7 +38,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<ICardReminderJobPublisher, PostgresCardReminderJobPublisher>();
         }
 
-        services.AddSingleton<IWorkManagementService>(provider => new TransactionalWorkManagementService(new WorkManagementService(provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<StrataAI.Application.Organizations.IOrganizationStore>(), provider.GetRequiredService<StrataAI.Application.Common.IClock>(), provider.GetRequiredService<IWorkEventStore>(), provider.GetRequiredService<StrataAI.Application.Identity.IdentityPolicy>(), provider.GetRequiredService<IWorkNotificationStore>(), provider.GetRequiredService<CardWatchNotificationProducer>(), provider.GetRequiredService<CardReminderScheduling>()),
+        services.AddSingleton<IWorkManagementService>(provider => new TransactionalWorkManagementService(new WorkManagementService(provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<StrataAI.Application.Organizations.IOrganizationStore>(), provider.GetRequiredService<StrataAI.Application.Common.IClock>(), provider.GetRequiredService<IWorkEventStore>(), provider.GetRequiredService<StrataAI.Application.Identity.IdentityPolicy>(), provider.GetRequiredService<IWorkNotificationStore>(), provider.GetRequiredService<CardWatchNotificationProducer>(), provider.GetRequiredService<CardReminderScheduling>(), provider.GetRequiredService<CardReminderContainerScheduling>()),
                 provider.GetRequiredService<IWorkManagementStore>(), provider.GetRequiredService<IWorkManagementUnitOfWork>(),
                 provider.GetRequiredService<StrataAI.Application.Organizations.IOrganizationStore>(), provider.GetRequiredService<IWorkCommandContext>(),
                 provider.GetRequiredService<StrataAI.Application.Identity.ICommandActorAuthorization>()));
@@ -49,6 +49,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<ICardDateStore>(provider => (ICardDateStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<CardDateService>();
         services.AddSingleton<CardReminderScheduling>();
+        services.AddSingleton<CardReminderContainerScheduling>();
         services.AddSingleton<CardReminderService>();
         services.AddSingleton<ICardReminderEventPublisher, CardReminderEvents>();
         services.AddSingleton<CardWatchNotificationProducer>();
