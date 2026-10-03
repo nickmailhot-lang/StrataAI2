@@ -1,4 +1,6 @@
 using System.Buffers.Binary;
+using System.Collections;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using StrataAI.Application.WorkManagement;
 
@@ -12,6 +14,28 @@ public static class AttachmentPreviewProcessProtocol
     private const int ResultHeaderSize = 22;
     private static readonly string[] FailureCodes = ["preview_decoder_unavailable", "preview_type_unsupported",
         "preview_source_unavailable", "preview_image_invalid", "preview_dimensions_exceeded", "preview_output_exceeded"];
+    private static readonly IReadOnlyDictionary<string, string> ChildEnvironment = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["DOTNET_EnableDiagnostics"] = "0",
+        ["DOTNET_GCHeapHardLimit"] = "4000000", // Hex: 64 MiB managed heap.
+        ["DOTNET_GCRegionRange"] = "10000000", // Hex: 256 MiB virtual GC region range.
+        ["DOTNET_gcServer"] = "0",
+        ["DOTNET_PROCESSOR_COUNT"] = "1",
+        ["MALLOC_ARENA_MAX"] = "1" // Bound glibc arena reservations independently of host CPU count.
+    };
+
+    public static void ConfigureChildEnvironment(ProcessStartInfo start)
+    {
+        ArgumentNullException.ThrowIfNull(start); start.Environment.Clear();
+        foreach (var entry in ChildEnvironment) start.Environment[entry.Key] = entry.Value;
+    }
+
+    public static bool IsFixedChildEnvironment(IDictionary environment)
+    {
+        ArgumentNullException.ThrowIfNull(environment);
+        return environment.Count == ChildEnvironment.Count
+            && ChildEnvironment.All(entry => environment[entry.Key] is string value && value == entry.Value);
+    }
 
     // Retain only a bounded prefix, return only a fixed category, and drain the
     // remaining pipe so a longer fail-fast report cannot deadlock the child.
@@ -98,9 +122,7 @@ public static class AttachmentPreviewProcessProtocol
         {
             ReportStage(stage);
             if (!OperatingSystem.IsLinux()) throw new AttachmentImagePreviewException("preview_decoder_unavailable");
-            var allowedEnvironment = new HashSet<string>(StringComparer.Ordinal)
-            { "DOTNET_EnableDiagnostics", "DOTNET_GCHeapHardLimit", "DOTNET_GCRegionRange", "DOTNET_gcServer", "DOTNET_PROCESSOR_COUNT" };
-            if (Environment.GetEnvironmentVariables().Keys.Cast<string>().Any(key => !allowedEnvironment.Contains(key)))
+            if (!IsFixedChildEnvironment(Environment.GetEnvironmentVariables()))
                 throw new AttachmentImagePreviewException("preview_decoder_unavailable");
             // Create an owned anonymous staging inode before filesystem
             // restriction. No request bytes have been read at this point.

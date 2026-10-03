@@ -54,12 +54,7 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
                 start.ArgumentList.Add("--clear-groups"); start.ArgumentList.Add("--bounding-set=-all");
             }
             start.ArgumentList.Add("--"); start.ArgumentList.Add("/app/strata-preview-launcher"); start.ArgumentList.Add(scratch);
-            start.Environment.Clear();
-            start.Environment["DOTNET_EnableDiagnostics"] = "0";
-            start.Environment["DOTNET_GCHeapHardLimit"] = "4000000"; // Hex: 64 MiB managed heap.
-            start.Environment["DOTNET_GCRegionRange"] = "10000000"; // Hex: 256 MiB virtual GC region range.
-            start.Environment["DOTNET_gcServer"] = "0";
-            start.Environment["DOTNET_PROCESSOR_COUNT"] = "1";
+            AttachmentPreviewProcessProtocol.ConfigureChildEnvironment(start);
             child = Process.Start(start) ?? throw Unavailable();
             result = AttachmentPreviewProcessProtocol.ReadResultAsync(child.StandardOutput.BaseStream, deadline.Token);
             var writer = WriteAndCloseAsync(child.StandardInput.BaseStream, request, verifiedMimeType, verifiedSource, deadline.Token);

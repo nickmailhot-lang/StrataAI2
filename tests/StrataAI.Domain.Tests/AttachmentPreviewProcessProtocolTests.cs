@@ -1,4 +1,6 @@
 using System.Buffers.Binary;
+using System.Collections;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -13,6 +15,34 @@ public sealed class AttachmentPreviewProcessProtocolTests
     private static readonly byte[] Png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==");
     private static AttachmentScanRequest Request(byte[] source) => new(new(Guid.NewGuid(), Guid.NewGuid()), source.Length,
         Convert.ToHexStringLower(SHA256.HashData(source)));
+
+    [Fact]
+    public void Child_environment_removes_inherited_provider_credentials_and_limits_runtime_reservations()
+    {
+        var start = new ProcessStartInfo("fixed-worker");
+        start.Environment["PROVIDER_SECRET"] = "private-provider-value";
+        start.Environment["DOTNET_EnableDiagnostics"] = "1";
+        AttachmentPreviewProcessProtocol.ConfigureChildEnvironment(start);
+        Assert.Equal(6, start.Environment.Count); Assert.False(start.Environment.ContainsKey("PROVIDER_SECRET"));
+        Assert.Equal("1", start.Environment["MALLOC_ARENA_MAX"]); Assert.Equal("0", start.Environment["DOTNET_EnableDiagnostics"]);
+        var environment = new Hashtable(); foreach (var entry in start.Environment) environment.Add(entry.Key, entry.Value);
+        Assert.True(AttachmentPreviewProcessProtocol.IsFixedChildEnvironment(environment));
+        environment["PROVIDER_SECRET"] = "private-provider-value";
+        Assert.False(AttachmentPreviewProcessProtocol.IsFixedChildEnvironment(environment));
+    }
+
+    [Theory]
+    [InlineData("MALLOC_ARENA_MAX", "0")] [InlineData("DOTNET_EnableDiagnostics", "1")]
+    [InlineData("DOTNET_GCHeapHardLimit", "80000000")]
+    public void Child_environment_rejects_changed_or_missing_runtime_policy_values(string key, string value)
+    {
+        var start = new ProcessStartInfo("fixed-worker"); AttachmentPreviewProcessProtocol.ConfigureChildEnvironment(start);
+        var environment = new Hashtable(); foreach (var entry in start.Environment) environment.Add(entry.Key, entry.Value);
+        environment[key] = value; Assert.False(AttachmentPreviewProcessProtocol.IsFixedChildEnvironment(environment));
+        environment.Remove(key); Assert.False(AttachmentPreviewProcessProtocol.IsFixedChildEnvironment(environment));
+        environment["PROVIDER_SECRET"] = "private-provider-value";
+        Assert.Equal(6, environment.Count); Assert.False(AttachmentPreviewProcessProtocol.IsFixedChildEnvironment(environment));
+    }
     private static byte[] Frame(byte[] png, int width = 1, int height = 1, int? length = null)
     {
         var result = new byte[22 + png.Length]; "SAPRV001"u8.CopyTo(result);
