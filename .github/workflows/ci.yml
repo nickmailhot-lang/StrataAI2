@@ -254,6 +254,17 @@ jobs:
       - name: Validate exact web image edge configuration
         run: docker run --rm --network none --entrypoint nginx "strataai-web:${GITHUB_SHA}" -t
 
+      - name: Verify native preview codec in the exact Worker image
+        timeout-minutes: 2
+        run: |
+          timeout --signal=TERM --kill-after=5s 30s docker run --rm \
+            --network none --read-only --user 1654:1654 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --memory 512m --memory-swap 512m --cpus 1 --pids-limit 64 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+            --env DOTNET_EnableDiagnostics=0 \
+            "strataai-worker:${GITHUB_SHA}" --verify-attachment-preview-runtime
+
       - name: Export exact built images
         shell: bash
         run: |
