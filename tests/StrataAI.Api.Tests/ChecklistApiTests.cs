@@ -64,6 +64,8 @@ public sealed partial class ApiHostTests
     public async Task PRD_13_List_copy_preserves_all_active_checklist_content_with_independent_ids(bool crossBoard)
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        var json = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web);
+        json.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
         using var owner = app.CreateClient(); using var member = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct);
         var work = app.Services.GetRequiredService<IWorkManagementStore>(); var children = app.Services.GetRequiredService<IChecklistStore>();
@@ -85,13 +87,13 @@ public sealed partial class ApiHostTests
         if (crossBoard)
         {
             using var board = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "Destination", visibility = "PRIVATE" });
-            destination = (await board.Content.ReadFromJsonAsync<BoardRecord>(ct))!.Id;
+            destination = (await board.Content.ReadFromJsonAsync<BoardRecord>(json, ct))!.Id;
         }
         var key = Guid.NewGuid().ToString(); var input = new { destinationBoardId = destination, name = "Checklist copy", version = 1 };
         using var copied = await Mutate(owner, HttpMethod.Post, $"/lists/{f.List}/copy", input, key);
         Assert.Equal(HttpStatusCode.Created, copied.StatusCode);
-        var list = (await copied.Content.ReadFromJsonAsync<BoardListRecord>(ct))!;
-        var snapshot = (await owner.GetFromJsonAsync<BoardSnapshot>($"/boards/{destination}", ct))!;
+        var list = (await copied.Content.ReadFromJsonAsync<BoardListRecord>(json, ct))!;
+        var snapshot = (await owner.GetFromJsonAsync<BoardSnapshot>($"/boards/{destination}", json, ct))!;
         var copy = Assert.Single(Assert.Single(snapshot.Lists, entry => entry.List.Id == list.Id).Cards);
         var page = (await owner.GetFromJsonAsync<ChecklistPage>($"/cards/{copy.Id}/checklists", ct))!;
         var parent = Assert.Single(page.Items).Checklist;
