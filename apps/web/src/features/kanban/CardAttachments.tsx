@@ -3,6 +3,7 @@ import { Box, Button, Link, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { attachmentUrl, parseAttachmentPage, type AttachmentPage, type AttachmentScope } from './attachments';
 import { FileAttachmentDownloadControl } from './FileAttachmentDownloadControl';
+import { FileAttachmentPreviewControl } from './FileAttachmentPreviewControl';
 
 type Props = AttachmentScope & { version: number; unavailable: boolean; onRefresh: () => void };
 export function CardAttachments(props: Props) {
@@ -66,6 +67,7 @@ function AttachmentContent(props: Props & { returnToToggle: () => void }) {
           : item.scanStatus === 3 ? 'File rejected by the safety scan. File access is unavailable.'
             : item.scanStatus === 4 ? 'Safety scan failed. File access is unavailable.' : 'Safety scan complete.'}</Typography>
         {item.scanStatus === 2 && <FileAttachmentDownloadControl {...props} file={item} />}
+        {item.scanStatus === 2 && <FileAttachmentPreviewControl {...props} file={item} />}
       </Stack>)}
     </>}
     <Stack direction="row" spacing={1}>

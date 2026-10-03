@@ -68,5 +68,51 @@ public sealed class AttachmentDownloadAdmissionService(IWorkManagementStore work
         && file.Metadata.ScannedAt >= file.Metadata.CreatedAt && file.Metadata.ScannedAt <= file.Metadata.UpdatedAt
         && file.Metadata.Url is null && file.Metadata.MimeType is "image/png" or "image/jpeg" or "image/webp" or "application/pdf"
         && file.Metadata.SizeBytes is > 0 and <= 1_073_741_824 && file.Metadata.SizeBytes == file.Integrity.SizeBytes
+        && !file.Integrity.Reference.IsPreview
         && file.Integrity.Reference.OrganizationId == card.OrganizationId && file.Integrity.Reference.AttachmentId == id;
+
+    public async Task<WorkOperation<AttachmentPreviewAdmission>> AdmitPreviewAsync(Guid cardId, Guid attachmentId,
+        Guid actor, CancellationToken ct = default)
+    {
+        var source = await AdmitAsync(cardId, attachmentId, actor, ct);
+        if (!source.Succeeded || source.Value is null)
+            return WorkOperation<AttachmentPreviewAdmission>.Failure(source.ErrorCode ?? "card_not_found");
+        var current = source.Value;
+        return await transactions.ExecuteReadAsync(current.Card.OrganizationId, actor, "card_not_found",
+            () => AttachmentAdmission.CheckAsync(work, organizations, boards, current.Card, actor, false, ct), async () =>
+            {
+                var file = await attachments.FindFileAttachmentAsync(current.Card.OrganizationId, cardId, attachmentId, ct);
+                if (file is null || file != current.File || file.Metadata.MimeType is not ("image/png" or "image/jpeg" or "image/webp"))
+                    return WorkOperation<AttachmentPreviewAdmission>.Failure("card_not_found");
+                var preview = await attachments.FindPublishedPreviewAsync(file, ct);
+                return IsPreview(preview, current)
+                    ? WorkOperation<AttachmentPreviewAdmission>.Success(new(current, preview!))
+                    : WorkOperation<AttachmentPreviewAdmission>.Failure("card_not_found");
+            }, ct);
+    }
+
+    public async Task<WorkOperation<bool>> RevalidatePreviewAsync(AttachmentPreviewAdmission admitted, Guid actor,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(admitted);
+        var source = admitted.Source;
+        bool Timely() => actor == source.ActorId && clock.UtcNow >= source.AdmittedAt && clock.UtcNow < source.ExpiresAt;
+        if (!Timely()) return WorkOperation<bool>.Failure("card_not_found");
+        return await transactions.ExecuteReadAsync(source.Card.OrganizationId, actor, "card_not_found",
+            async () => Timely() && await AttachmentAdmission.CheckAsync(work, organizations, boards, source.Card, actor, false, ct), async () =>
+            {
+                var file = await attachments.FindFileAttachmentAsync(source.Card.OrganizationId, source.Card.Id, source.File.Metadata.Id, ct);
+                if (file is null || file != source.File || !IsDeliverable(file, source.Card, source.File.Metadata.Id))
+                    return WorkOperation<bool>.Failure("card_not_found");
+                var preview = await attachments.FindPublishedPreviewAsync(file, ct);
+                return Timely() && preview == admitted.Preview && IsPreview(preview, source)
+                    ? WorkOperation<bool>.Success(true) : WorkOperation<bool>.Failure("card_not_found");
+            }, ct);
+    }
+
+    private static bool IsPreview(AttachmentPublishedPreview? preview, AttachmentDownloadAdmission source) => preview is not null
+        && preview.Integrity.Reference.IsPreview && preview.Integrity.Reference.OrganizationId == source.Card.OrganizationId
+        && preview.Integrity.Reference.AttachmentId != source.File.Metadata.Id
+        && preview.Integrity.SizeBytes is >= 45 and <= 8_388_608
+        && preview.Width is >= 1 and <= 1024 && preview.Height is >= 1 and <= 1024;
 }

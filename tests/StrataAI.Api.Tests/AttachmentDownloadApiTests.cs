@@ -15,6 +15,9 @@ public sealed partial class ApiHostTests
     private sealed class DownloadMetadata(IAttachmentMetadataStore inner) : IAttachmentMetadataStore
     {
         public bool Clean;
+        public AttachmentPublishedPreview? PublishedPreview;
+        public Task<AttachmentPublishedPreview?> FindPublishedPreviewAsync(AttachmentFileRecord source, CancellationToken ct)
+            => Task.FromResult(PublishedPreview);
         public Task<AttachmentMetadata> CreateUrlAttachmentAsync(Guid id, Guid organization, Guid card, Guid uploader, string title, string url, DateTimeOffset at, CancellationToken ct)
             => inner.CreateUrlAttachmentAsync(id, organization, card, uploader, title, url, at, ct);
         public Task<AttachmentMetadata> CreateFileAttachmentAsync(StoredAttachmentObject measured, Guid card, Guid uploader, string name, string mime, DateTimeOffset at, CancellationToken ct)
@@ -27,7 +30,7 @@ public sealed partial class ApiHostTests
         {
             var file = await inner.FindFileAttachmentAsync(organization, card, attachment, ct);
             return file is null || !Clean ? file : file with { Metadata = file.Metadata with {
-                ScanStatus = AttachmentScanStatus.Clean, ScannedAt = file.Metadata.UpdatedAt, Version = 2 } };
+                ScanStatus = AttachmentScanStatus.Clean, ScannedAt = file.Metadata.UpdatedAt, Version = PublishedPreview is null ? 2 : 3 } };
         }
     }
 
@@ -48,6 +51,8 @@ public sealed partial class ApiHostTests
         using var pendingOptions = await member.GetAsync(path + "-options", ct); Assert.Equal(HttpStatusCode.NotFound, pendingOptions.StatusCode);
         using var pending = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, pending.StatusCode); Assert.Equal(0, objects.Reads);
         var metadata = Assert.IsType<DownloadMetadata>(app.Services.GetRequiredService<IAttachmentMetadataStore>()); metadata.Clean = true;
+        using var pdfPreview = await member.GetAsync($"/cards/{card.Id}/attachments/{file.Id}/preview", ct);
+        Assert.Equal(HttpStatusCode.NotFound, pdfPreview.StatusCode); Assert.Equal(0, objects.Reads);
         var options = (await member.GetFromJsonAsync<AttachmentDownloadOptions>(path + "-options", ct))!;
         Assert.Equal(f.Organization, options.OrganizationId); Assert.Equal(f.Board, options.BoardId); Assert.Equal(card.Id, options.CardId);
         Assert.Equal(2, options.CardVersion); Assert.Equal(file.Id, options.AttachmentId); Assert.Equal(2, options.AttachmentVersion); Assert.Equal(f.Recipient, options.ActorId);

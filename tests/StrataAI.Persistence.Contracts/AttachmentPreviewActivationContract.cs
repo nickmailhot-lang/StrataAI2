@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.WorkManagement;
@@ -9,7 +10,7 @@ using StrataAI.Infrastructure.WorkManagement;
 internal static class AttachmentPreviewActivationContract
 {
     internal static async Task RunAsync(NpgsqlConnection admin,PostgresConnectionFactory worker,PostgresBackgroundJobStore capable,
-        Func<string,Task<Guid>> publish,Guid organization,Guid card,byte[] bytes,CancellationToken ct)
+        Func<string,Task<Guid>> publish,Guid organization,Guid card,byte[] bytes,ServiceProvider apiServices,CancellationToken ct)
     {
         void Require(bool condition,string invariant) {if(!condition)throw new InvalidOperationException(invariant);}
         var legacy=new PostgresBackgroundJobStore(worker); var workerId=Guid.NewGuid();
@@ -100,6 +101,16 @@ internal static class AttachmentPreviewActivationContract
             Require(await state.ExecuteScalarAsync(ct) is true,"Capable Worker did not recover terminal preview expiry.");
         }
         var intents=new PostgresAttachmentPreviewIntentStore(worker);
+        var admission=apiServices.GetRequiredService<AttachmentDownloadAdmissionService>();
+        objects.ApiConnections=apiServices.GetRequiredService<PostgresConnectionFactory>();
+        var loadedPreview=await intents.LoadAsync(preview,reference,ct);
+        var declaredBytes=Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==");
+        Require(loadedPreview.Source is not null && await intents.DeclareAsync(preview,reference,loadedPreview.Source,"image/png",
+            new(declaredBytes.Length,Convert.ToHexStringLower(SHA256.HashData(declaredBytes)),1,1),ct)==AttachmentPreviewDeclaration.Declared,
+            "Read fixture could not declare an unpublished private preview.");
+        var reads=objects.Reads;
+        Require(!(await admission.AdmitPreviewAsync(card,source,job.ActorId,ct)).Succeeded && objects.Reads==reads,
+            "Declared-only Clean source admitted preview bytes.");
         var generator=new Generator();
         var handler=new AttachmentPreviewDeliveryHandler(intents,new(intents,new PrivateAttachmentDownloadPreparer(objects),generator,objects),intents);
         await handler.ExecuteAsync(preview,ct);
@@ -109,6 +120,35 @@ internal static class AttachmentPreviewActivationContract
         Require(objects.Reads==beforeReads && objects.Writes==1 && generator.Calls==1,"Automatic preview replay repeated provider I/O.");
         Require(await capable.CompleteAsync(organization,preview.Id,preview.LeaseId,workerId,ct),"Preview could not acknowledge publication.");
         Require(await Scalar<bool>("SELECT scan_status='CLEAN' AND version=3 FROM public.attachments WHERE id=@file AND tenant_id=@tenant;"),"Automatic preview did not publish File revision.");
+        var previewRead=new AttachmentPreviewReadService(admission,new PrivateAttachmentDownloadPreparer(objects));
+        var admitted=await admission.AdmitPreviewAsync(card,source,job.ActorId,ct);
+        Require(admitted.Value is not null && admitted.Value.Preview.Integrity.Reference==AttachmentObjectReference.ForPreview(organization,preview.Id),
+            "Restricted API did not derive the published private preview namespace.");
+        reads=objects.Reads;
+        Require(!(await previewRead.PrepareAsync(card,source,Guid.NewGuid(),ct)).Succeeded
+            && !(await previewRead.PrepareAsync(Guid.NewGuid(),source,job.ActorId,ct)).Succeeded
+            && !(await previewRead.PrepareAsync(card,source,job.ActorId,ct,2)).Succeeded && objects.Reads==reads,
+            "Foreign actor/Card/stale File revision reached the preview provider.");
+        var content=await previewRead.PrepareAsync(card,source,job.ActorId,ct,3);
+        Require(content.Value is not null && content.Value.Admission.Preview==admitted.Value!.Preview,"Published preview was not currently authorized.");
+        await using(var owned=content.Value!)
+        {
+            using var copied=new MemoryStream();await owned.Bytes.CopyToAsync(copied,ct);
+            Require(copied.ToArray().SequenceEqual(Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==")),
+                "Preview read delivered different or original bytes.");
+        }
+        objects.Corrupt=true;
+        Require((await previewRead.PrepareAsync(card,source,job.ActorId,ct)).ErrorCode=="work_storage_unavailable","Corrupt preview passed full integrity staging.");
+        objects.Corrupt=false;
+        objects.AfterRead=async ()=>await Scalar<int>("UPDATE public.attachments SET version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
+        Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct)).Succeeded,"File revision changed during preview staging retained its grant.");
+        Require(!(await admission.RevalidatePreviewAsync(admitted.Value!,job.ActorId,ct)).Succeeded,"Stale preview snapshot remained authorized.");
+        var renamed=await admission.AdmitPreviewAsync(card,source,job.ActorId,ct);
+        Require(renamed.Succeeded,"Unchanged immutable source could not re-admit a later File revision.");
+        await Scalar<int>("UPDATE public.attachments SET deleted_at=clock_timestamp(),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
+        reads=objects.Reads;
+        Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct)).Succeeded && objects.Reads==reads,"Deleted original retained preview delivery.");
+        Console.WriteLine("Restricted preview reads: committed receipt, source-bound integrity, private namespace, forced RLS, foreign actor/Card/stale revision refusal, full staging outside DB, corruption, changed revision and deletion passed.");
 
         async Task NoPreview(string mime,AttachmentScannerVerdict verdict)
         {
@@ -164,9 +204,25 @@ internal static class AttachmentPreviewActivationContract
     {
         private readonly Dictionary<AttachmentObjectReference,byte[]> _values=new(){[new(tenant,original)]=bytes};
         public int Reads {get;private set;} public int Writes {get;private set;}
+        public bool Corrupt;
+        public Func<Task>? AfterRead;
+        public PostgresConnectionFactory? ApiConnections;
         public void Add(Guid file,byte[] content)=>_values.Add(new(tenant,file),content);
         public Task<Stream?> OpenPrivateReadAsync(AttachmentObjectReference reference,CancellationToken ct)
-        {ct.ThrowIfCancellationRequested();if(reference.OrganizationId!=tenant)throw new InvalidOperationException("Fixture scope widened.");Reads++;return Task.FromResult<Stream?>(_values.TryGetValue(reference,out var value)?new MemoryStream(value,false):null);}
+        {
+            ct.ThrowIfCancellationRequested();if(reference.OrganizationId!=tenant)throw new InvalidOperationException("Fixture scope widened.");
+            if(ApiConnections is not null && typeof(PostgresConnectionFactory).GetMethod("HasCommandScope",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!
+                .Invoke(ApiConnections,[tenant]) is true)throw new InvalidOperationException("Preview provider I/O held an owning API transaction.");
+            Reads++;if(!_values.TryGetValue(reference,out var value))return Task.FromResult<Stream?>(null);
+            var copy=value.ToArray();if(Corrupt)copy[^1]^=1;
+            var callback=AfterRead;AfterRead=null;return Task.FromResult<Stream?>(new Read(copy,callback));
+        }
+        private sealed class Read(byte[] content,Func<Task>? closed):MemoryStream(content,false)
+        {
+            private int _closed;
+            public override async ValueTask DisposeAsync()
+            {await base.DisposeAsync();if(Interlocked.Exchange(ref _closed,1)==0 && closed is not null)await closed();}
+        }
         public async Task<StoredAttachmentObject> WritePrivateAsync(AttachmentObjectReference reference,Stream source,long maximum,CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();if(!reference.IsPreview || reference.OrganizationId!=tenant || _values.ContainsKey(reference))throw new InvalidOperationException("Fixture write is not private non-clobbering preview.");

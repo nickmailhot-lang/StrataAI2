@@ -18,6 +18,7 @@ ALTER ROLE strataai_worker_runtime LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCR
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM strataai_api_runtime,strataai_worker_runtime;
 GRANT USAGE ON SCHEMA public TO strataai_api_runtime,strataai_worker_runtime;
 GRANT SELECT ON schema_migrations TO strataai_api_runtime,strataai_worker_runtime;
+GRANT SELECT ON attachment_previews,attachment_preview_publications TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe() TO strataai_api_runtime,strataai_worker_runtime;
 GRANT SELECT,INSERT,UPDATE ON users,sessions,password_reset_tokens,email_verification_tokens TO strataai_api_runtime;
 GRANT INSERT ON audit_events,identity_delivery_jobs TO strataai_api_runtime;

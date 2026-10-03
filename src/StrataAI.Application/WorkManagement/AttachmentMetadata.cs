@@ -16,6 +16,9 @@ public sealed record AttachmentFileRecord(AttachmentMetadata Metadata, [property
 
 public interface IAttachmentMetadataStore
 {
+    // Unsupported providers fail closed. A declaration alone is never published.
+    Task<AttachmentPublishedPreview?> FindPublishedPreviewAsync(AttachmentFileRecord source, CancellationToken ct)
+        => Task.FromResult<AttachmentPublishedPreview?>(null);
     // Production calls require an owning tenant read/command transaction.
     // Authorization, parent lifecycle/CAS, audit/events and idempotency belong
     // to the enclosing Application command, not these metadata primitives.

@@ -42,6 +42,9 @@ path="/cards/$card/attachments"; key=$(uuid)
 download_id=$(uuid)
 test "$(read_page owner "$path/$download_id/download")" = 404
 test "$(read_page owner "/attachments/$download_id/download?cardId=$card")" = 404
+test "$(read_page owner "$path/$download_id/preview")" = 404
+test "$(read_page owner "$path/$download_id/preview-options")" = 404
+test "$(read_page owner "/attachments/$download_id/preview?cardId=$card")" = 404
 payload='{"title":" Link ","url":"https://example.test/private-attachment?q=1#section","cardVersion":1}'
 test "$(request owner POST "$path/url" "$key" "$payload")" = 200
 cp "$scratch/response.json" "$scratch/receipt.json"

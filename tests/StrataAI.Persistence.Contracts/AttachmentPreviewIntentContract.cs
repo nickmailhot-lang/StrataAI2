@@ -70,6 +70,7 @@ internal static class AttachmentPreviewIntentContract
         foreach (var sql in new[] { "SELECT * FROM public.attachment_previews;", "UPDATE public.attachment_previews SET width=1;",
             "DELETE FROM public.attachment_previews;" })
         {
+            if (factory == api && sql.StartsWith("SELECT", StringComparison.Ordinal)) continue;
             await using var session = await factory.OpenTenantSessionAsync(organization, ct);
             await using var denied = new NpgsqlCommand(sql, session.Connection, session.Transaction);
             try { await denied.ExecuteNonQueryAsync(ct); throw new InvalidOperationException("Runtime role directly accessed private preview ledger."); }
@@ -124,11 +125,7 @@ internal static class AttachmentPreviewIntentContract
         Require(await store.DeclareAsync(job, attempt, source, "image/png", new(70, new string('c', 64), 1, 1), ct)
             == AttachmentPreviewDeclaration.Conflict, "Preview retry replaced declared bytes.");
         Require((await store.LoadAsync(job, attempt, ct)).DeclaredOutput == output, "Preview retry lost its private recovery measurement.");
-        // Give a disposable test transaction read permission to exercise actual
-        // forced RLS under a NOBYPASSRLS role, then restore production privileges.
-        await using (var grant = new NpgsqlCommand("GRANT SELECT ON public.attachment_previews TO strataai_api_runtime;", admin))
-            await grant.ExecuteNonQueryAsync(ct);
-        try
+        // Permanent read-only API grants exercise actual forced tenant RLS.
         {
             foreach (var scope in new[] { organization, foreignOrganization })
             {
@@ -146,11 +143,7 @@ internal static class AttachmentPreviewIntentContract
                 await transaction.RollbackAsync(ct);
             }
         }
-        finally
-        {
-            await using var revoke = new NpgsqlCommand("REVOKE SELECT ON public.attachment_previews FROM strataai_api_runtime;", admin);
-            await revoke.ExecuteNonQueryAsync(ct);
-        }
+
         await using (var mutate = new NpgsqlCommand("UPDATE public.attachment_previews SET output_sha256=repeat('d',64) WHERE id=@id;", admin))
         {
             mutate.Parameters.AddWithValue("id", id);

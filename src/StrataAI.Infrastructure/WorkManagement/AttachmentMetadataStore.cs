@@ -67,6 +67,36 @@ internal sealed partial class InMemoryWorkManagementStore : IAttachmentMetadataS
 
 internal sealed partial class PostgresWorkManagementStore : IAttachmentMetadataStore
 {
+    public async Task<AttachmentPublishedPreview?> FindPublishedPreviewAsync(AttachmentFileRecord source, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        var file = source.Metadata;
+        if (!connectionFactory.HasCommandScope(file.OrganizationId))
+            throw new InvalidOperationException("Preview reads require the owning scope.");
+        if (source.Integrity.Reference.IsPreview || source.Integrity.Reference.OrganizationId != file.OrganizationId
+            || source.Integrity.Reference.AttachmentId != file.Id) return null;
+        await using var session = await connectionFactory.OpenTenantSessionAsync(file.OrganizationId, ct);
+        await using var query = new NpgsqlCommand("""
+            SELECT m.id,m.output_size_bytes,m.output_sha256,m.width,m.height
+            FROM attachment_previews m
+            JOIN attachment_preview_publications p ON p.id=m.id AND p.tenant_id=m.tenant_id
+            JOIN attachments a ON a.id=m.attachment_id AND a.tenant_id=m.tenant_id AND a.card_id=m.card_id
+            WHERE m.tenant_id=@tenant AND m.card_id=@card AND m.attachment_id=@file AND m.policy_version=1
+              AND p.attachment_version=m.source_version+1 AND a.version>=p.attachment_version AND a.version=@version
+              AND a.kind='FILE' AND a.scan_status='CLEAN' AND a.deleted_at IS NULL
+              AND a.storage_key=@key AND a.sha256=@digest AND a.size_bytes=@size AND a.mime_type=@mime
+              AND m.source_sha256=a.sha256 AND m.source_size_bytes=a.size_bytes AND m.source_mime_type=a.mime_type
+            ORDER BY m.source_version DESC LIMIT 1;
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", file.OrganizationId); query.Parameters.AddWithValue("card", file.CardId);
+        query.Parameters.AddWithValue("file", file.Id); query.Parameters.AddWithValue("version", file.Version);
+        query.Parameters.AddWithValue("key", source.Integrity.Reference.ObjectKey); query.Parameters.AddWithValue("digest", source.Integrity.Sha256);
+        query.Parameters.AddWithValue("size", source.Integrity.SizeBytes); query.Parameters.AddWithValue("mime", file.MimeType ?? "");
+        await using var row = await query.ExecuteReaderAsync(ct);
+        return await row.ReadAsync(ct)
+            ? new(new(AttachmentObjectReference.ForPreview(file.OrganizationId, row.GetGuid(0)), row.GetInt64(1), row.GetString(2)),
+                row.GetInt32(3), row.GetInt32(4)) : null;
+    }
     private const string AttachmentMetadataColumns = "a.id,a.tenant_id,a.card_id,a.uploader_id,a.kind,a.display_name,a.mime_type,a.size_bytes,a.url,a.scan_status,a.scanned_at,a.created_at,a.updated_at,a.version,a.deleted_at";
     private static AttachmentMetadata ReadAttachmentMetadata(NpgsqlDataReader row) => new(row.GetGuid(0), row.GetGuid(1), row.GetGuid(2), row.GetGuid(3),
         row.GetString(4) switch { "FILE" => AttachmentKind.File, "URL" => AttachmentKind.Url, _ => throw new InvalidOperationException("Attachment kind metadata is invalid.") }, row.GetString(5), row.IsDBNull(6) ? null : row.GetString(6),

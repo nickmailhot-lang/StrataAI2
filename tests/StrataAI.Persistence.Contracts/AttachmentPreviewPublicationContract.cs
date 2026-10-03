@@ -59,6 +59,7 @@ internal static class AttachmentPreviewPublicationContract
             "UPDATE public.attachment_preview_publications SET card_version=card_version+1;",
             "DELETE FROM public.attachment_preview_publications;" })
         {
+            if (factory == api && sql.StartsWith("SELECT", StringComparison.Ordinal)) continue;
             await using var session = await factory.OpenTenantSessionAsync(job.OrganizationId, ct);
             await using var denied = new NpgsqlCommand(sql, session.Connection, session.Transaction);
             try { await denied.ExecuteNonQueryAsync(ct); throw new InvalidOperationException("Runtime accessed preview publications directly."); }
@@ -167,9 +168,7 @@ internal static class AttachmentPreviewPublicationContract
             FROM public.attachment_preview_publications r JOIN public.audit_events a ON a.id=r.id AND a.tenant_id=r.tenant_id
              JOIN public.work_events e ON e.event_id=r.id AND e.tenant_id=r.tenant_id WHERE r.id=@job AND r.tenant_id=@tenant;
             """), "Preview receipt lacked atomic ready event/audit.");
-        await using (var grant = new NpgsqlCommand("GRANT SELECT ON public.attachment_preview_publications TO strataai_api_runtime;",admin))
-            await grant.ExecuteNonQueryAsync(ct);
-        try
+        // Permanent read-only API grants exercise actual forced tenant RLS.
         {
             foreach(var scope in new[] {job.OrganizationId,foreignOrganization})
             {
@@ -186,11 +185,7 @@ internal static class AttachmentPreviewPublicationContract
                 await transaction.RollbackAsync(ct);
             }
         }
-        finally
-        {
-            await using var revoke=new NpgsqlCommand("REVOKE SELECT ON public.attachment_preview_publications FROM strataai_api_runtime;",admin);
-            await revoke.ExecuteNonQueryAsync(ct);
-        }
+
         Require(await store.LoadAsync(job, attempt, ct) is { Status: AttachmentPreviewLoadStatus.Applied, Source: null, VerifiedMimeType: null, DeclaredOutput: null },
             "Committed preview replay disclosed private measurements.");
         var opens=objects.Opens;

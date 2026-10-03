@@ -236,12 +236,12 @@ test "$(api 'SELECT public.runtime_database_role_is_safe()')" = t
 test "$(api "SELECT has_table_privilege(current_user,'attachments','SELECT') AND has_table_privilege(current_user,'attachments','INSERT') AND has_table_privilege(current_user,'attachments','UPDATE') AND NOT has_table_privilege(current_user,'attachments','DELETE')")" = t
 test "$(worker "SELECT has_table_privilege(current_user,'attachments','SELECT') OR has_table_privilege(current_user,'attachments','UPDATE')")" = f
 
-# Preview declarations are Worker functions; neither runtime can read or
-# rewrite the private recovery ledger directly. Helper capabilities stay private.
+# Preview declarations are Worker functions. Neither runtime can rewrite the
+# private ledger directly. Read-only API access enforces RLS; helpers stay private.
 test "$(worker "SELECT has_function_privilege(current_user,'load_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint)','EXECUTE') AND has_function_privilege(current_user,'declare_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text,bigint,text,integer,integer)','EXECUTE') AND NOT has_function_privilege(current_user,'attachment_preview_claim_is_live(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint)','EXECUTE')")" = t
 test "$(api "SELECT has_function_privilege(current_user,'load_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint)','EXECUTE') OR has_function_privilege(current_user,'declare_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text,bigint,text,integer,integer)','EXECUTE')")" = f
 for role in api worker; do
- test "$("$role" "SELECT has_table_privilege(current_user,'attachment_previews','SELECT') OR has_table_privilege(current_user,'attachment_previews','INSERT') OR has_table_privilege(current_user,'attachment_previews','UPDATE') OR has_table_privilege(current_user,'attachment_previews','DELETE')")" = f
+ test "$("$role" "SELECT has_table_privilege(current_user,'attachment_previews','INSERT') OR has_table_privilege(current_user,'attachment_previews','UPDATE') OR has_table_privilege(current_user,'attachment_previews','DELETE')")" = f
 done
 
 # Publication has its own fenced Worker capability. The renamed source helper
@@ -249,8 +249,11 @@ done
 test "$(worker "SELECT has_function_privilege(current_user,'finish_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,integer,integer)','EXECUTE') AND NOT has_function_privilege(current_user,'load_attachment_preview_source(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint)','EXECUTE')")" = t
 test "$(api "SELECT has_function_privilege(current_user,'finish_attachment_preview(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,integer,integer)','EXECUTE') OR has_function_privilege(current_user,'load_attachment_preview_source(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint)','EXECUTE')")" = f
 for role in api worker; do
- test "$("$role" "SELECT has_table_privilege(current_user,'attachment_preview_publications','SELECT') OR has_table_privilege(current_user,'attachment_preview_publications','INSERT') OR has_table_privilege(current_user,'attachment_preview_publications','UPDATE') OR has_table_privilege(current_user,'attachment_preview_publications','DELETE')")" = f
+ test "$("$role" "SELECT has_table_privilege(current_user,'attachment_preview_publications','INSERT') OR has_table_privilege(current_user,'attachment_preview_publications','UPDATE') OR has_table_privilege(current_user,'attachment_preview_publications','DELETE')")" = f
 done
 test "$(worker "SELECT has_function_privilege(current_user,'finish_attachment_scan(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text,boolean)','EXECUTE')")" = t
 test "$(api "SELECT has_function_privilege(current_user,'finish_attachment_scan(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,bigint,text,text,boolean)','EXECUTE')")" = f
 echo 'Real runtime logins reject elevation and enforce service-specific grants.'
+
+test "$(api "SELECT has_table_privilege(current_user,'attachment_previews','SELECT') AND has_table_privilege(current_user,'attachment_preview_publications','SELECT')")" = t
+test "$(worker "SELECT has_table_privilege(current_user,'attachment_previews','SELECT') OR has_table_privilege(current_user,'attachment_preview_publications','SELECT')")" = f

@@ -57,11 +57,11 @@ public sealed partial class ApiHostTests
     }
     // The normal Demo host remains disabled. This test explicitly injects a
     // synthetic transport/provider fixture; PostgreSQL atomicity is separate.
-    private static ApiFactory UploadFactory(UploadObjects objects, bool downloads = false) => new(configureServices: services =>
+    private static ApiFactory UploadFactory(UploadObjects objects, bool downloads = false, bool images = false) => new(configureServices: services =>
     {
         services.Replace(ServiceDescriptor.Singleton(new AttachmentUploadAvailability(true)));
         services.AddSingleton<IAttachmentObjectStorage>(objects);
-        services.AddSingleton(new AttachmentUploadPolicy(1024, ["application/pdf"]));
+        services.AddSingleton(new AttachmentUploadPolicy(1024, images ? ["image/png"] : ["application/pdf"]));
         services.AddSingleton<IAttachmentFileTypeInspector, AttachmentFileTypeInspector>();
         services.AddSingleton<IAttachmentDownloadPreparer, PrivateAttachmentDownloadPreparer>();
         if (downloads) services.Replace(ServiceDescriptor.Singleton<IAttachmentMetadataStore>(provider =>

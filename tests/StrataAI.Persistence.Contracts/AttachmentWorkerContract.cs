@@ -192,7 +192,7 @@ internal static class AttachmentWorkerContract
         await handler.ExecuteAsync(removedJob!,ct);
         Require(scanner.Calls==providerCalls && storage.Opens==objectReads,"Deactivated file was read by the scanner.");
         Require(await queue.CompleteAsync(organization,removedJob!.Id,removedJob.LeaseId,workerId,ct),"Superseded scan could not be acknowledged.");
-        await AttachmentPreviewActivationContract.RunAsync(admin,worker,queue,mime=>PublishPending(mime),organization,original.CardId,bytes,ct);
+        await AttachmentPreviewActivationContract.RunAsync(admin,worker,queue,mime=>PublishPending(mime),organization,original.CardId,bytes,apiServices,ct);
         Console.WriteLine("Restricted C# Worker scan: private admission, immutable claims, late lease rollback, status/Card/audit/event effects, replay without provider I/O and bounded failure passed.");
     }
     private sealed class FixtureStorage(Guid organization,byte[] bytes) : IAttachmentObjectStorage
