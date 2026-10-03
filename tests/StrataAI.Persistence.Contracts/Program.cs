@@ -102,6 +102,18 @@ try
     Require(await Change(expiry,3,new(AttachmentUploadAction.ConfirmMissing,now.AddHours(1))) is null,"Expired upload admitted another writer.");
     Require(await Change(expiry,3,new(AttachmentUploadAction.Abandon,now.AddHours(1))) is { State:AttachmentUploadState.Abandoned },"Expired intent was not retained.");
     Require(await InScope(organization,() => store.PrepareUploadAsync(Intent(expiry.RetryKey),ct)) is null,"Abandoned retry identity reused.");
+    var reconciled = Intent(); await InScope(organization,() => store.PrepareUploadAsync(reconciled,ct));
+    var reconcileNonce = Guid.NewGuid(); await Change(reconciled,1,new(AttachmentUploadAction.StartWrite,now,reconcileNonce,now.AddMinutes(5)));
+    await Change(reconciled,2,new(AttachmentUploadAction.UnknownWrite,now.AddSeconds(1),reconcileNonce));
+    var wrongMeasure = new StoredAttachmentObject(new(organization,reconciled.Id),128,new string('b',64));
+    Require(await Change(reconciled,3,new(AttachmentUploadAction.RecordReconciled,now.AddSeconds(2),Measured:wrongMeasure,VerifiedMimeType:"image/png")) is null,"Reconciliation trusted mismatched bytes.");
+    var recoveredMeasure = new StoredAttachmentObject(new(organization,reconciled.Id),128,reconciled.ExpectedSha256);
+    var recovered = await Change(reconciled,3,new(AttachmentUploadAction.RecordReconciled,now.AddSeconds(2),Measured:recoveredMeasure,VerifiedMimeType:"image/png"));
+    Require(recovered is { Version:4,State:AttachmentUploadState.Stored },"Existing-object reconciliation failed.");
+    var tombstone = await Change(reconciled,4,new(AttachmentUploadAction.Abandon,now.AddSeconds(3)));
+    Require(tombstone is { Version:5,State:AttachmentUploadState.Abandoned } && tombstone.StoredAt==recovered!.StoredAt
+        && tombstone.VerifiedMimeType=="image/png" && tombstone.ExpectedSha256==reconciled.ExpectedSha256,"Stored upload tombstone lost private reconciliation identity.");
+    Require(await Change(reconciled,5,new(AttachmentUploadAction.ConfirmMissing,now.AddSeconds(4))) is null,"Stored tombstone was resurrected.");
     Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, publication rollback and retained expiry passed.");
 }
 finally
