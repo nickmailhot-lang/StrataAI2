@@ -133,9 +133,22 @@ test "$(request member DELETE "$reminderPath?cardVersion=6&version=5" "$cancelKe
 cmp "$scratch/reminder-cancelled.json" "$scratch/response.json"
 test "$(request member PUT "$reminderPath" "$(uuid)" '{"intervalCode":"1_HOUR","enabled":true,"cardVersion":6,"version":6}')" = 400
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_type='Reminder' AND entity_id='$reminder' AND event_type IN ('REMINDER_SCHEDULED','REMINDER_CANCELLED');")" = 6
+test "$(request owner PATCH "$path" "$(uuid)" "$(jq -c '.version=6' <<< "$payload")")" = 200
+test "$(request member PUT "$reminderPath" "$(uuid)" '{"intervalCode":"1_HOUR","enabled":true,"cardVersion":7,"version":6}')" = 200
+archiveKey=$(uuid)
+test "$(request owner POST "/cards/$card/archive" "$archiveKey" '{"version":7}')" = 200
+test "$(admin "SELECT generation=8 AND enabled AND status='SUSPENDED' AND trigger_at IS NULL FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+after=$(state)
+test "$(request owner POST "/cards/$card/archive" "$archiveKey" '{"version":7}')" = 200
+test "$after" = "$(state)"
+test "$(request member PUT "$reminderPath" "$reminderKey" "$choice")" = 404
+test "$(request owner POST "/cards/$card/restore" "$(uuid)" '{"version":8}')" = 200
+test "$(admin "SELECT generation=9 AND status='SCHEDULED' AND trigger_at=due_at-interval '1 hour' FROM card_reminders WHERE tenant_id='$org' AND id='$reminder';")" = t
+test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$reminder';")" = 5
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 before=$(state)
 test "$(request member PUT "$reminderPath" "$reminderKey" "$choice")" = 404
 test "$before" = "$(state)"
 echo 'Date-command Reminder generations, canonical future jobs, replay/no-op, completion/reopen/clear and publication rollback passed.'
 echo 'Personal Reminder configuration, recipient privacy, stable cancellation, private events and revoked replay passed.'
+echo 'Card archive/restore Reminder suspension, future generation renewal and archive receipt deduplication passed.'

@@ -7,7 +7,8 @@ public sealed partial class WorkManagementService(
     IWorkManagementStore store,
     IOrganizationStore organizationStore,
     IClock clock, IWorkEventStore events, StrataAI.Application.Identity.IdentityPolicy identityPolicy,
-    IWorkNotificationStore notifications, CardWatchNotificationProducer watchNotifications) : IWorkManagementService, IWorkBoardAuthorization
+    IWorkNotificationStore notifications, CardWatchNotificationProducer watchNotifications,
+    CardReminderScheduling reminders) : IWorkManagementService, IWorkBoardAuthorization
 {
     public async Task<WorkOperation<BoardSyncScope>> GetSyncScopeAsync(Guid boardId, Guid? actorId,
         CancellationToken cancellationToken = default)
@@ -908,6 +909,7 @@ public sealed partial class WorkManagementService(
             return WorkOperation<CardRecord>.Failure("version_conflict");
         }
 
+        await reminders.RescheduleAsync(card, updated, actorUserId, correlationId, cancellationToken);
         await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, EventForLifecycle("CARD", nextState), "Card", updated.Id, updated.Version, correlationId, cancellationToken);
 
         return WorkOperation<CardRecord>.Success(updated);

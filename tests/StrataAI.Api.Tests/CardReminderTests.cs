@@ -9,6 +9,42 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Card_archive_suspends_the_choice_and_restore_reschedules_without_reenabling_cancelled_choices()
+    {
+        var ct = TestContext.Current.CancellationToken; var publisher = new ReminderPublisher();
+        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<ICardReminderJobPublisher>(publisher));
+        using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        var f = await NotificationFixture(app, owner, recipient, ct); var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var reminders = app.Services.GetRequiredService<ICardReminderStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Archive reminder", null, null, DateTimeOffset.UtcNow, ct);
+        using var dates = await Mutate(owner, HttpMethod.Patch, $"/cards/{card.Id}/dates",
+            new CardDatesInput(null, DateTimeOffset.UtcNow.AddDays(2).ToString("O"), "UTC", true, false, 1));
+        Assert.Equal(HttpStatusCode.OK, dates.StatusCode);
+        var path = $"/cards/{card.Id}/reminder"; var input = new CardReminderInput("1_HOUR", true, 2, 0); var key = Guid.NewGuid().ToString();
+        using var created = await Mutate(recipient, HttpMethod.Put, path, input, key); Assert.Equal(HttpStatusCode.OK, created.StatusCode);
+        var initial = (await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct))!;
+        using var archive = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/archive", new { version = 2 });
+        Assert.Equal(HttpStatusCode.OK, archive.StatusCode);
+        var suspended = (await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct))!;
+        Assert.Equal(initial.Id, suspended.Id); Assert.Equal(2, suspended.Generation); Assert.Equal("SUSPENDED", suspended.Status);
+        Assert.True(suspended.Enabled); Assert.Null(suspended.TriggerAt); Assert.Single(publisher.Jobs);
+        using var hidden = await Mutate(recipient, HttpMethod.Put, path, input, key); Assert.Equal(HttpStatusCode.NotFound, hidden.StatusCode);
+        using var restore = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/restore", new { version = 3 });
+        Assert.Equal(HttpStatusCode.OK, restore.StatusCode);
+        var scheduled = (await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct))!;
+        Assert.Equal(initial.Id, scheduled.Id); Assert.Equal(3, scheduled.Generation); Assert.Equal("SCHEDULED", scheduled.Status);
+        Assert.Equal(2, publisher.Jobs.Count);
+        using var cancel = await Mutate(recipient, HttpMethod.Delete, path + "?cardVersion=4&version=3", new { });
+        Assert.Equal(HttpStatusCode.OK, cancel.StatusCode);
+        var cancelled = (await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct))!;
+        using var archiveAgain = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/archive", new { version = 4 });
+        Assert.Equal(HttpStatusCode.OK, archiveAgain.StatusCode);
+        using var restoreAgain = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/restore", new { version = 5 });
+        Assert.Equal(HttpStatusCode.OK, restoreAgain.StatusCode);
+        Assert.Equal(cancelled, await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct)); Assert.Equal(2, publisher.Jobs.Count);
+    }
+
+    [Fact]
     public async Task Personal_reminders_validate_revisions_intervals_and_privacy_and_recover_set_cancel_receipts()
     {
         var ct = TestContext.Current.CancellationToken; var publisher = new ReminderPublisher();

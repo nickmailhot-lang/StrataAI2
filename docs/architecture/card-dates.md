@@ -264,7 +264,7 @@ Card, Reminder generation, events, jobs, notifications and receipt all roll back
 then recovers with the original key and verifies canonical future job metadata.
 Strict solution build and shell syntax passed locally. Linux source/API and
 exact-image execution remain required before these new checks are called passed.
-Archive/restore integration and MUI controls are still incomplete. PRD-12/17
+Container archive/restore integration and MUI controls are still incomplete. PRD-12/17
 remain open.
 
 Personal configuration now has authenticated GET/PUT/DELETE endpoints at
@@ -285,3 +285,12 @@ fixture now creates the choice through its real personal API and checks both
 date rescheduling and personal cancellation/privacy/revoked replay. It no longer
 seeds a personal choice directly in PostgreSQL. These new API and container tests
 must pass Linux CI before release acceptance is claimed; no ticket is closed.
+
+Card archive, restore and deletion commands now run the same scheduling
+participant after their canonical lifecycle change, inside the existing command
+transaction. Archiving suspends an enabled choice and advances its generation;
+restoring publishes a fresh future generation when the retained interval remains
+available. Explicitly cancelled choices stay cancelled across both operations.
+The API regression and exact-image fixture cover archive/restore, private receipt
+admission and unchanged effects on archive replay. List/Board/Organization
+container transitions, MUI configuration and full release acceptance remain open.
