@@ -39,7 +39,7 @@ LABEL org.opencontainers.image.revision=$STRATAAI_BUILD_REVISION \
       org.opencontainers.image.version=$STRATAAI_BUILD_VERSION
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl util-linux \
+    && apt-get install -y --no-install-recommends curl util-linux strace \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

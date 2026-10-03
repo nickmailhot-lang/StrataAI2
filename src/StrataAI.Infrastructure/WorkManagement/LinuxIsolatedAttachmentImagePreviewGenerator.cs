@@ -60,11 +60,17 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             scratch = $"/tmp/strata-preview-sandbox-{Guid.NewGuid():N}";
             Directory.CreateDirectory(scratch, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             if (LinuxAttachmentPreviewContainment.IsRoot) LinuxAttachmentPreviewContainment.AssignScratchOwner(scratch);
-            var start = new ProcessStartInfo("/usr/bin/setpriv")
+            var tracePublicFixture = _publicFixtureVerification && !LinuxAttachmentPreviewContainment.IsRoot && File.Exists("/usr/bin/strace");
+            var start = new ProcessStartInfo(tracePublicFixture ? "/usr/bin/strace" : "/usr/bin/setpriv")
             {
                 UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true,
                 RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = "/tmp"
             };
+            if (tracePublicFixture)
+            {
+                foreach (var argument in new[] { "-f", "-qq", "-y", "-e", "trace=openat,mmap,mprotect,brk,ftruncate", "-e", "status=failed", "--", "/usr/bin/setpriv" })
+                    start.ArgumentList.Add(argument);
+            }
             start.ArgumentList.Add("--no-new-privs"); start.ArgumentList.Add("--inh-caps=-all"); start.ArgumentList.Add("--ambient-caps=-all");
             if (LinuxAttachmentPreviewContainment.IsRoot)
             {
@@ -131,24 +137,28 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
 
     private static async Task<AttachmentPreviewFailureStage> DrainPublicFixtureDiagnosticsAsync(Stream pipe, CancellationToken ct)
     {
-        var prefix = new byte[4096]; var discard = new byte[4096]; var count = 0;
+        var prefix = new byte[4096]; var discard = new byte[4096]; var tail = new byte[4096]; var count = 0; var next = 0; long total = 0;
         try
         {
             while (true)
             {
-                var read = await pipe.ReadAsync(count < prefix.Length ? prefix.AsMemory(count) : discard, ct);
+                var prefixRead = count < prefix.Length;
+                var target = prefixRead ? prefix.AsMemory(count) : discard;
+                var read = await pipe.ReadAsync(target, ct);
                 if (read == 0) break;
-                if (count < prefix.Length) count += read;
+                for (var offset = 0; offset < read; offset++) { tail[next] = target.Span[offset]; next = (next + 1) % tail.Length; }
+                total += read;
+                if (prefixRead) count += read;
                 else CryptographicOperations.ZeroMemory(discard);
             }
             using var retained = new MemoryStream(prefix, 0, count, writable: false);
             var stage = await AttachmentPreviewProcessProtocol.DrainRuntimeFailureAsync(retained, ct);
             var report = new StringBuilder(count);
-            for (var offset = 0; offset < count; offset++)
+            AppendPublicReport(report, prefix.AsSpan(0, count));
+            if (total > prefix.Length)
             {
-                if (offset <= count - 9 && prefix.AsSpan(offset, 8).SequenceEqual("SAPRVSTG"u8)) { offset += 8; continue; }
-                var value = prefix[offset];
-                if (value is >= 32 and <= 126 or 10 or 13) report.Append((char)value);
+                report.AppendLine().AppendLine("[bounded tail of the fixed public verification report]");
+                AppendPublicReport(report, tail.AsSpan(next)); AppendPublicReport(report, tail.AsSpan(0, next));
             }
             if (report.Length > 0)
             {
@@ -157,7 +167,16 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             }
             return stage;
         }
-        finally { CryptographicOperations.ZeroMemory(prefix); CryptographicOperations.ZeroMemory(discard); }
+        finally { CryptographicOperations.ZeroMemory(prefix); CryptographicOperations.ZeroMemory(discard); CryptographicOperations.ZeroMemory(tail); }
+    }
+
+    private static void AppendPublicReport(StringBuilder report, ReadOnlySpan<byte> bytes)
+    {
+        for (var offset = 0; offset < bytes.Length; offset++)
+        {
+            if (offset <= bytes.Length - 9 && bytes.Slice(offset, 8).SequenceEqual("SAPRVSTG"u8)) { offset += 8; continue; }
+            var value = bytes[offset]; if (value is >= 32 and <= 126 or 10 or 13) report.Append((char)value);
+        }
     }
     private static AttachmentImagePreviewException Unavailable(AttachmentPreviewFailureStage stage = AttachmentPreviewFailureStage.None) => new("preview_decoder_unavailable", stage);
 }
