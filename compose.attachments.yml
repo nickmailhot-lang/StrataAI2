@@ -1,0 +1,24 @@
+# Optional operator-provisioned managed storage and private local scanner.
+# Combine with compose.release.yml; this file introduces no application image.
+services:
+  api:
+    environment:
+      STRATAAI_ATTACHMENT_STORAGE_ENABLED: "true"
+      STRATAAI_ATTACHMENT_S3_BUCKET: ${STRATAAI_ATTACHMENT_S3_BUCKET:?Set private attachment bucket}
+      STRATAAI_ATTACHMENT_S3_OWNER: ${STRATAAI_ATTACHMENT_S3_OWNER:?Set expected AWS account owner}
+      STRATAAI_ATTACHMENT_S3_REGION: ${STRATAAI_ATTACHMENT_S3_REGION:?Set explicit AWS region}
+  worker:
+    environment:
+      STRATAAI_ATTACHMENT_STORAGE_ENABLED: "true"
+      STRATAAI_ATTACHMENT_S3_BUCKET: ${STRATAAI_ATTACHMENT_S3_BUCKET:?Set private attachment bucket}
+      STRATAAI_ATTACHMENT_S3_OWNER: ${STRATAAI_ATTACHMENT_S3_OWNER:?Set expected AWS account owner}
+      STRATAAI_ATTACHMENT_S3_REGION: ${STRATAAI_ATTACHMENT_S3_REGION:?Set explicit AWS region}
+      STRATAAI_WORKER_ORGANIZATION_IDS: ${STRATAAI_WORKER_ORGANIZATION_IDS:?Set explicit Worker Organization scope}
+      STRATAAI_ATTACHMENT_SCANNER_SOCKET: /run/strata-scanner/clamd.sock
+    volumes:
+      - type: bind
+        source: ${STRATAAI_ATTACHMENT_SCANNER_DIRECTORY:?Set existing private scanner socket directory}
+        target: /run/strata-scanner
+        read_only: true
+        bind:
+          create_host_path: false

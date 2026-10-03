@@ -90,6 +90,7 @@ jobs:
       - name: Validate release and event fixture configuration before image builds
         run: |
           docker compose --env-file .env.release.example -f compose.release.yml config --quiet
+          STRATAAI_ATTACHMENT_S3_BUCKET=strata-private-ci-fixture STRATAAI_ATTACHMENT_S3_OWNER=123456789012 STRATAAI_ATTACHMENT_S3_REGION=us-east-1 STRATAAI_WORKER_ORGANIZATION_IDS=11111111-1111-1111-1111-111111111111 STRATAAI_ATTACHMENT_SCANNER_DIRECTORY=/tmp/strata-scanner docker compose --env-file .env.release.example -f compose.release.yml -f compose.attachments.yml config --quiet
           STRATAAI_TEST_EVENT_ORGANIZATION_ID=11111111-1111-1111-1111-111111111111 docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.work-event-test.yml config --quiet
           docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.atomic-test.yml -f scripts/ci/compose.owner-continuity-test.yml config --quiet
           STRATAAI_TEST_TOKEN_KEYS='{}' STRATAAI_TEST_INVITATION_ORGANIZATION_ID=11111111-1111-1111-1111-111111111111 docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml -f scripts/ci/compose.invitation-signup-test.yml -f scripts/ci/compose.invitation-mail-test.yml config --quiet
@@ -712,7 +713,7 @@ jobs:
           cp image-artifacts/strataai-web.tar.gz bundle/images/
           cp image-artifacts/strataai-api.tar.gz bundle/images/
           cp image-artifacts/strataai-worker.tar.gz bundle/images/
-          cp compose.release.yml compose.metrics.yml bundle/
+          cp compose.release.yml compose.metrics.yml compose.attachments.yml bundle/
           mkdir -p bundle/deploy/metrics
           cp deploy/metrics/collector.yml bundle/deploy/metrics/
           cp .env.release.example bundle/

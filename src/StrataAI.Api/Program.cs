@@ -58,6 +58,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddSecurityRateLimits(builder.Configuration);
 
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
+builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: false);
 builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
 builder.Services.AddStrataAiOrganizations(runtime);
 builder.Services.AddStrataAiOnboarding(runtime, builder.Configuration);

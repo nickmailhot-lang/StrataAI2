@@ -8,11 +8,13 @@ using StrataAI.Infrastructure.Identity;
 using StrataAI.Application.Onboarding;
 using StrataAI.Infrastructure.Onboarding;
 using StrataAI.Infrastructure.Persistence;
+using StrataAI.Infrastructure.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
+builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: true);
 builder.Services.AddHostedService<WorkerHeartbeat>();
 
 if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))

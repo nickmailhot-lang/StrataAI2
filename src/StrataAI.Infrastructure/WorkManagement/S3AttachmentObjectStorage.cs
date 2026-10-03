@@ -16,15 +16,19 @@ public sealed class S3AttachmentObjectStorage : IAttachmentObjectStorage
     public S3AttachmentObjectStorage(IAmazonS3 client, string bucket, string expectedBucketOwner)
     {
         ArgumentNullException.ThrowIfNull(client);
+        ValidateBucketConfiguration(bucket, expectedBucketOwner);
+        if (client.Config.UseHttp || !string.IsNullOrEmpty(client.Config.ServiceURL))
+            throw new ArgumentException("Managed attachment storage requires the regional HTTPS AWS endpoint.", nameof(client));
+        _client = client; _bucket = bucket; _owner = expectedBucketOwner;
+    }
+    internal static void ValidateBucketConfiguration(string bucket, string expectedBucketOwner)
+    {
         if (string.IsNullOrEmpty(bucket) || bucket.Length is < 3 or > 63
             || bucket.Any(c => c is not (>= 'a' and <= 'z') and not (>= '0' and <= '9') and not '-')
             || !char.IsAsciiLetterOrDigit(bucket[0]) || !char.IsAsciiLetterOrDigit(bucket[^1]))
             throw new ArgumentException("A canonical managed storage bucket is required.", nameof(bucket));
         if (expectedBucketOwner is null || expectedBucketOwner.Length != 12 || expectedBucketOwner.Any(c => c is not (>= '0' and <= '9')))
             throw new ArgumentException("An expected managed storage owner is required.", nameof(expectedBucketOwner));
-        if (client.Config.UseHttp || !string.IsNullOrEmpty(client.Config.ServiceURL))
-            throw new ArgumentException("Managed attachment storage requires the regional HTTPS AWS endpoint.", nameof(client));
-        _client = client; _bucket = bucket; _owner = expectedBucketOwner;
     }
     public async Task ValidatePrivateBucketAsync(CancellationToken ct)
     {
