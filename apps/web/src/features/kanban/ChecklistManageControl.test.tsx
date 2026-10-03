@@ -18,6 +18,56 @@ const sibling = { ...checklist, id: id(6), title: 'Execution', rank: rank(10) };
 const movePage = { ...page, items: [page.items[0], { ...page.items[0], checklist: sibling }] };
 const moved = (changed = true) => ({ ...scope, changed, cardVersion: changed ? 5 : 4,
   checklist: { ...checklist, rank: changed ? rank(15) : checklist.rank, version: changed ? 3 : 2 } });
+const itemAdded = (text = 'Prepare materials') => ({ ...scope, changed: true, cardVersion: 5, checklist: { ...checklist, version: 3 },
+  item: { id: id(10), organizationId: scope.organizationId, checklistId: checklist.id, text, rank: rank(10), version: 1,
+    createdAt: now, updatedAt: now, deletedAt: null, completed: false, completedBy: null, completedAt: null } });
+async function reviewItem(text = 'Prepare materials') {
+  fireEvent.click(screen.getByRole('button', { name: 'Manage checklists' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Add item to Preparations' }));
+  fireEvent.change(screen.getByRole('textbox', { name: /Checklist item text/ }), { target: { value: text } });
+}
+it('creates normalized multiline item text using the reviewed Card and Checklist revisions', async () => {
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'POST' ? itemAdded('Prepare\nmaterials') : page);
+  render(<ChecklistManageControl {...props()} />); await reviewItem(' Prepare\nmaterials '); fireEvent.click(screen.getByRole('button', { name: 'Create checklist item' }));
+  await screen.findByText('Checklist item added.'); const writes = vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'POST');
+  expect(writes).toHaveLength(1); expect(writes[0][0]).toBe(`/cards/${scope.cardId}/checklists/${checklist.id}/items`);
+  expect(JSON.parse(writes[0][1]!.body as string)).toEqual({ text: 'Prepare\nmaterials', cardVersion: 4, checklistVersion: 2 });
+});
+it.each(['x'.repeat(2001), 'text\0hidden'])('rejects invalid item text without issuing a command', async text => {
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : page);
+  render(<ChecklistManageControl {...props()} />); await reviewItem(text); fireEvent.click(screen.getByRole('button', { name: 'Create checklist item' }));
+  await screen.findByText('Enter item text of 1 to 2000 characters.'); expect(vi.mocked(workRequest).mock.calls.some(([, options]) => options?.method === 'POST')).toBe(false);
+});
+it('preserves item text and requires review after a concurrent Card revision or denied write', async () => {
+  vi.mocked(workRequest).mockImplementation(async (path, options) => {
+    if (path === '/me') return profile; if (options?.method === 'POST') throw new WorkRequestError(403, null); return page;
+  });
+  const p = props(); const view = render(<ChecklistManageControl {...p} />); await reviewItem(); view.rerender(<ChecklistManageControl {...p} version={5} />);
+  expect(screen.getByRole('textbox')).toHaveValue('Prepare materials'); expect(screen.getByRole('button', { name: 'Create checklist item' })).toBeDisabled();
+  view.rerender(<ChecklistManageControl {...p} />); fireEvent.click(screen.getByRole('button', { name: 'Create checklist item' }));
+  await screen.findByText(/This item creation is unavailable/); expect(screen.getByRole('textbox')).toHaveValue('Prepare materials');
+  expect(screen.getByRole('textbox')).toBeDisabled(); expect(screen.queryByRole('button', { name: 'Retry checklist item creation' })).not.toBeInTheDocument();
+});
+it('recovers an unconfirmed item creation with exactly the same text, key, actor and revisions', async () => {
+  let writes = 0; vi.mocked(workRequest).mockImplementation(async (path, options) => {
+    if (path === '/me') return profile; if (options?.method !== 'POST') return page;
+    if (++writes === 1) throw new WorkRequestError(0, null); return itemAdded();
+  });
+  const p = props(); const view = render(<ChecklistManageControl {...p} />); await reviewItem(); fireEvent.click(screen.getByRole('button', { name: 'Create checklist item' }));
+  await screen.findByRole('button', { name: 'Retry checklist item creation' }); view.rerender(<ChecklistManageControl {...p} version={5} unavailable />);
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument(); view.rerender(<ChecklistManageControl {...p} version={5} />);
+  const retry = screen.getByRole('button', { name: 'Retry checklist item creation' }); await waitFor(() => expect(retry).toHaveFocus());
+  expect(screen.getByRole('textbox')).toBeDisabled(); fireEvent.click(retry); await screen.findByText('Checklist item added.');
+  const calls = vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'POST'); expect(calls).toHaveLength(2);
+  expect(calls[1][1]!.body).toBe(calls[0][1]!.body); expect(calls[1][1]!.headers).toEqual(calls[0][1]!.headers);
+});
+it.each([{ cardVersion: 6 }, { checklist: { ...itemAdded().checklist, rank: rank(5) } },
+  { item: { ...itemAdded().item, checklistId: id(90) } }, { item: { ...itemAdded().item, completed: true, completedAt: now, completedBy: profile.id } },
+  { item: { ...itemAdded().item, version: 2 } }])('retains recovery after malformed or foreign item acknowledgments (%j)', async change => {
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'POST' ? { ...itemAdded(), ...change } : page);
+  render(<ChecklistManageControl {...props()} />); await reviewItem(); fireEvent.click(screen.getByRole('button', { name: 'Create checklist item' }));
+  expect(await screen.findByRole('button', { name: 'Retry checklist item creation' })).toBeEnabled(); expect(screen.queryByText('Checklist item added.')).not.toBeInTheDocument();
+});
 async function reviewMove() {
   fireEvent.click(screen.getByRole('button', { name: 'Manage checklists' }));
   fireEvent.click(await screen.findByRole('button', { name: 'Move Preparations' }));

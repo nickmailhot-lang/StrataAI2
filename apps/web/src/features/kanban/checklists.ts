@@ -11,6 +11,7 @@ export type ChecklistSummary = { checklist: Checklist; completed: number; total:
 export type ChecklistPage = ChecklistScope & { cardVersion: number; canEdit: boolean; items: ChecklistSummary[]; nextCursor: string | null };
 export type ChecklistItemPage = ChecklistScope & { cardVersion: number; canEdit: boolean; summary: ChecklistSummary; items: ChecklistItem[]; nextCursor: string | null };
 export type ChecklistChange = ChecklistScope & { cardVersion: number; checklist: Checklist; changed: boolean };
+export type ChecklistItemChange = ChecklistChange & { item: ChecklistItem };
 export type ChecklistPosition = { beforeId: string | null; lowerRank: string; upperRank: string; unchanged: boolean };
 
 const invalid = () => new Error('Invalid checklist response');
@@ -140,4 +141,14 @@ export function parseChecklistPositioned(value: unknown, scope: ChecklistScope, 
     (changed ? child.rank === before.rank || child.rank <= position.lowerRank || child.rank >= position.upperRank
       : child.rank !== before.rank || instant(child.updatedAt) !== instant(before.updatedAt))) throw invalid();
   return row as ChecklistChange;
+}
+export function parseChecklistItemCreated(value: unknown, scope: ChecklistScope, before: Checklist, text: string, cardVersion: number): ChecklistItemChange {
+  const row = record(value); const child = checklist(row.checklist, scope); const added = item(row.item, scope, before.id);
+  if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.boardId, scope.boardId) || !sameId(row.cardId, scope.cardId) ||
+    !version(cardVersion) || !version(row.cardVersion) || row.cardVersion !== cardVersion + 1 || row.changed !== true ||
+    !sameId(child.id, before.id) || child.title !== before.title || child.rank !== before.rank || child.version !== before.version + 1 ||
+    instant(child.createdAt) !== instant(before.createdAt) || instant(child.updatedAt) < instant(before.updatedAt) ||
+    added.text !== text || added.version !== 1 || added.completed || instant(added.createdAt) !== instant(added.updatedAt) ||
+    instant(added.createdAt) < instant(before.updatedAt)) throw invalid();
+  return row as ChecklistItemChange;
 }

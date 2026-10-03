@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
-import { checklistPosition, parseChecklistDeleted, parseChecklistPage, parseChecklistPositioned, parseChecklistRenamed, type Checklist, type ChecklistPage, type ChecklistPosition } from './checklists';
+import { checklistPosition, parseChecklistDeleted, parseChecklistItemCreated, parseChecklistPage, parseChecklistPositioned, parseChecklistRenamed, type Checklist, type ChecklistPage, type ChecklistPosition } from './checklists';
 import type { ChecklistCreateProps } from './ChecklistCreateControl';
 
 type Props = ChecklistCreateProps & { canAdminister?: boolean };
-type Draft = { actor: string; checklist: Checklist; title: string; cardVersion: number; kind: 'rename' | 'delete' | 'move'; total: number; confirmed: boolean; position?: ChecklistPosition; destination?: string };
+type Draft = { actor: string; checklist: Checklist; title: string; cardVersion: number; kind: 'rename' | 'delete' | 'move' | 'addItem'; total: number; confirmed: boolean; position?: ChecklistPosition; destination?: string; text?: string };
 type Intent = Draft & { key: string };
 export function ChecklistManageControl(props: Props) {
   return <ManageControl key={`${props.organizationId}/${props.boardId}/${props.cardId}`} {...props} />;
@@ -51,35 +51,41 @@ function ManageControl(props: Props) {
     if (draft.kind === 'delete' && (!props.canAdminister || !draft.confirmed)) return;
     if (draft.kind === 'move' && !draft.position) return;
     const title = draft.title.trim();
+    const text = draft.text?.trim() ?? '';
+    if (!intent && draft.kind === 'addItem' && (!text || text.length > 2000 || text.includes('\0'))) { setNotice('Enter item text of 1 to 2000 characters.'); return; }
     if (!intent && (!title || title.length > 160 || title.includes('\0'))) { setNotice('Enter a checklist title of 1 to 160 characters.'); return; }
-    const command = intent ?? { ...draft, title, key: crypto.randomUUID() };
+    const command = intent ?? { ...draft, title, text, key: crypto.randomUUID() };
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
     try {
       const value = await boundedWorkRead(async signal => {
         const profile = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(profile) || profile.id !== command.actor) throw new WorkRequestError(401, null);
-        return workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/checklists/${encodeURIComponent(command.checklist.id)}${command.kind === 'move' ? '/position' : ''}`, { method: command.kind === 'delete' ? 'DELETE' : 'PATCH', signal,
+        return workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/checklists/${encodeURIComponent(command.checklist.id)}${command.kind === 'move' ? '/position' : command.kind === 'addItem' ? '/items' : ''}`, { method: command.kind === 'delete' ? 'DELETE' : command.kind === 'addItem' ? 'POST' : 'PATCH', signal,
           headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key },
           body: JSON.stringify(command.kind === 'delete' ? { confirmed: true, cardVersion: command.cardVersion, version: command.checklist.version }
             : command.kind === 'move' ? { beforeId: command.position!.beforeId, cardVersion: command.cardVersion, version: command.checklist.version }
-              : { title: command.title, cardVersion: command.cardVersion, version: command.checklist.version }) });
+              : command.kind === 'addItem' ? { text: command.text, cardVersion: command.cardVersion, checklistVersion: command.checklist.version }
+                : { title: command.title, cardVersion: command.cardVersion, version: command.checklist.version }) });
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       const ack = command.kind === 'delete' ? parseChecklistDeleted(value, props, command.checklist, command.total, command.cardVersion)
         : command.kind === 'move' ? parseChecklistPositioned(value, props, command.checklist, command.position!, command.cardVersion)
-          : parseChecklistRenamed(value, props, command.checklist, command.title, command.cardVersion);
+          : command.kind === 'addItem' ? parseChecklistItemCreated(value, props, command.checklist, command.text!, command.cardVersion)
+            : parseChecklistRenamed(value, props, command.checklist, command.title, command.cardVersion);
       setIntent(undefined); setDraft(undefined); setSelection(undefined); setBlocked(false);
-      setNotice(command.kind === 'delete' ? 'Checklist deleted.' : command.kind === 'move' ? ack.changed ? 'Checklist moved.' : 'Checklist position is unchanged.'
+      setNotice(command.kind === 'addItem' ? 'Checklist item added.' : command.kind === 'delete' ? 'Checklist deleted.' : command.kind === 'move' ? ack.changed ? 'Checklist moved.' : 'Checklist position is unchanged.'
         : ack.changed ? 'Checklist renamed.' : 'Checklist title is unchanged.'); requestedFocus.current = true; props.onRefresh();
     } catch (error) {
       if (!mounted.current || pending.current !== controller) return;
       requestedFocus.current = true;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
-        setIntent(undefined); setBlocked(true); setNotice(command.kind === 'move'
+        setIntent(undefined); setBlocked(true); setNotice(command.kind === 'addItem'
+          ? 'This item creation is unavailable. Your text is preserved. Load the current Card and checklist before reviewing another item.' : command.kind === 'move'
           ? 'This checklist move is unavailable. Load the current Card and checklists before reviewing another position.' : command.kind === 'delete'
           ? 'This checklist deletion is unavailable. Load the current Card and checklist before confirming another deletion.'
           : 'This checklist rename is unavailable. Your title is preserved. Load the current Card and checklist before reviewing another change.');
-      } else { setIntent(command); setNotice(command.kind === 'move'
+      } else { setIntent(command); setNotice(command.kind === 'addItem'
+        ? 'The item creation is unconfirmed. Retry the original change to recover its acknowledgment.' : command.kind === 'move'
         ? 'The checklist move is unconfirmed. Retry the original change to recover its acknowledgment.' : command.kind === 'delete'
         ? 'The checklist deletion is unconfirmed. Retry the original change to recover its acknowledgment.'
         : 'The checklist rename is unconfirmed. Retry the original change to recover its acknowledgment.'); }
@@ -90,8 +96,8 @@ function ManageControl(props: Props) {
   return <Stack component="section" aria-label="Manage checklists" spacing={1} sx={{ my: 2 }}>
     {notice && <Typography role="status">{notice}</Typography>}
     {props.unavailable ? <Typography>Checking current Card access…</Typography> : draft ? <>
-      <Typography>{draft.kind === 'delete' ? 'Delete' : draft.kind === 'move' ? 'Move' : 'Rename'} checklist: {draft.checklist.title}</Typography>
-      {conflict && !intent && <Alert severity="warning">{draft.kind === 'move' ? 'This Card changed elsewhere. Review the current checklists before choosing a position.' : draft.kind === 'delete' ? 'This Card changed elsewhere. Review the current checklist before confirming deletion.' : 'This Card changed elsewhere. Your checklist title is preserved.'}</Alert>}
+      <Typography>{draft.kind === 'addItem' ? 'Add item to' : draft.kind === 'delete' ? 'Delete' : draft.kind === 'move' ? 'Move' : 'Rename'} checklist: {draft.checklist.title}</Typography>
+      {conflict && !intent && <Alert severity="warning">{draft.kind === 'addItem' ? 'This Card changed elsewhere. Your item text is preserved.' : draft.kind === 'move' ? 'This Card changed elsewhere. Review the current checklists before choosing a position.' : draft.kind === 'delete' ? 'This Card changed elsewhere. Review the current checklist before confirming deletion.' : 'This Card changed elsewhere. Your checklist title is preserved.'}</Alert>}
       <Box component="form" onSubmit={event => { event.preventDefault(); void save(); }}><Stack spacing={1}>
         {draft.kind === 'delete' ? <>
           <Alert severity="warning">This deletes the checklist and its {draft.total} active {draft.total === 1 ? 'item' : 'items'}.</Alert>
@@ -106,14 +112,15 @@ function ManageControl(props: Props) {
             {selection.page.nextCursor && <Button disabled={disabled} onClick={() => void load(selection.page.nextCursor!)}>Next position choices</Button>}
             {selection.cursor && <Button disabled={disabled} onClick={() => void load()}>First position choices</Button>}
           </>}
-        </> : <TextField autoFocus label="Checklist title" value={draft.title} required fullWidth slotProps={{ htmlInput: { maxLength: 160 } }}
+        </> : draft.kind === 'addItem' ? <TextField autoFocus label="Checklist item text" value={draft.text ?? ''} required fullWidth multiline slotProps={{ htmlInput: { maxLength: 2000 } }}
+          disabled={disabled || !!intent || blocked} onChange={event => setDraft({ ...draft, text: event.target.value })} /> : <TextField autoFocus label="Checklist title" value={draft.title} required fullWidth slotProps={{ htmlInput: { maxLength: 160 } }}
           disabled={disabled || !!intent || blocked} onChange={event => setDraft({ ...draft, title: event.target.value })} />}
         {intent ? <Button ref={action} disabled={disabled || draft.kind === 'delete' && !props.canAdminister} onFocus={() => { requestedFocus.current = true; }}
-          onBlur={event => { if (event.relatedTarget !== null) requestedFocus.current = false; }} onClick={() => void save()}>{draft.kind === 'move' ? 'Retry checklist move' : draft.kind === 'delete' ? 'Retry checklist deletion' : 'Retry checklist rename'}</Button>
-          : <Button type="submit" disabled={disabled || blocked || conflict || !draft.title.trim() || draft.kind === 'move' && !draft.position || draft.kind === 'delete' && (!draft.confirmed || !props.canAdminister)}>{draft.kind === 'move' ? 'Save checklist position' : draft.kind === 'delete' ? 'Delete confirmed checklist' : 'Save checklist title'}</Button>}
+          onBlur={event => { if (event.relatedTarget !== null) requestedFocus.current = false; }} onClick={() => void save()}>{draft.kind === 'addItem' ? 'Retry checklist item creation' : draft.kind === 'move' ? 'Retry checklist move' : draft.kind === 'delete' ? 'Retry checklist deletion' : 'Retry checklist rename'}</Button>
+          : <Button type="submit" disabled={disabled || blocked || conflict || !draft.title.trim() || draft.kind === 'addItem' && !draft.text?.trim() || draft.kind === 'move' && !draft.position || draft.kind === 'delete' && (!draft.confirmed || !props.canAdminister)}>{draft.kind === 'addItem' ? 'Create checklist item' : draft.kind === 'move' ? 'Save checklist position' : draft.kind === 'delete' ? 'Delete confirmed checklist' : 'Save checklist title'}</Button>}
         {!intent && <Button ref={blocked ? action : undefined} disabled={busy || props.disabled}
           onFocus={() => { if (blocked) requestedFocus.current = true; }} onBlur={event => { if (event.relatedTarget !== null) requestedFocus.current = false; }}
-          onClick={discard}>{draft.kind === 'move' ? 'Discard checklist move and load latest' : draft.kind === 'delete' ? 'Discard checklist deletion and load latest' : 'Discard checklist rename and load latest'}</Button>}
+          onClick={discard}>{draft.kind === 'addItem' ? 'Discard checklist item and load latest' : draft.kind === 'move' ? 'Discard checklist move and load latest' : draft.kind === 'delete' ? 'Discard checklist deletion and load latest' : 'Discard checklist rename and load latest'}</Button>}
       </Stack></Box>
     </> : selection ? <>
       {selection.page.cardVersion !== props.version && <Alert severity="warning">The Card changed. Load current checklists before choosing a change.</Alert>}
@@ -123,6 +130,8 @@ function ManageControl(props: Props) {
           onClick={() => setDraft({ actor: selection.actor, checklist, title: checklist.title, cardVersion: selection.page.cardVersion, kind: 'rename', total, confirmed: false })}>Rename {checklist.title}</Button>
         <Button disabled={disabled || selection.page.cardVersion !== props.version}
           onClick={() => setDraft({ actor: selection.actor, checklist, title: checklist.title, cardVersion: selection.page.cardVersion, kind: 'move', total, confirmed: false })}>Move {checklist.title}</Button>
+        <Button disabled={disabled || selection.page.cardVersion !== props.version}
+          onClick={() => setDraft({ actor: selection.actor, checklist, title: checklist.title, cardVersion: selection.page.cardVersion, kind: 'addItem', total, confirmed: false, text: '' })}>Add item to {checklist.title}</Button>
         {props.canAdminister && <Button disabled={disabled || selection.page.cardVersion !== props.version}
           onClick={() => setDraft({ actor: selection.actor, checklist, title: checklist.title, cardVersion: selection.page.cardVersion, kind: 'delete', total, confirmed: false })}>Delete {checklist.title}</Button>}
       </Stack>)}

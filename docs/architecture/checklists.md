@@ -348,3 +348,21 @@ desktop/mobile exact-image browser cases cover keyboard before/end choices,
 accessibility, lost committed acknowledgment and second-session live ordering;
 browser execution remains pending CI. Item mutation and item ordering UI remain
 unfinished, so this does not complete PRD-13.
+### Item creation controls
+
+The MUI manager lets admitted editors choose an active Checklist and create an
+item with normalized multiline text, bounded to 2000 characters. The command
+uses the reviewed Card and Checklist revisions and verifies the original actor
+before sending. Acknowledgment validation requires a scoped new incomplete
+item, canonical null completion attribution, initial item revision/timestamps,
+unchanged parent identity/title/rank and exact parent revision increments.
+
+Dirty text survives concurrent Card updates and definite denial while a new
+review is required. Unknown, malformed or lost responses retain the normalized
+text, actor, versions and key; the original displayed draft remains locked
+during recovery. Local verification: all 96 focused checklist parser/reader/
+create/manager tests passed; type checking, lint and production build passed.
+Two new desktop/mobile exact-image browser cases were discovered for keyboard
+creation, accessibility, committed/lost response recovery and second-session
+progress/contents. Browser execution remains pending CI. Editing/completion,
+deletion and ordering of individual items remain unfinished.
