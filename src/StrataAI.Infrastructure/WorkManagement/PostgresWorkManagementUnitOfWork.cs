@@ -13,6 +13,32 @@ internal sealed class PostgresWorkManagementUnitOfWork(
     ICommandActorAuthorization actors,
     ILogger<PostgresWorkManagementUnitOfWork> logger) : IWorkManagementUnitOfWork
 {
+    public async Task<WorkOperation<T>> ExecuteReadAsync<T>(Guid organizationId, Guid? actorId, string scopeFailureCode,
+        Func<Task<bool>> authorize, Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Scoped read callbacks share parent locks and the tenant transaction.
+            // Anonymous reads have no command receipt or fabricated session actor.
+            return await connections.ExecuteTenantCommandAsync(organizationId, async () =>
+            {
+                if (!await authorize()) return WorkOperation<T>.Failure(scopeFailureCode);
+                if (actorId is { } actor && !await actors.VerifyAsync(actor, cancellationToken)) return WorkOperation<T>.Failure("session_unavailable");
+                var result = await operation();
+                if (!result.Succeeded) return result;
+                if (!await authorize()) return WorkOperation<T>.Failure(scopeFailureCode);
+                if (actorId is { } current && !await actors.VerifyAsync(current, cancellationToken)) return WorkOperation<T>.Failure("session_unavailable");
+                return result;
+            }, result => result.Succeeded, cancellationToken);
+        }
+        catch (NpgsqlException exception)
+        {
+            logger.LogWarning("Work read lacked a database acknowledgment for Organization {OrganizationId}; database code {DatabaseCode}.",
+                organizationId, exception is PostgresException postgres ? postgres.SqlState : "connection_error");
+            return WorkOperation<T>.Failure("work_storage_unavailable");
+        }
+    }
+
     public async Task<WorkOperation<T>> ExecuteAsync<T>(Guid organizationId, WorkCommand command,
         Func<T?, Task<bool>> authorizeReplay, Func<Task<WorkOperation<T>>> operation,
         CancellationToken cancellationToken = default)

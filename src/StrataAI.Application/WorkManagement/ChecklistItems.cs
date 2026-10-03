@@ -12,13 +12,12 @@ public sealed record ChecklistItemPage(Guid OrganizationId, Guid BoardId, Guid C
 
 public sealed partial class ChecklistService
 {
-    public async Task<WorkOperation<ChecklistItemPage>> ListItemsAsync(Guid cardId, Guid checklistId, Guid actor, string? after, CancellationToken ct = default)
+    public async Task<WorkOperation<ChecklistItemPage>> ListItemsAsync(Guid cardId, Guid checklistId, Guid? actor, string? after, CancellationToken ct = default)
     {
         var hint = await work.FindCardAsync(cardId, ct);
         if (hint is null) return WorkOperation<ChecklistItemPage>.Failure("card_not_found");
-        return await transactions.ExecuteAsync(hint.OrganizationId,
-            WorkCommand.Create(actor, null, "ChecklistItemRead", checklistId, new { cardId, after }, "checklist_not_found"),
-            async _ => await Admit(hint, actor, false, ct) && await checklists.FindAsync(hint.OrganizationId, cardId, checklistId, ct) is not null,
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "checklist_not_found",
+            async () => await AdmitRead(hint, actor, ct) && await checklists.FindAsync(hint.OrganizationId, cardId, checklistId, ct) is not null,
             async () =>
             {
                 string? rank = null; Guid? id = null;
@@ -37,7 +36,7 @@ public sealed partial class ChecklistService
                 if (current is null || list is null || scope.Value is null || child is null) return WorkOperation<ChecklistItemPage>.Failure("checklist_not_found");
                 var rows = await checklists.ListItemsAsync(hint.OrganizationId, checklistId, rank, id, ct);
                 var summary = await checklists.GetSummaryAsync(hint.OrganizationId, cardId, checklistId, ct);
-                if (summary is null || !await Admit(hint, actor, false, ct) || !await actors.VerifyAsync(actor, ct))
+                if (summary is null || !await AdmitRead(hint, actor, ct))
                     return WorkOperation<ChecklistItemPage>.Failure("checklist_not_found");
                 var items = rows.Take(50).ToArray();
                 var cursor = rows.Count > 50 ? $"{checklistId:D}/{items[^1].Rank}/{items[^1].Id:D}" : null;

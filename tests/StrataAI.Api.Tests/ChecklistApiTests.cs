@@ -9,6 +9,61 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_13_Public_checklist_reads_follow_current_visibility_and_never_grant_editing()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        using var outsider = app.CreateClient(); using var visitor = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct); await RegisterAndLogin(outsider);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Public Card", null, null, DateTimeOffset.UtcNow, ct);
+        var path = $"/cards/{card.Id}/checklists";
+        using var created = await Mutate(owner, HttpMethod.Post, path, new CreateChecklistInput("Public preparation", 1));
+        var checklist = (await created.Content.ReadFromJsonAsync<ChecklistChange>(ct))!.Checklist;
+        var itemsPath = $"{path}/{checklist.Id}/items";
+        using var added = await Mutate(owner, HttpMethod.Post, itemsPath, new CreateChecklistItemInput("Visible item", 2, 1));
+        Assert.Equal(HttpStatusCode.OK, added.StatusCode);
+        foreach (var reader in new[] { visitor, outsider })
+        {
+            Assert.Equal(HttpStatusCode.NotFound, (await reader.GetAsync(path + "?after=malformed", ct)).StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await reader.GetAsync(itemsPath, ct)).StatusCode);
+        }
+        using var published = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/visibility", new { visibility = "PUBLIC", version = 1 });
+        Assert.Equal(HttpStatusCode.OK, published.StatusCode);
+        foreach (var reader in new[] { visitor, outsider })
+        {
+            var page = (await reader.GetFromJsonAsync<ChecklistPage>(path, ct))!;
+            Assert.False(page.CanEdit); Assert.Equal(f.Organization, page.OrganizationId); Assert.Equal(card.Id, page.CardId);
+            Assert.Equal("Public preparation", Assert.Single(page.Items).Checklist.Title); Assert.Equal(1, page.Items[0].Total);
+            var items = (await reader.GetFromJsonAsync<ChecklistItemPage>(itemsPath, ct))!;
+            Assert.False(items.CanEdit); Assert.Equal("Visible item", Assert.Single(items.Items).Text); Assert.Equal(1, items.Summary.Total);
+            Assert.Equal(HttpStatusCode.BadRequest, (await reader.GetAsync(path + "?after=malformed", ct)).StatusCode);
+        }
+        using var anonymousWrite = await Mutate(visitor, HttpMethod.Post, path, new CreateChecklistInput("Denied", 3));
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousWrite.StatusCode);
+        using var outsiderWrite = await Mutate(outsider, HttpMethod.Post, path, new CreateChecklistInput("Denied", 3));
+        Assert.Equal(HttpStatusCode.NotFound, outsiderWrite.StatusCode);
+        using var hidden = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/visibility", new { visibility = "PRIVATE", version = 2 });
+        Assert.Equal(HttpStatusCode.OK, hidden.StatusCode);
+        foreach (var reader in new[] { visitor, outsider })
+        {
+            using var denied = await reader.GetAsync(path, ct);
+            Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+            Assert.DoesNotContain("Public preparation", await denied.Content.ReadAsStringAsync(ct));
+            Assert.Equal(HttpStatusCode.NotFound, (await reader.GetAsync(itemsPath, ct)).StatusCode);
+        }
+        using var republished = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/visibility", new { visibility = "PUBLIC", version = 3 });
+        Assert.Equal(HttpStatusCode.OK, republished.StatusCode);
+        using var archived = await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/archive", new { version = 4 });
+        Assert.Equal(HttpStatusCode.OK, archived.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await visitor.GetAsync(path, ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await visitor.GetAsync(itemsPath, ct)).StatusCode);
+        Assert.False((await owner.GetFromJsonAsync<ChecklistPage>(path, ct))!.CanEdit);
+        Assert.False((await owner.GetFromJsonAsync<ChecklistItemPage>(itemsPath, ct))!.CanEdit);
+        Assert.Equal(3, (await store.FindCardAsync(card.Id, ct))!.Version);
+    }
+
+    [Fact]
     public async Task PRD_13_Checklist_delete_cascades_beyond_a_page_preserves_old_tombstones_and_denies_child_replay()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
@@ -356,7 +411,7 @@ public sealed partial class ApiHostTests
         var store = app.Services.GetRequiredService<IWorkManagementStore>();
         var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Checklist Card", "Original description", null, DateTimeOffset.UtcNow, ct);
         var path = $"/cards/{card.Id}/checklists";
-        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(path, ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await anonymous.GetAsync(path, ct)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync(path, ct)).StatusCode);
         using var forbidden = await Mutate(outsider, HttpMethod.Post, path, new CreateChecklistInput("Protected title", 1));
         Assert.Equal(HttpStatusCode.NotFound, forbidden.StatusCode);

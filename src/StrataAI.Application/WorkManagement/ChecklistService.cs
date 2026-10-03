@@ -39,13 +39,12 @@ public sealed partial class ChecklistService(IWorkManagementStore work, ICheckli
     IWorkManagementUnitOfWork transactions, IWorkCommandContext context, ICommandActorAuthorization actors,
     IClock clock, IWorkEventStore events)
 {
-    public async Task<WorkOperation<ChecklistPage>> ListAsync(Guid cardId, Guid actor, string? after, CancellationToken ct = default)
+    public async Task<WorkOperation<ChecklistPage>> ListAsync(Guid cardId, Guid? actor, string? after, CancellationToken ct = default)
     {
         var hint = await work.FindCardAsync(cardId, ct);
         if (hint is null) return WorkOperation<ChecklistPage>.Failure("card_not_found");
-        return await transactions.ExecuteAsync(hint.OrganizationId,
-            WorkCommand.Create(actor, null, "ChecklistRead", cardId, new { after }, "card_not_found"),
-            async _ => await Admit(hint, actor, false, ct), async () =>
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "card_not_found",
+            () => AdmitRead(hint, actor, ct), async () =>
             {
                 string? rank = null; Guid? id = null;
                 if (after is not null)
@@ -60,7 +59,7 @@ public sealed partial class ChecklistService(IWorkManagementStore work, ICheckli
                 var scope = await boards.GetSyncScopeAsync(hint.BoardId, actor, ct);
                 var list = current is null ? null : await work.FindListAsync(current.ListId, ct);
                 var rows = await checklists.ListAsync(hint.OrganizationId, cardId, rank, id, ct);
-                if (current is null || list is null || scope.Value is null || !await Admit(hint, actor, false, ct) || !await actors.VerifyAsync(actor, ct))
+                if (current is null || list is null || scope.Value is null || !await AdmitRead(hint, actor, ct))
                     return WorkOperation<ChecklistPage>.Failure("card_not_found");
                 var items = rows.Take(50).ToArray();
                 var cursor = rows.Count > 50 ? $"{cardId:D}/{items[^1].Checklist.Rank}/{items[^1].Checklist.Id:D}" : null;
@@ -134,6 +133,16 @@ public sealed partial class ChecklistService(IWorkManagementStore work, ICheckli
                 if (!await actors.VerifyAsync(actor, ct)) return WorkOperation<ChecklistChange>.Failure("session_unavailable");
                 return WorkOperation<ChecklistChange>.Success(new(hint.OrganizationId, hint.BoardId, cardId, updated.Version, renamed, true));
             }, ct);
+    }
+    private async Task<bool> AdmitRead(CardRecord hint, Guid? actor, CancellationToken ct)
+    {
+        if (!await work.AcquireBoardReadScopeAsync(hint.OrganizationId, actor ?? Guid.Empty, hint.BoardId, ct)) return false;
+        var scope = await boards.GetSyncScopeAsync(hint.BoardId, actor, ct);
+        if (scope.Value is null || !scope.Value.Access.CanView || scope.Value.Board.OrganizationId != hint.OrganizationId) return false;
+        var card = await work.FindCardAsync(hint.Id, ct);
+        if (card is null || card.OrganizationId != hint.OrganizationId || card.BoardId != hint.BoardId || card.ListId != hint.ListId) return false;
+        var list = await work.FindListAsync(card.ListId, ct);
+        return list is not null && list.OrganizationId == hint.OrganizationId && list.BoardId == hint.BoardId;
     }
     private async Task<bool> Admit(CardRecord hint, Guid actor, bool editing, CancellationToken ct)
     {

@@ -27,6 +27,7 @@ admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES
  INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES(gen_random_uuid(),'$org','$board','$member','MEMBER','ACTIVE',now(),now());" >/dev/null
 request() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -X "$2" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $4" -d "$5" -o "$scratch/response.json" -w '%{http_code}' "$base$3"; }
 read_page() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -o "$scratch/page.json" -w '%{http_code}' "$base$2"; }
+read_anonymous() { curl --max-time 60 --silent --show-error -o "$scratch/page.json" -w '%{http_code}' "$base$1"; }
 state() { admin "SELECT md5(jsonb_build_object(
  'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$org' AND id='$card'),
  'checklists',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM checklists c WHERE tenant_id='$org'),
@@ -108,6 +109,27 @@ test "$(request owner POST "$itemPath" "$(uuid)" "$itemInput")" = 409
 test "$after" = "$(state)"
 test "$(read_page owner "$itemPath")" = 200
 jq -e '(.items|length)==1 and .summary.total==1 and .summary.completed==0 and .summary.percent==0' "$scratch/page.json" >/dev/null
+# Visibility changes use the real producer. Public reads do not create receipts
+# or alter child versions, and an authenticated outsider gains no editing grant.
+test "$(read_anonymous "$path?after=malformed")" = 404
+test "$(read_anonymous "$itemPath")" = 404
+version=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
+test "$(request owner PATCH "/boards/$board/visibility" "$(uuid)" "{\"visibility\":\"PUBLIC\",\"version\":$version}")" = 200
+before=$(state)
+test "$(read_anonymous "$path")" = 200
+jq -e '.canEdit==false and .cardVersion==4 and (.items|length)==1 and .items[0].total==1' "$scratch/page.json" >/dev/null
+test "$(read_anonymous "$itemPath")" = 200
+jq -e '.canEdit==false and .summary.total==1 and .items[0].text=="Pack supplies"' "$scratch/page.json" >/dev/null
+test "$(read_page outsider "$itemPath")" = 200
+jq -e '.canEdit==false' "$scratch/page.json" >/dev/null
+test "$(request outsider POST "$itemPath" "$(uuid)" '{"text":"Denied","cardVersion":4,"checklistVersion":3}')" = 404
+test "$(read_anonymous "$path?after=malformed")" = 400
+test "$before" = "$(state)"
+version=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
+test "$(request owner PATCH "/boards/$board/visibility" "$(uuid)" "{\"visibility\":\"PRIVATE\",\"version\":$version}")" = 200
+test "$(read_anonymous "$path")" = 404
+test "$(read_anonymous "$itemPath")" = 404
+test "$(read_page outsider "$itemPath")" = 404
 # Canonical child rows exercise aggregate progress across a bounded checklist
 # page, including deleted-item exclusion and an empty sibling's zero progress.
 admin "INSERT INTO checklist_items(id,tenant_id,checklist_id,text,rank,completed,completed_at,completed_by,created_at,updated_at,deleted_at)

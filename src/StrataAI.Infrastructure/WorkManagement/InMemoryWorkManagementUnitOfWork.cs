@@ -11,6 +11,23 @@ internal sealed class InMemoryWorkManagementUnitOfWork(IClock clock, ICommandAct
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly ConcurrentDictionary<(Guid Organization, Guid Actor, Guid Key), (string Fingerprint, DateTimeOffset Expires, object Result)> _results = new();
 
+    public async Task<WorkOperation<T>> ExecuteReadAsync<T>(Guid organizationId, Guid? actorId, string scopeFailureCode,
+        Func<Task<bool>> authorize, Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try
+        {
+            if (!await authorize()) return WorkOperation<T>.Failure(scopeFailureCode);
+            if (actorId is { } actor && !await actors.VerifyAsync(actor, cancellationToken)) return WorkOperation<T>.Failure("session_unavailable");
+            var result = await operation();
+            if (!result.Succeeded) return result;
+            if (!await authorize()) return WorkOperation<T>.Failure(scopeFailureCode);
+            if (actorId is { } current && !await actors.VerifyAsync(current, cancellationToken)) return WorkOperation<T>.Failure("session_unavailable");
+            return result;
+        }
+        finally { _gate.Release(); }
+    }
+
     public async Task<WorkOperation<T>> ExecuteAsync<T>(Guid organizationId, WorkCommand command,
         Func<T?, Task<bool>> authorizeReplay, Func<Task<WorkOperation<T>>> operation,
         CancellationToken cancellationToken = default)

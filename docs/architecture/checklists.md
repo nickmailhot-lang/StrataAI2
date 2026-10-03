@@ -182,3 +182,20 @@ rollback, original-key recovery, per-item audit counts, old tombstone preservati
 and archive replay denial. Strict build and shell syntax pass; Linux execution of
 these new cases is pending. Public read, copy/move/parent-retention integration,
 MUI/realtime/accessibility and full performance acceptance remain unfinished.
+
+Checklist and item GET routes now use the existing current Board VIEW policy for
+both visitors and authenticated actors. Public active Boards permit bounded,
+read-only child pages; visibility changes immediately remove that permission,
+and anonymous visitors cannot view archived Boards. Permitted members can still
+read archived parents without editing. Deleted Cards, Lists and Checklists remain
+hidden. Writes keep their authenticated edit/admin admission.
+
+Read callbacks own the same tenant transaction and parent locks as mutations,
+rechecking current visibility and parent identity before returning data. They
+create no command receipt and invent no authenticated actor. Authenticated readers
+still undergo current session verification before and after successful reads.
+Malformed cursors are validated only after authorization, avoiding private-parent
+discovery. Source API coverage uses real visibility/archive commands; mandatory
+exact-image coverage checks public/outsider reads, denied writes, read-only state,
+private retraction and unchanged child/audit/event/receipt state during reads.
+Strict compilation is checked locally; Linux execution remains required.
