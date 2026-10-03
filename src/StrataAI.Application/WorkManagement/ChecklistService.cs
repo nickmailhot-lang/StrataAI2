@@ -18,13 +18,17 @@ public sealed record ChecklistChange(Guid OrganizationId, Guid BoardId, Guid Car
 public interface IChecklistStore
 {
     Task<IReadOnlyList<ChecklistSummary>> ListAsync(Guid organization, Guid card, string? afterRank, Guid? afterId, CancellationToken ct);
+    Task<ChecklistSummary?> GetSummaryAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct);
+    Task<IReadOnlyList<ChecklistItemRecord>> ListItemsAsync(Guid organization, Guid checklist, string? afterRank, Guid? afterId, CancellationToken ct);
+    Task<string> NextItemRankAsync(Guid organization, Guid checklist, CancellationToken ct);
+    Task<ChecklistItemRecord> CreateItemAsync(Guid organization, Guid checklist, string text, string rank, DateTimeOffset now, CancellationToken ct);
     Task<string> NextRankAsync(Guid organization, Guid card, CancellationToken ct);
     Task<ChecklistRecord> CreateAsync(Guid organization, Guid card, string title, string rank, DateTimeOffset now, CancellationToken ct);
     Task<ChecklistRecord?> FindAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct);
     Task<ChecklistRecord?> RenameAsync(Guid organization, Guid card, Guid checklist, string title, long version, DateTimeOffset now, CancellationToken ct);
 }
 
-public sealed class ChecklistService(IWorkManagementStore work, IChecklistStore checklists, IWorkBoardAuthorization boards,
+public sealed partial class ChecklistService(IWorkManagementStore work, IChecklistStore checklists, IWorkBoardAuthorization boards,
     IWorkManagementUnitOfWork transactions, IWorkCommandContext context, ICommandActorAuthorization actors,
     IClock clock, IWorkEventStore events)
 {

@@ -106,3 +106,16 @@ revisions, concurrent clients (one winner), wrong-parent IDs and revoked replay.
 The exact-image fixture forces the event insert to fail after both updates,
 checks whole-command rollback, retries the original key and verifies replay and
 no-op event/audit counts. Linux execution remains pending for this increment.
+
+Authenticated ordered item GET/POST routes are now under
+`/cards/{cardId}/checklists/{checklistId}/items`. Create validates normalized text
+and both parent revisions, leaves completion/attribution empty, and advances the
+Checklist and Card revisions with one item audit/event/outbox/receipt transaction.
+Item reads return at most 50 rows with a Checklist-bound cursor and a summary
+computed over all active items, independent of the item page. Demo and PostgreSQL
+stores use the same scoped ordering/count behavior. Source coverage creates 63
+items, checks 50/13 pages and full counts, rejects wrong parents and stale writes,
+and denies reads/replay after revocation. The mandatory exact-image fixture adds
+item/queue INSERT rollback, same-key recovery, full-page aggregate counts and
+deleted-item exclusion. These new cases await Linux CI; strict build passes.
+Item edit/completion/reorder/delete and Checklist reorder/delete remain required.

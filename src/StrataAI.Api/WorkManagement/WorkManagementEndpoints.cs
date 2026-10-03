@@ -830,6 +830,8 @@ public static partial class WorkManagementEndpoints
                 StatusCodes.Status404NotFound,
                 errorCode,
                 "The List was not found."),
+            "invalid_checklist_item_text" => Problem(
+                StatusCodes.Status400BadRequest, errorCode, "Checklist item text must be nonblank and at most 2000 characters."),
             "checklist_not_found" => Problem(
                 StatusCodes.Status404NotFound, errorCode, "The requested checklist is unavailable."),
             "card_not_found" => Problem(

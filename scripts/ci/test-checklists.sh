@@ -5,7 +5,7 @@ base=http://localhost:8088
 scratch=$(mktemp -d)
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
-  admin 'GRANT INSERT ON checklists, work_events TO strataai_api_runtime;' >/dev/null || true
+  admin 'GRANT INSERT ON checklists, checklist_items, work_events, background_jobs TO strataai_api_runtime;' >/dev/null || true
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -86,11 +86,33 @@ test "$(request owner PATCH "$renamePath" "$(uuid)" '{"title":" Revised preparat
 jq -e '.changed==false and .cardVersion==3 and .checklist.version==2' "$scratch/response.json" >/dev/null
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_UPDATED';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type='CHECKLIST_UPDATED';")" = 1
+itemPath="$path/$checklist/items"; itemKey=$(uuid); itemInput='{"text":" Pack supplies ","cardVersion":3,"checklistVersion":2}'
+before=$(state)
+test "$(read_page outsider "$itemPath?after=malformed")" = 404
+test "$(request outsider POST "$itemPath" "$(uuid)" "$itemInput")" = 404
+test "$(request owner POST "$itemPath" "$(uuid)" '{"text":" ","cardVersion":3,"checklistVersion":2}')" = 400
+for table in checklist_items background_jobs; do
+  admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+  test "$(request member POST "$itemPath" "$itemKey" "$itemInput")" = 503
+  test "$before" = "$(state)"
+  admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+done
+test "$(request member POST "$itemPath" "$itemKey" "$itemInput")" = 200
+jq -e '.changed and .cardVersion==4 and .checklist.version==3 and .item.text=="Pack supplies" and .item.version==1 and .item.completed==false and .item.completedAt==null and .item.completedBy==null' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/item-created.json"
+after=$(state)
+test "$(request member POST "$itemPath" "$itemKey" "$itemInput")" = 200
+cmp "$scratch/item-created.json" "$scratch/response.json"
+test "$after" = "$(state)"
+test "$(request owner POST "$itemPath" "$(uuid)" "$itemInput")" = 409
+test "$after" = "$(state)"
+test "$(read_page owner "$itemPath")" = 200
+jq -e '(.items|length)==1 and .summary.total==1 and .summary.completed==0 and .summary.percent==0' "$scratch/page.json" >/dev/null
 # Canonical child rows exercise aggregate progress across a bounded checklist
 # page, including deleted-item exclusion and an empty sibling's zero progress.
 admin "INSERT INTO checklist_items(id,tenant_id,checklist_id,text,rank,completed,completed_at,completed_by,created_at,updated_at,deleted_at)
- SELECT gen_random_uuid(),'$org','$checklist','Progress fixture',lpad(n::text,30,'0'),n<>2,
- CASE WHEN n<>2 THEN now() END,CASE WHEN n<>2 THEN '$owner'::uuid END,now(),now(),CASE WHEN n=3 THEN now() END FROM generate_series(1,3) n;
+ SELECT gen_random_uuid(),'$org','$checklist','Progress fixture',lpad(n::text,30,'0'),n IN (1,64),
+ CASE WHEN n IN (1,64) THEN now() END,CASE WHEN n IN (1,64) THEN '$owner'::uuid END,now(),now(),CASE WHEN n=64 THEN now() END FROM generate_series(1,64) n WHERE n<>63;
  INSERT INTO checklists(id,tenant_id,card_id,title,rank,created_at,updated_at)
  SELECT gen_random_uuid(),'$org','$card','Page '||n,lpad(n::text,30,'0'),now(),now() FROM generate_series(1,62) n;" >/dev/null
 test "$(read_page member "$path")" = 200
@@ -98,18 +120,27 @@ jq -e '(.items|length)==50 and .nextCursor!=null and all(.items[];.total==0 and 
 cursor=$(jq -r '.nextCursor' "$scratch/page.json")
 cp "$scratch/page.json" "$scratch/first.json"
 test "$(read_page member "$path?after=$cursor")" = 200
-jq -e --arg checklist "$checklist" '(.items|length)==13 and .nextCursor==null and any(.items[];.checklist.id==$checklist and .completed==1 and .total==2 and .percent==50)' "$scratch/page.json" >/dev/null
+jq -e --arg checklist "$checklist" '(.items|length)==13 and .nextCursor==null and any(.items[];.checklist.id==$checklist and .completed==1 and .total==63 and .percent>1 and .percent<2)' "$scratch/page.json" >/dev/null
 jq -se '[.[].items[].checklist.id] | length==63 and (unique|length)==63' "$scratch/first.json" "$scratch/page.json" >/dev/null
 test "$(read_page owner "$path?after=malformed")" = 400
+test "$(read_page owner "$itemPath")" = 200
+jq -e '(.items|length)==50 and .nextCursor!=null and .summary.total==63 and .summary.completed==1' "$scratch/page.json" >/dev/null
+itemCursor=$(jq -r '.nextCursor' "$scratch/page.json")
+cp "$scratch/page.json" "$scratch/items-first.json"
+test "$(read_page owner "$itemPath?after=$itemCursor")" = 200
+jq -e '(.items|length)==13 and .nextCursor==null and .summary.total==63 and .summary.completed==1 and all(.items[];.deletedAt==null)' "$scratch/page.json" >/dev/null
+jq -se '[.[].items[].id] | length==63 and (unique|length)==63' "$scratch/items-first.json" "$scratch/page.json" >/dev/null
 # A valid but exhausted tail must fail before advancing the aggregate revision.
 admin "UPDATE checklists SET rank='999999999999999999999999999998' WHERE id='$checklist';" >/dev/null
 before=$(state)
-test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":3}')" = 409
+test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":4}')" = 409
 jq -e '.code=="rank_space_exhausted"' "$scratch/response.json" >/dev/null
 test "$before" = "$(state)"
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 test "$(read_page member "$path?after=$cursor")" = 404
 test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 404
+test "$(read_page member "$itemPath?after=$itemCursor")" = 404
+test "$(request member POST "$itemPath" "$itemKey" "$itemInput")" = 404
 version=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
 test "$(request owner POST "/boards/$board/archive" "$(uuid)" "{\"version\":$version}")" = 200
 test "$(read_page owner "$path")" = 200

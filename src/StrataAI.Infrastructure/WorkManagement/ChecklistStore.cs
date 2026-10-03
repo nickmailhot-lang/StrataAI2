@@ -27,7 +27,7 @@ internal sealed partial class InMemoryWorkManagementStore : IChecklistStore
         lock (_sync) return Task.FromResult<IReadOnlyList<ChecklistSummary>>(_checklists.Values
             .Where(value => value.OrganizationId == organization && value.CardId == card && value.DeletedAt is null &&
                 (afterRank is null || string.CompareOrdinal(value.Rank, afterRank) > 0 || value.Rank == afterRank && value.Id.CompareTo(afterId!.Value) > 0))
-            .OrderBy(value => value.Rank, StringComparer.Ordinal).ThenBy(value => value.Id).Take(51).Select(value => new ChecklistSummary(value, 0, 0)).ToArray());
+            .OrderBy(value => value.Rank, StringComparer.Ordinal).ThenBy(value => value.Id).Take(51).Select(value => Summary(value)).ToArray());
     }
     public Task<string> NextRankAsync(Guid organization, Guid card, CancellationToken ct)
     {
