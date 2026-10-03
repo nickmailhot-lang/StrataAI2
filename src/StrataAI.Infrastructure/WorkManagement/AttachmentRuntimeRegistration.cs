@@ -1,5 +1,6 @@
 using Amazon;
 using Amazon.S3;
+using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -41,6 +42,19 @@ public static class AttachmentRuntimeRegistration
         var region = configuration["STRATAAI_ATTACHMENT_S3_REGION"];
         var endpoint = RegionEndpoint.EnumerableAllRegions.FirstOrDefault(value => value.SystemName == region);
         if (endpoint is null) throw new InvalidOperationException("A supported explicit attachment storage region is required.");
+        var maximumText = configuration["STRATAAI_ATTACHMENT_MAX_BYTES"] ?? "20971520";
+        if (!long.TryParse(maximumText, NumberStyles.None, CultureInfo.InvariantCulture, out var maximum))
+            throw new InvalidOperationException("Attachment upload size policy is invalid.");
+        AttachmentUploadPolicy policy;
+        try
+        {
+            policy = new AttachmentUploadPolicy(maximum,
+                (configuration["STRATAAI_ATTACHMENT_ALLOWED_TYPES"] ?? "image/png,image/jpeg,image/webp,application/pdf")
+                    .Split(',', StringSplitOptions.TrimEntries));
+        }
+        catch (ArgumentException) { throw new InvalidOperationException("Attachment upload policy is invalid."); }
+        services.AddSingleton(policy);
+        services.AddSingleton<IAttachmentFileTypeInspector, AttachmentFileTypeInspector>();
         ClamAvAttachmentMalwareScanner? scanner = null;
         if (worker)
         {

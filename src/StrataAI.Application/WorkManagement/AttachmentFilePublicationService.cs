@@ -10,7 +10,7 @@ namespace StrataAI.Application.WorkManagement;
 public sealed class AttachmentFilePublicationService(IWorkManagementStore work, IAttachmentMetadataStore attachments,
     IAttachmentUploadIntentStore uploads, IOrganizationStore organizations, IWorkBoardAuthorization boards,
     IWorkManagementUnitOfWork transactions, ICommandActorAuthorization actors, IClock clock,
-    IWorkEventStore events, IAttachmentScanJobPublisher scans)
+    IWorkEventStore events, IAttachmentScanJobPublisher scans, AttachmentUploadPolicy policy)
 {
     public async Task<WorkOperation<AttachmentChange>> PublishAsync(Guid cardId, Guid actor,
         Guid uploadId, Guid retryKey, string correlationId, CancellationToken ct = default)
@@ -41,6 +41,8 @@ public sealed class AttachmentFilePublicationService(IWorkManagementStore work, 
                 if (upload is null || upload.Id != uploadId || upload.CardId != cardId || upload.UploaderId != actor
                     || upload.State != AttachmentUploadState.Stored || upload.VerifiedMimeType is null || upload.StoredAt is null
                     || upload.StoredAt > now || upload.UpdatedAt > now || upload.ExpiresAt <= now)
+                    return WorkOperation<AttachmentChange>.Failure("attachment_upload_unavailable");
+                if (upload.ExpectedSizeBytes > policy.MaximumBytes || !policy.AllowedMimeTypes.Contains(upload.VerifiedMimeType))
                     return WorkOperation<AttachmentChange>.Failure("attachment_upload_unavailable");
                 var current = await work.FindCardAsync(cardId, ct);
                 if (current is null || current.Version != upload.OriginalCardVersion)

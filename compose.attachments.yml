@@ -7,6 +7,8 @@ services:
       STRATAAI_ATTACHMENT_S3_BUCKET: ${STRATAAI_ATTACHMENT_S3_BUCKET:?Set private attachment bucket}
       STRATAAI_ATTACHMENT_S3_OWNER: ${STRATAAI_ATTACHMENT_S3_OWNER:?Set expected AWS account owner}
       STRATAAI_ATTACHMENT_S3_REGION: ${STRATAAI_ATTACHMENT_S3_REGION:?Set explicit AWS region}
+      STRATAAI_ATTACHMENT_MAX_BYTES: ${STRATAAI_ATTACHMENT_MAX_BYTES:-20971520}
+      STRATAAI_ATTACHMENT_ALLOWED_TYPES: ${STRATAAI_ATTACHMENT_ALLOWED_TYPES:-image/png,image/jpeg,image/webp,application/pdf}
   worker:
     environment:
       STRATAAI_ATTACHMENT_STORAGE_ENABLED: "true"
@@ -15,6 +17,8 @@ services:
       STRATAAI_ATTACHMENT_S3_REGION: ${STRATAAI_ATTACHMENT_S3_REGION:?Set explicit AWS region}
       STRATAAI_WORKER_ORGANIZATION_IDS: ${STRATAAI_WORKER_ORGANIZATION_IDS:?Set explicit Worker Organization scope}
       STRATAAI_ATTACHMENT_SCANNER_SOCKET: /run/strata-scanner/clamd.sock
+      STRATAAI_ATTACHMENT_MAX_BYTES: ${STRATAAI_ATTACHMENT_MAX_BYTES:-20971520}
+      STRATAAI_ATTACHMENT_ALLOWED_TYPES: ${STRATAAI_ATTACHMENT_ALLOWED_TYPES:-image/png,image/jpeg,image/webp,application/pdf}
     volumes:
       - type: bind
         source: ${STRATAAI_ATTACHMENT_SCANNER_DIRECTORY:?Set existing private scanner socket directory}

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
+using StrataAI.Application.Organizations;
 using StrataAI.Application.Runtime;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Domain.WorkManagement;
@@ -57,6 +58,7 @@ internal static class AttachmentPublicationContract
         services.AddLogging(); services.AddSingleton<IClock>(clock); services.AddSingleton<ICommandActorAuthorization>(actor);
         services.AddSingleton<IWorkCommandContext, Context>(); services.AddSingleton(_ => new PostgresConnectionFactory(apiConnection));
         services.AddSingleton<PostgresBackgroundJobStore>();
+        services.AddSingleton(new AttachmentUploadPolicy(20971520, new[] { "image/png", "image/jpeg", "image/webp", "application/pdf" }));
         var settings = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["STRATAAI_AUTH_RETRY_CURRENT_KEY"] = "contract",
@@ -68,6 +70,29 @@ internal static class AttachmentPublicationContract
         var uploads = provider.GetRequiredService<IAttachmentUploadIntentStore>(); var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>();
         var publication = provider.GetRequiredService<AttachmentFilePublicationService>();
         var digest = Convert.ToHexStringLower(SHA256.HashData(new byte[128]));
+        var admission = provider.GetRequiredService<AttachmentUploadAdmissionService>();
+        var admissionInput = new PrepareAttachmentUploadInput("Contract admitted file", 128, digest, 1);
+        var admissionKey = Guid.NewGuid();
+        var admitted = await admission.PrepareAsync(card, user, admissionKey, admissionInput, ct);
+        Require(admitted.Succeeded && admitted.Value is { State: AttachmentUploadState.Prepared, Version: 1 }, "Current authorized upload preparation failed.");
+        Require((await admission.PrepareAsync(card, user, admissionKey, admissionInput with { DisplayName = " Contract admitted file " }, ct)).Value == admitted.Value,
+            "Normalized original upload retry changed identity.");
+        foreach (var changed in new[] { admissionInput with { DisplayName = "Changed" }, admissionInput with { SizeBytes = 129 },
+            admissionInput with { Sha256 = new string('b', 64) }, admissionInput with { CardVersion = 2 } })
+            Require((await admission.PrepareAsync(card, user, admissionKey, changed, ct)).ErrorCode == "idempotency_key_reused", "Upload retry rebased original claims.");
+        Require((await admission.PrepareAsync(card, outsider, Guid.Empty, new("", 0, "", 0), ct)).ErrorCode == "card_not_found", "Upload preparation disclosed validation to outsider.");
+        Require((await admission.PrepareAsync(card, user, Guid.NewGuid(), admissionInput with { CardVersion = 2 }, ct)).ErrorCode == "version_conflict", "First upload preparation ignored Card revision.");
+        clock.UtcNow = at.AddHours(2);
+        Require((await admission.PrepareAsync(card, user, admissionKey, admissionInput, ct)).ErrorCode == "attachment_upload_unavailable", "Expired upload retry minted another intent.");
+        clock.UtcNow = at.AddSeconds(3);
+        var writer = await admission.ClaimAsync(card, user, admitted.Value!.Id, admissionKey, 1, ct);
+        Require(writer.Succeeded && writer.Value is { State: AttachmentUploadState.Writing, Version: 2, WriteLeaseId: not null }, "Admitted upload writer claim failed.");
+        Require((await admission.ClaimAsync(card, user, writer.Value!.Id, admissionKey, 1, ct)).ErrorCode == "attachment_upload_unavailable", "Stale writer snapshot was reused.");
+        Require((await admission.ClaimAsync(card, user, writer.Value.Id, admissionKey, 2, ct)).ErrorCode == "attachment_upload_in_progress", "Duplicate inherited an active writer.");
+        var raceKey = Guid.NewGuid(); var race = await admission.PrepareAsync(card, user, raceKey, admissionInput, ct);
+        Require(race.Succeeded, "Concurrent writer fixture preparation failed.");
+        var contenders = await Task.WhenAll(Enumerable.Range(0, 2).Select(_ => admission.ClaimAsync(card, user, race.Value!.Id, raceKey, 1, ct)));
+        Require(contenders.Count(value => value.Succeeded) == 1, "Concurrent authorized upload claims had multiple writers.");
         async Task<AttachmentUploadIntent> Stored(long originalVersion = 1, Guid? targetCard = null)
         {
             var parent = targetCard ?? card;
@@ -112,6 +137,17 @@ internal static class AttachmentPublicationContract
             Require(await reader.ReadAsync(ct) && reader.GetString(0) == "STORED" && reader.GetInt64(1) == 3, "Failed publication lost retained measured intent.");
         }
         var upload = await Stored();
+        foreach (var restrictedPolicy in new[] { new AttachmentUploadPolicy(64, new[] { "image/png" }),
+            new AttachmentUploadPolicy(20971520, new[] { "application/pdf" }) })
+        {
+            var restricted = new AttachmentFilePublicationService(provider.GetRequiredService<IWorkManagementStore>(),
+                provider.GetRequiredService<IAttachmentMetadataStore>(), uploads, provider.GetRequiredService<IOrganizationStore>(),
+                provider.GetRequiredService<IWorkBoardAuthorization>(), unit, actor, clock,
+                provider.GetRequiredService<IWorkEventStore>(), provider.GetRequiredService<IAttachmentScanJobPublisher>(), restrictedPolicy);
+            Require((await restricted.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-policy-change", ct)).ErrorCode
+                == "attachment_upload_unavailable", "Publication ignored current configured size/type policy.");
+            await Effects(1, 0); await StillStored(upload);
+        }
         Require((await publication.PublishAsync(card, outsider, Guid.Empty, Guid.Empty, "publication-outsider", ct)).ErrorCode == "card_not_found", "Publication disclosed invalid inputs to outsider.");
         Require((await publication.PublishAsync(card, user, Guid.NewGuid(), upload.RetryKey, "publication-mismatch", ct)).ErrorCode == "attachment_upload_unavailable", "Publication widened upload identity.");
         clock.UtcNow = at.AddHours(2);
@@ -176,6 +212,7 @@ internal static class AttachmentPublicationContract
         await using (var revoke = new NpgsqlCommand("UPDATE organization_members SET status='REMOVED',updated_at=clock_timestamp(),version=version+1 WHERE tenant_id=@tenant AND user_id=@actor;", admin))
         { revoke.Parameters.AddWithValue("tenant", tenant); revoke.Parameters.AddWithValue("actor", user); await revoke.ExecuteNonQueryAsync(ct); }
         Require((await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-revoked-replay", ct)).ErrorCode == "card_not_found", "Revoked member recovered publication receipt.");
+        Require((await admission.PrepareAsync(card, user, admissionKey, admissionInput, ct)).ErrorCode == "card_not_found", "Revoked member recovered upload intent.");
         await Effects(2, 1);
         // Keep immutable audit and its parents until isolated CI DB teardown.
         Console.WriteLine("Restricted Application file publication: current scope, original Card CAS, expiry, audit/actor rollback, metadata/intent/scan-job/event atomicity and private authorized receipts passed.");

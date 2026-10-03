@@ -41,6 +41,9 @@ public sealed class AttachmentRuntimeTests
         var handler = Assert.IsType<AttachmentScanDeliveryHandler>(Assert.Single(provider.GetServices<IBackgroundJobHandler>()));
         Assert.Equal(AttachmentScanJobs.Type, handler.JobType); Assert.Equal(AttachmentScanJobs.Service, handler.ServiceIdentity);
         Assert.NotNull(provider.GetRequiredService<AttachmentQuarantineScanner>());
+        Assert.Equal(20971520, provider.GetRequiredService<AttachmentUploadPolicy>().MaximumBytes);
+        Assert.Equal(4, provider.GetRequiredService<AttachmentUploadPolicy>().AllowedMimeTypes.Count);
+        Assert.IsType<AttachmentFileTypeInspector>(provider.GetRequiredService<IAttachmentFileTypeInspector>());
         provider.InitializeAttachmentRuntime(enabled: true);
     }
 
@@ -60,6 +63,11 @@ public sealed class AttachmentRuntimeTests
     [InlineData("STRATAAI_ATTACHMENT_S3_REGION", "custom-region")]
     [InlineData("STRATAAI_ATTACHMENT_SCANNER_SOCKET", "relative")]
     [InlineData("STRATAAI_WORKER_ORGANIZATION_IDS", "")]
+    [InlineData("STRATAAI_ATTACHMENT_MAX_BYTES", "-1")]
+    [InlineData("STRATAAI_ATTACHMENT_MAX_BYTES", "1073741825")]
+    [InlineData("STRATAAI_ATTACHMENT_ALLOWED_TYPES", "image/svg+xml")]
+    [InlineData("STRATAAI_ATTACHMENT_ALLOWED_TYPES", "image/png,image/png")]
+    [InlineData("STRATAAI_ATTACHMENT_ALLOWED_TYPES", "")]
     public void ARCH_12_Invalid_enabled_configuration_is_a_startup_failure(string key, string value)
     {
         var settings = Settings(); settings[key] = value;

@@ -64,3 +64,16 @@ not create cloud resources or a scanner daemon.
 Runtime integration and synthetic/local-socket tests do not establish deployed
 bucket/IAM, antivirus signature freshness, scan-limit policy, socket permissions,
 full immutable container acceptance or complete file upload/download behavior.
+
+Enabled attachment runtime also configures `STRATAAI_ATTACHMENT_MAX_BYTES`
+(default 20 MiB / 20971520 bytes, bounded to 1 GiB) and
+`STRATAAI_ATTACHMENT_ALLOWED_TYPES` (default `image/png,image/jpeg,image/webp,application/pdf`).
+The allowlist must be a nonempty unique subset of these exact MIME values;
+unsupported active content, empty/duplicate entries and invalid byte limits fail
+startup. Actual-byte inspection determines MIME; request MIME and filenames
+cannot select an allowed type. Size is checked in original-intent admission and
+writer claiming; measured Stored-file publication rechecks both current size
+and type policy. Configure scanner StreamMaxLength and operational deadlines
+for the selected upload bound; protocol PING alone does not prove those limits
+or signature freshness. Upload preparation is a private Application service,
+not an exposed HTTP upload endpoint at this stage.
