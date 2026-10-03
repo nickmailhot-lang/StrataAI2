@@ -66,3 +66,22 @@ must be made explicit in the subsequent Application/account/UI implementation;
 they must not infer authority from arbitrary body text, display-name uniqueness,
 an email address or a current generic Board view permission. These unresolved
 cross-PRD choices do not waive mentions or their notifications.
+
+Migration 055 now adds metadata-only card_comments with forced tenant RLS,
+tenant/Card and tenant/author-membership foreign keys, a Card cursor index,
+bounded nonblank plaintext and finite timestamp shape. A revision trigger keeps
+ownership/createdAt immutable, admits only one-revision edits and body-redacting
+deletion, preserves edited history on deletion and refuses deleted-body revival.
+The API runtime receives SELECT/INSERT/UPDATE without hard DELETE; the Worker
+receives no comment table privileges. This is a storage boundary, not current
+session/Board authorization or an HTTP command implementation.
+
+The readiness ledger now requires all 55 migrations. Upgrade/repeat fixtures
+include 055, and synthetic serialization/failure/unrecorded fixtures move to
+056/057/058. Exact-image missing-ledger checks include 055. New PostgreSQL CI
+checks exercise both tenants, cross-tenant writes, foreign Card/author affinity,
+malformed content/transitions, immutable ownership, stale revision evidence,
+valid edit/redaction, retained history, no revival, no hard DELETE and missing
+tenant context. Real runtime login tests check the exact API/Worker grants.
+Local warning-as-error compilation and script syntax pass; new actual migrated
+PostgreSQL execution remains pending CI. No acceptance criterion is closed.

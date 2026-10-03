@@ -13,6 +13,8 @@ api() { PGUSER=strataai_api_runtime PGPASSWORD="$STRATAAI_API_DB_PASSWORD" psql 
 worker() { PGUSER=strataai_worker_runtime PGPASSWORD="$STRATAAI_WORKER_DB_PASSWORD" psql -X -At -v ON_ERROR_STOP=1 -c "$1"; }
 test "$(api 'SELECT public.runtime_database_role_is_safe()')" = t
 test "$(worker 'SELECT public.runtime_database_role_is_safe()')" = t
+test "$(api "SELECT has_table_privilege(current_user,'card_comments','SELECT') AND has_table_privilege(current_user,'card_comments','INSERT') AND has_table_privilege(current_user,'card_comments','UPDATE') AND NOT has_table_privilege(current_user,'card_comments','DELETE')")" = t
+test "$(worker "SELECT has_table_privilege(current_user,'card_comments','SELECT') OR has_table_privilege(current_user,'card_comments','INSERT') OR has_table_privilege(current_user,'card_comments','UPDATE') OR has_table_privilege(current_user,'card_comments','DELETE')")" = f
 test "$(api 'SELECT count(*) FROM boards')" = 0
 test "$(api "BEGIN; SET LOCAL app.tenant_id='11111111-1111-1111-1111-111111111111'; SELECT count(*) FROM boards WHERE tenant_id='22222222-2222-2222-2222-222222222222'; ROLLBACK;" | grep -E '^[0-9]+$')" = 0
 test "$(api "BEGIN; SET LOCAL app.tenant_id='11111111-1111-1111-1111-111111111111'; SELECT count(*) FROM boards WHERE id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'; ROLLBACK;" | grep -E '^[0-9]+$')" = 1
