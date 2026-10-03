@@ -19,6 +19,70 @@ const ack = (text = 'Prepare', completed = true) => {
 const props = () => ({ ...scope, checklist, actor: profile.id, version: 4, editable: true, disabled: false, unavailable: false,
   onBusyChange: vi.fn(), onRecoveryChange: vi.fn(), onRefresh: vi.fn(), onClose: vi.fn() });
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+const sibling = { ...item, id: id(6), text: 'Execute', rank: rank(10) };
+const movePage = { ...page, summary: { ...page.summary, total: 2 }, items: [item, sibling] };
+const positioned = (changed = true) => ({ ...scope, changed, cardVersion: changed ? 5 : 4,
+  checklist: { ...checklist, version: changed ? 3 : 2, updatedAt: changed ? later : now },
+  item: { ...item, rank: changed ? rank(15) : item.rank, version: changed ? 4 : 3, updatedAt: changed ? later : now } });
+async function reviewMove() {
+  fireEvent.click(screen.getByRole('button', { name: 'Review checklist items' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Move item: Prepare' }));
+}
+it('requires a reviewed destination and appends with exact Card/Checklist/item revisions', async () => {
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'PATCH' ? positioned() : movePage);
+  const p = props(); render(<ChecklistItemManageControl {...p} />); await reviewMove();
+  const save = screen.getByRole('button', { name: 'Save item position' }); expect(save).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Place before item: Prepare' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Place item at end' })); fireEvent.click(save);
+  await waitFor(() => expect(p.onClose).toHaveBeenCalledWith('Checklist item moved.'));
+  const calls = vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'PATCH'); expect(calls).toHaveLength(1);
+  expect(calls[0][0]).toBe(`/cards/${scope.cardId}/checklists/${checklist.id}/items/${item.id}/position`);
+  expect(JSON.parse(calls[0][1]!.body as string)).toEqual({ beforeId: null, cardVersion: 4, checklistVersion: 2, version: 3 });
+});
+it('accepts an already-before-sibling no-op without changing aggregate history', async () => {
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'PATCH' ? positioned(false) : movePage);
+  const p = props(); render(<ChecklistItemManageControl {...p} />); await reviewMove(); fireEvent.click(screen.getByRole('button', { name: 'Place before item: Execute' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save item position' })); await waitFor(() => expect(p.onClose).toHaveBeenCalledWith('Checklist item position is unchanged.'));
+});
+it('preserves completion attribution and time when moving a completed item', async () => {
+  const completed = { ...item, completed: true, completedBy: id(9), completedAt: now };
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'PATCH'
+    ? { ...positioned(), item: { ...positioned().item, completed: true, completedBy: id(9), completedAt: now } }
+    : { ...movePage, summary: { ...movePage.summary, completed: 1, percent: 50 }, items: [completed, sibling] });
+  const p = props(); render(<ChecklistItemManageControl {...p} />); await reviewMove(); fireEvent.click(screen.getByRole('button', { name: 'Place item at end' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save item position' })); await waitFor(() => expect(p.onClose).toHaveBeenCalledWith('Checklist item moved.'));
+});
+it('retains the original move destination, body and key through an unconfirmed response and newer snapshot', async () => {
+  let writes = 0; vi.mocked(workRequest).mockImplementation(async (path, options) => {
+    if (path === '/me') return profile; if (options?.method !== 'PATCH') return movePage;
+    if (++writes === 1) throw new WorkRequestError(0, null); return positioned();
+  });
+  const p = props(); const view = render(<ChecklistItemManageControl {...p} />); await reviewMove(); fireEvent.click(screen.getByRole('button', { name: 'Place item at end' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save item position' })); await screen.findByRole('button', { name: 'Retry checklist item move' });
+  view.rerender(<ChecklistItemManageControl {...p} version={5} unavailable />); expect(screen.queryByText('Chosen position: at end')).not.toBeInTheDocument();
+  view.rerender(<ChecklistItemManageControl {...p} version={5} />); const retry = screen.getByRole('button', { name: 'Retry checklist item move' });
+  await waitFor(() => expect(retry).toHaveFocus()); expect(screen.queryByRole('button', { name: 'Place item at end' })).not.toBeInTheDocument(); fireEvent.click(retry);
+  await waitFor(() => expect(p.onClose).toHaveBeenCalledWith('Checklist item moved.')); const calls = vi.mocked(workRequest).mock.calls.filter(([, options]) => options?.method === 'PATCH');
+  expect(calls).toHaveLength(2); expect(calls[1][1]!.body).toBe(calls[0][1]!.body); expect(calls[1][1]!.headers).toEqual(calls[0][1]!.headers);
+});
+it.each([{ cardVersion: 6 }, { item: { ...positioned().item, rank: rank(5) } }, { item: { ...positioned().item, text: 'Invented' } }, { changed: false }])('keeps recovery after a malformed position acknowledgment (%j)', async change => {
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'PATCH' ? { ...positioned(), ...change } : movePage);
+  const p = props(); render(<ChecklistItemManageControl {...p} />); await reviewMove(); fireEvent.click(screen.getByRole('button', { name: 'Place item at end' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save item position' })); expect(await screen.findByRole('button', { name: 'Retry checklist item move' })).toBeEnabled(); expect(p.onClose).not.toHaveBeenCalled();
+});
+it('chooses a before-item anchor on a later bounded page', async () => {
+  const rows = Array.from({ length: 50 }, (_, n) => ({ ...item, id: n === 0 ? item.id : id(n + 20), rank: rank((n + 1) * 10), text: n === 0 ? item.text : `Item ${n + 1}` }));
+  const cursor = `${checklist.id}/${rank(500)}/${id(69)}`; const anchor = { ...sibling, rank: rank(510), text: 'Last anchor' };
+  vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'PATCH'
+    ? { ...positioned(), item: { ...positioned().item, rank: rank(505) } }
+    : { ...page, summary: { ...page.summary, total: 63 }, items: path.includes('?after=') ? [anchor] : rows, nextCursor: path.includes('?after=') ? null : cursor });
+  const p = props(); render(<ChecklistItemManageControl {...p} />); await reviewMove(); expect(screen.queryByRole('button', { name: 'Place item at end' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Next item position choices' })); fireEvent.click(await screen.findByRole('button', { name: 'Place before item: Last anchor' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save item position' })); await waitFor(() => expect(p.onClose).toHaveBeenCalledWith('Checklist item moved.'));
+  const call = vi.mocked(workRequest).mock.calls.find(([, options]) => options?.method === 'PATCH');
+  expect(JSON.parse(call![1]!.body as string)).toEqual({ beforeId: anchor.id, cardVersion: 4, checklistVersion: 2, version: 3 });
+  expect(vi.mocked(workRequest).mock.calls.filter(([path]) => path !== '/me' && !path.endsWith('/position'))).toHaveLength(2);
+});
 const deleted = () => ({ ...scope, changed: true, cardVersion: 5, checklist: { ...checklist, version: 3, updatedAt: later },
   item: { ...item, version: 4, updatedAt: later, deletedAt: later } });
 async function reviewDeletion() {

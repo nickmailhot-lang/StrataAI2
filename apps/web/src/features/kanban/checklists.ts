@@ -121,10 +121,15 @@ export function parseChecklistDeleted(value: unknown, scope: ChecklistScope, bef
   return row as ChecklistChange & { deletedItems: number };
 }
 export function checklistPosition(page: ChecklistPage, moving: Checklist, beforeId: string | null, after?: string): ChecklistPosition {
-  const rows = page.items.map(value => value.checklist);
-  const previous = after ? cursor(after, page.cardId) : undefined;
+  return position(page.items.map(value => value.checklist), moving, page.cardId, page.nextCursor, beforeId, after);
+}
+export function checklistItemPosition(page: ChecklistItemPage, moving: ChecklistItem, beforeId: string | null, after?: string): ChecklistPosition {
+  return position(page.items, moving, page.summary.checklist.id, page.nextCursor, beforeId, after);
+}
+function position(rows: { id: string; rank: string }[], moving: { id: string; rank: string }, parent: string, nextCursor: string | null, beforeId: string | null, after?: string): ChecklistPosition {
+  const previous = after ? cursor(after, parent) : undefined;
   const anchor = beforeId === null ? undefined : rows.find(row => sameId(row.id, beforeId));
-  if (beforeId !== null && (!anchor || sameId(beforeId, moving.id)) || beforeId === null && page.nextCursor !== null) throw invalid();
+  if (beforeId !== null && (!anchor || sameId(beforeId, moving.id)) || beforeId === null && nextCursor !== null) throw invalid();
   const index = anchor ? rows.indexOf(anchor) : rows.length;
   const lower = rows.slice(0, index).filter(row => !sameId(row.id, moving.id)).at(-1)?.rank ?? previous?.rank ?? '0'.repeat(30);
   const upper = anchor?.rank ?? '9'.repeat(30);
@@ -177,5 +182,18 @@ export function parseChecklistItemDeleted(value: unknown, scope: ChecklistScope,
     deleted.version !== before.version + 1 || instant(deleted.createdAt) !== instant(before.createdAt) || instant(deleted.updatedAt) < instant(before.updatedAt) ||
     instant(child.updatedAt) !== instant(deleted.updatedAt) ||
     before.completed && (!sameId(deleted.completedBy, before.completedBy!) || instant(deleted.completedAt) !== instant(before.completedAt))) throw invalid();
+  return row as ChecklistItemChange;
+}
+export function parseChecklistItemPositioned(value: unknown, scope: ChecklistScope, parent: Checklist, before: ChecklistItem, position: ChecklistPosition, cardVersion: number): ChecklistItemChange {
+  const row = record(value); const child = checklist(row.checklist, scope); const moved = item(row.item, scope, parent.id); const changed = !position.unchanged;
+  if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.boardId, scope.boardId) || !sameId(row.cardId, scope.cardId) ||
+    !version(cardVersion) || !version(row.cardVersion) || row.cardVersion !== cardVersion + Number(changed) || row.changed !== changed ||
+    !sameId(child.id, parent.id) || child.title !== parent.title || child.rank !== parent.rank || child.version !== parent.version + Number(changed) ||
+    instant(child.createdAt) !== instant(parent.createdAt) || instant(child.updatedAt) < instant(parent.updatedAt) ||
+    !sameId(moved.id, before.id) || moved.text !== before.text || moved.completed !== before.completed || moved.version !== before.version + Number(changed) ||
+    instant(moved.createdAt) !== instant(before.createdAt) || instant(moved.updatedAt) < instant(before.updatedAt) ||
+    (changed ? moved.rank === before.rank || moved.rank <= position.lowerRank || moved.rank >= position.upperRank || instant(child.updatedAt) !== instant(moved.updatedAt)
+      : moved.rank !== before.rank || instant(child.updatedAt) !== instant(parent.updatedAt) || instant(moved.updatedAt) !== instant(before.updatedAt)) ||
+    before.completed && (!sameId(moved.completedBy, before.completedBy!) || instant(moved.completedAt) !== instant(before.completedAt))) throw invalid();
   return row as ChecklistItemChange;
 }

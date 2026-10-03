@@ -416,3 +416,26 @@ cases were discovered for keyboard confirmation, retained completion history,
 original committed/lost-response retry, accessibility and another session's
 empty aggregate progress. Exact-image browser execution is pending CI.
 Individual item ordering UI and full PRD-13 acceptance remain unfinished.
+### Individual item ordering controls
+
+Editors can choose a before-item anchor across bounded item pages or the end on
+the final page. Every page rechecks the original actor, current edit admission
+and Card/Checklist revisions. Shared position-bound calculation excludes the
+moving row and recognizes an already-in-position row at a seek boundary.
+
+Position acknowledgments preserve parent identity/title/rank and item identity,
+text, creation time and completion attribution. They verify rank bounds,
+aggregate mutation timestamps and exact changed/no-op Card/Checklist/item
+revisions. Unconfirmed responses retain the original actor, destination,
+versions and key; definite rejection requires a fresh review. Shared recovery
+locks and focus handling apply to item ordering as to other checklist changes.
+
+Local verification: 115 focused parser/root-manager/item-manager tests passed,
+including bounded later-page anchors, completion-history preservation, no-op
+state, invalid rank/acknowledgment recovery and original retry intent. Type
+checking, lint and production build passed. Two desktop/mobile browser cases
+were discovered for keyboard before/end choices, accessibility, a lost committed
+acknowledgment and another session's live item order. Their exact-image
+execution remains pending CI. Full acceptance still requires the complete
+browser suite, concurrency/disconnect/access-loss verification, telemetry and
+the documented performance/large-data criteria; PRD-13 is not complete.

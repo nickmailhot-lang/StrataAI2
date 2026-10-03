@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
-import { parseChecklistItemDeleted, parseChecklistItemEdited, parseChecklistItemPage, type Checklist, type ChecklistItem, type ChecklistItemPage } from './checklists';
+import { checklistItemPosition, parseChecklistItemDeleted, parseChecklistItemEdited, parseChecklistItemPage, parseChecklistItemPositioned, type Checklist, type ChecklistItem, type ChecklistItemPage, type ChecklistPosition } from './checklists';
 import type { ChecklistCreateProps } from './ChecklistCreateControl';
 
 type Props = ChecklistCreateProps & { checklist: Checklist; actor: string; canAdminister?: boolean; onClose: (message?: string) => void };
-type Draft = { checklist: Checklist; item: ChecklistItem; cardVersion: number; text: string; completed: boolean; kind: 'edit' | 'delete'; confirmed: boolean };
+type Draft = { checklist: Checklist; item: ChecklistItem; cardVersion: number; text: string; completed: boolean; kind: 'edit' | 'delete' | 'move'; confirmed: boolean; position?: ChecklistPosition; destination?: string };
 type Intent = Draft & { actor: string; key: string };
 export function ChecklistItemManageControl(props: Props) {
   const [page, setPage] = useState<{ value: ChecklistItemPage; cursor?: string }>();
@@ -25,7 +25,7 @@ export function ChecklistItemManageControl(props: Props) {
   const disabled = busy || props.disabled || props.unavailable || !props.editable;
   const conflict = !!draft && draft.cardVersion !== props.version;
   async function load(cursor?: string) {
-    if (pending.current || disabled || intent || draft || blocked) return;
+    if (pending.current || disabled || intent || draft && (draft.kind !== 'move' || conflict) || blocked) return;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setPage(undefined); setNotice(undefined);
     const version = props.version;
     try {
@@ -45,6 +45,7 @@ export function ChecklistItemManageControl(props: Props) {
   async function save() {
     if (pending.current || disabled || blocked || !draft || !intent && conflict) return;
     if (draft.kind === 'delete' && (!props.canAdminister || !draft.confirmed)) return;
+    if (draft.kind === 'move' && !draft.position) return;
     const text = draft.text.trim();
     if (!intent && (!text || text.length > 2000 || text.includes('\0'))) { setNotice('Enter item text of 1 to 2000 characters.'); return; }
     const command = intent ?? { ...draft, text, actor: props.actor, key: crypto.randomUUID() };
@@ -53,23 +54,26 @@ export function ChecklistItemManageControl(props: Props) {
       const value = await boundedWorkRead(async signal => {
         const profile = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(profile) || profile.id !== command.actor) throw new WorkRequestError(401, null);
-        return workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/checklists/${encodeURIComponent(command.checklist.id)}/items/${encodeURIComponent(command.item.id)}`, {
+        return workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/checklists/${encodeURIComponent(command.checklist.id)}/items/${encodeURIComponent(command.item.id)}${command.kind === 'move' ? '/position' : ''}`, {
           method: command.kind === 'delete' ? 'DELETE' : 'PATCH', signal, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key },
           body: JSON.stringify(command.kind === 'delete' ? { confirmed: true, cardVersion: command.cardVersion, checklistVersion: command.checklist.version, version: command.item.version }
-            : { text: command.text, completed: command.completed, cardVersion: command.cardVersion, checklistVersion: command.checklist.version, version: command.item.version }) });
+            : command.kind === 'move' ? { beforeId: command.position!.beforeId, cardVersion: command.cardVersion, checklistVersion: command.checklist.version, version: command.item.version }
+              : { text: command.text, completed: command.completed, cardVersion: command.cardVersion, checklistVersion: command.checklist.version, version: command.item.version }) });
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       const ack = command.kind === 'delete' ? parseChecklistItemDeleted(value, props, command.checklist, command.item, command.cardVersion)
-        : parseChecklistItemEdited(value, props, command.checklist, command.item, command.text, command.completed, command.actor, command.cardVersion);
-      setIntent(undefined); setBlocked(false); props.onRefresh(); props.onClose(command.kind === 'delete' ? 'Checklist item deleted.' : ack.changed ? 'Checklist item saved.' : 'Checklist item is unchanged.');
+        : command.kind === 'move' ? parseChecklistItemPositioned(value, props, command.checklist, command.item, command.position!, command.cardVersion)
+          : parseChecklistItemEdited(value, props, command.checklist, command.item, command.text, command.completed, command.actor, command.cardVersion);
+      setIntent(undefined); setBlocked(false); props.onRefresh(); props.onClose(command.kind === 'move' ? ack.changed ? 'Checklist item moved.' : 'Checklist item position is unchanged.'
+        : command.kind === 'delete' ? 'Checklist item deleted.' : ack.changed ? 'Checklist item saved.' : 'Checklist item is unchanged.');
     } catch (error) {
       if (!mounted.current || pending.current !== controller) return;
       requestedFocus.current = true;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
-        setIntent(undefined); setBlocked(true); setNotice(command.kind === 'delete'
+        setIntent(undefined); setBlocked(true); setNotice(command.kind === 'move' ? 'This item move is unavailable. Load the current Card and checklist before reviewing another position.' : command.kind === 'delete'
           ? 'This item deletion is unavailable. Load the current Card and checklist before confirming another deletion.'
           : 'This item change is unavailable. Your text and completion choice are preserved. Load the current Card and checklist before reviewing another change.');
-      } else { setIntent(command); setNotice(command.kind === 'delete' ? 'The item deletion is unconfirmed. Retry the original change to recover its acknowledgment.'
+      } else { setIntent(command); setNotice(command.kind === 'move' ? 'The item move is unconfirmed. Retry the original change to recover its acknowledgment.' : command.kind === 'delete' ? 'The item deletion is unconfirmed. Retry the original change to recover its acknowledgment.'
         : 'The item change is unconfirmed. Retry the original change to recover its acknowledgment.'); }
       props.onRefresh();
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
@@ -80,19 +84,30 @@ export function ChecklistItemManageControl(props: Props) {
     {props.unavailable ? <Typography>Checking current Card access…</Typography> : <>
       <Typography>Items in {props.checklist.title}</Typography>
       {draft ? <>
-        {conflict && !intent && <Alert severity="warning">{draft.kind === 'delete' ? 'This Card changed elsewhere. Review the current item before confirming deletion.' : 'This Card changed elsewhere. Your item text and completion choice are preserved.'}</Alert>}
+        {conflict && !intent && <Alert severity="warning">{draft.kind === 'move' ? 'This Card changed elsewhere. Review the current items before choosing a position.' : draft.kind === 'delete' ? 'This Card changed elsewhere. Review the current item before confirming deletion.' : 'This Card changed elsewhere. Your item text and completion choice are preserved.'}</Alert>}
         <Stack component="form" spacing={1} onSubmit={event => { event.preventDefault(); void save(); }}>
           {draft.kind === 'delete' ? <>
             <Alert severity="warning">Delete item: {draft.item.text}</Alert>
             <FormControlLabel label="Confirm item deletion" control={<Checkbox autoFocus checked={draft.confirmed} disabled={disabled || !!intent || blocked || !props.canAdminister}
               onChange={(_, confirmed) => setDraft({ ...draft, confirmed })} />} />
+          </> : draft.kind === 'move' ? <>
+            <Typography>Move item: {draft.item.text}</Typography>
+            <Typography>{draft.destination ? `Chosen position: ${draft.destination}` : 'Choose an item to place this before, or the end on the final page.'}</Typography>
+            {page && !intent && !blocked && !conflict && <>
+              {page.value.items.filter(item => item.id !== draft.item.id).map((item, index) => <Button key={item.id} autoFocus={index === 0} disabled={disabled}
+                onClick={() => setDraft({ ...draft, position: checklistItemPosition(page.value, draft.item, item.id, page.cursor), destination: `before ${item.text}` })}>Place before item: {item.text}</Button>)}
+              {!page.value.nextCursor && <Button autoFocus={!page.value.items.some(item => item.id !== draft.item.id)} disabled={disabled}
+                onClick={() => setDraft({ ...draft, position: checklistItemPosition(page.value, draft.item, null, page.cursor), destination: 'at end' })}>Place item at end</Button>}
+              {page.value.nextCursor && <Button disabled={disabled} onClick={() => void load(page.value.nextCursor!)}>Next item position choices</Button>}
+              {page.cursor && <Button disabled={disabled} onClick={() => void load()}>First item position choices</Button>}
+            </>}
           </> : <><TextField autoFocus label="Checklist item text" required multiline fullWidth value={draft.text} slotProps={{ htmlInput: { maxLength: 2000 } }}
             disabled={disabled || !!intent || blocked} onChange={event => setDraft({ ...draft, text: event.target.value })} />
           <FormControlLabel label="Item complete" control={<Checkbox checked={draft.completed} disabled={disabled || !!intent || blocked}
             onChange={(_, completed) => setDraft({ ...draft, completed })} />} /></>}
           {intent ? <Button ref={action} disabled={disabled || draft.kind === 'delete' && !props.canAdminister} onFocus={() => { requestedFocus.current = true; }}
-            onBlur={event => { if (event.relatedTarget !== null) requestedFocus.current = false; }} onClick={() => void save()}>{draft.kind === 'delete' ? 'Retry checklist item deletion' : 'Retry checklist item change'}</Button>
-            : <Button type="submit" disabled={disabled || blocked || conflict || !draft.text.trim() || draft.kind === 'delete' && (!draft.confirmed || !props.canAdminister)}>{draft.kind === 'delete' ? 'Delete confirmed item' : 'Save checklist item'}</Button>}
+            onBlur={event => { if (event.relatedTarget !== null) requestedFocus.current = false; }} onClick={() => void save()}>{draft.kind === 'move' ? 'Retry checklist item move' : draft.kind === 'delete' ? 'Retry checklist item deletion' : 'Retry checklist item change'}</Button>
+            : <Button type="submit" disabled={disabled || blocked || conflict || !draft.text.trim() || draft.kind === 'move' && !draft.position || draft.kind === 'delete' && (!draft.confirmed || !props.canAdminister)}>{draft.kind === 'move' ? 'Save item position' : draft.kind === 'delete' ? 'Delete confirmed item' : 'Save checklist item'}</Button>}
         </Stack>
       </> : page ? <>
         {page.value.cardVersion !== props.version && <Alert severity="warning">The Card changed. Review the current checklist before choosing an item.</Alert>}
@@ -100,6 +115,8 @@ export function ChecklistItemManageControl(props: Props) {
         {page.value.items.map(item => <Stack key={item.id} direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
           <Button disabled={disabled || page.value.cardVersion !== props.version}
             onClick={() => setDraft({ checklist: page.value.summary.checklist, item, cardVersion: page.value.cardVersion, text: item.text, completed: item.completed, kind: 'edit', confirmed: false })}>Edit item: {item.text}</Button>
+          <Button disabled={disabled || page.value.cardVersion !== props.version}
+            onClick={() => setDraft({ checklist: page.value.summary.checklist, item, cardVersion: page.value.cardVersion, text: item.text, completed: item.completed, kind: 'move', confirmed: false })}>Move item: {item.text}</Button>
           {props.canAdminister && <Button disabled={disabled || page.value.cardVersion !== props.version}
             onClick={() => setDraft({ checklist: page.value.summary.checklist, item, cardVersion: page.value.cardVersion, text: item.text, completed: item.completed, kind: 'delete', confirmed: false })}>Delete item: {item.text}</Button>}
         </Stack>)}
