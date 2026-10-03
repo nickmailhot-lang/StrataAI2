@@ -123,8 +123,12 @@ it('projects a fresh bounded page onto canonical Lists, restores it for the admi
   fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
   fireEvent.click(await screen.findByRole('button', { name: 'Show this page on Board' }));
   await screen.findByText('Filtered Board: 1 matching Cards on this page.');
-  const page = onCanvasChange.mock.calls.at(-1)![0];
-  expect(filteredBoardCanvas(canonical, page).lists.map(l => l.cards.map(c => c.id))).toEqual([[card.id], []]);
+  // Switching to canvas starts a fresh result read. The old disclosure text
+  // can still be present before that read's effect updates the parent canvas.
+  await waitFor(() => {
+    const page = onCanvasChange.mock.calls.at(-1)![0];
+    expect(filteredBoardCanvas(canonical, page).lists.map(l => l.cards.map(c => c.id))).toEqual([[card.id], []]);
+  });
   expect(canonical.lists[0].cards).toEqual([other, card]);
   expect(JSON.parse(sessionStorage.getItem(storage())!)).toEqual({ keyword: '', labels: [label.id], members: [], match: 'all', canvas: true });
   view.unmount(); const restored = mount(p);

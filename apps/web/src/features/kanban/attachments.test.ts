@@ -63,11 +63,15 @@ describe('private file metadata admission', () => {
   const file = { ...item(2), kind: 0 as const, mimeType: 'application/pdf' as const, sizeBytes: 100003, url: null, scanStatus: 1 as const, scannedAt: null };
   it('requires an original Pending file acknowledgment with exact actor/name/size/revision and admitted actual MIME', () => {
     const ack = { ...scope, cardVersion: 2, attachment: file };
-    expect(parseFileAttachmentCreated(ack, scope, actor, file.displayName, file.sizeBytes, 1, ['application/pdf'])).toEqual(ack);
-    for (const patch of [{ uploaderId: scope.boardId }, { displayName: 'Changed' }, { sizeBytes: 1 }, { mimeType: 'image/png' },
+    expect(parseFileAttachmentCreated(ack, scope, actor, file.displayName, file.sizeBytes, 1)).toEqual(ack);
+    // Actual MIME is server-owned and current policy may broaden after review;
+    // the client admits the supported public metadata variant, not File.type.
+    const currentPolicyReceipt = { ...ack, attachment: { ...file, mimeType: 'image/png' } };
+    expect(parseFileAttachmentCreated(currentPolicyReceipt, scope, actor, file.displayName, file.sizeBytes, 1)).toEqual(currentPolicyReceipt);
+    for (const patch of [{ uploaderId: scope.boardId }, { displayName: 'Changed' }, { sizeBytes: 1 }, { mimeType: 'text/html' },
       { kind: 1 }, { version: 2 }, { scanStatus: 2, scannedAt: now, version: 2 }, { updatedAt: '2026-10-03T08:00:01Z' }])
-      expect(() => parseFileAttachmentCreated({ ...ack, attachment: { ...file, ...patch } }, scope, actor, file.displayName, file.sizeBytes, 1, ['application/pdf'])).toThrow();
-    expect(() => parseFileAttachmentCreated({ ...ack, cardVersion: 3 }, scope, actor, file.displayName, file.sizeBytes, 1, ['application/pdf'])).toThrow();
+      expect(() => parseFileAttachmentCreated({ ...ack, attachment: { ...file, ...patch } }, scope, actor, file.displayName, file.sizeBytes, 1)).toThrow();
+    expect(() => parseFileAttachmentCreated({ ...ack, cardVersion: 3 }, scope, actor, file.displayName, file.sizeBytes, 1)).toThrow();
   });
   it('admits mixed links/files and all canonical scan states without provider delivery fields', () => {
     expect(parseAttachmentPage(page([file, item()]), scope).items).toEqual([file, item()]);

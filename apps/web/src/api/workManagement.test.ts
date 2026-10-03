@@ -6,6 +6,13 @@ import {
 } from "./workManagement";
 
 afterEach(() => vi.unstubAllGlobals());
+it('preserves the fixed live-upload retry code through the safe Problem boundary without server diagnostic text', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 'attachment_upload_in_progress', title: 'private provider diagnostic', detail: 'private SQL/body' }),
+    { status: 409, headers: { 'Content-Type': 'application/problem+json' } })));
+  const failure = await workRequest('/cards/one/attachments', { method: 'POST' }).catch((error: unknown) => error);
+  expect(failure).toBeInstanceOf(WorkRequestError); expect((failure as WorkRequestError).code).toBe('attachment_upload_in_progress');
+  expect((failure as Error).message).not.toContain('private');
+});
 it('never starts a request whose scope is already cancelled', async () => {
   const fetch = vi.fn(); vi.stubGlobal('fetch', fetch); const controller = new AbortController(); controller.abort();
   await expect(workRequest('/me', { signal: controller.signal })).rejects.toMatchObject({ name: 'AbortError' });

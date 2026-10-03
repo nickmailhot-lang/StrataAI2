@@ -77,7 +77,7 @@ export async function workRequest<T>(
         typeof problem === "object" &&
         "code" in problem &&
         (problem.code === "idempotency_key_expired" ||
-          problem.code === "idempotency_key_reused")
+          problem.code === "idempotency_key_reused" || problem.code === "attachment_upload_in_progress")
       )
         code = problem.code;
     } catch {

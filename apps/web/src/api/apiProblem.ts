@@ -11,6 +11,7 @@ const codes = new Set([
   'version_conflict', 'organization_owner_required', 'ownership_changed',
   'organization_not_found', 'session_unavailable', 'organization_storage_unavailable',
   'invalid_access_surface',
+  'attachment_upload_in_progress',
   'invalid_email', 'invalid_invitation_role', 'invalid_invitation_surface',
   'invalid_display_name', 'invalid_version', 'invalid_avatar_url', 'invalid_locale', 'invalid_timezone',
 ]);

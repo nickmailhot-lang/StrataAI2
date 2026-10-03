@@ -63,6 +63,42 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it('locks competing Card mutations during unconfirmed file upload and recovers the same original request after a newer snapshot', async () => {
+    const org = '11111111-1111-4111-8111-111111111111'; const board = '22222222-2222-4222-8222-222222222222';
+    const card = '33333333-3333-4333-8333-333333333333'; const actor = '44444444-4444-4444-8444-444444444444';
+    const current = structuredClone(fixture); current.board.id = board; current.board.organizationId = org; current.lists[0].cards[0].id = card;
+    const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
+    const attempts: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, request?: RequestInit) => {
+      const path = String(input);
+      if (path === '/me') return response(profile);
+      if (path.endsWith('/attachment-upload-options')) return response({ organizationId: org, boardId: board, cardId: card,
+        cardVersion: 3, maximumBytes: 20971520, allowedMimeTypes: ['application/pdf'] });
+      if (path.endsWith('/attachments') && request?.method === 'POST') {
+        attempts.push(request); current.lists[0].cards[0].version = 4;
+        if (attempts.length === 1) return response({ code: 'work_storage_unavailable', detail: 'private provider text' }, 503);
+        return response({ organizationId: org, boardId: board, cardId: card, cardVersion: 4, attachment: {
+          id: '55555555-5555-4555-8555-555555555555', organizationId: org, cardId: card, uploaderId: actor, kind: 0,
+          displayName: 'Document.pdf', mimeType: 'application/pdf', sizeBytes: 9, url: null, scanStatus: 1, scannedAt: null,
+          createdAt: '2026-10-03T08:00:00.123456Z', updatedAt: '2026-10-03T08:00:00.123456Z', version: 1, deletedAt: null } });
+      }
+      return response(current);
+    }));
+    mount(`/app/${org}/boards/${board}/cards/${card}`);
+    fireEvent.click(await screen.findByRole('button', { name: 'Add file attachment' }));
+    const selection = await screen.findByLabelText('File to attach'); await waitFor(() => expect(selection).toBeEnabled());
+    const file = new File(['%PDF-1.7\n'], 'Document.pdf', { type: 'text/html' });
+    Object.defineProperty(file, 'slice', { value: (start: number, end: number) => ({ arrayBuffer: async () => new TextEncoder().encode('%PDF-1.7\n').slice(start, end).buffer }) });
+    fireEvent.change(selection, { target: { files: [file] } }); fireEvent.click(screen.getByRole('button', { name: 'Upload selected file' }));
+    const retry = await screen.findByRole('button', { name: 'Retry original file upload' }); await waitFor(() => expect(retry).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Add link attachment' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
+    expect(attempts).toHaveLength(1); expect(attempts[0].body).toBe(file);
+    fireEvent.click(retry); await screen.findByText('File attached. Safety scan pending.');
+    expect(attempts).toHaveLength(2); expect(attempts[1].body).toBe(file);
+    expect(new Headers(attempts[1].headers).get('X-Card-Version')).toBe('3');
+    expect(new Headers(attempts[1].headers).get('Idempotency-Key')).toBe(new Headers(attempts[0].headers).get('Idempotency-Key'));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Close' })).toBeEnabled());
+  });
   it('updates canvas due descriptions on live completion and removes them when dates clear', async () => {
     let invalidate = () => {};
     vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });

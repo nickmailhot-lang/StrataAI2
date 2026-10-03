@@ -107,12 +107,12 @@ export function parseUrlAttachmentCreated(value: unknown, scope: AttachmentScope
   return row as AttachmentChange;
 }
 export function parseFileAttachmentCreated(value: unknown, scope: AttachmentScope, actor: string, name: string, sizeBytes: number,
-  cardVersion: number, allowedMimeTypes: readonly string[]): FileAttachmentChange {
+  cardVersion: number): FileAttachmentChange {
   const row = scopeRecord(value, scope); exact(row, ['organizationId', 'boardId', 'cardId', 'cardVersion', 'attachment']);
   const attachment = metadata(row.attachment, scope);
   if (attachment.kind !== 0 || attachment.scanStatus !== 1 || attachment.version !== 1 || !revision(cardVersion)
     || row.cardVersion !== cardVersion + 1 || !same(attachment.uploaderId, actor) || attachment.displayName !== name
-    || attachment.sizeBytes !== sizeBytes || !allowedMimeTypes.includes(attachment.mimeType)
+    || attachment.sizeBytes !== sizeBytes
     || instant(attachment.createdAt) !== instant(attachment.updatedAt)) throw invalid();
   return row as FileAttachmentChange;
 }
