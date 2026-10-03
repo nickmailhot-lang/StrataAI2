@@ -381,3 +381,18 @@ full private-object verification and response headers/refusals. Local compilatio
 passes with zero warnings; these new Linux tests remain pending. MUI selection,
 cover projection, public consent/recovery controls and full native release
 evidence remain open acceptance work.
+
+The actual a81b6cc Linux PostgreSQL job passes the complete selected-cover byte
+contract and the rest of restricted persistence. Current Internal/PUBLIC
+anonymous scope, exact committed PNG, full staging outside DB, source metadata
+separation, corruption, expiry/actor checks, staged selection/visibility
+withdrawal, parent archive and restoration without reselection are executed
+evidence. HTTP/managed and complete immutable release jobs remain pending.
+
+Browser cover response admission now validates exact scoped payloads, safe Card
+and File revisions, selected/null source consistency, PUBLIC consent, mutation
+no-op versus one Card revision, bounded candidate names/identities, microsecond
+timestamps and descending Card/revision-bound seek pages. Unexpected provider
+fields or stale/foreign receipts are refused. Five local adversarial contract
+tests, web typecheck and lint pass. This is preparation for the MUI controls and
+cover projection, not evidence that those UI/native requirements are complete.
