@@ -214,7 +214,7 @@ it('requires current review after definite conflict and keeps the rejected draft
   const p = props(); render(<ChecklistManageControl {...p} />); await review(); fireEvent.click(screen.getByRole('button', { name: 'Save checklist title' }));
   await screen.findByText(/This checklist rename is unavailable/); expect(screen.getByRole('textbox')).toHaveValue('New preparation');
   expect(screen.getByRole('textbox')).toBeDisabled(); expect(screen.queryByRole('button', { name: 'Retry checklist rename' })).not.toBeInTheDocument();
-  expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true);
+  await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true));
 });
 it.each([{ cardVersion: 6 }, { checklist: { ...ack().checklist, id: id(90) } }, { checklist: { ...ack().checklist, rank: rank(2) } }, { changed: false }])('does not acknowledge foreign children or invented revision/order changes (%j)', async change => {
   vi.mocked(workRequest).mockImplementation(async (path, options) => path === '/me' ? profile : options?.method === 'PATCH' ? { ...ack(), ...change } : page);
