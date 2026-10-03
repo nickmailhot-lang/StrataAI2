@@ -96,6 +96,7 @@ if (!string.IsNullOrWhiteSpace(jobScope))
     builder.Services.AddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
     builder.Services.AddHostedService<OrganizationJobWorker>();
     if (attachmentsEnabled) builder.Services.AddHostedService<AttachmentPreviewBackfillWorker>();
+    if (attachmentsEnabled) builder.Services.AddHostedService<AttachmentScanRecoveryWorker>();
 }
 
 var app = builder.Build();

@@ -259,6 +259,11 @@ test "$(api "SELECT has_table_privilege(current_user,'attachment_previews','SELE
 test "$(worker "SELECT has_table_privilege(current_user,'attachment_previews','SELECT') OR has_table_privilege(current_user,'attachment_preview_publications','SELECT')")" = f
 test "$(worker "SELECT has_function_privilege(current_user,'enqueue_attachment_preview_backfill(uuid,integer)','EXECUTE')")" = t
 test "$(api "SELECT has_function_privilege(current_user,'enqueue_attachment_preview_backfill(uuid,integer)','EXECUTE')")" = f
+test "$(worker "SELECT has_function_privilege(current_user,'recover_attachment_scan_page(uuid,integer)','EXECUTE')")" = t
+test "$(api "SELECT has_function_privilege(current_user,'recover_attachment_scan_page(uuid,integer)','EXECUTE')")" = f
+for role in api worker; do
+ test "$("$role" "SELECT has_table_privilege(current_user,'attachment_scan_sweeps','SELECT') OR has_table_privilege(current_user,'attachment_scan_sweeps','INSERT') OR has_table_privilege(current_user,'attachment_scan_sweeps','UPDATE') OR has_table_privilege(current_user,'attachment_scan_sweeps','DELETE')")" = f
+done
 for role in api worker; do
  test "$("$role" "SELECT has_table_privilege(current_user,'attachment_preview_sweeps','SELECT') OR has_table_privilege(current_user,'attachment_preview_sweeps','INSERT') OR has_table_privilege(current_user,'attachment_preview_sweeps','UPDATE') OR has_table_privilege(current_user,'attachment_preview_sweeps','DELETE')")" = f
 done
