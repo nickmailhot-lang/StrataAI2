@@ -14,6 +14,7 @@ public static partial class WorkManagementEndpoints
         MapNotificationEndpoints(app);
         MapWatchEndpoints(app);
         MapCardDateEndpoints(app);
+        MapCardReminderEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
             async (
@@ -743,6 +744,9 @@ public static partial class WorkManagementEndpoints
         {
             "notification_not_found" => Problem(404, errorCode, "The notifications are unavailable."),
             "watch_not_found" => Problem(404, errorCode, "This watch or entity is unavailable."),
+            "card_reminder_not_found" => Problem(404, errorCode, "This Card or personal reminder is unavailable."),
+            "invalid_card_reminder_version" => Problem(400, errorCode, "Use the current Card and personal reminder revisions."),
+            "invalid_card_reminder_interval" => Problem(400, errorCode, "Choose an available future reminder interval."),
             "invalid_card_dates" => Problem(400, errorCode, "Use UTC instants or calendar dates with IANA timezone context and valid date order."),
             "invalid_card_date_version" => Problem(400, errorCode, "Use the current Card revision."),
             "invalid_watch_version" => Problem(400, errorCode, "Use the current watch revision, or zero for a new subscription."),

@@ -49,6 +49,8 @@ public static class WorkManagementRegistration
         services.AddSingleton<ICardDateStore>(provider => (ICardDateStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<CardDateService>();
         services.AddSingleton<CardReminderScheduling>();
+        services.AddSingleton<CardReminderService>();
+        services.AddSingleton<ICardReminderEventPublisher, CardReminderEvents>();
         services.AddSingleton<CardWatchNotificationProducer>();
     }
 }

@@ -10,7 +10,8 @@ public interface ICardReminderJobPublisher
 
 // Internal command participant. The caller owns Card scope, authorization and
 // transaction; this participant neither opens a command nor admits recipients.
-public sealed class CardReminderScheduling(ICardReminderStore reminders, ICardReminderJobPublisher jobs, IClock clock)
+public sealed class CardReminderScheduling(ICardReminderStore reminders, ICardReminderJobPublisher jobs, IClock clock,
+    ICardReminderEventPublisher events)
 {
     public async Task RescheduleAsync(CardRecord before, CardRecord after, Guid actorId, string correlationId, CancellationToken ct)
     {
@@ -27,8 +28,11 @@ public sealed class CardReminderScheduling(ICardReminderStore reminders, ICardRe
                 throw new InvalidOperationException("Invalid reminder candidate scope.");
             var updated = await reminders.SetAsync(after, candidate.UserId, candidate.IntervalCode, true, candidate.Version, now, ct);
             if (updated is null) throw new InvalidOperationException("Reminder changed during its owning Card transaction.");
-            if (updated.Generation != candidate.Generation && updated.Status == "SCHEDULED")
-                await jobs.PublishAsync(updated, actorId, correlationId, ct);
+            if (updated.Generation != candidate.Generation)
+            {
+                if (updated.Status == "SCHEDULED") await jobs.PublishAsync(updated, actorId, correlationId, ct);
+                await events.PublishAsync(after, updated, actorId, correlationId, ct);
+            }
         }
     }
 }

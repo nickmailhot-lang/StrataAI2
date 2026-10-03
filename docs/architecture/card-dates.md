@@ -264,6 +264,24 @@ Card, Reminder generation, events, jobs, notifications and receipt all roll back
 then recovers with the original key and verifies canonical future job metadata.
 Strict solution build and shell syntax passed locally. Linux source/API and
 exact-image execution remain required before these new checks are called passed.
-Personal GET/set/cancel configuration, private scheduling audit/events,
-archive/restore integration and MUI controls are still incomplete. PRD-12/17
+Archive/restore integration and MUI controls are still incomplete. PRD-12/17
 remain open.
+
+Personal configuration now has authenticated GET/PUT/DELETE endpoints at
+`/cards/{cardId}/reminder`. Every read, mutation and replay reacquires current
+Organization membership, Board access and active Card/List scope; the authenticated
+actor alone selects the personal row. A public viewer outside the Organization
+cannot configure a choice. Writes use both Card and Reminder revisions and an
+explicit currently available interval. Cancellation preserves identity and
+advances the generation, while cancelling an absent choice and reapplying an
+unchanged plan are no-ops. No Card revision is changed by a personal choice.
+
+Personal changes and date rescheduling share private Reminder audit/event
+publication in the command transaction. Shared Board synchronization exposes
+only Board invalidation. The API regression covers personal isolation, unavailable
+and invalid intervals, version conflicts, replay/no-op, stable cancellation and
+re-enabling, private synchronization and revoked access. The exact-image date
+fixture now creates the choice through its real personal API and checks both
+date rescheduling and personal cancellation/privacy/revoked replay. It no longer
+seeds a personal choice directly in PostgreSQL. These new API and container tests
+must pass Linux CI before release acceptance is claimed; no ticket is closed.

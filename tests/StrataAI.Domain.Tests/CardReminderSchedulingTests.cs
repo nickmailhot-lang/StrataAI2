@@ -17,18 +17,20 @@ public sealed class CardReminderSchedulingTests
         using var provider = services.BuildServiceProvider(); var store = provider.GetRequiredService<ICardReminderStore>();
         foreach (var user in users) await store.SetAsync(card, user, "1_HOUR", true, 0, clock.UtcNow, ct);
         var disabled = Guid.NewGuid(); await store.SetAsync(card, disabled, "AT_DUE", false, 0, clock.UtcNow, ct);
-        var publisher = new Publisher(); var scheduling = new CardReminderScheduling(store, publisher, clock);
+        var publisher = new Publisher(); var events = new Events(); var scheduling = new CardReminderScheduling(store, publisher, clock, events);
         var changed = card with { DueAt = card.DueAt!.Value.AddDays(1), Version = 2 };
         await scheduling.RescheduleAsync(card, changed, actor, "reschedule-test", ct);
         Assert.Equal(76, publisher.Rows.Count); Assert.Equal(76, publisher.Rows.Select(row => row.UserId).Distinct().Count());
         Assert.All(publisher.Rows, row => { Assert.Equal(2, row.Generation); Assert.Equal(changed.DueAt, row.DueAt); });
         Assert.All(publisher.Actors, value => Assert.Equal(actor, value));
         Assert.All(publisher.Correlations, value => Assert.Equal("reschedule-test", value));
+        Assert.Equal(76, events.Rows.Count); Assert.All(events.Rows, row => Assert.Equal("SCHEDULED", row.Status)); events.Rows.Clear();
         publisher.Rows.Clear();
         var completed = changed with { DueComplete = true, Version = 3 };
         await scheduling.RescheduleAsync(changed, completed, actor, "complete", ct);
         Assert.Empty(publisher.Rows); Assert.All(await store.ListEnabledForCardAsync(card.OrganizationId, card.Id, ct),
             row => { Assert.Equal(3, row.Generation); Assert.Equal("SUSPENDED", row.Status); Assert.Null(row.TriggerAt); });
+        Assert.Equal(76, events.Rows.Count); Assert.All(events.Rows, row => Assert.Equal("SUSPENDED", row.Status));
         var reopened = completed with { DueComplete = false, Version = 4 };
         await scheduling.RescheduleAsync(completed, reopened, actor, "reopen", ct);
         Assert.Equal(76, publisher.Rows.Count); Assert.All(publisher.Rows, row => Assert.Equal(4, row.Generation)); publisher.Rows.Clear();
@@ -51,10 +53,12 @@ public sealed class CardReminderSchedulingTests
         using var provider = services.BuildServiceProvider(); var store = provider.GetRequiredService<ICardReminderStore>();
         var original = await store.SetAsync(card, user, "1_HOUR", true, 0, clock.UtcNow, ct); clock.UtcNow = card.DueAt!.Value;
         var publisher = new Publisher();
-        await new CardReminderScheduling(store, publisher, clock).RescheduleAsync(card,
+        var events = new Events();
+        await new CardReminderScheduling(store, publisher, clock, events).RescheduleAsync(card,
             card with { StartAt = clock.UtcNow.AddDays(-1), DueTimezone = "America/Vancouver", DueHasTime = true,
                 Title = "Changed", ListId = Guid.NewGuid(), BoardId = Guid.NewGuid(), Version = 2 }, Guid.NewGuid(), "unrelated", ct);
         Assert.Empty(publisher.Rows); Assert.Equal(original, await store.FindAsync(card.OrganizationId, user, card.Id, ct));
+        Assert.Empty(events.Rows);
     }
 
     [Fact]
@@ -63,10 +67,11 @@ public sealed class CardReminderSchedulingTests
         var ct = TestContext.Current.CancellationToken; var clock = new Clock(); var card = Card(clock.UtcNow);
         var services = new ServiceCollection(); services.AddStrataAiWorkManagement(new(RuntimeMode.Demo, "test", "test"));
         using var provider = services.BuildServiceProvider(); var store = provider.GetRequiredService<ICardReminderStore>(); var publisher = new Publisher();
-        var scheduling = new CardReminderScheduling(store, publisher, clock);
+        var events = new Events(); var scheduling = new CardReminderScheduling(store, publisher, clock, events);
         await Assert.ThrowsAsync<InvalidOperationException>(() => scheduling.RescheduleAsync(card, card with { Id = Guid.NewGuid() }, Guid.NewGuid(), "scope", ct));
         await Assert.ThrowsAsync<InvalidOperationException>(() => scheduling.RescheduleAsync(card, card with { OrganizationId = Guid.NewGuid() }, Guid.NewGuid(), "scope", ct));
         Assert.Empty(publisher.Rows);
+        Assert.Empty(events.Rows);
     }
 
     private static CardRecord Card(DateTimeOffset now) => new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
@@ -77,5 +82,11 @@ public sealed class CardReminderSchedulingTests
         public List<CardReminder> Rows { get; } = []; public List<Guid> Actors { get; } = []; public List<string> Correlations { get; } = [];
         public Task PublishAsync(CardReminder reminder, Guid actorId, string correlationId, CancellationToken ct)
         { Rows.Add(reminder); Actors.Add(actorId); Correlations.Add(correlationId); return Task.CompletedTask; }
+    }
+    private sealed class Events : ICardReminderEventPublisher
+    {
+        public List<CardReminder> Rows { get; } = [];
+        public Task PublishAsync(CardRecord card, CardReminder reminder, Guid actorId, string correlationId, CancellationToken ct)
+        { Assert.Equal(card.Id, reminder.CardId); Assert.Equal(card.OrganizationId, reminder.OrganizationId); Rows.Add(reminder); return Task.CompletedTask; }
     }
 }
