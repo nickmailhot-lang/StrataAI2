@@ -41,6 +41,7 @@ public sealed class AttachmentRuntimeTests
         var handler = Assert.IsType<AttachmentScanDeliveryHandler>(Assert.Single(provider.GetServices<IBackgroundJobHandler>()));
         Assert.Equal(AttachmentScanJobs.Type, handler.JobType); Assert.Equal(AttachmentScanJobs.Service, handler.ServiceIdentity);
         Assert.NotNull(provider.GetRequiredService<AttachmentQuarantineScanner>());
+        provider.InitializeAttachmentRuntime(enabled: true);
     }
 
     [Fact]
@@ -77,6 +78,17 @@ public sealed class AttachmentRuntimeTests
     {
         public RuntimeMode Mode => RuntimeMode.Production;
         public Task<bool> IsReadyAsync(CancellationToken cancellationToken = default) { cancellationToken.ThrowIfCancellationRequested(); return Task.FromResult(ready); }
+    }
+
+    [Fact]
+    public void ARCH_12_Provider_initialization_failure_is_fixed_and_disabled_runtime_does_not_resolve_it()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<S3AttachmentObjectStorage>(_ => throw new InvalidOperationException("private-credential-chain-detail"));
+        using var provider = services.BuildServiceProvider();
+        provider.InitializeAttachmentRuntime(enabled: false);
+        var error = Assert.Throws<InvalidOperationException>(() => provider.InitializeAttachmentRuntime(enabled: true));
+        Assert.Equal("Attachment runtime initialization is unavailable.", error.Message); Assert.Null(error.InnerException);
     }
     private sealed class Client : AmazonS3Client
     {

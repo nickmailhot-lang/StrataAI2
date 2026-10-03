@@ -13,6 +13,19 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 public static class AttachmentRuntimeRegistration
 {
+    public static void InitializeAttachmentRuntime(this IServiceProvider provider, bool enabled)
+    {
+        if (!enabled) return;
+        try { _ = provider.GetRequiredService<S3AttachmentObjectStorage>(); }
+        catch (Exception error) when (error is not (OutOfMemoryException or StackOverflowException or AccessViolationException))
+        {
+            // Resolve credentials/client at startup, before readiness routing;
+            // constructor/provider errors must not turn /readyz into a 500 or
+            // disclose credential-chain diagnostics in host startup logs.
+            throw new InvalidOperationException("Attachment runtime initialization is unavailable.");
+        }
+    }
+
     public static bool AddAttachmentRuntime(this IServiceCollection services, IConfiguration configuration,
         RuntimeDescriptor runtime, bool worker)
     {

@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
-builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: true);
+var attachmentsEnabled = builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: true);
 builder.Services.AddHostedService<WorkerHeartbeat>();
 
 if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))
@@ -82,6 +82,7 @@ if (!string.IsNullOrWhiteSpace(jobScope))
 }
 
 var app = builder.Build();
+app.Services.InitializeAttachmentRuntime(attachmentsEnabled);
 
 if (!string.IsNullOrWhiteSpace(jobScope) && !app.Services.GetServices<IBackgroundJobHandler>().Any())
     throw new InvalidOperationException("Scoped job execution requires registered handlers.");
