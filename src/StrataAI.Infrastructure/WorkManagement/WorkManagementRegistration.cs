@@ -12,13 +12,19 @@ public static class WorkManagementRegistration
     {
         if (runtime.Mode == RuntimeMode.Demo)
         {
-            services.AddSingleton<IWorkManagementStore, InMemoryWorkManagementStore>();
+            services.AddSingleton<DemoWorkTransactionScope>();
+            services.AddSingleton<InMemoryWorkManagementStore>();
+            services.AddSingleton<IWorkManagementStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
+            services.AddSingleton<ICardCommentStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
+            services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
             services.AddSingleton<InMemoryWorkEventStore>();
             services.AddSingleton<IWorkEventStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkEventReader>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
+            services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkManagementUnitOfWork, InMemoryWorkManagementUnitOfWork>();
             services.AddSingleton<InMemoryWorkNotificationStore>();
             services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
+            services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
             services.AddSingleton<INotificationInboxStore, InMemoryNotificationInboxStore>();
             services.AddSingleton<IWatchSubscriptionStore, InMemoryWatchSubscriptionStore>();
             services.AddSingleton<ICardReminderStore, InMemoryCardReminderStore>();

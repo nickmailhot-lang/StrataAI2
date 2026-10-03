@@ -2,8 +2,16 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class InMemoryWorkNotificationStore : IWorkNotificationStore
+internal sealed class InMemoryWorkNotificationStore : IWorkNotificationStore, IDemoWorkTransactionParticipant
 {
+    public Action CaptureRollback()
+    {
+        lock (_notifications)
+        {
+            var restore = DemoRollback.Dictionary(_notifications);
+            return () => { lock (_notifications) restore(); };
+        }
+    }
     private readonly Dictionary<(Guid Organization, Guid Event, Guid Recipient), CardNotification> _notifications = [];
 
     internal IReadOnlyList<CardNotification> Snapshot(Guid organization, Guid recipient)

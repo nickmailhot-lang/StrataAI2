@@ -2,8 +2,16 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class InMemoryWorkEventStore(IWorkManagementStore work) : IWorkEventStore, IWorkEventReader
+internal sealed class InMemoryWorkEventStore(IWorkManagementStore work) : IWorkEventStore, IWorkEventReader, IDemoWorkTransactionParticipant
 {
+    public Action CaptureRollback()
+    {
+        lock (_events)
+        {
+            var events = DemoRollback.Dictionary(_events); var streams = DemoRollback.Dictionary(_streams);
+            return () => { lock (_events) { events(); streams(); } };
+        }
+    }
     private readonly Dictionary<(Guid Organization, Guid Id), (long Sequence, WorkEvent Event)> _events = [];
     private readonly Dictionary<(Guid Organization, Guid Board), long> _streams = [];
     public Task AppendAsync(WorkEvent change, CancellationToken cancellationToken = default)

@@ -103,3 +103,25 @@ including tied timestamps across lookahead/seek pages. These are metadata
 fixtures, not evidence of current Board/session HTTP authorization or client
 acceptance. Local warning-as-error compilation passes; new Linux execution is
 pending CI.
+
+7c0ddd4 now passes the actual restricted PostgreSQL adapter contract: owning
+scope, normalized text, foreign tenant/author refusal, revision CAS, rollback,
+redaction, retained attribution and bounded tied seek paging. Web quality also
+passes; the remaining managed/API/image gates are tracked separately.
+
+Demo now registers the comment store against the same owning Work unit. Its
+metadata contract matches bounded seek paging, author/revision CAS and redacted
+history. Failed commands restore comments, shared Work state, events/stream
+positions and notifications before releasing the command gate; failed keys
+remain retryable. Final permission/session checks and cancellation run before
+successful receipt retention. Tests cover returned refusal, exception and late
+session refusal, then retry and replay the original key with exactly one event
+and notification. The event fixture uses existing assignment production and
+proves rollback, not comment mention delivery.
+
+These Demo stores are ephemeral for the canonical host lifetime. The canned
+DemoState reset does not currently reset canonical Work stores. Rollback covers
+only the registered Work/event/notification participants; reminder/watch stores
+and the existing no-op Demo audit implementation remain outside this claim.
+No performance budget or full comment acceptance criterion is closed. Local
+warning-as-error compilation passes; new Demo runtime tests await Linux CI.
