@@ -58,8 +58,9 @@ public static class AttachmentScanJobs
             || integrity.Reference.AttachmentId != upload.Id || integrity.SizeBytes != upload.ExpectedSizeBytes
             || integrity.Sha256 != upload.ExpectedSha256 || upload.CardId == Guid.Empty || upload.RetryKey == Guid.Empty)
             throw new InvalidOperationException("Attachment scan publication is unavailable.");
-        if (string.IsNullOrWhiteSpace(correlationId) || correlationId.Length > 120 || correlationId != correlationId.Trim()
-            || correlationId.Any(char.IsControl)) throw new ArgumentException("Scan correlation identity is invalid.", nameof(correlationId));
+        if (string.IsNullOrEmpty(correlationId) || correlationId.Length > 64
+            || correlationId.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not ('.' or '_' or '-')))
+            throw new ArgumentException("Scan correlation identity is invalid.", nameof(correlationId));
         return new(Guid.NewGuid(), upload.OrganizationId, Type,
             $"attachment-scan/{upload.Id:N}/{metadata.Version.ToString(CultureInfo.InvariantCulture)}", actor, Service, correlationId,
             JsonSerializer.Serialize(new { attachmentId=upload.Id, cardId=upload.CardId, version=metadata.Version }));

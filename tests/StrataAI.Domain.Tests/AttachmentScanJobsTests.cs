@@ -74,7 +74,7 @@ public sealed class AttachmentScanJobsTests
     {
         Assert.Throws<InvalidOperationException>(() => AttachmentScanAttempt.Parse(new string('x',257)));
         var fixture=Published();
-        foreach(var correlation in new[] {"", " padded ","injected\nvalue",new string('x',121)})
+        foreach(var correlation in new[] {"", " padded ","injected\nvalue",new string('x',65),"é","quoted\"value"})
             Assert.Throws<ArgumentException>(() => AttachmentScanJobs.Create(fixture.Upload,fixture.File,fixture.Upload.UploaderId,correlation));
     }
 }
