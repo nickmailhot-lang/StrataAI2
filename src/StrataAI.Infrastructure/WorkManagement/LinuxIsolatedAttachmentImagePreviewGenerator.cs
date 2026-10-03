@@ -77,7 +77,9 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
             var stage = child is null ? AttachmentPreviewFailureStage.Invocation : AttachmentPreviewFailureStage.RuntimeLaunch;
             if (child?.HasExited == true) stage = child.ExitCode switch
             { 65 => AttachmentPreviewFailureStage.Invocation, 66 => AttachmentPreviewFailureStage.ResourceBounds,
-                67 or 68 => AttachmentPreviewFailureStage.FileSystemRules, 69 => AttachmentPreviewFailureStage.RuntimeExec, _ => stage };
+                67 or 68 => AttachmentPreviewFailureStage.FileSystemRules, 69 => AttachmentPreviewFailureStage.RuntimeExec,
+                127 => AttachmentPreviewFailureStage.RuntimeLoader, 134 => AttachmentPreviewFailureStage.RuntimeAbort,
+                137 => AttachmentPreviewFailureStage.RuntimeKilled, 139 => AttachmentPreviewFailureStage.RuntimeFault, _ => stage };
             if (diagnostics?.IsCompletedSuccessfully == true && diagnostics.Result != AttachmentPreviewFailureStage.None)
                 stage = diagnostics.Result;
             throw Unavailable(stage);
@@ -129,6 +131,9 @@ public sealed class LinuxIsolatedAttachmentImagePreviewGenerator(AttachmentPrevi
                         return AttachmentPreviewFailureStage.RuntimeMemory;
                     if (bytes.IndexOf("Couldn't find a valid ICU package"u8) >= 0 || bytes.IndexOf("No usable version of libssl"u8) >= 0)
                         return AttachmentPreviewFailureStage.RuntimeLibrary;
+                    if (bytes.IndexOf("setpriv:"u8) >= 0) return AttachmentPreviewFailureStage.RuntimePrivileges;
+                    if (bytes.IndexOf("Failed to create CoreCLR"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeInitialize;
+                    if (bytes.IndexOf("error while loading shared libraries:"u8) >= 0) return AttachmentPreviewFailureStage.RuntimeLoader;
                     return AttachmentPreviewFailureStage.None;
                 }
                 count += read; if (count > 4096) throw Unavailable();

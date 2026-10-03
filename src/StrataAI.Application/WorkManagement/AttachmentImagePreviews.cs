@@ -13,7 +13,7 @@ public sealed class AttachmentImagePreviewPolicy(int maximumDimension = 32768, l
 }
 
 public enum AttachmentPreviewFailureStage
-{ None, Invocation, ResourceBounds, FileSystemRules, RuntimeLaunch, Scratch, Environment, Capabilities, SyscallFilter, NetworkProbe, ExecutionProbe, AddressSpaceProbe, FileSystemProbe, Source, RasterDecode, RuntimeMemory, RuntimeLibrary, RuntimeExec }
+{ None, Invocation, ResourceBounds, FileSystemRules, RuntimeLaunch, Scratch, Environment, Capabilities, SyscallFilter, NetworkProbe, ExecutionProbe, AddressSpaceProbe, FileSystemProbe, Source, RasterDecode, RuntimeMemory, RuntimeLibrary, RuntimeExec, RuntimePrivileges, RuntimeInitialize, RuntimeAbort, RuntimeKilled, RuntimeFault, RuntimeLoader }
 
 public sealed class AttachmentImagePreviewException(string code, AttachmentPreviewFailureStage stage = AttachmentPreviewFailureStage.None) : Exception("Attachment image preview is unavailable.")
 {
