@@ -175,3 +175,14 @@ unavailable response; the same original key remains the recovery mechanism.
 Tests inspect the actual retained Demo receipt and serialization round trip.
 No HTTP comment commands existed before this body-free receipt change, so no
 historical externally submitted comment body receipts require migration.
+
+CI on 851bb0c reported one API regression: concurrent administrator self-
+demotions both returned 404 because generic post-command replay admission
+required the grant that the valid command intentionally retired. The generic
+fresh-command post-check is removed to match the Production unit contract;
+producer-specific final admission remains authoritative. Comment Complete
+retains explicit current rights/session checks, and rollback on its returned
+refusal/exception/session loss remains intact. The shared unit still checks
+current session/cancellation before receipt retention and reauthorizes replay.
+The existing administrator continuity test remains unchanged and must pass in
+CI; this is a correction to the Demo change, not a weakened acceptance test.

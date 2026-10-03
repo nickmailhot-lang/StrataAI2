@@ -60,7 +60,9 @@ internal sealed class InMemoryWorkManagementUnitOfWork(IClock clock, ICommandAct
             if (command.Key is not null && _results.Count >= 10000) return WorkOperation<T>.Failure("work_storage_unavailable");
             var result = await operation();
             if (!result.Succeeded) return result;
-            if (!await authorizeReplay(result.Value)) return WorkOperation<T>.Failure(command.ScopeFailureCode);
+            // Replay admission is not a generic post-mutation rule: a valid
+            // self-demotion or deletion intentionally retires its former grant.
+            // Producers enforce their own final operation-specific admission.
             if (!await actors.VerifyAsync(command.ActorId, cancellationToken)) return WorkOperation<T>.Failure("session_unavailable");
             cancellationToken.ThrowIfCancellationRequested();
             if (command.Key is not null) _results[key] = (command.Fingerprint, clock.UtcNow.AddHours(24), result);
