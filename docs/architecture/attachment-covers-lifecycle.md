@@ -314,3 +314,11 @@ single-revision archive clearing, both canonical events, replay withdrawal and
 restoration without reselection. Local solution compilation passes with zero
 warnings; these new Linux tests remain pending. Selected public derivative
 delivery, cover UI/projection and complete native release evidence remain open.
+
+The first cover Application contract reached its injected audit failure but
+expected an exception; the production transaction layer intentionally maps that
+database failure to work_storage_unavailable. The corrected contract asserts
+that outcome and retains the complete before/after rollback snapshot. It also
+checks PUBLIC selection refusal without consent, successful confirmed selection,
+removal without source/selection consent, and zero provider byte reads for all
+cover commands. Actual corrected Linux execution remains pending.

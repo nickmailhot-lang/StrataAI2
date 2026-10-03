@@ -16,10 +16,11 @@ internal static class CardCoverCommandContract
         public Task<bool> VerifyAsync(Guid actor, CancellationToken ct = default) { ct.ThrowIfCancellationRequested(); return Task.FromResult(Allowed); }
     }
     private sealed class Clock : IClock { public DateTimeOffset UtcNow => DateTimeOffset.UtcNow.AddMinutes(5); }
-    public static async Task RunAsync(NpgsqlConnection admin, IServiceProvider provider, Guid tenant, Guid card, Guid file, Guid actor, CancellationToken ct)
+    public static async Task RunAsync(NpgsqlConnection admin, IServiceProvider provider, Guid tenant, Guid card, Guid file, Guid actor, Func<int> providerReads, CancellationToken ct)
     {
         void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
         var context = new Context(); var authorization = new Actor(); var clock = new Clock();
+        var initialReads = providerReads();
         var work = provider.GetRequiredService<IWorkManagementStore>(); var metadata = provider.GetRequiredService<IAttachmentMetadataStore>();
         var covers = provider.GetRequiredService<ICardAttachmentCoverStore>(); var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>();
         var organizations = provider.GetRequiredService<IOrganizationStore>(); var boards = provider.GetRequiredService<IWorkBoardAuthorization>();
@@ -62,8 +63,8 @@ internal static class CardCoverCommandContract
         await Install();
         try
         {
-            try { await service.SetAsync(card, actor, input, "cover-audit-failure", ct); throw new InvalidOperationException("Cover audit failure committed."); }
-            catch (PostgresException error) when (error.SqlState == PostgresErrorCodes.CheckViolation && error.MessageText == "Injected cover audit failure") { }
+            var failed = await service.SetAsync(card, actor, input, "cover-audit-failure", ct);
+            Require(failed.ErrorCode == "work_storage_unavailable", "Cover audit failure did not return the production storage failure outcome.");
             Require(await Snapshot() == baseline, "Cover audit failure retained Card/selection/event/job/retry/sequence effects.");
         }
         finally { await Remove(); }
@@ -92,8 +93,8 @@ internal static class CardCoverCommandContract
         baseline = await Snapshot(); await Install();
         try
         {
-            try { await lifecycle.ArchiveAsync(card, file, actor, archiveInput, "cover-clear-audit-failure", ct); throw new InvalidOperationException("Cover clear audit failure committed."); }
-            catch (PostgresException error) when (error.SqlState == PostgresErrorCodes.CheckViolation && error.MessageText == "Injected cover audit failure") { }
+            var failed = await lifecycle.ArchiveAsync(card, file, actor, archiveInput, "cover-clear-audit-failure", ct);
+            Require(failed.ErrorCode == "work_storage_unavailable", "Cover clear audit failure did not return the production storage failure outcome.");
             Require(await Snapshot() == baseline, "Failed cover clearing retained attachment/Card/history/audit/event/job/retry/sequence effects.");
         }
         finally { await Remove(); }
@@ -113,6 +114,27 @@ internal static class CardCoverCommandContract
         context.IdempotencyKey = Guid.NewGuid();
         var restored = await lifecycle.RestoreAsync(card, file, actor, new(archived.Value!.CardVersion, fileVersion + 1), "cover-source-restore", ct);
         Require(restored.Succeeded && (await service.ReadAsync(card, actor, ct)).Value is { AttachmentId: null }, "Restoration silently reselected the old cover.");
+        await Scalar<int>("UPDATE boards SET visibility='PUBLIC',version=version+1,updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND id=(SELECT board_id FROM cards WHERE id=@card AND tenant_id=@tenant) RETURNING 1;");
+        try
+        {
+            context.IdempotencyKey = Guid.NewGuid();
+            var publicInput = new SetCardCoverInput(file, restored.Value!.CardVersion, fileVersion + 2);
+            baseline = await Snapshot();
+            var unconfirmed = await service.SetAsync(card, actor, publicInput, "cover-public-unconfirmed", ct);
+            Require(unconfirmed.ErrorCode == "cover_public_confirmation_required" && await Snapshot() == baseline,
+                "PUBLIC cover selection committed without explicit visibility consent.");
+            var confirmed = await service.SetAsync(card, actor, publicInput with { PublicVisibilityConfirmed = true }, "cover-public-confirmed", ct);
+            Require(confirmed.Value is { Changed: true } && (await service.ReadAsync(card, actor, ct)).Value is { IsPublic: true, AttachmentId: not null },
+                "Confirmed PUBLIC cover selection lost its current disclosure binding.");
+            context.IdempotencyKey = Guid.NewGuid();
+            var removed = await service.SetAsync(card, actor, new(null, confirmed.Value!.CardVersion, null), "cover-public-remove", ct);
+            Require(removed.Value is { Changed: true, AttachmentId: null, AttachmentVersion: null }, "Cover removal required source/public selection consent or retained the reference.");
+        }
+        finally
+        {
+            await Scalar<int>("UPDATE boards SET visibility='PRIVATE',version=version+1,updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND id=(SELECT board_id FROM cards WHERE id=@card AND tenant_id=@tenant) RETURNING 1;");
+        }
+        Require(providerReads() == initialReads, "Cover commands performed provider byte I/O.");
         Console.WriteLine("Restricted cover commands: current authority, immutable published source, dual CAS, original replay/key reuse/no-op, late actor/audit full rollback, single-revision archive clearing, canonical effects and restoration without reselection passed.");
     }
 }

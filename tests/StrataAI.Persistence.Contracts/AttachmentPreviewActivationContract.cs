@@ -195,7 +195,7 @@ internal static class AttachmentPreviewActivationContract
         }
         await AttachmentPreviewBackfillContract.RunAsync(admin,worker,objects.ApiConnections!,organization,source,PublishLegacyClean,ct);
         await CardCoverPersistenceContract.RunAsync(admin,objects.ApiConnections!,organization,card,source,ct);
-        await CardCoverCommandContract.RunAsync(admin,readProvider,organization,card,source,job.ActorId,ct);
+        await CardCoverCommandContract.RunAsync(admin,readProvider,organization,card,source,job.ActorId,()=>objects.Reads,ct);
         Require(!(await admission.AdmitPreviewAsync(card,source,job.ActorId,ct,archiveReview:true)).Succeeded,
             "Archive review admitted an Active source.");
         await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
