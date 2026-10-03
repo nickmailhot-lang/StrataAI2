@@ -125,12 +125,19 @@ internal static class AttachmentPreviewActivationContract
         readServices.AddStrataAiIdentity(configuration,runtime);readServices.AddStrataAiOrganizations(runtime);readServices.AddStrataAiWorkManagement(runtime);
         await using var readProvider=readServices.BuildServiceProvider();
         await using(var grant=new NpgsqlCommand("""
+            INSERT INTO public.users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+            VALUES(@owner,'preview-owner-'||@owner::text||'@example.test',upper('preview-owner-'||@owner::text||'@example.test'),
+                'Preview read fixture owner','ACTIVE',true,'unused-contract-hash',clock_timestamp(),clock_timestamp());
+            INSERT INTO public.organization_members(id,tenant_id,user_id,role,status)
+            VALUES(@owner,@tenant,@owner,'OWNER','ACTIVE');
+            UPDATE public.organizations SET owner_user_id=@owner WHERE id=@tenant AND owner_user_id IS NULL;
             INSERT INTO public.board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
             SELECT gen_random_uuid(),tenant_id,board_id,@actor,'MEMBER','ACTIVE',clock_timestamp(),clock_timestamp()
             FROM public.cards WHERE id=@card AND tenant_id=@tenant ON CONFLICT(board_id,user_id) DO NOTHING;
             """,admin))
         {
             grant.Parameters.AddWithValue("actor",job.ActorId);grant.Parameters.AddWithValue("card",card);grant.Parameters.AddWithValue("tenant",organization);
+            grant.Parameters.AddWithValue("owner",Guid.NewGuid());
             await grant.ExecuteNonQueryAsync(ct);
         }
         var admission=readProvider.GetRequiredService<AttachmentDownloadAdmissionService>();
