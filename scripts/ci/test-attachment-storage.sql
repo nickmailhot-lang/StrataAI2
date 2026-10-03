@@ -36,15 +36,21 @@ DO $$ DECLARE affected integer; mutation text; BEGIN
  BEGIN
   UPDATE attachments SET tenant_id='04100000-0000-0000-0000-000000000002' WHERE id='04100000-0000-0000-0000-000000000051';
   RAISE EXCEPTION 'Cross-tenant attachment write accepted';
+ EXCEPTION WHEN insufficient_privilege OR check_violation THEN NULL; END;
+ BEGIN
+  INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,url,scan_status,created_at,updated_at)
+   VALUES(gen_random_uuid(),'04100000-0000-0000-0000-000000000002','04100000-0000-0000-0000-000000000032',
+    '04100000-0000-0000-0000-000000000042','URL','Forbidden tenant','https://example.test/','NOT_APPLICABLE',now(),now());
+  RAISE EXCEPTION 'Cross-tenant attachment insert accepted';
  EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN
   UPDATE attachments SET card_id='04100000-0000-0000-0000-000000000032' WHERE id='04100000-0000-0000-0000-000000000051';
   RAISE EXCEPTION 'Cross-tenant Card attachment accepted';
- EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ EXCEPTION WHEN foreign_key_violation OR check_violation THEN NULL; END;
  BEGIN
   UPDATE attachments SET uploader_id='04100000-0000-0000-0000-000000000042' WHERE id='04100000-0000-0000-0000-000000000051';
   RAISE EXCEPTION 'Cross-tenant uploader accepted';
- EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ EXCEPTION WHEN foreign_key_violation OR check_violation THEN NULL; END;
  FOREACH mutation IN ARRAY ARRAY[
    'mime_type=NULL','size_bytes=NULL','storage_key=NULL','size_bytes=0','size_bytes=-1',
    'sha256=NULL','sha256=''invalid''','sha256=repeat(''A'',64)','sha256=repeat(''b'',64)',
@@ -92,11 +98,14 @@ DO $$ DECLARE affected integer; mutation text; BEGIN
 END $$;
 UPDATE attachments SET scan_status='CLEAN',scanned_at=now(),updated_at=now(),version=version+1
  WHERE id='04100000-0000-0000-0000-000000000052';
-UPDATE attachments SET deleted_at=now(),updated_at=now(),version=version+1
+UPDATE attachments SET lifecycle_state='ARCHIVED',archived_at=now(),updated_at=now(),version=version+1
+ WHERE id='04100000-0000-0000-0000-000000000052';
+UPDATE attachments SET lifecycle_state='DELETED',deleted_by=uploader_id,deleted_at=now(),updated_at=now(),version=version+1
  WHERE id='04100000-0000-0000-0000-000000000052';
 DO $$ BEGIN
  IF NOT EXISTS(SELECT 1 FROM attachments WHERE id='04100000-0000-0000-0000-000000000052'
-   AND scan_status='CLEAN' AND deleted_at IS NOT NULL AND storage_key='ci/quarantine/unique-object' AND sha256=repeat('a',64) AND version=3)
+   AND scan_status='CLEAN' AND lifecycle_state='DELETED' AND archived_at IS NOT NULL AND deleted_by=uploader_id
+   AND deleted_at IS NOT NULL AND storage_key='ci/quarantine/unique-object' AND sha256=repeat('a',64) AND version=4)
  THEN RAISE EXCEPTION 'Attachment tombstone discarded scan/storage history'; END IF;
  IF (SELECT count(*) FROM attachments WHERE deleted_at IS NULL)<>1 THEN RAISE EXCEPTION 'Attachment active read includes tombstone'; END IF;
 END $$;
