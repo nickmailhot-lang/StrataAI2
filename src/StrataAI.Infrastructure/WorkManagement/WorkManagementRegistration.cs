@@ -28,6 +28,7 @@ public static class WorkManagementRegistration
         else
         {
             services.AddSingleton<IWorkManagementStore, PostgresWorkManagementStore>();
+            services.AddSingleton<ICardCommentStore, PostgresCardCommentStore>();
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();
             services.AddSingleton<IWorkEventReader, PostgresWorkEventReader>();
             services.AddSingleton<IWorkManagementUnitOfWork, PostgresWorkManagementUnitOfWork>();

@@ -85,3 +85,21 @@ valid edit/redaction, retained history, no revival, no hard DELETE and missing
 tenant context. Real runtime login tests check the exact API/Worker grants.
 Local warning-as-error compilation and script syntax pass; new actual migrated
 PostgreSQL execution remains pending CI. No acceptance criterion is closed.
+
+04fdca9 now passes the actual PostgreSQL job, including migrated comment shape,
+forced RLS, immutable author/history, redaction and runtime-grant checks, plus
+ordered upgrade/repeat/serialization and the existing full persistence chain.
+
+The Production adapter now implements owning-scope create/find, at most 51 rows
+of newest-first timestamp/ID seek metadata, author/version edit CAS and redacted
+deletion CAS. It validates create/edit content through CardComment, preserves
+tombstones/edited attribution and refuses outside-scope access. Equal body,
+original-receipt recovery, current session/Board/parent permission and atomic
+Card/audit/event/notification effects remain the Application command's duties;
+no HTTP command is exposed and the Demo comment adapter remains unfinished.
+New actual restricted-adapter checks cover round trips, foreign tenant/author,
+stale/no-op/deleted CAS, late owning-transaction refusal rollback and 64 rows
+including tied timestamps across lookahead/seek pages. These are metadata
+fixtures, not evidence of current Board/session HTTP authorization or client
+acceptance. Local warning-as-error compilation passes; new Linux execution is
+pending CI.

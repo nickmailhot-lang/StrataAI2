@@ -149,6 +149,7 @@ try
     await AttachmentWorkerContract.RunAsync(admin,workerConnection,provider,organization,foreignOrganization,value,
         fixtureBytes,fixtureDigest,ct);
     await AttachmentPublicationContract.RunAsync(admin,apiConnection,ct);
+    await CardCommentStoreContract.RunAsync(admin,provider,organization,foreignOrganization,value.CardId,value.UploaderId,ct);
     Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, metadata/scan-job rollback and retained expiry passed.");
 }
 finally
