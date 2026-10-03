@@ -9,6 +9,10 @@ public sealed record AttachmentMetadata(Guid Id, Guid OrganizationId, Guid CardI
     AttachmentScanStatus ScanStatus, DateTimeOffset? ScannedAt, DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt, long Version, DateTimeOffset? DeletedAt);
 
+// Private Application/Worker record. Never serialize the integrity request into
+// normal attachment pages/receipts or admit it from an HTTP request body.
+public sealed record AttachmentFileRecord(AttachmentMetadata Metadata, AttachmentScanRequest Integrity);
+
 public interface IAttachmentMetadataStore
 {
     // Production calls require an owning tenant read/command transaction.
@@ -16,6 +20,9 @@ public interface IAttachmentMetadataStore
     // to the enclosing Application command, not these metadata primitives.
     Task<AttachmentMetadata> CreateUrlAttachmentAsync(Guid id, Guid organization, Guid card, Guid uploader,
         string title, string url, DateTimeOffset now, CancellationToken ct);
+    Task<AttachmentMetadata> CreateFileAttachmentAsync(StoredAttachmentObject measured, Guid card, Guid uploader,
+        string displayName, string verifiedMimeType, DateTimeOffset now, CancellationToken ct);
+    Task<AttachmentFileRecord?> FindFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct);
     Task<AttachmentMetadata?> FindAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct);
     Task<IReadOnlyList<AttachmentMetadata>> ListAttachmentsAsync(Guid organization, Guid card,
         DateTimeOffset? beforeCreatedAt, Guid? beforeId, CancellationToken ct);

@@ -376,3 +376,28 @@ persist an original-intent record before provider writes and reconcile private
 objects on metadata/type-integrity failure, without deleting ambiguous duplicate
 identities. Runtime policy/provider registration and upload/Worker endpoints are
 still absent; no acceptance is inferred from these unexposed primitives alone.
+
+File metadata persistence now accepts only server-owned measured object receipts:
+identity/Organization/key derive from the typed reference, and Domain validates
+the bounded size, canonical digest, MIME and display text. Both Demo/PostgreSQL
+create a Pending FILE with normalized microsecond timestamps and no scan date,
+using the existing store and (in production) owning command transaction. The
+private `AttachmentFileRecord` contains metadata and a scoped integrity request;
+ordinary pages/receipts still contain neither key, digest nor that private record.
+PostgreSQL private reads require the tenant command/read scope before DB access,
+exact Card/attachment/Organization, active FILE metadata, non-null digest and the
+generated storage key. Legacy noncanonical-key/hashless rows cannot enter this
+private read path. Worker still needs its verified-lease SQL boundary; no direct
+Worker attachment grants have been introduced.
+
+Three new store cases compile for Pending file metadata/private integrity,
+timestamp precision and projection secrecy, foreign tenant/Card/uploader refusal,
+same-tenant wrong Card, URL-vs-file identity isolation, duplicate refusal without
+replacing integrity, invalid digest/size and pre-cancellation without partial
+metadata. The existing production guard case now also checks both file paths
+refuse unscoped calls before a configured unreachable database is accessed.
+Warning-as-error build/diff checks pass. Linux execution is pending; real
+PostgreSQL adapter command execution, file upload authorization/current parent
+CAS, original intent/outbox/scan job and compensating/orphan lifecycle remain
+required. These primitives perform no object I/O, scan dispatch, status mutation
+or HTTP binary exposure by themselves.

@@ -78,6 +78,55 @@ public sealed class AttachmentMetadataStoreTests
         await Assert.ThrowsAsync<ArgumentException>(() => store.ListAttachmentsAsync(parent.Organization, parent.Card.Id, Now, Guid.Empty, ct));
     }
     [Fact]
+    public async Task File_creation_persists_only_pending_metadata_and_keeps_scope_bound_integrity_out_of_normal_projections()
+    {
+        var ct = TestContext.Current.CancellationToken; using var services = Demo(); var parent = await Parent(services, ct); var other = await Parent(services, ct);
+        var store = services.GetRequiredService<IAttachmentMetadataStore>(); var reference = new AttachmentObjectReference(parent.Organization, Guid.NewGuid());
+        var measured = new StoredAttachmentObject(reference, 128, new string('a', 64));
+        var row = await store.CreateFileAttachmentAsync(measured, parent.Card.Id, parent.User, " Image name.png ", "image/png", Now.AddTicks(1), ct);
+        Assert.Equal(reference.AttachmentId, row.Id); Assert.Equal(AttachmentKind.File, row.Kind); Assert.Equal(AttachmentScanStatus.Pending, row.ScanStatus);
+        Assert.Equal("Image name.png", row.DisplayName); Assert.Equal("image/png", row.MimeType); Assert.Equal(128, row.SizeBytes);
+        Assert.Null(row.Url); Assert.Null(row.ScannedAt); Assert.Null(row.DeletedAt); Assert.Equal(1, row.Version); Assert.Equal(Now, row.CreatedAt);
+        var file = await store.FindFileAttachmentAsync(parent.Organization, parent.Card.Id, row.Id, ct); Assert.NotNull(file);
+        Assert.Equal(row, file.Metadata); Assert.Equal(reference, file.Integrity.Reference); Assert.Equal(measured.Sha256, file.Integrity.Sha256); Assert.Equal(128, file.Integrity.SizeBytes);
+        using var json = JsonDocument.Parse(JsonSerializer.Serialize(row)); Assert.False(json.RootElement.TryGetProperty("StorageKey", out _)); Assert.False(json.RootElement.TryGetProperty("Sha256", out _)); Assert.False(json.RootElement.TryGetProperty("Integrity", out _));
+        Assert.Null(await store.FindFileAttachmentAsync(other.Organization, parent.Card.Id, row.Id, ct));
+        Assert.Null(await store.FindFileAttachmentAsync(parent.Organization, other.Card.Id, row.Id, ct));
+        var sameTenantCard = await services.GetRequiredService<IWorkManagementStore>().CreateCardAsync(parent.Card.ListId, Guid.NewGuid(), "Other Card", null, null, Now, ct);
+        Assert.Null(await store.FindFileAttachmentAsync(parent.Organization, sameTenantCard.Id, row.Id, ct));
+        var url = await store.CreateUrlAttachmentAsync(Guid.NewGuid(), parent.Organization, parent.Card.Id, parent.User, "Link", "https://example.test/", Now, ct);
+        Assert.Null(await store.FindFileAttachmentAsync(parent.Organization, parent.Card.Id, url.Id, ct));
+        Assert.Equal(2, (await store.ListAttachmentsAsync(parent.Organization, parent.Card.Id, null, null, ct)).Count);
+    }
+    [Fact]
+    public async Task File_identity_cannot_replace_metadata_or_integrity_and_foreign_parent_or_uploader_cannot_create()
+    {
+        var ct = TestContext.Current.CancellationToken; using var services = Demo(); var parent = await Parent(services, ct); var other = await Parent(services, ct);
+        var store = services.GetRequiredService<IAttachmentMetadataStore>(); var measured = new StoredAttachmentObject(new(parent.Organization, Guid.NewGuid()), 128, new string('a', 64));
+        var row = await store.CreateFileAttachmentAsync(measured, parent.Card.Id, parent.User, "Image", "image/png", Now, ct);
+        await Assert.ThrowsAsync<ArgumentException>(() => store.CreateFileAttachmentAsync(measured with { Sha256 = new string('b', 64) }, parent.Card.Id, parent.User, "Changed", "image/jpeg", Now, ct));
+        Assert.Equal(row, await store.FindAttachmentAsync(parent.Organization, parent.Card.Id, row.Id, ct));
+        Assert.Equal(measured.Sha256, (await store.FindFileAttachmentAsync(parent.Organization, parent.Card.Id, row.Id, ct))!.Integrity.Sha256);
+        var fresh = measured with { Reference = new(parent.Organization, Guid.NewGuid()) };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.CreateFileAttachmentAsync(fresh, other.Card.Id, parent.User, "Foreign parent", "image/png", Now, ct));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.CreateFileAttachmentAsync(fresh, parent.Card.Id, other.User, "Foreign uploader", "image/png", Now, ct));
+        Assert.Null(await store.FindFileAttachmentAsync(parent.Organization, parent.Card.Id, fresh.Reference.AttachmentId, ct));
+        var url = await store.CreateUrlAttachmentAsync(fresh.Reference.AttachmentId, parent.Organization, parent.Card.Id, parent.User, "Link", "https://example.test/", Now, ct);
+        await Assert.ThrowsAsync<ArgumentException>(() => store.CreateFileAttachmentAsync(fresh, parent.Card.Id, parent.User, "Replacement file", "image/png", Now, ct));
+        Assert.Equal(url, await store.FindAttachmentAsync(parent.Organization, parent.Card.Id, fresh.Reference.AttachmentId, ct)); Assert.Null(await store.FindFileAttachmentAsync(parent.Organization, parent.Card.Id, fresh.Reference.AttachmentId, ct));
+    }
+    [Fact]
+    public async Task Invalid_measured_digest_size_and_cancellation_cannot_partially_publish_file_metadata()
+    {
+        var ct = TestContext.Current.CancellationToken; using var services = Demo(); var parent = await Parent(services, ct); var store = services.GetRequiredService<IAttachmentMetadataStore>();
+        var measured = new StoredAttachmentObject(new(parent.Organization, Guid.NewGuid()), 128, new string('a', 64));
+        foreach (var invalid in new[] { measured with { Sha256 = "private-provider-detail" }, measured with { SizeBytes = 0 }, measured with { SizeBytes = 1073741825 } })
+            await Assert.ThrowsAnyAsync<ArgumentException>(() => store.CreateFileAttachmentAsync(invalid, parent.Card.Id, parent.User, "Image", "image/png", Now, ct));
+        using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => store.CreateFileAttachmentAsync(measured, parent.Card.Id, parent.User, "Image", "image/png", Now, cancelled.Token));
+        Assert.Empty(await store.ListAttachmentsAsync(parent.Organization, parent.Card.Id, null, null, ct)); Assert.Null(await store.FindFileAttachmentAsync(parent.Organization, parent.Card.Id, measured.Reference.AttachmentId, ct));
+    }
+    [Fact]
     public async Task Production_metadata_paths_refuse_unscoped_calls_before_database_access_or_metadata_validation()
     {
         var ct = TestContext.Current.CancellationToken; var services = new ServiceCollection();
@@ -87,5 +136,7 @@ public sealed class AttachmentMetadataStoreTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.CreateUrlAttachmentAsync(Guid.Empty, organization, card, Guid.Empty, "", "javascript:bad", Now, ct));
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.FindAttachmentAsync(organization, card, Guid.NewGuid(), ct));
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.ListAttachmentsAsync(organization, card, Now, null, ct));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.CreateFileAttachmentAsync(new(new(organization, Guid.NewGuid()), 0, "invalid"), card, Guid.Empty, "", "invalid", Now, ct));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.FindFileAttachmentAsync(organization, card, Guid.NewGuid(), ct));
     }
 }

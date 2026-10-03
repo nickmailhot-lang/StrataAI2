@@ -8,6 +8,32 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed partial class InMemoryWorkManagementStore : IAttachmentMetadataStore
 {
     private readonly Dictionary<Guid, AttachmentMetadata> _attachmentMetadata = [];
+    private readonly Dictionary<Guid, AttachmentScanRequest> _attachmentIntegrity = [];
+
+    public async Task<AttachmentMetadata> CreateFileAttachmentAsync(StoredAttachmentObject measured, Guid card, Guid uploader,
+        string displayName, string verifiedMimeType, DateTimeOffset now, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(measured); ArgumentNullException.ThrowIfNull(measured.Reference); ct.ThrowIfCancellationRequested();
+        var reference = measured.Reference;
+        if (await organizations.FindMembershipAsync(reference.OrganizationId, uploader, ct) is null)
+            throw new InvalidOperationException("Attachment uploader unavailable.");
+        var value = Attachment.QuarantineFile(reference.AttachmentId, reference.OrganizationId, card, uploader, displayName,
+            verifiedMimeType, measured.SizeBytes, reference.ObjectKey, measured.Sha256, AttachmentMetadataMapping.DatabaseTimestamp(now));
+        var metadata = AttachmentMetadataMapping.From(value); var integrity = new AttachmentScanRequest(reference, measured.SizeBytes, measured.Sha256);
+        lock (_sync)
+        {
+            if (!_cards.TryGetValue(card, out var parent) || parent.OrganizationId != reference.OrganizationId)
+                throw new InvalidOperationException("Attachment parent unavailable.");
+            _attachmentMetadata.Add(value.Id, metadata); _attachmentIntegrity.Add(value.Id, integrity); return metadata;
+        }
+    }
+    public Task<AttachmentFileRecord?> FindFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_sync) return Task.FromResult(_attachmentMetadata.TryGetValue(attachment, out var value)
+            && value.OrganizationId == organization && value.CardId == card && value.Kind == AttachmentKind.File && value.DeletedAt is null
+            && _attachmentIntegrity.TryGetValue(attachment, out var integrity) ? new AttachmentFileRecord(value, integrity) : null);
+    }
 
     public async Task<AttachmentMetadata> CreateUrlAttachmentAsync(Guid id, Guid organization, Guid card, Guid uploader,
         string title, string url, DateTimeOffset now, CancellationToken ct)
@@ -51,6 +77,47 @@ internal sealed partial class PostgresWorkManagementStore : IAttachmentMetadataS
             _ => throw new InvalidOperationException("Attachment scan metadata is invalid.")
         }, row.IsDBNull(10) ? null : row.GetFieldValue<DateTimeOffset>(10), row.GetFieldValue<DateTimeOffset>(11),
         row.GetFieldValue<DateTimeOffset>(12), row.GetInt64(13), row.IsDBNull(14) ? null : row.GetFieldValue<DateTimeOffset>(14));
+
+    public async Task<AttachmentMetadata> CreateFileAttachmentAsync(StoredAttachmentObject measured, Guid card, Guid uploader,
+        string displayName, string verifiedMimeType, DateTimeOffset now, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(measured); ArgumentNullException.ThrowIfNull(measured.Reference);
+        var reference = measured.Reference;
+        if (!connectionFactory.HasCommandScope(reference.OrganizationId)) throw new InvalidOperationException("Attachment writes require the owning command transaction.");
+        var value = Attachment.QuarantineFile(reference.AttachmentId, reference.OrganizationId, card, uploader, displayName,
+            verifiedMimeType, measured.SizeBytes, reference.ObjectKey, measured.Sha256, AttachmentMetadataMapping.DatabaseTimestamp(now));
+        await using var session = await connectionFactory.OpenTenantSessionAsync(reference.OrganizationId, ct);
+        await using var query = new NpgsqlCommand($"""
+            INSERT INTO attachments AS a(id,tenant_id,card_id,uploader_id,kind,display_name,mime_type,size_bytes,storage_key,sha256,scan_status,created_at,updated_at)
+            VALUES(@id,@tenant,@card,@uploader,'FILE',@title,@mime,@size,@key,@digest,'PENDING',@now,@now)
+            RETURNING {AttachmentMetadataColumns};
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("id", value.Id); query.Parameters.AddWithValue("tenant", value.OrganizationId);
+        query.Parameters.AddWithValue("card", value.CardId); query.Parameters.AddWithValue("uploader", value.UploaderId);
+        query.Parameters.AddWithValue("title", value.DisplayName); query.Parameters.AddWithValue("mime", value.MimeType!);
+        query.Parameters.AddWithValue("size", value.SizeBytes!.Value); query.Parameters.AddWithValue("key", reference.ObjectKey);
+        query.Parameters.AddWithValue("digest", value.Sha256!); query.Parameters.AddWithValue("now", value.CreatedAt);
+        await using var reader = await query.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct)) throw new InvalidOperationException("Attachment creation returned no metadata.");
+        return ReadAttachmentMetadata(reader);
+    }
+    public async Task<AttachmentFileRecord?> FindFileAttachmentAsync(Guid organization, Guid card, Guid attachment, CancellationToken ct)
+    {
+        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Attachment reads require the owning scope.");
+        var reference = new AttachmentObjectReference(organization, attachment);
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
+        await using var query = new NpgsqlCommand($"""
+            SELECT {AttachmentMetadataColumns},a.sha256 FROM attachments a
+            WHERE a.tenant_id=@tenant AND a.card_id=@card AND a.id=@id AND a.kind='FILE'
+              AND a.deleted_at IS NULL AND a.sha256 IS NOT NULL AND a.storage_key=@key;
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("card", card);
+        query.Parameters.AddWithValue("id", attachment); query.Parameters.AddWithValue("key", reference.ObjectKey);
+        await using var reader = await query.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct)) return null;
+        var metadata = ReadAttachmentMetadata(reader);
+        return new(metadata, new(reference, metadata.SizeBytes!.Value, reader.GetString(15)));
+    }
 
     public async Task<AttachmentMetadata> CreateUrlAttachmentAsync(Guid id, Guid organization, Guid card, Guid uploader,
         string title, string url, DateTimeOffset now, CancellationToken ct)
