@@ -84,7 +84,8 @@ for (const width of [1280, 390]) {
     await page.getByRole('button', { name: 'Hide labels', exact: true }).focus(); await page.keyboard.press('Enter');
     await expect(details.getByLabel('Priority, red', { exact: true })).toHaveCount(0);
     await edit.focus(); await page.keyboard.press('Enter');
-    await page.getByRole('button', { name: 'Remove label blue', exact: true }).focus(); await page.keyboard.press('Enter'); await expect(edit).toBeFocused();
+    const removeBlue = page.getByRole('button', { name: 'Remove label blue', exact: true });
+    await expect(removeBlue).toBeEnabled(); await removeBlue.press('Enter'); await expect(edit).toBeFocused();
     const remaining = await context.request.get(`/cards/${card}/labels`); expect(remaining.status()).toBe(200);
     const remainingItems = (await remaining.json()).items; expect(remainingItems).toHaveLength(1); expect(remainingItems[0].id).toBe(labels[0]);
     await page.goto(`/app/${org}/boards/${board}`);

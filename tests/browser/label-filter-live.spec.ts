@@ -95,9 +95,9 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect((await phoneAssignees()).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
     const editMembers = page.getByRole('button', { name: 'Edit Card assignees', exact: true });
     async function memberChange(action: string) {
-      await expect(editMembers).toBeEnabled(); await editMembers.focus(); await page.keyboard.press('Enter');
+      await expect(editMembers).toBeEnabled(); await editMembers.press('Enter');
       const change = page.getByRole('button', { name: `${action} Label collaboration fixture`, exact: true });
-      await expect(change).toBeEnabled(); await change.focus(); await page.keyboard.press('Enter'); await expect(editMembers).toBeFocused();
+      await expect(change).toBeEnabled(); await change.press('Enter'); await expect(editMembers).toBeFocused();
     }
     await memberChange('Unassign');
     await expect((await phoneAssignees()).getByText('No assignees on this page.', { exact: true })).toBeVisible();

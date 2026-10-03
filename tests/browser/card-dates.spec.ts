@@ -36,14 +36,14 @@ for (const width of [1280, 390]) {
     expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
     expect(JSON.parse(attempts[0].body!)).toMatchObject({ dueAt: '2040-01-02', dueTimezone: 'Pacific/Honolulu', version: 1 });
     await page.unroute(`**/cards/${card}/dates`);
-    const region = page.getByRole('region', { name: 'Card dates' });
+    const region = page.getByRole('region', { name: 'Card dates', exact: true });
     await expect(region).toContainText('Due Jan 3, 2040'); await expect(region).toContainText('Upcoming');
     await expect(region).toContainText('Viewing timezone: UTC. Date context: Pacific/Honolulu.');
     const other = await browser.newContext({ baseURL: new URL(page.url()).origin, viewport: { width, height: 844 } });
     try {
       expect((await other.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
       const peer = await other.newPage(); await peer.goto(route);
-      const peerDates = peer.getByRole('region', { name: 'Card dates' }); await expect(peerDates).toContainText('Upcoming');
+      const peerDates = peer.getByRole('region', { name: 'Card dates', exact: true }); await expect(peerDates).toContainText('Upcoming');
       const completed = await other.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { ...dateInput, version: 2, dueComplete: true } });
       expect(completed.status()).toBe(200);
       // Explicit refresh checks persisted canonical state; this scenario does

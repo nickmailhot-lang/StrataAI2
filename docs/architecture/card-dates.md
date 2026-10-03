@@ -345,3 +345,17 @@ release Worker image, one self notification, canonical FIRED revision and
 post-delivery receipt replay. These new browser and Worker scenarios require
 their own exact-image CI result. Organization lifecycle, Board timezone policy
 and full PRD-12 acceptance remain outstanding; the ticket remains open.
+
+Run 37080060407 completed with 67 browser cases passed, one intentionally skipped
+identity-mail case (run separately), and six failures. Both date failures were
+strict-locator ambiguity between `Card dates` and `Edit Card dates`; date display
+assertions now use the exact region name. Browser traces for the other four
+failures show the intended last keyboard action did not start its corresponding
+request: archive retry, label removal, assignee option discovery or copy discovery.
+Those actions now use locator-scoped Enter after enabled admission, removing the
+separate asynchronous focus/global-keyboard gap. Existing focus, authoritative
+state, live delivery and exact retry assertions are retained. The nine affected
+scenarios parse and list locally; actual release execution is still required.
+The same run passed Watch scenarios and its normal Board/movement performance
+cases, but the overall required release gate failed and no acceptance is inferred
+for the repaired scenarios.

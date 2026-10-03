@@ -40,7 +40,7 @@ for (const width of [1280, 390]) {
       // A connected stream can invalidate the snapshot before its read settles.
       // Focusing a disabled button silently does nothing, so admit the keyboard
       // action only after the canonical Board read enables this control.
-      await expect(copyButton).toBeEnabled(); await copyButton.focus(); await page.keyboard.press('Enter');
+      await expect(copyButton).toBeEnabled(); await copyButton.press('Enter');
       await expect(page.getByRole('button', { name: 'Reload copy destinations' })).toBeEnabled();
       async function choose(label: string, name: string) {
         await page.getByRole('combobox', { name: label }).focus(); await page.keyboard.press('Enter');

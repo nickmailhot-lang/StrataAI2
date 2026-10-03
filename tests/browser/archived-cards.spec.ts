@@ -72,7 +72,8 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Retry this restore', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel restore', exact: true })).toHaveCount(0);
       await expect(other.getByRole('link', { name: 'Archived work', exact: true })).toBeVisible();
-      await page.getByRole('button', { name: 'Retry this restore', exact: true }).focus(); await page.keyboard.press('Enter');
+      const retryRestore = page.getByRole('button', { name: 'Retry this restore', exact: true });
+      await expect(retryRestore).toBeEnabled(); await retryRestore.press('Enter');
       await expect(page.getByText('No archived cards on this page.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current archived cards', exact: true })).toBeFocused();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]); expect(JSON.parse(writes[0].body!)).toEqual({ version: 2 });
