@@ -95,6 +95,35 @@ public sealed class AttachmentPreviewStorageRecoveryTests
         Assert.Equal(1, f.Generator.Calls); Assert.Equal(0, f.Storage.Deletes);
     }
     [Fact]
+    public async Task Corrupt_source_never_reaches_decoder_or_output_declaration()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var f = new Fixture(); f.Storage.Values[f.Intent.Source.Reference][0] ^= 1;
+        await Assert.ThrowsAsync<AttachmentStorageException>(() => f.Run());
+        Assert.Null(f.Intent.Output); Assert.Equal(0, f.Intent.Declarations);
+        Assert.Equal(0, f.Generator.Calls); Assert.Equal(0, f.Storage.Writes);
+    }
+    [Fact]
+    public async Task A_valid_provider_receipt_cannot_release_corrupt_stored_bytes()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var f = new Fixture(); f.Storage.CorruptAfterCommit = true;
+        await Assert.ThrowsAsync<AttachmentStorageException>(() => f.Run());
+        Assert.NotNull(f.Intent.Output); Assert.Equal(1, f.Storage.Writes);
+        await Assert.ThrowsAsync<AttachmentStorageException>(() => f.Run());
+        Assert.Equal(1, f.Storage.Writes); Assert.Equal(1, f.Generator.Calls);
+        Assert.Equal(0, f.Storage.Deletes);
+    }
+    [Fact]
+    public async Task Scope_withdrawal_after_write_keeps_the_private_object_without_returning_evidence()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var f = new Fixture(); f.Intent.WithdrawAtLoad = 5;
+        Assert.Null(await f.Run()); Assert.Equal(1, f.Storage.Writes);
+        Assert.True(f.Storage.Values.ContainsKey(new(f.Job.OrganizationId, f.Job.Id)));
+        Assert.NotNull(f.Intent.Output); Assert.Equal(0, f.Storage.Deletes);
+    }
+    [Fact]
     public async Task Cancellation_before_admission_has_no_provider_effects()
     {
         var f = new Fixture(); using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
@@ -126,6 +155,7 @@ public sealed class AttachmentPreviewStorageRecoveryTests
     private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
     private sealed class IntentStore(AttachmentScanRequest source) : IAttachmentPreviewIntentStore
     {
+        public AttachmentScanRequest Source => source;
         public AttachmentPreviewLoadStatus Status { get; set; } = AttachmentPreviewLoadStatus.Ready;
         public AttachmentPreviewMeasurement? Output { get; private set; }
         public int Loads { get; private set; }
@@ -166,6 +196,7 @@ public sealed class AttachmentPreviewStorageRecoveryTests
         public bool FailBeforeCommit { get; set; }
         public bool FailAfterCommit { get; set; }
         public bool WrongReceipt { get; set; }
+        public bool CorruptAfterCommit { get; set; }
         public Task<Stream?> OpenPrivateReadAsync(AttachmentObjectReference reference, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested(); Assert.Equal(source.OrganizationId, reference.OrganizationId);
@@ -181,8 +212,10 @@ public sealed class AttachmentPreviewStorageRecoveryTests
             using var content = new MemoryStream(); await bytes.CopyToAsync(content, ct);
             var encoded = content.ToArray(); Assert.Equal(maximum, encoded.Length); Assert.Equal(intent.Output.Sha256, Hash(encoded));
             Values.Add(reference, encoded);
+            var measured = Hash(encoded);
+            if (CorruptAfterCommit) encoded[0] ^= 1;
             if (FailAfterCommit) { FailAfterCommit = false; throw new AttachmentStorageException("object_storage_unavailable"); }
-            return new(reference, encoded.Length + (WrongReceipt ? 1 : 0), Hash(encoded));
+            return new(reference, encoded.Length + (WrongReceipt ? 1 : 0), measured);
         }
         public Task<bool> DeletePrivateAsync(AttachmentObjectReference reference, CancellationToken ct)
         {
