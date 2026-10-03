@@ -55,8 +55,9 @@ internal static class AttachmentPreviewBackfillContract
         Require(await Scalar<long>("SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text;",files[^1])==0,
             "Legacy Clean fixture unexpectedly queued a preview.");
         await Scalar<long>("DELETE FROM public.attachment_preview_sweeps WHERE tenant_id=@tenant; SELECT 1::bigint;");
-        // A malformed canonical source is skipped but still advances the page.
-        await Scalar<long>("UPDATE public.attachments SET storage_key='attachments/'||replace(tenant_id::text,'-','')||'/'||replace(gen_random_uuid()::text,'-','') WHERE tenant_id=@tenant AND id=@file; SELECT 1::bigint;",files[0]);
+        // Withdraw the actual parent lifecycle gate without changing immutable
+        // source identity. Clean rows remain in the index and advance the page.
+        await Scalar<long>("UPDATE public.cards SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE tenant_id=@tenant AND id=(SELECT card_id FROM public.attachments WHERE id=@file); SELECT 1::bigint;");
         var cardVersion=await Scalar<long>("SELECT version FROM public.cards WHERE tenant_id=@tenant AND id=(SELECT card_id FROM public.attachments WHERE id=@file);");
         var events=await Scalar<long>("SELECT count(*) FROM public.work_events WHERE tenant_id=@tenant;");
         var fileVersion=await Scalar<long>("SELECT version FROM public.attachments WHERE tenant_id=@tenant AND id=@file;");
@@ -72,29 +73,37 @@ internal static class AttachmentPreviewBackfillContract
             await held.RollbackAsync(ct);
         }
         for(var pass=0;pass<8;pass++)await store.EnqueuePageAsync(tenant,32,ct);
-        foreach(var file in files.Skip(1))
+        foreach(var file in files)
         {
-            Require(await Scalar<long>("SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text AND safe_metadata->>'version'='2' AND actor_id=(SELECT uploader_id FROM public.attachments WHERE id=@file) AND service_identity='attachment-private-preview';",file)==1,
-                "Later legacy Clean source was starved or duplicated.");
+            Require(await Scalar<long>("SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text;",file)==0,
+                "Archived source parent acquired preview work.");
         }
-        Require(await Scalar<long>("SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text;",files[0])==0,
-            "Noncanonical source acquired preview work.");
         Require(await Scalar<long>("SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text AND (safe_metadata->>'version')::bigint=(SELECT version FROM public.attachments WHERE id=@file);")==0,
             "Still-current published derivative was regenerated after a metadata revision.");
         Require(await Scalar<long>("SELECT version FROM public.cards WHERE tenant_id=@tenant AND id=(SELECT card_id FROM public.attachments WHERE id=@file);")==cardVersion
             && await Scalar<long>("SELECT count(*) FROM public.work_events WHERE tenant_id=@tenant;")==events
             && await Scalar<long>("SELECT version FROM public.attachments WHERE tenant_id=@tenant AND id=@file;")==fileVersion,
             "Metadata maintenance altered Card/File/event publication.");
-        // A repaired/late-eligible source behind the cursor is recovered on
-        // wrap. Failed jobs retain their exact terminal row and retry identity.
-        await Scalar<long>("UPDATE public.attachments SET storage_key='attachments/'||replace(tenant_id::text,'-','')||'/'||replace(id::text,'-','') WHERE tenant_id=@tenant AND id=@file; SELECT 1::bigint;",files[0]);
+        // Restored sources behind the cursor are recovered on wrap.
+        await Scalar<long>("UPDATE public.cards SET lifecycle_state='ACTIVE',archived_at=NULL,updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE tenant_id=@tenant AND id=(SELECT card_id FROM public.attachments WHERE id=@file); SELECT 1::bigint;");
+        for(var pass=0;pass<8;pass++)await store.EnqueuePageAsync(tenant,32,ct);
+        foreach(var file in files)
+        {
+            Require(await Scalar<long>("SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text AND safe_metadata->>'version'='2' AND actor_id=(SELECT uploader_id FROM public.attachments WHERE id=@file) AND service_identity='attachment-private-preview';",file)==1,
+                "Later restored legacy Clean source was starved or duplicated.");
+        }
+        Require(await Scalar<long>("SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text AND (safe_metadata->>'version')::bigint=(SELECT version FROM public.attachments WHERE id=@file);")==0,
+            "Active restored parent regenerated a still-current published derivative.");
+        Require(await Scalar<long>("SELECT version FROM public.cards WHERE tenant_id=@tenant AND id=(SELECT card_id FROM public.attachments WHERE id=@file);")==cardVersion+1
+            && await Scalar<long>("SELECT count(*) FROM public.work_events WHERE tenant_id=@tenant;")==events
+            && await Scalar<long>("SELECT version FROM public.attachments WHERE tenant_id=@tenant AND id=@file;")==fileVersion,
+            "Restored metadata maintenance altered publication revisions/events.");
+        // Failed jobs retain their exact terminal row and retry identity.
         await Scalar<long>("UPDATE public.background_jobs SET state='FAILED',attempt_count=max_attempts,last_error_code='lease_expired',updated_at=clock_timestamp(),version=version+1 WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text; SELECT 1::bigint;",files[1]);
         const string failedSql="SELECT to_jsonb(j)::text FROM public.background_jobs j WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text;";
         var failed=await Scalar<string>(failedSql,files[1]);
         for(var pass=0;pass<8;pass++)await store.EnqueuePageAsync(tenant,32,ct);
         Require(await Scalar<string>(failedSql,files[1])==failed,"Backfill reset or rewrote a terminal preview job.");
-        Require(await Scalar<long>("SELECT count(*) FROM public.background_jobs WHERE tenant_id=@tenant AND job_type='ATTACHMENT_PREVIEW' AND safe_metadata->>'attachmentId'=@file::text AND safe_metadata->>'version'='2';",files[0])==1,
-            "Cursor wrap did not recover a newly eligible older source.");
-        Console.WriteLine("Restricted preview backfill: Worker-only tenant scope, private forced-RLS cursor, bounded indexed pages, replica skip-lock, canonical legacy Clean jobs, receipt reuse, source repair on wrap, cancellation and unchanged terminal failures passed.");
+        Console.WriteLine("Restricted preview backfill: Worker-only tenant scope, private forced-RLS cursor, bounded indexed pages, replica skip-lock, canonical legacy Clean jobs, receipt reuse, parent archival/restoration on wrap, cancellation and unchanged terminal failures passed.");
     }
 }
