@@ -224,7 +224,7 @@ curl --fail --silent --show-error -b "$scratch/owner.cookies" "$base/organizatio
 test "$(request owner POST "$firePath" "$fireKey" "$fireChoice")" = 200
 cmp "$scratch/fire-created.json" "$scratch/response.json"
 test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$fireReminder';")" = 1
-test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_type='Reminder' AND entity_id='$fireReminder' AND event_type='REMINDER_FIRED' AND ready;")" = 1
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_type='Reminder' AND entity_id='$fireReminder' AND event_type='REMINDER_FIRED' AND ready_at IS NOT NULL;")" = 1
 test "$(admin "SELECT version=2 AND lifecycle_state='ACTIVE' FROM cards WHERE tenant_id='$org' AND id='$fireCard';")" = t
 # Board policy controls display only, using admin admission and Board CAS. It
 # must not rewrite Card dates or renew already fired/future Reminder generations.
