@@ -9,6 +9,66 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_13_Item_edit_completion_attribution_noops_and_due_completion_are_independent()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient(); using var outsider = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct); await RegisterAndLogin(outsider);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Completion Card", "Retained", null, DateTimeOffset.UtcNow, ct);
+        using var dates = await Mutate(owner, HttpMethod.Patch, $"/cards/{card.Id}/dates", new { dueAt = "2040-01-03T08:00:00Z", dueTimezone = "UTC", dueHasTime = true, dueComplete = true, version = 1 });
+        Assert.Equal(HttpStatusCode.OK, dates.StatusCode);
+        var parentPath = $"/cards/{card.Id}/checklists";
+        using var created = await Mutate(owner, HttpMethod.Post, parentPath, new CreateChecklistInput("Items", 2));
+        var checklist = (await created.Content.ReadFromJsonAsync<ChecklistChange>(ct))!.Checklist;
+        var itemPath = $"{parentPath}/{checklist.Id}/items";
+        using var added = await Mutate(member, HttpMethod.Post, itemPath, new CreateChecklistItemInput("Original", 3, 1));
+        var first = (await added.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        var path = $"{itemPath}/{first.Item.Id}"; var input = new UpdateChecklistItemInput(" Original ", true, 4, 2, 1);
+        using var denied = await Mutate(outsider, HttpMethod.Patch, path, input);
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        using var invalid = await Mutate(owner, HttpMethod.Patch, path, input with { Text = " " });
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        using var missingFlag = await Mutate(owner, HttpMethod.Patch, path, new { text = "Original", cardVersion = 4, checklistVersion = 2, version = 1 });
+        Assert.Equal(HttpStatusCode.BadRequest, missingFlag.StatusCode);
+        var key = Guid.NewGuid().ToString();
+        using var completed = await Mutate(member, HttpMethod.Patch, path, input, key);
+        Assert.Equal(HttpStatusCode.OK, completed.StatusCode);
+        var done = (await completed.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        Assert.Equal(5, done.CardVersion); Assert.Equal(3, done.Checklist.Version); Assert.Equal(2, done.Item.Version);
+        Assert.True(done.Item.Completed); Assert.Equal(f.Recipient, done.Item.CompletedBy); Assert.NotNull(done.Item.CompletedAt);
+        var page = (await owner.GetFromJsonAsync<ChecklistItemPage>(itemPath, ct))!;
+        Assert.Equal(100, page.Summary.Percent);
+        using var replay = await Mutate(member, HttpMethod.Patch, path, input, key);
+        Assert.Equal(await completed.Content.ReadAsStringAsync(ct), await replay.Content.ReadAsStringAsync(ct));
+        var next = input with { CardVersion = 5, ChecklistVersion = 3, Version = 2 };
+        using var noop = await Mutate(owner, HttpMethod.Patch, path, next);
+        var unchanged = (await noop.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        Assert.False(unchanged.Changed); Assert.Equal(done.Item, unchanged.Item); Assert.Equal(done.Checklist, unchanged.Checklist); Assert.Equal(5, unchanged.CardVersion);
+        using var edited = await Mutate(owner, HttpMethod.Patch, path, next with { Text = "Edited" });
+        var edit = (await edited.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        Assert.Equal(6, edit.CardVersion); Assert.Equal(4, edit.Checklist.Version); Assert.Equal(3, edit.Item.Version);
+        Assert.Equal(done.Item.CompletedAt, edit.Item.CompletedAt); Assert.Equal(done.Item.CompletedBy, edit.Item.CompletedBy); Assert.Equal(first.Item.Rank, edit.Item.Rank);
+        using var reopened = await Mutate(owner, HttpMethod.Patch, path, new UpdateChecklistItemInput("Edited", false, 6, 4, 3));
+        var open = (await reopened.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        Assert.Equal(7, open.CardVersion); Assert.False(open.Item.Completed); Assert.Null(open.Item.CompletedBy); Assert.Null(open.Item.CompletedAt);
+        Assert.Equal(0, (await member.GetFromJsonAsync<ChecklistItemPage>(itemPath, ct))!.Summary.Percent);
+        Assert.True((await store.FindCardAsync(card.Id, ct))!.DueComplete);
+        foreach (var stale in new[] { new UpdateChecklistItemInput("Edited", true, 6, 5, 4), new("Edited", true, 7, 4, 4), new("Edited", true, 7, 5, 3) })
+        {
+            using var rejected = await Mutate(owner, HttpMethod.Patch, path, stale); Assert.Equal(HttpStatusCode.Conflict, rejected.StatusCode);
+        }
+        using var otherChecklist = await Mutate(owner, HttpMethod.Post, parentPath, new CreateChecklistInput("Other", 7));
+        var other = (await otherChecklist.Content.ReadFromJsonAsync<ChecklistChange>(ct))!;
+        using var wrong = await Mutate(owner, HttpMethod.Patch, $"{parentPath}/{other.Checklist.Id}/items/{first.Item.Id}", new UpdateChecklistItemInput("Wrong", true, 8, 1, 4));
+        Assert.Equal(HttpStatusCode.NotFound, wrong.StatusCode);
+        using var removed = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
+        Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
+        using var lostReplay = await Mutate(member, HttpMethod.Patch, path, input, key);
+        Assert.Equal(HttpStatusCode.NotFound, lostReplay.StatusCode);
+    }
+
+    [Fact]
     public async Task PRD_13_Checklist_items_are_ordered_bounded_parent_scoped_and_retry_safe()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();

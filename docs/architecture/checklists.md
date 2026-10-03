@@ -119,3 +119,18 @@ and denies reads/replay after revocation. The mandatory exact-image fixture adds
 item/queue INSERT rollback, same-key recovery, full-page aggregate counts and
 deleted-item exclusion. These new cases await Linux CI; strict build passes.
 Item edit/completion/reorder/delete and Checklist reorder/delete remain required.
+
+Item PATCH requires explicit text/completed plus Card, Checklist and item
+revisions. It edits text, completes or uncompletes (including a combined change)
+with one revision advance per row. Completing records the actor/time; subsequent
+text edits and completion no-ops preserve original attribution. Uncompletion
+clears both fields. No-op input preserves all revisions and emits no audit/event.
+Each changed fact emits its corresponding content-free Card event and item audit
+inside the same transaction; combined changes publish both facts. Source tests
+cover attribution, full/no-op/stale input, required completion flag, wrong-parent
+IDs, revoked replay and independence from a completed Card due date. Exact-image
+coverage forces event/queue failures after all updates, checks rollback/recovery,
+unchanged completion attribution through another actor's text edit, combined
+uncompletion/edit and aggregate counts. Strict build passes; Linux execution is
+pending. Checklist/item reorder/delete, public reads, lifecycle integration and
+MUI acceptance remain required.

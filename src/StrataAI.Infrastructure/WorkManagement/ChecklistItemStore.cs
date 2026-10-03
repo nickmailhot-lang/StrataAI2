@@ -7,6 +7,20 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed partial class InMemoryWorkManagementStore
 {
     private readonly Dictionary<Guid, ChecklistItemRecord> _checklistItems = [];
+    public Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct)
+    {
+        lock (_sync) return Task.FromResult(_checklistItems.TryGetValue(item, out var value) && value.OrganizationId == organization && value.ChecklistId == checklist && value.DeletedAt is null ? value : null);
+    }
+    public Task<ChecklistItemRecord?> UpdateItemAsync(Guid organization, Guid checklist, Guid item, string text, bool completed, DateTimeOffset? completedAt, Guid? completedBy, long version, DateTimeOffset now, CancellationToken ct)
+    {
+        lock (_sync)
+        {
+            if (!_checklistItems.TryGetValue(item, out var value) || value.OrganizationId != organization || value.ChecklistId != checklist || value.DeletedAt is not null || value.Version != version)
+                return Task.FromResult<ChecklistItemRecord?>(null);
+            var updated = value with { Text = text, Completed = completed, CompletedAt = completedAt, CompletedBy = completedBy, UpdatedAt = now, Version = version + 1 };
+            _checklistItems[item] = updated; return Task.FromResult<ChecklistItemRecord?>(updated);
+        }
+    }
     private ChecklistSummary Summary(ChecklistRecord checklist)
     {
         var items = _checklistItems.Values.Where(value => value.OrganizationId == checklist.OrganizationId && value.ChecklistId == checklist.Id && value.DeletedAt is null).ToArray();
@@ -46,6 +60,26 @@ internal sealed partial class PostgresWorkManagementStore
     private static ChecklistItemRecord ReadChecklistItem(NpgsqlDataReader row) => new(row.GetGuid(0), row.GetGuid(1), row.GetGuid(2), row.GetString(3), row.GetString(4),
         row.GetBoolean(5), row.IsDBNull(6) ? null : row.GetFieldValue<DateTimeOffset>(6), row.IsDBNull(7) ? null : row.GetGuid(7),
         row.GetFieldValue<DateTimeOffset>(8), row.GetFieldValue<DateTimeOffset>(9), row.GetInt64(10), row.IsDBNull(11) ? null : row.GetFieldValue<DateTimeOffset>(11));
+    public async Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct)
+    {
+        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Checklist item reads require the owning scope.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
+        await using var query = new NpgsqlCommand($"SELECT {ChecklistItemColumns} FROM checklist_items i WHERE i.tenant_id=@tenant AND i.checklist_id=@checklist AND i.id=@id AND i.deleted_at IS NULL;", session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("checklist", checklist); query.Parameters.AddWithValue("id", item);
+        await using var reader = await query.ExecuteReaderAsync(ct); return await reader.ReadAsync(ct) ? ReadChecklistItem(reader) : null;
+    }
+    public async Task<ChecklistItemRecord?> UpdateItemAsync(Guid organization, Guid checklist, Guid item, string text, bool completed, DateTimeOffset? completedAt, Guid? completedBy, long version, DateTimeOffset now, CancellationToken ct)
+    {
+        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Checklist item edits require the owning command transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
+        await using var update = new NpgsqlCommand($"UPDATE checklist_items AS i SET text=@text,completed=@completed,completed_at=@completed_at,completed_by=@completed_by,updated_at=@now,version=i.version+1 WHERE i.tenant_id=@tenant AND i.checklist_id=@checklist AND i.id=@id AND i.version=@version AND i.deleted_at IS NULL RETURNING {ChecklistItemColumns};", session.Connection, session.Transaction);
+        update.Parameters.AddWithValue("tenant", organization); update.Parameters.AddWithValue("checklist", checklist); update.Parameters.AddWithValue("id", item);
+        update.Parameters.AddWithValue("text", text); update.Parameters.AddWithValue("completed", completed);
+        update.Parameters.AddWithValue("completed_at", NpgsqlDbType.TimestampTz, (object?)completedAt ?? DBNull.Value);
+        update.Parameters.AddWithValue("completed_by", NpgsqlDbType.Uuid, (object?)completedBy ?? DBNull.Value);
+        update.Parameters.AddWithValue("version", version); update.Parameters.AddWithValue("now", now);
+        await using var reader = await update.ExecuteReaderAsync(ct); return await reader.ReadAsync(ct) ? ReadChecklistItem(reader) : null;
+    }
     public async Task<ChecklistSummary?> GetSummaryAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct)
     {
         if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Checklist summaries require the owning scope.");

@@ -18,6 +18,8 @@ public sealed record ChecklistChange(Guid OrganizationId, Guid BoardId, Guid Car
 public interface IChecklistStore
 {
     Task<IReadOnlyList<ChecklistSummary>> ListAsync(Guid organization, Guid card, string? afterRank, Guid? afterId, CancellationToken ct);
+    Task<ChecklistItemRecord?> FindItemAsync(Guid organization, Guid checklist, Guid item, CancellationToken ct);
+    Task<ChecklistItemRecord?> UpdateItemAsync(Guid organization, Guid checklist, Guid item, string text, bool completed, DateTimeOffset? completedAt, Guid? completedBy, long version, DateTimeOffset now, CancellationToken ct);
     Task<ChecklistSummary?> GetSummaryAsync(Guid organization, Guid card, Guid checklist, CancellationToken ct);
     Task<IReadOnlyList<ChecklistItemRecord>> ListItemsAsync(Guid organization, Guid checklist, string? afterRank, Guid? afterId, CancellationToken ct);
     Task<string> NextItemRankAsync(Guid organization, Guid checklist, CancellationToken ct);

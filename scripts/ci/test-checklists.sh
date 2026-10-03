@@ -130,10 +130,42 @@ cp "$scratch/page.json" "$scratch/items-first.json"
 test "$(read_page owner "$itemPath?after=$itemCursor")" = 200
 jq -e '(.items|length)==13 and .nextCursor==null and .summary.total==63 and .summary.completed==1 and all(.items[];.deletedAt==null)' "$scratch/page.json" >/dev/null
 jq -se '[.[].items[].id] | length==63 and (unique|length)==63' "$scratch/items-first.json" "$scratch/page.json" >/dev/null
+item=$(jq -r '.item.id' "$scratch/item-created.json")
+editPath="$itemPath/$item"; completeKey=$(uuid); completeInput='{"text":" Pack supplies ","completed":true,"cardVersion":4,"checklistVersion":3,"version":1}'
+before=$(state)
+test "$(request outsider PATCH "$editPath" "$(uuid)" "$completeInput")" = 404
+test "$(request owner PATCH "$editPath" "$(uuid)" '{"text":"Pack supplies","cardVersion":4,"checklistVersion":3,"version":1}')" = 400
+for table in work_events background_jobs; do
+  admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
+  test "$(request member PATCH "$editPath" "$completeKey" "$completeInput")" = 503
+  test "$before" = "$(state)"
+  admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
+done
+test "$(request member PATCH "$editPath" "$completeKey" "$completeInput")" = 200
+jq -e --arg member "$member" '.changed and .cardVersion==5 and .checklist.version==4 and .item.version==2 and .item.completed and .item.completedBy==$member and .item.completedAt!=null' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/completed.json"
+after=$(state)
+test "$(request member PATCH "$editPath" "$completeKey" "$completeInput")" = 200
+cmp "$scratch/completed.json" "$scratch/response.json"
+test "$after" = "$(state)"
+test "$(request owner PATCH "$editPath" "$(uuid)" '{"text":" Pack supplies ","completed":true,"cardVersion":5,"checklistVersion":4,"version":2}')" = 200
+jq -e '.changed==false and .cardVersion==5 and .item.version==2' "$scratch/response.json" >/dev/null
+test "$(request owner PATCH "$editPath" "$(uuid)" '{"text":"Edited supplies","completed":true,"cardVersion":5,"checklistVersion":4,"version":2}')" = 200
+jq -se '.[1].cardVersion==6 and .[1].checklist.version==5 and .[1].item.version==3 and .[1].item.completedBy==.[0].item.completedBy and .[1].item.completedAt==.[0].item.completedAt' "$scratch/completed.json" "$scratch/response.json" >/dev/null
+# A simultaneous text change/uncompletion emits both facts but advances each
+# aggregate row only once and clears attribution atomically.
+test "$(request owner PATCH "$editPath" "$(uuid)" '{"text":"Pack supplies","completed":false,"cardVersion":6,"checklistVersion":5,"version":3}')" = 200
+jq -e '.changed and .cardVersion==7 and .checklist.version==6 and .item.version==4 and .item.completed==false and .item.completedAt==null and .item.completedBy==null' "$scratch/response.json" >/dev/null
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_UPDATED';")" = 2
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_COMPLETED';")" = 1
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_UNCOMPLETED';")" = 1
+test "$(admin "SELECT NOT due_complete FROM cards WHERE tenant_id='$org' AND id='$card';")" = t
+test "$(read_page owner "$itemPath")" = 200
+jq -e '.summary.completed==1 and .summary.total==63 and .cardVersion==7' "$scratch/page.json" >/dev/null
 # A valid but exhausted tail must fail before advancing the aggregate revision.
 admin "UPDATE checklists SET rank='999999999999999999999999999998' WHERE id='$checklist';" >/dev/null
 before=$(state)
-test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":4}')" = 409
+test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":7}')" = 409
 jq -e '.code=="rank_space_exhausted"' "$scratch/response.json" >/dev/null
 test "$before" = "$(state)"
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
@@ -141,6 +173,7 @@ test "$(read_page member "$path?after=$cursor")" = 404
 test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 404
 test "$(read_page member "$itemPath?after=$itemCursor")" = 404
 test "$(request member POST "$itemPath" "$itemKey" "$itemInput")" = 404
+test "$(request member PATCH "$editPath" "$completeKey" "$completeInput")" = 404
 version=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
 test "$(request owner POST "/boards/$board/archive" "$(uuid)" "{\"version\":$version}")" = 200
 test "$(read_page owner "$path")" = 200

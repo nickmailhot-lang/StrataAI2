@@ -6,6 +6,12 @@ public static partial class WorkManagementEndpoints
 {
     private static void MapChecklistEndpoints(WebApplication app)
     {
+        app.MapPatch("/cards/{cardId:guid}/checklists/{checklistId:guid}/items/{itemId:guid}", async (Guid cardId, Guid checklistId, Guid itemId, UpdateChecklistItemInput input, HttpContext context, ChecklistService service, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            var result = await service.UpdateItemAsync(cardId, checklistId, itemId, actor.Value, input, context.TraceIdentifier, ct);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         app.MapGet("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", async (Guid cardId, Guid checklistId, string? after, HttpContext context, ChecklistService service, CancellationToken ct) =>
         {
             var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();

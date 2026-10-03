@@ -36,6 +36,7 @@ public sealed class BoardSharingTelemetry
             ("/cards/{cardId:guid}/members", "GET") => "card_member_read",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", "GET") => "checklist_item_read",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", "POST") => "checklist_item_create",
+            ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items/{itemId:guid}", "PATCH") => "checklist_item_update",
             ("/cards/{cardId:guid}/checklists", "GET") => "checklist_read",
             ("/cards/{cardId:guid}/checklists", "POST") => "checklist_create",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}", "PATCH") => "checklist_rename",
@@ -88,7 +89,7 @@ public sealed class BoardSharingTelemetry
                 or "notification_not_found" or "invalid_notification_cursor" or "invalid_notification_selection"
                 or "watch_not_found" or "invalid_watch_version" or "invalid_card_dates" or "invalid_card_date_version" or "invalid_board_date_policy"
                 or "card_reminder_not_found" or "invalid_card_reminder_version" or "invalid_card_reminder_interval"
-                or "invalid_checklist_item_text" or "checklist_not_found" or "invalid_checklist_cursor" or "invalid_checklist_title" or "invalid_checklist_version"
+                or "invalid_checklist_item_text" or "checklist_item_not_found" or "checklist_not_found" or "invalid_checklist_cursor" or "invalid_checklist_title" or "invalid_checklist_version"
                 or "session_unavailable" or "work_storage_unavailable" or "invitation_storage_unavailable"
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"
                 or "invalid_board_member_cursor" or "invalid_invitation_cursor" or "invalid_email"
