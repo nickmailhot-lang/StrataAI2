@@ -102,3 +102,8 @@ and Application provider deadline at most five minutes. Normal Demo and disabled
 hosts retain URL routes and do not map binary creation. Synthetic HTTP and
 provider tests do not establish deployed bucket/scanner or complete FILE
 lifecycle acceptance.
+
+Enabled hosts also expose GET /cards/{cardId}/attachment-upload-options to
+currently authorized editors. Its scoped/current-revision response supplies the
+configured byte ceiling and sorted type subset for review. Reading these options
+never grants an upload or skips subsequent current admission/policy checks.

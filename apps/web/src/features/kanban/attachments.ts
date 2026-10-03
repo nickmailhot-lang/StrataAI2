@@ -13,6 +13,7 @@ export type FileAttachment = Omit<UrlAttachment, 'kind' | 'mimeType' | 'sizeByte
 export type AttachmentMetadata = UrlAttachment | FileAttachment;
 export type AttachmentPage = AttachmentScope & { cardVersion: number; canEdit: boolean; items: AttachmentMetadata[]; nextCursor: string | null };
 export type AttachmentChange = AttachmentScope & { cardVersion: number; attachment: UrlAttachment };
+export type AttachmentUploadOptions = AttachmentScope & { cardVersion: number; maximumBytes: number; allowedMimeTypes: string[] };
 const invalid = () => new Error('Invalid attachment response');
 const same = (value: unknown, expected: string) => notificationUuid(value) && notificationUuid(expected) && value.toLowerCase() === expected.toLowerCase();
 const revision = (value: unknown): value is number => Number.isSafeInteger(value) && Number(value) > 0;
@@ -61,6 +62,16 @@ function scopeRecord(value: unknown, scope: AttachmentScope) {
   const row = record(value);
   if (!same(row.organizationId, scope.organizationId) || !same(row.boardId, scope.boardId) || !same(row.cardId, scope.cardId) || !revision(row.cardVersion)) throw invalid();
   return row;
+}
+export function parseAttachmentUploadOptions(value: unknown, scope: AttachmentScope, cardVersion: number): AttachmentUploadOptions {
+  const row = scopeRecord(value, scope);
+  exact(row, ['organizationId', 'boardId', 'cardId', 'cardVersion', 'maximumBytes', 'allowedMimeTypes']);
+  const types = row.allowedMimeTypes;
+  if (!revision(cardVersion) || row.cardVersion !== cardVersion || !Number.isSafeInteger(row.maximumBytes)
+    || Number(row.maximumBytes) < 1 || Number(row.maximumBytes) > 1073741824 || !Array.isArray(types) || types.length < 1 || types.length > 4
+    || types.some(value => typeof value !== 'string' || !['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(value))
+    || new Set(types).size !== types.length || types.some((value, index) => index > 0 && value <= types[index - 1])) throw invalid();
+  return row as AttachmentUploadOptions;
 }
 function position(value: unknown, cardId: string) {
   if (typeof value !== 'string' || value.length > 128) throw invalid();

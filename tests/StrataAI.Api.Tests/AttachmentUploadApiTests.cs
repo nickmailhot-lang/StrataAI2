@@ -61,6 +61,12 @@ public sealed partial class ApiHostTests
         var work = app.Services.GetRequiredService<IWorkManagementStore>();
         var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "File transport", "Preserved", null, DateTimeOffset.UtcNow, ct);
         var path = $"/cards/{card.Id}/attachments"; var key = Guid.NewGuid(); var bytes = new byte[512]; "%PDF-1.7\n"u8.CopyTo(bytes);
+        var optionsPath = $"/cards/{card.Id}/attachment-upload-options";
+        var options = (await member.GetFromJsonAsync<AttachmentUploadOptions>(optionsPath, ct))!;
+        Assert.Equal(f.Organization, options.OrganizationId); Assert.Equal(f.Board, options.BoardId); Assert.Equal(card.Id, options.CardId);
+        Assert.Equal(1, options.CardVersion); Assert.Equal(1024, options.MaximumBytes); Assert.Equal("application/pdf", Assert.Single(options.AllowedMimeTypes));
+        using var outsiderOptions = await outsider.GetAsync(optionsPath, ct); Assert.Equal(HttpStatusCode.NotFound, outsiderOptions.StatusCode);
+        using var anonymousOptions = await anonymous.GetAsync(optionsPath, ct); Assert.Equal(HttpStatusCode.Unauthorized, anonymousOptions.StatusCode);
         using (var denied = FileRequest(path, bytes))
         { using var response = await outsider.SendAsync(denied, ct); Assert.Equal(HttpStatusCode.NotFound, response.StatusCode); }
         using (var denied = FileRequest(path, bytes, key))
@@ -84,6 +90,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         using var revoked = FileRequest(path, bytes, key); using var revokedResponse = await member.SendAsync(revoked, ct);
         Assert.Equal(HttpStatusCode.NotFound, revokedResponse.StatusCode); Assert.Equal(1, objects.Writes);
+        using var revokedOptions = await member.GetAsync(optionsPath, ct); Assert.Equal(HttpStatusCode.NotFound, revokedOptions.StatusCode);
     }
 
     [Fact]

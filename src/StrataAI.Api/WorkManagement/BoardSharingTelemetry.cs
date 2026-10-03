@@ -36,6 +36,7 @@ public sealed class BoardSharingTelemetry
             ("/cards/{cardId:guid}/members", "GET") => "card_member_read",
             ("/cards/{cardId:guid}/attachments", "GET") => "attachment_read",
             ("/cards/{cardId:guid}/attachments", "POST") => "attachment_file_create",
+            ("/cards/{cardId:guid}/attachment-upload-options", "GET") => "attachment_upload_options",
             ("/cards/{cardId:guid}/attachments/url", "POST") => "attachment_url_create",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", "GET") => "checklist_item_read",
             ("/cards/{cardId:guid}/checklists/{checklistId:guid}/items", "POST") => "checklist_item_create",

@@ -251,6 +251,9 @@ jobs:
         run: |
           docker build             --file Dockerfile.worker             --build-arg STRATAAI_BUILD_REVISION="${GITHUB_SHA}"             --build-arg STRATAAI_BUILD_VERSION="0.1.0-${GITHUB_RUN_NUMBER}"             --tag "strataai-worker:${GITHUB_SHA}"             .
 
+      - name: Validate exact web image edge configuration
+        run: docker run --rm --network none --entrypoint nginx "strataai-web:${GITHUB_SHA}" -t
+
       - name: Export exact built images
         shell: bash
         run: |

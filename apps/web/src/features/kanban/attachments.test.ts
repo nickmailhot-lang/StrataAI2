@@ -1,4 +1,4 @@
-import { attachmentUrl, parseAttachmentPage, parseUrlAttachmentCreated, type AttachmentMetadata, type UrlAttachment } from './attachments';
+import { attachmentUrl, parseAttachmentPage, parseAttachmentUploadOptions, parseUrlAttachmentCreated, type AttachmentMetadata, type UrlAttachment } from './attachments';
 import { dateInstantTicks } from './cardDates';
 
 const scope = { organizationId: '11111111-1111-4111-8111-111111111111', boardId: '22222222-2222-4222-8222-222222222222', cardId: '33333333-3333-4333-8333-333333333333' };
@@ -52,6 +52,14 @@ describe('URL attachment response admission', () => {
 });
 
 describe('private file metadata admission', () => {
+  it('admits only current scoped, bounded, canonical upload options without private fields', () => {
+    const options = { ...scope, cardVersion: 2, maximumBytes: 20971520, allowedMimeTypes: ['application/pdf', 'image/png'] };
+    expect(parseAttachmentUploadOptions(options, scope, 2)).toEqual(options);
+    for (const patch of [{ organizationId: scope.cardId }, { boardId: scope.cardId }, { cardVersion: 3 }, { maximumBytes: 0 },
+      { maximumBytes: 1073741825 }, { maximumBytes: '20971520' }, { allowedMimeTypes: [] }, { allowedMimeTypes: ['text/html'] },
+      { allowedMimeTypes: ['image/png', 'image/png'] }, { allowedMimeTypes: ['image/png', 'application/pdf'] }, { storageKey: 'private/key' }])
+      expect(() => parseAttachmentUploadOptions({ ...options, ...patch }, scope, 2)).toThrow();
+  });
   const file = { ...item(2), kind: 0 as const, mimeType: 'application/pdf' as const, sizeBytes: 100003, url: null, scanStatus: 1 as const, scannedAt: null };
   it('admits mixed links/files and all canonical scan states without provider delivery fields', () => {
     expect(parseAttachmentPage(page([file, item()]), scope).items).toEqual([file, item()]);

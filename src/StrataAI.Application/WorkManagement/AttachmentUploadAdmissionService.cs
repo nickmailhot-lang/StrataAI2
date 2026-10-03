@@ -6,11 +6,27 @@ namespace StrataAI.Application.WorkManagement;
 
 // Expected digest binds the original request; it is not verified content.
 public sealed record PrepareAttachmentUploadInput(string DisplayName, long SizeBytes, string Sha256, long CardVersion);
+public sealed record AttachmentUploadOptions(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
+    long MaximumBytes, IReadOnlyList<string> AllowedMimeTypes);
 
 public sealed class AttachmentUploadAdmissionService(IWorkManagementStore work, IOrganizationStore organizations,
     IWorkBoardAuthorization boards, IAttachmentUploadIntentStore uploads, IWorkManagementUnitOfWork transactions,
     IClock clock, AttachmentUploadPolicy policy)
 {
+    public async Task<WorkOperation<AttachmentUploadOptions>> GetOptionsAsync(Guid cardId, Guid actor, CancellationToken ct)
+    {
+        var hint = await work.FindCardAsync(cardId, ct);
+        if (hint is null) return WorkOperation<AttachmentUploadOptions>.Failure("card_not_found");
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "card_not_found",
+            () => AttachmentAdmission.CheckAsync(work, organizations, boards, hint, actor, true, ct), async () =>
+            {
+                var current = await work.FindCardAsync(cardId, ct);
+                return current is null ? WorkOperation<AttachmentUploadOptions>.Failure("card_not_found")
+                    : WorkOperation<AttachmentUploadOptions>.Success(new(hint.OrganizationId, hint.BoardId, cardId, current.Version,
+                        policy.MaximumBytes, policy.AllowedMimeTypes.Order(StringComparer.Ordinal).ToArray()));
+            }, ct);
+    }
+
     public async Task<WorkOperation<bool>> CheckRequestAsync(Guid cardId, Guid actor, CancellationToken ct)
     {
         var hint = await work.FindCardAsync(cardId, ct);

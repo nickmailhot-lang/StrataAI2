@@ -71,6 +71,12 @@ internal static class AttachmentPublicationContract
         var publication = provider.GetRequiredService<AttachmentFilePublicationService>();
         var digest = Convert.ToHexStringLower(SHA256.HashData(new byte[128]));
         var admission = provider.GetRequiredService<AttachmentUploadAdmissionService>();
+        var options = await admission.GetOptionsAsync(card, user, ct);
+        Require(options.Succeeded && options.Value is { MaximumBytes: 20971520, CardVersion: 1 }
+            && options.Value.OrganizationId == tenant && options.Value.BoardId == board && options.Value.CardId == card
+            && options.Value.AllowedMimeTypes.SequenceEqual(new[] { "application/pdf", "image/jpeg", "image/png", "image/webp" }),
+            "Current authorized upload policy disclosure was not canonical/scoped.");
+        Require((await admission.GetOptionsAsync(card, outsider, ct)).ErrorCode == "card_not_found", "Upload policy disclosed protected scope to outsider.");
         var admissionInput = new PrepareAttachmentUploadInput("Contract admitted file", 128, digest, 1);
         var admissionKey = Guid.NewGuid();
         var admitted = await admission.PrepareAsync(card, user, admissionKey, admissionInput, ct);
@@ -234,6 +240,7 @@ internal static class AttachmentPublicationContract
         { revoke.Parameters.AddWithValue("tenant", tenant); revoke.Parameters.AddWithValue("actor", user); await revoke.ExecuteNonQueryAsync(ct); }
         Require((await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-revoked-replay", ct)).ErrorCode == "card_not_found", "Revoked member recovered publication receipt.");
         Require((await admission.PrepareAsync(card, user, admissionKey, admissionInput, ct)).ErrorCode == "card_not_found", "Revoked member recovered upload intent.");
+        Require((await admission.GetOptionsAsync(card, user, ct)).ErrorCode == "card_not_found", "Revoked member recovered upload options.");
         await Effects(2, 1);
         await AttachmentFileUploadContract.RunAsync(admin, provider, tenant, secondOwner, EdgeCard,
             () => clock.UtcNow, value => clock.UtcNow = value, ct);

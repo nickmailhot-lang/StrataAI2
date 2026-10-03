@@ -19,6 +19,13 @@ public static partial class WorkManagementEndpoints
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         if (!app.Services.GetRequiredService<AttachmentUploadAvailability>().Enabled) return;
+        app.MapGet("/cards/{cardId:guid}/attachment-upload-options", async (Guid cardId, HttpContext context,
+            AttachmentUploadAdmissionService admission, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            var result = await admission.GetOptionsAsync(cardId, actor.Value, ct);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         app.MapPost("/cards/{cardId:guid}/attachments", async (Guid cardId, HttpContext context,
             AttachmentUploadAdmissionService admission, AttachmentFileUploadService service,
             AttachmentUploadPolicy policy, IWorkCommandContext commands, CancellationToken ct) =>
