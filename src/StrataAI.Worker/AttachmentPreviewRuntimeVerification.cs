@@ -47,7 +47,19 @@ internal static class AttachmentPreviewRuntimeVerification
             catch (AttachmentImagePreviewException) { }
             using var retry = await generator.GenerateAsync(request, "image/png", source, CancellationToken.None);
             if (retry.Width != 1 || retry.Height != 1 || !source.CanRead) return Failed();
-            Console.WriteLine("Worker isolated preview runtime verified using a fixed public PNG fixture, integrity refusal and recovery.");
+            // Hold a fixed fixture's source read while the child waits for its
+            // pipe payload. Cancellation must kill/reap the child and release
+            // the singleton slot even when the parent runs as another uid.
+            using var held = new HeldFixtureSource(source.Length);
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var cancelled = generator.GenerateAsync(request, "image/png", held, cancellation.Token);
+            await held.Waiting.Task.WaitAsync(cancellation.Token);
+            await cancellation.CancelAsync();
+            try { using var unexpected = await cancelled; return Failed(); }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+            using var recovered = await generator.GenerateAsync(request, "image/png", source, CancellationToken.None);
+            if (recovered.Width != 1 || recovered.Height != 1 || !source.CanRead) return Failed();
+            Console.WriteLine("Worker isolated preview runtime verified using a fixed public PNG fixture, integrity refusal, cancellation and recovery.");
             return 0;
         }
         catch (AttachmentImagePreviewException error)
@@ -61,6 +73,30 @@ internal static class AttachmentPreviewRuntimeVerification
             // a stable failure signal; no source, hash or exception diagnostics.
             return Failed();
         }
+    }
+
+    private sealed class HeldFixtureSource(long size) : Stream
+    {
+        public TaskCompletionSource Waiting { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => false;
+        public override long Length => size;
+        public override long Position { get; set; }
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct = default)
+        {
+            // Allow the fixed child to enter its ordinary pipe read before the
+            // verifier cancels; no arbitrary provider/source bytes are passed.
+            await Task.Delay(TimeSpan.FromSeconds(1), ct);
+            Waiting.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return 0;
+        }
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void Flush() => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 
     private static int Failed()
