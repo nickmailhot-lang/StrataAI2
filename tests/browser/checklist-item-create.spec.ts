@@ -40,7 +40,6 @@ for (const width of [1280, 390]) {
       await retry.press('Enter'); await expect(page.getByText('Checklist item added.', { exact: true })).toBeVisible();
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]); expect(JSON.parse(attempts[0].body!)).toEqual({ text: 'Prepare materials', cardVersion: 2, checklistVersion: 1 });
       await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible({ timeout: 20_000 });
-      await peer.getByRole('button', { name: 'Show items in Preparations', exact: true }).press('Enter');
       await expect(peer.getByText('Incomplete: Prepare materials', { exact: true })).toBeVisible();
       const response = await context.request.get(`/cards/${card}/checklists/${checklist.id}/items`); expect(response.status()).toBe(200);
       const result = await response.json(); expect(result.cardVersion).toBe(3); expect(result.summary.checklist.version).toBe(2);

@@ -4,6 +4,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { parseChecklistItemPage, parseChecklistPage, type ChecklistItemPage, type ChecklistPage, type ChecklistScope, type ChecklistSummary } from './checklists';
 
 type Props = ChecklistScope & { version: number; unavailable: boolean; onRefresh: () => void };
+type Disclosures = { openItems: Set<string>; onItemToggle: (id: string) => void };
 function usePage(props: Props, open: boolean, cursor: string | undefined, attempt: number, checklistId?: string) {
   const [result, setResult] = useState<ChecklistPage | ChecklistItemPage>();
   const [error, setError] = useState<string>(); const [loading, setLoading] = useState(false);
@@ -34,17 +35,19 @@ export function CardChecklists(props: Props) {
 }
 function ChecklistDisclosure(props: Props) {
   const [open, setOpen] = useState(false); const region = useId();
+  const [openItems, setOpenItems] = useState<Set<string>>(() => new Set());
+  function onItemToggle(id: string) { setOpenItems(previous => { const next = new Set(previous); if (next.has(id)) next.delete(id); else next.add(id); return next; }); }
   return <Box sx={{ my: 2 }}>
-    <Button aria-expanded={open} aria-controls={region} disabled={props.unavailable} onClick={() => setOpen(value => !value)}>
+    <Button aria-expanded={open} aria-controls={region} onClick={() => { if (open) setOpenItems(new Set()); setOpen(value => !value); }}>
       {open ? 'Hide checklists' : 'Show checklists'}
     </Button>
     {open && <Stack id={region} component="section" aria-label="Card checklists" spacing={2}>
       {props.unavailable ? <Typography role="status">Checking current Card access…</Typography>
-        : <ChecklistContent key={props.version} {...props} />}
+        : <ChecklistContent key={props.version} {...props} openItems={openItems} onItemToggle={onItemToggle} />}
     </Stack>}
   </Box>;
 }
-function ChecklistContent(props: Props) {
+function ChecklistContent(props: Props & Disclosures) {
   const [cursor, setCursor] = useState<string>(); const [attempt, setAttempt] = useState(0);
   const { result, error, loading } = usePage(props, true, cursor, attempt);
   const page = result && !('summary' in result) ? result : undefined;
@@ -54,13 +57,14 @@ function ChecklistContent(props: Props) {
     {page && <>
       {!page.canEdit && <Typography>Read-only checklists.</Typography>}
       {page.items.length === 0 && <Typography>No checklists on this page.</Typography>}
-      {page.items.map(summary => <ChecklistItems key={summary.checklist.id} {...props} summary={summary} />)}
+      {page.items.map(summary => <ChecklistItems key={summary.checklist.id} {...props} summary={summary}
+        open={props.openItems.has(summary.checklist.id)} onToggle={() => props.onItemToggle(summary.checklist.id)} />)}
       <Pages cursor={cursor} next={page.nextCursor} change={setCursor} kind="checklists" />
     </>}
   </>;
 }
-function ChecklistItems(props: Props & { summary: ChecklistSummary }) {
-  const [open, setOpen] = useState(false); const [cursor, setCursor] = useState<string>(); const [attempt, setAttempt] = useState(0);
+function ChecklistItems(props: Props & { summary: ChecklistSummary; open: boolean; onToggle: () => void }) {
+  const { open } = props; const [cursor, setCursor] = useState<string>(); const [attempt, setAttempt] = useState(0);
   const region = useId(); const heading = useId(); const { checklist } = props.summary;
   const { result, error, loading } = usePage(props, open, cursor, attempt, checklist.id);
   const page = result && 'summary' in result ? result : undefined;
@@ -69,7 +73,7 @@ function ChecklistItems(props: Props & { summary: ChecklistSummary }) {
     <Typography id={heading} component="h3" variant="subtitle1">{checklist.title}</Typography>
     <Typography>{progress.completed} of {progress.total} items complete ({Number(progress.percent.toFixed(1))}%)</Typography>
     <LinearProgress variant="determinate" value={progress.percent} aria-label={`Progress for ${checklist.title}`} />
-    <Button aria-expanded={open} aria-controls={region} onClick={() => { setCursor(undefined); setOpen(value => !value); }}>
+    <Button aria-expanded={open} aria-controls={region} onClick={() => { setCursor(undefined); props.onToggle(); }}>
       {open ? `Hide items in ${checklist.title}` : `Show items in ${checklist.title}`}
     </Button>
     {open && <Stack id={region} spacing={1}>

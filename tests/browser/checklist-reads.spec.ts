@@ -38,7 +38,6 @@ for (const width of [1280, 390]) {
       }); expect(complete.status()).toBe(200);
       for (const reader of [page, peer]) {
         await expect(reader.getByText('1 of 1 items complete (100%)', { exact: true })).toBeVisible({ timeout: 20_000 });
-        await reader.getByRole('button', { name: 'Show items in Preparations', exact: true }).press('Enter');
         await expect(reader.getByText('Complete: Prepare materials', { exact: true })).toBeVisible();
         await reader.getByRole('button', { name: 'Hide checklists', exact: true }).press('Enter');
         await expect(reader.getByRole('region', { name: 'Card checklists', exact: true })).toHaveCount(0);

@@ -51,12 +51,10 @@ for (const width of [1280, 390]) {
       await retry.press('Enter'); await expect(page.getByText('Checklist item moved.', { exact: true })).toBeVisible();
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
       expect(JSON.parse(attempts[0].body!)).toEqual({ beforeId: items[2].id, cardVersion: 5, checklistVersion: 4, version: 1 });
-      await expect(showItems).toBeEnabled({ timeout: 20_000 }); await showItems.press('Enter');
-      await expect(rows).toHaveText(['Incomplete: Execute', 'Incomplete: Prepare', 'Incomplete: Review']);
+      await expect(rows).toHaveText(['Incomplete: Execute', 'Incomplete: Prepare', 'Incomplete: Review'], { timeout: 20_000 });
       await page.unroute(commandPath); await move(); await page.getByRole('button', { name: 'Place item at end', exact: true }).press('Enter'); await save.press('Enter');
       await expect(page.getByText('Checklist item moved.', { exact: true })).toBeVisible();
-      await expect(showItems).toBeEnabled({ timeout: 20_000 }); await showItems.press('Enter');
-      await expect(rows).toHaveText(['Incomplete: Execute', 'Incomplete: Review', 'Incomplete: Prepare']);
+      await expect(rows).toHaveText(['Incomplete: Execute', 'Incomplete: Review', 'Incomplete: Prepare'], { timeout: 20_000 });
       const response = await context.request.get(`/cards/${card}/checklists/${checklist.id}/items`); expect(response.status()).toBe(200); const result = await response.json();
       expect(result.cardVersion).toBe(7); expect(result.summary.checklist.version).toBe(6); expect(result.summary.total).toBe(3); expect(result.summary.completed).toBe(0);
       expect(result.items.map((item: { id: string }) => item.id)).toEqual([items[1].id, items[2].id, items[0].id]); expect(result.items[2].version).toBe(3);

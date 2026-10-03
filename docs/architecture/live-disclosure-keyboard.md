@@ -34,3 +34,20 @@ in 1005.82 ms (1500 ms budget), cached detail in 141.30 ms (200 ms), and 20 date
 mutations had p95 50.72 ms (500 ms). Normal Board readiness/detail/mutation and
 Card/List feedback budgets also passed. These are measured stage results, not
 an overall green release or complete PRD acceptance.
+
+## Checklist disclosure follow-up
+
+Runs 37097898694 and 37098456354 also failed the general browser suite. The
+latter reported missing checklist item content and a missing renamed checklist
+after keyboard disclosure. The checklist root trigger is now stable and accepts
+show/hide intent during re-admission without making a protected read. Expanded
+item IDs live at Card scope, so a live revision refresh retains expansion intent
+while discarding old content and fetching current summaries/items. Explicitly
+hiding all checklists clears child expansion; changing Card scope resets it.
+
+Local verification: 47 reader/parser tests passed, including stale-content
+removal and retained expansion through re-admission. Type checking, lint and
+production build passed. Six affected browser cases were discovered; their
+execution remains pending exact-image CI. The peer-session creation, completion
+and ordering cases now assert refreshed item content without reopening an
+already expanded disclosure. No acceptance assertion or timeout was waived.

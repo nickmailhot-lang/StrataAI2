@@ -18,6 +18,25 @@ const items = { ...scope, cardVersion: 4, canEdit: false, summary, items: [
 const props = { ...scope, version: 4, unavailable: false, onRefresh: vi.fn() };
 const respond = (value: unknown) => new Response(JSON.stringify(value), { status: 200, headers: { 'Content-Type': 'application/json' } });
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
+it('preserves expanded item intent across revision/access refresh but removes old content before reading current state', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(respond(page)).mockResolvedValueOnce(respond(items))
+    .mockResolvedValueOnce(respond({ ...page, cardVersion: 5 }))
+    .mockResolvedValueOnce(respond({ ...items, cardVersion: 5, items: [{ ...items.items[1], text: 'Current preparation' }], summary: { ...summary, completed: 0, total: 1, percent: 0 } }));
+  vi.stubGlobal('fetch', fetch); const view = render(<CardChecklists {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show checklists' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Show items in Preparations' })); await screen.findByText('Incomplete: Pending preparation');
+  view.rerender(<CardChecklists {...props} version={5} unavailable />);
+  expect(screen.queryByText('Incomplete: Pending preparation')).not.toBeInTheDocument(); expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledTimes(2); view.rerender(<CardChecklists {...props} version={5} />);
+  expect(await screen.findByText('Incomplete: Current preparation')).toBeVisible(); expect(screen.getByRole('button', { name: 'Hide items in Preparations' })).toHaveAttribute('aria-expanded', 'true');
+  expect(screen.queryByText('Incomplete: Pending preparation')).not.toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(4);
+});
+it('accepts generic disclosure intent during re-admission without reading protected content', async () => {
+  const fetch = vi.fn().mockResolvedValue(respond(page)); vi.stubGlobal('fetch', fetch);
+  const view = render(<CardChecklists {...props} unavailable />); const trigger = screen.getByRole('button', { name: 'Show checklists' }); trigger.focus(); fireEvent.click(trigger);
+  expect(screen.getByText('Checking current Card access…')).toBeVisible(); expect(fetch).not.toHaveBeenCalled();
+  view.rerender(<CardChecklists {...props} />); expect(await screen.findByRole('heading', { name: 'Preparations' })).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Hide checklists' })).toBe(trigger); expect(trigger).toHaveFocus();
+});
 
 it('loads lazily, shows authoritative progress and offers named read-only item disclosure', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(respond(page)).mockResolvedValueOnce(respond(items)); vi.stubGlobal('fetch', fetch);
