@@ -98,3 +98,14 @@ API-host tests, including optional SDK transport/ForceFlush cases. The named
 options repair is now executed evidence. Its independent notification focus
 failure skipped image/receiver stages; e9b5d15 repairs that case, with all 872
 local web cases passing. Actual deployed Collector ingestion remains pending.
+
+Exact-image receiver evidence is now executed at e9b5d15, run 37109396890,
+container job 111165055788: pinned Collector configuration validation and real
+OTLP ingestion/private-field checks both passed. Retained artifact 11269482094
+contains only schema/revision/status/topology/Collector version and six true
+verification flags: client events/duration, server requests/duration, fixed build
+identity and excluded private fields. The downloaded JSON was inspected and
+matches the exact revision. Security job 111165055801 also passed. This proves
+native metric export into the actual pinned receiver; it does not prove dashboards,
+alerting, persistent history/HA, backup restore or the rest of ARCH-08. The run's
+browser stage remains live, so full required-ci/release success is not claimed.

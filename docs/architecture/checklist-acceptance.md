@@ -134,3 +134,16 @@ Focused execution is pending.
 All 10 focused Checklist create cases pass after awaiting the same recovery
 callback assertions. The retry case still proves two actual commands with
 identical original body/key across newer snapshot and temporary re-admission.
+
+Executed exact-image capacity evidence at e9b5d15, run 37109396890/container job
+111165055788, retained artifact 11269995985: 200 Lists, 5,000 active and 100,000
+archived Cards, 63 Checklist items/page size 50. Archive pages 50/50/1, item pages
+50/13, progress 31->32 after a versioned completion, and unchanged state on reads
+all passed. Measured Board read 61.858 ms, first/last archive 18.844/18.389 ms,
+first item read 33.25 ms in this CI environment. These are retained measurements,
+not production latency guarantees or the browser budgets. The downloaded JSON
+matches the exact revision and passed state; the previous empty jq artifact is
+not used as evidence. The same image's pinned Collector config and ingestion
+checks passed with all six fixed/privacy flags true in artifact 11269482094.
+Actual browser/keyboard/recovery/capacity budgets and all remaining full-ticket
+requirements still govern closure; the run is still in its browser stage.
