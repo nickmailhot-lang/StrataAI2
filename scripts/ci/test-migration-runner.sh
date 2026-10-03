@@ -256,37 +256,45 @@ run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 48
 test "$(query "SELECT has_table_privilege('strataai_api_runtime','attachment_previews','SELECT') AND has_table_privilege('strataai_api_runtime','attachment_preview_publications','SELECT')")" = t
 test "$(query "SELECT has_table_privilege('strataai_api_runtime','attachment_previews','INSERT') OR has_table_privilege('strataai_api_runtime','attachment_preview_publications','UPDATE')")" = f
-cat > "$scratch/migrations/049_serialization_fixture.sql" <<'SQL'
+cp db/migrations/049_attachment_preview_backfill.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 49
+test "$(query "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='attachment_preview_sweeps'::regclass")" = t
+test "$(query "SELECT prosecdef FROM pg_proc WHERE oid='enqueue_attachment_preview_backfill(uuid,integer)'::regprocedure")" = t
+test "$(query "SELECT has_function_privilege('strataai_worker_runtime','enqueue_attachment_preview_backfill(uuid,integer)','EXECUTE')")" = t
+test "$(query "SELECT has_function_privilege('strataai_api_runtime','enqueue_attachment_preview_backfill(uuid,integer)','EXECUTE')")" = f
+cat > "$scratch/migrations/050_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('049_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('050_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='049_serialization_fixture'")" = 1
-cat > "$scratch/migrations/050_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='050_serialization_fixture'")" = 1
+cat > "$scratch/migrations/051_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('050_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('051_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='050_failure_fixture'")" = 0
-rm "$scratch/migrations/050_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='051_failure_fixture'")" = 0
+rm "$scratch/migrations/051_failure_fixture.sql"
 run
-cat > "$scratch/migrations/051_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/052_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='051_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/051_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='052_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/052_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

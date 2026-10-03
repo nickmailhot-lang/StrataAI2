@@ -183,6 +183,17 @@ internal static class AttachmentPreviewActivationContract
         Require(!(await admission.RevalidatePreviewAsync(admitted.Value!,job.ActorId,ct)).Succeeded,"Stale preview snapshot remained authorized.");
         var renamed=await admission.AdmitPreviewAsync(card,source,job.ActorId,ct);
         Require(renamed.Succeeded,"Unchanged immutable source could not re-admit a later File revision.");
+        async Task<Guid> PublishLegacyClean()
+        {
+            var file=await publish("image/png"); objects.Add(file,bytes);
+            var oldScan=await legacy.ClaimAsync(organization,workerId,ct);
+            Require(oldScan?.JobType==AttachmentScanJobs.Type,"Legacy Clean backfill source was not claimed.");
+            await new AttachmentScanDeliveryHandler(new PostgresAttachmentScanDeliveryStore(worker),
+                new AttachmentQuarantineScanner(objects,new Scanner())).ExecuteAsync(oldScan!,ct);
+            Require(await capable.CompleteAsync(organization,oldScan!.Id,oldScan.LeaseId,workerId,ct),"Legacy Clean source was not acknowledged.");
+            return file;
+        }
+        await AttachmentPreviewBackfillContract.RunAsync(admin,worker,objects.ApiConnections!,organization,source,PublishLegacyClean,ct);
         await Scalar<int>("UPDATE public.attachments SET deleted_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
         reads=objects.Reads;
         Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct)).Succeeded && objects.Reads==reads,"Deleted original retained preview delivery.");

@@ -257,3 +257,8 @@ echo 'Real runtime logins reject elevation and enforce service-specific grants.'
 
 test "$(api "SELECT has_table_privilege(current_user,'attachment_previews','SELECT') AND has_table_privilege(current_user,'attachment_preview_publications','SELECT')")" = t
 test "$(worker "SELECT has_table_privilege(current_user,'attachment_previews','SELECT') OR has_table_privilege(current_user,'attachment_preview_publications','SELECT')")" = f
+test "$(worker "SELECT has_function_privilege(current_user,'enqueue_attachment_preview_backfill(uuid,integer)','EXECUTE')")" = t
+test "$(api "SELECT has_function_privilege(current_user,'enqueue_attachment_preview_backfill(uuid,integer)','EXECUTE')")" = f
+for role in api worker; do
+ test "$("$role" "SELECT has_table_privilege(current_user,'attachment_preview_sweeps','SELECT') OR has_table_privilege(current_user,'attachment_preview_sweeps','INSERT') OR has_table_privilege(current_user,'attachment_preview_sweeps','UPDATE') OR has_table_privilege(current_user,'attachment_preview_sweeps','DELETE')")" = f
+done

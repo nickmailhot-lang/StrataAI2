@@ -50,6 +50,7 @@ public sealed class AttachmentRuntimeTests
         Assert.Equal(AttachmentPreviewJobs.Service,preview.ServiceIdentity);
         Assert.Same(provider.GetRequiredService<IAttachmentPreviewIntentStore>(),provider.GetRequiredService<IAttachmentPreviewPublicationStore>());
         Assert.IsType<PostgresAttachmentPreviewIntentStore>(provider.GetRequiredService<IAttachmentPreviewIntentStore>());
+        Assert.IsType<PostgresAttachmentPreviewBackfillStore>(provider.GetRequiredService<IAttachmentPreviewBackfillStore>());
         Assert.Equal(20971520, provider.GetRequiredService<AttachmentUploadPolicy>().MaximumBytes);
         Assert.Equal(4, provider.GetRequiredService<AttachmentUploadPolicy>().AllowedMimeTypes.Count);
         Assert.IsType<AttachmentFileTypeInspector>(provider.GetRequiredService<IAttachmentFileTypeInspector>());
@@ -67,6 +68,7 @@ public sealed class AttachmentRuntimeTests
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentImagePreviewDecoder));
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentImagePreviewGenerator));
         Assert.DoesNotContain(services,s=>s.ServiceType==typeof(IAttachmentPreviewIntentStore) || s.ServiceType==typeof(IAttachmentPreviewPublicationStore) || s.ServiceType==typeof(AttachmentPreviewStorageRecovery));
+        Assert.DoesNotContain(services,s=>s.ServiceType==typeof(IAttachmentPreviewBackfillStore));
     }
 
     [Theory]

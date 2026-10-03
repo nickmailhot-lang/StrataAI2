@@ -73,6 +73,7 @@ public static class AttachmentRuntimeRegistration
             services.AddSingleton<IAttachmentPreviewPublicationStore>(provider=>provider.GetRequiredService<PostgresAttachmentPreviewIntentStore>());
             services.AddSingleton<AttachmentPreviewStorageRecovery>();
             services.AddSingleton<IBackgroundJobHandler,AttachmentPreviewDeliveryHandler>();
+            services.AddSingleton<IAttachmentPreviewBackfillStore,PostgresAttachmentPreviewBackfillStore>();
             services.Replace(ServiceDescriptor.Singleton<PostgresBackgroundJobStore>(provider=>new(provider.GetRequiredService<PostgresConnectionFactory>(),previewJobs:true)));
             services.Replace(ServiceDescriptor.Singleton<IBackgroundJobStore>(provider=>provider.GetRequiredService<PostgresBackgroundJobStore>()));
         }
