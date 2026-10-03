@@ -239,3 +239,13 @@ the updated items instead; the data-modifying audit CTE still always executes in
 the same transaction. The mandatory fixture explicitly verifies audit SELECT is
 absent before running rollback/success/count checks. Runtime grants are unchanged.
 The failed run is retained as evidence; the repair requires a new exact-image run.
+
+The browser Checklist response boundary validates current Organization/Board/Card
+identity, child parent IDs, positive safe revisions, canonical rank order, unique
+IDs/ranks, active lifecycle, UTC microsecond timestamps and completion attribution.
+Progress must match its completed/total counts; bounded item pages must fit those
+full aggregate counts. Seek pages must advance beyond their incoming cursor and
+next cursors must identify the actual final row of a full 50-row page. Malformed,
+foreign or internally inconsistent data is rejected before UI use. Thirty-eight
+focused cases exercise this boundary; typecheck, lint and production build pass.
+This boundary prepares the MUI implementation; it does not complete that UI.
