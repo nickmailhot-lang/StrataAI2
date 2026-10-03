@@ -29,7 +29,7 @@ internal static class AttachmentPreviewRuntimeVerification
             var request = new AttachmentScanRequest(new(Guid.NewGuid(), Guid.NewGuid()), source.Length,
                 Convert.ToHexStringLower(SHA256.HashData(source.ToArray())));
             var generator = new LinuxIsolatedAttachmentImagePreviewGenerator(CurrentExecutable());
-            using var preview = await generator.GenerateAsync(request, "image/png", source, CancellationToken.None);
+            using var preview = await LinuxIsolatedAttachmentImagePreviewGenerator.VerifyPublicFixtureAsync(CurrentExecutable(), CancellationToken.None);
             if (preview.Width != 1 || preview.Height != 1 || preview.MimeType != "image/png"
                 || preview.SizeBytes is < 1 or > 8388608 || !source.CanRead || preview.Bytes.CanWrite)
                 return Failed();
