@@ -99,3 +99,12 @@ export function parseChecklistCreated(value: unknown, scope: ChecklistScope, tit
     child.title !== title || child.version !== 1 || instant(child.createdAt) !== instant(child.updatedAt)) throw invalid();
   return row as ChecklistChange;
 }
+export function parseChecklistRenamed(value: unknown, scope: ChecklistScope, before: Checklist, title: string, cardVersion: number): ChecklistChange {
+  const row = record(value); const child = checklist(row.checklist, scope); const changed = title !== before.title;
+  if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.boardId, scope.boardId) || !sameId(row.cardId, scope.cardId) ||
+    !version(cardVersion) || !version(row.cardVersion) || row.cardVersion !== cardVersion + Number(changed) || row.changed !== changed ||
+    !sameId(child.id, before.id) || child.title !== title || child.version !== before.version + Number(changed) || child.rank !== before.rank ||
+    instant(child.createdAt) !== instant(before.createdAt) || instant(child.updatedAt) < instant(before.updatedAt) ||
+    !changed && instant(child.updatedAt) !== instant(before.updatedAt)) throw invalid();
+  return row as ChecklistChange;
+}

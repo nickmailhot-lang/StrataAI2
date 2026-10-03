@@ -286,3 +286,24 @@ tests; typecheck/lint pass. Desktop/mobile browser scenarios now also lose a rea
 committed creation response and compare the recovered original request/key and
 persisted empty Checklist across both sessions. Execution is pending. Item and
 Checklist edit/reorder/delete recovery controls remain unfinished.
+
+Checklist title management now reviews current server edit admission and supports
+bounded next/first selection pages before choosing a Checklist. The dirty rename
+draft retains its chosen child, actor and Card/Checklist revisions independently
+of Card refreshes. Both changed and normalized no-op acknowledgements validate
+scope, child identity, title, rank, original creation time and exact revision
+deltas. Unconfirmed changes retain the original request/key; definite denial or
+conflict requires explicit discard and current review. Recovery focus survives
+re-admission, and create/rename recovery flags are independent so one control
+cannot release another's mutation lock.
+
+All 68 focused Checklist browser tests and all 26 Board tests pass, with typecheck,
+lint and production build. Desktop/390px scenarios add real committed rename
+response loss, original-request recovery, two-session live title convergence and
+mutation-interlock/WCAG checks; scenario discovery passes, execution is pending.
+Checklist deletion/ordering and item mutation controls remain unfinished.
+
+The complete GitHub issue snapshot was re-analyzed after this increment: 92
+canonical tickets, 7 dependency groups and 3 cyclic groups. All requirement body
+digests match the checked dependency map; 91 canonical issues remain open. These
+counts describe the full unchanged objective and do not assert acceptance.

@@ -24,6 +24,7 @@ import {
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardChecklists } from './CardChecklists';
 import { ChecklistCreateControl } from './ChecklistCreateControl';
+import { ChecklistManageControl } from './ChecklistManageControl';
 import { CardDateDisplay } from './CardDateDisplay';
 import { BoardDateProvider } from './BoardDateBadges';
 import { BoardCardLink } from './BoardCardLink';
@@ -102,7 +103,9 @@ function BoardContent() {
   const [memberRecovery, setMemberRecovery] = useState(false);
   const [dateRecovery, setDateRecovery] = useState(false);
   const [reminderRecovery, setReminderRecovery] = useState(false);
-  const [checklistRecovery, setChecklistRecovery] = useState(false);
+  const [checklistCreateRecovery, setChecklistCreateRecovery] = useState(false);
+  const [checklistManageRecovery, setChecklistManageRecovery] = useState(false);
+  const checklistRecovery = checklistCreateRecovery || checklistManageRecovery;
   const otherBusy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || reminderRecovery || checklistRecovery;
   const busy = otherBusy || dateRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
@@ -699,8 +702,13 @@ function BoardContent() {
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <ChecklistCreateControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} editable={Boolean(editable)} unavailable={snapshotReading || !!loadError}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery}
-              onBusyChange={setBusy} onRecoveryChange={setChecklistRecovery}
+              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistManageRecovery}
+              onBusyChange={setBusy} onRecoveryChange={setChecklistCreateRecovery}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            {cardId && <ChecklistManageControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              cardId={card.id} version={card.version} editable={Boolean(editable)} unavailable={snapshotReading || !!loadError}
+              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistCreateRecovery}
+              onBusyChange={setBusy} onRecoveryChange={setChecklistManageRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardLabels key={`labels-${card.id}`} organizationId={snapshot.board.organizationId}
               boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
