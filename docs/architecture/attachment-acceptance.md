@@ -192,3 +192,38 @@ Final local regression for the URL creation increment: all 901 tests across
 37112277658 at f87f70b also passed all 901 tests/69 files, with PostgreSQL job
 111172347727 passing. The latest .NET/image/browser and exact-image URL fixture
 remain separately pending; source web success does not close any full ticket.
+
+ARCH-07's adopted override explicitly permits a local filesystem adapter while
+requiring managed object storage in production. `IAttachmentObjectStorage` now
+separates private byte operations from Domain/Application commands. Its typed
+reference derives keys only from server-owned Organization and attachment IDs;
+no caller filename/path/key can select an object. It grants no authorization or
+clean scan status, has no public/signed URL operation, and returns actual measured
+byte count and SHA-256 metadata. The interface is not registered as a production
+fallback or exposed by upload/download HTTP endpoints.
+
+`LocalAttachmentObjectStorage` is an explicit local/test adapter requiring an
+absolute operator-owned private root. It streams with a 64 KiB buffer, reads at
+most one byte beyond the server limit, rejects empty/oversize streams, leaves the
+source owned by its caller, writes a unique private temporary file, flushes to disk
+and publishes a complete same-directory rename without overwriting existing keys.
+Failed/cancelled writes attempt temporary cleanup; outage/crash orphan sweeping
+remains future lifecycle work. Reads and deletes use typed tenant identity and
+reject symbolic/reparse links in existing ancestors/objects. Unix roots must have
+no group/other permissions and new objects have owner read/write only. Windows
+requires the operator to provide a root with private inherited ACLs. The root and
+its directories must not be mutable by untrusted processes; this is not a defense
+against a compromised host or arbitrary directory replacement races. Fixed failure
+codes/messages exclude provider paths and source exception details. No provider SDK,
+broker, BLOB or new production topology was added.
+
+Eleven new cases compile for actual byte/digest preservation, adapter restart,
+same attachment ID in a foreign tenant, owner-only Unix permissions, concurrent
+identity refusal/complete bytes, idempotent cleanup, empty/oversize/invalid limits,
+pre-cancelled sources, failure after partial bytes, fixed safe errors and root/
+ancestor/object links without deleting their targets. Warning-as-error build and
+diff checks pass. Windows Application Control still prevents local execution;
+Linux execution is pending. Managed-provider selection/credentials/readiness,
+server upload policy/byte inspection, scanner Worker jobs/CAS/outbox, controlled
+delivery, compensating/orphan cleanup and complete attachment acceptance remain
+incomplete. This local interface/adapter foundation does not close PRD-14/ARCH-07.
