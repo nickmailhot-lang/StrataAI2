@@ -1,4 +1,4 @@
-import { attachmentUrl, parseAttachmentPage, parseAttachmentUploadOptions, parseUrlAttachmentCreated, type AttachmentMetadata, type UrlAttachment } from './attachments';
+import { attachmentUrl, parseAttachmentPage, parseAttachmentUploadOptions, parseFileAttachmentCreated, parseUrlAttachmentCreated, type AttachmentMetadata, type UrlAttachment } from './attachments';
 import { dateInstantTicks } from './cardDates';
 
 const scope = { organizationId: '11111111-1111-4111-8111-111111111111', boardId: '22222222-2222-4222-8222-222222222222', cardId: '33333333-3333-4333-8333-333333333333' };
@@ -61,6 +61,14 @@ describe('private file metadata admission', () => {
       expect(() => parseAttachmentUploadOptions({ ...options, ...patch }, scope, 2)).toThrow();
   });
   const file = { ...item(2), kind: 0 as const, mimeType: 'application/pdf' as const, sizeBytes: 100003, url: null, scanStatus: 1 as const, scannedAt: null };
+  it('requires an original Pending file acknowledgment with exact actor/name/size/revision and admitted actual MIME', () => {
+    const ack = { ...scope, cardVersion: 2, attachment: file };
+    expect(parseFileAttachmentCreated(ack, scope, actor, file.displayName, file.sizeBytes, 1, ['application/pdf'])).toEqual(ack);
+    for (const patch of [{ uploaderId: scope.boardId }, { displayName: 'Changed' }, { sizeBytes: 1 }, { mimeType: 'image/png' },
+      { kind: 1 }, { version: 2 }, { scanStatus: 2, scannedAt: now, version: 2 }, { updatedAt: '2026-10-03T08:00:01Z' }])
+      expect(() => parseFileAttachmentCreated({ ...ack, attachment: { ...file, ...patch } }, scope, actor, file.displayName, file.sizeBytes, 1, ['application/pdf'])).toThrow();
+    expect(() => parseFileAttachmentCreated({ ...ack, cardVersion: 3 }, scope, actor, file.displayName, file.sizeBytes, 1, ['application/pdf'])).toThrow();
+  });
   it('admits mixed links/files and all canonical scan states without provider delivery fields', () => {
     expect(parseAttachmentPage(page([file, item()]), scope).items).toEqual([file, item()]);
     for (const scanStatus of [2, 3, 4] as const) {

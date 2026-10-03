@@ -13,6 +13,7 @@ export type FileAttachment = Omit<UrlAttachment, 'kind' | 'mimeType' | 'sizeByte
 export type AttachmentMetadata = UrlAttachment | FileAttachment;
 export type AttachmentPage = AttachmentScope & { cardVersion: number; canEdit: boolean; items: AttachmentMetadata[]; nextCursor: string | null };
 export type AttachmentChange = AttachmentScope & { cardVersion: number; attachment: UrlAttachment };
+export type FileAttachmentChange = AttachmentScope & { cardVersion: number; attachment: FileAttachment };
 export type AttachmentUploadOptions = AttachmentScope & { cardVersion: number; maximumBytes: number; allowedMimeTypes: string[] };
 const invalid = () => new Error('Invalid attachment response');
 const same = (value: unknown, expected: string) => notificationUuid(value) && notificationUuid(expected) && value.toLowerCase() === expected.toLowerCase();
@@ -104,4 +105,14 @@ export function parseUrlAttachmentCreated(value: unknown, scope: AttachmentScope
   if (attachment.kind !== 1 || !revision(cardVersion) || row.cardVersion !== cardVersion + 1 || !same(attachment.uploaderId, actor) || attachment.displayName !== title
     || attachmentUrl(attachment.url) !== attachmentUrl(url) || attachment.version !== 1 || instant(attachment.createdAt) !== instant(attachment.updatedAt)) throw invalid();
   return row as AttachmentChange;
+}
+export function parseFileAttachmentCreated(value: unknown, scope: AttachmentScope, actor: string, name: string, sizeBytes: number,
+  cardVersion: number, allowedMimeTypes: readonly string[]): FileAttachmentChange {
+  const row = scopeRecord(value, scope); exact(row, ['organizationId', 'boardId', 'cardId', 'cardVersion', 'attachment']);
+  const attachment = metadata(row.attachment, scope);
+  if (attachment.kind !== 0 || attachment.scanStatus !== 1 || attachment.version !== 1 || !revision(cardVersion)
+    || row.cardVersion !== cardVersion + 1 || !same(attachment.uploaderId, actor) || attachment.displayName !== name
+    || attachment.sizeBytes !== sizeBytes || !allowedMimeTypes.includes(attachment.mimeType)
+    || instant(attachment.createdAt) !== instant(attachment.updatedAt)) throw invalid();
+  return row as FileAttachmentChange;
 }
