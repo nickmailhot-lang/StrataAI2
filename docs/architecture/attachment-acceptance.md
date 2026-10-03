@@ -21,8 +21,9 @@ state. Deletion preserves metadata and disables delivery/image/cover eligibility
 Only clean active PNG/JPEG/WebP file metadata is image/cover eligible, and cover
 eligibility requires the same Organization and Card. This flag is a Domain
 invariant, never an authorization decision or permission to issue a URL.
-An actual cover also requires a current published verified derivative; neither
-that publication nor the Card cover mutation is implemented yet. URL
+An actual cover also requires a current published verified derivative. The
+Worker now publishes verified derivatives and the API/MUI provide authorized
+preview delivery; Card cover selection is still outstanding. URL
 attachments are untrusted absolute HTTP(S) metadata with no embedded credentials,
 no binary storage/MIME/size and no scan/download/cover status. No URL is fetched.
 Bounds are 255 characters for display name, 2048 for the canonical encoded URL,
