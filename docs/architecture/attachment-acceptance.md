@@ -427,3 +427,32 @@ must still persist/admit original intent before invoking the reader, retain priv
 object compensation/reconciliation and atomically publish metadata/scan job/current
 Card CAS/audit/events afterward. File endpoint/provider registration, scanner Worker
 and controlled delivery remain unimplemented; these additions do not close tickets.
+
+Executed replay/file projection evidence at 1debf98: .NET-quality job
+111184233772 in run 37116498421 passed all 364 Domain/Application/Infrastructure
+and 265 API cases, zero skips, including all six upload-reader cases and the
+private record serialization checks. Web/PostgreSQL/image build passed; complete
+security/container/browser and release acceptance remain separately pending.
+
+The Domain original upload-intent state model now pins tenant/Card/uploader,
+nonempty retry key, original Card revision, normalized display name and bounded
+expected size/canonical SHA-256 claims. Those claims bind retries but do not
+establish verified content. Intent expiry is bounded to 24 hours. Writer tokens
+and renewable leases are bounded to ten minutes and the intent expiry; stale or
+foreign tokens cannot finish or replace a current writer. Unknown writes/expired
+writers move to Reconcile, never directly to a new upload. Only verified provider
+absence permits a new writer using original identity, or measured original bytes
+can become Stored. Size/digest/MIME disagreements do not partially advance state.
+
+Publication requires Stored/unexpired state; the eventual Application transaction
+must still re-admit current permission/lifecycle, CAS original Card revision and
+atomically persist Pending attachment/audit/events/scan job. Publication is
+idempotent once achieved; active writers/published records cannot be abandoned
+through upload cleanup. Abandonment retains claims/measurements for private orphan
+reconciliation and does not authorize object deletion. Thirteen new Domain cases
+compile for original intent, renewal, unknown outcomes, verified absence/recovery,
+stale callbacks, mismatch atomicity, expiry, retained cleanup history, lease bounds,
+backward clocks and invalid scope/claims. Build/diff checks pass; Linux execution
+is pending. Durable intent schema/store, upload orchestration and reconciliation
+jobs are still required; this Domain model alone is not a persisted workflow or
+completed attachment acceptance.

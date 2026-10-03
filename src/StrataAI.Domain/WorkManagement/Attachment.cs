@@ -89,7 +89,7 @@ public sealed class Attachment : DomainEntity, IOrganizationScoped
     {
         if (Kind != AttachmentKind.File || DeletedAt is not null) throw new InvalidOperationException("Attachment scanning is unavailable.");
     }
-    private static string RequireDisplayName(string value)
+    internal static string RequireDisplayName(string value)
     {
         var normalized = value?.Trim();
         if (string.IsNullOrEmpty(normalized) || normalized.Length > 255
