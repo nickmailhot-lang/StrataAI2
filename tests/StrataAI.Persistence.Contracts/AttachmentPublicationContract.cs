@@ -34,10 +34,10 @@ internal static class AttachmentPublicationContract
         var tenant = Guid.NewGuid(); var user = Guid.NewGuid(); var secondOwner = Guid.NewGuid(); var outsider = Guid.NewGuid();
         var board = Guid.NewGuid(); var list = Guid.NewGuid(); var card = Guid.NewGuid();
         await using (var seed = new NpgsqlCommand("""
-            INSERT INTO organizations(id,name,created_at,updated_at) VALUES(@tenant,'File publication contract',@at,@at);
             INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
             SELECT id,'publication-' || id::text || '@example.test',upper('publication-' || id::text || '@example.test'),
               'Publication contract','ACTIVE',true,'unused-contract-hash',@at,@at FROM unnest(@users) id;
+            INSERT INTO organizations(id,name,owner_user_id,created_at,updated_at) VALUES(@tenant,'File publication contract',@actor,@at,@at);
             INSERT INTO organization_members(id,tenant_id,user_id,role,status)
               VALUES(@actor,@tenant,@actor,'OWNER','ACTIVE'),(@second,@tenant,@second,'OWNER','ACTIVE');
             INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES(@board,@tenant,'Private',@at,@at);
