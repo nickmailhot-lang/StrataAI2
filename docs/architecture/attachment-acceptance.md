@@ -206,7 +206,9 @@ fallback or exposed by upload/download HTTP endpoints.
 absolute operator-owned private root. It streams with a 64 KiB buffer, reads at
 most one byte beyond the server limit, rejects empty/oversize streams, leaves the
 source owned by its caller, writes a unique private temporary file, flushes to disk
-and publishes a complete same-directory rename without overwriting existing keys.
+and publishes a complete final name without overwriting existing keys (Windows
+no-replace move; Unix atomic same-directory hard link, followed by temporary-name
+cleanup).
 Failed/cancelled writes attempt temporary cleanup; outage/crash orphan sweeping
 remains future lifecycle work. Reads and deletes use typed tenant identity and
 reject symbolic/reparse links in existing ancestors/objects. Unix roots must have
@@ -280,3 +282,25 @@ move to 043/044/045; readiness-removal tests include 042. Four extra Domain case
 compile. Build, script syntax and diff checks pass; actual migration/SQL execution
 and new Domain/scanner execution remain pending Linux CI. Full ticket acceptance
 and production provider/upload/scanner Worker integration remain incomplete.
+
+Executed scanner evidence at 3ad35fb: Linux .NET-quality job 111176112195 in run
+37113628061 passed 311 Domain/Application/Infrastructure and 265 API cases,
+including all 17 new scanner cases, with zero skips. At 6f62778 PostgreSQL job
+111176909326 in run 37113914092 passed migration 042, legacy forward/repeat
+upgrade/refusal/deletion and restricted attachment integrity fixtures. Its .NET
+job 111176909210 passed 314 of 315 cases but caught a real prior local-storage
+publication race: both concurrent writers reported success. This source failure
+keeps image/release gates closed; it is not treated as accepted flaky testing.
+
+The repair uses POSIX `link` to publish the fully flushed private inode on Linux/
+macOS; existing destination names atomically refuse publication. Windows retains
+its no-replace move. The .NET 10 Unix `File.Move(overwrite:false)` implementation
+checks destination existence before attempting `rename`, leaving a replacement
+race ([runtime source](https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Private.CoreLib/src/System/IO/FileSystem.Unix.cs)).
+There is no copy/rename fallback on unsupported Unix filesystems/native binding;
+they fail closed with a fixed storage error. Cleanup removes only the writer's
+temporary name, preserving the winning object. The existing concurrency regression
+now synchronizes eight distinct adapters per object across 16 rounds, requires
+exactly one winner and matches its digest to the complete final bytes, while
+retaining cleanup/idempotent deletion checks. Build/diff checks pass; executed
+Linux proof of the repair and latest required-ci remain pending.

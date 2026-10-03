@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Runtime.InteropServices;
 using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
@@ -58,9 +59,7 @@ public sealed class LocalAttachmentObjectStorage : IAttachmentObjectStorage
                 digest = Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
             }
             ct.ThrowIfCancellationRequested(); RejectLinks(parent); RejectLinks(final);
-            // Same-directory rename publishes a complete object without
-            // overwriting a prior object or exposing a partial read.
-            File.Move(temporary, final, overwrite: false); temporary = null;
+            PublishCompleteObject(temporary, final, ct);
             return new(reference, size, digest);
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
@@ -76,6 +75,31 @@ public sealed class LocalAttachmentObjectStorage : IAttachmentObjectStorage
             }
         }
     }
+    private static void PublishCompleteObject(string temporary, string final, CancellationToken ct)
+    {
+        if (OperatingSystem.IsWindows()) { File.Move(temporary, final, overwrite: false); return; }
+        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS()) throw new AttachmentStorageException("object_storage_unavailable");
+        // .NET's Unix no-overwrite Move checks existence before rename, which
+        // can replace a concurrent winner. POSIX link creates the final name
+        // atomically or refuses EEXIST. No copy/rename fallback may expose bytes.
+        try
+        {
+            while (true)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (LinkPrivateFile(temporary, final) == 0) return;
+                var error = Marshal.GetLastPInvokeError();
+                if (error == 4) continue; // EINTR: no successful publication.
+                throw new AttachmentStorageException(error == 17 ? "object_exists" : "object_storage_unavailable");
+            }
+        }
+        catch (Exception error) when (error is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
+        { throw new AttachmentStorageException("object_storage_unavailable"); }
+        // finally in WritePrivateAsync removes only this writer's temporary
+        // name. On Unix both names refer to the already flushed complete inode.
+    }
+    [DllImport("libc", EntryPoint = "link", SetLastError = true)]
+    private static extern int LinkPrivateFile([MarshalAs(UnmanagedType.LPUTF8Str)] string source, [MarshalAs(UnmanagedType.LPUTF8Str)] string destination);
     public Task<Stream?> OpenPrivateReadAsync(AttachmentObjectReference reference, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested(); var path = ObjectPath(reference);

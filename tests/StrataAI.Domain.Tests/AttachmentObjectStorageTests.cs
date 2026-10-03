@@ -45,22 +45,41 @@ public sealed class AttachmentObjectStorageTests
     public async Task Concurrent_same_identity_never_overwrites_or_publishes_partial_objects_and_cleanup_is_idempotent()
     {
         var ct = TestContext.Current.CancellationToken; using var workspace = new Workspace(); var store = new LocalAttachmentObjectStorage(workspace.Root);
-        var reference = new AttachmentObjectReference(Guid.NewGuid(), Guid.NewGuid());
-        async Task<bool> Write(byte value)
+        for (var round = 0; round < 16; round++)
         {
-            using var input = new MemoryStream(Enumerable.Repeat(value, 100000).ToArray());
-            try { await store.WritePrivateAsync(reference, input, 100000, ct); return true; }
-            catch (AttachmentStorageException failure) { Assert.Equal("object_exists", failure.Code); return false; }
+            var reference = new AttachmentObjectReference(Guid.NewGuid(), Guid.NewGuid());
+            var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously); var arrivals = 0;
+            async Task<StoredAttachmentObject?> Write(byte value)
+            {
+                using var input = new TogetherStream(Enumerable.Repeat(value, 100000).ToArray(), gate.Task,
+                    () => { if (Interlocked.Increment(ref arrivals) == 8) gate.SetResult(); });
+                // Distinct adapters sharing a root must coordinate through the
+                // filesystem; an instance-local lock cannot satisfy this test.
+                var writer = new LocalAttachmentObjectStorage(workspace.Root);
+                try { return await writer.WritePrivateAsync(reference, input, 100000, ct); }
+                catch (AttachmentStorageException failure) { Assert.Equal("object_exists", failure.Code); Assert.True(input.CanRead); return null; }
+            }
+            var outcomes = await Task.WhenAll(Enumerable.Range(1, 8).Select(value => Write((byte)value)));
+            var winner = Assert.Single(outcomes, value => value is not null); Assert.NotNull(winner);
+            await using (var read = await store.OpenPrivateReadAsync(reference, ct))
+            {
+                Assert.NotNull(read); using var bytes = new MemoryStream(); await read.CopyToAsync(bytes, ct);
+                Assert.Equal(100000, bytes.Length); Assert.Single(bytes.ToArray().Distinct());
+                Assert.Equal(winner.Sha256, Convert.ToHexString(SHA256.HashData(bytes.ToArray())).ToLowerInvariant());
+            }
+            Assert.Empty(Directory.GetFiles(workspace.Root, "*.tmp", SearchOption.AllDirectories));
+            Assert.True(await store.DeletePrivateAsync(reference, ct)); Assert.False(await store.DeletePrivateAsync(reference, ct));
+            Assert.Null(await store.OpenPrivateReadAsync(reference, ct));
         }
-        var outcomes = await Task.WhenAll(Write(1), Write(2)); Assert.Single(outcomes, value => value);
-        await using (var read = await store.OpenPrivateReadAsync(reference, ct))
+    }
+    private sealed class TogetherStream(byte[] bytes, Task gate, Action arrive) : MemoryStream(bytes)
+    {
+        private bool _arrived;
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct = default)
         {
-            Assert.NotNull(read); using var bytes = new MemoryStream(); await read.CopyToAsync(bytes, ct);
-            Assert.Equal(100000, bytes.Length); Assert.Single(bytes.ToArray().Distinct());
+            if (!_arrived) { _arrived = true; arrive(); await gate.WaitAsync(ct); }
+            return await base.ReadAsync(buffer, ct);
         }
-        Assert.Empty(Directory.GetFiles(workspace.Root, "*.tmp", SearchOption.AllDirectories));
-        Assert.True(await store.DeletePrivateAsync(reference, ct)); Assert.False(await store.DeletePrivateAsync(reference, ct));
-        Assert.Null(await store.OpenPrivateReadAsync(reference, ct));
     }
     [Theory]
     [InlineData(0, 10, "object_empty")]
