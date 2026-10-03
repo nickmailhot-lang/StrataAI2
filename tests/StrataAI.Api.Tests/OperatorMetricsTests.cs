@@ -75,6 +75,9 @@ public sealed class OperatorMetricsTests
     {
         public bool Fail { get; set; }
         public ConcurrentQueue<(string Endpoint, string? ContentType, string WireText)> Batches { get; } = new();
+        // OTLP's .NET exporter uses HttpClient.Send on this target framework.
+        protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            SendAsync(request, cancellationToken).GetAwaiter().GetResult();
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (Fail) throw new HttpRequestException("Disposable collector outage");

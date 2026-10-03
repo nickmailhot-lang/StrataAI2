@@ -42,3 +42,10 @@ This export foundation does not close ARCH-08 or PRD-13.
 
 References: [official exporter contract](https://opentelemetry.io/docs/languages/dotnet/exporters/)
 and [pinned 1.19.1 OTLP options](https://github.com/open-telemetry/opentelemetry-dotnet/blob/core-1.19.1/src/OpenTelemetry.Exporter.OpenTelemetryProtocol/README.md).
+
+Run 37107966645 at 1827732 executed 256 API-host tests successfully but failed
+the new export case at ForceFlush: its fake transport implemented SendAsync only,
+whereas the pinned exporter uses synchronous Send on Linux/.NET. The fixture now
+implements both paths without changing the successful-flush, wire-content or
+privacy assertions. The repaired suite compiles with zero warnings/errors; new
+Linux execution is pending. No successful exporter execution is claimed yet.
