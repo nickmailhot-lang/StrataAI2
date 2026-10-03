@@ -381,6 +381,8 @@ jobs:
 
       - name: Verify explicit Worker job scope and handler configuration
         run: scripts/ci/test-worker-job-configuration.sh "strataai-worker:${GITHUB_SHA}"
+      - name: Verify enabled attachment configuration refusal in exact release images
+        run: bash scripts/ci/test-attachment-runtime-configuration.sh "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}"
 
       - name: Verify production account defaults then test PostgreSQL profile concurrency
         shell: bash
