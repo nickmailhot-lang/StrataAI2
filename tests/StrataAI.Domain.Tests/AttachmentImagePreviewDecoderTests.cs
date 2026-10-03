@@ -37,8 +37,10 @@ public sealed class AttachmentImagePreviewDecoderTests
         Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(bytes)), preview.Sha256);
         using var parsed = SKBitmap.Decode(bytes); Assert.NotNull(parsed); Assert.Equal(preview.Width, parsed.Width); Assert.Equal(preview.Height, parsed.Height);
         using var data = SKData.CreateCopy(bytes); using var codec = SKCodec.Create(data); Assert.Equal(SKEncodedImageFormat.Png, codec.EncodedFormat);
-        Assert.DoesNotContain(preview.Sha256, JsonSerializer.Serialize(preview), StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Bytes", JsonSerializer.Serialize(preview), StringComparison.Ordinal);
+        using var serialized = JsonDocument.Parse(JsonSerializer.Serialize(preview));
+        Assert.Equal(new[] { "Height", "MimeType", "SizeBytes", "Width" },
+            serialized.RootElement.EnumerateObject().Select(property => property.Name).OrderBy(name => name, StringComparer.Ordinal));
+        Assert.Equal(preview.SizeBytes, serialized.RootElement.GetProperty("SizeBytes").GetInt64());
     }
 
     [Theory]
