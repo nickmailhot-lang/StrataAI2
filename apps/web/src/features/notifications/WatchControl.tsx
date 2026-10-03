@@ -66,9 +66,13 @@ function WatchDialog(props: Props) {
   }, [admitted, organizationId, boardId, entityType, entityId, path, retire]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; ++epoch.current; pending.current?.abort(); intent.current = undefined; }; }, []);
   useEffect(() => {
-    if (busy || !open || !returnFocus.current) return;
+    if (busy || pending.current || !open || !returnFocus.current) return;
+    // Async result state may commit separately from busy=false. The original
+    // intent is authoritative: defer until its recovery button is attached,
+    // rather than consuming the focus request on the old Check button.
+    const target = intent.current ? retryButton.current : checkButton.current;
+    if (!target) return;
     returnFocus.current = false;
-    const target = recovery ? retryButton.current : checkButton.current;
     (target && !target.disabled ? target : doneButton.current)?.focus({ preventScroll: true });
   }, [busy, current, open, recovery]);
   useEffect(() => {

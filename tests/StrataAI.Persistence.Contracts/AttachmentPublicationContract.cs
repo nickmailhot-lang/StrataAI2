@@ -68,17 +68,18 @@ internal static class AttachmentPublicationContract
         var uploads = provider.GetRequiredService<IAttachmentUploadIntentStore>(); var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>();
         var publication = provider.GetRequiredService<AttachmentFilePublicationService>();
         var digest = Convert.ToHexStringLower(SHA256.HashData(new byte[128]));
-        async Task<AttachmentUploadIntent> Stored(long originalVersion = 1)
+        async Task<AttachmentUploadIntent> Stored(long originalVersion = 1, Guid? targetCard = null)
         {
-            var value = AttachmentUploadIntent.Prepare(Guid.NewGuid(), tenant, card, user, Guid.NewGuid(), originalVersion,
+            var parent = targetCard ?? card;
+            var value = AttachmentUploadIntent.Prepare(Guid.NewGuid(), tenant, parent, user, Guid.NewGuid(), originalVersion,
                 "Contract file.png", 128, digest, at.AddHours(1), at);
             var nonce = Guid.NewGuid();
             var result = await unit.ExecuteReadAsync(tenant, null, "contract_scope", () => Task.FromResult(true), async () =>
             {
                 Require(await uploads.PrepareUploadAsync(value, ct) is not null, "Publication fixture prepare failed.");
-                Require(await uploads.TryChangeUploadAsync(tenant, card, user, value.Id, 1,
+                Require(await uploads.TryChangeUploadAsync(tenant, parent, user, value.Id, 1,
                     new(AttachmentUploadAction.StartWrite, at, nonce, at.AddMinutes(5)), ct) is not null, "Publication fixture claim failed.");
-                var stored = await uploads.TryChangeUploadAsync(tenant, card, user, value.Id, 2,
+                var stored = await uploads.TryChangeUploadAsync(tenant, parent, user, value.Id, 2,
                     new(AttachmentUploadAction.RecordStored, at.AddSeconds(1), nonce,
                         Measured: new(new(tenant, value.Id), 128, digest), VerifiedMimeType: "image/png"), ct);
                 Require(stored is { State: AttachmentUploadState.Stored, Version: 3 }, "Publication fixture measurement failed.");
@@ -95,7 +96,7 @@ internal static class AttachmentPublicationContract
                   (SELECT count(*) FROM audit_events WHERE tenant_id=@tenant),
                   (SELECT count(*) FROM work_events WHERE tenant_id=@tenant),
                   (SELECT count(*) FROM work_command_replays WHERE tenant_id=@tenant),
-                  (SELECT stream_sequence FROM boards WHERE id=@board)
+                  COALESCE((SELECT last_sequence FROM work_event_streams WHERE tenant_id=@tenant AND board_id=@board),0::bigint)
                 FROM cards c WHERE c.id=@card;
                 """, admin);
             query.Parameters.AddWithValue("tenant", tenant); query.Parameters.AddWithValue("card", card); query.Parameters.AddWithValue("board", board);
@@ -119,6 +120,29 @@ internal static class AttachmentPublicationContract
         var stale = await Stored(2);
         Require((await publication.PublishAsync(card, user, stale.Id, stale.RetryKey, "publication-stale", ct)).ErrorCode == "version_conflict", "Publication rebased original Card revision.");
         await Effects(1, 0); await StillStored(upload); await StillStored(stale);
+
+        var edgeSequence = 6;
+        async Task<Guid> EdgeCard()
+        {
+            var id = Guid.NewGuid();
+            await using var insert = new NpgsqlCommand("""
+                INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+                VALUES(@id,@tenant,@board,@list,'Publication edge',@rank,@at,@at);
+                """, admin);
+            insert.Parameters.AddWithValue("id", id); insert.Parameters.AddWithValue("tenant", tenant); insert.Parameters.AddWithValue("board", board);
+            insert.Parameters.AddWithValue("list", list); insert.Parameters.AddWithValue("rank", (edgeSequence++).ToString(System.Globalization.CultureInfo.InvariantCulture) + new string('0', 29));
+            insert.Parameters.AddWithValue("at", at); await insert.ExecuteNonQueryAsync(ct); return id;
+        }
+        foreach (var archive in new[] { false, true })
+        {
+            var edge = await EdgeCard(); var retained = await Stored(targetCard: edge);
+            await using var advance = new NpgsqlCommand("UPDATE cards SET version=version+1,updated_at=@at,lifecycle_state=@state WHERE id=@id;", admin);
+            advance.Parameters.AddWithValue("id", edge); advance.Parameters.AddWithValue("at", at.AddSeconds(2));
+            advance.Parameters.AddWithValue("state", archive ? "ARCHIVED" : "ACTIVE"); await advance.ExecuteNonQueryAsync(ct);
+            Require((await publication.PublishAsync(edge, user, retained.Id, retained.RetryKey, "publication-parent-changed", ct)).ErrorCode
+                == (archive ? "card_not_found" : "version_conflict"), "Post-storage Card change bypassed publication admission.");
+            await StillStored(retained); await Effects(1, 0);
+        }
 
         // Fail after Card/metadata/intent/scan-job writes. The actual command and
         // restricted adapters must roll all effects and the retry claim back.
