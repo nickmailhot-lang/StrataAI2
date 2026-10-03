@@ -25,16 +25,22 @@ export function CardAssignees(props: Props) {
   return <AssigneeDisclosure key={`${props.organizationId}/${props.boardId}/${props.cardId}`} {...props} />;
 }
 function AssigneeDisclosure(props: Props) {
-  const [open, setOpen] = useState(false);
-  return <AssigneeContent key={`${props.version}/${props.unavailable}`} {...props} open={open} onToggle={() => setOpen(value => !value)} />;
+  const [open, setOpen] = useState(false); const region = useId();
+  return <Box sx={{ mt: 2 }}>
+    <Button aria-expanded={open} aria-controls={region} onClick={() => setOpen(value => !value)}>{open ? 'Hide assignees' : 'Show assignees'}</Button>
+    {open && <Stack id={region} component="section" aria-label="Card assignees" spacing={1}>
+      {props.unavailable ? <Typography role="status">Checking current assignee access…</Typography>
+        : <AssigneeContent key={props.version} {...props} />}
+    </Stack>}
+  </Box>;
 }
-function AssigneeContent(props: Props & { open: boolean; onToggle: () => void }) {
-  const region = useId(); const { open } = props; const [cursor, setCursor] = useState<string>();
+function AssigneeContent(props: Props) {
+  const [cursor, setCursor] = useState<string>();
   const [attempt, setAttempt] = useState(0); const [result, setResult] = useState<Page>();
   const [error, setError] = useState<string>(); const [loading, setLoading] = useState(false);
   const { organizationId, boardId, cardId, version, unavailable } = props;
   useEffect(() => {
-    if (!open || unavailable) return;
+    if (unavailable) return;
     let active = true; const controller = new AbortController(); setResult(undefined); setError(undefined); setLoading(true);
     void boundedWorkRead(signal => workRequest<unknown>(`/cards/${encodeURIComponent(cardId)}/members${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`, { signal }), controller.signal)
       .then(value => { if (active) setResult(parse(value, { organizationId, boardId, cardId, version, unavailable, onRefresh: () => {} }, cursor)); })
@@ -45,10 +51,8 @@ function AssigneeContent(props: Props & { open: boolean; onToggle: () => void })
           : 'Unable to load current assignees. Refresh the Board or try again.');
       }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); };
-  }, [open, unavailable, organizationId, boardId, cardId, version, cursor, attempt]);
-  return <Box sx={{ mt: 2 }}>
-    <Button aria-expanded={open} aria-controls={region} disabled={unavailable} onClick={() => { setCursor(undefined); setResult(undefined); props.onToggle(); }}>{open ? 'Hide assignees' : 'Show assignees'}</Button>
-    {open && <Stack id={region} component="section" aria-label="Card assignees" spacing={1}>
+  }, [unavailable, organizationId, boardId, cardId, version, cursor, attempt]);
+  return <>
       {loading && <Typography role="status">Loading assignees…</Typography>}
       {error && <Alert severity="warning">{error}</Alert>}
       {result && <>
@@ -65,6 +69,5 @@ function AssigneeContent(props: Props & { open: boolean; onToggle: () => void })
       {error && <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
         <Button onClick={() => setAttempt(n => n + 1)}>Retry assignees</Button><Button onClick={props.onRefresh}>Refresh Board</Button>
       </Stack>}
-    </Stack>}
-  </Box>;
+  </>;
 }

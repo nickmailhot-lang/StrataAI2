@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import { waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) {
   test(`PRD-10: Card labels have keyboard-readable names and reflect persisted deletion at ${width}px`, async ({ page, context }) => {
@@ -51,6 +52,7 @@ for (const width of [1280, 390]) {
       labels.push(id);
     }
     const path = `/app/${org}/boards/${board}/cards/${card}`;
+    await waitForBoardDelivery(context.request, board);
     await page.goto(path);
     const assignmentAttempts: { url: string; key: string | undefined }[] = [];
     await page.route(`**/cards/${card}/labels/${labels[0]}?*`, async route => {
@@ -69,6 +71,7 @@ for (const width of [1280, 390]) {
     expect(assignmentAttempts).toHaveLength(2); expect(assignmentAttempts[0]).toEqual(assignmentAttempts[1]);
     await edit.press('Enter');
     await page.getByRole('button', { name: 'Add label blue', exact: true }).press('Enter'); await expect(edit).toBeFocused();
+    await waitForBoardDelivery(context.request, board);
     await page.goto(`/app/${org}/boards/${board}`);
     const face = page.getByRole('link').filter({ hasText: 'Labeled work' });
     await expect(face.getByLabel('Priority, red', { exact: true })).toBeVisible();
