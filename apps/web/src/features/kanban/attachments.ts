@@ -16,6 +16,9 @@ type StateMetadata<T, State extends 1 | 2> = T extends AttachmentMetadata ? Omit
   lifecycleState: State; archivedAt: string; deletedAt: State extends 2 ? string : null; deletedBy: State extends 2 ? string : null;
 } : never;
 export type ArchivedAttachment = StateMetadata<AttachmentMetadata, 1>;
+export type ArchivedFileAttachment = Extract<ArchivedAttachment, { kind: 0 }>;
+export type FileAttachmentReview = { file: FileAttachment; archiveReview?: false }
+  | { file: ArchivedFileAttachment; archiveReview: true };
 export type DeletedAttachment = StateMetadata<AttachmentMetadata, 2>;
 export type LifecycleAttachment = AttachmentMetadata | ArchivedAttachment | DeletedAttachment;
 export type AttachmentPage = AttachmentScope & { cardVersion: number; canEdit: boolean; items: AttachmentMetadata[]; nextCursor: string | null };
@@ -24,6 +27,13 @@ export type FileAttachmentChange = AttachmentScope & { cardVersion: number; atta
 export type AttachmentUploadOptions = AttachmentScope & { cardVersion: number; maximumBytes: number; allowedMimeTypes: string[] };
 export type AttachmentDownloadOptions = AttachmentScope & { cardVersion: number; attachmentId: string; attachmentVersion: number; actorId: string };
 export function parseAttachmentDownloadOptions(value: unknown, scope: AttachmentScope, cardVersion: number, file: FileAttachment, actor: string): AttachmentDownloadOptions {
+  return deliveryOptions(value, scope, cardVersion, file, actor, 0);
+}
+export function parseArchivedAttachmentDownloadOptions(value: unknown, scope: AttachmentScope, cardVersion: number, file: ArchivedFileAttachment, actor: string): AttachmentDownloadOptions {
+  return deliveryOptions(value, scope, cardVersion, file, actor, 1);
+}
+function deliveryOptions(value: unknown, scope: AttachmentScope, cardVersion: number, file: FileAttachment | ArchivedFileAttachment, actor: string, state: 0 | 1): AttachmentDownloadOptions {
+  parseLifecycleAttachmentMetadata(file, scope, state);
   const row = scopeRecord(value, scope); exact(row, ['organizationId', 'boardId', 'cardId', 'cardVersion', 'attachmentId', 'attachmentVersion', 'actorId']);
   if (!revision(cardVersion) || row.cardVersion !== cardVersion || !same(row.attachmentId, file.id)
     || file.scanStatus !== 2 || row.attachmentVersion !== file.version || !same(row.actorId, actor)) throw invalid();

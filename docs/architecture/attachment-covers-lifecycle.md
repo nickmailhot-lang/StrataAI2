@@ -230,3 +230,24 @@ reads, protected original bytes and safe headers, and restoration during staging
 Restricted PostgreSQL preview coverage checks committed receipt reuse, separate
 ordinary/archive admission, foreign/stale refusal, staged restoration withdrawal
 and Deleted refusal. Compilation passes locally; Linux execution remains pending.
+
+The dd2381a and f34a8e0 PostgreSQL jobs now pass in Linux, including protected
+archive preview receipt reuse and staged restoration withdrawal. Managed HTTP
+execution remains pending at this checkpoint.
+
+MUI archive review exposes explicit protected download/image review for Clean
+archived files, including read-only members. Ordinary and archive delivery props
+and strict metadata admission are separate. Each options review verifies the
+current actor before and after scope/revision admission, uses the scoped archive
+route, and expires after one minute. Changed Card revisions, unavailable access,
+staged lifecycle commands and unmounted archive pages remove private links/images
+and abort pending reads. Pending/rejected/failed files remain unavailable; PDF
+original review does not enable image preview. No provider URL is admitted.
+
+All 63 local tests across the new archived delivery cases and existing download,
+preview, management and disclosure suites pass; typecheck, lint and production
+build pass. Two additional desktop/mobile native scenarios are registered for
+keyboard archive image review, readonly mutation controls, explicit protected
+download admission, current denial and accessibility. Their provider responses
+are explicitly simulated; they prove client behavior only after execution, not
+server publication or integrity. Real API/PostgreSQL contracts remain required.

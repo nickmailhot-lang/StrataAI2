@@ -6,6 +6,8 @@ import { parseAttachmentPage, type AttachmentMetadata, type AttachmentPage, type
 import { parseAttachmentArchivePage, parseAttachmentLifecycleChanged, type AttachmentArchivePage, type AttachmentLifecycleAction } from './attachmentLifecycle';
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import type { UrlAttachmentCreateProps } from './UrlAttachmentCreateControl';
+import { FileAttachmentDownloadControl } from './FileAttachmentDownloadControl';
+import { FileAttachmentPreviewControl } from './FileAttachmentPreviewControl';
 
 type Props = UrlAttachmentCreateProps & { canAdminister: boolean };
 type Source = AttachmentMetadata | ArchivedAttachment;
@@ -107,6 +109,10 @@ function Management(props: Props) {
         {review.page.items.length === 0 && <Typography>No attachments on this page.</Typography>}
         {review.page.items.map(file => <Stack key={file.id} spacing={0.5} role="group" aria-label={`Attachment ${file.displayName}`}>
           <Typography sx={{ overflowWrap: 'anywhere' }}>{file.displayName}</Typography>
+          {review.archive && reviewCurrent && !disabled && file.lifecycleState === 1 && file.kind === 0 && file.scanStatus === 2 && <>
+            <FileAttachmentDownloadControl {...props} file={file} archiveReview />
+            <FileAttachmentPreviewControl {...props} file={file} archiveReview />
+          </>}
           {review.archive ? <>
             <Button disabled={disabled || !reviewCurrent || !props.editable || !('canRestore' in review.page && review.page.canRestore)} onBlur={releaseFocus}
               onClick={event => stage(file, 'restore', event.currentTarget)}>Restore attachment {file.displayName}</Button>

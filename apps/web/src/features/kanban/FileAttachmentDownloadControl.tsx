@@ -3,17 +3,18 @@ import { Button, Link, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
-import { parseAttachmentDownloadOptions, type AttachmentDownloadOptions, type AttachmentScope, type FileAttachment } from './attachments';
+import { parseAttachmentDownloadOptions, parseArchivedAttachmentDownloadOptions, type AttachmentDownloadOptions, type AttachmentScope, type FileAttachmentReview } from './attachments';
 
-type Props = AttachmentScope & { version: number; file: FileAttachment; onRefresh: () => void };
+type Props = AttachmentScope & { version: number; onRefresh: () => void } & FileAttachmentReview;
 export function FileAttachmentDownloadControl(props: Props) {
-  return <Download key={`${props.organizationId}/${props.boardId}/${props.cardId}/${props.version}/${props.file.id}/${props.file.version}`} {...props} />;
+  return <Download key={`${props.organizationId}/${props.boardId}/${props.cardId}/${props.version}/${props.file.id}/${props.file.version}/${props.archiveReview ? 'archive' : 'active'}`} {...props} />;
 }
 function Download(props: Props) {
   const [options, setOptions] = useState<AttachmentDownloadOptions>(); const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string>(); const [failed, setFailed] = useState(false);
   const mounted = useRef(true); const pending = useRef<AbortController | undefined>(undefined); const focus = useRef(false);
   const review = useRef<HTMLButtonElement>(null); const link = useRef<HTMLAnchorElement>(null);
+  const path = `/cards/${encodeURIComponent(props.cardId)}/attachments/${props.archiveReview ? 'archive/' : ''}${encodeURIComponent(props.file.id)}/download`;
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); }; }, []);
   useEffect(() => {
     if (!options) return;
@@ -38,9 +39,11 @@ function Download(props: Props) {
       const profile = await boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (!isNotificationProfile(profile)) throw new Error();
-      const value = await boundedWorkRead(signal => workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/attachments/${encodeURIComponent(props.file.id)}/download-options`, { signal }), controller.signal);
+      const value = await boundedWorkRead(signal => workRequest<unknown>(path + '-options', { signal }), controller.signal);
       if (!mounted.current || pending.current !== controller) return;
-      const admitted = parseAttachmentDownloadOptions(value, props, props.version, props.file, profile.id);
+      const admitted = props.archiveReview
+        ? parseArchivedAttachmentDownloadOptions(value, props, props.version, props.file, profile.id)
+        : parseAttachmentDownloadOptions(value, props, props.version, props.file, profile.id);
       const current = await boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (!isNotificationProfile(current) || current.id.toLowerCase() !== profile.id.toLowerCase()) throw new Error();
@@ -54,13 +57,13 @@ function Download(props: Props) {
   if (props.file.scanStatus !== 2) return null;
   return <Stack spacing={0.5}>
     <Button ref={review} disabled={busy} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, review.current)) focus.current = false; }} onClick={() => { void check(); }}>
-      {busy ? 'Checking file download…' : 'Check file download access'}
+      {busy ? 'Checking file download…' : props.archiveReview ? 'Check archived file download access' : 'Check file download access'}
     </Button>
     {busy && <Button onClick={() => { pending.current?.abort(); pending.current = undefined; setBusy(false); setNotice('Download review stopped.'); }}>Stop download review</Button>}
-    {options && <Link ref={link} href={`/cards/${encodeURIComponent(props.cardId)}/attachments/${encodeURIComponent(props.file.id)}/download?actorId=${encodeURIComponent(options.actorId)}&attachmentVersion=${options.attachmentVersion}`}
+    {options && <Link ref={link} href={`${path}?actorId=${encodeURIComponent(options.actorId)}&attachmentVersion=${options.attachmentVersion}`}
       target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" sx={{ overflowWrap: 'anywhere' }}
       onClick={() => setNotice('Download requested. Your browser will report whether it completes.')}>
-      Download {props.file.displayName} (opens in a new tab)
+      {props.archiveReview ? 'Download archived' : 'Download'} {props.file.displayName} (opens in a new tab)
     </Link>}
     {notice && <Typography role={failed ? 'alert' : 'status'}>{notice}</Typography>}
     {failed && <Button onClick={props.onRefresh}>Refresh Card for file download</Button>}

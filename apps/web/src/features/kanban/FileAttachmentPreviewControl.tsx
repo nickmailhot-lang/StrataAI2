@@ -3,19 +3,19 @@ import { Box, Button, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { ownsRecoveryFocus } from './focusRecovery';
-import { parseAttachmentDownloadOptions, type AttachmentDownloadOptions, type AttachmentScope, type FileAttachment } from './attachments';
+import { parseAttachmentDownloadOptions, parseArchivedAttachmentDownloadOptions, type AttachmentDownloadOptions, type AttachmentScope, type FileAttachmentReview } from './attachments';
 
-type Props = AttachmentScope & { version: number; file: FileAttachment; onRefresh: () => void };
+type Props = AttachmentScope & { version: number; onRefresh: () => void } & FileAttachmentReview;
 export function FileAttachmentPreviewControl(props: Props) {
   if (props.file.scanStatus !== 2 || props.file.mimeType === 'application/pdf') return null;
-  return <Preview key={[props.organizationId, props.boardId, props.cardId, props.version, props.file.id, props.file.version].join('/')} {...props} />;
+  return <Preview key={[props.organizationId, props.boardId, props.cardId, props.version, props.file.id, props.file.version, props.archiveReview ? 'archive' : 'active'].join('/')} {...props} />;
 }
 function Preview(props: Props) {
   const [options, setOptions] = useState<AttachmentDownloadOptions>(); const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string>(); const [failed, setFailed] = useState(false);
   const mounted = useRef(true); const pending = useRef<AbortController | undefined>(undefined);
   const review = useRef<HTMLButtonElement>(null); const focus = useRef(false);
-  const path = '/cards/' + encodeURIComponent(props.cardId) + '/attachments/' + encodeURIComponent(props.file.id) + '/preview';
+  const path = '/cards/' + encodeURIComponent(props.cardId) + '/attachments/' + (props.archiveReview ? 'archive/' : '') + encodeURIComponent(props.file.id) + '/preview';
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); }; }, []);
   useEffect(() => {
     if (!options) return;
@@ -39,7 +39,9 @@ function Preview(props: Props) {
       if (!isNotificationProfile(profile)) throw new Error();
       const value = await boundedWorkRead(signal => workRequest<unknown>(path + '-options', { signal }), controller.signal);
       if (!mounted.current || pending.current !== controller) return;
-      const admitted = parseAttachmentDownloadOptions(value, props, props.version, props.file, profile.id);
+      const admitted = props.archiveReview
+        ? parseArchivedAttachmentDownloadOptions(value, props, props.version, props.file, profile.id)
+        : parseAttachmentDownloadOptions(value, props, props.version, props.file, profile.id);
       const current = await boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (!isNotificationProfile(current) || current.id.toLowerCase() !== profile.id.toLowerCase()) throw new Error();
@@ -54,7 +56,7 @@ function Preview(props: Props) {
   }
   return <Stack spacing={0.5}>
     <Button ref={review} disabled={busy} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, review.current)) focus.current = false; }}
-      onClick={() => { void check(); }}>{busy ? 'Checking image preview…' : 'Show image preview'}</Button>
+      onClick={() => { void check(); }}>{busy ? 'Checking image preview…' : props.archiveReview ? 'Show archived image preview' : 'Show image preview'}</Button>
     {busy && <Button onClick={() => {
       pending.current?.abort(); pending.current = undefined; setBusy(false); setNotice('Preview review stopped.');
     }}>Stop preview review</Button>}
