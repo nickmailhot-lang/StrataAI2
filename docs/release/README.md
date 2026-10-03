@@ -56,3 +56,11 @@ docker compose --env-file .env -f compose.release.yml down
 
 The application images in this bundle must not be rebuilt before deployment. Promotion
 means using these exact tested image artifacts/digests with environment-specific configuration.
+
+Optional operator metrics: start with
+`docker compose -f compose.release.yml -f compose.metrics.yml up -d` to add the
+pinned private OTLP receiver. Scrapes are available only on host loopback at
+`http://127.0.0.1:9464/metrics`. This provides in-memory aggregate collection;
+configure a managed history/dashboard/alerting backend separately. For an external
+receiver instead, use the full `STRATAAI_METRICS_OTLP_ENDPOINT` and optional secret
+headers with the base Compose file. Collector outage does not block core readiness.

@@ -59,6 +59,9 @@ jobs:
       - name: Verify retained performance evidence excludes private fields
         run: node --test tests/browser-performance.test.mjs
 
+      - name: Verify operator evidence rejects missing and private metric fields
+        run: python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
+
       - name: Unit and component tests
         run: npm test
 
@@ -264,6 +267,7 @@ jobs:
       STRATAAI_WEB_IMAGE: strataai-web:${{ github.sha }}
       STRATAAI_API_IMAGE: strataai-api:${{ github.sha }}
       STRATAAI_WORKER_IMAGE: strataai-worker:${{ github.sha }}
+      STRATAAI_METRICS_OTLP_ENDPOINT: http://metrics-collector:4318/v1/metrics
     steps:
       - uses: actions/checkout@v7
 
@@ -292,7 +296,7 @@ jobs:
           echo "::add-mask::$auth_retry_key"
           echo 'STRATAAI_AUTH_RETRY_CURRENT_KEY=ci-auth-v1' >> "$GITHUB_ENV"
           echo "STRATAAI_AUTH_RETRY_KEYS=$(jq -nc --arg key "$auth_retry_key" '{"ci-auth-v1":$key}')" >> "$GITHUB_ENV"
-          STRATAAI_AUTH_RETRY_CURRENT_KEY=ci-auth-v1 STRATAAI_AUTH_RETRY_KEYS="$(jq -nc --arg key "$auth_retry_key" '{"ci-auth-v1":$key}')" docker compose -f compose.release.yml up -d --wait --wait-timeout 180
+          STRATAAI_AUTH_RETRY_CURRENT_KEY=ci-auth-v1 STRATAAI_AUTH_RETRY_KEYS="$(jq -nc --arg key "$auth_retry_key" '{"ci-auth-v1":$key}')" docker compose -f compose.release.yml -f compose.metrics.yml up -d --wait --wait-timeout 180
 
       - name: Apply release-database migrations
         run: scripts/apply-compose-migrations.sh
@@ -428,6 +432,21 @@ jobs:
 
       - name: Checklist reads and mutation at supported Board and archive capacity
         run: scripts/ci/test-checklist-capacity.sh
+
+      - name: Validate pinned operator Collector configuration
+        run: docker compose -f compose.release.yml -f compose.metrics.yml run --rm --no-deps metrics-collector validate --config=/etc/strataai/metrics.yml
+
+      - name: Verify exact-image operator metric ingestion and private-field exclusion
+        run: scripts/ci/test-operator-metrics.sh
+
+      - name: Retain fixed operator collection evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: operator-metrics-${{ github.sha }}
+          path: artifacts/metrics/operator.json
+          retention-days: 90
+          if-no-files-found: ignore
 
       - name: Retain fixed-scope Checklist capacity measurements
         if: always()
@@ -606,6 +625,13 @@ jobs:
             docker run --rm               -v /var/run/docker.sock:/var/run/docker.sock               aquasec/trivy:0.74.0               image --exit-code 1 --ignore-unfixed --severity CRITICAL               "strataai-${image}:${GITHUB_SHA}"
           done
 
+      - name: Scan and inventory pinned operator receiver
+        run: |
+          set -euo pipefail
+          collector='otel/opentelemetry-collector-contrib:0.161.0@sha256:fd328de2552466ad78385e1b1289c3f2402b1c45f265b252aab1955b42845ac1'
+          docker run --rm -v "${PWD}/security-artifacts:/output" aquasec/trivy:0.74.0 image --format cyclonedx --output /output/metrics-collector.cdx.json "$collector"
+          docker run --rm aquasec/trivy:0.74.0 image --exit-code 1 --ignore-unfixed --severity CRITICAL "$collector"
+
       - name: Upload SBOMs and security evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -664,7 +690,9 @@ jobs:
           cp image-artifacts/strataai-web.tar.gz bundle/images/
           cp image-artifacts/strataai-api.tar.gz bundle/images/
           cp image-artifacts/strataai-worker.tar.gz bundle/images/
-          cp compose.release.yml bundle/
+          cp compose.release.yml compose.metrics.yml bundle/
+          mkdir -p bundle/deploy/metrics
+          cp deploy/metrics/collector.yml bundle/deploy/metrics/
           cp .env.release.example bundle/
           cp scripts/health-check.sh bundle/health-check.sh
           cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh

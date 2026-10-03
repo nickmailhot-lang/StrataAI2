@@ -49,3 +49,37 @@ whereas the pinned exporter uses synchronous Send on Linux/.NET. The fixture now
 implements both paths without changing the successful-flush, wire-content or
 privacy assertions. The repaired suite compiles with zero warnings/errors; new
 Linux execution is pending. No successful exporter execution is claimed yet.
+
+## Optional receiver and ingestion gate
+
+`compose.metrics.yml` adds a digest-pinned official OpenTelemetry Collector
+0.161.0 to the release topology. Start it with
+`docker compose -f compose.release.yml -f compose.metrics.yml up -d`.
+It listens for OTLP only on the deployment's private Compose network. Its
+Prometheus scrape port is bound to host loopback at `127.0.0.1:9464/metrics`.
+Treat that network and host access as operator boundaries. No public app route
+proxies metrics. The receiver is optional and is not a fourth application image;
+the three build-once app images remain identical. It uses a read-only config/root,
+dropped capabilities, no-new-privileges, a 256 MiB container limit and bounded
+memory/batches. Only four service/build resource attributes become metric labels.
+It retains aggregate scrape state in memory; restart recovery, persistent history,
+production HA, dashboards and alerting remain separate unfinished requirements.
+
+CI now starts this receiver with the immutable release API and validates its
+configuration with the pinned binary. A mandatory stage creates a disposable
+private Checklist fixture through Nginx, records a legitimate aggregate batch,
+rejects anonymous/extra-private-field batches, then polls actual collected metric
+families. It verifies exact client counts (denied/invalid batches cannot inflate
+these), server counters/durations and current embedded build metadata, excludes
+private fixture content/UUIDs/unexpected labels and retains only fixed booleans,
+collector version and commit. Raw scrapes, accounts, scope IDs and credentials
+are disposable and are not retained. Three verifier tests cover success, missing
+families/wrong builds, private content/identity/keys and unknown families. They
+pass locally; shell syntax and diff checks pass. Local Docker and YAML libraries
+are unavailable, so collector/configuration/topology execution remains unproven
+until Linux CI passes. The receiver's SBOM and fixed Critical vulnerability gate
+use the same policy as the app images. Optional Compose/config files are included
+in the release bundle. This does not complete ARCH-08 or PRD-13.
+
+Collector reference:
+[pinned Prometheus exporter configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.161.0/exporter/prometheusexporter/README.md).
