@@ -326,3 +326,25 @@ original request, observe live removal in a second session, verify hidden item
 reads and run WCAG checks. All four Checklist browser cases are discovered;
 exact-image execution remains pending. Ordering and item mutation controls remain
 unfinished, and wider PRD/architecture acceptance remains open.
+### Checklist position controls
+
+The MUI manager now reviews a Checklist's current Card/child revisions and lets
+contributors choose a before-sibling anchor across bounded seek pages. The end
+choice is offered on the final page. Selection excludes the moving Checklist;
+each page requires current edit admission, the same actor and the same Card
+revision. A concurrent revision or rejected move requires a new review.
+
+Position acknowledgments preserve scope, identity, title and creation time,
+validate the chosen rank interval, and distinguish changed revisions from
+already-in-position no-ops, including when the moving row is the seek boundary.
+Unconfirmed responses retain the original destination, versions, actor and key;
+re-admission does not change the pending command. Shared Card recovery locks
+continue to prevent overlapping mutations.
+
+Local verification: 71 parser/manager tests passed, including bounded later-page
+position selection, interval and seek-boundary validation, no-op revisions,
+conflicts and original retry recovery. Type checking and lint passed. The new
+desktop/mobile exact-image browser cases cover keyboard before/end choices,
+accessibility, lost committed acknowledgment and second-session live ordering;
+browser execution remains pending CI. Item mutation and item ordering UI remain
+unfinished, so this does not complete PRD-13.

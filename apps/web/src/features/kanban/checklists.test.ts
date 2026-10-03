@@ -1,4 +1,4 @@
-import { parseChecklistItemPage, parseChecklistPage, type Checklist, type ChecklistItem, type ChecklistScope } from './checklists';
+import { checklistPosition, parseChecklistItemPage, parseChecklistPage, parseChecklistPositioned, type Checklist, type ChecklistItem, type ChecklistScope } from './checklists';
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const rank = (n: number) => String(n).padStart(30, '0');
@@ -11,6 +11,26 @@ const item: ChecklistItem = { id: id(5), organizationId: scope.organizationId, c
 const progress = () => ({ checklist: { ...parent }, completed: 0, total: 1, percent: 0 });
 const page = () => ({ ...scope, cardVersion: 4, canEdit: false, items: [progress()], nextCursor: null });
 const items = () => ({ ...scope, cardVersion: 4, canEdit: true, summary: progress(), items: [{ ...item }], nextCursor: null });
+it('recognizes a no-op at the seek boundary without demanding a new rank or revision', () => {
+  const moving = { ...parent, rank: rank(50) };
+  const next = { ...parent, id: id(70), rank: rank(51) };
+  const value = { ...page(), items: [{ ...progress(), checklist: next }] };
+  const after = `${scope.cardId}/${moving.rank}/${moving.id}`;
+  const position = checklistPosition(value, moving, next.id, after);
+  expect(position.unchanged).toBe(true);
+  expect(parseChecklistPositioned({ ...scope, cardVersion: 4, changed: false, checklist: moving }, scope, moving, position, 4).changed).toBe(false);
+  expect(() => parseChecklistPositioned({ ...scope, cardVersion: 5, changed: true, checklist: { ...moving, version: 3, rank: rank(49) } }, scope, moving, position, 4)).toThrow();
+});
+it('validates both sides of a chosen rank interval and rejects self, foreign or premature-end choices', () => {
+  const left = { ...parent, id: id(6), rank: rank(10) }; const right = { ...parent, id: id(7), rank: rank(20) };
+  const value = { ...page(), items: [progress(), { ...progress(), checklist: left }, { ...progress(), checklist: right }] };
+  const position = checklistPosition(value, parent, right.id);
+  const changed = { ...scope, cardVersion: 5, changed: true, checklist: { ...parent, rank: rank(15), version: 3 } };
+  expect(parseChecklistPositioned(changed, scope, parent, position, 4).checklist.rank).toBe(rank(15));
+  for (const bad of [rank(5), rank(10), rank(20), rank(25)]) expect(() => parseChecklistPositioned({ ...changed, checklist: { ...changed.checklist, rank: bad } }, scope, parent, position, 4)).toThrow();
+  expect(() => checklistPosition(value, parent, parent.id)).toThrow(); expect(() => checklistPosition(value, parent, id(90))).toThrow();
+  expect(() => checklistPosition({ ...value, nextCursor: `${scope.cardId}/${right.rank}/${right.id}` }, parent, null)).toThrow();
+});
 
 it('admits scoped read-only Checklist pages and canonical empty progress', () => {
   expect(parseChecklistPage(page(), scope).canEdit).toBe(false);

@@ -11,6 +11,7 @@ export type ChecklistSummary = { checklist: Checklist; completed: number; total:
 export type ChecklistPage = ChecklistScope & { cardVersion: number; canEdit: boolean; items: ChecklistSummary[]; nextCursor: string | null };
 export type ChecklistItemPage = ChecklistScope & { cardVersion: number; canEdit: boolean; summary: ChecklistSummary; items: ChecklistItem[]; nextCursor: string | null };
 export type ChecklistChange = ChecklistScope & { cardVersion: number; checklist: Checklist; changed: boolean };
+export type ChecklistPosition = { beforeId: string | null; lowerRank: string; upperRank: string; unchanged: boolean };
 
 const invalid = () => new Error('Invalid checklist response');
 const sameId = (value: unknown, expected: string) => notificationUuid(value) && notificationUuid(expected) && value.toLowerCase() === expected.toLowerCase();
@@ -117,4 +118,26 @@ export function parseChecklistDeleted(value: unknown, scope: ChecklistScope, bef
     instant(child.createdAt) !== instant(before.createdAt) || instant(child.updatedAt) < instant(before.updatedAt) ||
     !count(total) || row.deletedItems !== total) throw invalid();
   return row as ChecklistChange & { deletedItems: number };
+}
+export function checklistPosition(page: ChecklistPage, moving: Checklist, beforeId: string | null, after?: string): ChecklistPosition {
+  const rows = page.items.map(value => value.checklist);
+  const previous = after ? cursor(after, page.cardId) : undefined;
+  const anchor = beforeId === null ? undefined : rows.find(row => sameId(row.id, beforeId));
+  if (beforeId !== null && (!anchor || sameId(beforeId, moving.id)) || beforeId === null && page.nextCursor !== null) throw invalid();
+  const index = anchor ? rows.indexOf(anchor) : rows.length;
+  const lower = rows.slice(0, index).filter(row => !sameId(row.id, moving.id)).at(-1)?.rank ?? previous?.rank ?? '0'.repeat(30);
+  const upper = anchor?.rank ?? '9'.repeat(30);
+  // A moving row at the seek boundary is already immediately before this first anchor.
+  const boundary = previous && sameId(previous.id, moving.id) && !rows.slice(0, index).some(row => !sameId(row.id, moving.id));
+  return { beforeId, lowerRank: lower, upperRank: upper, unchanged: !!boundary || moving.rank > lower && moving.rank < upper };
+}
+export function parseChecklistPositioned(value: unknown, scope: ChecklistScope, before: Checklist, position: ChecklistPosition, cardVersion: number): ChecklistChange {
+  const row = record(value); const child = checklist(row.checklist, scope); const changed = !position.unchanged;
+  if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.boardId, scope.boardId) || !sameId(row.cardId, scope.cardId) ||
+    !version(cardVersion) || !version(row.cardVersion) || row.cardVersion !== cardVersion + Number(changed) || row.changed !== changed ||
+    !sameId(child.id, before.id) || child.title !== before.title || child.version !== before.version + Number(changed) ||
+    instant(child.createdAt) !== instant(before.createdAt) || instant(child.updatedAt) < instant(before.updatedAt) ||
+    (changed ? child.rank === before.rank || child.rank <= position.lowerRank || child.rank >= position.upperRank
+      : child.rank !== before.rank || instant(child.updatedAt) !== instant(before.updatedAt))) throw invalid();
+  return row as ChecklistChange;
 }
