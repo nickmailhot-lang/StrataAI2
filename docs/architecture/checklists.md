@@ -134,3 +134,17 @@ unchanged completion attribution through another actor's text edit, combined
 uncompletion/edit and aggregate counts. Strict build passes; Linux execution is
 pending. Checklist/item reorder/delete, public reads, lifecycle integration and
 MUI acceptance remain required.
+
+Checklist/item PATCH position routes take an explicit `beforeId` (null appends)
+and the same parent/entity revision preconditions. Anchors must be active siblings
+in the admitted tenant/parent and cannot be the moving entity. Bounded indexed
+neighbor queries exclude the moving row and allocate an interval rank under the
+owning command locks. Already-adjacent/already-last positions preserve all rows
+and emit no audit/event; changed order advances the applicable parent/entity rows
+with audit/events/receipt atomically. Missing/foreign/self anchors are stable
+invalid-position errors; exhausted intervals fail before writes. Source tests
+cover reorder/end/no-op/CAS/replay/foreign anchors and revoked replay; the mandatory
+exact-image fixture checks real rank ordering, post-update event/queue rollback,
+retry recovery, empty ordering space and unchanged completion/count data.
+Strict build and shell checks pass; Linux execution of this increment is pending.
+Deletion, public views, copy/retention, MUI and remaining acceptance are unfinished.

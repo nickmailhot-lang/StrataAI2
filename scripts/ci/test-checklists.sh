@@ -111,10 +111,10 @@ jq -e '(.items|length)==1 and .summary.total==1 and .summary.completed==0 and .s
 # Canonical child rows exercise aggregate progress across a bounded checklist
 # page, including deleted-item exclusion and an empty sibling's zero progress.
 admin "INSERT INTO checklist_items(id,tenant_id,checklist_id,text,rank,completed,completed_at,completed_by,created_at,updated_at,deleted_at)
- SELECT gen_random_uuid(),'$org','$checklist','Progress fixture',lpad(n::text,30,'0'),n IN (1,64),
+ SELECT gen_random_uuid(),'$org','$checklist','Progress fixture',lpad((n*1000)::text,30,'0'),n IN (1,64),
  CASE WHEN n IN (1,64) THEN now() END,CASE WHEN n IN (1,64) THEN '$owner'::uuid END,now(),now(),CASE WHEN n=64 THEN now() END FROM generate_series(1,64) n WHERE n<>63;
  INSERT INTO checklists(id,tenant_id,card_id,title,rank,created_at,updated_at)
- SELECT gen_random_uuid(),'$org','$card','Page '||n,lpad(n::text,30,'0'),now(),now() FROM generate_series(1,62) n;" >/dev/null
+ SELECT gen_random_uuid(),'$org','$card','Page '||n,lpad((n*1000)::text,30,'0'),now(),now() FROM generate_series(1,62) n;" >/dev/null
 test "$(read_page member "$path")" = 200
 jq -e '(.items|length)==50 and .nextCursor!=null and all(.items[];.total==0 and .percent==0)' "$scratch/page.json" >/dev/null
 cursor=$(jq -r '.nextCursor' "$scratch/page.json")
@@ -162,10 +162,60 @@ test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event
 test "$(admin "SELECT NOT due_complete FROM cards WHERE tenant_id='$org' AND id='$card';")" = t
 test "$(read_page owner "$itemPath")" = 200
 jq -e '.summary.completed==1 and .summary.total==63 and .cardVersion==7' "$scratch/page.json" >/dev/null
+firstChecklist=$(admin "SELECT id FROM checklists WHERE tenant_id='$org' AND card_id='$card' AND title='Page 1';")
+positionPath="$path/$checklist/position"; positionKey=$(uuid)
+positionInput=$(jq -nc --arg before "$firstChecklist" '{beforeId:$before,cardVersion:7,version:6}')
+before=$(state)
+admin 'REVOKE INSERT ON work_events FROM strataai_api_runtime;' >/dev/null
+test "$(request owner PATCH "$positionPath" "$positionKey" "$positionInput")" = 503
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON work_events TO strataai_api_runtime;' >/dev/null
+test "$(request owner PATCH "$positionPath" "$positionKey" "$positionInput")" = 200
+jq -e '.changed and .cardVersion==8 and .checklist.version==7' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/position.json"
+after=$(state)
+test "$(request owner PATCH "$positionPath" "$positionKey" "$positionInput")" = 200
+cmp "$scratch/position.json" "$scratch/response.json"
+test "$after" = "$(state)"
+test "$(read_page owner "$path")" = 200
+jq -e --arg checklist "$checklist" '.items[0].checklist.id==$checklist' "$scratch/page.json" >/dev/null
+test "$(request owner PATCH "$positionPath" "$(uuid)" "$(jq -c '.cardVersion=8|.version=7' <<< "$positionInput")")" = 200
+jq -e '.changed==false and .cardVersion==8 and .checklist.version==7' "$scratch/response.json" >/dev/null
+test "$(request owner PATCH "$positionPath" "$(uuid)" '{"beforeId":null,"cardVersion":8,"version":7}')" = 200
+jq -e '.changed and .cardVersion==9 and .checklist.version==8' "$scratch/response.json" >/dev/null
+firstItem=$(admin "SELECT id FROM checklist_items WHERE tenant_id='$org' AND checklist_id='$checklist' AND deleted_at IS NULL ORDER BY rank LIMIT 1;")
+secondItem=$(admin "SELECT id FROM checklist_items WHERE tenant_id='$org' AND checklist_id='$checklist' AND deleted_at IS NULL ORDER BY rank OFFSET 1 LIMIT 1;")
+itemPositionPath="$editPath/position"; itemPositionKey=$(uuid)
+itemPositionInput=$(jq -nc --arg before "$firstItem" '{beforeId:$before,cardVersion:9,checklistVersion:8,version:4}')
+before=$(state)
+admin 'REVOKE INSERT ON background_jobs FROM strataai_api_runtime;' >/dev/null
+test "$(request member PATCH "$itemPositionPath" "$itemPositionKey" "$itemPositionInput")" = 503
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON background_jobs TO strataai_api_runtime;' >/dev/null
+test "$(request member PATCH "$itemPositionPath" "$itemPositionKey" "$itemPositionInput")" = 200
+jq -e '.changed and .cardVersion==10 and .checklist.version==9 and .item.version==5 and .item.completed==false and .item.completedBy==null' "$scratch/response.json" >/dev/null
+cp "$scratch/response.json" "$scratch/item-position.json"
+after=$(state)
+test "$(request member PATCH "$itemPositionPath" "$itemPositionKey" "$itemPositionInput")" = 200
+cmp "$scratch/item-position.json" "$scratch/response.json"
+test "$after" = "$(state)"
+test "$(read_page owner "$itemPath")" = 200
+jq -e --arg item "$item" '.items[0].id==$item and .summary.completed==1 and .summary.total==63' "$scratch/page.json" >/dev/null
+test "$(request owner PATCH "$itemPositionPath" "$(uuid)" "$(jq -c '.cardVersion=10|.checklistVersion=9|.version=5' <<< "$itemPositionInput")")" = 200
+jq -e '.changed==false and .cardVersion==10 and .item.version==5' "$scratch/response.json" >/dev/null
+test "$(request owner PATCH "$itemPositionPath" "$(uuid)" '{"beforeId":null,"cardVersion":10,"checklistVersion":9,"version":5}')" = 200
+jq -e '.changed and .cardVersion==11 and .checklist.version==10 and .item.version==6' "$scratch/response.json" >/dev/null
+# Exhaust a genuine interval between two neighboring active items. Position
+# validation must leave the Card, Checklist, item, audit/outbox and receipt intact.
+admin "UPDATE checklist_items SET rank=lpad((CASE WHEN id='$firstItem' THEN 1 ELSE 2 END)::text,30,'0') WHERE tenant_id='$org' AND id IN ('$firstItem','$secondItem');" >/dev/null
+before=$(state)
+test "$(request owner PATCH "$itemPositionPath" "$(uuid)" "$(jq -nc --arg before "$secondItem" '{beforeId:$before,cardVersion:11,checklistVersion:10,version:6}')")" = 409
+jq -e '.code=="rank_space_exhausted"' "$scratch/response.json" >/dev/null
+test "$before" = "$(state)"
 # A valid but exhausted tail must fail before advancing the aggregate revision.
 admin "UPDATE checklists SET rank='999999999999999999999999999998' WHERE id='$checklist';" >/dev/null
 before=$(state)
-test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":7}')" = 409
+test "$(request owner POST "$path" "$(uuid)" '{"title":"No remaining rank","cardVersion":11}')" = 409
 jq -e '.code=="rank_space_exhausted"' "$scratch/response.json" >/dev/null
 test "$before" = "$(state)"
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
@@ -174,6 +224,7 @@ test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 404
 test "$(read_page member "$itemPath?after=$itemCursor")" = 404
 test "$(request member POST "$itemPath" "$itemKey" "$itemInput")" = 404
 test "$(request member PATCH "$editPath" "$completeKey" "$completeInput")" = 404
+test "$(request member PATCH "$itemPositionPath" "$itemPositionKey" "$itemPositionInput")" = 404
 version=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
 test "$(request owner POST "/boards/$board/archive" "$(uuid)" "{\"version\":$version}")" = 200
 test "$(read_page owner "$path")" = 200
