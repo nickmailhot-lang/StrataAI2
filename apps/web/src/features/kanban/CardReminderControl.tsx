@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, type FocusEvent } from 'react';
 import { Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type WorkCard } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
@@ -38,9 +38,14 @@ function ReminderControl(props: Props) {
     }
   }, [props.unavailable, props.disabled, props.card.version, current, open, intent, blocked, busy]);
   useEffect(() => { if (!open) return; const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, [open]);
-  useEffect(() => { if (focusRequested.current && !busy && !props.disabled && !props.unavailable) {
-    action.current?.focus(); focusRequested.current = false;
+  useEffect(() => { if (focusRequested.current && !busy && !props.disabled && !props.unavailable
+    && (document.activeElement === document.body || document.activeElement === action.current)) {
+    action.current?.focus({ preventScroll: true });
   } }, [busy, props.disabled, props.unavailable, open, intent, blocked]);
+  const actionFocus = {
+    onFocus: () => { focusRequested.current = true; },
+    onBlur: (event: FocusEvent<HTMLButtonElement>) => { if (event.relatedTarget !== null) focusRequested.current = false; },
+  };
   const path = `/cards/${encodeURIComponent(props.card.id)}/reminders`;
   const outdated = !!current && current.cardVersion !== props.card.version;
   const disabled = busy || props.disabled || props.unavailable;
@@ -108,10 +113,10 @@ function ReminderControl(props: Props) {
   }
   return <Stack component="section" aria-label="Personal due reminder" spacing={1} sx={{ my: 2 }}>
     {notice && <Typography role="status">{notice}</Typography>}
-    {!open ? <Button ref={action} disabled={disabled} onClick={() => void read()}>Due reminder</Button> : <>
+    {!open ? <Button ref={action} {...actionFocus} disabled={disabled} onClick={() => { focusRequested.current = false; void read(); }}>Due reminder</Button> : <>
       {intent ? <>
         <Typography>Recover the original reminder change before choosing another interval.</Typography>
-        <Button ref={action} disabled={disabled} onClick={() => void save()}>Retry reminder change</Button>
+        <Button ref={action} {...actionFocus} disabled={disabled} onClick={() => void save()}>Retry reminder change</Button>
         <Button disabled={busy} onClick={props.onRefresh}>Check current Card</Button>
       </> : props.unavailable ? <Typography role="status">Checking current Card access…</Typography> : <>
         {current && !outdated && !blocked && <>
@@ -128,7 +133,7 @@ function ReminderControl(props: Props) {
           {current.reminder?.enabled && <Button disabled={disabled || !current.canChange} onClick={() => void save(true)}>Cancel due reminder</Button>}
         </>}
         {outdated && <Typography role="status">The Card changed. Load your current reminder before choosing an interval.</Typography>}
-        <Button ref={blocked ? action : undefined} disabled={disabled} onClick={() => void read()}>Load current reminder</Button>
+        <Button ref={blocked ? action : undefined} {...(blocked ? actionFocus : {})} disabled={disabled} onClick={() => { focusRequested.current = false; void read(); }}>Load current reminder</Button>
         <Button disabled={busy} onClick={() => { setOpen(false); setCurrent(undefined); setBlocked(false); focusRequested.current = true; }}>Close reminder</Button>
       </>}
     </>}

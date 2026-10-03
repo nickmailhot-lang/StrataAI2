@@ -31,6 +31,25 @@ async function open() { fireEvent.click(screen.getByRole('button', { name: 'Due 
 function choose() { fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Reminder interval' }));
   fireEvent.click(screen.getByRole('option', { name: '1 hour before' })); }
 
+it.each([false, true])('retains save/recovery focus across live checks without stealing navigation (lost=%s)', async lost => {
+  const fetcher = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(initial))
+    .mockResolvedValueOnce(reply(profile));
+  if (lost) fetcher.mockRejectedValueOnce(new Error('Lost response'));
+  else fetcher.mockResolvedValueOnce(reply({ ...scheduled, changed: true }));
+  vi.stubGlobal('fetch', fetcher);
+  const ui = (unavailable: boolean) => <><button>Other control</button><CardReminderControl {...props} unavailable={unavailable} /></>;
+  const view = render(ui(false)); await open(); choose();
+  fireEvent.click(screen.getByRole('button', { name: 'Save due reminder' }));
+  const action = await screen.findByRole('button', { name: lost ? 'Retry reminder change' : 'Due reminder' });
+  await waitFor(() => expect(action).toHaveFocus());
+  view.rerender(ui(true)); expect(action).toBeDisabled(); action.blur();
+  view.rerender(ui(false)); await waitFor(() => expect(action).toHaveFocus());
+  screen.getByRole('button', { name: 'Other control' }).focus();
+  view.rerender(ui(true)); view.rerender(ui(false));
+  expect(screen.getByRole('button', { name: 'Other control' })).toHaveFocus();
+  expect(fetcher).toHaveBeenCalledTimes(4);
+});
+
 it('validates scoped personal data and exact UTC interval arithmetic without losing microseconds', () => {
   expect(parseReminderState(scheduled, scope)).toEqual(scheduled);
   const due = '2030-01-02T12:00:00.123456Z'; const precise = { ...scheduled,

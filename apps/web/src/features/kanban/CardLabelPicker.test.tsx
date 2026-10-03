@@ -10,6 +10,20 @@ const ack = { card: { ...card, organizationId: org, boardId: board, version: 2 }
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Edit Card labels' })); return screen.findByRole('button', { name: 'Add label Priority' }); }
 afterEach(() => vi.unstubAllGlobals());
+it('retains returned trigger focus through later admission checks and respects navigation away', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response(options)).mockResolvedValueOnce(response(ack));
+  vi.stubGlobal('fetch', fetch); const p = props();
+  const ui = (disabled: boolean) => <><button>Other control</button><CardLabelPicker {...p} disabled={disabled} /></>;
+  const view = render(ui(false)); fireEvent.click(await open());
+  const trigger = screen.getByRole('button', { name: 'Edit Card labels' });
+  await waitFor(() => expect(trigger).toHaveFocus());
+  view.rerender(ui(true)); expect(trigger).toBeDisabled(); trigger.blur();
+  view.rerender(ui(false)); await waitFor(() => expect(trigger).toHaveFocus());
+  screen.getByRole('button', { name: 'Other control' }).focus();
+  view.rerender(ui(true)); view.rerender(ui(false));
+  expect(screen.getByRole('button', { name: 'Other control' })).toHaveFocus();
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
 it('loads current choices and sends a versioned assignment, then restores focus', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(response(options)).mockResolvedValueOnce(response(ack)); vi.stubGlobal('fetch', fetch); const p = props(); render(<CardLabelPicker {...p} />);
   fireEvent.click(await open()); await waitFor(() => expect(p.onRefresh).toHaveBeenCalled());

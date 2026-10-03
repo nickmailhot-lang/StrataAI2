@@ -51,3 +51,23 @@ production build passed. Six affected browser cases were discovered; their
 execution remains pending exact-image CI. The peer-session creation, completion
 and ordering cases now assert refreshed item content without reopening an
 already expanded disclosure. No acceptance assertion or timeout was waived.
+
+## Returned focus and filter opening
+
+Label assignment and personal Reminder save/recovery controls now retain their
+returned-focus intent across subsequent temporary access checks. They restore
+focus only when it is on the page body or the same action, and clear that intent
+on an intentional focus transfer. They do not repeat a command automatically.
+
+The generic filter opener accepts keyboard intent while admission is pending.
+Its dialog shows a checking status and defers identity/choice reads until the
+Board is admitted. Deferred opening is scoped to the original Organization and
+Board and is canceled by closure or scope changes. All protected filter actions
+still require current admission.
+
+Local verification: all 62 label-picker, Reminder and filter tests passed,
+including returned-focus preservation, deliberate navigation, deferred read and
+scope/closure cancellation regressions. Type checking, lint and production build
+passed; five affected browser scenarios were discovered. These repairs still
+require execution against their exact release images. They do not establish that
+the other reported drag, option activation or notification failures are fixed.

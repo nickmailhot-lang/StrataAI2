@@ -19,7 +19,9 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
   const activeCard = card && snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === cardId));
   const current = page && page.cardVersion === card?.version;
   useEffect(() => {
-    if (restoreFocus.current && !busy && !disabled && activeCard) { restoreFocus.current = false; trigger.current?.focus({ preventScroll: true }); }
+    if (restoreFocus.current && !busy && !disabled && activeCard
+      && (document.activeElement === document.body || document.activeElement === trigger.current))
+      trigger.current?.focus({ preventScroll: true });
   }, [busy, disabled, activeCard]);
   useEffect(() => {
     if (intent && recoverFocus.current && !busy && !disabled && activeCard
@@ -83,7 +85,10 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
   }
   if (!admitted) return null;
   return <Box sx={{ mt: 2 }}>
-    <Button ref={trigger} disabled={busy || disabled || !!intent || denied || !activeCard} aria-expanded={open} onClick={() => void load()}>Edit Card labels</Button>
+    <Button ref={trigger} disabled={busy || disabled || !!intent || denied || !activeCard} aria-expanded={open}
+      onFocus={() => { restoreFocus.current = true; }}
+      onBlur={event => { if (event.relatedTarget !== null) restoreFocus.current = false; }}
+      onClick={() => { restoreFocus.current = false; void load(); }}>Edit Card labels</Button>
     {open && <Stack component="section" aria-label="Edit Card labels" spacing={1}>
       {busy && <Typography role="status">Updating label options…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}

@@ -17,6 +17,28 @@ const storage = (id = actor) => `strataai:board-filter:v1:${id}:${org}:${board}`
 function mount(p: ComponentProps<typeof BoardFilterControl> = props()) { return render(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>); }
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' })); await screen.findByRole('checkbox', { name: 'Priority (red)' }); }
 beforeEach(() => sessionStorage.clear()); afterEach(() => vi.unstubAllGlobals());
+it('accepts filter opening intent during admission without reading choices until available', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices());
+  vi.stubGlobal('fetch', fetch); const p = props(); const view = mount({ ...p, disabled: true });
+  const trigger = screen.getByRole('button', { name: 'Filter Board Cards' });
+  trigger.focus(); expect(trigger).toHaveFocus(); fireEvent.click(trigger);
+  expect(screen.getByRole('dialog')).toBeVisible(); expect(screen.getByText('Checking current Board access…')).toBeVisible();
+  expect(fetch).not.toHaveBeenCalled(); expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  view.rerender(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>);
+  await screen.findByRole('checkbox', { name: 'Priority (red)' }); expect(fetch).toHaveBeenCalledTimes(2);
+});
+it('cancels a deferred filter opening when closed or when Board scope changes', async () => {
+  const fetch = vi.fn(); vi.stubGlobal('fetch', fetch); const p = props(); const view = mount({ ...p, disabled: true });
+  fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Close filters' }));
+  view.rerender(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>);
+  expect(fetch).not.toHaveBeenCalled();
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  view.rerender(<MemoryRouter><BoardFilterControl {...p} disabled /></MemoryRouter>);
+  fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' }));
+  view.rerender(<MemoryRouter><BoardFilterControl {...p} snapshot={{ ...snapshot, board: { ...snapshot.board, id: actor } }} /></MemoryRouter>);
+  expect(fetch).not.toHaveBeenCalled(); await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});
 it('lets a viewer apply canonical label and keyword predicates and persists only criteria under their identity', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(results()); vi.stubGlobal('fetch', fetch); mount(); await open();
   fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: ' roof ' } }); fireEvent.click(screen.getByRole('checkbox', { name: 'Priority (red)' }));

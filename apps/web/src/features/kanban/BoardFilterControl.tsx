@@ -24,6 +24,7 @@ function saved(key: string): { criteria: Criteria; canvas: boolean } {
 }
 export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChange }: Props) {
   const [canvasMode, setCanvasMode] = useState(false);
+  const [openingPending, setOpeningPending] = useState<string>();
   const [open, setOpen] = useState(false); const [criteria, setCriteria] = useState<Criteria>(empty);
   const [applied, setApplied] = useState<Criteria>(); const [labels, setLabels] = useState<Label[]>([]);
   const [labelCursor, setLabelCursor] = useState<string | null>(null); const [result, setResult] = useState<Result>();
@@ -49,12 +50,14 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     setLabels([]); setLabelCursor(null); setResult(undefined); setIdentity(undefined); setApplied(undefined); setLoading(false); setLabelLoading(false);
     setNotice(undefined); setLabelNotice(undefined);
     setCriteria(empty()); setOpen(false); setCursor(undefined);
+    setOpeningPending(undefined);
     setCanvasMode(false);
   }, [org, board, available]);
   async function loadLabels(after?: string, opening = false, restoring = false) {
     if (!available || disabled || pending.current) return;
     const controller = new AbortController(); pending.current = controller; const ticket = epoch.current;
     if (opening) {
+      setOpeningPending(undefined);
       memberPending.current?.abort(); memberPending.current = undefined; setMemberOpen(false); setMembers([]); setMemberCursor(null); setMemberLoading(false); setMemberNotice(undefined);
       setCanvasMode(false); setOpen(!restoring); setCriteria(empty()); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCursor(undefined); setNotice(undefined);
     }
@@ -115,13 +118,17 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     } finally { if (ticket === epoch.current) { memberPending.current = undefined; setMemberLoading(false); } }
   }
   const restoreSavedCanvas = useEffectEvent(() => {
-    if (!onCanvasChange || !available || disabled || identity || pending.current) return;
+    if (!onCanvasChange || !available || disabled || openingPending || identity || pending.current) return;
     try {
       if (Object.keys(sessionStorage).some(key => key.startsWith('strataai:board-filter:v1:') && key.endsWith(`:${org}:${board}`) && saved(key).canvas))
         void loadLabels(undefined, true, true);
     } catch { /* Optional storage. */ }
   });
   useEffect(() => { restoreSavedCanvas(); }, [org, board, available, disabled, identity]);
+  const admitOpening = useEffectEvent(() => {
+    if (openingPending === `${org}/${board}` && available && !disabled && !pending.current) void loadLabels(undefined, true);
+  });
+  useEffect(() => { admitOpening(); }, [openingPending, available, disabled, labelLoading]);
   const refreshChoices = useEffectEvent(() => {
     if (!open || !identity || disabled || !available) return;
     epoch.current++; pending.current?.abort(); pending.current = undefined;
@@ -172,9 +179,9 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     try { sessionStorage.setItem(storageKey(identity), JSON.stringify(next)); } catch { /* Optional persistence. */ }
     setApplied(next); setCursor(undefined);
   }
-  function close() { epoch.current++; pending.current?.abort(); pending.current = undefined; memberPending.current?.abort(); memberPending.current = undefined; setMemberLoading(false); setMembers([]); setMemberOpen(false); setLabelLoading(false); setOpen(false); setResult(undefined); }
+  function close() { epoch.current++; pending.current?.abort(); pending.current = undefined; memberPending.current?.abort(); memberPending.current = undefined; setMemberLoading(false); setMembers([]); setMemberOpen(false); setLabelLoading(false); setOpen(false); setOpeningPending(undefined); setResult(undefined); }
   return <>
-    {available && <Button disabled={disabled} onClick={() => void loadLabels(undefined, true)}>Filter Board Cards</Button>}
+    {available && <Button onClick={() => { setOpen(true); setOpeningPending(`${org}/${board}`); }}>Filter Board Cards</Button>}
     {canvasMode && !open && <Stack spacing={1}>
       <Typography role="status">{result ? `Filtered Board: ${result.items.length} matching Cards on this page.` : 'Checking filtered Board Cards…'}</Typography>
       <Typography variant="body2">Open a Card to move it, or clear filters to reorder the full Board.</Typography>
@@ -189,7 +196,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     {!open && (notice || labelNotice) && <Typography role="status">{notice || labelNotice}</Typography>}
     <Dialog open={open && available} onClose={close} fullWidth maxWidth="sm">
       <DialogTitle>Filter Board Cards</DialogTitle>
-      <DialogContent><Stack spacing={2}>
+      <DialogContent>{openingPending ? <Typography role="status">Checking current Board access…</Typography> : <Stack spacing={2}>
         <TextField label="Card keyword" value={criteria.keyword} onChange={e => setCriteria(c => ({ ...c, keyword: e.target.value }))} disabled={disabled || labelLoading || !identity} slotProps={{ htmlInput: { maxLength: 160 } }} />
         <TextField select label="Match filters" value={criteria.match} onChange={e => setCriteria(c => ({ ...c, match: e.target.value as Criteria['match'] }))} disabled={disabled || labelLoading || !identity}>
           <MenuItem value="all">Match ALL</MenuItem><MenuItem value="any">Match ANY</MenuItem>
@@ -231,7 +238,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
           {result.next && <Button onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
           {cursor && <Button onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
         </Stack>}
-      </Stack></DialogContent><DialogActions><Button onClick={close}>Close filters</Button></DialogActions>
+      </Stack>}</DialogContent><DialogActions><Button onClick={close}>Close filters</Button></DialogActions>
     </Dialog>
   </>;
 }
