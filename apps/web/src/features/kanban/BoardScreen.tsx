@@ -23,6 +23,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { CardChecklists } from './CardChecklists';
+import { ChecklistCreateControl } from './ChecklistCreateControl';
 import { CardDateDisplay } from './CardDateDisplay';
 import { BoardDateProvider } from './BoardDateBadges';
 import { BoardCardLink } from './BoardCardLink';
@@ -101,7 +102,8 @@ function BoardContent() {
   const [memberRecovery, setMemberRecovery] = useState(false);
   const [dateRecovery, setDateRecovery] = useState(false);
   const [reminderRecovery, setReminderRecovery] = useState(false);
-  const otherBusy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || reminderRecovery;
+  const [checklistRecovery, setChecklistRecovery] = useState(false);
+  const otherBusy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || reminderRecovery || checklistRecovery;
   const busy = otherBusy || dateRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
@@ -689,11 +691,16 @@ function BoardContent() {
               onBusyChange={setBusy} onRecoveryChange={setDateRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             <CardReminderControl card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || cardRecovery}
+              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || cardRecovery || checklistRecovery}
               unavailable={snapshotReading || !!loadError} onBusyChange={setBusy} onRecoveryChange={setReminderRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             {cardId && <CardChecklists organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            {cardId && <ChecklistCreateControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              cardId={card.id} version={card.version} editable={Boolean(editable)} unavailable={snapshotReading || !!loadError}
+              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery}
+              onBusyChange={setBusy} onRecoveryChange={setChecklistRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardLabels key={`labels-${card.id}`} organizationId={snapshot.board.organizationId}
               boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
@@ -714,17 +721,17 @@ function BoardContent() {
               snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === cardId))}
             disabled={busy || !!loadError} refreshing={snapshotReading} onReturnFocus={() => cardClose.current?.focus({ preventScroll: true })} />}
           {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || snapshotReading || !!loadError}
+            disabled={operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onAcknowledged={() => { canvasFocus.current = { scope: key, cardId };
               setSnapshotReading(true); setReload(value => value + 1); closeCard(); }} />}
           {cardId && <CardLabelPicker key={`label-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || snapshotReading || !!loadError}
+            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setAssignmentRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {cardId && <CardMemberPicker key={`member-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || cardRecovery || dateRecovery || reminderRecovery || snapshotReading || !!loadError}
+            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setMemberRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
         </DialogContent>

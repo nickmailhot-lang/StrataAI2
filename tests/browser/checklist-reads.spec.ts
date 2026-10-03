@@ -43,6 +43,28 @@ for (const width of [1280, 390]) {
         await reader.getByRole('button', { name: 'Hide checklists', exact: true }).press('Enter');
         await expect(reader.getByRole('region', { name: 'Card checklists', exact: true })).toHaveCount(0);
       }
+      const attempts: { key: string | undefined; body: string | null }[] = []; let drop = true;
+      await page.route(`**/cards/${card}/checklists`, async intercepted => {
+        if (intercepted.request().method() !== 'POST') { await intercepted.continue(); return; }
+        attempts.push({ key: intercepted.request().headers()['idempotency-key'], body: intercepted.request().postData() });
+        const response = await intercepted.fetch(); expect(response.status()).toBe(200);
+        if (drop) { drop = false; await intercepted.abort('failed'); } else await intercepted.fulfill({ response });
+      });
+      const add = page.getByRole('button', { name: 'Add checklist', exact: true }); await expect(add).toBeEnabled(); await add.press('Enter');
+      await page.getByRole('textbox', { name: /New checklist title/ }).fill('Follow-up preparation');
+      await page.getByRole('button', { name: 'Create checklist', exact: true }).press('Enter');
+      const retry = page.getByRole('button', { name: 'Retry checklist creation', exact: true }); await expect(retry).toBeEnabled();
+      await expect(retry).toBeFocused(); await expect(page.getByRole('textbox', { name: /New checklist title/ })).toBeDisabled();
+      await retry.press('Enter'); await expect(page.getByText('Checklist created.', { exact: true })).toBeVisible();
+      expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
+      expect(JSON.parse(attempts[0].body!)).toEqual({ title: 'Follow-up preparation', cardVersion: 4 });
+      await page.unroute(`**/cards/${card}/checklists`);
+      for (const reader of [page, peer]) {
+        const show = reader.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
+        await expect(reader.getByRole('heading', { name: 'Follow-up preparation', exact: true })).toBeVisible();
+        await expect(reader.getByText('0 of 0 items complete (0%)', { exact: true })).toBeVisible();
+        expect((await new AxeBuilder({ page: reader }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      }
     } finally { await peerContext.close(); }
   });
 }

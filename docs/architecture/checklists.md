@@ -265,3 +265,24 @@ registered for desktop/390px keyboard reads, full-page WCAG checks and two-sessi
 CHECKLIST_ITEM_COMPLETED refresh through the real API/outbox/live layer. Listing
 those cases confirms discovery only; actual exact-image browser execution is
 pending, including existing cached-detail/performance budgets.
+
+The 7ac2db3 Linux run passed all 246 Domain and 236 API tests. Its mandatory
+Checklist release-image step passed public reads/retraction, both post-wait
+visibility denials, all child commands and rollback checks, append-only cascade
+audit, complete graph copy, movement and retained parent lifecycle. Overall CI
+and newer UI release-image checks remain separately required.
+
+Card detail now includes MUI Checklist creation with an explicitly reviewed actor
+and Card revision. Dirty titles survive a newer snapshot and require discard/current
+review after conflict. Unconfirmed transport or malformed acknowledgement retains
+the original title, Card revision, actor and idempotency key; retry checks the same
+current actor and validates authoritative scope/title/new child revision/Card CAS.
+Definite denials block resubmission until current review. An unresolved operation
+locks other mutations, and Card navigation cancels the owning request. Recovery
+focus survives temporary re-admission while respecting intentional focus changes.
+The title field is hidden during access re-admission and disabled without editing
+authority. Ten creation tests and all 26 Board tests pass, alongside the 43 reader
+tests; typecheck/lint pass. Desktop/mobile browser scenarios now also lose a real
+committed creation response and compare the recovered original request/key and
+persisted empty Checklist across both sessions. Execution is pending. Item and
+Checklist edit/reorder/delete recovery controls remain unfinished.

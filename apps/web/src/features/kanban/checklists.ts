@@ -10,6 +10,7 @@ export type ChecklistItem = { id: string; organizationId: string; checklistId: s
 export type ChecklistSummary = { checklist: Checklist; completed: number; total: number; percent: number };
 export type ChecklistPage = ChecklistScope & { cardVersion: number; canEdit: boolean; items: ChecklistSummary[]; nextCursor: string | null };
 export type ChecklistItemPage = ChecklistScope & { cardVersion: number; canEdit: boolean; summary: ChecklistSummary; items: ChecklistItem[]; nextCursor: string | null };
+export type ChecklistChange = ChecklistScope & { cardVersion: number; checklist: Checklist; changed: boolean };
 
 const invalid = () => new Error('Invalid checklist response');
 const sameId = (value: unknown, expected: string) => notificationUuid(value) && notificationUuid(expected) && value.toLowerCase() === expected.toLowerCase();
@@ -90,4 +91,11 @@ export function parseChecklistItemPage(value: unknown, scope: ChecklistScope, ch
   if (progress.total < rows.length || progress.completed < completed || progress.total - progress.completed < rows.length - completed) throw invalid();
   ordered(rows, checklistId, row.nextCursor, after);
   return row as ChecklistItemPage;
+}
+export function parseChecklistCreated(value: unknown, scope: ChecklistScope, title: string, cardVersion: number): ChecklistChange {
+  const row = record(value); const child = checklist(row.checklist, scope);
+  if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.boardId, scope.boardId) || !sameId(row.cardId, scope.cardId) ||
+    !version(cardVersion) || !version(row.cardVersion) || row.cardVersion !== cardVersion + 1 || row.changed !== true ||
+    child.title !== title || child.version !== 1 || instant(child.createdAt) !== instant(child.updatedAt)) throw invalid();
+  return row as ChecklistChange;
 }
