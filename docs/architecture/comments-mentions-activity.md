@@ -201,3 +201,31 @@ valid emoji and .NET/JavaScript whitespace differences), malformed surrogate/
 control/oversize input, foreign/stale/extra metadata, redaction/history,
 lookahead/tied cursor boundaries and mutation acknowledgments. Typecheck and
 lint pass. MUI controls and native accessibility/collaboration are still required.
+
+The MUI Card comments control is now integrated into Card detail. It reviews
+current profile and scoped pages, renders literal plaintext and retained
+history, offers only the current author's edit/removal controls, confirms body
+removal, and captures both revisions plus an immutable original retry key/body.
+Only uncertain responses offer original recovery; definite refusals retire the
+protected review and require explicit discard/current review. Drafts and
+unconfirmed commands fence competing Board/Card actions and Card closure.
+Unavailable or newer contexts hide old rows; acknowledgments display only at
+the corresponding current Card revision. Focus recovery respects another
+control's focus ownership. There are no automatic mention recipients.
+
+Typecheck and lint pass. All 49 selected client/Board tests pass, including
+plaintext rendering, author/no-op/edit/delete policy, confirmation, immutable
+retry across newer snapshots, account changes, malformed acknowledgment,
+400/401/403/404/409/429 refusals, empty/read-only/stale states and actual Board
+closure/competing-action guards. These component tests are not native proof.
+
+Two desktop/mobile release-browser scenarios are registered (1280/390px).
+They use actual login, commands, comment storage and event delivery; only the
+first already-committed create response is replaced with 503. They assert the
+same original key/body, single persisted comment, dual revisions, edits,
+confirmation, redacted tombstone, refusal of the original former-body receipt,
+exactly three comment events, focus and axe checks. Registration passed; native
+execution remains pending the immutable-image CI fixture. No full acceptance
+criterion is closed; live automatic comment-page reconciliation, readable
+historical author names, mentions, activity projection, large-data and complete
+release evidence still require work.
