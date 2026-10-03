@@ -59,6 +59,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<CardDateService>();
         services.AddSingleton<IChecklistStore>(provider => (IChecklistStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<ChecklistService>();
+        services.AddSingleton<CardCommentService>();
         services.AddSingleton<AttachmentService>();
         services.AddSingleton<AttachmentLifecycleService>();
         services.AddSingleton<ICardAttachmentCoverStore>(provider => (ICardAttachmentCoverStore)provider.GetRequiredService<IWorkManagementStore>());

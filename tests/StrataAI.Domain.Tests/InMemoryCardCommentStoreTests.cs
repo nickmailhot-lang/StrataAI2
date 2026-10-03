@@ -16,12 +16,16 @@ public sealed class InMemoryCardCommentStoreTests
 {
     private sealed class Actor : ICommandActorAuthorization
     { public bool Allowed = true; public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(Allowed); }
+    private sealed class CommandContext : IWorkCommandContext
+    { public Guid? IdempotencyKey { get; set; } }
     private static ServiceProvider Demo(Actor actor)
     {
         var services = new ServiceCollection(); var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
         services.AddSingleton<IClock, SystemClock>(); services.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
-        services.AddSingleton<ICommandActorAuthorization>(actor); return services.BuildServiceProvider();
+        services.AddSingleton<ICommandActorAuthorization>(actor);
+        services.AddSingleton<CommandContext>(); services.AddSingleton<IWorkCommandContext>(p => p.GetRequiredService<CommandContext>());
+        return services.BuildServiceProvider();
     }
     private static async Task<(Guid Org,Guid User,CardRecord Card)> Parent(ServiceProvider services, CancellationToken ct)
     {
@@ -103,5 +107,80 @@ public sealed class InMemoryCardCommentStoreTests
         Assert.Equal(success.Value, (await Execute()).Value); Assert.Equal(2, attempts);
         Assert.Single(await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct));
         Assert.Single((await services.GetRequiredService<IWorkEventReader>().ReadAsync(parent.Org, parent.Card.BoardId, 0, 50, ct)).Events);
+    }
+
+    [Fact]
+    public async Task PRD_15_TC_01_07_ApplicationCommentCommandsConsumeBothRevisionsAndNeverReplayRedactedBody()
+    {
+        var ct = TestContext.Current.CancellationToken; using var services = Demo(new()); var parent = await Parent(services, ct);
+        var service = services.GetRequiredService<CardCommentService>(); var context = services.GetRequiredService<CommandContext>();
+        var reader = services.GetRequiredService<IWorkEventReader>();
+        var key = Guid.NewGuid(); context.IdempotencyKey = key; var input = new CreateCardCommentInput("  First\r\n🙂  ", 1);
+        var created = await service.CreateAsync(parent.Card.Id, parent.User, input, "comment-test", ct);
+        Assert.True(created.Succeeded); var row = created.Value!; Assert.Equal(2, row.CardVersion); Assert.Equal(1, row.Comment.Version);
+        Assert.Equal("First\n🙂", row.Comment.Content);
+        Assert.Equal(row, (await service.CreateAsync(parent.Card.Id, parent.User, input, "comment-retry", ct)).Value);
+        context.IdempotencyKey = Guid.NewGuid();
+        var noop = await service.EditAsync(parent.Card.Id, row.Comment.Id, parent.User, new("First\n🙂", 2, 1), "comment-test", ct);
+        Assert.True(noop.Succeeded); Assert.False(noop.Value!.Changed); Assert.Equal(2, noop.Value.CardVersion);
+        context.IdempotencyKey = Guid.NewGuid();
+        var edited = await service.EditAsync(parent.Card.Id, row.Comment.Id, parent.User, new("Edited", 2, 1), "comment-test", ct);
+        Assert.True(edited.Succeeded); Assert.Equal(3, edited.Value!.CardVersion); Assert.Equal(2, edited.Value.Comment.Version);
+        context.IdempotencyKey = Guid.NewGuid();
+        var unconfirmed = await service.DeleteAsync(parent.Card.Id, row.Comment.Id, parent.User, new(3, 2, false), "comment-test", ct);
+        Assert.Equal("comment_delete_confirmation_required", unconfirmed.ErrorCode);
+        var deleted = await service.DeleteAsync(parent.Card.Id, row.Comment.Id, parent.User, new(3, 2, true), "comment-test", ct);
+        Assert.True(deleted.Succeeded); Assert.Equal(4, deleted.Value!.CardVersion); Assert.Equal(3, deleted.Value.Comment.Version);
+        Assert.Null(deleted.Value.Comment.Content); Assert.Equal(edited.Value.Comment.EditedAt, deleted.Value.Comment.EditedAt);
+        context.IdempotencyKey = key;
+        Assert.Equal("comment_not_found", (await service.CreateAsync(parent.Card.Id, parent.User, input, "comment-retry", ct)).ErrorCode);
+        var page = await service.ListAsync(parent.Card.Id, parent.User, null, ct);
+        Assert.True(page.Succeeded); Assert.True(page.Value!.CanComment); Assert.Null(Assert.Single(page.Value.Items).Content);
+        var changes = (await reader.ReadAsync(parent.Org, parent.Card.BoardId, 0, 50, ct)).Events;
+        Assert.Equal(new[] { "COMMENT_ADDED", "COMMENT_EDITED", "COMMENT_DELETED" }, changes.Select(x => x.Event.EventType));
+        Assert.All(changes, x => { Assert.Equal("Card", x.Event.EntityType); Assert.Equal(parent.Card.Id, x.Event.EntityId); });
+    }
+
+    [Fact]
+    public async Task PRD_15_TC_03_04_ApplicationRefusesInvalidForeignAuthorAndGovernanceWithoutBoardParticipation()
+    {
+        var ct = TestContext.Current.CancellationToken; using var services = Demo(new()); var parent = await Parent(services, ct);
+        var service = services.GetRequiredService<CardCommentService>(); var work = services.GetRequiredService<IWorkManagementStore>();
+        var orgs = services.GetRequiredService<IOrganizationStore>(); var context = services.GetRequiredService<CommandContext>();
+        context.IdempotencyKey = Guid.NewGuid();
+        Assert.Equal("invalid_comment_content", (await service.CreateAsync(parent.Card.Id, parent.User, new(" \0 ", 1), "comment-test", ct)).ErrorCode);
+        Assert.Empty((await service.ListAsync(parent.Card.Id, parent.User, null, ct)).Value!.Items);
+        var created = (await service.CreateAsync(parent.Card.Id, parent.User, new("Owned", 1), "comment-test", ct)).Value!;
+        var governor = Guid.NewGuid(); await orgs.AddOrRestoreMemberAsync(parent.Org, governor, OrganizationRole.Admin, DateTimeOffset.UtcNow, ct);
+        context.IdempotencyKey = Guid.NewGuid();
+        Assert.Equal("comment_not_found", (await service.CreateAsync(parent.Card.Id, governor, new("Denied", 2), "comment-test", ct)).ErrorCode);
+        await work.UpsertBoardMemberAsync(parent.Card.BoardId, governor, BoardRole.Member, DateTimeOffset.UtcNow, ct);
+        Assert.Equal("comment_not_found", (await service.EditAsync(parent.Card.Id, created.Comment.Id, governor, new("Foreign", 2, 1), "comment-test", ct)).ErrorCode);
+        Assert.Equal("comment_not_found", (await service.DeleteAsync(parent.Card.Id, created.Comment.Id, governor, new(2, 1, true), "comment-test", ct)).ErrorCode);
+        Assert.Equal("version_conflict", (await service.EditAsync(parent.Card.Id, created.Comment.Id, parent.User, new("Stale", 1, 1), "comment-test", ct)).ErrorCode);
+        Assert.Equal(created.Comment, Assert.Single((await service.ListAsync(parent.Card.Id, parent.User, null, ct)).Value!.Items));
+        Assert.Equal(2, (await work.FindCardAsync(parent.Card.Id, ct))!.Version);
+        Assert.Equal("invalid_comment_cursor", (await service.ListAsync(parent.Card.Id, parent.User, new string('x', 161), ct)).ErrorCode);
+        Assert.False((await service.ListAsync(parent.Card.Id, Guid.Empty, null, ct)).Succeeded);
+    }
+
+    [Fact]
+    public async Task PRD_15_TC_05_10_CurrentMembershipSessionAndArchivedParentsRefuseFreshCommandsAndReceipts()
+    {
+        var ct = TestContext.Current.CancellationToken; var actor = new Actor(); using var services = Demo(actor); var parent = await Parent(services, ct);
+        var service = services.GetRequiredService<CardCommentService>(); var work = services.GetRequiredService<IWorkManagementStore>();
+        var context = services.GetRequiredService<CommandContext>(); context.IdempotencyKey = Guid.NewGuid(); var input = new CreateCardCommentInput("Retained", 1);
+        var created = (await service.CreateAsync(parent.Card.Id, parent.User, input, "comment-test", ct)).Value!;
+        actor.Allowed = false;
+        Assert.Equal("session_unavailable", (await service.CreateAsync(parent.Card.Id, parent.User, input, "comment-test", ct)).ErrorCode);
+        actor.Allowed = true;
+        await work.SetCardLifecycleAsync(parent.Card.Id, WorkItemLifecycleState.Active, WorkItemLifecycleState.Archived, 2, DateTimeOffset.UtcNow, ct);
+        Assert.Equal("comment_not_found", (await service.CreateAsync(parent.Card.Id, parent.User, input, "comment-test", ct)).ErrorCode);
+        var archived = (await service.ListAsync(parent.Card.Id, parent.User, null, ct)).Value!;
+        Assert.False(archived.CanComment); Assert.Equal(created.Comment, Assert.Single(archived.Items));
+        await work.SetCardLifecycleAsync(parent.Card.Id, WorkItemLifecycleState.Archived, WorkItemLifecycleState.Active, 3, DateTimeOffset.UtcNow, ct);
+        await work.RemoveBoardMemberAsync(parent.Card.BoardId, parent.User, DateTimeOffset.UtcNow, ct);
+        Assert.Equal("comment_not_found", (await service.CreateAsync(parent.Card.Id, parent.User, input, "comment-test", ct)).ErrorCode);
+        Assert.False((await service.ListAsync(parent.Card.Id, parent.User, null, ct)).Value!.CanComment);
     }
 }

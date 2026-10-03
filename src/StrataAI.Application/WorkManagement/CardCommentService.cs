@@ -1,0 +1,126 @@
+using System.Globalization;
+using StrataAI.Application.Common;
+using StrataAI.Application.Identity;
+using StrataAI.Application.Organizations;
+using StrataAI.Domain.WorkManagement;
+
+namespace StrataAI.Application.WorkManagement;
+
+public sealed record CreateCardCommentInput(string? Content, long CardVersion);
+public sealed record EditCardCommentInput(string? Content, long CardVersion, long Version);
+public sealed record DeleteCardCommentInput(long CardVersion, long Version, bool Confirmed);
+public sealed record CardCommentChange(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion, CardCommentRecord Comment, bool Changed);
+public sealed record CardCommentPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
+    IReadOnlyList<CardCommentRecord> Items, string? NextCursor, bool CanComment);
+
+// Internal authenticated comment boundary. Public/Owner Portal projection needs
+// its own explicit policy; visibility alone does not establish participation.
+public sealed class CardCommentService(IWorkManagementStore work, ICardCommentStore comments,
+    IOrganizationStore organizations, IWorkBoardAuthorization boards, IWorkManagementUnitOfWork transactions,
+    IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events)
+{
+    public async Task<WorkOperation<CardCommentPage>> ListAsync(Guid cardId, Guid actor, string? after, CancellationToken ct = default)
+    {
+        var hint = await work.FindCardAsync(cardId, ct);
+        if (hint is null) return WorkOperation<CardCommentPage>.Failure("card_not_found");
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "card_not_found", () => Admit(hint, actor, false, ct), async () =>
+        {
+            var current = await work.FindCardAsync(cardId, ct);
+            if (current is null) return WorkOperation<CardCommentPage>.Failure("card_not_found");
+            DateTimeOffset? before = null; Guid? beforeId = null;
+            if (after is not null)
+            {
+                var parts = after.Length <= 160 ? after.Split('/') : [];
+                if (parts.Length != 4 || !Guid.TryParseExact(parts[0], "D", out var parent) || parent != cardId
+                    || !long.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var version) || version < 1
+                    || !long.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out var ticks)
+                    || ticks < DateTimeOffset.MinValue.Ticks || ticks > DateTimeOffset.MaxValue.Ticks || ticks % 10 != 0
+                    || !Guid.TryParseExact(parts[3], "D", out var id) || id == Guid.Empty)
+                    return WorkOperation<CardCommentPage>.Failure("invalid_comment_cursor");
+                if (current.Version != version) return WorkOperation<CardCommentPage>.Failure("version_conflict");
+                before = new(ticks, TimeSpan.Zero); beforeId = id;
+            }
+            var rows = await comments.ListAsync(hint.OrganizationId, cardId, before, beforeId, ct);
+            if (!await Admit(hint, actor, false, ct)) return WorkOperation<CardCommentPage>.Failure("card_not_found");
+            var items = rows.Take(50).ToArray();
+            var cursor = rows.Count > 50 ? $"{cardId:D}/{current.Version.ToString(CultureInfo.InvariantCulture)}/{items[^1].CreatedAt.UtcTicks.ToString(CultureInfo.InvariantCulture)}/{items[^1].Id:D}" : null;
+            return WorkOperation<CardCommentPage>.Success(new(hint.OrganizationId, hint.BoardId, cardId, current.Version, items, cursor,
+                await Admit(hint, actor, true, ct)));
+        }, ct);
+    }
+
+    public Task<WorkOperation<CardCommentChange>> CreateAsync(Guid cardId, Guid actor, CreateCardCommentInput input, string correlationId, CancellationToken ct = default)
+        => Change(cardId, null, actor, input.CardVersion, null, input.Content, false, false, input, correlationId, ct);
+    public Task<WorkOperation<CardCommentChange>> EditAsync(Guid cardId, Guid commentId, Guid actor, EditCardCommentInput input, string correlationId, CancellationToken ct = default)
+        => Change(cardId, commentId, actor, input.CardVersion, input.Version, input.Content, false, false, input, correlationId, ct);
+    public Task<WorkOperation<CardCommentChange>> DeleteAsync(Guid cardId, Guid commentId, Guid actor, DeleteCardCommentInput input, string correlationId, CancellationToken ct = default)
+        => Change(cardId, commentId, actor, input.CardVersion, input.Version, null, true, input.Confirmed, input, correlationId, ct);
+
+    private async Task<WorkOperation<CardCommentChange>> Change(Guid cardId, Guid? commentId, Guid actor, long cardVersion,
+        long? commentVersion, string? content, bool deleting, bool confirmed, object input, string correlationId, CancellationToken ct)
+    {
+        var hint = await work.FindCardAsync(cardId, ct);
+        if (hint is null) return WorkOperation<CardCommentChange>.Failure("card_not_found");
+        var type = deleting ? "COMMENT_DELETED" : commentId.HasValue ? "COMMENT_EDITED" : "COMMENT_ADDED";
+        return await transactions.ExecuteAsync(hint.OrganizationId,
+            WorkCommand.Create(actor, context.IdempotencyKey, type, commentId ?? cardId, new { cardId, input }, "comment_not_found"),
+            async receipt =>
+            {
+                if (!await Admit(hint, actor, true, ct)) return false;
+                if (commentId is { } requested && (await comments.FindAsync(hint.OrganizationId, cardId, requested, ct))?.AuthorId != actor) return false;
+                if (receipt is null) return true;
+                if (receipt.OrganizationId != hint.OrganizationId || receipt.BoardId != hint.BoardId || receipt.CardId != cardId
+                    || receipt.Comment.OrganizationId != hint.OrganizationId || receipt.Comment.CardId != cardId || receipt.Comment.AuthorId != actor
+                    || commentId is { } child && receipt.Comment.Id != child) return false;
+                // Never replay a former body after an edit or redaction. A newer
+                // unrelated Card version does not invalidate an exact receipt.
+                return await comments.FindAsync(hint.OrganizationId, cardId, receipt.Comment.Id, ct) == receipt.Comment;
+            }, async () =>
+            {
+                if (cardVersion < 1 || commentId == Guid.Empty || commentId.HasValue && commentVersion is not > 0)
+                    return WorkOperation<CardCommentChange>.Failure("invalid_comment_version");
+                if (deleting && !confirmed) return WorkOperation<CardCommentChange>.Failure("comment_delete_confirmation_required");
+                var current = await work.FindCardAsync(cardId, ct);
+                var child = commentId is { } id ? await comments.FindAsync(hint.OrganizationId, cardId, id, ct) : null;
+                if (current is null || commentId.HasValue && (child is null || child.AuthorId != actor)) return WorkOperation<CardCommentChange>.Failure("comment_not_found");
+                if (current.Version != cardVersion || child is not null && child.Version != commentVersion)
+                    return WorkOperation<CardCommentChange>.Failure("version_conflict");
+                string? normalized = null;
+                if (!deleting)
+                {
+                    if (child?.DeletedAt is not null) return WorkOperation<CardCommentChange>.Failure("comment_not_found");
+                    try { normalized = CardComment.RequireContent(content!); }
+                    catch (ArgumentException) { return WorkOperation<CardCommentChange>.Failure("invalid_comment_content"); }
+                }
+                if (child is not null && (deleting ? child.DeletedAt is not null : child.Content == normalized))
+                    return await Complete(hint, actor, current.Version, child, false, ct);
+                var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
+                if (current.Version == long.MaxValue || now < current.UpdatedAt || child is not null && (child.Version == long.MaxValue || now < child.UpdatedAt))
+                    return WorkOperation<CardCommentChange>.Failure("version_conflict");
+                var updated = await work.UpdateCardAsync(cardId, current.Title, current.Description, cardVersion, now, ct);
+                if (updated is null) return WorkOperation<CardCommentChange>.Failure("version_conflict");
+                var changed = child is null ? await comments.CreateAsync(Guid.NewGuid(), hint.OrganizationId, cardId, actor, normalized!, now, ct)
+                    : deleting ? await comments.DeleteAsync(hint.OrganizationId, cardId, child.Id, actor, child.Version, now, ct)
+                    : await comments.EditAsync(hint.OrganizationId, cardId, child.Id, actor, child.Version, normalized!, now, ct);
+                if (changed is null) return WorkOperation<CardCommentChange>.Failure("version_conflict");
+                await work.AppendAuditAsync(hint.OrganizationId, actor, type, "Comment", changed.Id, correlationId, ct);
+                // Content-free Card invalidation; activity/mention projections
+                // require their own additional producer and disclosure policy.
+                await events.AppendAsync(new(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor, type, "Card", cardId, updated.Version, correlationId, now), ct);
+                return await Complete(hint, actor, updated.Version, changed, true, ct);
+            }, ct);
+    }
+    private async Task<WorkOperation<CardCommentChange>> Complete(CardRecord hint, Guid actor, long version, CardCommentRecord comment, bool changed, CancellationToken ct)
+    {
+        if (!await Admit(hint, actor, true, ct)) return WorkOperation<CardCommentChange>.Failure("comment_not_found");
+        if (!await actors.VerifyAsync(actor, ct)) return WorkOperation<CardCommentChange>.Failure("session_unavailable");
+        return WorkOperation<CardCommentChange>.Success(new(hint.OrganizationId, hint.BoardId, hint.Id, version, comment, changed));
+    }
+    private async Task<bool> Admit(CardRecord hint, Guid actor, bool writing, CancellationToken ct)
+    {
+        if (actor == Guid.Empty || !await AttachmentAdmission.CheckAsync(work, organizations, boards, hint, actor, writing, ct)) return false;
+        // COMMENT requires explicit current Board participation; Organization
+        // governance or PUBLIC visibility alone is insufficient.
+        return !writing || (await work.FindBoardMemberAsync(hint.BoardId, actor, ct)) is { Active: true };
+    }
+}

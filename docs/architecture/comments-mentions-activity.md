@@ -125,3 +125,29 @@ only the registered Work/event/notification participants; reminder/watch stores
 and the existing no-op Demo audit implementation remain outside this claim.
 No performance budget or full comment acceptance criterion is closed. Local
 warning-as-error compilation passes; new Demo runtime tests await Linux CI.
+
+The Application producer now defines authenticated internal list/create/edit/
+delete operations. COMMENT requires active explicit Board participation in
+addition to current Organization membership/session, Board rights and active
+parents. Organization governance and PUBLIC view alone do not grant COMMENT.
+Author equality is necessary for edit/delete, which also require current edit
+rights. Confirmed body-redacting deletion uses the author's policy rather than
+elevated parent deletion; tombstones are retained and cannot be revived.
+
+Commands CAS the Card aggregate and comment revision in the owning transaction,
+then append content-free Card invalidation plus Comment audit attribution.
+Equal normalized edits and repeated current-revision deletion are no-ops.
+Reads expose at most 50 items with version-bound, bounded timestamp/UUID seek
+cursors. Read admission remains authenticated internal Organization/Board view;
+archived parents are read-only. Original successful receipts are disclosed only
+if current comment metadata/body still exactly matches, preventing recovery of
+an edited/redacted body; unrelated newer Card versions permit exact recovery.
+
+New Application tests use actual Demo stores/unit/Board policy with a controlled
+session verifier: normalization, dual revisions, no-op, confirmation, replay,
+redaction, content-free events, invalid input/cursors, foreign author, governance
+without participation, session loss, archive and Board membership revocation.
+Compilation passes; new runtime execution is pending Linux CI. No HTTP route,
+mentions or complete activity projection is exposed by this producer slice.
+Durable receipt retention/redaction needs an explicit policy before full release;
+receipt admission prevents body replay but does not erase stored former receipts.
