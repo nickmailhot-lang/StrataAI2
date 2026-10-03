@@ -26,6 +26,7 @@ import { CardChecklists } from './CardChecklists';
 import { CardAttachments } from './CardAttachments';
 import { AttachmentManageControl } from './AttachmentManageControl';
 import { CardCoverControl } from './CardCoverControl';
+import { CardCoverImage } from './CardCoverImage';
 import { UrlAttachmentCreateControl } from './UrlAttachmentCreateControl';
 import { FileAttachmentCreateControl } from './FileAttachmentCreateControl';
 import { ChecklistCreateControl } from './ChecklistCreateControl';
@@ -597,6 +598,8 @@ function BoardContent() {
                   disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId}
                   available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(item.version) && item.version > 0}>
                 <BoardCardLink card={item} boardPath={boardPath} links={cardLinks.current}
+                  organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+                  coverUnavailable={snapshotReading || !!loadError || snapshot.board.lifecycleState !== 'active' || column.list.lifecycleState !== 'active'}
                   labels={snapshot.cardLabels?.[item.id]} members={snapshotReading || loadError ? undefined : snapshot.cardMembers?.[item.id]} />
                 </CardDragItem>
               ))}
@@ -684,7 +687,9 @@ function BoardContent() {
               This card is unavailable in this board.
             </Alert>
           ) : (
-            <><CardDetailEditor
+            <><CardCoverImage organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} card={card} detail
+              unavailable={snapshotReading || !!loadError || snapshot.board.lifecycleState !== 'active' || !snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === card.id))} />
+            <CardDetailEditor
               key={card.id}
               card={card}
               acknowledged={acknowledged}

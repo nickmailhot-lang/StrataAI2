@@ -429,3 +429,25 @@ original retry available. Ten control scenarios and the existing 29 Board tests
 pass locally; a new Board recovery integration scenario separately passes. Web
 typecheck and lint pass. Actual new Linux/native release coverage is pending;
 cover image rendering and remaining full PRD acceptance remain open.
+
+All source gates for 1d4086c pass, including Linux managed/API tests and the
+restricted PostgreSQL contracts. Immutable image build is still running.
+
+Card faces now lazily render the selected sanitized image using only the
+snapshot HasCover hint and current Card/revision image route; open Card details
+load that same image eagerly. Scope uncertainty, archived parents, removal,
+context changes and revision changes retire the old image. Failed delivery shows
+a generic unavailable caption without attachment/provider identity. Forty-one
+image and Board component scenarios pass locally, including refresh/removal and
+original retry guarding; web typecheck/lint/production build also pass. The
+display test checks both DOM images while MUI correctly hides the background
+canvas from assistive technology during the details dialog.
+
+Two desktop/mobile native client contract scenarios are registered for the
+release browser suite: PUBLIC warning and keyboard checkbox consent, original
+retry key/body after uncertain acknowledgment and a newer snapshot, competing
+mutation guards, actual browser PNG decoding, focus, accessibility and removal
+without reconsent. Publication, cover replies and provider delivery in those
+scenarios are explicitly simulated, and the unchanged canonical backing Card is
+asserted. Registration is not execution evidence. Full genuine upload-through-
+Worker publication and native cover delivery/lifecycle acceptance remain open.

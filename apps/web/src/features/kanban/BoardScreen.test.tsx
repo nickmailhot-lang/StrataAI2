@@ -868,4 +868,26 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
   });
 
+  it('renders only admitted cover hints on the Card face/detail and retires images during live refresh/removal', async () => {
+    const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+    const current = structuredClone(fixture); current.board.id = uuid(2); current.board.organizationId = uuid(1);
+    current.lists[0].list.id = uuid(6); current.lists[0].cards[0].id = uuid(3); current.lists[0].cards[0].hasCover = true;
+    const removed = structuredClone(current); removed.lists[0].cards[0].version = 4; removed.lists[0].cards[0].hasCover = false;
+    let invalidate: (() => void) | undefined; let finish: ((value: Response) => void) | undefined;
+    vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(current)).mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; })));
+    mount(`/app/${uuid(1)}/boards/${uuid(2)}/cards/${uuid(3)}`);
+    await screen.findByRole('heading', { name: 'Card details' });
+    // MUI hides the canvas from assistive technology while details are open.
+    await screen.findByRole('img', { name: 'Card cover' });
+    const images = [...document.querySelectorAll('img[alt="Card cover"]')]; expect(images).toHaveLength(2);
+    expect(images.map(image => image.getAttribute('loading')).sort()).toEqual(['eager', 'lazy']);
+    for (const image of images) expect(image).toHaveAttribute('src', `/cards/${uuid(3)}/cover/image?cardVersion=3`);
+    await waitFor(() => expect(invalidate).toBeDefined()); act(() => invalidate!());
+    await waitFor(() => expect(document.querySelectorAll('img[alt="Card cover"]')).toHaveLength(0));
+    await waitFor(() => expect(finish).toBeDefined()); await act(async () => finish!(response(removed)));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Save card' })).toBeEnabled());
+    expect(document.querySelectorAll('img[alt="Card cover"]')).toHaveLength(0);
+  });
+
 });
