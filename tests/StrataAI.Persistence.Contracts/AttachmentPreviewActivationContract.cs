@@ -252,6 +252,8 @@ internal static class AttachmentPreviewActivationContract
             "Cover changes did not deliver exactly their six canonical outbox events.");
         Require(await Scalar<long>("SELECT count(*) FROM work_events WHERE tenant_id=@tenant AND entity_id=@card AND event_type='CARD_COVER_CHANGED' AND ready_at IS NOT NULL;") == 4,
             "Cover event feed readiness lost a selected/cleared/public/removed change.");
+        await CardCoverDeliveryContract.RunAsync(admin, readProvider, objects.ApiConnections!, objects, organization, card, source, job.ActorId,
+            declaredBytes, () => objects.Reads, value => objects.Corrupt = value, callback => objects.AfterRead = callback, ct);
         Require(!(await admission.AdmitPreviewAsync(card,source,job.ActorId,ct,archiveReview:true)).Succeeded,
             "Archive review admitted an Active source.");
         await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");

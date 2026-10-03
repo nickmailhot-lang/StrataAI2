@@ -72,6 +72,16 @@ public static partial class WorkManagementEndpoints
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         if (!app.Services.GetRequiredService<AttachmentUploadAvailability>().Enabled) return;
+        // Public admission is solely for the currently selected sanitized image.
+        // No caller-controlled File/preview identity enters this delivery route.
+        app.MapGet("/cards/{cardId:guid}/cover/image", async (Guid cardId, long? cardVersion, HttpContext context,
+            CardCoverReadService service, CardCoverAdmissionService admission, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context);
+            context.Response.Headers.CacheControl = "private, no-store";
+            var result = await service.PrepareAsync(cardId, actor, ct, cardVersion);
+            return result.Succeeded && result.Value is not null ? new CardCoverResult(result.Value, admission, actor) : ErrorFor(result.ErrorCode);
+        }).AllowAnonymous().AddEndpointFilter<BoardSharingResultFilter>();
         MapArchivedAttachmentDelivery(app);
         app.MapGet("/cards/{cardId:guid}/attachments/{attachmentId:guid}/preview-options", async (Guid cardId, Guid attachmentId,
             HttpContext context, AttachmentDownloadAdmissionService admission, CancellationToken ct) =>

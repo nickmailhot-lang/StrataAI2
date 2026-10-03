@@ -2,6 +2,9 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface ICardAttachmentCoverStore
 {
+    // Anonymous selected-derivative admission has no fabricated session actor.
+    Task<bool> AcquirePublicReadScopeAsync(Guid organization, Guid board, Guid list, Guid card, CancellationToken ct)
+        => Task.FromResult(false);
     // At most 51 rows, with committed preview proof applied before pagination.
     // Providers without immutable publication support expose no candidates.
     Task<IReadOnlyList<CardCoverCandidate>> ListCandidatesAsync(Guid organization, Guid card,

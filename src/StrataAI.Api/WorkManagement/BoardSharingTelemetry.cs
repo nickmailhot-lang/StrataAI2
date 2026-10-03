@@ -37,6 +37,7 @@ public sealed class BoardSharingTelemetry
             ("/cards/{cardId:guid}/attachments", "GET") => "attachment_read",
             ("/cards/{cardId:guid}/cover", "GET") => "card_cover_read",
             ("/cards/{cardId:guid}/cover/candidates", "GET") => "card_cover_candidates",
+            ("/cards/{cardId:guid}/cover/image", "GET") => "card_cover_image",
             ("/cards/{cardId:guid}/cover", "PUT") => "card_cover_set",
             ("/cards/{cardId:guid}/attachments", "POST") => "attachment_file_create",
             ("/cards/{cardId:guid}/attachment-upload-options", "GET") => "attachment_upload_options",

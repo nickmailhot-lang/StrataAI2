@@ -351,3 +351,33 @@ PostgresWorkEventDeliveryStore/Worker handler and lease acknowledgment. Four
 cover changes must have event-feed readiness. This validates delivery while
 preserving canonical jobs rather than deleting or rescheduling fixture effects.
 The complete Linux job and candidate assertions still await passing CI.
+
+The actual 38d921d PostgreSQL job passes the complete restricted persistence
+suite, including cover commands, bounded published candidates, real outbox
+delivery, and subsequent scan recovery/lifecycle fixtures. Web quality passes;
+managed and immutable release stages are still being observed.
+
+Selected cover delivery now has a separate server-owned admission and private
+full-byte preparation path. GET /cards/{cardId}/cover/image takes only Card
+identity and an optional current Card revision. Current PUBLIC viewers may
+receive the selected committed sanitized PNG anonymously; Internal members use
+current membership/Board access. Private source metadata, candidate lists and
+original downloads remain separate protected routes. Anonymous admission uses
+a nullable actor and explicit Active PUBLIC parent locks, never a synthetic
+session ID. The snapshot binds Card, Board, selected File, immutable preview,
+actor and a one-minute expiry. Full size/SHA staging runs outside the database,
+then current selection/source/parents/visibility are checked again. HTTP delivery
+checks admission before headers, periodically and before final bytes; it returns
+only image/png with generic cover.png, no-store, nosniff, sandbox/no-referrer and
+no range/caching grants. Archived parents expose no eligible cover choices.
+
+New real restricted PostgreSQL coverage uses a genuinely committed publication
+and tests Internal/PUBLIC anonymous delivery, exact derivative bytes, private
+metadata/original separation, provider admission refusals, corruption, expiry,
+actor switching, selection/visibility changes during staging, parent archive and
+restoration without reselection. HTTP coverage uses explicitly synthetic
+selection/publication fixtures while executing real sessions, Board authority,
+full private-object verification and response headers/refusals. Local compilation
+passes with zero warnings; these new Linux tests remain pending. MUI selection,
+cover projection, public consent/recovery controls and full native release
+evidence remain open acceptance work.

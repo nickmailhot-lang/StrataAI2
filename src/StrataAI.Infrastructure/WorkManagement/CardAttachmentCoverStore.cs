@@ -39,6 +39,22 @@ internal sealed partial class InMemoryWorkManagementStore : ICardAttachmentCover
 
 internal sealed partial class PostgresWorkManagementStore : ICardAttachmentCoverStore
 {
+    public async Task<bool> AcquirePublicReadScopeAsync(Guid organization, Guid board, Guid list, Guid card, CancellationToken ct)
+    {
+        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Public cover admission requires the owning read scope.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
+        async Task<bool> Lock(string sql)
+        {
+            await using var query = new NpgsqlCommand(sql, session.Connection, session.Transaction);
+            query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("board", board);
+            query.Parameters.AddWithValue("list", list); query.Parameters.AddWithValue("card", card);
+            return await query.ExecuteScalarAsync(ct) is Guid;
+        }
+        return await Lock("SELECT id FROM organizations WHERE id=@tenant AND status='ACTIVE' FOR SHARE;")
+            && await Lock("SELECT id FROM boards WHERE tenant_id=@tenant AND id=@board AND visibility='PUBLIC' AND lifecycle_state='ACTIVE' FOR UPDATE;")
+            && await Lock("SELECT id FROM board_lists WHERE tenant_id=@tenant AND board_id=@board AND id=@list AND lifecycle_state='ACTIVE' FOR SHARE;")
+            && await Lock("SELECT id FROM cards WHERE tenant_id=@tenant AND board_id=@board AND list_id=@list AND id=@card AND lifecycle_state='ACTIVE' FOR SHARE;");
+    }
     public async Task<IReadOnlyList<CardCoverCandidate>> ListCandidatesAsync(Guid organization, Guid card,
         DateTimeOffset? beforeCreatedAt, Guid? beforeId, CancellationToken ct)
     {
@@ -50,6 +66,10 @@ internal sealed partial class PostgresWorkManagementStore : ICardAttachmentCover
             WHERE a.tenant_id=@tenant AND a.card_id=@card AND a.kind='FILE'
              AND a.lifecycle_state='ACTIVE' AND a.deleted_at IS NULL AND a.scan_status='CLEAN' AND a.scanned_at IS NOT NULL
              AND a.version>=3 AND a.mime_type IN ('image/png','image/jpeg','image/webp')
+             AND EXISTS (SELECT 1 FROM cards c JOIN board_lists l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
+              JOIN boards b ON b.tenant_id=c.tenant_id AND b.id=c.board_id JOIN organizations o ON o.id=c.tenant_id
+              WHERE c.tenant_id=a.tenant_id AND c.id=a.card_id AND c.lifecycle_state='ACTIVE'
+               AND l.lifecycle_state='ACTIVE' AND b.lifecycle_state='ACTIVE' AND o.status='ACTIVE')
              AND (@created IS NULL OR (a.created_at,a.id)<(@created,@before))
              AND EXISTS (
               SELECT 1 FROM attachment_previews m JOIN attachment_preview_publications p ON p.id=m.id AND p.tenant_id=m.tenant_id

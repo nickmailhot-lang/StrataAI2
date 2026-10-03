@@ -56,6 +56,8 @@ public static class WorkManagementRegistration
         services.AddSingleton<AttachmentLifecycleService>();
         services.AddSingleton<ICardAttachmentCoverStore>(provider => (ICardAttachmentCoverStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<CardAttachmentCoverService>();
+        services.AddSingleton<CardCoverAdmissionService>();
+        services.AddSingleton<CardCoverReadService>();
         services.AddSingleton<AttachmentDownloadAdmissionService>();
         services.AddSingleton<AttachmentDownloadService>();
         services.AddSingleton<AttachmentPreviewReadService>();
