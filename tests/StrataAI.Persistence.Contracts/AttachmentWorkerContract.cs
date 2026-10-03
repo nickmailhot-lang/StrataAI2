@@ -120,6 +120,8 @@ internal static class AttachmentWorkerContract
         Require(await queue.CompleteAsync(organization,claim.Id,claim.LeaseId,workerId,ct),"Worker could not acknowledge applied scan.");
         Require(await delivery.LoadAsync(claim,attempt,ct) is {Status:AttachmentScanLoadStatus.LeaseLost,Request:null},"Completed job disclosed private integrity.");
 
+        await AttachmentPreviewIntentContract.RunAsync(admin,api,worker,queue,organization,foreignOrganization,original,bytes,digest,ct);
+
         // Publish another original intent/FILE/job through the actual adapters.
         var uploads=apiServices.GetRequiredService<IAttachmentUploadIntentStore>(); var metadata=apiServices.GetRequiredService<IAttachmentMetadataStore>();
         var publisher=apiServices.GetRequiredService<IAttachmentScanJobPublisher>(); var unit=apiServices.GetRequiredService<IWorkManagementUnitOfWork>();
