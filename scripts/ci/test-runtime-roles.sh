@@ -222,3 +222,6 @@ test "$(api 'SELECT public.runtime_database_role_is_safe()')" = f
 restore
 test "$(api 'SELECT public.runtime_database_role_is_safe()')" = t
 echo 'Real runtime logins reject elevation and enforce service-specific grants.'
+
+test "$(api "SELECT has_table_privilege(current_user,'attachments','SELECT') AND has_table_privilege(current_user,'attachments','INSERT') AND has_table_privilege(current_user,'attachments','UPDATE') AND NOT has_table_privilege(current_user,'attachments','DELETE')")" = t
+test "$(worker "SELECT has_table_privilege(current_user,'attachments','SELECT') OR has_table_privilege(current_user,'attachments','UPDATE')")" = f

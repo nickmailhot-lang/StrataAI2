@@ -155,3 +155,8 @@ blurs to body on a later cycle and checks restoration with exactly one POST. It
 fails against the prior behavior and passes with the change. All 16 notification
 component tests, typecheck and lint pass; full local regression is running.
 Container/image stages were skipped in that failed source run.
+
+The added notification focus case fails against the previous marker-clearing
+source and passes after repair. The complete local web suite passes 872 tests;
+focused notification tests, typecheck and lint pass. Exact-image/browser execution
+remains separately gated by CI.

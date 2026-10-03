@@ -56,3 +56,24 @@ original-intent retry, disclosure fencing, public/Owner Portal separation,
 keyboard/mobile/scroll context and the unchanged performance/capacity budgets
 must be implemented and proved before closure. This audit preserves all ten FRs
 and shared dependency scope rather than treating the Domain foundation as done.
+
+Migration 041 adds metadata-only `attachments` with forced tenant RLS, composite
+Card/Organization and uploader-membership FKs, mutually exclusive file/URL shape,
+quarantine/terminal timestamp shape, positive size/version and bounded names,
+MIME, URLs and keys. A globally unique generated object key prevents two metadata
+rows sharing binary ownership; active Card reads have a timestamp/ID cursor index.
+Card identity avoids stale duplicated Board identity after a move. SQL shape
+checks complement the stricter Domain URL validation; they do not admit uploads,
+authorize delivery or verify bytes. Scan transition CAS and atomic events remain
+Application/store work, and no cover reference is added yet.
+
+Runtime connection admission now requires all 41 ordered migrations. API metadata
+access has SELECT/INSERT/UPDATE without hard DELETE; Worker still has no attachment
+table grants until the scoped scanning command path is implemented. CI adds actual
+migrated PostgreSQL checks under a nonsuperuser/NOBYPASSRLS role: both tenant reads,
+foreign update rejection, tenant write rejection, foreign Card/uploader rejection,
+39 malformed file/URL shapes including nullable bypasses, unique binary keys,
+valid scan/tombstone history and missing-context refusal. Upgrade/repeat checks
+and missing-ledger exact-image readiness probes include migration 041. Local
+warning-as-error build, shell syntax and diff checks pass. PostgreSQL execution
+is pending Linux CI; no SQL/runtime proof is inferred from compilation.

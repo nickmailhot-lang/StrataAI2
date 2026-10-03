@@ -92,3 +92,9 @@ through named options, and AddOtlpExporter uses the named single-options overloa
 without an inline delegate. Endpoint, resource, timeout, redirect and collection
 policies are unchanged; the real successful-flush/private-field assertions remain.
 The solution builds with zero warnings/errors; repaired execution is pending CI.
+
+Subsequent Linux run 37108766526 at 14c58bd passed all 246 Domain and 257
+API-host tests, including optional SDK transport/ForceFlush cases. The named
+options repair is now executed evidence. Its independent notification focus
+failure skipped image/receiver stages; e9b5d15 repairs that case, with all 872
+local web cases passing. Actual deployed Collector ingestion remains pending.
