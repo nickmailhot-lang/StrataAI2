@@ -117,7 +117,8 @@ it('keeps the original body/key/Card revision after response loss and live Card 
   fireEvent.click(screen.getByRole('button', { name: 'Retry reminder change' })); await screen.findByText('Due reminder saved.');
   expect(fetcher).toHaveBeenCalledTimes(6); expect(fetcher.mock.calls[5][1].body).toBe(first.body);
   expect(fetcher.mock.calls[5][1].headers.get('Idempotency-Key')).toBe(first.headers.get('Idempotency-Key'));
-  expect(props.onRecoveryChange).toHaveBeenCalledWith(true); expect(props.onRecoveryChange).toHaveBeenLastCalledWith(false);
+  expect(props.onRecoveryChange).toHaveBeenCalledWith(true);
+  await waitFor(() => expect(props.onRecoveryChange).toHaveBeenLastCalledWith(false));
 });
 it('cancels the current personal revision and validates its stable identity/generation acknowledgment', async () => {
   const fetcher = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(scheduled))
