@@ -186,3 +186,18 @@ refusal/exception/session loss remains intact. The shared unit still checks
 current session/cancellation before receipt retention and reauthorizes replay.
 The existing administrator continuity test remains unchanged and must pass in
 CI; this is a correction to the Demo change, not a weakened acceptance test.
+
+The browser response boundary now validates scoped comment pages and command
+acknowledgments before MUI may display them. It checks exact payload shape,
+current Card revision, author identity, finite microsecond history, bounded
+Unicode plaintext, body-free tombstones, dual revision/no-op semantics and
+explicit deletion confirmation. Pages enforce a 50-item bound, descending
+createdAt/UUID order, uniqueness and exact version-bound seek continuation.
+Literal markup and mention-like text stay plaintext; this parser does not
+resolve recipients, render controls or grant authorization.
+
+Four browser contract tests pass locally, covering normalization (including
+valid emoji and .NET/JavaScript whitespace differences), malformed surrogate/
+control/oversize input, foreign/stale/extra metadata, redaction/history,
+lookahead/tied cursor boundaries and mutation acknowledgments. Typecheck and
+lint pass. MUI controls and native accessibility/collaboration are still required.
