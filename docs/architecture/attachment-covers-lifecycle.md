@@ -322,3 +322,10 @@ that outcome and retains the complete before/after rollback snapshot. It also
 checks PUBLIC selection refusal without consent, successful confirmed selection,
 removal without source/selection consent, and zero provider byte reads for all
 cover commands. Actual corrected Linux execution remains pending.
+
+The corrected 1e292af Linux run passes the full restricted cover command
+contract, including public consent and zero provider byte reads. The later
+scan-only fixture then claimed one of its genuine work-event delivery jobs.
+The fixture now runs cover commands after all scan-only queue assertions,
+preserving real outbox publication and production queue ordering. The whole
+PostgreSQL job still requires a new passing run.
