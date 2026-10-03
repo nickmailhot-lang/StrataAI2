@@ -70,11 +70,31 @@ for (const width of [1280, 390]) {
       await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible({ timeout: 20_000 }); await expect(dirty).toHaveValue('Draft during socket outage');
       await expect(peer.getByRole('button', { name: 'Save checklist item', exact: true })).toBeDisabled();
       expect((await new AxeBuilder({ page: peer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      // Exercise revocation with an actual committed command whose reply was
+      // lost, as well as the dirty-draft conflict already checked above.
+      await peer.getByRole('button', { name: 'Discard item review and load latest', exact: true }).press('Enter');
+      await edit(peer, 'After socket reconnect'); await dirty.fill('Committed before revocation');
+      let original: { key: string; body: string } | undefined;
+      await peer.route(`**${path}/${item.id}`, async intercepted => {
+        if (intercepted.request().method() !== 'PATCH') { await intercepted.continue(); return; }
+        const key = intercepted.request().headers()['idempotency-key']; const body = intercepted.request().postData();
+        expect(key).toMatch(/^[0-9a-f-]{36}$/); expect(body).not.toBeNull(); original = { key: key!, body: body! };
+        const response = await intercepted.fetch(); expect(response.status()).toBe(200); await intercepted.abort('failed');
+      });
+      const save = peer.getByRole('button', { name: 'Save checklist item', exact: true }); await expect(save).toBeEnabled(); await save.press('Enter');
+      await expect(peer.getByRole('button', { name: 'Retry checklist item change', exact: true })).toBeEnabled();
+      expect(original).toBeDefined(); expect(JSON.parse(original!.body)).toEqual({ text: 'Committed before revocation', completed: false, cardVersion: 6, checklistVersion: 5, version: 4 });
+      const beforeRevocation = await context.request.get(path); expect(beforeRevocation.status()).toBe(200); const committed = await beforeRevocation.json();
+      expect(committed.cardVersion).toBe(7); expect(committed.items[0].text).toBe('Committed before revocation'); expect(committed.items[0].version).toBe(5);
       const removal = await context.request.delete(`/boards/${board}/members/${actor}`, { headers: { ...headers, 'If-Match': `"${membershipVersion}"`, 'Idempotency-Key': crypto.randomUUID() } }); expect(removal.status()).toBe(204);
       await expect(peer.getByRole('heading', { name: 'Checklist collaboration Board', exact: true })).toHaveCount(0, { timeout: 20_000 }); await expect(dirty).toHaveCount(0);
       await expect(peer.getByText('Draft during socket outage', { exact: true })).toHaveCount(0); expect((await recipient.request.get(path)).status()).toBe(404);
+      await expect(peer.getByRole('button', { name: 'Retry checklist item change', exact: true })).toHaveCount(0);
+      await expect(peer.getByText('Committed before revocation', { exact: true })).toHaveCount(0);
+      const receiptDenied = await recipient.request.patch(`${path}/${item.id}`, { headers: { ...headers, 'Content-Type': 'application/json', 'Idempotency-Key': original!.key }, data: original!.body });
+      expect(receiptDenied.status()).toBe(404);
       const denied = await recipient.request.patch(`${path}/${item.id}`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { text: 'Unauthorized draft', completed: true, cardVersion: 6, checklistVersion: 5, version: 4 } }); expect(denied.status()).toBe(404);
-      const unchanged = await context.request.get(path); expect(unchanged.status()).toBe(200); expect((await unchanged.json()).items[0].text).toBe('After socket reconnect');
+      const unchanged = await context.request.get(path); expect(unchanged.status()).toBe(200); expect(await unchanged.json()).toEqual(committed);
     } finally { releaseConflict(); await recipient.close(); restoreWorker(); }
   });
 }
