@@ -231,3 +231,11 @@ compares the entire retained child graph. It also observes a real PostgreSQL
 Board-lock wait for each anonymous GET, commits visibility retraction during that
 wait, and verifies a content-free denial with no child or command side effects.
 Strict build and shell syntax pass; Linux execution of the added cases is pending.
+
+The 1376b0c release-image run exposed a cascade audit permission error (42501):
+INSERT RETURNING on audit_events requires SELECT, while the API deliberately has
+append-only audit access. Cascade audit now inserts without RETURNING and counts
+the updated items instead; the data-modifying audit CTE still always executes in
+the same transaction. The mandatory fixture explicitly verifies audit SELECT is
+absent before running rollback/success/count checks. Runtime grants are unchanged.
+The failed run is retained as evidence; the repair requires a new exact-image run.

@@ -334,6 +334,7 @@ test "$(admin "SELECT count(*) FROM checklist_items WHERE tenant_id='$org' AND i
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_DELETED';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND event_type='CHECKLIST_ITEM_DELETED';")" = 1
 cascadePath="$path/$checklist"; cascadeKey=$(uuid); cascadeInput='{"confirmed":true,"cardVersion":12,"version":11}'
+test "$(admin "SELECT has_table_privilege('strataai_api_runtime','audit_events','SELECT');")" = f
 oldTombstones=$(admin "SELECT md5(jsonb_agg(to_jsonb(i) ORDER BY id)::text) FROM checklist_items i WHERE tenant_id='$org' AND checklist_id='$checklist' AND deleted_at IS NOT NULL;")
 before=$(state)
 test "$(request member DELETE "$cascadePath" "$(uuid)" "$cascadeInput")" = 404

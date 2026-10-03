@@ -26,6 +26,8 @@ internal sealed partial class PostgresWorkManagementStore
         await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
         // Cascade and per-item audit stay in PostgreSQL; no unbounded child result
         // is materialized or disclosed, and previous tombstones remain unchanged.
+        // Audit is append-only for the API role: never RETURNING from that insert.
+        // Its data-modifying CTE always executes; count the updated children instead.
         await using var command = new NpgsqlCommand($$"""
             WITH parent AS (
               UPDATE checklists AS c SET deleted_at=@now,updated_at=@now,version=c.version+1
@@ -35,8 +37,8 @@ internal sealed partial class PostgresWorkManagementStore
               WHERE i.tenant_id=@tenant AND i.checklist_id=@id AND i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM parent) RETURNING i.id
             ), audited AS (
               INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,safe_metadata,created_at)
-              SELECT gen_random_uuid(),@tenant,@actor,'CHECKLIST_ITEM_DELETED','ChecklistItem',id,@correlation,'{}'::jsonb,@now FROM deleted_items RETURNING id
-            ) SELECT {{ChecklistColumns}},(SELECT count(*) FROM audited) FROM parent c;
+              SELECT gen_random_uuid(),@tenant,@actor,'CHECKLIST_ITEM_DELETED','ChecklistItem',id,@correlation,'{}'::jsonb,@now FROM deleted_items
+            ) SELECT {{ChecklistColumns}},(SELECT count(*) FROM deleted_items) FROM parent c;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", organization); command.Parameters.AddWithValue("card", card); command.Parameters.AddWithValue("id", checklist);
         command.Parameters.AddWithValue("version", version); command.Parameters.AddWithValue("actor", actor); command.Parameters.AddWithValue("correlation", correlationId); command.Parameters.AddWithValue("now", now);
