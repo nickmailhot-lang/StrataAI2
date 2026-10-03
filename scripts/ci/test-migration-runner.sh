@@ -197,37 +197,54 @@ run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 41
 test "$(query "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='attachments'::regclass")" = t
-cat > "$scratch/migrations/042_serialization_fixture.sql" <<'SQL'
+# Preserve pre-integrity metadata without inventing a digest or releasing bytes.
+query "INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at) VALUES
+ ('04200000-0000-0000-0000-000000000001','02100000-0000-0000-0000-000000000011','02500000-0000-0000-0000-000000000001','Legacy files','500000000000000000000000000000',now(),now());
+ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at) VALUES
+ ('04200000-0000-0000-0000-000000000002','02100000-0000-0000-0000-000000000011','02500000-0000-0000-0000-000000000001','04200000-0000-0000-0000-000000000001','Legacy file metadata','500000000000000000000000000000',now(),now());
+ INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,mime_type,size_bytes,storage_key,scan_status,created_at,updated_at)
+ VALUES ('04200000-0000-0000-0000-000000000003','02100000-0000-0000-0000-000000000011','04200000-0000-0000-0000-000000000002','02100000-0000-0000-0000-000000000010','FILE','Legacy pending','image/png',128,'ci/legacy-file','PENDING',now(),now());" >/dev/null
+cp db/migrations/042_attachment_integrity.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 42
+test "$(query "SELECT sha256 IS NULL AND scan_status='PENDING' AND version=1 FROM attachments WHERE id='04200000-0000-0000-0000-000000000003'")" = t
+if query "UPDATE attachments SET scan_status='CLEAN',scanned_at=now(),updated_at=now(),version=version+1 WHERE id='04200000-0000-0000-0000-000000000003';" >/dev/null; then
+ echo 'Legacy file published without measured digest'; exit 1
+fi
+query "UPDATE attachments SET deleted_at=now(),updated_at=now(),version=version+1 WHERE id='04200000-0000-0000-0000-000000000003';" >/dev/null
+test "$(query "SELECT sha256 IS NULL AND deleted_at IS NOT NULL AND scan_status='PENDING' AND version=2 FROM attachments WHERE id='04200000-0000-0000-0000-000000000003'")" = t
+cat > "$scratch/migrations/043_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('042_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('043_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='042_serialization_fixture'")" = 1
-cat > "$scratch/migrations/043_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='043_serialization_fixture'")" = 1
+cat > "$scratch/migrations/044_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('043_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('044_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='043_failure_fixture'")" = 0
-rm "$scratch/migrations/043_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='044_failure_fixture'")" = 0
+rm "$scratch/migrations/044_failure_fixture.sql"
 run
-cat > "$scratch/migrations/044_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/045_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='044_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/044_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='045_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/045_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

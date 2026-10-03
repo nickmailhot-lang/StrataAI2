@@ -7,7 +7,7 @@ public sealed class AttachmentTests
     private static readonly DateTimeOffset At = new(2026, 10, 3, 0, 0, 0, TimeSpan.Zero);
     private readonly Guid organization = Guid.NewGuid(), card = Guid.NewGuid(), actor = Guid.NewGuid();
     private Attachment File(string mime = "image/png") => Attachment.QuarantineFile(Guid.NewGuid(), organization, card, actor,
-        " Preparation image ", mime, 128, "attachments/server-random-key", At);
+        " Preparation image ", mime, 128, "attachments/server-random-key", new string('a', 64), At);
 
     [Theory]
     [InlineData(AttachmentScanStatus.Pending)]
@@ -43,6 +43,7 @@ public sealed class AttachmentTests
         var file = File(mime);
         Assert.Equal(organization, file.OrganizationId); Assert.Equal(card, file.CardId); Assert.Equal(actor, file.UploaderId);
         Assert.Equal("Preparation image", file.DisplayName); Assert.Equal(128, file.SizeBytes);
+        Assert.Equal(new string('a', 64), file.Sha256);
         Assert.Equal(AttachmentKind.File, file.Kind); Assert.Equal(1, file.Version); Assert.Null(file.Url);
         Assert.False(file.CanDownload); Assert.False(file.CanPreviewImage); Assert.False(file.CanUseAsCoverFor(organization, card));
         Assert.True(file.CompleteScan(AttachmentScanStatus.Clean, At.AddMinutes(1)));
@@ -105,6 +106,7 @@ public sealed class AttachmentTests
         var link = Attachment.AttachUrl(Guid.NewGuid(), organization, card, actor, " Reference ", " https://example.test/path?q=1#section ", At);
         Assert.Equal("https://example.test/path?q=1#section", link.Url); Assert.Equal("Reference", link.DisplayName);
         Assert.Null(link.StorageKey); Assert.Null(link.MimeType); Assert.Null(link.SizeBytes);
+        Assert.Null(link.Sha256);
         Assert.Equal(AttachmentScanStatus.NotApplicable, link.ScanStatus);
         Assert.False(link.CanDownload); Assert.False(link.CanUseAsCoverFor(organization, card));
         Assert.Throws<InvalidOperationException>(() => link.CompleteScan(AttachmentScanStatus.Clean, At));
@@ -124,13 +126,20 @@ public sealed class AttachmentTests
     [InlineData("folder\\key")]
     [InlineData("folder/./key")]
     public void PRD_14_TC_03_StorageKeysCannotBeTraversalPaths(string key) => Assert.Throws<ArgumentException>(() =>
-        Attachment.QuarantineFile(Guid.NewGuid(), organization, card, actor, "Name", "image/png", 128, key, At));
+        Attachment.QuarantineFile(Guid.NewGuid(), organization, card, actor, "Name", "image/png", 128, key, new string('a', 64), At));
     [Theory]
     [InlineData("image/png; charset=secret", 128)]
     [InlineData("not-mime", 128)]
     [InlineData("image/png\r\nsecret", 128)]
     [InlineData("image/png", 0)]
     [InlineData("image/png", -1)]
+    [InlineData("image/png", 1073741825)]
     public void PRD_14_TC_03_VerifiedMetadataMustHaveCanonicalMimeAndPositiveBytes(string mime, long size) => Assert.ThrowsAny<ArgumentException>(() =>
-        Attachment.QuarantineFile(Guid.NewGuid(), organization, card, actor, "Name", mime, size, "server-key", At));
+        Attachment.QuarantineFile(Guid.NewGuid(), organization, card, actor, "Name", mime, size, "server-key", new string('a', 64), At));
+    [Theory]
+    [InlineData("")]
+    [InlineData("private-invalid-digest")]
+    [InlineData("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")]
+    public void PRD_14_TC_03_BinaryIntegrityClaimsRequireCanonicalMeasuredDigest(string digest) => Assert.Throws<ArgumentException>(() =>
+        Attachment.QuarantineFile(Guid.NewGuid(), organization, card, actor, "Name", "image/png", 128, "server-key", digest, At));
 }

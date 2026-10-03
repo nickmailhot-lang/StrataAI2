@@ -257,3 +257,26 @@ scope and Pending record/version/digest before applying evidence atomically with
 its event/outbox. Neither a provider verdict nor this evidence grants user access
 without the existing current authorization and lifecycle checks. Full PRD-14 and
 ARCH-07 acceptance remains incomplete.
+
+Migration 042 adds private canonical SHA-256 metadata without changing migration
+041 or inventing byte claims for legacy rows. New FILE inserts require a measured
+digest; canonical digests require positive size within the 1 GiB storage ceiling.
+URL digests are forbidden. Once recorded, the digest and binary object key/size/MIME
+cannot be rewritten, including after scan completion or deletion. Existing FILE
+metadata without a digest survives upgrade with NULL but cannot transition to
+active Clean, enter an integrity-bound scan or controlled delivery. Tombstones
+remain possible without inventing a hash. Explicit verification/backfill of old
+private bytes is future work; there is no automatic publication or data deletion.
+The Domain file factory now requires canonical measured SHA-256 and bounded size;
+URL models retain NULL, and private digests are not added to public metadata DTOs.
+
+Runtime readiness requires all 42 canonical migrations. The restricted PostgreSQL
+fixture tests missing/new, malformed, modified and URL digests, immutable object
+metadata, retained digest on tombstones and existing tenant/key constraints. The
+forward-upgrade fixture seeds a real pre-042 Pending FILE, verifies unchanged NULL
+digest/state/version across repeat migration, refuses Clean publication without
+integrity and permits retained deletion. Serialized/failure/unrecorded fixtures
+move to 043/044/045; readiness-removal tests include 042. Four extra Domain cases
+compile. Build, script syntax and diff checks pass; actual migration/SQL execution
+and new Domain/scanner execution remain pending Linux CI. Full ticket acceptance
+and production provider/upload/scanner Worker integration remain incomplete.

@@ -12,14 +12,14 @@ public enum AttachmentScanStatus { NotApplicable, Pending, Clean, Rejected, Fail
 public sealed class Attachment : DomainEntity, IOrganizationScoped
 {
     private Attachment(Guid id, Guid organizationId, Guid cardId, Guid uploaderId, string displayName,
-        AttachmentKind kind, string? mimeType, long? sizeBytes, string? storageKey, string? url, DateTimeOffset at)
+        AttachmentKind kind, string? mimeType, long? sizeBytes, string? storageKey, string? sha256, string? url, DateTimeOffset at)
         : base(id, at.ToUniversalTime())
     {
         if (organizationId == Guid.Empty || cardId == Guid.Empty || uploaderId == Guid.Empty)
             throw new ArgumentException("Attachment scope and uploader are required.");
         OrganizationId = organizationId; CardId = cardId; UploaderId = uploaderId;
         DisplayName = RequireDisplayName(displayName); Kind = kind; MimeType = mimeType;
-        SizeBytes = sizeBytes; StorageKey = storageKey; Url = url;
+        SizeBytes = sizeBytes; StorageKey = storageKey; Sha256 = sha256; Url = url;
         ScanStatus = kind == AttachmentKind.File ? AttachmentScanStatus.Pending : AttachmentScanStatus.NotApplicable;
     }
     public Guid OrganizationId { get; }
@@ -30,26 +30,30 @@ public sealed class Attachment : DomainEntity, IOrganizationScoped
     public string? MimeType { get; }
     public long? SizeBytes { get; }
     public string? StorageKey { get; }
+    public string? Sha256 { get; }
     public string? Url { get; }
     public AttachmentScanStatus ScanStatus { get; private set; }
     public DateTimeOffset? ScannedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
-    public bool CanDownload => Kind == AttachmentKind.File && DeletedAt is null && ScanStatus == AttachmentScanStatus.Clean;
+    public bool CanDownload => Kind == AttachmentKind.File && Sha256 is not null && DeletedAt is null && ScanStatus == AttachmentScanStatus.Clean;
     public bool CanPreviewImage => CanDownload && MimeType is ("image/png" or "image/jpeg" or "image/webp");
     public bool CanUseAsCoverFor(Guid organizationId, Guid cardId) => CanPreviewImage && OrganizationId == organizationId && CardId == cardId;
 
     public static Attachment QuarantineFile(Guid id, Guid organizationId, Guid cardId, Guid uploaderId, string displayName,
-        string verifiedMimeType, long verifiedSizeBytes, string serverStorageKey, DateTimeOffset at)
+        string verifiedMimeType, long verifiedSizeBytes, string serverStorageKey, string verifiedSha256, DateTimeOffset at)
     {
         var mime = verifiedMimeType?.Trim().ToLowerInvariant();
         if (mime is null || mime.Length > 127 || !Regex.IsMatch(mime, @"\A[a-z0-9!#$&^_.+\-]+/[a-z0-9!#$&^_.+\-]+\z", RegexOptions.CultureInvariant))
             throw new ArgumentException("Verified MIME type is invalid.", nameof(verifiedMimeType));
-        if (verifiedSizeBytes <= 0) throw new ArgumentOutOfRangeException(nameof(verifiedSizeBytes), "Verified file size must be positive.");
+        if (verifiedSizeBytes is <= 0 or > 1073741824) throw new ArgumentOutOfRangeException(nameof(verifiedSizeBytes), "Verified file size must fit the storage bound.");
+        if (verifiedSha256 is null || verifiedSha256.Length != 64
+            || verifiedSha256.Any(c => c is not (>= '0' and <= '9') and not (>= 'a' and <= 'f')))
+            throw new ArgumentException("Verified file digest is invalid.", nameof(verifiedSha256));
         if (string.IsNullOrWhiteSpace(serverStorageKey) || serverStorageKey.Length > 512
             || serverStorageKey.Any(char.IsControl) || serverStorageKey.Contains('\\') || serverStorageKey.StartsWith('/')
             || serverStorageKey.Split('/').Any(segment => segment is "" or "." or ".."))
             throw new ArgumentException("Server storage key is invalid.", nameof(serverStorageKey));
-        return new(id, organizationId, cardId, uploaderId, displayName, AttachmentKind.File, mime, verifiedSizeBytes, serverStorageKey, null, at);
+        return new(id, organizationId, cardId, uploaderId, displayName, AttachmentKind.File, mime, verifiedSizeBytes, serverStorageKey, verifiedSha256, null, at);
     }
     public static Attachment AttachUrl(Guid id, Guid organizationId, Guid cardId, Guid uploaderId, string title, string url, DateTimeOffset at)
     {
@@ -59,7 +63,7 @@ public sealed class Attachment : DomainEntity, IOrganizationScoped
             || string.IsNullOrEmpty(parsed.Host) || !string.IsNullOrEmpty(parsed.UserInfo) || parsed.AbsoluteUri.Length > 2048)
             throw new ArgumentException("Attachment URL must be an absolute HTTP(S) link without credentials.", nameof(url));
         // Metadata only: no URL fetch, server-side preview or storage operation.
-        return new(id, organizationId, cardId, uploaderId, title, AttachmentKind.Url, null, null, null, parsed.AbsoluteUri, at);
+        return new(id, organizationId, cardId, uploaderId, title, AttachmentKind.Url, null, null, null, null, parsed.AbsoluteUri, at);
     }
     public bool CompleteScan(AttachmentScanStatus verdict, DateTimeOffset at)
     {
