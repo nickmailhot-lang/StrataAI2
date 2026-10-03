@@ -31,6 +31,20 @@ internal static class AttachmentWorkerContract
         }
         var wrongReference=claim with {SafeMetadataJson=JsonSerializer.Serialize(new {attachmentId=original.Id,cardId=Guid.NewGuid(),version=1})};
         Require((await delivery.LoadAsync(wrongReference,AttachmentScanAttempt.Parse(wrongReference.SafeMetadataJson),ct)) is {Status:AttachmentScanLoadStatus.LeaseLost,Request:null},"Forged Card reference disclosed integrity.");
+        foreach(var payload in new[] {"[]","null","{}",
+            JsonSerializer.Serialize(new {attachmentId=original.Id,cardId=original.CardId,version=0}),
+            JsonSerializer.Serialize(new {attachmentId=original.Id,cardId=original.CardId,version=long.MaxValue}),
+            JsonSerializer.Serialize(new {attachmentId=original.Id,cardId=original.CardId,version="1"}),
+            JsonSerializer.Serialize(new {attachmentId=original.Id,cardId=original.CardId,version=1,sha256="forbidden"}),
+            JsonSerializer.Serialize(new {attachmentId=original.Id,cardId=original.CardId,version=1,padding=new string('x',1024)})})
+        {
+            await using var malformed=new NpgsqlCommand("INSERT INTO public.background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,safe_metadata) VALUES(@id,@tenant,'ATTACHMENT_SCAN',@key,@actor,'attachment-quarantine-scan','scan-shape',@payload);",admin);
+            malformed.Parameters.AddWithValue("id",Guid.NewGuid()); malformed.Parameters.AddWithValue("tenant",organization);
+            malformed.Parameters.AddWithValue("actor",original.UploaderId); malformed.Parameters.AddWithValue("key",$"attachment-scan/{original.Id:N}/1");
+            malformed.Parameters.AddWithValue("payload",NpgsqlTypes.NpgsqlDbType.Jsonb,payload);
+            try {await malformed.ExecuteNonQueryAsync(ct);throw new InvalidOperationException("Malformed scan queue payload was admitted.");}
+            catch(PostgresException error) when(error.SqlState==PostgresErrorCodes.CheckViolation) { }
+        }
         foreach(var mutation in new[] {"id=gen_random_uuid()","tenant_id=gen_random_uuid()","actor_id=gen_random_uuid()","job_type='OTHER'",
             "service_identity='other'","safe_metadata=safe_metadata||'{\"sha256\":\"forbidden\"}'","idempotency_key='redirected'",
             "max_attempts=max_attempts+1","correlation_id=correlation_id||'-changed'","created_at=created_at+interval '1 second'"})

@@ -9,9 +9,12 @@ BEGIN
   RAISE EXCEPTION 'Attachment scan job identity is immutable' USING ERRCODE='23514';
  END IF;
  IF NEW.job_type='ATTACHMENT_SCAN' THEN
+  IF jsonb_typeof(NEW.safe_metadata) IS DISTINCT FROM 'object' OR octet_length(NEW.safe_metadata::text)>256 THEN
+   RAISE EXCEPTION 'Attachment scan job references are invalid' USING ERRCODE='23514';
+  END IF;
   IF NEW.id='00000000-0000-0000-0000-000000000000' OR NEW.actor_id='00000000-0000-0000-0000-000000000000'
    OR NEW.service_identity<>'attachment-quarantine-scan' OR NEW.correlation_id !~ '^[A-Za-z0-9._-]{1,64}$'
-   OR jsonb_typeof(NEW.safe_metadata)<>'object' OR (SELECT count(*) FROM jsonb_object_keys(NEW.safe_metadata))<>3
+   OR (SELECT count(*) FROM jsonb_object_keys(NEW.safe_metadata))<>3
    OR jsonb_typeof(NEW.safe_metadata->'attachmentId') IS DISTINCT FROM 'string'
    OR jsonb_typeof(NEW.safe_metadata->'cardId') IS DISTINCT FROM 'string'
    OR COALESCE(NEW.safe_metadata->>'attachmentId','') !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
