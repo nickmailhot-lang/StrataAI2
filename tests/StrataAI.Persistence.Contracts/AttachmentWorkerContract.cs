@@ -126,7 +126,10 @@ internal static class AttachmentWorkerContract
         async Task<Guid> PublishPending()
         {
             var at=AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow); var id=Guid.NewGuid();
-            var value=AttachmentUploadIntent.Prepare(id,organization,original.CardId,original.UploaderId,Guid.NewGuid(),2,"Worker retry fixture",bytes.Length,digest,at.AddHours(1),at);
+            await using var parent=new NpgsqlCommand("SELECT version FROM public.cards WHERE tenant_id=@tenant AND id=@card;",admin);
+            parent.Parameters.AddWithValue("tenant",organization); parent.Parameters.AddWithValue("card",original.CardId);
+            var revision=(long)(await parent.ExecuteScalarAsync(ct))!;
+            var value=AttachmentUploadIntent.Prepare(id,organization,original.CardId,original.UploaderId,Guid.NewGuid(),revision,"Worker retry fixture",bytes.Length,digest,at.AddHours(1),at);
             var result=await unit.ExecuteReadAsync(organization,null,"worker_fixture",()=>Task.FromResult(true),async()=>
             {
                 Require(await uploads.PrepareUploadAsync(value,ct) is not null,"Retry fixture intent was not prepared."); var nonce=Guid.NewGuid();
@@ -165,6 +168,28 @@ internal static class AttachmentWorkerContract
             terminal.Parameters.AddWithValue("tenant",organization); terminal.Parameters.AddWithValue("file",retryFile);
             Require(await terminal.ExecuteScalarAsync(ct) is true,"Final unavailable scan was not retained as Failed.");
         }
+        var rejectedFile=await PublishPending(); scanner.Verdict=AttachmentScannerVerdict.Infected;
+        var infectedJob=await queue.ClaimAsync(organization,workerId,ct); Require(infectedJob is not null,"Malware fixture was not claimed.");
+        await handler.ExecuteAsync(infectedJob!,ct);
+        await using(var rejected=new NpgsqlCommand("SELECT scan_status='REJECTED' AND version=2 FROM public.attachments WHERE tenant_id=@tenant AND id=@file;",admin))
+        {
+            rejected.Parameters.AddWithValue("tenant",organization); rejected.Parameters.AddWithValue("file",rejectedFile);
+            Require(await rejected.ExecuteScalarAsync(ct) is true,"Malware verdict was not retained as Rejected.");
+        }
+        Require(await queue.CompleteAsync(organization,infectedJob!.Id,infectedJob.LeaseId,workerId,ct),"Rejected scan could not be acknowledged.");
+        var removedFile=await PublishPending(); var removedJob=await queue.ClaimAsync(organization,workerId,ct);
+        Require(removedJob is not null,"Tombstone fixture was not claimed.");
+        await using(var session=await api.OpenTenantSessionAsync(organization,ct))
+        await using(var tombstone=new NpgsqlCommand("UPDATE public.attachments SET deleted_at=GREATEST(statement_timestamp(),updated_at),updated_at=GREATEST(statement_timestamp(),updated_at),version=version+1 WHERE tenant_id=@tenant AND id=@file;",session.Connection,session.Transaction))
+        {
+            tombstone.Parameters.AddWithValue("tenant",organization); tombstone.Parameters.AddWithValue("file",removedFile);
+            Require(await tombstone.ExecuteNonQueryAsync(ct)==1,"Tombstone fixture did not deactivate file metadata."); await session.CommitAsync(ct);
+        }
+        providerCalls=scanner.Calls; objectReads=storage.Opens;
+        Require(await delivery.LoadAsync(removedJob!,AttachmentScanAttempt.Parse(removedJob!.SafeMetadataJson),ct) is {Status:AttachmentScanLoadStatus.Superseded,Request:null},"Deactivated file disclosed private integrity.");
+        await handler.ExecuteAsync(removedJob!,ct);
+        Require(scanner.Calls==providerCalls && storage.Opens==objectReads,"Deactivated file was read by the scanner.");
+        Require(await queue.CompleteAsync(organization,removedJob!.Id,removedJob.LeaseId,workerId,ct),"Superseded scan could not be acknowledged.");
         Console.WriteLine("Restricted C# Worker scan: private admission, immutable claims, late lease rollback, status/Card/audit/event effects, replay without provider I/O and bounded failure passed.");
     }
     private sealed class FixtureStorage(Guid organization,byte[] bytes) : IAttachmentObjectStorage
