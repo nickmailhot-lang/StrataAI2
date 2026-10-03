@@ -478,3 +478,11 @@ does not replace the separate isolated Worker-image codec verification or prove
 the complete managed AWS upload/browser path. The persistence executable uses
 the same pinned Linux Skia native asset already used by Domain tests; local
 warning-as-error compilation passes and new Linux execution is pending.
+
+0795984 now passes the actual restricted PostgreSQL job, including corrected
+capacity and the complete existing cover/preview/lifecycle chain. cd2ff77 has all
+source gates green; immutable image build is queued. The cover command contract
+also now races two distinct retry keys against the same original Card/source
+revisions, requires one winner and one version conflict, verifies exactly one
+audit/event and recovers the winner's exact original receipt. This new competing
+writer check compiles locally; Linux execution remains pending.

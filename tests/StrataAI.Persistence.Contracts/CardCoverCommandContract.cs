@@ -128,11 +128,24 @@ internal static class CardCoverCommandContract
         var withdrawn = await service.SetAsync(card, actor, input, "cover-late-session", ct);
         Require(withdrawn.ErrorCode == "session_unavailable" && await Snapshot() == baseline, "Late actor withdrawal retained cover effects.");
         authorization.Allowed = true;
+        var competingContext = new Context();
+        var competingService = new CardAttachmentCoverService(work, metadata, covers, organizations, boards, unit,
+            competingContext, authorization, clock, events);
+        var beforeSelectionAudit = await Scalar<long>("SELECT count(*) FROM audit_events WHERE tenant_id=@tenant;");
+        var beforeSelectionEvents = await Scalar<long>("SELECT count(*) FROM work_events WHERE tenant_id=@tenant;");
+        var contenders = await Task.WhenAll(service.SetAsync(card, actor, input, "cover-selection", ct),
+            competingService.SetAsync(card, actor, input, "cover-competing-selection", ct));
+        Require(contenders.Count(x => x.Succeeded) == 1 && contenders.Count(x => x.ErrorCode == "version_conflict") == 1,
+            "Competing cover writers did not produce one authoritative acknowledgment and one stale-revision conflict.");
+        if (contenders[1].Succeeded) context.IdempotencyKey = competingContext.IdempotencyKey;
         var key = context.IdempotencyKey;
-        var selected = await service.SetAsync(card, actor, input, "cover-selection", ct);
+        var selected = contenders.Single(x => x.Succeeded);
         Require(selected.Value is { Changed: true } && selected.Value.CardVersion == initial.CardVersion + 1
             && selected.Value.AttachmentId == file && selected.Value.AttachmentVersion == fileVersion, "Cover selection lost source/Card revision binding.");
         Require(await Scalar<long>("SELECT version FROM attachments WHERE tenant_id=@tenant AND id=@file;") == fileVersion, "Cover selection advanced immutable source revision.");
+        Require(await Scalar<long>("SELECT count(*) FROM audit_events WHERE tenant_id=@tenant;") == beforeSelectionAudit + 1
+            && await Scalar<long>("SELECT count(*) FROM work_events WHERE tenant_id=@tenant;") == beforeSelectionEvents + 1,
+            "Competing cover writers duplicated canonical selection effects.");
         var committed = await Snapshot();
         Require((await service.ListCandidatesAsync(card, actor, seek, ct)).ErrorCode == "version_conflict" && await Snapshot() == committed,
             "Cover candidate cursor survived a different Card revision.");
