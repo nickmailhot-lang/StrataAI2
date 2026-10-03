@@ -34,6 +34,8 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/cards", "GET") => "board_filter_read",
             ("/boards/{boardId:guid}/assignable-members", "GET") => "assignable_member_read",
             ("/cards/{cardId:guid}/members", "GET") => "card_member_read",
+            ("/cards/{cardId:guid}/checklists", "GET") => "checklist_read",
+            ("/cards/{cardId:guid}/checklists", "POST") => "checklist_create",
             ("/cards/{cardId:guid}/member-options", "GET") => "card_member_options",
             ("/cards/{cardId:guid}/members/{userId:guid}", "PUT") => "card_member_assign",
             ("/cards/{cardId:guid}/members/{userId:guid}", "DELETE") => "card_member_remove",
@@ -83,6 +85,7 @@ public sealed class BoardSharingTelemetry
                 or "notification_not_found" or "invalid_notification_cursor" or "invalid_notification_selection"
                 or "watch_not_found" or "invalid_watch_version" or "invalid_card_dates" or "invalid_card_date_version" or "invalid_board_date_policy"
                 or "card_reminder_not_found" or "invalid_card_reminder_version" or "invalid_card_reminder_interval"
+                or "invalid_checklist_cursor" or "invalid_checklist_title" or "invalid_checklist_version"
                 or "session_unavailable" or "work_storage_unavailable" or "invitation_storage_unavailable"
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"
                 or "invalid_board_member_cursor" or "invalid_invitation_cursor" or "invalid_email"

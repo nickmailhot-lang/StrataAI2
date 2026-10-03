@@ -15,6 +15,7 @@ public static partial class WorkManagementEndpoints
         MapWatchEndpoints(app);
         MapCardDateEndpoints(app);
         MapCardReminderEndpoints(app);
+        MapChecklistEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
             async (
@@ -748,6 +749,9 @@ public static partial class WorkManagementEndpoints
             "invalid_card_reminder_version" => Problem(400, errorCode, "Use the current Card and personal reminder revisions."),
             "invalid_card_reminder_interval" => Problem(400, errorCode, "Choose an available future reminder interval."),
             "invalid_card_dates" => Problem(400, errorCode, "Use UTC instants or calendar dates with IANA timezone context and valid date order."),
+            "invalid_checklist_cursor" => Problem(400, errorCode, "Use the continuation cursor for this Card."),
+            "invalid_checklist_version" => Problem(400, errorCode, "Use the current Card revision."),
+            "invalid_checklist_title" => Problem(400, errorCode, "Checklist title is required and must fit its limit."),
             "invalid_card_date_version" => Problem(400, errorCode, "Use the current Card revision."),
             "invalid_board_date_policy" => Problem(400, errorCode, "Use a valid IANA timezone or null and the current Board revision."),
             "invalid_watch_version" => Problem(400, errorCode, "Use the current watch revision, or zero for a new subscription."),

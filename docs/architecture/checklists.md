@@ -1,8 +1,9 @@
 # Checklists and items (PRD-13)
 
-This is the persistence/domain foundation, not a completed checklist feature.
+This implements the persistence/domain foundation and authenticated checklist
+reads/creation. PRD-13 is not complete.
 PRD-13 depends on the existing Card and audit contracts (PRD-08/22) within the
-canonical dependency cycle. API commands, typed stores, MUI interactions,
+canonical dependency cycle. Remaining API commands, MUI interactions,
 authorized realtime delivery and complete lifecycle acceptance remain required.
 
 Checklist identity, Organization and Card parent IDs are immutable. Item identity,
@@ -69,3 +70,27 @@ upgrade/repeat, recovery of an existing Honolulu policy with a missing 039 ledge
 serialized runners, transactional SQL failure and explicit rejection of an
 unrecorded migration. Shell syntax and emitted SQL inspection pass; corrected
 PostgreSQL execution remains pending.
+
+Authenticated GET/POST `/cards/{cardId}/checklists` now admit the current
+Organization, Board, List, Card and actor inside the owning transaction. Reads
+allow archived parents with `canEdit=false`, return at most 50 checklists with a
+Card-bound rank/id cursor, and compute counts over all active items. Public
+visitor read support is still required. Creation checks the Card revision,
+allocates ordering space before mutation, advances the Card revision without
+changing its content/dates, inserts the Checklist, records its audit identity,
+and appends a content-free Card aggregate invalidation plus retry receipt in the
+same transaction. Replay must pass fresh edit admission, so archived or revoked
+access cannot reveal an old acknowledgement. Rank exhaustion is a stable conflict
+before any write. The returned child is the persisted PostgreSQL row, including
+its canonical timestamp precision.
+
+Two API cases cover rejected input, private reads/writes, Card CAS, retry keys,
+ordered 50/13 pages, empty progress, archived reads and access removal. A new
+mandatory exact-image fixture additionally exercises INSERT failures both before
+the child and after Card/child/audit writes, whole-command rollback, same-key
+recovery, SQL-backed full aggregate counts/deleted-item exclusion, rank exhaustion
+and lifecycle/replay admission. These new API/container cases await Linux CI.
+The bf2ab79 PostgreSQL job passed the checklist storage, migration recovery and
+runtime-role fixtures; the strict local solution build has zero warnings/errors.
+Item editing/completion, checklist editing/reorder/delete, public views, copy and
+retention integration, MUI and full performance evidence remain unfinished.
