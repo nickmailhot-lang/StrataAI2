@@ -106,3 +106,21 @@ These assertions executed successfully in step 33 of run 36963451064 against
 the exact release images and restricted PostgreSQL runtime. This establishes
 database correctness at that capacity, not browser rendering or timing evidence
 for that large fixture.
+
+The mandatory PRD-12 dated-Board benchmark uses three Lists and 50 dated Cards
+created through the exact release API. Only application assets are warm. Usable
+readiness includes fresh Board reads, an enabled Card drag control and an
+accessible authoritative due-state description after the real profile read,
+with the original <1500 ms budget. Cached detail opening retains <200 ms. Twenty
+changing date commands use fresh revisions/idempotency keys and retain p95
+<500 ms, including response decoding. The scenario attaches all samples and
+fixture conditions before budget assertions; no retries or raised budgets apply.
+Existing movement feedback benchmarks remain mandatory and unchanged.
+
+The performance reporter retains a separate `normal-desktop-card-dates` metric
+in the existing revision-bound artifact, whitelisting numeric measurements and
+fixed fixture fields only. It validates all 20 samples and independently checks
+p95; invalid topology, undated fixtures or malformed samples produce no entry.
+Reporter tests and scenario parsing pass locally. Actual dated-Board timing is
+pending exact-image CI and does not establish 200-List/5000-Card rendering or
+virtualization acceptance.

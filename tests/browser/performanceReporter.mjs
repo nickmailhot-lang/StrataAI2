@@ -7,6 +7,20 @@ const duration = value => typeof value === 'number' && Number.isFinite(value) &&
 // Never serialize test titles, errors, request data or arbitrary fields.
 export function performanceEntry(name, value, status) {
   if (!statuses.has(status) || !value || typeof value !== 'object') return undefined;
+  if (name === 'card-dates-performance.json') {
+    if (value.fixture?.lists !== 3 || value.fixture.cards !== 50 || value.fixture.datedCards !== 50
+      || value.fixture.samples !== 20 || value.fixture.viewport !== '1280x844' || value.fixture.assets !== 'warm'
+      || value.fixture.topology !== 'exact release images through Nginx'
+      || ![value.usableMs, value.detailMs, value.mutationP95Ms].every(duration)
+      || !Array.isArray(value.mutationSamplesMs) || value.mutationSamplesMs.length !== 20
+      || !value.mutationSamplesMs.every(duration)) return undefined;
+    const p95 = [...value.mutationSamplesMs].sort((a, b) => a - b)[18];
+    if (p95 !== value.mutationP95Ms) return undefined;
+    return { metric: 'normal-desktop-card-dates', status,
+      fixture: { lists: 3, cards: 50, datedCards: 50, samples: 20, viewport: '1280x844', assets: 'warm' },
+      usableMs: value.usableMs, detailMs: value.detailMs, mutationP95Ms: p95, mutationSamplesMs: [...value.mutationSamplesMs],
+      budgetsMs: { usable: 1500, detail: 200, mutationP95: 500 } };
+  }
   const feedback = value.feedbackObserved === true && duration(value.feedbackMs) ? value.feedbackMs
     : value.feedbackObserved === false && value.feedbackMs === null ? null : undefined;
   if (feedback === undefined || value.fixture?.viewport !== '1280x844'
@@ -37,7 +51,7 @@ export default class PerformanceReporter {
   }
   async collect(result) {
     for (const attachment of result.attachments) {
-      if (!['kanban-performance.json', 'list-feedback-performance.json'].includes(attachment.name)
+      if (!['kanban-performance.json', 'list-feedback-performance.json', 'card-dates-performance.json'].includes(attachment.name)
         || attachment.contentType !== 'application/json') continue;
       try {
         const body = attachment.body ?? await readFile(attachment.path);

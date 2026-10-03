@@ -39,6 +39,20 @@ test('normal benchmark retains all twenty samples and its original budgets', () 
   assert.equal(performanceEntry('kanban-performance.json', { ...value, mutationP95Ms: 1 }, 'passed'), undefined);
 });
 
+test('dated Board evidence retains strict budgets and twenty valid samples without private fields', () => {
+  const value = { fixture: { ...fixture, lists: 3, cards: 50, datedCards: 50, samples: 20, assets: 'warm', cardId: 'private-id' },
+    usableMs: 600, detailMs: 150, mutationP95Ms: 49, mutationSamplesMs: Array.from({ length: 20 }, (_, index) => index + 31),
+    profile: 'private-profile', content: 'private-content' };
+  const entry = performanceEntry('card-dates-performance.json', value, 'failed');
+  assert.equal(entry.metric, 'normal-desktop-card-dates'); assert.equal(entry.status, 'failed');
+  assert.deepEqual(entry.budgetsMs, { usable: 1500, detail: 200, mutationP95: 500 });
+  assert.deepEqual(entry.mutationSamplesMs, value.mutationSamplesMs); assert.ok(!JSON.stringify(entry).includes('private'));
+  for (const invalid of [{ ...value, fixture: { ...value.fixture, datedCards: 0 } },
+    { ...value, mutationP95Ms: 1 }, { ...value, mutationSamplesMs: [50] },
+    { ...value, detailMs: Infinity }, { ...value, fixture: { ...value.fixture, topology: 'mocked reads' } }])
+    assert.equal(performanceEntry('card-dates-performance.json', invalid, 'passed'), undefined);
+});
+
 test('reporter waits for attachment collection and ignores unrelated payloads', async () => {
   const reporter = new PerformanceReporter();
   reporter.onTestEnd({ title: 'private-title' }, { status: 'failed', errors: ['private-error'], attachments: [

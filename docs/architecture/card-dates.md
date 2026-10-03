@@ -496,3 +496,17 @@ passed zero tagged axe violations, keyboard Card descriptions, policy recheck
 and no page overflow at 1280 and 390 px; the phone layout was inspected visually.
 This diagnostic does not prove real release API/Worker/live acceptance. The
 mandatory browser scenarios and the full exact-image gate remain pending.
+
+Corrected release run 37089366725 now reports success for the complete mandatory
+date fixture: production Worker fire/readiness, private notification/replay,
+Board-policy publication rollback/retry and Organization deletion-request
+rollback/suspension of all 76 enabled choices. It continues through later checks;
+this fixture success is scoped evidence, not a complete green release.
+Canvas head 6e4f39b passed Linux source (718 web tests), PostgreSQL and source
+quality gates; its image/runtime/browser checks remain pending.
+
+A mandatory dated-Board performance scenario now measures readiness including
+actual badges/profile admission, cached detail and 20 date commands using the
+existing <1500/<200/p95 <500 ms budgets. It retains numeric samples in the
+existing revision-bound performance artifact without personal content. See
+`docs/kanban-performance.md` for fixture conditions and pending CI status.
