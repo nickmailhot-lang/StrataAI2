@@ -1,9 +1,12 @@
 # Board-sharing request telemetry
 
 The API emits native .NET instruments from meter `StrataAI.BoardSharing`, owned
-by its dependency-injection meter factory. This adds no datastore, collector,
-deployable service, package or public metrics endpoint. Authorized operators can
-consume the instruments through their configured .NET diagnostics/metrics tools.
+by its dependency-injection meter factory. Native instrumentation adds no
+datastore or public metrics endpoint. Authorized operators can consume it through
+.NET diagnostics tools or the optional OpenTelemetry OTLP export described in
+`docs/architecture/operator-metrics.md`. The exporter uses centrally pinned SDK
+packages and an explicitly configured operator receiver. Deployed receiver and
+dashboard acceptance remain pending.
 Listeners must remain non-blocking. A throwing listener is isolated from the
 business response and cannot replace a committed acknowledgment with an error.
 

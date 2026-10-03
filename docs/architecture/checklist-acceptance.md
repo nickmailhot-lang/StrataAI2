@@ -42,9 +42,12 @@ client interactions satisfy realtime acceptance.
 request counters and duration histograms, with bounded outcome/error-code/keyed-
 attempt labels. It excludes tenant/object/actor IDs, content, raw URLs and keys.
 HTTP reads and keyed attempts do not prove client feature opens or user-visible
-retries. Client open/use/exception/retry reporting, reconnect/conflict rates and
-operator collection/export evidence remain incomplete, as described by the
-shared telemetry documents. Audit remains authoritative for business history.
+retries. Production client controls now report fixed open/use/exception/retry,
+conflict, validated result/timing and completed transport-recovery observations
+through the bounded authenticated aggregate endpoint. The API has an optional
+configured OTLP export path. Deployed collection, dashboards, render-exception
+coverage and complete telemetry acceptance remain incomplete, as described by
+the shared telemetry documents. Audit remains authoritative for business history.
 
 The ticket also depends on PRD-08/22 and cross-PRD lifecycle/copy behavior. New
 source stages are passing, but exact-image browser runs are live or pending;
