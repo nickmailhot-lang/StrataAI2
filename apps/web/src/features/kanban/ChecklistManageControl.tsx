@@ -26,7 +26,7 @@ function ManageControl(props: Props) {
     if (requestedFocus.current && !busy && !props.disabled && !props.unavailable && action.current && !action.current.disabled) {
       action.current.focus({ preventScroll: true }); requestedFocus.current = !!intent || blocked;
     }
-  }, [busy, props.disabled, props.unavailable, intent, blocked, draft, itemReview]);
+  }, [busy, props.disabled, props.unavailable, props.editable, props.canAdminister, intent, blocked, draft, itemReview]);
   const disabled = busy || props.disabled || props.unavailable || !props.editable;
   const conflict = !!draft && draft.cardVersion !== props.version;
   async function load(cursor?: string) {

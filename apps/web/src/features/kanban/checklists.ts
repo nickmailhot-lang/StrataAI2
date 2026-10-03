@@ -44,8 +44,8 @@ function summary(value: unknown, scope: ChecklistScope): ChecklistSummary {
     Math.abs(row.percent - (row.total === 0 ? 0 : row.completed * 100 / row.total)) > 1e-10) throw invalid();
   return row as ChecklistSummary;
 }
-function item(value: unknown, scope: ChecklistScope, parent: string): ChecklistItem {
-  const row = record(value); lifecycle(row);
+function item(value: unknown, scope: ChecklistScope, parent: string, deleted = false): ChecklistItem {
+  const row = record(value); lifecycle(row, deleted);
   if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.checklistId, parent) || !text(row.text, 2000) || typeof row.completed !== 'boolean') throw invalid();
   if (row.completed) {
     const completed = instant(row.completedAt);
@@ -165,5 +165,17 @@ export function parseChecklistItemEdited(value: unknown, scope: ChecklistScope, 
     (changed ? instant(child.updatedAt) !== instant(updated.updatedAt) : instant(child.updatedAt) !== instant(parent.updatedAt) || instant(updated.updatedAt) !== instant(before.updatedAt)) ||
     completed && (before.completed ? !sameId(updated.completedBy, before.completedBy!) || instant(updated.completedAt) !== instant(before.completedAt)
       : !sameId(updated.completedBy, actor) || instant(updated.completedAt) !== instant(updated.updatedAt))) throw invalid();
+  return row as ChecklistItemChange;
+}
+export function parseChecklistItemDeleted(value: unknown, scope: ChecklistScope, parent: Checklist, before: ChecklistItem, cardVersion: number): ChecklistItemChange {
+  const row = record(value); const child = checklist(row.checklist, scope); const deleted = item(row.item, scope, parent.id, true);
+  if (!sameId(row.organizationId, scope.organizationId) || !sameId(row.boardId, scope.boardId) || !sameId(row.cardId, scope.cardId) ||
+    !version(cardVersion) || !version(row.cardVersion) || row.cardVersion !== cardVersion + 1 || row.changed !== true ||
+    !sameId(child.id, parent.id) || child.title !== parent.title || child.rank !== parent.rank || child.version !== parent.version + 1 ||
+    instant(child.createdAt) !== instant(parent.createdAt) || instant(child.updatedAt) < instant(parent.updatedAt) ||
+    !sameId(deleted.id, before.id) || deleted.rank !== before.rank || deleted.text !== before.text || deleted.completed !== before.completed ||
+    deleted.version !== before.version + 1 || instant(deleted.createdAt) !== instant(before.createdAt) || instant(deleted.updatedAt) < instant(before.updatedAt) ||
+    instant(child.updatedAt) !== instant(deleted.updatedAt) ||
+    before.completed && (!sameId(deleted.completedBy, before.completedBy!) || instant(deleted.completedAt) !== instant(before.completedAt))) throw invalid();
   return row as ChecklistItemChange;
 }

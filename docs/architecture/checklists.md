@@ -394,3 +394,25 @@ lost committed response, retained completion history on text edits,
 uncompletion, accessibility and another session's live aggregate progress.
 Browser execution is pending CI. Individual item deletion and ordering UI and
 the remaining full PRD acceptance are still required.
+### Individual item deletion controls
+
+Admitted administrators can select an active item through the bounded manager,
+review its text and explicitly confirm deletion. Contributors do not receive
+deletion controls; loss of administrator access blocks both a new deletion and
+recovery of a pending one. The original confirmation, actor, Card/Checklist/item
+revisions and key remain fixed after a lost or malformed acknowledgment.
+
+Acknowledgment validation requires a new tombstone with matching mutation time,
+exact aggregate/child revision increments and preserved parent identity/title/
+rank plus item identity/text/rank/creation/completion history. Only the original
+successful receipt resolves recovery. A fresh, already-deleted no-op is not
+offered by the active-item selector. The backend remains the permission boundary.
+
+Local verification: 106 focused parser/root-manager/item-manager tests passed;
+type checking and lint passed. An initial recovery-focus test failed after
+administrator access returned; both manager effects now observe permission
+changes, and the full focused suite passed on rerun. Two desktop/mobile browser
+cases were discovered for keyboard confirmation, retained completion history,
+original committed/lost-response retry, accessibility and another session's
+empty aggregate progress. Exact-image browser execution is pending CI.
+Individual item ordering UI and full PRD-13 acceptance remain unfinished.
