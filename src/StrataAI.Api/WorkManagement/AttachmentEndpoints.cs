@@ -6,6 +6,19 @@ public static partial class WorkManagementEndpoints
 {
     private static void MapAttachmentEndpoints(WebApplication app)
     {
+        app.MapGet("/cards/{cardId:guid}/cover", async (Guid cardId, HttpContext context, CardAttachmentCoverService service, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            context.Response.Headers.CacheControl = "private, no-store";
+            var result = await service.ReadAsync(cardId, actor.Value, ct);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+        app.MapPut("/cards/{cardId:guid}/cover", async (Guid cardId, SetCardCoverInput input, HttpContext context, CardAttachmentCoverService service, CancellationToken ct) =>
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            var result = await service.SetAsync(cardId, actor.Value, input, context.TraceIdentifier, ct);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         app.MapGet("/cards/{cardId:guid}/attachments/archive", async (Guid cardId, string? after, HttpContext context, AttachmentLifecycleService service, CancellationToken ct) =>
         {
             var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();

@@ -15,7 +15,7 @@ public sealed record AttachmentArchivePage(Guid OrganizationId, Guid BoardId, Gu
 
 public sealed class AttachmentLifecycleService(IWorkManagementStore work, IAttachmentMetadataStore attachments,
     IOrganizationStore organizations, IWorkBoardAuthorization boards, IWorkManagementUnitOfWork transactions,
-    IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events)
+    IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events, ICardAttachmentCoverStore covers)
 {
     public Task<WorkOperation<AttachmentLifecycleChange>> ArchiveAsync(Guid card, Guid attachment, Guid actor,
         AttachmentLifecycleInput input, string correlationId, CancellationToken ct = default) =>
@@ -67,12 +67,21 @@ public sealed class AttachmentLifecycleService(IWorkManagementStore work, IAttac
                 var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
                 if (now < current.UpdatedAt || now < child.UpdatedAt || child.Version == long.MaxValue || current.Version == long.MaxValue)
                     return WorkOperation<AttachmentLifecycleChange>.Failure("version_conflict");
-                var updated = await work.UpdateCardAsync(cardId, current.Title, current.Description, current.Version, now, ct);
+                var clearCover = next is AttachmentLifecycleState.Archived or AttachmentLifecycleState.Deleted
+                    && await covers.FindSelectedAsync(hint.OrganizationId, cardId, ct) == attachmentId;
+                var updated = clearCover
+                    ? await covers.SetAsync(hint.OrganizationId, hint.BoardId, cardId, null, null, attachmentId, current.Version, now, ct)
+                    : await work.UpdateCardAsync(cardId, current.Title, current.Description, current.Version, now, ct);
                 if (updated is null) return WorkOperation<AttachmentLifecycleChange>.Failure("version_conflict");
                 var changed = await attachments.ChangeAttachmentLifecycleAsync(hint.OrganizationId, cardId, attachmentId,
                     child.Version, child.LifecycleState, next, actor, now, ct);
                 if (changed is null) return WorkOperation<AttachmentLifecycleChange>.Failure("version_conflict");
                 await work.AppendAuditAsync(hint.OrganizationId, actor, action, "Attachment", attachmentId, correlationId, ct);
+                if (clearCover)
+                {
+                    await work.AppendAuditAsync(hint.OrganizationId, actor, "CARD_COVER_CHANGED", "Card", cardId, correlationId, ct);
+                    await events.AppendAsync(new(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor, "CARD_COVER_CHANGED", "Card", cardId, updated.Version, correlationId, now), ct);
+                }
                 // The stream invalidates the Card; private file/URL details stay out of the event.
                 await events.AppendAsync(new(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor, action, "Card", cardId, updated.Version, correlationId, now), ct);
                 if (!await Admit(hint, actor, deleting, ct)) return WorkOperation<AttachmentLifecycleChange>.Failure("attachment_not_found");

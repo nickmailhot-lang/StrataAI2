@@ -284,3 +284,33 @@ returns no metadata and remains revoked from PUBLIC. Worker general Card read
 privileges remain unchanged. Existing restricted Worker permission/refusal tests
 and actual scan/preview transactions must still pass. Readiness and migration
 repeat verification include 054; new Linux execution remains pending.
+
+The actual 4dc865a Linux PostgreSQL job passes after 054, including restricted
+Worker publication and the real cover persistence contract. This confirms the
+deferred guard fix without granting Worker general Card reads.
+
+Authorized cover commands now provide private Internal GET/PUT Card cover
+routes. Selection binds current Card and File revisions, Active owning parent
+context, current edit authority and committed immutable image publication.
+PUBLIC selection requires explicit visibility consent; removal has no source
+version. Provider keys, digests, filenames and private receipt identities never
+appear in cover command responses or content-free Card events. The store locks
+Card then source, checks both revisions and advances Card once while preserving
+all other Card fields. The File revision is unchanged by selection/removal.
+
+Original retry receipts require current authority, the same current selection
+and a still-admitted source. Key reuse with another intent is refused; a fresh
+same-selection command is a no-op. Audit, current Board event/sequence, delivery
+job and receipt commit with the mutation and roll back on late session failure.
+Attachment archive/delete clears a selected source using that same single Card
+revision before its File CAS, and emits both lifecycle and cover-clearing effects
+inside the owning transaction. Restore never reselects a former cover.
+
+New HTTP checks exercise current Internal authority, no-op/replay, malformed
+selection, URL refusal and revoked receipt access. A new real restricted
+PostgreSQL Application contract exercises published-source selection, dual CAS,
+original retry/key reuse/no-op, injected audit and late actor full rollback,
+single-revision archive clearing, both canonical events, replay withdrawal and
+restoration without reselection. Local solution compilation passes with zero
+warnings; these new Linux tests remain pending. Selected public derivative
+delivery, cover UI/projection and complete native release evidence remain open.

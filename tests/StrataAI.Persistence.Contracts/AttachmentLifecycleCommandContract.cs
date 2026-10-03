@@ -26,7 +26,7 @@ internal static class AttachmentLifecycleCommandContract
         var work = provider.GetRequiredService<IWorkManagementStore>(); var metadata = provider.GetRequiredService<IAttachmentMetadataStore>();
         var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>();
         var service = new AttachmentLifecycleService(work, metadata, provider.GetRequiredService<IOrganizationStore>(),
-            provider.GetRequiredService<IWorkBoardAuthorization>(), unit, context, authorization, new Clock(), provider.GetRequiredService<IWorkEventStore>());
+            provider.GetRequiredService<IWorkBoardAuthorization>(), unit, context, authorization, new Clock(), provider.GetRequiredService<IWorkEventStore>(), provider.GetRequiredService<ICardAttachmentCoverStore>());
         var hint = (await work.FindCardAsync(card, ct))!;
         await unit.ExecuteReadAsync(tenant, actor, "card_not_found", () => work.AcquireCommandScopeAsync(tenant, actor, hint.BoardId, ct), async () =>
         {

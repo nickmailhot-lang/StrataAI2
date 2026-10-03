@@ -35,6 +35,8 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/assignable-members", "GET") => "assignable_member_read",
             ("/cards/{cardId:guid}/members", "GET") => "card_member_read",
             ("/cards/{cardId:guid}/attachments", "GET") => "attachment_read",
+            ("/cards/{cardId:guid}/cover", "GET") => "card_cover_read",
+            ("/cards/{cardId:guid}/cover", "PUT") => "card_cover_set",
             ("/cards/{cardId:guid}/attachments", "POST") => "attachment_file_create",
             ("/cards/{cardId:guid}/attachment-upload-options", "GET") => "attachment_upload_options",
             ("/cards/{cardId:guid}/attachments/url", "POST") => "attachment_url_create",
@@ -111,6 +113,7 @@ public sealed class BoardSharingTelemetry
                 or "invalid_checklist_item_text" or "checklist_item_not_found" or "checklist_not_found" or "invalid_checklist_cursor" or "invalid_checklist_title" or "invalid_checklist_version"
                 or "session_unavailable" or "work_storage_unavailable" or "invitation_storage_unavailable"
                 or "invalid_attachment_cursor" or "invalid_attachment_version" or "invalid_attachment_url" or "invalid_attachment_upload"
+                or "invalid_card_cover" or "cover_public_confirmation_required"
                 or "attachment_too_large" or "attachment_type_not_allowed" or "attachment_integrity_invalid" or "attachment_source_unavailable"
                 or "attachment_upload_in_progress" or "attachment_upload_unavailable"
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"

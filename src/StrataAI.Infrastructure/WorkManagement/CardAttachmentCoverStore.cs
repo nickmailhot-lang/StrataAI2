@@ -1,0 +1,90 @@
+using Npgsql;
+using NpgsqlTypes;
+using StrataAI.Application.WorkManagement;
+using StrataAI.Domain.WorkManagement;
+
+namespace StrataAI.Infrastructure.WorkManagement;
+
+internal sealed partial class InMemoryWorkManagementStore : ICardAttachmentCoverStore
+{
+    private readonly Dictionary<Guid, Guid> _cardCovers = [];
+    public Task<Guid?> FindSelectedAsync(Guid organization, Guid card, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_sync) return Task.FromResult<Guid?>(_cards.TryGetValue(card, out var parent) && parent.OrganizationId == organization
+            && _cardCovers.TryGetValue(card, out var selected) ? selected : null);
+    }
+    public Task<CardRecord?> SetAsync(Guid organization, Guid board, Guid card, Guid? attachment, long? sourceVersion,
+        Guid? previous, long cardVersion, DateTimeOffset now, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_sync)
+        {
+            if (!_cards.TryGetValue(card, out var parent) || parent.OrganizationId != organization || parent.BoardId != board
+                || parent.LifecycleState != WorkItemLifecycleState.Active || parent.Version != cardVersion
+                || parent.Version == long.MaxValue || now < parent.UpdatedAt
+                || (_cardCovers.TryGetValue(card, out var current) ? (Guid?)current : null) != previous)
+                return Task.FromResult<CardRecord?>(null);
+            if (attachment is { } selected && (!_attachmentMetadata.TryGetValue(selected, out var source)
+                || source.OrganizationId != organization || source.CardId != card || source.Version != sourceVersion
+                || source.Kind != AttachmentKind.File || source.LifecycleState != AttachmentLifecycleState.Active
+                || source.DeletedAt is not null || source.ScanStatus != AttachmentScanStatus.Clean
+                || source.MimeType is not ("image/png" or "image/jpeg" or "image/webp"))) return Task.FromResult<CardRecord?>(null);
+            var updated = parent with { Version = parent.Version + 1, UpdatedAt = now };
+            if (attachment is { } value) _cardCovers[card] = value; else _cardCovers.Remove(card);
+            _cards[card] = updated; return Task.FromResult<CardRecord?>(updated);
+        }
+    }
+}
+
+internal sealed partial class PostgresWorkManagementStore : ICardAttachmentCoverStore
+{
+    public async Task<Guid?> FindSelectedAsync(Guid organization, Guid card, CancellationToken ct)
+    {
+        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Cover reads require the owning scope.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
+        await using var query = new NpgsqlCommand("SELECT cover_attachment_id FROM cards WHERE tenant_id=@tenant AND id=@card;", session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("card", card);
+        return await query.ExecuteScalarAsync(ct) is Guid id ? id : null;
+    }
+    public async Task<CardRecord?> SetAsync(Guid organization, Guid board, Guid card, Guid? attachment, long? sourceVersion,
+        Guid? previous, long cardVersion, DateTimeOffset now, CancellationToken ct)
+    {
+        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Cover changes require the owning command transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
+        await using var parent = new NpgsqlCommand("""
+            SELECT id FROM cards WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version
+             AND version<9223372036854775807 AND updated_at<=@now AND lifecycle_state='ACTIVE'
+             AND cover_attachment_id IS NOT DISTINCT FROM @previous FOR UPDATE;
+            """, session.Connection, session.Transaction);
+        parent.Parameters.AddWithValue("tenant", organization); parent.Parameters.AddWithValue("board", board);
+        parent.Parameters.AddWithValue("card", card); parent.Parameters.AddWithValue("version", cardVersion);
+        parent.Parameters.AddWithValue("now", now); parent.Parameters.AddWithValue("previous", NpgsqlDbType.Uuid, (object?)previous ?? DBNull.Value);
+        if (await parent.ExecuteScalarAsync(ct) is not Guid) return null;
+        if (attachment is { } selected)
+        {
+            if (sourceVersion is not > 0) return null;
+            await using var source = new NpgsqlCommand("""
+                SELECT id FROM attachments WHERE tenant_id=@tenant AND card_id=@card AND id=@file AND version=@version
+                 AND kind='FILE' AND lifecycle_state='ACTIVE' AND deleted_at IS NULL AND scan_status='CLEAN'
+                 AND mime_type IN ('image/png','image/jpeg','image/webp') FOR UPDATE;
+                """, session.Connection, session.Transaction);
+            source.Parameters.AddWithValue("tenant", organization); source.Parameters.AddWithValue("card", card);
+            source.Parameters.AddWithValue("file", selected); source.Parameters.AddWithValue("version", sourceVersion.Value);
+            if (await source.ExecuteScalarAsync(ct) is not Guid) return null;
+        }
+        await using var update = new NpgsqlCommand("""
+            UPDATE cards SET cover_attachment_id=@file,version=version+1,updated_at=@now
+            WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version
+             AND cover_attachment_id IS NOT DISTINCT FROM @previous AND lifecycle_state='ACTIVE'
+            RETURNING id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version,
+             start_at,due_at,due_timezone,due_has_time,due_complete;
+            """, session.Connection, session.Transaction);
+        update.Parameters.AddWithValue("tenant", organization); update.Parameters.AddWithValue("board", board); update.Parameters.AddWithValue("card", card);
+        update.Parameters.AddWithValue("version", cardVersion); update.Parameters.AddWithValue("now", now);
+        update.Parameters.AddWithValue("file", NpgsqlDbType.Uuid, (object?)attachment ?? DBNull.Value);
+        update.Parameters.AddWithValue("previous", NpgsqlDbType.Uuid, (object?)previous ?? DBNull.Value);
+        await using var row = await update.ExecuteReaderAsync(ct);
+        return await row.ReadAsync(ct) ? ReadCard(row) : null;
+    }
+}
