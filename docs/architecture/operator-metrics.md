@@ -83,3 +83,12 @@ in the release bundle. This does not complete ARCH-08 or PRD-13.
 
 Collector reference:
 [pinned Prometheus exporter configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.161.0/exporter/prometheusexporter/README.md).
+
+The synchronous transport repair alone did not pass: run 37108290219 at 4201d99
+still failed ForceFlush (256 host cases passed). Inspection of the pinned SDK
+showed the combined exporter/reader callback applies inline after named options,
+replacing the injected test transport. Exporter and reader settings now register
+through named options, and AddOtlpExporter uses the named single-options overload
+without an inline delegate. Endpoint, resource, timeout, redirect and collection
+policies are unchanged; the real successful-flush/private-field assertions remain.
+The solution builds with zero warnings/errors; repaired execution is pending CI.

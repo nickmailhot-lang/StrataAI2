@@ -27,19 +27,23 @@ public static class OperatorMetricsRegistration
             ["service.name"] = "strataai-api", ["service.namespace"] = "strataai",
             ["service.version"] = build.Version, ["strataai.build.revision"] = build.Revision,
         });
-        services.AddOpenTelemetry().WithMetrics(metrics => metrics.SetResourceBuilder(resource)
-            .AddMeter("StrataAI.BoardSharing", "StrataAI.ChecklistClient")
-            .AddOtlpExporter(ExporterName, (options, reader) =>
+        services.Configure<OtlpExporterOptions>(ExporterName, options =>
             {
                 options.Endpoint = endpoint; options.Protocol = OtlpExportProtocol.HttpProtobuf;
                 options.Headers = configuration["STRATAAI_METRICS_OTLP_HEADERS"] ?? string.Empty;
                 options.TimeoutMilliseconds = 3000;
                 options.HttpClientFactory = () => new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
                     { Timeout = TimeSpan.FromSeconds(3) };
+            });
+        services.Configure<MetricReaderOptions>(ExporterName, reader =>
+            {
                 reader.TemporalityPreference = MetricReaderTemporalityPreference.Cumulative;
                 reader.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 10_000;
                 reader.PeriodicExportingMetricReaderOptions.ExportTimeoutMilliseconds = 3000;
-            }));
+            });
+        services.AddOpenTelemetry().WithMetrics(metrics => metrics.SetResourceBuilder(resource)
+            .AddMeter("StrataAI.BoardSharing", "StrataAI.ChecklistClient")
+            .AddOtlpExporter(ExporterName, configure: (Action<OtlpExporterOptions>?)null));
         return true;
     }
 }
