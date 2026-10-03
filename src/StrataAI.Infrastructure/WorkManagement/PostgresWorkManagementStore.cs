@@ -8,6 +8,21 @@ namespace StrataAI.Infrastructure.WorkManagement;
 internal sealed partial class PostgresWorkManagementStore(
     PostgresConnectionFactory connectionFactory) : IWorkManagementStore, ICardDateStore
 {
+    public async Task<IReadOnlyList<Guid>> ListReminderCandidateBoardIdsAsync(Guid organizationId, CancellationToken ct)
+    {
+        if (!connectionFactory.HasCommandScope(organizationId))
+            throw new InvalidOperationException("Reminder Organization candidates require the owning command transaction.");
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, ct);
+        await using var query = new NpgsqlCommand("""
+            SELECT DISTINCT c.board_id FROM cards c JOIN card_reminders r
+              ON r.tenant_id=c.tenant_id AND r.card_id=c.id AND r.enabled
+            WHERE c.tenant_id=@tenant ORDER BY c.board_id;
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organizationId);
+        var result = new List<Guid>(); await using var reader = await query.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct)) result.Add(reader.GetGuid(0));
+        return result;
+    }
     public async Task<IReadOnlyList<Guid>> ListReminderCandidateCardIdsAsync(Guid organizationId, Guid boardId, Guid? listId, CancellationToken ct)
     {
         if (!connectionFactory.HasCommandScope(organizationId))

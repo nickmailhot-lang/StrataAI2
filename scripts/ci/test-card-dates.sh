@@ -36,6 +36,7 @@ admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES
  INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES(gen_random_uuid(),'$org','$board','$member','MEMBER','ACTIVE',now(),now());" >/dev/null
 request() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -X "$2" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $4" -d "$5" -o "$scratch/response.json" -w '%{http_code}' "$base$3"; }
 state() { admin "SELECT md5(jsonb_build_object(
+ 'organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$org'),
  'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$org' AND id='$card'),
  'reminders',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM card_reminders r WHERE tenant_id='$org'),
  'lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l WHERE tenant_id='$org'),
@@ -91,27 +92,6 @@ test "$(request owner POST "/cards/$card/restore" "$(uuid)" '{"version":8}')" = 
 # Old receipts must not disclose dates after access removal.
 memberKey=$(uuid)
 test "$(request member PATCH "$path" "$memberKey" '{"version":9,"dueHasTime":false,"dueComplete":false}')" = 200
-# Board policy controls display only, using admin admission and Board CAS. It
-# must not rewrite Card dates or renew already fired/future Reminder generations.
-policyVersion=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" "$base/boards/$board" | jq -r '.board.version')
-policyPath="/boards/$board/date-policy"; policyKey=$(uuid)
-policyPayload=$(jq -nc --argjson version "$policyVersion" '{timezone:"Pacific/Honolulu",version:$version}')
-before=$(state)
-test "$(request member PATCH "$policyPath" "$(uuid)" "$policyPayload")" = 404
-test "$(request owner PATCH "$policyPath" "$(uuid)" "$(jq -c '.timezone="Unknown/Place"' <<< "$policyPayload")")" = 400
-test "$before" = "$(state)"
-admin 'REVOKE INSERT ON work_events FROM strataai_api_runtime;' >/dev/null
-test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 503
-test "$before" = "$(state)"
-admin 'GRANT INSERT ON work_events TO strataai_api_runtime;' >/dev/null
-test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 200
-jq -e --argjson version "$policyVersion" '.changed and .board.dateTimezoneOverride=="Pacific/Honolulu" and .board.version==$version+1' "$scratch/response.json" >/dev/null
-after=$(state)
-test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 200
-test "$after" = "$(state)"
-test "$(admin "SELECT version=2 AND due_at='$fireDue' FROM cards WHERE tenant_id='$org' AND id='$fireCard';")" = t
-test "$(admin "SELECT generation=1 AND version=2 AND status='FIRED' FROM card_reminders WHERE tenant_id='$org' AND id='$fireReminder';")" = t
-test "$(request owner PATCH "$policyPath" "$(uuid)" "$(jq -nc --argjson version "$((policyVersion+1))" '{timezone:null,version:$version}')")" = 200
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 before=$(state)
 test "$(request member PATCH "$path" "$memberKey" '{"version":9,"dueHasTime":false,"dueComplete":false}')" = 404
@@ -246,13 +226,53 @@ cmp "$scratch/fire-created.json" "$scratch/response.json"
 test "$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='CARD_REMINDER' AND safe_metadata->>'reminderId'='$fireReminder';")" = 1
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_type='Reminder' AND entity_id='$fireReminder' AND event_type='REMINDER_FIRED' AND ready;")" = 1
 test "$(admin "SELECT version=2 AND lifecycle_state='ACTIVE' FROM cards WHERE tenant_id='$org' AND id='$fireCard';")" = t
+# Board policy controls display only, using admin admission and Board CAS. It
+# must not rewrite Card dates or renew already fired/future Reminder generations.
+policyVersion=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" "$base/boards/$board" | jq -r '.board.version')
+policyPath="/boards/$board/date-policy"; policyKey=$(uuid)
+policyPayload=$(jq -nc --argjson version "$policyVersion" '{timezone:"Pacific/Honolulu",version:$version}')
+before=$(state)
+test "$(request member PATCH "$policyPath" "$(uuid)" "$policyPayload")" = 404
+test "$(request owner PATCH "$policyPath" "$(uuid)" "$(jq -c '.timezone="Unknown/Place"' <<< "$policyPayload")")" = 400
+test "$before" = "$(state)"
+admin 'REVOKE INSERT ON work_events FROM strataai_api_runtime;' >/dev/null
+test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 503
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON work_events TO strataai_api_runtime;' >/dev/null
+test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 200
+jq -e --argjson version "$policyVersion" '.changed and .board.dateTimezoneOverride=="Pacific/Honolulu" and .board.version==$version+1' "$scratch/response.json" >/dev/null
+after=$(state)
+test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 200
+test "$after" = "$(state)"
+test "$(admin "SELECT version=2 AND due_at='$fireDue' FROM cards WHERE tenant_id='$org' AND id='$fireCard';")" = t
+test "$(admin "SELECT generation=1 AND version=2 AND status='FIRED' FROM card_reminders WHERE tenant_id='$org' AND id='$fireReminder';")" = t
+test "$(request owner PATCH "$policyPath" "$(uuid)" "$(jq -nc --argjson version "$((policyVersion+1))" '{timezone:null,version:$version}')")" = 200
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 before=$(state)
 test "$(request member POST "$reminderPath" "$reminderKey" "$choice")" = 404
 test "$before" = "$(state)"
+# The existing owner deletion-request command must suspend every chosen Card
+# in the same Organization transaction, preserving dates and cancelled choices.
+orgVersion=$(admin "SELECT version FROM organizations WHERE id='$org';")
+before=$(state)
+test "$(request member DELETE "/organizations/$org?version=$orgVersion" "$(uuid)" '{}')" = 404
+test "$before" = "$(state)"
+admin 'REVOKE INSERT ON work_events FROM strataai_api_runtime;' >/dev/null
+test "$(request owner DELETE "/organizations/$org?version=$orgVersion" "$(uuid)" '{}')" = 503
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON work_events TO strataai_api_runtime;' >/dev/null
+test "$(request owner DELETE "/organizations/$org?version=$orgVersion" "$(uuid)" '{}')" = 202
+test "$(admin "SELECT status='DELETING' AND version=$orgVersion+1 FROM organizations WHERE id='$org';")" = t
+test "$(admin "SELECT count(*) FROM card_reminders WHERE tenant_id='$org' AND enabled AND (status<>'SUSPENDED' OR trigger_at IS NOT NULL);")" = 0
+test "$(admin "SELECT count(*) FROM card_reminders r JOIN cards c ON c.tenant_id=r.tenant_id AND c.id=r.card_id WHERE r.tenant_id='$org' AND c.title LIKE 'Container fanout %' AND r.generation=4 AND r.status='SUSPENDED' AND c.version=1 AND c.lifecycle_state='ACTIVE';")" = 76
+test "$(admin "SELECT generation=2 AND NOT enabled AND status='CANCELLED' FROM card_reminders WHERE tenant_id='$org' AND id='$cancelledReminder';")" = t
+test "$(admin "SELECT version=2 AND due_at='$fireDue' AND lifecycle_state='ACTIVE' FROM cards WHERE tenant_id='$org' AND id='$fireCard';")" = t
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND card_id='$fireCard' AND notification_type='REMINDER_FIRED';")" = 1
+test "$(curl --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/response.json" -w '%{http_code}' "$base/boards/$board")" = 404
 echo 'Date-command Reminder generations, canonical future jobs, replay/no-op, completion/reopen/clear and publication rollback passed.'
 echo 'Personal Reminder configuration, recipient privacy, stable cancellation, private events and revoked replay passed.'
 echo 'Card archive/restore Reminder suspension, future generation renewal and archive receipt deduplication passed.'
 echo 'List/Board archive contexts, all 76 chosen Cards, selective renewal, cancelled-choice preservation and lifecycle publication rollback passed.'
 echo 'Real release Worker Reminder delivery, self inbox, canonical FIRED revision and post-delivery receipt deduplication passed.'
 echo 'Board timezone policy admin admission, event-publication rollback, receipt replay and unchanged UTC dates/Reminder generations passed.'
+echo 'Organization deletion-request Reminder suspension, all chosen Cards, cancelled-choice/date/audit preservation and full event-publication rollback passed.'

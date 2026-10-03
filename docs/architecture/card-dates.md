@@ -423,3 +423,25 @@ tagged axe violations, keyboard recovery/focus and no horizontal overflow at
 1280 and 390 px. This diagnostic does not prove release API/Worker or live delivery;
 the mandatory exact-image scenarios still need CI. Organization lifecycle and
 remaining PRD-wide acceptance stay open.
+
+Run 37086355617 passed Linux source, PostgreSQL, images and security, but its date
+fixture failed because the new Board policy check referenced the Worker Card
+before that Card was created. The fixture is corrected to run the policy check
+after the actual Worker delivery/replay checks. This setup failure is separate
+from run 37085562302's earlier queue-draining failure. Neither establishes successful
+Worker fire or policy rollback acceptance; the corrected exact-image run is needed.
+
+The existing Organization deletion-request command now locks all Boards with
+enabled Reminder choices in stable order before changing the Organization status.
+Its internal PostgreSQL candidate query is uncapped and tenant-scoped; it does
+not reuse the visible Board directory. The shared planner also checks current
+Organization status, and the command suspends choices/private scheduling events
+inside its owning transaction after marking DELETING. Cancelled choices, Card
+UTC fields/revisions and earlier notification/audit history remain intact.
+The new source regression spans 52 Boards and a separate tenant; the mandatory
+date fixture forces event-publication failure and verifies whole Organization,
+Reminder and outbox rollback before checking successful suspension of all 76
+chosen Cards. Strict local build and shell syntax pass; these new cases require
+Linux CI. This extends the existing deletion request, not a claim of completed
+Organization archive/restore or final deletion/retention behavior. Those lifecycle
+features and remaining ticket acceptance are still open.

@@ -9,7 +9,8 @@ public sealed class OrganizationService(
     IClock clock,
     IOrganizationUnitOfWork unitOfWork,
     StrataAI.Application.Identity.ICommandActorAuthorization actors,
-    StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents) : IOrganizationService
+    StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
+    CardReminderContainerScheduling reminders) : IOrganizationService
 {
     // ARCH-02-AC-003: admission is a current read, never a transferable grant.
     public Task<OrganizationOperation<OrganizationSurfaceAdmission>> ReadSurfaceAdmissionAsync(Guid organizationId,
@@ -365,6 +366,13 @@ public sealed class OrganizationService(
             return OrganizationOperation<bool>.Failure("organization_not_found");
         }
 
+        // The Organization command owns the parent gate. Lock every chosen
+        // Board in stable order before making the parent unavailable; never use
+        // a paged UI Board directory to truncate lifecycle effects.
+        var reminderBoards = await workStore.ListReminderCandidateBoardIdsAsync(organizationId, cancellationToken);
+        foreach (var boardId in reminderBoards)
+            if (!await workStore.AcquireCommandScopeAsync(organizationId, actorUserId, boardId, cancellationToken))
+                return OrganizationOperation<bool>.Failure("organization_not_found");
         var changed = await store.MarkDeletingAsync(
             organizationId,
             expectedVersion,
@@ -375,6 +383,9 @@ public sealed class OrganizationService(
         {
             return OrganizationOperation<bool>.Failure("version_conflict");
         }
+
+        foreach (var boardId in reminderBoards)
+            await reminders.RescheduleAsync(organizationId, boardId, null, actorUserId, correlationId, cancellationToken);
 
         await store.AppendAuditAsync(
             organizationId,
