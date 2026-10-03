@@ -251,3 +251,26 @@ keyboard archive image review, readonly mutation controls, explicit protected
 download admission, current denial and accessibility. Their provider responses
 are explicitly simulated; they prove client behavior only after execution, not
 server publication or integrity. Real API/PostgreSQL contracts remain required.
+
+Migration 053 adds the PRD's nullable Card cover attachment identity, with the
+same-tenant/Card composite FK and an index for selected-source checks. Existing
+Cards retain no cover. Selection/removal requires a next Card revision; new
+selection requires an Active Card/Board/List and an Active Clean image with
+source-bound immutable preview/publication evidence. The source row is locked
+during selection. Forced Card/attachment/preview RLS continues to apply; no new
+public metadata or provider capability is granted.
+
+A deferred source guard prevents committing an archive/deletion or unavailable
+source while it remains selected. Explicit cover clearing and source lifecycle
+changes may occur in either order inside one transaction; invalid final state
+rolls the entire transaction back. Restoration does not select a cover. This
+schema rule requires the upcoming Application lifecycle command to clear the
+selection with its existing single Card revision/audit/event transaction.
+
+The new restricted persistence contract exercises a real committed preview,
+URL/unpublished/sibling-Card refusal, tenant read/write isolation, revision
+guards, deferred source withdrawal rollback, atomic archive/clear and restoration
+without reselection. Migration repeat/upgrade and runtime readiness include 053.
+Local compilation and script syntax pass; actual Linux execution is pending.
+Application cover commands/read projection, lifecycle clearing, selected public
+derivative admission and MUI cover controls remain subsequent acceptance work.

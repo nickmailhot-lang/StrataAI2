@@ -298,37 +298,46 @@ query 'DO $$ DECLARE target uuid; prior bigint; BEGIN
   RAISE EXCEPTION '\''Lifecycle count was caller mutable'\'';
  EXCEPTION WHEN check_violation THEN NULL; END;
 END $$;'
-cat > "$scratch/migrations/053_serialization_fixture.sql" <<'SQL'
+cp db/migrations/053_card_attachment_covers.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 53
+test "$(query 'SELECT bool_and(cover_attachment_id IS NULL) FROM cards')" = t
+if query "UPDATE cards SET cover_attachment_id=gen_random_uuid(),version=version+1,updated_at=GREATEST(updated_at,statement_timestamp());" >/dev/null; then
+ echo 'Unpublished cover source was admitted'; exit 1
+fi
+test "$(query 'SELECT bool_and(cover_attachment_id IS NULL) FROM cards')" = t
+cat > "$scratch/migrations/054_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('053_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('054_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='053_serialization_fixture'")" = 1
-cat > "$scratch/migrations/054_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='054_serialization_fixture'")" = 1
+cat > "$scratch/migrations/055_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('054_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('055_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='054_failure_fixture'")" = 0
-rm "$scratch/migrations/054_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='055_failure_fixture'")" = 0
+rm "$scratch/migrations/055_failure_fixture.sql"
 run
-cat > "$scratch/migrations/055_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/056_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='055_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/055_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='056_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/056_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'
