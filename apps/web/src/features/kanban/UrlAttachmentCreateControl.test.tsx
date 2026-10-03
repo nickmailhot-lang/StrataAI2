@@ -8,7 +8,7 @@ const scope = { organizationId: id(1), boardId: id(2), cardId: id(3) }; const no
 const props = () => ({ ...scope, version: 4, editable: true, disabled: false, unavailable: false, onRefresh: vi.fn(), onBusyChange: vi.fn(), onRecoveryChange: vi.fn() });
 const ack = () => ({ ...scope, cardVersion: 5, attachment: { id: id(4), organizationId: scope.organizationId, cardId: scope.cardId, uploaderId: profile.id,
   kind: 1, displayName: 'Reference', url: 'https://example.test/reference', mimeType: null, sizeBytes: null, scanStatus: 0, scannedAt: null,
-  createdAt: now, updatedAt: now, version: 1, deletedAt: null } });
+  createdAt: now, updatedAt: now, version: 1, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null } });
 beforeEach(() => vi.mocked(workRequest).mockReset());
 async function review() {
   fireEvent.click(screen.getByRole('button', { name: 'Add link attachment' }));

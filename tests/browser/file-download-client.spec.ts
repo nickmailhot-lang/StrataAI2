@@ -25,7 +25,7 @@ for (const width of [1280, 390]) {
     await page.route(`**${path}`, route => route.fulfill({ json: {
       organizationId: org, boardId: board, cardId: card, cardVersion: 1, canEdit: false, nextCursor: null,
       items: [{ id: attachment, organizationId: org, cardId: card, uploaderId: actor, kind: 0, displayName: 'Résumé.pdf',
-        mimeType: 'application/pdf', sizeBytes: bytes.length, url: null, scanStatus: 2, scannedAt: at, createdAt: at, updatedAt: at, version: 2, deletedAt: null }]
+        mimeType: 'application/pdf', sizeBytes: bytes.length, url: null, scanStatus: 2, scannedAt: at, createdAt: at, updatedAt: at, version: 2, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null }]
     } }));
     await page.route(`**${path}/${attachment}/download-options`, route => route.fulfill({ json: {
       organizationId: org, boardId: board, cardId: card, cardVersion: 1, attachmentId: attachment, attachmentVersion: 2, actorId: actor

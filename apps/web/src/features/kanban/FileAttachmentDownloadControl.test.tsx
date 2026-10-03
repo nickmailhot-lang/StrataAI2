@@ -9,7 +9,7 @@ const scope = { organizationId: id(1), boardId: id(2), cardId: id(3) };
 const profile = { id: id(8), version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
 const now = '2026-10-03T08:00:00.123456Z';
 const file: FileAttachment = { id: id(4), organizationId: id(1), cardId: id(3), uploaderId: profile.id, kind: 0, displayName: 'Résumé.pdf',
-  mimeType: 'application/pdf', sizeBytes: 100003, url: null, scanStatus: 2, scannedAt: now, createdAt: now, updatedAt: now, version: 2, deletedAt: null };
+  mimeType: 'application/pdf', sizeBytes: 100003, url: null, scanStatus: 2, scannedAt: now, createdAt: now, updatedAt: now, version: 2, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null };
 const options = { ...scope, cardVersion: 4, attachmentId: file.id, attachmentVersion: file.version, actorId: profile.id };
 const props = { ...scope, version: 4, file, onRefresh: vi.fn() };
 beforeEach(() => { vi.mocked(workRequest).mockReset(); props.onRefresh.mockReset(); });

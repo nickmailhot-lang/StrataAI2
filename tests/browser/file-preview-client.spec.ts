@@ -26,7 +26,7 @@ for (const width of [1280, 390]) {
     await page.route('**' + path, route => route.fulfill({ json: {
       organizationId: org, boardId: board, cardId: card, cardVersion: 1, canEdit: false, nextCursor: null,
       items: [{ id: attachment, organizationId: org, cardId: card, uploaderId: actor, kind: 0, displayName: 'Photo.webp',
-        mimeType: 'image/webp', sizeBytes: 100003, url: null, scanStatus: 2, scannedAt: at, createdAt: at, updatedAt: at, version: 3, deletedAt: null }]
+        mimeType: 'image/webp', sizeBytes: 100003, url: null, scanStatus: 2, scannedAt: at, createdAt: at, updatedAt: at, version: 3, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null }]
     } }));
     await page.route('**' + path + '/' + attachment + '/preview-options', route => unavailable
       ? route.fulfill({ status: 404, json: { code: 'card_not_found' } })

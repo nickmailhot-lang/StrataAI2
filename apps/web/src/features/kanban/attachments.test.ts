@@ -7,7 +7,7 @@ const now = '2026-10-03T08:00:00.123456+00:00';
 const ticks = dateInstantTicks(now) + 621355968000000000n;
 const item = (index = 1): UrlAttachment => ({ id: `55555555-5555-4555-8555-${String(index).padStart(12, '0')}`, organizationId: scope.organizationId, cardId: scope.cardId,
   uploaderId: actor, kind: 1, displayName: 'External link', mimeType: null, sizeBytes: null, url: 'https://example.test/path?q=1#part', scanStatus: 0, scannedAt: null,
-  createdAt: now, updatedAt: now, version: 1, deletedAt: null });
+  createdAt: now, updatedAt: now, version: 1, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null });
 const page = (items: AttachmentMetadata[] = [item()]) => ({ ...scope, cardVersion: 2, canEdit: true, items, nextCursor: null as string | null });
 const change = () => ({ ...scope, cardVersion: 2, attachment: item() });
 
@@ -27,9 +27,18 @@ describe('URL attachment response admission', () => {
       { kind: 0 }, { scanStatus: 2 }, { mimeType: 'image/png' }, { sizeBytes: 50 }, { scannedAt: now }, { deletedAt: now }, { storageKey: 'private/key' },
       { displayName: 'Unsafe\nname' }, { displayName: '\u202Espoofed' }, { displayName: ' ' }, { displayName: 'x'.repeat(256) },
       { createdAt: '2026-10-03T08:00:00.1234567Z' }, { updatedAt: '2026-10-03T07:59:59Z' },
+      { lifecycleState: 1 }, { lifecycleState: 2 }, { lifecycleState: 'ACTIVE' }, { deletedBy: actor },
+      { archivedAt: now }, { version: 3, archivedAt: '2026-10-03T09:00:00Z' },
     ]) expect(() => parseAttachmentPage(page([{ ...item(), ...patch }] as UrlAttachment[]), scope)).toThrow();
     for (const patch of [{ boardId: scope.cardId }, { cardVersion: 0 }, { canEdit: 'true' }, { providerDetail: 'private' }])
       expect(() => parseAttachmentPage({ ...page(), ...patch }, scope)).toThrow();
+  });
+  it('admits restored Active history but rejects missing or malformed lifecycle evidence', () => {
+    const restored = { ...item(), version: 3, archivedAt: now };
+    expect(parseAttachmentPage(page([restored]), scope).items[0]).toEqual(restored);
+    const { lifecycleState: _state, ...missing } = restored;
+    expect(() => parseAttachmentPage(page([missing] as UrlAttachment[]), scope)).toThrow();
+    expect(() => parseAttachmentPage(page([{ ...restored, archivedAt: '2026-10-03T08:00:00.1234567Z' }]), scope)).toThrow();
   });
   it('keeps .NET cursor precision across 50 tied timestamps and requires cursor anchored to the final row', () => {
     const rows = Array.from({ length: 50 }, (_, i) => item(100 - i)); const first = page(rows);

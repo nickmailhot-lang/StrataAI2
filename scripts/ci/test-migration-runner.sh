@@ -270,37 +270,47 @@ run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 50
 test "$(query "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='attachment_scan_sweeps'::regclass")" = t
 test "$(query "SELECT has_function_privilege('strataai_worker_runtime','recover_attachment_scan_page(uuid,integer)','EXECUTE') AND NOT has_function_privilege('strataai_api_runtime','recover_attachment_scan_page(uuid,integer)','EXECUTE')")" = t
-cat > "$scratch/migrations/051_serialization_fixture.sql" <<'SQL'
+cp db/migrations/051_attachment_lifecycle.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 51
+test "$(query "SELECT lifecycle_state='DELETED' AND archived_at IS NULL AND deleted_by IS NULL AND sha256 IS NULL AND version=2 FROM attachments WHERE id='04200000-0000-0000-0000-000000000003'")" = t
+test "$(query "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='attachments'::regclass")" = t
+test "$(query "SELECT count(*)=3 FROM pg_indexes WHERE tablename='attachments' AND indexname IN ('ix_attachments_card_cursor','ix_attachments_archive_cursor','ix_attachments_preview_sweep') AND indexdef LIKE '%lifecycle_state%'")" = t
+if query "UPDATE attachments SET lifecycle_state='ACTIVE',deleted_at=NULL,version=version+1 WHERE id='04200000-0000-0000-0000-000000000003';" >/dev/null; then
+ echo 'Legacy deleted attachment was restored'; exit 1
+fi
+cat > "$scratch/migrations/052_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('051_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('052_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='051_serialization_fixture'")" = 1
-cat > "$scratch/migrations/052_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='052_serialization_fixture'")" = 1
+cat > "$scratch/migrations/053_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('052_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('053_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='052_failure_fixture'")" = 0
-rm "$scratch/migrations/052_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='053_failure_fixture'")" = 0
+rm "$scratch/migrations/053_failure_fixture.sql"
 run
-cat > "$scratch/migrations/053_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/054_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='053_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/053_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='054_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/054_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

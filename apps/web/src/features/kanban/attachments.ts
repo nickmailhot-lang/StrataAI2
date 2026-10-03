@@ -6,7 +6,8 @@ export type AttachmentScope = { organizationId: string; boardId: string; cardId:
 // delivery URLs are never admitted through the metadata response.
 export type UrlAttachment = { id: string; organizationId: string; cardId: string; uploaderId: string;
   kind: 1; displayName: string; mimeType: null; sizeBytes: null; url: string; scanStatus: 0;
-  scannedAt: null; createdAt: string; updatedAt: string; version: number; deletedAt: null };
+  scannedAt: null; createdAt: string; updatedAt: string; version: number; deletedAt: null;
+  lifecycleState: 0; archivedAt: string | null; deletedBy: null };
 export type FileAttachment = Omit<UrlAttachment, 'kind' | 'mimeType' | 'sizeBytes' | 'url' | 'scanStatus' | 'scannedAt'> & {
   kind: 0; mimeType: 'image/png' | 'image/jpeg' | 'image/webp' | 'application/pdf'; sizeBytes: number; url: null;
 } & ({ scanStatus: 1; scannedAt: null } | { scanStatus: 2 | 3 | 4; scannedAt: string });
@@ -46,12 +47,16 @@ export function attachmentUrl(value: unknown): string {
 }
 function metadata(value: unknown, scope: AttachmentScope): AttachmentMetadata {
   const row = record(value);
-  exact(row, ['id', 'organizationId', 'cardId', 'uploaderId', 'kind', 'displayName', 'mimeType', 'sizeBytes', 'url', 'scanStatus', 'scannedAt', 'createdAt', 'updatedAt', 'version', 'deletedAt']);
+  exact(row, ['id', 'organizationId', 'cardId', 'uploaderId', 'kind', 'displayName', 'mimeType', 'sizeBytes', 'url', 'scanStatus', 'scannedAt', 'createdAt', 'updatedAt', 'version', 'deletedAt', 'lifecycleState', 'archivedAt', 'deletedBy']);
   if (!notificationUuid(row.id) || !notificationUuid(row.uploaderId) || !same(row.organizationId, scope.organizationId) || !same(row.cardId, scope.cardId)
-    || !revision(row.version) || row.deletedAt !== null
+    || !revision(row.version) || row.deletedAt !== null || row.lifecycleState !== 0 || row.deletedBy !== null
     || typeof row.displayName !== 'string' || !row.displayName || row.displayName.trim() !== row.displayName || row.displayName.length > 255 || /[\p{Cc}\p{Cf}]/u.test(row.displayName)) throw invalid();
   const created = instant(row.createdAt); const updated = instant(row.updatedAt);
   if (updated < created || created % 10n !== 0n || updated % 10n !== 0n) throw invalid();
+  if (row.archivedAt !== null) {
+    const archived = instant(row.archivedAt);
+    if (row.version < 3 || archived < created || archived > updated || archived % 10n !== 0n) throw invalid();
+  }
   if (row.kind === 1) {
     if (row.scanStatus !== 0 || row.mimeType !== null || row.sizeBytes !== null || row.scannedAt !== null) throw invalid();
     attachmentUrl(row.url);

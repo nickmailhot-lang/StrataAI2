@@ -64,6 +64,7 @@ public sealed class AttachmentDownloadAdmissionService(IWorkManagementStore work
     private static bool IsDeliverable(AttachmentFileRecord? file, CardRecord card, Guid id) => file is not null
         && file.Metadata.Id == id && file.Metadata.OrganizationId == card.OrganizationId && file.Metadata.CardId == card.Id
         && file.Metadata.Kind == AttachmentKind.File && file.Metadata.ScanStatus == AttachmentScanStatus.Clean
+        && file.Metadata.LifecycleState == AttachmentLifecycleState.Active
         && file.Metadata.DeletedAt is null && file.Metadata.ScannedAt is not null && file.Metadata.Version >= 2
         && file.Metadata.ScannedAt >= file.Metadata.CreatedAt && file.Metadata.ScannedAt <= file.Metadata.UpdatedAt
         && file.Metadata.Url is null && file.Metadata.MimeType is "image/png" or "image/jpeg" or "image/webp" or "application/pdf"

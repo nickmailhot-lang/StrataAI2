@@ -11,7 +11,7 @@ const options = { ...scope, cardVersion: 4, maximumBytes: 20971520, allowedMimeT
 const props = () => ({ ...scope, version: 4, editable: true, disabled: false, unavailable: false, onRefresh: vi.fn(), onBusyChange: vi.fn(), onRecoveryChange: vi.fn() });
 const ack = () => ({ ...scope, cardVersion: 5, attachment: { id: id(4), organizationId: scope.organizationId, cardId: scope.cardId, uploaderId: profile.id,
   kind: 0, displayName: 'Résumé.png', url: null, mimeType: 'application/pdf', sizeBytes: 9, scanStatus: 1, scannedAt: null,
-  createdAt: now, updatedAt: now, version: 1, deletedAt: null } });
+  createdAt: now, updatedAt: now, version: 1, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null } });
 const selected = () => new File(['%PDF-1.7\n'], 'Résumé.png', { type: 'image/png' });
 const writes = () => vi.mocked(workRequest).mock.calls.filter(([path]) => path.endsWith('/attachments'));
 function respond(post: () => Promise<unknown> = async () => ack()) {

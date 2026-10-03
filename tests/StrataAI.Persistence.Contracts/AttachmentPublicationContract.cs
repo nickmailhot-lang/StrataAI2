@@ -313,14 +313,14 @@ internal static class AttachmentPublicationContract
         await Verdict("CLEAN");
         Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Changed file version reused an old snapshot.");
         download = (await downloads.AdmitAsync(card, upload.Id, user, ct)).Value!;
-        await using (var deleted = new NpgsqlCommand("UPDATE attachments SET deleted_at=@at WHERE tenant_id=@tenant AND id=@id;", admin))
+        await using (var deleted = new NpgsqlCommand("UPDATE attachments SET lifecycle_state='ARCHIVED',archived_at=@at,updated_at=@at,version=version+1 WHERE tenant_id=@tenant AND id=@id;", admin))
         {
             deleted.Parameters.AddWithValue("at", clock.UtcNow); deleted.Parameters.AddWithValue("tenant", tenant); deleted.Parameters.AddWithValue("id", upload.Id);
             await deleted.ExecuteNonQueryAsync(ct);
         }
-        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Deleted file reused delivery admission.");
-        Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).ErrorCode == "card_not_found", "Deleted file obtained delivery admission.");
-        await using (var restored = new NpgsqlCommand("UPDATE attachments SET deleted_at=NULL WHERE tenant_id=@tenant AND id=@id;", admin))
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Archived file reused normal delivery admission.");
+        Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).ErrorCode == "card_not_found", "Archived file obtained normal delivery admission.");
+        await using (var restored = new NpgsqlCommand("UPDATE attachments SET lifecycle_state='ACTIVE',version=version+1 WHERE tenant_id=@tenant AND id=@id;", admin))
         { restored.Parameters.AddWithValue("tenant", tenant); restored.Parameters.AddWithValue("id", upload.Id); await restored.ExecuteNonQueryAsync(ct); }
         await using (var revoke = new NpgsqlCommand("UPDATE organization_members SET status='REMOVED',updated_at=clock_timestamp(),version=version+1 WHERE tenant_id=@tenant AND user_id=@actor;", admin))
         { revoke.Parameters.AddWithValue("tenant", tenant); revoke.Parameters.AddWithValue("actor", user); await revoke.ExecuteNonQueryAsync(ct); }

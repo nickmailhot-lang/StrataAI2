@@ -73,3 +73,30 @@ cover eligibility. Necessary cover-source checks require Active state; they stil
 do not grant permissions or prove a published derivative. These rules have domain
 tests linked to PRD-14/18 TC-01/02/03/07/10. Persisted lifecycle metadata, authorized
 commands, archive review and cover delivery/UI remain subsequent work.
+
+Migration 051 persists explicit lifecycle state, retained archive time and deletion
+actor. Existing tombstones retain their actual history without invented archive or
+actor values. New records start Active; transition triggers require the next File
+revision, preserve ownership/history and make Deleted rows immutable. New deletion
+requires an Archived source and retained actor evidence. Forced tenant RLS remains
+mandatory. Active and Archived seek pages have separate partial indexes, and the
+bounded preview maintenance index excludes Archived rows.
+
+Normal metadata/original/preview admission now requires Active state. The private
+preview source loader, opt-in Clean-to-preview enqueue and backfill require Active
+sources; backfill rechecks lifecycle after acquiring the File lock. Existing scan
+verdict completion remains permitted for Archived files. Current metadata DTOs and
+strict web admission include lifecycle/history fields; invalid states, deletion
+identity and malformed or missing history are refused in ordinary pages. Fixture
+download/preview responses use the same shape. Existing scan/recovery contracts
+perform real archive-before-delete transitions; the delivery withdrawal fixture
+uses reversible archival rather than restoring a deleted tombstone.
+
+The restricted lifecycle contract checks tenant RLS, defaults, direct Active-delete
+refusal, lifecycle evidence/ownership protection, archive/restore/deletion
+revisions, retained actor/history and immutable deletion. Migration tests preserve
+legacy tombstones and verify the partial indexes, repeat/forward upgrades and
+serialized-runner rollback. Runtime readiness requires migration 051. Actual new
+Linux execution is pending; command authorization/consent, atomic Card/event/audit
+effects, archive review and selected-cover clearing still require Application/API
+implementation and acceptance tests.

@@ -8,7 +8,12 @@ namespace StrataAI.Application.WorkManagement;
 public sealed record AttachmentMetadata(Guid Id, Guid OrganizationId, Guid CardId, Guid UploaderId,
     AttachmentKind Kind, string DisplayName, string? MimeType, long? SizeBytes, string? Url,
     AttachmentScanStatus ScanStatus, DateTimeOffset? ScannedAt, DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt, long Version, DateTimeOffset? DeletedAt);
+    DateTimeOffset UpdatedAt, long Version, DateTimeOffset? DeletedAt)
+{
+    public AttachmentLifecycleState LifecycleState { get; init; }
+    public DateTimeOffset? ArchivedAt { get; init; }
+    public Guid? DeletedBy { get; init; }
+}
 
 // Private Application/Worker record. Never serialize the integrity request into
 // normal attachment pages/receipts or admit it from an HTTP request body.
@@ -36,7 +41,8 @@ public static class AttachmentMetadataMapping
 {
     public static AttachmentMetadata From(Attachment value) => new(value.Id, value.OrganizationId, value.CardId,
         value.UploaderId, value.Kind, value.DisplayName, value.MimeType, value.SizeBytes, value.Url,
-        value.ScanStatus, value.ScannedAt, value.CreatedAt, value.UpdatedAt, value.Version, value.DeletedAt);
+        value.ScanStatus, value.ScannedAt, value.CreatedAt, value.UpdatedAt, value.Version, value.DeletedAt)
+    { LifecycleState = value.LifecycleState, ArchivedAt = value.ArchivedAt, DeletedBy = value.DeletedBy };
 
     public static DateTimeOffset DatabaseTimestamp(DateTimeOffset value)
     {

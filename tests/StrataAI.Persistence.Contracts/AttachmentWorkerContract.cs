@@ -182,10 +182,10 @@ internal static class AttachmentWorkerContract
         var removedFile=await PublishPending(); var removedJob=await queue.ClaimAsync(organization,workerId,ct);
         Require(removedJob is not null,"Tombstone fixture was not claimed.");
         await using(var session=await api.OpenTenantSessionAsync(organization,ct))
-        await using(var tombstone=new NpgsqlCommand("UPDATE public.attachments SET deleted_at=GREATEST(statement_timestamp(),updated_at),updated_at=GREATEST(statement_timestamp(),updated_at),version=version+1 WHERE tenant_id=@tenant AND id=@file;",session.Connection,session.Transaction))
+        await using(var tombstone=new NpgsqlCommand("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE tenant_id=@tenant AND id=@file; UPDATE public.attachments SET lifecycle_state='DELETED',deleted_by=uploader_id,deleted_at=GREATEST(statement_timestamp(),updated_at),updated_at=GREATEST(statement_timestamp(),updated_at),version=version+1 WHERE tenant_id=@tenant AND id=@file;",session.Connection,session.Transaction))
         {
             tombstone.Parameters.AddWithValue("tenant",organization); tombstone.Parameters.AddWithValue("file",removedFile);
-            Require(await tombstone.ExecuteNonQueryAsync(ct)==1,"Tombstone fixture did not deactivate file metadata."); await session.CommitAsync(ct);
+            Require(await tombstone.ExecuteNonQueryAsync(ct)==2,"Archive/delete fixture did not deactivate file metadata."); await session.CommitAsync(ct);
         }
         providerCalls=scanner.Calls; objectReads=storage.Opens;
         Require(await delivery.LoadAsync(removedJob!,AttachmentScanAttempt.Parse(removedJob!.SafeMetadataJson),ct) is {Status:AttachmentScanLoadStatus.Superseded,Request:null},"Deactivated file disclosed private integrity.");
@@ -196,6 +196,7 @@ internal static class AttachmentWorkerContract
         await AttachmentScanRecoveryContract.RunAsync(admin,worker,api,organization,original.CardId,mime=>PublishPending(mime),
             claim=>new AttachmentScanDeliveryHandler(new PostgresAttachmentScanDeliveryStore(worker),new(storage,new FixtureScanner())).ExecuteAsync(claim,ct),
             ()=>storage.Opens,ct);
+        await AttachmentLifecycleContract.RunAsync(admin,api,organization,original.CardId,ct);
         Console.WriteLine("Restricted C# Worker scan: private admission, immutable claims, late lease rollback, status/Card/audit/event effects, replay without provider I/O and bounded failure passed.");
     }
     private sealed class FixtureStorage(Guid organization,byte[] bytes) : IAttachmentObjectStorage

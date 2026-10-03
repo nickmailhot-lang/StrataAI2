@@ -194,7 +194,7 @@ internal static class AttachmentPreviewActivationContract
             return file;
         }
         await AttachmentPreviewBackfillContract.RunAsync(admin,worker,objects.ApiConnections!,organization,source,PublishLegacyClean,ct);
-        await Scalar<int>("UPDATE public.attachments SET deleted_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
+        await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant; UPDATE public.attachments SET lifecycle_state='DELETED',deleted_by=uploader_id,deleted_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");
         reads=objects.Reads;
         Require(!(await previewRead.PrepareAsync(card,source,job.ActorId,ct)).Succeeded && objects.Reads==reads,"Deleted original retained preview delivery.");
         Console.WriteLine("Restricted preview reads: committed receipt, source-bound integrity, private namespace, forced RLS, foreign actor/Card/stale revision refusal, full staging outside DB, corruption, changed revision and deletion passed.");

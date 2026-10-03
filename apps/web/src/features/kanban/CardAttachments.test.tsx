@@ -5,7 +5,7 @@ const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')
 const scope = { organizationId: id(1), boardId: id(2), cardId: id(3) };
 const now = '2026-10-03T08:00:00.123456Z';
 const item = { id: id(4), organizationId: scope.organizationId, cardId: scope.cardId, uploaderId: id(8), kind: 1, displayName: 'External reference',
-  mimeType: null, sizeBytes: null, url: 'https://example.test/reference', scanStatus: 0, scannedAt: null, createdAt: now, updatedAt: now, version: 1, deletedAt: null };
+  mimeType: null, sizeBytes: null, url: 'https://example.test/reference', scanStatus: 0, scannedAt: null, createdAt: now, updatedAt: now, version: 1, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null };
 const page = { ...scope, cardVersion: 4, canEdit: false, items: [item], nextCursor: null };
 const props = { ...scope, version: 4, unavailable: false, onRefresh: vi.fn() };
 const respond = (value: unknown) => new Response(JSON.stringify(value), { status: 200, headers: { 'Content-Type': 'application/json' } });
