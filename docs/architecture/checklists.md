@@ -56,3 +56,16 @@ transactional audit/outbox, Card copy/move/delete integration, MUI recovery and
 confirmation/focus, live/reconnect/access-loss scenarios, telemetry and full
 normal/large-data performance evidence. No acceptance checkbox or issue closure
 is implied by this foundation.
+
+The first PostgreSQL run for 0d392f0 (37091711154) failed because migration 039
+never inserted its version ledger row. Its timezone column existed, but the
+stream's `\quit 3` ignored the argument and returned success before migration
+040 ran. Migration 039 now records its version and supports the known existing
+unrecorded column/constraint state, preserving policy values while checking the
+column shape and rebuilding its constraint transactionally. The stream raises
+a SQL exception on a missing ledger entry under ON_ERROR_STOP, so later migrations
+cannot silently be skipped. The migration-runner fixture now exercises 039/040
+upgrade/repeat, recovery of an existing Honolulu policy with a missing 039 ledger,
+serialized runners, transactional SQL failure and explicit rejection of an
+unrecorded migration. Shell syntax and emitted SQL inspection pass; corrected
+PostgreSQL execution remains pending.

@@ -177,28 +177,52 @@ cp db/migrations/038_card_reminder_delivery.sql "$scratch/migrations/"
 run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 38
-cat > "$scratch/migrations/039_serialization_fixture.sql" <<'SQL'
+cp db/migrations/039_board_date_policy.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 39
+# Reproduce the old applied-column/unrecorded-ledger state with a real policy.
+query "UPDATE boards SET date_timezone_override='Pacific/Honolulu' WHERE id='02500000-0000-0000-0000-000000000001';
+ DELETE FROM schema_migrations WHERE version='039_board_date_policy';" >/dev/null
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 39
+test "$(query "SELECT date_timezone_override='Pacific/Honolulu' FROM boards WHERE id='02500000-0000-0000-0000-000000000001'")" = t
+cp db/migrations/040_checklists.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 40
+test "$(query "SELECT count(*) FROM pg_class WHERE relname IN ('checklists','checklist_items') AND relrowsecurity AND relforcerowsecurity")" = 2
+cat > "$scratch/migrations/041_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('039_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('041_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='039_serialization_fixture'")" = 1
-cat > "$scratch/migrations/040_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='041_serialization_fixture'")" = 1
+cat > "$scratch/migrations/042_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('040_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('042_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='040_failure_fixture'")" = 0
-rm "$scratch/migrations/040_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='042_failure_fixture'")" = 0
+rm "$scratch/migrations/042_failure_fixture.sql"
+run
+cat > "$scratch/migrations/043_unrecorded_fixture.sql" <<'SQL'
+BEGIN;
+CREATE TABLE migration_unrecorded_fixture(id integer);
+COMMIT;
+SQL
+if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='043_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/043_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'
