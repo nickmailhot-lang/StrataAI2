@@ -90,3 +90,19 @@ it('explains read-only empty state and blocks new commands when the Card changes
   view.unmount(); mock(); const next = render(<CardCommentsControl {...p} />); await create(); next.rerender(<CardCommentsControl {...p} version={5} />);
   expect(screen.getByRole('button', { name: 'Save comment' })).toBeDisabled(); expect(screen.getByRole('textbox')).toBeDisabled(); expect(writes()).toHaveLength(0);
 });
+it('automatically rereads an opened clean view after Card invalidation and reconnect without stealing focus', async () => {
+  let current: unknown = page; const p = props();
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : current);
+  const view = render(<><CardCommentsControl {...p} reconnectSequence={0} /><Button>Another control</Button></>); await review();
+  screen.getByRole('button', { name: 'Another control' }).focus();
+  current = { ...page, cardVersion: 5, items: [{ ...row, content: 'Updated by another client', version: 2,
+    updatedAt: '2026-10-03T08:01:00.123456Z', editedAt: '2026-10-03T08:01:00.123456Z' }] };
+  view.rerender(<><CardCommentsControl {...p} version={5} reconnectSequence={0} /><Button>Another control</Button></>);
+  await screen.findByText('Updated by another client'); expect(screen.queryByText(row.content)).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Another control' })).toHaveFocus();
+  const reads = () => vi.mocked(workRequest).mock.calls.filter(([path]) => path.includes('/comments')).length;
+  expect(reads()).toBe(2);
+  view.rerender(<><CardCommentsControl {...p} version={5} reconnectSequence={1} /><Button>Another control</Button></>);
+  await waitFor(() => expect(reads()).toBe(3)); await screen.findByText('Updated by another client');
+  expect(screen.getByRole('button', { name: 'Another control' })).toHaveFocus(); expect(writes()).toHaveLength(0);
+});

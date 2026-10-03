@@ -229,3 +229,18 @@ execution remains pending the immutable-image CI fixture. No full acceptance
 criterion is closed; live automatic comment-page reconciliation, readable
 historical author names, mentions, activity projection, large-data and complete
 release evidence still require work.
+
+Clean opened comment views now automatically reread the first bounded page
+when the Card aggregate changes or the Board reconnect sequence advances.
+Old seek cursors retire; current profile/scope/revision validation runs again.
+Drafts and uncertain receipts keep their original concurrency boundary rather
+than being overwritten by live updates. Refresh does not request focus away
+from another control. An acknowledged row retires when its Card context changes.
+
+All 46 selected component/Board tests pass after this change, including the new
+live/reconnect/focus test. Typecheck and lint pass after correcting the test
+fixture's overly narrow editedAt type. The two registered native scenarios now
+include a second independent authenticated browser session, automatic create/
+delete delivery and recovery of an edit missed while that session is offline.
+They use the actual API and separate Worker; execution is still pending CI,
+and registration does not close two-client/reconnect acceptance criteria.

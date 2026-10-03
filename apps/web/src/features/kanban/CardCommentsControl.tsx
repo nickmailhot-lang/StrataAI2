@@ -9,14 +9,16 @@ import type { UrlAttachmentCreateProps } from './UrlAttachmentCreateControl';
 type Review = { actor: string; page: CardCommentPage; cursor?: string };
 type Draft = { actor: string; version: number; original: CardComment | null; text: string; deleting: boolean; confirmed: boolean };
 type Intent = { actor: string; key: string; path: string; method: string; body: string; check: CommentIntent };
-export function CardCommentsControl(props: UrlAttachmentCreateProps) {
+export type CardCommentsProps = UrlAttachmentCreateProps & { reconnectSequence?: number };
+export function CardCommentsControl(props: CardCommentsProps) {
   return <CommentsControl key={`${props.organizationId}/${props.boardId}/${props.cardId}`} {...props} />;
 }
-function CommentsControl(props: UrlAttachmentCreateProps) {
+function CommentsControl(props: CardCommentsProps) {
   const [review, setReview] = useState<Review>(); const [draft, setDraft] = useState<Draft>();
   const [intent, setIntent] = useState<Intent>(); const [blocked, setBlocked] = useState(false); const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string>(); const pending = useRef<AbortController | undefined>(undefined);
   const [acknowledged, setAcknowledged] = useState<CardCommentChange>();
+  const observedReconnect = useRef(props.reconnectSequence);
   const mounted = useRef(false); const callbacks = useRef(props); callbacks.current = props;
   const primary = useRef<HTMLButtonElement>(null); const editor = useRef<HTMLInputElement>(null); const consent = useRef<HTMLInputElement>(null);
   const retry = useRef<HTMLButtonElement>(null); const discard = useRef<HTMLButtonElement>(null);
@@ -34,9 +36,19 @@ function CommentsControl(props: UrlAttachmentCreateProps) {
     const target = intent ? retry.current : blocked ? discard.current : draft ? draft.deleting ? consent.current : editor.current : primary.current;
     if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = !!intent || blocked; }
   }, [disabled, draft, intent, blocked, review]);
-  async function load(owner: HTMLElement, cursor?: string) {
+  useEffect(() => {
+    // A clean opened view follows aggregate invalidations and reconnects.
+    // Retire the old cursor and reread the bounded first page. Dirty drafts and
+    // uncertain original receipts retain their captured concurrency boundary.
+    const version = review?.page.cardVersion ?? acknowledged?.cardVersion;
+    if (version === undefined || props.version < version || pending.current || disabled || draft || intent || blocked) return;
+    if (props.version !== version || observedReconnect.current !== props.reconnectSequence) void load();
+  }, [props.version, props.reconnectSequence, disabled, draft, intent, blocked, review, acknowledged]);
+  async function load(owner?: HTMLElement, cursor?: string) {
     if (pending.current || disabled || draft || intent || blocked) return;
-    focus(owner); const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setReview(undefined); setAcknowledged(undefined);
+    if (owner) focus(owner);
+    observedReconnect.current = props.reconnectSequence;
+    const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setReview(undefined); setAcknowledged(undefined);
     const version = props.version;
     try {
       const result = await boundedWorkRead(async signal => {
