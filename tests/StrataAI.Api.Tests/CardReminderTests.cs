@@ -106,7 +106,7 @@ public sealed partial class ApiHostTests
         var hidden = sync.Events.Where(e => ids.Contains(e.EventId)).ToArray(); Assert.Equal(3, hidden.Length);
         Assert.All(hidden, e => { Assert.Equal("BOARD_INVALIDATED", e.EventType); Assert.Equal(f.Board, e.EntityId); Assert.Null(e.ActorId); Assert.Empty(e.Metadata); });
         using var remove = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
-        Assert.Equal(HttpStatusCode.OK, remove.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, remove.StatusCode);
         using var forbiddenReplay = await Mutate(recipient, HttpMethod.Put, path, input, key);
         Assert.Equal(HttpStatusCode.NotFound, forbiddenReplay.StatusCode);
         using var forbiddenRead = await recipient.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, forbiddenRead.StatusCode);

@@ -294,3 +294,11 @@ available. Explicitly cancelled choices stay cancelled across both operations.
 The API regression and exact-image fixture cover archive/restore, private receipt
 admission and unchanged effects on archive replay. List/Board/Organization
 container transitions, MUI configuration and full release acceptance remain open.
+
+Personal configuration's first Linux source run (37082134090) passed Domain and
+PostgreSQL checks but failed one API assertion: the new test expected 200 for
+the existing Board member removal endpoint, whose contract returns 204. All
+preceding personal configuration, cancellation/recovery and private-event checks
+passed before that assertion. The expectation is corrected to NoContent; the
+following revoked-read/replay checks and new Card lifecycle case still require
+the next Linux run. The failed commit built no accepted images or release bundle.
