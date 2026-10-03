@@ -457,7 +457,8 @@ function BoardContent() {
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           <ListCopyControl snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || labelRecovery || labelManageRecovery || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
+            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || labelRecovery || labelManageRecovery || !!loadError || cardRecovery || !!cardId || !!creation}
+            refreshing={snapshotReading}
             unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
             onBusyChange={setBusy} onRecoveryChange={setCopyRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
@@ -520,7 +521,12 @@ function BoardContent() {
           const target = String(event.over.id);
           const column = snapshot.lists.find(value => value.list.lifecycleState === 'active' && (target === `card-end:${value.list.id}` || value.cards.some(item => target === `card:${item.id}`)));
           if (!column || !snapshot.access.canMove || snapshot.board.lifecycleState !== 'active') return;
-          setCardDrop({ ...sourceCard, destination: column.list.id, before: target.startsWith('card:') ? target.slice(5) : '', nonce: crypto.randomUUID() });
+          const drop = { ...sourceCard, destination: column.list.id, before: target.startsWith('card:') ? target.slice(5) : '', nonce: crypto.randomUUID() };
+          const current = snapshot.lists.filter(value => value.list.lifecycleState === 'active').flatMap(value => value.cards).find(value => value.id === sourceCard.cardId);
+          // Show provisional placement in the drop event, before mounting the command
+          // control. The command still owns validation, persistence and recovery.
+          if (current?.version === sourceCard.version) setMovePreview(drop);
+          setCardDrop(drop);
           return;
         }
         const source = dragList.current; dragList.current = undefined;

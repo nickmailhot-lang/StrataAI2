@@ -7,7 +7,7 @@ type Board = { id: string; name: string; version: number };
 type Draft = { id: string; sourceName: string; sourceRank: string; version: number; name: string; destination: string };
 type Review = Draft & { destinationName: string };
 type Intent = Review & { key: string };
-type Props = { snapshot: BoardSnapshot; disabled: boolean; unavailableListIds: Set<string>;
+type Props = { snapshot: BoardSnapshot; disabled: boolean; refreshing?: boolean; unavailableListIds: Set<string>;
   onBusyChange: (busy: boolean) => void; onRecoveryChange: (unresolved: boolean) => void;
   onRefresh: () => void; onReturnFocus: () => void };
 const guid = (value: unknown): value is string => typeof value === 'string'
@@ -15,13 +15,14 @@ const guid = (value: unknown): value is string => typeof value === 'string'
   && value !== '00000000-0000-0000-0000-000000000000';
 
 // Board-owned recovery survives canonical source-column removal after a copy.
-export function ListCopyControl({ snapshot, disabled, unavailableListIds, onBusyChange, onRecoveryChange, onRefresh, onReturnFocus }: Props) {
+export function ListCopyControl({ snapshot, disabled, refreshing = false, unavailableListIds, onBusyChange, onRecoveryChange, onRefresh, onReturnFocus }: Props) {
   const [open, setOpen] = useState(false); const [boards, setBoards] = useState<Board[]>();
   const [draft, setDraft] = useState<Draft>(); const [review, setReview] = useState<Review>();
   const [intent, setIntent] = useState<Intent>(); const [busy, setBusy] = useState(false);
   const [blocked, setBlocked] = useState(false); const [denied, setDenied] = useState(false); const [notice, setNotice] = useState<string>();
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false); const epoch = useRef(0);
   const authorized = snapshot.access.canEdit && snapshot.board.lifecycleState === 'active' && !denied;
+  const commandBlocked = disabled || refreshing;
   const lists = snapshot.lists.map(column => column.list).filter(list => list.lifecycleState === 'active'
     && Number.isSafeInteger(list.version) && Number(list.version) > 0);
   const source = lists.find(list => list.id === draft?.id);
@@ -77,7 +78,7 @@ export function ListCopyControl({ snapshot, disabled, unavailableListIds, onBusy
     } catch { if (mounted.current && generation === epoch.current) setNotice('Copy destinations could not be loaded. Try loading them again.'); }
   }
   async function prepare() {
-    if (pending.current || disabled || !authorized || !draft || changed || intent) return;
+    if (pending.current || commandBlocked || !authorized || !draft || changed || intent) return;
     const generation = epoch.current;
     const name = draft.name.trim();
     if (!name || name.length > 160) { setNotice('Use a copy name with 1 to 160 characters.'); return; }
@@ -97,7 +98,7 @@ export function ListCopyControl({ snapshot, disabled, unavailableListIds, onBusy
     } catch { if (mounted.current && generation === epoch.current) setNotice('The destination could not be checked. Review the copy again.'); }
   }
   async function copy() {
-    if (pending.current || disabled || !authorized || !review || (!intent && (changed || blocked))) return;
+    if (pending.current || commandBlocked || !authorized || !review || (!intent && (changed || blocked))) return;
     const generation = epoch.current;
     const command = intent ?? { ...review, key: crypto.randomUUID() }; setNotice(undefined);
     try {
@@ -129,6 +130,7 @@ export function ListCopyControl({ snapshot, disabled, unavailableListIds, onBusy
       slotProps={{ transition: { onExited: onReturnFocus } }}>
       {open && <><DialogTitle>Copy list</DialogTitle><DialogContent><Stack spacing={2} sx={{ pt: 1 }}>
         {notice && <Typography role="status">{notice}</Typography>}
+        {refreshing && <Typography role="status">Checking current Board access before copying.</Typography>}
         <Typography>The copy gets new IDs and includes active and archived Cards. Deleted Cards are excluded. Card order and archive state are preserved.</Typography>
         {!intent && <>
           {boards?.length === 0 && <Typography>No destination Boards are available. Check access or create a Board before copying.</Typography>}
@@ -150,14 +152,14 @@ export function ListCopyControl({ snapshot, disabled, unavailableListIds, onBusy
             setDraft(current => current && { ...current, sourceName: source.name, sourceRank: source.rank, version: source.version! });
             setReview(undefined); setBlocked(false); setNotice(undefined); onRefresh();
           }}>Use current List for copy review</Button>}
-          <Button disabled={busy || disabled || !draft || !boards || changed || blocked} onClick={() => void prepare()}>Review List copy</Button>
+          <Button disabled={busy || commandBlocked || !draft || !boards || changed || blocked} onClick={() => void prepare()}>Review List copy</Button>
         </>}
         {review && <Typography sx={{ overflowWrap: 'anywhere' }}>Copy {review.sourceName} as {review.name} to {review.destinationName}?</Typography>}
         {intent && <Alert severity="info">The original copy is unresolved. Keep its name and destination unchanged until its acknowledgment is recovered.</Alert>}
         <Button disabled={busy} onClick={onRefresh}>Check current Board for this copy</Button>
       </Stack></DialogContent><DialogActions>
         {!intent && <Button disabled={busy} onClick={close}>Cancel copy</Button>}
-        <Button disabled={busy || disabled || !authorized || !review || (!intent && (changed || blocked))} onClick={() => void copy()}>
+        <Button disabled={busy || commandBlocked || !authorized || !review || (!intent && (changed || blocked))} onClick={() => void copy()}>
           {intent ? 'Retry this List copy' : 'Confirm List copy'}
         </Button>
       </DialogActions></>}

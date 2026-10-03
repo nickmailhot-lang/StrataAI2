@@ -35,10 +35,14 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
   const neighbors = lists.find(column => column.list.id === review?.destination)?.cards.filter(value => value.id !== card.id) ?? [];
   const positionActive = !!review && (!review.before || neighbors.some(value => value.id === review.before));
   const consumeDrop = useEffectEvent((request: CardDropRequest) => {
-    if (request.cardId !== card.id || intent || blocked || disabled || pending.current) return;
+    if (request.cardId !== card.id || intent || blocked || disabled || pending.current) {
+      if (!intent && !pending.current) onPreview?.();
+      return;
+    }
     const selected = { version: request.version, destination: request.destination, before: request.before };
     setReview(selected);
     if (request.version !== card.version) {
+      onPreview?.();
       setBlocked(true); setNotice('The card changed during dragging. Check the current Board before reviewing another move.'); onRefresh(); return;
     }
     void move(selected);
@@ -49,7 +53,10 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
     const destination = lists.find(column => column.list.id === proposed?.destination);
     const validPosition = !!proposed && !!destination && (!proposed.before || destination.cards.some(value => value.id === proposed.before && value.id !== card.id));
     if (pending.current || disabled || blocked || !proposed || (selected && intent)
-      || (!intent && (proposed.version !== card.version || !validPosition))) return;
+      || (!intent && (proposed.version !== card.version || !validPosition))) {
+      if (selected && !intent && !pending.current) onPreview?.();
+      return;
+    }
     const command = intent ?? { ...proposed, key: crypto.randomUUID() };
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setAcknowledged(false);
     onBusyChange?.(true);

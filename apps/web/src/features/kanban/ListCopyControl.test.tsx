@@ -30,6 +30,28 @@ async function review() {
 function confirm() { fireEvent.click(screen.getByRole('button', { name: 'Confirm List copy' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); vi.clearAllMocks(); });
 
+it('opens discovery during a live Board read but waits for its current source revision before confirming', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(reply(directory)).mockResolvedValueOnce(reply(target));
+  vi.stubGlobal('fetch', fetch);
+  const view = render(<ListCopyControl {...props} refreshing />);
+  fireEvent.click(screen.getByRole('button', { name: 'Copy list' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Reload copy destinations' })).toBeEnabled());
+  select('List to copy', 'Planning'); select('Destination Board', 'Delivery');
+  expect(screen.getByRole('button', { name: 'Review List copy' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Confirm List copy' })).toBeDisabled();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  view.rerender(<ListCopyControl {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Review List copy' }));
+  await screen.findByText('Copy Planning as Planning copy to Delivery?');
+  expect(screen.getByRole('button', { name: 'Confirm List copy' })).toBeEnabled();
+  view.rerender(<ListCopyControl {...props} refreshing />);
+  expect(screen.getByRole('button', { name: 'Confirm List copy' })).toBeDisabled();
+  view.rerender(<ListCopyControl {...props} snapshot={{ ...snapshot, lists: [{ list: { ...list, version: 3 }, cards: [] }] }} />);
+  expect(screen.getByRole('button', { name: 'Confirm List copy' })).toBeDisabled();
+  expect(screen.getByText(/This copy review changed/)).toBeVisible();
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
 it('checks destination authority before submitting only the reviewed source version/name/destination/key', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(reply(directory)).mockResolvedValueOnce(reply(target)).mockResolvedValueOnce(reply(ack, 201));
   vi.stubGlobal('fetch', fetch); render(<ListCopyControl {...props} />); await review(); confirm();

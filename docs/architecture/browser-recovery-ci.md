@@ -86,3 +86,20 @@ expanded phone assignees, List copy review, Card Watch opening and 102ms movemen
 feedback against the unchanged 100ms budget. This evidence adds the List copy and
 feedback path to the remaining CI investigation; it does not invalidate its
 already passed exact-image Card date and Watch fixtures or prove browser closure.
+
+The follow-up drop path publishes presentation-only placement in the pointer or
+keyboard drop event, before the command control mounts. It uses the current
+canonical Card revision; stale, disabled or invalid destinations retire a preview
+without writing. Persistence, original idempotency intent, uncertainty rollback
+and refresh remain owned by CardMoveControls. A BoardScreen regression observes
+the destination DOM before the POST starts, then proves rollback and unchanged
+canonical data after response loss. The release feedback target remains <100ms;
+only the exact-image performance case can establish that budget.
+
+List copy discovery can open during a read-only Board refresh and still fetches
+server-authorized destinations. Preparing or confirming a copy waits for the
+current Board read. A refreshed source revision invalidates the original review;
+an unresolved copy continues to retain its original version, body and key.
+The 61 existing/focused movement, copy and Board tests plus the new drop regression
+passed locally, as did typecheck, lint and production build. Exact-image acceptance
+is still pending; these changes do not close a ticket.

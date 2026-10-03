@@ -48,11 +48,24 @@ it('submits an admitted drop through the bound move and uncertain-response recov
   await waitFor(() => expect(recovery).toHaveBeenLastCalledWith(card.id, false));
 });
 it('rejects a drop captured before a newer card revision without writing', async () => {
-  const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher); const refresh = vi.fn();
+  const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher); const refresh = vi.fn(); const preview = vi.fn();
   render(<CardMoveControls card={{ ...card, version: 4 }} snapshot={snapshot} disabled={false} onAcknowledged={vi.fn()} onRefresh={refresh}
+    onPreview={preview}
     dropRequest={{ cardId: card.id, version: 3, destination: 'dest', before: '', nonce: 'drop-2' }} />);
   expect(await screen.findByText(/The card changed during dragging/)).toBeVisible();
   expect(fetcher).not.toHaveBeenCalled(); expect(refresh).toHaveBeenCalledTimes(1);
+  expect(preview).toHaveBeenLastCalledWith();
+});
+it.each([
+  { disabled: true, destination: 'dest', before: '' },
+  { disabled: false, destination: 'archived', before: '' },
+  { disabled: false, destination: 'dest', before: 'missing' },
+])('retires provisional placement when a drop cannot start: %j', async ({ disabled, destination, before }) => {
+  const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher); const preview = vi.fn();
+  render(<CardMoveControls card={card} snapshot={snapshot} disabled={disabled} onAcknowledged={vi.fn()} onRefresh={vi.fn()}
+    onPreview={preview} dropRequest={{ cardId: card.id, version: card.version, destination, before, nonce: 'rejected' }} />);
+  await waitFor(() => expect(preview).toHaveBeenLastCalledWith());
+  expect(fetcher).not.toHaveBeenCalled();
 });
 it('does not replace an uncertain drop with another drop after newer live placement arrives', async () => {
   const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply(ack)); vi.stubGlobal('fetch', fetcher);
