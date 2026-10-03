@@ -6,6 +6,7 @@ namespace StrataAI.Domain.WorkManagement;
 
 public enum AttachmentKind { File, Url }
 public enum AttachmentScanStatus { NotApplicable, Pending, Clean, Rejected, Failed }
+public enum AttachmentLifecycleState { Active, Archived, Deleted }
 
 // Storage keys and verified MIME/size are server-owned inputs. HTTP upload DTOs
 // must not bind directly to this factory or treat client metadata as verified.
@@ -35,9 +36,15 @@ public sealed class Attachment : DomainEntity, IOrganizationScoped
     public AttachmentScanStatus ScanStatus { get; private set; }
     public DateTimeOffset? ScannedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
+    public DateTimeOffset? ArchivedAt { get; private set; }
+    public Guid? DeletedBy { get; private set; }
+    public AttachmentLifecycleState LifecycleState { get; private set; }
     public bool CanDownload => Kind == AttachmentKind.File && Sha256 is not null && DeletedAt is null && ScanStatus == AttachmentScanStatus.Clean;
     public bool CanPreviewImage => CanDownload && MimeType is ("image/png" or "image/jpeg" or "image/webp");
-    public bool CanUseAsCoverFor(Guid organizationId, Guid cardId) => CanPreviewImage && OrganizationId == organizationId && CardId == cardId;
+    // Necessary source eligibility only: Application admission must additionally
+    // require current permissions and the immutable verified preview receipt.
+    public bool CanUseAsCoverFor(Guid organizationId, Guid cardId) => LifecycleState == AttachmentLifecycleState.Active
+        && CanPreviewImage && OrganizationId == organizationId && CardId == cardId;
 
     public static Attachment QuarantineFile(Guid id, Guid organizationId, Guid cardId, Guid uploaderId, string displayName,
         string verifiedMimeType, long verifiedSizeBytes, string serverStorageKey, string verifiedSha256, DateTimeOffset at)
@@ -80,10 +87,26 @@ public sealed class Attachment : DomainEntity, IOrganizationScoped
         if (ScanStatus != AttachmentScanStatus.Failed) throw new InvalidOperationException("Only failed scanning can be retried.");
         MarkUpdated(at.ToUniversalTime()); ScanStatus = AttachmentScanStatus.Pending; ScannedAt = null; return true;
     }
-    public bool Delete(DateTimeOffset at)
+    public bool Archive(DateTimeOffset at)
     {
+        if (LifecycleState == AttachmentLifecycleState.Deleted) throw new InvalidOperationException("Deleted attachments cannot be archived.");
+        if (LifecycleState == AttachmentLifecycleState.Archived) return false;
+        MarkUpdated(at.ToUniversalTime()); ArchivedAt = UpdatedAt; LifecycleState = AttachmentLifecycleState.Archived; return true;
+    }
+    public bool Restore(bool parentContextActive, DateTimeOffset at)
+    {
+        if (!parentContextActive || LifecycleState == AttachmentLifecycleState.Deleted)
+            throw new InvalidOperationException("Attachment restoration is unavailable.");
+        if (LifecycleState == AttachmentLifecycleState.Active) return false;
+        MarkUpdated(at.ToUniversalTime()); LifecycleState = AttachmentLifecycleState.Active; return true;
+    }
+    public bool Delete(Guid actorId, bool confirmed, DateTimeOffset at)
+    {
+        if (actorId == Guid.Empty || !confirmed) throw new InvalidOperationException("Attachment deletion requires an actor and explicit confirmation.");
         if (DeletedAt is not null) return false;
-        MarkUpdated(at.ToUniversalTime()); DeletedAt = UpdatedAt; return true;
+        if (LifecycleState != AttachmentLifecycleState.Archived) throw new InvalidOperationException("Archive the attachment before permanently deleting it.");
+        MarkUpdated(at.ToUniversalTime()); DeletedAt = UpdatedAt; DeletedBy = actorId;
+        LifecycleState = AttachmentLifecycleState.Deleted; return true;
     }
     private void RequireFileActive()
     {

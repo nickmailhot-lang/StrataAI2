@@ -82,9 +82,12 @@ public sealed class AttachmentTests
     public void PRD_14_TC_10_TombstoneRevokesDeliveryAndPreservesRetainedMetadata()
     {
         var file = File(); file.CompleteScan(AttachmentScanStatus.Clean, At);
-        Assert.True(file.Delete(At.AddMinutes(1))); Assert.False(file.Delete(At.AddMinutes(2)));
+        file.Archive(At.AddSeconds(30));
+        Assert.True(file.Delete(actor, true, At.AddMinutes(1))); Assert.False(file.Delete(actor, true, At.AddMinutes(2)));
         Assert.False(file.CanDownload); Assert.False(file.CanPreviewImage); Assert.False(file.CanUseAsCoverFor(organization, card));
-        Assert.Equal("attachments/server-random-key", file.StorageKey); Assert.Equal(actor, file.UploaderId); Assert.Equal(3, file.Version);
+        Assert.Equal("attachments/server-random-key", file.StorageKey); Assert.Equal(actor, file.UploaderId); Assert.Equal(4, file.Version);
+        Assert.Equal(AttachmentLifecycleState.Deleted, file.LifecycleState); Assert.Equal(actor, file.DeletedBy);
+        Assert.Equal(At.AddSeconds(30), file.ArchivedAt);
         Assert.Throws<InvalidOperationException>(() => file.CompleteScan(AttachmentScanStatus.Clean, At.AddMinutes(3)));
     }
     [Theory]
@@ -116,8 +119,63 @@ public sealed class AttachmentTests
     {
         var file = File();
         Assert.Throws<ArgumentOutOfRangeException>(() => file.CompleteScan(AttachmentScanStatus.Clean, At.AddSeconds(-1)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => file.Delete(At.AddSeconds(-1)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => file.Archive(At.AddSeconds(-1)));
         Assert.Equal(AttachmentScanStatus.Pending, file.ScanStatus); Assert.Equal(1, file.Version); Assert.Null(file.DeletedAt); Assert.Null(file.ScannedAt);
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PRD_18_TC_01_02_10_ArchiveRestoreRetainsHistoryAndNeverGrantsCover(bool url)
+    {
+        var value = url ? Attachment.AttachUrl(Guid.NewGuid(), organization, card, actor, "Reference", "https://example.test/", At) : File();
+        if (!url) value.CompleteScan(AttachmentScanStatus.Clean, At);
+        var before = value.Version;
+        Assert.True(value.Archive(At.AddMinutes(1))); Assert.False(value.Archive(At.AddMinutes(2)));
+        Assert.Equal(before + 1, value.Version); Assert.Equal(At.AddMinutes(1), value.ArchivedAt);
+        Assert.False(value.CanUseAsCoverFor(organization, card));
+        Assert.Throws<InvalidOperationException>(() => value.Restore(false, At.AddMinutes(2)));
+        Assert.Equal(AttachmentLifecycleState.Archived, value.LifecycleState); Assert.Equal(before + 1, value.Version);
+        Assert.True(value.Restore(true, At.AddMinutes(2))); Assert.False(value.Restore(true, At.AddMinutes(3)));
+        Assert.Equal(AttachmentLifecycleState.Active, value.LifecycleState); Assert.Equal(before + 2, value.Version);
+        Assert.Equal(At.AddMinutes(1), value.ArchivedAt); Assert.Null(value.DeletedAt); Assert.Null(value.DeletedBy);
+        Assert.Equal(!url, value.CanUseAsCoverFor(organization, card));
+        Assert.True(value.Archive(At.AddMinutes(3))); Assert.Equal(At.AddMinutes(3), value.ArchivedAt);
+    }
+    [Fact]
+    public void PRD_18_TC_03_07_10_DeletionRequiresArchiveActorAndConsentAndIsIrreversible()
+    {
+        var file = File();
+        Assert.Throws<InvalidOperationException>(() => file.Delete(actor, true, At));
+        Assert.Equal(1, file.Version); Assert.Equal(AttachmentLifecycleState.Active, file.LifecycleState);
+        file.Archive(At.AddMinutes(1));
+        Assert.Throws<InvalidOperationException>(() => file.Delete(actor, false, At.AddMinutes(2)));
+        Assert.Throws<InvalidOperationException>(() => file.Delete(Guid.Empty, true, At.AddMinutes(2)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => file.Delete(actor, true, At));
+        Assert.Equal(2, file.Version); Assert.Null(file.DeletedAt); Assert.Null(file.DeletedBy);
+        file.Delete(actor, true, At.AddMinutes(2));
+        Assert.Throws<InvalidOperationException>(() => file.Restore(true, At.AddMinutes(3)));
+        Assert.Throws<InvalidOperationException>(() => file.Archive(At.AddMinutes(3)));
+        Assert.Throws<InvalidOperationException>(() => file.RetryFailedScan(At.AddMinutes(3)));
+        Assert.Equal(3, file.Version); Assert.Equal(At.AddMinutes(2), file.DeletedAt);
+        Assert.Equal(At.AddMinutes(1), file.ArchivedAt); Assert.Equal(actor, file.DeletedBy);
+    }
+    [Fact]
+    public void PRD_14_18_TC_10_ArchivedPendingScanCanFinishWithoutMakingAnActiveCover()
+    {
+        var file = File(); file.Archive(At.AddMinutes(1));
+        file.CompleteScan(AttachmentScanStatus.Clean, At.AddMinutes(2));
+        Assert.Equal(AttachmentLifecycleState.Archived, file.LifecycleState); Assert.False(file.CanUseAsCoverFor(organization, card));
+        // Private archived delivery still needs separate Application admission.
+        Assert.True(file.CanDownload); Assert.True(file.CanPreviewImage);
+        file.Restore(true, At.AddMinutes(3)); Assert.True(file.CanUseAsCoverFor(organization, card));
+    }
+    [Fact]
+    public void PRD_18_TC_03_RejectedRestoreTimestampPreservesArchiveStateAndHistory()
+    {
+        var file = File(); file.Archive(At.AddMinutes(1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => file.Restore(true, At));
+        Assert.Equal(AttachmentLifecycleState.Archived, file.LifecycleState); Assert.Equal(At.AddMinutes(1), file.ArchivedAt);
+        Assert.Equal(2, file.Version); Assert.Null(file.DeletedAt);
     }
     [Theory]
     [InlineData("../private")]

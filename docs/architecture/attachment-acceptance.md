@@ -654,3 +654,13 @@ Migration 050 completes Pending quarantine metadata after an exhausted scan job 
 Recovery follows Organization/current Board/Card/List/job/File lock order. It retains an already Failed job row or terminalizes an expired final lease, then publishes Failed File metadata, current Card revision, current Board sequence, ready scan-completed event and audit in one transaction. A final exact terminal-job snapshot fence after all effects rolls the entire page and cursor back if evidence changes. The enabled Production attachment Worker runs one bounded page per explicitly configured Organization round-robin tick with the same two-second application/1500 ms SQL/250 ms lock deadlines as preview maintenance. API/Demo/disabled registration does not gain this capability. Clean verdicts committed before lost acknowledgements are never downgraded.
 
 The restricted contract creates more than one page of real live publication/claim transactions before exhausted sources, proves direct expired-final and ordinary queue-terminalized recovery, owned-cursor skip-lock, foreign/API/cursor denial, stale/non-final/live/deleted refusal, retained Clean results, stable Card movement to a new Board, exact audit/ready events, old lease refusal and replay without duplicate revisions. It injects a change to terminal evidence after event insertion and requires rollback of File/Card/job/sequence/audit/event/cursor, then safe recovery after removing the fault. Provider-read counts must remain unchanged. Solution compilation passes with zero warnings/errors and edited shell syntax checks pass; actual new Linux execution is pending CI. The preceding bbf7df3 passed web/.NET/PostgreSQL/source and immutable image builds; downstream container/security/release results remain pending. PRD-14 stays open for full release/browser proof, covers and attachment lifecycle/deletion.
+
+Exact-head CI 37153480540 at 80dd049 passed actual Linux .NET, PostgreSQL,
+web/source, immutable image building, security and CodeQL checks. The restricted
+050 scan-recovery contract executed successfully, including the late terminal
+snapshot fence and provider-read refusal. Container/browser/release completion
+is still pending. Follow-on 2064019 browser repairs passed 84 focused local web
+cases plus typecheck, lint and production build; its Linux PostgreSQL and web
+gates have passed, with remaining exact-image checks pending. Covers and lifecycle
+decisions and the first domain implementation are tracked in
+[attachment-covers-lifecycle.md](attachment-covers-lifecycle.md).
