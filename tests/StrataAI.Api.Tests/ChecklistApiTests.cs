@@ -11,6 +11,56 @@ public sealed partial class ApiHostTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task PRD_13_Parent_archive_restore_and_delete_retain_children_without_disclosing_deleted_parents(bool listParent)
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>(); var children = app.Services.GetRequiredService<IChecklistStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Retained history", null, null, DateTimeOffset.UtcNow, ct);
+        var path = $"/cards/{card.Id}/checklists"; var key = Guid.NewGuid().ToString();
+        var createInput = new CreateChecklistInput("Retained checklist", 1);
+        using var created = await Mutate(owner, HttpMethod.Post, path, createInput, key);
+        var checklist = (await created.Content.ReadFromJsonAsync<ChecklistChange>(ct))!.Checklist;
+        var itemPath = $"{path}/{checklist.Id}/items";
+        using var added = await Mutate(owner, HttpMethod.Post, itemPath, new CreateChecklistItemInput("Retained item", 2, 1));
+        var item = (await added.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!.Item;
+        using var completion = await Mutate(member, HttpMethod.Patch, $"{itemPath}/{item.Id}", new UpdateChecklistItemInput(item.Text, true, 3, 2, 1));
+        var completed = (await completion.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!;
+        var parentPath = listParent ? $"/lists/{f.List}" : $"/cards/{card.Id}";
+        using var archived = await Mutate(owner, HttpMethod.Post, parentPath + "/archive", new { version = listParent ? 1 : 4 });
+        Assert.Equal(HttpStatusCode.OK, archived.StatusCode);
+        var readonlyPage = (await owner.GetFromJsonAsync<ChecklistItemPage>(itemPath, ct))!;
+        Assert.False(readonlyPage.CanEdit); Assert.Equal(completed.Item, Assert.Single(readonlyPage.Items)); Assert.Equal(100, readonlyPage.Summary.Percent);
+        Assert.False((await owner.GetFromJsonAsync<ChecklistPage>(path, ct))!.CanEdit);
+        using var unavailableRetry = await Mutate(owner, HttpMethod.Post, path, createInput, key);
+        Assert.Equal(HttpStatusCode.NotFound, unavailableRetry.StatusCode);
+        using var denied = await Mutate(owner, HttpMethod.Patch, $"{path}/{checklist.Id}", new RenameChecklistInput("Denied", listParent ? 4 : 5, 3));
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        Assert.Equal(completed.Item, await children.FindItemAsync(f.Organization, checklist.Id, item.Id, ct));
+        using var restored = await Mutate(owner, HttpMethod.Post, parentPath + "/restore", new { version = listParent ? 2 : 5 });
+        Assert.Equal(HttpStatusCode.OK, restored.StatusCode);
+        Assert.True((await owner.GetFromJsonAsync<ChecklistItemPage>(itemPath, ct))!.CanEdit);
+        Assert.Equal(completed.Item, await children.FindItemAsync(f.Organization, checklist.Id, item.Id, ct));
+        using var renamed = await Mutate(owner, HttpMethod.Patch, $"{path}/{checklist.Id}", new RenameChecklistInput("Restored checklist", listParent ? 4 : 6, 3));
+        Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
+        var current = (await renamed.Content.ReadFromJsonAsync<ChecklistChange>(ct))!;
+        using var archivedAgain = await Mutate(owner, HttpMethod.Post, parentPath + "/archive", new { version = listParent ? 3 : 7 });
+        Assert.Equal(HttpStatusCode.OK, archivedAgain.StatusCode);
+        var deletePath = listParent ? parentPath + "?version=4&confirmed=true&containedCardCount=1" : parentPath + "?version=8&confirmed=true";
+        using var deleted = await Mutate(owner, HttpMethod.Delete, deletePath, new { });
+        Assert.Equal(HttpStatusCode.OK, deleted.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await owner.GetAsync(path, ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await owner.GetAsync(itemPath, ct)).StatusCode);
+        using var hiddenRetry = await Mutate(owner, HttpMethod.Post, path, createInput, key);
+        Assert.Equal(HttpStatusCode.NotFound, hiddenRetry.StatusCode);
+        Assert.Equal(current.Checklist, await children.FindAsync(f.Organization, card.Id, checklist.Id, ct, true));
+        Assert.Equal(completed.Item, await children.FindItemAsync(f.Organization, checklist.Id, item.Id, ct, true));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task PRD_13_List_copy_preserves_all_active_checklist_content_with_independent_ids(bool crossBoard)
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();

@@ -3,8 +3,11 @@ set -euo pipefail
 test "${CI:-}" = true || { echo 'Disposable checklist fixtures may run only in CI.' >&2; exit 1; }
 base=http://localhost:8088
 scratch=$(mktemp -d)
+gate_pid=''; request_pid=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
+  if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
+  if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON checklists, checklist_items, audit_events, work_events, background_jobs TO strataai_api_runtime;' >/dev/null || true
   rm -rf "$scratch"
 }
@@ -28,6 +31,27 @@ admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES
 request() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -X "$2" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $4" -d "$5" -o "$scratch/response.json" -w '%{http_code}' "$base$3"; }
 read_page() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -o "$scratch/page.json" -w '%{http_code}' "$base$2"; }
 read_anonymous() { curl --max-time 60 --silent --show-error -o "$scratch/page.json" -w '%{http_code}' "$base$1"; }
+hold_board() {
+  rm -f "$scratch/gate.in" "$scratch/gate.log"; mkfifo "$scratch/gate.in"
+  docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.log" 2>&1 &
+  gate_pid=$!; exec 3> "$scratch/gate.in"
+  printf 'BEGIN;\nSELECT id FROM boards WHERE tenant_id=%s AND id=%s FOR UPDATE;\n\\echo checklist_locked\n' "'$org'" "'$board'" >&3
+  for ((attempt=0; attempt<100; attempt++)); do
+    if grep -q '^checklist_locked$' "$scratch/gate.log"; then return; fi
+    kill -0 "$gate_pid" || return 1; sleep 0.05
+  done
+  echo 'Checklist parent lock was not acquired.' >&2; return 1
+}
+blocked_read() {
+  local count
+  for ((attempt=0; attempt<100; attempt++)); do
+    count=$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%SELECT id FROM boards%FOR UPDATE%';")
+    [[ "$count" =~ ^[0-9]+$ ]] || return 1
+    if ((count>0)); then return; fi
+    sleep 0.05
+  done
+  echo 'Checklist read did not reach the expected database lock wait.' >&2; return 1
+}
 state() { admin "SELECT md5(jsonb_build_object(
  'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$org' AND id='$card'),
  'checklists',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM checklists c WHERE tenant_id='$org'),
@@ -130,6 +154,21 @@ test "$(request owner PATCH "/boards/$board/visibility" "$(uuid)" "{\"visibility
 test "$(read_anonymous "$path")" = 404
 test "$(read_anonymous "$itemPath")" = 404
 test "$(read_page outsider "$itemPath")" = 404
+# A visitor arriving before visibility changes must be denied after its actual
+# Board-lock wait. Direct SQL here represents the concurrently committed change.
+for route in "$path" "$itemPath"; do
+  version=$(admin "SELECT version FROM boards WHERE tenant_id='$org' AND id='$board';")
+  test "$(request owner PATCH "/boards/$board/visibility" "$(uuid)" "{\"visibility\":\"PUBLIC\",\"version\":$version}")" = 200
+  before=$(state); hold_board
+  curl --max-time 60 --silent --show-error -o "$scratch/waited-page.json" -w '%{http_code}' "$base$route" > "$scratch/waited-status" &
+  request_pid=$!; blocked_read
+  printf "UPDATE boards SET visibility='PRIVATE',version=version+1,updated_at=now() WHERE tenant_id='%s' AND id='%s';\nCOMMIT;\n\\q\n" "$org" "$board" >&3
+  exec 3>&-; wait "$gate_pid"; gate_pid=''
+  wait "$request_pid"; request_pid=''
+  test "$(cat "$scratch/waited-status")" = 404
+  scripts/ci/assert-file-excludes.sh 'Preparations|preparations|Pack supplies' "$scratch/waited-page.json"
+  test "$before" = "$(state)"
+done
 # Canonical child rows exercise aggregate progress across a bounded checklist
 # page, including deleted-item exclusion and an empty sibling's zero progress.
 admin "INSERT INTO checklist_items(id,tenant_id,checklist_id,text,rank,completed,completed_at,completed_by,created_at,updated_at,deleted_at)
@@ -324,6 +363,33 @@ test "$(request owner DELETE "$cascadePath" "$(uuid)" '{"confirmed":true,"cardVe
 jq -e '.changed==false and .cardVersion==13 and .deletedItems==0' "$scratch/response.json" >/dev/null
 test "$(read_page member "$path")" = 200
 jq -e '(.items|length)==50 and all(.items[];.checklist.deletedAt==null)' "$scratch/page.json" >/dev/null
+# A copied graph follows its Card to the new List, remains read-only while either
+# parent is archived, and retains exact history when the List becomes deleted.
+destinationListInput='{"name":"Retained checklist destination"}'
+test "$(request owner POST "/boards/$board/lists" "$(uuid)" "$destinationListInput")" = 201
+destinationList=$(jq -r '.id' "$scratch/response.json")
+retained=$(admin "SELECT md5(jsonb_build_object('parents',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM checklists c WHERE c.tenant_id='$org' AND c.card_id='$copiedCard'),'items',(SELECT jsonb_agg(to_jsonb(i) ORDER BY i.id) FROM checklist_items i JOIN checklists c ON c.tenant_id=i.tenant_id AND c.id=i.checklist_id WHERE c.tenant_id='$org' AND c.card_id='$copiedCard'))::text);")
+test "$(request owner POST "/cards/$copiedCard/move" "$(uuid)" "{\"destinationListId\":\"$destinationList\",\"expectedVersion\":1}")" = 200
+copiedPath="/cards/$copiedCard/checklists/$copiedChecklist/items"
+test "$(read_page owner "$copiedPath")" = 200
+jq -e '.canEdit and .cardVersion==2 and .summary.total==63' "$scratch/page.json" >/dev/null
+test "$(request owner POST "/cards/$copiedCard/archive" "$(uuid)" '{"version":2}')" = 200
+test "$(read_page owner "$copiedPath")" = 200
+jq -e '.canEdit==false and .summary.total==63' "$scratch/page.json" >/dev/null
+test "$(request owner POST "/cards/$copiedCard/checklists" "$(uuid)" '{"title":"Denied","cardVersion":3}')" = 404
+test "$(request owner POST "/cards/$copiedCard/restore" "$(uuid)" '{"version":3}')" = 200
+test "$(request owner POST "/lists/$destinationList/archive" "$(uuid)" '{"version":1}')" = 200
+test "$(read_page owner "$copiedPath")" = 200
+jq -e '.canEdit==false and .summary.total==63' "$scratch/page.json" >/dev/null
+test "$(request owner POST "/cards/$copiedCard/checklists" "$(uuid)" '{"title":"Denied","cardVersion":4}')" = 404
+test "$(request owner POST "/lists/$destinationList/restore" "$(uuid)" '{"version":2}')" = 200
+test "$(read_page owner "$copiedPath")" = 200
+jq -e '.canEdit and .summary.total==63' "$scratch/page.json" >/dev/null
+test "$(request owner POST "/lists/$destinationList/archive" "$(uuid)" '{"version":3}')" = 200
+test "$(request owner DELETE "/lists/$destinationList?version=4&confirmed=true&containedCardCount=1" "$(uuid)" '{}')" = 200
+test "$(read_page owner "$copiedPath")" = 404
+test "$(read_page owner "/cards/$copiedCard/checklists")" = 404
+test "$retained" = "$(admin "SELECT md5(jsonb_build_object('parents',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM checklists c WHERE c.tenant_id='$org' AND c.card_id='$copiedCard'),'items',(SELECT jsonb_agg(to_jsonb(i) ORDER BY i.id) FROM checklist_items i JOIN checklists c ON c.tenant_id=i.tenant_id AND c.id=i.checklist_id WHERE c.tenant_id='$org' AND c.card_id='$copiedCard'))::text);")"
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 test "$(read_page member "$path?after=$cursor")" = 404
 test "$(request member PATCH "$renamePath" "$renameKey" "$renameInput")" = 404

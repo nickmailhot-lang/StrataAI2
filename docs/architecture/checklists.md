@@ -215,3 +215,19 @@ Source cases cover both Board contexts and a 62-item graph after child deletion;
 mandatory exact-image coverage copies 63 Checklists/63 items, forces child and
 late audit/event/queue failures, and checks total rollback and retry recovery.
 No new service, migration or database grants are needed. Linux execution pending.
+
+Parent lifecycle integration retains Checklist/item history without rewriting
+child IDs, versions or completion attribution. Card/List archives expose permitted
+read-only pages, reject editing and old mutation receipts, and restoration reopens
+editing on the same graph. Current Card/List identity is checked after parent-lock
+admission, so movement uses the current parent. Deleted parent Cards/Lists hide
+children and prior receipts while storage retains history for the wider PRD-18
+retention process; this is not a physical-purge implementation.
+
+Source API cases cover Card and List archive/restore/confirmed deletion with
+completed-item history. Mandatory release-image coverage moves a copied 63-item
+graph, archives/restores both parents, deletes the List with reviewed impact and
+compares the entire retained child graph. It also observes a real PostgreSQL
+Board-lock wait for each anonymous GET, commits visibility retraction during that
+wait, and verifies a content-free denial with no child or command side effects.
+Strict build and shell syntax pass; Linux execution of the added cases is pending.
