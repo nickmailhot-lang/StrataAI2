@@ -14,12 +14,18 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
   const [notice, setNotice] = useState<string>(); const [busy, setBusy] = useState(false); const [denied, setDenied] = useState(false);
   const controller = useRef<AbortController | undefined>(undefined); const epoch = useRef(0); const trigger = useRef<HTMLButtonElement>(null);
   const restoreFocus = useRef(false);
+  const retryTrigger = useRef<HTMLButtonElement>(null); const recoverFocus = useRef(false);
   const admitted = snapshot.access.canEdit && snapshot.board.lifecycleState === 'active';
   const activeCard = card && snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === cardId));
   const current = page && page.cardVersion === card?.version;
   useEffect(() => {
     if (restoreFocus.current && !busy && !disabled && activeCard) { restoreFocus.current = false; trigger.current?.focus({ preventScroll: true }); }
   }, [busy, disabled, activeCard]);
+  useEffect(() => {
+    if (intent && recoverFocus.current && !busy && !disabled && activeCard
+      && (document.activeElement === document.body || document.activeElement === retryTrigger.current))
+      retryTrigger.current?.focus({ preventScroll: true });
+  }, [intent, busy, disabled, activeCard]);
   useEffect(() => { onRecoveryChange(!!intent); return () => onRecoveryChange(false); }, [intent, onRecoveryChange]);
   useEffect(() => {
     epoch.current++;
@@ -35,7 +41,7 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
     if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
       setDenied(true); setIntent(undefined); setNotice('Label editing is unavailable. Refresh the Board to check access.'); onRefresh();
     } else if (command && !(error instanceof WorkRequestError && [400, 409].includes(error.status))) {
-      setIntent(command); setNotice('The change may have completed. Retry the same label change to confirm it.');
+      recoverFocus.current = true; setIntent(command); setNotice('The change may have completed. Retry the same label change to confirm it.');
     } else { setIntent(undefined); setNotice('Labels changed or could not be loaded. Refresh the Board, then reload label options.'); }
   }
   async function load(after?: string) {
@@ -81,7 +87,8 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
     {open && <Stack component="section" aria-label="Edit Card labels" spacing={1}>
       {busy && <Typography role="status">Updating label options…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
-      {intent ? <><Typography>{intent.assigned ? 'Add' : 'Remove'} {intent.name}</Typography><Button disabled={busy || disabled} onClick={() => void change()}>Retry label change</Button></> : <>
+      {intent ? <><Typography>{intent.assigned ? 'Add' : 'Remove'} {intent.name}</Typography><Button ref={retryTrigger} disabled={busy || disabled} onFocus={() => { recoverFocus.current = true; }}
+        onBlur={event => { if (event.relatedTarget !== null) recoverFocus.current = false; }} onClick={() => void change()}>Retry label change</Button></> : <>
         {current && !notice && page.items.map(option => <Stack key={option.label.id} direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
           <Typography>{option.label.name || 'Unnamed label'} ({option.label.color})</Typography>
           <Button disabled={busy || disabled} onClick={() => void change(option)} aria-label={`${option.assigned ? 'Remove' : 'Add'} label ${option.label.name || option.label.color}`}>{option.assigned ? 'Remove' : 'Add'}</Button>

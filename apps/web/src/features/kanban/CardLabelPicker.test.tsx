@@ -49,3 +49,21 @@ it('does not resurrect a pending assignment after permission loss', async () => 
   view.rerender(<CardLabelPicker {...p} snapshot={{ ...snapshot, access: { ...snapshot.access, canEdit: false } }} />);
   await act(async () => fail(new Error('late'))); expect(screen.queryByText('Retry label change')).not.toBeInTheDocument(); expect(p.onRefresh).not.toHaveBeenCalled();
 });
+
+it('restores retry focus after temporary Board admission checks without stealing an intentional focus change', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response(options)).mockRejectedValueOnce(new Error('lost'));
+  vi.stubGlobal('fetch', fetch); const p = props();
+  const view = render(<><button>Other control</button><CardLabelPicker {...p} /></>);
+  fireEvent.click(await open());
+  const retry = await screen.findByRole('button', { name: 'Retry label change' });
+  await waitFor(() => expect(retry).toHaveFocus());
+  view.rerender(<><button>Other control</button><CardLabelPicker {...p} disabled /></>);
+  expect(retry).toBeDisabled(); retry.blur();
+  view.rerender(<><button>Other control</button><CardLabelPicker {...p} /></>);
+  await waitFor(() => expect(retry).toHaveFocus());
+  screen.getByRole('button', { name: 'Other control' }).focus();
+  view.rerender(<><button>Other control</button><CardLabelPicker {...p} disabled /></>);
+  view.rerender(<><button>Other control</button><CardLabelPicker {...p} /></>);
+  expect(screen.getByRole('button', { name: 'Other control' })).toHaveFocus();
+  expect(fetch).toHaveBeenCalledTimes(2); expect(p.onRecoveryChange).toHaveBeenCalledWith(true);
+});

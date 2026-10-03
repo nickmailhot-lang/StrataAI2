@@ -34,22 +34,22 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await other.goto(boardPath); await expect(other.getByText('Live updates connected.', { exact: true })).toBeVisible();
     const openFilters = other.getByRole('button', { name: 'Filter Board Cards', exact: true });
     await expect(openFilters).toBeEnabled(); await openFilters.focus(); await expect(openFilters).toBeFocused();
-    await other.keyboard.press('Enter');
+    await openFilters.press('Enter');
     const filters = other.getByRole('dialog', { name: 'Filter Board Cards' });
     const priority = filters.getByRole('checkbox', { name: 'Priority (red)', exact: true });
-    await expect(priority).toBeEnabled(); await priority.focus(); await other.keyboard.press('Space');
-    await filters.getByRole('button', { name: 'Apply filters', exact: true }).focus(); await other.keyboard.press('Enter');
+    await expect(priority).toBeEnabled(); await priority.press('Space');
+    await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
     await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
     await page.goto(`${boardPath}/cards/${card}`);
     await expect(page.getByText('Live updates connected.', { exact: true })).toBeVisible();
     const assignees = page.getByRole('button', { name: 'Show assignees', exact: true });
-    await expect(assignees).toBeEnabled(); await assignees.focus(); await page.keyboard.press('Enter');
+    await expect(assignees).toBeEnabled(); await assignees.press('Enter');
     await expect(page.getByRole('region', { name: 'Card assignees' }).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
     const edit = page.getByRole('button', { name: 'Edit Card labels', exact: true });
     async function assignment(action: string) {
-      await expect(edit).toBeEnabled(); await edit.focus(); await page.keyboard.press('Enter');
+      await expect(edit).toBeEnabled(); await edit.press('Enter');
       const change = page.getByRole('button', { name: action, exact: true });
-      await expect(change).toBeEnabled(); await change.focus(); await page.keyboard.press('Enter'); await expect(edit).toBeFocused();
+      await expect(change).toBeEnabled(); await change.press('Enter'); await expect(edit).toBeFocused();
     }
     await assignment('Add label Priority');
     const matching = filters.getByRole('link', { name: 'Collaborative labeled Card — Planning', exact: true });
@@ -68,7 +68,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await assignment('Add label Urgent'); await expect(matching).toBeVisible({ timeout: 20_000 });
     await expect(filters.getByLabel('Card keyword')).toHaveValue('');
     const show = filters.getByRole('button', { name: 'Show this page on Board', exact: true });
-    await expect(show).toBeEnabled(); await show.focus(); await other.keyboard.press('Enter');
+    await expect(show).toBeEnabled(); await show.press('Enter');
     await expect(other.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true })).toBeVisible();
     await expect(other.getByText('Unmatched canvas Card', { exact: true })).toHaveCount(0);
     await expect(other.getByRole('button', { name: 'Drag Collaborative labeled Card card', exact: true })).toHaveCount(0);
@@ -79,7 +79,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await assignment('Remove label Urgent');
     await expect(other.getByText('Filtered Board: 0 matching Cards on this page.', { exact: true })).toBeVisible({ timeout: 20_000 });
     const clear = other.getByRole('button', { name: 'Clear Board filters', exact: true });
-    await expect(clear).toBeEnabled(); await clear.focus(); await other.keyboard.press('Enter');
+    await expect(clear).toBeEnabled(); await clear.press('Enter');
     await expect(other.getByText('Unmatched canvas Card', { exact: true })).toBeVisible();
     await expect(other.getByRole('button', { name: 'Drag Collaborative labeled Card card', exact: true })).toBeEnabled();
     await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
@@ -106,12 +106,12 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     expect(await other.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await other.goto(boardPath);
     await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
-    await expect(openFilters).toBeEnabled(); await openFilters.focus(); await other.keyboard.press('Enter');
+    await expect(openFilters).toBeEnabled(); await openFilters.press('Enter');
     const chooseMembers = filters.getByRole('button', { name: 'Choose assignees', exact: true });
-    await expect(chooseMembers).toBeEnabled(); await chooseMembers.focus(); await other.keyboard.press('Enter');
+    await expect(chooseMembers).toBeEnabled(); await chooseMembers.press('Enter');
     const selectedMember = filters.getByRole('checkbox', { name: 'Label collaboration fixture', exact: true });
-    await expect(selectedMember).toBeEnabled(); await selectedMember.focus(); await other.keyboard.press('Space');
-    await filters.getByRole('button', { name: 'Apply filters', exact: true }).focus(); await other.keyboard.press('Enter');
+    await expect(selectedMember).toBeEnabled(); await selectedMember.press('Space');
+    await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
     await expect(matching).toBeVisible();
     await memberChange('Unassign');
     await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible({ timeout: 20_000 });
