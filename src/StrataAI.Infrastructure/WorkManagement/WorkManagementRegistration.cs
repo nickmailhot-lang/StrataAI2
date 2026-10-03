@@ -54,6 +54,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<ChecklistService>();
         services.AddSingleton<AttachmentService>();
         services.AddSingleton<AttachmentDownloadAdmissionService>();
+        services.AddSingleton<AttachmentDownloadService>();
         services.AddSingleton<AttachmentFilePublicationService>();
         services.AddSingleton<AttachmentUploadAdmissionService>();
         services.AddSingleton<AttachmentFileUploadService>();

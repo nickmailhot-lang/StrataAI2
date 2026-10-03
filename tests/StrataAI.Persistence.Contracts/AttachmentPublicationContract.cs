@@ -27,6 +27,18 @@ internal static class AttachmentPublicationContract
         { cancellationToken.ThrowIfCancellationRequested(); return Task.FromResult(++Calls < DenyAt); }
     }
     private sealed class Context : IWorkCommandContext { public Guid? IdempotencyKey => null; }
+    private sealed class DownloadObjects(PostgresConnectionFactory connections) : IAttachmentObjectStorage
+    {
+        public int Reads;
+        public Task<Stream?> OpenPrivateReadAsync(AttachmentObjectReference reference, CancellationToken ct)
+        {
+            var scope = typeof(PostgresConnectionFactory).GetMethod("HasCommandScope", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            Require(scope.Invoke(connections, [reference.OrganizationId]) is false, "Download provider I/O held an owning database transaction.");
+            ct.ThrowIfCancellationRequested(); Reads++; return Task.FromResult<Stream?>(new MemoryStream(new byte[128], writable: false));
+        }
+        public Task<StoredAttachmentObject> WritePrivateAsync(AttachmentObjectReference reference, Stream source, long maximum, CancellationToken ct) => throw new InvalidOperationException("Download rewrote private bytes.");
+        public Task<bool> DeletePrivateAsync(AttachmentObjectReference reference, CancellationToken ct) => throw new InvalidOperationException("Download deleted private bytes.");
+    }
     private static void Require(bool condition, string invariant) { if (!condition) throw new InvalidOperationException(invariant); }
 
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
@@ -256,6 +268,17 @@ internal static class AttachmentPublicationContract
             Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).ErrorCode == "card_not_found", "Unsafe verdict obtained download admission.");
         }
         await Verdict("CLEAN");
+        var downloadObjects = new DownloadObjects(provider.GetRequiredService<PostgresConnectionFactory>());
+        var fileDelivery = new AttachmentDownloadService(downloads, new PrivateAttachmentDownloadPreparer(downloadObjects));
+        var preparedDelivery = await fileDelivery.PrepareAsync(card, upload.Id, user, ct);
+        Require(preparedDelivery.Succeeded && preparedDelivery.Value is not null, "Controlled delivery preparation failed.");
+        await using (var prepared = preparedDelivery.Value!)
+        {
+            Require(JsonSerializer.Serialize(prepared) == "{}", "Delivery content serialized private claims.");
+            using var actualBytes = new MemoryStream(); await prepared.Bytes.CopyToAsync(actualBytes, ct);
+            Require(actualBytes.ToArray().SequenceEqual(new byte[128]) && !prepared.Bytes.CanWrite && downloadObjects.Reads == 1,
+                "Controlled delivery did not retain exact verified private bytes.");
+        }
         var admittedDownload = await downloads.AdmitAsync(card, upload.Id, user, ct);
         Require(admittedDownload.Succeeded && admittedDownload.Value is not null, "Clean file lacked controlled download admission.");
         var download = admittedDownload.Value!;

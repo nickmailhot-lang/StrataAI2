@@ -19,6 +19,20 @@ public static partial class WorkManagementEndpoints
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         if (!app.Services.GetRequiredService<AttachmentUploadAvailability>().Enabled) return;
+        async Task<IResult> Download(Guid cardId, Guid attachmentId, HttpContext context, AttachmentDownloadService service,
+            AttachmentDownloadAdmissionService admission, CancellationToken ct)
+        {
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            var result = await service.PrepareAsync(cardId, attachmentId, actor.Value, ct);
+            return result.Succeeded && result.Value is not null
+                ? new AttachmentDownloadResult(result.Value, admission, actor.Value) : ErrorFor(result.ErrorCode);
+        }
+        app.MapGet("/cards/{cardId:guid}/attachments/{attachmentId:guid}/download", Download)
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+        // The canonical attachment route requires its current Card context;
+        // no global metadata lookup or caller-selected object key is exposed.
+        app.MapGet("/attachments/{attachmentId:guid}/download", Download)
+            .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         app.MapGet("/cards/{cardId:guid}/attachment-upload-options", async (Guid cardId, HttpContext context,
             AttachmentUploadAdmissionService admission, CancellationToken ct) =>
         {

@@ -74,6 +74,7 @@ public static class AttachmentRuntimeRegistration
         { RegionEndpoint = endpoint, UseHttp = false, MaxErrorRetry = 1 }));
         services.AddSingleton(provider => new S3AttachmentObjectStorage(provider.GetRequiredService<IAmazonS3>(), bucket, owner));
         services.AddSingleton<IAttachmentObjectStorage>(provider => provider.GetRequiredService<S3AttachmentObjectStorage>());
+        if (!worker) services.AddSingleton<IAttachmentDownloadPreparer, PrivateAttachmentDownloadPreparer>();
         services.Replace(ServiceDescriptor.Singleton<IRuntimeDependencyStatus>(provider =>
             new AttachmentRuntimeDependencyStatus(new ProductionRuntimeDependencyStatus(provider.GetRequiredService<PostgresConnectionFactory>()),
                 provider.GetRequiredService<S3AttachmentObjectStorage>(), scanner)));

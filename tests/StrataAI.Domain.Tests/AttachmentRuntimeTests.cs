@@ -41,6 +41,7 @@ public sealed class AttachmentRuntimeTests
         var handler = Assert.IsType<AttachmentScanDeliveryHandler>(Assert.Single(provider.GetServices<IBackgroundJobHandler>()));
         Assert.Equal(AttachmentScanJobs.Type, handler.JobType); Assert.Equal(AttachmentScanJobs.Service, handler.ServiceIdentity);
         Assert.NotNull(provider.GetRequiredService<AttachmentQuarantineScanner>());
+        Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentDownloadPreparer));
         Assert.Equal(20971520, provider.GetRequiredService<AttachmentUploadPolicy>().MaximumBytes);
         Assert.Equal(4, provider.GetRequiredService<AttachmentUploadPolicy>().AllowedMimeTypes.Count);
         Assert.IsType<AttachmentFileTypeInspector>(provider.GetRequiredService<IAttachmentFileTypeInspector>());
@@ -53,6 +54,7 @@ public sealed class AttachmentRuntimeTests
         var settings = Settings(); settings.Remove("STRATAAI_ATTACHMENT_SCANNER_SOCKET"); settings.Remove("STRATAAI_WORKER_ORGANIZATION_IDS");
         var services = new ServiceCollection();
         Assert.True(services.AddAttachmentRuntime(Config(settings), Production, worker: false));
+        Assert.Contains(services, s => s.ServiceType == typeof(IAttachmentDownloadPreparer) && s.ImplementationType == typeof(PrivateAttachmentDownloadPreparer));
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAttachmentMalwareScanner) || s.ServiceType == typeof(IAttachmentScanDeliveryStore));
     }
 

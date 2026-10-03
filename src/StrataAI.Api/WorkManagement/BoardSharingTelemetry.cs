@@ -80,6 +80,8 @@ public sealed class BoardSharingTelemetry
             ("/cards/{cardId:guid}", "PATCH") => "card_update",
             ("/cards/{cardId:guid}/dates", "PATCH") => "card_date_update",
             ("/cards/{cardId:guid}/reminders", "GET") => "card_reminder_read",
+            ("/cards/{cardId:guid}/attachments/{attachmentId:guid}/download", "GET") => "attachment_download",
+            ("/attachments/{attachmentId:guid}/download", "GET") => "attachment_download",
             ("/cards/{cardId:guid}/reminders", "POST") => "card_reminder_set",
             ("/cards/{cardId:guid}/reminders", "DELETE") => "card_reminder_cancel",
             ("/cards/{cardId:guid}/archive", "POST") => "card_archive",

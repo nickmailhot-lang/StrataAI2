@@ -19,6 +19,8 @@ public sealed partial class ApiHostTests
     {
         private readonly Dictionary<AttachmentObjectReference, byte[]> _bytes = new();
         public int Writes, Reads;
+        public bool CorruptReads;
+        public Func<Task>? AfterReadClosed;
         public async Task<StoredAttachmentObject> WritePrivateAsync(AttachmentObjectReference reference, Stream source, long maximumBytes, CancellationToken ct)
         {
             Writes++; using var bytes = new MemoryStream(); await source.CopyToAsync(bytes, ct);
@@ -27,7 +29,18 @@ public sealed partial class ApiHostTests
             return new(reference, content.LongLength, Convert.ToHexStringLower(SHA256.HashData(content)));
         }
         public Task<Stream?> OpenPrivateReadAsync(AttachmentObjectReference reference, CancellationToken ct)
-        { ct.ThrowIfCancellationRequested(); Reads++; return Task.FromResult<Stream?>(_bytes.TryGetValue(reference, out var bytes) ? new MemoryStream(bytes, false) : null); }
+        {
+            ct.ThrowIfCancellationRequested(); Reads++; if (!_bytes.TryGetValue(reference, out var bytes)) return Task.FromResult<Stream?>(null);
+            var copy = bytes.ToArray(); if (CorruptReads) copy[^1] ^= 1;
+            var callback = AfterReadClosed; AfterReadClosed = null;
+            return Task.FromResult<Stream?>(new DownloadRead(copy, callback));
+        }
+        private sealed class DownloadRead(byte[] bytes, Func<Task>? closed) : MemoryStream(bytes, writable: false)
+        {
+            private int _closed;
+            public override async ValueTask DisposeAsync()
+            { await base.DisposeAsync(); if (Interlocked.Exchange(ref _closed, 1) == 0 && closed is not null) await closed(); }
+        }
         public Task<bool> DeletePrivateAsync(AttachmentObjectReference reference, CancellationToken ct) => throw new InvalidOperationException("Upload must not delete objects.");
     }
     private static HttpRequestMessage FileRequest(string path, byte[] bytes, Guid? key = null, string name = "Looks like image.png", long version = 1)
@@ -44,12 +57,15 @@ public sealed partial class ApiHostTests
     }
     // The normal Demo host remains disabled. This test explicitly injects a
     // synthetic transport/provider fixture; PostgreSQL atomicity is separate.
-    private static ApiFactory UploadFactory(UploadObjects objects) => new(configureServices: services =>
+    private static ApiFactory UploadFactory(UploadObjects objects, bool downloads = false) => new(configureServices: services =>
     {
         services.Replace(ServiceDescriptor.Singleton(new AttachmentUploadAvailability(true)));
         services.AddSingleton<IAttachmentObjectStorage>(objects);
         services.AddSingleton(new AttachmentUploadPolicy(1024, ["application/pdf"]));
         services.AddSingleton<IAttachmentFileTypeInspector, AttachmentFileTypeInspector>();
+        services.AddSingleton<IAttachmentDownloadPreparer, PrivateAttachmentDownloadPreparer>();
+        if (downloads) services.Replace(ServiceDescriptor.Singleton<IAttachmentMetadataStore>(provider =>
+            new DownloadMetadata((IAttachmentMetadataStore)provider.GetRequiredService<IWorkManagementStore>())));
     });
 
     [Fact]
