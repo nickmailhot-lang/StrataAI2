@@ -236,11 +236,76 @@ internal static class AttachmentPublicationContract
         Require(replay.Succeeded && JsonSerializer.Serialize(replay) == JsonSerializer.Serialize(created), "Publication replay changed its original receipt.");
         Require(!JsonSerializer.Serialize(created).Contains(digest, StringComparison.OrdinalIgnoreCase), "Publication receipt disclosed private integrity.");
         await Effects(2, 1);
+        // Download preparation is server-only and cannot make quarantine bytes
+        // available. Verdict transitions below are explicit admin fixtures;
+        // real Worker verdict/lease execution has its separate contract.
+        var downloads = provider.GetRequiredService<AttachmentDownloadAdmissionService>();
+        Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).ErrorCode == "card_not_found", "Pending file obtained download admission.");
+        Require((await downloads.AdmitAsync(card, upload.Id, outsider, ct)).ErrorCode == "card_not_found", "Outsider obtained download admission.");
+        Require((await downloads.AdmitAsync(card, Guid.NewGuid(), user, ct)).ErrorCode == "card_not_found", "Missing file obtained download admission.");
+        async Task Verdict(string verdict)
+        {
+            await using var change = new NpgsqlCommand("UPDATE attachments SET scan_status=@status,scanned_at=@at,updated_at=@at,version=version+1 WHERE tenant_id=@tenant AND id=@id;", admin);
+            change.Parameters.AddWithValue("status", verdict); change.Parameters.AddWithValue("at", clock.UtcNow);
+            change.Parameters.AddWithValue("tenant", tenant); change.Parameters.AddWithValue("id", upload.Id);
+            await change.ExecuteNonQueryAsync(ct);
+        }
+        foreach (var status in new[] { "REJECTED", "FAILED" })
+        {
+            await Verdict(status);
+            Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).ErrorCode == "card_not_found", "Unsafe verdict obtained download admission.");
+        }
+        await Verdict("CLEAN");
+        var admittedDownload = await downloads.AdmitAsync(card, upload.Id, user, ct);
+        Require(admittedDownload.Succeeded && admittedDownload.Value is not null, "Clean file lacked controlled download admission.");
+        var download = admittedDownload.Value!;
+        Require(JsonSerializer.Serialize(download) == "{}", "Download preparation serialized protected metadata or integrity.");
+        Require((await downloads.RevalidateAsync(download, user, ct)).Succeeded, "Current Clean file failed delivery re-admission.");
+        actor.Calls = 0; actor.DenyAt = 2;
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "session_unavailable", "Final actor refusal disclosed delivery admission.");
+        actor.DenyAt = int.MaxValue;
+        var deliveryList = Guid.NewGuid();
+        await using (var move = new NpgsqlCommand("""
+            INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
+              VALUES(@list,@tenant,@board,'Delivery scope fixture','600000000000000000000000000000',@at,@at);
+            UPDATE cards SET list_id=@list WHERE tenant_id=@tenant AND id=@card;
+            """, admin))
+        {
+            move.Parameters.AddWithValue("list", deliveryList); move.Parameters.AddWithValue("tenant", tenant); move.Parameters.AddWithValue("board", board);
+            move.Parameters.AddWithValue("at", clock.UtcNow); move.Parameters.AddWithValue("card", card); await move.ExecuteNonQueryAsync(ct);
+        }
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Moved Card reused the original delivery scope.");
+        Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).Succeeded, "Current authorized Card scope could not obtain fresh admission.");
+        await using (var moveBack = new NpgsqlCommand("UPDATE cards SET list_id=@list WHERE tenant_id=@tenant AND id=@card;", admin))
+        { moveBack.Parameters.AddWithValue("list", list); moveBack.Parameters.AddWithValue("tenant", tenant); moveBack.Parameters.AddWithValue("card", card); await moveBack.ExecuteNonQueryAsync(ct); }
+        Require((await downloads.RevalidateAsync(download, secondOwner, ct)).ErrorCode == "card_not_found", "Another actor inherited a download snapshot.");
+        var downloadAt = clock.UtcNow;
+        clock.UtcNow = download.ExpiresAt;
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Expired download snapshot was extended.");
+        clock.UtcNow = download.AdmittedAt.AddTicks(-1);
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Clock rollback extended download admission.");
+        clock.UtcNow = downloadAt;
+        await Verdict("FAILED");
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Changed verdict reused Clean admission.");
+        await Verdict("CLEAN");
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Changed file version reused an old snapshot.");
+        download = (await downloads.AdmitAsync(card, upload.Id, user, ct)).Value!;
+        await using (var deleted = new NpgsqlCommand("UPDATE attachments SET deleted_at=@at WHERE tenant_id=@tenant AND id=@id;", admin))
+        {
+            deleted.Parameters.AddWithValue("at", clock.UtcNow); deleted.Parameters.AddWithValue("tenant", tenant); deleted.Parameters.AddWithValue("id", upload.Id);
+            await deleted.ExecuteNonQueryAsync(ct);
+        }
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Deleted file reused delivery admission.");
+        Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).ErrorCode == "card_not_found", "Deleted file obtained delivery admission.");
+        await using (var restored = new NpgsqlCommand("UPDATE attachments SET deleted_at=NULL WHERE tenant_id=@tenant AND id=@id;", admin))
+        { restored.Parameters.AddWithValue("tenant", tenant); restored.Parameters.AddWithValue("id", upload.Id); await restored.ExecuteNonQueryAsync(ct); }
         await using (var revoke = new NpgsqlCommand("UPDATE organization_members SET status='REMOVED',updated_at=clock_timestamp(),version=version+1 WHERE tenant_id=@tenant AND user_id=@actor;", admin))
         { revoke.Parameters.AddWithValue("tenant", tenant); revoke.Parameters.AddWithValue("actor", user); await revoke.ExecuteNonQueryAsync(ct); }
         Require((await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-revoked-replay", ct)).ErrorCode == "card_not_found", "Revoked member recovered publication receipt.");
         Require((await admission.PrepareAsync(card, user, admissionKey, admissionInput, ct)).ErrorCode == "card_not_found", "Revoked member recovered upload intent.");
         Require((await admission.GetOptionsAsync(card, user, ct)).ErrorCode == "card_not_found", "Revoked member recovered upload options.");
+        Require((await downloads.RevalidateAsync(download, user, ct)).ErrorCode == "card_not_found", "Revoked member reused download admission.");
+        Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).ErrorCode == "card_not_found", "Revoked member prepared a new download.");
         await Effects(2, 1);
         await AttachmentFileUploadContract.RunAsync(admin, provider, tenant, secondOwner, EdgeCard,
             () => clock.UtcNow, value => clock.UtcNow = value, ct);
