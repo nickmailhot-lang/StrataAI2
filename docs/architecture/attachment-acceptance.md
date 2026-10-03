@@ -77,3 +77,23 @@ valid scan/tombstone history and missing-context refusal. Upgrade/repeat checks
 and missing-ledger exact-image readiness probes include migration 041. Local
 warning-as-error build, shell syntax and diff checks pass. PostgreSQL execution
 is pending Linux CI; no SQL/runtime proof is inferred from compilation.
+
+Linux run 37110102227 at 0ab0c97 passed the actual PostgreSQL attachment fixture,
+ordered upgrade/repeat/serialization and tenant catalog guards. Its unfiltered
+.NET host suites passed 280 Domain and 257 API cases, including all 34 new
+attachment Domain cases. This is source/database evidence, not upload/scanner or
+complete immutable-image acceptance.
+
+`IAttachmentMetadataStore` now has matching Demo/PostgreSQL URL creation,
+Card/Organization-scoped lookup and newest-first timestamp/ID reads capped at 51
+(the eventual API returns 50 plus a continuation). Timestamps are normalized to
+PostgreSQL microseconds before storage so ties have stable identities. Domain URL
+validation is reused; SQL inserts enforce Card/uploader composite FKs. Production
+calls reject a missing owning tenant transaction before database access or
+metadata validation. Read records exclude object keys and scanner/provider detail.
+New cases exercise 63 tied-timestamp rows across pages, both foreign scopes,
+identity reuse refusal, foreign parents/uploaders, metadata separation, malformed
+cursor pairs and unscoped production calls. They compile; execution is pending
+Linux CI. These primitives are deliberately not exposed through HTTP yet: current
+permission/lifecycle admission, Card CAS, replay receipts and atomic audit/outbox
+must wrap them before a user-facing URL attachment command or read is enabled.
