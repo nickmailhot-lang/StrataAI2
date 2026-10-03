@@ -98,6 +98,9 @@ jobs:
       - name: Reject dependency lock drift
         run: scripts/ci/test-dependency-locks.sh
 
+      - name: Verify attachment refusal fixtures replace environment defaults
+        run: bash scripts/ci/test-attachment-runtime-fixture-arguments.sh
+
       - name: Build with warnings as errors
         run: dotnet build StrataAI2.slnx --configuration Release --no-restore
 
