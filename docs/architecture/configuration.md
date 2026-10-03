@@ -75,5 +75,30 @@ cannot select an allowed type. Size is checked in original-intent admission and
 writer claiming; measured Stored-file publication rechecks both current size
 and type policy. Configure scanner StreamMaxLength and operational deadlines
 for the selected upload bound; protocol PING alone does not prove those limits
-or signature freshness. Upload preparation is a private Application service,
-not an exposed HTTP upload endpoint at this stage.
+or signature freshness.
+
+Enabled Production hosts map `POST /cards/{cardId}/attachments`. Send a raw
+`application/octet-stream` body with `X-StrataAI-Request: 1` and a mandatory
+nonempty UUID `Idempotency-Key`. Bind the original request using
+`X-Attachment-Name` (canonical base64 of strict UTF-8, at most 255 UTF-16
+characters), `X-Attachment-Size` (decimal original byte count),
+`X-Attachment-SHA256` (64 lower-case hexadecimal characters) and
+`X-Card-Version` (original decimal revision). If supplied, `Content-Length`
+must equal the original byte count. Filenames, digest claims and request MIME
+do not establish verified metadata; the server inspects and measures actual
+bytes before publishing Pending metadata and the durable scan job.
+
+Retry with the same actor, Card, key, name, size, digest and original revision.
+An active writer returns a fixed conflict; ambiguous provider writes retain a
+reconciliation claim. Recovery proves absence or measures the original private
+object before proceeding. Do not change claims or mint a new key merely because
+an acknowledgment was lost. Cancellation does not prove an object was absent.
+Pending/Rejected/Failed files have no normal download or preview access.
+
+The file collection edge route streams without request-body disk buffering,
+with a 1 GiB hard ceiling; Application applies the configured lower limit before
+reading. Idle body timeout is 60 seconds, proxy send/read deadlines 330 seconds
+and Application provider deadline at most five minutes. Normal Demo and disabled
+hosts retain URL routes and do not map binary creation. Synthetic HTTP and
+provider tests do not establish deployed bucket/scanner or complete FILE
+lifecycle acceptance.
