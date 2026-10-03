@@ -67,7 +67,10 @@ empty/oversize rejection, all four public-access flags, public policy, ownership
 privacy outage, source/part failure, cancellation and invalid limits/configuration.
 These are adapter contract tests, not executed real-bucket or transport proof.
 Locked restore, warning-as-error build and dependency vulnerability audit pass;
-Linux execution and immutable-image security gates remain pending.
+Linux .NET-quality job 111179398305 in run 37114789590 at db6bb53 passed all
+334 Domain/Application/Infrastructure and 265 API cases, zero skips, including
+these 19 adapter cases. Web/PostgreSQL passed; image/security/container/browser
+gates are tracked separately.
 
 Two additional transport cases use the actual official SDK's signing,
 serialization and response pipeline, substituting only its final HttpClient
@@ -79,6 +82,13 @@ fixed unavailable failure with part-only cleanup. Fixture credentials and privat
 response bytes remain within the intercepted in-memory transport; no network or
 cloud account is used. The two cases compile but execution is pending Linux CI;
 they do not prove real bucket/IAM/credential/readiness acceptance.
+
+The initial transport execution at b410687 (.NET job 111179958841, run
+37114989667) failed both cases at the typed HttpClient Authorization property
+before upload. The test now checks raw Authorization header presence and exact
+SigV4 scheme, without depending on typed parsing. This retains the signing
+requirement; provider implementation is unchanged. Execution of this correction
+remains pending, so signed transport/embedded-error proof is not yet accepted.
 
 Remaining integration: runtime provider/client registration and readiness,
 credential/region/prefix policy diagnostics, managed-bucket transport acceptance,

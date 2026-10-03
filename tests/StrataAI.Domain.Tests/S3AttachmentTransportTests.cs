@@ -30,7 +30,10 @@ public sealed class S3AttachmentTransportTests
             Assert.Equal("https", uri.Scheme); Assert.EndsWith(".amazonaws.com", uri.Host);
             Assert.StartsWith("strataai-private-fixture.", uri.Host);
             Assert.True(request.Headers.TryGetValues("x-amz-expected-bucket-owner", out var owners)); Assert.Equal("123456789012", Assert.Single(owners));
-            Assert.NotNull(request.Headers.Authorization); Assert.Equal("AWS4-HMAC-SHA256", request.Headers.Authorization.Scheme);
+            // AWS installs its signature as a raw header. Assert the exact
+            // signing scheme without depending on HttpClient's typed parser.
+            Assert.True(request.Headers.TryGetValues("Authorization", out var authorization), "SDK transport must carry an authorization header.");
+            Assert.True(Assert.Single(authorization).StartsWith("AWS4-HMAC-SHA256 ", StringComparison.Ordinal), "SDK transport must carry a SigV4 signature.");
             Assert.False(request.Headers.Contains("x-amz-acl"));
             var query = uri.Query;
             if (query.Contains("publicAccessBlock", StringComparison.Ordinal))

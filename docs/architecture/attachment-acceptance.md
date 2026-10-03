@@ -329,3 +329,11 @@ and embedded HTTP-200 completion errors. They make no cloud/network calls.
 Execution is separately pending; no managed bucket or runtime capability is
 claimed from compilation. Locked restore/build/audit and current source checks
 remain documented separately from image/browser gates.
+
+Executed managed adapter evidence: db6bb53 .NET-quality job 111179398305 in run
+37114789590 passed 334 Domain/Application/Infrastructure and 265 API cases,
+zero skips, including all 19 managed S3 adapter cases; web/PostgreSQL passed.
+The later two real-SDK transport cases failed at typed Authorization before any
+upload in b410687 job 111179958841. They now require raw signature header presence
+and the same SigV4 scheme instead; correction execution and complete release gates
+remain pending. No signing acceptance is inferred from compile-only correction.
