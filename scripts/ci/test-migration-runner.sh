@@ -286,7 +286,9 @@ run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 52
 test "$(query "SELECT lifecycle_revision=0 AND lifecycle_state='DELETED' AND version=2 FROM attachments WHERE id='04200000-0000-0000-0000-000000000003'")" = t
 query 'DO $$ DECLARE target uuid; prior bigint; BEGIN
- SELECT id,version INTO target,prior FROM attachments WHERE deleted_at IS NULL LIMIT 1;
+ INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,url,scan_status,created_at,updated_at)
+ SELECT gen_random_uuid(),tenant_id,card_id,uploader_id,'\''URL'\'','\''Count fixture'\'','\''https://example.test/count'\'','\''NOT_APPLICABLE'\'',statement_timestamp(),statement_timestamp()
+ FROM attachments LIMIT 1 RETURNING id,version INTO target,prior;
  IF target IS NULL THEN RAISE EXCEPTION '\''Lifecycle count fixture missing'\''; END IF;
  UPDATE attachments SET lifecycle_state='\''ARCHIVED'\'',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=target;
  UPDATE attachments SET lifecycle_state='\''ACTIVE'\'',version=version+1 WHERE id=target;

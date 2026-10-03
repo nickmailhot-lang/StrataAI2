@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Domain.WorkManagement;
 using Xunit;
@@ -105,8 +106,13 @@ public sealed partial class ApiHostTests
         var restore = $"/cards/{card.Id}/attachments/{files[0].Id}/restore"; var key = Guid.NewGuid().ToString(); var input = new AttachmentLifecycleInput(1, 2);
         using var restored = await Mutate(member, HttpMethod.Post, restore, input, key); Assert.Equal(HttpStatusCode.OK, restored.StatusCode);
         using var revoked = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { }); Assert.Equal(HttpStatusCode.NoContent, revoked.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(path, ct)).StatusCode);
+        // PUBLIC viewing remains available to an Internal Organization member
+        // after its explicit Board edit grant is removed.
+        var retained = (await member.GetFromJsonAsync<AttachmentArchivePage>(path, ct))!;
+        Assert.False(retained.CanRestore); Assert.False(retained.CanDelete); Assert.Equal(50, retained.Items.Count); Assert.NotNull(retained.NextCursor);
         using var denied = await Mutate(member, HttpMethod.Post, restore, input, key); Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        await app.Services.GetRequiredService<IOrganizationStore>().RemoveMemberAsync(f.Organization, f.Recipient, DateTimeOffset.UtcNow, ct);
+        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(path, ct)).StatusCode);
         Assert.Equal(2, (await work.FindCardAsync(card.Id, ct))!.Version);
     }
 }

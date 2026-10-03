@@ -181,3 +181,13 @@ object/integrity/delivery fields are refused. Seven lifecycle cases plus the
 existing attachment admission cases pass locally (36 tests across 3 files).
 Typecheck, lint and production build pass. Native lifecycle controls and their
 browser/accessibility/performance evidence remain subsequent acceptance work.
+
+The c8aab6a managed run exposed a fixture expectation error: removing an explicit
+Board edit grant on a PUBLIC board leaves an Internal Organization member's
+read-only archive access intact. The corrected HTTP test requires read-only
+capabilities, denied restore replay and then denied reads after Organization
+membership removal. It preserves current-authority enforcement. The first 052
+migration-runner contract reached the count test but its upgrade fixture contained
+only a retained legacy tombstone; the test now creates a separate Active URL row
+under that existing canonical parent rather than assuming an Active seed or
+resurrecting the tombstone. Neither failure weakens the production guards.
