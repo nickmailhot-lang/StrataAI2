@@ -130,3 +130,17 @@ inbox content during each read and revalidates the actor before writes; focus
 changes never submit a request. All 15 notification component tests passed,
 including two refresh/navigation regressions; type checking, lint and production
 build passed. The affected real-image browser case was discovered, not executed.
+
+Run 37100787880 (assignee disclosure repair) finished with 79 passing, seven
+failing and one skipped general browser cases. Both label cases timed out in
+the newly added delivery barrier: their fixture never selected its disposable
+Organization for Worker delivery. Each label case now owns that scoped Worker,
+waits for its initial setup delivery before opening the Board, and restores the
+prior Worker scope in `finally`. The 30-second delivery assertion and all label
+keyboard/receipt/filter/deletion assertions remain unchanged. Two cases were
+discovered; repaired image execution remains pending. Checklist disclosure and
+Reminder failures in that run have later main repairs pending execution.
+
+Source stages for commit 4522155 passed web/.NET/PostgreSQL, immutable image
+build and security in run 37104844850; its container integration is still live.
+These stage successes do not prove an overall green release or later commits.
