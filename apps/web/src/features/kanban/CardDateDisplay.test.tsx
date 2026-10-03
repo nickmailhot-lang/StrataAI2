@@ -7,6 +7,21 @@ const card: WorkCard = { id: 'card', title: 'Card', description: null, rank: 'ra
   startAt: null, dueAt: '2026-10-03T08:00:00Z', dueTimezone: 'UTC', dueHasTime: false, dueComplete: true };
 const props = () => ({ card, organizationId: 'org', boardId: 'board', unavailable: false, onRefresh: vi.fn() });
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+it('applies the current Board timezone policy and clearing it restores the viewing account timezone', async () => {
+  vi.mocked(workRequest).mockResolvedValue(profile);
+  const p = props(); const { rerender } = render(<CardDateDisplay {...p} boardTimezone="UTC" />);
+  const region = await screen.findByRole('region', { name: 'Card dates' });
+  expect(region).toHaveTextContent('Due Oct 3, 2026'); expect(region).toHaveTextContent('Board timezone policy.');
+  rerender(<CardDateDisplay {...p} boardTimezone={null} />);
+  expect(region).toHaveTextContent('Due Oct 2, 2026'); expect(region).not.toHaveTextContent('Board timezone policy.');
+  expect(card.dueAt).toBe('2026-10-03T08:00:00Z');
+});
+it('withholds dates when a Board policy contains an invalid timezone', async () => {
+  vi.mocked(workRequest).mockResolvedValue(profile);
+  render(<CardDateDisplay {...props()} boardTimezone="Unknown/Place" />);
+  expect(await screen.findByRole('alert')).toHaveTextContent('Dates are unavailable');
+  expect(screen.queryByRole('region', { name: 'Card dates' })).not.toBeInTheDocument();
+});
 it('shows configured timezone, date-only text and a textual completion status with an icon', async () => {
   vi.mocked(workRequest).mockResolvedValue(profile);
   render(<CardDateDisplay {...props()} />);

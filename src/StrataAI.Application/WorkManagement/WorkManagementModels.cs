@@ -64,7 +64,11 @@ public sealed record BoardRecord(
     BoardLifecycleState LifecycleState,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    long Version);
+    long Version)
+{
+    // Null uses each viewing account's timezone. This never changes Card UTC dates.
+    public string? DateTimezoneOverride { get; init; }
+}
 
 public sealed record BoardListRecord(
     Guid Id,

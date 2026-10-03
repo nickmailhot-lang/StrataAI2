@@ -749,6 +749,7 @@ public static partial class WorkManagementEndpoints
             "invalid_card_reminder_interval" => Problem(400, errorCode, "Choose an available future reminder interval."),
             "invalid_card_dates" => Problem(400, errorCode, "Use UTC instants or calendar dates with IANA timezone context and valid date order."),
             "invalid_card_date_version" => Problem(400, errorCode, "Use the current Card revision."),
+            "invalid_board_date_policy" => Problem(400, errorCode, "Use a valid IANA timezone or null and the current Board revision."),
             "invalid_watch_version" => Problem(400, errorCode, "Use the current watch revision, or zero for a new subscription."),
             "invalid_notification_cursor" => Problem(400, errorCode, "Use the notification page's current cursor."),
             "invalid_notification_selection" => Problem(400, errorCode, "Select between one and 50 distinct notifications."),

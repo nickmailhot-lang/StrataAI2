@@ -5,7 +5,7 @@ base=http://localhost:8088
 scratch=$(mktemp -d); worker_scoped=false
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
-  admin 'GRANT INSERT ON card_assignment_notifications, background_jobs TO strataai_api_runtime;' >/dev/null || true
+  admin 'GRANT INSERT ON card_assignment_notifications, background_jobs, work_events TO strataai_api_runtime;' >/dev/null || true
   if test "$worker_scoped" = true; then docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null || true; fi
   rm -rf "$scratch"
 }
@@ -82,6 +82,27 @@ test "$(request owner POST "/cards/$card/restore" "$(uuid)" '{"version":8}')" = 
 # Old receipts must not disclose dates after access removal.
 memberKey=$(uuid)
 test "$(request member PATCH "$path" "$memberKey" '{"version":9,"dueHasTime":false,"dueComplete":false}')" = 200
+# Board policy controls display only, using admin admission and Board CAS. It
+# must not rewrite Card dates or renew already fired/future Reminder generations.
+policyVersion=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" "$base/boards/$board" | jq -r '.board.version')
+policyPath="/boards/$board/date-policy"; policyKey=$(uuid)
+policyPayload=$(jq -nc --argjson version "$policyVersion" '{timezone:"Pacific/Honolulu",version:$version}')
+before=$(state)
+test "$(request member PATCH "$policyPath" "$(uuid)" "$policyPayload")" = 404
+test "$(request owner PATCH "$policyPath" "$(uuid)" "$(jq -c '.timezone="Unknown/Place"' <<< "$policyPayload")")" = 400
+test "$before" = "$(state)"
+admin 'REVOKE INSERT ON work_events FROM strataai_api_runtime;' >/dev/null
+test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 503
+test "$before" = "$(state)"
+admin 'GRANT INSERT ON work_events TO strataai_api_runtime;' >/dev/null
+test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 200
+jq -e --argjson version "$policyVersion" '.changed and .board.dateTimezoneOverride=="Pacific/Honolulu" and .board.version==$version+1' "$scratch/response.json" >/dev/null
+after=$(state)
+test "$(request owner PATCH "$policyPath" "$policyKey" "$policyPayload")" = 200
+test "$after" = "$(state)"
+test "$(admin "SELECT version=2 AND due_at='$fireDue' FROM cards WHERE tenant_id='$org' AND id='$fireCard';")" = t
+test "$(admin "SELECT generation=1 AND version=2 AND status='FIRED' FROM card_reminders WHERE tenant_id='$org' AND id='$fireReminder';")" = t
+test "$(request owner PATCH "$policyPath" "$(uuid)" "$(jq -nc --argjson version "$((policyVersion+1))" '{timezone:null,version:$version}')")" = 200
 admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$member';" >/dev/null
 before=$(state)
 test "$(request member PATCH "$path" "$memberKey" '{"version":9,"dueHasTime":false,"dueComplete":false}')" = 404
@@ -225,3 +246,4 @@ echo 'Personal Reminder configuration, recipient privacy, stable cancellation, p
 echo 'Card archive/restore Reminder suspension, future generation renewal and archive receipt deduplication passed.'
 echo 'List/Board archive contexts, all 76 chosen Cards, selective renewal, cancelled-choice preservation and lifecycle publication rollback passed.'
 echo 'Real release Worker Reminder delivery, self inbox, canonical FIRED revision and post-delivery receipt deduplication passed.'
+echo 'Board timezone policy admin admission, event-publication rollback, receipt replay and unchanged UTC dates/Reminder generations passed.'

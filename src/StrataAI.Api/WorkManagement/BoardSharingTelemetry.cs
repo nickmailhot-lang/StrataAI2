@@ -50,6 +50,7 @@ public sealed class BoardSharingTelemetry
             ("/boards/{boardId:guid}/members/{targetUserId:guid}", "PATCH") => "member_role",
             ("/boards/{boardId:guid}/members/{targetUserId:guid}", "DELETE") => "member_remove",
             ("/boards/{boardId:guid}/visibility", "PATCH") => "visibility_change",
+            ("/boards/{boardId:guid}/date-policy", "PATCH") => "board_date_policy",
             ("/boards/{boardId:guid}/invitations", "GET") => "invitation_read",
             ("/boards/{boardId:guid}/invitations", "POST") => "invitation_create",
             ("/boards/{boardId:guid}/invitations/{invitationId:guid}", "DELETE") => "invitation_revoke",
@@ -80,7 +81,7 @@ public sealed class BoardSharingTelemetry
         {
             "board_not_found" or "organization_not_found" or "member_not_found" or "invitation_not_found"
                 or "notification_not_found" or "invalid_notification_cursor" or "invalid_notification_selection"
-                or "watch_not_found" or "invalid_watch_version" or "invalid_card_dates" or "invalid_card_date_version"
+                or "watch_not_found" or "invalid_watch_version" or "invalid_card_dates" or "invalid_card_date_version" or "invalid_board_date_policy"
                 or "card_reminder_not_found" or "invalid_card_reminder_version" or "invalid_card_reminder_interval"
                 or "session_unavailable" or "work_storage_unavailable" or "invitation_storage_unavailable"
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"

@@ -39,6 +39,21 @@ for (const width of [1280, 390]) {
     const region = page.getByRole('region', { name: 'Card dates', exact: true });
     await expect(region).toContainText('Due Jan 3, 2040'); await expect(region).toContainText('Upcoming');
     await expect(region).toContainText('Viewing timezone: UTC. Date context: Pacific/Honolulu.');
+    const policyBoard = (await (await context.request.get(`/boards/${board}`)).json()).board;
+    const policy = await context.request.patch(`/boards/${board}/date-policy`, {
+      headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+      data: { timezone: 'Pacific/Honolulu', version: policyBoard.version },
+    });
+    expect(policy.status()).toBe(200); const configuredPolicy = await policy.json();
+    await page.reload(); await expect(region).toContainText('Due Jan 2, 2040');
+    await expect(region).toContainText('Board timezone policy.');
+    expect((await (await context.request.get('/me')).json()).timezone).toBe('UTC');
+    expect((await context.request.patch(`/boards/${board}/date-policy`, {
+      headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+      data: { timezone: null, version: configuredPolicy.board.version },
+    })).status()).toBe(200);
+    await page.reload(); await expect(region).toContainText('Due Jan 3, 2040');
+    await expect(region).not.toContainText('Board timezone policy.');
     const other = await browser.newContext({ baseURL: new URL(page.url()).origin, viewport: { width, height: 844 } });
     try {
       expect((await other.request.post('/auth/login', { headers, data: account })).status()).toBe(200);

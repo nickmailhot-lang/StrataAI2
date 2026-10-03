@@ -359,3 +359,31 @@ scenarios parse and list locally; actual release execution is still required.
 The same run passed Watch scenarios and its normal Board/movement performance
 cases, but the overall required release gate failed and no acceptance is inferred
 for the repaired scenarios.
+
+DATE-FR-006 now has an explicit Board policy representation:
+`Board.dateTimezoneOverride`, nullable with the default null. An internal Board
+administrator can PATCH `/boards/{id}/date-policy` with `{timezone, version}` and
+an idempotency key. Non-null values must be recognized IANA timezone IDs (or UTC);
+null clears the policy. The existing Board revision, Organization/Board gates,
+current administrator admission and command receipt machinery protect changes.
+An effective change emits the existing BOARD_UPDATED audit/event, so subscribed
+clients recover the policy through their canonical snapshot. A no-op changes no
+revision. Replay returns the original acknowledgment only after current admission.
+
+The policy overrides the viewer timezone for both displayed Card start/due dates
+and derived due state. It does not change the user's profile, Card UTC values,
+date-entry timezone context, or personal Reminder generations/triggers. This is
+the recorded PRD-05/12 policy choice; it adds no deployable component. Migration
+039 adds the tenant-owned nullable field; existing tenant RLS remains applicable.
+Telemetry uses bounded operation `board_date_policy` and stable validation code
+`invalid_board_date_policy`, without timezone/body values as dimensions.
+
+Local validation passed 43 date/display/Reminder tests, strict solution build,
+web typecheck/lint/production build and shell syntax. The new API regression covers
+administrator-only admission, invalid zones, CAS conflict, no-op, clearing,
+original receipt replay and archived-parent replay denial. The mandatory release
+fixture forces an event-publication failure to prove full policy rollback and
+unchanged UTC Card/Reminder state. Desktop/phone browser scenarios check applied
+policy and clearing against persisted API state. Those new API/database/browser
+cases require Linux exact-image results; administrator MUI configuration and
+dedicated live-policy/accessibility scenarios remain outstanding. No ticket closes.

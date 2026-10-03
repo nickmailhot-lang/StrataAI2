@@ -20,6 +20,7 @@ export type BoardSnapshot = {
     name: string;
     description: string | null;
     lifecycleState: string;
+    dateTimezoneOverride?: string | null;
   };
   lists: {
     list: { id: string; name: string; rank: string; lifecycleState: string; version?: number };

@@ -697,6 +697,7 @@ function BoardContent() {
               onRefresh={() => setReload((value) => value + 1)}
             />
             <CardDateDisplay card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              boardTimezone={snapshot.board.dateTimezoneOverride}
               unavailable={snapshotReading || !!loadError} onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             <CardDateEditor card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               listId={snapshot.lists.find(column => column.cards.some(item => item.id === card.id))!.list.id}

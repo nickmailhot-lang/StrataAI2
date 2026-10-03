@@ -48,6 +48,8 @@ public static class WorkManagementRegistration
         services.AddSingleton<WatchSubscriptionService>();
         services.AddSingleton<ICardDateStore>(provider => (ICardDateStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<CardDateService>();
+        services.AddSingleton<IBoardDatePolicyStore>(provider => (IBoardDatePolicyStore)provider.GetRequiredService<IWorkManagementStore>());
+        services.AddSingleton<BoardDatePolicyService>();
         services.AddSingleton<CardReminderScheduling>();
         services.AddSingleton<CardReminderContainerScheduling>();
         services.AddSingleton<CardReminderService>();
