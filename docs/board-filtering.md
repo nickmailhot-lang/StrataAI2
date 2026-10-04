@@ -79,8 +79,15 @@ fixture's execution is pending; shell syntax alone is not runtime evidence.
 Server request counts, outcomes, stable `invalid_search` errors and durations
 use the existing BoardSharing meter with fixed `global_search` operation tags.
 Search text, label/member criteria and cursor material never become metric tags.
-Client use/retry/reconnect instrumentation and large-data search measurements
-remain outstanding.
+The existing bounded client-observation transport also admits fixed
+`search_disclosure` and `search_read` categories. It records opens, reads,
+explicit refreshes, online reconnects, successful/failed durations and client
+exceptions; polling/focus reads do not inflate reconnect counts. Reports contain
+only action/kind/count/duration, and the server rejects batches containing query,
+label/member, cursor or result-title fields atomically. These observations are
+best-effort metrics, never authoritative audit history. Seventeen focused web
+cases and strict solution compilation passed locally; Linux parser execution,
+native acceptance and large-data search measurements remain outstanding.
 
 The internal shell now links to `/app/:organizationId/search`, with MUI text,
 label/member name, composition and lifecycle controls. A submitted search

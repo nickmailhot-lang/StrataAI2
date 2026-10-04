@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Api.WorkManagement;
 using Xunit;
@@ -9,6 +10,27 @@ using Xunit;
 namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData("q")]
+    [InlineData("label")]
+    [InlineData("member")]
+    [InlineData("after")]
+    [InlineData("resultTitle")]
+    public void PRD_16_Search_client_observations_admit_fixed_actions_and_reject_private_material(string field)
+    {
+        using var valid = JsonDocument.Parse("""
+            {"events":[{"action":"search_disclosure","kind":"open","count":1},
+            {"action":"search_read","kind":"reconnect","count":1},
+            {"action":"search_read","kind":"success","count":1,"durationMs":125}]}
+            """);
+        Assert.Equal(3, ActivityClientTelemetry.Parse(valid.RootElement)!.Count);
+        var payload = JsonSerializer.Serialize(new { events = new object[] {
+            new { action = "search_disclosure", kind = "open", count = 1 },
+            new Dictionary<string, object> { ["action"] = "search_read", ["kind"] = "use", ["count"] = 1, [field] = "private-material" } } });
+        using var invalid = JsonDocument.Parse(payload);
+        Assert.Null(ActivityClientTelemetry.Parse(invalid.RootElement));
+    }
+
     [Fact]
     public async Task Activity_client_observations_are_authenticated_bounded_and_reject_private_batches_atomically()
     {

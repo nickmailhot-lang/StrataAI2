@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { parseSearchPage, type SearchPage } from './globalSearch';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Criteria = { q: string; label: string; member: string; match: 'all' | 'any'; scope: 'active' | 'archived' };
 const empty = (): Criteria => ({ q: '', label: '', member: '', match: 'all', scope: 'active' });
@@ -14,9 +15,10 @@ export function GlobalSearchPage() {
   const applied = useRef<Criteria>(empty()); const cursor = useRef<string | undefined>(undefined);
   const actor = useRef<string | undefined>(undefined); const pending = useRef<AbortController | undefined>(undefined);
   const epoch = useRef(0); const alive = useRef(false);
-  const load = useCallback(async (criteria: Criteria, after?: string) => {
+  const load = useCallback(async (criteria: Criteria, after?: string, kind: 'use' | 'retry' | 'reconnect' = 'use') => {
     pending.current?.abort(); const controller = new AbortController(); pending.current = controller;
     const ticket = ++epoch.current; setBusy(true); setPage(undefined); setNotice(undefined);
+    const started = performance.now(); activityEvent('search_read', kind);
     try {
       const result = await boundedWorkRead(async signal => {
         const before = await workRequest<unknown>('/me', { signal });
@@ -30,9 +32,12 @@ export function GlobalSearchPage() {
         return { actor: afterProfile.id.toLowerCase(), page: parseSearchPage(response, after) };
       }, controller.signal);
       if (!alive.current || ticket !== epoch.current || controller.signal.aborted) return;
+      activityResult('search_read', true, started);
       actor.current = result.actor; applied.current = criteria; cursor.current = after; setPage(result.page);
     } catch (reason) {
       if (!alive.current || ticket !== epoch.current) return;
+      activityResult('search_read', false, started);
+      if (!(reason instanceof WorkRequestError) && !(reason instanceof ChangedSearchAccount)) activityEvent('search_read', 'exception');
       setPage(undefined);
       if (reason instanceof ChangedSearchAccount || reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) {
         actor.current = undefined; cursor.current = undefined; applied.current = empty(); setDraft(empty());
@@ -44,11 +49,13 @@ export function GlobalSearchPage() {
   }, []);
   useEffect(() => {
     alive.current = true;
+    activityEvent('search_disclosure', 'open');
     const refresh = () => { if (!pending.current && document.visibilityState !== 'hidden' && actor.current) void load(applied.current, cursor.current); };
-    window.addEventListener('focus', refresh); window.addEventListener('online', refresh);
+    const online = () => { if (!pending.current && document.visibilityState !== 'hidden' && actor.current) void load(applied.current, cursor.current, 'reconnect'); };
+    window.addEventListener('focus', refresh); window.addEventListener('online', online);
     document.addEventListener('visibilitychange', refresh); const interval = setInterval(refresh, 10_000);
     return () => { alive.current = false; epoch.current++; pending.current?.abort(); clearInterval(interval);
-      window.removeEventListener('focus', refresh); window.removeEventListener('online', refresh); document.removeEventListener('visibilitychange', refresh); };
+      window.removeEventListener('focus', refresh); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', refresh); };
   }, [load]);
   return <Stack spacing={2} component="section" aria-label="Global Card search">
     <Typography variant="h5" component="h2">Search Cards</Typography>
@@ -78,6 +85,6 @@ export function GlobalSearchPage() {
       <Typography>{item.dueAt ? `Due ${new Date(item.dueAt).toLocaleString()}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
     </Paper>)}
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
-    {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current)}>Refresh results</Button>}
+    {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}
   </Stack>;
 }
