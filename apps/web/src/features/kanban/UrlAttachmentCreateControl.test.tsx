@@ -16,6 +16,17 @@ async function review() {
   fireEvent.change(screen.getByLabelText(/Attachment URL/), { target: { value: ' https://example.test/reference ' } });
 }
 const writes = () => vi.mocked(workRequest).mock.calls.filter(([path]) => path.endsWith('/attachments/url'));
+it('purges the private title, URL and retry when the account changes after a committed response', async () => {
+  let profiles = 0;
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me'
+    ? (++profiles < 3 ? profile : { ...profile, id: id(99) }) : ack());
+  render(<UrlAttachmentCreateControl {...props()} />); await review();
+  fireEvent.click(screen.getByRole('button', { name: 'Create link attachment' }));
+  await screen.findByText(/This link attachment change is unavailable/);
+  expect(writes()).toHaveLength(1); expect(screen.queryByLabelText(/Attachment URL/)).not.toBeInTheDocument();
+  expect(screen.queryByText('Link attachment created.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry link attachment creation' })).not.toBeInTheDocument();
+});
 it('creates a link only after review and validates actor/body/version acknowledgment before showing success', async () => {
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : ack()); const p = props(); render(<UrlAttachmentCreateControl {...p} />);
   await review(); expect(writes()).toHaveLength(0); fireEvent.click(screen.getByRole('button', { name: 'Create link attachment' }));
@@ -51,6 +62,6 @@ it('refuses unsafe URLs locally and preserves both fields when the Card changes 
 it('refuses a different signed-in actor before emitting a command and keeps reviewed fields blocked until explicit discard', async () => {
   let reads = 0; vi.mocked(workRequest).mockImplementation(async () => ++reads === 1 ? profile : { ...profile, id: id(99) });
   const p = props(); render(<UrlAttachmentCreateControl {...p} />); await review(); fireEvent.click(screen.getByRole('button', { name: 'Create link attachment' }));
-  await screen.findByText(/This link attachment change is unavailable/); expect(writes()).toHaveLength(0); expect(screen.getByLabelText(/Attachment URL/)).toBeDisabled();
+  await screen.findByText(/This link attachment change is unavailable/); expect(writes()).toHaveLength(0); expect(screen.queryByLabelText(/Attachment URL/)).not.toBeInTheDocument();
   await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true)); expect(screen.queryByRole('button', { name: 'Retry link attachment creation' })).not.toBeInTheDocument();
 });

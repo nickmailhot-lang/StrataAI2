@@ -49,8 +49,11 @@ function CreateControl(props: UrlAttachmentCreateProps) {
       const value = await boundedWorkRead(async signal => {
         const profile = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(profile) || profile.id !== command.actor) throw new WorkRequestError(401, null);
-        return workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/attachments/url`, { method: 'POST', signal,
+        const result = await workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/attachments/url`, { method: 'POST', signal,
           headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify({ title: command.title, url: command.url, cardVersion: command.cardVersion }) });
+        const current = await workRequest<unknown>('/me', { signal }).catch(() => { throw new WorkRequestError(401, null); });
+        if (!isNotificationProfile(current) || current.id !== command.actor) throw new WorkRequestError(401, null);
+        return result;
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       parseUrlAttachmentCreated(value, props, command.actor, command.title, command.url, command.cardVersion);
@@ -59,7 +62,11 @@ function CreateControl(props: UrlAttachmentCreateProps) {
       if (!mounted.current || pending.current !== controller) return;
       focusRequested.current = true;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
-        setIntent(undefined); setBlocked(true); setNotice('This link attachment change is unavailable. Your title and URL are preserved. Load the current Card before reviewing another change.');
+        const denied = [401, 403, 404].includes(error.status);
+        if (denied) setDraft(undefined);
+        setIntent(undefined); setBlocked(true); setNotice(denied
+          ? 'This link attachment change is unavailable. Load the current Card before reviewing another change.'
+          : 'This link attachment change is unavailable. Your title and URL are preserved. Load the current Card before reviewing another change.');
       } else { setIntent(command); setNotice('The link attachment creation is unconfirmed. Retry the original change to recover its acknowledgment.'); }
       props.onRefresh();
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }

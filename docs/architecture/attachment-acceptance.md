@@ -750,3 +750,10 @@ or failed post-response account check refuses disclosure; terminal access refusa
 clears private review/draft and retires the original retry. Tests cover account
 changes during review and after a committed reply, plus the existing pre-write
 actor switch refusal. All 12 focused component tests, typecheck and lint pass.
+
+URL creation also rechecks the account after mutation replies before showing
+success. Account changes or failed post-response checks retire the original
+retry and clear private title/URL drafts; terminal access denial does the same.
+Validation/version refusals preserve drafts for fresh review. Nine focused
+tests pass, including account change after a committed reply and pre-write
+actor refusal. Typecheck and lint pass; actual Linux/release execution is pending.
