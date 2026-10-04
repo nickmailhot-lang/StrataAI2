@@ -101,8 +101,8 @@ public sealed partial class TransactionalWorkManagementService(
         Guid actorUserId,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default) =>
-        BoardCommand(boardId, actorUserId, "admin", WorkCommand.Create(actorUserId, context.IdempotencyKey, "DeleteBoardAsync", boardId, new { expectedVersion }, "board_not_found"), () => inner.DeleteBoardAsync(boardId, actorUserId, expectedVersion, correlationId, cancellationToken), cancellationToken);
+        CancellationToken cancellationToken = default, bool deletionConfirmed = false) =>
+        BoardCommand(boardId, actorUserId, "admin", WorkCommand.Create(actorUserId, context.IdempotencyKey, "DeleteBoardAsync", boardId, new { expectedVersion, deletionConfirmed }, "board_not_found"), () => inner.DeleteBoardAsync(boardId, actorUserId, expectedVersion, correlationId, cancellationToken, deletionConfirmed), cancellationToken);
 
     public Task<WorkOperation<bool>> SetStarAsync(
         Guid boardId,

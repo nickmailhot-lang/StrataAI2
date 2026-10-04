@@ -283,7 +283,7 @@ public sealed partial class WorkManagementService(
         Guid actorUserId,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default, bool deletionConfirmed = false) =>
         ChangeBoardLifecycleAsync(
             boardId,
             actorUserId,
@@ -292,7 +292,7 @@ public sealed partial class WorkManagementService(
             expectedVersion,
             "BOARD_DELETED",
             correlationId,
-            cancellationToken);
+            cancellationToken, deletionConfirmed);
 
     public async Task<WorkOperation<bool>> SetStarAsync(
         Guid boardId,
@@ -1028,7 +1028,7 @@ public sealed partial class WorkManagementService(
         long expectedVersion,
         string eventType,
         string correlationId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, bool deletionConfirmed = false)
     {
         var resolved = await ResolveAccessAsync(
             boardId,
@@ -1041,6 +1041,9 @@ public sealed partial class WorkManagementService(
         {
             return WorkOperation<BoardRecord>.Failure("board_not_found");
         }
+
+        if (nextState == BoardLifecycleState.Deleted && !deletionConfirmed)
+            return WorkOperation<BoardRecord>.Failure("delete_confirmation_required");
 
         var updated = await store.SetBoardLifecycleAsync(
             boardId,

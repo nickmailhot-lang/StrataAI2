@@ -82,7 +82,7 @@ public interface IWorkManagementService
         Guid actorUserId,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, bool deletionConfirmed = false);
 
     Task<WorkOperation<bool>> SetStarAsync(
         Guid boardId,

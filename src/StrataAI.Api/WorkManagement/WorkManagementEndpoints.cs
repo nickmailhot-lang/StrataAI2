@@ -231,6 +231,7 @@ public static partial class WorkManagementEndpoints
                 async (
                     Guid boardId,
                     long version,
+                    bool? confirmed,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -247,7 +248,7 @@ public static partial class WorkManagementEndpoints
                             userId.Value,
                             version,
                             context.TraceIdentifier,
-                            cancellationToken));
+                            cancellationToken, confirmed is true));
                 })
             .RequireAuthorization();
 
