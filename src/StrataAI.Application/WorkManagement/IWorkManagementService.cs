@@ -86,6 +86,8 @@ public interface IWorkManagementService
         string correlationId,
         CancellationToken cancellationToken = default, bool deletionConfirmed = false);
 
+    Task<WorkOperation<BoardStarPreference>> GetStarAsync(Guid boardId, Guid actorUserId, CancellationToken cancellationToken = default);
+
     Task<WorkOperation<bool>> SetStarAsync(
         Guid boardId,
         Guid actorUserId,

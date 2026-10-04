@@ -16,6 +16,7 @@ public sealed partial class ApiHostTests
         var ct = TestContext.Current.CancellationToken;
         await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct);
+        owner.DefaultRequestHeaders.Add("X-StrataAI-Request", "1");
         var id = Guid.Parse("71000000-0000-4000-8000-000000000001");
         await app.Services.GetRequiredService<IWorkManagementStore>().CreateBoardAsync(f.Organization, f.Owner, id,
             "Lifecycle discovery", "Private body", BoardVisibility.Private, "COLOR", "blue", DateTimeOffset.UtcNow, ct);

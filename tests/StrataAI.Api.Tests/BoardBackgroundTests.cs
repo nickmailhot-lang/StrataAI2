@@ -15,6 +15,7 @@ public sealed partial class ApiHostTests
         var ct = TestContext.Current.CancellationToken;
         await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct);
+        owner.DefaultRequestHeaders.Add("X-StrataAI-Request", "1"); member.DefaultRequestHeaders.Add("X-StrataAI-Request", "1");
         foreach (var color in BoardBackgroundPolicy.Colors)
         {
             using var created = await owner.PostAsJsonAsync("/boards", new { organizationId = f.Organization, name = "Palette " + color,
@@ -51,6 +52,7 @@ public sealed partial class ApiHostTests
         var ct = TestContext.Current.CancellationToken;
         await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct);
+        owner.DefaultRequestHeaders.Add("X-StrataAI-Request", "1");
         var store = app.Services.GetRequiredService<IWorkManagementStore>();
         var id = Guid.NewGuid();
         await store.CreateBoardAsync(f.Organization, f.Owner, id, "Historical Board", null, BoardVisibility.Private,

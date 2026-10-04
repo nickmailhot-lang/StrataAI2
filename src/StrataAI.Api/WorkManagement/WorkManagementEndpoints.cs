@@ -11,6 +11,7 @@ public static partial class WorkManagementEndpoints
         MapBoardCardFilterEndpoints(app);
         MapGlobalSearchEndpoints(app);
         MapAssignableBoardMembersEndpoints(app);
+        MapBoardStarPreferenceEndpoints(app);
         MapCardMemberEndpoints(app);
         MapNotificationEndpoints(app);
         MapWatchEndpoints(app);
