@@ -48,6 +48,7 @@ import { LabelManageControl } from './LabelManageControl';
 import { BoardFilterControl } from './BoardFilterControl';
 import { filteredBoardCanvas, type BoardCanvasFilter } from './boardFilterCanvas';
 import { CrossBoardCardMoveControl } from "./CrossBoardCardMoveControl";
+import { CardCopyControl } from "./CardCopyControl";
 import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardArchiveControl } from './CardArchiveControl';
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
@@ -124,8 +125,10 @@ function BoardContent() {
   const checklistRecovery = checklistCreateRecovery || checklistManageRecovery;
   const otherBusy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery;
   const [crossBoardMoveRecovery, setCrossBoardMoveRecovery] = useState(false);
+  const [cardCopyRecovery, setCardCopyRecovery] = useState(false);
+  const cardCommandRecovery = crossBoardMoveRecovery || cardCopyRecovery;
   const [crossBoardMoved, setCrossBoardMoved] = useState<{ cardId: string; boardId: string }>();
-  const busy = otherBusy || dateRecovery || crossBoardMoveRecovery;
+  const busy = otherBusy || dateRecovery || crossBoardMoveRecovery || cardCopyRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
   const [listDrop, setListDrop] = useState<ListDropRequest>();
@@ -484,7 +487,7 @@ function BoardContent() {
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           <ListCopyControl snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || labelRecovery || labelManageRecovery || !!loadError || cardRecovery || !!cardId || !!creation}
+            disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || labelRecovery || labelManageRecovery || !!loadError || cardRecovery || !!cardId || !!creation}
             refreshing={snapshotReading}
             unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
             onBusyChange={setBusy} onRecoveryChange={setCopyRecovery}
@@ -494,7 +497,7 @@ function BoardContent() {
             onBusyChange={setBusy} onRecoveryChange={setLabelRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
-          <LabelManageControl snapshot={snapshot} disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
+          <LabelManageControl snapshot={snapshot} disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
             onBusyChange={setBusy} onRecoveryChange={setLabelManageRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
@@ -693,7 +696,7 @@ function BoardContent() {
         <DialogTitle>Card details</DialogTitle>
         <DialogContent>
           {!card ? (
-            crossBoardMoveRecovery ? <Typography role="status">Checking the original cross-Board move.</Typography>
+            crossBoardMoveRecovery || cardCopyRecovery ? <Typography role="status">Checking the original Card command.</Typography>
               : crossBoardMoved && crossBoardMoved.cardId === cardId ? <Button component={Link}
                 to={`/app/${organizationId}/boards/${crossBoardMoved.boardId}/cards/${cardId}`}>Open Card on destination Board</Button>
               : cardId ? <ArchivedCardDetail organizationId={organizationId} boardId={boardId} cardId={cardId}
@@ -722,11 +725,11 @@ function BoardContent() {
               unavailable={snapshotReading || !!loadError} onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             <CardDateEditor card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               listId={snapshot.lists.find(column => column.cards.some(item => item.id === card.id))!.list.id}
-              editable={Boolean(editable)} disabled={otherBusy || cardRecovery} unavailable={snapshotReading || !!loadError}
+              editable={Boolean(editable)} disabled={otherBusy || cardRecovery || cardCommandRecovery} unavailable={snapshotReading || !!loadError}
               onBusyChange={setBusy} onRecoveryChange={setDateRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             <CardReminderControl card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || cardRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || cardRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery}
               unavailable={snapshotReading || !!loadError} onBusyChange={setBusy} onRecoveryChange={setReminderRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             {cardId && <CardAttachments organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
@@ -740,43 +743,43 @@ function BoardContent() {
               refreshSequence={`${reload}/${reconnectSequence}/${card.version}`} onDenied={clearDeniedScope} />}
             {cardId && <UrlAttachmentCreateControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))} unavailable={snapshotReading || !!loadError}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setAttachmentRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <FileAttachmentCreateControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))} unavailable={snapshotReading || !!loadError}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || attachmentRecovery}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || attachmentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setFileAttachmentRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardCoverControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))}
               unavailable={snapshotReading || !!loadError}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || commentRecovery}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || commentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setCoverRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardCommentsControl reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               canAdminister={snapshot.access.canAdminister}
               cardId={card.id} version={card.version} editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))}
               unavailable={snapshotReading || !!loadError}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery}
               onBusyChange={setBusy} onRecoveryChange={setCommentRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <AttachmentManageControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} canAdminister={snapshot.access.canAdminister}
               editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))}
               unavailable={snapshotReading || !!loadError}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || coverRecovery || commentRecovery}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || coverRecovery || commentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setAttachmentLifecycleRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <ChecklistCreateControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} editable={Boolean(editable)} unavailable={snapshotReading || !!loadError}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistManageRecovery || attachmentRecovery || fileAttachmentRecovery}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistManageRecovery || attachmentRecovery || fileAttachmentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setChecklistCreateRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <ChecklistManageControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               canAdminister={snapshot.access.canAdminister}
               cardId={card.id} version={card.version} editable={Boolean(editable)} unavailable={snapshotReading || !!loadError}
-              disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistCreateRecovery || attachmentRecovery || fileAttachmentRecovery}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistCreateRecovery || attachmentRecovery || fileAttachmentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setChecklistManageRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardLabels key={`labels-${card.id}`} organizationId={snapshot.board.organizationId}
@@ -794,26 +797,30 @@ function BoardContent() {
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
           )}
           {cardId && <CrossBoardCardMoveControl key={`cross-move-${cardId}`} card={card} selectedCardId={cardId}
-            snapshot={snapshot} disabled={otherBusy || dateRecovery || cardRecovery} unavailable={snapshotReading || !!loadError}
+            snapshot={snapshot} disabled={otherBusy || dateRecovery || cardRecovery || cardCopyRecovery} unavailable={snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCrossBoardMoveRecovery}
             onAcknowledged={(movedCardId, movedBoardId) => setCrossBoardMoved({ cardId: movedCardId, boardId: movedBoardId })}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+          {cardId && <CardCopyControl key={`card-copy-${cardId}`} card={card} selectedCardId={cardId}
+            snapshot={snapshot} disabled={otherBusy || dateRecovery || cardRecovery || crossBoardMoveRecovery} unavailable={snapshotReading || !!loadError}
+            onBusyChange={setBusy} onRecoveryChange={setCardCopyRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {cardId && <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="CARD" entityId={cardId}
             admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active' && !!card &&
               snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === cardId))}
             disabled={busy || !!loadError} refreshing={snapshotReading} onReturnFocus={() => cardClose.current?.focus({ preventScroll: true })} />}
           {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
+            disabled={cardCommandRecovery || operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onAcknowledged={() => { canvasFocus.current = { scope: key, cardId };
               setSnapshotReading(true); setReload(value => value + 1); closeCard(); }} />}
           {cardId && <CardLabelPicker key={`label-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
+            disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setAssignmentRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {cardId && <CardMemberPicker key={`member-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
+            disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setMemberRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
         </DialogContent>

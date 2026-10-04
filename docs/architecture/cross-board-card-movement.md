@@ -90,6 +90,12 @@ failure and unrecorded fixtures are numbered 067–069.
   New movement/read-receipt execution is pending. The release fixture also
   observes a live canonical Board gate wait, withdraws destination membership,
   and requires refusal without disclosure or command effects.
+  The new post-wait setup initially failed because its psql marker was escaped
+  incorrectly. Commit `abc4808` fixed the marker and used the valid `REMOVED`
+  Board membership state. The full cross-Board command/inbox fixture then passed
+  on exact images in container job 111426869272 of
+  [run 37198597943](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37198597943).
+  The broader release/native gate was still live when inspected.
 - The MUI cross-Board selector now loads authorized destination Boards and
   checks an active destination List, binds account identity and original source,
   and keeps receipt recovery after canonical source removal. Unit and integrated

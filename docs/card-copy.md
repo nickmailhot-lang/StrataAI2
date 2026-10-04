@@ -21,7 +21,7 @@ The command does not inherit comments, historical events, assignees, personal
 Reminders, Card Watches, attachments or selected covers. Binary duplication
 requires independent upload/integrity/scan/publication identities and is not
 implemented by reusing a source download grant or object reference. These copy
-defaults must be stated in the upcoming MUI review control; they do not imply
+defaults are stated in the MUI review control; they do not imply
 complete attachment-copy or whole-PRD acceptance.
 
 One `CARD_COPIED` audit/event refers to the new Card. This birth event is new
@@ -50,6 +50,22 @@ pages, fresh completion state, no source-history/personal inheritance, source
 revision preservation, current receipt recovery and revoked/invalid admission.
 The mandatory immutable release fixture adds real restricted PostgreSQL writes,
 sessions, destination Watch notification and full late-publication rollback.
-The new tests require Linux CI execution; local Windows managed execution is
-blocked by Application Control. MUI copy review/recovery, native multi-client
-interaction and copy capacity evidence remain unfinished. PRD-08 remains open.
+The MUI control loads current permitted Boards and active editable destination
+Lists, including the source Board. It reviews a bounded new title and the copy
+defaults before confirmation, checks `/me` before and after every bounded request,
+and retires original recovery on account change or terminal refusal. An uncertain
+reply freezes the original title/body/key; recovery survives source removal and
+does not invent a copied Card locally. An acknowledgment must identify a fresh
+Card with the correct Organization/Board/List, title, rank and revision 1. The
+Board owns this recovery outside its canonical Card editor and fences competing
+edits. Cancellation returns focus to Copy Card; acknowledgment focuses the link
+to the new Card once current Board admission has finished.
+
+Local typecheck/lint/build and 55 related MUI/Board tests passed, including
+cancellation/acknowledgment focus. Desktop/mobile native scenarios now verify keyboard review,
+actual committed-but-lost response recovery, independent sessions observing the
+new destination Card without changing the source, one persisted copy, new
+activity and reload. Discovery verifies two cases; actual new native and final
+managed/release execution require Linux CI. Local Windows managed execution is
+blocked by Application Control. Copy capacity and complete PRD-wide acceptance
+remain unfinished. PRD-08 remains open.
