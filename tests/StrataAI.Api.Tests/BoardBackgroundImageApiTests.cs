@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.WorkManagement;
 using Xunit;
@@ -14,6 +16,8 @@ public sealed partial class ApiHostTests
     {
         if (!OperatingSystem.IsLinux()) return;
         var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects();
+        var json = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        json.Converters.Add(new JsonStringEnumConverter());
         await using var app = UploadFactory(objects, downloads: true, images: true);
         using var owner = app.CreateClient(); using var member = app.CreateClient(); using var anonymous = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct); var work = app.Services.GetRequiredService<IWorkManagementStore>();
@@ -30,7 +34,7 @@ public sealed partial class ApiHostTests
         metadata.PublishedPreview = new(new(reference, stored.SizeBytes, stored.Sha256), 1, 1);
         var key = Guid.NewGuid().ToString();
         using var selected = await Mutate(member, HttpMethod.Post, path, input, key); Assert.Equal(HttpStatusCode.OK, selected.StatusCode);
-        var receipt = await selected.Content.ReadAsStringAsync(ct); var board = (await selected.Content.ReadFromJsonAsync<BoardRecord>(ct))!;
+        var receipt = await selected.Content.ReadAsStringAsync(ct); var board = (await selected.Content.ReadFromJsonAsync<BoardRecord>(json, ct))!;
         Assert.Equal(2, board.Version); Assert.Equal("IMAGE", board.BackgroundType); Assert.True(Guid.TryParseExact(board.BackgroundValue, "D", out _));
         Assert.DoesNotContain(reference.ObjectKey, receipt, StringComparison.Ordinal); Assert.DoesNotContain(stored.Sha256, receipt, StringComparison.Ordinal);
         using (var hidden = await anonymous.GetAsync(path, ct)) Assert.Equal(HttpStatusCode.NotFound, hidden.StatusCode);
@@ -47,7 +51,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.OK, replay.StatusCode); Assert.Equal(receipt, await replay.Content.ReadAsStringAsync(ct));
         using (var retained = await member.GetAsync(path, ct)) { Assert.Equal(HttpStatusCode.OK, retained.StatusCode); Assert.Equal(bytes, await retained.Content.ReadAsByteArrayAsync(ct)); }
         using var copied = await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/copy", new { name = "Independent image Board", version = 2 });
-        Assert.Equal(HttpStatusCode.Created, copied.StatusCode); var target = (await copied.Content.ReadFromJsonAsync<BoardRecord>(ct))!;
+        Assert.Equal(HttpStatusCode.Created, copied.StatusCode); var target = (await copied.Content.ReadFromJsonAsync<BoardRecord>(json, ct))!;
         Assert.Equal("IMAGE", target.BackgroundType); Assert.Equal(1, target.Version); Assert.NotEqual(board.BackgroundValue, target.BackgroundValue);
         var copyPath = $"/boards/{target.Id}/background/image";
         using (var denied = await member.GetAsync(copyPath, ct)) Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
