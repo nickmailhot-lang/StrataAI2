@@ -27,6 +27,26 @@ async function select(action = 'Archive') {
   fireEvent.click(await screen.findByRole('button', { name: `${action} attachment Reference` }));
 }
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+it('withholds private attachment review when the account changes during the read', async () => {
+  let profiles = 0;
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me'
+    ? (++profiles === 1 ? profile : { ...profile, id: '99999999-9999-4999-8999-999999999999' }) : page);
+  render(<AttachmentManageControl {...props()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Manage attachments' }));
+  await screen.findByText('Unable to review current attachments. Refresh the Card and try again.');
+  expect(screen.queryByText('Reference')).not.toBeInTheDocument(); expect(writes()).toHaveLength(0);
+});
+it('purges private review and original retry when the account changes after a committed response', async () => {
+  let profiles = 0;
+  vi.mocked(workRequest).mockImplementation(async (path, init) => path === '/me'
+    ? (++profiles < 4 ? profile : { ...profile, id: '99999999-9999-4999-8999-999999999999' }) : init?.method ? ack : page);
+  render(<AttachmentManageControl {...props()} />); await select();
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm attachment archive' }));
+  await screen.findByText('This attachment change is unavailable. Load the latest Card before reviewing another change.');
+  expect(writes()).toHaveLength(1); expect(screen.queryByText('Reference')).not.toBeInTheDocument();
+  expect(screen.queryByText('Attachment archived.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry original attachment change' })).not.toBeInTheDocument();
+});
 it('reviews current metadata then sends the original archive revisions/key and admits the exact acknowledgment', async () => {
   mock(); const p = props(); render(<AttachmentManageControl {...p} />); expect(workRequest).not.toHaveBeenCalled();
   await select(); expect(writes()).toHaveLength(0); fireEvent.click(screen.getByRole('button', { name: 'Confirm attachment archive' }));
@@ -85,7 +105,7 @@ it('permits read-only archive review but refuses mutation capabilities, and neve
   fireEvent.click(screen.getByRole('button', { name: 'Manage attachments' })); fireEvent.click(await screen.findByRole('button', { name: 'Review attachment archive' }));
   expect(await screen.findByRole('button', { name: 'Restore attachment Reference' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Delete attachment Reference' })).toBeDisabled();
   view.unmount(); vi.mocked(workRequest).mockReset(); let reads = 0;
-  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? ++reads === 1 ? profile : { ...profile, id: id(99) } : page);
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? ++reads <= 2 ? profile : { ...profile, id: id(99) } : page);
   render(<AttachmentManageControl {...props()} />); await select(); fireEvent.click(screen.getByRole('button', { name: 'Confirm attachment archive' }));
   await screen.findByText(/This attachment change is unavailable/); expect(writes()).toHaveLength(0);
 });

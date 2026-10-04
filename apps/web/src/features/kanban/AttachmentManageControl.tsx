@@ -52,6 +52,8 @@ function Management(props: Props) {
         const value = await workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/attachments${archive ? '/archive' : ''}${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`, { signal });
         const page = archive ? parseAttachmentArchivePage(value, props, cursor) : parseAttachmentPage(value, props, cursor);
         if (page.cardVersion !== version) throw new WorkRequestError(409, null);
+        const current = await workRequest<unknown>('/me', { signal }).catch(() => { throw new WorkRequestError(401, null); });
+        if (!isNotificationProfile(current) || current.id !== profile.id) throw new WorkRequestError(401, null);
         return { actor: profile.id, archive, page, cursor };
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
@@ -80,9 +82,12 @@ function Management(props: Props) {
         const path = command.action === 'delete'
           ? `/attachments/${encodeURIComponent(command.file.id)}?cardId=${encodeURIComponent(scope.cardId)}&cardVersion=${command.cardVersion}&version=${command.file.version}&confirmed=true`
           : `/cards/${encodeURIComponent(scope.cardId)}/attachments/${encodeURIComponent(command.file.id)}/${command.action}`;
-        return workRequest<unknown>(path, { method: command.action === 'delete' ? 'DELETE' : 'POST', signal,
+        const result = await workRequest<unknown>(path, { method: command.action === 'delete' ? 'DELETE' : 'POST', signal,
           headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key },
           ...(command.action === 'delete' ? {} : { body: JSON.stringify({ cardVersion: command.cardVersion, version: command.file.version }) }) });
+        const current = await workRequest<unknown>('/me', { signal }).catch(() => { throw new WorkRequestError(401, null); });
+        if (!isNotificationProfile(current) || current.id !== command.actor) throw new WorkRequestError(401, null);
+        return result;
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       parseAttachmentLifecycleChanged(value, props, command.file, command.cardVersion, command.actor, command.action);
@@ -91,6 +96,7 @@ function Management(props: Props) {
     } catch (error) {
       if (!mounted.current || pending.current !== controller) return;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
+        if ([401, 403, 404].includes(error.status)) { setReview(undefined); setDraft(undefined); }
         setIntent(undefined); setBlocked(true); setNotice('This attachment change is unavailable. Load the latest Card before reviewing another change.');
       } else { setIntent(command); setNotice('The attachment change is unconfirmed. Retry the original request to recover its acknowledgment.'); }
       props.onRefresh();

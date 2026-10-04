@@ -743,3 +743,10 @@ unchanged URL attachment and archives that stable child on the destination;
 current metadata and an accessibility scan are checked. No publication or
 delivery replies are simulated. Discovery registers both scenarios; actual
 release-browser execution remains pending CI. Binary pipeline proof is separate.
+
+Attachment management rechecks the current account after metadata reads and
+mutation replies, before disclosing private review or success. An account change
+or failed post-response account check refuses disclosure; terminal access refusal
+clears private review/draft and retires the original retry. Tests cover account
+changes during review and after a committed reply, plus the existing pre-write
+actor switch refusal. All 12 focused component tests, typecheck and lint pass.
