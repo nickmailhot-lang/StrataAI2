@@ -742,6 +742,8 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const active = { ...fixture, lists: [{ ...fixture.lists[0], list: { ...fixture.lists[0].list, version: 1 } }] };
     let archived = false; const writes: RequestInit[] = [];
     vi.stubGlobal('fetch', vi.fn((_path: string, init?: RequestInit) => {
+      if (_path === '/me') return Promise.resolve(response({ id: '00000000-0000-4000-8000-000000000001',
+        version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' }));
       if (init?.method === 'POST') {
         writes.push(init); archived = true;
         return writes.length === 1 ? Promise.reject(new Error('Lost')) : Promise.resolve(response({ ...fixture.lists[0].cards[0],

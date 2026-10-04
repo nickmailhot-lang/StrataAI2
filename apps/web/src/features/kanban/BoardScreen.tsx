@@ -22,6 +22,7 @@ import {
   type WorkCard,
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
+import { ArchivedCardDetail } from './ArchivedCardDetail';
 import { CardChecklists } from './CardChecklists';
 import { CardAttachments } from './CardAttachments';
 import { AttachmentManageControl } from './AttachmentManageControl';
@@ -689,9 +690,11 @@ function BoardContent() {
         <DialogTitle>Card details</DialogTitle>
         <DialogContent>
           {!card ? (
-            <Alert severity="info">
-              This card is unavailable in this board.
-            </Alert>
+            cardId ? <ArchivedCardDetail organizationId={organizationId} boardId={boardId} cardId={cardId}
+              unavailable={snapshotReading || !!loadError || !snapshot || busy} refreshSequence={`${reload}/${reconnectSequence}`}
+              reconnectSequence={reconnectSequence} onDenied={clearDeniedScope}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
+              : <Alert severity="info">This card is unavailable in this board.</Alert>
           ) : (
             <><CardCoverImage organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} card={card} detail
               unavailable={snapshotReading || !!loadError || snapshot.board.lifecycleState !== 'active' || !snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === card.id))} />

@@ -77,15 +77,18 @@ PRD-08 movement, related assignments/labels/attachments/watch/Reminder and curre
 authorization/event contracts must be implemented consistently before claiming
 real moved-entity acceptance.
 
-Current `BoardScreen` resolves Card detail from the active Board snapshot. An
-archived Card or Card in an archived List can be absent there, leaving a generic
-unavailable detail instead of the permitted read-only comments/activity controls.
-API archive admission and Board history do not complete that MUI detail path.
-PRD-09/18 detail/lifecycle integration remains required. Deleted target history
+`BoardScreen` now falls back to an independently admitted archived detail reader
+when a Card is absent from the active canvas. It supports archived Cards and
+active Cards in archived Lists, with read-only title/description, comments and
+activity. The archive directory links to this detail. Scoped admission uses the
+existing authenticated read transaction, current Organization/Board access and
+fresh Card/List checks under the Board gate; deleted content remains unavailable.
+API lifecycle cases compile and focused component tests pass locally; current
+Linux API and exact-image desktop/mobile execution remain required. Deleted target history
 stays body-free/current-admin-only; this gap does not authorize deleted body
 disclosure or an anonymous/Owner Portal activity projection.
 
-The issue remains open. Current estimated remaining work is **45%**, covering
+The issue remains open. Current estimated remaining work is **40%**, covering
 these producer/UI dependencies, full current native/runtime proof, remaining
 capacity/performance and cross-feature acceptance rather than only the recently
 implemented readers.

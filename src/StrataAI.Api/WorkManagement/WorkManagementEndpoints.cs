@@ -19,6 +19,14 @@ public static partial class WorkManagementEndpoints
         MapCardCommentEndpoints(app);
         MapActivityFeedEndpoints(app);
         MapAttachmentEndpoints(app);
+        app.MapGet("/boards/{boardId:guid}/cards/{cardId:guid}/archived-details",
+            async (Guid boardId, Guid cardId, HttpContext context, ArchivedCardDetailService service, CancellationToken ct) =>
+            {
+                context.Response.Headers.CacheControl = "no-store";
+                var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+                var result = await service.ReadAsync(boardId, cardId, actor.Value, ct);
+                return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+            }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         app.MapGet(
             "/boards/{boardId:guid}",
             async (

@@ -57,3 +57,18 @@ against the immutable release topology remains required before claiming either
 read capacity or the mutation budget passed. These measurements do not establish
 browser rendering, cached Card opening or movement feedback. Native mobile/keyboard/two-client,
 permission/lifecycle/retention and complete PRD-15 acceptance remain separate.
+# Verified release evidence
+
+Run [37190533527](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37190533527)
+passed the mandatory capacity step on immutable release images at revision
+`4ab794d5dfd354f81b5037609f80e4d54cb4a65a`. Retained artifact
+`comment-capacity-4ab794d5dfd354f81b5037609f80e4d54cb4a65a` (ID 11299217162)
+was downloaded and inspected: 200 Lists, 5,000 active Cards, 100,000 archived
+Cards and 100,000 seeded comments; 50/50/1 scoped pages, distinct seek results,
+final redaction, no-store and unchanged read state. Twenty serial actual HTTP
+comment commands passed atomic publication, exact retry with unchanged state,
+and stale-cursor refusal. First-page p95 was **34.345 ms** and command p95 was
+**57.554 ms**, below the gated 500 ms mutation budget under the artifact's fixed
+single-client/no-intentional-latency condition. These are API timings, not browser
+or concurrent-user measurements. The whole run's native/runtime gate was still
+in progress when this evidence was recorded.

@@ -315,3 +315,21 @@ lifecycle. Compilation/discovery is separate from Linux/runtime/browser executio
 which remains pending for these new cases. The optional activity Collector gate
 at `6574058` has passed exact-image steps 42–44 in run 37188968317; comment
 observation/capacity/runtime claims remain separate requirements.
+
+### Archived Card detail and verified comment capacity (2026-10-04)
+
+The active canvas omission now leads to a separately admitted internal archived
+Card detail read: archived Cards and Cards in archived Lists expose read-only
+content, comments and activity. Current Organization/Board access and fresh
+parents are checked through the existing read transaction and Board gate;
+deleted content remains unavailable. The archived Card directory links to detail.
+Local focused UI/recovery tests and the full .NET warning-as-error build pass;
+actual API and desktop/mobile release scenarios await the next exact CI run.
+
+Run 37190533527 on 4ab794d passed exact-image comment capacity and the extended
+activity/comment operator-metric privacy verifier. Inspected retained evidence
+reports first-page p95 34.345 ms and real serial comment-command p95 57.554 ms at
+100,000 comments with supported Board/archive sizes, atomic effects, unchanged
+read/retry state and refused stale cursor. Conditions and limits are documented
+in docs/architecture/comment-capacity.md. Native/runtime completion and actual
+cross-Board movement remain outstanding; PRD-15 stays open, about 40% remaining.

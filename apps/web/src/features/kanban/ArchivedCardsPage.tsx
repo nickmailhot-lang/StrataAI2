@@ -158,6 +158,8 @@ function Archive({ org, board }: { org: string; board: string }) {
     {reading && <CircularProgress aria-label="Checking archived Cards" />}
     {page?.items.map(e => <Paper key={e.card.id} component="article" aria-label={e.card.title} sx={{ p: 2, overflowWrap: 'anywhere' }}>
       <Typography component="h3" variant="h6">{e.card.title}</Typography><Typography>List: {e.list.name}</Typography>
+      <Button component={Link} to={`/app/${org}/boards/${board}/cards/${e.card.id}`} disabled={!ready || reading || writing || !!intent}
+        aria-label={`Read ${e.card.title} card details`}>Read Card details</Button>
       {e.list.lifecycleState === 'archived' && <Typography>Restore the parent List before restoring this Card.</Typography>}
       <Button disabled={!ready || reading || writing || !!intent || e.list.lifecycleState !== 'active'} aria-label={`Restore ${e.card.title} card`}
         onClick={() => { reviewingDeletion.current = false; setSelected(e); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined); }}>Restore Card</Button>
