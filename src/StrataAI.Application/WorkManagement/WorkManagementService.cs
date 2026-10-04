@@ -665,7 +665,7 @@ public sealed partial class WorkManagementService(
             nextState,
             expectedVersion,
             clock.UtcNow,
-            cancellationToken);
+            cancellationToken, actorUserId);
 
         if (updated is null)
         {
@@ -917,7 +917,7 @@ public sealed partial class WorkManagementService(
             nextState,
             expectedVersion,
             clock.UtcNow,
-            cancellationToken);
+            cancellationToken, actorUserId);
 
         if (updated is null)
         {
@@ -1048,7 +1048,7 @@ public sealed partial class WorkManagementService(
             nextState,
             expectedVersion,
             clock.UtcNow,
-            cancellationToken);
+            cancellationToken, actorUserId);
 
         if (updated is null)
         {

@@ -34,7 +34,7 @@ internal sealed partial class PostgresWorkManagementStore
                 version=version+1,updated_at=GREATEST(updated_at,@now)
             WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version AND lifecycle_state='ACTIVE'
             RETURNING id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version,
-                start_at,due_at,due_timezone,due_has_time,due_complete,archived_at,deleted_at;
+                start_at,due_at,due_timezone,due_has_time,due_complete,archived_at,deleted_at,deleted_by;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("board", boardId);
         command.Parameters.AddWithValue("card", cardId); command.Parameters.AddWithValue("version", version);

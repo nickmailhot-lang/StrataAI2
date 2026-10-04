@@ -111,7 +111,7 @@ public interface IWorkManagementStore
         BoardLifecycleState nextState,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? actorUserId = null);
 
     Task SetStarAsync(
         Guid boardId,
@@ -172,7 +172,7 @@ public interface IWorkManagementStore
         WorkItemLifecycleState nextState,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? actorUserId = null);
 
     Task<CardRecord> CreateCardAsync(
         Guid listId,
@@ -209,7 +209,7 @@ public interface IWorkManagementStore
         WorkItemLifecycleState nextState,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? actorUserId = null);
 
     Task AppendAuditAsync(
         Guid organizationId,

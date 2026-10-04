@@ -258,8 +258,10 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
         BoardLifecycleState nextState,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? actorUserId = null)
     {
+        if (nextState == BoardLifecycleState.Deleted && (actorUserId is null || actorUserId == Guid.Empty))
+            throw new ArgumentException("Deletion requires an actor.", nameof(actorUserId));
         lock (_sync)
         {
             if (!_boards.TryGetValue(boardId, out var board) ||
@@ -274,6 +276,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 LifecycleState = nextState,
                 ArchivedAt = nextState == BoardLifecycleState.Archived ? updatedAt : nextState == BoardLifecycleState.Active ? null : board.ArchivedAt,
                 DeletedAt = nextState == BoardLifecycleState.Deleted ? updatedAt : board.DeletedAt,
+                DeletedBy = nextState == BoardLifecycleState.Deleted ? actorUserId : board.DeletedBy,
                 UpdatedAt = updatedAt,
                 Version = board.Version + 1,
             };
@@ -537,8 +540,10 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
         WorkItemLifecycleState nextState,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? actorUserId = null)
     {
+        if (nextState == WorkItemLifecycleState.Deleted && (actorUserId is null || actorUserId == Guid.Empty))
+            throw new ArgumentException("Deletion requires an actor.", nameof(actorUserId));
         lock (_sync)
         {
             if (!_lists.TryGetValue(listId, out var list) ||
@@ -553,6 +558,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 LifecycleState = nextState,
                 ArchivedAt = nextState == WorkItemLifecycleState.Archived ? updatedAt : nextState == WorkItemLifecycleState.Active ? null : list.ArchivedAt,
                 DeletedAt = nextState == WorkItemLifecycleState.Deleted ? updatedAt : list.DeletedAt,
+                DeletedBy = nextState == WorkItemLifecycleState.Deleted ? actorUserId : list.DeletedBy,
                 UpdatedAt = updatedAt,
                 Version = list.Version + 1,
             };
@@ -716,8 +722,10 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
         WorkItemLifecycleState nextState,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? actorUserId = null)
     {
+        if (nextState == WorkItemLifecycleState.Deleted && (actorUserId is null || actorUserId == Guid.Empty))
+            throw new ArgumentException("Deletion requires an actor.", nameof(actorUserId));
         lock (_sync)
         {
             if (!_cards.TryGetValue(cardId, out var card) ||
@@ -732,6 +740,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 LifecycleState = nextState,
                 ArchivedAt = nextState == WorkItemLifecycleState.Archived ? updatedAt : nextState == WorkItemLifecycleState.Active ? null : card.ArchivedAt,
                 DeletedAt = nextState == WorkItemLifecycleState.Deleted ? updatedAt : card.DeletedAt,
+                DeletedBy = nextState == WorkItemLifecycleState.Deleted ? actorUserId : card.DeletedBy,
                 UpdatedAt = updatedAt,
                 Version = card.Version + 1,
             };

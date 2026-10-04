@@ -160,7 +160,7 @@ test "$(delete_list '&confirmed=true&containedCardCount=2')" = 503
 admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
 test "$before" = "$(state)"
 test "$(delete_list '&confirmed=true&containedCardCount=2')" = 200
-jq -e --arg target "$target" '.id==$target and .lifecycleState=="deleted" and .version==2' "$scratch/deleted.json" >/dev/null
+jq -e --arg target "$target" --arg actor "$owner" '.id==$target and .lifecycleState=="deleted" and .version==2 and .deletedBy==$actor' "$scratch/deleted.json" >/dev/null
 cp "$scratch/deleted.json" "$scratch/receipt.json"
 deleted_state=$(state)
 test "$(delete_list '&confirmed=true&containedCardCount=2')" = 200
@@ -206,7 +206,7 @@ test "$(delete_card '&confirmed=true')" = 503
 admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
 test "$card_before" = "$(state)"
 test "$(delete_card '&confirmed=true')" = 200
-jq -e --arg id "$card_target" '.id==$id and .lifecycleState=="deleted" and .version==2' "$scratch/card-deleted.json" >/dev/null
+jq -e --arg id "$card_target" --arg actor "$owner" '.id==$id and .lifecycleState=="deleted" and .version==2 and .deletedBy==$actor' "$scratch/card-deleted.json" >/dev/null
 cp "$scratch/card-deleted.json" "$scratch/card-receipt.json"
 card_after=$(state)
 test "$(delete_card '&confirmed=true')" = 200
@@ -276,7 +276,7 @@ test "$(admin "SELECT count(*) FROM card_labels a JOIN cards c ON c.id=a.card_id
 test "$(admin "SELECT count(*) FROM cards c JOIN cards s ON s.tenant_id=c.tenant_id AND s.list_id='$copy_source' AND s.title=c.title
   WHERE c.tenant_id='$org' AND c.list_id='$copy_id' AND c.id<>s.id AND c.version=1 AND c.rank=s.rank
     AND c.description IS NOT DISTINCT FROM s.description AND c.lifecycle_state=s.lifecycle_state
-    AND c.created_at=c.updated_at AND c.deleted_at IS NULL
+    AND c.created_at=c.updated_at AND c.deleted_at IS NULL AND c.deleted_by IS NULL
     AND (c.lifecycle_state<>'ARCHIVED' OR c.archived_at=c.created_at);")" = 2
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND board_id='$copy_destination' AND entity_id='$copy_id' AND event_type='LIST_COPIED';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$copy_id' AND event_type='LIST_COPIED';")" = 1

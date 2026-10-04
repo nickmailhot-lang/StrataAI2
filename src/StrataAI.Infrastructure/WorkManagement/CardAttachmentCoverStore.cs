@@ -125,7 +125,7 @@ internal sealed partial class PostgresWorkManagementStore : ICardAttachmentCover
             WHERE tenant_id=@tenant AND board_id=@board AND id=@card AND version=@version
              AND cover_attachment_id IS NOT DISTINCT FROM @previous AND lifecycle_state='ACTIVE'
             RETURNING id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,created_at,updated_at,version,
-             start_at,due_at,due_timezone,due_has_time,due_complete,archived_at,deleted_at;
+             start_at,due_at,due_timezone,due_has_time,due_complete,archived_at,deleted_at,deleted_by;
             """, session.Connection, session.Transaction);
         update.Parameters.AddWithValue("tenant", organization); update.Parameters.AddWithValue("board", board); update.Parameters.AddWithValue("card", card);
         update.Parameters.AddWithValue("version", cardVersion); update.Parameters.AddWithValue("now", now);

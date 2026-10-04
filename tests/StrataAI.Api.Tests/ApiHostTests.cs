@@ -165,7 +165,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.NotFound, revokedWrite.StatusCode);
         var unchanged = await owner.GetFromJsonAsync<JsonElement>($"/boards/{boardId}", cancellationToken);
         Assert.Empty(unchanged.GetProperty("lists").EnumerateArray());
-        await workStore.SetBoardLifecycleAsync(boardId, BoardLifecycleState.Active, BoardLifecycleState.Deleted, 1, DateTimeOffset.UtcNow, cancellationToken);
+        await workStore.SetBoardLifecycleAsync(boardId, BoardLifecycleState.Active, BoardLifecycleState.Deleted, 1, DateTimeOffset.UtcNow, cancellationToken, userId);
         Assert.Empty((await owner.GetFromJsonAsync<JsonElement>(route, cancellationToken)).EnumerateArray());
     }
 
