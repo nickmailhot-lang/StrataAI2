@@ -792,4 +792,18 @@ that actor's Board grant. The canonical command correctly denied recovery. The
 fixture now adds a destination Member grant and explicitly verifies editable
 current destination access to the selected published image before replay.
 No production authorization check is weakened. Compilation passes with zero
-warnings/errors; repaired Linux execution remains pending.
+warnings/errors. The repaired restricted PostgreSQL integration job passes at
+7750334 in run 37203161282; the complete release gate remains pending.
+
+Exact-image run 37201694235 at 48555e4 passed attachment step 41, including
+moved URL creation/archive/restore/delete original receipt recovery, independent
+original/current Board permission withdrawal and restoration, and unchanged
+command effects. This commit predates the live-lock-wait extension, so it does
+not establish that extension's execution or full binary-provider acceptance.
+
+The cover editor now clears private candidate names, selection review and retry
+intent after account change, unavailable post-response account admission, or
+terminal access refusal. It offers keyboard-focused fresh Card admission without
+retaining a private selection. Lost mutation replies still retain exact retry
+intent; revision/validation refusals preserve explicit fresh review. All 13 cover
+component tests pass, including three post-write admission/refusal cases.

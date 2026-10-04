@@ -43,7 +43,7 @@ function CoverControl(props: UrlAttachmentCreateProps) {
         const profile = await workRequest<unknown>('/me', { signal }); if (!isNotificationProfile(profile)) throw new WorkRequestError(401, null);
         const view = parseCardCoverView(await workRequest<unknown>(path, { signal }), props, version);
         const page = parseCardCoverCandidates(await workRequest<unknown>(path + '/candidates' + (cursor ? '?after=' + encodeURIComponent(cursor) : ''), { signal }), props, version, cursor);
-        const current = await workRequest<unknown>('/me', { signal });
+        const current = await workRequest<unknown>('/me', { signal }).catch(() => { throw new WorkRequestError(401, null); });
         if (!isNotificationProfile(current) || current.id.toLowerCase() !== profile.id.toLowerCase()) throw new WorkRequestError(401, null);
         if (view.canEdit !== page.canEdit || view.isPublic !== page.isPublic) throw new Error();
         return { actor: profile.id, view, page, cursor };
@@ -75,7 +75,7 @@ function CoverControl(props: UrlAttachmentCreateProps) {
           throw new WorkRequestError(409, null);
         const result = await workRequest<unknown>(path, { method: 'PUT', signal, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(command.input) });
         parseCardCoverChange(result, props, command.view, command.input);
-        const current = await workRequest<unknown>('/me', { signal });
+        const current = await workRequest<unknown>('/me', { signal }).catch(() => { throw new WorkRequestError(401, null); });
         if (!isNotificationProfile(current) || current.id.toLowerCase() !== command.actor.toLowerCase()) throw new WorkRequestError(401, null);
         return result;
       }, controller.signal);
@@ -86,6 +86,7 @@ function CoverControl(props: UrlAttachmentCreateProps) {
     } catch (error) {
       if (!mounted.current || pending.current !== controller) return;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
+        if ([401, 403, 404].includes(error.status)) { setReview(undefined); setDraft(undefined); }
         setIntent(undefined); setBlocked(true); setNotice('This cover change is unavailable. Load the latest Card before reviewing another change.');
       } else { setIntent(command); setNotice('The cover change is unconfirmed. Retry the original request to recover its acknowledgment.'); }
       props.onRefresh();
@@ -97,6 +98,9 @@ function CoverControl(props: UrlAttachmentCreateProps) {
     {busy && <Typography role="status">{draft ? 'Saving cover change…' : 'Checking current cover images…'}</Typography>}
     {notice && <Typography role="status">{notice}</Typography>}
     {props.unavailable ? <Typography role="status">Checking current Card access…</Typography> : <>
+      {blocked && !draft && <Button ref={discard} disabled={disabled} onBlur={blur} onClick={event => {
+        focus(event.currentTarget); setBlocked(false); setNotice(undefined); props.onRefresh();
+      }}>Load latest Card before reviewing a cover</Button>}
       {review && !draft && <>
         {!current && <Alert severity="warning">This Card changed. Review its latest cover before making a change.</Alert>}
         <Typography>{review.view.attachmentId === null ? 'This Card has no cover.' : 'This Card has a selected image cover.'}</Typography>

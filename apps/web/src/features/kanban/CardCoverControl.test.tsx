@@ -77,4 +77,34 @@ it('permits readonly cover review and never sends a captured change after the ac
     : init?.method ? ack : path.includes('/candidates') ? { ...scope, cardVersion: 4, items: [candidate], nextCursor: null, canEdit: true, isPublic: false } : base);
   render(<CardCoverControl {...props()} />); await choose(); fireEvent.click(screen.getByRole('button', { name: 'Confirm Card cover' }));
   await screen.findByText(/This cover change is unavailable/); expect(writes()).toHaveLength(0);
+  expect(screen.queryByText(candidate.displayName)).not.toBeInTheDocument();
+});
+
+it.each(['changed account', 'unavailable account', 'access refusal'])('purges private cover review after %s and supports fresh admission', async failure => {
+  let profiles = 0;
+  vi.mocked(workRequest).mockImplementation(async (path, init) => {
+    if (path === '/me') {
+      if (++profiles === 4) {
+        if (failure === 'unavailable account') throw new WorkRequestError(503, null);
+        return { ...profile, id: id(99) };
+      }
+      return profile;
+    }
+    if (init?.method) {
+      if (failure === 'access refusal') throw new WorkRequestError(403, null);
+      return ack;
+    }
+    return path.includes('/candidates') ? { ...scope, cardVersion: 4, items: [candidate], nextCursor: null, canEdit: true, isPublic: false } : base;
+  });
+  const p = props(); render(<CardCoverControl {...p} />); await choose();
+  const save = screen.getByRole('button', { name: 'Confirm Card cover' }); save.focus(); fireEvent.click(save);
+  await screen.findByText(/This cover change is unavailable/);
+  expect(screen.queryByText(candidate.displayName)).not.toBeInTheDocument();
+  expect(screen.queryByText('Card cover updated.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry original cover change' })).not.toBeInTheDocument();
+  const latest = screen.getByRole('button', { name: 'Load latest Card before reviewing a cover' });
+  await waitFor(() => expect(latest).toHaveFocus());
+  expect(writes()).toHaveLength(1); await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true));
+  fireEvent.click(latest); await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false));
+  expect(screen.getByRole('button', { name: 'Review Card cover' })).toBeEnabled();
 });
