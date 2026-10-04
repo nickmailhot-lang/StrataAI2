@@ -444,7 +444,7 @@ function BoardContent() {
     );
   if (!snapshot) return <CircularProgress aria-label="Loading board" />;
   return (
-    <Stack spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1 }}>
+    <Stack role="region" aria-label="Board workspace" spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1 }}>
       {loadError && message(loadError)}
       <Typography role="status" aria-live="polite" variant="body2">
         {liveStatus === "live"
@@ -459,11 +459,11 @@ function BoardContent() {
         direction="row"
         sx={{ justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}
       >
-        <Box>
-          <Typography variant="h4" component="h2">
+        <Box sx={{ minWidth: 0, maxWidth: '100%', overflowWrap: 'anywhere' }}>
+          <Typography variant="h4" component="h2" sx={{ overflowWrap: 'anywhere' }}>
             {snapshot.board.name}
           </Typography>
-          <Typography>{snapshot.board.description}</Typography>
+          <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{snapshot.board.description}</Typography>
         </Box>
         <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
           <Button
