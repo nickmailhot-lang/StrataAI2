@@ -9,13 +9,17 @@ const item = { id: id(4), organizationId: scope.organizationId, cardId: scope.ca
 const page = { ...scope, cardVersion: 4, canEdit: false, items: [item], nextCursor: null };
 const props = { ...scope, version: 4, unavailable: false, onRefresh: vi.fn() };
 const respond = (value: unknown) => new Response(JSON.stringify(value), { status: 200, headers: { 'Content-Type': 'application/json' } });
+const profile = { id: id(8), version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
+function admit(metadata: (path: string, options: RequestInit) => Promise<Response>) {
+  vi.stubGlobal('fetch', vi.fn((path: string, options: RequestInit) => path.endsWith('/me') ? Promise.resolve(respond(profile)) : metadata(path, options)));
+}
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 
 it.each([[1, 'Safety scan pending. File access is unavailable.'], [2, 'Safety scan complete.'],
   [3, 'File rejected by the safety scan. File access is unavailable.'], [4, 'Safety scan failed. File access is unavailable.']])('renders admitted file metadata and textual scan status %s without fetching or linking private bytes', async (scanStatus, status) => {
     const file = { ...item, kind: 0, displayName: 'Original document.pdf', mimeType: 'application/pdf', sizeBytes: 100003, url: null,
       scanStatus, scannedAt: scanStatus === 1 ? null : now, version: scanStatus === 1 ? 1 : 2 };
-    const fetch = vi.fn().mockResolvedValue(respond({ ...page, items: [file] })); vi.stubGlobal('fetch', fetch);
+    const fetch = vi.fn().mockResolvedValue(respond({ ...page, items: [file] })); admit(fetch);
     const view = render(<CardAttachments {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
     expect(await screen.findByText(String(status))).toBeVisible(); expect(screen.getByText(/Original document.pdf/)).toBeVisible();
     expect(screen.queryByRole('link')).not.toBeInTheDocument(); expect(view.container.querySelector('img')).toBeNull(); expect(fetch).toHaveBeenCalledOnce();
@@ -23,7 +27,7 @@ it.each([[1, 'Safety scan pending. File access is unavailable.'], [2, 'Safety sc
   });
 
 it('loads only on explicit disclosure and renders a safe external link without fetching its target', async () => {
-  const fetch = vi.fn().mockResolvedValue(respond(page)); vi.stubGlobal('fetch', fetch);
+  const fetch = vi.fn().mockResolvedValue(respond(page)); admit(fetch);
   render(<CardAttachments {...props} />); expect(fetch).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
   const link = await screen.findByRole('link', { name: 'External reference (opens in a new tab)' });
@@ -37,7 +41,7 @@ it('loads only on explicit disclosure and renders a safe external link without f
 it('retains disclosure intent through re-admission but aborts and hides late protected content', async () => {
   let resolve: (value: Response) => void = () => {}; let signal: AbortSignal | undefined;
   const fetch = vi.fn().mockImplementationOnce((_path: string, options: RequestInit) => { signal = options.signal as AbortSignal; return new Promise<Response>(yes => { resolve = yes; }); })
-    .mockResolvedValueOnce(respond(page)); vi.stubGlobal('fetch', fetch);
+    .mockResolvedValueOnce(respond(page)); admit(fetch);
   const view = render(<CardAttachments {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
   await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
   view.rerender(<CardAttachments {...props} unavailable />); expect(signal?.aborted).toBe(true);
@@ -47,24 +51,41 @@ it('retains disclosure intent through re-admission but aborts and hides late pro
   view.rerender(<CardAttachments {...props} unavailable />); expect(screen.queryByRole('link')).not.toBeInTheDocument();
 });
 it('preserves a Show click while access is checked without issuing a protected read until admission finishes', async () => {
-  const fetch = vi.fn().mockResolvedValue(respond(page)); vi.stubGlobal('fetch', fetch);
+  const fetch = vi.fn().mockResolvedValue(respond(page)); admit(fetch);
   const view = render(<CardAttachments {...props} unavailable />); fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
   expect(fetch).not.toHaveBeenCalled(); view.rerender(<CardAttachments {...props} />); await screen.findByRole('link');
   expect(fetch).toHaveBeenCalledOnce();
 });
 it.each([{ ...page, boardId: id(90) }, { ...page, cardVersion: 5 }, { ...page, items: [{ ...item, url: 'javascript:alert(1)' }] },
   { ...page, items: [{ ...item, storageKey: 'private/key' }] }])('rejects foreign, stale, unsafe or private-field responses without exposing content (%j)', async value => {
-  const fetch = vi.fn().mockResolvedValueOnce(respond(value)).mockResolvedValueOnce(respond(page)); vi.stubGlobal('fetch', fetch);
+  const fetch = vi.fn().mockResolvedValueOnce(respond(value)).mockResolvedValueOnce(respond(page)); admit(fetch);
   render(<CardAttachments {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load current attachments'); expect(screen.queryByRole('link')).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Retry attachments' })); await screen.findByRole('link'); expect(fetch).toHaveBeenCalledTimes(2);
 });
 it('clears the old revision before current read and resets disclosure completely on Card scope change', async () => {
   let resolve: (value: Response) => void = () => {};
-  const fetch = vi.fn().mockResolvedValueOnce(respond(page)).mockImplementationOnce(() => new Promise<Response>(yes => { resolve = yes; })); vi.stubGlobal('fetch', fetch);
+  const fetch = vi.fn().mockResolvedValueOnce(respond(page)).mockImplementationOnce(() => new Promise<Response>(yes => { resolve = yes; })); admit(fetch);
   const view = render(<CardAttachments {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Show attachments' })); await screen.findByRole('link');
   view.rerender(<CardAttachments {...props} version={5} />); expect(screen.queryByRole('link')).not.toBeInTheDocument();
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2)); view.rerender(<CardAttachments {...props} cardId={id(99)} version={5} />);
   await act(async () => resolve(respond({ ...page, cardVersion: 5 }))); expect(screen.queryByRole('link')).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Show attachments' })).toHaveAttribute('aria-expanded', 'false'); expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it.each(['changed', 'unavailable', 'malformed'])('withholds protected metadata after %s post-read account admission and permits a fresh retry', async failure => {
+  let profiles = 0;
+  const fetch = vi.fn(async (path: string) => {
+    if (!path.endsWith('/me')) return respond(page);
+    if (++profiles !== 2) return respond(profile);
+    if (failure === 'unavailable') return new Response(null, { status: 503 });
+    return respond(failure === 'changed' ? { ...profile, id: id(99) } : { ...profile, status: 'INACTIVE' });
+  });
+  vi.stubGlobal('fetch', fetch); render(<CardAttachments {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
+  await screen.findByRole('alert'); expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  expect(screen.queryByText('External reference')).not.toBeInTheDocument();
+  expect(fetch.mock.calls.map(([path]) => path)).toEqual(['/me', `/cards/${scope.cardId}/attachments`, '/me']);
+  fireEvent.click(screen.getByRole('button', { name: 'Retry attachments' }));
+  await screen.findByRole('link', { name: 'External reference (opens in a new tab)' });
 });

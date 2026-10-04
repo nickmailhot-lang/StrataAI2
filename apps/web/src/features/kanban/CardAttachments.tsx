@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Box, Button, Link, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { isNotificationProfile } from '../notifications/notificationInbox';
 import { attachmentUrl, parseAttachmentPage, type AttachmentPage, type AttachmentScope } from './attachments';
 import { FileAttachmentDownloadControl } from './FileAttachmentDownloadControl';
 import { FileAttachmentPreviewControl } from './FileAttachmentPreviewControl';
@@ -30,7 +31,14 @@ function AttachmentContent(props: Props & { returnToToggle: () => void }) {
   useEffect(() => {
     let active = true; const controller = new AbortController(); setPage(undefined); setError(false); setLoading(true);
     const path = `/cards/${encodeURIComponent(cardId)}/attachments${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`;
-    void boundedWorkRead(signal => workRequest<unknown>(path, { signal }), controller.signal).then(value => {
+    void boundedWorkRead(async signal => {
+      const actor = await workRequest<unknown>('/me', { signal });
+      if (!isNotificationProfile(actor)) throw new WorkRequestError(401, null);
+      const value = await workRequest<unknown>(path, { signal });
+      const current = await workRequest<unknown>('/me', { signal });
+      if (!isNotificationProfile(current) || current.id.toLowerCase() !== actor.id.toLowerCase()) throw new WorkRequestError(401, null);
+      return value;
+    }, controller.signal).then(value => {
       if (!active) return;
       const current = parseAttachmentPage(value, { organizationId, boardId, cardId }, cursor);
       if (current.cardVersion !== version) throw new WorkRequestError(409, null);

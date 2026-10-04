@@ -825,3 +825,11 @@ recover the same stable URL identity/current revision without manual reload.
 Both clients receive accessibility checks. Playwright discovers both scenarios;
 actual native execution remains pending, and this is URL lifecycle evidence
 rather than a complete binary-provider workflow.
+
+Attachment metadata disclosure now checks the current account before and after
+each bounded page read. Changed, malformed or unavailable account admission
+withholds all filenames/links and offers fresh retry. Existing scope/revision,
+private-field and URL validation remain mandatory; late aborted responses cannot
+restore private content. All 15 focused attachment-list component tests pass,
+including the three post-read account failure cases. This complements server
+authorization and does not substitute for enabled-provider release acceptance.
