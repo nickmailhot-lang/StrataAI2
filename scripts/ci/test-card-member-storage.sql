@@ -299,5 +299,41 @@ DO $$ BEGIN
  IF (SELECT count(*) FROM card_assignment_notifications) <> 2 THEN RAISE EXCEPTION 'Membership departure erased notification history'; END IF;
  IF NOT EXISTS(SELECT 1 FROM card_members WHERE assigned_by='03000000-0000-0000-0000-000000000044') THEN RAISE EXCEPTION 'Departure erased historical actor reference'; END IF;
 END $$;
+-- PRD-08 / PRD-15: actual database movement preserves historical notifications.
+-- This is a storage contract, not an authorized move API acceptance claim.
+INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at) VALUES
+ ('06600000-0000-0000-0000-000000000021','03000000-0000-0000-0000-000000000001',
+  '03000000-0000-0000-0000-000000000012','Destination','500000000000000000000000000000',now(),now());
+CREATE TEMP TABLE notification_before_move AS SELECT to_jsonb(n) AS envelope FROM card_assignment_notifications n;
+DELETE FROM card_members WHERE card_id='03000000-0000-0000-0000-000000000031';
+UPDATE cards SET board_id='03000000-0000-0000-0000-000000000012',
+ list_id='06600000-0000-0000-0000-000000000021',version=version+1,updated_at=clock_timestamp()
+ WHERE id='03000000-0000-0000-0000-000000000031';
+DO $$ BEGIN
+ IF (SELECT board_id FROM cards WHERE id='03000000-0000-0000-0000-000000000031')
+    <> '03000000-0000-0000-0000-000000000012'::uuid THEN RAISE EXCEPTION 'Storage movement did not persist'; END IF;
+ IF EXISTS((SELECT envelope FROM notification_before_move EXCEPT SELECT to_jsonb(n) FROM card_assignment_notifications n)
+   UNION ALL (SELECT to_jsonb(n) FROM card_assignment_notifications n EXCEPT SELECT envelope FROM notification_before_move))
+ THEN RAISE EXCEPTION 'Movement changed historical notifications'; END IF;
+END $$;
+INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at) VALUES
+ ('06600000-0000-0000-0000-000000000031','03000000-0000-0000-0000-000000000001',
+  '03000000-0000-0000-0000-000000000012','06600000-0000-0000-0000-000000000021',
+  'Unrelated Card','600000000000000000000000000000',now(),now());
+SET LOCAL ROLE strataai_member_storage_ci;
+SELECT set_config('app.tenant_id','03000000-0000-0000-0000-000000000001',true);
+DO $$ BEGIN
+ IF (SELECT count(*) FROM card_assignment_notifications)<>1 THEN RAISE EXCEPTION 'Movement widened historical tenant reads'; END IF;
+ BEGIN
+  UPDATE card_assignment_notifications SET card_id='06600000-0000-0000-0000-000000000031';
+  RAISE EXCEPTION 'Historical source rebound to unrelated same-tenant Card';
+ EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ UPDATE card_assignment_notifications SET read_at=GREATEST(created_at,clock_timestamp());
+ IF EXISTS(SELECT FROM card_assignment_notifications WHERE read_at IS NULL
+    OR board_id<>'03000000-0000-0000-0000-000000000011'
+    OR card_id<>'03000000-0000-0000-0000-000000000031')
+ THEN RAISE EXCEPTION 'Historical read acknowledgement changed source or failed'; END IF;
+END $$;
+RESET ROLE;
 ROLLBACK;
 \echo 'Card member and assignment notification storage: forced RLS, composite references, event-recipient uniqueness, self suppression, revision/read-time constraints and retained attribution passed.'

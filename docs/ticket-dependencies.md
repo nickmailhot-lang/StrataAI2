@@ -333,3 +333,17 @@ reports first-page p95 34.345 ms and real serial comment-command p95 57.554 ms a
 read/retry state and refused stale cursor. Conditions and limits are documented
 in docs/architecture/comment-capacity.md. Native/runtime completion and actual
 cross-Board movement remain outstanding; PRD-15 stays open, about 40% remaining.
+
+### Cross-Board historical notification integrity (2026-10-04)
+
+PRD-08 movement requires the historical notification storage dependency in
+migration 066. Notifications now keep original source Board/event attribution
+while referencing the stable same-tenant Card, plus an exact source-event/Card
+identity constraint. Populated repeat-upgrade and restricted raw storage movement
+cases preserve complete envelopes and reject unrelated same-tenant subject
+rebinding. Runtime schema and missing-migration/restore evidence require 66
+migrations; synthetic runner fixtures advance to 067–069. Compilation and Bash
+syntax pass locally; actual new SQL/upgrade/runtime evidence awaits Linux CI.
+The full command, Board-scoped references, notification projection and native
+consumer acceptance remain required; docs/architecture/cross-board-card-movement.md
+records this dependency without claiming the API movement feature complete.

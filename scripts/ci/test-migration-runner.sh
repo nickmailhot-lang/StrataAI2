@@ -374,37 +374,51 @@ cp db/migrations/065_activity_history_indexes.sql "$scratch/migrations/"
 run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 65
-cat > "$scratch/migrations/066_serialization_fixture.sql" <<'SQL'
+# A populated notification upgrade retains its complete historical envelope.
+query "INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+ VALUES('02100000-0000-0000-0000-000000000011','06600000-0000-0000-0000-000000000091',
+ '02500000-0000-0000-0000-000000000001',3,'02100000-0000-0000-0000-000000000010',
+ 'REMINDER_FIRED','Card','04200000-0000-0000-0000-000000000002',1,'notification-upgrade',now());
+ INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,event_id,recipient_id,actor_id,card_version,created_at,notification_type)
+ SELECT tenant_id,'06600000-0000-0000-0000-000000000092',board_id,entity_id,event_id,actor_id,actor_id,entity_version,created_at,'REMINDER_FIRED'
+ FROM work_events WHERE event_id='06600000-0000-0000-0000-000000000091';" >/dev/null
+notification_before=$(query "SELECT to_jsonb(n) FROM card_assignment_notifications n WHERE id='06600000-0000-0000-0000-000000000092'")
+cp db/migrations/066_notification_historical_card.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 66
+test "$(query "SELECT to_jsonb(n) FROM card_assignment_notifications n WHERE id='06600000-0000-0000-0000-000000000092'")" = "$notification_before"
+cat > "$scratch/migrations/067_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('066_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('067_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='066_serialization_fixture'")" = 1
-cat > "$scratch/migrations/067_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='067_serialization_fixture'")" = 1
+cat > "$scratch/migrations/068_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('067_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('068_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='067_failure_fixture'")" = 0
-rm "$scratch/migrations/067_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='068_failure_fixture'")" = 0
+rm "$scratch/migrations/068_failure_fixture.sql"
 run
-cat > "$scratch/migrations/068_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/069_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='068_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/068_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='069_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/069_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'
