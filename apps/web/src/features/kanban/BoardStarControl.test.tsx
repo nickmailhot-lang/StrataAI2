@@ -5,7 +5,8 @@ const org = '11111111-1111-1111-1111-111111111111', board = '22222222-2222-2222-
 const user = '33333333-3333-3333-3333-333333333333', other = '44444444-4444-4444-4444-444444444444';
 const profile = { id: user, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
 const props = { organizationId: org, boardId: board, admitted: true, disabled: false };
-const state = { organizationId: org, boardId: board, userId: user, starred: false };
+const state = { organizationId: org, boardId: board, userId: user, starred: false, version: 0, createdAt: null, updatedAt: null };
+const retained = { ...state, version: 1, createdAt: '2026-10-04T12:00:00Z', updatedAt: '2026-10-04T12:00:00Z' };
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 async function open() {
@@ -29,7 +30,7 @@ it('retains the original operation and key through an unknown result and a newer
   const fetch = vi.fn(async (path: string, options?: RequestInit) => {
     if (path === '/me') return response(profile);
     if (options?.method === 'PUT') { if (++writes === 1) throw new Error('Private response diagnostic'); return new Response(null, { status: 204 }); }
-    return response({ ...state, starred: writes > 0 });
+    return response(writes > 0 ? { ...retained, starred: true } : state);
   });
   vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open();
   fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
@@ -79,7 +80,7 @@ it('aborts a pending change on access withdrawal and ignores a late acknowledgme
 });
 it('re-admits current preference on reconnect and removes listeners when closed', async () => {
   let starred = false;
-  const fetch = vi.fn(async (path: string) => path === '/me' ? response(profile) : response({ ...state, starred }));
+  const fetch = vi.fn(async (path: string) => path === '/me' ? response(profile) : response(starred ? { ...retained, starred } : state));
   vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open(); starred = true;
   fireEvent(window, new Event('online')); await screen.findByText('You have starred this Board.');
   fireEvent.click(screen.getByRole('button', { name: 'Done' }));
@@ -171,4 +172,24 @@ it.each([409, 403])('reports a known failure without retry intent or response te
   if (status === 409) expect(events).toContainEqual(expect.objectContaining({ action: 'board_star_change', kind: 'conflict' }));
   expect(screen.queryByRole('button', { name: 'Retry same star change' })).not.toBeInTheDocument();
   expect(reports.join('')).not.toContain('private server details');
+});
+it.each([
+  { ...state, starred: true },
+  { ...state, version: -1 },
+  { ...retained, version: 1.5 },
+  { ...retained, updatedAt: null },
+  { ...retained, updatedAt: 'private diagnostic' },
+  { ...retained, createdAt: '2026-10-04T13:00:00Z' },
+])('withholds invalid preference revision/clock combinations %#', async invalid => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : invalid)));
+  render(<BoardStarControl {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Board starring' }));
+  await screen.findByText('Unable to check your current star. Try again.');
+  expect(screen.queryByRole('button', { name: 'Star Board' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Unstar Board' })).not.toBeInTheDocument();
+  expect(screen.queryByText('private diagnostic')).not.toBeInTheDocument();
+});
+it('admits a retained historical preference with an explicitly unknown creation clock', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : { ...retained, createdAt: null })));
+  render(<BoardStarControl {...props} />); await open();
+  expect(screen.getByRole('button', { name: 'Star Board' })).toBeEnabled();
 });

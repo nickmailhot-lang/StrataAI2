@@ -1,18 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
-import { isNotificationProfile } from '../notifications/notificationInbox';
+import { isNotificationProfile, notificationInstant } from '../notifications/notificationInbox';
 import { activityEvent, activityResult } from './activityTelemetry';
 
 type Props = { organizationId: string; boardId: string; admitted: boolean; disabled: boolean };
-type Preference = { organizationId: string; boardId: string; userId: string; starred: boolean };
+type Preference = { organizationId: string; boardId: string; userId: string; starred: boolean;
+  createdAt: string | null; updatedAt: string | null; version: number };
 type Intent = { userId: string; starred: boolean; key: string };
 class ChangedStarAccount extends Error {}
 function preference(value: unknown, scope: Props, actor: string): Preference {
   const p = value as Preference | null;
-  if (!p || Object.keys(p).sort().join(',') !== 'boardId,organizationId,starred,userId'
+  if (!p || Object.keys(p).sort().join(',') !== 'boardId,createdAt,organizationId,starred,updatedAt,userId,version'
     || p.organizationId !== scope.organizationId || p.boardId !== scope.boardId || p.userId !== actor
-    || typeof p.starred !== 'boolean') throw new Error('Invalid personal preference');
+    || typeof p.starred !== 'boolean' || !Number.isSafeInteger(p.version) || p.version < 0) throw new Error('Invalid personal preference');
+  if (p.version === 0) {
+    if (p.starred || p.createdAt !== null || p.updatedAt !== null) throw new Error('Invalid absent preference');
+  } else {
+    const updated = notificationInstant(p.updatedAt);
+    if (p.createdAt !== null && notificationInstant(p.createdAt).ticks > updated.ticks) throw new Error('Invalid preference clocks');
+  }
   return p;
 }
 export function BoardStarControl(props: Props) {

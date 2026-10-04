@@ -684,7 +684,7 @@ internal sealed partial class PostgresWorkManagementStore(
             INSERT INTO user_board_preferences(tenant_id,board_id,user_id,starred,created_at,updated_at,version)
             VALUES(@tenant_id,@board_id,@user_id,@starred,@updated_at,@updated_at,1)
             ON CONFLICT (board_id,user_id) DO UPDATE SET
-                starred=EXCLUDED.starred, updated_at=EXCLUDED.updated_at,
+                starred=EXCLUDED.starred, updated_at=GREATEST(user_board_preferences.updated_at,EXCLUDED.updated_at),
                 version=user_board_preferences.version+1
             WHERE user_board_preferences.starred IS DISTINCT FROM EXCLUDED.starred;
             """, session.Connection, session.Transaction);

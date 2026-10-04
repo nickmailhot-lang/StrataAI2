@@ -115,7 +115,7 @@ public interface IWorkManagementStore
         DateTimeOffset updatedAt,
         CancellationToken cancellationToken = default, Guid? actorUserId = null);
 
-    Task<bool> GetStarAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default);
+    Task<BoardStarState> GetStarAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default);
 
     Task SetStarAsync(
         Guid boardId,

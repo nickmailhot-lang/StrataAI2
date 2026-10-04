@@ -300,7 +300,8 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             if (!_starred.TryGetValue(key, out var current))
                 _starred[key] = new(starred, updatedAt, updatedAt, 1);
             else if (current.Starred != starred)
-                _starred[key] = current with { Starred = starred, UpdatedAt = updatedAt, Version = checked(current.Version + 1) };
+                _starred[key] = current with { Starred = starred, UpdatedAt = updatedAt > current.UpdatedAt ? updatedAt : current.UpdatedAt,
+                    Version = checked(current.Version + 1) };
         }
 
         return Task.CompletedTask;

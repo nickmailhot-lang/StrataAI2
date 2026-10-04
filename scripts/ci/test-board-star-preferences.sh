@@ -25,7 +25,7 @@ request() {
 preference() {
   test "$(request "$1" GET "/boards/$board/star" "$(uuid)" '')" = 200
   jq -e --arg org "$organization" --arg board "$board" --arg user "$2" --argjson starred "$3" '
-    (keys == ["boardId","organizationId","starred","userId"]) and
+    (keys == ["boardId","createdAt","organizationId","starred","updatedAt","userId","version"]) and
     .organizationId == $org and .boardId == $board and .userId == $user and .starred == $starred
   ' "$scratch/response" >/dev/null
   tr -d '\r' < "$scratch/headers" | grep -Ei '^cache-control:.*private' >/dev/null

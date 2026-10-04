@@ -2,7 +2,9 @@ using StrataAI.Application.Organizations;
 
 namespace StrataAI.Application.WorkManagement;
 
-public sealed record BoardStarPreference(Guid OrganizationId, Guid BoardId, Guid UserId, bool Starred);
+public sealed record BoardStarState(bool Starred, DateTimeOffset? CreatedAt, DateTimeOffset? UpdatedAt, long Version);
+public sealed record BoardStarPreference(Guid OrganizationId, Guid BoardId, Guid UserId, bool Starred,
+    DateTimeOffset? CreatedAt, DateTimeOffset? UpdatedAt, long Version);
 
 public sealed partial class WorkManagementService
 {
@@ -12,8 +14,9 @@ public sealed partial class WorkManagementService
         if (scope is null || !scope.Value.Access.CanView ||
             await organizationStore.FindOrganizationAsync(scope.Value.Board.OrganizationId, cancellationToken) is not { Status: OrganizationStatus.Active })
             return WorkOperation<BoardStarPreference>.Failure("board_not_found");
+        var preference = await store.GetStarAsync(boardId, actorId, cancellationToken);
         return WorkOperation<BoardStarPreference>.Success(new(scope.Value.Board.OrganizationId, boardId, actorId,
-            await store.GetStarAsync(boardId, actorId, cancellationToken)));
+            preference.Starred, preference.CreatedAt, preference.UpdatedAt, preference.Version));
     }
 }
 
