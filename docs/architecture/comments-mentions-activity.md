@@ -875,3 +875,47 @@ immutable image build in run 37171932768; security/container stages are live.
 No mention notification, complete release/native pass or ticket closure is
 claimed. Current-target locking, atomic notification effects, mass-mention
 policy and native teammate controls remain necessary before full acceptance.
+
+## Current recipient publication revalidation
+
+The internal mention-member port now has a separate producer-only lock operation
+bounded to 20 exact current username targets. PostgreSQL takes share row locks
+on the selected account, current handle, Board membership and Organization
+membership, with the same active-account/membership/verified-email policy and
+forced tenant joins. Locks stay in the owning mutation transaction. Competing
+updates must wait or fail; a rename/removal that wins before selection produces
+fresh eligibility, not an obsolete metadata promise. This does not establish
+caller/session/Card authorization or mass mention permission.
+
+The plan retains an immutable copy of reviewed user IDs, current handles and
+handle revisions. Revalidation requires the exact eligible identity/handle/
+revision set after locking; a missing/removed account or changed handle yields
+mention_targets_changed, including rename-away/reclaim of the same spelling.
+Display-name changes do not grant recipient authority. Producer callers must
+perform initial/final Card/actor admission, retain snapshots and publish all
+notification/event effects atomically. Unknown handles remain literal rather
+than selecting arbitrary global accounts.
+
+Demo rechecks current eligibility under its owning Work gate; global identity
+commands do not share that gate, so this slice does not claim PostgreSQL row-lock
+semantics for Demo. Its fixture covers fresh validation, rename refusal,
+rename/reclaim revision refusal and fresh explicit review. The actual restricted
+PostgreSQL C# contract now validates the plan, opens independent administrative
+transactions and verifies lock_timeout refusal for account, handle and both
+membership updates while the owning scope holds its locks; it then renames a
+recipient and requires original plan refusal. Full local warning-as-error
+compilation passes; new Linux lock/revalidation execution remains pending.
+
+Snapshot adapter commit 610f68b now passes source gates, immutable image build
+and security in run 37172378145. Its actual restricted C# snapshot contract passed
+owning/exact retry, real FK rollback, comment/snapshot rollback, retained prior
+identity, empty current revision and tenant/Card isolation. Later container/
+native release acceptance remains live. No full requirement or ticket is closed.
+
+The authoritative PRD-15 and PRD-17 issues were reread before integration.
+MENTION_CREATED must be a real relevant domain event; simply relabeling the
+existing COMMENT event notification is not complete event coverage. Mention
+notifications remain in-app; external email/push is outside PRD-17 scope.
+Mass mention rate control/fanout and its recipient history need separate full
+implementation beyond the direct username window; the 20-username bound cannot
+be used as proof of arbitrary Board mass mention support.

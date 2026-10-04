@@ -93,6 +93,37 @@ internal static class CardMentionMemberStoreContract
             Require(excess.ErrorCode == "invalid_comment_mentions", "Unbounded resolved comment recipients were admitted.");
             await Scope(tenant, async () =>
             {
+                Require((await planning.RevalidateAsync(tenant, board, planned.Value!, ct)).Succeeded, "Current mention target revalidation failed.");
+                foreach (var statement in new[] {
+                    "UPDATE users SET display_name=display_name WHERE id=@user",
+                    "UPDATE user_mention_handles SET version=version WHERE user_id=@user",
+                    "UPDATE organization_members SET status=status WHERE tenant_id=@tenant AND user_id=@user",
+                    "UPDATE board_members SET status=status WHERE tenant_id=@tenant AND board_id=@board AND user_id=@user" })
+                {
+                    await using var competitor = new NpgsqlConnection(admin.ConnectionString); await competitor.OpenAsync(ct);
+                    await using var competingTransaction = await competitor.BeginTransactionAsync(ct);
+                    await using var configure = new NpgsqlCommand("SET LOCAL lock_timeout='250ms'; SELECT set_config('app.identity_subject',@subject,true);", competitor, competingTransaction);
+                    configure.Parameters.AddWithValue("subject", users[0].ToString()); await configure.ExecuteNonQueryAsync(ct);
+                    await using var mutation = new NpgsqlCommand(statement, competitor, competingTransaction) { CommandTimeout = 5 };
+                    mutation.Parameters.AddWithValue("user", users[0]); mutation.Parameters.AddWithValue("tenant", tenant); mutation.Parameters.AddWithValue("board", board);
+                    try { await mutation.ExecuteNonQueryAsync(ct); throw new InvalidOperationException("Current recipient lock did not retain account/handle/membership eligibility."); }
+                    catch (PostgresException e) when (e.SqlState == "55P03") { }
+                    await competingTransaction.RollbackAsync(ct);
+                }
+                return true;
+            });
+            await using (var rename = new NpgsqlCommand("""
+                SELECT set_config('app.identity_subject',@subject,false);
+                UPDATE user_mention_handles SET handle=@handle,version=version+1,updated_at=clock_timestamp() WHERE user_id=@user;
+                """, admin))
+            {
+                rename.Parameters.AddWithValue("subject", users[2].ToString()); rename.Parameters.AddWithValue("user", users[2]);
+                rename.Parameters.AddWithValue("handle", prefix + "renamed"); await rename.ExecuteNonQueryAsync(ct);
+            }
+            Require((await Scope(tenant, () => planning.RevalidateAsync(tenant, board, planned.Value!, ct))).ErrorCode == "mention_targets_changed",
+                "Retired recipient handle still authorized original plan.");
+            await Scope(tenant, async () =>
+            {
                 foreach (var invalid in new[] { "@member", "nïck", "1name", new string('x', 41) })
                 {
                     try { await store.SearchAsync(tenant, board, invalid, null, true, ct); throw new InvalidOperationException("Invalid prefix accepted."); }

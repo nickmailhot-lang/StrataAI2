@@ -11,6 +11,10 @@ public interface ICardMentionMemberStore
         bool requireVerifiedEmail, CancellationToken ct = default);
     Task<IReadOnlyList<CardMentionMember>> ResolveAsync(Guid organization, Guid board, IReadOnlyList<string> handles,
         bool requireVerifiedEmail, CancellationToken ct = default);
+    // Producer-only current target locking, bounded to the direct username
+    // recipient window. This does not establish caller/Card admission.
+    Task<IReadOnlyList<CardMentionMember>> LockRecipientsAsync(Guid organization, Guid board, IReadOnlyList<string> handles,
+        bool requireVerifiedEmail, CancellationToken ct = default);
 }
 public static class CardMentionLookup
 {

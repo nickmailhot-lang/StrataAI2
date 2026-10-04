@@ -93,6 +93,15 @@ public sealed class CardMentionMemberStoreTests
         Assert.Equal(new[] { users[0], users[4], users[5] }.Order(), planned.Value.Recipients.Current);
         Assert.Equal(users[5], Assert.Single(planned.Value.Recipients.Added));
         Assert.True(planned.Value.HasCardMention); Assert.True(planned.Value.HasBoardMention);
+        Assert.True((await Scoped(org, () => planning.RevalidateAsync(org, board.Id, planned.Value, ct))).Succeeded);
+        Assert.True((await identityUnit.ExecuteAsync(users[5], () => handles.ClaimAsync(users[5], "changed_member", 2, at.AddSeconds(4), ct), ct)).Succeeded);
+        Assert.Equal("mention_targets_changed", (await Scoped(org, () => planning.RevalidateAsync(org, board.Id, planned.Value, ct))).ErrorCode);
+        Assert.True((await identityUnit.ExecuteAsync(users[5], () => handles.ClaimAsync(users[5], "member_05", 3, at.AddSeconds(5), ct), ct)).Succeeded);
+        // Same handle after rename/reclaim has another revision; the old plan
+        // cannot silently stand in for fresh recipient review.
+        Assert.Equal("mention_targets_changed", (await Scoped(org, () => planning.RevalidateAsync(org, board.Id, planned.Value, ct))).ErrorCode);
+        var fresh = await Scoped(org, () => planning.ResolveAsync(org, board.Id, users[0], "@member_05", [], ct));
+        Assert.True((await Scoped(org, () => planning.RevalidateAsync(org, board.Id, fresh.Value!, ct))).Succeeded);
         Assert.Equal(planned.Value.Content.Trim(), planned.Value.Content);
         var excess = string.Join(' ', Enumerable.Range(4, 21).Select(i => $"@member_{i:D2}"));
         Assert.Equal("invalid_comment_mentions", (await Scoped(org, () => planning.ResolveAsync(org, board.Id, users[0], excess, [], ct))).ErrorCode);

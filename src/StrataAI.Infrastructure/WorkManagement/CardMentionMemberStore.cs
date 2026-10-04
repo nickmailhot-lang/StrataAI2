@@ -27,7 +27,7 @@ internal sealed class PostgresCardMentionMemberStore(PostgresConnectionFactory c
             : Read(organization, board, "", null, targets, requireVerifiedEmail, ct);
     }
     private async Task<IReadOnlyList<CardMentionMember>> Read(Guid organization, Guid board, string prefix, string? after,
-        string[]? handles, bool verified, CancellationToken ct)
+        string[]? handles, bool verified, CancellationToken ct, bool locking = false)
     {
         await using var session = await connections.OpenTenantSessionAsync(organization, ct);
         await using var query = new NpgsqlCommand("""
@@ -41,8 +41,8 @@ internal sealed class PostgresCardMentionMemberStore(PostgresConnectionFactory c
               AND h.handle>=@prefix AND h.handle<(@prefix||'{') COLLATE "C"
               AND (@after IS NULL OR h.handle>@after)
               AND (@handles IS NULL OR h.handle=ANY(@handles))
-            ORDER BY h.handle COLLATE "C" LIMIT @limit;
-            """, session.Connection, session.Transaction);
+            ORDER BY h.handle COLLATE "C" LIMIT @limit
+            """ + (locking ? " FOR SHARE OF m,o,u,h;" : ";"), session.Connection, session.Transaction);
         query.Parameters.AddWithValue("organization", organization); query.Parameters.AddWithValue("board", board);
         query.Parameters.AddWithValue("prefix", prefix); query.Parameters.AddWithValue("verified", verified);
         query.Parameters.AddWithValue("after", NpgsqlDbType.Text, (object?)after ?? DBNull.Value);
@@ -51,6 +51,14 @@ internal sealed class PostgresCardMentionMemberStore(PostgresConnectionFactory c
         var result = new List<CardMentionMember>(); await using var rows = await query.ExecuteReaderAsync(ct);
         while (await rows.ReadAsync(ct)) result.Add(new(rows.GetGuid(0), rows.GetString(1), rows.GetString(2), rows.GetInt64(3)));
         return result;
+    }
+    public Task<IReadOnlyList<CardMentionMember>> LockRecipientsAsync(Guid organization, Guid board, IReadOnlyList<string> handles,
+        bool requireVerifiedEmail, CancellationToken ct = default)
+    {
+        RequireScope(organization); var targets = CardMentionLookup.Targets(handles); ct.ThrowIfCancellationRequested();
+        if (targets.Length > StrataAI.Domain.WorkManagement.CommentMentionText.MaximumUserRecipients) throw new ArgumentException("Mention target lock window is invalid.");
+        return targets.Length == 0 ? Task.FromResult<IReadOnlyList<CardMentionMember>>([])
+            : Read(organization, board, "", null, targets, requireVerifiedEmail, ct, true);
     }
 }
 
@@ -99,5 +107,14 @@ internal sealed class InMemoryCardMentionMemberStore(IWorkManagementStore work, 
         RequireScope(organization); var targets = CardMentionLookup.Targets(requested).ToHashSet(StringComparer.Ordinal);
         if (targets.Count == 0) return [];
         return await Eligible(organization, board, requireVerifiedEmail, row => targets.Contains(row.Handle), targets.Count, ct);
+    }
+    public Task<IReadOnlyList<CardMentionMember>> LockRecipientsAsync(Guid organization, Guid board, IReadOnlyList<string> requested,
+        bool requireVerifiedEmail, CancellationToken ct = default)
+    {
+        RequireScope(organization); var targets = CardMentionLookup.Targets(requested); ct.ThrowIfCancellationRequested();
+        if (targets.Length > StrataAI.Domain.WorkManagement.CommentMentionText.MaximumUserRecipients) throw new ArgumentException("Mention target lock window is invalid.");
+        // Demo rechecks actual eligibility under its owning Work gate. Global
+        // identity units do not share this gate; no Production row-lock claim.
+        return ResolveAsync(organization, board, targets, requireVerifiedEmail, ct);
     }
 }
