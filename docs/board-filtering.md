@@ -97,6 +97,14 @@ The independent mutation writer is APIRequestContext, not a second browser
 editor. Both cases are discovered locally; actual exact-image execution remains
 pending. Discovery does not prove keyboard, accessibility or live recovery.
 
+The mandatory restricted persistence executable now also invokes the search
+content contract: 52 matching Cards plus an earlier nonmatching Card, literal
+description/label/member criteria before the 51-row lookahead, 50+2 UUID seek,
+ANY/ALL, removed assignee membership, deleted label, archived List scope and
+rejection outside the owning transaction. Seed and cleanup use trusted fixture
+IDs; actor admission is synthetic/null and does not prove HTTP authorization.
+Compilation passed; real PostgreSQL execution remains pending.
+
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and

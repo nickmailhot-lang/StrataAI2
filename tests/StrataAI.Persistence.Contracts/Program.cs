@@ -76,6 +76,7 @@ try
 {
     await Seed(organization,user,board,list,card); await Seed(foreignOrganization,foreignUser,foreignBoard,foreignList,foreignCard);
     await SearchTraversalStoreContract.RunAsync(admin,apiConnection,organization,user,ct);
+    await SearchContentStoreContract.RunAsync(admin,provider,organization,board,user,ct);
     var value = Intent(); var prepared = await InScope(organization,() => store.PrepareUploadAsync(value,ct));
     Require(prepared is { Version:1, State:AttachmentUploadState.Prepared },"Prepared upload persistence shape failed.");
     Require(await InScope(organization,() => store.PrepareUploadAsync(Intent(value.RetryKey),ct)) is null,"Upload retry was duplicated.");
