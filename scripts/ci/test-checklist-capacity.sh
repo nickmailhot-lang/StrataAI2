@@ -87,6 +87,7 @@ jq -nc --arg revision "$revision" --argjson board "$board_seconds" --argjson arc
 mv "$scratch/capacity.json" artifacts/capacity/checklists.json
 bash scripts/ci/test-search-capacity.sh "$org" "$board" "$scratch/cookies"
 bash scripts/ci/test-activity-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
+bash scripts/ci/test-notification-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 bash scripts/ci/test-comment-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 bash scripts/ci/test-card-move-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 bash scripts/ci/test-card-copy-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
