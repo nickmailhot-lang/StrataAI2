@@ -112,7 +112,10 @@ function CommentsControl(props: CardCommentsProps) {
       const acknowledged = await boundedWorkRead(async signal => {
         const profile = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(profile) || profile.id.toLowerCase() !== captured.actor.toLowerCase()) throw new WorkRequestError(401, null);
-        if (callbacks.current.unavailable || !originalRetry && (callbacks.current.version !== captured.check.cardVersion || !callbacks.current.editable)) throw new WorkRequestError(409, null);
+        // Admission may be refreshing while an original receipt is being
+        // recovered. A local read gap does not establish a rejected command.
+        if (callbacks.current.unavailable) throw new WorkRequestError(originalRetry ? 503 : 409, null);
+        if (!originalRetry && (callbacks.current.version !== captured.check.cardVersion || !callbacks.current.editable)) throw new WorkRequestError(409, null);
         const result = await workRequest<unknown>(captured.path, { method: captured.method, signal, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': captured.key }, body: captured.body });
         const admitted = parseCardCommentChange(result, props, captured.check);
         const current = await workRequest<unknown>('/me', { signal });

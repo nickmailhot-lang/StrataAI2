@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { trackBoardReads } from './boardReadTracker';
+import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 
 // Real comment commands/storage. Only the first already-committed HTTP reply
 // is replaced with 503 to exercise recovery; command bodies and receipts are
@@ -33,6 +33,7 @@ for (const width of [1280, 390]) {
       const peerPage = await peer.newPage(); restoreWorker = scopedBoardWorker(org);
       await waitForBoardDelivery(context.request, board);
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`; const reads = trackBoardReads(page, board, cardPath);
+      const cardVersion = trackCardVersion(page, board, card, cardPath);
       await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       const peerReads = trackBoardReads(peerPage, board, cardPath); await peerPage.goto(cardPath); await expect.poll(peerReads).toBeGreaterThanOrEqual(2);
       const peerReview = peerPage.getByRole('button', { name: 'Review Card comments', exact: true });
@@ -47,7 +48,8 @@ for (const width of [1280, 390]) {
       await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
       for (const name of ['Add checklist', 'Save card', 'Add link attachment', 'Manage attachments', 'Review Card cover', 'Close'])
         await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
-      await retry.press('Enter'); await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
+      await expect.poll(cardVersion).toBe(2);
+      await expect(retry).toBeEnabled(); await retry.press('Enter'); await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
       await expect(peerPage.getByText('Literal <script>🙂', { exact: true })).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
       expect(JSON.parse(writes[0].body!)).toEqual({ content: 'Literal <script>🙂', cardVersion: 1 });

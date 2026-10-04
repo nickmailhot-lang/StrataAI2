@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { trackBoardReads } from './boardReadTracker';
+import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 
 // Real account invitations, explicit Board membership and Card assignment.
 // Only an actual committed first response is replaced to exercise recovery.
@@ -38,9 +38,15 @@ for (const width of [1280, 390]) {
         { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: {} })).status()).toBe(200);
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`;
+      const cardVersion = trackCardVersion(page, board, card, cardPath);
       const reads = trackBoardReads(page, board, cardPath); await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       const commentsPath = `/cards/${card}/comments`; const inboxPath = `/organizations/${org}/notifications`;
       async function draft(text: string) {
+        await waitForBoardDelivery(context.request, board);
+        const snapshot = await (await context.request.get(`/boards/${board}`)).json();
+        const current = snapshot.lists.flatMap((column: { cards: { id: string; version: number }[] }) => column.cards)
+          .find((row: { id: string }) => row.id === card);
+        expect(current).toBeDefined(); await expect.poll(cardVersion).toBe(current.version);
         const review = page.getByRole('button', { name: 'Review Card comments', exact: true });
         await expect(review).toBeEnabled(); await review.press('Enter');
         await page.getByRole('button', { name: 'Add comment', exact: true }).press('Enter');
