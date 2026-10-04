@@ -94,9 +94,13 @@ function FileControl(props: UrlAttachmentCreateProps) {
         }
         signal.throwIfAborted(); setIntent(command); posted = true; setPhase('Uploading file for a safety scan…');
         const encoded = btoa(Array.from(new TextEncoder().encode(command.name), byte => String.fromCharCode(byte)).join(''));
-        return workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/attachments`, { method: 'POST', signal, body: command.file,
+        const result = await workRequest<unknown>(`/cards/${encodeURIComponent(props.cardId)}/attachments`, { method: 'POST', signal, body: command.file,
           headers: { 'Content-Type': 'application/octet-stream', 'Idempotency-Key': command.key, 'X-Attachment-Name': encoded,
             'X-Attachment-Size': String(command.sizeBytes), 'X-Attachment-SHA256': command.digest, 'X-Card-Version': String(command.cardVersion) } });
+        const current = await boundedWorkRead(token => workRequest<unknown>('/me', { signal: token }), signal)
+          .catch(() => { throw new WorkRequestError(401, null); });
+        if (!isNotificationProfile(current) || current.id !== command.actor) throw new WorkRequestError(401, null);
+        return result;
       }, controller.signal);
       if (!mounted.current || pending.current !== controller || !command) return;
       parseFileAttachmentCreated(value, props, command.actor, command.name, command.sizeBytes, command.cardVersion);
@@ -105,7 +109,12 @@ function FileControl(props: UrlAttachmentCreateProps) {
       if (!mounted.current || pending.current !== controller) return;
       focusRequested.current = true;
       const terminal = error instanceof WorkRequestError && [400, 401, 403, 404, 409, 413].includes(error.status) && error.code !== 'attachment_upload_in_progress';
-      if (terminal) { setBlocked(true); setNotice('This file upload is unavailable. Your selected file is preserved. Load the current Card before reviewing another change.'); }
+      if (terminal) {
+        const denied = [401, 403, 404].includes(error.status);
+        if (denied) { setDraft(undefined); setIntent(undefined); }
+        setBlocked(true); setNotice(denied ? 'This file upload is unavailable. Load the current Card before reviewing another change.'
+          : 'This file upload is unavailable. Your selected file is preserved. Load the current Card before reviewing another change.');
+      }
       else if (posted || intent) { setIntent(command); setNotice('The file upload is unconfirmed. Retry the original file to recover its acknowledgment.'); }
       else setNotice('File preparation stopped. Your selected file is preserved.');
       if (posted || terminal || intent) props.onRefresh();

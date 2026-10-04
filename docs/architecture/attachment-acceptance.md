@@ -776,3 +776,12 @@ fixtures, exact original selection receipt recovery, independent Board archival
 and unchanged Card/File/command effects, then restores the fixture route. It
 does not claim HTTP actor/movement proof for the published image. Full solution
 compilation passes with zero warnings/errors; actual Linux execution is pending.
+
+File upload acknowledgement disclosure is now fenced by a post-response current
+account check. Changed/unavailable account admission or terminal access denial
+purges the retained File reference, private name and original retry intent.
+Validation/version refusals keep the selected file for fresh review; ambiguous
+provider replies retain the original actor/key/digest/bytes for admitted retry.
+All 18 focused upload component tests pass, including post-publication account
+change and both existing pre-write actor checks; typecheck and lint pass.
+Actual Linux/release execution is pending CI.

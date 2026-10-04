@@ -39,6 +39,18 @@ it('reviews current options and actor, manages keyboard focus and sends actual F
   await waitFor(() => expect(screen.getByRole('button', { name: 'Add file attachment' })).toHaveFocus());
   expect(p.onRefresh).toHaveBeenCalledOnce(); expect(p.onBusyChange).toHaveBeenLastCalledWith(false);
 });
+it('purges the retained file and original retry when the account changes after publication', async () => {
+  let profiles = 0;
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me'
+    ? (++profiles < 4 ? profile : { ...profile, id: id(99) }) : path.endsWith('/attachment-upload-options') ? options : ack());
+  render(<FileAttachmentCreateControl {...props()} />); await review();
+  fireEvent.click(screen.getByRole('button', { name: 'Upload selected file' }));
+  await screen.findByText('This file upload is unavailable. Load the current Card before reviewing another change.');
+  expect(writes()).toHaveLength(1); expect(screen.queryByLabelText('File to attach')).not.toBeInTheDocument();
+  expect(screen.queryByText(/Selected file:/)).not.toBeInTheDocument();
+  expect(screen.queryByText('File attached. Safety scan pending.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry original file upload' })).not.toBeInTheDocument();
+});
 it.each([new WorkRequestError(503, null), new WorkRequestError(409, null, 'attachment_upload_in_progress'), new WorkRequestError(429, null)])('preserves one original File/actor/hash/key/revision through unconfirmed response and a newer hidden snapshot (%j)', async failure => {
     let attempts = 0; respond(async () => { if (++attempts === 1) throw failure; return ack(); });
     const p = props(); const view = render(<FileAttachmentCreateControl {...p} />); const file = await review();
@@ -61,9 +73,9 @@ it.each([{ uploaderId: id(90) }, { sizeBytes: 10 }, { displayName: 'Changed' }, 
 it.each([2, 3])('refuses a different actor on profile read %s before emitting a file mutation', async changedRead => {
   let reads = 0; vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? ++reads === changedRead ? { ...profile, id: id(99) } : profile : options);
   const p = props(); render(<FileAttachmentCreateControl {...p} />); await review(); fireEvent.click(screen.getByRole('button', { name: 'Upload selected file' }));
-  await screen.findByText(/This file upload is unavailable/); expect(writes()).toHaveLength(0); expect(screen.getByLabelText('File to attach')).toBeDisabled();
+  await screen.findByText(/This file upload is unavailable/); expect(writes()).toHaveLength(0); expect(screen.queryByLabelText('File to attach')).not.toBeInTheDocument();
   await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true));
-  fireEvent.click(screen.getByRole('button', { name: 'Discard selected file and load latest' })); expect(screen.queryByLabelText('File to attach')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry original file upload' })).not.toBeInTheDocument();
 });
 it('refuses unscoped/private upload options without showing file selection or sending bytes', async () => {
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : { ...options, storageKey: 'private/key' });
