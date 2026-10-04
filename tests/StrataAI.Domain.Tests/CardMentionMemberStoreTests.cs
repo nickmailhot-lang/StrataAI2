@@ -1,0 +1,81 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using StrataAI.Application.Common;
+using StrataAI.Application.Identity;
+using StrataAI.Application.Organizations;
+using StrataAI.Application.Runtime;
+using StrataAI.Application.WorkManagement;
+using StrataAI.Infrastructure.Identity;
+using StrataAI.Infrastructure.Organizations;
+using StrataAI.Infrastructure.WorkManagement;
+using Xunit;
+
+namespace StrataAI.Domain.Tests;
+
+public sealed class CardMentionMemberStoreTests
+{
+    private sealed class Actor : ICommandActorAuthorization
+    { public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(true); }
+
+    [Fact]
+    public async Task PRD_15_CurrentBoardParticipantsSeekAcrossMembershipPagesWithoutGlobalAliasOrTenantDisclosure()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var services = new ServiceCollection(); var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
+        services.AddSingleton<IClock, SystemClock>(); services.AddSingleton<ICommandActorAuthorization, Actor>();
+        services.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
+        services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
+        using var provider = services.BuildServiceProvider();
+        var identity = provider.GetRequiredService<IIdentityStore>(); var orgs = provider.GetRequiredService<IOrganizationStore>();
+        var work = provider.GetRequiredService<IWorkManagementStore>(); var store = provider.GetRequiredService<ICardMentionMemberStore>();
+        var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>(); var identityUnit = provider.GetRequiredService<IIdentityUnitOfWork>();
+        var handles = provider.GetRequiredService<IUserMentionHandleStore>(); var at = DateTimeOffset.UtcNow;
+        var org = Guid.NewGuid(); var foreign = Guid.NewGuid(); var users = Enumerable.Range(0, 60).Select(_ => Guid.NewGuid()).ToArray();
+        for (var index = 0; index < users.Length; index++)
+        {
+            var id = users[index]; var email = $"{id:N}@example.test";
+            Assert.True(await identity.TryCreateUserAsync(new(id, email, email.ToUpperInvariant(), "Same name", null, "en", "UTC",
+                AccountStatus.Active, index != 59, "fixture", at, at, 1), null, null, ct));
+            Assert.True((await identityUnit.ExecuteAsync(id, () => handles.ClaimAsync(id, $"member_{index:D2}", 1, at.AddSeconds(1), ct), ct)).Succeeded);
+        }
+        await orgs.CreateOrganizationAsync(users[0], org, "Own", null, at, ct);
+        await orgs.CreateOrganizationAsync(users[0], foreign, "Foreign", null, at, ct);
+        var board = await work.CreateBoardAsync(org, users[0], Guid.NewGuid(), "Board", null, BoardVisibility.Private, "COLOR", null, at, ct);
+        var other = await work.CreateBoardAsync(foreign, users[0], Guid.NewGuid(), "Other", null, BoardVisibility.Private, "COLOR", null, at, ct);
+        for (var index = 1; index < users.Length; index++)
+        {
+            await orgs.AddOrRestoreMemberAsync(org, users[index], OrganizationRole.Member, at, ct);
+            await work.UpsertBoardMemberAsync(board.Id, users[index], BoardRole.Member, at, ct);
+        }
+        async Task<T> Scoped<T>(Guid tenant, Func<Task<T>> action)
+        {
+            // Synthetic fixture admission; actual adapter ownership, not HTTP authorization.
+            var result = await unit.ExecuteReadAsync(tenant, null, "fixture_denied", () => Task.FromResult(true),
+                async () => WorkOperation<T>.Success(await action()), ct);
+            Assert.True(result.Succeeded); return result.Value!;
+        }
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.SearchAsync(org, board.Id, "member_", null, true, ct));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.ResolveAsync(org, board.Id, ["member_00"], true, ct));
+        var all = new List<CardMentionMember>(); string? cursor = null;
+        do
+        {
+            var page = await Scoped(org, () => store.SearchAsync(org, board.Id, "member_", cursor, true, ct));
+            Assert.InRange(page.Count, 0, 21); all.AddRange(page.Take(20));
+            cursor = page.Count == 21 ? page[19].Handle : null;
+        } while (cursor is not null);
+        Assert.Equal(Enumerable.Range(0, 59).Select(i => $"member_{i:D2}"), all.Select(x => x.Handle));
+        Assert.Equal(59, all.Select(x => x.UserId).Distinct().Count()); Assert.All(all, x => Assert.Equal(2, x.HandleVersion));
+        Assert.Empty(await Scoped(org, () => store.ResolveAsync(org, other.Id, ["member_00"], true, ct)));
+        Assert.Empty(await Scoped(foreign, () => store.ResolveAsync(foreign, board.Id, ["member_00"], true, ct)));
+        Assert.Single(await Scoped(foreign, () => store.ResolveAsync(foreign, other.Id, ["member_00", "member_00"], true, ct)));
+        Assert.Empty(await Scoped(org, () => store.ResolveAsync(org, board.Id, ["member_59"], true, ct)));
+        Assert.Single(await Scoped(org, () => store.ResolveAsync(org, board.Id, ["member_59"], false, ct)));
+        Assert.True((await identityUnit.ExecuteAsync(users[0], () => handles.ClaimAsync(users[0], "renamed_member", 2, at.AddSeconds(2), ct), ct)).Succeeded);
+        Assert.Empty(await Scoped(org, () => store.ResolveAsync(org, board.Id, ["member_00", $"u_{users[0]:N}"], true, ct)));
+        Assert.Equal(3, Assert.Single(await Scoped(org, () => store.ResolveAsync(org, board.Id, ["renamed_member"], true, ct))).HandleVersion);
+        await work.RemoveBoardMemberAsync(board.Id, users[1], at.AddSeconds(3), ct);
+        await orgs.RemoveMemberAsync(org, users[2], at.AddSeconds(3), ct);
+        Assert.True(await identity.DeactivateUserAsync(users[3], at.AddSeconds(3), ct));
+        Assert.Empty(await Scoped(org, () => store.ResolveAsync(org, board.Id, ["member_01", "member_02", "member_03"], true, ct)));
+    }
+}

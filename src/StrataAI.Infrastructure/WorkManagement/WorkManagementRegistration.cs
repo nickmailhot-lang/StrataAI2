@@ -13,6 +13,7 @@ public static class WorkManagementRegistration
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<DemoWorkTransactionScope>();
+            services.AddSingleton<ICardMentionMemberStore, InMemoryCardMentionMemberStore>();
             services.AddSingleton<InMemoryWorkManagementStore>();
             services.AddSingleton<IWorkManagementStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
             services.AddSingleton<ICardCommentStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
@@ -34,6 +35,7 @@ public static class WorkManagementRegistration
         else
         {
             services.AddSingleton<IWorkManagementStore, PostgresWorkManagementStore>();
+            services.AddSingleton<ICardMentionMemberStore, PostgresCardMentionMemberStore>();
             services.AddSingleton<ICardCommentStore, PostgresCardCommentStore>();
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();
             services.AddSingleton<IWorkEventReader, PostgresWorkEventReader>();

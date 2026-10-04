@@ -39,7 +39,7 @@ bodies into public event or notification payloads.
 | COMMENT-FR-002 author/content/time/edited state | PostgreSQL/HTTP DTOs and bounded MUI parser retain canonical author/history, UTC revisions and redacted tombstones | Complete native rendering and historical-readable-author/lifecycle evidence |
 | COMMENT-FR-003 author edits | Author/current rights admission, dual revisions, body-free receipts, atomic audit/events and guarded UI edits implemented | Complete session/grant/parent changes under live waits, native reconciliation and performance evidence |
 | COMMENT-FR-004 author deletion | Confirmed author deletion persists a redacted tombstone; original former-body receipt is refused; MUI removal/retry guards implemented | Complete actual native confirmation/replay/lifecycle evidence and retention/purge policy |
-| COMMENT-FR-005 @username | Bounded plaintext tokens, globally unique reserved handle registry/storage, owning account command, protected HTTP and guarded MUI account dialog implemented; no comment recipient resolver/notification producer yet | Production session lifecycle under waits, native account UI, scoped teammate resolution/selection and safe mention UI |
+| COMMENT-FR-005 @username | Bounded plaintext tokens, current account handles and guarded account UI; owning Board-participant lookup adapters implemented; no comment recipient/notification producer yet | Native account UI, Application teammate admission/selection and atomic current-recipient publication |
 | COMMENT-FR-006 @card/@board | Bounded lexical declarations exist; actual mass-mention producer unimplemented | Explicit confirmation, current authorization, bounded fanout, durable rate limits and stable refusal without partial effects |
 | COMMENT-FR-007 mention notifications | Existing PRD-17 infrastructure; no comment mention producer | Atomic recipient intent, current eligibility/notification delivery, idempotent edits/replays, no protected body leakage |
 | COMMENT-FR-008 immutable activity | Existing Work events/audit; no complete activity projection | Every significant domain event, immutable interpreter/projection, complete lifecycle and replay coverage |
@@ -637,3 +637,39 @@ Corrected release run 37168895243 has now passed its actual PostgreSQL profile
 step, which invokes the complete corrected handle HTTP contract and post-
 deactivation protected-read denial. Its later runtime stages are still live;
 the new wait cases and native UI scenarios require their own new exact-image run.
+
+## Current Board participant handle metadata
+
+A separate read-only Work port searches literal canonical handle prefixes with
+20 results plus one lookahead and resolves at most 64 lexical targets. It
+requires an owning Organization transaction and joins current handles through
+active Board and Organization membership, active accounts and an explicit
+verified-email policy. Returned metadata contains only stable user ID, current
+handle and revision, and display name. Former reserved aliases never resolve.
+Ordinal seek anchors must belong to the searched prefix; underscore is literal,
+not a SQL wildcard. Duplicate exact targets collapse to one account.
+
+The global current-handle table is trusted runtime metadata, not a forced
+subject-RLS table. Account writes retain the owning identity lease and database
+subject/revision trigger. This Work projection uses existing forced tenant RLS
+membership joins; it adds no global HTTP lookup or database privilege. Caller
+session, Card context, current parent lifecycle and COMMENT participation need
+Application admission before and after this storage read. Recipient eligibility
+must also be freshly checked at atomic notification publication.
+
+Demo discovers eligible participants through the existing membership adapter
+and only then reads their current handles. It traverses membership pages while
+retaining at most 21 search rows or 64 exact targets. A real Demo adapter test
+covers 60 participants across pages, tenant/Board mismatch, explicit shared
+participation, current-only rename, email policy and removed/deactivated members.
+The new restricted PostgreSQL contract separately seeds 30 participants and
+checks prefix/seek ordering, current revisions, all eligibility filters, former
+alias exclusion, shared-user isolation and input/output bounds. Both fixtures
+use synthetic transaction admission and do not prove actual cookie authorization.
+
+Full local compilation passes with zero warnings/errors. Linux execution for
+this slice remains pending. On previous main 3aeabb2, source, restricted database,
+immutable image build and security gates pass in run 37169585086. Its exact-image
+identity transaction step has passed the actual session revocation/expiry and
+late-expiry handle wait fixtures; browser stages are still pending. No complete
+PRD requirement, native browser proof or release pass is credited here.
