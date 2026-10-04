@@ -8,6 +8,8 @@ Writes retain the existing actor/Organization/operation-scoped receipt contract.
 
 API source coverage checks minimal fields, cache headers, two-user isolation, same-key replay after a later preference change, changed-operation conflict, unchanged Board/child records, anonymous denial and current membership revocation. Runtime proof depends on rigorous CI.
 
+The exact-release CI fixture also exercises these properties against the restricted PostgreSQL API runtime, including the same receipt key in two actor namespaces and rejection of a previously successful receipt after Organization membership suspension. It leaves the stored Board grant and preference intact during revocation so fresh admission must deny both disclosure and replay. Shared Board/child records are compared before and after personal changes. This fixture is collected sequentially by the existing build-once container integration job; executed proof remains pending until that job passes.
+
 The personal star/unstar interface, account-bound retry/reconciliation, preference creation/revision metadata, realtime/event/audit/privacy policy, client telemetry and native/concurrent/performance acceptance remain unfinished. The existing writes do not yet emit the complete BOARD_STARRED producer contract; this read increment does not complete BOARD-FR-005 or PRD-04.
 
 The source API mutation requests include the required X-StrataAI-Request intent header. Recent Board background/archive source fixtures were corrected to include it as well; runtime CSRF protection is unchanged. Full solution compilation passes without warnings/errors. This does not substitute for executed API/PostgreSQL acceptance.

@@ -483,6 +483,9 @@ jobs:
       - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
         run: scripts/ci/test-board-discovery.sh
 
+      - name: Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime
+        run: bash scripts/ci/test-board-star-preferences.sh
+
       - name: Board administrator demotion continuity and atomic recovery
         run: scripts/ci/test-board-admin-continuity.sh
 
