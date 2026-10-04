@@ -117,3 +117,9 @@ nearest-rank p95 below 500ms. It also retains a failed budget measurement to aid
 repair. This is one serial client with no intentional network latency; it does
 not prove browser feedback, concurrent-client or cached-open budgets. New Linux
 execution is required before any measured performance claim.
+
+
+The mandatory exact-image command fixture also submits opposing A-to-B and
+B-to-A moves simultaneously on two distinct Cards. It requires both commands to
+commit with the correct routes/revisions, four Board events and two audits. This
+exercises canonical gate ordering with actual PostgreSQL; execution is pending.

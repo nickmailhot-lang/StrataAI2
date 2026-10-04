@@ -141,4 +141,28 @@ test "$(request other PATCH "/cards/$child_card/comments/$comment" '{"content":"
 get other "/boards/$source" | jq -e --arg board "$source" '.board.id==$board' >/dev/null
 test "$(state)" = "$before"
 
+# Opposing directions must acquire the same canonical pair of Board gates.
+# Two simultaneous real commands on distinct Cards must both commit, rather
+# than deadlock after each takes its own source first.
+test "$(request owner POST "/lists/$source_list/cards" '{"title":"Opposing source Card"}')" = 201
+opposing_source=$(jq -r '.id' "$scratch/response.json")
+test "$(request owner POST "/lists/$destination_list/cards" '{"title":"Opposing destination Card"}')" = 201
+opposing_destination=$(jq -r '.id' "$scratch/response.json")
+for id in "$opposing_source" "$opposing_destination"; do [[ "$id" =~ ^[0-9a-f-]{36}$ ]]; done
+jq -nc --arg source "$source" --arg list "$destination_list" '{sourceBoardId:$source,destinationListId:$list,expectedVersion:1}' > "$scratch/opposing-0.body"
+jq -nc --arg source "$destination" --arg list "$source_list" '{sourceBoardId:$source,destinationListId:$list,expectedVersion:1}' > "$scratch/opposing-1.body"
+parallel_move() {
+ local index=$1 card=$2
+ curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: $(uuid)" --data-binary "@$scratch/opposing-$index.body" -o "$scratch/opposing-$index.json" -w '%{http_code}' "$base/cards/$card/move" > "$scratch/opposing-$index.code"
+}
+parallel_move 0 "$opposing_source" & first_pid=$!
+parallel_move 1 "$opposing_destination" & second_pid=$!
+wait "$first_pid"; wait "$second_pid"
+test "$(cat "$scratch/opposing-0.code")" = 200; test "$(cat "$scratch/opposing-1.code")" = 200
+jq -e --arg card "$opposing_source" --arg board "$destination" --arg list "$destination_list" '.id==$card and .boardId==$board and .listId==$list and .version==2' "$scratch/opposing-0.json" >/dev/null
+jq -e --arg card "$opposing_destination" --arg board "$source" --arg list "$source_list" '.id==$card and .boardId==$board and .listId==$list and .version==2' "$scratch/opposing-1.json" >/dev/null
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id IN ('$opposing_source','$opposing_destination') AND event_type='CARD_MOVED';")" = 4
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id IN ('$opposing_source','$opposing_destination') AND event_type='CARD_MOVED';")" = 2
+
 echo 'Exact-image cross-Board movement: scoped references, atomic rollback, history, original retry and source revocation passed.'
