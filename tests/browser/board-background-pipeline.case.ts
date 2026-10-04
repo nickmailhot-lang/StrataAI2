@@ -30,6 +30,23 @@ for (const width of [1280, 390]) {
       data: { visibility: 'PUBLIC', version: before.version },
     });
     expect(publicVisibility.status()).toBe(200);
+    const candidates = await context.request.get(`/cards/${fixture.cardId}/cover/candidates`);
+    expect(candidates.status()).toBe(200);
+    const candidate = (await candidates.json()).items.find((item: { displayName: string }) => item.displayName === 'Private original.png');
+    expect(candidate).toBeTruthy();
+    // UI consent cannot be the security boundary: a direct client omitting
+    // consent must leave the actual public Board and its revision unchanged.
+    const deniedSelection = await context.request.post(`/boards/${board}/background/image`, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { cardId: fixture.cardId, attachmentId: candidate.attachmentId,
+        attachmentVersion: candidate.attachmentVersion, boardVersion: before.version + 1 },
+    });
+    expect(deniedSelection.status()).toBe(409);
+    expect(await deniedSelection.json()).toMatchObject({ code: 'background_public_confirmation_required' });
+    const unchanged = await context.request.get(`/boards/${board}`);
+    expect(unchanged.status()).toBe(200);
+    expect((await unchanged.json()).board).toMatchObject({ version: before.version + 1,
+      backgroundType: before.backgroundType, backgroundValue: before.backgroundValue });
     await waitForBoardDelivery(context.request, board);
     const cardPath = `/app/${org}/boards/${board}/cards/${fixture.cardId}`;
     const reads = trackBoardReads(page, board, cardPath);
