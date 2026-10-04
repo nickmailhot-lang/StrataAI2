@@ -63,6 +63,17 @@ the whole response. This is a sequence of authorized tenant reads, not an atomic
 cross-tenant snapshot; resumed pages always use current admission and data.
 The coordinator is registered, but GET /search and MUI integration remain.
 
+The authenticated API now exposes
+`GET /search?q=...&label=...&member=...&match=all|any&scope=active|archived&after=...`.
+Criteria are trimmed and capped at 160 characters each; names are literal
+case-insensitive substrings, not a query language. Defaults are empty criteria,
+ALL and active scope. The actor always comes from the current server session.
+Invalid criteria, scope, composition or cursor return `invalid_search` (400)
+after actor verification; unavailable sessions return 401. Responses use
+`private, no-store`. Clients must URL-encode the opaque continuation, keep the
+same criteria, and allow an empty continuation page until `nextCursor` is null.
+MUI integration and runtime/acceptance evidence remain outstanding.
+
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and

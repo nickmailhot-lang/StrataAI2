@@ -9,6 +9,7 @@ public static partial class WorkManagementEndpoints
     {
         MapLabelEndpoints(app);
         MapBoardCardFilterEndpoints(app);
+        MapGlobalSearchEndpoints(app);
         MapAssignableBoardMembersEndpoints(app);
         MapCardMemberEndpoints(app);
         MapNotificationEndpoints(app);
@@ -809,6 +810,7 @@ public static partial class WorkManagementEndpoints
             "invalid_label_color" => Problem(400, errorCode, "Choose a supported label color."),
             "invalid_label_cursor" => Problem(400, errorCode, "The label cursor must be a nonempty UUID."),
             "invalid_board_filter" => Problem(400, errorCode, "Use a keyword of at most 160 characters, up to 25 distinct label IDs, ANY or ALL, and a valid cursor."),
+            "invalid_search" => Problem(400, errorCode, "Use text criteria of at most 160 characters, ANY or ALL, active or archived scope, and this search's current cursor."),
             "invalid_board_member_cursor" => Problem(400, errorCode, "The member cursor must be a nonempty UUID."),
             "invalid_card_member_version" => Problem(400, errorCode, "Use the Card's current positive revision."),
             "label_not_found" => Problem(404, errorCode, "The label was not found."),
