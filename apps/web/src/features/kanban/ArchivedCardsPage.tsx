@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { activityEvent, activityResult } from './activityTelemetry';
 import { watchBoard, type LiveStatus } from '../../api/boardLive';
 import { validInvitationKey as uuid } from '../organizations/invitationIntent';
 
@@ -45,6 +46,8 @@ function Archive({ org, board }: { org: string; board: string }) {
   const [subscribed, setSubscribed] = useState(false); const [live, setLive] = useState<LiveStatus>('connecting'); const [retryRead, setRetryRead] = useState(false);
   const position = useRef<{ cursor: string | null; history: (string | null)[] }>({ cursor: null, history: [] });
   const read = useRef<AbortController | undefined>(undefined); const write = useRef<AbortController | undefined>(undefined);
+  const recovering = useRef(false);
+  const queuedKind = useRef<'use' | 'retry' | 'reconnect'>('use');
   const queued = useRef(false); const mounted = useRef(false); const refresh = useRef<HTMLButtonElement>(null); const focusRequested = useRef(false);
   const reviewingDeletion = useRef(false);
   const focusFrame = useRef<number | undefined>(undefined);
@@ -81,7 +84,8 @@ function Archive({ org, board }: { org: string; board: string }) {
     setPendingDeletionReview(undefined);
     queued.current = false; setRetryRead(false); setNotice(undefined); setError('Archived Card access is unavailable.');
   }
-  async function load(cursor: string | null, trail: (string | null)[]) {
+  async function load(cursor: string | null, trail: (string | null)[], kind: 'use' | 'retry' | 'reconnect' = 'use') {
+    const started = performance.now(); activityEvent('archive_card_read', kind);
     // Disabling a focused button can move browser focus to the document body.
     // Preserve that return target through queued realtime reads as well.
     if (document.activeElement === refresh.current) focusRequested.current = true;
@@ -90,7 +94,7 @@ function Archive({ org, board }: { org: string; board: string }) {
     try {
       const result = await request(`/boards/${encodeURIComponent(board)}/archived-cards${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`, {}, c);
       if (!mounted.current || read.current !== c || c.signal.aborted) return;
-      if ([401, 403, 404].includes(result.status)) { deny(); return; }
+      if ([401, 403, 404].includes(result.status)) { activityResult('archive_card_read', false, started); deny(); return; }
       const p = result.body as ArchivePage | undefined;
       if (result.status !== 200 || p?.organizationId !== org || p.boardId !== board || typeof p.canDelete !== 'boolean' || !Array.isArray(p.items) || p.items.length > 50
         || !p.items.every((e, i, rows) => validEntry(e, org, board) && e.card.id.toLowerCase() > (i ? rows[i - 1].card.id.toLowerCase() : cursor?.toLowerCase() ?? ''))
@@ -100,29 +104,37 @@ function Archive({ org, board }: { org: string; board: string }) {
         write.current?.abort(); write.current = undefined; setWriting(false); setIntent(undefined); setSelected(undefined);
         setConfirmed(false); setDeleting(false); setNotice('Permanent Card deletion is unavailable.');
       }
+      activityResult('archive_card_read', true, started);
       setPage(p); setReady(true); setSubscribed(true);
     } catch { if (mounted.current && read.current === c) {
+      activityEvent('archive_card_read', 'exception'); activityResult('archive_card_read', false, started);
       setPage(undefined); setReady(false); setRetryRead(true); setError('Unable to confirm current archived Cards. Please check again.');
     } } finally { if (mounted.current && read.current === c) {
       read.current = undefined; setReading(false);
-      if (queued.current) void load(position.current.cursor, position.current.history);
+      if (queued.current) void load(position.current.cursor, position.current.history, queuedKind.current);
     } }
   }
-  const invalidate = useEffectEvent(() => {
-    if (read.current) queued.current = true; else void load(position.current.cursor, position.current.history);
+  const invalidate = useEffectEvent((kind: 'use' | 'retry' | 'reconnect' = 'use') => {
+    if (read.current) {
+      if (!queued.current || kind === 'reconnect' || kind === 'retry' && queuedKind.current !== 'reconnect') queuedKind.current = kind;
+      queued.current = true;
+    } else void load(position.current.cursor, position.current.history, kind);
   });
-  useEffect(() => { mounted.current = true; void load(null, []);
-    const reconnect = () => { if (document.visibilityState !== 'hidden') invalidate(); };
+  useEffect(() => { mounted.current = true; activityEvent('archive_card_disclosure', 'open'); void load(null, []);
+    const reconnect = () => { if (document.visibilityState !== 'hidden') invalidate('reconnect'); };
     window.addEventListener('online', reconnect);
     return () => { mounted.current = false; read.current?.abort(); write.current?.abort();
       window.removeEventListener('online', reconnect);
       if (focusFrame.current !== undefined) cancelAnimationFrame(focusFrame.current); }; }, [org, board]);
-  useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: board, invalidate: () => invalidate(), status: setLive }) : undefined, [org, board, subscribed]);
-  useEffect(() => { if (!retryRead || reading) return; const timer = setTimeout(() => invalidate(), 10_000); return () => clearTimeout(timer); }, [retryRead, reading]);
+  useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: board, invalidate: () => { const kind = recovering.current ? 'reconnect' : 'use'; recovering.current = false; invalidate(kind); },
+    status: value => { setLive(value); if (value === 'polling' || value === 'recovering') recovering.current = true; } }) : undefined, [org, board, subscribed]);
+  useEffect(() => { if (!retryRead || reading) return; const timer = setTimeout(() => invalidate('retry'), 10_000); return () => clearTimeout(timer); }, [retryRead, reading]);
   async function change() {
     if (write.current || !selected || !ready || reading || deleting && !page?.canDelete
       || (!intent && (changed || conflict || deleting && !confirmed || !deleting && selected.list.lifecycleState !== 'active'))) return;
     const command = intent ?? { entry: selected, key: crypto.randomUUID(), deleting }; const card = command.entry.card;
+    const action = command.deleting ? 'archive_card_delete' : 'archive_card_restore';
+    const started = performance.now(); activityEvent(action, intent ? 'retry' : 'use');
     const c = new AbortController(); write.current = c; setWriting(true); setNotice(undefined);
     try {
       const path = command.deleting ? `/cards/${encodeURIComponent(card.id)}?version=${card.version}&confirmed=true` : `/cards/${encodeURIComponent(card.id)}/restore`;
@@ -130,8 +142,9 @@ function Archive({ org, board }: { org: string; board: string }) {
         headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key },
         ...(command.deleting ? {} : { body: JSON.stringify({ version: card.version }) }) }, c);
       if (!mounted.current || write.current !== c) return;
-      if ([401, 403, 404].includes(result.status)) { deny(); return; }
+      if ([401, 403, 404].includes(result.status)) { activityResult(action, false, started); deny(); return; }
       if ([400, 409].includes(result.status)) {
+        activityEvent(action, 'conflict'); activityResult(action, false, started);
         setIntent(undefined); setConflict(true); setNotice(command.deleting
           ? 'This deletion could not be applied. Check the archive and review the current Card and parent List.'
           : 'This restore could not be applied. Check the archive and review the current Card and parent List.');
@@ -140,10 +153,11 @@ function Archive({ org, board }: { org: string; board: string }) {
         if (result.status !== 200 || ack?.id !== card.id || ack.organizationId !== org || ack.boardId !== board
           || ack.listId !== card.listId || ack.title !== card.title || ack.rank !== card.rank || ack.lifecycleState !== (command.deleting ? 'deleted' : 'active')
           || ack.version !== card.version + 1) throw new Error('Unconfirmed restore');
-        reviewingDeletion.current = false; setIntent(undefined); setSelected(undefined); setNotice(command.deleting
+        reviewingDeletion.current = false; activityResult(action, true, started); setIntent(undefined); setSelected(undefined); setNotice(command.deleting
           ? 'Card deletion acknowledged. Current archived Cards are being checked.' : 'Card restore acknowledged. Current archived Cards are being checked.');
       }
     } catch { if (mounted.current && write.current === c) {
+      activityEvent(action, 'exception'); activityResult(action, false, started);
       setIntent(command); setNotice(command.deleting
         ? 'The deletion could not be confirmed. Retry the same deletion to recover its acknowledgment.'
         : 'The restore could not be confirmed. Retry the same restore to recover its acknowledgment.');
@@ -165,9 +179,9 @@ function Archive({ org, board }: { org: string; board: string }) {
         aria-label={`Read ${e.card.title} card details`}>Read Card details</Button>
       {e.list.lifecycleState === 'archived' && <Typography>Restore the parent List before restoring this Card.</Typography>}
       <Button disabled={!ready || reading || writing || !!intent || e.list.lifecycleState !== 'active'} aria-label={`Restore ${e.card.title} card`}
-        onClick={() => { reviewingDeletion.current = false; setSelected(e); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined); }}>Restore Card</Button>
+        onClick={() => { activityEvent('archive_card_restore', 'open'); reviewingDeletion.current = false; setSelected(e); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined); }}>Restore Card</Button>
       {page.canDelete && <Button color="error" disabled={writing || !!intent} aria-label={`Permanently delete ${e.card.title} card`}
-        onClick={() => { setPendingDeletionReview(e.card.id); setConfirmed(false); setNotice(undefined); }}>Permanently delete Card</Button>}
+        onClick={() => { activityEvent('archive_card_delete', 'open'); setPendingDeletionReview(e.card.id); setConfirmed(false); setNotice(undefined); }}>Permanently delete Card</Button>}
     </Paper>)}
     {ready && page?.items.length === 0 && <Typography>No archived cards on this page.</Typography>}
     <Stack direction="row" spacing={1}>

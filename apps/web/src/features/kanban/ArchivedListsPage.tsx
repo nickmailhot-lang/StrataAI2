@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { activityEvent, activityResult } from './activityTelemetry';
 import { watchBoard, type LiveStatus } from '../../api/boardLive';
 import { validInvitationKey as uuid } from '../organizations/invitationIntent';
 
@@ -41,6 +42,8 @@ function Archive({ org, board }: { org: string; board: string }) {
   const position = useRef<{ cursor: string | null; history: (string | null)[] }>({ cursor: null, history: [] });
   const read = useRef<AbortController | undefined>(undefined); const write = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(false); const refresh = useRef<HTMLButtonElement>(null);
+  const recovering = useRef(false);
+  const queuedKind = useRef<'use' | 'retry' | 'reconnect'>('use');
   const queued = useRef(false);
   const focusRequested = useRef(false);
   const focusFrame = useRef<number | undefined>(undefined);
@@ -68,44 +71,53 @@ function Archive({ org, board }: { org: string; board: string }) {
     queued.current = false;
     setRetryRead(false); setNotice(undefined); setError('Archived List administration is unavailable.');
   }
-  async function load(cursor: string | null, trail: (string | null)[]) {
+  async function load(cursor: string | null, trail: (string | null)[], kind: 'use' | 'retry' | 'reconnect' = 'use') {
+    const started = performance.now(); activityEvent('archive_list_read', kind);
     if (document.activeElement === refresh.current) focusRequested.current = true;
     read.current?.abort(); queued.current = false; const c = new AbortController(); read.current = c;
     position.current = { cursor, history: trail }; setHistory(trail); setReading(true); setReady(false); setRetryRead(false); setError(undefined);
     try {
       const result = await request(`/boards/${encodeURIComponent(board)}/archived-lists${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`, {}, c);
       if (!mounted.current || read.current !== c || c.signal.aborted) return;
-      if ([401, 403, 404].includes(result.status)) { deny(); return; }
+      if ([401, 403, 404].includes(result.status)) { activityResult('archive_list_read', false, started); deny(); return; }
       const p = result.body as ArchivePage | undefined;
       if (result.status !== 200 || p?.organizationId !== org || p.boardId !== board || !Array.isArray(p.items) || p.items.length > 50
         || !p.items.every((e, i, rows) => entry(e, org, board) && e.list.id.toLowerCase() > (i ? rows[i - 1].list.id.toLowerCase() : cursor?.toLowerCase() ?? ''))
         || (p.nextCursor !== null && (!uuid(p.nextCursor) || p.items.length !== 50 || p.nextCursor !== p.items.at(-1)?.list.id)))
         throw new Error('Invalid archive page');
+      activityResult('archive_list_read', true, started);
       setPage(p); setReady(true); setSubscribed(true);
     } catch { if (mounted.current && read.current === c) {
+      activityEvent('archive_list_read', 'exception'); activityResult('archive_list_read', false, started);
       setPage(undefined); setReady(false); setRetryRead(true); setError('Unable to confirm current archived Lists. Please check again.');
     } } finally { if (mounted.current && read.current === c) {
       read.current = undefined; setReading(false);
-      if (queued.current) void load(position.current.cursor, position.current.history);
+      if (queued.current) void load(position.current.cursor, position.current.history, queuedKind.current);
     } }
   }
-  const invalidate = useEffectEvent(() => {
-    if (read.current) queued.current = true; else void load(position.current.cursor, position.current.history);
+  const invalidate = useEffectEvent((kind: 'use' | 'retry' | 'reconnect' = 'use') => {
+    if (read.current) {
+      if (!queued.current || kind === 'reconnect' || kind === 'retry' && queuedKind.current !== 'reconnect') queuedKind.current = kind;
+      queued.current = true;
+    } else void load(position.current.cursor, position.current.history, kind);
   });
   useEffect(() => {
-    mounted.current = true; void load(null, []);
-    const reconnect = () => { if (document.visibilityState !== 'hidden') invalidate(); };
+    mounted.current = true; activityEvent('archive_list_disclosure', 'open'); void load(null, []);
+    const reconnect = () => { if (document.visibilityState !== 'hidden') invalidate('reconnect'); };
     window.addEventListener('online', reconnect);
     return () => { mounted.current = false; read.current?.abort(); write.current?.abort();
       window.removeEventListener('online', reconnect);
       if (focusFrame.current !== undefined) cancelAnimationFrame(focusFrame.current); };
   }, [org, board]);
-  useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: board, invalidate: () => invalidate(), status: setLive }) : undefined,
+  useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: board, invalidate: () => { const kind = recovering.current ? 'reconnect' : 'use'; recovering.current = false; invalidate(kind); },
+    status: value => { setLive(value); if (value === 'polling' || value === 'recovering') recovering.current = true; } }) : undefined,
     [org, board, subscribed]);
-  useEffect(() => { if (!retryRead || reading) return; const timer = setTimeout(() => invalidate(), 10_000); return () => clearTimeout(timer); }, [retryRead, reading]);
+  useEffect(() => { if (!retryRead || reading) return; const timer = setTimeout(() => invalidate('retry'), 10_000); return () => clearTimeout(timer); }, [retryRead, reading]);
   async function change() {
     if (write.current || !selected || !ready || reading || (!intent && (changed || conflict || deleting && !confirmed))) return;
     const command = intent ?? { entry: selected, key: crypto.randomUUID(), deleting }; const l = command.entry.list;
+    const action = command.deleting ? 'archive_list_delete' : 'archive_list_restore';
+    const started = performance.now(); activityEvent(action, intent ? 'retry' : 'use');
     const c = new AbortController(); write.current = c; setWriting(true); setNotice(undefined);
     try {
       const path = command.deleting ? `/lists/${encodeURIComponent(l.id)}?version=${l.version}&confirmed=true&containedCardCount=${command.entry.containedCardCount}`
@@ -114,8 +126,9 @@ function Archive({ org, board }: { org: string; board: string }) {
         headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key },
         ...(command.deleting ? {} : { body: JSON.stringify({ version: l.version }) }) }, c);
       if (!mounted.current || write.current !== c) return;
-      if ([401, 403, 404].includes(result.status)) { deny(); return; }
+      if ([401, 403, 404].includes(result.status)) { activityResult(action, false, started); deny(); return; }
       if ([400, 409].includes(result.status)) {
+        activityEvent(action, 'conflict'); activityResult(action, false, started);
         setIntent(undefined); setConflict(true); setNotice(command.deleting
           ? 'This deletion could not be applied. Check the archive and review the current List and card impact.'
           : 'This restore could not be applied. Check the archive and review the current List.');
@@ -124,11 +137,12 @@ function Archive({ org, board }: { org: string; board: string }) {
         if (result.status !== 200 || ack?.id !== l.id || ack.organizationId !== org || ack.boardId !== board
           || ack.name !== l.name || ack.rank !== l.rank || ack.lifecycleState !== (command.deleting ? 'deleted' : 'active') || ack.version !== l.version + 1)
           throw new Error('Unconfirmed lifecycle change');
-        setIntent(undefined); setSelected(undefined); setNotice(command.deleting
+        activityResult(action, true, started); setIntent(undefined); setSelected(undefined); setNotice(command.deleting
           ? 'List deletion acknowledged. Current archived Lists are being checked.'
           : 'List restore acknowledged. Current archived Lists are being checked.');
       }
     } catch { if (mounted.current && write.current === c) {
+      activityEvent(action, 'exception'); activityResult(action, false, started);
       setIntent(command); setNotice(command.deleting
         ? 'The deletion could not be confirmed. Retry the same deletion to recover its acknowledgment.'
         : 'The restore could not be confirmed. Retry the same restore to recover its acknowledgment.');
@@ -148,10 +162,10 @@ function Archive({ org, board }: { org: string; board: string }) {
       <Typography component="h3" variant="h6">{e.list.name}</Typography>
       <Typography>{e.containedCardCount} contained cards</Typography>
       <Button disabled={writing || !!intent} aria-label={`Restore ${e.list.name} list`} onClick={() => {
-        setSelected(e); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined);
+        activityEvent('archive_list_restore', 'open'); setSelected(e); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined);
       }}>Restore List</Button>
       <Button color="error" disabled={writing || !!intent} aria-label={`Permanently delete ${e.list.name} list`} onClick={() => {
-        setSelected(e); setDeleting(true); setConfirmed(false); setConflict(false); setNotice(undefined);
+        activityEvent('archive_list_delete', 'open'); setSelected(e); setDeleting(true); setConfirmed(false); setConflict(false); setNotice(undefined);
       }}>Permanently delete List</Button>
     </Paper>)}
     {ready && page?.items.length === 0 && <Typography>No archived lists on this page.</Typography>}

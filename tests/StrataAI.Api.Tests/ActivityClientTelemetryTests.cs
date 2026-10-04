@@ -11,6 +11,30 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Theory]
+    [InlineData("archive_list_disclosure")]
+    [InlineData("archive_list_read")]
+    [InlineData("archive_list_restore")]
+    [InlineData("archive_list_delete")]
+    [InlineData("archive_card_disclosure")]
+    [InlineData("archive_card_read")]
+    [InlineData("archive_card_restore")]
+    [InlineData("archive_card_delete")]
+    public void PRD_18_Archive_observations_accept_fixed_actions_and_reject_private_material(string action)
+    {
+        using var valid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
+            new { action, kind = "open", count = 1 }, new { action, kind = "reconnect", count = 1 },
+            new { action, kind = "failure", count = 1, durationMs = 125 } } }));
+        Assert.Equal(3, ActivityClientTelemetry.Parse(valid.RootElement)!.Count);
+        foreach (var field in new[] { "boardId", "cardId", "listId", "name", "key", "containedCardCount", "diagnostic" })
+        {
+            using var invalid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
+                new { action, kind = "open", count = 1 },
+                new Dictionary<string, object> { ["action"] = action, ["kind"] = "use", ["count"] = 1, [field] = "private-material" } } }));
+            Assert.Null(ActivityClientTelemetry.Parse(invalid.RootElement));
+        }
+    }
+
+    [Theory]
     [InlineData("subscriptionId")]
     [InlineData("userId")]
     [InlineData("entityId")]

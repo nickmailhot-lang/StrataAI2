@@ -3,13 +3,13 @@ import { apiFetch } from '../../api/apiFetch';
 export type ActivityAction = 'board_read' | 'card_read' | 'board_disclosure' | 'card_disclosure'
   | 'comment_disclosure' | 'comment_read' | 'comment_create' | 'comment_edit' | 'comment_delete'
   | 'mention_read' | 'mention_selection' | 'card_group_confirmation' | 'board_group_confirmation'
-  | 'search_disclosure' | 'search_read' | 'notification_disclosure' | 'notification_read' | 'notification_mark_read' | 'watch_disclosure' | 'watch_read' | 'watch_change';
+  | 'search_disclosure' | 'search_read' | 'notification_disclosure' | 'notification_read' | 'notification_mark_read' | 'watch_disclosure' | 'watch_read' | 'watch_change' | 'archive_list_disclosure' | 'archive_list_read' | 'archive_list_restore' | 'archive_list_delete' | 'archive_card_disclosure' | 'archive_card_read' | 'archive_card_restore' | 'archive_card_delete';
 type Kind = 'open' | 'use' | 'retry' | 'exception' | 'conflict' | 'reconnect' | 'success' | 'failure';
 type Observation = { action: ActivityAction; kind: Kind; count: number; durationMs?: number };
 const actions = new Set<string>(['board_read', 'card_read', 'board_disclosure', 'card_disclosure',
   'comment_disclosure', 'comment_read', 'comment_create', 'comment_edit', 'comment_delete',
   'mention_read', 'mention_selection', 'card_group_confirmation', 'board_group_confirmation', 'search_disclosure', 'search_read',
-  'notification_disclosure', 'notification_read', 'notification_mark_read', 'watch_disclosure', 'watch_read', 'watch_change']);
+  'notification_disclosure', 'notification_read', 'notification_mark_read', 'watch_disclosure', 'watch_read', 'watch_change', 'archive_list_disclosure', 'archive_list_read', 'archive_list_restore', 'archive_list_delete', 'archive_card_disclosure', 'archive_card_read', 'archive_card_restore', 'archive_card_delete']);
 const kinds = new Set<string>(['open', 'use', 'retry', 'exception', 'conflict', 'reconnect', 'success', 'failure']);
 let enabled = import.meta.env.PROD;
 let queue: Observation[] = []; let timer: ReturnType<typeof setTimeout> | undefined;

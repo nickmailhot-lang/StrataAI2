@@ -10,7 +10,8 @@ public sealed class ActivityClientTelemetry
     private static readonly HashSet<string> Actions = ["board_read", "card_read", "board_disclosure", "card_disclosure",
         "comment_disclosure", "comment_read", "comment_create", "comment_edit", "comment_delete",
         "mention_read", "mention_selection", "card_group_confirmation", "board_group_confirmation", "search_disclosure", "search_read",
-        "notification_disclosure", "notification_read", "notification_mark_read", "watch_disclosure", "watch_read", "watch_change"];
+        "notification_disclosure", "notification_read", "notification_mark_read", "watch_disclosure", "watch_read", "watch_change", "archive_list_disclosure", "archive_list_read", "archive_list_restore", "archive_list_delete",
+        "archive_card_disclosure", "archive_card_read", "archive_card_restore", "archive_card_delete"];
     public Meter Meter { get; }
     private readonly Counter<long> _events;
     private readonly Histogram<double> _duration;
