@@ -4,6 +4,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile, notificationInstant } from '../notifications/notificationInbox';
 import { activityEvent, activityResult } from './activityTelemetry';
 import { watchBoardStars } from './boardStarLive';
+import { BoardStarHistory } from './BoardStarHistoryControl';
 
 type Props = { organizationId: string; boardId: string; admitted: boolean; disabled: boolean };
 type Preference = { organizationId: string; boardId: string; userId: string; starred: boolean;
@@ -31,6 +32,7 @@ function StarDialog(props: Props) {
   const [open, setOpen] = useState(false); const [current, setCurrent] = useState<Preference>();
   const [busy, setBusy] = useState(false); const [recovery, setRecovery] = useState(false); const [notice, setNotice] = useState<string>();
   const [subject, setSubject] = useState<string>();
+  const [historyRevision, setHistoryRevision] = useState(0);
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const intent = useRef<Intent | undefined>(undefined); const actor = useRef<string | undefined>(undefined);
   const retry = useRef<HTMLButtonElement>(null); const check = useRef<HTMLButtonElement>(null);
@@ -56,7 +58,7 @@ function StarDialog(props: Props) {
       }, c.signal);
       if (!mounted.current || pending.current !== c || c.signal.aborted) return;
       activityResult('board_star_read', true, started);
-      actor.current = result.userId; setSubject(result.userId); setCurrent(result);
+      actor.current = result.userId; setSubject(result.userId); setHistoryRevision(result.version); setCurrent(result);
       setNotice(intent.current ? 'This star change is unconfirmed. Retry the same change.' : undefined);
     } catch (error) {
       if (!mounted.current || pending.current !== c || c.signal.aborted) return;
@@ -135,6 +137,9 @@ function StarDialog(props: Props) {
         {current && <Typography>{current.starred ? 'You have starred this Board.' : 'You have not starred this Board.'}</Typography>}
         {notice && <Alert severity="info" role="status">{notice}</Alert>}
         <Button ref={check} disabled={busy || !admitted} onClick={() => { restore.current = true; void load('retry'); }}>Check current star</Button>
+        {subject && <BoardStarHistory organizationId={organizationId} boardId={boardId} userId={subject}
+          version={historyRevision} unavailable={busy || !admitted || !current}
+          onDenied={() => retire('Board starring is unavailable. Check access or sign in.')} />}
       </DialogContent><DialogActions>
         {!recovery && <Button ref={done} disabled={busy} onClick={close}>Done</Button>}
         {recovery ? <Button ref={retry} disabled={busy || disabled || !admitted || !current} onClick={() => void change()}>Retry same star change</Button>

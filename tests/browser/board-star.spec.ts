@@ -53,6 +53,15 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Star Board', exact: true })).toBeEnabled();
       await expect(page.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
       expect(keys).toHaveLength(2); expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/); expect(keys[1]).toBe(keys[0]);
+      for (const [client, revisions] of [[page, 2], [other, 1]] as const) {
+        const review = client.getByRole('button', { name: 'Review your star history', exact: true });
+        await expect(review).toBeEnabled(); await review.focus(); await client.keyboard.press('Enter');
+        const history = client.getByRole('region', { name: 'Your star history', exact: true });
+        await expect(history.getByRole('listitem')).toHaveCount(revisions);
+        await expect(history.getByText(`You changed your Board star (revision ${revisions}).`, { exact: true })).toBeVisible();
+        const close = client.getByRole('button', { name: 'Close star history', exact: true });
+        await close.focus(); await client.keyboard.press('Enter'); await expect(review).toBeFocused();
+      }
       for (const [client, starred] of [[context.request, false], [outsider.request, true]] as const) {
         const result = await client.get(`/boards/${board.id}/star`); expect(result.status()).toBe(200);
         expect((await result.json()).starred).toBe(starred);
