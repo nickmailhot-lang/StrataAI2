@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { BoardStarControl } from './BoardStarControl';
 import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
+import { watchBoardStars } from './boardStarLive';
+vi.mock('./boardStarLive', () => ({ watchBoardStars: vi.fn(() => vi.fn()) }));
 const org = '11111111-1111-1111-1111-111111111111', board = '22222222-2222-2222-2222-222222222222';
 const user = '33333333-3333-3333-3333-333333333333', other = '44444444-4444-4444-4444-444444444444';
 const profile = { id: user, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
@@ -13,6 +15,31 @@ async function open() {
   fireEvent.click(screen.getByRole('button', { name: 'Board starring' }));
   await screen.findByText('You have not starred this Board.');
 }
+it('refreshes private events without restarting the actor stream and stops on access withdrawal', async () => {
+  const stop = vi.fn(); vi.mocked(watchBoardStars).mockClear(); vi.mocked(watchBoardStars).mockReturnValueOnce(stop);
+  let starred = false;
+  const fetch = vi.fn(async (path: string) => path === '/me' ? response(profile) : response(starred ? { ...retained, starred: true } : state));
+  vi.stubGlobal('fetch', fetch); const view = render(<BoardStarControl {...props} />); await open();
+  await waitFor(() => expect(watchBoardStars).toHaveBeenCalledTimes(1));
+  const options = vi.mocked(watchBoardStars).mock.calls[0][0];
+  expect(options).toMatchObject({ organizationId: org, boardId: board, userId: user });
+  starred = true; act(() => options.invalidate());
+  await screen.findByText('You have starred this Board.');
+  expect(watchBoardStars).toHaveBeenCalledTimes(1);
+  view.rerender(<BoardStarControl {...props} admitted={false} />);
+  await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+  expect(screen.queryByText('You have starred this Board.')).not.toBeInTheDocument();
+});
+it('ends private event delivery when the current account changes during refresh', async () => {
+  const stop = vi.fn(); vi.mocked(watchBoardStars).mockClear(); vi.mocked(watchBoardStars).mockReturnValueOnce(stop);
+  let changed = false;
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? response({ ...profile, id: changed ? other : user }) : response(state)));
+  render(<BoardStarControl {...props} />); await open();
+  await waitFor(() => expect(watchBoardStars).toHaveBeenCalledTimes(1));
+  changed = true; act(() => vi.mocked(watchBoardStars).mock.calls[0][0].invalidate());
+  await screen.findByText('Your account changed. Close and reopen Board starring.');
+  expect(stop).toHaveBeenCalledTimes(1);
+});
 it('reads current personal state after acknowledgment rather than assuming an old replay is current', async () => {
   const fetch = vi.fn(async (path: string, options?: RequestInit) => path === '/me' ? response(profile)
     : options?.method === 'PUT' ? new Response(null, { status: 204 }) : response(state));

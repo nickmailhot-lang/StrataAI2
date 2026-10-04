@@ -3,6 +3,7 @@ import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typog
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile, notificationInstant } from '../notifications/notificationInbox';
 import { activityEvent, activityResult } from './activityTelemetry';
+import { watchBoardStars } from './boardStarLive';
 
 type Props = { organizationId: string; boardId: string; admitted: boolean; disabled: boolean };
 type Preference = { organizationId: string; boardId: string; userId: string; starred: boolean;
@@ -29,6 +30,7 @@ function StarDialog(props: Props) {
   const { admitted, organizationId, boardId, disabled } = props;
   const [open, setOpen] = useState(false); const [current, setCurrent] = useState<Preference>();
   const [busy, setBusy] = useState(false); const [recovery, setRecovery] = useState(false); const [notice, setNotice] = useState<string>();
+  const [subject, setSubject] = useState<string>();
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const intent = useRef<Intent | undefined>(undefined); const actor = useRef<string | undefined>(undefined);
   const retry = useRef<HTMLButtonElement>(null); const check = useRef<HTMLButtonElement>(null);
@@ -36,7 +38,7 @@ function StarDialog(props: Props) {
   const restore = useRef(false);
   const path = '/boards/' + encodeURIComponent(boardId) + '/star';
   const retire = useCallback((message: string) => {
-    intent.current = undefined; actor.current = undefined; setRecovery(false); setCurrent(undefined); setNotice(message);
+    intent.current = undefined; actor.current = undefined; setSubject(undefined); setRecovery(false); setCurrent(undefined); setNotice(message);
   }, []);
   const load = useCallback(async (kind: 'use' | 'retry' | 'reconnect' = 'use') => {
     if (!mounted.current || pending.current || !admitted) return;
@@ -54,7 +56,7 @@ function StarDialog(props: Props) {
       }, c.signal);
       if (!mounted.current || pending.current !== c || c.signal.aborted) return;
       activityResult('board_star_read', true, started);
-      actor.current = result.userId; setCurrent(result);
+      actor.current = result.userId; setSubject(result.userId); setCurrent(result);
       setNotice(intent.current ? 'This star change is unconfirmed. Retry the same change.' : undefined);
     } catch (error) {
       if (!mounted.current || pending.current !== c || c.signal.aborted) return;
@@ -79,6 +81,11 @@ function StarDialog(props: Props) {
     window.addEventListener('focus', refresh); window.addEventListener('online', reconnect); document.addEventListener('visibilitychange', refresh);
     return () => { clearInterval(timer); window.removeEventListener('focus', refresh); window.removeEventListener('online', reconnect); document.removeEventListener('visibilitychange', refresh); };
   }, [open, admitted, load]);
+  useEffect(() => {
+    if (!open || !admitted || !subject) return;
+    return watchBoardStars({ organizationId,boardId,userId: subject,invalidate: () => { void load(); },
+      observe: kind => activityEvent('board_star_read',kind) });
+  }, [open,admitted,subject,organizationId,boardId,load]);
   useEffect(() => {
     if (busy || !restore.current) return;
     const target = recovery ? retry.current : check.current;
@@ -118,7 +125,7 @@ function StarDialog(props: Props) {
       if (pending.current === c) { pending.current = undefined; if (mounted.current) { setBusy(false); if (refresh) void load(); } }
     }
   }
-  function close() { if (!busy && !intent.current) { setOpen(false); setCurrent(undefined); actor.current = undefined; setNotice(undefined); } }
+  function close() { if (!busy && !intent.current) { setOpen(false); setSubject(undefined); setCurrent(undefined); actor.current = undefined; setNotice(undefined); } }
   return <>
     {admitted && <Button ref={entry} disabled={disabled || busy} onClick={() => { activityEvent('board_star_disclosure', 'open'); setOpen(true); }}>Board starring</Button>}
     <Dialog open={open} onClose={close} disableRestoreFocus fullWidth maxWidth="sm"
