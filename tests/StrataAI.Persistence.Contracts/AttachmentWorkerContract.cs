@@ -146,6 +146,63 @@ internal static class AttachmentWorkerContract
             },ct);
             Require(result.Succeeded,"Retry fixture transaction failed."); return id;
         }
+        // Restricted Worker proof after trusted fixture routing; HTTP movement
+        // authorization is covered separately by CardMoveSourceScopeTests.
+        var movedFile=await PublishPending("application/pdf");
+        var movedJob=await queue.ClaimAsync(organization,workerId,ct);
+        Require(movedJob is not null && AttachmentScanAttempt.Parse(movedJob.SafeMetadataJson).AttachmentId==movedFile,
+            "Moved pending scan was not claimed.");
+        var movedAttempt=AttachmentScanAttempt.Parse(movedJob!.SafeMetadataJson);
+        Require(await delivery.LoadAsync(movedJob,movedAttempt,ct) is {Status:AttachmentScanLoadStatus.Ready},
+            "Pending scan was not admitted before movement.");
+        var destinationBoard=Guid.NewGuid(); var destinationList=Guid.NewGuid();
+        Guid sourceBoard; Guid sourceList; long movedRevision;
+        await using(var parent=new NpgsqlCommand("SELECT board_id,list_id FROM cards WHERE tenant_id=@tenant AND id=@card;",admin))
+        {
+            parent.Parameters.AddWithValue("tenant",organization);parent.Parameters.AddWithValue("card",original.CardId);
+            await using var row=await parent.ExecuteReaderAsync(ct);Require(await row.ReadAsync(ct),"Pending scan parent disappeared.");
+            sourceBoard=row.GetGuid(0);sourceList=row.GetGuid(1);
+        }
+        await using(var move=new NpgsqlCommand("""
+            INSERT INTO boards(id,tenant_id,name,created_at,updated_at)
+             VALUES(@board,@tenant,'Pending scan destination',statement_timestamp(),statement_timestamp());
+            INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
+             VALUES(@list,@tenant,@board,'Pending scan destination','500000000000000000000000000000',statement_timestamp(),statement_timestamp());
+            UPDATE cards SET board_id=@board,list_id=@list,version=version+1,
+             updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND id=@card RETURNING version;
+            """,admin))
+        {
+            move.Parameters.AddWithValue("tenant",organization);move.Parameters.AddWithValue("card",original.CardId);
+            move.Parameters.AddWithValue("board",destinationBoard);move.Parameters.AddWithValue("list",destinationList);
+            movedRevision=(long)(await move.ExecuteScalarAsync(ct))!;
+        }
+        await handler.ExecuteAsync(movedJob,ct);
+        await using(var verify=new NpgsqlCommand("""
+            SELECT c.board_id=@board AND c.list_id=@list AND c.version=@revision
+             AND a.scan_status='CLEAN' AND a.version=2 AND a.uploader_id=@actor
+             AND (SELECT count(*) FROM work_events WHERE tenant_id=@tenant AND event_id=@job AND board_id=@board AND ready_at IS NOT NULL)=1
+             AND (SELECT count(*) FROM audit_events WHERE tenant_id=@tenant AND id=@job)=1
+             AND (SELECT count(*) FROM work_events WHERE tenant_id=@tenant AND event_id=@job)=1
+            FROM cards c JOIN attachments a ON a.tenant_id=c.tenant_id AND a.card_id=c.id
+            WHERE c.tenant_id=@tenant AND c.id=@card AND a.id=@file;
+            """,admin))
+        {
+            verify.Parameters.AddWithValue("tenant",organization);verify.Parameters.AddWithValue("card",original.CardId);
+            verify.Parameters.AddWithValue("file",movedFile);verify.Parameters.AddWithValue("actor",original.UploaderId);
+            verify.Parameters.AddWithValue("board",destinationBoard);verify.Parameters.AddWithValue("list",destinationList);
+            verify.Parameters.AddWithValue("revision",movedRevision+1);verify.Parameters.AddWithValue("job",movedJob.Id);
+            Require(await verify.ExecuteScalarAsync(ct) is true,"Scan after movement changed identity or published outside the current Board.");
+        }
+        providerCalls=scanner.Calls;objectReads=storage.Opens;
+        await handler.ExecuteAsync(movedJob,ct);
+        Require(scanner.Calls==providerCalls && storage.Opens==objectReads,"Moved scan replay repeated private provider I/O.");
+        Require(await queue.CompleteAsync(organization,movedJob.Id,movedJob.LeaseId,workerId,ct),"Moved scan could not be acknowledged.");
+        await using(var restore=new NpgsqlCommand("UPDATE cards SET board_id=@board,list_id=@list,version=version+1,updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND id=@card;",admin))
+        {
+            restore.Parameters.AddWithValue("tenant",organization);restore.Parameters.AddWithValue("card",original.CardId);
+            restore.Parameters.AddWithValue("board",sourceBoard);restore.Parameters.AddWithValue("list",sourceList);
+            Require(await restore.ExecuteNonQueryAsync(ct)==1,"Moved scan fixture did not restore its parent route.");
+        }
         // Guarded lifecycle revisions must not strand a canonical Pending scan.
         foreach(var restoreBeforeScan in new[]{false,true})
         {
