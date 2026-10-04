@@ -117,7 +117,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             description: String(form.get("description") ?? ""),
             visibility: String(form.get("visibility") ?? "PRIVATE"),
             backgroundType: "COLOR",
-            backgroundValue: "#0f4c81",
+            backgroundValue: "blue",
           },
         );
         navigate(`/app/${organizationId}/boards/${board.id}`);

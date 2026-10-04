@@ -94,6 +94,8 @@ describe("PRD-01/03/04 organization discovery", () => {
       name: "Planning",
       organizationId: "org-1",
       visibility: "PRIVATE",
+      backgroundType: "COLOR",
+      backgroundValue: "blue",
     });
   });
   it("redirects expired sessions to sign in", async () => {
