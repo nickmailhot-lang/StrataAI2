@@ -301,6 +301,17 @@ DO $$ BEGIN
 END $$;
 -- PRD-08 / PRD-15: actual database movement preserves historical notifications.
 -- This is a storage contract, not an authorized move API acceptance claim.
+-- A Reminder notification follows the typed Reminder subject, not a Card
+-- entity ID. Both source forms must survive the same stable Card movement.
+INSERT INTO work_events(tenant_id,board_id,event_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+ VALUES('03000000-0000-0000-0000-000000000001','03000000-0000-0000-0000-000000000011',
+ '06600000-0000-0000-0000-000000000051',3,'03000000-0000-0000-0000-000000000041',
+ 'REMINDER_FIRED','Reminder','03700000-0000-0000-0000-000000000071',2,'notification-move-storage',now());
+INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,event_id,recipient_id,actor_id,card_version,created_at,notification_type)
+ SELECT c.tenant_id,'06600000-0000-0000-0000-000000000061',c.board_id,c.id,
+ '06600000-0000-0000-0000-000000000051','03000000-0000-0000-0000-000000000041',
+ '03000000-0000-0000-0000-000000000041',c.version,now(),'REMINDER_FIRED'
+ FROM cards c WHERE c.id='03000000-0000-0000-0000-000000000031';
 INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at) VALUES
  ('06600000-0000-0000-0000-000000000021','03000000-0000-0000-0000-000000000001',
   '03000000-0000-0000-0000-000000000012','Destination','500000000000000000000000000000',now(),now());
@@ -323,7 +334,7 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
 SET LOCAL ROLE strataai_member_storage_ci;
 SELECT set_config('app.tenant_id','03000000-0000-0000-0000-000000000001',true);
 DO $$ BEGIN
- IF (SELECT count(*) FROM card_assignment_notifications)<>1 THEN RAISE EXCEPTION 'Movement widened historical tenant reads'; END IF;
+ IF (SELECT count(*) FROM card_assignment_notifications)<>2 THEN RAISE EXCEPTION 'Movement widened historical tenant reads'; END IF;
  BEGIN
   UPDATE card_assignment_notifications SET card_id='06600000-0000-0000-0000-000000000031';
   RAISE EXCEPTION 'Historical source rebound to unrelated same-tenant Card';

@@ -356,7 +356,11 @@ run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 62
 test "$(query "SELECT activity_actor_label='Member 02100000-0000-0000-0000-000000000010'
  FROM work_events WHERE event_id='06200000-0000-0000-0000-000000000091'")" = t
-query "INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+query "INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+ VALUES('06600000-0000-0000-0000-000000000010','notification-upgrade@example.test','NOTIFICATION-UPGRADE@EXAMPLE.TEST','Notification recipient','ACTIVE',true,'fixture',now(),now());
+ INSERT INTO organization_members(id,user_id,tenant_id,role,status)
+ VALUES(gen_random_uuid(),'06600000-0000-0000-0000-000000000010','02100000-0000-0000-0000-000000000011','MEMBER','ACTIVE');
+ INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
  VALUES('02100000-0000-0000-0000-000000000011','06200000-0000-0000-0000-000000000092',
  '02500000-0000-0000-0000-000000000001',2,'02100000-0000-0000-0000-000000000010',
  'BOARD_UPDATED','Board','02500000-0000-0000-0000-000000000001',1,'activity-upgrade',now());
@@ -378,16 +382,26 @@ test "$(query 'SELECT count(*) FROM schema_migrations')" = 65
 query "INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
  VALUES('02100000-0000-0000-0000-000000000011','06600000-0000-0000-0000-000000000091',
  '02500000-0000-0000-0000-000000000001',3,'02100000-0000-0000-0000-000000000010',
- 'REMINDER_FIRED','Card','04200000-0000-0000-0000-000000000002',1,'notification-upgrade',now());
+ 'CARD_UPDATED','Card','04200000-0000-0000-0000-000000000002',1,'notification-upgrade',now());
  INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,event_id,recipient_id,actor_id,card_version,created_at,notification_type)
- SELECT tenant_id,'06600000-0000-0000-0000-000000000092',board_id,entity_id,event_id,actor_id,actor_id,entity_version,created_at,'REMINDER_FIRED'
- FROM work_events WHERE event_id='06600000-0000-0000-0000-000000000091';" >/dev/null
-notification_before=$(query "SELECT to_jsonb(n) FROM card_assignment_notifications n WHERE id='06600000-0000-0000-0000-000000000092'")
+ SELECT tenant_id,'06600000-0000-0000-0000-000000000092',board_id,entity_id,event_id,'06600000-0000-0000-0000-000000000010',actor_id,entity_version,created_at,'CARD_UPDATED'
+ FROM work_events WHERE event_id='06600000-0000-0000-0000-000000000091';
+ INSERT INTO card_reminders(tenant_id,id,user_id,card_id,interval_code,enabled,status,generation,created_at,updated_at,version)
+ VALUES('02100000-0000-0000-0000-000000000011','06600000-0000-0000-0000-000000000095',
+ '02100000-0000-0000-0000-000000000010','04200000-0000-0000-0000-000000000002','AT_DUE',false,'CANCELLED',1,now(),now(),1);
+ INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
+ VALUES('02100000-0000-0000-0000-000000000011','06600000-0000-0000-0000-000000000093',
+ '02500000-0000-0000-0000-000000000001',4,'02100000-0000-0000-0000-000000000010',
+ 'REMINDER_FIRED','Reminder','06600000-0000-0000-0000-000000000095',1,'notification-upgrade',now());
+ INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,event_id,recipient_id,actor_id,card_version,created_at,notification_type)
+ SELECT tenant_id,'06600000-0000-0000-0000-000000000094',board_id,'04200000-0000-0000-0000-000000000002',
+ event_id,actor_id,actor_id,1,created_at,'REMINDER_FIRED' FROM work_events WHERE event_id='06600000-0000-0000-0000-000000000093';" >/dev/null
+notification_before=$(query "SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n")
 cp db/migrations/066_notification_historical_card.sql "$scratch/migrations/"
 run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 66
-test "$(query "SELECT to_jsonb(n) FROM card_assignment_notifications n WHERE id='06600000-0000-0000-0000-000000000092'")" = "$notification_before"
+test "$(query "SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n")" = "$notification_before"
 cat > "$scratch/migrations/067_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);

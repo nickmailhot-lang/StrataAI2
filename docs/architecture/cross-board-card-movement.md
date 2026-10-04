@@ -11,9 +11,13 @@ not an alternative definition of completion.
 Migration `066_notification_historical_card` separates the immutable source Board
 from the stable Card's current Board. Notifications keep their original Board,
 event, actor, recipient, Card version and timestamp. They still reference the
-same-tenant Card and the original source event/type. An additional composite
-foreign key binds the source event's entity ID to the notification's Card ID;
-even an unrelated same-tenant Card cannot replace the historical subject.
+same-tenant Card and the original source event/type. An additional typed source
+constraint binds a Card event's entity ID to the notification's Card ID, or a
+Reminder event through its immutable Reminder-to-Card reference. An unrelated
+same-tenant Card cannot replace the historical subject. Valid existing rows are
+checked during upgrade; an AFTER trigger validates inserts and changed source
+identities once generated event-type fields are available. Read-at changes retain
+the admitted source identity.
 Current API/Worker grants and forced RLS remain unchanged.
 
 The populated migration runner inserts a valid historical notification before
