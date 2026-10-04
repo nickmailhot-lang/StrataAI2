@@ -60,6 +60,7 @@ import { BoardMetadataControl } from './BoardMetadataControl';
 import { BoardStarControl } from './BoardStarControl';
 import { BoardCopyControl } from './BoardCopyControl';
 import { boardBackgroundColor } from './boardBackground';
+import { BoardBackgroundImage } from './BoardBackgroundImage';
 import { ListCopyControl } from './ListCopyControl';
 import { CardReminderControl } from './CardReminderControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
@@ -447,7 +448,8 @@ function BoardContent() {
     );
   if (!snapshot) return <CircularProgress aria-label="Loading board" />;
   return (
-    <Stack role="region" aria-label="Board workspace" spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1 }}>
+    <Stack role="region" aria-label="Board workspace" spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1, position: 'relative', isolation: 'isolate' }}>
+      <BoardBackgroundImage snapshot={snapshot} unavailable={snapshotReading || !!loadError} />
       {loadError && message(loadError)}
       <Typography role="status" aria-live="polite" variant="body2">
         {liveStatus === "live"

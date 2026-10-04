@@ -20,6 +20,21 @@ async function open() {
   await waitFor(() => expect(screen.getByRole('button', { name: 'Create Board copy' })).toBeEnabled());
 }
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.clearAllMocks(); });
+it.each([true, false])('requires a new owned image reference in the copy acknowledgment (independent=%s)', async independent => {
+  const sourceImage = '55555555-5555-5555-5555-555555555555';
+  const imageSnapshot = { ...snapshot, board: { ...snapshot.board, backgroundType: 'IMAGE', backgroundValue: sourceImage } };
+  const imageResult = { ...result, backgroundType: 'IMAGE', backgroundValue: independent ? '66666666-6666-6666-6666-666666666666' : sourceImage };
+  vi.stubGlobal('fetch', vi.fn(async (path: string, options?: RequestInit) => response(path === '/me' ? profile
+    : options?.method === 'POST' ? imageResult : path.endsWith(target) ? { ...copied, board: imageResult } : imageSnapshot,
+    options?.method === 'POST' ? 201 : 200)));
+  render(<MemoryRouter><BoardCopyControl {...props} snapshot={imageSnapshot} /></MemoryRouter>);
+  await open(); fireEvent.click(screen.getByRole('button', { name: 'Create Board copy' }));
+  if (independent) await screen.findByRole('link', { name: 'Open copied Board' });
+  else {
+    await screen.findByText('This copy is unconfirmed. Keep the name unchanged and retry the same copy.');
+    expect(screen.queryByRole('link', { name: 'Open copied Board' })).not.toBeInTheDocument();
+  }
+});
 it('reviews the bound source before copying and reads current destination before offering navigation', async () => {
   const fetch = vi.fn(async (path: string, options?: RequestInit) => response(path === '/me' ? profile
     : options?.method === 'POST' ? result : path.endsWith(target) ? copied : snapshot, options?.method === 'POST' ? 201 : 200));

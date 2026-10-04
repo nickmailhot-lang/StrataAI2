@@ -3,10 +3,10 @@ import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack
 import { Link } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot } from '../../api/workManagement';
 import { isNotificationProfile, notificationInstant, notificationUuid } from '../notifications/notificationInbox';
-import { boardColors } from './boardBackground';
+import { supportedBoardBackground } from './boardBackground';
 import { activityEvent, activityResult } from './activityTelemetry';
 type Review = { id: string; organizationId: string; name: string; description: string | null;
-  version: number; backgroundType: 'COLOR'; backgroundValue: string | null; userId: string };
+  version: number; backgroundType: 'COLOR' | 'IMAGE'; backgroundValue: string | null; userId: string };
 type Intent = { review: Review; name: string; key: string };
 type Copy = { id: string; userId: string; organizationId: string };
 type Props = { snapshot: BoardSnapshot; disabled: boolean; onBusyChange: (busy: boolean) => void;
@@ -17,17 +17,18 @@ function readReview(input: unknown, scope: { id: string; organizationId: string 
   if (!b || !notificationUuid(scope.id) || !notificationUuid(scope.organizationId) || b.id !== scope.id || b.organizationId !== scope.organizationId || value?.access?.canView !== true
     || value.access.canEdit !== true || b.lifecycleState !== 'active' || !Number.isSafeInteger(b.version) || Number(b.version) < 1
     || typeof b.name !== 'string' || !b.name.trim() || b.name.length > 160 || !(b.description === null || typeof b.description === 'string')
-    || b.backgroundType !== 'COLOR' || b.backgroundValue !== null && !boardColors.includes(b.backgroundValue as typeof boardColors[number]))
+    || !supportedBoardBackground(b.backgroundType, b.backgroundValue))
     throw new Error('Unavailable copy review');
   return { id: b.id, organizationId: b.organizationId, name: b.name, description: b.description,
-    version: b.version!, backgroundType: 'COLOR', backgroundValue: b.backgroundValue!, userId };
+    version: b.version!, backgroundType: b.backgroundType as Review['backgroundType'], backgroundValue: b.backgroundValue!, userId };
 }
 function acknowledgment(input: unknown, command: Intent): Copy {
   const b = input as Record<string, unknown> | null;
   if (!b || !notificationUuid(b.id) || b.id === command.review.id || b.organizationId !== command.review.organizationId
     || b.version !== 1 || b.lifecycleState !== 'active' || b.visibility !== 'PRIVATE' || b.name !== command.name
     || b.description !== command.review.description || b.backgroundType !== command.review.backgroundType
-    || b.backgroundValue !== command.review.backgroundValue
+    || (command.review.backgroundType === 'COLOR' ? b.backgroundValue !== command.review.backgroundValue
+      : !notificationUuid(b.backgroundValue) || b.backgroundValue === command.review.backgroundValue)
     || notificationInstant(b.createdAt).ticks !== notificationInstant(b.updatedAt).ticks) throw new Error('Unconfirmed copy');
   return { id: b.id, organizationId: command.review.organizationId, userId: command.review.userId };
 }
@@ -37,8 +38,8 @@ export function BoardCopyControl(props: Props) {
 function CopyDialog(props: Props) {
   const callbacks = useRef(props); callbacks.current = props;
   const board = props.snapshot.board; const admitted = props.snapshot.access.canView && props.snapshot.access.canEdit && board.lifecycleState === 'active';
-  const available = admitted && notificationUuid(board.id) && notificationUuid(board.organizationId) && board.backgroundType === 'COLOR'
-    && (board.backgroundValue === null || boardColors.includes(board.backgroundValue as typeof boardColors[number]));
+  const available = admitted && notificationUuid(board.id) && notificationUuid(board.organizationId)
+    && supportedBoardBackground(board.backgroundType, board.backgroundValue);
   const [open, setOpen] = useState(false); const [review, setReview] = useState<Review>(); const [name, setName] = useState('');
   const [intent, setIntent] = useState<Intent>(); const [copy, setCopy] = useState<Copy>(); const [verified, setVerified] = useState<string>();
   const [busy, setBusy] = useState(false); const [conflict, setConflict] = useState(false); const [notice, setNotice] = useState<string>();

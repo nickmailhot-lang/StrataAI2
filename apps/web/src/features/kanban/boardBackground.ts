@@ -1,5 +1,10 @@
 import type { BoardSnapshot } from '../../api/workManagement';
+import { notificationUuid } from '../notifications/notificationInbox';
 export const boardColors = ['blue', 'green', 'red', 'purple', 'orange', 'gray'] as const;
+export function supportedBoardBackground(type: unknown, value: unknown): boolean {
+  return type === 'COLOR' ? value === null || boardColors.includes(value as typeof boardColors[number])
+    : type === 'IMAGE' && notificationUuid(value);
+}
 const palette = { blue: ['#eff6ff', '#10243a'], green: ['#ecfdf5', '#102e24'], red: ['#fff1f2', '#381b22'],
   purple: ['#faf5ff', '#291e38'], orange: ['#fff7ed', '#352615'], gray: ['#f3f4f6', '#252930'] } as const;
 // Never interpolate persisted CSS, URLs or object references into presentation.
