@@ -45,6 +45,8 @@ END $$;
 CREATE FUNCTION pg_temp.no_reminder_effects() RETURNS void LANGUAGE plpgsql AS $$ BEGIN
  IF EXISTS(SELECT 1 FROM work_events WHERE tenant_id='03800000-0000-0000-0000-000000000001') OR
   EXISTS(SELECT 1 FROM card_assignment_notifications WHERE tenant_id='03800000-0000-0000-0000-000000000001') OR
+  EXISTS(SELECT 1 FROM notification_events WHERE tenant_id='03800000-0000-0000-0000-000000000001') OR
+  EXISTS(SELECT 1 FROM notification_event_streams WHERE tenant_id='03800000-0000-0000-0000-000000000001') OR
   EXISTS(SELECT 1 FROM audit_events WHERE tenant_id='03800000-0000-0000-0000-000000000001') OR
   EXISTS(SELECT 1 FROM work_event_streams WHERE tenant_id='03800000-0000-0000-0000-000000000001' AND last_sequence<>0) OR
   EXISTS(SELECT 1 FROM card_reminders WHERE tenant_id='03800000-0000-0000-0000-000000000001' AND status='FIRED')
@@ -63,6 +65,8 @@ SELECT pg_temp.attempt_reminder('LEASE_LOST',2);
 DO $$ BEGIN
  BEGIN PERFORM id FROM cards; RAISE EXCEPTION 'Worker read Cards' USING ERRCODE='check_violation'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM id FROM users; RAISE EXCEPTION 'Worker read accounts' USING ERRCODE='check_violation'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN PERFORM event_id FROM notification_events; RAISE EXCEPTION 'Worker read private journal' USING ERRCODE='check_violation'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN PERFORM last_sequence FROM notification_event_streams; RAISE EXCEPTION 'Worker read private counters' USING ERRCODE='check_violation'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN DELETE FROM card_reminders; RAISE EXCEPTION 'Worker erased Reminders' USING ERRCODE='check_violation'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END $$;
 RESET ROLE;
@@ -180,6 +184,16 @@ RESET ROLE;
 DO $$ BEGIN
  IF (SELECT count(*) FROM work_events WHERE tenant_id='03800000-0000-0000-0000-000000000001')<>1 OR
   (SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='03800000-0000-0000-0000-000000000001')<>1 OR
+  (SELECT count(*) FROM notification_events WHERE tenant_id='03800000-0000-0000-0000-000000000001')<>1 OR
+  NOT EXISTS(SELECT 1 FROM notification_event_streams WHERE tenant_id='03800000-0000-0000-0000-000000000001'
+    AND recipient_id='03800000-0000-0000-0000-000000000041' AND last_sequence=1) OR
+  NOT EXISTS(SELECT 1 FROM notification_events e JOIN card_assignment_notifications n
+    ON n.tenant_id=e.tenant_id AND n.id=e.notification_id AND n.recipient_id=e.recipient_id
+    WHERE e.tenant_id='03800000-0000-0000-0000-000000000001' AND e.sequence=1
+    AND e.event_type='NOTIFICATION_CREATED' AND e.version=1 AND e.metadata='{}'::jsonb
+    AND e.notification_id='03800000-0000-0000-0000-000000000061'
+    AND e.actor_id=e.recipient_id AND e.recipient_id='03800000-0000-0000-0000-000000000041'
+    AND e.board_id=n.board_id AND e.created_at=n.created_at) OR
   (SELECT count(*) FROM audit_events WHERE tenant_id='03800000-0000-0000-0000-000000000001')<>1 OR
   NOT EXISTS(SELECT 1 FROM card_reminders WHERE id='03800000-0000-0000-0000-000000000051' AND status='FIRED' AND generation=1 AND version=2) OR
   NOT EXISTS(SELECT 1 FROM work_event_streams WHERE tenant_id='03800000-0000-0000-0000-000000000001' AND last_sequence=1) OR
