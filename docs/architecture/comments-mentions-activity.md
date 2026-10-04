@@ -958,3 +958,11 @@ native mention selection and full PRD-15/PRD-17 acceptance remain open.
 The prior lock commit 554550d has now passed web, .NET, actual restricted
 PostgreSQL recipient row-lock tests and immutable image build in run 37173017212;
 container/security stages remain live. No full ticket is closed by this slice.
+
+A mandatory restricted PostgreSQL mention publication contract now exercises
+actual Card/comment/snapshot/source event/notification/delivery effects in one
+synthetic owning scope, verifies absent source and changed source revision
+refusal, exact notification duplicate identity and actor self suppression, then
+deliberately refuses and checks every effect and the Card revision rolled back.
+Admission is synthetic and it does not claim Production cookie command coverage.
+Local compilation passes; Linux execution of this new contract remains pending.
