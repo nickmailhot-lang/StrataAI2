@@ -68,10 +68,10 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
   useEffect(() => {
     mounted.current = true; void load();
     const check = () => { if (document.visibilityState !== 'hidden') void load(currentCursor.current); };
-    const interval = setInterval(check, 10_000); window.addEventListener('focus', check); document.addEventListener('visibilitychange', check);
+    const interval = setInterval(check, 10_000); window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
     return () => {
       mounted.current = false; ++epoch.current; pending.current?.abort(); pending.current = undefined; intent.current = undefined;
-      clearInterval(interval); window.removeEventListener('focus', check); document.removeEventListener('visibilitychange', check);
+      clearInterval(interval); window.removeEventListener('focus', check); window.removeEventListener('online', check); document.removeEventListener('visibilitychange', check);
     };
   }, [load]);
   const subject = profile?.id;
@@ -152,14 +152,14 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
       <Stack spacing={1}>
         {page.items.map(n => {
           const created = formatUserDateTime(n.createdAt, profile) ?? 'Date unavailable';
-          return <Paper key={n.id} component="article" variant="outlined" aria-label={`Card assignment, ${created}, ${n.readAt ? 'Read' : 'Unread'}`} sx={{ p: 2 }}>
+          return <Paper key={n.id} component="article" variant="outlined" aria-label={`${notificationLabels[n.type]}, ${created}, ${n.readAt ? 'Read' : 'Unread'}`} sx={{ p: 2 }}>
             <Stack spacing={1}>
               <Typography sx={{ fontWeight: 600 }}>{notificationLabels[n.type]} · {n.readAt ? 'Read' : 'Unread'}</Typography>
               <Typography component="time" dateTime={n.createdAt}>{created}</Typography>
               {n.readAt && <Typography>Read {formatUserDateTime(n.readAt, profile) ?? 'at an unavailable time'}</Typography>}
               <Stack direction="row" useFlexGap sx={{ gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                 {!n.readAt && <Checkbox checked={selected.includes(n.id)} disabled={busy || recovery} data-notification-focus={`select/${n.id}`}
-                  slotProps={{ input: { 'aria-label': `Select unread assignment from ${created}` } }}
+                  slotProps={{ input: { 'aria-label': `Select unread ${notificationLabels[n.type].toLowerCase()} from ${created}` } }}
                   onChange={(_, checked) => setSelected(previous => checked ? [...previous.filter(id => id !== n.id), n.id] : previous.filter(id => id !== n.id))} />}
                 <Button component={Link} to={n.entityLink} data-notification-focus={`link/${n.id}`}>Open Card</Button>
                 {!n.readAt && <Button disabled={busy || recovery} data-notification-focus={`read/${n.id}`} onClick={() => { void markRead([n.id]); }}>Mark read</Button>}

@@ -1,11 +1,12 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
-test('PRD-17: recipient inbox recovers real assignment and read changes across desktop and phone', async ({ page, context, browser }) => {
+test('PRD-17: recipient inbox recovers real assignment and read changes across desktop and phone', async ({ page, context, browser, baseURL }) => {
   test.setTimeout(150_000);
   await page.setViewportSize({ width: 1280, height: 844 });
   const headers = { 'X-StrataAI-Request': '1' };
-  const owner = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  const owner = await browser.newContext({ baseURL });
   let phone: typeof owner | undefined; let restoreWorker = () => {};
   try {
     const email = `notification-recipient-${Date.now()}@example.test`;
@@ -28,7 +29,7 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     expect(createdList.status()).toBe(201); const list = (await createdList.json()).id;
     restoreWorker = scopedBoardWorker(org);
     await waitForBoardDelivery(owner.request, board);
-    phone = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
+    phone = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
     const other = await phone.newPage();
     await page.goto(`/app/${org}/notifications`); await other.goto(`/app/${org}/notifications`);
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible();
@@ -71,8 +72,22 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     const markSelected = other.getByRole('button', { name: 'Mark selected read' }); await expect(markSelected).toBeEnabled(); await markSelected.press('Enter');
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    await phone.setOffline(true);
+    await other.getByRole('button', { name: 'Refresh notifications', exact: true }).press('Enter');
+    await expect(other.getByText('Unable to load current notifications. Try again.', { exact: true })).toBeVisible();
+    await expect(other.getByRole('article')).toHaveCount(0);
+    await assign('Assignment during recipient disconnect');
+    await expect(page.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    await phone.setOffline(false);
+    await expect(other.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    await other.getByRole('button', { name: 'Mark read', exact: true }).press('Enter');
+    await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+    await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    for (const client of [page, other]) {
+      expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    }
     const inbox = await context.request.get(`/organizations/${org}/notifications`); expect(inbox.status()).toBe(200);
-    const notifications = (await inbox.json()).items; expect(notifications).toHaveLength(3);
+    const notifications = (await inbox.json()).items; expect(notifications).toHaveLength(4);
     expect(notifications.every((n: { recipientId: string; readAt: string | null }) => n.recipientId === recipient && n.readAt !== null)).toBe(true);
     expect((await (await owner.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
     expect(await other.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

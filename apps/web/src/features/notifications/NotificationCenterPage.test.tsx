@@ -22,6 +22,8 @@ it.each([['CARD_MOVED', 'Card moved'], ['LABEL_REMOVED', 'Label removed']])('ren
   expect(await screen.findByText(`${label} · Unread`)).toBeVisible();
   expect(screen.getByRole('link', { name: 'Open Card' })).toHaveAttribute('href', item().entityLink);
   expect(screen.getByRole('button', { name: 'Mark read' })).toBeEnabled();
+  expect(screen.getByRole('article').getAttribute('aria-label')).toMatch(new RegExp(`^${label},`));
+  expect(screen.getByRole('checkbox').getAttribute('aria-label')).toMatch(new RegExp(`^Select unread ${label.toLowerCase()} from`));
 });
 
 it('renders recipient-only Card links and sends explicit selected IDs with a retry key', async () => {
@@ -152,4 +154,25 @@ it.each([400, 409])('retires a rejected selection and requires canonical refresh
   await screen.findByText('The selection changed. Refresh notifications before trying again.');
   expect(screen.queryByText('Retry mark read')).not.toBeInTheDocument(); expect(screen.queryByRole('article')).not.toBeInTheDocument();
   expect(screen.queryByText('raw rejected selection')).not.toBeInTheDocument();
+});
+
+it('automatically re-admits the inbox when connectivity returns after a failed read', async () => {
+  let online = true, available = false;
+  const fetch = vi.fn(async (path: string) => {
+    if (!online) throw new Error('private network diagnostic');
+    return response(path === '/me' ? profile : data(available ? [item()] : []));
+  });
+  vi.stubGlobal('fetch', fetch); const view = mount();
+  await screen.findByText('0 unread on this page.');
+  online = false;
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh notifications' }));
+  await screen.findByText('Unable to load current notifications. Try again.');
+  expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(screen.queryByText('private network diagnostic')).not.toBeInTheDocument();
+  available = true; online = true; fireEvent(window, new Event('online'));
+  await screen.findByText('1 unread on this page.');
+  expect(screen.getByRole('article', { name: /^Assigned to you,/ })).toBeVisible();
+  expect(screen.getByRole('checkbox', { name: /^Select unread assigned to you from/ })).toBeEnabled();
+  view.unmount(); const calls = fetch.mock.calls.length;
+  fireEvent(window, new Event('online')); expect(fetch).toHaveBeenCalledTimes(calls);
 });
