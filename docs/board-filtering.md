@@ -12,6 +12,14 @@ before the Board page limit. Archived Board candidates may appear in traversal;
 the requested search lifecycle scope must be enforced at content admission.
 
 These methods are prerequisites, not a shipped global-search API or UI.
+The cross-Organization cursor codec uses ASP.NET Data Protection with a distinct
+versioned purpose. It binds the actor, normalized keyword/label/member strings,
+ANY/ALL mode and active/archive scope to the Organization/Board/Card seek
+position, expires after 15 minutes, and caps decoding input at 4,096 characters.
+Positions are routing state, never proof of authorization; every resumed content
+read must recheck current admission. Account changes or changed criteria reject
+the old token. This codec is registered in both runtimes; the search coordinator
+and API must still be connected to it.
 Remaining implementation includes cross-Organization cursor coordination,
 title/description and label/member matching, authorized Board/List/label/member/
 deadline context, explicit archive scope, an extensible projected-document
