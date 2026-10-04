@@ -1352,3 +1352,25 @@ Board/Card rights, moves/archive/deletion, private watch/reminder scopes, atomic
 read waits, pagination, historical actor display, retention and full capacity
 evidence still need their own complete implementation and tests. PRD-15 remains
 open at **50% estimated remaining work**; no acceptance criterion is closed.
+
+2102cb7 passed the actual PostgreSQL job in run 37179692323, including populated
+upgrade/repeat, the new restricted historical-caption/source checks and runtime
+grants. Review then caught a missing positive case: the initial source guard
+was BEFORE UPDATE, while stored generated Watch/Reminder references are computed
+after BEFORE triggers ([PostgreSQL 17 generated-column documentation](https://www.postgresql.org/docs/17/ddl-generated-columns.html)).
+That passing Board-source fixture did not prove correct private-event readiness.
+Migration 063 corrects this through an ordered upgrade: the guard runs AFTER
+UPDATE, compares the complete computed source, and raises to roll back any
+historical mutation atomically. Migration 062 remains the already-recorded
+historical migration. The readiness ledger now requires all 63 versions; repeat
+fixtures include 063 and move synthetic cases to 064/065/066.
+
+The mandatory storage fixture now includes actual generated Watch and Reminder
+sources and updates readiness using a separate restricted login shape with only
+source identity/readiness SELECT columns and UPDATE(ready_at). Captions and
+computed references must survive, and a valid source-version rewrite must still
+fail with unchanged history. Foreign/invalid envelope attempts may be refused
+by existing RLS/FK/check boundaries before the AFTER guard; all must preserve
+state. Local warning-as-error compilation, shell syntax and diff checks pass.
+The new generated-source correction and scenarios await actual CI execution.
+PRD-15 remains open at **50% estimated remaining work**.

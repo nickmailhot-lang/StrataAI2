@@ -4,6 +4,9 @@ BEGIN;
 CREATE ROLE strataai_activity_storage_ci NOSUPERUSER NOBYPASSRLS NOLOGIN;
 GRANT USAGE ON SCHEMA public TO strataai_activity_storage_ci;
 GRANT SELECT,INSERT,UPDATE ON work_events TO strataai_activity_storage_ci;
+CREATE ROLE strataai_activity_delivery_ci NOSUPERUSER NOBYPASSRLS NOLOGIN;
+GRANT USAGE ON SCHEMA public TO strataai_activity_delivery_ci;
+GRANT SELECT(tenant_id,event_id,board_id,actor_id,ready_at),UPDATE(ready_at) ON work_events TO strataai_activity_delivery_ci;
 INSERT INTO organizations(id,name,created_at,updated_at) VALUES
  ('06200000-0000-0000-0000-000000000001','Activity A',now(),now()),
  ('06200000-0000-0000-0000-000000000002','Activity B',now(),now());
@@ -43,7 +46,7 @@ DO $$ DECLARE mutation text; baseline jsonb; affected integer; BEGIN
   BEGIN
    EXECUTE 'UPDATE work_events SET '||mutation;
    RAISE EXCEPTION 'Historical activity mutated: %',mutation;
-  EXCEPTION WHEN check_violation THEN NULL; END;
+  EXCEPTION WHEN check_violation OR foreign_key_violation OR insufficient_privilege THEN NULL; END;
   IF (SELECT to_jsonb(e)-'ready_at' FROM work_events e) IS DISTINCT FROM baseline THEN
    RAISE EXCEPTION 'Rejected activity mutation changed historical state'; END IF;
  END LOOP;
@@ -77,6 +80,47 @@ DO $$ BEGIN
   'Member 06200000-0000-0000-0000-000000000042' THEN RAISE EXCEPTION 'Foreign account caption disclosed'; END IF;
 END $$;
 RESET ROLE;
+-- Generated Watch/Reminder references must be materialized before comparing
+-- the historical row. Exercise the actual Worker column privilege shape.
+INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at) VALUES
+ ('06200000-0000-0000-0000-000000000021','06200000-0000-0000-0000-000000000001',
+ '06200000-0000-0000-0000-000000000011','Activity list','500000000000000000000000000000',now(),now());
+INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at) VALUES
+ ('06200000-0000-0000-0000-000000000031','06200000-0000-0000-0000-000000000001',
+ '06200000-0000-0000-0000-000000000011','06200000-0000-0000-0000-000000000021',
+ 'Activity Card','500000000000000000000000000000',now(),now());
+INSERT INTO watch_subscriptions(tenant_id,id,user_id,entity_type,entity_id,board_id,watching,created_at,updated_at,version) VALUES
+ ('06200000-0000-0000-0000-000000000001','06200000-0000-0000-0000-000000000061',
+ '06200000-0000-0000-0000-000000000041','BOARD','06200000-0000-0000-0000-000000000011',
+ '06200000-0000-0000-0000-000000000011',true,now(),now(),1);
+INSERT INTO card_reminders(tenant_id,id,user_id,card_id,interval_code,enabled,status,generation,created_at,updated_at,version) VALUES
+ ('06200000-0000-0000-0000-000000000001','06200000-0000-0000-0000-000000000062',
+ '06200000-0000-0000-0000-000000000041','06200000-0000-0000-0000-000000000031',
+ 'AT_DUE',true,'SUSPENDED',1,now(),now(),1);
+SET LOCAL ROLE strataai_activity_storage_ci;
+INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at) VALUES
+ ('06200000-0000-0000-0000-000000000001','06200000-0000-0000-0000-000000000054',
+ '06200000-0000-0000-0000-000000000011',3,'06200000-0000-0000-0000-000000000041',
+ 'WATCH_CREATED','WatchSubscription','06200000-0000-0000-0000-000000000061',1,'activity-generated',now()),
+ ('06200000-0000-0000-0000-000000000001','06200000-0000-0000-0000-000000000055',
+ '06200000-0000-0000-0000-000000000011',4,'06200000-0000-0000-0000-000000000041',
+ 'REMINDER_SCHEDULED','Reminder','06200000-0000-0000-0000-000000000062',1,'activity-generated',now());
+SET LOCAL ROLE strataai_activity_delivery_ci;
+UPDATE work_events SET ready_at=clock_timestamp()
+ WHERE event_id IN ('06200000-0000-0000-0000-000000000054','06200000-0000-0000-0000-000000000055');
+SET LOCAL ROLE strataai_activity_storage_ci;
+DO $$ BEGIN
+ IF (SELECT count(*) FROM work_events WHERE correlation_id='activity-generated' AND ready_at IS NOT NULL
+  AND activity_actor_label='Original name' AND (watch_subscription_id=entity_id OR reminder_id=entity_id))<>2 THEN
+  RAISE EXCEPTION 'Generated source references or attribution prevented readiness'; END IF;
+ BEGIN
+  UPDATE work_events SET entity_version=2 WHERE correlation_id='activity-generated';
+  RAISE EXCEPTION 'Generated activity source was rewritten';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+ IF EXISTS(SELECT 1 FROM work_events WHERE correlation_id='activity-generated' AND entity_version<>1) THEN
+  RAISE EXCEPTION 'Refused generated source update survived'; END IF;
+END $$;
+RESET ROLE;
 UPDATE users SET display_name='Later name',status='DEACTIVATED' WHERE id='06200000-0000-0000-0000-000000000041';
 SET LOCAL ROLE strataai_activity_storage_ci;
 DO $$ BEGIN
@@ -89,4 +133,4 @@ END $$;
 SELECT set_config('app.tenant_id','',true);
 DO $$ BEGIN IF EXISTS(SELECT 1 FROM work_events) THEN RAISE EXCEPTION 'Activity read without owning tenant'; END IF; END $$;
 ROLLBACK;
-\echo 'Activity journal: captured/immutable attribution, rename/deactivation history, foreign caption refusal, forced tenant isolation, immutable envelope, readiness-only updates and seek indexes passed.'
+\echo 'Activity journal: captured/immutable attribution, rename/deactivation history, foreign caption refusal, forced tenant isolation, immutable envelope, restricted Watch/Reminder generated-source readiness updates and seek indexes passed.'
