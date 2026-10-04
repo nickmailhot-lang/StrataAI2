@@ -60,11 +60,38 @@ revision=$(json "$base/boards/$board" | jq -r '.board.version')
 selected_version=$((revision + 1))
 body=$(jq -nc --arg card "$card" --arg attachment "$attachment" --argjson revision "$revision" '{cardId:$card,attachmentId:$attachment,attachmentVersion:3,boardVersion:$revision}')
 selection_key=$(cat /proc/sys/kernel/random/uuid)
+competing_key=$(cat /proc/sys/kernel/random/uuid)
+race_selection() {
+  local key=$1 output=$2
+  curl --max-time 60 --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -H "Idempotency-Key: $key" -X POST -d "$body" -o "$scratch/$output.body" -w '%{http_code}' "$base/boards/$board/background/image" > "$scratch/$output.status"
+}
+# Independent requests contend on the same reviewed Board revision. Exactly
+# one ownership selection may commit; the stale command must stay rejected.
+race_selection "$selection_key" race-a & race_a=$!
+race_selection "$competing_key" race-b & race_b=$!
+wait "$race_a"
+wait "$race_b"
+if [ "$(cat "$scratch/race-a.status")" = 200 ]; then
+  winner=race-a; loser=race-b; losing_key=$competing_key
+else
+  winner=race-b; loser=race-a; losing_key=$selection_key; selection_key=$competing_key
+fi
+test "$(cat "$scratch/$winner.status")" = 200
+test "$(cat "$scratch/$loser.status")" = 409
+jq -e '.code=="version_conflict"' "$scratch/$loser.body" >/dev/null
+cp "$scratch/$winner.body" "$scratch/selected"
+race_selection "$losing_key" race-loser-retry
+test "$(cat "$scratch/race-loser-retry.status")" = 409
+jq -e '.code=="version_conflict"' "$scratch/race-loser-retry.body" >/dev/null
 select_image() {
   curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
     -H "Idempotency-Key: $selection_key" -X POST -d "$body" "$base/boards/$board/background/image"
 }
-select_image > "$scratch/selected"
+select_image > "$scratch/race-winner-recovered"
+cmp "$scratch/selected" "$scratch/race-winner-recovered"
+json "$base/boards/$board" > "$scratch/race-current"
+jq -e --slurpfile selected "$scratch/selected" '.board.version==$selected[0].version and .board.backgroundValue==$selected[0].backgroundValue' "$scratch/race-current" >/dev/null
 jq -e --argjson version "$selected_version" '.version==$version and .backgroundType=="IMAGE"' "$scratch/selected" >/dev/null
 owned=$(jq -r '.backgroundValue' "$scratch/selected"); [[ "$owned" =~ ^[0-9a-f-]{36}$ ]]
 test "$owned" != 00000000-0000-0000-0000-000000000000
