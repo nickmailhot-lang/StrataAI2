@@ -195,3 +195,17 @@ waits for the edge to resolve the replacement API. Shell syntax passes locally;
 actual PostgreSQL/image execution occurs only in the mandatory Linux release
 pipeline. These scenarios are not claimed passed until their exact-image step
 finishes successfully.
+
+Required native activity browser coverage now defines separate 1280px and 390px
+scenarios. Real distinct accounts, Organization invitations and Board membership
+create 65 actual Card mutations before history review. Keyboard paging checks
+50/16 Card pages, focus recovery, literal captured captions and absence of body
+content. Two independently authenticated clients recover comment activity;
+the reader's real Board WebSocket is explicitly disconnected and reconnects
+after a missed, Worker-delivered event. Revoked membership removes displayed
+history and refuses its previous cursor. Owner archive/delete commands preserve
+permitted API and Board activity tombstones. Axe WCAG 2.2 AA and viewport overflow
+checks run against the real MUI interface. Playwright discovery passes locally;
+actual execution requires the immutable-image release topology and is not yet
+claimed passed. This does not substitute source/component tests for native UI,
+Worker or SignalR evidence.
