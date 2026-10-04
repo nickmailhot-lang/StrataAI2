@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from './releaseTest';
+import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 test('PRD-17: recipient inbox recovers real assignment and read changes across desktop and phone', async ({ page, context, browser, baseURL }) => {
@@ -30,6 +30,11 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     restoreWorker = scopedBoardWorker(org);
     await waitForBoardDelivery(owner.request, board);
     phone = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
+    let notificationSocket: WebSocketRoute | undefined; let liveOffline = false;
+    await phone.routeWebSocket('**/notifications/live*', route => {
+      if (liveOffline) { route.close({ code: 1013 }); return; }
+      notificationSocket = route; route.connectToServer();
+    });
     const other = await phone.newPage();
     function observeLive(client: typeof page) {
       const events: string[] = []; const cursors: (string | null)[] = []; let snapshots = 0;
@@ -109,13 +114,14 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     const markSelected = other.getByRole('button', { name: 'Mark selected read' }); await expect(markSelected).toBeEnabled(); await markSelected.press('Enter');
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
-    await phone.setOffline(true);
+    expect(notificationSocket).toBeDefined(); liveOffline = true;
+    await phone.setOffline(true); await notificationSocket!.close({ code: 1012 });
     await other.getByRole('button', { name: 'Refresh notifications', exact: true }).press('Enter');
     await expect(other.getByText('Unable to load current notifications. Try again.', { exact: true })).toBeVisible();
     await expect(other.getByRole('article')).toHaveCount(0);
     await assign('Assignment during recipient disconnect');
     await expect(page.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
-    await phone.setOffline(false);
+    liveOffline = false; await phone.setOffline(false);
     await expect(other.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     await expect.poll(() => phoneLive.cursors.some(cursor => typeof cursor === 'string' && /^[0-9]+$/.test(cursor)), { timeout: 25_000 }).toBe(true);
     await expect.poll(() => phoneLive.events.filter(type => type === 'NOTIFICATION_CREATED').length, { timeout: 25_000 }).toBe(4);
