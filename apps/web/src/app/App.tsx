@@ -18,6 +18,7 @@ import { BoardDatePolicyPage } from "../features/kanban/BoardDatePolicyPage";
 import { BoardMembersPage } from "../features/kanban/BoardMembersPage";
 import { ArchivedListsPage } from "../features/kanban/ArchivedListsPage";
 import { ArchivedCardsPage } from "../features/kanban/ArchivedCardsPage";
+import { ArchivedBoardsPage } from "../features/kanban/ArchivedBoardsPage";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
 import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
@@ -55,6 +56,7 @@ const routes = [
       { path: "settings", element: <OrganizationSettingsPage /> },
       { path: "notifications", element: <NotificationCenterPage /> },
       { path: "search", element: <GlobalSearchPage /> },
+      { path: "archived-boards", element: <ArchivedBoardsPage /> },
       { path: "members", element: <OrganizationMembersPage /> },
       { path: "invite", element: <OrganizationInvitationPage /> },
       { path: "boards/:boardId/invite", element: <BoardInvitationPage /> },

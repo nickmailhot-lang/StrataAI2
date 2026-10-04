@@ -191,6 +191,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               <Typography>{organization.description}</Typography>
             )}
             <Stack direction="row" spacing={2}>
+              {organizationId && organization?.status === 0 && <Button component={Link} to={`/app/${organizationId}/archived-boards`}>Archived boards</Button>}
               {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
                 <Button component={Link} to={`/app/${organizationId}/settings`}>Organization settings</Button>
               )}
