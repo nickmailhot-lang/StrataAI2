@@ -82,14 +82,16 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
           if (!activated || activated.disabled || !activated.closest('[aria-label="Create checklist"]')) return;
           document.removeEventListener('keydown', activate, true);
           document.removeEventListener('click', activate, true);
-          const began = performance.now();
+          // This callback executes in the browser. The imported Node clock
+          // would be rewritten to a module binding unavailable in that page.
+          const began = window.performance.now();
           const frame = () => {
             const region = document.querySelector('[aria-label="Create checklist"]');
             const status = region?.querySelector('[role="status"]');
             const button = region?.querySelector<HTMLButtonElement>('button[type="submit"]');
             if (status?.textContent === 'Creating checklist…' && (!button || button.disabled)) {
-              requestAnimationFrame(() => { clearTimeout(timer); resolve(performance.now() - began); });
-            } else if (performance.now() - began >= 2000) { clearTimeout(timer); resolve(Infinity); }
+              requestAnimationFrame(() => { clearTimeout(timer); resolve(window.performance.now() - began); });
+            } else if (window.performance.now() - began >= 2000) { clearTimeout(timer); resolve(Infinity); }
             else requestAnimationFrame(frame);
           }; requestAnimationFrame(frame);
         };
