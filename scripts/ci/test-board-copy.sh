@@ -28,23 +28,23 @@ source=$(jq -r '.id' "$scratch/response")
 for id in "$actor" "$org" "$source"; do [[ "$id" =~ ^[0-9a-f-]{36}$ ]]; done
 # Trusted disposable capacity data. The copy itself always uses the authenticated
 # release API and its restricted role, and must never truncate to UI page sizes.
-admin "INSERT INTO board_lists(id,tenant_id,board_id,name,rank,lifecycle_state,archived_at)
+admin "INSERT INTO board_lists(id,tenant_id,board_id,name,rank,lifecycle_state,archived_at,created_at,updated_at)
   SELECT gen_random_uuid(),'$org','$source','List '||n,lpad(n::text,30,'0'),
-    CASE WHEN n=200 THEN 'ARCHIVED' ELSE 'ACTIVE' END,CASE WHEN n=200 THEN clock_timestamp() ELSE NULL END FROM generate_series(1,200) n;
-  INSERT INTO cards(id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,archived_at)
+    CASE WHEN n=200 THEN 'ARCHIVED' ELSE 'ACTIVE' END,CASE WHEN n=200 THEN now() ELSE NULL END,now(),now() FROM generate_series(1,200) n;
+  INSERT INTO cards(id,tenant_id,board_id,list_id,title,description,rank,lifecycle_state,archived_at,created_at,updated_at)
   SELECT gen_random_uuid(),'$org','$source',l.id,'Card '||n,'Copied description',lpad(n::text,30,'0'),
-    CASE WHEN n=25 THEN 'ARCHIVED' ELSE 'ACTIVE' END,CASE WHEN n=25 THEN clock_timestamp() ELSE NULL END
+    CASE WHEN n=25 THEN 'ARCHIVED' ELSE 'ACTIVE' END,CASE WHEN n=25 THEN now() ELSE NULL END,now(),now()
     FROM board_lists l CROSS JOIN generate_series(1,25) n WHERE l.tenant_id='$org' AND l.board_id='$source';
   INSERT INTO board_labels(id,tenant_id,board_id,name,color,rank)
     SELECT gen_random_uuid(),'$org','$source','Distinct shared label','blue',lpad(n::text,30,'0') FROM generate_series(1,2) n;
   INSERT INTO card_labels(tenant_id,board_id,card_id,label_id)
     SELECT '$org','$source',c.id,l.id FROM cards c CROSS JOIN board_labels l WHERE c.tenant_id='$org' AND c.board_id='$source' AND l.tenant_id='$org' AND l.board_id='$source';
-  INSERT INTO checklists(id,tenant_id,card_id,title,rank)
-    SELECT gen_random_uuid(),'$org',c.id,'Independent checklist',lpad('1',30,'0') FROM cards c JOIN board_lists l ON l.id=c.list_id AND l.tenant_id=c.tenant_id
+  INSERT INTO checklists(id,tenant_id,card_id,title,rank,created_at,updated_at)
+    SELECT gen_random_uuid(),'$org',c.id,'Independent checklist',lpad('1',30,'0'),now(),now() FROM cards c JOIN board_lists l ON l.id=c.list_id AND l.tenant_id=c.tenant_id
     WHERE c.tenant_id='$org' AND c.board_id='$source' AND c.rank=lpad('1',30,'0') AND l.rank IN(lpad('1',30,'0'),lpad('2',30,'0'));
-  INSERT INTO checklist_items(id,tenant_id,checklist_id,text,rank)
-    SELECT gen_random_uuid(),'$org',c.id,'Work '||n,lpad(n::text,30,'0') FROM checklists c CROSS JOIN generate_series(1,63) n WHERE c.tenant_id='$org';
-  UPDATE checklist_items SET completed=true,completed_at=clock_timestamp(),completed_by='$actor',version=2
+  INSERT INTO checklist_items(id,tenant_id,checklist_id,text,rank,created_at,updated_at)
+    SELECT gen_random_uuid(),'$org',c.id,'Work '||n,lpad(n::text,30,'0'),now(),now() FROM checklists c CROSS JOIN generate_series(1,63) n WHERE c.tenant_id='$org';
+  UPDATE checklist_items SET completed=true,completed_at=now(),completed_by='$actor',version=2,updated_at=now()
     WHERE tenant_id='$org' AND rank=lpad('1',30,'0');" >/dev/null
 state() { admin "SELECT md5(jsonb_build_object(
   'boards',(SELECT jsonb_agg(to_jsonb(b) ORDER BY id) FROM boards b WHERE tenant_id='$org'),
