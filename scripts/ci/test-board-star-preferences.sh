@@ -3,7 +3,12 @@ set -euo pipefail
 test "${CI:-}" = true || { echo 'Disposable star fixtures may run only in CI.' >&2; exit 1; }
 BASE_URL="${1:-http://localhost:8080}"
 scratch="$(mktemp -d)"
-trap 'rm -rf "$scratch"' EXIT
+restore() {
+  if [ "${preference_permission_withdrawn:-0}" = 1 ]; then
+    admin 'GRANT UPDATE ON user_board_preferences TO strataai_api_runtime;' >/dev/null
+  fi
+}
+trap 'restore; rm -rf "$scratch"' EXIT
 trap 'echo "Board star check failed at line $LINENO" >&2' ERR
 uuid() { cat /proc/sys/kernel/random/uuid; }
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
@@ -61,6 +66,24 @@ test "$(admin "SELECT version=2 AND NOT starred AND created_at<=updated_at FROM 
 test "$(admin "SELECT created_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = "$creation"
 test "$(request owner DELETE "/boards/$board/star" "$key" '')" = 409
 jq -e '.code == "idempotency_key_reused"' "$scratch/response" >/dev/null
+# A failed restricted write must roll back its tentative receipt and retain all
+# preference clocks/revision. The same intent may then commit after recovery.
+retry_key="$(uuid)"
+preference_before="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")"
+preference_permission_withdrawn=1
+admin 'REVOKE UPDATE ON user_board_preferences FROM strataai_api_runtime;' >/dev/null
+test "$(request owner PUT "/boards/$board/star" "$retry_key" '')" = 503
+jq -e '.code == "work_storage_unavailable"' "$scratch/response" >/dev/null
+scripts/ci/assert-file-excludes.sh 'Npgsql|permission denied|user_board_preferences|work_command_replays|INSERT INTO' "$scratch/response"
+test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$preference_before"
+test "$(admin "SELECT count(*) FROM work_command_replays WHERE tenant_id='$organization' AND actor_id='$owner_id' AND key_id='$retry_key';")" = 0
+restore
+preference_permission_withdrawn=0
+test "$(request owner PUT "/boards/$board/star" "$retry_key" '')" = 204
+test "$(admin "SELECT version=3 AND starred FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
+committed="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")"
+test "$(request owner PUT "/boards/$board/star" "$retry_key" '')" = 204
+test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$committed"
 test "$(request owner GET "/boards/$board" "$(uuid)" '')" = 200
 jq -S '{board,lists}' "$scratch/response" > "$scratch/after.json"
 cmp "$scratch/before.json" "$scratch/after.json"
@@ -72,4 +95,4 @@ for method in GET PUT; do
   scripts/ci/assert-file-excludes.sh 'starred|Private personal preferences|Npgsql|user_board_preferences|work_command_replays' "$scratch/response"
 done
 test "$(curl --max-time 30 --silent --show-error -o "$scratch/response" -w '%{http_code}' "$BASE_URL/boards/$board/star")" = 401
-echo 'Exact release API proves private actor-scoped star reads, receipt isolation, replay without overwrite, unchanged shared records and revoked admission.'
+echo 'Exact release API proves private star reads, retained revisions, atomic rollback/recovery, receipt isolation, replay without overwrite and revoked admission.'
