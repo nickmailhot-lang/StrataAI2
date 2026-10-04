@@ -209,3 +209,16 @@ checks run against the real MUI interface. Playwright discovery passes locally;
 actual execution requires the immutable-image release topology and is not yet
 claimed passed. This does not substitute source/component tests for native UI,
 Worker or SignalR evidence.
+
+Activity capacity validation now reuses the real supported-size Checklist parent
+fixture (200 Lists, 5,000 active Cards and 100,000 archived Cards), adds 100,000
+synthetic immutable Card history sources, and exercises Board/Card first and
+seek pages through the restricted API/Nginx. It verifies 50-row pages, 100 distinct
+IDs across two pages, body-free items and unchanged read state, and measures 20
+requests per endpoint. A dedicated retained artifact contains only fixed fixture
+sizes, verification flags, numeric samples/p95s and the immutable revision. No
+source identities, captions, bodies, profiles, cursor tokens or SQL are retained.
+Shell syntax passes locally; actual execution is a required release step. This
+setup measures API read capacity; it does not claim actual audited history birth,
+a browser rendering budget, exhaustive 100,000-event enumeration or a retention
+policy that silently discards old events.
