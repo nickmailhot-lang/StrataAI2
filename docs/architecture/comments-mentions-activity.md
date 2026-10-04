@@ -479,3 +479,30 @@ as errors; new execution evidence awaits Linux CI. Successful append-only audit
 and its disposable account are retained until the isolated CI database teardown.
 This service is not yet exposed over HTTP or MUI; cookie lifecycle, native UI,
 scoped recipient resolution and mention notifications remain unfinished.
+
+## Protected account handle HTTP boundary
+
+GET/PATCH /me/mention-handle now expose only the authenticated current account.
+There is no account-ID route or teammate/profile lookup capability. PATCH uses
+the shared cookie authorization, CSRF header and canonical single UUID retry-key
+middleware; this new command requires a nonempty key. Both endpoints and key
+refusals set private, no-store. The shared Problem boundary returns stable
+validation, conflict, reservation-limit, revoked-session and storage errors.
+
+The actual host tests use separate authenticated cookie clients, concurrent
+identical retries, normalized original recovery, another account's collision
+and independent key namespace, unrelated profile change, rename refusal and an
+original revoked cookie. Invalid/missing/repeated keys and reserved names retain
+state; unauthenticated access, missing CSRF and account-ID lookup are refused.
+These are Demo-host middleware/session tests, not PostgreSQL HTTP/live-lock-wait
+or native MUI execution evidence. Local warning-as-error compilation passes;
+their Linux execution still awaits the new commit's CI. Account UI, actual
+Production cookie lifecycle under waits, scoped recipient selection and mention
+notification/activity acceptance remain open.
+
+The preceding command slice's corrected CI run 37167703326 has passed actual
+restricted PostgreSQL command composition, including the injected audit refusal
+and complete rollback/retry/current-only hydration assertions. The first fixture
+commit omitted required account timestamps; d9488b9 supplies finite server
+timestamps and the corrected contract passes. This does not substitute for the
+new HTTP tests or completion of the full build-once release pipeline.

@@ -183,6 +183,25 @@ public static class IdentityEndpoints
 
         var me = app.MapGroup("/me").RequireAuthorization();
 
+        me.MapGet("/mention-handle", async (HttpContext context, UserMentionHandleService handles, CancellationToken ct) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var user = GetUserId(context);
+            if (user is null) return Results.Unauthorized();
+            var result = await handles.GetAsync(user.Value, ct);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+        me.MapPatch("/mention-handle", async (ClaimMentionHandleInput request, HttpContext context,
+            UserMentionHandleService handles, IIdentityCommandContext commands, CancellationToken ct) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var user = GetUserId(context);
+            if (user is null) return Results.Unauthorized();
+            if (commands.IdempotencyKey is not { } key) return ErrorFor("invalid_idempotency_key");
+            var result = await handles.ClaimAsync(user.Value, key, request, context.TraceIdentifier, ct);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+
         me.MapGet("/sync", async (long? after, HttpContext context, IIdentityService identityService,
             CancellationToken cancellationToken) =>
         {
@@ -306,6 +325,11 @@ public static class IdentityEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_idempotency_key" => Problem(StatusCodes.Status400BadRequest, errorCode, "A nonempty UUID retry key is required."),
+            "mention_handle_invalid" => Problem(StatusCodes.Status400BadRequest, errorCode, "Use 3–40 letters, digits or underscores, beginning with a letter. Reserved names cannot be chosen."),
+            "mention_handle_unavailable" => Problem(StatusCodes.Status409Conflict, errorCode, "This handle or original handle-change acknowledgment is unavailable. Review the current account setting."),
+            "mention_handle_claim_refused" => Problem(StatusCodes.Status409Conflict, errorCode, "This account has reached its handle reservation limit. Choose a previously owned handle."),
+            "invalid_correlation_id" => Problem(StatusCodes.Status400BadRequest, errorCode, "A valid request identifier is required."),
             "idempotency_key_expired" => Problem(StatusCodes.Status409Conflict, errorCode, "This account-change attempt is no longer available."),
             "identity_retry_key_unavailable" => Problem(StatusCodes.Status503ServiceUnavailable, errorCode, "This retry could not be confirmed. Contact support before starting another attempt."),
             "idempotency_key_reused" => Problem(StatusCodes.Status409Conflict, errorCode, "This retry key was already used for another account change."),

@@ -14,7 +14,9 @@ public sealed class IdentityProfileIdempotencyMiddleware(RequestDelegate next)
     public async Task InvokeAsync(HttpContext context)
     {
         var path = context.Request.Path.Value?.TrimEnd('/');
-        var supported = (HttpMethods.IsPatch(context.Request.Method) && string.Equals(path, "/me", StringComparison.OrdinalIgnoreCase))
+        var handleCommand = string.Equals(path, "/me/mention-handle", StringComparison.OrdinalIgnoreCase);
+        if (handleCommand) context.Response.Headers.CacheControl = "private, no-store";
+        var supported = (HttpMethods.IsPatch(context.Request.Method) && (string.Equals(path, "/me", StringComparison.OrdinalIgnoreCase) || handleCommand))
             || (HttpMethods.IsPost(context.Request.Method) && (string.Equals(path, "/auth/logout", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(path, "/auth/login", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(path, "/auth/register", StringComparison.OrdinalIgnoreCase)
