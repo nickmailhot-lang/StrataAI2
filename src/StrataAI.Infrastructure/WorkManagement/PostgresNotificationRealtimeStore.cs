@@ -5,6 +5,15 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class PostgresWorkNotificationStore
 {
+    public async Task<long> GetRecipientSequenceAsync(Guid organizationId, Guid recipientId, CancellationToken cancellationToken = default)
+    {
+        if (organizationId == Guid.Empty || recipientId == Guid.Empty) throw new ArgumentException("Invalid notification journal scope.");
+        if (!connections.HasCommandScope(organizationId)) throw new InvalidOperationException("Notification journal reads require their owning transaction.");
+        await using var session = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var query = new NpgsqlCommand("SELECT last_sequence FROM notification_event_streams WHERE tenant_id=@tenant AND recipient_id=@recipient;", session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organizationId); query.Parameters.AddWithValue("recipient", recipientId);
+        return await query.ExecuteScalarAsync(cancellationToken) is long sequence ? sequence : 0;
+    }
     public async Task<IReadOnlyList<NotificationRealtimeEvent>> ListRecipientEventsAsync(Guid organizationId,
         Guid recipientId, long after = 0, CancellationToken cancellationToken = default)
     {

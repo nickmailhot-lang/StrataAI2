@@ -19,6 +19,13 @@ internal sealed class InMemoryWorkNotificationStore(DemoWorkTransactionScope sco
     private readonly Dictionary<(Guid Organization, Guid Event, Guid Recipient), CardNotification> _notifications = [];
     private readonly Dictionary<(Guid Organization, Guid Recipient), List<NotificationRealtimeEvent>> _journal = [];
 
+    public Task<long> GetRecipientSequenceAsync(Guid organizationId, Guid recipientId, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (organizationId == Guid.Empty || recipientId == Guid.Empty) throw new ArgumentException("Invalid notification journal scope.");
+        lock (_notifications) return Task.FromResult<long>(_journal.TryGetValue((organizationId, recipientId), out var events) ? events.Count : 0);
+    }
+
     public Task<IReadOnlyList<NotificationRealtimeEvent>> ListRecipientEventsAsync(Guid organizationId,
         Guid recipientId, long after = 0, CancellationToken cancellationToken = default)
     {

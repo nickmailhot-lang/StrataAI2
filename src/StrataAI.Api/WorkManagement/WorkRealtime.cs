@@ -30,7 +30,7 @@ public sealed class WorkRealtimeOriginMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context, WorkRealtimeOrigin origin, ILogger<WorkRealtimeOriginMiddleware> logger)
     {
-        if (!context.Request.Path.StartsWithSegments("/boards/live") && !context.Request.Path.StartsWithSegments("/me/live")) { await next(context); return; }
+        if (!context.Request.Path.StartsWithSegments("/boards/live") && !context.Request.Path.StartsWithSegments("/me/live") && !context.Request.Path.StartsWithSegments("/notifications/live")) { await next(context); return; }
         context.Response.Headers.CacheControl = "no-store";
         var values = context.Request.Headers.Origin;
         var enabled = origin.Authority is not null;

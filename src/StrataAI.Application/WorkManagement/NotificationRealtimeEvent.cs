@@ -7,6 +7,7 @@ namespace StrataAI.Application.WorkManagement;
 // a delivery service must recheck the current actor and protected entity scope.
 public interface INotificationRealtimeStore
 {
+    Task<long> GetRecipientSequenceAsync(Guid organizationId, Guid recipientId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<NotificationRealtimeEvent>> ListRecipientEventsAsync(Guid organizationId,
         Guid recipientId, long after = 0, CancellationToken cancellationToken = default);
 }

@@ -42,9 +42,9 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
     INotificationRealtimeStore journal)
 {
     public sealed record SyncPage(Guid OrganizationId, Guid RecipientId, string Cursor, bool HasMore,
-        IReadOnlyList<NotificationRealtimeEvent> Events);
+        IReadOnlyList<NotificationRealtimeEvent> Events, bool ResetRequired = false);
 
-    public Task<WorkOperation<SyncPage>> ReadEventsAsync(Guid organizationId, Guid recipientId, long after,
+    public Task<WorkOperation<SyncPage>> ReadEventsAsync(Guid organizationId, Guid recipientId, long? after,
         CancellationToken ct = default)
     {
         if (organizationId == Guid.Empty || recipientId == Guid.Empty)
@@ -52,15 +52,19 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
         IReadOnlyList<NotificationRealtimeEvent> planned = [];
         IReadOnlyList<CardNotification> admitted = [];
         var more = false;
+        long head = 0; var reset = false;
         return transactions.ExecuteAsync(organizationId,
             WorkCommand.Create(recipientId, null, "NotificationSync", organizationId, new { after }, "notification_not_found"),
             async _ => {
                 if (!await AdmitOrganization(organizationId, recipientId, ct)) return false;
-                if (after < 0) return true;
-                var window = await journal.ListRecipientEventsAsync(organizationId, recipientId, after, ct);
+                if (after is < 0) return true;
+                head = await journal.GetRecipientSequenceAsync(organizationId, recipientId, ct);
+                reset = after > head;
+                if (after is null || reset) { planned = []; admitted = []; more = false; return true; }
+                var window = await journal.ListRecipientEventsAsync(organizationId, recipientId, after.Value, ct);
                 if (window.Count > 51 || window.Any(e => e.OrganizationId != organizationId || e.RecipientId != recipientId))
                     throw new InvalidOperationException("Invalid notification journal window.");
-                var previous = after; var identities = new HashSet<Guid>();
+                var previous = after.Value; var identities = new HashSet<Guid>();
                 foreach (var change in window)
                 {
                     if (!long.TryParse(change.Sequence, NumberStyles.None, CultureInfo.InvariantCulture, out var sequence) ||
@@ -73,7 +77,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
                     planned.Select(e => e.EntityId).Distinct().ToArray(), policy.RequireVerifiedEmail, ct);
                 return await LockAndVerify(organizationId, recipientId, admitted, ct);
             }, async () => {
-                if (after < 0) return WorkOperation<SyncPage>.Failure("invalid_notification_cursor");
+                if (after is < 0) return WorkOperation<SyncPage>.Failure("invalid_notification_cursor");
                 var current = await notifications.FindVisibleAsync(organizationId, recipientId,
                     admitted.Select(n => n.Id).ToArray(), policy.RequireVerifiedEmail, ct);
                 if (current.Count != admitted.Count || !current.Select(n => n.Id).ToHashSet().SetEquals(admitted.Select(n => n.Id)) ||
@@ -81,8 +85,8 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
                     return WorkOperation<SyncPage>.Failure("notification_not_found");
                 var visible = current.Select(n => n.Id).ToHashSet();
                 return WorkOperation<SyncPage>.Success(new(organizationId, recipientId,
-                    planned.Count == 0 ? after.ToString(System.Globalization.CultureInfo.InvariantCulture) : planned[^1].Sequence,
-                    more, planned.Where(e => visible.Contains(e.EntityId)).ToArray()));
+                    planned.Count == 0 ? (after is null || reset ? head : after.Value).ToString(CultureInfo.InvariantCulture) : planned[^1].Sequence,
+                    more, planned.Where(e => visible.Contains(e.EntityId)).ToArray(), reset));
             }, ct);
     }
 

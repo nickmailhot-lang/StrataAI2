@@ -89,10 +89,10 @@ public sealed partial class ApiHostTests
         Assert.Equal(2, (await journal.ListRecipientEventsAsync(f.Organization, f.Recipient, cancellationToken: ct)).Count);
     }
 
-    private static async Task<(Guid Organization, Guid Board, Guid List, Guid Owner, Guid Recipient)> NotificationFixture(
+    private static async Task<(Guid Organization, Guid Board, Guid List, Guid Owner, Guid Recipient, string RecipientCookie)> NotificationFixture(
         ApiFactory app, HttpClient owner, HttpClient recipient, CancellationToken ct)
     {
-        await RegisterAndLogin(owner); await RegisterAndLogin(recipient);
+        await RegisterAndLogin(owner); var recipientCookie = await RegisterAndLogin(recipient);
         var actor = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
         var user = (await recipient.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
         using var createdOrg = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Notification Organization" });
@@ -104,7 +104,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.OK, grant.StatusCode);
         using var createdList = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/lists", new { name = "Notification List" });
         var list = (await createdList.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
-        return (org, board, list, actor, user);
+        return (org, board, list, actor, user, recipientCookie);
     }
 
     [Fact]
