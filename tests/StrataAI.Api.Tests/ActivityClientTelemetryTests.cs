@@ -1,0 +1,52 @@
+using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
+using System.Net;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using StrataAI.Api.WorkManagement;
+using Xunit;
+
+namespace StrataAI.Api.Tests;
+public sealed partial class ApiHostTests
+{
+    [Fact]
+    public async Task Activity_client_observations_are_authenticated_bounded_and_reject_private_batches_atomically()
+    {
+        await using var app = new ApiFactory(); using var actor = app.CreateClient(); using var anonymous = app.CreateClient();
+        await RegisterAndLogin(actor);
+        var meter = app.Services.GetRequiredService<ActivityClientTelemetry>().Meter;
+        var observations = new ConcurrentQueue<(long Value, Dictionary<string, object?> Tags)>();
+        var durations = new ConcurrentQueue<double>(); using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, current) => { if (ReferenceEquals(instrument.Meter, meter)) current.EnableMeasurementEvents(instrument); };
+        listener.SetMeasurementEventCallback<long>((_, value, tags, _) => observations.Enqueue((value, tags.ToArray().ToDictionary(tag => tag.Key, tag => tag.Value))));
+        listener.SetMeasurementEventCallback<double>((_, value, _, _) => durations.Enqueue(value)); listener.Start();
+        var payload = new { events = new object[] { new { action = "card_disclosure", kind = "open", count = 2 },
+            new { action = "board_read", kind = "retry", count = 1 }, new { action = "card_read", kind = "success", count = 1, durationMs = 125d } } };
+        using var denied = await Mutate(anonymous, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode); Assert.Empty(observations);
+        using var accepted = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode); Assert.Equal(3, observations.Count);
+        Assert.Equal(4, observations.Sum(item => item.Value)); Assert.Equal(.125, Assert.Single(durations));
+        Assert.All(observations, item => Assert.Equal(new[] { "action", "kind" }, item.Tags.Keys.Order().ToArray()));
+        foreach (var body in new[] {
+            "{\"events\":[{\"action\":\"card_read\",\"kind\":\"use\",\"count\":1},{\"action\":\"card_read\",\"kind\":\"use\",\"count\":1,\"cursor\":\"private\"}]}",
+            "{\"events\":[{\"action\":\"private-card-id\",\"kind\":\"use\",\"count\":1}]}",
+            "{\"events\":[{\"action\":\"card_read\",\"kind\":\"private-error\",\"count\":1}]}",
+            "{\"events\":[{\"action\":\"card_read\",\"kind\":\"use\",\"count\":1,\"count\":2}]}",
+            "{\"events\":[{\"action\":\"card_read\",\"kind\":\"success\",\"count\":2,\"durationMs\":125}]}",
+            "{\"events\":[],\"actorId\":\"private\"}" })
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/me/activity-client-events") { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+            request.Headers.Add("X-StrataAI-Request", "1"); using var rejected = await actor.SendAsync(request, TestContext.Current.CancellationToken);
+            Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(3, observations.Count); Assert.Single(durations);
+        }
+        using var csrf = await actor.PostAsync("/me/activity-client-events", new StringContent("{}"), TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.Forbidden, csrf.StatusCode);
+        using var oversized = new HttpRequestMessage(HttpMethod.Post, "/me/activity-client-events") { Content = new StringContent(new string(' ', 8193)) };
+        oversized.Headers.Add("X-StrataAI-Request", "1"); using var tooLarge = await actor.SendAsync(oversized, TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, tooLarge.StatusCode); Assert.Equal(3, observations.Count);
+        listener.SetMeasurementEventCallback<long>((_, _, _, _) => throw new InvalidOperationException("Disposable listener outage"));
+        using var listenerOutage = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.NoContent, listenerOutage.StatusCode);
+    }
+}

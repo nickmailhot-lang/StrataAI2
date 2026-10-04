@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ActivityHistoryControl } from './ActivityHistoryControl';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
+import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
 vi.mock('../../api/workManagement', async importOriginal => ({ ...await importOriginal<typeof import('../../api/workManagement')>(), workRequest: vi.fn() }));
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const scope = { organizationId: id(1), boardId: id(2), kind: 'CARD' as const, targetId: id(3) };
@@ -13,6 +14,27 @@ const props = () => ({ ...scope, refreshSequence: '1', unavailable: false, onDen
 const wrap = (p: ReturnType<typeof props>) => <MemoryRouter><ActivityHistoryControl {...p} /></MemoryRouter>;
 const reads = () => vi.mocked(workRequest).mock.calls.filter(([path]) => path !== '/me');
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
+it('reports fixed opening, failed read and user retry observations without protected page data', async () => {
+  configureActivityTelemetry(true); const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetch);
+  let fail = true; vi.mocked(workRequest).mockImplementation(async path => {
+    if (path === '/me') return profile;
+    if (fail) throw new WorkRequestError(400, null); return page();
+  });
+  render(wrap(props())); fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
+  await screen.findByText('This history page expired. Return to newest activity.'); fail = false;
+  fireEvent.click(screen.getByRole('button', { name: 'Retry activity page' })); await screen.findByRole('listitem');
+  await flushActivityTelemetry(); expect(fetch).toHaveBeenCalledTimes(1);
+  const [path, options] = fetch.mock.calls[0]; expect(path).toBe('/me/activity-client-events');
+  const observations = JSON.parse(options.body).events;
+  expect(observations).toEqual(expect.arrayContaining([
+    { action: 'card_disclosure', kind: 'open', count: 1 }, { action: 'card_read', kind: 'use', count: 2 },
+    { action: 'card_read', kind: 'retry', count: 1 },
+    { action: 'card_read', kind: 'failure', count: 1, durationMs: expect.any(Number) },
+    { action: 'card_read', kind: 'success', count: 1, durationMs: expect.any(Number) },
+  ]));
+  expect(options.body).not.toContain(id(1)); expect(options.body).not.toContain('Historical'); expect(options.body).not.toContain('opaque');
+});
 it('loads on demand, safely renders historical captions and replaces bounded pages with older/newer history', async () => {
   const first = page(Array.from({ length: 50 }, (_, index) => item(100 - index)), 'opaque');
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : path.includes('?after=') ? page([item(50)]) : first);

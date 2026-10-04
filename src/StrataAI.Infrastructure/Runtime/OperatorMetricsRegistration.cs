@@ -42,7 +42,7 @@ public static class OperatorMetricsRegistration
                 reader.PeriodicExportingMetricReaderOptions.ExportTimeoutMilliseconds = 3000;
             });
         services.AddOpenTelemetry().WithMetrics(metrics => metrics.SetResourceBuilder(resource)
-            .AddMeter("StrataAI.BoardSharing", "StrataAI.ChecklistClient")
+            .AddMeter("StrataAI.BoardSharing", "StrataAI.ChecklistClient", "StrataAI.ActivityClient")
             .AddOtlpExporter(ExporterName, configure: (Action<OtlpExporterOptions>?)null));
         return true;
     }

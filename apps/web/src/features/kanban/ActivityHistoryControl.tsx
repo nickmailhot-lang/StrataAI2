@@ -5,6 +5,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { activityCardLink, activityLabel, parseActivityPage, type ActivityItem, type ActivityPage, type ActivityScope } from './activityHistory';
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
+import { activityEvent, activityResult } from './activityTelemetry';
 
 type Props = ActivityScope & { unavailable: boolean; refreshSequence: string; onDenied: (error: Error) => void };
 type View = { epoch: string; page: ActivityPage; profile: { locale: string; timezone: string } };
@@ -39,6 +40,8 @@ function History(props: Props) {
     const controller = new AbortController(); pending.current?.abort(); pending.current = controller;
     setBusy(true); setView(undefined); setNotice(undefined);
     const captured = `${props.refreshSequence}/${navigation.generation}`;
+    const action = props.kind === 'BOARD' ? 'board_read' : 'card_read';
+    const started = performance.now(); activityEvent(action, 'use');
     const position = positions.at(-1)!;
     const path = `/${props.kind === 'BOARD' ? 'boards' : 'cards'}/${encodeURIComponent(props.targetId)}/activity`;
     void boundedWorkRead(async signal => {
@@ -49,9 +52,11 @@ function History(props: Props) {
       if (!isNotificationProfile(current) || current.id.toLowerCase() !== profile.id.toLowerCase()) throw new WorkRequestError(401, null);
       return { epoch: captured, page, profile: { locale: current.locale, timezone: current.timezone } };
     }, controller.signal).then(result => {
-      if (!controller.signal.aborted && pending.current === controller) setView(result);
+      if (!controller.signal.aborted && pending.current === controller) { activityResult(action, true, started); setView(result); }
     }).catch((error: unknown) => {
       if (controller.signal.aborted || pending.current !== controller) return;
+      activityResult(action, false, started);
+      if (!(error instanceof WorkRequestError)) activityEvent(action, 'exception');
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
         setView(undefined); setBusy(false);
         // Discard the continuation without scheduling another protected read.
@@ -73,13 +78,13 @@ function History(props: Props) {
   }, [busy, props.unavailable, opened, message, admitted, positions.length, navigation.denied]);
   const name = props.kind === 'BOARD' ? 'Board' : 'Card';
   return <Stack spacing={1} sx={{ minWidth: 0 }} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current)) restoreFocus.current = false; }}>
-    <Button ref={primary} disabled={props.unavailable || busy || navigation.denied} onClick={event => { ownFocus(event.currentTarget); if (opened) { setPositions([{}]); setAttempt(value => value + 1); } else setOpened(true); }}>
+    <Button ref={primary} disabled={props.unavailable || busy || navigation.denied} onClick={event => { ownFocus(event.currentTarget); if (opened) { setPositions([{}]); setAttempt(value => value + 1); } else { activityEvent(props.kind === 'BOARD' ? 'board_disclosure' : 'card_disclosure', 'open'); setOpened(true); } }}>
       {opened ? `Refresh ${name} activity` : `Review ${name} activity`}
     </Button>
     {opened && <Box component="section" aria-label={`${name} activity`} aria-busy={busy}>
       <Typography role="status" aria-live="polite">{props.unavailable ? 'Checking activity access…' : busy ? 'Loading activity…' : admitted ? `${admitted.page.items.length} activity events on this page.` : ''}</Typography>
       {message && <Alert severity="warning">{message}</Alert>}
-      {message && !navigation.denied && <Button ref={retry} disabled={busy} onClick={event => { ownFocus(event.currentTarget); setAttempt(value => value + 1); }}>Retry activity page</Button>}
+      {message && !navigation.denied && <Button ref={retry} disabled={busy} onClick={event => { ownFocus(event.currentTarget); activityEvent(props.kind === 'BOARD' ? 'board_read' : 'card_read', 'retry'); setAttempt(value => value + 1); }}>Retry activity page</Button>}
       {admitted && <>
         {admitted.page.items.length === 0 && <Typography>No activity to review yet. Authorized changes will appear here.</Typography>}
         <Box component="ol" sx={{ pl: 3, m: 0 }}>

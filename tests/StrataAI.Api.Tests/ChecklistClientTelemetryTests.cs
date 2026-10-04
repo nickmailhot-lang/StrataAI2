@@ -24,6 +24,9 @@ public sealed partial class ApiHostTests
         }
         using var rejected = await Mutate(owner, HttpMethod.Post, "/me/checklist-client-events", payload);
         Assert.Equal(HttpStatusCode.TooManyRequests, rejected.StatusCode);
+        using var activityRejected = await Mutate(owner, HttpMethod.Post, "/me/activity-client-events",
+            new { events = new[] { new { action = "card_read", kind = "use", count = 1 } } });
+        Assert.Equal(HttpStatusCode.TooManyRequests, activityRejected.StatusCode);
         using var independent = await Mutate(other, HttpMethod.Post, "/me/checklist-client-events", payload);
         Assert.Equal(HttpStatusCode.NoContent, independent.StatusCode);
     }

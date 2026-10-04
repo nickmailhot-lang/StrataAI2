@@ -15,7 +15,8 @@ public sealed class ChecklistClientTelemetry(IMeterFactory factory)
         "item_create", "item_update", "item_delete", "item_position", "disclosure", "item_disclosure", "realtime"];
     private static readonly HashSet<string> Kinds = ["open", "use", "retry", "exception", "conflict", "reconnect", "success", "failure"];
     public sealed record Observation(string Action, string Kind, int Count, double? DurationMs);
-    public static IReadOnlyList<Observation>? Parse(JsonElement root)
+    public static IReadOnlyList<Observation>? Parse(JsonElement root) => Parse(root, Actions);
+    internal static IReadOnlyList<Observation>? Parse(JsonElement root, IReadOnlySet<string> actions)
     {
         if (root.ValueKind != JsonValueKind.Object || root.EnumerateObject().Count() != 1
             || !root.TryGetProperty("events", out var events) || events.ValueKind != JsonValueKind.Array
@@ -28,7 +29,7 @@ public sealed class ChecklistClientTelemetry(IMeterFactory factory)
             foreach (var property in entry.EnumerateObject())
                 if (!names.Add(property.Name) || property.Name is not ("action" or "kind" or "count" or "durationMs")) return null;
             if (!entry.TryGetProperty("action", out var action) || action.ValueKind != JsonValueKind.String
-                || !Actions.Contains(action.GetString()!) || !entry.TryGetProperty("kind", out var kind) || kind.ValueKind != JsonValueKind.String
+                || !actions.Contains(action.GetString()!) || !entry.TryGetProperty("kind", out var kind) || kind.ValueKind != JsonValueKind.String
                 || !Kinds.Contains(kind.GetString()!) || !entry.TryGetProperty("count", out var count) || count.ValueKind != JsonValueKind.Number || !count.TryGetInt32(out var number)
                 || number is < 1 or > 100) return null;
             double? duration = null;
@@ -62,25 +63,30 @@ public static class ChecklistClientTelemetryEndpoints
     public static void MapChecklistClientTelemetry(this WebApplication app)
     {
         app.MapPost("/me/checklist-client-events", async (HttpContext context, ChecklistClientTelemetry telemetry) =>
+            await Read(context, ChecklistClientTelemetry.Parse, telemetry.Record))
+            .RequireAuthorization().RequireRateLimiting("client-events");
+    }
+    internal static async Task<IResult> Read(HttpContext context,
+        Func<JsonElement, IReadOnlyList<ChecklistClientTelemetry.Observation>?> parse,
+        Action<IReadOnlyList<ChecklistClientTelemetry.Observation>> record)
+    {
+        if (context.Request.ContentLength is > 8192) return Results.StatusCode(413);
+        var bytes = new byte[8193]; var length = 0;
+        while (length < bytes.Length)
         {
-            if (context.Request.ContentLength is > 8192) return Results.StatusCode(413);
-            var bytes = new byte[8193]; var length = 0;
-            while (length < bytes.Length)
-            {
-                var read = await context.Request.Body.ReadAsync(bytes.AsMemory(length), context.RequestAborted);
-                if (read == 0) break;
-                length += read;
-            }
-            if (length > 8192) return Results.StatusCode(413);
-            try
-            {
-                using var document = JsonDocument.Parse(bytes.AsMemory(0, length), new JsonDocumentOptions { MaxDepth = 5 });
-                var observations = ChecklistClientTelemetry.Parse(document.RootElement);
-                if (observations is null) return Results.BadRequest();
-                telemetry.Record(observations);
-                return Results.NoContent();
-            }
-            catch (JsonException) { return Results.BadRequest(); }
-        }).RequireAuthorization().RequireRateLimiting("client-events");
+            var read = await context.Request.Body.ReadAsync(bytes.AsMemory(length), context.RequestAborted);
+            if (read == 0) break;
+            length += read;
+        }
+        if (length > 8192) return Results.StatusCode(413);
+        try
+        {
+            using var document = JsonDocument.Parse(bytes.AsMemory(0, length), new JsonDocumentOptions { MaxDepth = 5 });
+            var observations = parse(document.RootElement);
+            if (observations is null) return Results.BadRequest();
+            record(observations);
+            return Results.NoContent();
+        }
+        catch (JsonException) { return Results.BadRequest(); }
     }
 }

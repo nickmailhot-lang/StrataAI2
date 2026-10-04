@@ -257,3 +257,12 @@ each denial after a valid older-page continuation, requiring exactly one denial,
 no automatic retry, cleared protected rows and a cursor-free read only after
 fresh parent admission. This does not replace real post-wait revocation or
 native browser execution. PRD-15 remains open with approximately **45%** remaining.
+
+Activity opening/read/retry/exception observations now have a bounded MUI queue,
+an authenticated fixed-category endpoint sharing the Checklist abuse budget,
+native aggregate instruments and the existing optional OTLP export path. See
+[activity history telemetry](architecture/activity-history-telemetry.md) for the
+protocol, privacy boundary, source tests and mandatory Collector proof. Local
+typecheck/lint/build, 19 focused activity/Checklist transport/component tests,
+three operator-validator tests and zero-warning managed compilation pass.
+Linux managed/exporter and actual release Collector execution remain pending.

@@ -17,6 +17,11 @@ card=$(post "/lists/$list/cards" '{"title":"private-metric-fixture"}' | jq -r '.
 post "/cards/$card/checklists" '{"title":"private-metric-fixture","cardVersion":1}' >/dev/null
 curl --fail --silent --show-error -b "$scratch/cookies" "$base/cards/$card/checklists" >/dev/null
 post /me/checklist-client-events '{"events":[{"action":"disclosure","kind":"open","count":1},{"action":"create","kind":"use","count":1},{"action":"create","kind":"success","count":1,"durationMs":125}]}' >/dev/null
+curl --fail --silent --show-error -b "$scratch/cookies" "$base/cards/$card/activity" >/dev/null
+curl --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/activity" >/dev/null
+post /me/activity-client-events '{"events":[{"action":"card_disclosure","kind":"open","count":1},{"action":"board_disclosure","kind":"open","count":1},{"action":"card_read","kind":"retry","count":1},{"action":"card_read","kind":"success","count":1,"durationMs":125}]}' >/dev/null
+test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"card_read","kind":"use","count":1}]}' "$base/me/activity-client-events")" = 401
+test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"card_read","kind":"use","count":1,"cursor":"private-metric-fixture"}]}' "$base/me/activity-client-events")" = 400
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"create","kind":"use","count":1}]}' "$base/me/checklist-client-events")" = 401
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"create","kind":"use","count":1,"private":"private-metric-fixture"}]}' "$base/me/checklist-client-events")" = 400
 # Poll bounded export/batch intervals; raw scrapes never become retained artifacts.

@@ -18,14 +18,23 @@ class OperatorEvidenceTests(unittest.TestCase):
                         ("strataai_checklist_client_events", 'action="create",kind="success"'),
                         ("strataai_checklist_client_duration_count", 'action="create",kind="success"'),
                         ("strataai_board_sharing_requests", 'operation="checklist_read",outcome="success"'),
-                        ("strataai_board_sharing_duration_count", 'operation="checklist_read",outcome="success"')]
+                        ("strataai_board_sharing_duration_count", 'operation="checklist_read",outcome="success"'),
+                        ("strataai_activity_client_events", 'action="card_disclosure",kind="open"'),
+                        ("strataai_activity_client_events", 'action="board_disclosure",kind="open"'),
+                        ("strataai_activity_client_events", 'action="card_read",kind="retry"'),
+                        ("strataai_activity_client_events", 'action="card_read",kind="success"'),
+                        ("strataai_activity_client_duration_count", 'action="card_read",kind="success"'),
+                        ("strataai_board_sharing_requests", 'operation="card_activity_read",outcome="success"'),
+                        ("strataai_board_sharing_requests", 'operation="board_activity_read",outcome="success"')]
         return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations)
 
     def test_complete_fixed_scope(self):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
 
     def test_missing_observation_or_wrong_build_cannot_pass(self):
-        self.assertFalse(metrics.verify("\n".join(self.fixture().splitlines()[:-1]), self.revision, self.version))
+        rows = self.fixture().splitlines()
+        for index in range(len(rows)):
+            self.assertFalse(metrics.verify("\n".join(rows[:index] + rows[index + 1:]), self.revision, self.version))
         self.assertFalse(metrics.verify(self.fixture(), "b" * 40, self.version))
 
     def test_protected_values_labels_and_unknown_metric_families_cannot_pass(self):
