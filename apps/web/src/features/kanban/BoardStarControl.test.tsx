@@ -1,12 +1,13 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { BoardStarControl } from './BoardStarControl';
+import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
 const org = '11111111-1111-1111-1111-111111111111', board = '22222222-2222-2222-2222-222222222222';
 const user = '33333333-3333-3333-3333-333333333333', other = '44444444-4444-4444-4444-444444444444';
 const profile = { id: user, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
 const props = { organizationId: org, boardId: board, admitted: true, disabled: false };
 const state = { organizationId: org, boardId: board, userId: user, starred: false };
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
-afterEach(() => { vi.unstubAllGlobals(); });
+afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 async function open() {
   fireEvent.click(screen.getByRole('button', { name: 'Board starring' }));
   await screen.findByText('You have not starred this Board.');
@@ -127,4 +128,47 @@ it('drops an unresolved receipt when navigating to another Board', async () => {
   view.rerender(<BoardStarControl {...props} boardId={other} />);
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Retry same star change' })).not.toBeInTheDocument();
+});
+it('reports fixed retry/reconnect outcomes without preferences, identifiers or diagnostics', async () => {
+  configureActivityTelemetry(true); const reports: string[] = []; let writes = 0;
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me/activity-client-events') { reports.push(String(options?.body)); return new Response(null, { status: 204 }); }
+    if (path === '/me') return response(profile);
+    if (options?.method === 'PUT') { if (++writes === 1) throw new Error('private star diagnostic'); return new Response(null, { status: 204 }); }
+    return response(state);
+  });
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
+  const retry = await screen.findByRole('button', { name: 'Retry same star change' });
+  await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry);
+  await screen.findByRole('button', { name: 'Star Board' });
+  fireEvent(window, new Event('online'));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Star Board' })).toBeEnabled());
+  await flushActivityTelemetry();
+  const events = reports.flatMap(report => JSON.parse(report).events);
+  for (const [action, kind] of [['board_star_disclosure', 'open'], ['board_star_read', 'reconnect'],
+    ['board_star_change', 'use'], ['board_star_change', 'retry'], ['board_star_change', 'exception'],
+    ['board_star_change', 'failure'], ['board_star_change', 'success']])
+    expect(events).toContainEqual(expect.objectContaining({ action, kind }));
+  for (const event of events) expect(Object.keys(event).every(key => ['action', 'kind', 'count', 'durationMs'].includes(key))).toBe(true);
+  for (const value of [org, board, user, 'starred', 'diagnostic', 'Idempotency-Key', '/boards/'])
+    expect(reports.join('')).not.toContain(value);
+});
+it.each([409, 403])('reports a known failure without retry intent or response text (%s)', async status => {
+  configureActivityTelemetry(true); const reports: string[] = [];
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me/activity-client-events') { reports.push(String(options?.body)); return new Response(null, { status: 204 }); }
+    if (path === '/me') return response(profile);
+    if (options?.method === 'PUT') return response({ title: 'private server details' }, status);
+    return response(state);
+  });
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Done' })).toBeEnabled());
+  await flushActivityTelemetry();
+  const events = reports.flatMap(report => JSON.parse(report).events);
+  expect(events).toContainEqual(expect.objectContaining({ action: 'board_star_change', kind: 'failure' }));
+  if (status === 409) expect(events).toContainEqual(expect.objectContaining({ action: 'board_star_change', kind: 'conflict' }));
+  expect(screen.queryByRole('button', { name: 'Retry same star change' })).not.toBeInTheDocument();
+  expect(reports.join('')).not.toContain('private server details');
 });
