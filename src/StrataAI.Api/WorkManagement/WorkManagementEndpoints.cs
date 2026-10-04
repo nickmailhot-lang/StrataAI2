@@ -46,6 +46,17 @@ public static partial class WorkManagementEndpoints
                     : ErrorFor(result.ErrorCode);
             }).AddEndpointFilter<BoardSharingResultFilter>();
 
+        app.MapGet("/organizations/{organizationId:guid}/archived-boards", async (Guid organizationId, string? after,
+            HttpContext context, IWorkManagementService service, CancellationToken cancellationToken) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            context.Response.Headers.CacheControl = "private, no-store";
+            Guid? cursor = after is null ? null : Guid.TryParse(after, out var parsed) ? parsed : Guid.Empty;
+            var result = await service.ListArchivedBoardsAsync(organizationId, actor.Value, cursor, cancellationToken);
+            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+
         app.MapGet("/boards/{boardId:guid}/archived-lists", async (Guid boardId, string? after,
             HttpContext context, IWorkManagementService service, CancellationToken cancellationToken) =>
         {

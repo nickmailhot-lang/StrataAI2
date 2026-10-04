@@ -25,6 +25,7 @@ public sealed class BoardSharingTelemetry
         ((context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText, context.Request.Method.ToUpperInvariant()) switch
         {
             ("/search", "GET") => "global_search",
+            ("/organizations/{organizationId:guid}/archived-boards", "GET") => "archived_board_read",
             ("/boards/{boardId:guid}", "GET") => "board_read",
             ("/boards/{boardId:guid}/activity", "GET") => "board_activity_read",
             ("/cards/{cardId:guid}/activity", "GET") => "card_activity_read",

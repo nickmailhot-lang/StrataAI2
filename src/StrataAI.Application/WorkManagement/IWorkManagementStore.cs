@@ -2,6 +2,8 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementStore
 {
+    Task<IReadOnlyList<ArchivedBoardSummary>> ListArchivedBoardsAsync(Guid organizationId, Guid actorId,
+        bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default);
     Task<CardRecord?> CopyCardAsync(Guid sourceCardId, Guid destinationListId, Guid copiedCardId,
         string title, long expectedVersion, DateTimeOffset createdAt, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Guid>> ListReminderCandidateBoardIdsAsync(Guid organizationId, CancellationToken ct);

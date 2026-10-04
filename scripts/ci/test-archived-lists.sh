@@ -351,3 +351,29 @@ test "$(admin "SELECT version FROM boards WHERE id='$receipt_board' AND lifecycl
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND board_id='$receipt_board' AND event_type='BOARD_DELETED';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$receipt_board' AND event_type='BOARD_DELETED';")" = 1
 echo 'Board deletion: explicit consent, atomic rollback, identical tombstone receipt recovery, changed intent, hidden normal reads, new-key rejection and current membership admission passed.'
+
+# PRD-18 archive directory: bounded minimal disclosure, current Board administration.
+admin "INSERT INTO boards(id,tenant_id,name,description,lifecycle_state,created_at,updated_at,archived_at,version)
+  SELECT gen_random_uuid(),'$org','Board directory fixture '||i,'Private Board directory body','ARCHIVED',now()-interval '1 hour',now(),now(),2
+  FROM generate_series(1,52) i;" >/dev/null
+test "$(get owner "/organizations/$org/archived-boards" board-directory-first)" = 200
+jq -e --arg org "$org" '.organizationId==$org and (.items|length)==50 and .nextCursor==.items[-1].id
+  and all(.items[];(.|keys)==["archivedAt","id","name","organizationId","version"] and .organizationId==$org and .version==2)' "$scratch/board-directory-first.json" >/dev/null
+directory_cursor=$(jq -r '.nextCursor' "$scratch/board-directory-first.json")
+test "$(get owner "/organizations/$org/archived-boards?after=$directory_cursor" board-directory-last)" = 200
+jq -e '.nextCursor==null and (.items|length)==2' "$scratch/board-directory-last.json" >/dev/null
+test "$(jq -sr '[.[].items[].id]|unique|length' "$scratch/board-directory-first.json" "$scratch/board-directory-last.json")" = 52
+scripts/ci/assert-file-excludes.sh 'Private Board directory body|Board receipt recovery' "$scratch/board-directory-first.json"
+test "$(get editor "/organizations/$org/archived-boards" board-directory-editor)" = 200
+jq -e '(.items|length)==0' "$scratch/board-directory-editor.json" >/dev/null
+directory_board=$(jq -r '.items[0].id' "$scratch/board-directory-first.json")
+admin "INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+  VALUES(gen_random_uuid(),'$org','$directory_board','$editor','ADMIN','ACTIVE',now(),now());" >/dev/null
+test "$(get editor "/organizations/$org/archived-boards" board-directory-admin)" = 200
+jq -e --arg id "$directory_board" '(.items|length)==1 and .items[0].id==$id' "$scratch/board-directory-admin.json" >/dev/null
+admin "UPDATE board_members SET role='MEMBER' WHERE tenant_id='$org' AND board_id='$directory_board' AND user_id='$editor';" >/dev/null
+test "$(get editor "/organizations/$org/archived-boards" board-directory-demoted)" = 200
+jq -e '(.items|length)==0' "$scratch/board-directory-demoted.json" >/dev/null
+test "$(get outsider "/organizations/$org/archived-boards" board-directory-denied)" = 404
+scripts/ci/assert-file-excludes.sh 'Board directory fixture|Private Board directory body|"items"' "$scratch/board-directory-denied.json"
+echo 'Board archive directory: 50/2 paging, minimal fields, deleted exclusion, current admin grants/demotion and non-member denial passed.'

@@ -139,6 +139,8 @@ public sealed record BoardMemberDirectoryEntry(Guid BoardId, Guid UserId, BoardR
     string? DisplayName, string? Email, bool OrganizationMemberActive);
 
 public sealed record ArchivedListEntry(BoardListRecord List, long ContainedCardCount);
+public sealed record ArchivedBoardSummary(Guid Id, Guid OrganizationId, string Name, long Version, DateTimeOffset? ArchivedAt);
+public sealed record ArchivedBoardPage(Guid OrganizationId, IReadOnlyList<ArchivedBoardSummary> Items, Guid? NextCursor);
 public sealed record BoardLabelRecord(Guid Id, Guid OrganizationId, Guid BoardId, string Name, string Color,
     string Rank, bool Deleted, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long Version);
 public sealed record BoardLabelPage(Guid OrganizationId, Guid BoardId, IReadOnlyList<BoardLabelRecord> Items,
