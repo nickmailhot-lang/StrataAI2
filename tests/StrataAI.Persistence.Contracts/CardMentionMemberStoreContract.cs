@@ -100,7 +100,11 @@ internal static class CardMentionMemberStoreContract
                     "UPDATE organization_members SET status=status WHERE tenant_id=@tenant AND user_id=@user",
                     "UPDATE board_members SET status=status WHERE tenant_id=@tenant AND board_id=@board AND user_id=@user" })
                 {
-                    await using var competitor = new NpgsqlConnection(admin.ConnectionString); await competitor.OpenAsync(ct);
+                    // An opened connection may redact its password property.
+                    // Keep using the original CI-only administrative setting.
+                    var independentAdmin = Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_ADMIN_CONNECTION")
+                        ?? throw new InvalidOperationException("Contract admin connection is required.");
+                    await using var competitor = new NpgsqlConnection(independentAdmin); await competitor.OpenAsync(ct);
                     await using var competingTransaction = await competitor.BeginTransactionAsync(ct);
                     await using var configure = new NpgsqlCommand("SET LOCAL lock_timeout='250ms'; SELECT set_config('app.identity_subject',@subject,true);", competitor, competingTransaction);
                     configure.Parameters.AddWithValue("subject", users[0].ToString()); await configure.ExecuteNonQueryAsync(ct);
