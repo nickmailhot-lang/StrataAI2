@@ -5,7 +5,7 @@ namespace StrataAI.Application.WorkManagement;
 internal static class AttachmentAdmission
 {
     public static async Task<bool> CheckReceiptAsync(IWorkManagementStore work, IOrganizationStore organizations,
-        IWorkBoardAuthorization boards, CardRecord hint, Guid originalBoardId, Guid actor, CancellationToken ct)
+        IWorkBoardAuthorization boards, CardRecord hint, Guid originalBoardId, Guid actor, CancellationToken ct, bool administering = false)
     {
         // The immutable acknowledgment retains its publication Board. Plan both
         // original and current gates before any lock; a later move must not
@@ -16,6 +16,7 @@ internal static class AttachmentAdmission
             if (!await work.AcquireCommandScopeAsync(hint.OrganizationId, actor, gate, ct)) return false;
             var scope = await boards.GetSyncScopeAsync(gate, actor, ct);
             if (scope.Value is null || !scope.Value.Access.CanView || !scope.Value.Access.CanEdit
+                || administering && !scope.Value.Access.CanAdminister
                 || scope.Value.Board.OrganizationId != hint.OrganizationId
                 || scope.Value.Board.LifecycleState != BoardLifecycleState.Active) return false;
         }

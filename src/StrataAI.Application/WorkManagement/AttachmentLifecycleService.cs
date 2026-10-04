@@ -38,12 +38,13 @@ public sealed class AttachmentLifecycleService(IWorkManagementStore work, IAttac
             WorkCommand.Create(actor, context.IdempotencyKey, action, attachmentId, new { cardId, input, confirmed }, "attachment_not_found"),
             async receipt =>
             {
-                if (!await Admit(hint, actor, deleting, ct)) return false;
+                if (receipt is null ? !await Admit(hint, actor, deleting, ct)
+                    : !await AttachmentAdmission.CheckReceiptAsync(work, organizations, boards, hint, receipt.BoardId, actor, ct, deleting)) return false;
                 var current = await attachments.FindLifecycleAttachmentAsync(hint.OrganizationId, cardId, attachmentId, ct);
                 // Default admission includes Active/Archived (or a Deleted command's tombstone).
                 // A prior receipt is disclosed only while its current lifecycle still matches.
                 if (current is null || !deleting && current.LifecycleState == AttachmentLifecycleState.Deleted) return false;
-                return receipt is null || receipt.OrganizationId == hint.OrganizationId && receipt.BoardId == hint.BoardId
+                return receipt is null || receipt.OrganizationId == hint.OrganizationId
                     && receipt.CardId == cardId && receipt.Attachment.Id == attachmentId && receipt.Attachment.OrganizationId == hint.OrganizationId
                     && receipt.Attachment.CardId == cardId && receipt.Attachment.LifecycleState == next
                     && current.LifecycleState == next && current.Version >= receipt.Attachment.Version

@@ -10,6 +10,60 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData("archive")]
+    [InlineData("restore")]
+    [InlineData("delete")]
+    public async Task PRD_14_18_Moved_attachment_lifecycle_receipts_require_original_and_current_command_authority(string action)
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>(); var metadata = app.Services.GetRequiredService<IAttachmentMetadataStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Moving lifecycle", null, null, DateTimeOffset.UtcNow, ct);
+        using var promote = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "ADMIN" });
+        Assert.Equal(HttpStatusCode.OK, promote.StatusCode);
+        using var created = await Mutate(member, HttpMethod.Post, $"/cards/{card.Id}/attachments/url", new CreateUrlAttachmentInput("Retained child", "https://example.test/", 1));
+        Assert.Equal(HttpStatusCode.OK, created.StatusCode); var child = (await created.Content.ReadFromJsonAsync<AttachmentChange>(ct))!.Attachment;
+        var childPath = $"/cards/{card.Id}/attachments/{child.Id}"; long revision = 2; long childRevision = 1;
+        if (action != "archive")
+        {
+            using var setup = await Mutate(member, HttpMethod.Post, childPath + "/archive", new AttachmentLifecycleInput(revision, childRevision));
+            Assert.Equal(HttpStatusCode.OK, setup.StatusCode); revision++; childRevision++;
+        }
+        var key = Guid.NewGuid().ToString(); var deleting = action == "delete";
+        var path = deleting ? childPath + $"?cardVersion={revision}&version={childRevision}&confirmed=true" : childPath + "/" + action;
+        var method = deleting ? HttpMethod.Delete : HttpMethod.Post;
+        var input = new AttachmentLifecycleInput(revision, childRevision);
+        using var changed = await Mutate(member, method, path, input, key); Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
+        var receipt = await changed.Content.ReadAsStringAsync(ct); var retained = (await metadata.FindLifecycleAttachmentAsync(f.Organization, card.Id, child.Id, ct))!;
+        revision++;
+        using var boardResponse = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "Lifecycle destination", visibility = "PRIVATE" });
+        var destination = (await boardResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var grant = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "ADMIN" }); Assert.Equal(HttpStatusCode.OK, grant.StatusCode);
+        using var listResponse = await Mutate(owner, HttpMethod.Post, $"/boards/{destination}/lists", new { name = "Lifecycle parent" });
+        var list = (await listResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var moved = await Mutate(member, HttpMethod.Post, $"/cards/{card.Id}/move", new { sourceBoardId = f.Board, destinationListId = list, expectedVersion = revision });
+        Assert.Equal(HttpStatusCode.OK, moved.StatusCode); var movedCard = (await work.FindCardAsync(card.Id, ct))!;
+        using var retry = await Mutate(member, method, path, input, key); Assert.Equal(HttpStatusCode.OK, retry.StatusCode);
+        Assert.Equal(receipt, await retry.Content.ReadAsStringAsync(ct));
+        Assert.Equal(movedCard, await work.FindCardAsync(card.Id, ct)); Assert.Equal(retained, await metadata.FindLifecycleAttachmentAsync(f.Organization, card.Id, child.Id, ct));
+        using var destinationWithdrawal = deleting
+            ? await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "MEMBER" })
+            : await Mutate(owner, HttpMethod.Delete, $"/boards/{destination}/members/{f.Recipient}", new { });
+        Assert.Equal(deleting ? HttpStatusCode.OK : HttpStatusCode.NoContent, destinationWithdrawal.StatusCode);
+        using var hidden = await Mutate(member, method, path, input, key); Assert.Equal(HttpStatusCode.NotFound, hidden.StatusCode);
+        using var restore = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "ADMIN" }); Assert.Equal(HttpStatusCode.OK, restore.StatusCode);
+        using var recovered = await Mutate(member, method, path, input, key); Assert.Equal(HttpStatusCode.OK, recovered.StatusCode); Assert.Equal(receipt, await recovered.Content.ReadAsStringAsync(ct));
+        using var sourceWithdrawal = deleting
+            ? await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "MEMBER" })
+            : await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
+        Assert.Equal(deleting ? HttpStatusCode.OK : HttpStatusCode.NoContent, sourceWithdrawal.StatusCode);
+        using var sourceHidden = await Mutate(member, method, path, input, key); Assert.Equal(HttpStatusCode.NotFound, sourceHidden.StatusCode);
+        using var currentAccess = await member.GetAsync($"/boards/{destination}", ct); Assert.Equal(HttpStatusCode.OK, currentAccess.StatusCode);
+        Assert.Equal(movedCard, await work.FindCardAsync(card.Id, ct)); Assert.Equal(retained, await metadata.FindLifecycleAttachmentAsync(f.Organization, card.Id, child.Id, ct));
+    }
+
     [Fact]
     public async Task PRD_14_18_Archive_restore_delete_preserve_history_require_consent_and_replay_only_with_current_authority()
     {

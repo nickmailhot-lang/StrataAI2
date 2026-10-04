@@ -699,3 +699,13 @@ metadata identity, and returns the unchanged acknowledgment. API-host coverage
 checks a real cross-Board move, exact recovery without a Card revision or duplicate
 metadata, destination withdrawal/restoration and original source withdrawal while
 destination metadata remains accessible. New Linux execution is pending CI.
+
+Archive, restore and confirmed-delete receipts now survive authorized Card
+movement using the same original/current gate plan. Delete replay additionally
+requires administrator access on both Boards; continued edit access after
+administrator demotion cannot disclose the old deletion acknowledgment. Existing
+current-child lifecycle matching, deletion attribution and parent lifecycle
+checks remain required. Three API-host contracts cover actual movement, exact
+receipt recovery, destination withdrawal/restoration and source withdrawal,
+with unchanged Card and child metadata. Compilation passes with zero warnings
+and errors; actual new Linux execution is pending CI.
