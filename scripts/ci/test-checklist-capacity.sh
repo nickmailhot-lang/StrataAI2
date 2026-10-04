@@ -88,4 +88,5 @@ mv "$scratch/capacity.json" artifacts/capacity/checklists.json
 bash scripts/ci/test-activity-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 bash scripts/ci/test-comment-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 bash scripts/ci/test-card-move-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
+bash scripts/ci/test-card-copy-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 echo 'Exact-image Checklist capacity: 200 Lists, 5,000 active Cards, 100,000 archived Cards, bounded first/seek/final pages, full progress, unchanged read state and versioned completion passed.'

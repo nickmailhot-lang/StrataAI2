@@ -69,3 +69,25 @@ activity and reload. Discovery verifies two cases; actual new native and final
 managed/release execution require Linux CI. Local Windows managed execution is
 blocked by Application Control. Copy capacity and complete PRD-wide acceptance
 remain unfinished. PRD-08 remains open.
+
+## Supported-capacity command gate
+
+The mandatory capacity chain now executes twenty cross-Board copy commands
+through Nginx and the immutable restricted API. Both Boards have 200 Lists; the
+source stays at 5,000 active Cards and the destination grows from 4,980 to 5,000.
+The Organization has 100,000 archived Cards. The selected source retains its
+existing large comment history, one label, one eligible assignment, and one
+Checklist with more than 50 current items. Every copied item must be independent,
+incomplete, unattributed and revision 1; the source Card and full Checklist/item
+records must remain unchanged. Comments, assignments, personal state and
+attachments must not appear on the new Cards.
+
+The gate verifies twenty distinct copied Card IDs, twenty birth events/audits/
+receipts, destination label/child counts and exact original acknowledgment replay
+after nineteen later copies without additional effects. The retained
+`card-copy-capacity-{sha}` artifact contains fixed fixture conditions and all
+twenty numeric HTTP samples, with no identities, titles or retry material. It
+enforces nearest-rank mutation p95 below the unchanged 500ms budget and retains
+failed budget measurements. Conditions are one serial client with no intentional
+network latency. This does not establish concurrent-client or browser-feedback
+budgets. Linux execution is required before any measured copy performance claim.
