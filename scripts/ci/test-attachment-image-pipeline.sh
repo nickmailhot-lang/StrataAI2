@@ -11,7 +11,7 @@ fixture=("${normal[@]}" -f scripts/ci/compose.attachment-pipeline-test.yml)
 scanner_pid=''
 cleanup() {
   local status=$?
-  docker compose "${normal[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 180 api worker >/dev/null || status=1
+  docker compose "${normal[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 180 api worker web >/dev/null || status=1
   if [ -n "$scanner_pid" ]; then kill "$scanner_pid" 2>/dev/null || true; wait "$scanner_pid" 2>/dev/null || true; fi
   # Container-created private files require root cleanup, only inside this
   # verified mktemp directory. Never traverse an unverified computed target.
@@ -23,7 +23,7 @@ trap 'echo "Attachment release pipeline failed at line $LINENO" >&2' ERR
 python3 scripts/ci/fake-attachment-scanner.py "$scratch/scanner.sock" "$scratch/scans" & scanner_pid=$!
 for attempt in $(seq 1 20); do [ ! -S "$scratch/scanner.sock" ] || break; sleep 1; done
 test -S "$scratch/scanner.sock"
-docker compose "${fixture[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 180 api >/dev/null
+docker compose "${fixture[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 180 api web >/dev/null
 base=http://localhost:8088
 json() { curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(cat /proc/sys/kernel/random/uuid)" "$@"; }
 jq -nc --arg email "image-pipeline-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"image-pipeline-correct-horse",displayName:"Image pipeline owner"}' > "$scratch/account"
@@ -52,17 +52,23 @@ for attempt in $(seq 1 90); do
 done
 jq -e --arg id "$attachment" '.items|any(.attachmentId==$id and .attachmentVersion==3)' "$scratch/candidates" >/dev/null
 test "$(cat "$scratch/scans")" -ge 1
-body=$(jq -nc --arg card "$card" --arg attachment "$attachment" '{cardId:$card,attachmentId:$attachment,attachmentVersion:3,boardVersion:1}')
+jq --arg org "$org" --arg board "$board" --arg card "$card" '{email,password,organizationId:$org,boardId:$board,cardId:$card}' "$scratch/account" > "$scratch/browser-fixture"
+STRATAAI_ATTACHMENT_BROWSER_FIXTURE="$scratch/browser-fixture" STRATAAI_E2E_RATE_PACING=1 STRATAAI_E2E_RELEASE_HEADERS=1 \
+  npx playwright test --config playwright.attachment.config.ts
+revision=$(json "$base/boards/$board" | jq -r '.board.version')
+[[ "$revision" =~ ^[1-9][0-9]*$ ]]
+selected_version=$((revision + 1))
+body=$(jq -nc --arg card "$card" --arg attachment "$attachment" --argjson revision "$revision" '{cardId:$card,attachmentId:$attachment,attachmentVersion:3,boardVersion:$revision}')
 selection_key=$(cat /proc/sys/kernel/random/uuid)
 select_image() {
   curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
     -H "Idempotency-Key: $selection_key" -X POST -d "$body" "$base/boards/$board/background/image"
 }
 select_image > "$scratch/selected"
-jq -e '.version==2 and .backgroundType=="IMAGE"' "$scratch/selected" >/dev/null
+jq -e --argjson version "$selected_version" '.version==$version and .backgroundType=="IMAGE"' "$scratch/selected" >/dev/null
 owned=$(jq -r '.backgroundValue' "$scratch/selected"); [[ "$owned" =~ ^[0-9a-f-]{36}$ ]]
 test "$owned" != 00000000-0000-0000-0000-000000000000
-curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -D "$scratch/preview.headers" "$base/boards/$board/background/image?boardVersion=2" > "$scratch/preview"
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -D "$scratch/preview.headers" "$base/boards/$board/background/image?boardVersion=$selected_version" > "$scratch/preview"
 python3 - "$scratch/preview" "$scratch/preview.headers" <<'PY'
 import sys
 with open(sys.argv[1], 'rb') as source:
@@ -91,12 +97,12 @@ test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' 
 json -X POST -d '{"cardVersion":2,"version":3}' "$base/cards/$card/attachments/$attachment/archive" > "$scratch/archived-attachment"
 select_image > "$scratch/recovered"
 cmp "$scratch/selected" "$scratch/recovered"
-curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/background/image?boardVersion=2" > "$scratch/retained-preview"
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/background/image?boardVersion=$selected_version" > "$scratch/retained-preview"
 cmp "$scratch/preview" "$scratch/retained-preview"
-json -X POST -d '{"name":"Independent owned image","version":2}' "$base/boards/$board/copy" > "$scratch/copied"
+json -X POST -d "$(jq -nc --argjson version "$selected_version" '{name:"Independent owned image",version:$version}')" "$base/boards/$board/copy" > "$scratch/copied"
 copy=$(jq -r '.id' "$scratch/copied"); [[ "$copy" =~ ^[0-9a-f-]{36}$ ]]
 jq -e --arg source "$(jq -r '.backgroundValue' "$scratch/selected")" '.version==1 and .visibility=="PRIVATE" and .backgroundType=="IMAGE" and .backgroundValue!=$source' "$scratch/copied" >/dev/null
-json -X POST -d '{"version":2}' "$base/boards/$board/archive" >/dev/null
+json -X POST -d "$(jq -nc --argjson version "$selected_version" '{version:$version}')" "$base/boards/$board/archive" >/dev/null
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$copy/background/image?boardVersion=1" > "$scratch/copied-preview"
 cmp "$scratch/preview" "$scratch/copied-preview"
 test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/boards/$copy/background/image")" = 404
