@@ -8,6 +8,37 @@ const detail = { ...scope, title: 'Archived <script>🙂', description: 'Read-on
 const props = { ...scope, unavailable: false, refreshSequence: '1', reconnectSequence: 0, onDenied: vi.fn(), onRefresh: vi.fn() };
 const reply = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 afterEach(() => vi.unstubAllGlobals());
+it('keeps retained checklists and attachments readable without child mutation controls while an archived parent is admitted', async () => {
+  const at = '2026-10-04T08:00:00.123456Z'; const rank = '000000000000000000000000001000';
+  const checklist = { id: id(5), organizationId: scope.organizationId, cardId: scope.cardId, title: 'Retained preparations',
+    rank, version: 1, createdAt: at, updatedAt: at, deletedAt: null };
+  const summary = { checklist, total: 1, completed: 0, percent: 0 };
+  const item = { id: id(6), organizationId: scope.organizationId, checklistId: checklist.id, text: 'Retained preparation',
+    rank, completed: false, completedAt: null, completedBy: null, createdAt: at, updatedAt: at, version: 1, deletedAt: null };
+  const attachment = { id: id(7), organizationId: scope.organizationId, cardId: scope.cardId, uploaderId: profile.id,
+    kind: 1, displayName: 'Retained reference', mimeType: null, sizeBytes: null, url: 'https://example.test/retained', scanStatus: 0,
+    scannedAt: null, createdAt: at, updatedAt: at, version: 1, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null };
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input);
+    if (path === '/me') return reply(profile);
+    if (path.endsWith('/archived-details')) return reply(detail);
+    if (path.endsWith('/checklists')) return reply({ ...scope, cardVersion: 2, canEdit: false, items: [summary], nextCursor: null });
+    if (path.endsWith('/items')) return reply({ ...scope, cardVersion: 2, canEdit: false, summary, items: [item], nextCursor: null });
+    return reply({ ...scope, cardVersion: 2, canEdit: false, items: [attachment], nextCursor: null });
+  }));
+  const view = render(<MemoryRouter><ArchivedCardDetail {...props} /></MemoryRouter>);
+  await screen.findByText(detail.title);
+  fireEvent.click(screen.getByRole('button', { name: 'Show checklists' })); await screen.findByText('Read-only checklists.');
+  fireEvent.click(screen.getByRole('button', { name: 'Show items in Retained preparations' }));
+  await screen.findByText('Incomplete: Retained preparation');
+  fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
+  expect(await screen.findByRole('link', { name: 'Retained reference (opens in a new tab)' })).toHaveAttribute('href', attachment.url);
+  for (const name of ['Add checklist', 'Manage checklists', 'Manage attachments', 'Add link attachment', 'Add file attachment'])
+    expect(screen.queryByRole('button', { name })).toBeNull();
+  expect(screen.queryByRole('textbox')).toBeNull(); expect(screen.queryByRole('checkbox')).toBeNull();
+  view.rerender(<MemoryRouter><ArchivedCardDetail {...props} unavailable refreshSequence="2" /></MemoryRouter>);
+  expect(screen.queryByText('Incomplete: Retained preparation')).toBeNull(); expect(screen.queryByRole('link')).toBeNull();
+});
 it('reads scoped archived details, exposes comments and history without mutation controls, and purges immediately on invalidation', async () => {
   const requests: string[] = [];
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {

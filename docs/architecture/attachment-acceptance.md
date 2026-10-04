@@ -842,3 +842,5 @@ current Board so both membership withdrawals happen before either membership
 gate. Refusal/unchanged effects/restored original receipt assertions are retained.
 The earlier passing run does not establish deterministic execution of the old
 fixture; corrected Linux execution is pending.
+
+Archived Card detail now mounts the existing scope/revision/account-fenced attachment disclosure so retained metadata and URL links remain accessible in the read-only view. No attachment mutation controls are added. A component regression verifies retained checklist and attachment content and immediate removal when admission is withdrawn; 28 focused cases, typecheck and lint pass. This does not establish managed binary-provider or native release acceptance.

@@ -4,6 +4,8 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { ActivityHistoryControl } from './ActivityHistoryControl';
 import { CardCommentsControl } from './CardCommentsControl';
+import { CardChecklists } from './CardChecklists';
+import { CardAttachments } from './CardAttachments';
 
 type Scope = { organizationId: string; boardId: string; cardId: string };
 type Detail = Scope & { title: string; description: string | null; version: number };
@@ -51,6 +53,8 @@ function Reader(props: Props) {
     <Alert severity="info">This Card or its List is archived. Details are read-only.</Alert>
     <Typography component="h3" variant="h6" sx={{ overflowWrap: 'anywhere' }}>{detail.title}</Typography>
     {detail.description && <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{detail.description}</Typography>}
+    <CardChecklists {...props} version={detail.version} />
+    <CardAttachments {...props} version={detail.version} />
     <ActivityHistoryControl organizationId={props.organizationId} boardId={props.boardId} kind="CARD" targetId={props.cardId}
       unavailable={false} refreshSequence={props.refreshSequence} onDenied={props.onDenied} />
     <CardCommentsControl {...props} version={detail.version} editable={false} disabled={false} canAdminister={false}
