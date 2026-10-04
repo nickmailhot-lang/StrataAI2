@@ -38,6 +38,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+RUN install -d -m 0700 /var/lib/strataai/activity-keys
 COPY --from=build /app/publish .
 
 ENV ASPNETCORE_URLS=http://+:8080

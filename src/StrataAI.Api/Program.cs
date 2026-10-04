@@ -67,6 +67,7 @@ builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
 builder.Services.AddStrataAiOrganizations(runtime);
 builder.Services.AddStrataAiOnboarding(runtime, builder.Configuration);
 builder.Services.AddStrataAiWorkManagement(runtime);
+builder.Services.AddStrataAiActivityKeys(builder.Configuration);
 builder.Services.AddSingleton(new WorkRealtimeOrigin(builder.Configuration));
 builder.Services.AddSignalR(options =>
 {

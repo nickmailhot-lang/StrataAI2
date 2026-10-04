@@ -167,3 +167,17 @@ realtime invalidations and reconnects retire prior pages/cursors, abort old read
 and exclude delayed replies. Access loss purges protected state. Loading, empty,
 error/expired-cursor retry and keyboard focus recovery are provided. This is
 component-level evidence pending native desktop/mobile/two-client CI acceptance.
+
+Production/release Compose now mounts a dedicated API-only named volume at
+`/var/lib/strataai/activity-keys`, using `STRATAAI_ACTIVITY_KEY_DIRECTORY` and
+fixed `StrataAI2.InternalActivity` Data Protection application isolation. The API
+image creates its key directory with mode 0700; the Worker/web services do not
+mount it. Preserve that volume during upgrades; deleting it intentionally
+invalidates existing history continuations (clients recover from newest history).
+Operators running APIs outside Compose must configure an absolute protected
+key directory; replicas must share the same application name and key directory.
+The mounted filesystem should use the deployment's encrypted storage and backup
+controls. No key material belongs in web roots, CI artifacts or release bundles.
+A mandatory managed test opens two independently constructed providers on the
+same persisted directory and rejects a third unrelated application domain;
+exact-image restart/replica execution still requires release verification.

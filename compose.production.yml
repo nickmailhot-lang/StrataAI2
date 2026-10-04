@@ -31,6 +31,7 @@ services:
       STRATAAI_DATABASE_HOST: postgres
       STRATAAI_DATABASE_NAME: ${POSTGRES_DB:-strataai}
       STRATAAI_DATABASE_USERNAME: strataai_api_runtime
+      STRATAAI_ACTIVITY_KEY_DIRECTORY: /var/lib/strataai/activity-keys
       STRATAAI_DATABASE_PASSWORD: ${STRATAAI_API_DB_PASSWORD}
       STRATAAI_IDENTITY_EMAIL_ENABLED: ${STRATAAI_IDENTITY_EMAIL_ENABLED:-false}
       STRATAAI_IDENTITY_EMAIL_FROM: ${STRATAAI_IDENTITY_EMAIL_FROM:-}
@@ -40,6 +41,9 @@ services:
       STRATAAI_IDENTITY_TOKEN_KEYS: ${STRATAAI_IDENTITY_TOKEN_KEYS:-}
     ports:
       - "8080:8080"
+
+    volumes:
+      - strataai-activity-keys:/var/lib/strataai/activity-keys
 
   worker:
     build:
@@ -84,3 +88,4 @@ services:
 
 volumes:
   strataai-postgres:
+  strataai-activity-keys:

@@ -188,6 +188,7 @@ internal static class ActivityEventSourceStoreContract
             }
             Require((await Scope(() => feed.ReadAsync(cardBinding, null, ct))).SequenceEqual(personalHistory),
                 "Organization administration widened private activity ownership.");
+            Console.WriteLine("Real restricted activity feeds: complete historical Card seek, source/current Board revocation, own Watch/Reminder audience distinct from actor, 100 hidden personal events filtered before the bound, and no administrator private-history widening passed.");
             Console.WriteLine("Real restricted activity source adapter: bounded same-time seek, immutable captions after rename/deactivation, pending source visibility, exact retry, owning rollback and recovery passed. Raw sources do not establish HTTP/feed audience admission.");
             Console.WriteLine("Real restricted Card activity source slices: bounded tied seek, entity-type/identity/source-Board isolation and explicit historical Board reads passed. Synthetic source setup does not prove actual Card movement or authorized feeds.");
         }
