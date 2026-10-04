@@ -1,6 +1,6 @@
 export type NotificationProfile = { id: string; version: number; locale: string; timezone: string; status: 'ACTIVE'; emailVerified: boolean };
 export const notificationLabels = {
-  CARD_ASSIGNED: 'Assigned to you', CARD_CREATED: 'Card created', CARD_UPDATED: 'Card updated', CARD_MOVED: 'Card moved',
+  CARD_ASSIGNED: 'Assigned to you', CARD_CREATED: 'Card created', CARD_COPIED: 'Card copied', CARD_UPDATED: 'Card updated', CARD_MOVED: 'Card moved',
   CARD_ARCHIVED: 'Card archived', CARD_RESTORED: 'Card restored', CARD_MEMBER_ADDED: 'Card member added',
   CARD_MEMBER_REMOVED: 'Card member removed', LABEL_ADDED: 'Label added', LABEL_REMOVED: 'Label removed',
   CARD_DATE_CHANGED: 'Card dates changed', CARD_DUE_COMPLETED: 'Due date completed', CARD_DUE_REOPENED: 'Due date reopened',

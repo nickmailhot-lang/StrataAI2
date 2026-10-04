@@ -5,7 +5,7 @@ namespace StrataAI.Application.WorkManagement;
 public sealed record CardWatchActivity(Guid OrganizationId, Guid BoardId, Guid ListId, Guid CardId)
 {
     public static bool IsRelevant(WorkEvent change) => change.EntityType == "Card" && change.EventType is
-        "CARD_CREATED" or "CARD_UPDATED" or "CARD_MOVED" or "CARD_ARCHIVED" or "CARD_RESTORED" or
+        "CARD_CREATED" or "CARD_COPIED" or "CARD_UPDATED" or "CARD_MOVED" or "CARD_ARCHIVED" or "CARD_RESTORED" or
         "CARD_MEMBER_ADDED" or "CARD_MEMBER_REMOVED" or "LABEL_ADDED" or "LABEL_REMOVED" or "CARD_DATE_CHANGED" or "CARD_DUE_COMPLETED" or "CARD_DUE_REOPENED";
 
     public static CardWatchActivity? Capture(WorkEvent change, CardRecord current)

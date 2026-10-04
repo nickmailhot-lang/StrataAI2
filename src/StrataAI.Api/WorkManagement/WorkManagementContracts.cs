@@ -50,3 +50,5 @@ public sealed record MoveCardRequest(
     long ExpectedVersion,
     Guid? BeforeCardId = null,
     Guid? SourceBoardId = null);
+
+public sealed record CopyCardRequest(Guid SourceBoardId, Guid DestinationListId, string Title, long ExpectedVersion);

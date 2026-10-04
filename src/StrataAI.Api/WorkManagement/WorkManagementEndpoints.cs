@@ -565,6 +565,15 @@ public static partial class WorkManagementEndpoints
                 })
             .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
+        app.MapPost("/cards/{cardId:guid}/copy", async (Guid cardId, CopyCardRequest request,
+            HttpContext context, IWorkManagementService service, CancellationToken cancellationToken) =>
+        {
+            var userId = GetUserId(context);
+            if (userId is null) return Results.Unauthorized();
+            return ToMutationResult(await service.CopyCardAsync(cardId, request.SourceBoardId, request.DestinationListId,
+                userId.Value, request.Title, request.ExpectedVersion, context.TraceIdentifier, cancellationToken));
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+
         app.MapPost(
                 "/cards/{cardId:guid}/move",
                 async (

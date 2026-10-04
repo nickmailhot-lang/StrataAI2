@@ -519,6 +519,9 @@ jobs:
       - name: Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images
         run: bash scripts/ci/test-cross-board-card-moves.sh
 
+      - name: Independent Card copy, destination Watch notification and atomic late-publication rollback through exact release images
+        run: bash scripts/ci/test-card-copy.sh
+
       - name: UTC Card dates, atomic notification rollback and private retry recovery through exact release images
         run: scripts/ci/test-card-dates.sh
 

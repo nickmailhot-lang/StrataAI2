@@ -48,7 +48,7 @@ export function parseActivityPage(value: unknown, scope: ActivityScope, before?:
 const labels: Record<string, string> = {
   BOARD_CREATED: 'created the Board', BOARD_UPDATED: 'updated the Board', BOARD_ARCHIVED: 'archived the Board', BOARD_RESTORED: 'restored the Board',
   LIST_CREATED: 'created a List', LIST_UPDATED: 'updated a List', LIST_MOVED: 'moved a List', LIST_ARCHIVED: 'archived a List', LIST_RESTORED: 'restored a List', LIST_DELETED: 'deleted a List',
-  CARD_CREATED: 'created a Card', CARD_UPDATED: 'updated a Card', CARD_MOVED: 'moved a Card', CARD_ARCHIVED: 'archived a Card', CARD_RESTORED: 'restored a Card', CARD_DELETED: 'deleted a Card',
+  CARD_CREATED: 'created a Card', CARD_COPIED: 'copied a Card', CARD_UPDATED: 'updated a Card', CARD_MOVED: 'moved a Card', CARD_ARCHIVED: 'archived a Card', CARD_RESTORED: 'restored a Card', CARD_DELETED: 'deleted a Card',
   COMMENT_ADDED: 'added a comment', COMMENT_EDITED: 'edited a comment', COMMENT_DELETED: 'removed a comment body', MENTION_CREATED: 'created comment mentions',
   WATCH_CREATED: 'started watching an item', WATCH_REMOVED: 'stopped watching an item', REMINDER_SCHEDULED: 'scheduled a personal reminder', REMINDER_CANCELLED: 'cancelled a personal reminder', REMINDER_FIRED: 'received a personal reminder',
   CARD_MEMBER_ADDED: 'assigned a Card member', CARD_MEMBER_REMOVED: 'removed a Card member', CARD_DATE_CHANGED: 'changed Card dates', CARD_DUE_COMPLETED: 'completed a due date', CARD_DUE_REOPENED: 'reopened a due date',
