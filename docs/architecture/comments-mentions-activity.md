@@ -517,3 +517,26 @@ no credential/provider fixture substitutes for actual account commands. Shell
 syntax passes. Execution awaits the new immutable-image CI run. Session expiry
 and revocation during live waits, native account UI and full mention acceptance
 remain unfinished.
+
+## Account handle client contract
+
+The account client now validates the exact setting/acknowledgment shape, current
+verified subject and account revision, positive safe revisions, canonical handle
+and its owning generated namespace, finite UTC microsecond history and no-op or
+changed acknowledgment against the original intent. It refuses foreign-account,
+stale-profile, malformed, extra-field/private, unsafe-version and invented-no-op
+acknowledgments. This is client admission, not server authority.
+
+The normalized original handle, both original revisions, serialized request
+body and UUID key are retained in a frozen intent with a copied frozen original
+setting; changing a caller's draft cannot change the pending retry. Approved
+handle refusal and invalid-key codes survive the shared bounded Problem
+normalizer without retaining server private fields. Four account contract cases
+and the transport/Problem checks pass locally (19 total), along with typecheck
+and lint. These helpers are not yet a visible MUI control or native UI proof.
+
+The protected HTTP commit 35733d9 now passes its complete source gate in CI run
+37167855911: 602 Domain and 285 actual API-host cases, zero failed/skipped, plus
+web and restricted PostgreSQL checks. The new seven host cases include actual
+cookie authorization and revocation. Immutable image build/security/runtime
+stages remain separate live evidence; this is not a full release success claim.

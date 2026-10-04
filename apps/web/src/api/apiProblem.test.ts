@@ -2,6 +2,11 @@ import { normalizeApiProblem } from './apiProblem';
 
 afterEach(() => vi.useRealTimers());
 describe('ARCH-02 common Problem normalization', () => {
+  it.each(['mention_handle_invalid', 'mention_handle_unavailable', 'mention_handle_claim_refused', 'invalid_idempotency_key'])(
+    'retains approved account handle refusal %s while excluding private response fields', async code => {
+      const response = await normalizeApiProblem(new Response(JSON.stringify({ code, handle: 'private', userId: 'private', detail: 'private' }), { status: 409 }));
+      expect(await response.json()).toEqual({ type: 'about:blank', title: 'Unable to complete this request.', status: 409, code });
+    });
   it('retains actual status, approved code and recovery headers, excluding server details', async () => {
     const response = await normalizeApiProblem(new Response(JSON.stringify({ status: 200, code: 'idempotency_key_expired',
       title: 'private SQL', detail: 'private recipient', stack: 'private stack', user: { id: 'private ID' } }), {

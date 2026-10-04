@@ -6,6 +6,8 @@ const codes = new Set([
   'idempotency_key_expired', 'idempotency_key_reused', 'identity_retry_key_unavailable',
   'email_unavailable', 'self_registration_disabled', 'identity_delivery_unavailable',
   'identity_storage_unavailable', 'invalid_or_expired_invitation', 'invalid_or_expired_token',
+  'mention_handle_invalid', 'mention_handle_unavailable', 'mention_handle_claim_refused',
+  'invalid_idempotency_key',
   'invalid_password', 'rate_limit_exceeded', 'invalid_organization_logo_url',
   'sole_owner', 'member_version_conflict', 'board_not_found', 'sole_board_admin',
   'version_conflict', 'organization_owner_required', 'ownership_changed',
