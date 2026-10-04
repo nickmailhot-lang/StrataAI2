@@ -9,7 +9,7 @@ import { trackBoardReads } from './boardReadTracker';
 // The CI shell fixture supplies a real uploaded/published image and owns the
 // exact API/Worker lifecycle. Only the first committed response is dropped.
 for (const width of [1280, 390]) {
-  test(`PRD-04 real publication selection, original recovery and image-backed copy at ${width}px`, async ({ page, context }) => {
+  test(`PRD-04 real public consent, publication recovery and image-backed copy at ${width}px`, async ({ page, context }) => {
     test.setTimeout(150_000);
     expect(process.env.CI).toBe('true');
     const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE;
@@ -21,6 +21,15 @@ for (const width of [1280, 390]) {
       data: { email: fixture.email, password: fixture.password } });
     expect(login.status()).toBe(200);
     const board = fixture.boardId, org = fixture.organizationId;
+    const beforeVisibility = await context.request.get(`/boards/${board}`);
+    expect(beforeVisibility.status()).toBe(200);
+    const before = (await beforeVisibility.json()).board;
+    expect(before.visibility).toBe('PRIVATE');
+    const publicVisibility = await context.request.patch(`/boards/${board}/visibility`, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { visibility: 'PUBLIC', version: before.version },
+    });
+    expect(publicVisibility.status()).toBe(200);
     await waitForBoardDelivery(context.request, board);
     const cardPath = `/app/${org}/boards/${board}/cards/${fixture.cardId}`;
     const reads = trackBoardReads(page, board, cardPath);
@@ -37,12 +46,16 @@ for (const width of [1280, 390]) {
     await expect(review).toBeEnabled(); await review.press('Enter');
     await page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }).press('Enter');
     const confirm = page.getByRole('button', { name: 'Confirm Board background image', exact: true });
-    await expect(confirm).toBeEnabled(); await expect(confirm).toBeFocused(); await confirm.press('Enter');
+    await expect(confirm).toBeDisabled();
+    const consent = page.getByRole('checkbox', { name: 'I understand this Board background image will be publicly visible', exact: true });
+    await expect(consent).toBeFocused(); await consent.press('Space');
+    await expect(confirm).toBeEnabled(); await confirm.press('Enter');
     const retry = page.getByRole('button', { name: 'Retry original Board background change', exact: true });
     await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
     for (const name of ['Save card', 'Review Card cover', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
     await retry.press('Enter'); await expect(page.getByText('Board background updated.', { exact: true })).toBeVisible();
     await expect(review).toBeFocused(); expect(attempts).toHaveLength(2);
+    expect(JSON.parse(attempts[0].body!)).toMatchObject({ publicVisibilityConfirmed: true, boardVersion: before.version + 1 });
     const sourceResponse = await context.request.get(`/boards/${board}`); expect(sourceResponse.status()).toBe(200);
     const source = (await sourceResponse.json()).board;
     expect(source.backgroundType).toBe('IMAGE'); expect(source.backgroundValue).toMatch(/^[0-9a-f-]{36}$/);
@@ -82,5 +95,12 @@ for (const width of [1280, 390]) {
     const retained = await context.request.get(`/boards/${target}`);
     expect(retained.status()).toBe(200);
     expect((await retained.json()).board).toMatchObject({ version: 1, backgroundType: 'IMAGE', backgroundValue: copied.backgroundValue });
+    // Restore the source visibility for the next independent viewport case
+    // and the subsequent private HTTP lifecycle/concurrency assertions.
+    const privateVisibility = await context.request.patch(`/boards/${board}/visibility`, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { visibility: 'PRIVATE', version: source.version + 1 },
+    });
+    expect(privateVisibility.status()).toBe(200);
   });
 }
