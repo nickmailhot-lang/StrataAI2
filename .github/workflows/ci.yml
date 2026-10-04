@@ -104,6 +104,9 @@ jobs:
       - name: Verify attachment refusal fixtures replace environment defaults
         run: bash scripts/ci/test-attachment-runtime-fixture-arguments.sh
 
+      - name: Verify declared attachment scanner protocol fixture
+        run: python3 tests/attachment-scanner-fixture.py
+
       - name: Build with warnings as errors
         run: dotnet build StrataAI2.slnx --configuration Release --no-restore
 
