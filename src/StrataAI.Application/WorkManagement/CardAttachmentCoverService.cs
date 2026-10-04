@@ -71,10 +71,13 @@ public sealed class CardAttachmentCoverService(IWorkManagementStore work, IAttac
         return await transactions.ExecuteAsync(hint.OrganizationId,
             WorkCommand.Create(actor, context.IdempotencyKey, "CARD_COVER_CHANGED", cardId, input, "card_not_found"), async receipt =>
             {
-                if (!await Admit(hint, actor, true, ct)) return false;
+                if (receipt is null ? !await Admit(hint, actor, true, ct)
+                    : !await AttachmentAdmission.CheckReceiptAsync(work, organizations, boards, hint, receipt.BoardId, actor, ct)) return false;
                 var selected = await covers.FindSelectedAsync(hint.OrganizationId, cardId, ct);
                 if (receipt is null) return true;
-                if (receipt.OrganizationId != hint.OrganizationId || receipt.BoardId != hint.BoardId || receipt.CardId != cardId || selected != receipt.AttachmentId) return false;
+                if (receipt.OrganizationId != hint.OrganizationId || receipt.CardId != cardId || selected != receipt.AttachmentId
+                    || receipt.AttachmentId != input.AttachmentId || receipt.AttachmentVersion != input.AttachmentVersion
+                    || receipt.CardVersion != input.CardVersion + (receipt.Changed ? 1 : 0)) return false;
                 return selected is null || await Source(hint, selected.Value, ct) is { } source && source.Metadata.Version >= receipt.AttachmentVersion;
             }, async () =>
             {

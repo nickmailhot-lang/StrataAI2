@@ -766,3 +766,13 @@ After release, the request must return 404 without attachment disclosure or
 command effects. A real Owner restoration command then recovers the unchanged
 original acknowledgment. This tests fresh permission admission after lock waits
 for all four receipt types. Shell syntax/diff checks pass; execution is pending.
+
+Cover command receipts now recover after Card movement through original/current
+Board admission, retaining original Card/source revisions and selected-cover
+matching. The API-host contract covers a no-op empty selection through actual
+HTTP movement and independent source/destination permission withdrawal. The
+restricted PostgreSQL contract uses a genuinely published image, trusted routing
+fixtures, exact original selection receipt recovery, independent Board archival
+and unchanged Card/File/command effects, then restores the fixture route. It
+does not claim HTTP actor/movement proof for the published image. Full solution
+compilation passes with zero warnings/errors; actual Linux execution is pending.

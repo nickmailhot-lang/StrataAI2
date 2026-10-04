@@ -151,6 +151,40 @@ internal static class CardCoverCommandContract
             "Cover candidate cursor survived a different Card revision.");
         Require((await service.SetAsync(card, actor, input, "cover-original-retry", ct)).Value == selected.Value && await Snapshot() == committed,
             "Cover original retry repeated effects or changed its acknowledgment.");
+        // Trusted routing fixture around the genuine published image and
+        // restricted command; HTTP movement is covered separately.
+        var route = (await work.FindCardAsync(card, ct))!; var movedBoard = Guid.NewGuid(); var movedList = Guid.NewGuid();
+        await using (var move = new NpgsqlCommand("""
+            INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES(@board,@tenant,'Moved cover receipt',@at,@at);
+            INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
+              VALUES(@list,@tenant,@board,'Moved cover parent','500000000000000000000000000000',@at,@at);
+            UPDATE cards SET board_id=@board,list_id=@list WHERE tenant_id=@tenant AND id=@card;
+            """, admin))
+        {
+            move.Parameters.AddWithValue("board", movedBoard); move.Parameters.AddWithValue("list", movedList);
+            move.Parameters.AddWithValue("tenant", tenant); move.Parameters.AddWithValue("at", clock.UtcNow); move.Parameters.AddWithValue("card", card);
+            await move.ExecuteNonQueryAsync(ct);
+        }
+        var movedState = await Snapshot();
+        Require((await service.SetAsync(card, actor, input, "cover-moved-retry", ct)).Value == selected.Value && await Snapshot() == movedState,
+            "Moved published cover lost its original receipt or repeated selection effects.");
+        foreach (var blockedBoard in new[] { route.BoardId, movedBoard })
+        {
+            await using var change = new NpgsqlCommand("UPDATE boards SET lifecycle_state=@state WHERE tenant_id=@tenant AND id=@board;", admin);
+            change.Parameters.AddWithValue("tenant", tenant); change.Parameters.AddWithValue("board", blockedBoard); change.Parameters.AddWithValue("state", "ARCHIVED");
+            await change.ExecuteNonQueryAsync(ct);
+            Require((await service.SetAsync(card, actor, input, "cover-moved-withdrawal", ct)).ErrorCode == "card_not_found" && await Snapshot() == movedState,
+                "Original/current Board withdrawal disclosed a moved cover receipt or changed domain effects.");
+            change.Parameters["state"].Value = "ACTIVE"; await change.ExecuteNonQueryAsync(ct);
+        }
+        Require((await service.SetAsync(card, actor, input, "cover-moved-restored", ct)).Value == selected.Value && await Snapshot() == movedState,
+            "Restored moved cover receipt changed its original acknowledgment.");
+        await using (var restore = new NpgsqlCommand("UPDATE cards SET board_id=@board,list_id=@list WHERE tenant_id=@tenant AND id=@card;", admin))
+        {
+            restore.Parameters.AddWithValue("board", route.BoardId); restore.Parameters.AddWithValue("list", route.ListId);
+            restore.Parameters.AddWithValue("tenant", tenant); restore.Parameters.AddWithValue("card", card); await restore.ExecuteNonQueryAsync(ct);
+        }
+        Require(await Snapshot() == committed, "Cover routing fixture did not restore canonical command state.");
         Require((await service.SetAsync(card, actor, new(null, selected.Value!.CardVersion, null), "cover-key-reuse", ct)).ErrorCode == "idempotency_key_reused"
             && await Snapshot() == committed, "Cover retry key allowed another intent.");
         context.IdempotencyKey = Guid.NewGuid();

@@ -40,9 +40,23 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.OK, created.StatusCode); var link = (await created.Content.ReadFromJsonAsync<AttachmentChange>(ct))!;
         using var urlCover = await Mutate(member, HttpMethod.Put, path, new { attachmentId = link.Attachment.Id, cardVersion = 2, attachmentVersion = 1 });
         Assert.Equal(HttpStatusCode.NotFound, urlCover.StatusCode); Assert.Equal(2, (await work.FindCardAsync(card.Id, ct))!.Version);
+        using var destinationResponse = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "Cover receipt destination", visibility = "PRIVATE" });
+        var destination = (await destinationResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var grant = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "MEMBER" }); Assert.Equal(HttpStatusCode.OK, grant.StatusCode);
+        using var destinationList = await Mutate(owner, HttpMethod.Post, $"/boards/{destination}/lists", new { name = "Cover receipt parent" });
+        var list = (await destinationList.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var moved = await Mutate(member, HttpMethod.Post, $"/cards/{card.Id}/move", new { sourceBoardId = f.Board, destinationListId = list, expectedVersion = 2 });
+        Assert.Equal(HttpStatusCode.OK, moved.StatusCode); var current = (await work.FindCardAsync(card.Id, ct))!;
+        using var movedRetry = await Mutate(member, HttpMethod.Put, path, empty, key); Assert.Equal(HttpStatusCode.OK, movedRetry.StatusCode);
+        Assert.Equal(noOp, await movedRetry.Content.ReadFromJsonAsync<CardCoverChange>(ct)); Assert.Equal(current, await work.FindCardAsync(card.Id, ct));
+        using var withdrawDestination = await Mutate(owner, HttpMethod.Delete, $"/boards/{destination}/members/{f.Recipient}", new { }); Assert.Equal(HttpStatusCode.NoContent, withdrawDestination.StatusCode);
+        using var hiddenRetry = await Mutate(member, HttpMethod.Put, path, empty, key); Assert.Equal(HttpStatusCode.NotFound, hiddenRetry.StatusCode);
+        using var restoreDestination = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "MEMBER" }); Assert.Equal(HttpStatusCode.OK, restoreDestination.StatusCode);
+        using var restoredRetry = await Mutate(member, HttpMethod.Put, path, empty, key); Assert.Equal(HttpStatusCode.OK, restoredRetry.StatusCode); Assert.Equal(noOp, await restoredRetry.Content.ReadFromJsonAsync<CardCoverChange>(ct));
         using var revoked = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { }); Assert.Equal(HttpStatusCode.NoContent, revoked.StatusCode);
         using var revokedRetry = await Mutate(member, HttpMethod.Put, path, empty, key); Assert.Equal(HttpStatusCode.NotFound, revokedRetry.StatusCode);
-        using var revokedRead = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, revokedRead.StatusCode);
-        using var revokedCandidates = await member.GetAsync(candidatePath, ct); Assert.Equal(HttpStatusCode.NotFound, revokedCandidates.StatusCode);
+        using var currentRead = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.OK, currentRead.StatusCode);
+        using var currentCandidates = await member.GetAsync(candidatePath, ct); Assert.Equal(HttpStatusCode.OK, currentCandidates.StatusCode);
+        Assert.Equal(current, await work.FindCardAsync(card.Id, ct));
     }
 }
