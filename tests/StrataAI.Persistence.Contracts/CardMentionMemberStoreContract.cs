@@ -81,6 +81,30 @@ internal static class CardMentionMemberStoreContract
             Require(group.Intersect(users).Count() == 25 && group.Count > 20, "Full Board group roster was truncated or widened to ineligible users.");
             Require((await Scope(tenant, () => mass.LockRecipientsAsync(tenant, foreignBoard, card, false, true, true, ct))).Count == 0,
                 "Mass roster crossed the canonical Card/Board parent.");
+            await using (var assign = new NpgsqlCommand("""
+                INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by)
+                SELECT @tenant,@board,@card,id,@assigner FROM unnest(@assigned) AS targets(id);
+                """, admin))
+            {
+                assign.Parameters.AddWithValue("tenant", tenant); assign.Parameters.AddWithValue("board", board);
+                assign.Parameters.AddWithValue("card", card); assign.Parameters.AddWithValue("assigner", users[0]);
+                // Retained assignments include departed/suspended/unverified
+                // participants: current roster admission must still filter them.
+                assign.Parameters.AddWithValue("assigned", new[] { users[0], users[1], users[2], users[26], users[27], users[28], users[29] });
+                await assign.ExecuteNonQueryAsync(ct);
+            }
+            var assignedGroup = await Scope(tenant, () => mass.LockRecipientsAsync(tenant, board, card, true, false, true, ct));
+            Require(assignedGroup.Intersect(users).Order().SequenceEqual(users.Take(3).Order()) && assignedGroup.All(group.Contains),
+                "Card group omitted a current assignee or widened to stale/unassigned Board participants.");
+            var unverifiedGroup = await Scope(tenant, () => mass.LockRecipientsAsync(tenant, board, card, true, false, false, ct));
+            Require(unverifiedGroup.Intersect(users).Order().SequenceEqual(users.Take(3).Append(users[28]).Order()),
+                "Card group ignored its explicit verified-email policy.");
+            Require((await Scope(tenant, () => mass.LockRecipientsAsync(tenant, board, card, true, true, true, ct))).SequenceEqual(group),
+                "Overlapping Card/Board group scopes duplicated or omitted recipients.");
+            Require((await Scope(tenant, () => mass.LockRecipientsAsync(tenant, board, Guid.NewGuid(), true, true, true, ct))).Count == 0
+                && (await Scope(tenant, () => mass.LockRecipientsAsync(tenant, board, card, false, false, true, ct))).Count == 0
+                && (await Scope(foreignTenant, () => mass.LockRecipientsAsync(foreignTenant, board, card, true, true, true, ct))).Count == 0,
+                "Missing Card, absent scopes or foreign tenant disclosed a group roster.");
             var groupComment = Guid.NewGuid();
             var snapshotStore = provider.GetRequiredService<ICommentMentionSnapshotStore>(); var commentStore = provider.GetRequiredService<ICardCommentStore>();
             var refusedGroup = await unit.ExecuteReadAsync(tenant, null, "fixture_denied", () => Task.FromResult(true), async () =>
@@ -196,6 +220,7 @@ internal static class CardMentionMemberStoreContract
                 DELETE FROM comment_mention_recipients WHERE tenant_id=@tenant AND comment_id=ANY(@comments);
                 DELETE FROM comment_mention_snapshots WHERE tenant_id=@tenant AND comment_id=ANY(@comments);
                 DELETE FROM card_comments WHERE tenant_id=@tenant AND id=ANY(@comments);
+                DELETE FROM card_members WHERE tenant_id=@tenant AND (user_id=ANY(@users) OR assigned_by=ANY(@users));
                 DELETE FROM board_members WHERE user_id=ANY(@users) AND tenant_id IN (@tenant,@foreign);
                 DELETE FROM organization_members WHERE user_id=ANY(@users) AND tenant_id IN (@tenant,@foreign);
                 DELETE FROM users WHERE id=ANY(@users);
@@ -206,6 +231,6 @@ internal static class CardMentionMemberStoreContract
             await cleanupTransaction.CommitAsync(ct);
         }
         Console.WriteLine("Restricted mention member metadata: owning tenant, literal prefix/seek bounds, exact current handles, active Board/Organization/account/email policy, former alias exclusion and shared-user isolation passed.");
-        Console.WriteLine("Restricted mass recipient history: complete Board roster beyond username window, Card/Board affinity, durable full recipient snapshot and refused comment/history rollback passed.");
+        Console.WriteLine("Restricted mass recipient history: complete Board roster beyond username window, current Card assignments with explicit email policy, union without duplicates, Card/Board/tenant affinity, durable full recipient snapshot and refused comment/history rollback passed.");
     }
 }

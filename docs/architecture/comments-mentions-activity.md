@@ -1146,3 +1146,15 @@ and Card/Board recipients, unchanged edits, removals/readdition and false declar
 Local warning-as-error compilation passed; Linux test execution is pending. This
 is producer preparation, not current actor authorization or durable anti-abuse
 reservation, and HTTP/MUI group mentions remain literal until both are connected.
+
+Run 37176649581 at 714a9e3 passed the mandatory PostgreSQL integration job,
+including actual restricted full Board group history and source-verified batch
+publication/rollback contracts. Run 37176770652 at 17cf8f7 has also passed its
+PostgreSQL and web jobs; managed and full image/runtime acceptance remain pending.
+The restricted mass roster contract now additionally seeds current and retained
+stale Card assignments. It requires exactly the eligible assignees, applies the
+explicit verified-email policy, verifies overlapping Card/Board scope union,
+and refuses missing Cards, absent group scopes and foreign tenant parents.
+Compilation passed; new Card-assignment contract execution is pending. These
+checks are storage-policy evidence with synthetic actor admission, not complete
+Production group confirmation, quota, HTTP/native or performance acceptance.
