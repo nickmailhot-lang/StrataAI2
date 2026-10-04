@@ -15,6 +15,62 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PRD_14_Pending_upload_after_cross_Board_move_keeps_original_revision_and_requires_fresh_review(bool stored)
+    {
+        var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects(); await using var app = UploadFactory(objects);
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var admission = app.Services.GetRequiredService<AttachmentUploadAdmissionService>();
+        var intents = app.Services.GetRequiredService<IAttachmentUploadIntentStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Pending upload movement", null, null, DateTimeOffset.UtcNow, ct);
+        var bytes = new byte[512]; "%PDF-1.7\n"u8.CopyTo(bytes); var key = Guid.NewGuid();
+        var input = new PrepareAttachmentUploadInput("Original.pdf", bytes.Length, Convert.ToHexStringLower(SHA256.HashData(bytes)), 1);
+        var prepared = await admission.PrepareAsync(card.Id, f.Recipient, key, input, ct);
+        Assert.True(prepared.Succeeded); var pending = prepared.Value!;
+        if (stored)
+        {
+            // Server-owned measured storage fixture; the retry must perform no provider I/O.
+            var claimed = await admission.ClaimAsync(card.Id, f.Recipient, pending.Id, key, pending.Version, ct);
+            Assert.True(claimed.Succeeded);
+            var recorded = await admission.RecordStoredAsync(card.Id, f.Recipient, claimed.Value!, new("application/pdf"),
+                new(new(f.Organization, pending.Id), bytes.Length, input.Sha256), ct);
+            Assert.True(recorded.Succeeded); pending = recorded.Value!;
+        }
+        using var boardResponse = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "Upload destination", visibility = "PRIVATE" });
+        Assert.Equal(HttpStatusCode.Created, boardResponse.StatusCode);
+        var destination = (await boardResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var grant = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, grant.StatusCode);
+        using var listResponse = await Mutate(owner, HttpMethod.Post, $"/boards/{destination}/lists", new { name = "Current parent" });
+        var list = (await listResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var moved = await Mutate(member, HttpMethod.Post, $"/cards/{card.Id}/move",
+            new { sourceBoardId = f.Board, destinationListId = list, expectedVersion = 1 });
+        Assert.Equal(HttpStatusCode.OK, moved.StatusCode); var current = (await work.FindCardAsync(card.Id, ct))!;
+        var path = $"/cards/{card.Id}/attachments";
+        using var retry = FileRequest(path, bytes, key, input.DisplayName, 1);
+        using var refused = await member.SendAsync(retry, ct);
+        Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode); Assert.Contains("version_conflict", await refused.Content.ReadAsStringAsync(ct));
+        Assert.Equal(0, objects.Writes); Assert.Equal(0, objects.Reads);
+        Assert.Equal(pending, await intents.FindUploadByRetryAsync(f.Organization, f.Recipient, key, ct));
+        Assert.Equal(current, await work.FindCardAsync(card.Id, ct));
+        Assert.Empty((await member.GetFromJsonAsync<AttachmentPage>(path, ct))!.Items);
+        var options = (await member.GetFromJsonAsync<AttachmentUploadOptions>($"/cards/{card.Id}/attachment-upload-options", ct))!;
+        Assert.Equal(destination, options.BoardId); Assert.Equal(2, options.CardVersion);
+        using var fresh = FileRequest(path, bytes, Guid.NewGuid(), "Reviewed.pdf", options.CardVersion);
+        using var published = await member.SendAsync(fresh, ct); Assert.Equal(HttpStatusCode.OK, published.StatusCode);
+        Assert.Equal(1, objects.Writes); Assert.Equal(0, objects.Reads);
+        Assert.Equal(3, (await work.FindCardAsync(card.Id, ct))!.Version);
+        Assert.Single((await member.GetFromJsonAsync<AttachmentPage>(path, ct))!.Items);
+        using var removal = await Mutate(owner, HttpMethod.Delete, $"/boards/{destination}/members/{f.Recipient}", new { });
+        Assert.Equal(HttpStatusCode.NoContent, removal.StatusCode);
+        using var hidden = FileRequest(path, bytes, key, input.DisplayName, 1); using var denied = await member.SendAsync(hidden, ct);
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode); Assert.Equal(1, objects.Writes); Assert.Equal(0, objects.Reads);
+    }
+
     private sealed class UploadObjects : IAttachmentObjectStorage
     {
         private readonly Dictionary<AttachmentObjectReference, byte[]> _bytes = new();

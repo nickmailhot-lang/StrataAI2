@@ -668,3 +668,14 @@ cases plus typecheck, lint and production build; its Linux PostgreSQL and web
 gates have passed, with remaining exact-image checks pending. Covers and lifecycle
 decisions and the first domain implementation are tracked in
 [attachment-covers-lifecycle.md](attachment-covers-lifecycle.md).
+
+Pending uploads across Board movement retain their original Card revision.
+The API-host contract now covers both Prepared and Stored intents, followed by
+a real authorized cross-Board move and an HTTP retry of the original upload.
+That retry must return version_conflict without provider reads/writes, metadata
+publication, intent rebasing or another Card revision. Current destination
+options supply the new revision; a separately reviewed upload with a new key
+can publish there. Withdrawal of destination membership refuses the old retry
+before provider I/O. Stored measurements are an explicit server-owned fixture;
+this host test does not claim PostgreSQL or real object-provider execution.
+The solution compiles with zero warnings/errors; Linux execution is pending CI.
