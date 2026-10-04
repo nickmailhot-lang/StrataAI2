@@ -63,6 +63,30 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it('fences competing Board commands while recovering an original metadata save after newer canonical data', async () => {
+    let current: BoardSnapshot = { ...structuredClone(fixture), board: { ...fixture.board, version: 2, backgroundType: 'COLOR', backgroundValue: 'blue' } };
+    const attempts: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, request?: RequestInit) => {
+      if (String(input) === '/boards/board-1' && request?.method === 'PATCH') {
+        attempts.push(request); current = { ...current, board: { ...current.board, version: 3, name: 'Updated Board' } };
+        return attempts.length === 1 ? response({ detail: 'Private failure' }, 503) : response(current.board);
+      }
+      return response(current);
+    }));
+    mount(); const edit = await screen.findByRole('button', { name: 'Edit Board details' });
+    await waitFor(() => expect(edit).toBeEnabled()); fireEvent.click(edit);
+    fireEvent.change(screen.getByRole('textbox', { name: 'Board name' }), { target: { value: 'Updated Board' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save Board details' }));
+    const retry = await screen.findByRole('button', { name: 'Retry this Board save' }); await waitFor(() => expect(retry).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Archive Board', hidden: true })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add list', hidden: true })).toBeDisabled();
+    fireEvent.click(retry); await screen.findByText('Board changes acknowledged. Current Board state is being checked.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Add list' })).toBeEnabled());
+    expect(attempts).toHaveLength(2); expect(attempts[0].body).toBe(attempts[1].body);
+    expect(new Headers(attempts[0].headers).get('Idempotency-Key')).toBe(new Headers(attempts[1].headers).get('Idempotency-Key'));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit Board details' })).toHaveFocus());
+  });
+
   it('recovers a Board archive after canonical read-only state without releasing competing commands', async () => {
     let current: BoardSnapshot = { ...structuredClone(fixture), board: { ...fixture.board, version: 2 } };
     const attempts: RequestInit[] = [];

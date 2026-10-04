@@ -56,6 +56,8 @@ import { ListPositionControls } from "./ListPositionControls";
 import { ListRenameControl } from './ListRenameControl';
 import { ListArchiveControl } from './ListArchiveControl';
 import { BoardArchiveControl } from './BoardArchiveControl';
+import { BoardMetadataControl } from './BoardMetadataControl';
+import { boardBackgroundColor } from './boardBackground';
 import { ListCopyControl } from './ListCopyControl';
 import { CardReminderControl } from './CardReminderControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
@@ -108,7 +110,8 @@ function BoardContent() {
   const [operationBusy, setBusy] = useState(false);
   const [listArchiveRecovery, setArchiveRecovery] = useState(false);
   const [boardArchiveRecovery, setBoardArchiveRecovery] = useState(false);
-  const archiveRecovery = listArchiveRecovery || boardArchiveRecovery;
+  const [boardMetadataRecovery, setBoardMetadataRecovery] = useState(false);
+  const archiveRecovery = listArchiveRecovery || boardArchiveRecovery || boardMetadataRecovery;
   const [cardArchiveRecovery, setCardArchiveRecovery] = useState(false);
   const [copyRecovery, setCopyRecovery] = useState(false);
   const [labelRecovery, setLabelRecovery] = useState(false);
@@ -441,7 +444,7 @@ function BoardContent() {
     );
   if (!snapshot) return <CircularProgress aria-label="Loading board" />;
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1 }}>
       {loadError && message(loadError)}
       <Typography role="status" aria-live="polite" variant="body2">
         {liveStatus === "live"
@@ -483,13 +486,17 @@ function BoardContent() {
           )}
           {snapshot.access.canEdit && snapshot.board.lifecycleState === 'active' &&
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/archived-cards`}>Archived cards</Button>}
+          <BoardMetadataControl snapshot={snapshot}
+            disabled={operationBusy || listArchiveRecovery || boardArchiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || cardCommandRecovery || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0 || !!cardId || !!creation}
+            onBusyChange={setBusy} onRecoveryChange={setBoardMetadataRecovery}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           <BoardArchiveControl snapshot={snapshot}
-            disabled={operationBusy || listArchiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || cardCommandRecovery || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0 || !!cardId || !!creation}
+            disabled={boardMetadataRecovery || operationBusy || listArchiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || cardCommandRecovery || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0 || !!cardId || !!creation}
             onBusyChange={setBusy} onRecoveryChange={setBoardArchiveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           <ListArchiveControl snapshot={snapshot}
-            disabled={boardArchiveRecovery || operationBusy || copyRecovery || labelRecovery || labelManageRecovery || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
+            disabled={boardMetadataRecovery || boardArchiveRecovery || operationBusy || copyRecovery || labelRecovery || labelManageRecovery || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
             unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
             onBusyChange={setBusy} onRecoveryChange={setArchiveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}

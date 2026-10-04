@@ -22,6 +22,8 @@ export type BoardSnapshot = {
     description: string | null;
     lifecycleState: string;
     version?: number;
+    backgroundType?: string;
+    backgroundValue?: string | null;
     dateTimezoneOverride?: string | null;
   };
   lists: {
