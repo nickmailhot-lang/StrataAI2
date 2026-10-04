@@ -45,6 +45,9 @@ test "$(read_page owner "/attachments/$download_id/download?cardId=$card")" = 40
 test "$(read_page owner "$path/$download_id/preview")" = 404
 test "$(read_page owner "$path/$download_id/preview-options")" = 404
 test "$(read_page owner "/attachments/$download_id/preview?cardId=$card")" = 404
+# Lifecycle alias deletion must also reach the API; a missing child is 404, not
+# Nginx's 405 SPA fallback. This does not mutate the disposable Card.
+test "$(request owner DELETE "/attachments/$download_id?cardId=$card&cardVersion=1&version=1&confirmed=true" "$(uuid)" '{}')" = 404
 payload='{"title":" Link ","url":"https://example.test/private-attachment?q=1#section","cardVersion":1}'
 test "$(request owner POST "$path/url" "$key" "$payload")" = 200
 cp "$scratch/response.json" "$scratch/receipt.json"

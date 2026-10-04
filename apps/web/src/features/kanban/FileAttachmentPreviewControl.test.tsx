@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { Dialog } from '@mui/material';
 import { workRequest } from '../../api/workManagement';
 import { FileAttachmentPreviewControl } from './FileAttachmentPreviewControl';
 import type { FileAttachment } from './attachments';
@@ -17,6 +18,18 @@ afterEach(() => vi.useRealTimers());
 function admit() { vi.mocked(workRequest).mockResolvedValueOnce(profile).mockResolvedValueOnce(options).mockResolvedValueOnce(profile); }
 function check() { fireEvent.click(screen.getByRole('button', { name: 'Show image preview' })); }
 
+it('restores preview focus from its own MUI Dialog after disabling the review control', async () => {
+  let resolve!: (value: unknown) => void;
+  vi.mocked(workRequest).mockImplementationOnce(() => new Promise(value => { resolve = value; }))
+    .mockResolvedValueOnce(options).mockResolvedValueOnce(profile);
+  render(<Dialog open transitionDuration={0}><FileAttachmentPreviewControl {...props} /></Dialog>);
+  const review = screen.getByRole('button', { name: 'Show image preview' });
+  await act(async () => review.focus()); fireEvent.click(review);
+  await waitFor(() => expect(workRequest).toHaveBeenCalledOnce());
+  expect(screen.getByRole('dialog')).toHaveFocus();
+  await act(async () => resolve(profile));
+  await screen.findByRole('img'); await waitFor(() => expect(review).toHaveFocus());
+});
 it('checks current actor and published scope before requesting a native sanitized image, then hides it with keyboard focus', async () => {
   admit(); render(<FileAttachmentPreviewControl {...props} />); expect(workRequest).not.toHaveBeenCalled(); expect(screen.queryByRole('img')).toBeNull();
   check(); const image = await screen.findByRole('img', { name: 'Sanitized preview of Photo.webp' });

@@ -21,7 +21,7 @@ for (const width of [1280, 390]) {
     const bytes = Buffer.from('%PDF-1.7\n'); const at = new Date().toISOString();
     const attachment = { id: randomUUID(), organizationId: org, cardId: card, uploaderId: (await (await context.request.get('/me')).json()).id,
       kind: 0, displayName: 'Résumé.png', mimeType: 'application/pdf', sizeBytes: bytes.length, url: null, scanStatus: 1, scannedAt: null,
-      createdAt: at, updatedAt: at, version: 1, deletedAt: null };
+      createdAt: at, updatedAt: at, version: 1, deletedAt: null, lifecycleState: 0, archivedAt: null, deletedBy: null };
     const attempts: { headers: Record<string, string>; bytes: Buffer }[] = [];
     await page.route(`**/cards/${card}/attachment-upload-options`, route => route.fulfill({ json: { ...scope, cardVersion: 1,
       maximumBytes: 20971520, allowedMimeTypes: ['application/pdf'] } }));
