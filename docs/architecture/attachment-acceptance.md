@@ -709,3 +709,15 @@ checks remain required. Three API-host contracts cover actual movement, exact
 receipt recovery, destination withdrawal/restoration and source withdrawal,
 with unchanged Card and child metadata. Compilation passes with zero warnings
 and errors; actual new Linux execution is pending CI.
+
+The mandatory exact-image attachment fixture now invokes
+`test-moved-attachment-receipts.sh`. It creates real private Boards, Lists, Cards
+and URL/lifecycle commands through Nginx and the restricted API, moves each
+stable Card, then checks the exact original receipt for URL creation, archive,
+restore and confirmed delete. It withdraws/restores original and destination
+authority separately; delete uses administrator demotion while retaining edit
+membership. Every retry compares full Card/child and tenant command effect
+digests, excluding only Worker readiness timestamps; legitimate membership
+command effects establish a fresh baseline before each comparison. No fixture
+publication or routing mutation substitutes for these commands. Shell syntax
+checks pass; actual release-image execution remains pending CI.

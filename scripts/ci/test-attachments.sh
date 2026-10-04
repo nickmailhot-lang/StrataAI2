@@ -114,3 +114,4 @@ before=$(state)
 test "$(request owner POST "$path/url" "$key" "$payload")" = 404
 test "$before" = "$(state)"
 echo 'Exact-image URL attachments: canonical receipts, Card CAS, authorization, validation, four transactional rollback boundaries, outbox, cursor paging, revocation and archived retention passed.'
+bash "$(dirname "$0")/test-moved-attachment-receipts.sh" "$org" "$member" "$scratch/owner.cookies" "$scratch/member.cookies"
