@@ -277,3 +277,43 @@ unknown/foreign map refusal and token/recipient overflow without truncation.
 Warning-as-error compilation passes; their Linux execution awaits CI. The
 historical-author/readable profile policy, handle registry/claim lifetime,
 mention UI and all remaining full acceptance criteria stay open.
+
+Migration 056 adds the global account handle registry required by PRD-02 and
+COMMENT-FR-005/006 (PRD-15), with PRD-24 identity ownership protections and
+ARCH-04 migration/runtime-role checks. Existing accounts receive deterministic
+u_<UUID> defaults; restricted registration seeds new defaults atomically through
+a private trigger. Current handles are unique, canonical lowercase ASCII and
+revisioned. A former handle stays reserved to its original account, including
+after deactivation. Only the current-handle table will resolve new mentions;
+historical aliases are not additional recipient addresses.
+
+The adopted claim policy bounds each account to 32 lifetime reservations,
+including its generated default. Returning to an already owned alias does not
+consume another slot. This prevents unbounded alias hoarding; it is a shared
+PRD-02/15/24 behavior that the eventual account setting must explain before a
+claim. @card/@board and another account's generated u_ namespace cannot be
+claimed. A current-account row lock serializes its updates, and unique indexes
+arbitrate cross-account collisions. A refused claim rolls back its reservation.
+
+These two tables are explicitly global identity metadata in the tenant-catalog
+classification; no tenant table loses forced RLS. The API can read current
+handles and update only handle/revision/update-time columns. It cannot insert
+or delete current handles, read or directly change reserved aliases, or invoke
+the private trigger capabilities. The Worker has no registry access. Updates
+also require the owning transaction's identity subject; this is database
+defense, not session authentication. Current-session ownership and bounded
+Board-scoped teammate disclosure must still be established by Application
+commands before any HTTP setting or recipient resolver is exposed.
+
+Privileged disposable-test account deletion may cascade the registry. The
+runtime API cannot delete accounts; user deactivation retains the registry
+and historical aliases. This does not define future account-erasure retention.
+The new restricted SQL contract checks backfill/new registration, canonical and
+reserved shapes, subject/revision refusals, stale CAS, no-op, immutable history,
+former/current/default collision, same-owner reclaim, lifetime bounds,
+deactivation retention and exact privilege denial. Ordered upgrade/repeat and
+immutable-image readiness now require all 56 canonical migrations. Local
+warning-as-error compilation and shell syntax validation are the available
+local checks; PostgreSQL execution is required in Linux CI before a storage
+pass is claimed. Full mentions, notifications, activity and acceptance remain
+unfinished; existing comment HTTP still treats mention-like text literally.

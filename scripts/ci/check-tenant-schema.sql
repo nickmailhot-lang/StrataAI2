@@ -9,7 +9,8 @@ DECLARE
       'schema_migrations','users','sessions','password_reset_tokens','email_verification_tokens',
       'identity_delivery_jobs','identity_event_streams','identity_events','identity_profile_replays',
       'identity_revocation_replays','identity_login_replays','identity_registration_replays',
-      'identity_recovery_request_replays','identity_token_consumption_replays'];
+      'identity_recovery_request_replays','identity_token_consumption_replays',
+      'mention_handle_reservations','user_mention_handles'];
 BEGIN
     FOR relation IN
       SELECT c.oid, c.relname, c.relrowsecurity, c.relforcerowsecurity
