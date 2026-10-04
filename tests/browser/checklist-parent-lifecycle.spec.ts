@@ -34,7 +34,7 @@ for (const width of [1280, 390]) for (const listParent of [false, true]) {
       expect(intent).toBeDefined(); expect(intent!.body).toEqual({ title: 'Recovered title', cardVersion: 3, version: 2 });
       const parentPath = listParent ? `/lists/${list}` : `/cards/${card}`;
       const archive = await context.request.post(`${parentPath}/archive`, { headers, data: { version: listParent ? 1 : 4 } }); expect(archive.status()).toBe(200);
-      await expect(page.getByText('This card is unavailable in this board.', { exact: true })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByText('This Card or its List is archived. Details are read-only.', { exact: true })).toBeVisible({ timeout: 20_000 });
       await expect(page.getByRole('textbox', { name: 'Checklist title' })).toHaveCount(0); await expect(page.getByRole('button', { name: 'Retry checklist rename', exact: true })).toHaveCount(0);
       const itemPath = `${commandPath}/items`; const readOnly = await context.request.get(itemPath); expect(readOnly.status()).toBe(200); const retained = await readOnly.json();
       expect(retained.canEdit).toBe(false); expect(retained.summary.checklist.title).toBe('Recovered title'); expect(retained.summary.checklist.version).toBe(3); expect(retained.items).toEqual([item]);
@@ -48,7 +48,7 @@ for (const width of [1280, 390]) for (const listParent of [false, true]) {
       await page.getByRole('button', { name: 'Show items in Recovered title', exact: true }).press('Enter'); await expect(page.getByText('Incomplete: Retained preparation', { exact: true })).toBeVisible();
       const current = await context.request.get(itemPath); expect(current.status()).toBe(200); expect((await current.json()).items).toEqual([item]);
       const archivedAgain = await context.request.post(`${parentPath}/archive`, { headers, data: { version: listParent ? 3 : 6 } }); expect(archivedAgain.status()).toBe(200);
-      await expect(page.getByText('This card is unavailable in this board.', { exact: true })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByText('This Card or its List is archived. Details are read-only.', { exact: true })).toBeVisible({ timeout: 20_000 });
       const deletion = await context.request.delete(`${parentPath}?version=${listParent ? 4 : 7}&confirmed=true${listParent ? '&containedCardCount=1' : ''}`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() } }); expect(deletion.status()).toBe(200);
       expect((await context.request.get(itemPath)).status()).toBe(404); expect((await context.request.patch(commandPath, { headers: replayHeaders, data: intent!.body })).status()).toBe(404);
       await expect(page.getByText('Incomplete: Retained preparation', { exact: true })).toHaveCount(0); await expect(page.getByRole('heading', { name: 'Recovered title', exact: true })).toHaveCount(0);
