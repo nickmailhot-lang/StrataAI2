@@ -132,24 +132,25 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
 
     public Task<BoardRecord?> FindBoardAsync(
         Guid boardId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         lock (_sync)
         {
             _boards.TryGetValue(boardId, out var board);
-            return Task.FromResult<BoardRecord?>(board);
+            return Task.FromResult<BoardRecord?>(board is { LifecycleState: BoardLifecycleState.Deleted } && !includeDeleted ? null : board);
         }
     }
 
     public Task<BoardMemberRecord?> FindBoardMemberAsync(
         Guid boardId,
         Guid userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         lock (_sync)
         {
             _members.TryGetValue((boardId, userId), out var member);
-            return Task.FromResult<BoardMemberRecord?>(member);
+            return Task.FromResult<BoardMemberRecord?>(_boards.TryGetValue(boardId, out var board) &&
+                (includeDeleted || board.LifecycleState != BoardLifecycleState.Deleted) ? member : null);
         }
     }
 

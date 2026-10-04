@@ -23,7 +23,7 @@ public sealed partial class ApiHostTests
         Assert.Null((await store.FindCardAsync(card.Id, ct))!.DeletedBy);
         var deletion = await service.SetCardLifecycleAsync(card.Id, f.Owner, WorkItemLifecycleState.Deleted, 2, "actor-test", ct, deletionConfirmed: true);
         Assert.True(deletion.Succeeded);
-        Assert.Equal(f.Owner, (await store.FindCardAsync(card.Id, ct))!.DeletedBy);
+        Assert.Equal(f.Owner, (await store.FindCardAsync(card.Id, ct, includeDeleted: true))!.DeletedBy);
     }
 
     [Fact]

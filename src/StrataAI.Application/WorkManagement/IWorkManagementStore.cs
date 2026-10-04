@@ -68,12 +68,12 @@ public interface IWorkManagementStore
 
     Task<BoardRecord?> FindBoardAsync(
         Guid boardId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     Task<BoardMemberRecord?> FindBoardMemberAsync(
         Guid boardId,
         Guid userId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     Task<BoardSnapshot?> GetSnapshotAsync(
         Guid boardId,

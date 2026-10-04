@@ -308,3 +308,46 @@ test "$(copy_list)" = 201
 cmp "$scratch/copy-receipt.json" "$scratch/copied.json"
 test "$copy_after" = "$(state)"
 echo 'List copy: cross-Board Card content/order/archive state, new IDs/versions, atomic audit rollback, one receipt, changed intent, post-wait destination lifecycle and current source authority passed.'
+
+# PRD-18: Board tombstone receipt recovery uses fresh authority, never normal reads.
+receipt_board=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -d "$(jq -nc --arg org "$org" '{organizationId:$org,name:"Board receipt recovery",visibility:"PRIVATE"}')" "$base/boards" | jq -r '.id')
+[[ "$receipt_board" =~ ^[0-9a-fA-F-]{36}$ ]]
+curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: $(cat /proc/sys/kernel/random/uuid)" -d '{"version":1}' "$base/boards/$receipt_board/archive" >/dev/null
+board_delete_key=$(cat /proc/sys/kernel/random/uuid)
+board_delete() {
+  curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+    -H "Idempotency-Key: $board_delete_key" -X DELETE -o "$scratch/board-deleted.json" -w '%{http_code}' \
+    "$base/boards/$receipt_board?version=2$1"
+}
+test "$(board_delete '')" = 400
+test "$(board_delete '&confirmed=false')" = 400
+test "$(admin "SELECT version FROM boards WHERE id='$receipt_board' AND lifecycle_state='ARCHIVED' AND deleted_by IS NULL;")" = 2
+admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
+test "$(board_delete '&confirmed=true')" = 503
+admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+test "$(admin "SELECT version FROM boards WHERE id='$receipt_board' AND lifecycle_state='ARCHIVED' AND deleted_by IS NULL;")" = 2
+test "$(board_delete '&confirmed=true')" = 200
+jq -e --arg id "$receipt_board" --arg actor "$owner" '.id==$id and .version==3 and .lifecycleState=="deleted" and .deletedBy==$actor' "$scratch/board-deleted.json" >/dev/null
+cp "$scratch/board-deleted.json" "$scratch/board-delete-receipt.json"
+test "$(board_delete '&confirmed=true')" = 200
+cmp "$scratch/board-delete-receipt.json" "$scratch/board-deleted.json"
+test "$(board_delete '&confirmed=false')" = 409
+jq -e '.code=="idempotency_key_reused"' "$scratch/board-deleted.json" >/dev/null
+test "$(get owner "/boards/$receipt_board" deleted-board-hidden)" = 404
+scripts/ci/assert-file-excludes.sh 'Board receipt recovery|deletedBy|lifecycleState' "$scratch/deleted-board-hidden.json"
+original_board_delete_key=$board_delete_key
+board_delete_key=$(cat /proc/sys/kernel/random/uuid)
+test "$(board_delete '&confirmed=true')" = 404
+board_delete_key=$original_board_delete_key
+admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+test "$(board_delete '&confirmed=true')" = 404
+scripts/ci/assert-file-excludes.sh 'Board receipt recovery|deletedBy|lifecycleState' "$scratch/board-deleted.json"
+admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+test "$(board_delete '&confirmed=true')" = 200
+cmp "$scratch/board-delete-receipt.json" "$scratch/board-deleted.json"
+test "$(admin "SELECT version FROM boards WHERE id='$receipt_board' AND lifecycle_state='DELETED' AND deleted_by='$owner';")" = 3
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND board_id='$receipt_board' AND event_type='BOARD_DELETED';")" = 1
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$receipt_board' AND event_type='BOARD_DELETED';")" = 1
+echo 'Board deletion: explicit consent, atomic rollback, identical tombstone receipt recovery, changed intent, hidden normal reads, new-key rejection and current membership admission passed.'

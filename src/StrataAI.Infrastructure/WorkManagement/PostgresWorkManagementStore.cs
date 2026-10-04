@@ -302,11 +302,11 @@ internal sealed partial class PostgresWorkManagementStore(
 
     public async Task<BoardRecord?> FindBoardAsync(
         Guid boardId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         var tenantId = await ResolveBoardTenantAsync(
             boardId,
-            cancellationToken);
+            cancellationToken, includeDeleted);
 
         return tenantId.HasValue
             ? await FindBoardInTenantAsync(
@@ -319,11 +319,11 @@ internal sealed partial class PostgresWorkManagementStore(
     public async Task<BoardMemberRecord?> FindBoardMemberAsync(
         Guid boardId,
         Guid userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         var tenantId = await ResolveBoardTenantAsync(
             boardId,
-            cancellationToken);
+            cancellationToken, includeDeleted);
 
         if (!tenantId.HasValue)
         {
@@ -1581,7 +1581,7 @@ internal sealed partial class PostgresWorkManagementStore(
 
     private async Task<Guid?> ResolveBoardTenantAsync(
         Guid boardId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, bool includeDeleted = false)
     {
         await using var routing =
             await connectionFactory.OpenRoutingSessionAsync(cancellationToken);
@@ -1591,10 +1591,11 @@ internal sealed partial class PostgresWorkManagementStore(
             SELECT tenant_id
             FROM board_routes
             WHERE board_id = @board_id
-              AND lifecycle_state <> 'DELETED';
+              AND (@include_deleted OR lifecycle_state <> 'DELETED');
             """,
             routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("board_id", boardId);
+        command.Parameters.AddWithValue("include_deleted", includeDeleted);
 
         var value = await command.ExecuteScalarAsync(cancellationToken);
         return value is Guid tenantId ? tenantId : null;

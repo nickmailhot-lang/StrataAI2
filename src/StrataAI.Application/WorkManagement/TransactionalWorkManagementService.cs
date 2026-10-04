@@ -102,7 +102,7 @@ public sealed partial class TransactionalWorkManagementService(
         long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default, bool deletionConfirmed = false) =>
-        BoardCommand(boardId, actorUserId, "admin", WorkCommand.Create(actorUserId, context.IdempotencyKey, "DeleteBoardAsync", boardId, new { expectedVersion, deletionConfirmed }, "board_not_found"), () => inner.DeleteBoardAsync(boardId, actorUserId, expectedVersion, correlationId, cancellationToken, deletionConfirmed), cancellationToken);
+        BoardDeletionCommand(boardId, actorUserId, WorkCommand.Create(actorUserId, context.IdempotencyKey, "DeleteBoardAsync", boardId, new { expectedVersion, deletionConfirmed }, "board_not_found"), () => inner.DeleteBoardAsync(boardId, actorUserId, expectedVersion, correlationId, cancellationToken, deletionConfirmed), cancellationToken);
 
     public Task<WorkOperation<bool>> SetStarAsync(
         Guid boardId,
@@ -294,6 +294,27 @@ public sealed partial class TransactionalWorkManagementService(
             WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetCardLifecycleAsync", cardId, body, "card_not_found"),
             () => inner.SetCardLifecycleAsync(cardId, actorUserId, nextState, expectedVersion, correlationId, cancellationToken, deletionConfirmed),
             cancellationToken, includeDeleted: nextState == WorkItemLifecycleState.Deleted);
+    }
+
+    private async Task<WorkOperation<BoardRecord>> BoardDeletionCommand(Guid id, Guid actorId, WorkCommand command,
+        Func<Task<WorkOperation<BoardRecord>>> operation, CancellationToken cancellationToken)
+    {
+        var resource = await store.FindBoardAsync(id, cancellationToken, includeDeleted: true);
+        if (resource is null) return WorkOperation<BoardRecord>.Failure("board_not_found");
+        return await transactions.ExecuteAsync(resource.OrganizationId, command, async receipt =>
+        {
+            if (!await store.AcquireCommandScopeAsync(resource.OrganizationId, actorId, id, cancellationToken)) return false;
+            var current = await store.FindBoardAsync(id, cancellationToken, includeDeleted: true);
+            if (current is null || current.OrganizationId != resource.OrganizationId ||
+                current.LifecycleState is not (BoardLifecycleState.Archived or BoardLifecycleState.Deleted) ||
+                await organizations.FindOrganizationAsync(resource.OrganizationId, cancellationToken) is not { Status: OrganizationStatus.Active }) return false;
+            var membership = await organizations.FindMembershipAsync(resource.OrganizationId, actorId, cancellationToken);
+            if (membership is not { Active: true }) return false;
+            var administrator = membership.Role is OrganizationRole.Owner or OrganizationRole.Admin ||
+                await store.FindBoardMemberAsync(id, actorId, cancellationToken, includeDeleted: true) is { Active: true, Role: BoardRole.Admin };
+            return administrator && (receipt is null || current.LifecycleState == BoardLifecycleState.Deleted &&
+                receipt.Id == id && receipt.OrganizationId == resource.OrganizationId && receipt.LifecycleState == BoardLifecycleState.Deleted);
+        }, operation, cancellationToken);
     }
 
     private async Task<WorkOperation<T>> BoardCommand<T>(Guid id, Guid actorId, string permission, WorkCommand command, Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken)
