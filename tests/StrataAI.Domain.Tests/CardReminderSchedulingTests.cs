@@ -17,7 +17,7 @@ public sealed class CardReminderSchedulingTests
         using var provider = services.BuildServiceProvider(); var store = provider.GetRequiredService<ICardReminderStore>();
         foreach (var user in users) await store.SetAsync(card, user, "1_HOUR", true, 0, clock.UtcNow, ct);
         var disabled = Guid.NewGuid(); await store.SetAsync(card, disabled, "AT_DUE", false, 0, clock.UtcNow, ct);
-        var publisher = new Publisher(); var events = new Events(); var scheduling = new CardReminderScheduling(store, publisher, clock, events);
+        var publisher = new Publisher(); var events = new Events(); var scheduling = new CardReminderScheduling(store, publisher, clock, events, new Eligibility(true));
         var changed = card with { DueAt = card.DueAt!.Value.AddDays(1), Version = 2 };
         await scheduling.RescheduleAsync(card, changed, actor, "reschedule-test", ct);
         Assert.Equal(76, publisher.Rows.Count); Assert.Equal(76, publisher.Rows.Select(row => row.UserId).Distinct().Count());
@@ -46,7 +46,7 @@ public sealed class CardReminderSchedulingTests
     }
 
     [Fact]
-    public async Task Unrelated_date_context_or_card_movement_does_not_invalidate_pending_due_attempt_after_trigger()
+    public async Task Unrelated_date_context_or_same_Board_card_movement_does_not_invalidate_pending_due_attempt_after_trigger()
     {
         var ct = TestContext.Current.CancellationToken; var clock = new Clock(); var card = Card(clock.UtcNow); var user = Guid.NewGuid();
         var services = new ServiceCollection(); services.AddStrataAiWorkManagement(new(RuntimeMode.Demo, "test", "test"));
@@ -54,9 +54,9 @@ public sealed class CardReminderSchedulingTests
         var original = await store.SetAsync(card, user, "1_HOUR", true, 0, clock.UtcNow, ct); clock.UtcNow = card.DueAt!.Value;
         var publisher = new Publisher();
         var events = new Events();
-        await new CardReminderScheduling(store, publisher, clock, events).RescheduleAsync(card,
+        await new CardReminderScheduling(store, publisher, clock, events, new Eligibility(true)).RescheduleAsync(card,
             card with { StartAt = clock.UtcNow.AddDays(-1), DueTimezone = "America/Vancouver", DueHasTime = true,
-                Title = "Changed", ListId = Guid.NewGuid(), BoardId = Guid.NewGuid(), Version = 2 }, Guid.NewGuid(), "unrelated", ct);
+                Title = "Changed", ListId = Guid.NewGuid(), Version = 2 }, Guid.NewGuid(), "unrelated", ct);
         Assert.Empty(publisher.Rows); Assert.Equal(original, await store.FindAsync(card.OrganizationId, user, card.Id, ct));
         Assert.Empty(events.Rows);
     }
@@ -67,11 +67,41 @@ public sealed class CardReminderSchedulingTests
         var ct = TestContext.Current.CancellationToken; var clock = new Clock(); var card = Card(clock.UtcNow);
         var services = new ServiceCollection(); services.AddStrataAiWorkManagement(new(RuntimeMode.Demo, "test", "test"));
         using var provider = services.BuildServiceProvider(); var store = provider.GetRequiredService<ICardReminderStore>(); var publisher = new Publisher();
-        var events = new Events(); var scheduling = new CardReminderScheduling(store, publisher, clock, events);
+        var events = new Events(); var scheduling = new CardReminderScheduling(store, publisher, clock, events, new Eligibility(true));
         await Assert.ThrowsAsync<InvalidOperationException>(() => scheduling.RescheduleAsync(card, card with { Id = Guid.NewGuid() }, Guid.NewGuid(), "scope", ct));
         await Assert.ThrowsAsync<InvalidOperationException>(() => scheduling.RescheduleAsync(card, card with { OrganizationId = Guid.NewGuid() }, Guid.NewGuid(), "scope", ct));
         Assert.Empty(publisher.Rows);
         Assert.Empty(events.Rows);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Cross_Board_move_retains_eligible_overdue_attempt_and_suspends_ineligible_owner(bool eligible)
+    {
+        var ct = TestContext.Current.CancellationToken; var clock = new Clock(); var card = Card(clock.UtcNow); var user = Guid.NewGuid();
+        var services = new ServiceCollection(); services.AddStrataAiWorkManagement(new(RuntimeMode.Demo, "test", "test"));
+        using var provider = services.BuildServiceProvider(); var store = provider.GetRequiredService<ICardReminderStore>();
+        var original = await store.SetAsync(card, user, "1_HOUR", true, 0, clock.UtcNow, ct); clock.UtcNow = card.DueAt!.Value;
+        var publisher = new Publisher(); var events = new Events(); var eligibility = new Eligibility(eligible);
+        await new CardReminderScheduling(store, publisher, clock, events, eligibility).RescheduleAsync(card,
+            card with { BoardId = Guid.NewGuid(), ListId = Guid.NewGuid(), Version = 2 }, Guid.NewGuid(), "move", ct);
+        Assert.Equal(1, eligibility.Calls); Assert.Empty(publisher.Rows);
+        var updated = await store.FindAsync(card.OrganizationId, user, card.Id, ct);
+        Assert.NotNull(updated); Assert.Equal(original!.Id, updated.Id);
+        if (eligible) { Assert.Equal(original, updated); Assert.Empty(events.Rows); }
+        else
+        {
+            Assert.Equal("SUSPENDED", updated.Status); Assert.Null(updated.TriggerAt);
+            Assert.Equal(original.Generation + 1, updated.Generation); Assert.Single(events.Rows);
+        }
+    }
+
+    private sealed class Eligibility(bool eligible) : ICardReminderMoveEligibility
+    {
+        public int Calls { get; private set; }
+        public Task<bool> CanReceiveAsync(CardRecord card, Guid userId, CancellationToken ct)
+        { Calls++; return Task.FromResult(eligible); }
     }
 
     private static CardRecord Card(DateTimeOffset now) => new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),

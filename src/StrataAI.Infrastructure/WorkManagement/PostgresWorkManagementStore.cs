@@ -1288,7 +1288,7 @@ internal sealed partial class PostgresWorkManagementStore(
         string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default, Guid? beforeCardId = null)
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null, bool requireVerifiedEmail = false)
     {
         var cardRoute = await ResolveCardRouteAsync(
             cardId,
@@ -1299,8 +1299,7 @@ internal sealed partial class PostgresWorkManagementStore(
 
         if (cardRoute is null ||
             listRoute is null ||
-            cardRoute.Value.TenantId != listRoute.Value.TenantId ||
-            cardRoute.Value.BoardId != listRoute.Value.BoardId)
+            cardRoute.Value.TenantId != listRoute.Value.TenantId)
         {
             return null;
         }
@@ -1312,15 +1311,20 @@ internal sealed partial class PostgresWorkManagementStore(
         if (beforeCardId is not null)
         {
             rank = await AllocateBeforeCardRankAsync(session.Connection, session.Transaction,
-                cardRoute.Value.TenantId, cardRoute.Value.BoardId, destinationListId, cardId, beforeCardId.Value, cancellationToken);
+                cardRoute.Value.TenantId, listRoute.Value.BoardId, destinationListId, cardId, beforeCardId.Value, cancellationToken);
             if (rank is null) return null;
         }
         else rank ??= await AllocateAppendRankAsync(session.Connection, session.Transaction,
-            cardRoute.Value.TenantId, cardRoute.Value.BoardId, destinationListId, cancellationToken, cardId);
+            cardRoute.Value.TenantId, listRoute.Value.BoardId, destinationListId, cancellationToken, cardId);
+        MovingReferences? moving = null;
+        if (cardRoute.Value.BoardId != listRoute.Value.BoardId)
+            moving = await DetachMovingReferences(cardRoute.Value.TenantId, cardRoute.Value.BoardId,
+                listRoute.Value.BoardId, cardId, requireVerifiedEmail, updatedAt, cancellationToken);
         await using var command = new NpgsqlCommand(
             """
             UPDATE cards
             SET list_id = @destination_list_id,
+                board_id = @destination_board_id,
                 rank = @rank,
                 updated_at = @updated_at,
                 version = version + 1
@@ -1341,6 +1345,7 @@ internal sealed partial class PostgresWorkManagementStore(
             destinationListId);
         command.Parameters.AddWithValue("tenant_id", cardRoute.Value.TenantId);
         command.Parameters.AddWithValue("board_id", cardRoute.Value.BoardId);
+        command.Parameters.AddWithValue("destination_board_id", listRoute.Value.BoardId);
         command.Parameters.AddWithValue("source_list_id", cardRoute.Value.ListId);
         command.Parameters.AddWithValue("rank", rank);
         command.Parameters.AddWithValue("updated_at", updatedAt);
@@ -1356,6 +1361,8 @@ internal sealed partial class PostgresWorkManagementStore(
 
         var result = ReadCard(reader);
         await reader.DisposeAsync();
+        if (moving is not null) await AttachMovingReferences(cardRoute.Value.TenantId, listRoute.Value.BoardId,
+            cardId, moving, updatedAt, cancellationToken);
         await session.CommitAsync(cancellationToken);
         return result;
     }

@@ -516,6 +516,9 @@ jobs:
       - name: Protected activity history, post-wait access/session admission and persisted cursor restart through exact release images
         run: bash scripts/ci/test-activity-feeds.sh
 
+      - name: Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images
+        run: bash scripts/ci/test-cross-board-card-moves.sh
+
       - name: UTC Card dates, atomic notification rollback and private retry recovery through exact release images
         run: scripts/ci/test-card-dates.sh
 

@@ -29,7 +29,7 @@ checks establish different claims; none substitutes for all the others.
 | TC-02 empty state | Source component tests and real empty comment browser path | Current native execution |
 | TC-05 access loss | Source UI clears protected state; exact-image source/current Board, account/session revocation and natural expiry during observed lock waits passed | Current native access-loss proof and remaining parent/producer lifecycle |
 | TC-06/07 timeout/retry | Real committed request with lost reply in browser fixture, original body/key recovery, scope/version revalidation and no duplicate effects in runtime fixture | Current native run and new supported-size real command/retry fixture |
-| TC-10 archive/delete | HTTP frozen writes/read-only archive, current elevated body-free deleted target history, role-revoked receipt refusal; separately admitted MUI archived Card/List reader and native scenarios now exist | Current actual archived detail API/native proof and real cross-Board move producer remain required |
+| TC-10 archive/delete | HTTP frozen writes/read-only archive, current elevated body-free deleted target history, role-revoked receipt refusal; separately admitted MUI archived Card/List reader and native scenarios now exist | Archived detail API tests have passed; cross-Board producer and new command tests now exist, with exact-image/native execution still required |
 | TC-11/12 keyboard/mobile | MUI names, consent, focus recovery/no focus stealing, desktop/390px native scenarios; Axe and viewport checks exist | Current complete native WCAG/keyboard/mobile execution |
 | TC-13 large data | Actual supported Board/archive activity fixture passed with 100,000 sources and retained timings; comment fixture adds bounded first/seek/final redaction plus real commands | Execute comment fixture and its p95 <500ms/recovery/publication assertions; browser capacity remains separate |
 
@@ -92,3 +92,10 @@ The issue remains open. Current estimated remaining work is **40%**, covering
 these producer/UI dependencies, full current native/runtime proof, remaining
 capacity/performance and cross-feature acceptance rather than only the recently
 implemented readers.
+
+
+Cross-Board producer continuation adds both Board stream events, stable Card
+routing and original-source receipt admission. New HTTP tests cover current
+history after movement; an exact-image rollback/retry fixture is mandatory.
+These additions compile locally; new Linux execution and full native acceptance
+remain pending. PRD-15 remains open with approximately 40% remaining.

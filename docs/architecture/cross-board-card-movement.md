@@ -1,10 +1,42 @@
 # Cross-Board Card movement: implementation dependencies
 
 PRD-08 requires destination permissions and Board-scoped reference integrity;
-PRD-15 requires readable historical activity after actual movement. The current
-transactional decorator, application command and both stores still reject
-cross-Board movement. This document tracks the full implementation dependency,
-not an alternative definition of completion.
+PRD-15 requires readable historical activity after actual movement. The move
+command now supports same-Organization cross-Board movement in both stores.
+Full MUI, native interaction, consumer and capacity acceptance remains open.
+
+## Command contract and reference policy
+
+Cross-Board requests provide `sourceBoardId`, `destinationListId` and the expected
+Card version. Keep the original source in retries, even after the Card moves.
+Legacy same-Board requests retain their original fingerprints. The transactional
+decorator discovers original source, destination and current Card Boards, locks
+all distinct gates in canonical order, and rechecks active parents, tenant,
+issuing session and edit permissions after waits. Receipt admission performs the
+same current checks before returning the original acknowledgement.
+
+The Card keeps its ID, dates, content and Card-owned objects. Its Board, List,
+rank, route and version change atomically. Active source labels are cloned with
+new destination-scoped IDs, names and colors. Assignments retain only active
+Organization users who are active destination Board members and satisfy the
+configured email policy; retained assignment attribution and creation timestamps
+are preserved and their association revision increments. Other current
+assignments are removed, without deleting historical notifications.
+
+One Card revision and one mutation audit accompany two body-free `CARD_MOVED`
+events, one in each Board stream, with distinct event IDs. Destination Watch
+production uses current eligibility; the source event invalidates its canvas.
+Personal Reminder owners are rechecked against current destination visibility,
+account and Organization membership. Ineligible owners are suspended and their
+generation changes; eligible owners keep queued overdue attempts when the date
+and lifecycle have not changed. Reminder identity remains stable.
+
+API tests exercise stable identity, label/assignment policy, personal Reminder
+retention/suspension, original-source receipt recovery after later edits, revoked
+source access, and same-tenant admission. The mandatory exact-image movement
+fixture also forces event publication failure after reference/Card writes and
+requires complete rollback before retry. Local compilation and shell syntax
+validation are available; these new execution cases require Linux CI results.
 
 ## Historical notification storage
 
@@ -36,27 +68,20 @@ The runtime schema requirement and exact-image missing-migration/refusal/restore
 fixture require all 66 real migrations. The runner's synthetic serialization,
 failure and unrecorded fixtures are numbered 067–069.
 
-## Remaining command and consumer work
+## Remaining consumer and acceptance work
 
-- Acquire source and destination Board gates in canonical order, with fresh
-  session, Organization, both Board permissions and active parents after waits.
-- Preserve current within-Board command fingerprints; cross-Board exact retry
-  must admit the original source and current destination safely after movement.
-- Move current Board-scoped labels/assignments according to explicitly recorded
-  cross-feature rules, without corrupting or deleting historical notifications.
-- Update rank/Board/List and routing atomically, with one Card revision and
-  consistent source/destination activity, audit, realtime and durable receipts.
-- Reconcile Watch, Reminder, Checklist, Attachment, cover and comment current
-  authorization and scheduling through their stable Card relationship.
-- Update notification admission/projection: the existing inbox deliberately
-  joins the Card's current Board to the historical source Board, so moved
-  notifications remain hidden until an explicit current-authorized projection
-  is implemented. Historical storage changes do not widen current disclosure.
-- Add explicit MUI destination selection and concurrent/retry/revocation tests,
-  actual two-client movement/reconnect and native keyboard/mobile acceptance.
-- Verify supported capacity, visual feedback and server acknowledgement budgets
-  through the adopted build-once release gate before closing PRD-08/15.
+- Verify the new authorized command and rollback fixtures execute successfully
+  in the full immutable release pipeline.
+- Reconcile Watch, Checklist, Attachment, cover and comment current admission
+  through their stable Card relationship with explicit movement tests.
+- Update notification admission/projection: the existing inbox joins current Card
+  Board to historical source Board, so moved notifications remain hidden until
+  a current-authorized projection is implemented.
+- Add MUI destination selection, concurrent retry and revocation cases, actual
+  two-client movement/reconnect and native keyboard/mobile acceptance.
+- Verify supported capacity, visual feedback and acknowledgement budgets before
+  closing PRD-08/15.
 
-The prior archived-detail revision `8b9623e` passed .NET/API, web, PostgreSQL and
-source-quality checks in run 37192240480. Immutable image/release completion was
-still running when this dependency work began. No issue is closed by this stage.
+Baseline `850daff` passed web, managed/API, PostgreSQL, source-quality, image build
+and security jobs in run 37193132162; container integration was still running
+when this implementation began. No issue is closed by this stage.

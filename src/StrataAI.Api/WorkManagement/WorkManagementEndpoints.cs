@@ -588,7 +588,7 @@ public static partial class WorkManagementEndpoints
                             request.Rank,
                             request.ExpectedVersion,
                             context.TraceIdentifier,
-                            cancellationToken, request.BeforeCardId));
+                            cancellationToken, request.BeforeCardId, request.SourceBoardId));
                 })
             .RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 

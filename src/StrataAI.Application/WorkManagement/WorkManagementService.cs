@@ -799,7 +799,7 @@ public sealed partial class WorkManagementService(
         string? rank,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default, Guid? beforeCardId = null)
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null, Guid? sourceBoardId = null)
     {
         var card = await store.FindCardAsync(cardId, cancellationToken);
         var source = card is null ? null : await store.FindListAsync(card.ListId, cancellationToken);
@@ -810,7 +810,8 @@ public sealed partial class WorkManagementService(
         if (card is null ||
             source is null || source.LifecycleState != WorkItemLifecycleState.Active ||
             destination is null ||
-            destination.BoardId != card.BoardId ||
+            sourceBoardId is not null && card.BoardId != sourceBoardId ||
+            destination.OrganizationId != card.OrganizationId ||
             card.LifecycleState != WorkItemLifecycleState.Active ||
             destination.LifecycleState != WorkItemLifecycleState.Active ||
             (rank is not null && !RankToken.IsValid(rank)))
@@ -840,8 +841,12 @@ public sealed partial class WorkManagementService(
         CardRecord? updated;
         try
         {
+            var destinationAccess = await ResolveAccessAsync(destination.BoardId, actorUserId, cancellationToken);
+            if (destinationAccess is null || !destinationAccess.Value.Access.CanMove
+                || destinationAccess.Value.Board.LifecycleState != BoardLifecycleState.Active)
+                return WorkOperation<CardRecord>.Failure("card_not_found");
             updated = await store.MoveCardAsync(cardId, destinationListId, rank, expectedVersion,
-                clock.UtcNow, cancellationToken, beforeCardId);
+                clock.UtcNow, cancellationToken, beforeCardId, identityPolicy.RequireVerifiedEmail);
         }
         catch (RankSpaceExhaustedException)
         {
@@ -854,6 +859,15 @@ public sealed partial class WorkManagementService(
         }
 
         await RecordChangeAsync(updated.OrganizationId, updated.BoardId, actorUserId, "CARD_MOVED", "Card", updated.Id, updated.Version, correlationId, cancellationToken);
+        if (card.BoardId != updated.BoardId)
+        {
+            // Both Board streams must invalidate. Only the destination event
+            // produces current-authorized watch notifications; historical
+            // source attribution stays body-free and never grants new access.
+            await events.AppendAsync(new WorkEvent(Guid.NewGuid(), card.OrganizationId, card.BoardId, actorUserId,
+                "CARD_MOVED", "Card", card.Id, updated.Version, correlationId, clock.UtcNow), cancellationToken);
+            await reminders.RescheduleAsync(card, updated, actorUserId, correlationId, cancellationToken);
+        }
 
         return WorkOperation<CardRecord>.Success(updated);
     }

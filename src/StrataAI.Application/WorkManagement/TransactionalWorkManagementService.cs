@@ -231,16 +231,53 @@ public sealed partial class TransactionalWorkManagementService(
         string? rank,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default, Guid? beforeCardId = null)
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null, Guid? sourceBoardId = null)
     {
         var card = await store.FindCardAsync(cardId, cancellationToken);
         var destination = await store.FindListAsync(destinationListId, cancellationToken);
-        if (card is null || destination is null || card.OrganizationId != destination.OrganizationId || card.BoardId != destination.BoardId)
+        if (card is null || destination is null || card.OrganizationId != destination.OrganizationId)
             return WorkOperation<CardRecord>.Failure("card_not_found");
         // Preserve existing receipt fingerprints when no relative position was supplied.
         object body = beforeCardId is null ? new { destinationListId, rank, expectedVersion }
             : new { destinationListId, rank, expectedVersion, beforeCardId };
-        return await transactions.ExecuteAsync(card.OrganizationId, WorkCommand.Create(actorUserId, context.IdempotencyKey, "MoveCardAsync", cardId, body, "card_not_found"), _ => AuthorizeBoard(card.BoardId, actorUserId, "edit", cancellationToken), () => inner.MoveCardAsync(cardId, actorUserId, destinationListId, rank, expectedVersion, correlationId, cancellationToken, beforeCardId), cancellationToken);
+        if (sourceBoardId is not null) body = beforeCardId is null
+            ? new { destinationListId, rank, expectedVersion, sourceBoardId }
+            : new { destinationListId, rank, expectedVersion, beforeCardId, sourceBoardId };
+        // Legacy requests identify a same-Board move. A cross-Board request
+        // carries its original source explicitly so retry never derives that
+        // security boundary from the Card's already changed current Board.
+        var originalSource = sourceBoardId ?? destination.BoardId;
+        var sourceHint = await store.FindBoardAsync(originalSource, cancellationToken);
+        if (sourceHint is null || sourceHint.OrganizationId != card.OrganizationId)
+            return WorkOperation<CardRecord>.Failure("card_not_found");
+        var gates = new[] { originalSource, destination.BoardId, card.BoardId }.Distinct().Order().ToArray();
+        return await transactions.ExecuteAsync(card.OrganizationId,
+            WorkCommand.Create(actorUserId, context.IdempotencyKey, "MoveCardAsync", cardId, body, "card_not_found"), async receipt =>
+            {
+                foreach (var boardId in gates)
+                    if (!await AuthorizeBoard(boardId, actorUserId, "edit", cancellationToken)
+                        || (await store.FindBoardAsync(boardId, cancellationToken)) is not { LifecycleState: BoardLifecycleState.Active } admitted
+                        || admitted.OrganizationId != card.OrganizationId) return false;
+                var current = await store.FindCardAsync(cardId, cancellationToken);
+                var target = await store.FindListAsync(destinationListId, cancellationToken);
+                var parent = current is null ? null : await store.FindListAsync(current.ListId, cancellationToken);
+                if (current is not { LifecycleState: WorkItemLifecycleState.Active } || current.OrganizationId != card.OrganizationId
+                    || current.BoardId != card.BoardId || parent is not { LifecycleState: WorkItemLifecycleState.Active }
+                    || parent.OrganizationId != card.OrganizationId || parent.BoardId != current.BoardId
+                    || target is not { LifecycleState: WorkItemLifecycleState.Active } || target.OrganizationId != card.OrganizationId
+                    || target.BoardId != destination.BoardId || !await actors.VerifyAsync(actorUserId, cancellationToken)) return false;
+                return receipt is null || receipt.Id == cardId && receipt.OrganizationId == card.OrganizationId
+                    && receipt.BoardId == destination.BoardId && receipt.ListId == destinationListId
+                    && receipt.Version > expectedVersion && current.Version >= receipt.Version;
+            }, async () =>
+            {
+                var current = await store.FindCardAsync(cardId, cancellationToken);
+                if (current?.BoardId != originalSource) return WorkOperation<CardRecord>.Failure("card_not_found");
+                var result = await inner.MoveCardAsync(cardId, actorUserId, destinationListId, rank, expectedVersion,
+                    correlationId, cancellationToken, beforeCardId, originalSource);
+                return await actors.VerifyAsync(actorUserId, cancellationToken) ? result
+                    : WorkOperation<CardRecord>.Failure("session_unavailable");
+            }, cancellationToken);
     }
 
     public Task<WorkOperation<CardRecord>> SetCardLifecycleAsync(

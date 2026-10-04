@@ -622,22 +622,36 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
         }
     }
 
-    public Task<CardRecord?> MoveCardAsync(
+    public async Task<CardRecord?> MoveCardAsync(
         Guid cardId,
         Guid destinationListId,
         string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default, Guid? beforeCardId = null)
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null, bool requireVerifiedEmail = false)
     {
+        CardRecord? initial; BoardListRecord? target; Guid[] members;
+        lock (_sync)
+        {
+            if (!_cards.TryGetValue(cardId, out initial) || !_lists.TryGetValue(destinationListId, out target)
+                || initial.OrganizationId != target.OrganizationId || initial.Version != expectedVersion) return null;
+            members = _cardMembers.Keys.Where(k => k.CardId == cardId).Select(k => k.UserId).ToArray();
+        }
+        var eligible = new HashSet<Guid>();
+        if (initial.BoardId != target.BoardId)
+        {
+            if (!transactionScope.Owns(initial.OrganizationId)) throw new InvalidOperationException("Cross-Board move requires its owning transaction.");
+            foreach (var user in members)
+                if (await IsAssignableBoardMemberAsync(target.BoardId, user, requireVerifiedEmail, cancellationToken)) eligible.Add(user);
+        }
         lock (_sync)
         {
             if (!_cards.TryGetValue(cardId, out var card) ||
                 !_lists.TryGetValue(destinationListId, out var destination) ||
                 card.Version != expectedVersion ||
-                destination.BoardId != card.BoardId)
+                destination.OrganizationId != card.OrganizationId || card.BoardId != initial.BoardId || destination.BoardId != target.BoardId)
             {
-                return Task.FromResult<CardRecord?>(null);
+                return null;
             }
 
             var siblings = _cards.Values.Where(sibling => sibling.Id != cardId && sibling.ListId == destinationListId
@@ -645,20 +659,37 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             if (beforeCardId is not null)
             {
                 var position = Array.FindIndex(siblings, sibling => sibling.Id == beforeCardId);
-                if (position < 0) return Task.FromResult<CardRecord?>(null);
+                if (position < 0) return null;
                 if (position > 0 && siblings[position - 1].Rank == siblings[position].Rank) throw new RankSpaceExhaustedException();
                 rank = RankToken.Between(position == 0 ? null : siblings[position - 1].Rank, siblings[position].Rank);
             }
             var updated = card with
             {
+                BoardId = destination.BoardId,
                 ListId = destinationListId,
                 Rank = rank ?? RankToken.After(siblings.LastOrDefault()?.Rank),
                 UpdatedAt = updatedAt,
                 Version = card.Version + 1,
             };
-
+            if (card.BoardId != destination.BoardId)
+            {
+                var last = _labels.Values.Where(l => l.BoardId == destination.BoardId && !l.Deleted)
+                    .Select(l => l.Rank).Order(StringComparer.Ordinal).LastOrDefault();
+                var copied = new List<BoardLabelRecord>();
+                foreach (var label in _cardLabels.Where(a => a.CardId == cardId).Select(a => _labels[a.LabelId])
+                    .Where(l => !l.Deleted).OrderBy(l => l.Rank, StringComparer.Ordinal).ThenBy(l => l.Id))
+                {
+                    last = RankToken.After(last);
+                    copied.Add(label with { Id = Guid.NewGuid(), BoardId = destination.BoardId, Rank = last,
+                        CreatedAt = updatedAt, UpdatedAt = updatedAt, Version = 1 });
+                }
+                _cardLabels.RemoveWhere(a => a.CardId == cardId);
+                foreach (var label in copied) { _labels.Add(label.Id, label); _cardLabels.Add((cardId, label.Id)); }
+                foreach (var member in _cardMembers.Keys.Where(k => k.CardId == cardId && !eligible.Contains(k.UserId)).ToArray())
+                    _cardMembers.Remove(member);
+            }
             _cards[cardId] = updated;
-            return Task.FromResult<CardRecord?>(updated);
+            return updated;
         }
     }
 

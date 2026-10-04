@@ -48,4 +48,5 @@ public sealed record MoveCardRequest(
     Guid DestinationListId,
     string? Rank,
     long ExpectedVersion,
-    Guid? BeforeCardId = null);
+    Guid? BeforeCardId = null,
+    Guid? SourceBoardId = null);

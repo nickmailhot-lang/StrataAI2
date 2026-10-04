@@ -160,7 +160,7 @@ public interface IWorkManagementService
         string? rank,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default, Guid? beforeCardId = null);
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null, Guid? sourceBoardId = null);
 
     Task<WorkOperation<CardRecord>> SetCardLifecycleAsync(
         Guid cardId,

@@ -103,6 +103,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<IAttachmentUploadIntentStore>(provider => (IAttachmentUploadIntentStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<IBoardDatePolicyStore>(provider => (IBoardDatePolicyStore)provider.GetRequiredService<IWorkManagementStore>());
         services.AddSingleton<BoardDatePolicyService>();
+        services.AddSingleton<ICardReminderMoveEligibility, CardReminderMoveEligibility>();
         services.AddSingleton<CardReminderScheduling>();
         services.AddSingleton<CardReminderContainerScheduling>();
         services.AddSingleton<CardReminderService>();

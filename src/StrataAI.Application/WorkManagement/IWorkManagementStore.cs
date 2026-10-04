@@ -190,7 +190,7 @@ public interface IWorkManagementStore
         string? rank,
         long expectedVersion,
         DateTimeOffset updatedAt,
-        CancellationToken cancellationToken = default, Guid? beforeCardId = null);
+        CancellationToken cancellationToken = default, Guid? beforeCardId = null, bool requireVerifiedEmail = false);
 
     Task<CardRecord?> SetCardLifecycleAsync(
         Guid cardId,

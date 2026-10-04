@@ -347,3 +347,11 @@ syntax pass locally; actual new SQL/upgrade/runtime evidence awaits Linux CI.
 The full command, Board-scoped references, notification projection and native
 consumer acceptance remain required; docs/architecture/cross-board-card-movement.md
 records this dependency without claiming the API movement feature complete.
+
+
+Cross-Board Card command continuation: PRD-08 now has original-source receipt
+admission, atomic destination label cloning and eligible assignment retention,
+stable Card routing, both Board events and personal Reminder owner rechecks.
+New API and mandatory immutable-image rollback/retry fixtures cover the command;
+Linux execution, MUI destination selection and full native/capacity acceptance
+remain required. PRD-08 and PRD-15 stay open (estimated 45% and 40% remaining).
