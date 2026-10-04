@@ -89,6 +89,28 @@ test "$(filter_read owner 'completion=unknown')" = 400
 jq -e '.code=="invalid_board_filter"' "$scratch/filter.json" >/dev/null
 test "$(filter_read outsider 'completion=unknown')" = 404
 test "$(state)" = "$filterBaseline"
+# Trusted disposable capacity setup around the genuinely completed Card.
+# The filtered reads still run through Nginx and the restricted exact API.
+admin "WITH source AS (SELECT * FROM cards WHERE tenant_id='$org' AND id='$card'),
+ fixtures AS (SELECT gen_random_uuid() id,n FROM generate_series(1,52) n)
+ INSERT INTO cards SELECT populated.* FROM source c CROSS JOIN fixtures f CROSS JOIN LATERAL
+ jsonb_populate_record(NULL::cards,to_jsonb(c)||jsonb_build_object('id',f.id,
+ 'title','Completion paging fixture','rank',lpad((400000000000000000000000000000::numeric+f.n)::text,30,'0'),
+ 'cover_attachment_id',NULL)) populated RETURNING id;" > "$scratch/completion-paging.ids"
+test "$(wc -l < "$scratch/completion-paging.ids")" = 52
+test "$(filter_read owner 'completion=complete')" = 200
+cp "$scratch/filter.json" "$scratch/completion-first.json"
+jq -e '.items|length==50 and all(.dueComplete)' "$scratch/completion-first.json" >/dev/null
+after=$(jq -r '.nextCursor' "$scratch/completion-first.json"); [[ "$after" =~ ^[0-9a-fA-F-]{36}$ ]]
+test "$(filter_read owner "completion=complete&after=$after")" = 200
+jq -e '.nextCursor==null and (.items|length==3 and all(.dueComplete))' "$scratch/filter.json" >/dev/null
+jq -se '[.[].items[].id] | length==53 and (unique|length==53)' "$scratch/completion-first.json" "$scratch/filter.json" >/dev/null
+pagingIds=''
+while read -r fixtureCard; do
+ [[ "$fixtureCard" =~ ^[0-9a-fA-F-]{36}$ ]]
+ pagingIds+="${pagingIds:+,}'$fixtureCard'"
+done < "$scratch/completion-paging.ids"
+admin "DELETE FROM cards WHERE tenant_id='$org' AND id=ANY(ARRAY[$pagingIds]::uuid[]) AND title='Completion paging fixture';" >/dev/null
 test "$(request owner PATCH "$path" "$(uuid)" "$(jq -c '.dueComplete=false | .version=3' <<< "$complete")")" = 200
 test "$(filter_read owner 'completion=complete')" = 200
 jq -e '.items | length==0' "$scratch/filter.json" >/dev/null

@@ -27,6 +27,14 @@ real Worker delivery. The existing canvas reload also retains the completion
 predicate. No filter, date or event response is substituted. Native execution
 remains pending; successful discovery is not runtime acceptance.
 
+Completion pagination coverage seeds earlier nonmatching Cards and 52 completed
+Cards in the host contract, requiring a full 50-row page followed by two unique
+matches. The mandatory release dates fixture uses trusted disposable metadata
+setup around the genuinely completed Card to require 50+3 completed results
+through Nginx/restricted PostgreSQL, then removes only its own setup rows. These
+cases test predicate-before-limit and duplicate-free seek; fixture setup is not
+proof of 52 date mutation commands. Linux execution remains pending.
+
 Keyword matching is a case-insensitive literal substring of title or description;
 SQL wildcard characters such as `%` and `_` are literal. The trimmed keyword is
 limited to 160 characters. At most 25 distinct nonempty label UUIDs are accepted.
