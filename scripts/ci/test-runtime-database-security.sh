@@ -12,7 +12,7 @@ for migration in db/migrations/[0-9][0-9][0-9]_*.sql; do
   fi
 done
 restore() { admin "ALTER ROLE strataai_api_runtime NOBYPASSRLS; ALTER ROLE strataai_worker_runtime NOBYPASSRLS; GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe() TO strataai_api_runtime; INSERT INTO schema_migrations(version) VALUES $migration_values ON CONFLICT DO NOTHING;"; }
-trap 'echo "Runtime database security fixture failed at line $LINENO; migration=${version:-none}" >&2' ERR
+trap 'echo "Runtime database security fixture failed at line $LINENO; migration=${version:-none}; response_status=${code:-none}" >&2' ERR
 trap restore EXIT
 status() { curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$1"; }
 test "$(status http://127.0.0.1:8080/readyz)" = 200
@@ -37,6 +37,10 @@ test "$(status http://127.0.0.1:8080/readyz)" = 503
 restore
 test "$(status http://127.0.0.1:8080/readyz)" = 200
 for version in "${required_versions[@]}"; do
+# Each migration independently tests the protected login boundary. Keep these
+# requests below the unchanged production 60/minute budget, including the
+# earlier unsafe-role request, rather than exhausting it as the schema grows.
+sleep 2
 admin "DELETE FROM schema_migrations WHERE version='$version';"
 test "$(status http://127.0.0.1:8080/readyz)" = 503
 test "$(status http://127.0.0.1:8081/readyz)" = 503
