@@ -113,6 +113,16 @@ page does not claim a cross-Board SignalR subscription. Seven parser/component
 contracts passed locally; typecheck/lint passed. Native keyboard/mobile/Axe,
 runtime/SQL and exact-image acceptance remain pending.
 
+The native desktop/phone fixture uses two isolated authenticated browser
+contexts: one searches across two Organizations, while the other edits the
+selected Card through the actual MUI detail controls and checks versioned API
+acknowledgments and fresh Board admission. The reader observes that edit through
+foreground refresh, then goes offline while the editor makes another change;
+results are withheld during failure and recover on reconnection without a full
+reload. Real scoped Worker delivery and Axe checks remain part of the scenario.
+Both cases were discovered locally, not executed; this is not yet two-browser
+acceptance evidence.
+
 Search transient-read recovery retains the admitted actor and current cursor
 while withholding all result content. Online/focus recovery can then re-run the
 same submitted page with fresh pre/post-account checks. Terminal 401/403/404 or

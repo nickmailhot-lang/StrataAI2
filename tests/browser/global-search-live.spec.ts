@@ -1,9 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 
 for (const width of [1280, 390]) {
-  test(`PRD-16 global search crosses Organizations and recovers changed and missed state at ${width}px`, async ({ page, context }) => {
+  test(`PRD-16 global search crosses Organizations and recovers changed and missed state at ${width}px`, async ({ page, context, browser }) => {
     test.setTimeout(180_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `global-search-${width}-${Date.now()}@example.test`,
@@ -29,6 +30,7 @@ for (const width of [1280, 390]) {
       records.push({ org, board, card, title, version: 3 });
     }
     let restoreWorker = () => {};
+    let closePeer = async () => {};
     try {
       await page.goto(`/app/${records[0].org}/search`);
       await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('needle');
@@ -48,12 +50,24 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: 'Search', exact: true }).press('Enter');
       await expect(page.getByRole('link', { name: current.title, exact: true })).toBeVisible();
       restoreWorker = scopedBoardWorker(current.org); await waitForBoardDelivery(context.request, current.board);
+      const peer = await browser.newContext({ baseURL: new URL(page.url()).origin, viewport: { width, height: 844 } });
+      closePeer = () => peer.close();
+      expect((await peer.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+      const editor = await peer.newPage(); const cardPath = `/app/${current.org}/boards/${current.board}/cards/${current.card}`;
+      const reads = trackBoardReads(editor, current.board, cardPath);
+      const revision = trackCardVersion(editor, current.board, current.card, cardPath);
+      await editor.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      await expect.poll(revision).toBe(current.version);
       async function rename(title: string) {
-        const reply = await context.request.patch(`/cards/${current.card}`, {
-          headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
-          data: { title, description: null, version: current.version },
-        });
-        expect(reply.status()).toBe(200); current.version = (await reply.json()).version;
+        const field = editor.getByRole('textbox', { name: 'Card title', exact: true });
+        await expect(field).toBeEnabled(); await field.fill(title);
+        const save = editor.getByRole('button', { name: 'Save card', exact: true }); await expect(save).toBeEnabled();
+        const acknowledgment = editor.waitForResponse(response => response.request().method() === 'PATCH'
+          && new URL(response.url()).pathname === `/cards/${current.card}`);
+        await save.press('Enter'); const reply = await acknowledgment; expect(reply.status()).toBe(200);
+        const value = await reply.json(); expect(value.version).toBe(current.version + 1); current.version = value.version;
+        await waitForBoardDelivery(peer.request, current.board); await expect.poll(revision).toBe(current.version);
+        await expect(field).toBeEnabled(); await expect(field).toHaveValue(title);
       }
       await rename('Global needle changed');
       await expect(page.getByRole('link', { name: 'Global needle changed', exact: true })).toBeVisible({ timeout: 25_000 });
@@ -61,10 +75,10 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
       await expect(page.getByText(/Search is unavailable/)).toBeVisible({ timeout: 20_000 });
       await expect(page.getByRole('link', { name: 'Global needle changed', exact: true })).toHaveCount(0);
-      await rename('Global needle recovered'); await waitForBoardDelivery(context.request, current.board);
+      await rename('Global needle recovered');
       await context.setOffline(false);
       await expect(page.getByRole('link', { name: 'Global needle recovered', exact: true })).toBeVisible({ timeout: 30_000 });
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-    } finally { try { await context.setOffline(false); } finally { restoreWorker(); } }
+    } finally { try { await context.setOffline(false); } finally { try { restoreWorker(); } finally { await closePeer(); } } }
   });
 }
