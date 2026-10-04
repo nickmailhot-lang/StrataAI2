@@ -101,3 +101,12 @@ routing and original-source receipt admission. New HTTP tests cover current
 history after movement; an exact-image rollback/retry fixture is mandatory.
 The producer and new HTTP cases passed Linux managed/API execution; full release
 and native acceptance remain pending. PRD-15 remains open with approximately 40% remaining.
+# Activity denial fixture synchronization
+
+Web job 111444596527 in run 37205119205 failed the 403 keyboard-denial case:
+the initial page's rows could render before its passive focus recovery completed,
+and the fixture immediately started another operation. The fixture now waits for
+initial Older activity focus before testing denial. All denial, no-extra-read,
+private-content clearing and Close activity focus assertions remain mandatory.
+All 11 focused activity-history tests pass locally. Production behavior is
+unchanged; full Linux web execution remains pending.

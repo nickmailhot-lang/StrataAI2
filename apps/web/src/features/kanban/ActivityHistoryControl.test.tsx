@@ -86,7 +86,11 @@ it.each([401, 403, 404])('stops protected reads after a %s denial and resumes on
   const p = { ...props(), onDenied: vi.fn(() => flushSync(() => {})) }; const view = render(wrap(p));
   fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
   await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(50));
-  fireEvent.click(screen.getByRole('button', { name: 'Older activity' }));
+  const older = screen.getByRole('button', { name: 'Older activity' });
+  // Settle the first page's keyboard recovery before starting a second
+  // operation; DOM rows alone can precede its passive focus effect.
+  await waitFor(() => expect(older).toHaveFocus());
+  fireEvent.click(older);
   await screen.findByText('Activity is unavailable. Refresh the Board to check access.');
   await waitFor(() => expect(screen.getByRole('button', { name: 'Close activity' })).toHaveFocus());
   expect(screen.queryByRole('listitem')).toBeNull();
