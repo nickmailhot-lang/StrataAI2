@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot } from '../../api/workManagement';
 import { boardColors } from './boardBackground';
+import { activityEvent, activityResult } from './activityTelemetry';
 type Review = { id: string; organizationId: string; version: number; name: string; description: string | null; backgroundType: string; backgroundValue: string | null };
 type Intent = { review: Review; key: string; name: string; description: string | null; selection: string };
 type Props = { snapshot: BoardSnapshot; disabled: boolean; onBusyChange: (busy: boolean) => void; onRecoveryChange: (unresolved: boolean) => void;
@@ -33,7 +34,7 @@ export function BoardMetadataControl({ snapshot, disabled, onBusyChange, onRecov
   useEffect(() => { if (!review && !disabled && !busy && focusRequested.current) restoreFocus(); }, [review, disabled, busy]);
   function currentReview(): Review { return { id: board.id, organizationId: board.organizationId, version: board.version!, name: board.name,
     description: board.description, backgroundType: board.backgroundType!, backgroundValue: board.backgroundValue! }; }
-  function open() { setReview(currentReview()); setName(board.name); setDescription(board.description ?? ''); setSelection('preserve'); setNotice(undefined); setConflict(false); }
+  function open() { activityEvent('board_metadata_update', 'open'); setReview(currentReview()); setName(board.name); setDescription(board.description ?? ''); setSelection('preserve'); setNotice(undefined); setConflict(false); }
   function close() { if (!busy && !intent) { setReview(undefined); setNotice(undefined); } }
   async function save() {
     if (pending.current || disabled || !admitted || !review || !intent && (changed || conflict)) return;
@@ -41,6 +42,7 @@ export function BoardMetadataControl({ snapshot, disabled, onBusyChange, onRecov
       setNotice('Use a Board name with 1 to 160 characters and an available background choice.'); return;
     }
     const command = intent ?? { review, name: name.trim(), description: description.trim() || null, selection, key: crypto.randomUUID() };
+    const started = performance.now(); activityEvent('board_metadata_update', intent ? 'retry' : 'use');
     const c = new AbortController(); pending.current = c; setBusy(true); onBusyChange(true); setNotice(undefined);
     try {
       const value = await boundedWorkRead(signal => workRequest<unknown>(`/boards/${encodeURIComponent(command.review.id)}`, { method: 'PATCH', signal,
@@ -52,13 +54,15 @@ export function BoardMetadataControl({ snapshot, disabled, onBusyChange, onRecov
         || value.name !== command.name || value.description !== command.description || value.lifecycleState !== 'active'
         || value.backgroundType !== (command.selection === 'preserve' ? command.review.backgroundType : 'COLOR')
         || value.backgroundValue !== (command.selection === 'preserve' ? command.review.backgroundValue : command.selection === 'default' ? null : command.selection)) throw new Error('Unconfirmed metadata');
-      setIntent(undefined); setReview(undefined); setNotice('Board changes acknowledged. Current Board state is being checked.'); onRefresh();
+      activityResult('board_metadata_update', true, started); setIntent(undefined); setReview(undefined); setNotice('Board changes acknowledged. Current Board state is being checked.'); onRefresh();
     } catch (error) { if (mounted.current && pending.current === c) {
+      activityResult('board_metadata_update', false, started);
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
         setIntent(undefined); setReview(undefined); setName(''); setDescription(''); setNotice('Board editing is unavailable.');
       } else if (error instanceof WorkRequestError && [400, 409].includes(error.status)) {
+        activityEvent('board_metadata_update', 'conflict');
         setIntent(undefined); setConflict(true); setNotice('This save could not be applied. Check the Board and review its current revision.');
-      } else { setIntent(command); setNotice('This save is unconfirmed. Keep its fields unchanged and retry the same save.'); }
+      } else { activityEvent('board_metadata_update', 'exception'); setIntent(command); setNotice('This save is unconfirmed. Keep its fields unchanged and retry the same save.'); }
       onRefresh();
     } } finally { if (pending.current === c) { pending.current = undefined; if (mounted.current) { setBusy(false); onBusyChange(false); } } }
   }

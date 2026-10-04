@@ -11,6 +11,29 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Theory]
+    [InlineData("boardId")]
+    [InlineData("name")]
+    [InlineData("description")]
+    [InlineData("backgroundValue")]
+    [InlineData("selection")]
+    [InlineData("version")]
+    [InlineData("key")]
+    [InlineData("diagnostic")]
+    public void PRD_04_Metadata_observations_reject_private_extras_atomically(string field)
+    {
+        using var valid = JsonDocument.Parse("""
+            {"events":[{"action":"board_metadata_update","kind":"open","count":1},
+            {"action":"board_metadata_update","kind":"retry","count":1},
+            {"action":"board_metadata_update","kind":"success","count":1,"durationMs":125}]}
+            """);
+        Assert.Equal(3, ActivityClientTelemetry.Parse(valid.RootElement)!.Count);
+        using var invalid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
+            new { action = "board_metadata_update", kind = "open", count = 1 },
+            new Dictionary<string, object> { ["action"] = "board_metadata_update", ["kind"] = "use", ["count"] = 1, [field] = "private-material" } } }));
+        Assert.Null(ActivityClientTelemetry.Parse(invalid.RootElement));
+    }
+
+    [Theory]
     [InlineData("archive_list_disclosure")]
     [InlineData("archive_list_read")]
     [InlineData("archive_list_restore")]
