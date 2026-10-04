@@ -4,7 +4,11 @@ test "${CI:-}" = true || { echo 'Disposable Board copy fixture requires CI.' >&2
 umask 077
 scratch=$(mktemp -d); revoked=false; base=http://localhost:8088
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
-cleanup() { if $revoked; then admin 'GRANT INSERT ON checklist_items TO strataai_api_runtime;' >/dev/null || true; fi; rm -rf "$scratch"; }
+cleanup() {
+  if $revoked; then admin 'GRANT INSERT ON checklist_items TO strataai_api_runtime;' >/dev/null || true; fi
+  admin 'DROP TRIGGER IF EXISTS ci_board_copy_publication_refusal ON work_events; DROP FUNCTION IF EXISTS ci_board_copy_publication_refusal(); DROP SEQUENCE IF EXISTS ci_board_copy_publication_reached;' >/dev/null || true
+  rm -rf "$scratch"
+}
 trap cleanup EXIT
 trap 'echo "Board copy fixture failed at line $LINENO; status=${code:-none}" >&2' ERR
 uuid() { cat /proc/sys/kernel/random/uuid; }
@@ -46,6 +50,14 @@ state() { admin "SELECT md5(jsonb_build_object(
   'boards',(SELECT jsonb_agg(to_jsonb(b) ORDER BY id) FROM boards b WHERE tenant_id='$org'),
   'lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l WHERE tenant_id='$org'),
   'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id='$org'),
+  'labels',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_labels l WHERE tenant_id='$org'),
+  'associations',(SELECT jsonb_agg(to_jsonb(a) ORDER BY card_id,label_id) FROM card_labels a WHERE tenant_id='$org'),
+  'checklists',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM checklists c WHERE tenant_id='$org'),
+  'items',(SELECT jsonb_agg(to_jsonb(i) ORDER BY id) FROM checklist_items i WHERE tenant_id='$org'),
+  'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY board_id,user_id) FROM board_members m WHERE tenant_id='$org'),
+  'list_routes',(SELECT jsonb_agg(to_jsonb(r) ORDER BY list_id) FROM list_routes r WHERE tenant_id='$org'),
+  'card_routes',(SELECT jsonb_agg(to_jsonb(r) ORDER BY card_id) FROM card_routes r WHERE tenant_id='$org'),
+  'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY board_id) FROM work_event_streams s WHERE tenant_id='$org'),
   'events',(SELECT jsonb_agg(to_jsonb(e)-'ready_at' ORDER BY event_id) FROM work_events e WHERE tenant_id='$org'),
   'audit',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org'),
   'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='$org'),
@@ -58,6 +70,28 @@ test "$(state)" = "$before"
 test "$(admin "SELECT count(*) FROM list_routes WHERE tenant_id='$org';")" = 200
 test "$(admin "SELECT count(*) FROM card_routes WHERE tenant_id='$org';")" = 5000
 admin 'GRANT INSERT ON checklist_items TO strataai_api_runtime;' >/dev/null; revoked=false
+# Refuse only the final copied-Board event, after the whole graph exists.
+# BOARD_CREATED remains writable, so this proves rollback beyond creation.
+admin "CREATE SEQUENCE ci_board_copy_publication_reached;
+  GRANT USAGE ON SEQUENCE ci_board_copy_publication_reached TO strataai_api_runtime;
+  CREATE FUNCTION ci_board_copy_publication_refusal() RETURNS trigger LANGUAGE plpgsql AS \$\$
+  BEGIN
+    IF NEW.tenant_id='$org'::uuid AND NEW.event_type='BOARD_COPIED' THEN
+      IF (SELECT count(*) FROM cards WHERE tenant_id=NEW.tenant_id AND board_id=NEW.board_id)<>5000 THEN
+        RAISE EXCEPTION 'Board copy publication fixture did not reach the complete graph';
+      END IF;
+      PERFORM nextval('ci_board_copy_publication_reached');
+      RAISE EXCEPTION 'Disposable Board copy publication refusal' USING ERRCODE='42501';
+    END IF;
+    RETURN NEW;
+  END; \$\$;
+  CREATE TRIGGER ci_board_copy_publication_refusal BEFORE INSERT ON work_events
+    FOR EACH ROW EXECUTE FUNCTION ci_board_copy_publication_refusal();" >/dev/null
+code=$(request POST "/boards/$source/copy" '{"name":"Independent Board","version":1}' "$key")
+test "$code" = 503; jq -e '.code=="work_storage_unavailable"' "$scratch/response" >/dev/null
+test "$(admin 'SELECT last_value=1 AND is_called FROM ci_board_copy_publication_reached;')" = t
+test "$(state)" = "$before"
+admin 'DROP TRIGGER ci_board_copy_publication_refusal ON work_events; DROP FUNCTION ci_board_copy_publication_refusal(); DROP SEQUENCE ci_board_copy_publication_reached;' >/dev/null
 test "$(request POST "/boards/$source/copy" '{"name":"Independent Board","version":1}' "$key")" = 201
 cp "$scratch/response" "$scratch/receipt"; copy=$(jq -r '.id' "$scratch/response"); [[ "$copy" =~ ^[0-9a-f-]{36}$ ]]
 jq -e --arg org "$org" --arg source "$source" '.id!=$source and .organizationId==$org and .visibility=="PRIVATE" and .version==1' "$scratch/response" >/dev/null
@@ -74,4 +108,4 @@ cmp "$scratch/receipt" "$scratch/response"; test "$(state)" = "$after"
 test "$(request POST "/boards/$source/copy" '{"name":"Changed intent","version":1}' "$key")" = 409
 test "$(request POST "/boards/$source/archive" '{"version":1}')" = 200
 test "$(request POST "/boards/$source/copy" '{"name":"Independent Board","version":1}' "$key")" = 404
-echo 'Exact-image Board copy retains full capacity, distinct labels, fresh content and atomic retry recovery.'
+echo 'Exact-image Board copy retains full capacity, distinct labels, fresh content, complete-graph publication rollback and atomic retry recovery.'
