@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
 
 for (const width of [1280, 390]) {
   test(`PRD-10: Card labels have keyboard-readable names and reflect persisted deletion at ${width}px`, async ({ page, context }) => {
@@ -20,7 +21,11 @@ for (const width of [1280, 390]) {
     try {
       await waitForBoardDelivery(context.request, board);
       const labels: string[] = [];
-      await page.goto(`/app/${org}/boards/${board}`);
+      const navigate = async (path: string) => {
+        const reads = trackBoardReads(page, board, path);
+        await page.goto(path); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      };
+      await navigate(`/app/${org}/boards/${board}`);
       const attempts: { key: string | undefined; body: string | null }[] = [];
       await page.route(`**/boards/${board}/labels`, async route => {
         if (route.request().method() !== 'POST') return route.continue();
@@ -56,7 +61,7 @@ for (const width of [1280, 390]) {
       }
       const path = `/app/${org}/boards/${board}/cards/${card}`;
       await waitForBoardDelivery(context.request, board);
-      await page.goto(path);
+      await navigate(path);
       const assignmentAttempts: { url: string; key: string | undefined }[] = [];
       await page.route(`**/cards/${card}/labels/${labels[0]}?*`, async route => {
         assignmentAttempts.push({ url: route.request().url(), key: route.request().headers()['idempotency-key'] });
@@ -75,11 +80,11 @@ for (const width of [1280, 390]) {
       await edit.press('Enter');
       await page.getByRole('button', { name: 'Add label blue', exact: true }).press('Enter'); await expect(edit).toBeFocused();
       await waitForBoardDelivery(context.request, board);
-      await page.goto(`/app/${org}/boards/${board}`);
+      await navigate(`/app/${org}/boards/${board}`);
       const face = page.getByRole('link').filter({ hasText: 'Labeled work' });
       await expect(face.getByLabel('Priority, red', { exact: true })).toBeVisible();
       await expect(face.getByText('blue label', { exact: true })).toBeVisible();
-      await page.goto(path);
+      await navigate(path);
       const details = page.getByRole('dialog');
       const show = page.getByRole('button', { name: 'Show labels', exact: true });
       await expect(show).toBeEnabled();
@@ -94,7 +99,7 @@ for (const width of [1280, 390]) {
       await expect(removeBlue).toBeEnabled(); await removeBlue.press('Enter'); await expect(edit).toBeFocused();
       const remaining = await context.request.get(`/cards/${card}/labels`); expect(remaining.status()).toBe(200);
       const remainingItems = (await remaining.json()).items; expect(remainingItems).toHaveLength(1); expect(remainingItems[0].id).toBe(labels[0]);
-      await page.goto(`/app/${org}/boards/${board}`);
+      await navigate(`/app/${org}/boards/${board}`);
       const edits: { url: string; key: string | undefined; body: string | null }[] = [];
       const filterButton = page.getByRole('button', { name: 'Filter Board Cards', exact: true });
       await expect(filterButton).toBeEnabled(); await filterButton.press('Enter');
