@@ -36,6 +36,8 @@ set -euo pipefail
     elif [ "${values[STRATAAI_ATTACHMENT_S3_REGION]}" = custom-region ]; then echo 'A supported explicit attachment storage region is required.'
     elif [ "${values[STRATAAI_ATTACHMENT_MAX_BYTES]-}" = invalid ]; then echo 'Attachment upload size policy is invalid.'
     elif [ "${values[STRATAAI_ATTACHMENT_ALLOWED_TYPES]-}" = image/svg+xml ]; then echo 'Attachment upload policy is invalid.'
+    elif [[ -v 'values[STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT]' ]] && { [ "${values[ASPNETCORE_ENVIRONMENT]-}" != IntegrationTest ] || [ "${values[DOTNET_ENVIRONMENT]-IntegrationTest}" != IntegrationTest ]; }; then echo 'Local attachment fixtures require the IntegrationTest environment.'
+    elif [ "${values[STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT]-}" = relative-fixture ]; then echo 'An absolute private attachment fixture root is required.'
     elif [ "$1" = fixture-worker ] && [ "${values[STRATAAI_WORKER_ORGANIZATION_IDS]}" = '' ]; then echo 'Attachment scanning requires explicit Worker Organization scope.'
     elif [ "$1" = fixture-worker ] && [[ "${values[STRATAAI_ATTACHMENT_SCANNER_SOCKET]}" = relative.sock || "${values[STRATAAI_ATTACHMENT_SCANNER_SOCKET]}" = /run/../scanner.sock ]]; then echo 'An absolute local scanner socket path is required.'
     else echo 'Missing expected refusal override.'; return 2
@@ -43,6 +45,6 @@ set -euo pipefail
     return 1
   }
   source scripts/ci/test-attachment-runtime-configuration.sh fixture-api fixture-worker
-  [ "$case_number" = 17 ]
-  echo 'All 17 configuration fixtures pass argument-only checks with unique environment entries.'
+  [ "$case_number" = 23 ]
+  echo 'All 23 configuration fixtures pass argument-only checks with unique environment entries.'
 )

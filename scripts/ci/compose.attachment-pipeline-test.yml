@@ -1,0 +1,18 @@
+# Explicit disposable providers; never packaged in the release bundle.
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: IntegrationTest
+      STRATAAI_ATTACHMENT_STORAGE_ENABLED: 'true'
+      STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT: /run/strata-attachment-fixture/objects
+    volumes:
+      - ${STRATAAI_TEST_ATTACHMENT_DIR:?Set the private disposable fixture directory}:/run/strata-attachment-fixture
+  worker:
+    environment:
+      ASPNETCORE_ENVIRONMENT: IntegrationTest
+      STRATAAI_ATTACHMENT_STORAGE_ENABLED: 'true'
+      STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT: /run/strata-attachment-fixture/objects
+      STRATAAI_ATTACHMENT_SCANNER_SOCKET: /run/strata-attachment-fixture/scanner.sock
+      STRATAAI_WORKER_ORGANIZATION_IDS: ${STRATAAI_TEST_ATTACHMENT_ORG:?Set the isolated fixture Organization}
+    volumes:
+      - ${STRATAAI_TEST_ATTACHMENT_DIR:?Set the private disposable fixture directory}:/run/strata-attachment-fixture

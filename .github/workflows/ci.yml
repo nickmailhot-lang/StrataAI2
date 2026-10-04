@@ -617,6 +617,9 @@ jobs:
       - name: Atomic Work events and leased Worker readiness against exact release images
         run: scripts/ci/test-work-events.sh
 
+      - name: Attachment upload and isolated Worker image publication through explicit private test providers
+        run: bash scripts/ci/test-attachment-image-pipeline.sh
+
       - name: Retain fixed-scope Card copy capacity measurements
         if: always()
         uses: actions/upload-artifact@v7
