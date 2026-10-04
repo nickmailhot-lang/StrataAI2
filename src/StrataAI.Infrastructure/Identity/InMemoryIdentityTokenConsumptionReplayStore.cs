@@ -2,7 +2,7 @@ using StrataAI.Application.Identity;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed class InMemoryIdentityTokenConsumptionReplayStore : IIdentityTokenConsumptionReplayStore
+internal sealed partial class InMemoryIdentityTokenConsumptionReplayStore : IIdentityTokenConsumptionReplayStore
 {
     private readonly Dictionary<(Guid User, Guid Key, IdentityTokenPurpose Purpose), IdentityTokenConsumptionReplay> rows = [];
     public Task<IdentityTokenConsumptionReplay?> ReadAsync(Guid userId, Guid key, IdentityTokenPurpose purpose, CancellationToken cancellationToken)

@@ -3,6 +3,7 @@ namespace StrataAI.Domain.WorkManagement;
 public static class MentionHandle
 {
     public const int MaximumLength = 40;
+    public const int MaximumLifetimeReservations = 32;
     public static string Normalize(string value)
     {
         if (value is null || value.Length > MaximumLength) throw new ArgumentException("Mention handle is invalid.");

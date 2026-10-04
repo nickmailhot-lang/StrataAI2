@@ -344,3 +344,47 @@ Compilation passes; its Linux execution remains pending until its own CI job
 confirms the contract. Demo parity, account setting receipts/audit/events,
 current-session proof, scoped teammate lookup, mention notification producers,
 mass-mention abuse controls and full activity/acceptance remain outstanding.
+
+The actual restricted Production C# handle contract now passes in PostgreSQL
+job 111324137136, run 37164359628, for 21275ee. Its log confirms owning scope,
+normalization, CAS/no-op, rollback, concurrent collision, former/default reclaim,
+reservation bounds and recovered savepoints. The complete managed-host and
+immutable release gates remain separate; the synthetic actor fixture is not
+HTTP session or Board recipient authorization evidence.
+
+Demo now has its own DI-owned account handle registry, eagerly seeded by
+canonical account insertion. Its exact account transaction subject is required
+for handle reads/claims. Canonical/default names, microsecond timestamps,
+one-revision changes, no-op/stale/past refusal, reserved namespaces, immutable
+former aliases, same-owner/default reclaim and the same 32 lifetime bound match
+the storage contract. Deactivation retains aliases. Independent host providers
+retain independent registries; this is not a Production fallback or a claim
+that the canned Demo-reset surface resets canonical account state.
+
+The generic owning Demo identity boundary and registration boundary now capture
+and restore registered account/profile/session/token/event state, handle
+current/reservation/count state and all six existing identity retry stores.
+Returned failure, exception or final cancellation restores those participants;
+success commits them. Nested commands entered from these scopes fail before
+waiting on the shared gate. Generic commands retain existing actor admission;
+they do not perform a new generic post-write session check that would invalidate
+intentional logout. The future handle producer must check its current session
+again before acknowledging/committing a handle change.
+
+This is scoped identity rollback. Specialized sign-in, recovery, token-proof,
+revocation and cross-module deactivation cleanup boundaries have not all gained
+this rollback proof. Demo audit is still the existing no-op, and Organization/
+Work lifecycle effects are not included in these identity participant snapshots.
+No full Demo atomicity or audit acceptance is claimed.
+
+Seven new Domain cases use the actual Demo DI registry and owning unit with
+explicitly synthetic actor eligibility. They cover missing/foreign subject,
+host isolation, namespace/normalization/CAS/history, concurrent ownership,
+deactivation retention, quota/reclaim, failed-command profile/event/receipt/
+reservation rollback (failure/exception/cancellation), failed registration and
+retry, denied actor and nested generic/specialized commands. Warning-as-error
+compilation passes after satisfying the xUnit filtering assertion analyzer.
+Their execution requires Linux CI; local test execution remains blocked by
+Windows Application Control and is not bypassed. The actual session command,
+handle receipts/events/UI, teammate lookup and complete PRD acceptance remain
+unfinished.

@@ -3,7 +3,7 @@ using StrataAI.Application.Common;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
+internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHandleRegistry handles) : IIdentityStore
 {
     private sealed record TokenState(
         SecurityTokenRecord Token, DateTimeOffset? UsedAt = null);
@@ -55,6 +55,7 @@ internal sealed class InMemoryIdentityStore(IClock clock) : IIdentityStore
 
             _users[user.Id] = user;
             _usersByEmail[user.EmailNormalized] = user.Id;
+            handles.Seed(user);
             if (verificationToken is not null)
                 _emailVerificationTokens[verificationToken.TokenHash] = new TokenState(verificationToken);
             return Task.FromResult(true);

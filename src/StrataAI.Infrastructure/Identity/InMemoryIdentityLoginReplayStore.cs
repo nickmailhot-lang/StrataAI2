@@ -1,7 +1,7 @@
 using StrataAI.Application.Identity;
 
 namespace StrataAI.Infrastructure.Identity;
-internal sealed class InMemoryIdentityLoginReplayStore : IIdentityLoginReplayStore
+internal sealed partial class InMemoryIdentityLoginReplayStore : IIdentityLoginReplayStore
 {
     private readonly Dictionary<(Guid, Guid), IdentityLoginReplay> _rows = [];
     // The shared identity command gate owns every access.

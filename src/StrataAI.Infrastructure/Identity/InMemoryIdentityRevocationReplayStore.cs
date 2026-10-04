@@ -3,7 +3,7 @@ using StrataAI.Application.Common;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed class InMemoryIdentityRevocationReplayStore(IClock clock) : IIdentityRevocationReplayStore
+internal sealed partial class InMemoryIdentityRevocationReplayStore(IClock clock) : IIdentityRevocationReplayStore
 {
     private readonly Dictionary<(Guid, Guid), IdentityRevocationReceipt> _receipts = [];
     public Task<IdentityRevocationReceipt?> ReadAsync(Guid userId, Guid key, CancellationToken cancellationToken) =>

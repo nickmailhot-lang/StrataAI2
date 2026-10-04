@@ -57,6 +57,10 @@ public static class IdentityRegistration
 
         if (runtime.Mode == RuntimeMode.Demo)
         {
+            services.AddSingleton<DemoIdentityTransactionScope>();
+            services.AddSingleton<DemoMentionHandleRegistry>();
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => provider.GetRequiredService<DemoMentionHandleRegistry>());
+            services.AddSingleton<IUserMentionHandleStore, InMemoryUserMentionHandleStore>();
             services.AddSingleton<IInvitationRegistrationProofStore, InMemoryInvitationRegistrationProofStore>();
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();
             services.AddSingleton<IAccountDeactivationOwnership, InMemoryAccountDeactivationOwnership>();
@@ -68,6 +72,13 @@ public static class IdentityRegistration
             services.AddSingleton<IIdentityRegistrationReplayStore, InMemoryIdentityRegistrationReplayStore>();
             services.AddSingleton<IIdentityRecoveryRequestReplayStore, InMemoryIdentityRecoveryRequestReplayStore>();
             services.AddSingleton<IIdentityTokenConsumptionReplayStore, InMemoryIdentityTokenConsumptionReplayStore>();
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => (IDemoIdentityTransactionParticipant)provider.GetRequiredService<IIdentityStore>());
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => (IDemoIdentityTransactionParticipant)provider.GetRequiredService<IIdentityProfileReplayStore>());
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => (IDemoIdentityTransactionParticipant)provider.GetRequiredService<IIdentityRevocationReplayStore>());
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => (IDemoIdentityTransactionParticipant)provider.GetRequiredService<IIdentityLoginReplayStore>());
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => (IDemoIdentityTransactionParticipant)provider.GetRequiredService<IIdentityRegistrationReplayStore>());
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => (IDemoIdentityTransactionParticipant)provider.GetRequiredService<IIdentityRecoveryRequestReplayStore>());
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => (IDemoIdentityTransactionParticipant)provider.GetRequiredService<IIdentityTokenConsumptionReplayStore>());
         }
         else
         {

@@ -2,7 +2,7 @@ using StrataAI.Application.Identity;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed class InMemoryIdentityRecoveryRequestReplayStore : IIdentityRecoveryRequestReplayStore
+internal sealed partial class InMemoryIdentityRecoveryRequestReplayStore : IIdentityRecoveryRequestReplayStore
 {
     private readonly Dictionary<(Guid User, Guid Key, IdentityTokenPurpose Purpose), IdentityRecoveryRequestReplay> rows = [];
     public Task<IdentityRecoveryRequestReplay?> ReadAsync(Guid userId, Guid key, IdentityTokenPurpose purpose, CancellationToken cancellationToken)

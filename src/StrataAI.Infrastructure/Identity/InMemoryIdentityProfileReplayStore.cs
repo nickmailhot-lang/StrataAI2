@@ -3,7 +3,7 @@ using StrataAI.Application.Common;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed class InMemoryIdentityProfileReplayStore(IClock clock) : IIdentityProfileReplayStore
+internal sealed partial class InMemoryIdentityProfileReplayStore(IClock clock) : IIdentityProfileReplayStore
 {
     private readonly Dictionary<(Guid, Guid), (IdentityProfileReplay Replay, DateTimeOffset Expires)> _records = [];
     public Task<IdentityProfileReplay?> ReadAsync(Guid userId, Guid key, CancellationToken cancellationToken)
