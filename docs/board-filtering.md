@@ -23,6 +23,16 @@ check each window, ANY/ALL, denial and unchanged command effects. Component
 coverage checks persisted criterion restoration and invalid saved input. New
 Linux host/release execution remains pending.
 
+Desktop/mobile native deadline scenarios now use an independent real API writer
+and subscribed browser with the scoped release Worker. Upcoming results appear
+after scheduling, disappear after completion, return after reopening, and
+disappear after a past deadline is delivered while the browser is offline.
+Reconnection must recover without manual reload. Keyboard selection of overdue
+and recent-update criteria, persisted canvas reload, deadline removal, canonical
+version/state and WCAG checks are included. The existing two-browser label
+scenario now supplies its second context's verified release origin explicitly.
+All three scenarios are discovered; native execution remains pending.
+
 `due=none` selects Cards without a deadline. `due=overdue` requires an incomplete
 deadline strictly before the server's current UTC instant; `due=upcoming`
 requires an incomplete deadline at or after that instant. Upcoming includes all

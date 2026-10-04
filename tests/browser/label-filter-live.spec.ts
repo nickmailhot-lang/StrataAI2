@@ -20,7 +20,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
   expect((await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Unmatched canvas Card' } })).status()).toBe(201);
   const labelReply = await context.request.post(`/boards/${board}/labels`, { headers, data: { name: 'Priority', color: 'red' } });
   expect(labelReply.status()).toBe(201); const label = (await labelReply.json()).id;
-  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
+  const phone = await browser.newContext({ baseURL: new URL(cardReply.url()).origin, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
   const other = await phone.newPage(); let unavailable = false; let socket: WebSocketRoute | undefined;
   await phone.routeWebSocket('**/boards/live*', route => {
     if (unavailable) { route.close({ code: 1013 }); return; }
