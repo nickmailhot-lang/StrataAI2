@@ -284,3 +284,12 @@ done
 for role in api worker; do
  test "$("$role" "SELECT has_table_privilege(current_user,'attachment_preview_sweeps','SELECT') OR has_table_privilege(current_user,'attachment_preview_sweeps','INSERT') OR has_table_privilege(current_user,'attachment_preview_sweeps','UPDATE') OR has_table_privilege(current_user,'attachment_preview_sweeps','DELETE')")" = f
 done
+
+for relation in notification_events notification_event_streams; do
+ test "$(api "SELECT has_table_privilege(current_user,'$relation','SELECT') AND NOT (has_table_privilege(current_user,'$relation','INSERT') OR has_table_privilege(current_user,'$relation','UPDATE') OR has_table_privilege(current_user,'$relation','DELETE'))")" = t
+ test "$(worker "SELECT has_table_privilege(current_user,'$relation','SELECT') OR has_table_privilege(current_user,'$relation','INSERT') OR has_table_privilege(current_user,'$relation','UPDATE') OR has_table_privilege(current_user,'$relation','DELETE')")" = f
+done
+for function in 'public.append_notification_journal_transition(public.card_assignment_notifications,text,timestamptz)' 'public.journal_notification_transition()'; do
+ test "$(api "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
+ test "$(worker "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
+done

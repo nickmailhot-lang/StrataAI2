@@ -5,7 +5,7 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed partial class PostgresWorkNotificationStore(PostgresConnectionFactory connections) : IWorkNotificationStore, INotificationInboxStore
+internal sealed partial class PostgresWorkNotificationStore(PostgresConnectionFactory connections) : IWorkNotificationStore, INotificationInboxStore, INotificationRealtimeStore
 {
     public async Task AppendCardAssignmentAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
         => await AppendAsync(change, CardNotification.From(change, recipientId), cancellationToken);

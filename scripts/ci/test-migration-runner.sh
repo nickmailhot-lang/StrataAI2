@@ -421,37 +421,52 @@ cp db/migrations/067_card_copy_notifications.sql "$scratch/migrations/"
 run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 67
-cat > "$scratch/migrations/068_serialization_fixture.sql" <<'SQL'
+cp db/migrations/068_notification_private_journal.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 68
+test "$(query 'SELECT (SELECT count(*) FROM notification_events)=(SELECT count(*)+count(read_at) FROM card_assignment_notifications)')" = t
+test "$(query "SELECT count(*) FROM notification_events e JOIN card_assignment_notifications n ON n.tenant_id=e.tenant_id AND n.id=e.notification_id WHERE e.recipient_id<>n.recipient_id OR e.board_id<>n.board_id OR e.metadata<>'{}'::jsonb OR (e.event_type='NOTIFICATION_CREATED' AND (e.actor_id<>n.actor_id OR e.created_at<>n.created_at OR e.version<>1)) OR (e.event_type='NOTIFICATION_READ' AND (e.actor_id<>n.recipient_id OR e.created_at IS DISTINCT FROM n.read_at OR e.version<>2))")" = 0
+test "$(query 'SELECT count(*) FROM notification_event_streams s WHERE s.last_sequence<>(SELECT count(*) FROM notification_events e WHERE e.tenant_id=s.tenant_id AND e.recipient_id=s.recipient_id)')" = 0
+journal_before=$(query "SELECT md5(jsonb_build_object('events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY tenant_id,recipient_id,sequence) FROM notification_events e),'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY tenant_id,recipient_id) FROM notification_event_streams s))::text)")
+query "BEGIN; UPDATE card_assignment_notifications SET read_at=created_at WHERE read_at IS NULL; ROLLBACK;" >/dev/null
+test "$(query "SELECT md5(jsonb_build_object('events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY tenant_id,recipient_id,sequence) FROM notification_events e),'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY tenant_id,recipient_id) FROM notification_event_streams s))::text)")" = "$journal_before"
+query "UPDATE card_assignment_notifications SET read_at=created_at WHERE read_at IS NULL;" >/dev/null
+test "$(query "SELECT count(*) FROM notification_events WHERE event_type='NOTIFICATION_READ'")" = "$(query 'SELECT count(*) FROM card_assignment_notifications WHERE read_at IS NOT NULL')"
+journal_after=$(query "SELECT md5(string_agg(to_jsonb(e)::text,'' ORDER BY tenant_id,recipient_id,sequence)) FROM notification_events e")
+query "UPDATE card_assignment_notifications SET read_at=COALESCE(read_at,created_at);" >/dev/null
+test "$(query "SELECT md5(string_agg(to_jsonb(e)::text,'' ORDER BY tenant_id,recipient_id,sequence)) FROM notification_events e")" = "$journal_after"
+cat > "$scratch/migrations/069_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('068_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('069_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='068_serialization_fixture'")" = 1
-cat > "$scratch/migrations/069_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='069_serialization_fixture'")" = 1
+cat > "$scratch/migrations/070_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('069_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('070_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='069_failure_fixture'")" = 0
-rm "$scratch/migrations/069_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='070_failure_fixture'")" = 0
+rm "$scratch/migrations/070_failure_fixture.sql"
 run
-cat > "$scratch/migrations/070_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/071_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='070_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/070_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='071_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/071_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

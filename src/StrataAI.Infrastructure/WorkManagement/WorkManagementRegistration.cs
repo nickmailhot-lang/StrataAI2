@@ -65,6 +65,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<PostgresWorkNotificationStore>();
             services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
             services.AddSingleton<INotificationInboxStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
+            services.AddSingleton<INotificationRealtimeStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
             services.AddSingleton<IWatchSubscriptionStore, PostgresWatchSubscriptionStore>();
             services.AddSingleton<ICardReminderStore, PostgresCardReminderStore>();
             services.AddSingleton<ICardReminderJobPublisher, PostgresCardReminderJobPublisher>();
