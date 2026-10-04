@@ -72,8 +72,11 @@ failure and unrecorded fixtures are numbered 067–069.
 
 - Verify the new authorized command and rollback fixtures execute successfully
   in the full immutable release pipeline.
-- Reconcile Watch, Checklist, Attachment, cover and comment current admission
-  through their stable Card relationship with explicit movement tests.
+- New HTTP and exact-image consumer cases now preserve Checklist/item, URL
+  attachment and comment records plus personal Card Watch identity; source-only
+  readers and edits are refused under current private destination admission.
+  Their new execution is pending. File downloads, previews and covers still need
+  explicit moved-entity coverage.
 - Update notification admission/projection: the existing inbox joins current Card
   Board to historical source Board, so moved notifications remain hidden until
   a current-authorized projection is implemented.

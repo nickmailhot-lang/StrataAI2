@@ -82,6 +82,67 @@ public sealed partial class ApiHostTests
         Assert.Equal(7, members.GetProperty("cardVersion").GetInt64()); Assert.Single(members.GetProperty("items").EnumerateArray());
     }
 
+    [Fact]
+    public async Task PRD_08_Moved_Card_keeps_children_and_watch_identity_but_rechecks_current_destination_access()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct); var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Moved children", "Stable body", null, DateTimeOffset.UtcNow, ct);
+        var checklistPath = $"/cards/{card.Id}/checklists";
+        using var created = await Mutate(owner, HttpMethod.Post, checklistPath, new CreateChecklistInput("Stable checklist", 1));
+        Assert.Equal(HttpStatusCode.OK, created.StatusCode);
+        var checklist = (await created.Content.ReadFromJsonAsync<ChecklistChange>(ct))!.Checklist;
+        var itemPath = $"{checklistPath}/{checklist.Id}/items";
+        using var added = await Mutate(owner, HttpMethod.Post, itemPath, new CreateChecklistItemInput("Stable item", 2, 1));
+        Assert.Equal(HttpStatusCode.OK, added.StatusCode);
+        var item = (await added.Content.ReadFromJsonAsync<ChecklistItemChange>(ct))!.Item;
+        var attachmentPath = $"/cards/{card.Id}/attachments";
+        using var attached = await Mutate(member, HttpMethod.Post, attachmentPath + "/url",
+            new CreateUrlAttachmentInput("Stable URL", "https://example.test/moved", 3));
+        Assert.Equal(HttpStatusCode.OK, attached.StatusCode);
+        var attachment = (await attached.Content.ReadFromJsonAsync<AttachmentChange>(ct))!.Attachment;
+        var commentPath = $"/cards/{card.Id}/comments";
+        using var commented = await Mutate(member, HttpMethod.Post, commentPath, new CreateCardCommentInput("Stable comment", 4));
+        Assert.Equal(HttpStatusCode.OK, commented.StatusCode);
+        var comment = (await commented.Content.ReadFromJsonAsync<CardCommentChange>(ct))!.Comment;
+        var watchPath = $"/watch/CARD/{card.Id}";
+        using var watched = await Mutate(owner, HttpMethod.Put, watchPath + "?version=0", new { });
+        Assert.Equal(HttpStatusCode.OK, watched.StatusCode); var watch = (await watched.Content.ReadFromJsonAsync<WatchState>(ct))!;
+        using var memberWatched = await Mutate(member, HttpMethod.Put, watchPath + "?version=0", new { });
+        Assert.Equal(HttpStatusCode.OK, memberWatched.StatusCode);
+        using var destination = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "Private destination", visibility = "PRIVATE" });
+        Assert.Equal(HttpStatusCode.Created, destination.StatusCode);
+        var board = (await destination.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var parent = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/lists", new { name = "Destination" });
+        var list = (await parent.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var moved = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/move", new { sourceBoardId = f.Board, destinationListId = list, expectedVersion = 5 });
+        Assert.Equal(HttpStatusCode.OK, moved.StatusCode);
+        var current = (await work.FindCardAsync(card.Id, ct))!;
+        Assert.Equal(board, current.BoardId); Assert.Equal(6, current.Version); Assert.Equal(card.Description, current.Description);
+        var checklists = (await owner.GetFromJsonAsync<ChecklistPage>(checklistPath, ct))!;
+        Assert.Equal(board, checklists.BoardId); Assert.Equal(6, checklists.CardVersion); Assert.Equal(checklist.Id, Assert.Single(checklists.Items).Checklist.Id);
+        var items = (await owner.GetFromJsonAsync<ChecklistItemPage>(itemPath, ct))!;
+        Assert.Equal(board, items.BoardId); Assert.Equal(item, Assert.Single(items.Items));
+        var attachments = (await owner.GetFromJsonAsync<AttachmentPage>(attachmentPath, ct))!;
+        Assert.Equal(board, attachments.BoardId); Assert.Equal(attachment, Assert.Single(attachments.Items));
+        var comments = (await owner.GetFromJsonAsync<CardCommentPage>(commentPath, ct))!;
+        Assert.Equal(board, comments.BoardId); Assert.Equal(comment, Assert.Single(comments.Items));
+        var currentWatch = (await owner.GetFromJsonAsync<WatchState>(watchPath, ct))!;
+        Assert.Equal(board, currentWatch.BoardId); Assert.Equal(watch.SubscriptionId, currentWatch.SubscriptionId);
+        Assert.Equal(watch.Version, currentWatch.Version); Assert.True(currentWatch.Watching);
+        foreach (var path in new[] { checklistPath, itemPath, attachmentPath, commentPath, watchPath })
+        {
+            using var refused = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, refused.StatusCode);
+            Assert.DoesNotContain("Stable", await refused.Content.ReadAsStringAsync(ct));
+        }
+        using var oldSource = await member.GetAsync($"/boards/{f.Board}", ct); Assert.Equal(HttpStatusCode.OK, oldSource.StatusCode);
+        using var refusedEdit = await Mutate(member, HttpMethod.Patch, $"{commentPath}/{comment.Id}", new EditCardCommentInput("Denied", 6, 1));
+        Assert.Equal(HttpStatusCode.NotFound, refusedEdit.StatusCode);
+        Assert.Equal(comment, Assert.Single((await owner.GetFromJsonAsync<CardCommentPage>(commentPath, ct))!.Items));
+        Assert.Equal(current, await work.FindCardAsync(card.Id, ct));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

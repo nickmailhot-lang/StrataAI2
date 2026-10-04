@@ -364,3 +364,11 @@ the removed editor and does not invoke archived-detail denial for that pending
 move. Final 42 related unit/Board checks and an explicit recovery integration
 case passed; two native keyboard/mobile scenarios are discovered but require
 Linux immutable-image execution. PRD-08/15 remain open.
+
+
+Cross-Board consumer continuation adds HTTP and mandatory exact-image cases for
+stable Checklist/item, URL attachment, comment and personal Watch records with
+current destination admission. Former source members retain source Board access
+but cannot read/edit moved private Card children. Local full managed compilation
+and shell syntax pass; new Linux execution is required. No percentage reduction
+or issue closure is inferred from compilation alone.
