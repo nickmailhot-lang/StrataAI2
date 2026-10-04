@@ -94,7 +94,10 @@ function Archive({ org, board }: { org: string; board: string }) {
   });
   useEffect(() => {
     mounted.current = true; void load(null, []);
+    const reconnect = () => { if (document.visibilityState !== 'hidden') invalidate(); };
+    window.addEventListener('online', reconnect);
     return () => { mounted.current = false; read.current?.abort(); write.current?.abort();
+      window.removeEventListener('online', reconnect);
       if (focusFrame.current !== undefined) cancelAnimationFrame(focusFrame.current); };
   }, [org, board]);
   useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: board, invalidate: () => invalidate(), status: setLive }) : undefined,

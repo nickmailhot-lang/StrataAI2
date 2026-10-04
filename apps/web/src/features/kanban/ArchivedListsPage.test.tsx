@@ -48,6 +48,17 @@ it('preserves the archive return focus through a real-time read after acknowledg
   await waitFor(() => expect(check).toHaveFocus());
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); vi.clearAllMocks(); });
+it('rechecks archive authority when online and removes reconnect recovery after unmount', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply({ detail: 'private reconnect denial' }, 403));
+  const view = mount(fetch); await screen.findByRole('button', { name: 'Restore Planning list' });
+  fireEvent(window, new Event('online'));
+  await screen.findByText('Archived List administration is unavailable.');
+  expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(screen.queryByText('private reconnect denial')).not.toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledTimes(2);
+  view.unmount(); fireEvent(window, new Event('online'));
+  await act(async () => {}); expect(fetch).toHaveBeenCalledTimes(2);
+});
 it('coalesces repeated live invalidations during a read and admits the latest archive afterward', async () => {
   let finish!: (value: Response) => void;
   const latest = { ...page, items: [{ ...row, list: { ...list, name: 'Latest archive', version: 2 } }] };

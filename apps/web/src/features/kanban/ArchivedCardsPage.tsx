@@ -112,7 +112,10 @@ function Archive({ org, board }: { org: string; board: string }) {
     if (read.current) queued.current = true; else void load(position.current.cursor, position.current.history);
   });
   useEffect(() => { mounted.current = true; void load(null, []);
+    const reconnect = () => { if (document.visibilityState !== 'hidden') invalidate(); };
+    window.addEventListener('online', reconnect);
     return () => { mounted.current = false; read.current?.abort(); write.current?.abort();
+      window.removeEventListener('online', reconnect);
       if (focusFrame.current !== undefined) cancelAnimationFrame(focusFrame.current); }; }, [org, board]);
   useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: board, invalidate: () => invalidate(), status: setLive }) : undefined, [org, board, subscribed]);
   useEffect(() => { if (!retryRead || reading) return; const timer = setTimeout(() => invalidate(), 10_000); return () => clearTimeout(timer); }, [retryRead, reading]);
