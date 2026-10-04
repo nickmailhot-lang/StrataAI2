@@ -222,3 +222,18 @@ Shell syntax passes locally; actual execution is a required release step. This
 setup measures API read capacity; it does not claim actual audited history birth,
 a browser rendering budget, exhaustive 100,000-event enumeration or a retention
 policy that silently discards old events.
+
+Internal activity retains its append-only, body-free history without an automatic
+age cutoff. The API runtime has SELECT/INSERT journal permissions; the Worker
+can only read delivery fields and update `ready_at`. There is no Work journal
+purge job or DELETE grant. Soft entity/account lifecycle preserves historical
+identities, and every read still requires current source/target visibility and
+personal ownership. A cursor expires after 15 minutes; it does not expire the
+underlying history. A new session and freshly admitted continuation can page old
+sources. A managed HTTP scenario advances a controlled clock five years after
+66 real Card history mutations, verifies the old session and cursor are refused,
+then uses fresh authentication to read all 67 old/current events. This is Demo
+HTTP/clock evidence pending Linux CI execution, not a real five-year deployment
+or a new configurable retention/erasure policy. Cross-PRD data-retention changes
+must preserve explicitly approved activity/audit rules rather than silently
+purging immutable sources.
