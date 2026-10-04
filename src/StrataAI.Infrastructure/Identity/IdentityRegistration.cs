@@ -74,6 +74,7 @@ public static class IdentityRegistration
             services.AddSingleton<IInvitationRegistrationProofStore, PostgresInvitationRegistrationProofStore>();
             services.AddSingleton<IAccountDeactivationOwnership, PostgresAccountDeactivationOwnership>();
             services.AddSingleton<IIdentityStore, PostgresIdentityStore>();
+            services.AddSingleton<IUserMentionHandleStore, PostgresUserMentionHandleStore>();
             services.AddSingleton<IIdentityUnitOfWork, PostgresIdentityUnitOfWork>();
             services.AddSingleton<IIdentityProfileReplayStore, PostgresIdentityProfileReplayStore>();
             services.AddSingleton<IIdentityRevocationReplayStore, PostgresIdentityRevocationReplayStore>();

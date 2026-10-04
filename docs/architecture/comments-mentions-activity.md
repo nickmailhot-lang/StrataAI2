@@ -317,3 +317,30 @@ warning-as-error compilation and shell syntax validation are the available
 local checks; PostgreSQL execution is required in Linux CI before a storage
 pass is claimed. Full mentions, notifications, activity and acceptance remain
 unfinished; existing comment HTTP still treats mention-like text literally.
+
+Registry migration a635fcb passes its complete PostgreSQL integration job
+111323487289 in run 37164139775. Actual logs confirm canonical/default backfill,
+subject/CAS guards, immutable aliases, bounded reservations, deactivation
+retention and restricted privileges, alongside ordered repeat/upgrade and
+serialized-runner checks. Web quality also passes. This is storage evidence,
+not complete immutable-image/browser/security release acceptance.
+
+The Production account adapter now requires an owning identity transaction,
+reads the exact requested account, normalizes claims, rejects reserved/foreign
+generated handles, locks the current registry row and checks its revision.
+Equal normalized claims preserve history; changes advance exactly one revision
+at database microsecond precision. Uniqueness and policy refusals use savepoints
+so they return stable errors without poisoning the caller's transaction. An
+owning transaction refusal rolls back both the current handle and reservation.
+This adapter does not authenticate the supplied account argument; the future
+current-session Application command must prove ownership before invoking it.
+
+A new actual C# restricted-login contract uses the existing Production identity
+unit with explicitly synthetic actor eligibility. It tests scope refusal,
+canonical default/history, normalization, stale/past revisions, no-op, invalid
+names, atomic rollback, concurrent two-account collisions, recovery reads after
+failed SQL, retained/former/default reclaim and the 32-reservation policy.
+Compilation passes; its Linux execution remains pending until its own CI job
+confirms the contract. Demo parity, account setting receipts/audit/events,
+current-session proof, scoped teammate lookup, mention notification producers,
+mass-mention abuse controls and full activity/acceptance remain outstanding.
