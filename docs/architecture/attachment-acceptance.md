@@ -679,3 +679,16 @@ can publish there. Withdrawal of destination membership refuses the old retry
 before provider I/O. Stored measurements are an explicit server-owned fixture;
 this host test does not claim PostgreSQL or real object-provider execution.
 The solution compiles with zero warnings/errors; Linux execution is pending CI.
+
+Published file upload receipts now retain their original Board and Card revision
+after cross-Board movement. Replay plans original/current Board command gates in
+canonical order, requires current edit eligibility and active lifecycle in both,
+and rechecks current Card/List routing after waiting. It returns the original
+receipt without another upload, scan job, audit, event or Card revision. The
+API-host transport contract covers movement, destination withdrawal/restoration,
+and original source withdrawal while destination options remain accessible.
+The restricted PostgreSQL publication contract covers immutable recovery and
+original/current Board archival independently, with unchanged publication effect
+counts. Its routing transitions are explicit administrator fixtures; HTTP actor
+admission remains the API-host contract. Compilation passes with zero warnings
+and errors; actual new Linux API/PostgreSQL execution remains pending CI.

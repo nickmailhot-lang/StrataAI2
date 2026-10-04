@@ -159,11 +159,33 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.Conflict, refused.StatusCode); Assert.Contains("idempotency_key_reused", await refused.Content.ReadAsStringAsync(ct));
         var page = (await owner.GetFromJsonAsync<AttachmentPage>(path, ct))!; Assert.Equal(change.Attachment, Assert.Single(page.Items));
         Assert.Equal("Preserved", (await work.FindCardAsync(card.Id, ct))!.Description);
+        using var destinationResponse = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "Published file destination", visibility = "PRIVATE" });
+        var destination = (await destinationResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var grant = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, grant.StatusCode);
+        using var destinationList = await Mutate(owner, HttpMethod.Post, $"/boards/{destination}/lists", new { name = "Published parent" });
+        var list = (await destinationList.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var moved = await Mutate(member, HttpMethod.Post, $"/cards/{card.Id}/move",
+            new { sourceBoardId = f.Board, destinationListId = list, expectedVersion = 2 });
+        Assert.Equal(HttpStatusCode.OK, moved.StatusCode); var movedCard = (await work.FindCardAsync(card.Id, ct))!;
+        using var movedRetry = FileRequest(path, bytes, key); using var movedReceipt = await member.SendAsync(movedRetry, ct);
+        Assert.Equal(HttpStatusCode.OK, movedReceipt.StatusCode); Assert.Equal(receipt, await movedReceipt.Content.ReadAsStringAsync(ct));
+        Assert.Equal(movedCard, await work.FindCardAsync(card.Id, ct)); Assert.Equal(1, objects.Writes); Assert.Equal(0, objects.Reads);
+        using var destinationRemoval = await Mutate(owner, HttpMethod.Delete, $"/boards/{destination}/members/{f.Recipient}", new { });
+        Assert.Equal(HttpStatusCode.NoContent, destinationRemoval.StatusCode);
+        using var hiddenRetry = FileRequest(path, bytes, key); using var hiddenReceipt = await member.SendAsync(hiddenRetry, ct);
+        Assert.Equal(HttpStatusCode.NotFound, hiddenReceipt.StatusCode); Assert.Equal(1, objects.Writes); Assert.Equal(0, objects.Reads);
+        using var restoredGrant = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, restoredGrant.StatusCode);
+        using var restoredRetry = FileRequest(path, bytes, key); using var restoredReceipt = await member.SendAsync(restoredRetry, ct);
+        Assert.Equal(HttpStatusCode.OK, restoredReceipt.StatusCode); Assert.Equal(receipt, await restoredReceipt.Content.ReadAsStringAsync(ct));
         using var removed = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         using var revoked = FileRequest(path, bytes, key); using var revokedResponse = await member.SendAsync(revoked, ct);
         Assert.Equal(HttpStatusCode.NotFound, revokedResponse.StatusCode); Assert.Equal(1, objects.Writes);
-        using var revokedOptions = await member.GetAsync(optionsPath, ct); Assert.Equal(HttpStatusCode.NotFound, revokedOptions.StatusCode);
+        // Destination access still exists; it cannot disclose the original source receipt.
+        using var currentOptions = await member.GetAsync(optionsPath, ct); Assert.Equal(HttpStatusCode.OK, currentOptions.StatusCode);
+        Assert.Equal(movedCard, await work.FindCardAsync(card.Id, ct)); Assert.Equal(0, objects.Reads);
     }
 
     [Fact]

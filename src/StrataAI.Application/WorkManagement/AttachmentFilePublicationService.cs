@@ -22,14 +22,14 @@ public sealed class AttachmentFilePublicationService(IWorkManagementStore work, 
             WorkCommand.Create(actor, retryKey == Guid.Empty ? null : retryKey, "AttachmentFilePublish", cardId, new { uploadId, retryKey }, "card_not_found"),
             async receipt =>
             {
-                if (!await Admit()) return false;
-                if (receipt is null) return true;
+                if (receipt is null) return await Admit();
+                if (!await AttachmentAdmission.CheckReceiptAsync(work, organizations, boards, hint, receipt.BoardId, actor, ct)) return false;
                 var upload = await uploads.FindUploadByRetryAsync(hint.OrganizationId, actor, retryKey, ct);
                 var current = await attachments.FindFileAttachmentAsync(hint.OrganizationId, cardId, uploadId, ct);
                 return upload is { State: AttachmentUploadState.Published } && upload.Id == uploadId && upload.CardId == cardId
                     && current is not null && current.Metadata.UploaderId == actor
                     && current.Integrity.Sha256 == upload.ExpectedSha256 && current.Integrity.SizeBytes == upload.ExpectedSizeBytes
-                    && receipt.OrganizationId == hint.OrganizationId && receipt.BoardId == hint.BoardId && receipt.CardId == cardId
+                    && receipt.OrganizationId == hint.OrganizationId && receipt.CardId == cardId
                     && receipt.CardVersion == upload.OriginalCardVersion + 1 && receipt.Attachment.Id == uploadId
                     && receipt.Attachment.OrganizationId == hint.OrganizationId && receipt.Attachment.CardId == cardId
                     && receipt.Attachment.UploaderId == actor && receipt.Attachment.Kind == AttachmentKind.File;

@@ -251,6 +251,46 @@ internal static class AttachmentPublicationContract
         // Download preparation is server-only and cannot make quarantine bytes
         // available. Verdict transitions below are explicit admin fixtures;
         // real Worker verdict/lease execution has its separate contract.
+        // Trusted routing fixture around the real restricted publication command.
+        // Actual authorized movement/session behavior has API-host coverage.
+        var receiptBoard = Guid.NewGuid(); var receiptList = Guid.NewGuid();
+        await using (var moveReceipt = new NpgsqlCommand("""
+            INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES(@destination,@tenant,'Receipt destination',@at,@at);
+            INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
+              VALUES(@destinationList,@tenant,@destination,'Receipt parent','500000000000000000000000000000',@at,@at);
+            UPDATE cards SET board_id=@destination,list_id=@destinationList WHERE tenant_id=@tenant AND id=@card;
+            """, admin))
+        {
+            moveReceipt.Parameters.AddWithValue("destination", receiptBoard); moveReceipt.Parameters.AddWithValue("destinationList", receiptList);
+            moveReceipt.Parameters.AddWithValue("tenant", tenant); moveReceipt.Parameters.AddWithValue("at", clock.UtcNow);
+            moveReceipt.Parameters.AddWithValue("card", card); await moveReceipt.ExecuteNonQueryAsync(ct);
+        }
+        async Task ReceiptBoardState(Guid id, bool archived)
+        {
+            await using var change = new NpgsqlCommand("UPDATE boards SET lifecycle_state=@state,archived_at=@archived WHERE tenant_id=@tenant AND id=@id;", admin);
+            change.Parameters.AddWithValue("state", archived ? "ARCHIVED" : "ACTIVE");
+            change.Parameters.AddWithValue("archived", NpgsqlTypes.NpgsqlDbType.TimestampTz, archived ? clock.UtcNow : DBNull.Value);
+            change.Parameters.AddWithValue("tenant", tenant); change.Parameters.AddWithValue("id", id); await change.ExecuteNonQueryAsync(ct);
+        }
+        replay = await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-moved-replay", ct);
+        Require(replay.Succeeded && JsonSerializer.Serialize(replay) == JsonSerializer.Serialize(created), "Moved publication lost its immutable original acknowledgment.");
+        await Effects(2, 1);
+        await ReceiptBoardState(board, true);
+        Require((await admission.GetOptionsAsync(card, user, ct)).Succeeded, "Destination fixture was unavailable after original Board archival.");
+        Require((await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-source-archived", ct)).ErrorCode == "card_not_found",
+            "Current destination access bypassed original receipt Board admission.");
+        await ReceiptBoardState(board, false); await ReceiptBoardState(receiptBoard, true);
+        Require((await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-destination-archived", ct)).ErrorCode == "card_not_found",
+            "Original receipt Board access bypassed current destination admission.");
+        await ReceiptBoardState(receiptBoard, false);
+        replay = await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-restored-moved-replay", ct);
+        Require(replay.Succeeded && JsonSerializer.Serialize(replay) == JsonSerializer.Serialize(created), "Restored scopes changed original publication acknowledgment.");
+        await Effects(2, 1);
+        await using (var restoreRoute = new NpgsqlCommand("UPDATE cards SET board_id=@board,list_id=@list WHERE tenant_id=@tenant AND id=@card;", admin))
+        {
+            restoreRoute.Parameters.AddWithValue("board", board); restoreRoute.Parameters.AddWithValue("list", list);
+            restoreRoute.Parameters.AddWithValue("tenant", tenant); restoreRoute.Parameters.AddWithValue("card", card); await restoreRoute.ExecuteNonQueryAsync(ct);
+        }
         var downloads = provider.GetRequiredService<AttachmentDownloadAdmissionService>();
         Require((await downloads.AdmitAsync(card, upload.Id, user, ct)).ErrorCode == "card_not_found", "Pending file obtained download admission.");
         Require((await downloads.AdmitAsync(card, upload.Id, outsider, ct)).ErrorCode == "card_not_found", "Outsider obtained download admission.");
