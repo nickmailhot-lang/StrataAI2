@@ -81,6 +81,16 @@ internal static class CardMentionMemberStoreContract
             Require(shared.Count == 1 && shared[0].UserId == users[0], "Explicit shared Board participant did not resolve in its own tenant.");
             var exact = await Scope(tenant, () => store.ResolveAsync(tenant, board, new[] { names[0], names[0] }, true, ct));
             Require(exact.Count == 1, "Repeated targets duplicated an account.");
+            var planning = new CardCommentMentionPlanning(store, new(false, true, 12, TimeSpan.FromDays(1), TimeSpan.FromHours(1)));
+            var planned = await Scope(tenant, () => planning.ResolveAsync(tenant, board, users[0],
+                $"  @{names[0]} @{names[1]} @{names[2]} @{names[2]} @{names[25]} @{names[26]} @{names[27]} @{names[28]} @{names[29]} @u_{users[0]:N} @card @board  ", [users[1]], ct));
+            Require(planned.Succeeded && planned.Value!.Recipients.References.Count == 4
+                && planned.Value.Recipients.Current.SequenceEqual(new[] { users[0], users[1], users[2] }.Order())
+                && planned.Value.Recipients.Added.SequenceEqual(new[] { users[2] })
+                && planned.Value.HasCardMention && planned.Value.HasBoardMention,
+                "Current-scoped comment plan disclosed an ineligible/former recipient, lost reference identity or repeated/self notification delta.");
+            var excess = await Scope(tenant, () => planning.ResolveAsync(tenant, board, users[0], string.Join(' ', names.Take(21).Select(name => "@" + name)), [], ct));
+            Require(excess.ErrorCode == "invalid_comment_mentions", "Unbounded resolved comment recipients were admitted.");
             await Scope(tenant, async () =>
             {
                 foreach (var invalid in new[] { "@member", "nïck", "1name", new string('x', 41) })

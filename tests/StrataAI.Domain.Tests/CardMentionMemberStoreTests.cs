@@ -85,6 +85,19 @@ public sealed class CardMentionMemberStoreTests
         Assert.True(await identity.DeactivateUserAsync(users[3], at.AddSeconds(3), ct));
         Assert.Empty(await Scoped(org, () => store.ResolveAsync(org, board.Id, ["member_01", "member_02", "member_03"], true, ct)));
 
+        var planning = provider.GetRequiredService<CardCommentMentionPlanning>();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => planning.ResolveAsync(org, board.Id, users[0], "@member_04", [], ct));
+        var planned = await Scoped(org, () => planning.ResolveAsync(org, board.Id, users[0],
+            "  @renamed_member @member_04 @member_05 @member_05 @member_00 @member_01 @member_02 @member_03 @card @board  ", [users[4]], ct));
+        Assert.True(planned.Succeeded); Assert.Equal(4, planned.Value!.Recipients.References.Count);
+        Assert.Equal(new[] { users[0], users[4], users[5] }.Order(), planned.Value.Recipients.Current);
+        Assert.Equal(users[5], Assert.Single(planned.Value.Recipients.Added));
+        Assert.True(planned.Value.HasCardMention); Assert.True(planned.Value.HasBoardMention);
+        Assert.Equal(planned.Value.Content.Trim(), planned.Value.Content);
+        var excess = string.Join(' ', Enumerable.Range(4, 21).Select(i => $"@member_{i:D2}"));
+        Assert.Equal("invalid_comment_mentions", (await Scoped(org, () => planning.ResolveAsync(org, board.Id, users[0], excess, [], ct))).ErrorCode);
+        Assert.Empty((await Scoped(org, () => planning.ResolveAsync(org, board.Id, users[0], "@member_04", [users[4]], ct))).Value!.Recipients.Added);
+
         var list = await work.CreateListAsync(board.Id, Guid.NewGuid(), "List", null, at, ct);
         var card = await work.CreateCardAsync(list.Id, Guid.NewGuid(), "Card", null, null, at, ct);
         var options = provider.GetRequiredService<CardMentionOptionsService>();

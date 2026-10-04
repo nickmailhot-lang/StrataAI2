@@ -761,3 +761,40 @@ quality. This includes the corrected current COMMENT options Application case
 and the actual-cookie API case. Immutable image build is still running; complete
 release/native/mass-mention/notification/activity/performance acceptance remains
 open.
+
+## Bounded recipient identity and edit delta
+
+CommentMentionRecipients captures immutable normalized-body UTF-16 references,
+current distinct stable recipient IDs and newly added non-self IDs. The prior
+committed revision's recipient snapshot must be unique, nonempty IDs and at
+most 20 accounts; current resolution retains the same 20-account bound. Editing
+without adding a stable recipient does not repeat a notification, even if that
+recipient's handle changes. Removing and later readding an account after an
+intervening snapshot without it creates a new delta. Self references retain
+identity in the snapshot while never creating a notification. Repeated tokens
+retain their own offsets but collapse to one recipient/delta. Unresolved handles,
+former aliases and lexical email/URL text remain literal.
+
+CardCommentMentionPlanning uses the owning Work current-handle adapter and the
+actual verified-email policy to prepare this delta. It exposes @card/@board as
+explicit declarations needing separate mass authorization/confirmation/fanout
+and rate policy; they do not become username recipients. The planner has no
+public route and does not publish notifications or grant later authorization.
+The existing comment command still treats mention-like text literally until
+snapshot persistence, current-target revalidation and notifications are wired
+atomically with the comment/event/audit/receipt. The durable snapshot must not
+retain comment body and must remain available as the preceding revision's
+identity comparison, independently of mutable usernames or deactivated profiles.
+
+Domain tests cover edit/rename/duplicate/self/removal/readdition semantics,
+immutable copies, bounds/history refusal and nonauthoritative declarations.
+The actual Demo adapter fixture invokes the Application planner inside its
+owning transaction, checks current-only renamed/removed/deactivated recipients,
+identity deltas, mass flags, repeated original recipients and the 21-recipient
+refusal. The restricted PostgreSQL contract invokes the same planner with actual
+tenant storage, checking all membership/account/email/former-alias exclusions,
+exact identities/offset count, edit/self delta and oversized fanout refusal.
+Admission in these fixture units is synthetic; this is not Production cookie
+publication or native selector proof. Full local warning-as-error compilation
+passes. Linux execution for these new additions remains pending. No complete
+PRD acceptance or mention notification publication is claimed.
