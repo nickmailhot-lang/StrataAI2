@@ -40,6 +40,16 @@ must enforce the applicable archive-read permission before invoking this store.
 This store is not yet exposed through a search endpoint and does not replace
 fresh Board admission or actor verification.
 
+The Application Board-search read now holds the owning Board read scope,
+freshly admits view access before validation/content reads, and verifies the
+actor again before returning. Results include canonical Card/date fields,
+Board and List names, and up to 50 active labels/eligible assignees with explicit
+overflow flags. The document source kind is currently CARD; future comment
+projections can use a distinct kind instead of overwriting Card descriptions.
+An explicit archived search remains a read under view admission; it grants no
+archive, restore or edit permission. Cross-Organization coordination and the
+public search endpoint/UI are still outstanding.
+
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and

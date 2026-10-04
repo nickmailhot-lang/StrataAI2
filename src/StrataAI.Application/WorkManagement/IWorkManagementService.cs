@@ -2,6 +2,8 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementService
 {
+    Task<WorkOperation<BoardSearchPage>> SearchBoardAsync(Guid boardId, GlobalSearchBinding binding,
+        Guid? after = null, CancellationToken cancellationToken = default);
     Task<WorkOperation<CardRecord>> CopyCardAsync(Guid cardId, Guid sourceBoardId, Guid destinationListId,
         Guid actorId, string title, long expectedVersion, string correlationId, CancellationToken cancellationToken = default);
     Task<WorkOperation<CardMemberOptionsPage>> ListCardMemberOptionsAsync(Guid cardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default);

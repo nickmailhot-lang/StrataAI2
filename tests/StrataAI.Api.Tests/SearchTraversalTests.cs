@@ -20,6 +20,20 @@ public sealed partial class ApiHostTests
         Assert.NotNull(await store.SetCardLabelAsync(first.Id, label.Id, true, 1, now, ct));
         Assert.NotNull(await store.SetCardMemberAsync(first.Id, fixture.Owner.Id, fixture.Owner.Id, true, 2, now, ct));
         var binding = new GlobalSearchBinding(fixture.Owner.Id, "NEEDLE", "prior", "Board command", true, GlobalSearchLifecycleScope.Active);
+        var service = app.Services.GetRequiredService<IWorkManagementService>();
+        var admitted = await service.SearchBoardAsync(fixture.Board.Id, binding, cancellationToken: ct);
+        Assert.True(admitted.Succeeded);
+        var document = Assert.Single(admitted.Value!.Items);
+        Assert.Equal("CARD", document.SourceKind); Assert.Equal(first.Id, document.Card.Id);
+        Assert.Equal(fixture.Board.Name, document.BoardName); Assert.Equal(list.Name, document.ListName);
+        Assert.Equal(label.Id, Assert.Single(document.Labels).Id);
+        Assert.Equal(fixture.Owner.Id, Assert.Single(document.Members).UserId);
+        Assert.False(document.HasMoreLabels); Assert.False(document.HasMoreMembers);
+        Assert.Null(admitted.Value.NextCard);
+        Assert.Equal("invalid_search", (await service.SearchBoardAsync(fixture.Board.Id,
+            binding with { Keyword = new string('x', 161) }, cancellationToken: ct)).ErrorCode);
+        Assert.Equal("board_not_found", (await service.SearchBoardAsync(fixture.Board.Id,
+            binding with { ActorId = Guid.NewGuid(), Keyword = new string('x', 161) }, cancellationToken: ct)).ErrorCode);
         Assert.Equal(first.Id, Assert.Single(await store.SearchBoardCardsAsync(fixture.Board.Id, binding, false, null, ct)).Id);
         Assert.Empty(await store.SearchBoardCardsAsync(fixture.Board.Id, binding with { Keyword = "Other" }, false, null, ct));
         Assert.Equal(new[] { first.Id, second.Id }.Order(), (await store.SearchBoardCardsAsync(fixture.Board.Id,
@@ -27,6 +41,10 @@ public sealed partial class ApiHostTests
         Assert.True((await app.Services.GetRequiredService<IWorkManagementService>().SetListLifecycleAsync(
             list.Id, fixture.Owner.Id, WorkItemLifecycleState.Archived, 1, "search-scope", ct)).Succeeded);
         Assert.Empty(await store.SearchBoardCardsAsync(fixture.Board.Id, binding, false, null, ct));
+        Assert.Empty((await service.SearchBoardAsync(fixture.Board.Id, binding, cancellationToken: ct)).Value!.Items);
+        var archivedRead = await service.SearchBoardAsync(fixture.Board.Id,
+            binding with { Scope = GlobalSearchLifecycleScope.Archived }, cancellationToken: ct);
+        Assert.True(archivedRead.Succeeded); Assert.Equal(first.Id, Assert.Single(archivedRead.Value!.Items).Card.Id);
         Assert.Equal(first.Id, Assert.Single(await store.SearchBoardCardsAsync(fixture.Board.Id,
             binding with { Scope = GlobalSearchLifecycleScope.Archived }, false, null, ct)).Id);
         Assert.Empty(await store.SearchBoardCardsAsync(Guid.NewGuid(), binding, false, null, ct));
