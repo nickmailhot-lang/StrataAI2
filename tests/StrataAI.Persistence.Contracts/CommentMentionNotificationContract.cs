@@ -41,8 +41,10 @@ internal static class CommentMentionNotificationContract
                 }
                 catch (InvalidOperationException e) when (e.Message == "Assignment notification event was unavailable or reused.") { }
                 await events.AppendAsync(change, ct);
+                await notifications.AppendCardMentionsAsync(change, [recipient, author], ct);
                 await notifications.AppendCardMentionAsync(change, recipient, ct);
                 await notifications.AppendCardMentionAsync(change, recipient, ct);
+                await notifications.AppendCardMentionsAsync(change, [recipient, author], ct);
                 var items = await notifications.ListCardNotificationsAsync(tenant, recipient, cancellationToken: ct);
                 var item = items.Single(row => row.EventId == eventId);
                 Require(item.NotificationType == "MENTION_CREATED" && item.CardId == card && item.ActorId == author,
@@ -54,6 +56,12 @@ internal static class CommentMentionNotificationContract
                 {
                     await notifications.AppendCardMentionAsync(change with { Version = change.Version + 1 }, recipient, ct);
                     throw new InvalidOperationException("Mismatched mention source revision was accepted.");
+                }
+                catch (InvalidOperationException e) when (e.Message == "Assignment notification event was unavailable or reused.") { }
+                try
+                {
+                    await notifications.AppendCardMentionsAsync(change with { CreatedAt = change.CreatedAt.AddSeconds(1) }, [recipient], ct);
+                    throw new InvalidOperationException("Mismatched batch source time was accepted.");
                 }
                 catch (InvalidOperationException e) when (e.Message == "Assignment notification event was unavailable or reused.") { }
                 return WorkOperation<bool>.Failure("fixture_refused");

@@ -83,6 +83,20 @@ internal static class CardMentionMemberStoreContract
                 await snapshotStore.AppendSnapshotAsync(snapshot, ct); await snapshotStore.AppendSnapshotAsync(snapshot, ct);
                 Require((await snapshotStore.FindSnapshotAsync(tenant, card, row.Id, row.Version, ct))!.SameAs(snapshot),
                     "Complete group snapshot was truncated, duplicated or changed on read.");
+                var parent = await provider.GetRequiredService<IWorkManagementStore>().FindCardAsync(card, ct);
+                var change = new WorkEvent(Guid.NewGuid(), tenant, board, group[0], "MENTION_CREATED", "Card", card,
+                    parent!.Version, "mass-storage-fixture", row.UpdatedAt);
+                await provider.GetRequiredService<IWorkEventStore>().AppendAsync(change, ct);
+                var notifications = provider.GetRequiredService<IWorkNotificationStore>();
+                await notifications.AppendCardMentionsAsync(change, group, ct);
+                await notifications.AppendCardMentionsAsync(change, group, ct);
+                foreach (var recipient in group.Skip(1))
+                {
+                    var items = await notifications.ListCardNotificationsAsync(tenant, recipient, cancellationToken: ct);
+                    Require(items.Count(item => item.EventId == change.EventId) == 1, "Batch group notification recipient was omitted or duplicated.");
+                }
+                Require(!(await notifications.ListCardNotificationsAsync(tenant, group[0], cancellationToken: ct)).Any(item => item.EventId == change.EventId),
+                    "Batch group actor received a self notification.");
                 return WorkOperation<bool>.Failure("fixture_refused");
             }, ct);
             Require(refusedGroup.ErrorCode == "fixture_refused"

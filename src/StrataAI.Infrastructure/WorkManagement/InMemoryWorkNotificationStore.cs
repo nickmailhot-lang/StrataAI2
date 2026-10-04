@@ -2,7 +2,7 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class InMemoryWorkNotificationStore : IWorkNotificationStore, IDemoWorkTransactionParticipant
+internal sealed class InMemoryWorkNotificationStore(DemoWorkTransactionScope scope) : IWorkNotificationStore, IDemoWorkTransactionParticipant
 {
     public Action CaptureRollback()
     {
@@ -39,6 +39,15 @@ internal sealed class InMemoryWorkNotificationStore : IWorkNotificationStore, ID
         => Append(CardNotification.FromActivity(change, recipientId));
     public Task AppendCardMentionAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
         => Append(CardNotification.FromMention(change, recipientId));
+    public async Task AppendCardMentionsAsync(WorkEvent change, IReadOnlyList<Guid> recipients, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(recipients); cancellationToken.ThrowIfCancellationRequested();
+        if (!scope.Owns(change.OrganizationId)) throw new InvalidOperationException("Mention notifications require the originating command transaction.");
+        _ = CardNotification.FromMention(change, change.ActorId);
+        if (recipients.Any(id => id == Guid.Empty) || recipients.Distinct().Count() != recipients.Count)
+            throw new ArgumentException("Mention notification recipients must be distinct accounts.");
+        foreach (var recipient in recipients) { cancellationToken.ThrowIfCancellationRequested(); await Append(CardNotification.FromMention(change, recipient)); }
+    }
 
     private Task Append(CardNotification? item)
     {

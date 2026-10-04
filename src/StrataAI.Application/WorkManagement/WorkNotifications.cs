@@ -42,6 +42,7 @@ public interface IWorkNotificationStore
     Task AppendCardAssignmentAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
     Task AppendCardActivityAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
     Task AppendCardMentionAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
+    Task AppendCardMentionsAsync(WorkEvent change, IReadOnlyList<Guid> recipients, CancellationToken cancellationToken = default);
 
     // Internal bounded storage window, not an authorized inbox response.
     Task<IReadOnlyList<CardNotification>> ListCardNotificationsAsync(Guid organizationId,

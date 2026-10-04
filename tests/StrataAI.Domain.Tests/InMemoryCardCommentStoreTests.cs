@@ -121,6 +121,8 @@ public sealed class InMemoryCardCommentStoreTests
         public Task AppendCardActivityAsync(WorkEvent change, Guid recipient, CancellationToken ct = default) => inner.AppendCardActivityAsync(change, recipient, ct);
         public async Task AppendCardMentionAsync(WorkEvent change, Guid recipient, CancellationToken ct = default)
         { await inner.AppendCardMentionAsync(change, recipient, ct); if (actor.RefuseMention) actor.Allowed = false; }
+        public async Task AppendCardMentionsAsync(WorkEvent change, IReadOnlyList<Guid> recipients, CancellationToken ct = default)
+        { await inner.AppendCardMentionsAsync(change, recipients, ct); if (actor.RefuseMention) actor.Allowed = false; }
         public Task<IReadOnlyList<CardNotification>> ListCardNotificationsAsync(Guid organization, Guid recipient, Guid? after = null, CancellationToken cancellationToken = default)
             => inner.ListCardNotificationsAsync(organization, recipient, after, cancellationToken);
     }

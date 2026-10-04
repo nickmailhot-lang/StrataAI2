@@ -139,8 +139,7 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                     var mentionEvent = new WorkEvent(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor,
                         "MENTION_CREATED", "Card", cardId, updated.Version, correlationId, now);
                     await events.AppendAsync(mentionEvent, ct);
-                    foreach (var recipient in plan.Recipients.Added)
-                        await notifications.AppendCardMentionAsync(mentionEvent, recipient, ct);
+                    await notifications.AppendCardMentionsAsync(mentionEvent, plan.Recipients.Added, ct);
                 }
                 if (plan is not null)
                 {

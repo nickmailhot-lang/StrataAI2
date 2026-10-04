@@ -1095,3 +1095,21 @@ The username picker head f26494a has now passed every source gate and immutable
 image build in run 37174830018; its container/security jobs remain live. The
 subsequent recipient/session wait fixture 76ff434 has successful web/PostgreSQL
 jobs in run 37175042371 with managed tests still live at the last observation.
+
+Username comment publication now uses the same multi-recipient notification port
+needed by mass fanout. The PostgreSQL adapter performs a set-based insert under
+the exact source event/tenant/Board/Card/actor/revision/time, excludes actor self,
+preserves existing event-recipient identity/read state, and then verifies every
+target in a fresh statement. That second statement also observes an exact
+concurrent duplicate after ON CONFLICT waits; a missing/mismatched source or
+recipient fails the owning transaction. No new external service or delivery
+channel is introduced. Demo requires the owning Work scope for batches and its
+existing rollback participant restores all rows on late refusal/cancellation.
+Current username commands retain the existing actor/recipient final checks.
+
+Mandatory restricted contracts now insert and replay a batch (including self),
+reject changed source time, and publish every >20-member group recipient in a
+synthetic owning scope before deliberately refusing the whole group command.
+Local warning-as-error compilation passes with zero warnings/errors. New Linux
+batch execution is pending; no mass confirmation, quota, actor-policy, native
+scope selection, capacity or whole-FR acceptance is inferred from batch storage.
