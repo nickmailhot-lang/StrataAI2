@@ -1421,3 +1421,22 @@ Watch/Reminder audiences, current account/session, archive/move/deletion and
 mid-read changes before returning a page or cursor. Protected Board/Card APIs,
 interpreter, MUI views/realtime recovery, full pagination/access/performance and
 retention remain unfinished. Estimated PRD-15 remaining work stays **50%**.
+
+The restricted PostgreSQL Board-source contract passed in CI run 37181054874,
+job 111373550021. Its Demo fixture initially omitted command actor
+authorization; 201b7c1/28f598a register a fixture-only authorization instance
+without changing production checks. The corrected Domain gate passed, and the
+28f598a PostgreSQL and web gates passed; complete exact-image CI remains pending.
+
+An internal Card-source window now uses the existing partial Card activity
+index and filters entity type, Card identity and explicit historical Board
+before applying the 51-row limit. Production and Demo retain the same paired
+UTC microsecond timestamp/ID seek contract. Complete Card feeds must enumerate
+and admit all eligible historical source Boards and the current Card context;
+this method is one slice and does not replace that requirement. No endpoint
+discloses these raw sources. Expanded Demo and mandatory restricted PostgreSQL
+contracts exercise 65 tied Card sources, type/identity/Board exclusion and
+separate historical Board slices. Their source setup is synthetic and does not
+prove actual Card movement, HTTP admission or private Watch/Reminder audience
+filtering. Warning-as-error compilation passed; expanded test execution awaits
+CI. Estimated PRD-15 remaining work stays **50%**.

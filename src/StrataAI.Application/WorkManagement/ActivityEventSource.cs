@@ -19,6 +19,11 @@ public interface IActivityEventSourceStore
     // realtime delivery is not ready. At most 51 rows; no offset/full-journal scan.
     Task<IReadOnlyList<ActivityEventSource>> ReadBoardWindowAsync(Guid organizationId, Guid boardId,
         DateTimeOffset? beforeCreatedAt, Guid? beforeEventId, CancellationToken ct = default);
+
+    // One explicit historical Board slice. A complete authorized Card feed
+    // must combine every eligible source Board; this is not current-Board-only history.
+    Task<IReadOnlyList<ActivityEventSource>> ReadCardWindowAsync(Guid organizationId, Guid sourceBoardId, Guid cardId,
+        DateTimeOffset? beforeCreatedAt, Guid? beforeEventId, CancellationToken ct = default);
 }
 
 public static class ActivityEventSourceWindow

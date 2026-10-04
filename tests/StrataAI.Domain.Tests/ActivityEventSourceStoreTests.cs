@@ -29,7 +29,7 @@ public sealed class ActivityEventSourceStoreTests
         registrations.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         registrations.AddStrataAiOrganizations(runtime); registrations.AddStrataAiWorkManagement(runtime);
         using var provider = registrations.BuildServiceProvider();
-        var org = Guid.NewGuid(); var board = Guid.NewGuid(); var actor = Guid.NewGuid();
+        var org = Guid.NewGuid(); var board = Guid.NewGuid(); var actor = Guid.NewGuid(); var card = Guid.NewGuid();
         var at = new DateTimeOffset(2026, 10, 4, 12, 0, 0, TimeSpan.Zero); var email = $"{actor:N}@example.test";
         var identity = provider.GetRequiredService<IIdentityStore>();
         Assert.True(await identity.TryCreateUserAsync(new(actor, email, email.ToUpperInvariant(), "Original actor", null,
@@ -44,13 +44,14 @@ public sealed class ActivityEventSourceStoreTests
             Assert.True(result.Succeeded); return result.Value!;
         }
         await Assert.ThrowsAsync<InvalidOperationException>(() => sources.ReadBoardWindowAsync(org, board, null, null, ct));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sources.ReadCardWindowAsync(org, board, card, null, null, ct));
         var originals = new List<WorkEvent>();
         await Scope(org, async () =>
         {
             for (var index = 1; index <= 65; index++)
             {
                 var source = new WorkEvent(Guid.Parse($"06400000-0000-0000-0000-{index:D12}"), org, board, actor,
-                    "CARD_UPDATED", "Card", Guid.NewGuid(), index, "activity-fixture", at);
+                    "CARD_UPDATED", "Card", card, index, "activity-fixture", at);
                 originals.Add(source); await events.AppendAsync(source, ct);
             }
             return true;
@@ -60,13 +61,28 @@ public sealed class ActivityEventSourceStoreTests
         var anchor = first[49]; var tail = await Scope(org, () => sources.ReadBoardWindowAsync(org, board, anchor.CreatedAt, anchor.EventId, ct));
         Assert.Equal(15, tail.Count); Assert.Equal(65, first.Take(50).Concat(tail).Select(row => row.EventId).Distinct().Count());
         Assert.Equal(first, await Scope(org, () => sources.ReadBoardWindowAsync(org, board, null, null, ct)));
+        var otherBoard = Guid.NewGuid();
+        await Scope(org, async () =>
+        {
+            await events.AppendAsync(originals[0] with { EventId = Guid.NewGuid(), EntityType = "Board", EntityId = board, CreatedAt = at.AddSeconds(1) }, ct);
+            await events.AppendAsync(originals[0] with { EventId = Guid.NewGuid(), EntityId = Guid.NewGuid(), CreatedAt = at.AddSeconds(1) }, ct);
+            await events.AppendAsync(originals[0] with { EventId = Guid.NewGuid(), BoardId = otherBoard, CreatedAt = at.AddSeconds(1) }, ct);
+            return true;
+        });
+        var cardFirst = await Scope(org, () => sources.ReadCardWindowAsync(org, board, card, null, null, ct));
+        Assert.Equal(first, cardFirst);
+        var cardTail = await Scope(org, () => sources.ReadCardWindowAsync(org, board, card, anchor.CreatedAt, anchor.EventId, ct));
+        Assert.Equal(tail, cardTail);
+        Assert.Single(await Scope(org, () => sources.ReadCardWindowAsync(org, otherBoard, card, null, null, ct)));
+        Assert.Empty(await Scope(org, () => sources.ReadCardWindowAsync(org, board, Guid.NewGuid(), null, null, ct)));
+        await Assert.ThrowsAsync<ArgumentException>(() => Scope(org, () => sources.ReadCardWindowAsync(org, board, Guid.Empty, null, null, ct)));
         await Assert.ThrowsAsync<ArgumentException>(() => Scope(org, () => sources.ReadBoardWindowAsync(org, board, at, null, ct)));
         await Assert.ThrowsAsync<ArgumentException>(() => Scope(org, () => sources.ReadBoardWindowAsync(org, board, at.AddTicks(1), anchor.EventId, ct)));
         await Assert.ThrowsAsync<ArgumentException>(() => Scope(org, () => sources.ReadBoardWindowAsync(org, board, at.ToOffset(TimeSpan.FromHours(1)), anchor.EventId, ct)));
         var metadata = Assert.IsAssignableFrom<IDictionary<string, object?>>(first[0].Metadata);
         Assert.Throws<NotSupportedException>(() => metadata.Add("body", "Private comment"));
         var copy = first[0] with { ActorLabel = "Changed view" };
-        Assert.NotEqual(copy, (await Scope(org, () => sources.ReadBoardWindowAsync(org, board, null, null, ct)))[0]);
+        Assert.NotEqual(copy, (await Scope(org, () => sources.ReadCardWindowAsync(org, board, card, null, null, ct)))[0]);
         Assert.NotNull(await identity.UpdateProfileAsync(actor, "Later actor", null, "en", "UTC", 1, at.AddSeconds(1), ct));
         Assert.True(await identity.DeactivateUserAsync(actor, at.AddSeconds(2), ct));
         await Scope(org, async () => { await events.AppendAsync(originals[0], ct); return true; });

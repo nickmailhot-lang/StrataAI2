@@ -48,6 +48,17 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentit
 
     public Task<IReadOnlyList<ActivityEventSource>> ReadBoardWindowAsync(Guid organizationId, Guid boardId,
         DateTimeOffset? beforeCreatedAt, Guid? beforeEventId, CancellationToken ct = default)
+        => ReadWindowAsync(organizationId, boardId, null, beforeCreatedAt, beforeEventId, ct);
+
+    public Task<IReadOnlyList<ActivityEventSource>> ReadCardWindowAsync(Guid organizationId, Guid sourceBoardId, Guid cardId,
+        DateTimeOffset? beforeCreatedAt, Guid? beforeEventId, CancellationToken ct = default)
+    {
+        if (cardId == Guid.Empty) throw new ArgumentException("Activity Card identity is required.");
+        return ReadWindowAsync(organizationId, sourceBoardId, cardId, beforeCreatedAt, beforeEventId, ct);
+    }
+
+    private Task<IReadOnlyList<ActivityEventSource>> ReadWindowAsync(Guid organizationId, Guid boardId, Guid? cardId,
+        DateTimeOffset? beforeCreatedAt, Guid? beforeEventId, CancellationToken ct)
     {
         if (organizationId == Guid.Empty || boardId == Guid.Empty || !scope.Owns(organizationId))
             throw new InvalidOperationException("Activity sources require the owning Work transaction.");
@@ -55,6 +66,7 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentit
         lock (_events)
         {
             var rows = _activity.Values.Where(row => row.OrganizationId == organizationId && row.BoardId == boardId
+                && (!cardId.HasValue || row.EntityType == "Card" && row.EntityId == cardId.Value)
                 && (beforeCreatedAt is null || row.CreatedAt < beforeCreatedAt || row.CreatedAt == beforeCreatedAt
                     && string.CompareOrdinal(row.EventId.ToString("N"), beforeEventId!.Value.ToString("N")) < 0))
                 .OrderByDescending(row => row.CreatedAt).ThenByDescending(row => row.EventId.ToString("N"), StringComparer.Ordinal).Take(ActivityEventSourceWindow.MaximumRows).ToArray();
