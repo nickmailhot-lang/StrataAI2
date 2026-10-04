@@ -1294,3 +1294,18 @@ is refused. This is atomic producer boundary coverage with a controlled roster
 read, not actual concurrent PostgreSQL membership execution. Warning-as-error
 compilation passes locally; managed execution awaits CI. PRD-15 remains open at
 **50% estimated remaining work**.
+
+The required release-image fixture additionally observes the actual full-group
+recipient SQL lock wait for Card and Board scopes across recipient Board
+departure, Organization departure and account deactivation. A separate Board
+keeps these six cases independent of the fanout quota fixture. The command must
+capture the complete roster eligible after the wait: an empty Card assignment
+group or Board actor-only group, retaining no departed-recipient snapshot or
+inbox delivery and consuming no quota. Restoring eligibility before original
+receipt replay must preserve the immutable receipt/history and whole-state
+hash without sending another notification. Membership/Card-assignment setup is
+synthetic; the restricted release-image HTTP command and observed database
+wait are real. Syntax and diff checks pass locally; actual execution is pending.
+This covers eligibility changed before initial roster capture, distinct from
+the controlled final-roster-change refusal test. No closure or performance
+acceptance is inferred; estimated remaining PRD-15 work stays **50%**.

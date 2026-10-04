@@ -166,6 +166,52 @@ test "$(get recipient "$path")" = 404
 
 admin "UPDATE board_members SET status='ACTIVE',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$recipient';
  INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by) VALUES('$org','$board','$card','$recipient','$owner');" >/dev/null
+# Current group eligibility is evaluated after real membership/account waits.
+# Use a separate Board so its empty/self-only publications cannot alter the
+# original Board's quota/fanout assertions. Membership onboarding is synthetic.
+test "$(request owner POST /boards "$(cat /proc/sys/kernel/random/uuid)" "$(jq -nc --arg org "$org" '{organizationId:$org,name:"Group wait boundaries",visibility:"PRIVATE"}')")" = 201
+race_board=$(jq -r '.id' "$scratch/response.json")
+test "$(request owner POST "/boards/$race_board/lists" "$(cat /proc/sys/kernel/random/uuid)" '{"name":"Wait boundaries"}')" = 201
+race_list=$(jq -r '.id' "$scratch/response.json")
+admin "INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+ VALUES(gen_random_uuid(),'$org','$race_board','$recipient','MEMBER','ACTIVE',clock_timestamp(),clock_timestamp());" >/dev/null
+for scope in card board; do
+  for boundary in board organization account; do
+    test "$(request owner POST "/lists/$race_list/cards" "$(cat /proc/sys/kernel/random/uuid)" '{"title":"Current group roster"}')" = 201
+    race_card=$(jq -r '.id' "$scratch/response.json")
+    admin "INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by)
+     VALUES('$org','$race_board','$race_card','$recipient','$owner');" >/dev/null
+    case "$boundary" in
+      board) row="board_members WHERE tenant_id='$org' AND board_id='$race_board' AND user_id='$recipient'"; refused=REMOVED; ;;
+      organization) row="organization_members WHERE tenant_id='$org' AND user_id='$recipient'"; refused=REMOVED; ;;
+      account) row="users WHERE id='$recipient'"; refused=DEACTIVATED; ;;
+    esac
+    race_key=$(cat /proc/sys/kernel/random/uuid)
+    race_body=$(jq -nc --arg scope "$scope" '{content:("Current @"+$scope),cardVersion:1,massMentionConfirmation:{card:($scope=="card"),board:($scope=="board")}}')
+    gate "SELECT 1 FROM $row FOR UPDATE;"
+    request owner POST "/cards/$race_card/comments" "$race_key" "$race_body" > "$scratch/status" & request_pid=$!
+    blocked '%FOR SHARE OF m,o,u;%'
+    release "UPDATE ${row%% WHERE*} SET status='$refused' WHERE ${row#* WHERE };"
+    wait "$request_pid"; request_pid=''
+    test "$(cat "$scratch/status")" = 200
+    jq -e '.changed==true and .cardVersion==2 and .comment.version==1' "$scratch/response.json" >/dev/null
+    race_comment=$(jq -r '.comment.id' "$scratch/response.json")
+    cp "$scratch/response.json" "$scratch/race-receipt.json"
+    test "$(admin "SELECT count(*) FROM comment_mention_recipients WHERE tenant_id='$org' AND comment_id='$race_comment' AND recipient_id='$recipient';")" = 0
+    expected=0; if test "$scope" = board; then expected=1; fi
+    test "$(admin "SELECT recipient_count FROM comment_mention_snapshots WHERE tenant_id='$org' AND comment_id='$race_comment' AND comment_version=1;")" = "$expected"
+    test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND board_id='$race_board';")" = 0
+    test "$(admin "SELECT count(*) FROM mass_mention_reservations WHERE tenant_id='$org' AND board_id='$race_board';")" = 0
+    # Restoring eligibility cannot revise history or send a fresh group on an
+    # exact original receipt; all current rights of the issuing actor still hold.
+    admin "UPDATE ${row%% WHERE*} SET status='ACTIVE' WHERE ${row#* WHERE };" >/dev/null
+    race_after=$(state)
+    test "$(request owner POST "/cards/$race_card/comments" "$race_key" "$race_body")" = 200
+    cmp "$scratch/response.json" "$scratch/race-receipt.json"
+    test "$race_after" = "$(state)"
+  done
+done
+echo 'Exact-image Card/Board groups: verified recipient Board/Organization/account waits use current complete eligibility; restored recipients cannot alter original history, create inbox deliveries or consume quota on replay.'
 # Disposable active/verified membership fixtures make this actual API fanout
 # exceed the 20-name window. Their onboarding is synthetic, not a signup test.
 admin "WITH seeded AS (
