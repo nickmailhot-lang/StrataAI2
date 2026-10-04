@@ -134,3 +134,24 @@ it('automatically recovers another client watch change while the dialog remains 
   await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
   expect(screen.getByText('You are watching this Card.')).toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(4);
 });
+
+it.each([
+  { createdAt: '2026-02-30T12:00:00Z', updatedAt: '2026-03-02T12:00:00Z' },
+  { createdAt: '2026-10-02T12:00:00.000002Z', updatedAt: '2026-10-02T12:00:00.000001Z' },
+  { createdAt: '10/02/2026 12:00:00', updatedAt: '10/02/2026 12:00:01' },
+  { createdAt: '2026-10-02T12:00:00Z', updatedAt: '2026-10-02T13:00:00+01:00' },
+])('withholds watch state with invalid or precisely reversed server timestamps (%j)', async dates => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false, ...dates })));
+  mount(); fireEvent.click(screen.getByRole('button', { name: 'Card watching' }));
+  await screen.findByText('Unable to check current watching. Try again.');
+  expect(screen.queryByText('You are watching this Card.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Unwatch Card' })).not.toBeInTheDocument();
+});
+
+it('accepts canonical microsecond watch timestamps without rounding their revision order', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false,
+    createdAt: '2026-10-02T12:00:00.000001Z', updatedAt: '2026-10-02T12:00:00.000002Z' })));
+  mount(); fireEvent.click(screen.getByRole('button', { name: 'Card watching' }));
+  await screen.findByText('You are watching this Card.');
+  expect(screen.getByRole('button', { name: 'Unwatch Card' })).toBeEnabled();
+});

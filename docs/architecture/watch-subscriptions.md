@@ -159,3 +159,5 @@ scope. The fixture now recreates the same release Worker image using the existin
 isolated event-test override, then restores the default Worker during cleanup.
 The readiness, contiguous cursor and private projection assertions remain intact.
 Fresh CI is required to verify this repair and the subsequent fan-out checks.
+
+Watch timestamp admission now uses the inbox's strict canonical UTC parser and preserves PostgreSQL microseconds/.NET ticks when comparing createdAt and updatedAt. Invalid calendar dates, ambiguous local dates, non-UTC offsets and precisely reversed updates are withheld instead of being accepted by permissive millisecond Date.parse. Four negative cases and a valid microsecond ordering case cover disclosure/mutation-control admission. All 62 watch/inbox parser component tests, SPA/full browser typechecks and lint pass. Original subscription identity, version, same-key retry and server authorization rules remain enforced. Actual native release acceptance and recipient-private notification event delivery remain pending.

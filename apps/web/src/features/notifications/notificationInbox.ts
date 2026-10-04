@@ -19,7 +19,7 @@ export const notificationUuid = (value: unknown): value is string => typeof valu
 
 // Preserve PostgreSQL microseconds/.NET ticks when ordering seek cursors. Date
 // alone rounds sub-millisecond ties and can misorder valid adjacent records.
-function instant(value: unknown): { text: string; ticks: bigint } {
+export function notificationInstant(value: unknown): { text: string; ticks: bigint } {
   if (typeof value !== 'string') throw new Error('Invalid notification time');
   const match = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,7}))?(?:Z|\+00:00)$/.exec(value);
   if (!match) throw new Error('Invalid notification time');
@@ -30,7 +30,7 @@ function instant(value: unknown): { text: string; ticks: bigint } {
 function cursor(value: string) {
   const parts = value.split('/');
   if (parts.length !== 2 || !notificationUuid(parts[1])) throw new Error('Invalid notification cursor');
-  return { ticks: instant(parts[0]).ticks, id: parts[1].toLowerCase() };
+  return { ticks: notificationInstant(parts[0]).ticks, id: parts[1].toLowerCase() };
 }
 function before(ticks: bigint, id: string, previous: { ticks: bigint; id: string }) {
   return ticks < previous.ticks || ticks === previous.ticks && id < previous.id;
@@ -55,8 +55,8 @@ export function parseInbox(value: unknown, organizationId: string, recipientId: 
       !notificationType(n.type) || n.entityType !== 'Card' || !notificationUuid(n.entityId) || !notificationUuid(n.boardId)) throw new Error('Invalid notification');
     const currentBoard = n.currentBoardId === undefined ? n.boardId : n.currentBoardId;
     if (!notificationUuid(currentBoard)) throw new Error('Invalid current notification scope');
-    const id = n.id.toLowerCase(); const created = instant(n.createdAt);
-    const read = n.readAt === null ? null : instant(n.readAt);
+    const id = n.id.toLowerCase(); const created = notificationInstant(n.createdAt);
+    const read = n.readAt === null ? null : notificationInstant(n.readAt);
     const link = `/app/${organizationId.toLowerCase()}/boards/${currentBoard.toLowerCase()}/cards/${n.entityId.toLowerCase()}`;
     if (n.entityLink !== link || ids.has(id) || previous && !before(created.ticks, id, previous) || read && read.ticks < created.ticks) throw new Error('Invalid notification order or link');
     ids.add(id); previous = { ticks: created.ticks, id };
@@ -80,7 +80,7 @@ export function validateReadAcknowledgment(value: unknown, organizationId: strin
     const n = value as Record<string, unknown> | null;
     if (!n || !notificationUuid(n.id)) throw new Error('Unconfirmed notification identity');
     const id = n.id.toLowerCase(); const created = expected.get(id);
-    if (created === undefined || seen.has(id) || previous && id <= previous || instant(n.readAt).ticks < created) throw new Error('Unconfirmed notification read');
+    if (created === undefined || seen.has(id) || previous && id <= previous || notificationInstant(n.readAt).ticks < created) throw new Error('Unconfirmed notification read');
     seen.add(id); previous = id;
   }
 }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
-import { isNotificationProfile, notificationUuid } from './notificationInbox';
+import { isNotificationProfile, notificationInstant, notificationUuid } from './notificationInbox';
 
 type Props = { organizationId: string; boardId: string; entityType: 'CARD' | 'LIST' | 'BOARD'; entityId: string; admitted: boolean; disabled: boolean; refreshing?: boolean; onReturnFocus?: () => void };
 type State = { organizationId: string; boardId: string; userId: string; entityType: string; entityId: string;
@@ -19,7 +19,7 @@ function state(value: unknown, scope: Props, user: string): State {
   if (s.version === 0) {
     if (s.watching || s.subscriptionId !== null || s.createdAt !== null || s.updatedAt !== null || s.changed) throw new Error('Invalid empty watch');
   } else if (!notificationUuid(s.subscriptionId) || typeof s.createdAt !== 'string' || typeof s.updatedAt !== 'string' ||
-    !Number.isFinite(Date.parse(s.createdAt)) || !Number.isFinite(Date.parse(s.updatedAt)) || Date.parse(s.updatedAt) < Date.parse(s.createdAt)) throw new Error('Invalid watch revision');
+    notificationInstant(s.updatedAt).ticks < notificationInstant(s.createdAt).ticks) throw new Error('Invalid watch revision');
   return s;
 }
 
