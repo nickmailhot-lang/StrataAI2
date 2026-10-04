@@ -272,6 +272,8 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             var updated = board with
             {
                 LifecycleState = nextState,
+                ArchivedAt = nextState == BoardLifecycleState.Archived ? updatedAt : nextState == BoardLifecycleState.Active ? null : board.ArchivedAt,
+                DeletedAt = nextState == BoardLifecycleState.Deleted ? updatedAt : board.DeletedAt,
                 UpdatedAt = updatedAt,
                 Version = board.Version + 1,
             };
@@ -427,7 +429,9 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 && item.BoardId == source.BoardId && item.ListId == sourceListId && item.LifecycleState != WorkItemLifecycleState.Deleted)
                   .ToArray();
               var cards = sourceCards.Select(item => item with { Id = Guid.NewGuid(), BoardId = destinationBoardId, ListId = copiedListId,
-                    CreatedAt = createdAt, UpdatedAt = createdAt, Version = 1 }).ToArray();
+                    CreatedAt = createdAt, UpdatedAt = createdAt, Version = 1,
+                    ArchivedAt = item.LifecycleState == WorkItemLifecycleState.Archived ? createdAt : null,
+                    DeletedAt = null, DeletedBy = null }).ToArray();
               var sourceIds = sourceCards.Select(item => item.Id).ToHashSet();
               var associations = _cardLabels.Where(item => sourceIds.Contains(item.CardId) && _labels.TryGetValue(item.LabelId, out var label) && !label.Deleted).ToArray();
               var labelMap = new Dictionary<Guid, BoardLabelRecord>();
@@ -547,6 +551,8 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             var updated = list with
             {
                 LifecycleState = nextState,
+                ArchivedAt = nextState == WorkItemLifecycleState.Archived ? updatedAt : nextState == WorkItemLifecycleState.Active ? null : list.ArchivedAt,
+                DeletedAt = nextState == WorkItemLifecycleState.Deleted ? updatedAt : list.DeletedAt,
                 UpdatedAt = updatedAt,
                 Version = list.Version + 1,
             };
@@ -724,6 +730,8 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             var updated = card with
             {
                 LifecycleState = nextState,
+                ArchivedAt = nextState == WorkItemLifecycleState.Archived ? updatedAt : nextState == WorkItemLifecycleState.Active ? null : card.ArchivedAt,
+                DeletedAt = nextState == WorkItemLifecycleState.Deleted ? updatedAt : card.DeletedAt,
                 UpdatedAt = updatedAt,
                 Version = card.Version + 1,
             };
