@@ -3,6 +3,7 @@ import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack
 import { Link } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile, notificationInstant, notificationUuid } from './notificationInbox';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Props = { organizationId: string; boardId: string; entityType: 'CARD' | 'LIST' | 'BOARD'; entityId: string; admitted: boolean; disabled: boolean; refreshing?: boolean; onReturnFocus?: () => void };
 type State = { organizationId: string; boardId: string; userId: string; entityType: string; entityId: string;
@@ -41,9 +42,10 @@ function WatchDialog(props: Props) {
   const retire = useCallback((message: string) => {
     intent.current = undefined; user.current = undefined; setCurrent(undefined); setRecovery(false); setDenied(true); setNotice(message);
   }, []);
-  const load = useCallback(async () => {
+  const load = useCallback(async (kind: 'use' | 'retry' | 'reconnect' = 'use') => {
     if (!mounted.current || pending.current || !admitted) return;
     const ticket = ++epoch.current; const controller = new AbortController(); pending.current = controller;
+    const started = performance.now(); activityEvent('watch_read', kind);
     if (document.activeElement instanceof HTMLElement && content.current?.contains(document.activeElement)) returnFocus.current = true;
     setBusy(true); setCurrent(undefined); setNotice(intent.current ? 'The watch change is unconfirmed. Retry the same change.' : undefined);
     try {
@@ -58,11 +60,14 @@ function WatchDialog(props: Props) {
         return value;
       }, controller.signal);
       if (!mounted.current || epoch.current !== ticket || controller.signal.aborted) return;
+      activityResult('watch_read', true, started);
       if (user.current && user.current !== result.userId) { intent.current = undefined; setRecovery(false); }
       if (!result.canChange) { intent.current = undefined; setRecovery(false); setNotice('Watching is read-only while this Organization is archived.'); }
       user.current = result.userId; setCurrent(result); setDenied(false);
     } catch (reason) {
       if (!mounted.current || epoch.current !== ticket) return;
+      activityResult('watch_read', false, started);
+      if (!(reason instanceof WorkRequestError) && !(reason instanceof ChangedWatchIdentity)) activityEvent('watch_read', 'exception');
       if (reason instanceof ChangedWatchIdentity) retire('Your account changed. Check watching again.');
       else if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Watching is unavailable. Check access or sign in.');
       else setNotice('Unable to check current watching. Try again.');
@@ -86,11 +91,13 @@ function WatchDialog(props: Props) {
   useEffect(() => {
     if (!open || !admitted) return;
     void load(); const check = () => { if (document.visibilityState !== 'hidden') void load(); };
-    const timer = setInterval(check, 10_000); window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
-    return () => { clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('online', check); document.removeEventListener('visibilitychange', check); };
+    const reconnect = () => { if (document.visibilityState !== 'hidden') void load('reconnect'); };
+    const timer = setInterval(check, 10_000); window.addEventListener('focus', check); window.addEventListener('online', reconnect); document.addEventListener('visibilitychange', check);
+    return () => { clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('online', reconnect); document.removeEventListener('visibilitychange', check); };
   }, [open, admitted, load]);
   async function submit() {
     if (pending.current || !admitted || commandBlocked || denied || (!intent.current && (!current || !current.canChange))) return;
+    const started = performance.now(); activityEvent('watch_change', intent.current ? 'retry' : 'use');
     const command = intent.current ?? { userId: current!.userId, watching: !current!.watching, version: current!.version,
       subscriptionId: current!.subscriptionId, createdAt: current!.createdAt, key: crypto.randomUUID() };
     intent.current = command; returnFocus.current = true; const ticket = ++epoch.current; const controller = new AbortController(); pending.current = controller;
@@ -106,9 +113,13 @@ function WatchDialog(props: Props) {
           command.subscriptionId !== null && (result.subscriptionId !== command.subscriptionId || result.createdAt !== command.createdAt)) throw new Error('Unconfirmed watch change');
       }, controller.signal);
       if (!mounted.current || epoch.current !== ticket || controller.signal.aborted) return;
+      activityResult('watch_change', true, started);
       intent.current = undefined; setRecovery(false); reload = true;
     } catch (reason) {
       if (!mounted.current || epoch.current !== ticket) return;
+      activityResult('watch_change', false, started);
+      if (reason instanceof WorkRequestError && [400, 409].includes(reason.status)) activityEvent('watch_change', 'conflict');
+      else if (!(reason instanceof WorkRequestError) && !(reason instanceof ChangedWatchIdentity)) activityEvent('watch_change', 'exception');
       if (reason instanceof ChangedWatchIdentity) retire('Your account changed. Check watching again.');
       else if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Watching is unavailable. Check access or sign in.');
       else if (reason instanceof WorkRequestError && [400, 409].includes(reason.status)) {
@@ -124,7 +135,7 @@ function WatchDialog(props: Props) {
     setBusy(false); setOpen(false); setCurrent(undefined); setNotice(undefined);
   };
   return <>
-    <Button ref={button} disabled={!valid || !admitted || disabled} onClick={() => setOpen(true)}>{kind} watching</Button>
+    <Button ref={button} disabled={!valid || !admitted || disabled} onClick={() => { activityEvent('watch_disclosure', 'open'); setOpen(true); }}>{kind} watching</Button>
     <Dialog open={open} onClose={close} fullWidth maxWidth="xs" aria-labelledby={title} disableRestoreFocus
       slotProps={{ transition: { onExited: () => {
         if (button.current && !button.current.disabled) button.current.focus({ preventScroll: true }); else props.onReturnFocus?.();
@@ -136,7 +147,7 @@ function WatchDialog(props: Props) {
         {props.refreshing && <Typography role="status">Checking current Board access…</Typography>}
         {notice && <Alert severity={recovery ? 'warning' : 'info'}>{notice}</Alert>}
         {current && <Typography role="status">{current.watching ? `You are watching this ${kind}.` : `You are not watching this ${kind}.`}</Typography>}
-        <Button ref={checkButton} disabled={busy || !admitted} onClick={() => void load()}>Check current watching</Button>
+        <Button ref={checkButton} disabled={busy || !admitted} onClick={() => void load('retry')}>Check current watching</Button>
         {recovery ? <Button ref={retryButton} disabled={busy || commandBlocked || !admitted} onClick={() => void submit()}>Retry same watch change</Button> :
           current && <Button disabled={busy || commandBlocked || !admitted || !current.canChange} onClick={() => void submit()}>{current.watching ? `Unwatch ${kind}` : `Watch ${kind}`}</Button>}
         {denied && <Button component={Link} to="/login">Sign in</Button>}

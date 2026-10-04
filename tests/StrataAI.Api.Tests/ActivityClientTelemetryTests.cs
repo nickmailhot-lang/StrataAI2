@@ -11,6 +11,28 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Theory]
+    [InlineData("subscriptionId")]
+    [InlineData("userId")]
+    [InlineData("entityId")]
+    [InlineData("watching")]
+    [InlineData("key")]
+    [InlineData("diagnostic")]
+    public void PRD_17_Watch_client_observations_accept_fixed_categories_and_reject_private_material(string field)
+    {
+        using var valid = JsonDocument.Parse("""
+            {"events":[{"action":"watch_disclosure","kind":"open","count":1},
+            {"action":"watch_read","kind":"reconnect","count":1},
+            {"action":"watch_change","kind":"success","count":1,"durationMs":125}]}
+            """);
+        Assert.Equal(3, ActivityClientTelemetry.Parse(valid.RootElement)!.Count);
+        var payload = JsonSerializer.Serialize(new { events = new object[] {
+            new { action = "watch_disclosure", kind = "open", count = 1 },
+            new Dictionary<string, object> { ["action"] = "watch_change", ["kind"] = "use", ["count"] = 1, [field] = "private-material" } } });
+        using var invalid = JsonDocument.Parse(payload);
+        Assert.Null(ActivityClientTelemetry.Parse(invalid.RootElement));
+    }
+
+    [Theory]
     [InlineData("notificationId")]
     [InlineData("recipientId")]
     [InlineData("entityLink")]
