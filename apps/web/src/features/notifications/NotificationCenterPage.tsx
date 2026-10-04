@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { watchIdentity } from '../auth/identityLive';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { isNotificationProfile, notificationLabels, notificationUuid, parseInbox, validateReadAcknowledgment,
   type InboxPage, type NotificationProfile } from './notificationInbox';
 
@@ -35,7 +36,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     intent.current = undefined; currentProfile.current = undefined; setProfile(undefined); setPage(undefined); setSelected([]);
     setRecovery(false); setDenied(true); setNotice(message);
   }, []);
-  const load = useCallback(async (after?: string) => {
+  const load = useCallback(async (after?: string, kind: 'use' | 'retry' | 'reconnect' = 'use') => {
     if (!mounted.current || pending.current) return;
     const ticket = ++epoch.current; const controller = new AbortController(); pending.current = controller;
     const active = document.activeElement;
@@ -43,6 +44,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     else if (active === retry.current) focusTarget.current = 'retry';
     if (active instanceof HTMLElement && list.current?.contains(active)) focusTarget.current = active.closest<HTMLElement>('[data-notification-focus]')?.dataset.notificationFocus ?? 'refresh';
     currentCursor.current = after; setBusy(true); setPage(undefined);
+    const started = performance.now(); activityEvent('notification_read', kind);
     setNotice(intent.current ? 'Unable to confirm read status. Retry the same selection to confirm it.' : undefined);
     try {
       const result = await boundedWorkRead(async signal => {
@@ -56,6 +58,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
         return { user: current, page };
       }, controller.signal);
       if (!mounted.current || ticket !== epoch.current || controller.signal.aborted) return;
+      activityResult('notification_read', true, started);
       if (currentProfile.current && currentProfile.current.id.toLowerCase() !== result.user.id.toLowerCase()) {
         intent.current = undefined; setRecovery(false); setSelected([]);
       }
@@ -63,6 +66,8 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
       setSelected(previous => previous.filter(id => result.page.items.some(n => n.id === id && n.readAt === null)));
     } catch (reason) {
       if (!mounted.current || ticket !== epoch.current) return;
+      activityResult('notification_read', false, started);
+      if (!(reason instanceof WorkRequestError) && !(reason instanceof ChangedNotificationIdentity)) activityEvent('notification_read', 'exception');
       if (reason instanceof ChangedNotificationIdentity) retire('Your account changed. Check notifications again.');
       else if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Notifications are unavailable. Check access again or sign in.');
       else { setPage(undefined); setNotice('Unable to load current notifications. Try again.'); }
@@ -71,12 +76,13 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     }
   }, [path, organizationId, retire]);
   useEffect(() => {
-    mounted.current = true; void load();
+    mounted.current = true; activityEvent('notification_disclosure', 'open'); void load();
     const check = () => { if (document.visibilityState !== 'hidden') void load(currentCursor.current); };
-    const interval = setInterval(check, 10_000); window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
+    const reconnect = () => { if (document.visibilityState !== 'hidden') void load(currentCursor.current, 'reconnect'); };
+    const interval = setInterval(check, 10_000); window.addEventListener('focus', check); window.addEventListener('online', reconnect); document.addEventListener('visibilitychange', check);
     return () => {
       mounted.current = false; ++epoch.current; pending.current?.abort(); pending.current = undefined; intent.current = undefined;
-      clearInterval(interval); window.removeEventListener('focus', check); window.removeEventListener('online', check); document.removeEventListener('visibilitychange', check);
+      clearInterval(interval); window.removeEventListener('focus', check); window.removeEventListener('online', reconnect); document.removeEventListener('visibilitychange', check);
     };
   }, [load]);
   const subject = profile?.id;
@@ -104,6 +110,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
       targets: page!.items.filter(n => ids!.includes(n.id) && n.readAt === null).map(n => ({ id: n.id, createdTicks: n.createdTicks })).sort((a, b) => a.id.localeCompare(b.id)),
       key: crypto.randomUUID() };
     if (!command.targets.length) return;
+    const started = performance.now(); activityEvent('notification_mark_read', intent.current ? 'retry' : 'use');
     intent.current = command; rememberFocus(); focusTarget.current = 'refresh';
     const ticket = ++epoch.current; const controller = new AbortController(); pending.current = controller;
     setBusy(true); setPage(undefined); setNotice(undefined);
@@ -118,9 +125,13 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
         validateReadAcknowledgment(value, organizationId, command.targets);
       }, controller.signal);
       if (!mounted.current || ticket !== epoch.current || controller.signal.aborted) return;
+      activityResult('notification_mark_read', true, started);
       intent.current = undefined; setRecovery(false); setSelected([]); setNotice('Notifications marked read.'); reload = true;
     } catch (reason) {
       if (!mounted.current || ticket !== epoch.current) return;
+      activityResult('notification_mark_read', false, started);
+      if (reason instanceof WorkRequestError && [400, 409].includes(reason.status)) activityEvent('notification_mark_read', 'conflict');
+      else if (!(reason instanceof WorkRequestError) && !(reason instanceof ChangedNotificationIdentity)) activityEvent('notification_mark_read', 'exception');
       if (reason instanceof ChangedNotificationIdentity) retire('Your account changed. Check notifications again.');
       else if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Notifications are unavailable. Check access again or sign in.');
       else if (reason instanceof WorkRequestError && [400, 409].includes(reason.status)) {
@@ -137,7 +148,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     <Stack direction="row" useFlexGap sx={{ gap: 1, flexWrap: 'wrap' }}>
       <Button ref={refresh} disabled={busy} onFocus={() => { focusTarget.current = 'refresh'; }}
         onBlur={event => { if (event.relatedTarget !== null) focusTarget.current = undefined; }}
-        onClick={() => { setSelected([]); void load(); }}>{denied ? 'Check notifications again' : 'Refresh notifications'}</Button>
+        onClick={() => { setSelected([]); void load(undefined, 'retry'); }}>{denied ? 'Check notifications again' : 'Refresh notifications'}</Button>
       <Button component={Link} to={`/app/${organizationId}`}>Open boards</Button>
       {denied && <Button component={Link} to="/login">Sign in</Button>}
     </Stack>

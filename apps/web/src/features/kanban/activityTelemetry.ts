@@ -3,12 +3,13 @@ import { apiFetch } from '../../api/apiFetch';
 export type ActivityAction = 'board_read' | 'card_read' | 'board_disclosure' | 'card_disclosure'
   | 'comment_disclosure' | 'comment_read' | 'comment_create' | 'comment_edit' | 'comment_delete'
   | 'mention_read' | 'mention_selection' | 'card_group_confirmation' | 'board_group_confirmation'
-  | 'search_disclosure' | 'search_read';
+  | 'search_disclosure' | 'search_read' | 'notification_disclosure' | 'notification_read' | 'notification_mark_read';
 type Kind = 'open' | 'use' | 'retry' | 'exception' | 'conflict' | 'reconnect' | 'success' | 'failure';
 type Observation = { action: ActivityAction; kind: Kind; count: number; durationMs?: number };
 const actions = new Set<string>(['board_read', 'card_read', 'board_disclosure', 'card_disclosure',
   'comment_disclosure', 'comment_read', 'comment_create', 'comment_edit', 'comment_delete',
-  'mention_read', 'mention_selection', 'card_group_confirmation', 'board_group_confirmation', 'search_disclosure', 'search_read']);
+  'mention_read', 'mention_selection', 'card_group_confirmation', 'board_group_confirmation', 'search_disclosure', 'search_read',
+  'notification_disclosure', 'notification_read', 'notification_mark_read']);
 const kinds = new Set<string>(['open', 'use', 'retry', 'exception', 'conflict', 'reconnect', 'success', 'failure']);
 let enabled = import.meta.env.PROD;
 let queue: Observation[] = []; let timer: ReturnType<typeof setTimeout> | undefined;

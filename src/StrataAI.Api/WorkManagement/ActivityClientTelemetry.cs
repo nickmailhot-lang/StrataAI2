@@ -9,7 +9,8 @@ public sealed class ActivityClientTelemetry
     public const string MeterName = "StrataAI.ActivityClient";
     private static readonly HashSet<string> Actions = ["board_read", "card_read", "board_disclosure", "card_disclosure",
         "comment_disclosure", "comment_read", "comment_create", "comment_edit", "comment_delete",
-        "mention_read", "mention_selection", "card_group_confirmation", "board_group_confirmation", "search_disclosure", "search_read"];
+        "mention_read", "mention_selection", "card_group_confirmation", "board_group_confirmation", "search_disclosure", "search_read",
+        "notification_disclosure", "notification_read", "notification_mark_read"];
     public Meter Meter { get; }
     private readonly Counter<long> _events;
     private readonly Histogram<double> _duration;

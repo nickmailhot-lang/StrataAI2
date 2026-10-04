@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { NotificationCenterPage } from './NotificationCenterPage';
+import { configureActivityTelemetry, flushActivityTelemetry } from '../kanban/activityTelemetry';
 vi.mock('../auth/identityLive', () => ({ watchIdentity: vi.fn(() => vi.fn()) }));
 const org = '11111111-1111-1111-1111-111111111111', recipient = '22222222-2222-2222-2222-222222222222';
 const board = '44444444-4444-4444-4444-444444444444', card = '55555555-5555-5555-5555-555555555555';
@@ -14,7 +15,7 @@ const response = (value: unknown, status = 200) => new Response(JSON.stringify(v
 function mount() { return render(<MemoryRouter initialEntries={[`/app/${org}/notifications`]}><Routes>
   <Route path="/app/:organizationId/notifications" element={<NotificationCenterPage />} />
 </Routes></MemoryRouter>); }
-afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 it.each([['CARD_MOVED', 'Card moved'], ['LABEL_REMOVED', 'Label removed']])('renders %s activity with the existing accessible read and Card-link controls', async (type, label) => {
   const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data([{ ...item(), type }]))).mockResolvedValueOnce(response(profile));
@@ -193,4 +194,35 @@ it.each(['changed', 'malformed', 'unavailable'] as const)('withholds the entire 
   expect(screen.queryByRole('button', { name: 'Mark read' })).not.toBeInTheDocument();
   expect(screen.queryByText('private admission diagnostic')).not.toBeInTheDocument();
   expect(fetch.mock.calls.map(call => call[0])).toEqual(['/me', `/organizations/${org}/notifications`, '/me']);
+});
+
+it('reports fixed inbox retry/reconnect and mutation observations without private notification material', async () => {
+  configureActivityTelemetry(true);
+  let read = false, online = true, writes = 0; const reports: string[] = [];
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me/activity-client-events') { reports.push(String(options?.body)); return new Response(null, { status: 204 }); }
+    if (!online) throw new Error('private connection diagnostic');
+    if (path === '/me') return response(profile);
+    if (options?.method === 'POST') {
+      if (++writes === 1) throw new Error('private lost reply diagnostic');
+      read = true; return response({ organizationId: org, items: [{ id: id(1), readAt: '2026-10-02T11:00:00Z' }] });
+    }
+    return response(data([{ ...item(), readAt: read ? '2026-10-02T11:00:00Z' : null }]));
+  });
+  vi.stubGlobal('fetch', fetch); mount();
+  fireEvent.click(await screen.findByRole('button', { name: 'Mark read' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Retry mark read' }));
+  await screen.findByText('0 unread on this page.');
+  online = false; fireEvent.click(screen.getByRole('button', { name: 'Refresh notifications' }));
+  await screen.findByText('Unable to load current notifications. Try again.');
+  online = true; fireEvent(window, new Event('online')); await screen.findByText('0 unread on this page.');
+  await flushActivityTelemetry();
+  const serialized = reports.join(''); const events = reports.flatMap(report => JSON.parse(report).events);
+  for (const [action, kind] of [['notification_disclosure', 'open'], ['notification_read', 'retry'], ['notification_read', 'reconnect'],
+    ['notification_mark_read', 'use'], ['notification_mark_read', 'retry'], ['notification_mark_read', 'failure'], ['notification_mark_read', 'success']]) {
+    expect(events).toContainEqual(expect.objectContaining({ action, kind }));
+  }
+  for (const event of events) expect(Object.keys(event).every(key => ['action', 'kind', 'count', 'durationMs'].includes(key))).toBe(true);
+  for (const privateValue of [org, recipient, board, card, id(1), item().entityLink, 'diagnostic', 'Idempotency-Key']) expect(serialized).not.toContain(privateValue);
+  expect(writes).toBe(2);
 });
