@@ -11,6 +11,7 @@ internal static class ActivityEventSourceStoreContract
         var board = Guid.NewGuid(); var otherBoard = Guid.NewGuid(); var at = AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
         var sources = provider.GetRequiredService<IActivityEventSourceStore>(); var events = provider.GetRequiredService<IWorkEventStore>();
         var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>(); string originalCaption; string originalStatus;
+        var feed = provider.GetRequiredService<IActivityFeedStore>();
         await using (var profile = new NpgsqlCommand("SELECT display_name,status FROM users WHERE id=@actor;", admin))
         {
             profile.Parameters.AddWithValue("actor", actor); await using var row = await profile.ExecuteReaderAsync(ct);
@@ -22,7 +23,7 @@ internal static class ActivityEventSourceStoreContract
                 async () => WorkOperation<T>.Success(await action()), ct);
             Require(result.Succeeded, "Activity owning operation failed."); return result.Value!;
         }
-        await using (var seed = new NpgsqlCommand("INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES(@board,@tenant,'Activity source contract',@at,@at),(@other_board,@tenant,'Historical activity source contract',@at,@at);", admin))
+        await using (var seed = new NpgsqlCommand("INSERT INTO boards(id,tenant_id,name,visibility,created_at,updated_at) VALUES(@board,@tenant,'Activity source contract','ORGANIZATION',@at,@at),(@other_board,@tenant,'Historical activity source contract','ORGANIZATION',@at,@at);", admin))
         {
             seed.Parameters.AddWithValue("board", board); seed.Parameters.AddWithValue("tenant", tenant); seed.Parameters.AddWithValue("at", at);
             seed.Parameters.AddWithValue("other_board", otherBoard);
@@ -48,6 +49,13 @@ internal static class ActivityEventSourceStoreContract
                 "Activity same-time source identities use inconsistent ordering.");
             var anchor = first[49]; var tail = await Scope(() => sources.ReadBoardWindowAsync(tenant, board, anchor.CreatedAt, anchor.EventId, ct));
             Require(tail.Count == 15 && first.Take(50).Concat(tail).Select(row => row.EventId).Distinct().Count() == 65, "Activity timestamp/ID seek lost or duplicated a tie.");
+            var binding = new ActivityCursorBinding(tenant, actor, ActivityTargetKind.Board, board);
+            var visible = await Scope(() => feed.ReadAsync(binding, null, ct));
+            Require(visible.SequenceEqual(first), "Restricted SQL activity visibility changed the admitted Board window.");
+            Require((await Scope(() => feed.ReadAsync(binding, new(anchor.CreatedAt, anchor.EventId), ct))).SequenceEqual(tail),
+                "Restricted SQL activity visibility changed the seek tail.");
+            Require((await Scope(() => feed.ReadAsync(binding with { ViewerId = Guid.NewGuid() }, null, ct))).Count == 0,
+                "Restricted SQL activity admitted a nonmember.");
             Require(first.SequenceEqual(await Scope(() => sources.ReadBoardWindowAsync(tenant, board, null, null, ct))), "Activity repeated read changed historical fields.");
             await using (var rename = new NpgsqlCommand("UPDATE users SET display_name='Later activity actor',status='DEACTIVATED' WHERE id=@actor;", admin))
             { rename.Parameters.AddWithValue("actor", actor); await rename.ExecuteNonQueryAsync(ct); }

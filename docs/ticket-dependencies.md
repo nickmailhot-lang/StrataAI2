@@ -126,3 +126,33 @@ For each ticket, derive its functional requirements, acceptance criteria, linked
 
 Latest repair a074f991a0c082ce43384e55dfcc2dacaa8df4ba restores locked Board snapshot admission under archived Organizations. Its .NET build and fixture syntax checks passed locally; exact-image CI run 37054915157 is pending. Previous run 37052462546 passed the Card assignment/options/previews/member-filter fixture and subsequently failed the archived-Organization snapshot assertion. No full-current-main green gate or remaining-ticket completion is claimed.
 
+
+## PRD-15 protected activity query milestone
+
+Authenticated internal Board and Card GET activity endpoints now return at most
+50 body-free items with an opaque 15-minute continuation bound to Organization,
+viewer, target kind and stable target ID. Source captions remain historical;
+entity versions are decimal strings. Responses prohibit caching. Card queries
+include eligible historical source Boards and personal Card Watch/Reminder
+sources. SQL and Demo filter current source/target visibility and personal
+ownership before the 51-row candidate limit. The Application discovers the
+complete source/current Board lock set before acquiring canonically ordered
+Board gates, then repeats parent/role admission and uses the existing issuing
+session transaction protocol. Invalid cursors are disclosed only after root
+admission. Private Board watch targets must retain their original source Board.
+
+Migration 065 adds ordered global Card and private-reference history indexes;
+readiness and migration rollback/repeat fixtures require all 65 migrations.
+Demo journal projection normalizes timestamps to PostgreSQL microsecond UTC
+precision while retaining original exact Work event retry identity.
+
+Validation: warning-as-error solution build passes locally. New mandatory API
+host fixtures cover tied pagination, hidden private history before the limit,
+viewer/target cursor binding, malformed cursors and revoked access; restricted
+PostgreSQL fixtures execute the production Board candidate query and seek.
+Linux CI executes these tests because Windows Application Control prevents
+local managed test execution. These are not full acceptance: historical Card
+SQL/private-owner stress, exact-image lock waits/session expiry, MUI rendering,
+realtime refresh, accessibility/mobile, capacity, retention and shared persistent
+Data Protection key deployment still require validation and implementation.
+PRD-15 remains open, estimated 50% remaining until those criteria are proven.

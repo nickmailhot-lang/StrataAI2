@@ -10,6 +10,8 @@ public static class WorkManagementRegistration
         this IServiceCollection services,
         RuntimeDescriptor runtime)
     {
+        services.AddDataProtection();
+        services.AddSingleton<IActivityCursorCodec, DataProtectedActivityCursorCodec>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<DemoWorkTransactionScope>();
@@ -28,6 +30,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWorkEventReader>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IActivityEventSourceStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IActivityPrivateTargetStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
+            services.AddSingleton<IActivityFeedStore, InMemoryActivityFeedStore>();
             services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkManagementUnitOfWork, InMemoryWorkManagementUnitOfWork>();
             services.AddSingleton<InMemoryWorkNotificationStore>();
@@ -54,6 +57,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<PostgresActivityEventSourceStore>();
             services.AddSingleton<IActivityEventSourceStore>(provider => provider.GetRequiredService<PostgresActivityEventSourceStore>());
             services.AddSingleton<IActivityPrivateTargetStore>(provider => provider.GetRequiredService<PostgresActivityEventSourceStore>());
+            services.AddSingleton<IActivityFeedStore, PostgresActivityFeedStore>();
             services.AddSingleton<IWorkManagementUnitOfWork, PostgresWorkManagementUnitOfWork>();
             services.AddSingleton<PostgresWorkNotificationStore>();
             services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
@@ -72,6 +76,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<CardMassMentionPlanning>();
         services.AddSingleton<WorkSynchronizationService>();
         services.AddSingleton<ActivitySourceScopeResolver>();
+        services.AddSingleton<ActivityFeedService>();
         services.AddSingleton<NotificationInboxService>();
         services.AddSingleton<WatchSubscriptionService>();
         services.AddSingleton<ICardDateStore>(provider => (ICardDateStore)provider.GetRequiredService<IWorkManagementStore>());

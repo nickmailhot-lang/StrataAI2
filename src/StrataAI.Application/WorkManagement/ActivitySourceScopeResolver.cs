@@ -40,7 +40,7 @@ public sealed class ActivitySourceScopeResolver(IWorkManagementStore work, IOrga
         switch (type)
         {
             case "Board":
-                if (owner is null && id != source.BoardId) return null;
+                if (id != source.BoardId) return null;
                 currentBoard = id;
                 break;
             case "List":

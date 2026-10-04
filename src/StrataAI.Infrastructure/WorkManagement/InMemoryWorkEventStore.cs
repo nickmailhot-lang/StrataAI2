@@ -8,6 +8,12 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentit
     IOrganizationStore organizations, DemoWorkTransactionScope scope, InMemoryWatchSubscriptionStore watches,
     InMemoryCardReminderStore reminders) : IWorkEventStore, IWorkEventReader, IActivityEventSourceStore, IActivityPrivateTargetStore, IDemoWorkTransactionParticipant
 {
+    internal IReadOnlyList<ActivityEventSource> ActivitySources(Guid organizationId)
+    {
+        if (!scope.Owns(organizationId)) throw new InvalidOperationException("Activity candidates require the owning Work transaction.");
+        lock (_events) return Array.AsReadOnly(_activity.Values.Where(row => row.OrganizationId == organizationId).ToArray());
+    }
+
     public Task<ActivityPrivateTarget?> FindAsync(Guid organizationId, Guid eventId, CancellationToken ct = default)
     {
         if (organizationId == Guid.Empty || eventId == Guid.Empty || !scope.Owns(organizationId))
@@ -57,7 +63,8 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentit
             _streams[stream] = sequence;
             _events[key] = (sequence, change);
             _activity[key] = new(change.EventId, change.OrganizationId, change.BoardId, change.ActorId, caption,
-                change.EventType, change.EntityType, change.EntityId, change.Version, change.CreatedAt);
+                change.EventType, change.EntityType, change.EntityId, change.Version,
+                new DateTimeOffset(change.CreatedAt.UtcTicks / 10 * 10, TimeSpan.Zero));
         }
     }
 

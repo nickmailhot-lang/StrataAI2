@@ -17,6 +17,7 @@ public static partial class WorkManagementEndpoints
         MapCardReminderEndpoints(app);
         MapChecklistEndpoints(app);
         MapCardCommentEndpoints(app);
+        MapActivityFeedEndpoints(app);
         MapAttachmentEndpoints(app);
         app.MapGet(
             "/boards/{boardId:guid}",
@@ -745,6 +746,9 @@ public static partial class WorkManagementEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "activity_not_found" => Problem(404, errorCode, "This activity is unavailable."),
+            "invalid_activity_cursor" => Problem(400, errorCode, "Reload activity or use this view's current continuation."),
+            "activity_unavailable" => Problem(503, errorCode, "Activity could not be confirmed. Try again."),
             "notification_not_found" => Problem(404, errorCode, "The notifications are unavailable."),
             "watch_not_found" => Problem(404, errorCode, "This watch or entity is unavailable."),
             "card_reminder_not_found" => Problem(404, errorCode, "This Card or personal reminder is unavailable."),

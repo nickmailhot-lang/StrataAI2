@@ -25,6 +25,8 @@ public sealed class BoardSharingTelemetry
         ((context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText, context.Request.Method.ToUpperInvariant()) switch
         {
             ("/boards/{boardId:guid}", "GET") => "board_read",
+            ("/boards/{boardId:guid}/activity", "GET") => "board_activity_read",
+            ("/cards/{cardId:guid}/activity", "GET") => "card_activity_read",
             ("/watch/{entityType}/{entityId:guid}", "GET") => "watch_read",
             ("/watch/{entityType}/{entityId:guid}", "PUT") => "watch_create",
             ("/watch/{entityType}/{entityId:guid}", "DELETE") => "watch_remove",
