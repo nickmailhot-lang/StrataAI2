@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField, Typography } from '@mui/material';
 import type { BoardSnapshot } from '../../api/workManagement';
 import { apiFetch } from '../../api/apiFetch';
+import { activityEvent, activityResult } from './activityTelemetry';
 
 type Review = { id: string; name: string; rank: string; version: number };
 type Intent = Review & { key: string };
@@ -26,6 +27,11 @@ export function ListArchiveControl({ snapshot, disabled, unavailableListIds, onB
   useEffect(() => { onRecoveryChange(!!intent); return () => onRecoveryChange(false); }, [intent, onRecoveryChange]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false;
     pending.current?.abort(); if (pending.current) onBusyChange(false); }; }, [onBusyChange]);
+  useEffect(() => {
+    if (admitted || (!open && !review && !intent && !pending.current)) return;
+    pending.current?.abort(); pending.current = undefined; setBusy(false); onBusyChange(false);
+    setOpen(false); setReview(undefined); setIntent(undefined); setNotice('This List or administration action is unavailable.');
+  }, [admitted, open, review, intent, onBusyChange]);
   function restoreFocus() {
     focusRequested.current = disabled || busy;
     if (focusRequested.current) return;
@@ -35,6 +41,7 @@ export function ListArchiveControl({ snapshot, disabled, unavailableListIds, onB
   function close() { if (!busy && !intent) { setOpen(false); setReview(undefined); setNotice(undefined); setConflict(false); } }
   async function archive() {
     if (pending.current || disabled || !admitted || !review || (!intent && (changed || conflict || unavailable))) return;
+    const started = performance.now(); activityEvent('list_archive', intent ? 'retry' : 'use');
     const command = intent ?? { ...review, key: crypto.randomUUID() }; const c = new AbortController(); pending.current = c;
     setBusy(true); onBusyChange(true); setNotice(undefined);
     let timer: ReturnType<typeof setTimeout> | undefined; let abort: (() => void) | undefined;
@@ -48,8 +55,10 @@ export function ListArchiveControl({ snapshot, disabled, unavailableListIds, onB
       ]);
       if (!mounted.current || pending.current !== c) return;
       if ([401, 403, 404].includes(result.status)) {
+        activityResult('list_archive', false, started);
         setIntent(undefined); setReview(undefined); setOpen(false); setNotice('This List or administration action is unavailable.');
       } else if ([400, 409].includes(result.status)) {
+        activityEvent('list_archive', 'conflict'); activityResult('list_archive', false, started);
         setIntent(undefined); setConflict(true); setNotice('This archive could not be applied. Check the Board and review the current List.');
       } else {
         const value = result.body as { id?: unknown; organizationId?: unknown; boardId?: unknown; name?: unknown;
@@ -58,11 +67,12 @@ export function ListArchiveControl({ snapshot, disabled, unavailableListIds, onB
           || value.boardId !== snapshot.board.id || value.name !== command.name || value.rank !== command.rank
           || value.lifecycleState !== 'archived' || value.version !== command.version + 1)
           throw new Error('Unconfirmed archive');
-        setIntent(undefined); setReview(undefined); setOpen(false);
+        activityResult('list_archive', true, started); setIntent(undefined); setReview(undefined); setOpen(false);
         setNotice('List archive acknowledged. Current Board state is being checked.');
       }
       onRefresh();
     } catch { if (mounted.current && pending.current === c) {
+      activityEvent('list_archive', 'exception'); activityResult('list_archive', false, started);
       setIntent(command); setNotice('The archive could not be confirmed. Retry that same archive to recover its acknowledgment.'); onRefresh();
     } } finally {
       clearTimeout(timer); if (abort) c.signal.removeEventListener('abort', abort);
@@ -71,7 +81,7 @@ export function ListArchiveControl({ snapshot, disabled, unavailableListIds, onB
   }
   return <>
     {admitted && <Button ref={action} disabled={disabled || busy || !!intent || lists.length === 0} onClick={() => {
-      setOpen(true); setReview(undefined); setConflict(false); setNotice(undefined);
+      activityEvent('list_archive', 'open'); setOpen(true); setReview(undefined); setConflict(false); setNotice(undefined);
     }}>Archive a list</Button>}
     {!open && notice && <Typography role="status">{notice}</Typography>}
     <Dialog open={open} onClose={close} disableRestoreFocus fullWidth maxWidth="sm"

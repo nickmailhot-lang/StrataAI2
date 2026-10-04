@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Stack, Typography } from '@mui/material';
 import { apiFetch } from '../../api/apiFetch';
+import { activityEvent, activityResult } from './activityTelemetry';
 import type { BoardSnapshot, WorkCard } from '../../api/workManagement';
 
 type Review = { id: string; title: string; rank: string; version: number; listId: string; listName: string; listVersion: number };
@@ -32,6 +33,7 @@ export function CardArchiveControl({ cardId, card, snapshot, disabled, onBusyCha
   }, [authorized, review, intent, onBusyChange]);
   async function archive() {
     if (pending.current || disabled || !authorized || !review || (!intent && (changed || blocked))) return;
+    const started = performance.now(); activityEvent('card_archive', intent ? 'retry' : 'use');
     const command = intent ?? { ...review, key: crypto.randomUUID() };
     const c = new AbortController(); pending.current = c; setBusy(true); onBusyChange(true); setNotice(undefined);
     let timer: ReturnType<typeof setTimeout> | undefined; let abort: (() => void) | undefined;
@@ -45,8 +47,10 @@ export function CardArchiveControl({ cardId, card, snapshot, disabled, onBusyCha
       ]);
       if (!mounted.current || pending.current !== c) return;
       if ([401, 403, 404].includes(result.status)) {
+        activityResult('card_archive', false, started);
         setIntent(undefined); setReview(undefined); setDenied(true); setNotice('This Card or archive action is unavailable.'); onRefresh();
       } else if ([400, 409].includes(result.status)) {
+        activityEvent('card_archive', 'conflict'); activityResult('card_archive', false, started);
         setIntent(undefined); setBlocked(true); setNotice('This archive could not be applied. Check the Board and review the current Card.'); onRefresh();
       } else {
         const ack = result.value as { id?: unknown; organizationId?: unknown; boardId?: unknown; listId?: unknown; title?: unknown;
@@ -54,9 +58,10 @@ export function CardArchiveControl({ cardId, card, snapshot, disabled, onBusyCha
         if (result.status !== 200 || ack?.id !== command.id || ack.organizationId !== snapshot.board.organizationId || ack.boardId !== snapshot.board.id
           || ack.listId !== command.listId || ack.title !== command.title || ack.rank !== command.rank || ack.lifecycleState !== 'archived'
           || ack.version !== command.version + 1) throw new Error('Unconfirmed archive');
-        setIntent(undefined); setReview(undefined); setNotice('Card archive acknowledged. Current Board state is being checked.'); onAcknowledged();
+        activityResult('card_archive', true, started); setIntent(undefined); setReview(undefined); setNotice('Card archive acknowledged. Current Board state is being checked.'); onAcknowledged();
       }
     } catch { if (mounted.current && pending.current === c) {
+      activityEvent('card_archive', 'exception'); activityResult('card_archive', false, started);
       setIntent(command); setNotice('The archive could not be confirmed. Retry this same archive to recover its acknowledgment.'); onRefresh();
     } } finally {
       clearTimeout(timer); if (abort) c.signal.removeEventListener('abort', abort);
@@ -66,7 +71,7 @@ export function CardArchiveControl({ cardId, card, snapshot, disabled, onBusyCha
   }
   return <Stack spacing={1} sx={{ mt: 2 }}>
     {admitted && !intent && <Button ref={action} disabled={disabled || busy} onClick={() => {
-      setReview({ id: cardId, title: card.title, rank: card.rank, version: card.version,
+      activityEvent('card_archive', 'open'); setReview({ id: cardId, title: card.title, rank: card.rank, version: card.version,
         listId: parent.id, listName: parent.name, listVersion: parent.version! }); setBlocked(false); setNotice(undefined);
     }}>Archive Card</Button>}
     {notice && <Typography role="status">{notice}</Typography>}
