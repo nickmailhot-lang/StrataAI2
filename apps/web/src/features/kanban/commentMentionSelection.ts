@@ -9,7 +9,7 @@ const whitespace = (value: string) => {
 };
 // Mirrors the server's plaintext lexical boundary, never recipient authority.
 // Retire selection expectations only when their actual token has been removed.
-export function selectedCommentMentions(content: string, selected: readonly CommentMentionSelection[]) {
+function commentMentionHandles(content: string) {
   const text = normalizeComment(content); const handles = new Set<string>(); let segment = 0; let count = 0;
   for (let at = 0; at < text.length; at++) {
     if (whitespace(text[at])) { segment = at + 1; continue; }
@@ -25,6 +25,14 @@ export function selectedCommentMentions(content: string, selected: readonly Comm
     if (++count > 64) throw new Error('Too many comment mention tokens');
     handles.add(handle); at = end - 1;
   }
+  return handles;
+}
+export function commentMassMentionScopes(content: string) {
+  const handles = commentMentionHandles(content);
+  return { card: handles.has('card'), board: handles.has('board') };
+}
+export function selectedCommentMentions(content: string, selected: readonly CommentMentionSelection[]) {
+  const handles = commentMentionHandles(content);
   const result = selected.filter(item => handles.has(item.handle));
   if (result.length > 20 || new Set(result.map(item => item.userId.toLowerCase())).size !== result.length
     || new Set(result.map(item => item.handle)).size !== result.length) throw new Error('Invalid selected mentions');

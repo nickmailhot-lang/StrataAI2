@@ -773,6 +773,8 @@ public static partial class WorkManagementEndpoints
             "invalid_comment_content" => Problem(400, errorCode, "Comment text must be nonblank, valid Unicode and at most 10000 characters."),
             "invalid_comment_mentions" => Problem(400, errorCode, "Review the comment's username mentions and selected teammates; use at most 20 recipients."),
             "mention_targets_changed" => Problem(409, errorCode, "Mention recipients changed. Review the current comment and teammates."),
+            "invalid_mass_mention_confirmation" => Problem(400, errorCode, "Confirm only group mentions present in the comment."),
+            "mass_mention_rate_limited" => Problem(429, errorCode, "Group mentions are limited to three deliveries per board in ten minutes. Wait before trying again."),
             "comment_delete_confirmation_required" => Problem(400, errorCode, "Confirm removal of this comment body."),
             "comment_not_found" => Problem(404, errorCode, "The requested comment action is unavailable."),
             "invalid_checklist_version" => Problem(400, errorCode, "Use the current Card revision."),

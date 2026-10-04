@@ -10,6 +10,53 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_15_ConfirmedBoardMentionsRequireAdministrationAndRateLimitAtomicallyAcrossComments()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct); var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Groups", null, null, DateTimeOffset.UtcNow, ct);
+        var path = $"/cards/{card.Id}/comments";
+        using var plain = await Mutate(owner, HttpMethod.Post, path, new CreateCardCommentInput("Literal @board", 1));
+        Assert.Equal(HttpStatusCode.OK, plain.StatusCode);
+        var inbox = app.Services.GetRequiredService<IWorkNotificationStore>();
+        Assert.Empty(await inbox.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct));
+        using var invalid = await Mutate(owner, HttpMethod.Post, path,
+            new CreateCardCommentInput("Not a declaration https://example.test/@board", 2, MassMentionConfirmation: new(false, true)));
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        using var denied = await Mutate(member, HttpMethod.Post, path,
+            new CreateCardCommentInput("@board", 2, MassMentionConfirmation: new(false, true)));
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        var key = Guid.NewGuid().ToString(); var input = new CreateCardCommentInput("First confirmed @board @board", 2, MassMentionConfirmation: new(false, true));
+        using var created = await Mutate(owner, HttpMethod.Post, path, input, key);
+        Assert.Equal(HttpStatusCode.OK, created.StatusCode); var first = (await created.Content.ReadFromJsonAsync<CardCommentChange>(ct))!;
+        using var replay = await Mutate(owner, HttpMethod.Post, path, input, key);
+        Assert.Equal(first, await replay.Content.ReadFromJsonAsync<CardCommentChange>(ct));
+        using var noop = await Mutate(owner, HttpMethod.Patch, $"{path}/{first.Comment.Id}",
+            new EditCardCommentInput(input.Content, 3, 1, MassMentionConfirmation: new(false, true)));
+        Assert.Equal(HttpStatusCode.OK, noop.StatusCode); Assert.False((await noop.Content.ReadFromJsonAsync<CardCommentChange>(ct))!.Changed);
+        using var edited = await Mutate(owner, HttpMethod.Patch, $"{path}/{first.Comment.Id}",
+            new EditCardCommentInput("First confirmed @board edited", 3, 1, MassMentionConfirmation: new(false, true)));
+        Assert.Equal(HttpStatusCode.OK, edited.StatusCode);
+        for (long version = 4; version <= 5; version++)
+        {
+            using var next = await Mutate(owner, HttpMethod.Post, path,
+                new CreateCardCommentInput($"Confirmed {version} @board", version, MassMentionConfirmation: new(false, true)));
+            Assert.Equal(HttpStatusCode.OK, next.StatusCode);
+        }
+        var refusedKey = Guid.NewGuid().ToString(); var refusedInput = new CreateCardCommentInput("Fourth @board", 6, MassMentionConfirmation: new(false, true));
+        using var limited = await Mutate(owner, HttpMethod.Post, path, refusedInput, refusedKey);
+        Assert.Equal(HttpStatusCode.TooManyRequests, limited.StatusCode);
+        Assert.Equal(6, (await work.FindCardAsync(card.Id, ct))!.Version);
+        var page = (await owner.GetFromJsonAsync<CardCommentPage>(path, ct))!;
+        Assert.Equal(4, page.Items.Count); Assert.DoesNotContain(page.Items, row => row.Content == refusedInput.Content);
+        Assert.Equal(3, (await inbox.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct)).Count);
+        Assert.Empty(await inbox.ListCardNotificationsAsync(f.Organization, f.Owner, cancellationToken: ct));
+        using var limitedRetry = await Mutate(owner, HttpMethod.Post, path, refusedInput, refusedKey);
+        Assert.Equal(HttpStatusCode.TooManyRequests, limitedRetry.StatusCode);
+        Assert.DoesNotContain("MassMentionConfirmation", JsonSerializer.Serialize(new CreateCardCommentInput("Old request", 1)));
+    }
+    [Fact]
     public async Task PRD_15_SelectedMentionIdentityAndRevisionAreValidatedBeforeWritesAndNoOps()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();

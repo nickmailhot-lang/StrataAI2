@@ -40,8 +40,8 @@ bodies into public event or notification payloads.
 | COMMENT-FR-003 author edits | Author/current rights admission, dual revisions, body-free receipts, atomic audit/events and guarded UI edits implemented | Complete session/grant/parent changes under live waits, native reconciliation and performance evidence |
 | COMMENT-FR-004 author deletion | Confirmed author deletion persists a redacted tombstone; original former-body receipt is refused; MUI removal/retry guards implemented | Complete actual native confirmation/replay/lifecycle evidence and retention/purge policy |
 | COMMENT-FR-005 @username | Bounded username parsing, current handle account UI, protected teammate selection, recipient locks, immutable history and atomic username event/inbox publication implemented | Complete native selection/receipt/current-recipient lifecycle, Production lock waits and capacity evidence |
-| COMMENT-FR-006 @card/@board | Bounded lexical declarations exist; actual mass-mention producer unimplemented | Explicit confirmation, current authorization, bounded fanout, durable rate limits and stable refusal without partial effects |
-| COMMENT-FR-007 mention notifications | Atomic username mention event/in-app inbox producer and actual restricted rollback/source tests implemented | Complete mass mention producer plus actual native/Production lifecycle and performance evidence |
+| COMMENT-FR-006 @card/@board | Confirmed full group producer, current actor policy, durable quota and explicit MUI scopes implemented; new execution pending | Complete exact-image/native group, lifecycle/concurrency and capacity/performance evidence |
+| COMMENT-FR-007 mention notifications | Atomic username/group event/in-app inbox producer, exact-source batch storage and durable group quota implemented | Complete actual native/Production group lifecycle and performance evidence |
 | COMMENT-FR-008 immutable activity | Existing Work events/audit; no complete activity projection | Every significant domain event, immutable interpreter/projection, complete lifecycle and replay coverage |
 | COMMENT-FR-009 event fields | Existing canonical Work event envelope | Current-authorized paginated activity DTO/projection with required safe metadata and complete event coverage |
 | COMMENT-FR-010 historical actor deactivation | Domain retains stable author ID | Historical actor interpretation after deactivation without granting current access or replacing past attribution with mutable profile data |
@@ -1192,3 +1192,51 @@ the substantial unfinished activity/group producer requirements.
 At the latest observation, run 37176935303 (4fa3fcd) passed all source gates,
 including the new restricted Card-assignment group roster tests; its immutable
 image build is live. Full runtime/release acceptance is still unproven.
+
+Group publication is now connected to comment create/edit commands. Optional
+confirmation fields are omitted when null, preserving original legacy command
+fingerprints. Unconfirmed declarations stay literal. Confirmed Card scope
+targets current eligible assignees; confirmed Board scope targets all current
+eligible explicit participants and additionally requires current administrative
+rights plus COMMENT admission. Original Board-group receipts and post-command
+hydration require those current rights too. The producer unions groups and named
+recipients by stable ID, retains complete revision history, and rechecks the full
+group before final acknowledgment. New group recipients consume one source-bound
+reservation in the same transaction as Card/comment/history/audit/event/inbox
+and receipt effects. Quota refusal returns 429 and rolls back all effects.
+Unchanged recipient edits, exact retries and self-only/empty group deliveries
+consume no new reservation. Unchanged plaintext remains an unchanged command
+after confirmation validation; confirmation does not silently revise an existing
+comment or activate a formerly literal group without a content change.
+
+MUI exposes separate, unchecked Card and Board confirmations for actual lexical
+declarations, explains their scopes and actor/Board rate limit, and blocks Board
+consent without current administrative access. Changing text or selecting another
+username clears group consent for review. Original uncertain recovery preserves
+the exact body/key, including its scopes. A definite 429 retires protected review
+and explains when to start a new current review. Added client tests cover both
+confirmed scopes on recovery, default literal behavior, false email/URL tokens,
+consent reset and Board role restriction. All 33 focused client tests, typecheck,
+lint, warning-as-error .NET compilation and shell syntax checks pass locally.
+
+New real-cookie Demo API checks require administration, reject false group
+confirmation, preserve unchanged edits/receipts, and verify three deliveries and
+fourth-attempt Card/comment/inbox rollback. The existing late actor refusal check
+now also covers Board group publication and its quota. The mandatory exact-image
+fixture additionally uses 26 actual eligible participants (24 have synthetic
+onboarding fixtures) and requires all 25 non-self deliveries, full snapshot,
+overlapping Card/Board/named deduplication, current Card assignment scope, source
+quota and late inbox permission-failure full rollback, same-key recovery,
+unchanged-group edit behavior and repeat 429 whole-state rollback. Its state hash
+now includes reservation rows. New managed/API/container/native execution remains
+pending; a small group fixture is not p95 or large-group performance acceptance.
+
+The preceding quota commit 4610ee5 passed all source, PostgreSQL, immutable image
+build and security jobs in run 37177351478. Its container job is still live.
+Actual restricted quota execution includes concurrent reservations, expiry,
+source affinity, exact retry and owning failure rollback. Full pipeline/release
+success is still unproven. PRD-15 estimated remaining work is now **50%**: complete
+native and Production lifecycle/race scenarios, group capacity (including the
+deferred cardinality cost), retention and activity/event/historical-actor
+projections and MUI feeds remain substantial unfinished requirements. No issue
+is closed and no full acceptance criterion is inferred from local source checks.

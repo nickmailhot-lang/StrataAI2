@@ -9,9 +9,11 @@ namespace StrataAI.Application.WorkManagement;
 
 public sealed record CardCommentMentionSelection(Guid UserId, string Handle, long HandleVersion);
 public sealed record CreateCardCommentInput(string? Content, long CardVersion,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<CardCommentMentionSelection>? MentionSelections = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<CardCommentMentionSelection>? MentionSelections = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CardCommentMassMentionConfirmation? MassMentionConfirmation = null);
 public sealed record EditCardCommentInput(string? Content, long CardVersion, long Version,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<CardCommentMentionSelection>? MentionSelections = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<CardCommentMentionSelection>? MentionSelections = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CardCommentMassMentionConfirmation? MassMentionConfirmation = null);
 public sealed record DeleteCardCommentInput(long CardVersion, long Version, bool Confirmed);
 public sealed record CardCommentChange(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion, CardCommentRecord Comment, bool Changed);
 public sealed record CardCommentPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
@@ -22,7 +24,8 @@ public sealed record CardCommentPage(Guid OrganizationId, Guid BoardId, Guid Car
 public sealed class CardCommentService(IWorkManagementStore work, ICardCommentStore comments,
     IOrganizationStore organizations, IWorkBoardAuthorization boards, IWorkManagementUnitOfWork transactions,
     IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events,
-    CardCommentMentionPlanning mentions, ICommentMentionSnapshotStore snapshots, IWorkNotificationStore notifications)
+    CardCommentMentionPlanning mentions, ICommentMentionSnapshotStore snapshots, IWorkNotificationStore notifications,
+    CardMassMentionPlanning groups, ICardMassMentionQuota quota)
 {
     // Durable recovery must never retain former comment plaintext. The body is
     // hydrated only from the currently admitted row at the recorded revision.
@@ -59,14 +62,15 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
     }
 
     public Task<WorkOperation<CardCommentChange>> CreateAsync(Guid cardId, Guid actor, CreateCardCommentInput input, string correlationId, CancellationToken ct = default)
-        => Change(cardId, null, actor, input.CardVersion, null, input.Content, false, false, input.MentionSelections, input, correlationId, ct);
+        => Change(cardId, null, actor, input.CardVersion, null, input.Content, false, false, input.MentionSelections, input.MassMentionConfirmation, input, correlationId, ct);
     public Task<WorkOperation<CardCommentChange>> EditAsync(Guid cardId, Guid commentId, Guid actor, EditCardCommentInput input, string correlationId, CancellationToken ct = default)
-        => Change(cardId, commentId, actor, input.CardVersion, input.Version, input.Content, false, false, input.MentionSelections, input, correlationId, ct);
+        => Change(cardId, commentId, actor, input.CardVersion, input.Version, input.Content, false, false, input.MentionSelections, input.MassMentionConfirmation, input, correlationId, ct);
     public Task<WorkOperation<CardCommentChange>> DeleteAsync(Guid cardId, Guid commentId, Guid actor, DeleteCardCommentInput input, string correlationId, CancellationToken ct = default)
-        => Change(cardId, commentId, actor, input.CardVersion, input.Version, null, true, input.Confirmed, null, input, correlationId, ct);
+        => Change(cardId, commentId, actor, input.CardVersion, input.Version, null, true, input.Confirmed, null, null, input, correlationId, ct);
 
     private async Task<WorkOperation<CardCommentChange>> Change(Guid cardId, Guid? commentId, Guid actor, long cardVersion,
         long? commentVersion, string? content, bool deleting, bool confirmed, IReadOnlyList<CardCommentMentionSelection>? selected,
+        CardCommentMassMentionConfirmation? mass,
         object input, string correlationId, CancellationToken ct)
     {
         var hint = await work.FindCardAsync(cardId, ct);
@@ -76,7 +80,7 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
             WorkCommand.Create(actor, context.IdempotencyKey, type, commentId ?? cardId, new { cardId, input }, "comment_not_found"),
             async receipt =>
             {
-                if (!await Admit(hint, actor, true, ct)) return false;
+                if (!await Admit(hint, actor, true, ct) || !await GroupAllowed(hint, actor, mass?.Board == true, ct)) return false;
                 if (commentId is { } requested && (await comments.FindAsync(hint.OrganizationId, cardId, requested, ct))?.AuthorId != actor) return false;
                 if (receipt is null) return true;
                 if (receipt.OrganizationId != hint.OrganizationId || receipt.BoardId != hint.BoardId || receipt.CardId != cardId
@@ -103,10 +107,11 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                     try { normalized = CardComment.RequireContent(content!); }
                     catch (ArgumentException) { return WorkOperation<Receipt>.Failure("invalid_comment_content"); }
                 }
-                if (child is not null && (deleting ? child.DeletedAt is not null : child.Content == normalized) && selected is not { Count: > 0 })
-                    return await Complete(hint, actor, current.Version, child, false, ct);
+                if (child is not null && (deleting ? child.DeletedAt is not null : child.Content == normalized) && selected is not { Count: > 0 } && mass is null)
+                    return await Complete(hint, actor, current.Version, child, false, false, ct);
                 var previous = child is null ? null : await snapshots.FindSnapshotAsync(hint.OrganizationId, cardId, child.Id, child.Version, ct);
                 CardCommentMentionPlan? plan = null;
+                CardMassMentionPlan? group = null;
                 if (!deleting)
                 {
                     var prepared = await mentions.ResolveAsync(hint.OrganizationId, hint.BoardId, actor, normalized!, previous?.Recipients ?? [], ct);
@@ -114,11 +119,22 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                     plan = prepared.Value;
                     var selection = mentions.ValidateSelections(plan, selected);
                     if (!selection.Succeeded) return WorkOperation<Receipt>.Failure(selection.ErrorCode!);
+                    if (mass is not null)
+                    {
+                        var preparedGroup = await groups.ResolveAsync(hint.OrganizationId, hint.BoardId, cardId, normalized!, mass, ct);
+                        if (!preparedGroup.Succeeded || preparedGroup.Value is null)
+                            return WorkOperation<Receipt>.Failure(preparedGroup.ErrorCode ?? "invalid_mass_mention_confirmation");
+                        group = preparedGroup.Value;
+                        var recipients = CommentMentionRecipients.CaptureConfirmedGroups(CommentMentionText.Parse(normalized!), actor,
+                            plan.CurrentMembers.ToDictionary(row => row.Handle, row => row.UserId, StringComparer.Ordinal), previous?.Recipients ?? [],
+                            group.Card, group.Board, group.CardRecipients, group.BoardRecipients);
+                        plan = plan with { Recipients = recipients };
+                    }
                     var targets = await mentions.RevalidateAsync(hint.OrganizationId, hint.BoardId, plan, ct);
                     if (!targets.Succeeded) return WorkOperation<Receipt>.Failure(targets.ErrorCode!);
                 }
                 if (child is not null && !deleting && child.Content == normalized)
-                    return await Complete(hint, actor, current.Version, child, false, ct);
+                    return await Complete(hint, actor, current.Version, child, false, mass?.Board == true, ct);
                 var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
                 if (current.Version == long.MaxValue || now < current.UpdatedAt || child is not null && (child.Version == long.MaxValue || now < child.UpdatedAt))
                     return WorkOperation<Receipt>.Failure("version_conflict");
@@ -139,6 +155,8 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                     var mentionEvent = new WorkEvent(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor,
                         "MENTION_CREATED", "Card", cardId, updated.Version, correlationId, now);
                     await events.AppendAsync(mentionEvent, ct);
+                    if (group is not null && group.HasNewDelivery(plan.Recipients.Added) && !await quota.TryReserveAsync(mentionEvent, ct))
+                        return WorkOperation<Receipt>.Failure("mass_mention_rate_limited");
                     await notifications.AppendCardMentionsAsync(mentionEvent, plan.Recipients.Added, ct);
                 }
                 if (plan is not null)
@@ -146,11 +164,14 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                     var targets = await mentions.RevalidateAsync(hint.OrganizationId, hint.BoardId, plan, ct);
                     if (!targets.Succeeded) return WorkOperation<Receipt>.Failure(targets.ErrorCode!);
                 }
-                return await Complete(hint, actor, updated.Version, changed, true, ct);
+                if (group is not null && !await groups.RevalidateAsync(hint.OrganizationId, hint.BoardId, cardId, group, ct))
+                    return WorkOperation<Receipt>.Failure("mention_targets_changed");
+                return await Complete(hint, actor, updated.Version, changed, true, mass?.Board == true, ct);
             }, ct);
         if (!result.Succeeded || result.Value is null) return WorkOperation<CardCommentChange>.Failure(result.ErrorCode ?? "comment_not_found");
         var receipt = result.Value;
-        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "comment_not_found", () => Admit(hint, actor, true, ct), async () =>
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, actor, "comment_not_found", async () => await Admit(hint, actor, true, ct)
+            && await GroupAllowed(hint, actor, mass?.Board == true, ct), async () =>
         {
             var row = await comments.FindAsync(hint.OrganizationId, cardId, receipt.CommentId, ct);
             if (row is null || row.AuthorId != actor || row.Version != receipt.CommentVersion)
@@ -158,12 +179,15 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
             return WorkOperation<CardCommentChange>.Success(new(receipt.OrganizationId, receipt.BoardId, cardId, receipt.CardVersion, row, receipt.Changed));
         }, ct);
     }
-    private async Task<WorkOperation<Receipt>> Complete(CardRecord hint, Guid actor, long version, CardCommentRecord comment, bool changed, CancellationToken ct)
+    private async Task<WorkOperation<Receipt>> Complete(CardRecord hint, Guid actor, long version, CardCommentRecord comment, bool changed, bool boardMass, CancellationToken ct)
     {
         if (!await Admit(hint, actor, true, ct)) return WorkOperation<Receipt>.Failure("comment_not_found");
+        if (!await GroupAllowed(hint, actor, boardMass, ct)) return WorkOperation<Receipt>.Failure("comment_not_found");
         if (!await actors.VerifyAsync(actor, ct)) return WorkOperation<Receipt>.Failure("session_unavailable");
         return WorkOperation<Receipt>.Success(new(hint.OrganizationId, hint.BoardId, hint.Id, version, comment.Id, comment.Version, actor, changed));
     }
+    private async Task<bool> GroupAllowed(CardRecord hint, Guid actor, bool boardMass, CancellationToken ct)
+        => !boardMass || (await boards.GetSyncScopeAsync(hint.BoardId, actor, ct)).Value?.Access.CanAdminister == true;
     private async Task<bool> Admit(CardRecord hint, Guid actor, bool writing, CancellationToken ct)
     {
         if (actor == Guid.Empty || !await AttachmentAdmission.CheckAsync(work, organizations, boards, hint, actor, writing, ct)) return false;

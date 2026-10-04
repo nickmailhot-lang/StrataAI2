@@ -20,6 +20,34 @@ function mock(write: () => unknown = () => ack, value: unknown = page) {
 async function review() { fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' })); await screen.findByRole('button', { name: 'Add comment' }); }
 async function create() { await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' })); fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } }); }
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+it('requires explicit group confirmations and preserves both scopes on original lost-reply recovery', async () => {
+  let attempts = 0; const content = '@card @board';
+  mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return { ...ack, comment: { ...row, content } }; });
+  render(<CardCommentsControl {...props()} canAdminister />); await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+  fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: content } });
+  const cardConsent = screen.getByRole('checkbox', { name: 'Notify current teammates assigned to this Card (@card)' });
+  const boardConsent = screen.getByRole('checkbox', { name: 'Notify all current board participants (@board)' });
+  expect(cardConsent).not.toBeChecked(); expect(boardConsent).not.toBeChecked();
+  fireEvent.click(cardConsent); fireEvent.click(boardConsent); fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Retry original comment change' }));
+  await screen.findByText('Comment added.');
+  expect(JSON.parse(writes()[0][1]!.body as string)).toEqual({ content, cardVersion: 4, massMentionConfirmation: { card: true, board: true } });
+  expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body); expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+});
+it('keeps unconfirmed groups literal, resets consent after text changes, and refuses Board consent without administration', async () => {
+  mock(() => ({ ...ack, comment: { ...row, content: '@card @board edited' } }));
+  render(<CardCommentsControl {...props()} />); await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+  const editor = screen.getByRole('textbox', { name: 'New comment' });
+  fireEvent.change(editor, { target: { value: 'x@board https://example.test/@card' } });
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  fireEvent.change(editor, { target: { value: '@card @board' } });
+  expect(screen.getByRole('checkbox', { name: 'Notify all current board participants (@board)' })).toBeDisabled();
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Notify current teammates assigned to this Card (@card)' }));
+  fireEvent.change(editor, { target: { value: '@card @board edited' } });
+  expect(screen.getByRole('checkbox', { name: 'Notify current teammates assigned to this Card (@card)' })).not.toBeChecked();
+  fireEvent.click(screen.getByRole('button', { name: 'Save comment' })); await screen.findByText('Comment added.');
+  expect(JSON.parse(writes()[0][1]!.body as string)).toEqual({ content: '@card @board edited', cardVersion: 4 });
+});
 it('inserts an explicitly reviewed teammate with immutable account/handle revision and preserves the same selection on lost-reply recovery', async () => {
   const teammate = { userId: id(9), handle: 'current_teammate', displayName: 'Current teammate', handleVersion: 3 };
   let attempts = 0;
@@ -95,7 +123,8 @@ it('preserves the original key/body after a lost reply and newer snapshots while
 });
 it.each([400, 401, 403, 404, 409, 429])('retires protected review on definite %s refusal and requires explicit discard before new work', async status => {
   mock(() => { throw new WorkRequestError(status, null); }); const p = props(); render(<CardCommentsControl {...p} />); await create();
-  fireEvent.click(screen.getByRole('button', { name: 'Save comment' })); await screen.findByText(/This comment change is unavailable/);
+  fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
+  await screen.findByText(status === 429 ? /Group mentions are limited to three deliveries/ : /This comment change is unavailable/);
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument(); expect(screen.queryByRole('button', { name: 'Retry original comment change' })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Review Card comments' })).toBeDisabled();
   fireEvent.click(screen.getByRole('button', { name: 'Discard comment review and load latest' }));

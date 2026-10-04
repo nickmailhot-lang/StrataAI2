@@ -140,8 +140,10 @@ public sealed class InMemoryCardCommentStoreTests
         services.AddSingleton<CommandContext>(); services.AddSingleton<IWorkCommandContext>(p => p.GetRequiredService<CommandContext>());
         return services.BuildServiceProvider();
     }
-    [Fact]
-    public async Task PRD_15_LateMentionActorRefusalRollsBackCommentSnapshotCardEventAndInboxThenSameKeyCommitsOnce()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PRD_15_LateMentionActorRefusalRollsBackCommentSnapshotCardEventAndInboxThenSameKeyCommitsOnce(bool mass)
     {
         var ct = TestContext.Current.CancellationToken; var actor = new Actor { RefuseMention = true };
         using var services = Demo(actor); var parent = await Parent(services, ct); var recipient = Guid.NewGuid(); var at = DateTimeOffset.UtcNow;
@@ -152,7 +154,8 @@ public sealed class InMemoryCardCommentStoreTests
         var work = services.GetRequiredService<IWorkManagementStore>();
         await work.UpsertBoardMemberAsync(parent.Card.BoardId, recipient, BoardRole.Member, at, ct);
         var context = services.GetRequiredService<CommandContext>(); context.IdempotencyKey = Guid.NewGuid();
-        var service = services.GetRequiredService<CardCommentService>(); var input = new CreateCardCommentInput($"Hello @u_{recipient:N}", 1);
+        var service = services.GetRequiredService<CardCommentService>(); var input = new CreateCardCommentInput(mass ? "Hello @board" : $"Hello @u_{recipient:N}", 1,
+            MassMentionConfirmation: mass ? new(false, true) : null);
         Assert.Equal("session_unavailable", (await service.CreateAsync(parent.Card.Id, parent.User, input, "mention-refusal", ct)).ErrorCode);
         actor.Allowed = true; actor.RefuseMention = false;
         Assert.Equal(parent.Card, await work.FindCardAsync(parent.Card.Id, ct));

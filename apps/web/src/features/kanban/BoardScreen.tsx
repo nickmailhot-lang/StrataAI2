@@ -739,6 +739,7 @@ function BoardContent() {
               onBusyChange={setBusy} onRecoveryChange={setCoverRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardCommentsControl reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              canAdminister={snapshot.access.canAdminister}
               cardId={card.id} version={card.version} editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))}
               unavailable={snapshotReading || !!loadError}
               disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery}

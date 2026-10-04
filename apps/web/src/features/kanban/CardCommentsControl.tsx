@@ -6,12 +6,12 @@ import { normalizeComment, parseCardCommentChange, parseCardCommentPage, type Ca
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import type { UrlAttachmentCreateProps } from './UrlAttachmentCreateControl';
 import { CommentMentionPicker } from './CommentMentionPicker';
-import { selectedCommentMentions, type CommentMentionSelection } from './commentMentionSelection';
+import { commentMassMentionScopes, selectedCommentMentions, type CommentMentionSelection } from './commentMentionSelection';
 
 type Review = { actor: string; page: CardCommentPage; cursor?: string };
-type Draft = { actor: string; version: number; original: CardComment | null; text: string; deleting: boolean; confirmed: boolean; selections: readonly CommentMentionSelection[] };
+type Draft = { actor: string; version: number; original: CardComment | null; text: string; deleting: boolean; confirmed: boolean; selections: readonly CommentMentionSelection[]; cardGroup: boolean; boardGroup: boolean };
 type Intent = { actor: string; key: string; path: string; method: string; body: string; check: CommentIntent };
-export type CardCommentsProps = UrlAttachmentCreateProps & { reconnectSequence?: number };
+export type CardCommentsProps = UrlAttachmentCreateProps & { reconnectSequence?: number; canAdminister?: boolean };
 export function CardCommentsControl(props: CardCommentsProps) {
   return <CommentsControl key={`${props.organizationId}/${props.boardId}/${props.cardId}`} {...props} />;
 }
@@ -28,6 +28,8 @@ function CommentsControl(props: CardCommentsProps) {
   const focusOwner = useRef<HTMLElement | null>(null); const focusDialog = useRef<HTMLElement | null>(null); const restoreFocus = useRef(false);
   const disabled = busy || mentionBusy || props.disabled || props.unavailable; const conflict = !!draft && draft.version !== props.version;
   const path = `/cards/${encodeURIComponent(props.cardId)}/comments`;
+  let declaredGroups = { card: false, board: false };
+  try { if (draft && !draft.deleting) declaredGroups = commentMassMentionScopes(draft.text); } catch { /* Invalid text is reviewed on save. */ }
   function focus(owner: HTMLElement) {
     focusOwner.current = owner; focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner);
   }
@@ -71,12 +73,13 @@ function CommentsControl(props: CardCommentsProps) {
     if (!review || disabled || draft || intent || blocked || !props.editable || !review.page.canComment || review.page.cardVersion !== props.version
       || original && (original.authorId.toLowerCase() !== review.actor.toLowerCase() || original.deletedAt !== null)) return;
     focus(owner); setDraft({ actor: review.actor, version: review.page.cardVersion, original: original ? { ...original } : null,
-      text: original?.content ?? '', deleting, confirmed: false, selections: [] });
+      text: original?.content ?? '', deleting, confirmed: false, selections: [], cardGroup: false, boardGroup: false });
   }
   async function save(owner: HTMLElement) {
     if (pending.current || disabled || blocked || !draft || !intent && (conflict || !props.editable || draft.deleting && !draft.confirmed)) return;
     let command = intent;
     if (!command) {
+      if (draft.boardGroup && !props.canAdminister) { setNotice('Board-wide mentions require current board administration rights. Review the latest Card.'); props.onRefresh(); return; }
       let text: string | undefined;
       try { text = draft.deleting ? undefined : normalizeComment(draft.text); }
       catch { setNotice('Enter valid comment text, up to 10000 characters.'); editor.current?.focus(); return; }
@@ -89,7 +92,9 @@ function CommentsControl(props: CardCommentsProps) {
         method: draft.deleting ? 'DELETE' : draft.original ? 'PATCH' : 'POST', check,
         body: JSON.stringify(draft.deleting ? { cardVersion: draft.version, version: draft.original!.version, confirmed: true }
           : { content: text, cardVersion: draft.version, ...(draft.original ? { version: draft.original.version } : {}),
-            ...(selections.length ? { mentionSelections: selections } : {}) }) };
+            ...(selections.length ? { mentionSelections: selections } : {}),
+            ...(draft.cardGroup && declaredGroups.card || draft.boardGroup && declaredGroups.board
+              ? { massMentionConfirmation: { card: draft.cardGroup && declaredGroups.card, board: draft.boardGroup && declaredGroups.board } } : {}) }) };
     }
     const originalRetry = !!intent; const captured = command;
     focus(owner); const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
@@ -112,7 +117,8 @@ function CommentsControl(props: CardCommentsProps) {
       if (!mounted.current || pending.current !== controller) return;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
         setIntent(undefined); setDraft(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(true);
-        setNotice('This comment change is unavailable. Load the latest Card before starting another change.');
+        setNotice(error.status === 429 ? 'Group mentions are limited to three deliveries per board in ten minutes. Wait, then review the latest Card.'
+          : 'This comment change is unavailable. Load the latest Card before starting another change.');
       } else { setIntent(captured); setNotice('The comment change is unconfirmed. Retry the original request to recover its acknowledgment.'); }
       props.onRefresh();
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
@@ -149,7 +155,16 @@ function CommentsControl(props: CardCommentsProps) {
           disabled={disabled || !!intent || conflict} onChange={event => setDraft({ ...draft, confirmed: event.target.checked })} />} /> :
           <TextField label={draft.original ? 'Edit your comment' : 'New comment'} multiline minRows={3} inputRef={editor} value={draft.text}
             disabled={disabled || !!intent || blocked || conflict || !props.editable} slotProps={{ htmlInput: { maxLength: 10000 } }}
-            onChange={event => setDraft({ ...draft, text: event.target.value })} />}
+            onChange={event => setDraft({ ...draft, text: event.target.value, cardGroup: false, boardGroup: false })} />}
+        {!draft.deleting && !intent && <>
+          {(declaredGroups.card || declaredGroups.board) && <Typography variant="body2">Group mentions stay plain text unless confirmed. New group deliveries are limited to three per board in ten minutes.</Typography>}
+          {declaredGroups.card && <FormControlLabel label="Notify current teammates assigned to this Card (@card)" control={<Checkbox checked={draft.cardGroup}
+            disabled={disabled || blocked || conflict || !props.editable} onChange={event => setDraft({ ...draft, cardGroup: event.target.checked })} />} />}
+          {declaredGroups.board && <FormControlLabel label="Notify all current board participants (@board)" control={<Checkbox checked={draft.boardGroup}
+            disabled={disabled || blocked || conflict || !props.editable || !props.canAdminister && !draft.boardGroup}
+            onChange={event => setDraft({ ...draft, boardGroup: event.target.checked })} />} />}
+          {declaredGroups.board && !props.canAdminister && <Typography variant="body2">Board-wide notifications require board administration rights.</Typography>}
+        </>}
         {!draft.deleting && !intent && !blocked && !conflict && props.editable && <CommentMentionPicker {...props} actor={draft.actor} version={draft.version}
           disabled={busy || props.disabled || props.unavailable} onBusyChange={setMentionBusy} onSelect={option => {
             if (disabled || intent || conflict) return;
@@ -157,7 +172,7 @@ function CommentsControl(props: CardCommentsProps) {
             const selections = [...draft.selections.filter(item => item.userId.toLowerCase() !== option.userId.toLowerCase()),
               { userId: option.userId, handle: option.handle, handleVersion: option.handleVersion }];
             if (selections.length > 20) { setNotice('Use at most 20 teammate mentions in a comment.'); return; }
-            setDraft({ ...draft, text, selections }); setNotice(undefined); editor.current?.focus();
+            setDraft({ ...draft, text, selections, cardGroup: false, boardGroup: false }); setNotice(undefined); editor.current?.focus();
           }} />}
         {intent ? <Button ref={retry} disabled={disabled} onBlur={blur} onClick={event => void save(event.currentTarget)}>Retry original comment change</Button> :
           <Button disabled={disabled || blocked || conflict || !props.editable || draft.deleting && !draft.confirmed} onBlur={blur}

@@ -9,6 +9,7 @@ cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null || true
+  admin 'GRANT INSERT ON mass_mention_reservations TO strataai_api_runtime;' >/dev/null || true
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -48,6 +49,7 @@ state() { admin "SELECT md5(jsonb_build_object(
  'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
  'notifications',(SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org'),
+ 'quotas',(SELECT jsonb_agg(to_jsonb(q) ORDER BY event_id) FROM mass_mention_reservations q WHERE tenant_id='$org'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
 before=$(state)
 gate() {
@@ -136,4 +138,62 @@ admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_
 test "$(get recipient "$inbox")" = 200
 jq -e '.items|length==0' "$scratch/response.json" >/dev/null
 test "$(get recipient "$path")" = 404
+
+admin "UPDATE board_members SET status='ACTIVE',version=version+1 WHERE tenant_id='$org' AND board_id='$board' AND user_id='$recipient';
+ INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by) VALUES('$org','$board','$card','$recipient','$owner');" >/dev/null
+# Disposable active/verified membership fixtures make this actual API fanout
+# exceed the 20-name window. Their onboarding is synthetic, not a signup test.
+admin "WITH seeded AS (
+ INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+ SELECT id,'mass-group-'||id::text||'@example.test',upper('mass-group-'||id::text||'@example.test'),
+ 'Mass fixture','ACTIVE',true,'fixture',clock_timestamp(),clock_timestamp()
+ FROM (SELECT gen_random_uuid() id FROM generate_series(1,24)) ids RETURNING id)
+ INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+ SELECT gen_random_uuid(),'$org',id,'MEMBER','ACTIVE' FROM seeded;
+ INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+ SELECT gen_random_uuid(),'$org','$board',m.user_id,'MEMBER','ACTIVE',clock_timestamp(),clock_timestamp()
+ FROM organization_members m JOIN users u ON u.id=m.user_id WHERE m.tenant_id='$org' AND u.email LIKE 'mass-group-%';" >/dev/null
+before=$(state)
+test "$(request recipient POST "$path" 21111111-1111-1111-1111-111111111120 '{"content":"@board","cardVersion":6,"massMentionConfirmation":{"card":false,"board":true}}')" = 404
+test "$before" = "$(state)"
+test "$(request owner POST "$path" 21111111-1111-1111-1111-111111111121 '{"content":"https://example.test/@board","cardVersion":6,"massMentionConfirmation":{"card":false,"board":true}}')" = 400
+test "$before" = "$(state)"
+group_key=21111111-1111-1111-1111-111111111122
+group_body=$(jq -nc --arg text "Group @card @board @u_${recipient//-/}" '{content:$text,cardVersion:6,massMentionConfirmation:{card:true,board:true}}')
+admin 'REVOKE INSERT ON mass_mention_reservations FROM strataai_api_runtime;' >/dev/null
+test "$(request owner POST "$path" "$group_key" "$group_body")" = 503
+admin 'GRANT INSERT ON mass_mention_reservations TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+admin 'REVOKE INSERT ON card_assignment_notifications FROM strataai_api_runtime;' >/dev/null
+test "$(request owner POST "$path" "$group_key" "$group_body")" = 503
+admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null
+test "$before" = "$(state)"
+test "$(request owner POST "$path" "$group_key" "$group_body")" = 200
+group_comment=$(jq -r '.comment.id' "$scratch/response.json")
+cp "$scratch/response.json" "$scratch/group-receipt.json"
+after=$(state)
+test "$(request owner POST "$path" "$group_key" "$group_body")" = 200
+cmp "$scratch/response.json" "$scratch/group-receipt.json"
+test "$after" = "$(state)"
+test "$(admin "SELECT recipient_count FROM comment_mention_snapshots WHERE tenant_id='$org' AND comment_id='$group_comment' AND comment_version=1;")" = 26
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND event_id=(SELECT event_id FROM mass_mention_reservations WHERE tenant_id='$org');")" = 25
+test "$(admin "SELECT count(*) FROM mass_mention_reservations WHERE tenant_id='$org';")" = 1
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 3
+test "$(request owner PATCH "$path/$group_comment" 21111111-1111-1111-1111-111111111123 "$(jq '.content += " edited" | .cardVersion=7 | .version=1' <<< "$group_body")")" = 200
+test "$(admin "SELECT count(*) FROM mass_mention_reservations WHERE tenant_id='$org';")" = 1
+for version in 8 9; do
+  test "$(request owner POST "$path" "$(cat /proc/sys/kernel/random/uuid)" "$(jq -nc --argjson version "$version" '{content:("Group @board "+($version|tostring)),cardVersion:$version,massMentionConfirmation:{card:false,board:true}}')")" = 200
+done
+before=$(state)
+limited_body='{"content":"Fourth group @board","cardVersion":10,"massMentionConfirmation":{"card":false,"board":true}}'
+test "$(request owner POST "$path" 21111111-1111-1111-1111-111111111124 "$limited_body")" = 429
+test "$before" = "$(state)"
+test "$(request owner POST "$path" 21111111-1111-1111-1111-111111111124 "$limited_body")" = 429
+test "$before" = "$(state)"
+test "$(admin "SELECT count(*) FROM mass_mention_reservations WHERE tenant_id='$org';")" = 3
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 5
+test "$(request recipient POST "$path" 21111111-1111-1111-1111-111111111125 '{"content":"Self group @card","cardVersion":10,"massMentionConfirmation":{"card":true,"board":false}}')" = 200
+test "$(admin "SELECT count(*) FROM mass_mention_reservations WHERE tenant_id='$org';")" = 3
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org';")" = 77
+echo 'Exact-image confirmed groups: current administration, Card assignment scope, overlap/self suppression, quota and late notification rollback, original-key recovery, stable edits and rate-refusal full rollback passed.'
 echo 'Exact-image username mentions: recipient Board/Organization/account and issuing session lock waits, atomic late-storage refusal, same-key recovery, actual source affinity, self suppression, stable recipient deltas, redaction history and current inbox authorization passed.'
