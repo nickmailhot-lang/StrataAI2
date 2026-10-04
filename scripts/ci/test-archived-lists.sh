@@ -29,9 +29,10 @@ admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES
     VALUES(gen_random_uuid(),'$org','$board','$editor','ADMIN','ACTIVE',now(),now());
   INSERT INTO board_lists(id,tenant_id,board_id,name,rank,lifecycle_state,created_at,updated_at,archived_at)
     SELECT gen_random_uuid(),'$org','$board','Archived fixture',lpad(i::text,30,'0'),'ARCHIVED',now(),now(),now() FROM generate_series(1,52) i;
-  INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,lifecycle_state,created_at,updated_at)
+  INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,lifecycle_state,created_at,updated_at,archived_at,deleted_at)
     SELECT gen_random_uuid(),l.tenant_id,l.board_id,l.id,'Contained fixture',lpad(i::text,30,'0'),
-      CASE i WHEN 1 THEN 'ACTIVE' WHEN 2 THEN 'ARCHIVED' ELSE 'DELETED' END,now(),now()
+      CASE i WHEN 1 THEN 'ACTIVE' WHEN 2 THEN 'ARCHIVED' ELSE 'DELETED' END,now()-interval '1 hour',now(),
+      CASE WHEN i=2 THEN now()-interval '1 second' ELSE NULL END, CASE WHEN i=3 THEN now() ELSE NULL END
     FROM board_lists l CROSS JOIN generate_series(1,3) i WHERE l.board_id='$board';
   INSERT INTO board_lists(id,tenant_id,board_id,name,rank,lifecycle_state,created_at,updated_at)
     VALUES(gen_random_uuid(),'$org','$board','Active fixture','800000000000000000000000000000','ACTIVE',now(),now()),
@@ -52,7 +53,9 @@ before=$(state)
 test "$(get owner "/boards/$board/archived-cards" cards-first)" = 200
 jq -e --arg org "$org" --arg board "$board" '.organizationId==$org and .boardId==$board and (.items|length)==50
   and .canDelete==true and .nextCursor==.items[-1].card.id and all(.items[];.card.lifecycleState=="archived"
-    and .card.description==null and .list.lifecycleState=="archived" and .card.listId==.list.id)' "$scratch/cards-first.json" >/dev/null
+    and .card.description==null and .list.lifecycleState=="archived" and .card.listId==.list.id
+    and (.card.archivedAt|type)=="string" and (.list.archivedAt|type)=="string" and .card.archivedAt!=.list.archivedAt
+    and (.card|has("deletedAt")|not) and (.list|has("deletedAt")|not))' "$scratch/cards-first.json" >/dev/null
 card_cursor=$(jq -r '.nextCursor' "$scratch/cards-first.json")
 test "$(get owner "/boards/$board/archived-cards?after=$card_cursor" cards-second)" = 200
 jq -e '.nextCursor==null and (.items|length)==2' "$scratch/cards-second.json" >/dev/null
@@ -68,7 +71,8 @@ test "$(get portal "/boards/$board/archived-cards")" = 404
 test "$before" = "$(state)"
 test "$(get owner "/boards/$board/archived-lists" first)" = 200
 jq -e --arg org "$org" --arg board "$board" '.organizationId==$org and .boardId==$board and (.items|length)==50
-  and .nextCursor==.items[-1].list.id and all(.items[];.list.lifecycleState=="archived" and .containedCardCount==2)' "$scratch/first.json" >/dev/null
+  and .nextCursor==.items[-1].list.id and all(.items[];.list.lifecycleState=="archived" and .containedCardCount==2
+    and .list.archivedAt==.list.updatedAt and (.list|has("deletedAt")|not))' "$scratch/first.json" >/dev/null
 cursor=$(jq -r '.nextCursor' "$scratch/first.json")
 test "$(get owner "/boards/$board/archived-lists?after=$cursor" second)" = 200
 jq -e '.nextCursor==null and (.items|length)==2 and all(.items[];.containedCardCount==2)' "$scratch/second.json" >/dev/null

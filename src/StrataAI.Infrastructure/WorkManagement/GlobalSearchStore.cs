@@ -16,7 +16,7 @@ internal sealed partial class PostgresWorkManagementStore
         await using var session = await connectionFactory.OpenTenantSessionAsync(board.OrganizationId, cancellationToken);
         await using var query = new NpgsqlCommand("""
             SELECT c.id,c.tenant_id,c.board_id,c.list_id,c.title,c.description,c.rank,c.lifecycle_state,
-              c.created_at,c.updated_at,c.version,c.start_at,c.due_at,c.due_timezone,c.due_has_time,c.due_complete
+              c.created_at,c.updated_at,c.version,c.start_at,c.due_at,c.due_timezone,c.due_has_time,c.due_complete,c.archived_at,c.deleted_at
             FROM cards c JOIN board_lists l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
             JOIN boards b ON b.tenant_id=c.tenant_id AND b.id=c.board_id
             CROSS JOIN LATERAL (SELECT

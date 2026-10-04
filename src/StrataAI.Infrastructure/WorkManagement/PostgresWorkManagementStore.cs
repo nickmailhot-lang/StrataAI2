@@ -364,7 +364,7 @@ internal sealed partial class PostgresWorkManagementStore(
         await using var session = await connectionFactory.OpenTenantSessionAsync(tenantId.Value, cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT l.id,l.tenant_id,l.board_id,l.name,l.rank,l.lifecycle_state,
-                l.created_at,l.updated_at,l.version,
+                l.created_at,l.updated_at,l.version,l.archived_at,l.deleted_at,
                 (SELECT count(*) FROM cards c WHERE c.tenant_id=l.tenant_id AND c.board_id=l.board_id
                     AND c.list_id=l.id AND c.lifecycle_state<>'DELETED')
             FROM board_lists l
@@ -376,7 +376,7 @@ internal sealed partial class PostgresWorkManagementStore(
         command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, after is null ? DBNull.Value : after.Value);
         var rows = new List<ArchivedListEntry>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        while (await reader.ReadAsync(cancellationToken)) rows.Add(new(ReadList(reader), reader.GetInt64(9)));
+        while (await reader.ReadAsync(cancellationToken)) rows.Add(new(ReadList(reader), reader.GetInt64(11)));
         return rows;
     }
 
@@ -390,7 +390,7 @@ internal sealed partial class PostgresWorkManagementStore(
             SELECT c.id,c.tenant_id,c.board_id,c.list_id,c.title,NULL::text,c.rank,c.lifecycle_state,
                 c.created_at,c.updated_at,c.version,
                 l.id,l.tenant_id,l.board_id,l.name,l.rank,l.lifecycle_state,l.created_at,l.updated_at,l.version,
-                c.start_at,c.due_at,c.due_timezone,c.due_has_time,c.due_complete
+                c.start_at,c.due_at,c.due_timezone,c.due_has_time,c.due_complete,c.archived_at,c.deleted_at,l.archived_at AS list_archived_at,l.deleted_at AS list_deleted_at
             FROM cards c JOIN board_lists l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
             WHERE c.tenant_id=@tenant AND c.board_id=@board AND c.lifecycle_state='ARCHIVED'
                 AND l.lifecycle_state<>'DELETED' AND (@after IS NULL OR c.id>@after)
@@ -403,7 +403,7 @@ internal sealed partial class PostgresWorkManagementStore(
         while (await reader.ReadAsync(cancellationToken)) rows.Add(new(ReadCard(reader),
             new(reader.GetGuid(11), reader.GetGuid(12), reader.GetGuid(13), reader.GetString(14), reader.GetString(15),
                 ParseWorkLifecycle(reader.GetString(16)), reader.GetFieldValue<DateTimeOffset>(17),
-                reader.GetFieldValue<DateTimeOffset>(18), reader.GetInt64(19))));
+                reader.GetFieldValue<DateTimeOffset>(18), reader.GetInt64(19)) { ArchivedAt = reader.IsDBNull(27) ? null : reader.GetFieldValue<DateTimeOffset>(27), DeletedAt = reader.IsDBNull(28) ? null : reader.GetFieldValue<DateTimeOffset>(28) }));
         return rows;
     }
 
@@ -451,7 +451,7 @@ internal sealed partial class PostgresWorkManagementStore(
             """
             SELECT
                 id, tenant_id, board_id, name, rank, lifecycle_state,
-                created_at, updated_at, version
+                created_at, updated_at, version, archived_at, deleted_at
             FROM board_lists
             WHERE board_id = @board_id
               AND lifecycle_state = 'ACTIVE'
@@ -480,7 +480,7 @@ internal sealed partial class PostgresWorkManagementStore(
                 """
                 SELECT
                     id, tenant_id, board_id, list_id, title, description,
-                    rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete, cover_attachment_id IS NOT NULL
+                    rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete, archived_at, deleted_at, cover_attachment_id IS NOT NULL
                 FROM cards
                 WHERE board_id = @board_id
                   AND lifecycle_state = 'ACTIVE'
@@ -495,7 +495,7 @@ internal sealed partial class PostgresWorkManagementStore(
 
             while (await reader.ReadAsync(cancellationToken))
             {
-                var card = ReadCard(reader) with { HasCover = reader.GetBoolean(16) };
+                var card = ReadCard(reader) with { HasCover = reader.GetBoolean(18) };
                 if (cardsByList.TryGetValue(card.ListId, out var bucket))
                 {
                     bucket.Add(card);
@@ -990,7 +990,7 @@ internal sealed partial class PostgresWorkManagementStore(
             """
             SELECT
                 id, tenant_id, board_id, name, rank, lifecycle_state,
-                created_at, updated_at, version
+                created_at, updated_at, version, archived_at, deleted_at
             FROM board_lists
             WHERE id = @list_id;
             """,
@@ -1058,7 +1058,7 @@ internal sealed partial class PostgresWorkManagementStore(
               AND lifecycle_state = 'ACTIVE'
             RETURNING
                 id, tenant_id, board_id, name, rank, lifecycle_state,
-                created_at, updated_at, version;
+                created_at, updated_at, version, archived_at, deleted_at;
             """,
             session.Connection,
             session.Transaction);
@@ -1124,7 +1124,7 @@ internal sealed partial class PostgresWorkManagementStore(
               AND version = @expected_version
             RETURNING
                 id, tenant_id, board_id, name, rank, lifecycle_state,
-                created_at, updated_at, version;
+                created_at, updated_at, version, archived_at, deleted_at;
             """,
             session.Connection,
             session.Transaction);
@@ -1231,7 +1231,7 @@ internal sealed partial class PostgresWorkManagementStore(
             """
             SELECT
                 id, tenant_id, board_id, list_id, title, description,
-                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete
+                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete, archived_at, deleted_at
             FROM cards
             WHERE id = @card_id;
             """,
@@ -1279,7 +1279,7 @@ internal sealed partial class PostgresWorkManagementStore(
               AND lifecycle_state = 'ACTIVE'
             RETURNING
                 id, tenant_id, board_id, list_id, title, description,
-                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete;
+                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete, archived_at, deleted_at;
             """,
             session.Connection,
             session.Transaction);
@@ -1358,7 +1358,7 @@ internal sealed partial class PostgresWorkManagementStore(
               AND lifecycle_state = 'ACTIVE'
             RETURNING
                 id, tenant_id, board_id, list_id, title, description,
-                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete;
+                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete, archived_at, deleted_at;
             """,
             session.Connection,
             session.Transaction);
@@ -1430,7 +1430,7 @@ internal sealed partial class PostgresWorkManagementStore(
               AND version = @expected_version
             RETURNING
                 id, tenant_id, board_id, list_id, title, description,
-                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete;
+                rank, lifecycle_state, created_at, updated_at, version, start_at, due_at, due_timezone, due_has_time, due_complete, archived_at, deleted_at;
             """,
             session.Connection,
             session.Transaction);
@@ -1677,7 +1677,7 @@ internal sealed partial class PostgresWorkManagementStore(
             ParseWorkLifecycle(reader.GetString(5)),
             reader.GetFieldValue<DateTimeOffset>(6),
             reader.GetFieldValue<DateTimeOffset>(7),
-            reader.GetInt64(8));
+            reader.GetInt64(8)) { ArchivedAt = reader.IsDBNull(9) ? null : reader.GetFieldValue<DateTimeOffset>(9), DeletedAt = reader.IsDBNull(10) ? null : reader.GetFieldValue<DateTimeOffset>(10) };
 
     private static CardRecord ReadCard(NpgsqlDataReader reader) =>
         new(
@@ -1693,6 +1693,8 @@ internal sealed partial class PostgresWorkManagementStore(
             reader.GetFieldValue<DateTimeOffset>(9),
             reader.GetInt64(10))
         {
+            ArchivedAt = reader.IsDBNull(reader.GetOrdinal("archived_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("archived_at")),
+            DeletedAt = reader.IsDBNull(reader.GetOrdinal("deleted_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("deleted_at")),
             StartAt = reader.IsDBNull(reader.GetOrdinal("start_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("start_at")),
             DueAt = reader.IsDBNull(reader.GetOrdinal("due_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("due_at")),
             DueTimezone = reader.IsDBNull(reader.GetOrdinal("due_timezone")) ? null : reader.GetString(reader.GetOrdinal("due_timezone")),
