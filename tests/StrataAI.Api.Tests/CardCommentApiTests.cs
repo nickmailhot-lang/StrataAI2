@@ -10,6 +10,43 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_15_CardGroupsUseAssigneesAndOriginalBoardGroupReceiptsRequireCurrentAdministration()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>(); var commands = app.Services.GetRequiredService<IWorkManagementService>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Group receipts", null, null, DateTimeOffset.UtcNow, ct);
+        Assert.True((await commands.SetCardMemberAsync(card.Id, f.Owner, f.Owner, true, 1, "group-assignment", ct)).Succeeded);
+        Assert.True((await commands.SetCardMemberAsync(card.Id, f.Recipient, f.Owner, true, 2, "group-assignment", ct)).Succeeded);
+        var path = $"/cards/{card.Id}/comments"; var cardKey = Guid.NewGuid().ToString();
+        var cardInput = new CreateCardCommentInput("Current assignees @card; literal @board", 3, MassMentionConfirmation: new(true, false));
+        using var cardCreated = await Mutate(member, HttpMethod.Post, path, cardInput, cardKey);
+        Assert.Equal(HttpStatusCode.OK, cardCreated.StatusCode); var first = (await cardCreated.Content.ReadFromJsonAsync<CardCommentChange>(ct))!;
+        var inbox = app.Services.GetRequiredService<IWorkNotificationStore>();
+        Assert.Single(await inbox.ListCardNotificationsAsync(f.Organization, f.Owner, cancellationToken: ct), row => row.NotificationType == "MENTION_CREATED");
+        Assert.DoesNotContain(await inbox.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct), row => row.NotificationType == "MENTION_CREATED");
+        var boardKey = Guid.NewGuid().ToString(); var boardInput = new CreateCardCommentInput("Admin notification @board", 4, MassMentionConfirmation: new(false, true));
+        using var denied = await Mutate(member, HttpMethod.Post, path, boardInput, boardKey);
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        using var promote = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "ADMIN" });
+        Assert.Equal(HttpStatusCode.OK, promote.StatusCode);
+        using var boardCreated = await Mutate(member, HttpMethod.Post, path, boardInput, boardKey);
+        Assert.Equal(HttpStatusCode.OK, boardCreated.StatusCode); var boardChange = (await boardCreated.Content.ReadFromJsonAsync<CardCommentChange>(ct))!;
+        using var boardRetry = await Mutate(member, HttpMethod.Post, path, boardInput, boardKey);
+        Assert.Equal(boardChange, await boardRetry.Content.ReadFromJsonAsync<CardCommentChange>(ct));
+        using var demote = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, demote.StatusCode);
+        using var revokedReceipt = await Mutate(member, HttpMethod.Post, path, boardInput, boardKey);
+        Assert.Equal(HttpStatusCode.NotFound, revokedReceipt.StatusCode);
+        Assert.DoesNotContain("Admin notification", await revokedReceipt.Content.ReadAsStringAsync(ct));
+        Assert.Equal(5, (await work.FindCardAsync(card.Id, ct))!.Version);
+        Assert.Equal(2, (await inbox.ListCardNotificationsAsync(f.Organization, f.Owner, cancellationToken: ct)).Count(row => row.NotificationType == "MENTION_CREATED"));
+        using var retainedCardReceipt = await Mutate(member, HttpMethod.Post, path, cardInput, cardKey);
+        Assert.Equal(HttpStatusCode.OK, retainedCardReceipt.StatusCode);
+        Assert.Equal(first, await retainedCardReceipt.Content.ReadFromJsonAsync<CardCommentChange>(ct));
+    }
+    [Fact]
     public async Task PRD_15_ConfirmedBoardMentionsRequireAdministrationAndRateLimitAtomicallyAcrossComments()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();

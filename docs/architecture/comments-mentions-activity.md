@@ -1253,3 +1253,32 @@ preserved. This proves a different explicit boundary (revocation while account
 verification waits), not deletion through a transaction-held session lock.
 Natural session expiry during a late parent wait still needs its own complete
 mention scenario. Local shell syntax passes; corrected actual execution is pending.
+
+Native group scenarios are now registered for desktop (1280px) and phone
+(390px). They use actual account invitations, private Board membership and Card
+assignment, keyboard group consent, scoped accessibility assertions, actual
+committed-response recovery with identical request/key, literal unconfirmed
+groups, three-delivery quota and fourth-attempt refusal, member-only Card scope
+and revoked inbox visibility. Local Playwright discovery finds both scenarios;
+discovery does not prove browser execution or accessibility acceptance.
+
+An additional real-cookie API test covers Card groups targeting assignees,
+Board group permission gained by promotion, exact original receipts and denial
+after administrative demotion, while an original Card-group receipt remains
+admitted for a current commenting member. Warning-as-error .NET compilation
+passes; execution of this new test awaits Linux CI.
+
+The mandatory mention fixture now also shortens only its disposable issuing
+session, observes the actual Card UPDATE lock wait while that session is still
+valid, waits for natural expiry, and requires 401 plus complete unchanged
+Card/comment/history/event/audit/job/inbox/quota/receipt state. A fresh cookie then
+recovers the same uncommitted key. Local shell syntax and diff checks pass;
+this new late-expiry scenario has not yet executed against release images.
+
+Run 37178258422 for 5627cad has passed source quality, actual PostgreSQL
+integration, managed tests and immutable image builds; container integration
+and security remain live at this observation. The earlier 4610ee5 container
+run has since failed the mention fixture; it does not establish release
+acceptance. PRD-15 remains open with **50% estimated remaining work**, including
+complete runtime/native lifecycle acceptance, capacity/cardinality cost,
+retention and the activity/event/historical-actor projections and MUI feeds.

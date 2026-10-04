@@ -101,6 +101,29 @@ wait "$request_pid"; request_pid=''
 test "$(cat "$scratch/status")" = 401
 test "$before" = "$(state)"
 curl --fail --silent --show-error -c "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/owner.credentials")" "$base/auth/login" >/dev/null
+# Natural expiry can cross a late parent wait without deleting a session row
+# already locked by the command. Require initial admission and the actual Card
+# update wait before allowing the clock to expire the issuing cookie.
+hash=$(awk '$6=="strataai_session" {print $7}' "$scratch/owner.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1)
+[[ "$hash" =~ ^[0-9a-f]{64}$ ]]
+gate "SELECT id FROM cards WHERE tenant_id='$org' AND id='$card' FOR UPDATE;"
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '15 seconds' WHERE token_hash='$hash';" >/dev/null
+request owner POST "$path" "$key" "$body" > "$scratch/status" & request_pid=$!
+blocked '%UPDATE cards%'
+test "$(admin "SELECT expires_at>clock_timestamp() FROM sessions WHERE token_hash='$hash';")" = t
+expired=false
+for ((attempt=0;attempt<200;attempt++)); do
+  if test "$(admin "SELECT expires_at<=clock_timestamp() FROM sessions WHERE token_hash='$hash';")" = t; then expired=true; break; fi
+  kill -0 "$request_pid" || exit 1; sleep 0.1
+done
+test "$expired" = true
+release ''
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/status")" = 401
+jq -e '.code=="session_unavailable" and (has("comment")|not)' "$scratch/response.json" >/dev/null
+test "$before" = "$(state)"
+curl --fail --silent --show-error -c "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/owner.credentials")" "$base/auth/login" >/dev/null
+echo 'Mention commands: issuing session expiry after a verified Card update wait rolls back Card/comment/history/event/audit/job/inbox/quota/receipt effects; fresh-cookie original-key recovery follows.'
 stale_body=$(jq '.mentionSelections[0].handleVersion=2' <<< "$body")
 test "$(request owner POST "$path" "$key" "$stale_body")" = 409
 test "$before" = "$(state)"
