@@ -176,6 +176,9 @@ jobs:
       - name: Verify canonical mention handles, immutable reservations and account boundaries
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-mention-handle-storage.sql
 
+      - name: Verify account handle receipts, immutable metadata and expired-only cleanup
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-handle-claim-replay-storage.sql
+
       - name: Verify durable upload identity, tenant isolation and publication transitions
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-upload-intent-storage.sql
 

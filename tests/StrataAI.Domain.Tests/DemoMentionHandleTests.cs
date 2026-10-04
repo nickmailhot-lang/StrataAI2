@@ -15,10 +15,11 @@ public sealed class DemoMentionHandleTests
 {
     private sealed class Actor : ICommandActorAuthorization
     { public bool Allowed = true; public Task<bool> VerifyAsync(Guid user, CancellationToken ct = default) => Task.FromResult(Allowed); }
-    private static ServiceProvider Demo(Actor? actor = null)
+    private sealed class Clock : IClock { public DateTimeOffset UtcNow { get; set; } = DateTimeOffset.UtcNow; }
+    private static ServiceProvider Demo(Actor? actor = null, IClock? clock = null)
     {
         var services = new ServiceCollection(); var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
-        services.AddSingleton<IClock, SystemClock>(); services.AddSingleton<ICommandActorAuthorization>(actor ?? new());
+        services.AddSingleton<IClock>(clock ?? new SystemClock()); services.AddSingleton<ICommandActorAuthorization>(actor ?? new());
         services.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
         return services.BuildServiceProvider();
@@ -101,6 +102,7 @@ public sealed class DemoMentionHandleTests
         await Seed(provider, user, ct); await Seed(provider, claimant, ct);
         var identity = provider.GetRequiredService<IIdentityStore>(); var store = provider.GetRequiredService<IUserMentionHandleStore>();
         var receipts = provider.GetRequiredService<IIdentityProfileReplayStore>(); var unit = provider.GetRequiredService<IIdentityUnitOfWork>();
+        var handleReceipts = provider.GetRequiredService<IIdentityHandleClaimReplayStore>();
         var initial = await Current(provider, user.Id, ct); var key = Guid.NewGuid(); using var canceled = CancellationTokenSource.CreateLinkedTokenSource(ct);
         async Task<IdentityOperation<bool>> Execute()
         {
@@ -108,6 +110,7 @@ public sealed class DemoMentionHandleTests
             var updated = await identity.UpdateProfileAsync(user.Id, "Tentative", null, "en", "UTC", 1, DateTimeOffset.UtcNow, ct);
             Assert.NotNull(updated); await identity.AppendDomainEventAsync(user.Id, "USER_PROFILE_UPDATED", "fixture", ct);
             await receipts.SaveAsync(user.Id, key, new("fixture", Profile(updated)), ct);
+            Assert.True(await handleReceipts.TrySaveAsync(user.Id, key, new string('a', 64), new(updated.Version, 2, true), ct));
             if (mode == "exception") throw new InvalidOperationException("fixture_failure");
             if (mode == "cancel") { canceled.Cancel(); return IdentityOperation<bool>.Success(true); }
             return IdentityOperation<bool>.Failure("fixture_refused");
@@ -119,6 +122,7 @@ public sealed class DemoMentionHandleTests
         var inspected = await unit.ExecuteAsync(user.Id, async () =>
         {
             Assert.Null(await receipts.ReadAsync(user.Id, key, ct));
+            Assert.Null(await handleReceipts.ReadAsync(user.Id, key, ct));
             var events = await identity.ReadEventsAsync(user.Id, 0, ct); Assert.True(events.Succeeded); Assert.Empty(events.Value!.Events);
             return IdentityOperation<bool>.Success(true);
         }, ct); Assert.True(inspected.Succeeded);
@@ -161,5 +165,40 @@ public sealed class DemoMentionHandleTests
             return IdentityOperation<bool>.Success(true);
         }, ct));
         Assert.Equal(1, (await Current(provider, user.Id, ct))!.Version);
+    }
+    [Fact]
+    public async Task PRD_02_15_HandleReceiptsRetainImmutableMetadataExactExpiryAndCurrentSubjectScope()
+    {
+        var ct = TestContext.Current.CancellationToken; var clock = new Clock(); using var provider = Demo(clock: clock);
+        var user = Account(); var other = Account(); await Seed(provider, user, ct); await Seed(provider, other, ct);
+        var unit = provider.GetRequiredService<IIdentityUnitOfWork>(); var store = provider.GetRequiredService<IIdentityHandleClaimReplayStore>();
+        var key = Guid.NewGuid(); var fingerprint = new string('a', 64); var receipt = new HandleClaimReceipt(1, 1, false);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.ReadAsync(user.Id, key, ct));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => unit.ExecuteAsync(user.Id, async () =>
+        { await store.TrySaveAsync(other.Id, key, fingerprint, receipt, ct); return IdentityOperation<bool>.Success(true); }, ct));
+        var saved = await unit.ExecuteAsync(user.Id, async () =>
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => store.TrySaveAsync(user.Id, key, "raw_handle", receipt, ct));
+            await Assert.ThrowsAsync<ArgumentException>(() => store.TrySaveAsync(user.Id, Guid.Empty, fingerprint, receipt, ct));
+            await Assert.ThrowsAsync<ArgumentException>(() => store.TrySaveAsync(user.Id, key, fingerprint, new(0, 1, false), ct));
+            Assert.True(await store.TrySaveAsync(user.Id, key, fingerprint, receipt, ct));
+            Assert.False(await store.TrySaveAsync(user.Id, key, new string('b', 64), new(2, 2, true), ct));
+            return IdentityOperation<IdentityHandleClaimReplay?>.Success(await store.ReadAsync(user.Id, key, ct));
+        }, ct);
+        Assert.True(saved.Succeeded); var original = saved.Value; Assert.NotNull(original);
+        Assert.Equal(fingerprint, original.Fingerprint); Assert.Equal(receipt, original.Receipt); Assert.False(original.Expired);
+        Assert.Equal(TimeSpan.FromHours(24), original.ExpiresAt - original.CreatedAt);
+        clock.UtcNow = original.ExpiresAt;
+        var expired = await unit.ExecuteAsync(user.Id, async () =>
+        {
+            Assert.False(await store.TrySaveAsync(user.Id, key, new string('b', 64), new(2, 2, true), ct));
+            return IdentityOperation<IdentityHandleClaimReplay?>.Success(await store.ReadAsync(user.Id, key, ct));
+        }, ct);
+        Assert.Equal(original with { Expired = true }, expired.Value);
+        var isolated = await unit.ExecuteAsync(other.Id, async () =>
+        {
+            Assert.Null(await store.ReadAsync(other.Id, key, ct));
+            return IdentityOperation<bool>.Success(await store.TrySaveAsync(other.Id, key, fingerprint, receipt, ct));
+        }, ct); Assert.True(isolated.Succeeded); Assert.True(isolated.Value);
     }
 }

@@ -61,6 +61,8 @@ public static class IdentityRegistration
             services.AddSingleton<DemoMentionHandleRegistry>();
             services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => provider.GetRequiredService<DemoMentionHandleRegistry>());
             services.AddSingleton<IUserMentionHandleStore, InMemoryUserMentionHandleStore>();
+            services.AddSingleton<IIdentityHandleClaimReplayStore, InMemoryIdentityHandleClaimReplayStore>();
+            services.AddSingleton<IDemoIdentityTransactionParticipant>(provider => (IDemoIdentityTransactionParticipant)provider.GetRequiredService<IIdentityHandleClaimReplayStore>());
             services.AddSingleton<IInvitationRegistrationProofStore, InMemoryInvitationRegistrationProofStore>();
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();
             services.AddSingleton<IAccountDeactivationOwnership, InMemoryAccountDeactivationOwnership>();
@@ -86,6 +88,7 @@ public static class IdentityRegistration
             services.AddSingleton<IAccountDeactivationOwnership, PostgresAccountDeactivationOwnership>();
             services.AddSingleton<IIdentityStore, PostgresIdentityStore>();
             services.AddSingleton<IUserMentionHandleStore, PostgresUserMentionHandleStore>();
+            services.AddSingleton<IIdentityHandleClaimReplayStore, PostgresIdentityHandleClaimReplayStore>();
             services.AddSingleton<IIdentityUnitOfWork, PostgresIdentityUnitOfWork>();
             services.AddSingleton<IIdentityProfileReplayStore, PostgresIdentityProfileReplayStore>();
             services.AddSingleton<IIdentityRevocationReplayStore, PostgresIdentityRevocationReplayStore>();

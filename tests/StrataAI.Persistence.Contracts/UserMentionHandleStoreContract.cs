@@ -143,6 +143,7 @@ internal static class UserMentionHandleStoreContract
             }, ct);
             Require(bounded.Succeeded && await ReservationCount(first) == 32 && (await Claim(first, claimed, 33)).Succeeded,
                 "Policy savepoint leaked aliases or blocked reclaim at the quota.");
+            await HandleClaimReplayContract.RunAsync(admin, provider, first, users[1], ct);
         }
         finally
         {

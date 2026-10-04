@@ -10,7 +10,7 @@ DECLARE
       'identity_delivery_jobs','identity_event_streams','identity_events','identity_profile_replays',
       'identity_revocation_replays','identity_login_replays','identity_registration_replays',
       'identity_recovery_request_replays','identity_token_consumption_replays',
-      'mention_handle_reservations','user_mention_handles'];
+      'mention_handle_reservations','user_mention_handles','identity_handle_claim_replays'];
 BEGIN
     FOR relation IN
       SELECT c.oid, c.relname, c.relrowsecurity, c.relforcerowsecurity

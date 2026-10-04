@@ -403,3 +403,51 @@ and foreign write rejection without advancing the other account. Compilation
 passes; these expanded Production subject checks await their exact commit's
 Linux execution. Current-session handle setting and all remaining mention/
 activity acceptance are still unfinished.
+
+7583037 passes its complete managed source job: 595 Domain and 278 API tests,
+zero failures, alongside web and PostgreSQL. 4528b75 also passes all source
+gates; restricted PostgreSQL logs confirm owning-subject read/write isolation
+for the expanded Production handle adapter. Immutable image/security/native
+release gates remain separate and do not close complete PRD acceptance.
+
+Migration 057 adds forced account-subject RLS for immutable handle-claim retry
+receipts. Stored data contains only account/key identity, a canonical request
+fingerprint, user/handle revisions, Changed and finite creation/expiry metadata.
+It stores no former handle, profile, credentials or response body. Retention is
+exactly 24 hours from server statement time. An existing original key cannot be
+overwritten, including after expiry until maintenance removes it. Reads retain
+an expired marker so the future command can refuse expired recovery explicitly.
+New commands use new keys; their original version fences also remain required.
+
+Only the exact owning identity subject can invoke the Production/Demo receipt
+adapters. Save uses insert-on-conflict-without-update, preserving original
+fingerprints, revisions and expiry. Demo receipt state participates in account
+rollback. Its process-local cache is bounded to 10,000 records and removes at
+most 100 expired records when inserting a new key; an existing key is checked
+before cleanup. This is ephemeral Demo behavior, not a Production fallback.
+
+The API has subject-scoped SELECT/INSERT and no UPDATE/DELETE/maintenance
+execution. The separate Worker has only expired key/expiry metadata, DELETE and
+the narrow invoker purge capability under GLOBAL_IDENTITY_RETRY_CLEANUP. It
+cannot read fingerprints, acknowledged revisions, Changed or private creation
+metadata. Subject spoofing cannot widen maintenance into live receipts. Purge
+uses a bounded indexed expiry page of 100; the existing Worker cleanup now
+covers seven receipt types with a maximum aggregate result of 700. Ordered
+upgrade/repeat, runtime grants and exact-image readiness require migration 057.
+
+The new actual SQL contract checks body-free catalog shape, forced RLS,
+missing/foreign subjects, canonical keys/fingerprints, positive revisions,
+immutable identity/history, exact retention and expired-only private Worker
+read/delete/purge bounds. The restricted C# contract exercises owning subject,
+typed acknowledgment shape, original-key preservation, exact expiry, refusal
+rollback and retained expired keys. Demo cases add scope/expiry/immutability
+and include new receipt state in failed-command rollback. Compilation and shell
+syntax checks pass; these new execution checks await their own Linux CI run.
+Actor eligibility in persistence fixtures remains explicitly synthetic.
+
+This completes receipt storage groundwork, not the account-setting producer.
+Current-session checks before commit/recovery, dual account/handle version
+admission, atomic user revision/audit/identity events, current-only hydration of
+the acknowledgment, stable HTTP errors and MUI original-intent recovery still
+need implementation. No account handle HTTP command or mention notification
+producer is exposed by this slice; all unfinished acceptance remains open.
