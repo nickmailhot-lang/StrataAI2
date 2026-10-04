@@ -62,7 +62,15 @@ state() { admin "SELECT md5(jsonb_build_object(
   'audit',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org'),
   'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='$org'),
   'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text);"; }
-key=$(uuid); before=$(state)
+source_state() { admin "SELECT md5(jsonb_build_object(
+  'board',(SELECT to_jsonb(b) FROM boards b WHERE tenant_id='$org' AND id='$source'),
+  'lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l WHERE tenant_id='$org' AND board_id='$source'),
+  'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id='$org' AND board_id='$source'),
+  'labels',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_labels l WHERE tenant_id='$org' AND board_id='$source'),
+  'associations',(SELECT jsonb_agg(to_jsonb(a) ORDER BY card_id,label_id) FROM card_labels a WHERE tenant_id='$org' AND board_id='$source'),
+  'checklists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY l.id) FROM checklists l JOIN cards c ON c.tenant_id=l.tenant_id AND c.id=l.card_id WHERE c.tenant_id='$org' AND c.board_id='$source'),
+  'items',(SELECT jsonb_agg(to_jsonb(i) ORDER BY i.id) FROM checklist_items i JOIN checklists l ON l.tenant_id=i.tenant_id AND l.id=i.checklist_id JOIN cards c ON c.tenant_id=l.tenant_id AND c.id=l.card_id WHERE c.tenant_id='$org' AND c.board_id='$source'))::text);"; }
+key=$(uuid); before=$(state); source_before=$(source_state)
 admin 'REVOKE INSERT ON checklist_items FROM strataai_api_runtime;' >/dev/null; revoked=true
 code=$(request POST "/boards/$source/copy" '{"name":"Independent Board","version":1}' "$key")
 test "$code" = 503; jq -e '.code=="work_storage_unavailable"' "$scratch/response" >/dev/null
@@ -97,11 +105,16 @@ cp "$scratch/response" "$scratch/receipt"; copy=$(jq -r '.id' "$scratch/response
 jq -e --arg org "$org" --arg source "$source" '.id!=$source and .organizationId==$org and .visibility=="PRIVATE" and .version==1' "$scratch/response" >/dev/null
 test "$(admin "SELECT count(*) FROM board_lists WHERE tenant_id='$org' AND board_id='$copy';")" = 200
 test "$(admin "SELECT count(*) FROM cards WHERE tenant_id='$org' AND board_id='$copy';")" = 5000
+test "$(admin "SELECT count(*) FROM board_lists WHERE tenant_id='$org' AND board_id='$copy' AND lifecycle_state='ARCHIVED';")" = 1
+test "$(admin "SELECT count(*) FROM cards WHERE tenant_id='$org' AND board_id='$copy' AND lifecycle_state='ARCHIVED';")" = 200
+test "$(admin "SELECT count(*) FROM board_lists l JOIN boards b ON b.tenant_id=l.tenant_id AND b.id=l.board_id WHERE l.tenant_id='$org' AND l.board_id='$copy' AND l.version=1 AND l.created_at=b.created_at AND l.updated_at=b.created_at AND l.deleted_at IS NULL AND l.deleted_by IS NULL AND (l.archived_at IS NULL OR l.archived_at=b.created_at);")" = 200
+test "$(admin "SELECT count(*) FROM cards c JOIN boards b ON b.tenant_id=c.tenant_id AND b.id=c.board_id WHERE c.tenant_id='$org' AND c.board_id='$copy' AND c.version=1 AND c.created_at=b.created_at AND c.updated_at=b.created_at AND c.deleted_at IS NULL AND c.deleted_by IS NULL AND (c.archived_at IS NULL OR c.archived_at=b.created_at);")" = 5000
 test "$(admin "SELECT count(*) FROM card_labels WHERE tenant_id='$org' AND board_id='$copy';")" = 10000
 test "$(admin "SELECT count(*) FROM board_labels WHERE tenant_id='$org' AND board_id='$copy';")" = 2
 test "$(admin "SELECT count(*) FROM checklist_items i JOIN checklists l ON l.tenant_id=i.tenant_id AND l.id=i.checklist_id JOIN cards c ON c.tenant_id=l.tenant_id AND c.id=l.card_id WHERE c.tenant_id='$org' AND c.board_id='$copy' AND NOT i.completed AND i.version=1;")" = 126
 test "$(admin "SELECT count(*) FROM board_members WHERE tenant_id='$org' AND board_id='$copy' AND user_id='$actor';")" = 1
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND board_id='$copy' AND event_type IN('BOARD_CREATED','BOARD_COPIED');")" = 2
+test "$(source_state)" = "$source_before"
 after=$(state)
 test "$(request POST "/boards/$source/copy" '{"name":"Independent Board","version":1}' "$key")" = 201
 cmp "$scratch/receipt" "$scratch/response"; test "$(state)" = "$after"
