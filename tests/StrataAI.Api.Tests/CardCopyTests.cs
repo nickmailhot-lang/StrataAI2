@@ -42,7 +42,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.OK, dates.StatusCode);
         using var comment = await Mutate(member, HttpMethod.Post, $"/cards/{source.Id}/comments", new CreateCardCommentInput("Source history only", 3));
         Assert.Equal(HttpStatusCode.OK, comment.StatusCode);
-        using var watch = await Mutate(member, HttpMethod.Put, $"/watch/CARD/{source.Id}", new { }); Assert.Equal(HttpStatusCode.OK, watch.StatusCode);
+        using var watch = await Mutate(member, HttpMethod.Put, $"/watch/CARD/{source.Id}?version=0", new { }); Assert.Equal(HttpStatusCode.OK, watch.StatusCode);
         using var membership = await Mutate(owner, HttpMethod.Put, $"/cards/{source.Id}/members/{f.Recipient}?version=4", new { });
         Assert.Equal(HttpStatusCode.OK, membership.StatusCode);
         var before = (await work.FindCardAsync(source.Id, ct))!;
@@ -56,7 +56,7 @@ public sealed partial class ApiHostTests
             using var listResponse = await Mutate(owner, HttpMethod.Post, $"/boards/{destinationBoard}/lists", new { name = "Copy destination" });
             destinationList = (await listResponse.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
         }
-        using var boardWatch = await Mutate(owner, HttpMethod.Put, $"/watch/BOARD/{destinationBoard}", new { }); Assert.Equal(HttpStatusCode.OK, boardWatch.StatusCode);
+        using var boardWatch = await Mutate(owner, HttpMethod.Put, $"/watch/BOARD/{destinationBoard}?version=0", new { }); Assert.Equal(HttpStatusCode.OK, boardWatch.StatusCode);
         var input = new { sourceBoardId = f.Board, destinationListId = destinationList, title = "  Independent copy  ", expectedVersion = before.Version };
         var key = Guid.NewGuid().ToString(); var path = $"/cards/{source.Id}/copy";
         using var response = await Mutate(member, HttpMethod.Post, path, input, key); Assert.Equal(HttpStatusCode.OK, response.StatusCode);

@@ -49,8 +49,8 @@ test "$(request owner POST "/cards/$card/checklists/$checklist/items" '{"text":"
 item=$(jq -r '.item.id' "$scratch/response.json")
 test "$(request owner PATCH "/cards/$card/checklists/$checklist/items/$item" '{"text":"Copied work","completed":true,"cardVersion":5,"checklistVersion":2,"version":1}')" = 200
 test "$(request member POST "/cards/$card/comments" '{"content":"Original history","cardVersion":6}')" = 200
-test "$(request member PUT "/watch/CARD/$card" '{}')" = 200
-test "$(request owner PUT "/watch/BOARD/$destination" '{}')" = 200
+test "$(request member PUT "/watch/CARD/$card?version=0" '{}')" = 200
+test "$(request owner PUT "/watch/BOARD/$destination?version=0" '{}')" = 200
 test "$(request owner PUT "/cards/$card/members/$member?version=7" '{}')" = 200
 for id in "$source" "$destination" "$source_list" "$destination_list" "$card" "$label" "$checklist" "$item"; do [[ "$id" =~ ^[0-9a-f-]{36}$ ]]; done
 state() { admin "SELECT md5(jsonb_build_object(
