@@ -89,6 +89,18 @@ best-effort metrics, never authoritative audit history. Seventeen focused web
 cases and strict solution compilation passed locally; Linux parser execution,
 native acceptance and large-data search measurements remain outstanding.
 
+The required capacity stage also runs `test-search-capacity.sh` against its
+existing 200-List/5,000-active-Card/100,000-archived-Card fixture. Active and
+archived first/seek pages must each hold 50 results, collectively match the
+first 100 persisted matching UUIDs without overlap, and leave Card revisions,
+audit/event/receipt counts unchanged. Twenty serial warm samples per page are
+retained in `search-capacity-<revision>` with fixed sizes/timings only. The
+500 ms page-read p95 is an explicit engineering budget, separate from the PRD's
+mutation acknowledgment target. This fixture does not measure simultaneous
+clients, every archived continuation page or native UI rendering. Shell syntax
+and composition checks passed; actual scale correctness and timings await the
+required build-once image run.
+
 The internal shell now links to `/app/:organizationId/search`, with MUI text,
 label/member name, composition and lifecycle controls. A submitted search
 replaces its current page rather than accumulating an unbounded collection.

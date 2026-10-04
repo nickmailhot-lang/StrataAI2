@@ -570,6 +570,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 90
 
+      - name: Retain fixed-scope global search capacity measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: search-capacity-${{ github.sha }}
+          path: artifacts/capacity/search.json
+          if-no-files-found: ignore
+          retention-days: 90
+
       - name: Retain fixed-scope comment capacity measurements
         if: always()
         uses: actions/upload-artifact@v7
