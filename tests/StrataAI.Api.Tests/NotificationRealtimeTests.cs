@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
 using Xunit;
 
@@ -46,6 +47,22 @@ public sealed partial class ApiHostTests
         Assert.Equal(id, change.GetProperty("entityId").GetGuid());
         Assert.Equal(f.Recipient, change.GetProperty("actorId").GetGuid());
         Assert.Equal(receipt.GetProperty("items")[0].GetProperty("readAt").GetDateTimeOffset(), change.GetProperty("createdAt").GetDateTimeOffset());
+        Assert.Equal(OrganizationRemoveMemberResult.Removed, await app.Services.GetRequiredService<IOrganizationStore>()
+            .RemoveMemberAsync(f.Organization, f.Recipient, DateTimeOffset.UtcNow, ct));
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(TimeSpan.FromSeconds(8));
+        var closed = false;
+        try
+        {
+            while (!closed)
+            {
+                var message = await Frame(socket, deadline.Token);
+                closed = message is null || message.Value.GetProperty("type").GetInt32() is 3 or 7;
+                if (message is not null && !closed) Assert.NotEqual(2, message.Value.GetProperty("type").GetInt32());
+            }
+        }
+        catch (WebSocketException) { closed = true; }
+        Assert.True(closed);
     }
 
     [Fact]
