@@ -14,6 +14,51 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class InMemoryCardCommentStoreTests
 {
+    [Fact]
+    public async Task PRD_15_UsernameMentionsPublishOnlyNewStableRecipientsWithImmutableRevisionHistory()
+    {
+        var ct = TestContext.Current.CancellationToken; using var services = Demo(new());
+        var parent = await Parent(services, ct); var at = DateTimeOffset.UtcNow;
+        var identity = services.GetRequiredService<IIdentityStore>(); var recipient = Guid.NewGuid();
+        foreach (var user in new[] { parent.User, recipient })
+        {
+            var email = $"{user:N}@example.test";
+            Assert.True(await identity.TryCreateUserAsync(new(user, email, email.ToUpperInvariant(), "Teammate", null, "en", "UTC",
+                AccountStatus.Active, true, "fixture", at, at, 1), null, null, ct));
+        }
+        await services.GetRequiredService<IOrganizationStore>().AddOrRestoreMemberAsync(parent.Org, recipient, OrganizationRole.Member, at, ct);
+        await services.GetRequiredService<IWorkManagementStore>().UpsertBoardMemberAsync(parent.Card.BoardId, recipient, BoardRole.Member, at, ct);
+        var context = services.GetRequiredService<CommandContext>(); var service = services.GetRequiredService<CardCommentService>();
+        var notifications = services.GetRequiredService<IWorkNotificationStore>(); var snapshots = services.GetRequiredService<ICommentMentionSnapshotStore>();
+        var text = $"Hello @u_{recipient:N} @u_{recipient:N} @u_{parent.User:N} @unknown_user";
+        context.IdempotencyKey = Guid.NewGuid(); var input = new CreateCardCommentInput(text, 1);
+        var created = await service.CreateAsync(parent.Card.Id, parent.User, input, "mention-command", ct);
+        Assert.True(created.Succeeded); var row = created.Value!;
+        Assert.Equal(row, (await service.CreateAsync(parent.Card.Id, parent.User, input, "mention-retry", ct)).Value);
+        var first = Assert.Single(await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct));
+        Assert.Equal("MENTION_CREATED", first.NotificationType);
+        Assert.Empty(await notifications.ListCardNotificationsAsync(parent.Org, parent.User, cancellationToken: ct));
+        var history = await Scoped(services, parent.Org, () => snapshots.FindSnapshotAsync(parent.Org, parent.Card.Id, row.Comment.Id, 1, ct), ct);
+        Assert.Equal(new[] { parent.User, recipient }.Order(), history!.Recipients);
+        context.IdempotencyKey = Guid.NewGuid();
+        var edited = await service.EditAsync(parent.Card.Id, row.Comment.Id, parent.User, new(text + " updated", 2, 1), "mention-edit", ct);
+        Assert.True(edited.Succeeded);
+        Assert.Equal(first, Assert.Single(await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct)));
+        context.IdempotencyKey = Guid.NewGuid();
+        var removed = await service.EditAsync(parent.Card.Id, row.Comment.Id, parent.User, new("Removed references", 3, 2), "mention-remove", ct);
+        Assert.True(removed.Succeeded);
+        Assert.Empty((await Scoped(services, parent.Org, () => snapshots.FindSnapshotAsync(parent.Org, parent.Card.Id, row.Comment.Id, 3, ct), ct))!.Recipients);
+        context.IdempotencyKey = Guid.NewGuid();
+        var added = await service.EditAsync(parent.Card.Id, row.Comment.Id, parent.User, new(text, 4, 3), "mention-readd", ct);
+        Assert.True(added.Succeeded);
+        Assert.Equal(2, (await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct)).Count);
+        context.IdempotencyKey = Guid.NewGuid();
+        Assert.True((await service.DeleteAsync(parent.Card.Id, row.Comment.Id, parent.User, new(5, 4, true), "mention-delete", ct)).Succeeded);
+        Assert.Empty((await Scoped(services, parent.Org, () => snapshots.FindSnapshotAsync(parent.Org, parent.Card.Id, row.Comment.Id, 5, ct), ct))!.Recipients);
+        var changes = (await services.GetRequiredService<IWorkEventReader>().ReadAsync(parent.Org, parent.Card.BoardId, 0, 50, ct)).Events;
+        Assert.Equal(2, changes.Count(change => change.Event.EventType == "MENTION_CREATED"));
+        Assert.All(changes, change => { Assert.Equal(parent.Card.Id, change.Event.EntityId); Assert.Equal("Card", change.Event.EntityType); });
+    }
     [Theory]
     [InlineData("failure")]
     [InlineData("exception")]
@@ -68,7 +113,16 @@ public sealed class InMemoryCardCommentStoreTests
         Assert.Throws<ArgumentException>(() => new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 2, initial.CreatedAt, Enumerable.Range(0,21).Select(_ => Guid.NewGuid()).ToArray()));
     }
     private sealed class Actor : ICommandActorAuthorization
-    { public bool Allowed = true; public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(Allowed); }
+    { public bool Allowed = true; public bool RefuseMention; public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(Allowed); }
+    private sealed class LateMentionRefusal(IWorkNotificationStore inner, Actor actor) : IWorkNotificationStore
+    {
+        public Task AppendCardAssignmentAsync(WorkEvent change, Guid recipient, CancellationToken ct = default) => inner.AppendCardAssignmentAsync(change, recipient, ct);
+        public Task AppendCardActivityAsync(WorkEvent change, Guid recipient, CancellationToken ct = default) => inner.AppendCardActivityAsync(change, recipient, ct);
+        public async Task AppendCardMentionAsync(WorkEvent change, Guid recipient, CancellationToken ct = default)
+        { await inner.AppendCardMentionAsync(change, recipient, ct); if (actor.RefuseMention) actor.Allowed = false; }
+        public Task<IReadOnlyList<CardNotification>> ListCardNotificationsAsync(Guid organization, Guid recipient, Guid? after = null, CancellationToken cancellationToken = default)
+            => inner.ListCardNotificationsAsync(organization, recipient, after, cancellationToken);
+    }
     private sealed class CommandContext : IWorkCommandContext
     { public Guid? IdempotencyKey { get; set; } }
     private static ServiceProvider Demo(Actor actor)
@@ -76,9 +130,38 @@ public sealed class InMemoryCardCommentStoreTests
         var services = new ServiceCollection(); var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
         services.AddSingleton<IClock, SystemClock>(); services.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
+        var notificationStore = services.Single(item => item.ServiceType == typeof(IWorkNotificationStore));
+        services.AddSingleton<IWorkNotificationStore>(provider => new LateMentionRefusal(
+            (IWorkNotificationStore)notificationStore.ImplementationFactory!(provider)!, actor));
         services.AddSingleton<ICommandActorAuthorization>(actor);
         services.AddSingleton<CommandContext>(); services.AddSingleton<IWorkCommandContext>(p => p.GetRequiredService<CommandContext>());
         return services.BuildServiceProvider();
+    }
+    [Fact]
+    public async Task PRD_15_LateMentionActorRefusalRollsBackCommentSnapshotCardEventAndInboxThenSameKeyCommitsOnce()
+    {
+        var ct = TestContext.Current.CancellationToken; var actor = new Actor { RefuseMention = true };
+        using var services = Demo(actor); var parent = await Parent(services, ct); var recipient = Guid.NewGuid(); var at = DateTimeOffset.UtcNow;
+        var email = $"{recipient:N}@example.test";
+        Assert.True(await services.GetRequiredService<IIdentityStore>().TryCreateUserAsync(new(recipient, email, email.ToUpperInvariant(),
+            "Recipient", null, "en", "UTC", AccountStatus.Active, true, "fixture", at, at, 1), null, null, ct));
+        await services.GetRequiredService<IOrganizationStore>().AddOrRestoreMemberAsync(parent.Org, recipient, OrganizationRole.Member, at, ct);
+        var work = services.GetRequiredService<IWorkManagementStore>();
+        await work.UpsertBoardMemberAsync(parent.Card.BoardId, recipient, BoardRole.Member, at, ct);
+        var context = services.GetRequiredService<CommandContext>(); context.IdempotencyKey = Guid.NewGuid();
+        var service = services.GetRequiredService<CardCommentService>(); var input = new CreateCardCommentInput($"Hello @u_{recipient:N}", 1);
+        Assert.Equal("session_unavailable", (await service.CreateAsync(parent.Card.Id, parent.User, input, "mention-refusal", ct)).ErrorCode);
+        actor.Allowed = true; actor.RefuseMention = false;
+        Assert.Equal(parent.Card, await work.FindCardAsync(parent.Card.Id, ct));
+        Assert.Empty((await service.ListAsync(parent.Card.Id, parent.User, null, ct)).Value!.Items);
+        var notifications = services.GetRequiredService<IWorkNotificationStore>();
+        Assert.Empty(await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct));
+        Assert.Empty((await services.GetRequiredService<IWorkEventReader>().ReadAsync(parent.Org, parent.Card.BoardId, 0, 50, ct)).Events);
+        var committed = await service.CreateAsync(parent.Card.Id, parent.User, input, "mention-recovery", ct);
+        Assert.True(committed.Succeeded);
+        Assert.Equal(committed.Value, (await service.CreateAsync(parent.Card.Id, parent.User, input, "mention-retry", ct)).Value);
+        Assert.Single(await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct));
+        Assert.Equal(2, (await services.GetRequiredService<IWorkEventReader>().ReadAsync(parent.Org, parent.Card.BoardId, 0, 50, ct)).Events.Count);
     }
     private static async Task<(Guid Org,Guid User,CardRecord Card)> Parent(ServiceProvider services, CancellationToken ct)
     {

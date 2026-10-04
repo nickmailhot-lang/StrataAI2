@@ -123,6 +123,7 @@ public sealed class BoardSharingTelemetry
                 or "invalid_card_cover" or "cover_public_confirmation_required"
                 or "invalid_comment_cursor" or "invalid_comment_version" or "invalid_comment_content" or "comment_not_found" or "comment_delete_confirmation_required"
                 or "invalid_mention_cursor" or "mention_prefix_invalid"
+                or "invalid_comment_mentions" or "mention_targets_changed"
                 or "attachment_too_large" or "attachment_type_not_allowed" or "attachment_integrity_invalid" or "attachment_source_unavailable"
                 or "attachment_upload_in_progress" or "attachment_upload_unavailable"
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"

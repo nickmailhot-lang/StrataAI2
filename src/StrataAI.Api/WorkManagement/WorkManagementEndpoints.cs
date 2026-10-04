@@ -771,6 +771,8 @@ public static partial class WorkManagementEndpoints
             "mention_prefix_invalid" => Problem(400, errorCode, "Use a bounded username prefix containing letters, digits or underscores."),
             "invalid_comment_version" => Problem(400, errorCode, "Use the current Card and comment revisions."),
             "invalid_comment_content" => Problem(400, errorCode, "Comment text must be nonblank, valid Unicode and at most 10000 characters."),
+            "invalid_comment_mentions" => Problem(400, errorCode, "Use at most 20 distinct username mention recipients."),
+            "mention_targets_changed" => Problem(409, errorCode, "Mention recipients changed. Review the current comment and teammates."),
             "comment_delete_confirmation_required" => Problem(400, errorCode, "Confirm removal of this comment body."),
             "comment_not_found" => Problem(404, errorCode, "The requested comment action is unavailable."),
             "invalid_checklist_version" => Problem(400, errorCode, "Use the current Card revision."),

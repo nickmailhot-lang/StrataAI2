@@ -37,6 +37,8 @@ internal sealed class InMemoryWorkNotificationStore : IWorkNotificationStore, ID
         => Append(CardNotification.From(change, recipientId));
     public Task AppendCardActivityAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
         => Append(CardNotification.FromActivity(change, recipientId));
+    public Task AppendCardMentionAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
+        => Append(CardNotification.FromMention(change, recipientId));
 
     private Task Append(CardNotification? item)
     {

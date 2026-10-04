@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.WorkManagement;
 using Xunit;
@@ -8,6 +9,36 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Fact]
+    public async Task PRD_15_HTTPUsernameMentionRetryPublishesPrivateInboxOnceAndRevokedBoardHidesIt()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        var f = await NotificationFixture(app, owner, recipient, ct); var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Mention Card", null, null, DateTimeOffset.UtcNow, ct);
+        var path = $"/cards/{card.Id}/comments"; var key = Guid.NewGuid().ToString();
+        var input = new CreateCardCommentInput($"Private words @u_{f.Recipient:N} @u_{f.Owner:N}", 1);
+        using var created = await Mutate(owner, HttpMethod.Post, path, input, key);
+        Assert.Equal(HttpStatusCode.OK, created.StatusCode);
+        var change = (await created.Content.ReadFromJsonAsync<CardCommentChange>(ct))!;
+        using var retry = await Mutate(owner, HttpMethod.Post, path, input, key);
+        Assert.Equal(change, await retry.Content.ReadFromJsonAsync<CardCommentChange>(ct));
+        var inbox = $"/organizations/{f.Organization}/notifications";
+        using var response = await recipient.GetAsync(inbox, ct);
+        Assert.True(response.Headers.CacheControl!.NoStore);
+        var page = (await response.Content.ReadFromJsonAsync<JsonElement>(ct));
+        var item = Assert.Single(page.GetProperty("items").EnumerateArray());
+        Assert.Equal("MENTION_CREATED", item.GetProperty("type").GetString());
+        Assert.Equal(f.Recipient, item.GetProperty("recipientId").GetGuid());
+        Assert.Equal(f.Owner, item.GetProperty("actorId").GetGuid());
+        Assert.Equal($"/app/{f.Organization}/boards/{f.Board}/cards/{card.Id}", item.GetProperty("entityLink").GetString());
+        Assert.DoesNotContain("Private words", page.GetRawText());
+        Assert.Empty((await owner.GetFromJsonAsync<JsonElement>(inbox, ct)).GetProperty("items").EnumerateArray());
+        await work.RemoveBoardMemberAsync(f.Board, f.Recipient, DateTimeOffset.UtcNow, ct);
+        Assert.Empty((await recipient.GetFromJsonAsync<JsonElement>(inbox, ct)).GetProperty("items").EnumerateArray());
+        using var refused = await Mutate(recipient, HttpMethod.Post, path, new CreateCardCommentInput("Rejected", 2));
+        Assert.Equal(HttpStatusCode.NotFound, refused.StatusCode);
+    }
     [Fact]
     public async Task PRD_15_TC_01_03_04_07_HTTPAuthorCommandsReconcileRevisionsAndRedactionWithoutBodyReplay()
     {

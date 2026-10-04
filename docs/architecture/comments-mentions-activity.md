@@ -919,3 +919,42 @@ notifications remain in-app; external email/push is outside PRD-17 scope.
 Mass mention rate control/fanout and its recipient history need separate full
 implementation beyond the direct username window; the 20-username bound cannot
 be used as proof of arbitrary Board mass mention support.
+
+### Username mention command publication
+
+Comment create/edit/delete now retain the current recipient snapshot in their
+owning Work receipt transaction. Current eligible username targets are locked
+before effects and revalidated after publication; edits compare stable user IDs
+with the previous revision. New references produce a separate content-free
+MENTION_CREATED Card event at the same revision as the COMMENT event. Only newly
+added non-self recipients receive durable in-app notifications. Removal and
+redaction append empty snapshots while retaining earlier recipient history;
+unchanged bodies and exact receipts produce no duplicate event or notification.
+Self references remain in history and can produce the source event, without an
+inbox item. Unknown/former aliases remain literal. Existing pre-feature comments
+have no delivered-recipient snapshot; their first changed revision starts history.
+
+Migration 059 admits the mention notification type while retaining the original
+source-event FK, exact source metadata verification, tenant isolation and reminder
+self-action exception. API/Worker readiness requires the complete 59-migration
+ledger. Migration repeat/upgrade/failure and missing-ledger checks include it.
+The MUI inbox labels and validates the new type under its existing recipient,
+canonical Card link and self-action checks; Board synchronization uses the generic
+content-free contiguous event envelope and needs no event-type exception.
+
+Local warning-as-error build passes with zero warnings/errors; web typecheck,
+lint and all 32 inbox tests pass. Added real-cookie Demo HTTP coverage for exact
+retry, private recipient inbox, no body disclosure/self inbox, and fresh Board
+revocation; whole-command Demo tests cover recipient delta/removal/readdition,
+redaction and late actor refusal after actual notification insertion followed by
+same-key recovery. Linux execution for these new cases is pending. Production
+whole-command lock waits, exact-image HTTP/native execution and capacity evidence
+are still required. Demo identity writes do not share PostgreSQL recipient row
+locks; its fresh rechecks are not proof of Production concurrency semantics.
+Mass @card/@board tokens remain literal until separate policy/confirmation,
+rate-control, full-fanout history and disclosure are implemented. Activity feeds,
+native mention selection and full PRD-15/PRD-17 acceptance remain open.
+
+The prior lock commit 554550d has now passed web, .NET, actual restricted
+PostgreSQL recipient row-lock tests and immutable image build in run 37173017212;
+container/security stages remain live. No full ticket is closed by this slice.

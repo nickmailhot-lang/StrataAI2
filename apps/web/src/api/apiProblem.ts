@@ -8,6 +8,7 @@ const codes = new Set([
   'identity_storage_unavailable', 'invalid_or_expired_invitation', 'invalid_or_expired_token',
   'mention_handle_invalid', 'mention_handle_unavailable', 'mention_handle_claim_refused',
   'invalid_mention_cursor', 'mention_prefix_invalid',
+  'invalid_comment_mentions', 'mention_targets_changed',
   'invalid_idempotency_key',
   'invalid_password', 'rate_limit_exceeded', 'invalid_organization_logo_url',
   'sole_owner', 'member_version_conflict', 'board_not_found', 'sole_board_admin',

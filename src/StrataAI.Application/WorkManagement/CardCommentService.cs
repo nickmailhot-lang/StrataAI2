@@ -17,7 +17,8 @@ public sealed record CardCommentPage(Guid OrganizationId, Guid BoardId, Guid Car
 // its own explicit policy; visibility alone does not establish participation.
 public sealed class CardCommentService(IWorkManagementStore work, ICardCommentStore comments,
     IOrganizationStore organizations, IWorkBoardAuthorization boards, IWorkManagementUnitOfWork transactions,
-    IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events)
+    IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events,
+    CardCommentMentionPlanning mentions, ICommentMentionSnapshotStore snapshots, IWorkNotificationStore notifications)
 {
     // Durable recovery must never retain former comment plaintext. The body is
     // hydrated only from the currently admitted row at the recorded revision.
@@ -99,6 +100,16 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                 }
                 if (child is not null && (deleting ? child.DeletedAt is not null : child.Content == normalized))
                     return await Complete(hint, actor, current.Version, child, false, ct);
+                var previous = child is null ? null : await snapshots.FindSnapshotAsync(hint.OrganizationId, cardId, child.Id, child.Version, ct);
+                CardCommentMentionPlan? plan = null;
+                if (!deleting)
+                {
+                    var prepared = await mentions.ResolveAsync(hint.OrganizationId, hint.BoardId, actor, normalized!, previous?.Recipients ?? [], ct);
+                    if (!prepared.Succeeded || prepared.Value is null) return WorkOperation<Receipt>.Failure(prepared.ErrorCode ?? "invalid_comment_mentions");
+                    plan = prepared.Value;
+                    var targets = await mentions.RevalidateAsync(hint.OrganizationId, hint.BoardId, plan, ct);
+                    if (!targets.Succeeded) return WorkOperation<Receipt>.Failure(targets.ErrorCode!);
+                }
                 var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
                 if (current.Version == long.MaxValue || now < current.UpdatedAt || child is not null && (child.Version == long.MaxValue || now < child.UpdatedAt))
                     return WorkOperation<Receipt>.Failure("version_conflict");
@@ -108,10 +119,25 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                     : deleting ? await comments.DeleteAsync(hint.OrganizationId, cardId, child.Id, actor, child.Version, now, ct)
                     : await comments.EditAsync(hint.OrganizationId, cardId, child.Id, actor, child.Version, normalized!, now, ct);
                 if (changed is null) return WorkOperation<Receipt>.Failure("version_conflict");
+                await snapshots.AppendSnapshotAsync(new(hint.OrganizationId, cardId, changed.Id, changed.Version, now,
+                    plan?.Recipients.Current ?? []), ct);
                 await work.AppendAuditAsync(hint.OrganizationId, actor, type, "Comment", changed.Id, correlationId, ct);
-                // Content-free Card invalidation; activity/mention projections
-                // require their own additional producer and disclosure policy.
                 await events.AppendAsync(new(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor, type, "Card", cardId, updated.Version, correlationId, now), ct);
+                // One content-free source event for this revision's new stable
+                // references, including self; only non-self deltas receive inbox items.
+                if (plan is not null && plan.Recipients.Current.Except(previous?.Recipients ?? []).Any())
+                {
+                    var mentionEvent = new WorkEvent(Guid.NewGuid(), hint.OrganizationId, hint.BoardId, actor,
+                        "MENTION_CREATED", "Card", cardId, updated.Version, correlationId, now);
+                    await events.AppendAsync(mentionEvent, ct);
+                    foreach (var recipient in plan.Recipients.Added)
+                        await notifications.AppendCardMentionAsync(mentionEvent, recipient, ct);
+                }
+                if (plan is not null)
+                {
+                    var targets = await mentions.RevalidateAsync(hint.OrganizationId, hint.BoardId, plan, ct);
+                    if (!targets.Succeeded) return WorkOperation<Receipt>.Failure(targets.ErrorCode!);
+                }
                 return await Complete(hint, actor, updated.Version, changed, true, ct);
             }, ct);
         if (!result.Succeeded || result.Value is null) return WorkOperation<CardCommentChange>.Failure(result.ErrorCode ?? "comment_not_found");

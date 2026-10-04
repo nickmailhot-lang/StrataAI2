@@ -13,6 +13,9 @@ internal sealed partial class PostgresWorkNotificationStore(PostgresConnectionFa
     public async Task AppendCardActivityAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
         => await AppendAsync(change, CardNotification.FromActivity(change, recipientId), cancellationToken);
 
+    public async Task AppendCardMentionAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
+        => await AppendAsync(change, CardNotification.FromMention(change, recipientId), cancellationToken);
+
     private async Task AppendAsync(WorkEvent change, CardNotification? item, CancellationToken cancellationToken)
     {
         if (item is null) return;

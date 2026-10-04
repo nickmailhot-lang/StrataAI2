@@ -9,6 +9,13 @@ public sealed record CardNotification(Guid Id, Guid OrganizationId, Guid BoardId
     public const string Type = "CARD_ASSIGNED";
     public string NotificationType { get; init; } = Type;
 
+    public static CardNotification? FromMention(WorkEvent change, Guid recipientId)
+    {
+        if (change.EventType != "MENTION_CREATED") throw new ArgumentException("Invalid mention notification event.");
+        var item = From(change with { EventType = "CARD_MEMBER_ADDED" }, recipientId);
+        return item is null ? null : item with { NotificationType = change.EventType };
+    }
+
     public static CardNotification? FromActivity(WorkEvent change, Guid recipientId)
     {
         if (!CardWatchActivity.IsRelevant(change)) throw new ArgumentException("Unconfigured Card watch activity.");
@@ -34,6 +41,7 @@ public interface IWorkNotificationStore
     // the first event-recipient notification and self-actions are suppressed.
     Task AppendCardAssignmentAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
     Task AppendCardActivityAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
+    Task AppendCardMentionAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
 
     // Internal bounded storage window, not an authorized inbox response.
     Task<IReadOnlyList<CardNotification>> ListCardNotificationsAsync(Guid organizationId,
