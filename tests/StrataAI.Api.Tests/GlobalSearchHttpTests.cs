@@ -28,6 +28,9 @@ public sealed partial class ApiHostTests
         Assert.Equal("Search List", document.GetProperty("listName").GetString());
         Assert.Equal("CARD", document.GetProperty("sourceKind").GetString());
         var cursor = page.GetProperty("nextCursor").GetString(); Assert.False(string.IsNullOrEmpty(cursor));
+        using var otherActorCursor = await outsider.GetAsync($"/search?q=100%25_&after={Uri.EscapeDataString(cursor!)}", ct);
+        Assert.Equal(HttpStatusCode.BadRequest, otherActorCursor.StatusCode);
+        Assert.DoesNotContain("Private search result", await otherActorCursor.Content.ReadAsStringAsync(ct));
         using var tail = await owner.GetAsync($"/search?q=100%25_&after={Uri.EscapeDataString(cursor!)}", ct);
         Assert.Equal(HttpStatusCode.OK, tail.StatusCode);
         var tailPage = await tail.Content.ReadFromJsonAsync<JsonElement>(ct);

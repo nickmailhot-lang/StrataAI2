@@ -7,6 +7,39 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData("board")]
+    [InlineData("organization")]
+    public async Task Global_search_continuation_rechecks_withdrawn_membership_and_recovers_only_current_authorized_tail(string withdrawal)
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        var fixture = await BoardInvitationFixtureAsync(app, ct);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var work = app.Services.GetRequiredService<IWorkManagementService>();
+        var organizations = app.Services.GetRequiredService<IOrganizationStore>();
+        var search = app.Services.GetRequiredService<GlobalSearchService>(); var now = DateTimeOffset.UtcNow;
+        var list = await store.CreateListAsync(fixture.Board.Id, Guid.NewGuid(), "Permission-bound search", null, now, ct);
+        var ids = new List<Guid>();
+        for (var n = 0; n < 52; n++)
+            ids.Add((await store.CreateCardAsync(list.Id, Guid.NewGuid(), "Protected needle", null, null, now, ct)).Id);
+        var binding = new GlobalSearchBinding(fixture.Inviter.Id, "needle", "", "", true, GlobalSearchLifecycleScope.Active);
+        var first = await search.SearchAsync(binding, null, ct);
+        Assert.True(first.Succeeded); Assert.Equal(50, first.Value!.Items.Count); Assert.NotNull(first.Value.NextCursor);
+        if (withdrawal == "board")
+            Assert.True((await work.RemoveBoardMemberAsync(fixture.Board.Id, fixture.Owner.Id, fixture.Inviter.Id, "search-withdraw", ct)).Succeeded);
+        else
+            Assert.True((await app.Services.GetRequiredService<IOrganizationService>().RemoveMemberAsync(
+                fixture.Board.OrganizationId, fixture.Owner.Id, fixture.Inviter.Id, "search-withdraw", ct)).Succeeded);
+        var denied = await search.SearchAsync(binding, first.Value.NextCursor, ct);
+        Assert.True(denied.Succeeded); Assert.Empty(denied.Value!.Items); Assert.Null(denied.Value.NextCursor);
+        await organizations.AddOrRestoreMemberAsync(fixture.Board.OrganizationId, fixture.Inviter.Id, OrganizationRole.Member, now, ct);
+        Assert.True((await work.SetBoardMemberAsync(fixture.Board.Id, fixture.Owner.Id, fixture.Inviter.Id, BoardRole.Admin, "search-restore", ct)).Succeeded);
+        var restored = await search.SearchAsync(binding, first.Value.NextCursor, ct);
+        Assert.True(restored.Succeeded);
+        Assert.Equal(ids.Order().Skip(50), restored.Value!.Items.Select(d => d.Card.Id));
+        Assert.All(restored.Value.Items, d => Assert.Equal(1, d.Card.Version));
+    }
+
     [Fact]
     public async Task Global_search_pages_across_Organizations_without_duplicates_and_binds_continuations()
     {
