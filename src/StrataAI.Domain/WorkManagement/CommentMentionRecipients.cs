@@ -16,7 +16,7 @@ public sealed class CommentMentionRecipients
         IReadOnlyDictionary<string, Guid> authorizedCurrentHandles, IReadOnlyList<Guid> previous)
     {
         ArgumentNullException.ThrowIfNull(text); ArgumentNullException.ThrowIfNull(previous);
-        if (actor == Guid.Empty || previous.Count > CommentMentionText.MaximumUserRecipients
+        if (actor == Guid.Empty
             || previous.Any(id => id == Guid.Empty) || previous.Distinct().Count() != previous.Count)
             throw new ArgumentException("Mention recipient history is invalid.");
         var references = text.BindUsers(authorizedCurrentHandles).ToArray();

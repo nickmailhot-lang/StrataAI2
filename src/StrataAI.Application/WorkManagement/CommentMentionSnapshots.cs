@@ -1,5 +1,3 @@
-using StrataAI.Domain.WorkManagement;
-
 namespace StrataAI.Application.WorkManagement;
 
 public sealed class CommentMentionSnapshot
@@ -8,7 +6,7 @@ public sealed class CommentMentionSnapshot
     {
         RequireIdentity(organization, card, comment, version);
         ArgumentNullException.ThrowIfNull(recipients);
-        if (at.Offset != TimeSpan.Zero || at.UtcTicks % 10 != 0 || recipients.Count > CommentMentionText.MaximumUserRecipients
+        if (at.Offset != TimeSpan.Zero || at.UtcTicks % 10 != 0
             || recipients.Any(id => id == Guid.Empty) || recipients.Distinct().Count() != recipients.Count)
             throw new ArgumentException("Mention snapshot metadata is invalid.");
         OrganizationId = organization; CardId = card; CommentId = comment; CommentVersion = version; CreatedAt = at;

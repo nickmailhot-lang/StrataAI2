@@ -150,7 +150,7 @@ try
         fixtureBytes,fixtureDigest,ct);
     await AttachmentPublicationContract.RunAsync(admin,apiConnection,ct);
     await CardCommentStoreContract.RunAsync(admin,provider,organization,foreignOrganization,value.CardId,value.UploaderId,ct);
-    await CardMentionMemberStoreContract.RunAsync(admin,provider,organization,foreignOrganization,board,foreignBoard,foreignUser,ct);
+    await CardMentionMemberStoreContract.RunAsync(admin,provider,organization,foreignOrganization,board,foreignBoard,foreignUser,card,ct);
     await CommentMentionSnapshotStoreContract.RunAsync(admin,provider,organization,foreignOrganization,card,foreignCard,user,foreignUser,ct);
     await CommentMentionNotificationContract.RunAsync(admin,provider,organization,card,user,foreignUser,ct);
     await UserMentionHandleStoreContract.RunAsync(admin,apiConnection,ct);

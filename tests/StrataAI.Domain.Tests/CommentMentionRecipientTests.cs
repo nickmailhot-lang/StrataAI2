@@ -25,14 +25,15 @@ public sealed class CommentMentionRecipientTests
             new Dictionary<string, Guid> { ["new_user"] = added }, removed.Current).Added));
     }
     [Fact]
-    public void PRD_15_ResolvedRecipientsAndHistoryAreBoundedAndDeclarationsNeverInventAuthority()
+    public void PRD_15_UsernameRecipientsAreBoundedWhileCompletePriorGroupHistoryRetainsStableIdentity()
     {
         var actor = Guid.NewGuid(); var ids = Enumerable.Range(0, 21).Select(_ => Guid.NewGuid()).ToArray();
         var mapping = ids.Select((id, n) => new KeyValuePair<string, Guid>("member_" + n, id)).ToDictionary();
         var text = CommentMentionText.Parse(string.Join(' ', mapping.Keys.Select(handle => "@" + handle)));
         Assert.Throws<ArgumentException>(() => CommentMentionRecipients.Capture(text, actor, mapping, []));
         mapping.Remove("member_20"); Assert.Equal(20, CommentMentionRecipients.Capture(text, actor, mapping, []).Current.Count);
-        foreach (var bad in new[] { new[] { Guid.Empty }, new[] { ids[0], ids[0] }, ids })
+        Assert.Empty(CommentMentionRecipients.Capture(text, actor, mapping, ids).Added);
+        foreach (var bad in new[] { new[] { Guid.Empty }, new[] { ids[0], ids[0] } })
             Assert.Throws<ArgumentException>(() => CommentMentionRecipients.Capture(text, actor, mapping, bad));
         Assert.Throws<ArgumentException>(() => CommentMentionRecipients.Capture(text, Guid.Empty, mapping, []));
         var declarations = CommentMentionText.Parse("@board @card @unknown_user x@example.test https://example.test/@member_1");

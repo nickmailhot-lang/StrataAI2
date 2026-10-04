@@ -110,7 +110,8 @@ public sealed class InMemoryCardCommentStoreTests
         }, ct);
         Assert.Throws<ArgumentException>(() => new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 2, initial.CreatedAt, [Guid.Empty]));
         Assert.Throws<ArgumentException>(() => new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 2, initial.CreatedAt, [parent.User, parent.User]));
-        Assert.Throws<ArgumentException>(() => new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 2, initial.CreatedAt, Enumerable.Range(0,21).Select(_ => Guid.NewGuid()).ToArray()));
+        Assert.Equal(60, new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 2, initial.CreatedAt,
+            Enumerable.Range(0,60).Select(_ => Guid.NewGuid()).ToArray()).Recipients.Count);
     }
     private sealed class Actor : ICommandActorAuthorization
     { public bool Allowed = true; public bool RefuseMention; public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(Allowed); }

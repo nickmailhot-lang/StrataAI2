@@ -9,11 +9,12 @@ internal static class CardMentionMemberStoreContract
     private static void Require(bool condition, string invariant)
     { if (!condition) throw new InvalidOperationException(invariant); }
     public static async Task RunAsync(NpgsqlConnection admin, IServiceProvider provider, Guid tenant, Guid foreignTenant,
-        Guid board, Guid foreignBoard, Guid foreignUser, CancellationToken ct)
+        Guid board, Guid foreignBoard, Guid foreignUser, Guid card, CancellationToken ct)
     {
         var users = Enumerable.Range(0, 30).Select(_ => Guid.NewGuid()).ToArray();
         var prefix = "mention_" + Guid.NewGuid().ToString("N")[..8] + "_";
         var names = Enumerable.Range(1, 30).Select(n => prefix + n.ToString("D2")).ToArray();
+        var groupComments = new List<Guid>();
         var store = provider.GetRequiredService<ICardMentionMemberStore>(); var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>();
         async Task<T> Scope<T>(Guid scope, Func<Task<T>> operation)
         {
@@ -68,6 +69,35 @@ internal static class CardMentionMemberStoreContract
                 && first.Take(20).Concat(tail).Select(x => x.UserId).Distinct().Count() == 25,
                 "Mention seek duplicated or lost active participants.");
             var resolved = await Scope(tenant, () => store.ResolveAsync(tenant, board, names, true, ct));
+            var mass = provider.GetRequiredService<ICardMassMentionMemberStore>();
+            var group = await Scope(tenant, () => mass.LockRecipientsAsync(tenant, board, card, false, true, true, ct));
+            Require(group.Intersect(users).Count() == 25 && group.Count > 20, "Full Board group roster was truncated or widened to ineligible users.");
+            Require((await Scope(tenant, () => mass.LockRecipientsAsync(tenant, foreignBoard, card, false, true, true, ct))).Count == 0,
+                "Mass roster crossed the canonical Card/Board parent.");
+            var groupComment = Guid.NewGuid();
+            var snapshotStore = provider.GetRequiredService<ICommentMentionSnapshotStore>(); var commentStore = provider.GetRequiredService<ICardCommentStore>();
+            var refusedGroup = await unit.ExecuteReadAsync(tenant, null, "fixture_denied", () => Task.FromResult(true), async () =>
+            {
+                var row = await commentStore.CreateAsync(groupComment, tenant, card, group[0], "Internal group history fixture", DateTimeOffset.UtcNow, ct);
+                var snapshot = new CommentMentionSnapshot(tenant, card, row.Id, row.Version, row.UpdatedAt, group);
+                await snapshotStore.AppendSnapshotAsync(snapshot, ct); await snapshotStore.AppendSnapshotAsync(snapshot, ct);
+                Require((await snapshotStore.FindSnapshotAsync(tenant, card, row.Id, row.Version, ct))!.SameAs(snapshot),
+                    "Complete group snapshot was truncated, duplicated or changed on read.");
+                return WorkOperation<bool>.Failure("fixture_refused");
+            }, ct);
+            Require(refusedGroup.ErrorCode == "fixture_refused"
+                && await Scope(tenant, () => commentStore.FindAsync(tenant, card, groupComment, ct)) is null
+                && await Scope(tenant, () => snapshotStore.FindSnapshotAsync(tenant, card, groupComment, 1, ct)) is null,
+                "Refused full group history retained comment/snapshot effects.");
+            var retainedGroup = await Scope(tenant, async () =>
+            {
+                var id = Guid.NewGuid(); groupComments.Add(id);
+                var row = await commentStore.CreateAsync(id, tenant, card, group[0], "Committed internal group history", DateTimeOffset.UtcNow, ct);
+                var snapshot = new CommentMentionSnapshot(tenant, card, id, row.Version, row.UpdatedAt, group);
+                await snapshotStore.AppendSnapshotAsync(snapshot, ct); return snapshot;
+            });
+            Require((await Scope(tenant, () => snapshotStore.FindSnapshotAsync(tenant, card, retainedGroup.CommentId, 1, ct)))!.SameAs(retainedGroup),
+                "Complete group recipient history did not survive its actual database commit.");
             Require(resolved.Select(x => x.Handle).SequenceEqual(names.Take(25)),
                 "Removed Board/Organization, Organization-only, suspended or unverified account reached resolution.");
             var unverified = await Scope(tenant, () => store.ResolveAsync(tenant, board, names, false, ct));
@@ -140,14 +170,21 @@ internal static class CardMentionMemberStoreContract
         }
         finally
         {
+            await using var cleanupTransaction = await admin.BeginTransactionAsync(ct);
             await using var cleanup = new NpgsqlCommand("""
+                DELETE FROM comment_mention_recipients WHERE tenant_id=@tenant AND comment_id=ANY(@comments);
+                DELETE FROM comment_mention_snapshots WHERE tenant_id=@tenant AND comment_id=ANY(@comments);
+                DELETE FROM card_comments WHERE tenant_id=@tenant AND id=ANY(@comments);
                 DELETE FROM board_members WHERE user_id=ANY(@users) AND tenant_id IN (@tenant,@foreign);
                 DELETE FROM organization_members WHERE user_id=ANY(@users) AND tenant_id IN (@tenant,@foreign);
                 DELETE FROM users WHERE id=ANY(@users);
-                """, admin);
+                """, admin, cleanupTransaction);
+            cleanup.Parameters.AddWithValue("comments", groupComments.ToArray());
             cleanup.Parameters.AddWithValue("users", users); cleanup.Parameters.AddWithValue("tenant", tenant); cleanup.Parameters.AddWithValue("foreign", foreignTenant);
             await cleanup.ExecuteNonQueryAsync(ct);
+            await cleanupTransaction.CommitAsync(ct);
         }
         Console.WriteLine("Restricted mention member metadata: owning tenant, literal prefix/seek bounds, exact current handles, active Board/Organization/account/email policy, former alias exclusion and shared-user isolation passed.");
+        Console.WriteLine("Restricted mass recipient history: complete Board roster beyond username window, Card/Board affinity, durable full recipient snapshot and refused comment/history rollback passed.");
     }
 }

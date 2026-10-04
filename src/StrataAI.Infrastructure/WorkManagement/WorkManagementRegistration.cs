@@ -14,6 +14,7 @@ public static class WorkManagementRegistration
         {
             services.AddSingleton<DemoWorkTransactionScope>();
             services.AddSingleton<ICardMentionMemberStore, InMemoryCardMentionMemberStore>();
+            services.AddSingleton<ICardMassMentionMemberStore, InMemoryCardMassMentionMemberStore>();
             services.AddSingleton<InMemoryWorkManagementStore>();
             services.AddSingleton<IWorkManagementStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
             services.AddSingleton<ICardCommentStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
@@ -37,6 +38,7 @@ public static class WorkManagementRegistration
         {
             services.AddSingleton<IWorkManagementStore, PostgresWorkManagementStore>();
             services.AddSingleton<ICardMentionMemberStore, PostgresCardMentionMemberStore>();
+            services.AddSingleton<ICardMassMentionMemberStore, PostgresCardMassMentionMemberStore>();
             services.AddSingleton<ICardCommentStore, PostgresCardCommentStore>();
             services.AddSingleton<ICommentMentionSnapshotStore, PostgresCommentMentionSnapshotStore>();
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();

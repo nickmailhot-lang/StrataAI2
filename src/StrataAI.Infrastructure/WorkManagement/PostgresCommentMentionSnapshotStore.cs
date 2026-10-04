@@ -19,7 +19,7 @@ internal sealed class PostgresCommentMentionSnapshotStore(PostgresConnectionFact
             SELECT s.created_at,s.recipient_count,ARRAY(
               SELECT r.recipient_id FROM comment_mention_recipients r
               WHERE r.tenant_id=s.tenant_id AND r.card_id=s.card_id AND r.comment_id=s.comment_id AND r.comment_version=s.comment_version
-              ORDER BY r.recipient_id LIMIT 21)
+              ORDER BY r.recipient_id)
             FROM comment_mention_snapshots s
             WHERE s.tenant_id=@tenant AND s.card_id=@card AND s.comment_id=@comment AND s.comment_version=@version;
             """, session.Connection, session.Transaction);

@@ -109,6 +109,33 @@ public sealed class CardMentionMemberStoreTests
 
         var list = await work.CreateListAsync(board.Id, Guid.NewGuid(), "List", null, at, ct);
         var card = await work.CreateCardAsync(list.Id, Guid.NewGuid(), "Card", null, null, at, ct);
+        var mass = provider.GetRequiredService<ICardMassMentionMemberStore>();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => mass.LockRecipientsAsync(org, board.Id, card.Id, false, true, true, ct));
+        var group = await Scoped(org, () => mass.LockRecipientsAsync(org, board.Id, card.Id, false, true, true, ct));
+        Assert.Equal(users.Where((_, index) => index is not (1 or 2 or 3 or 59)).Order(), group);
+        Assert.Equal(56, group.Count);
+        Assert.Equal(57, (await Scoped(org, () => mass.LockRecipientsAsync(org, board.Id, card.Id, false, true, false, ct))).Count);
+        Assert.Empty(await Scoped(org, () => mass.LockRecipientsAsync(org, other.Id, card.Id, false, true, true, ct)));
+        Assert.Empty(await Scoped(foreign, () => mass.LockRecipientsAsync(foreign, board.Id, card.Id, false, true, true, ct)));
+        Assert.Empty(await Scoped(org, () => mass.LockRecipientsAsync(org, board.Id, card.Id, true, false, true, ct)));
+        var assignedCard = await work.CreateCardAsync(list.Id, Guid.NewGuid(), "Assigned mass group", null, null, at, ct);
+        foreach (var recipient in new[] { users[0], users[4], users[5] })
+        {
+            var changed = await Scoped(org, () => work.SetCardMemberAsync(assignedCard.Id, recipient, users[0], true, assignedCard.Version, at.AddSeconds(6), ct));
+            Assert.NotNull(changed); assignedCard = changed.Card;
+        }
+        Assert.Equal(new[] { users[0], users[4], users[5] }.Order(),
+            await Scoped(org, () => mass.LockRecipientsAsync(org, board.Id, assignedCard.Id, true, false, true, ct)));
+        Assert.Equal(group, await Scoped(org, () => mass.LockRecipientsAsync(org, board.Id, assignedCard.Id, true, true, true, ct)));
+        var comments = provider.GetRequiredService<ICardCommentStore>(); var snapshots = provider.GetRequiredService<ICommentMentionSnapshotStore>();
+        await Scoped(org, async () =>
+        {
+            var row = await comments.CreateAsync(Guid.NewGuid(), org, card.Id, users[0], "Internal group history fixture", at, ct);
+            var snapshot = new CommentMentionSnapshot(org, card.Id, row.Id, row.Version, row.UpdatedAt, group);
+            await snapshots.AppendSnapshotAsync(snapshot, ct); await snapshots.AppendSnapshotAsync(snapshot, ct);
+            Assert.True((await snapshots.FindSnapshotAsync(org, card.Id, row.Id, row.Version, ct))!.SameAs(snapshot));
+            return true;
+        });
         var options = provider.GetRequiredService<CardMentionOptionsService>();
         var first = await options.ListAsync(card.Id, users[0], " MEMBER_ ", null, ct);
         Assert.True(first.Succeeded); Assert.Equal("member_", first.Value!.Prefix); Assert.Equal(20, first.Value.Items.Count);

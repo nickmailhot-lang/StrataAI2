@@ -39,9 +39,9 @@ bodies into public event or notification payloads.
 | COMMENT-FR-002 author/content/time/edited state | PostgreSQL/HTTP DTOs and bounded MUI parser retain canonical author/history, UTC revisions and redacted tombstones | Complete native rendering and historical-readable-author/lifecycle evidence |
 | COMMENT-FR-003 author edits | Author/current rights admission, dual revisions, body-free receipts, atomic audit/events and guarded UI edits implemented | Complete session/grant/parent changes under live waits, native reconciliation and performance evidence |
 | COMMENT-FR-004 author deletion | Confirmed author deletion persists a redacted tombstone; original former-body receipt is refused; MUI removal/retry guards implemented | Complete actual native confirmation/replay/lifecycle evidence and retention/purge policy |
-| COMMENT-FR-005 @username | Bounded plaintext tokens, current account handles and guarded account UI; owning Board-participant lookup adapters implemented; no comment recipient/notification producer yet | Native account UI, Application teammate admission/selection and atomic current-recipient publication |
+| COMMENT-FR-005 @username | Bounded username parsing, current handle account UI, protected teammate selection, recipient locks, immutable history and atomic username event/inbox publication implemented | Complete native selection/receipt/current-recipient lifecycle, Production lock waits and capacity evidence |
 | COMMENT-FR-006 @card/@board | Bounded lexical declarations exist; actual mass-mention producer unimplemented | Explicit confirmation, current authorization, bounded fanout, durable rate limits and stable refusal without partial effects |
-| COMMENT-FR-007 mention notifications | Existing PRD-17 infrastructure; no comment mention producer | Atomic recipient intent, current eligibility/notification delivery, idempotent edits/replays, no protected body leakage |
+| COMMENT-FR-007 mention notifications | Atomic username mention event/in-app inbox producer and actual restricted rollback/source tests implemented | Complete mass mention producer plus actual native/Production lifecycle and performance evidence |
 | COMMENT-FR-008 immutable activity | Existing Work events/audit; no complete activity projection | Every significant domain event, immutable interpreter/projection, complete lifecycle and replay coverage |
 | COMMENT-FR-009 event fields | Existing canonical Work event envelope | Current-authorized paginated activity DTO/projection with required safe metadata and complete event coverage |
 | COMMENT-FR-010 historical actor deactivation | Domain retains stable author ID | Historical actor interpretation after deactivation without granting current access or replacing past attribution with mutable profile data |
@@ -1048,3 +1048,50 @@ passes; actual new lock-wait execution remains pending exact-image CI, not
 inferred from the earlier internal row-lock contract. These negative fixtures
 change disposable authoritative rows administratively and do not claim full
 Organization leave/account-deactivation workflow coverage.
+
+### Complete group roster and recipient history
+
+The PRD-15 issue was reread. An internal mass group storage port now retrieves
+all eligible explicit current Board participants, or the current Card assignees
+among those participants; a combined request takes their union. Every recipient
+must have active Organization membership/account and satisfy the configured
+verified-email policy. Self remains in the roster for history; the owning
+producer must suppress self notifications. No username/handle metadata is used
+to decide group membership. The PostgreSQL adapter requires the owning Work
+transaction, verifies/locks canonical tenant/Board/Card affinity and shares
+recipient membership/account locks. Demo traverses every bounded 51-row storage
+window. Neither uses the 20-username or 50-row UI window to truncate a group.
+
+Migration 060 removes only the username-specific upper bound from immutable
+internal recipient history; current username resolution remains capped at 20.
+Exact cardinality, parent/membership FKs, no-nil/duplicate IDs, body-free UTC
+metadata, append-only runtime grants and forced tenant RLS remain. Full snapshot
+reads no longer truncate to 21, and stable edit comparison accepts complete prior
+group histories. API/Worker readiness and migration repeat/upgrade/serialization/
+failure/missing-ledger fixtures require all 60 ordered migrations.
+
+Added Demo tests for full 56/57-recipient Board rosters across the 51-row window,
+policy exclusions, canonical Card/Board/tenant affinity, empty and assigned Card
+groups, deduplicated union and exact full-history retry. The mandatory restricted
+C# PostgreSQL contract additionally commits and rereads a >20-recipient group
+snapshot and checks full comment/history rollback in a refused owning scope.
+Synthetic admission in these adapter tests is not Production cookie permission
+or complete mass notification acceptance. Local warning-as-error compilation
+and migration shell syntax pass; new Linux execution is pending.
+
+The group port is not yet called by comment commands. @card/@board remain literal
+until their explicit confirmation, current actor policy, durable anti-abuse
+reservation and atomic whole-fanout producer are connected. Board-wide intent
+will require current administrative rights plus existing COMMENT participation;
+Card-wide intent uses current COMMENT rights and current Card assignees. Both
+must apply the same durable actor/Board quota and stable-ID delta/history rules,
+and original committed receipts must not consume another reservation. UI must
+state each target scope explicitly. Large-group acceptance still requires
+notification batching and measurement/optimization of deferred cardinality
+checks; complete roster storage is not proof of mutation performance. No full
+FR-006, notification, activity or ticket acceptance is claimed.
+
+The username picker head f26494a has now passed every source gate and immutable
+image build in run 37174830018; its container/security jobs remain live. The
+subsequent recipient/session wait fixture 76ff434 has successful web/PostgreSQL
+jobs in run 37175042371 with managed tests still live at the last observation.
