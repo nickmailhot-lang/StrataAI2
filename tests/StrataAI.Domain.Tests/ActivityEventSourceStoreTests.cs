@@ -25,7 +25,7 @@ public sealed class ActivityEventSourceStoreTests
     {
         var ct = TestContext.Current.CancellationToken; var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
         var registrations = new ServiceCollection(); registrations.AddSingleton<IClock, SystemClock>();
-        registrations.AddSingleton<ICommandActorAuthorization, FixtureActorAuthorization>();
+        registrations.AddSingleton<ICommandActorAuthorization>(new FixtureActorAuthorization());
         registrations.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         registrations.AddStrataAiOrganizations(runtime); registrations.AddStrataAiWorkManagement(runtime);
         using var provider = registrations.BuildServiceProvider();
