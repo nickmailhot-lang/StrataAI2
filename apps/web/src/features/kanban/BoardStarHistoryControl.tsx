@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
@@ -43,8 +43,9 @@ function History(props: Props) {
     }).finally(() => { if (pending.current === controller) { pending.current = undefined; setBusy(false); } });
     return () => { controller.abort(); if (pending.current === controller) pending.current = undefined; };
   }, [open, props.unavailable, props.organizationId, props.boardId, props.userId, positions, attempt]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!restore.current || busy || props.unavailable) return;
+    if (open && !notice && !view) return;
     const target = !open ? entry.current : notice ? retry.current : view?.page.nextAfter ? next.current : close.current;
     if (target && !target.disabled) { target.focus({ preventScroll: true }); restore.current = false; }
   }, [open, busy, props.unavailable, notice, view]);

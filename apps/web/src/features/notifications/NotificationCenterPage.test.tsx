@@ -28,6 +28,7 @@ it('retains live invalidation received during a pending canonical inbox read', a
     return reads === 2 ? held : response(data(reads >= 3 ? [item(2), item(1)] : [item()]));
   });
   vi.stubGlobal('fetch', fetch); mount(); await screen.findByText('1 unread on this page.');
+  await waitFor(() => expect(watchNotifications).toHaveBeenCalled());
   const invalidate = vi.mocked(watchNotifications).mock.calls.at(-1)![0].invalidate;
   act(() => invalidate()); await waitFor(() => expect(reads).toBe(2));
   act(() => invalidate());

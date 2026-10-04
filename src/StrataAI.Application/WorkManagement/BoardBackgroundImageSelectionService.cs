@@ -50,7 +50,7 @@ public sealed class BoardBackgroundImageSelectionService(IWorkManagementStore wo
                 if (source.Card.BoardId != boardId || source.Card.OrganizationId != hint.OrganizationId
                     || source.Card.Id != input.CardId || source.File.Metadata.Id != input.AttachmentId
                     || source.File.Metadata.Version != input.AttachmentVersion
-                    || !(await sourceAdmission.RevalidatePreviewAsync(content.Admission, actor, ct)).Succeeded)
+                    || !await sourceAdmission.RevalidatePreviewInCommandAsync(content.Admission, actor, ct))
                     return WorkOperation<BoardRecord>.Failure("invalid_background");
                 var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
                 if (now < current.UpdatedAt) return WorkOperation<BoardRecord>.Failure("version_conflict");

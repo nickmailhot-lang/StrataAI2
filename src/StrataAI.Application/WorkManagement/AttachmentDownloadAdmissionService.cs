@@ -118,6 +118,21 @@ public sealed class AttachmentDownloadAdmissionService(IWorkManagementStore work
             }, ct);
     }
 
+    // The caller already owns the Board command transaction. Keep all current
+    // source gates and immutable publication checks without nesting a read UoW.
+    internal async Task<bool> RevalidatePreviewInCommandAsync(AttachmentPreviewAdmission admitted, Guid actor, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(admitted); var source = admitted.Source;
+        bool Timely() => actor == source.ActorId && clock.UtcNow >= source.AdmittedAt && clock.UtcNow < source.ExpiresAt;
+        if (!Timely() || source.File.Metadata.LifecycleState != AttachmentLifecycleState.Active
+            || !await AttachmentAdmission.CheckAsync(work, organizations, boards, source.Card, actor, true, ct)) return false;
+        var card = await work.FindCardAsync(source.Card.Id, ct);
+        var file = await FindFileAsync(source.Card.OrganizationId, source.Card.Id, source.File.Metadata.Id, false, ct);
+        if (card != source.Card || file is null || file != source.File || !IsDeliverable(file, source.Card, source.File.Metadata.Id, false)) return false;
+        var preview = await attachments.FindPublishedPreviewAsync(file, ct);
+        return Timely() && preview == admitted.Preview && IsPreview(preview, source);
+    }
+
     private static bool IsPreview(AttachmentPublishedPreview? preview, AttachmentDownloadAdmission source) => preview is not null
         && preview.Integrity.Reference.IsPreview && preview.Integrity.Reference.OrganizationId == source.Card.OrganizationId
         && preview.Integrity.Reference.AttachmentId != source.File.Metadata.Id

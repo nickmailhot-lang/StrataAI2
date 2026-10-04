@@ -41,6 +41,22 @@ it('withholds history when the post-read account changes and publishes denial', 
   await waitFor(() => expect(denied).toHaveBeenCalledTimes(1));
   expect(screen.queryByText('You changed your Board star (revision 1).')).not.toBeInTheDocument();
 });
+it('returns focus when closed during a pending read and fences the late private page', async () => {
+  let finish!: (value: Response) => void; let signal: AbortSignal | undefined;
+  vi.stubGlobal('fetch', vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    signal = options?.signal ?? undefined; return new Promise<Response>(resolve => { finish = resolve; });
+  }));
+  render(<BoardStarHistory {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Review your star history' }));
+  await waitFor(() => expect(finish).toBeDefined());
+  fireEvent.click(screen.getByRole('button', { name: 'Close star history' }));
+  expect(signal?.aborted).toBe(true);
+  expect(screen.getByRole('button', { name: 'Review your star history' })).toHaveFocus();
+  finish(response(page));
+  await waitFor(() => expect(screen.queryByRole('region', { name: 'Your star history' })).not.toBeInTheDocument());
+  expect(screen.queryByText('You changed your Board star (revision 1).')).not.toBeInTheDocument();
+});
 it('aborts on admission withdrawal and ignores a late protected page', async () => {
   let finish!: (value: Response) => void; let signal: AbortSignal | undefined;
   vi.stubGlobal('fetch', vi.fn(async (path: string, options?: RequestInit) => {
