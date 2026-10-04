@@ -120,7 +120,7 @@ public sealed class LocalAttachmentFixtureDependencyStatus(IRuntimeDependencySta
         try
         {
             if (!await database.IsReadyAsync(deadline.Token).WaitAsync(deadline.Token)) return false;
-            _ = new LocalAttachmentObjectStorage(root); // Recheck current root ownership, permissions and links.
+            _ = new LocalAttachmentObjectStorage(root); // Recheck current root permissions and links.
             return scanner is null || await scanner.IsReadyAsync(deadline.Token).WaitAsync(deadline.Token);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
