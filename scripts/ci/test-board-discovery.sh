@@ -25,6 +25,16 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
 done
 private_id="$(jq -r '.id' "$scratch/PRIVATE.json")"
 [[ "$private_id" =~ ^[0-9a-fA-F-]{36}$ ]]
+for value in unknown '#ffffff' 'url(https://example.test/private)' 'https://example.test/image.png'; do
+  status="$(curl --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -X PATCH -d "$(jq -nc --arg value "$value" '{name:"Should not change",version:1,backgroundType:"COLOR",backgroundValue:$value}')" \
+    -o "$scratch/background-denied.json" -w '%{http_code}' "$BASE_URL/boards/$private_id")"
+  test "$status" = 400
+  jq -e '.code == "invalid_background"' "$scratch/background-denied.json" >/dev/null
+  curl --fail --silent --show-error -b "$scratch/owner.cookies" "$BASE_URL/boards/$private_id" | jq -e '.board.name == "Discovery PRIVATE" and .board.version == 1' >/dev/null
+done
+request owner PATCH "/boards/$private_id" '{"name":"Discovery PRIVATE","version":1,"backgroundType":" color ","backgroundValue":" PURPLE "}' > "$scratch/PRIVATE.json"
+jq -e '.backgroundType == "COLOR" and .backgroundValue == "purple" and .version == 2' "$scratch/PRIVATE.json" >/dev/null
 list() { curl --fail --silent --show-error -b "$scratch/$1.cookies" "$BASE_URL/organizations/$organization_id/boards"; }
 list owner | jq -e 'length == 3' >/dev/null
 list member | jq -e 'length == 2 and all(.[]; .name != "Discovery PRIVATE")' >/dev/null

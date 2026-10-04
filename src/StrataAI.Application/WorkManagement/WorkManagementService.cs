@@ -172,11 +172,19 @@ public sealed partial class WorkManagementService(
                 ? resolved.Value.Board.BackgroundValue
                 : backgroundValue;
 
-        if (!TryNormalizeBackground(
+        string normalizedType; string? normalizedValue;
+        if (backgroundType is null && backgroundValue is null)
+        {
+            // Metadata-only edits preserve historical typed backgrounds. Do not
+            // rewrite legacy values or fabricate a new selection implicitly.
+            normalizedType = resolved.Value.Board.BackgroundType;
+            normalizedValue = resolved.Value.Board.BackgroundValue;
+        }
+        else if (!TryNormalizeBackground(
                 requestedBackgroundType,
                 requestedBackgroundValue,
-                out var normalizedType,
-                out var normalizedValue))
+                out normalizedType,
+                out normalizedValue))
         {
             return WorkOperation<BoardRecord>.Failure("invalid_background");
         }
@@ -1142,11 +1150,11 @@ public sealed partial class WorkManagementService(
             .Trim()
             .ToUpperInvariant();
         normalizedValue = NormalizeOptional(backgroundValue);
+        if (normalizedType == "COLOR") normalizedValue = normalizedValue?.ToLowerInvariant();
 
         return normalizedType switch
         {
-            "COLOR" => normalizedValue is null ||
-                normalizedValue.Length <= 64,
+            "COLOR" => normalizedValue is null || BoardBackgroundPolicy.Colors.Contains(normalizedValue, StringComparer.Ordinal),
             "IMAGE" => normalizedValue is not null &&
                 normalizedValue.Length <= 2048,
             _ => false,

@@ -1,0 +1,9 @@
+# Board background selection policy
+
+PRD-04 BOARD-FR-004 requires an approved built-in set or a stored image reference. New COLOR selections now use six stable names: blue, green, red, purple, orange and gray. A null COLOR value retains the default theme background. Type/name whitespace and case normalize before persistence. Arbitrary CSS literals, URL expressions and image URLs are rejected as COLOR selections with invalid_background after current authorization; the Board revision/content stays unchanged.
+
+Metadata-only updates that omit both background fields preserve the existing typed value, including historical custom values. They do not silently select, rewrite or attribute a new background. An explicit unsupported selection still fails. Historical rendering must use a safe fallback until an authorized user selects an approved built-in.
+
+The Application policy is shared by creation and versioned Board updates in both stores. Existing command transactions, current edit admission, audit/events and idempotent receipts remain in force. Source API coverage checks all six normalized built-ins, invalid selections with unchanged state, authorization-before-validation and historical metadata-only preservation. The exact-image PostgreSQL discovery fixture checks invalid selections/unchanged state and a normalized approved update.
+
+The Board metadata/background interface, safe theme mapping, stored-image ownership/reference selection and image rendering/lifecycle validation remain unfinished. The existing IMAGE branch is not evidence that a stored object is owned, available, scanned or admitted for this purpose; complete BOARD-FR-004 acceptance remains open. Runtime API/PostgreSQL evidence depends on rigorous CI.
