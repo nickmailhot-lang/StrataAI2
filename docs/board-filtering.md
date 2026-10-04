@@ -20,6 +20,13 @@ parents; the existing mandatory exact-image Card dates fixture checks complete,
 incomplete, reopen, ANY/ALL, stable invalid input and unauthorized reads without
 effects. Actual Linux/release execution of this increment remains pending.
 
+The native desktop/phone collaboration scenario now applies due-completion with
+its selected label, starts empty, completes/reopens/recompletes the real Card
+through the dates API and requires the phone result to appear/disappear through
+real Worker delivery. The existing canvas reload also retains the completion
+predicate. No filter, date or event response is substituted. Native execution
+remains pending; successful discovery is not runtime acceptance.
+
 Keyword matching is a case-insensitive literal substring of title or description;
 SQL wildcard characters such as `%` and `_` are literal. The trimmed keyword is
 limited to 160 characters. At most 25 distinct nonempty label UUIDs are accepted.
