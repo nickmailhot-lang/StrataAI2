@@ -17,7 +17,7 @@ handle_version="$(jq -r '.handleVersion' "$scratch/initial.json")"
 audit_before="$(admin "SELECT count(*) FROM audit_events WHERE actor_id='$user' AND event_type='USER_PROFILE_UPDATED';")"
 key="$(cat /proc/sys/kernel/random/uuid)"
 name="http_${user//-/}"
-body="$(jq -nc --arg handle "  ${name^^}  " --argjson userVersion "$user_version" --argjson handleVersion "$handle_version" '{handle:$handle,userVersion:$userVersion,handleVersion:$handleVersion}')"
+body="$(jq -nc --arg handle " ${name^^} " --argjson userVersion "$user_version" --argjson handleVersion "$handle_version" '{handle:$handle,userVersion:$userVersion,handleVersion:$handleVersion}')"
 request() {
   local suffix="$1" intent="$2" retry="$3"
   curl --max-time 60 --silent --show-error -b "$COOKIE_JAR" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
