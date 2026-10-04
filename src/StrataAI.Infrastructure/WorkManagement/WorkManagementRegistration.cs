@@ -71,6 +71,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<IWorkBoardAuthorization>(provider => (IWorkBoardAuthorization)provider.GetRequiredService<IWorkManagementService>());
         services.AddSingleton<CardMassMentionPlanning>();
         services.AddSingleton<WorkSynchronizationService>();
+        services.AddSingleton<ActivitySourceScopeResolver>();
         services.AddSingleton<NotificationInboxService>();
         services.AddSingleton<WatchSubscriptionService>();
         services.AddSingleton<ICardDateStore>(provider => (ICardDateStore)provider.GetRequiredService<IWorkManagementStore>());

@@ -1493,3 +1493,43 @@ Reminder cancellation with retained identity. Compilation passed with zero
 warnings/errors; new migration/runtime execution awaits CI. This does not
 complete authorized activity feeds, private current owner/parent admission,
 MUI/realtime or retention/capacity acceptance. PRD-15 remains **50%** unfinished.
+
+The current 12cf497 source, PostgreSQL, managed, immutable-image build and
+security gates passed. Its full container gate remains live. Earlier corrected
+group wait run 37180812289 also reached native browser execution after its
+mandatory mention fixture passed; its full browser/required gate is pending.
+
+An internal activity scope resolver now produces discovery/revalidation plans
+for current Organization members with VIEW in both the source's historical
+Board and the target's current Board. Cards retain history across different
+source/current Boards when both remain admitted; losing either scope hides the
+event. Current entity and parent identities must remain tenant/Board-consistent.
+Board sources must refer to their own Board; unknown types and inconsistent
+private event/type envelopes are refused. Watch/Reminder sources use the actual
+persisted owner and target. A missing private target or a different viewer is
+refused even when the viewer administers the Board. Removed personal intent
+does not itself erase readable history if its owner retains target access.
+
+Archive remains readable under the existing comment/attachment read rules.
+Deleted Card/List/Label targets require current Organization or Board
+administration and expose only body-free history, not deleted content. Deleted
+Boards are unavailable. Read-only archived Organizations remain eligible for
+VIEW; elevated tombstone history uses current active membership/role rather
+than mutation permission. No account/portal/public projection is introduced.
+
+The new Application scope test uses real HTTP account/Organization/Board grants,
+then trusted owning Demo source setup and direct resolver calls. It exercises
+two historical/current Board scopes, grant/revocation, cross-tenant current
+entity refusal even for an administrator of both tenants, unknown/private
+envelope rejection, stored owner distinct from actor, missing references,
+unwatch/cancellation, HTTP Card archive/delete and current role restrictions.
+Its historical source setup is synthetic, not an executed cross-Board move.
+Compilation passed with zero warnings/errors; test execution awaits CI.
+
+These plans are not response authorization: complete consumers must acquire
+all source/current Board gates in canonical order, re-resolve after lock waits,
+and verify current account/session before disclosing any page or cursor. Full
+Card history still requires all eligible historical Board sources. Authorized
+APIs, protected cursor paging, MUI/interpreter/realtime, Production race tests,
+retention and full performance acceptance remain unfinished. PRD-15 remaining
+work is still estimated at **50%**.
