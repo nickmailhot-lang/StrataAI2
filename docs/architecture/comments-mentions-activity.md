@@ -244,3 +244,36 @@ include a second independent authenticated browser session, automatic create/
 delete delivery and recovery of an edit missed while that session is offline.
 They use the actual API and separate Worker; execution is still pending CI,
 and registration does not close two-client/reconnect acceptance criteria.
+
+4551933 now passes the complete Linux Domain and API-host jobs, alongside web
+quality and PostgreSQL integration. This includes the unchanged administrator
+continuity test after the Demo correction and the new comment HTTP cases.
+Source/image/security/native-release gates remain distinct; this is not a full
+immutable release claim.
+
+The next mention producer now defines canonical case-insensitive ASCII handles
+(3–40 characters; first letter; remaining letters/digits/underscore), reserved
+@card/@board namespaces and deterministic u_<account UUID> defaults. Custom
+claims reserve u_ for generated handles. The account registry must enforce
+uniqueness and current-handle lookup; this Domain contract does not establish
+those persisted facts or expose an account setting yet. Current display names
+and email addresses are never used as unambiguous usernames.
+
+Mention tokens are bounded lexical declarations in normalized plaintext, with
+UTF-16 offsets matching the browser/persisted body. Standalone @username,
+@card and @board are recognized; email/URL/escape/partial unsupported-name
+fragments are literal. Unknown handles remain literal. Only an explicitly
+current-authorized canonical handle map can bind user references, with a
+64-token/map window and at most 20 distinct direct users; repeated occurrences
+retain their spans but do not establish additional distinct recipients.
+These bounds do not replace durable mass-mention authorization, explicit
+confirmation, rate limits, bounded fanout, current recipient eligibility or
+transactional notification production. Existing comment routes still store
+mention-like text literally and do not produce mention notifications yet.
+
+New Domain cases cover namespace/reserved names, emoji/line normalization and
+exact spans, mass declarations, literal email/URL/escape/unsupported fragments,
+unknown/foreign map refusal and token/recipient overflow without truncation.
+Warning-as-error compilation passes; their Linux execution awaits CI. The
+historical-author/readable profile policy, handle registry/claim lifetime,
+mention UI and all remaining full acceptance criteria stay open.
