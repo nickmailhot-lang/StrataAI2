@@ -3,6 +3,14 @@ using System.Globalization;
 
 namespace StrataAI.Application.WorkManagement;
 
+// Internal bounded journal window. This is not an authorized recipient feed;
+// a delivery service must recheck the current actor and protected entity scope.
+public interface INotificationRealtimeStore
+{
+    Task<IReadOnlyList<NotificationRealtimeEvent>> ListRecipientEventsAsync(Guid organizationId,
+        Guid recipientId, long after = 0, CancellationToken cancellationToken = default);
+}
+
 // Recipient-private journal envelope. Never append to a Board replay stream.
 // Admission and persistence are separate requirements; this factory grants neither.
 public sealed record NotificationRealtimeEvent

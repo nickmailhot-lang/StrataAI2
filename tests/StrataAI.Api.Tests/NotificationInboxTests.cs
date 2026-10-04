@@ -10,6 +10,40 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Fact]
+    public async Task Demo_notification_journal_records_first_read_once_across_command_replay_and_new_keys()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        var f = await NotificationFixture(app, owner, recipient, ct);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Private notification source", null, null, DateTimeOffset.UtcNow, ct);
+        Assert.True((await app.Services.GetRequiredService<IWorkManagementService>()
+            .SetCardMemberAsync(card.Id, f.Recipient, f.Owner, true, 1, "journal-test", ct)).Succeeded);
+        var journal = app.Services.GetRequiredService<INotificationRealtimeStore>();
+        var created = Assert.Single(await journal.ListRecipientEventsAsync(f.Organization, f.Recipient, cancellationToken: ct));
+        Assert.Equal("NOTIFICATION_CREATED", created.EventType); Assert.Equal(f.Owner, created.ActorId);
+        Assert.Empty(await journal.ListRecipientEventsAsync(f.Organization, f.Owner, cancellationToken: ct));
+        var path = $"/organizations/{f.Organization}/notifications/read"; var key = Guid.NewGuid().ToString();
+        var selection = new { ids = new[] { created.EntityId } };
+        using var read = await Mutate(recipient, HttpMethod.Post, path, selection, key);
+        Assert.Equal(HttpStatusCode.OK, read.StatusCode); var receipt = await read.Content.ReadAsStringAsync(ct);
+        var readEvent = Assert.Single(await journal.ListRecipientEventsAsync(f.Organization, f.Recipient, 1, ct));
+        Assert.Equal("NOTIFICATION_READ", readEvent.EventType); Assert.Equal("2", readEvent.Sequence);
+        using var acknowledged = JsonDocument.Parse(receipt);
+        Assert.Equal(acknowledged.RootElement.GetProperty("items")[0].GetProperty("readAt").GetDateTimeOffset(), readEvent.CreatedAt);
+        Assert.Equal(f.Recipient, readEvent.ActorId); Assert.Equal(created.EntityId, readEvent.EntityId); Assert.Empty(readEvent.Metadata);
+        using var replay = await Mutate(recipient, HttpMethod.Post, path, selection, key);
+        Assert.Equal(HttpStatusCode.OK, replay.StatusCode); Assert.Equal(receipt, await replay.Content.ReadAsStringAsync(ct));
+        using var repeated = await Mutate(recipient, HttpMethod.Post, path, selection, Guid.NewGuid().ToString());
+        Assert.Equal(HttpStatusCode.OK, repeated.StatusCode); Assert.Equal(receipt, await repeated.Content.ReadAsStringAsync(ct));
+        Assert.Equal(readEvent, Assert.Single(await journal.ListRecipientEventsAsync(f.Organization, f.Recipient, 1, ct)));
+        Assert.Empty(await journal.ListRecipientEventsAsync(f.Organization, f.Recipient, 2, ct));
+        using var denied = await Mutate(owner, HttpMethod.Post, path, selection);
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        Assert.Equal(2, (await journal.ListRecipientEventsAsync(f.Organization, f.Recipient, cancellationToken: ct)).Count);
+    }
+
     private static async Task<(Guid Organization, Guid Board, Guid List, Guid Owner, Guid Recipient)> NotificationFixture(
         ApiFactory app, HttpClient owner, HttpClient recipient, CancellationToken ct)
     {

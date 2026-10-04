@@ -1,18 +1,68 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using StrataAI.Application.Common;
+using StrataAI.Application.Identity;
 using StrataAI.Application.Runtime;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Infrastructure.WorkManagement;
+using StrataAI.Infrastructure.Identity;
+using StrataAI.Infrastructure.Organizations;
 using Xunit;
 
 namespace StrataAI.Domain.Tests;
 
 public sealed class WorkNotificationStoreTests
 {
+    [Fact]
+    public async Task Demo_private_journal_creation_is_deduplicated_bounded_recipient_scoped_and_rolls_back_with_notifications()
+    {
+        var ct = TestContext.Current.CancellationToken; using var services = Demo();
+        var store = services.GetRequiredService<IWorkNotificationStore>();
+        var journal = services.GetRequiredService<INotificationRealtimeStore>();
+        var organization = Guid.NewGuid(); var recipient = Guid.NewGuid(); var board = Guid.NewGuid(); var actor = Guid.NewGuid();
+        var change = Assignment(organization, board, actor);
+        await store.AppendCardAssignmentAsync(change, recipient, ct);
+        var original = Assert.Single(await journal.ListRecipientEventsAsync(organization, recipient, cancellationToken: ct));
+        await store.AppendCardAssignmentAsync(change, recipient, ct);
+        Assert.Equal(original, Assert.Single(await journal.ListRecipientEventsAsync(organization, recipient, cancellationToken: ct)));
+        Assert.Equal("NOTIFICATION_CREATED", original.EventType); Assert.Equal("1", original.Sequence);
+        Assert.Equal(Assert.Single(await store.ListCardNotificationsAsync(organization, recipient, cancellationToken: ct)).Id, original.EntityId);
+        await store.AppendCardAssignmentAsync(change, actor, ct);
+        Assert.Empty(await journal.ListRecipientEventsAsync(organization, actor, cancellationToken: ct));
+        var unit = services.GetRequiredService<IWorkManagementUnitOfWork>();
+        var rolledBack = await unit.ExecuteReadAsync<int>(organization, null, "journal_denied", () => Task.FromResult(true), async () => {
+        for (var index = 0; index < 51; index++) await store.AppendCardAssignmentAsync(Assignment(organization, board, actor), recipient, ct);
+        var first = await journal.ListRecipientEventsAsync(organization, recipient, cancellationToken: ct);
+        Assert.Equal(51, first.Count);
+        var second = await journal.ListRecipientEventsAsync(organization, recipient, 50, ct); Assert.Equal(2, second.Count);
+        Assert.Equal(52, first.Take(50).Concat(second).Select(e => e.EventId).Distinct().Count());
+        Assert.Empty(await journal.ListRecipientEventsAsync(Guid.NewGuid(), recipient, cancellationToken: ct));
+        Assert.Empty(await journal.ListRecipientEventsAsync(organization, Guid.NewGuid(), cancellationToken: ct));
+        return WorkOperation<int>.Failure("journal_test_rollback");
+        }, ct);
+        Assert.False(rolledBack.Succeeded);
+        Assert.Equal(original, Assert.Single(await journal.ListRecipientEventsAsync(organization, recipient, cancellationToken: ct)));
+        Assert.Single(await store.ListCardNotificationsAsync(organization, recipient, cancellationToken: ct));
+        await store.AppendCardAssignmentAsync(Assignment(organization, board, actor), recipient, ct);
+        Assert.Equal("2", (await journal.ListRecipientEventsAsync(organization, recipient, cancellationToken: ct))[1].Sequence);
+    }
+
     private static ServiceProvider Demo()
     {
         var services = new ServiceCollection();
-        services.AddStrataAiWorkManagement(new RuntimeDescriptor(RuntimeMode.Demo, "test", "test"));
+        services.AddSingleton<IClock>(new JournalClock());
+        var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
+        services.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
+        services.AddStrataAiOrganizations(runtime);
+        services.AddSingleton<ICommandActorAuthorization>(new JournalActor());
+        services.AddStrataAiWorkManagement(runtime);
         return services.BuildServiceProvider();
+    }
+
+    private sealed class JournalClock : IClock { public DateTimeOffset UtcNow => DateTimeOffset.UtcNow; }
+    private sealed class JournalActor : ICommandActorAuthorization
+    {
+        public Task<bool> VerifyAsync(Guid actorId, CancellationToken cancellationToken = default) => Task.FromResult(true);
     }
 
     private static WorkEvent Assignment(Guid organization, Guid board, Guid actor) =>

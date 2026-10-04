@@ -37,6 +37,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWorkManagementUnitOfWork, InMemoryWorkManagementUnitOfWork>();
             services.AddSingleton<InMemoryWorkNotificationStore>();
             services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
+            services.AddSingleton<INotificationRealtimeStore>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
             services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
             services.AddSingleton<INotificationInboxStore, InMemoryNotificationInboxStore>();
             services.AddSingleton<InMemoryWatchSubscriptionStore>();

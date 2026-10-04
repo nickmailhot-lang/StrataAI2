@@ -2,17 +2,42 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class InMemoryWorkNotificationStore(DemoWorkTransactionScope scope) : IWorkNotificationStore, IDemoWorkTransactionParticipant
+internal sealed class InMemoryWorkNotificationStore(DemoWorkTransactionScope scope) : IWorkNotificationStore, INotificationRealtimeStore, IDemoWorkTransactionParticipant
 {
     public Action CaptureRollback()
     {
         lock (_notifications)
         {
             var restore = DemoRollback.Dictionary(_notifications);
-            return () => { lock (_notifications) restore(); };
+            var journal = _journal.ToDictionary(pair => pair.Key, pair => pair.Value.ToList());
+            return () => { lock (_notifications) {
+                restore(); _journal.Clear();
+                foreach (var pair in journal) _journal.Add(pair.Key, pair.Value.ToList());
+            } };
         }
     }
     private readonly Dictionary<(Guid Organization, Guid Event, Guid Recipient), CardNotification> _notifications = [];
+    private readonly Dictionary<(Guid Organization, Guid Recipient), List<NotificationRealtimeEvent>> _journal = [];
+
+    public Task<IReadOnlyList<NotificationRealtimeEvent>> ListRecipientEventsAsync(Guid organizationId,
+        Guid recipientId, long after = 0, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (organizationId == Guid.Empty || recipientId == Guid.Empty || after < 0)
+            throw new ArgumentException("Invalid notification journal scope or cursor.");
+        lock (_notifications)
+            return Task.FromResult<IReadOnlyList<NotificationRealtimeEvent>>(_journal.TryGetValue((organizationId, recipientId), out var events)
+                ? events.Skip((int)Math.Min(after, int.MaxValue)).Take(51).ToArray() : []);
+    }
+
+    private void Journal(CardNotification notification, bool read)
+    {
+        var key = (notification.OrganizationId, notification.RecipientId);
+        if (!_journal.TryGetValue(key, out var events)) _journal.Add(key, events = []);
+        var sequence = (long)events.Count + 1;
+        events.Add(read ? NotificationRealtimeEvent.Read(notification, Guid.NewGuid(), sequence, notification.ReadAt!.Value)
+            : NotificationRealtimeEvent.Created(notification, Guid.NewGuid(), sequence));
+    }
 
     internal IReadOnlyList<CardNotification> Snapshot(Guid organization, Guid recipient)
     {
@@ -27,6 +52,7 @@ internal sealed class InMemoryWorkNotificationStore(DemoWorkTransactionScope sco
             foreach (var entry in _notifications.Where(pair => pair.Key.Organization == organization && pair.Key.Recipient == recipient && ids.Contains(pair.Value.Id)).ToArray())
             {
                 var item = entry.Value with { ReadAt = entry.Value.ReadAt ?? (now < entry.Value.CreatedAt ? entry.Value.CreatedAt : now) };
+                if (entry.Value.ReadAt is null) Journal(item, true);
                 _notifications[entry.Key] = item; result.Add(new(item.Id, item.ReadAt!.Value));
             }
             return result.OrderBy(n => n.Id.ToString("N"), StringComparer.Ordinal).ToArray();
@@ -60,7 +86,7 @@ internal sealed class InMemoryWorkNotificationStore(DemoWorkTransactionScope sco
                 if (existing with { Id = item.Id, ReadAt = null } != item)
                     throw new InvalidOperationException("Assignment notification identity was reused.");
             }
-            else _notifications.Add(key, item);
+            else { _notifications.Add(key, item); Journal(item, false); }
         }
         return Task.CompletedTask;
     }
