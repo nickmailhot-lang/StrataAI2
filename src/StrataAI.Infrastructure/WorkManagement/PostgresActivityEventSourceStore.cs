@@ -5,8 +5,29 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class PostgresActivityEventSourceStore(PostgresConnectionFactory connections) : IActivityEventSourceStore
+internal sealed class PostgresActivityEventSourceStore(PostgresConnectionFactory connections) : IActivityEventSourceStore, IActivityPrivateTargetStore
 {
+    public async Task<ActivityPrivateTarget?> FindAsync(Guid organizationId, Guid eventId, CancellationToken ct = default)
+    {
+        if (organizationId == Guid.Empty || eventId == Guid.Empty || !connections.HasCommandScope(organizationId))
+            throw new InvalidOperationException("Activity targets require the owning Work transaction.");
+        ct.ThrowIfCancellationRequested();
+        await using var session = await connections.OpenTenantSessionAsync(organizationId, ct);
+        await using var query = new NpgsqlCommand("""
+            SELECT w.user_id,w.entity_type,w.entity_id FROM work_events e
+            JOIN watch_subscriptions w ON w.tenant_id=e.tenant_id AND w.id=e.watch_subscription_id
+            WHERE e.tenant_id=@tenant AND e.event_id=@event AND e.entity_type='WatchSubscription'
+            UNION ALL
+            SELECT r.user_id,'CARD',r.card_id FROM work_events e
+            JOIN card_reminders r ON r.tenant_id=e.tenant_id AND r.id=e.reminder_id
+            WHERE e.tenant_id=@tenant AND e.event_id=@event AND e.entity_type='Reminder'
+            LIMIT 1;
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organizationId); query.Parameters.AddWithValue("event", eventId);
+        await using var reader = await query.ExecuteReaderAsync(ct);
+        return await reader.ReadAsync(ct) ? new(reader.GetGuid(0), reader.GetString(1), reader.GetGuid(2)) : null;
+    }
+
     public async Task<IReadOnlyList<ActivityEventSource>> ReadBoardWindowAsync(Guid organizationId, Guid boardId,
         DateTimeOffset? beforeCreatedAt, Guid? beforeEventId, CancellationToken ct = default)
         => await ReadWindowAsync(organizationId, boardId, null, beforeCreatedAt, beforeEventId, ct);

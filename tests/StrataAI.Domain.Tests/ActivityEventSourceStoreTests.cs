@@ -100,5 +100,32 @@ public sealed class ActivityEventSourceStoreTests
         await Scope(foreign, async () => { await events.AppendAsync(failed with { EventId = Guid.NewGuid(), OrganizationId = foreign }, ct); return true; });
         Assert.Equal($"Member {actor:D}", Assert.Single(await Scope(foreign, () => sources.ReadBoardWindowAsync(foreign, board, null, null, ct))).ActorLabel);
         Assert.Empty(await Scope(org, () => sources.ReadBoardWindowAsync(org, Guid.NewGuid(), null, null, ct)));
+        var targets = provider.GetRequiredService<IActivityPrivateTargetStore>();
+        var watches = provider.GetRequiredService<IWatchSubscriptionStore>();
+        var reminders = provider.GetRequiredService<ICardReminderStore>();
+        var personalOwner = Guid.NewGuid();
+        var reminderCard = new CardRecord(card, org, board, Guid.NewGuid(), "Activity", null, "rank",
+            WorkItemLifecycleState.Active, at, at, 1) { DueAt = at.AddDays(2), DueTimezone = "UTC" };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => targets.FindAsync(org, originals[0].EventId, ct));
+        Guid watchEvent = Guid.NewGuid(); Guid reminderEvent = Guid.NewGuid();
+        await Scope(org, async () =>
+        {
+            var watch = await watches.SetAsync(org, personalOwner, "CARD", card, true, 0, at, ct);
+            var reminder = await reminders.SetAsync(reminderCard, personalOwner, "1_DAY", true, 0, at, ct);
+            Assert.NotNull(watch); Assert.NotNull(reminder);
+            await events.AppendAsync(new(watchEvent, org, board, actor, "WATCH_CREATED", "WatchSubscription", watch.Id, watch.Version, "private-watch-source", at), ct);
+            await events.AppendAsync(new(reminderEvent, org, board, actor, "REMINDER_SCHEDULED", "Reminder", reminder.Id, reminder.Version, "private-reminder-source", at), ct);
+            var expected = new ActivityPrivateTarget(personalOwner, "CARD", card);
+            Assert.Equal(expected, await targets.FindAsync(org, watchEvent, ct));
+            Assert.Equal(expected, await targets.FindAsync(org, reminderEvent, ct));
+            Assert.Null(await targets.FindAsync(org, watch.Id, ct));
+            Assert.Null(await targets.FindAsync(org, originals[0].EventId, ct));
+            Assert.NotNull(await watches.SetAsync(org, personalOwner, "CARD", card, false, watch.Version, at.AddSeconds(1), ct));
+            Assert.NotNull(await reminders.SetAsync(reminderCard, personalOwner, "1_DAY", false, reminder.Version, at.AddSeconds(1), ct));
+            Assert.Equal(expected, await targets.FindAsync(org, watchEvent, ct));
+            Assert.Equal(expected, await targets.FindAsync(org, reminderEvent, ct));
+            return true;
+        });
+        Assert.Null(await Scope(foreign, () => targets.FindAsync(foreign, reminderEvent, ct)));
     }
 }

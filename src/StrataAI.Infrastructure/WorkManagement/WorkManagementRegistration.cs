@@ -27,14 +27,17 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWorkEventStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkEventReader>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IActivityEventSourceStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
+            services.AddSingleton<IActivityPrivateTargetStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkManagementUnitOfWork, InMemoryWorkManagementUnitOfWork>();
             services.AddSingleton<InMemoryWorkNotificationStore>();
             services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
             services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
             services.AddSingleton<INotificationInboxStore, InMemoryNotificationInboxStore>();
-            services.AddSingleton<IWatchSubscriptionStore, InMemoryWatchSubscriptionStore>();
-            services.AddSingleton<ICardReminderStore, InMemoryCardReminderStore>();
+            services.AddSingleton<InMemoryWatchSubscriptionStore>();
+            services.AddSingleton<IWatchSubscriptionStore>(provider => provider.GetRequiredService<InMemoryWatchSubscriptionStore>());
+            services.AddSingleton<InMemoryCardReminderStore>();
+            services.AddSingleton<ICardReminderStore>(provider => provider.GetRequiredService<InMemoryCardReminderStore>());
             services.AddSingleton<ICardReminderJobPublisher, InMemoryCardReminderJobPublisher>();
             services.AddSingleton<IAttachmentScanJobPublisher, InMemoryAttachmentScanJobPublisher>();
         }
@@ -48,7 +51,9 @@ public static class WorkManagementRegistration
             services.AddSingleton<ICommentMentionSnapshotStore, PostgresCommentMentionSnapshotStore>();
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();
             services.AddSingleton<IWorkEventReader, PostgresWorkEventReader>();
-            services.AddSingleton<IActivityEventSourceStore, PostgresActivityEventSourceStore>();
+            services.AddSingleton<PostgresActivityEventSourceStore>();
+            services.AddSingleton<IActivityEventSourceStore>(provider => provider.GetRequiredService<PostgresActivityEventSourceStore>());
+            services.AddSingleton<IActivityPrivateTargetStore>(provider => provider.GetRequiredService<PostgresActivityEventSourceStore>());
             services.AddSingleton<IWorkManagementUnitOfWork, PostgresWorkManagementUnitOfWork>();
             services.AddSingleton<PostgresWorkNotificationStore>();
             services.AddSingleton<IWorkNotificationStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());

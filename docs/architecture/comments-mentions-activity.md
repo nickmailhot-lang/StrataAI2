@@ -1440,3 +1440,31 @@ separate historical Board slices. Their source setup is synthetic and does not
 prove actual Card movement, HTTP admission or private Watch/Reminder audience
 filtering. Warning-as-error compilation passed; expanded test execution awaits
 CI. Estimated PRD-15 remaining work stays **50%**.
+
+The expanded Card-source contract passed in run 37181680267, PostgreSQL job
+111375352356; its managed and web gates also passed. Complete exact-image CI
+remains pending. The corrected group wait observer ran successfully in the
+mandatory mention command step of run 37180812289, container job 111374028125,
+step 36. That complete step includes all six Card/Board recipient lifecycle
+wait cases, restored-roster receipt checks and full-group quota/fanout rollback;
+the overall container/native browser gate remains live.
+
+Private activity now has a separate internal target resolver keyed by the
+actual tenant/event identity. PostgreSQL joins the immutable source's generated
+Watch/Reminder reference to its tenant-qualified personal record. Demo resolves
+the same stored source through its shared personal stores. The result is the
+stored owner plus target type/identity, not the event actor: another contributor
+changing Card/container dates can be a Reminder actor without being its owner.
+Removed watches and cancelled Reminders retain historical target interpretation.
+Target reads require the owning Work transaction and do not become activity
+metadata, public response fields or current audience authorization.
+
+Expanded Demo and mandatory restricted PostgreSQL contracts check source versus
+record identity, private owner different from actor, current target affinity,
+cross-tenant denial and interpretation after removal/cancellation. Actor/owner
+setup is synthetic, not proof of command admission or any feed disclosure.
+Warning-as-error compilation passed; new execution awaits CI. Final consumers
+still need current owner/session, source/current Board and target lifecycle
+admission before returning these events or page cursors. Authorized APIs,
+interpreter/MUI/realtime, retention and full performance acceptance are still
+unfinished. Estimated PRD-15 remaining work stays **50%**.

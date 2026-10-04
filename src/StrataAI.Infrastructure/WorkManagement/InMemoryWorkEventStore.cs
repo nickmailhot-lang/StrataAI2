@@ -5,8 +5,23 @@ using StrataAI.Application.Organizations;
 namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentityStore identities,
-    IOrganizationStore organizations, DemoWorkTransactionScope scope) : IWorkEventStore, IWorkEventReader, IActivityEventSourceStore, IDemoWorkTransactionParticipant
+    IOrganizationStore organizations, DemoWorkTransactionScope scope, InMemoryWatchSubscriptionStore watches,
+    InMemoryCardReminderStore reminders) : IWorkEventStore, IWorkEventReader, IActivityEventSourceStore, IActivityPrivateTargetStore, IDemoWorkTransactionParticipant
 {
+    public Task<ActivityPrivateTarget?> FindAsync(Guid organizationId, Guid eventId, CancellationToken ct = default)
+    {
+        if (organizationId == Guid.Empty || eventId == Guid.Empty || !scope.Owns(organizationId))
+            throw new InvalidOperationException("Activity targets require the owning Work transaction.");
+        ct.ThrowIfCancellationRequested(); WorkEvent? source;
+        lock (_events) source = _events.GetValueOrDefault((organizationId, eventId)).Event;
+        return Task.FromResult(source?.EntityType switch
+        {
+            "WatchSubscription" => watches.FindActivityTarget(organizationId, source.EntityId),
+            "Reminder" => reminders.FindActivityTarget(organizationId, source.EntityId),
+            _ => null,
+        });
+    }
+
     public Action CaptureRollback()
     {
         lock (_events)

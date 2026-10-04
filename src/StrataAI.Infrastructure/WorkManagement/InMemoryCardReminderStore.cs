@@ -6,6 +6,14 @@ internal sealed class InMemoryCardReminderStore : ICardReminderStore
 {
     private readonly object _gate = new();
     private readonly Dictionary<(Guid Organization, Guid User, Guid Card), CardReminder> _rows = [];
+    internal ActivityPrivateTarget? FindActivityTarget(Guid organizationId, Guid reminderId)
+    {
+        lock (_gate)
+        {
+            var row = _rows.Values.SingleOrDefault(row => row.OrganizationId == organizationId && row.Id == reminderId);
+            return row is null ? null : new(row.UserId, "CARD", row.CardId);
+        }
+    }
 
     public Task<CardReminder?> FindAsync(Guid organizationId, Guid userId, Guid cardId, CancellationToken ct)
     {
