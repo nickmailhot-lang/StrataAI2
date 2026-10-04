@@ -69,6 +69,30 @@ state() { admin "SELECT md5(jsonb_build_object(
  'notifications',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='$org'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
 before=$(state)
+mention_path="/cards/$card/mention-options"
+test "$(get member "$mention_path?prefix=u_" mention-first)" = 200
+mention_cursor=$(jq -r '.nextCursor|@uri' "$scratch/mention-first.json")
+test "$(get member "$mention_path?prefix=u_&after=$mention_cursor" mention-second)" = 200
+mention_cursor=$(jq -r '.nextCursor|@uri' "$scratch/mention-second.json")
+test "$(get member "$mention_path?prefix=u_&after=$mention_cursor" mention-third)" = 200
+jq -se --arg org "$org" --arg board "$board" --arg card "$card" '
+ all(.[];.organizationId==$org and .boardId==$board and .cardId==$card and .cardVersion==1 and .prefix=="u_")
+ and ([.[].items[].userId]|unique|length)==52
+ and ([.[].items[].handle] as $h|$h==($h|sort) and ($h|unique|length)==52)
+ and (.[0].items|length)==20 and (.[1].items|length)==20 and (.[2].items|length)==12 and .[2].nextCursor==null
+ and all(.[].items[];(keys|sort)==["displayName","handle","handleVersion","userId"] and .handleVersion==1
+   and .handle==("u_"+(.userId|gsub("-";""))) and .displayName!="Assignment seeded 51"
+   and .displayName!="Assignment seeded 52" and .displayName!="Assignment seeded 53")
+ and .[0].nextCursor==($card+"/1/u_/"+.[0].items[-1].handle)
+ and .[1].nextCursor==($card+"/1/u_/"+.[1].items[-1].handle)' \
+ "$scratch/mention-first.json" "$scratch/mention-second.json" "$scratch/mention-third.json" >/dev/null
+test "$(get member "$mention_path?prefix=u_${owner//-/}" mention-exact)" = 200
+jq -e --arg owner "$owner" '(.items|length)==1 and .items[0].userId==$owner and .nextCursor==null' "$scratch/mention-exact.json" >/dev/null
+test "$(get member "$mention_path?prefix=%40member")" = 400
+test "$(get member "$mention_path?prefix=u_&prefix=member")" = 400
+test "$(get member "$mention_path?after=")" = 400
+test "$(get outsider "$mention_path?prefix=%40member")" = 404
+test "$before" = "$(state)"
 test "$(request outsider PUT "$member_path?version=1" "$key" '{}')" = 404
 test "$before" = "$(state)"
 test "$(request owner PUT "$member_path?version=0" "$key" '{}')" = 400
@@ -301,6 +325,21 @@ hold; get member "/cards/$card/member-options" > "$scratch/status" & request_pid
 blocked; release "DELETE FROM sessions WHERE user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
 scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|assigned|cardVersion' "$scratch/response.json"
+curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/member.credentials")" "$base/auth/login" >/dev/null
+hold; get member "$mention_path?prefix=u_" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|handleVersion|cardVersion' "$scratch/response.json"
+admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
+hold; get member "$mention_path?prefix=u_" > "$scratch/status" & request_pid=$!
+blocked; release "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|handleVersion|cardVersion' "$scratch/response.json"
+admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
+hold; get member "$mention_path?prefix=u_" > "$scratch/status" & request_pid=$!
+blocked; release "DELETE FROM sessions WHERE user_id='$member';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
+scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|handleVersion|cardVersion' "$scratch/response.json"
 curl --fail --silent --show-error -c "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/member.credentials")" "$base/auth/login" >/dev/null
 hold; get member "/cards/$card/members" > "$scratch/status" & request_pid=$!
 blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$board' AND user_id='$member';"

@@ -726,3 +726,38 @@ Application/adapter, but not a Production database or native selector. Local
 warning-as-error compilation passes; Linux host/release execution is pending.
 Mention UI, atomic recipient notifications, mass-mention controls and complete
 activity acceptance remain outstanding. No ticket or full criterion is closed.
+
+## Client teammate response admission and exact-image read fixtures
+
+The teammate client contract now admits only the exact current Organization,
+Board, Card and safe positive revision, canonical literal prefix, at most 20
+current handle options and a continuation anchored to the final delivered
+handle. It rejects unexpected/private fields, foreign or duplicate identities,
+noncanonical/default handles belonging to another user, invalid revisions,
+unsorted or repeated anchors, stale/cross-prefix/Card cursors and oversized
+metadata. It copies and freezes the admitted page/items so later mutable
+response objects cannot replace an already reviewed identity. Display names
+are metadata, never handle authority. This is response admission for the coming
+selector, not a mention notification producer or recipient authorization.
+Approved prefix/cursor Problem codes pass through the shared bounded safe
+normalizer; private error details remain excluded. Typecheck/lint and 16 selected
+response/Problem cases pass locally.
+
+The already registered exact-image assignment fixture now reads mention options
+using the actual member cookie and restricted API, checks 20+20+12 prefix pages
+against exact Card context, current default handles, exact metadata keys, unique
+ordinal order and final-row cursors, excludes all removed/deactivated fixtures,
+checks exact prefix filtering, and rejects malformed/repeated input/outsiders.
+Its existing complete Work-state snapshot must match across those reads.
+Additional controlled Board lock waits revoke Board membership, Organization
+membership or actual sessions before release; responses must refuse without
+items/handle/displayName/Card revision. Membership/cookie fixture state is
+restored for subsequent checks. Shell syntax passes; new exact-image execution
+remains required and is not inferred from registration.
+
+Protected HTTP commit 7274e99 now passes all source gates in run 37170838129:
+603 Domain and 286 API tests, zero failed/skipped, restricted PostgreSQL and web
+quality. This includes the corrected current COMMENT options Application case
+and the actual-cookie API case. Immutable image build is still running; complete
+release/native/mass-mention/notification/activity/performance acceptance remains
+open.
