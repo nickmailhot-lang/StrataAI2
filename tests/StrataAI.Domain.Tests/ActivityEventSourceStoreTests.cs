@@ -14,11 +14,18 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class ActivityEventSourceStoreTests
 {
+    private sealed class FixtureActorAuthorization : ICommandActorAuthorization
+    {
+        public Task<bool> VerifyAsync(Guid actorId, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+    }
+
     [Fact]
     public async Task PRD_15_InternalActivityWindowsRetainHistoricalCaptionsStableTiesTenantScopeAndRollback()
     {
         var ct = TestContext.Current.CancellationToken; var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
         var registrations = new ServiceCollection(); registrations.AddSingleton<IClock, SystemClock>();
+        registrations.AddSingleton<ICommandActorAuthorization, FixtureActorAuthorization>();
         registrations.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         registrations.AddStrataAiOrganizations(runtime); registrations.AddStrataAiWorkManagement(runtime);
         using var provider = registrations.BuildServiceProvider();
