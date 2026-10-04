@@ -1113,3 +1113,23 @@ synthetic owning scope before deliberately refusing the whole group command.
 Local warning-as-error compilation passes with zero warnings/errors. New Linux
 batch execution is pending; no mass confirmation, quota, actor-policy, native
 scope selection, capacity or whole-FR acceptance is inferred from batch storage.
+
+CI follow-up: runs 37174155043 (48c185c) and 37175042371 (76ff434)
+failed the existing assignable-member container check at line 336. That check
+held the Board while trying to revoke Organization membership which the waiting
+request had already locked FOR SHARE. The fixture now holds the Organization
+membership first and observes the actual API wait at that row before revoking it;
+the 404/no-directory-payload assertion remains mandatory. The existing Board and
+session wait checks remain in place. Run 37176001041 (47ea01f) also failed the new
+mass roster storage check: an earlier Worker contract had moved the shared Card,
+but the new membership fixture used its original Board. The fixture now obtains
+the Card's current canonical Board before seeding, while retaining full eligible
+roster and cross-parent refusal assertions. No production authorization, row
+locks, test assertions or required gates are weakened. Local warning-as-error
+compilation (zero warnings/errors) and shell syntax pass; Linux rerun is pending.
+
+PRD-15 estimated remaining work: **55%**. This is an engineering estimate for
+the whole PRD, including incomplete mass confirmation/authorization/quota,
+activity projections/history/UI, lifecycle/native acceptance and performance
+evidence. It is not a percentage of passing tests or completed acceptance
+criteria; the issue remains open until every required criterion is satisfied.

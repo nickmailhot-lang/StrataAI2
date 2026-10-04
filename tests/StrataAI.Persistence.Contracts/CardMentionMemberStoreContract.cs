@@ -11,6 +11,13 @@ internal static class CardMentionMemberStoreContract
     public static async Task RunAsync(NpgsqlConnection admin, IServiceProvider provider, Guid tenant, Guid foreignTenant,
         Guid board, Guid foreignBoard, Guid foreignUser, Guid card, CancellationToken ct)
     {
+        // Earlier Worker contracts deliberately move this Card. Seed membership
+        // against its current canonical parent rather than the original Board.
+        await using (var parent = new NpgsqlCommand("SELECT board_id FROM cards WHERE tenant_id=@tenant AND id=@card;", admin))
+        {
+            parent.Parameters.AddWithValue("tenant", tenant); parent.Parameters.AddWithValue("card", card);
+            board = (Guid)(await parent.ExecuteScalarAsync(ct) ?? throw new InvalidOperationException("Mention fixture Card is unavailable."));
+        }
         var users = Enumerable.Range(0, 30).Select(_ => Guid.NewGuid()).ToArray();
         var prefix = "mention_" + Guid.NewGuid().ToString("N")[..8] + "_";
         var names = Enumerable.Range(1, 30).Select(n => prefix + n.ToString("D2")).ToArray();

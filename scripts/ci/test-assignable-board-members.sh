@@ -244,13 +244,19 @@ hold() {
   mkfifo "$scratch/gate.in"
   docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.log" 2>&1 & gate_pid=$!
   exec 3> "$scratch/gate.in"
-  printf 'BEGIN;\nSELECT id FROM boards WHERE id=\047%s\047 FOR UPDATE;\n\\echo assignment_locked\n' "$board" >&3
+  if test "${1:-board}" = organization_member; then
+    printf 'BEGIN;\nSELECT id FROM organization_members WHERE tenant_id=\047%s\047 AND user_id=\047%s\047 FOR UPDATE;\n\\echo assignment_locked\n' "$org" "$member" >&3
+  else
+    printf 'BEGIN;\nSELECT id FROM boards WHERE id=\047%s\047 FOR UPDATE;\n\\echo assignment_locked\n' "$board" >&3
+  fi
   for ((attempt=0;attempt<100;attempt++)); do if grep -q '^assignment_locked$' "$scratch/gate.log"; then return; fi; kill -0 "$gate_pid" || return 1; sleep 0.05; done
   return 1
 }
 blocked() {
+  local query_pattern='%SELECT id FROM boards%FOR UPDATE%'
+  if test "${1:-board}" = organization_member; then query_pattern='%SELECT id FROM organization_members%FOR SHARE%'; fi
   for ((attempt=0;attempt<100;attempt++)); do
-    if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%SELECT id FROM boards%FOR UPDATE%';")" -ge 1; then return; fi
+    if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '$query_pattern';")" -ge 1; then return; fi
     sleep 0.05
   done
   echo 'Expected assignment directory Board lock wait was not observed.' >&2; return 1
@@ -331,8 +337,8 @@ blocked; release "UPDATE board_members SET status='REMOVED' WHERE board_id='$boa
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|handleVersion|cardVersion' "$scratch/response.json"
 admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
-hold; get member "$mention_path?prefix=u_" > "$scratch/status" & request_pid=$!
-blocked; release "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$member';"
+hold organization_member; get member "$mention_path?prefix=u_" > "$scratch/status" & request_pid=$!
+blocked organization_member; release "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|handleVersion|cardVersion' "$scratch/response.json"
 admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
