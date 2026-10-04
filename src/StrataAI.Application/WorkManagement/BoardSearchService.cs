@@ -15,7 +15,8 @@ public sealed partial class WorkManagementService
         Guid? after = null, CancellationToken cancellationToken = default)
     {
         var access = await ResolveAccessAsync(boardId, binding.ActorId, cancellationToken);
-        if (access is not { Access.CanView: true }) return WorkOperation<BoardSearchPage>.Failure("board_not_found");
+        if (access is not { Access.CanView: true } || access.Value.OrganizationMembership is not { Active: true })
+            return WorkOperation<BoardSearchPage>.Failure("board_not_found");
         static bool Text(string? value) => value is not null && value.Length <= 160 && value == value.Trim();
         if (binding.ActorId == Guid.Empty || !Text(binding.Keyword) || !Text(binding.Label) || !Text(binding.Member)
             || !Enum.IsDefined(binding.Scope) || after == Guid.Empty)

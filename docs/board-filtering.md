@@ -50,6 +50,19 @@ An explicit archived search remains a read under view admission; it grants no
 archive, restore or edit permission. Cross-Organization coordination and the
 public search endpoint/UI are still outstanding.
 
+The global coordinator now traverses membership routes and visible Boards in
+UUID order, re-admits each Organization (including cursor resumes), then uses
+the Board search read for content. Board search requires current Organization
+membership as well as Board view access. Each response contains up to 50 Cards
+from one Board; its opaque cursor continues through that Board and subsequent
+Boards/Organizations. At most 20 Organization admissions and 20 Board content
+reads occur per request. Empty responses may carry a continuation; clients must
+keep that continuation available instead of declaring a final empty result.
+Exhaustion is reported only by a null cursor. A final actor verification fences
+the whole response. This is a sequence of authorized tenant reads, not an atomic
+cross-tenant snapshot; resumed pages always use current admission and data.
+The coordinator is registered, but GET /search and MUI integration remain.
+
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and

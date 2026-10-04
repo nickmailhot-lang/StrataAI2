@@ -8,6 +8,41 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Global_search_pages_across_Organizations_without_duplicates_and_binds_continuations()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        var fixture = await BoardInvitationFixtureAsync(app, ct);
+        var organizations = app.Services.GetRequiredService<IOrganizationStore>();
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var search = app.Services.GetRequiredService<GlobalSearchService>(); var now = DateTimeOffset.UtcNow;
+        var other = await organizations.CreateOrganizationAsync(fixture.Owner.Id, Guid.NewGuid(), "Other tenant", null, now, ct);
+        var otherBoard = await store.CreateBoardAsync(other.Id, fixture.Owner.Id, Guid.NewGuid(), "Other Board", null,
+            BoardVisibility.Private, "COLOR", "#112233", now, ct);
+        var expected = new List<Guid>();
+        foreach (var (board, count) in new[] { (fixture.Board, 52), (otherBoard, 1) })
+        {
+            var list = await store.CreateListAsync(board.Id, Guid.NewGuid(), "Search List", null, now, ct);
+            for (var n = 0; n < count; n++)
+                expected.Add((await store.CreateCardAsync(list.Id, Guid.NewGuid(), "Search needle", null, null, now, ct)).Id);
+        }
+        var binding = new GlobalSearchBinding(fixture.Owner.Id, "needle", "", "", true, GlobalSearchLifecycleScope.Active);
+        var returned = new List<SearchCardDocument>(); string? cursor = null;
+        for (var attempt = 0; attempt < 8; attempt++)
+        {
+            var page = await search.SearchAsync(binding, cursor, ct);
+            Assert.True(page.Succeeded); Assert.InRange(page.Value!.Items.Count, 0, 50);
+            returned.AddRange(page.Value.Items); cursor = page.Value.NextCursor;
+            if (cursor is null) break;
+            Assert.Equal("invalid_search", (await search.SearchAsync(binding with { Keyword = "different" }, cursor, ct)).ErrorCode);
+        }
+        Assert.Null(cursor); Assert.Equal(expected.Order(), returned.Select(d => d.Card.Id).Order());
+        Assert.Equal(53, returned.Select(d => d.Card.Id).Distinct().Count());
+        Assert.Equal(2, returned.Select(d => d.Card.OrganizationId).Distinct().Count());
+        var hidden = await search.SearchAsync(binding with { ActorId = fixture.Recipient.Id }, null, ct);
+        Assert.True(hidden.Succeeded); Assert.Empty(hidden.Value!.Items); Assert.Null(hidden.Value.NextCursor);
+    }
+
+    [Fact]
     public async Task Search_content_matches_description_label_and_eligible_member_with_ANY_ALL_and_archive_scope()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
