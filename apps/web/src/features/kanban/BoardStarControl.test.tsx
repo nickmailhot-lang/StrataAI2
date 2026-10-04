@@ -1,0 +1,130 @@
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { BoardStarControl } from './BoardStarControl';
+const org = '11111111-1111-1111-1111-111111111111', board = '22222222-2222-2222-2222-222222222222';
+const user = '33333333-3333-3333-3333-333333333333', other = '44444444-4444-4444-4444-444444444444';
+const profile = { id: user, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
+const props = { organizationId: org, boardId: board, admitted: true, disabled: false };
+const state = { organizationId: org, boardId: board, userId: user, starred: false };
+const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
+afterEach(() => { vi.unstubAllGlobals(); });
+async function open() {
+  fireEvent.click(screen.getByRole('button', { name: 'Board starring' }));
+  await screen.findByText('You have not starred this Board.');
+}
+it('reads current personal state after acknowledgment rather than assuming an old replay is current', async () => {
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => path === '/me' ? response(profile)
+    : options?.method === 'PUT' ? new Response(null, { status: 204 }) : response(state));
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
+  await waitFor(() => expect(fetch.mock.calls.filter(([, options]) => options?.method === 'PUT')).toHaveLength(1));
+  await screen.findByText('You have not starred this Board.');
+  expect(screen.queryByText('You have starred this Board.')).not.toBeInTheDocument();
+  const write = fetch.mock.calls.find(([, options]) => options?.method === 'PUT')!;
+  expect(new Headers(write[1]?.headers).get('X-StrataAI-Request')).toBe('1');
+  expect(new Headers(write[1]?.headers).get('Idempotency-Key')).toBeTruthy();
+});
+it('retains the original operation and key through an unknown result and a newer preference', async () => {
+  let writes = 0;
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    if (options?.method === 'PUT') { if (++writes === 1) throw new Error('Private response diagnostic'); return new Response(null, { status: 204 }); }
+    return response({ ...state, starred: writes > 0 });
+  });
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
+  const retry = await screen.findByRole('button', { name: 'Retry same star change' });
+  await waitFor(() => expect(retry).toBeEnabled());
+  expect(screen.queryByRole('button', { name: 'Done' })).not.toBeInTheDocument();
+  fireEvent.click(retry); await screen.findByRole('button', { name: 'Unstar Board' });
+  const commands = fetch.mock.calls.filter(([, options]) => options?.method === 'PUT');
+  expect(commands).toHaveLength(2);
+  expect(new Headers(commands[0][1]?.headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1]?.headers).get('Idempotency-Key'));
+  expect(screen.queryByText('Private response diagnostic')).not.toBeInTheDocument();
+});
+it('checks the current account before sending a mutation and retires a different account', async () => {
+  let changed = false;
+  const fetch = vi.fn(async (path: string) => path === '/me' ? response({ ...profile, id: changed ? other : user }) : response(state));
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open(); changed = true;
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
+  await screen.findByText('Your account changed. Close and reopen Board starring.');
+  expect(fetch.mock.calls.every(call => call[0] === '/me' || call[0] === '/boards/' + board + '/star')).toBe(true);
+  expect(fetch.mock.calls).toHaveLength(4);
+  expect(screen.queryByRole('button', { name: 'Retry same star change' })).not.toBeInTheDocument();
+});
+it.each(['actor', 'scope', 'extra', 'identity'])('withholds malformed or cross-account preference reads (%s)', async kind => {
+  let profiles = 0;
+  const fetch = vi.fn(async (path: string) => path === '/me' ? response({ ...profile, id: kind === 'identity' && ++profiles > 1 ? other : user })
+    : response(kind === 'actor' ? { ...state, userId: other } : kind === 'scope' ? { ...state, boardId: other }
+      : kind === 'extra' ? { ...state, privateContent: 'secret' } : state));
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Board starring' }));
+  await screen.findByRole('status');
+  expect(screen.queryByText('You have not starred this Board.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Star Board' })).not.toBeInTheDocument();
+  expect(screen.queryByText('secret')).not.toBeInTheDocument();
+});
+it('aborts a pending change on access withdrawal and ignores a late acknowledgment', async () => {
+  let finish!: (response: Response) => void;
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => path === '/me' ? response(profile)
+    : options?.method === 'PUT' ? new Promise<Response>(resolve => { finish = resolve; }) : response(state));
+  vi.stubGlobal('fetch', fetch); const view = render(<BoardStarControl {...props} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' })); await waitFor(() => expect(finish).toBeDefined());
+  view.rerender(<BoardStarControl {...props} admitted={false} />);
+  await screen.findByText('Board starring is unavailable.');
+  expect(fetch.mock.calls.find(([, options]) => options?.method === 'PUT')![1]?.signal?.aborted).toBe(true);
+  await act(async () => finish(new Response(null, { status: 204 })));
+  expect(screen.queryByRole('button', { name: 'Retry same star change' })).not.toBeInTheDocument();
+  expect(screen.queryByText('You have starred this Board.')).not.toBeInTheDocument();
+});
+it('re-admits current preference on reconnect and removes listeners when closed', async () => {
+  let starred = false;
+  const fetch = vi.fn(async (path: string) => path === '/me' ? response(profile) : response({ ...state, starred }));
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open(); starred = true;
+  fireEvent(window, new Event('online')); await screen.findByText('You have starred this Board.');
+  fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+  const count = fetch.mock.calls.length; fireEvent(window, new Event('online')); await act(async () => {});
+  expect(fetch).toHaveBeenCalledTimes(count);
+});
+it('never sends an unresolved receipt under a replacement account', async () => {
+  let account = user;
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response({ ...profile, id: account });
+    if (options?.method === 'PUT') throw new Error('Lost response');
+    return response(state);
+  });
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
+  const retry = await screen.findByRole('button', { name: 'Retry same star change' });
+  await waitFor(() => expect(retry).toBeEnabled()); account = other; fireEvent.click(retry);
+  await screen.findByText('Your account changed. Close and reopen Board starring.');
+  expect(fetch.mock.calls.filter(([, options]) => options?.method === 'PUT')).toHaveLength(1);
+  expect(screen.queryByRole('button', { name: 'Retry same star change' })).not.toBeInTheDocument();
+});
+it('retires the receipt after a known access denial', async () => {
+  let writes = 0;
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    if (options?.method === 'PUT') {
+      if (++writes === 1) throw new Error('Lost response');
+      return response({ code: 'board_not_found' }, 404);
+    }
+    return response(state);
+  });
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
+  const retry = await screen.findByRole('button', { name: 'Retry same star change' });
+  await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry);
+  await screen.findByText('Board starring is unavailable. Check access or sign in.');
+  expect(screen.queryByRole('button', { name: 'Retry same star change' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Done' })).toBeEnabled();
+});
+it('drops an unresolved receipt when navigating to another Board', async () => {
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => path === '/me' ? response(profile)
+    : options?.method === 'PUT' ? Promise.reject(new Error('Lost response')) : response(state));
+  vi.stubGlobal('fetch', fetch); const view = render(<BoardStarControl {...props} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Star Board' }));
+  await screen.findByRole('button', { name: 'Retry same star change' });
+  view.rerender(<BoardStarControl {...props} boardId={other} />);
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry same star change' })).not.toBeInTheDocument();
+});

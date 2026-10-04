@@ -57,6 +57,7 @@ import { ListRenameControl } from './ListRenameControl';
 import { ListArchiveControl } from './ListArchiveControl';
 import { BoardArchiveControl } from './BoardArchiveControl';
 import { BoardMetadataControl } from './BoardMetadataControl';
+import { BoardStarControl } from './BoardStarControl';
 import { boardBackgroundColor } from './boardBackground';
 import { ListCopyControl } from './ListCopyControl';
 import { CardReminderControl } from './CardReminderControl';
@@ -486,6 +487,8 @@ function BoardContent() {
           )}
           {snapshot.access.canEdit && snapshot.board.lifecycleState === 'active' &&
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/archived-cards`}>Archived cards</Button>}
+          <BoardStarControl organizationId={organizationId} boardId={boardId} admitted={snapshot.access.canView}
+            disabled={otherBusy || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation} />
           <BoardMetadataControl snapshot={snapshot}
             disabled={operationBusy || listArchiveRecovery || boardArchiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || cardCommandRecovery || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0 || !!cardId || !!creation}
             onBusyChange={setBusy} onRecoveryChange={setBoardMetadataRecovery}
