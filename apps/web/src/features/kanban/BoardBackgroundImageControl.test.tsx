@@ -30,6 +30,7 @@ it('reviews current Board and checked source before sending a scoped atomic imag
   await choose(); expect(writes()).toHaveLength(0); fireEvent.click(screen.getByRole('button', { name: 'Confirm Board background image' }));
   await screen.findByText('Board background updated.'); expect(writes()).toHaveLength(1);
   expect(writes()[0][0]).toBe(`/boards/${scope.boardId}/background/image`);
+  expect(new Headers(writes()[0][1]!.headers).get('Content-Type')).toBe('application/json');
   expect(JSON.parse(writes()[0][1]!.body as string)).toEqual({ cardId: scope.cardId, attachmentId: candidate.attachmentId,
     attachmentVersion: 3, boardVersion: 7, publicVisibilityConfirmed: false });
   await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false));

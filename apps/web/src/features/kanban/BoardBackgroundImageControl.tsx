@@ -90,7 +90,7 @@ function Control(props: Props) {
         await actor(signal, command.actor);
         if (!callbacks.current.editable || callbacks.current.unavailable) throw new WorkRequestError(403, null);
         const value = await workRequest<unknown>(`/boards/${encodeURIComponent(props.boardId)}/background/image`, { method: 'POST', signal,
-          headers: { 'Idempotency-Key': command.key }, body: JSON.stringify(command.input) });
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(command.input) });
         acknowledgment(value, props, command); await actor(signal, command.actor);
       }, c.signal);
       if (current(c)) { activityResult('board_metadata_update', true, started); retire('Board background updated.'); callbacks.current.onRefresh(); }
