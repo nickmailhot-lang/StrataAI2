@@ -692,3 +692,10 @@ original/current Board archival independently, with unchanged publication effect
 counts. Its routing transitions are explicit administrator fixtures; HTTP actor
 admission remains the API-host contract. Compilation passes with zero warnings
 and errors; actual new Linux API/PostgreSQL execution remains pending CI.
+
+URL creation receipts use the same original/current Board gate plan after Card
+movement. Replay binds original Card revision, actor, attachment kind and current
+metadata identity, and returns the unchanged acknowledgment. API-host coverage
+checks a real cross-Board move, exact recovery without a Card revision or duplicate
+metadata, destination withdrawal/restoration and original source withdrawal while
+destination metadata remains accessible. New Linux execution is pending CI.

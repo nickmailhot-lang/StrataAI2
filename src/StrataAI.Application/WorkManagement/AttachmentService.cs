@@ -46,10 +46,17 @@ public sealed class AttachmentService(IWorkManagementStore work, IAttachmentMeta
         if (hint is null) return WorkOperation<AttachmentChange>.Failure("card_not_found");
         return await transactions.ExecuteAsync(hint.OrganizationId,
             WorkCommand.Create(actor, context.IdempotencyKey, "AttachmentUrlCreate", cardId, input, "card_not_found"),
-            async receipt => (receipt is null || receipt.OrganizationId == hint.OrganizationId && receipt.BoardId == hint.BoardId
-                && receipt.CardId == cardId && receipt.Attachment.OrganizationId == hint.OrganizationId && receipt.Attachment.CardId == cardId)
-                && await Admit(hint, actor, true, ct)
-                && (receipt is null || await attachments.FindAttachmentAsync(hint.OrganizationId, cardId, receipt.Attachment.Id, ct) is not null), async () =>
+            async receipt =>
+            {
+                if (receipt is null) return await Admit(hint, actor, true, ct);
+                if (receipt.OrganizationId != hint.OrganizationId || receipt.CardId != cardId
+                    || receipt.CardVersion != input.CardVersion + 1 || receipt.Attachment.OrganizationId != hint.OrganizationId
+                    || receipt.Attachment.CardId != cardId || receipt.Attachment.UploaderId != actor
+                    || receipt.Attachment.Kind != StrataAI.Domain.WorkManagement.AttachmentKind.Url
+                    || !await AttachmentAdmission.CheckReceiptAsync(work, organizations, boards, hint, receipt.BoardId, actor, ct)) return false;
+                var current = await attachments.FindAttachmentAsync(hint.OrganizationId, cardId, receipt.Attachment.Id, ct);
+                return current is not null && current.UploaderId == actor && current.Kind == receipt.Attachment.Kind;
+            }, async () =>
             {
                 if (input.CardVersion < 1) return WorkOperation<AttachmentChange>.Failure("invalid_attachment_version");
                 var now = clock.UtcNow;

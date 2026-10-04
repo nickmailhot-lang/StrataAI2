@@ -41,11 +41,32 @@ public sealed partial class ApiHostTests
         using var invalidOutsider = await Mutate(outsider, HttpMethod.Post, path + "/url", new CreateUrlAttachmentInput("", "javascript:bad", 0));
         Assert.Equal(HttpStatusCode.NotFound, invalidOutsider.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync(path + "?after=malformed", ct)).StatusCode);
+        using var destinationResponse = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "URL destination", visibility = "PRIVATE" });
+        var destination = (await destinationResponse.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var grant = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, grant.StatusCode);
+        using var listResponse = await Mutate(owner, HttpMethod.Post, $"/boards/{destination}/lists", new { name = "URL parent" });
+        var list = (await listResponse.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var moved = await Mutate(member, HttpMethod.Post, $"/cards/{card.Id}/move",
+            new { sourceBoardId = f.Board, destinationListId = list, expectedVersion = 2 });
+        Assert.Equal(HttpStatusCode.OK, moved.StatusCode); var movedCard = (await work.FindCardAsync(card.Id, ct))!;
+        using var movedReplay = await Mutate(member, HttpMethod.Post, path + "/url", input, key);
+        Assert.Equal(HttpStatusCode.OK, movedReplay.StatusCode); Assert.Equal(receipt, await movedReplay.Content.ReadAsStringAsync(ct));
+        Assert.Equal(movedCard, await work.FindCardAsync(card.Id, ct));
+        Assert.Equal(change.Attachment, Assert.Single((await member.GetFromJsonAsync<AttachmentPage>(path, ct))!.Items));
+        using var revokeDestination = await Mutate(owner, HttpMethod.Delete, $"/boards/{destination}/members/{f.Recipient}", new { });
+        Assert.Equal(HttpStatusCode.NoContent, revokeDestination.StatusCode);
+        using var hiddenReplay = await Mutate(member, HttpMethod.Post, path + "/url", input, key); Assert.Equal(HttpStatusCode.NotFound, hiddenReplay.StatusCode);
+        using var restoreDestination = await Mutate(owner, HttpMethod.Patch, $"/boards/{destination}/members/{f.Recipient}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, restoreDestination.StatusCode);
+        using var restoredReplay = await Mutate(member, HttpMethod.Post, path + "/url", input, key);
+        Assert.Equal(HttpStatusCode.OK, restoredReplay.StatusCode); Assert.Equal(receipt, await restoredReplay.Content.ReadAsStringAsync(ct));
         using var removed = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(path, ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await member.GetAsync(path, ct)).StatusCode);
         using var revokedReplay = await Mutate(member, HttpMethod.Post, path + "/url", input, key);
         Assert.Equal(HttpStatusCode.NotFound, revokedReplay.StatusCode);
+        Assert.Equal(movedCard, await work.FindCardAsync(card.Id, ct));
         Assert.Equal(change.Attachment, Assert.Single((await owner.GetFromJsonAsync<AttachmentPage>(path, ct))!.Items));
     }
     [Theory]
