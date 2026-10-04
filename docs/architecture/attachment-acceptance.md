@@ -816,3 +816,12 @@ then restores membership and recovers the unchanged original acknowledgment.
 Membership and routing setup remain explicit trusted fixtures; published-image
 metadata and the command use genuine restricted adapters. Linux execution is
 pending; compilation alone does not prove this race.
+
+The desktop/mobile moved-attachment native scenarios now keep an independent
+destination detail client open during archive, require removal through real
+Worker delivery, then disconnect that client during restoration and drain the
+destination outbox before reconnecting. The existing open attachment panel must
+recover the same stable URL identity/current revision without manual reload.
+Both clients receive accessibility checks. Playwright discovers both scenarios;
+actual native execution remains pending, and this is URL lifecycle evidence
+rather than a complete binary-provider workflow.
