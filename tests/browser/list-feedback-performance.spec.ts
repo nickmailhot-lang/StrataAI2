@@ -85,7 +85,7 @@ test('PRD-06: desktop list drop feedback precedes persistence and meets its budg
     expect(persisted.lists.map((column: { list: { id: string } }) => column.list.id)).toEqual([ids[1], ids[0]]);
     expect(persisted.lists[0].list.version).toBe(2); expect(persisted.lists[1]).toEqual(baseline.lists[0]);
     await page.reload(); await expect.poll(reads).toBeGreaterThanOrEqual(4);
-    await expect(page.getByRole('region').first()).toHaveAccessibleName('Feedback moving');
+    await expect(page.locator('[aria-label="Kanban board"]').getByRole('region').first()).toHaveAccessibleName('Feedback moving');
     expect(writes).toBe(1);
   } finally {
     releaseWrite(); await page.unroute(routePath);

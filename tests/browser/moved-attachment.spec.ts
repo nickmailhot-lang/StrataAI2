@@ -58,7 +58,7 @@ for (const width of [1280, 390]) {
       await peer.setOffline(true);
       const restored = await context.request.post(`${path}/${attachment.id}/restore`, {
         headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
-        data: { cardVersion: retained.cardVersion, attachmentVersion: retained.items[0].version },
+        data: { cardVersion: retained.cardVersion, version: retained.items[0].version },
       });
       expect(restored.status()).toBe(200);
       await waitForBoardDelivery(context.request, boards[1]);

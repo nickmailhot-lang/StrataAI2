@@ -50,7 +50,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await page.mouse.down();
       await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 12 });
       await page.mouse.up();
-      await expect(page.getByRole('region').first()).toHaveAccessibleName('First');
+      await expect(page.locator('[aria-label="Kanban board"]').getByRole('region').first()).toHaveAccessibleName('First');
       await expect(page.getByRole('button', { name: 'Move First list', exact: true })).toBeEnabled();
       const current = await context.request.get(`/boards/${board}`); expect(current.status()).toBe(200);
       const persisted = (await current.json()).lists.map((column: { list: { id: string; version: number } }) => column.list);
@@ -81,7 +81,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await page.keyboard.press('ArrowLeft');
     await expect(page.getByText(targetAnnouncement, { exact: true })).toBeAttached();
     await page.keyboard.press('Space');
-    await expect(page.getByRole('region').first()).toHaveAccessibleName(keyboardName);
+    await expect(page.locator('[aria-label="Kanban board"]').getByRole('region').first()).toHaveAccessibleName(keyboardName);
     await expect(page.getByRole('button', { name: `Move ${keyboardName} list`, exact: true })).toBeEnabled();
     expect(moveWrites).toBe(1);
     const afterKeyboard = await (await context.request.get(`/boards/${board}`)).json();
@@ -89,7 +89,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     expect(afterKeyboard.lists[0].list.version).toBe(beforeKeyboard.lists[1].list.version + 1);
     expect(afterKeyboard.lists[1].list.rank).toBe(beforeKeyboard.lists[0].list.rank);
     await page.reload();
-    await expect(page.getByRole('region').first()).toHaveAccessibleName(keyboardName);
+    await expect(page.locator('[aria-label="Kanban board"]').getByRole('region').first()).toHaveAccessibleName(keyboardName);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 }
