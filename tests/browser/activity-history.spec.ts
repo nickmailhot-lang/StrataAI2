@@ -101,7 +101,10 @@ for (const width of [1280, 390]) {
       expect(archived.status()).toBe(200); version++;
       const archivedHistory = await context.request.get(`/cards/${card}/activity`); expect(archivedHistory.status()).toBe(200);
       expect((await archivedHistory.json()).items.some((item: { eventType: string }) => item.eventType === 'CARD_ARCHIVED')).toBe(true);
-      await page.goto(`${boardPath}/cards/${card}`);
+      await waitForBoardDelivery(context.request, board);
+      const archivedPath = `${boardPath}/cards/${card}`;
+      const archivedReads = trackBoardReads(page, board, archivedPath);
+      await page.goto(archivedPath); await expect.poll(archivedReads).toBeGreaterThanOrEqual(2);
       await expect(page.getByText('This Card or its List is archived. Details are read-only.', { exact: true })).toBeVisible();
       await expect(open).toBeEnabled(); await open.press('Enter');
       await expect(cardHistory.getByText(`${caption} archived a Card.`, { exact: true })).toHaveCount(1);
@@ -110,7 +113,9 @@ for (const width of [1280, 390]) {
       await expect(archivedComments).toBeEnabled(); await archivedComments.press('Enter');
       await expect(page.getByText('Recovery body excluded from activity', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Add comment', exact: true })).toBeDisabled();
-      await page.goto(boardPath); await expect(boardOpen).toBeEnabled(); await boardOpen.press('Enter');
+      const returnReads = trackBoardReads(page, board, boardPath);
+      await page.goto(boardPath); await expect.poll(returnReads).toBeGreaterThanOrEqual(2);
+      await expect(boardOpen).toBeEnabled(); await boardOpen.press('Enter');
       await expect(boardHistory.getByText(`${caption} archived a Card.`, { exact: true })).toHaveCount(1);
       const deleted = await context.request.delete(`/cards/${card}?version=${version}&confirmed=true`, { headers });
       expect(deleted.status()).toBe(200);
