@@ -77,8 +77,10 @@ for (const width of [1280, 390]) {
       await retryAssignment.focus(); await expect(retryAssignment).toBeFocused(); await expect(retryAssignment).toBeEnabled();
       await retryAssignment.press('Enter'); await expect(edit).toBeFocused();
       expect(assignmentAttempts).toHaveLength(2); expect(assignmentAttempts[0]).toEqual(assignmentAttempts[1]);
+      await expect(edit).toBeEnabled();
       await edit.press('Enter');
-      await page.getByRole('button', { name: 'Add label blue', exact: true }).press('Enter'); await expect(edit).toBeFocused();
+      const addBlue = page.getByRole('button', { name: 'Add label blue', exact: true });
+      await expect(addBlue).toBeEnabled(); await addBlue.press('Enter'); await expect(edit).toBeFocused();
       await waitForBoardDelivery(context.request, board);
       await navigate(`/app/${org}/boards/${board}`);
       const face = page.getByRole('link').filter({ hasText: 'Labeled work' });

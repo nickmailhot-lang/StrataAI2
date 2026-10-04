@@ -39,7 +39,7 @@ for (const width of [1280, 390]) {
       await page.goto(path); await other.goto(path); await mirror.goto(path);
       for (const client of [page, other, mirror]) {
         await expect(client.getByRole('button', { name: 'Board starring', exact: true })).toBeEnabled();
-        await client.getByRole('button', { name: 'Board starring', exact: true }).focus(); await client.keyboard.press('Enter');
+        await client.getByRole('button', { name: 'Board starring', exact: true }).press('Enter');
         await expect(client.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
       }
       await expect.poll(() => initialPrivateFrame).toBe(true);

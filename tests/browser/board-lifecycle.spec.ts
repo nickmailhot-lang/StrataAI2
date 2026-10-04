@@ -43,7 +43,8 @@ for (const width of [1280, 390]) {
       });
       await page.getByRole('button', { name: 'Archive Board', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText(/Its Lists and Cards remain associated with it/)).toBeVisible();
-      await page.getByRole('button', { name: 'Confirm archive', exact: true }).focus(); await page.keyboard.press('Enter');
+      const confirmArchive = page.getByRole('button', { name: 'Confirm archive', exact: true });
+      await expect(confirmArchive).toBeEnabled(); await confirmArchive.press('Enter');
       await expect(page.getByRole('button', { name: 'Retry this archive', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel archive', exact: true })).toHaveCount(0);
       await expect(other.getByText('This board is archived. Editing is unavailable.', { exact: true })).toBeVisible();
