@@ -29,6 +29,7 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON card_labels TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE,DELETE ON card_members TO strataai_api_runtime;
 GRANT SELECT,INSERT ON card_assignment_notifications TO strataai_api_runtime;
 GRANT SELECT ON notification_events,notification_event_streams TO strataai_api_runtime;
+GRANT SELECT ON board_star_events TO strataai_api_runtime;
 GRANT UPDATE(read_at) ON card_assignment_notifications TO strataai_api_runtime;
 GRANT SELECT,INSERT ON watch_subscriptions TO strataai_api_runtime;
 GRANT SELECT,INSERT ON card_reminders TO strataai_api_runtime;
@@ -66,6 +67,7 @@ GRANT SELECT,UPDATE ON background_jobs TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.deliver_card_reminder(uuid,uuid,uuid,uuid,uuid,uuid,bigint,boolean) TO strataai_worker_runtime;
 GRANT SELECT,INSERT,UPDATE,DELETE ON organizations,boards,board_lists,cards,organization_members,invitations,portal_access,
     user_organization_access,invitation_routes,board_members,user_board_preferences,board_routes,list_routes,card_routes TO strataai_api_runtime;
+REVOKE DELETE ON user_board_preferences FROM strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON checklists,checklist_items TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON attachments TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON card_comments TO strataai_api_runtime;
