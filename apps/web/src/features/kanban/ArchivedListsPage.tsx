@@ -41,6 +41,7 @@ function Archive({ org, board }: { org: string; board: string }) {
   const position = useRef<{ cursor: string | null; history: (string | null)[] }>({ cursor: null, history: [] });
   const read = useRef<AbortController | undefined>(undefined); const write = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(false); const refresh = useRef<HTMLButtonElement>(null);
+  const queued = useRef(false);
   const focusRequested = useRef(false);
   const focusFrame = useRef<number | undefined>(undefined);
   function restoreFocus() {
@@ -64,11 +65,12 @@ function Archive({ org, board }: { org: string; board: string }) {
   function deny() {
     write.current?.abort(); write.current = undefined; setWriting(false);
     setPage(undefined); setSelected(undefined); setIntent(undefined); setReady(false); setSubscribed(false);
+    queued.current = false;
     setRetryRead(false); setNotice(undefined); setError('Archived List administration is unavailable.');
   }
   async function load(cursor: string | null, trail: (string | null)[]) {
     if (document.activeElement === refresh.current) focusRequested.current = true;
-    read.current?.abort(); const c = new AbortController(); read.current = c;
+    read.current?.abort(); queued.current = false; const c = new AbortController(); read.current = c;
     position.current = { cursor, history: trail }; setHistory(trail); setReading(true); setReady(false); setRetryRead(false); setError(undefined);
     try {
       const result = await request(`/boards/${encodeURIComponent(board)}/archived-lists${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`, {}, c);
@@ -82,9 +84,14 @@ function Archive({ org, board }: { org: string; board: string }) {
       setPage(p); setReady(true); setSubscribed(true);
     } catch { if (mounted.current && read.current === c) {
       setPage(undefined); setReady(false); setRetryRead(true); setError('Unable to confirm current archived Lists. Please check again.');
-    } } finally { if (mounted.current && read.current === c) { read.current = undefined; setReading(false); } }
+    } } finally { if (mounted.current && read.current === c) {
+      read.current = undefined; setReading(false);
+      if (queued.current) void load(position.current.cursor, position.current.history);
+    } }
   }
-  const invalidate = useEffectEvent(() => { void load(position.current.cursor, position.current.history); });
+  const invalidate = useEffectEvent(() => {
+    if (read.current) queued.current = true; else void load(position.current.cursor, position.current.history);
+  });
   useEffect(() => {
     mounted.current = true; void load(null, []);
     return () => { mounted.current = false; read.current?.abort(); write.current?.abort();

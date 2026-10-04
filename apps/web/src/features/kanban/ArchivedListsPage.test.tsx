@@ -48,6 +48,23 @@ it('preserves the archive return focus through a real-time read after acknowledg
   await waitFor(() => expect(check).toHaveFocus());
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); vi.clearAllMocks(); });
+it('coalesces repeated live invalidations during a read and admits the latest archive afterward', async () => {
+  let finish!: (value: Response) => void;
+  const latest = { ...page, items: [{ ...row, list: { ...list, name: 'Latest archive', version: 2 } }] };
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
+    .mockResolvedValueOnce(reply(latest));
+  mount(fetch); await screen.findByRole('button', { name: 'Restore Planning list' });
+  const invalidate = vi.mocked(watchBoard).mock.calls.at(-1)![0].invalidate;
+  act(() => invalidate()); await waitFor(() => expect(finish).toBeDefined());
+  const signal = fetch.mock.calls[1][1].signal as AbortSignal;
+  act(() => { invalidate(); invalidate(); invalidate(); });
+  expect(signal.aborted).toBe(false); expect(fetch).toHaveBeenCalledTimes(2);
+  await act(async () => finish(reply(page)));
+  await screen.findByRole('button', { name: 'Restore Latest archive list' });
+  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(screen.queryByRole('button', { name: 'Restore Planning list' })).not.toBeInTheDocument();
+});
 it('retires a pending restore when fresh archive admission denies access and ignores its late acknowledgment', async () => {
   let finish!: (value: Response) => void;
   const fetch = vi.fn().mockResolvedValueOnce(reply(page))
