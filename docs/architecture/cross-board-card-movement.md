@@ -100,3 +100,20 @@ security were still running when the MUI continuation was prepared. Local MUI
 checks passed 60 related tests before the final integration case; the final
 42-test selector/Board rerun and separate integrated recovery case passed.
 No native execution is inferred from Playwright test discovery.
+
+
+## Supported-capacity command gate
+
+The capacity chain now includes 20 actual serial cross-Board commands through
+Nginx and the restricted immutable API. Both Boards have 200 Lists; the source
+starts with 5,000 active Cards and the destination with 4,999, so every alternating
+move finishes with exactly 5,000 active Cards at its admitted destination. The
+Organization retains the existing 100,000 archived Cards. The moved Card carries
+one active label and one explicit eligible assignment, plus the existing large
+comment/checklist history. The fixture verifies stable body/identity, 40 Board
+events, 20 audits/receipts and unchanged original receipt recovery after 19 later
+moves. The retained fixed-field artifact records all 20 HTTP timings and enforces
+nearest-rank p95 below 500ms. It also retains a failed budget measurement to aid
+repair. This is one serial client with no intentional network latency; it does
+not prove browser feedback, concurrent-client or cached-open budgets. New Linux
+execution is required before any measured performance claim.
