@@ -69,6 +69,31 @@ public sealed partial class ApiHostTests
     }
 
     [Fact]
+    public async Task PRD_04_Board_copy_receipt_requires_source_access_even_while_the_creator_owns_the_copy()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var path = $"/boards/{f.Board}/copy"; var key = Guid.NewGuid().ToString();
+        var input = new { name = "Member's independent Board", version = 1 };
+        using var created = await Mutate(member, HttpMethod.Post, path, input, key);
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var copy = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        Assert.Equal(f.Recipient, Assert.Single(await store.ListBoardMembersAsync(copy, ct)).UserId);
+        using var removed = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
+        Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
+        var before = await store.ListVisibleBoardsAsync(f.Organization, f.Recipient, false, ct);
+        using var retained = await Mutate(member, HttpMethod.Post, path, input, key);
+        Assert.Equal(HttpStatusCode.NotFound, retained.StatusCode);
+        using var replacement = await Mutate(member, HttpMethod.Post, path, input);
+        Assert.Equal(HttpStatusCode.NotFound, replacement.StatusCode);
+        Assert.Equal(before, await store.ListVisibleBoardsAsync(f.Organization, f.Recipient, false, ct));
+        using var destination = await member.GetAsync($"/boards/{copy}", ct);
+        Assert.Equal(HttpStatusCode.OK, destination.StatusCode);
+    }
+
+    [Fact]
     public async Task PRD_04_Board_copy_withholds_structure_from_viewers_and_anonymous_users()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
