@@ -14,17 +14,32 @@ public sealed partial class WorkManagementService
             return WorkOperation<BoardRecord>.Failure("board_not_found");
         if (!TryNormalizeName(name, out var normalized)) return WorkOperation<BoardRecord>.Failure("invalid_board_name");
         if (version <= 0 || scope.Value.Board.Version != version) return WorkOperation<BoardRecord>.Failure("version_conflict");
-        // Image references need the separate stored-image admission contract.
-        // Do not widen that unfinished capability through duplication.
-        if (scope.Value.Board.BackgroundType != "COLOR") return WorkOperation<BoardRecord>.Failure("invalid_background");
+        BoardBackgroundImage? background = null;
+        if (scope.Value.Board.BackgroundType == "IMAGE")
+        {
+            if (!Guid.TryParseExact(scope.Value.Board.BackgroundValue, "D", out var imageId)
+                || (background = await store.FindBoardBackgroundImageAsync(scope.Value.Board.OrganizationId, boardId, imageId, ct)) is null)
+                return WorkOperation<BoardRecord>.Failure("invalid_background");
+        }
+        else if (scope.Value.Board.BackgroundType != "COLOR") return WorkOperation<BoardRecord>.Failure("invalid_background");
         var created = await CreateBoardAsync(scope.Value.Board.OrganizationId, actorId, normalized,
-            scope.Value.Board.Description, BoardVisibility.Private, scope.Value.Board.BackgroundType,
-            scope.Value.Board.BackgroundValue, correlationId, ct);
+            scope.Value.Board.Description, BoardVisibility.Private, "COLOR",
+            background is null ? scope.Value.Board.BackgroundValue : null, correlationId, ct);
         if (!created.Succeeded || created.Value is null) return created;
-        await store.CopyBoardContentsAsync(boardId, created.Value.Id, created.Value.CreatedAt, ct);
-        await RecordChangeAsync(created.Value.OrganizationId, created.Value.Id, actorId, "BOARD_COPIED", "Board",
-            created.Value.Id, created.Value.Version, correlationId, ct);
-        return created;
+        var target = created.Value;
+        if (background is not null)
+        {
+            var owned = await store.CreateBoardBackgroundImageAsync(new(Guid.NewGuid(), target.OrganizationId,
+                target.Id, actorId, target.CreatedAt, background.Preview, background.Id), ct);
+            var initialized = await store.InitializeCopiedBoardBackgroundAsync(target.OrganizationId, target.Id,
+                owned.Id, target.CreatedAt, ct);
+            if (initialized is null) return WorkOperation<BoardRecord>.Failure("version_conflict");
+            target = initialized;
+        }
+        await store.CopyBoardContentsAsync(boardId, target.Id, target.CreatedAt, ct);
+        await RecordChangeAsync(target.OrganizationId, target.Id, actorId, "BOARD_COPIED", "Board",
+            target.Id, target.Version, correlationId, ct);
+        return WorkOperation<BoardRecord>.Success(target);
     }
 }
 

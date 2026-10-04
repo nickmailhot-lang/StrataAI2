@@ -100,6 +100,9 @@ public static class WorkManagementRegistration
         services.AddSingleton<AttachmentDownloadAdmissionService>();
         services.AddSingleton<AttachmentDownloadService>();
         services.AddSingleton<AttachmentPreviewReadService>();
+        services.AddSingleton<BoardBackgroundImageSelectionService>();
+        services.AddSingleton<BoardBackgroundImageAdmissionService>();
+        services.AddSingleton<BoardBackgroundImageReadService>();
         services.AddSingleton<AttachmentFilePublicationService>();
         services.AddSingleton<AttachmentUploadAdmissionService>();
         services.AddSingleton<AttachmentFileUploadService>();

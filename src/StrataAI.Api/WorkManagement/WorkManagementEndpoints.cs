@@ -13,6 +13,7 @@ public static partial class WorkManagementEndpoints
         MapAssignableBoardMembersEndpoints(app);
         MapBoardStarPreferenceEndpoints(app);
         MapBoardCopyEndpoints(app);
+        MapBoardBackgroundImageEndpoints(app);
         MapCardMemberEndpoints(app);
         MapNotificationEndpoints(app);
         MapWatchEndpoints(app);
@@ -792,6 +793,7 @@ public static partial class WorkManagementEndpoints
             "invalid_attachment_version" => Problem(400, errorCode, "Use the current Card revision."),
             "invalid_card_cover" => Problem(400, errorCode, "Use the current Card and image attachment revisions, or null to remove its cover."),
             "cover_public_confirmation_required" => Problem(400, errorCode, "Confirm that this selected image derivative is visible on the public Board."),
+            "background_public_confirmation_required" => Problem(400, errorCode, "Confirm that this Board background is visible on the public Board."),
             "invalid_attachment_url" => Problem(400, errorCode, "Use a bounded title and an HTTP(S) link without embedded credentials."),
             "invalid_attachment_upload" => Problem(400, errorCode, "Use a file name, original size/digest/revision and an octet-stream body."),
             "invalid_idempotency_key" => Problem(400, errorCode, "A nonempty UUID retry key is required."),

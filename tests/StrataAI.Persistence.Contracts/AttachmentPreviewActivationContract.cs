@@ -262,6 +262,18 @@ internal static class AttachmentPreviewActivationContract
             "Cover event feed readiness lost a selected/cleared/public/removed change.");
         await CardCoverDeliveryContract.RunAsync(admin, readProvider, objects.ApiConnections!, objects, organization, card, source, job.ActorId,
             declaredBytes, () => objects.Reads, value => objects.Corrupt = value, callback => objects.AfterRead = callback, ct);
+        await BoardBackgroundImageContract.RunAsync(admin, readProvider, objects, organization, card, source, job.ActorId,
+            declaredBytes, () => objects.Reads, value => objects.Corrupt = value, callback => objects.AfterRead = callback, ct);
+        var imageDelivered = 0;
+        for (var pass = 0; pass < 16; pass++)
+        {
+            var next = await legacy.ClaimAsync(organization, workerId, ct); if (next is null) break;
+            Require(next.JobType == WorkEventDeliveryHandler.Type, "Board image fixture outbox contained an unexpected claim.");
+            await eventDelivery.ExecuteAsync(next, ct);
+            Require(await capable.CompleteAsync(organization, next.Id, next.LeaseId, workerId, ct), "Board image event delivery lost its queue acknowledgment.");
+            imageDelivered++;
+        }
+        Require(imageDelivered == 5 && await legacy.ClaimAsync(organization, workerId, ct) is null, "Board image changes did not deliver their five canonical outbox events.");
         Require(!(await admission.AdmitPreviewAsync(card,source,job.ActorId,ct,archiveReview:true)).Succeeded,
             "Archive review admitted an Active source.");
         await Scalar<int>("UPDATE public.attachments SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,statement_timestamp()),updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE id=@file AND tenant_id=@tenant RETURNING 1;");

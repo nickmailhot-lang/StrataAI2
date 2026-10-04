@@ -32,7 +32,7 @@ internal sealed partial class InMemoryWorkManagementStore : IDemoWorkTransaction
     {
         lock (_sync)
         {
-            Action[] restore = [DemoRollback.Dictionary(_boards), DemoRollback.Dictionary(_lists), DemoRollback.Dictionary(_cards),
+            Action[] restore = [DemoRollback.Dictionary(_boards), DemoRollback.Dictionary(_boardBackgroundImages), DemoRollback.Dictionary(_lists), DemoRollback.Dictionary(_cards),
                 DemoRollback.Dictionary(_members), DemoRollback.Dictionary(_starred), DemoRollback.Dictionary(_starEvents), DemoRollback.Dictionary(_labels), DemoRollback.Set(_cardLabels),
                 DemoRollback.Dictionary(_cardMembers), DemoRollback.Dictionary(_checklists), DemoRollback.Dictionary(_checklistItems),
                 DemoRollback.Dictionary(_attachmentMetadata), DemoRollback.Dictionary(_attachmentIntegrity), DemoRollback.Dictionary(_uploads),

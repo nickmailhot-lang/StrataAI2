@@ -49,7 +49,7 @@ public sealed partial class WorkManagementService(
                 backgroundType,
                 backgroundValue,
                 out var normalizedType,
-                out var normalizedValue))
+                out var normalizedValue) || normalizedType != "COLOR")
         {
             return WorkOperation<BoardRecord>.Failure("invalid_background");
         }
@@ -188,6 +188,14 @@ public sealed partial class WorkManagementService(
         {
             return WorkOperation<BoardRecord>.Failure("invalid_background");
         }
+
+        if (normalizedType == "IMAGE" && (backgroundType is not null || backgroundValue is not null)
+            && (!Guid.TryParseExact(normalizedValue, "D", out var imageId)
+                || await store.FindBoardBackgroundImageAsync(resolved.Value.Board.OrganizationId, boardId, imageId, cancellationToken) is null))
+            return WorkOperation<BoardRecord>.Failure("invalid_background");
+        if (normalizedType == "IMAGE" && normalizedValue != resolved.Value.Board.BackgroundValue
+            && resolved.Value.Board.Visibility == BoardVisibility.Public)
+            return WorkOperation<BoardRecord>.Failure("background_public_confirmation_required");
 
         var updated = await store.UpdateBoardAsync(
             boardId,
@@ -1158,8 +1166,7 @@ public sealed partial class WorkManagementService(
         return normalizedType switch
         {
             "COLOR" => normalizedValue is null || BoardBackgroundPolicy.Colors.Contains(normalizedValue, StringComparer.Ordinal),
-            "IMAGE" => normalizedValue is not null &&
-                normalizedValue.Length <= 2048,
+            "IMAGE" => Guid.TryParseExact(normalizedValue, "D", out var image) && image != Guid.Empty && normalizedValue == image.ToString("D"),
             _ => false,
         };
     }
