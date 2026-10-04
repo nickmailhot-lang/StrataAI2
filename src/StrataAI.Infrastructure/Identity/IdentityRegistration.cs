@@ -99,6 +99,7 @@ public static class IdentityRegistration
         }
 
         services.AddSingleton<IdentityService>();
+        services.AddSingleton<UserMentionHandleService>();
         services.AddSingleton<IdentityRevocationReplayExecutor>();
         services.AddSingleton<IIdentityService>(provider => new TransactionalIdentityService(
             provider.GetRequiredService<IdentityService>(), provider.GetRequiredService<IIdentityUnitOfWork>(),

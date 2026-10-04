@@ -39,7 +39,7 @@ bodies into public event or notification payloads.
 | COMMENT-FR-002 author/content/time/edited state | PostgreSQL/HTTP DTOs and bounded MUI parser retain canonical author/history, UTC revisions and redacted tombstones | Complete native rendering and historical-readable-author/lifecycle evidence |
 | COMMENT-FR-003 author edits | Author/current rights admission, dual revisions, body-free receipts, atomic audit/events and guarded UI edits implemented | Complete session/grant/parent changes under live waits, native reconciliation and performance evidence |
 | COMMENT-FR-004 author deletion | Confirmed author deletion persists a redacted tombstone; original former-body receipt is refused; MUI removal/retry guards implemented | Complete actual native confirmation/replay/lifecycle evidence and retention/purge policy |
-| COMMENT-FR-005 @username | Bounded plaintext tokens and globally unique reserved handle registry/storage implemented; no comment recipient resolver/notification producer yet | Current-session account setting/receipts/audit/events, scoped teammate resolution/selection and safe mention UI |
+| COMMENT-FR-005 @username | Bounded plaintext tokens, globally unique reserved handle registry/storage and owning account command implemented; no comment recipient resolver/notification producer yet | HTTP/current-session lifecycle and MUI account setting, scoped teammate resolution/selection and safe mention UI |
 | COMMENT-FR-006 @card/@board | Bounded lexical declarations exist; actual mass-mention producer unimplemented | Explicit confirmation, current authorization, bounded fanout, durable rate limits and stable refusal without partial effects |
 | COMMENT-FR-007 mention notifications | Existing PRD-17 infrastructure; no comment mention producer | Atomic recipient intent, current eligibility/notification delivery, idempotent edits/replays, no protected body leakage |
 | COMMENT-FR-008 immutable activity | Existing Work events/audit; no complete activity projection | Every significant domain event, immutable interpreter/projection, complete lifecycle and replay coverage |
@@ -451,3 +451,31 @@ admission, atomic user revision/audit/identity events, current-only hydration of
 the acknowledgment, stable HTTP errors and MUI original-intent recovery still
 need implementation. No account handle HTTP command or mention notification
 producer is exposed by this slice; all unfinished acceptance remains open.
+
+## Account handle command composition
+
+The owning Application service now reads only the current account setting and
+claims a normalized handle with both account and handle version fences. It
+reproves the current actor before reads, after reads and before final success.
+A changed handle advances the account revision exactly once while retaining
+its existing profile fields, then appends the standard USER_PROFILE_UPDATED
+audit and identity event with empty safe metadata. A current no-op advances
+neither revision nor event. Handle/reservation, account, audit, event and the
+immutable body-free original receipt share the owning transaction.
+
+Original-key recovery checks normalized request identity and exact recorded
+handle revision before hydrating the current handle. An unrelated later profile
+edit permits recovery of the original acknowledgment; renaming away or reclaiming
+the same name at a newer handle revision refuses obsolete recovery. Final
+session denial, exception or cancellation rolls back the whole Demo command.
+Demo actor tests are synthetic and its audit adapter remains a no-op.
+
+The new restricted PostgreSQL command contract injects an actual audit insert
+failure and checks rollback of account/handle/reservation/event/receipt, then
+retries the same original key. It checks exactly one body-free audit/event,
+normalized recovery, key collision, stale fresh requests, no-op and current-only
+hydration after profile edits/renames/reclaims. Compilation passes with warnings
+as errors; new execution evidence awaits Linux CI. Successful append-only audit
+and its disposable account are retained until the isolated CI database teardown.
+This service is not yet exposed over HTTP or MUI; cookie lifecycle, native UI,
+scoped recipient resolution and mention notifications remain unfinished.

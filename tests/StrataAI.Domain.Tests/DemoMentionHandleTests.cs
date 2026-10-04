@@ -14,7 +14,11 @@ namespace StrataAI.Domain.Tests;
 public sealed class DemoMentionHandleTests
 {
     private sealed class Actor : ICommandActorAuthorization
-    { public bool Allowed = true; public Task<bool> VerifyAsync(Guid user, CancellationToken ct = default) => Task.FromResult(Allowed); }
+    {
+        public bool Allowed = true;
+        public Func<Guid,CancellationToken,Task<bool>>? Probe;
+        public Task<bool> VerifyAsync(Guid user, CancellationToken ct = default) => Probe?.Invoke(user, ct) ?? Task.FromResult(Allowed);
+    }
     private sealed class Clock : IClock { public DateTimeOffset UtcNow { get; set; } = DateTimeOffset.UtcNow; }
     private static ServiceProvider Demo(Actor? actor = null, IClock? clock = null)
     {
@@ -200,5 +204,92 @@ public sealed class DemoMentionHandleTests
             Assert.Null(await store.ReadAsync(other.Id, key, ct));
             return IdentityOperation<bool>.Success(await store.TrySaveAsync(other.Id, key, fingerprint, receipt, ct));
         }, ct); Assert.True(isolated.Succeeded); Assert.True(isolated.Value);
+    }
+    [Fact]
+    public async Task PRD_02_15_AccountHandleCommandAcknowledgesNormalizedOriginalIntentAndAtomicUserEvent()
+    {
+        var ct = TestContext.Current.CancellationToken; using var provider = Demo(); var user = Account(); await Seed(provider, user, ct);
+        var service = provider.GetRequiredService<UserMentionHandleService>(); var key = Guid.NewGuid();
+        var input = new ClaimMentionHandleInput("  ALICE  ", 1, 1);
+        var initial = await service.GetAsync(user.Id, ct); Assert.True(initial.Succeeded); Assert.Equal(1, initial.Value!.UserVersion);
+        var changed = await service.ClaimAsync(user.Id, key, input, "fixture", ct); Assert.True(changed.Succeeded);
+        Assert.Equal(new HandleClaimAcknowledgment(user.Id, "alice", 2, 2, true), changed.Value);
+        Assert.Equal(changed.Value, (await service.ClaimAsync(user.Id, key, input with { Handle = "alice" }, "retry", ct)).Value);
+        Assert.Equal("idempotency_key_reused", (await service.ClaimAsync(user.Id, key, input with { Handle = "other" }, "fixture", ct)).ErrorCode);
+        Assert.Equal("version_conflict", (await service.ClaimAsync(user.Id, Guid.NewGuid(), input, "fixture", ct)).ErrorCode);
+        var noop = await service.ClaimAsync(user.Id, Guid.NewGuid(), new(" Alice ", 2, 2), "fixture", ct);
+        Assert.Equal(new HandleClaimAcknowledgment(user.Id, "alice", 2, 2, false), noop.Value);
+        var identity = provider.GetRequiredService<IIdentityStore>(); var current = await identity.FindUserByIdAsync(user.Id, ct);
+        Assert.Equal(user with { Version = 2, UpdatedAt = current!.UpdatedAt }, current);
+        var events = await identity.ReadEventsAsync(user.Id, 0, ct); Assert.True(events.Succeeded);
+        var only = Assert.Single(events.Value!.Events); Assert.Equal("USER_PROFILE_UPDATED", only.EventType);
+        Assert.Equal(2, only.Version); Assert.Empty(only.Metadata);
+        var unit = provider.GetRequiredService<IIdentityUnitOfWork>();
+        var receipt = await unit.ExecuteAsync(user.Id, async () => IdentityOperation<IdentityHandleClaimReplay?>.Success(
+            await provider.GetRequiredService<IIdentityHandleClaimReplayStore>().ReadAsync(user.Id, key, ct)), ct);
+        Assert.Equal(new HandleClaimReceipt(2, 2, true), receipt.Value!.Receipt);
+    }
+    [Fact]
+    public async Task PRD_02_15_OriginalHandleReceiptSurvivesOtherProfileChangesButNeverHydratesFormerAlias()
+    {
+        var ct = TestContext.Current.CancellationToken; using var provider = Demo(); var user = Account(); await Seed(provider, user, ct);
+        var service = provider.GetRequiredService<UserMentionHandleService>(); var first = new ClaimMentionHandleInput("alice", 1, 1); var key = Guid.NewGuid();
+        var result = await service.ClaimAsync(user.Id, key, first, "fixture", ct); Assert.True(result.Succeeded);
+        var unit = provider.GetRequiredService<IIdentityUnitOfWork>(); var identity = provider.GetRequiredService<IIdentityStore>();
+        var peer = await unit.ExecuteAsync(user.Id, async () => IdentityOperation<UserIdentity?>.Success(
+            await identity.UpdateProfileAsync(user.Id, "New display name", null, "en", "UTC", 2, DateTimeOffset.UtcNow, ct)), ct);
+        Assert.True(peer.Succeeded); Assert.Equal(3, peer.Value!.Version);
+        Assert.Equal(result.Value, (await service.ClaimAsync(user.Id, key, first, "retry", ct)).Value);
+        Assert.True((await service.ClaimAsync(user.Id, Guid.NewGuid(), new("renamed", 3, 2), "fixture", ct)).Succeeded);
+        Assert.Equal("mention_handle_unavailable", (await service.ClaimAsync(user.Id, key, first, "retry", ct)).ErrorCode);
+        Assert.True((await service.ClaimAsync(user.Id, Guid.NewGuid(), new("alice", 4, 3), "fixture", ct)).Succeeded);
+        Assert.Equal("mention_handle_unavailable", (await service.ClaimAsync(user.Id, key, first, "retry", ct)).ErrorCode);
+    }
+    [Theory]
+    [InlineData("session")]
+    [InlineData("exception")]
+    [InlineData("cancel")]
+    public async Task PRD_02_24_LateHandleCommandAdmissionRestoresUserAliasEventAndOriginalReceipt(string mode)
+    {
+        var ct = TestContext.Current.CancellationToken; var actor = new Actor(); using var provider = Demo(actor); var user = Account(); await Seed(provider, user, ct);
+        var key = Guid.NewGuid(); var service = provider.GetRequiredService<UserMentionHandleService>();
+        var receipts = provider.GetRequiredService<IIdentityHandleClaimReplayStore>(); using var canceled = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        actor.Probe = async (id, _) =>
+        {
+            if (await receipts.ReadAsync(id, key, ct) is null) return true;
+            if (mode == "exception") throw new InvalidOperationException("late_fixture_failure");
+            if (mode == "cancel") { canceled.Cancel(); return true; }
+            return false;
+        };
+        var input = new ClaimMentionHandleInput("must_rollback", 1, 1);
+        if (mode == "exception") await Assert.ThrowsAsync<InvalidOperationException>(() => service.ClaimAsync(user.Id, key, input, "fixture", ct));
+        else if (mode == "cancel") await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.ClaimAsync(user.Id, key, input, "fixture", canceled.Token));
+        else Assert.Equal("session_unavailable", (await service.ClaimAsync(user.Id, key, input, "fixture", ct)).ErrorCode);
+        actor.Probe = null; var snapshot = await service.GetAsync(user.Id, ct); Assert.True(snapshot.Succeeded);
+        Assert.Equal(1, snapshot.Value!.UserVersion); Assert.Equal(1, snapshot.Value.HandleVersion); Assert.Equal($"u_{user.Id:N}", snapshot.Value.Handle);
+        var identity = provider.GetRequiredService<IIdentityStore>(); Assert.Equal(user, await identity.FindUserByIdAsync(user.Id, ct));
+        Assert.Empty((await identity.ReadEventsAsync(user.Id, 0, ct)).Value!.Events);
+        Assert.True((await service.ClaimAsync(user.Id, key, input, "retry", ct)).Succeeded);
+        Assert.Single((await identity.ReadEventsAsync(user.Id, 0, ct)).Value!.Events);
+    }
+    [Fact]
+    public async Task PRD_02_24_InvalidConflictingExpiredAndDeniedHandleCommandsPreserveCurrentAccount()
+    {
+        var ct = TestContext.Current.CancellationToken; var clock = new Clock(); var actor = new Actor(); using var provider = Demo(actor, clock);
+        var user = Account(); var other = Account(); await Seed(provider, user, ct); await Seed(provider, other, ct);
+        clock.UtcNow = DateTimeOffset.UtcNow.AddMinutes(1); var service = provider.GetRequiredService<UserMentionHandleService>();
+        foreach (var handle in new[] { "card", "board", "u_other", $"u_{other.Id:N}", "nïck", "aa" })
+            Assert.Equal("mention_handle_invalid", (await service.ClaimAsync(user.Id, Guid.NewGuid(), new(handle, 1, 1), "fixture", ct)).ErrorCode);
+        Assert.Equal("invalid_idempotency_key", (await service.ClaimAsync(user.Id, Guid.Empty, new("valid", 1, 1), "fixture", ct)).ErrorCode);
+        Assert.Equal("invalid_version", (await service.ClaimAsync(user.Id, Guid.NewGuid(), new("valid", 0, 1), "fixture", ct)).ErrorCode);
+        Assert.Equal("version_conflict", (await service.ClaimAsync(user.Id, Guid.NewGuid(), new("valid", 1, 2), "fixture", ct)).ErrorCode);
+        var key = Guid.NewGuid(); var input = new ClaimMentionHandleInput("occupied", 1, 1);
+        Assert.True((await service.ClaimAsync(other.Id, key, input, "fixture", ct)).Succeeded);
+        Assert.Equal("mention_handle_unavailable", (await service.ClaimAsync(user.Id, Guid.NewGuid(), input, "fixture", ct)).ErrorCode);
+        Assert.Equal(1, (await service.GetAsync(user.Id, ct)).Value!.UserVersion);
+        clock.UtcNow = clock.UtcNow.AddHours(24);
+        Assert.Equal("idempotency_key_expired", (await service.ClaimAsync(other.Id, key, input, "retry", ct)).ErrorCode);
+        actor.Allowed = false; Assert.Equal("session_unavailable", (await service.GetAsync(other.Id, ct)).ErrorCode);
+        Assert.Equal("session_unavailable", (await service.ClaimAsync(other.Id, key, input, "retry", ct)).ErrorCode);
     }
 }
