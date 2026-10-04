@@ -12,7 +12,10 @@ public sealed partial class ApiHostTests
     public async Task Activity_history_survives_session_and_cursor_expiry_with_fresh_current_admission()
     {
         var ct = TestContext.Current.CancellationToken;
-        var current = DateTimeOffset.UtcNow; var clock = new ReceiptTestClock { UtcNow = current.AddYears(-5) };
+        // Start in the client's real present, then advance the server clock.
+        // Issuing absolute-expiry cookies five years in the past would cause
+        // the HTTP client to drop them before the initial fixture can sign in.
+        var current = DateTimeOffset.UtcNow.AddYears(5); var clock = new ReceiptTestClock { UtcNow = current.AddYears(-5) };
         await using var app = new ApiFactory(configureServices: services => services.AddSingleton<IClock>(clock));
         using var owner = app.CreateClient(); using var member = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct);
