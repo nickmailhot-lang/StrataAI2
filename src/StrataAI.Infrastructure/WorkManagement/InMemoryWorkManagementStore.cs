@@ -47,6 +47,17 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
         }
     }
 
+    public Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsPageAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default)
+    {
+        lock (_sync) return Task.FromResult<IReadOnlyList<OrganizationBoardSummary>>(
+            _boards.Values.Where(b => b.OrganizationId == organizationId && b.LifecycleState != BoardLifecycleState.Deleted
+                && (after is null || b.Id.CompareTo(after.Value) > 0)
+                && (b.Visibility != BoardVisibility.Private || organizationAdministrator
+                    || (_members.TryGetValue((b.Id, userId), out var member) && member.Active)))
+            .OrderBy(b => b.Id).Take(51).Select(b => new OrganizationBoardSummary(b.Id, b.Name, b.Version)).ToArray());
+    }
+
     public Task<IReadOnlyList<ArchivedListEntry>> ListArchivedListsAsync(Guid boardId, Guid? after,
         CancellationToken cancellationToken = default)
     {

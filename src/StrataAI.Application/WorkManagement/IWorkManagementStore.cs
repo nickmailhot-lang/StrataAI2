@@ -45,6 +45,11 @@ public interface IWorkManagementStore
         bool organizationAdministrator,
         CancellationToken cancellationToken = default);
 
+    // Caller must freshly authorize the owning Organization. UUID seek,
+    // 51 rows; Board admission is still required before reading Card content.
+    Task<IReadOnlyList<StrataAI.Application.Organizations.OrganizationBoardSummary>> ListVisibleBoardsPageAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default);
+
     Task<BoardRecord> CreateBoardAsync(
         Guid organizationId,
         Guid actorUserId,

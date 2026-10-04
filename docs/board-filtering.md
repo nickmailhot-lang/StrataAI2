@@ -1,5 +1,23 @@
 # Board filtering (PRD-10 / PRD-16)
 
+Global search traversal is being implemented separately from Board-local
+filtering. The store now provides UUID-seek pages of Organization membership
+routing hints and visible Boards, each capped at 51 rows (50 plus lookahead).
+The existing full directories remain available for their existing callers.
+Routing hints include inactive memberships and are never an authorized search
+response. A search coordinator must freshly admit each Organization and Board
+in its owning tenant transaction before reading or exposing Card content, and
+must verify the actor again before responding. Private Board eligibility applies
+before the Board page limit. Archived Board candidates may appear in traversal;
+the requested search lifecycle scope must be enforced at content admission.
+
+These methods are prerequisites, not a shipped global-search API or UI.
+Remaining implementation includes cross-Organization cursor coordination,
+title/description and label/member matching, authorized Board/List/label/member/
+deadline context, explicit archive scope, an extensible projected-document
+contract for later comment indexing, MUI interaction, and real authorization,
+reconnect, accessibility and large-data acceptance evidence.
+
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and

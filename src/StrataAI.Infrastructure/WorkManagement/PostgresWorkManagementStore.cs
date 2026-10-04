@@ -190,6 +190,28 @@ internal sealed partial class PostgresWorkManagementStore(
         return result;
     }
 
+    public async Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsPageAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default)
+    {
+        await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("""
+            SELECT b.id,b.name,b.version FROM boards b
+            WHERE b.tenant_id=@tenant AND b.lifecycle_state<>'DELETED'
+              AND (@after IS NULL OR b.id>@after)
+              AND (b.visibility<>'PRIVATE' OR @admin OR EXISTS (
+                SELECT 1 FROM board_members m WHERE m.tenant_id=b.tenant_id AND m.board_id=b.id
+                  AND m.user_id=@user AND m.status='ACTIVE'))
+            ORDER BY b.id LIMIT 51;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("user", userId);
+        command.Parameters.AddWithValue("admin", organizationAdministrator);
+        command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        var result = new List<OrganizationBoardSummary>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) result.Add(new(reader.GetGuid(0), reader.GetString(1), reader.GetInt64(2)));
+        return result;
+    }
+
     public async Task<BoardRecord> CreateBoardAsync(
         Guid organizationId,
         Guid actorUserId,

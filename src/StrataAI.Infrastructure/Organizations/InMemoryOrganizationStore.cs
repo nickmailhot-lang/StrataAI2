@@ -95,6 +95,13 @@ internal sealed class InMemoryOrganizationStore(IIdentityStore identities, Ident
             .Select(m => m.OrganizationId).Distinct().Order().ToArray());
     }
 
+    public Task<IReadOnlyList<Guid>> ListMembershipOrganizationIdsPageAsync(Guid userId, Guid? after, CancellationToken cancellationToken = default)
+    {
+        lock (_sync) return Task.FromResult<IReadOnlyList<Guid>>(_members.Values.Where(m => m.UserId == userId)
+            .Select(m => m.OrganizationId).Distinct().Where(id => after is null || id.CompareTo(after.Value) > 0)
+            .Order().Take(51).ToArray());
+    }
+
     public Task<IReadOnlyList<OrganizationSummary>> ListOrganizationsForUserAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
