@@ -88,6 +88,15 @@ focused parser/component cases passed locally, including offline-read recovery
 and each terminal denial; typecheck/lint passed. This mocked component recovery
 is not native browser/realtime acceptance evidence.
 
+The required release browser suite now includes desktop (1280px) and phone
+(390px) global-search scenarios: real registration/session, two Organizations,
+private Boards, assigned labels/members, keyboard form/pagination, canonical
+links, actual API Card edits, foreground refresh, offline failed read followed
+by online recovery after real scoped Worker delivery, and WCAG Axe checks.
+The independent mutation writer is APIRequestContext, not a second browser
+editor. Both cases are discovered locally; actual exact-image execution remains
+pending. Discovery does not prove keyboard, accessibility or live recovery.
+
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and
