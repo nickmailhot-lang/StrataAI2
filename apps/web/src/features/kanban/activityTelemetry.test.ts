@@ -33,4 +33,3 @@ it('does no network work when disabled', async () => {
   const fetch = vi.fn(); vi.stubGlobal('fetch', fetch); configureActivityTelemetry(false);
   activityEvent('card_disclosure', 'open'); activityResult('board_read', true, performance.now()); await flushActivityTelemetry(); expect(fetch).not.toHaveBeenCalled();
 });
-

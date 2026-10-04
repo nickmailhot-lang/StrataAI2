@@ -46,4 +46,3 @@ export async function flushActivityTelemetry() {
   } catch { /* Best effort. Never retry telemetry or alter an authoritative interaction. */ }
   finally { clearTimeout(timeout); if (ticket === generation) { pending = undefined; schedule(); } }
 }
-
