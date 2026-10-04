@@ -14,12 +14,16 @@ org=$(post /organizations '{"name":"private-metric-fixture"}' | jq -r '.organiza
 board=$(post /boards "$(jq -nc --arg org "$org" '{organizationId:$org,name:"private-metric-fixture",visibility:"PRIVATE"}')" | jq -r '.id')
 list=$(post "/boards/$board/lists" '{"name":"private-metric-fixture"}' | jq -r '.id')
 card=$(post "/lists/$list/cards" '{"title":"private-metric-fixture"}' | jq -r '.id')
-post "/cards/$card/checklists" '{"title":"private-metric-fixture","cardVersion":1}' >/dev/null
+card_version=$(post "/cards/$card/checklists" '{"title":"private-metric-fixture","cardVersion":1}' | jq -r '.cardVersion')
+[[ "$card_version" =~ ^[1-9][0-9]*$ ]]
 curl --fail --silent --show-error -b "$scratch/cookies" "$base/cards/$card/checklists" >/dev/null
 post /me/checklist-client-events '{"events":[{"action":"disclosure","kind":"open","count":1},{"action":"create","kind":"use","count":1},{"action":"create","kind":"success","count":1,"durationMs":125}]}' >/dev/null
 curl --fail --silent --show-error -b "$scratch/cookies" "$base/cards/$card/activity" >/dev/null
 curl --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/activity" >/dev/null
 post /me/activity-client-events '{"events":[{"action":"card_disclosure","kind":"open","count":1},{"action":"board_disclosure","kind":"open","count":1},{"action":"card_read","kind":"retry","count":1},{"action":"card_read","kind":"success","count":1,"durationMs":125}]}' >/dev/null
+post "/cards/$card/comments" "$(jq -nc --argjson version "$card_version" '{content:"private-metric-fixture",cardVersion:$version}')" >/dev/null
+curl --fail --silent --show-error -b "$scratch/cookies" "$base/cards/$card/comments" >/dev/null
+post /me/activity-client-events '{"events":[{"action":"comment_disclosure","kind":"open","count":1},{"action":"comment_create","kind":"use","count":1},{"action":"comment_create","kind":"success","count":1,"durationMs":125},{"action":"mention_selection","kind":"use","count":1}]}' >/dev/null
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"card_read","kind":"use","count":1}]}' "$base/me/activity-client-events")" = 401
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"card_read","kind":"use","count":1,"cursor":"private-metric-fixture"}]}' "$base/me/activity-client-events")" = 400
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"create","kind":"use","count":1}]}' "$base/me/checklist-client-events")" = 401

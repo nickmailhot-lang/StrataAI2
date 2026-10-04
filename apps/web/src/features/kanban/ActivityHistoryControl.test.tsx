@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { flushSync } from 'react-dom';
 import { ActivityHistoryControl } from './ActivityHistoryControl';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
 import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
@@ -80,7 +81,9 @@ it.each([401, 403, 404])('stops protected reads after a %s denial and resumes on
     if (path.includes('?after=')) throw new WorkRequestError(status, null);
     return first;
   });
-  const p = props(); const view = render(wrap(p));
+  // A parent may synchronously publish an access change before the request's
+  // final microtask. Recovery focus must work in that completion ordering too.
+  const p = { ...props(), onDenied: vi.fn(() => flushSync(() => {})) }; const view = render(wrap(p));
   fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
   await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(50));
   fireEvent.click(screen.getByRole('button', { name: 'Older activity' }));

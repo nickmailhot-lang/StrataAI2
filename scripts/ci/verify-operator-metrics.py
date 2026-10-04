@@ -50,6 +50,13 @@ def verify(raw, revision, version):
         observed("strataai_activity_client_duration_count", {"action": "card_read", "kind": "success"}),
         observed("strataai_board_sharing_requests", {"operation": "card_activity_read", "outcome": "success"}),
         observed("strataai_board_sharing_requests", {"operation": "board_activity_read", "outcome": "success"}),
+        observed("strataai_activity_client_events", {"action": "comment_disclosure", "kind": "open"}),
+        observed("strataai_activity_client_events", {"action": "comment_create", "kind": "use"}),
+        observed("strataai_activity_client_events", {"action": "comment_create", "kind": "success"}),
+        observed("strataai_activity_client_events", {"action": "mention_selection", "kind": "use"}),
+        observed("strataai_activity_client_duration_count", {"action": "comment_create", "kind": "success"}),
+        observed("strataai_board_sharing_requests", {"operation": "comment_create", "outcome": "success"}),
+        observed("strataai_board_sharing_requests", {"operation": "comment_read", "outcome": "success"}),
     ])
 
 
@@ -61,4 +68,5 @@ if __name__ == "__main__":
         "topology": "exact API through Nginx to pinned OTLP Collector", "collectorVersion": "0.161.0",
         "verified": {"clientEvents": True, "clientDuration": True, "serverRequests": True,
                      "serverDuration": True, "activityClientEvents": True, "activityClientDuration": True,
-                     "activityServerReads": True, "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")
+                     "activityServerReads": True, "commentClientEvents": True, "commentClientDuration": True,
+                     "commentServerOperations": True, "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

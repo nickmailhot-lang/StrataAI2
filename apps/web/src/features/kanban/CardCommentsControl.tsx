@@ -7,6 +7,7 @@ import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import type { UrlAttachmentCreateProps } from './UrlAttachmentCreateControl';
 import { CommentMentionPicker } from './CommentMentionPicker';
 import { commentMassMentionScopes, selectedCommentMentions, type CommentMentionSelection } from './commentMentionSelection';
+import { activityEvent, activityResult } from './activityTelemetry';
 
 type Review = { actor: string; page: CardCommentPage; cursor?: string };
 type Draft = { actor: string; version: number; original: CardComment | null; text: string; deleting: boolean; confirmed: boolean; selections: readonly CommentMentionSelection[]; cardGroup: boolean; boardGroup: boolean };
@@ -47,7 +48,10 @@ function CommentsControl(props: CardCommentsProps) {
     // uncertain original receipts retain their captured concurrency boundary.
     const version = review?.page.cardVersion ?? acknowledged?.cardVersion;
     if (version === undefined || props.version < version || pending.current || disabled || draft || intent || blocked) return;
-    if (props.version !== version || observedReconnect.current !== props.reconnectSequence) void load();
+    if (props.version !== version || observedReconnect.current !== props.reconnectSequence) {
+      if (observedReconnect.current !== props.reconnectSequence) activityEvent('comment_read', 'reconnect');
+      void load();
+    }
   }, [props.version, props.reconnectSequence, disabled, draft, intent, blocked, review, acknowledged]);
   async function load(owner?: HTMLElement, cursor?: string) {
     if (pending.current || disabled || draft || intent || blocked) return;
@@ -55,6 +59,7 @@ function CommentsControl(props: CardCommentsProps) {
     observedReconnect.current = props.reconnectSequence;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setReview(undefined); setAcknowledged(undefined);
     const version = props.version;
+    const started = performance.now(); activityEvent('comment_read', 'use');
     try {
       const result = await boundedWorkRead(async signal => {
         const profile = await workRequest<unknown>('/me', { signal }); if (!isNotificationProfile(profile)) throw new WorkRequestError(401, null);
@@ -65,8 +70,11 @@ function CommentsControl(props: CardCommentsProps) {
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (callbacks.current.unavailable || callbacks.current.version !== version) throw new Error();
-      setReview(result);
-    } catch { if (mounted.current && pending.current === controller) { setNotice('Unable to read current comments. Refresh the Card and try again.'); props.onRefresh(); } }
+      activityResult('comment_read', true, started); setReview(result);
+    } catch (error) { if (mounted.current && pending.current === controller) {
+      activityResult('comment_read', false, started); if (!(error instanceof WorkRequestError)) activityEvent('comment_read', 'exception');
+      setNotice('Unable to read current comments. Refresh the Card and try again.'); props.onRefresh();
+    } }
     finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
   }
   function stage(original: CardComment | null, deleting: boolean, owner: HTMLElement) {
@@ -97,6 +105,8 @@ function CommentsControl(props: CardCommentsProps) {
               ? { massMentionConfirmation: { card: draft.cardGroup && declaredGroups.card, board: draft.boardGroup && declaredGroups.board } } : {}) }) };
     }
     const originalRetry = !!intent; const captured = command;
+    const action = captured.method === 'DELETE' ? 'comment_delete' : captured.method === 'PATCH' ? 'comment_edit' : 'comment_create';
+    const started = performance.now(); activityEvent(action, originalRetry ? 'retry' : 'use');
     focus(owner); const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
     try {
       const acknowledged = await boundedWorkRead(async signal => {
@@ -110,11 +120,15 @@ function CommentsControl(props: CardCommentsProps) {
         return admitted;
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
+      activityResult(action, true, started);
       setIntent(undefined); setDraft(undefined); setReview(undefined); setBlocked(false);
       setAcknowledged(acknowledged);
       setNotice(captured.check.deleting ? 'Comment body removed.' : captured.check.original ? 'Comment saved.' : 'Comment added.'); props.onRefresh();
     } catch (error) {
       if (!mounted.current || pending.current !== controller) return;
+      activityResult(action, false, started);
+      if (error instanceof WorkRequestError && error.status === 409) activityEvent(action, 'conflict');
+      if (!(error instanceof WorkRequestError)) activityEvent(action, 'exception');
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
         setIntent(undefined); setDraft(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(true);
         setNotice(error.status === 429 ? 'Group mentions are limited to three deliveries per board in ten minutes. Wait, then review the latest Card.'
@@ -126,7 +140,7 @@ function CommentsControl(props: CardCommentsProps) {
   function reset(owner: HTMLElement) { focus(owner); setDraft(undefined); setIntent(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(false); setNotice(undefined); props.onRefresh(); }
   const current = review?.page.cardVersion === props.version;
   return <Stack component="section" aria-label="Card comments" spacing={1} sx={{ my: 2 }}>
-    <Button ref={primary} disabled={disabled || !!draft || !!intent || blocked} onBlur={blur} onClick={event => void load(event.currentTarget)}>Review Card comments</Button>
+    <Button ref={primary} disabled={disabled || !!draft || !!intent || blocked} onBlur={blur} onClick={event => { activityEvent('comment_disclosure', 'open'); void load(event.currentTarget); }}>Review Card comments</Button>
     {busy && <Typography role="status">{draft ? 'Saving comment change…' : 'Checking current comments…'}</Typography>}
     {notice && <Typography role="status">{notice}</Typography>}
     {props.unavailable ? <Typography role="status">Checking current Card access…</Typography> : <>
@@ -159,10 +173,10 @@ function CommentsControl(props: CardCommentsProps) {
         {!draft.deleting && !intent && <>
           {(declaredGroups.card || declaredGroups.board) && <Typography variant="body2">Group mentions stay plain text unless confirmed. New group deliveries are limited to three per board in ten minutes.</Typography>}
           {declaredGroups.card && <FormControlLabel label="Notify current teammates assigned to this Card (@card)" control={<Checkbox checked={draft.cardGroup}
-            disabled={disabled || blocked || conflict || !props.editable} onChange={event => setDraft({ ...draft, cardGroup: event.target.checked })} />} />}
+            disabled={disabled || blocked || conflict || !props.editable} onChange={event => { if (event.target.checked) activityEvent('card_group_confirmation', 'use'); setDraft({ ...draft, cardGroup: event.target.checked }); }} />} />}
           {declaredGroups.board && <FormControlLabel label="Notify all current board participants (@board)" control={<Checkbox checked={draft.boardGroup}
             disabled={disabled || blocked || conflict || !props.editable || !props.canAdminister && !draft.boardGroup}
-            onChange={event => setDraft({ ...draft, boardGroup: event.target.checked })} />} />}
+            onChange={event => { if (event.target.checked) activityEvent('board_group_confirmation', 'use'); setDraft({ ...draft, boardGroup: event.target.checked }); }} />} />}
           {declaredGroups.board && !props.canAdminister && <Typography variant="body2">Board-wide notifications require board administration rights.</Typography>}
         </>}
         {!draft.deleting && !intent && !blocked && !conflict && props.editable && <CommentMentionPicker {...props} actor={draft.actor} version={draft.version}

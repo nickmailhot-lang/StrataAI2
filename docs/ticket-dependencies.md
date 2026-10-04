@@ -266,3 +266,15 @@ protocol, privacy boundary, source tests and mandatory Collector proof. Local
 typecheck/lint/build, 19 focused activity/Checklist transport/component tests,
 three operator-validator tests and zero-warning managed compilation pass.
 Linux managed/exporter and actual release Collector execution remain pending.
+
+Comments and mentions now use that fixed observation path for disclosure/read,
+create/edit/delete attempts and recovered original receipts, definite conflicts,
+client exceptions, clean-view reconnect recovery, teammate lookup/selection and
+explicit group confirmation. No body, username/prefix, selected identity or
+recipient list becomes an observation. Local comment/group/teammate/recovery
+regressions and activity/transport checks pass (33 tests), including safe fixed
+reports; three operator-validator tests and managed compilation also pass.
+The activity denial focus ordering fix passes its 11 focused scenarios with a
+synchronous parent access publication. New managed and release Collector
+execution remains required. Earlier `6574058` has passed web, PostgreSQL and
+managed source jobs in run 37188968317; its complete release gate remains live.

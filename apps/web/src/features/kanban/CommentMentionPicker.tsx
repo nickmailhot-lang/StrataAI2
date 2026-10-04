@@ -4,6 +4,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { normalizeMentionPrefix, parseCardMentionOptions, type CardMentionOption, type CardMentionOptions } from './cardMentionOptions';
 import type { AttachmentScope } from './attachments';
+import { activityEvent, activityResult } from './activityTelemetry';
 
 type Props = AttachmentScope & { actor: string; version: number; disabled: boolean;
   onSelect: (option: CardMentionOption) => void; onBusyChange: (busy: boolean) => void };
@@ -19,6 +20,7 @@ export function CommentMentionPicker(props: Props) {
     if (after && (!page || page.prefix !== normalized || page.nextCursor !== after)) return;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setPage(undefined); setNotice(undefined); props.onBusyChange(true);
     const captured = props;
+    const started = performance.now(); activityEvent('mention_read', 'use');
     try {
       const result = await boundedWorkRead(async signal => {
         const profile = await workRequest<unknown>('/me', { signal });
@@ -30,8 +32,11 @@ export function CommentMentionPicker(props: Props) {
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (current.current.version !== captured.version || current.current.actor !== captured.actor || current.current.disabled) throw new Error('Teammate context changed');
-      setPrefix(normalized); setPage(result);
-    } catch { if (mounted.current && pending.current === controller) { setPage(undefined); setNotice('Unable to review current teammates. Refresh the Card before selecting a mention.'); } }
+      activityResult('mention_read', true, started); setPrefix(normalized); setPage(result);
+    } catch (error) { if (mounted.current && pending.current === controller) {
+      activityResult('mention_read', false, started); if (!(error instanceof WorkRequestError)) activityEvent('mention_read', 'exception');
+      setPage(undefined); setNotice('Unable to review current teammates. Refresh the Card before selecting a mention.');
+    } }
     finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); current.current.onBusyChange(false); } }
   }
   const admitted = page && page.cardVersion === props.version && !props.disabled;
@@ -44,7 +49,7 @@ export function CommentMentionPicker(props: Props) {
     {admitted && <>
       {page.items.length === 0 && <Typography>No current teammates match this username prefix.</Typography>}
       {page.items.map(option => <Button key={option.userId} sx={{ justifyContent: 'flex-start', overflowWrap: 'anywhere', textAlign: 'left' }}
-        onClick={() => { if (page.cardVersion === current.current.version && !current.current.disabled) props.onSelect(option); }}>Mention {option.displayName} (@{option.handle})</Button>)}
+        onClick={() => { if (page.cardVersion === current.current.version && !current.current.disabled) { activityEvent('mention_selection', 'use'); props.onSelect(option); } }}>Mention {option.displayName} (@{option.handle})</Button>)}
       <Button disabled={busy || !page.nextCursor} onClick={() => void search(page.nextCursor!)}>Next teammates</Button>
     </>}
   </Stack>;

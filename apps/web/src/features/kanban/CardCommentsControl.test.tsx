@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Button, Dialog } from '@mui/material';
 import { CardCommentsControl } from './CardCommentsControl';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
+import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
 vi.mock('../../api/workManagement', async importOriginal => ({ ...await importOriginal<typeof import('../../api/workManagement')>(), workRequest: vi.fn() }));
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const scope = { organizationId: id(1), boardId: id(2), cardId: id(3) };
@@ -20,7 +21,10 @@ function mock(write: () => unknown = () => ack, value: unknown = page) {
 async function review() { fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' })); await screen.findByRole('button', { name: 'Add comment' }); }
 async function create() { await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' })); fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } }); }
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
+function telemetry() { configureActivityTelemetry(true); const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetch); return fetch; }
 it('requires explicit group confirmations and preserves both scopes on original lost-reply recovery', async () => {
+  const reports = telemetry();
   let attempts = 0; const content = '@card @board';
   mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return { ...ack, comment: { ...row, content } }; });
   render(<CardCommentsControl {...props()} canAdminister />); await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
@@ -33,6 +37,15 @@ it('requires explicit group confirmations and preserves both scopes on original 
   await screen.findByText('Comment added.');
   expect(JSON.parse(writes()[0][1]!.body as string)).toEqual({ content, cardVersion: 4, massMentionConfirmation: { card: true, board: true } });
   expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body); expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+  await flushActivityTelemetry(); const observations = JSON.parse(reports.mock.calls[0][1].body).events;
+  expect(observations).toEqual(expect.arrayContaining([
+    { action: 'comment_disclosure', kind: 'open', count: 1 }, { action: 'card_group_confirmation', kind: 'use', count: 1 },
+    { action: 'board_group_confirmation', kind: 'use', count: 1 }, { action: 'comment_create', kind: 'retry', count: 1 },
+    { action: 'comment_create', kind: 'failure', count: 1, durationMs: expect.any(Number) },
+    { action: 'comment_create', kind: 'success', count: 1, durationMs: expect.any(Number) },
+  ]));
+  const body = reports.mock.calls[0][1].body; expect(body).not.toContain('@card'); expect(body).not.toContain(scope.cardId);
+  expect(body).not.toContain((writes()[0][1]!.headers as Record<string, string>)['Idempotency-Key']);
 });
 it('keeps unconfirmed groups literal, resets consent after text changes, and refuses Board consent without administration', async () => {
   mock(() => ({ ...ack, comment: { ...row, content: '@card @board edited' } }));
@@ -49,6 +62,7 @@ it('keeps unconfirmed groups literal, resets consent after text changes, and ref
   expect(JSON.parse(writes()[0][1]!.body as string)).toEqual({ content: '@card @board edited', cardVersion: 4 });
 });
 it('inserts an explicitly reviewed teammate with immutable account/handle revision and preserves the same selection on lost-reply recovery', async () => {
+  const reports = telemetry();
   const teammate = { userId: id(9), handle: 'current_teammate', displayName: 'Current teammate', handleVersion: 3 };
   let attempts = 0;
   vi.mocked(workRequest).mockImplementation(async (path, init) => {
@@ -67,6 +81,12 @@ it('inserts an explicitly reviewed teammate with immutable account/handle revisi
   expect(JSON.parse(writes()[0][1]!.body as string)).toEqual({ content: '@current_teammate', cardVersion: 4,
     mentionSelections: [{ userId: teammate.userId, handle: teammate.handle, handleVersion: 3 }] });
   expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body); expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+  await flushActivityTelemetry(); const body = reports.mock.calls[0][1].body;
+  expect(JSON.parse(body).events).toEqual(expect.arrayContaining([
+    { action: 'mention_read', kind: 'use', count: 1 }, { action: 'mention_selection', kind: 'use', count: 1 },
+    { action: 'mention_read', kind: 'success', count: 1, durationMs: expect.any(Number) },
+  ]));
+  expect(body).not.toContain(teammate.userId); expect(body).not.toContain(teammate.handle); expect(body).not.toContain(teammate.displayName);
 });
 it('retires pending teammate metadata when the Card revision changes before lookup admission', async () => {
   let finish!: (value: unknown) => void;
@@ -122,6 +142,7 @@ it('preserves the original key/body after a lost reply and newer snapshots while
   expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
 });
 it.each([400, 401, 403, 404, 409, 429])('retires protected review on definite %s refusal and requires explicit discard before new work', async status => {
+  const reports = telemetry();
   mock(() => { throw new WorkRequestError(status, null); }); const p = props(); render(<CardCommentsControl {...p} />); await create();
   fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
   await screen.findByText(status === 429 ? /Group mentions are limited to three deliveries/ : /This comment change is unavailable/);
@@ -130,6 +151,9 @@ it.each([400, 401, 403, 404, 409, 429])('retires protected review on definite %s
   fireEvent.click(screen.getByRole('button', { name: 'Discard comment review and load latest' }));
   await waitFor(() => expect(screen.getByRole('button', { name: 'Review Card comments' })).toBeEnabled());
   expect(writes()).toHaveLength(1);
+  await flushActivityTelemetry(); const observations = JSON.parse(reports.mock.calls[0][1].body).events;
+  expect(observations).toEqual(expect.arrayContaining([{ action: 'comment_create', kind: 'failure', count: 1, durationMs: expect.any(Number) }]));
+  expect(observations.filter((item: { kind: string }) => item.kind === 'conflict')).toEqual(status === 409 ? [{ action: 'comment_create', kind: 'conflict', count: 1 }] : []);
 });
 it('does not offer foreign-author mutations or disclose old rows under unavailable/newer context', async () => {
   mock(() => ack, { ...page, items: [{ ...row, authorId: id(99) }] }); const p = props(); const view = render(<CardCommentsControl {...p} />); await review();
@@ -152,6 +176,7 @@ it('explains read-only empty state and blocks new commands when the Card changes
   expect(screen.getByRole('button', { name: 'Save comment' })).toBeDisabled(); expect(screen.getByRole('textbox')).toBeDisabled(); expect(writes()).toHaveLength(0);
 });
 it('automatically rereads an opened clean view after Card invalidation and reconnect without stealing focus', async () => {
+  const reports = telemetry();
   let current: unknown = page; const p = props();
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : current);
   const view = render(<><CardCommentsControl {...p} reconnectSequence={0} /><Button>Another control</Button></>); await review();
@@ -166,4 +191,7 @@ it('automatically rereads an opened clean view after Card invalidation and recon
   view.rerender(<><CardCommentsControl {...p} version={5} reconnectSequence={1} /><Button>Another control</Button></>);
   await waitFor(() => expect(reads()).toBe(3)); await screen.findByText('Updated by another client');
   expect(screen.getByRole('button', { name: 'Another control' })).toHaveFocus(); expect(writes()).toHaveLength(0);
+  await flushActivityTelemetry(); expect(JSON.parse(reports.mock.calls[0][1].body).events).toEqual(expect.arrayContaining([
+    { action: 'comment_read', kind: 'reconnect', count: 1 }, { action: 'comment_read', kind: 'use', count: 3 },
+  ]));
 });

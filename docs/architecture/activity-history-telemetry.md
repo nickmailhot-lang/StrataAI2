@@ -4,7 +4,15 @@ The MUI Board/Card activity reader records opening, read attempts, successful
 and failed read durations, explicit user retries and client exceptions. Reports
 contain only the fixed actions `board_read`, `card_read`, `board_disclosure` and
 `card_disclosure`, a fixed observation kind, count and optional milliseconds.
-They never carry account/tenant/Board/Card identities, event IDs, historical
+The same endpoint now also accepts fixed comment and mention actions:
+`comment_disclosure`, `comment_read`, `comment_create`, `comment_edit`,
+`comment_delete`, `mention_read`, `mention_selection`,
+`card_group_confirmation` and `board_group_confirmation`. Comment editing and
+original-request retries record use/retry, confirmed result timing, definite
+conflict and client exceptions. A clean opened comment view records reconnect
+recovery. Teammate lookup records use/result; explicit selection and group
+consent record only fixed use counts. Selection/consent are not proof of a
+notification delivery or recipient count. Reports never carry account/tenant/Board/Card identities, event IDs, historical
 captions, bodies, profiles, cursors, paths, raw error codes or exception messages.
 Aborted obsolete reads do not report a successful result.
 
@@ -35,13 +43,28 @@ introduced. Reports remain separate from immutable Work sources.
 The mandatory exact-image operator fixture now submits authenticated Board/Card
 activity reads and opening/retry/success observations, rejects anonymous and
 private-cursor reports, and requires activity counters/duration and both server
-read operations in the actual pinned Collector scrape. Raw scrapes are temporary;
-the retained artifact contains only fixed verification flags and build metadata.
+read operations in the actual pinned Collector scrape.
+The fixture additionally creates and reads an actual comment using its captured
+authoritative Card version and requires comment opening/create/teammate-use
+counters, comment-create duration and both actual server comment operations.
+Raw scrapes are temporary; the retained artifact contains only fixed verification
+flags and build metadata.
 Its validator refuses unknown metric families/private labels and cannot pass
 when any required observation is missing.
 
 Local managed compilation, focused UI/transport tests and operator-validator
 tests cover this increment. Actual Linux managed/exporter and release Collector
 execution is required before claiming successful ingestion. This does not
-complete PRD-15: complete native browser/lifecycle/reconnect, large-data timing,
-remaining comment/mention telemetry and cross-feature acceptance remain open.
+complete PRD-15: complete native browser/lifecycle/reconnect, large-data timing
+and cross-feature acceptance remain open. Comment/mention telemetry source
+tests cover preserved original retries/group confirmations, safe teammate
+selection, conflict classification and reconnect refresh; actual managed and
+release ingestion remains required.
+
+A focused regression also exposed activity denial completion ordering that
+could leave keyboard focus on a disabled older-page control. The reader now
+clears its completed request before publishing idle denial state. Recovery
+focus therefore need not wait for a final promise microtask that may not produce
+another render. Denial tests exercise synchronous parent access publication,
+and the existing delayed-read test continues to preserve another control's
+focus ownership.

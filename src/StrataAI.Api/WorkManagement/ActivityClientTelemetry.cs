@@ -7,7 +7,9 @@ namespace StrataAI.Api.WorkManagement;
 public sealed class ActivityClientTelemetry
 {
     public const string MeterName = "StrataAI.ActivityClient";
-    private static readonly HashSet<string> Actions = ["board_read", "card_read", "board_disclosure", "card_disclosure"];
+    private static readonly HashSet<string> Actions = ["board_read", "card_read", "board_disclosure", "card_disclosure",
+        "comment_disclosure", "comment_read", "comment_create", "comment_edit", "comment_delete",
+        "mention_read", "mention_selection", "card_group_confirmation", "board_group_confirmation"];
     public Meter Meter { get; }
     private readonly Counter<long> _events;
     private readonly Histogram<double> _duration;

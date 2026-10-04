@@ -25,7 +25,14 @@ class OperatorEvidenceTests(unittest.TestCase):
                         ("strataai_activity_client_events", 'action="card_read",kind="success"'),
                         ("strataai_activity_client_duration_count", 'action="card_read",kind="success"'),
                         ("strataai_board_sharing_requests", 'operation="card_activity_read",outcome="success"'),
-                        ("strataai_board_sharing_requests", 'operation="board_activity_read",outcome="success"')]
+                        ("strataai_board_sharing_requests", 'operation="board_activity_read",outcome="success"'),
+                        ("strataai_activity_client_events", 'action="comment_disclosure",kind="open"'),
+                        ("strataai_activity_client_events", 'action="comment_create",kind="use"'),
+                        ("strataai_activity_client_events", 'action="comment_create",kind="success"'),
+                        ("strataai_activity_client_events", 'action="mention_selection",kind="use"'),
+                        ("strataai_activity_client_duration_count", 'action="comment_create",kind="success"'),
+                        ("strataai_board_sharing_requests", 'operation="comment_create",outcome="success"'),
+                        ("strataai_board_sharing_requests", 'operation="comment_read",outcome="success"')]
         return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations)
 
     def test_complete_fixed_scope(self):

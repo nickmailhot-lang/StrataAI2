@@ -58,6 +58,10 @@ function History(props: Props) {
       activityResult(action, false, started);
       if (!(error instanceof WorkRequestError)) activityEvent(action, 'exception');
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+        // Clear the completed request before publishing the idle denial state.
+        // Finally may run after its focus effect; setting busy=false twice would
+        // not trigger another render when that effect observed a pending ref.
+        pending.current = undefined;
         setView(undefined); setBusy(false);
         // Discard the continuation without scheduling another protected read.
         // Only a fresh parent access generation may resume this viewer.
