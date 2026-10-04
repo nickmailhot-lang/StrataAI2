@@ -66,18 +66,23 @@ preference owner "$owner_id" false
 preference member "$member_id" true
 test "$(admin "SELECT version=2 AND NOT starred AND created_at<=updated_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
 test "$(admin "SELECT created_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = "$creation"
+test "$(admin "SELECT count(*) FROM board_star_events WHERE board_id='$board' AND actor_id='$owner_id';")" = 2
+test "$(admin "SELECT count(*) FROM board_star_events WHERE board_id='$board' AND actor_id='$member_id';")" = 1
+test "$(admin "SELECT count(*) FROM board_star_events e JOIN user_board_preferences p ON p.tenant_id=e.tenant_id AND p.id=e.entity_id WHERE e.board_id='$board' AND (e.actor_id<>p.user_id OR e.board_id<>p.board_id OR e.event_type<>'BOARD_STARRED' OR e.entity_type<>'UserBoardPreference' OR e.metadata<>'{}'::jsonb);")" = 0
 test "$(request owner DELETE "/boards/$board/star?version=0" "$key" '')" = 409
 jq -e '.code == "idempotency_key_reused"' "$scratch/response" >/dev/null
 # A failed restricted write must roll back its tentative receipt and retain all
 # preference clocks/revision. The same intent may then commit after recovery.
 retry_key="$(uuid)"
 preference_before="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")"
+events_before="$(admin "SELECT md5(string_agg(to_jsonb(e)::text,chr(10) ORDER BY version)) FROM board_star_events e WHERE board_id='$board' AND actor_id='$owner_id';")"
 preference_permission_withdrawn=1
 admin 'REVOKE UPDATE ON user_board_preferences FROM strataai_api_runtime;' >/dev/null
 test "$(request owner PUT "/boards/$board/star?version=2" "$retry_key" '')" = 503
 jq -e '.code == "work_storage_unavailable"' "$scratch/response" >/dev/null
 scripts/ci/assert-file-excludes.sh 'Npgsql|permission denied|user_board_preferences|work_command_replays|INSERT INTO' "$scratch/response"
 test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$preference_before"
+test "$(admin "SELECT md5(string_agg(to_jsonb(e)::text,chr(10) ORDER BY version)) FROM board_star_events e WHERE board_id='$board' AND actor_id='$owner_id';")" = "$events_before"
 test "$(admin "SELECT count(*) FROM work_command_replays WHERE tenant_id='$organization' AND actor_id='$owner_id' AND key_id='$retry_key';")" = 0
 restore
 preference_permission_withdrawn=0
@@ -86,6 +91,12 @@ test "$(admin "SELECT version=3 AND starred FROM user_board_preferences WHERE bo
 committed="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")"
 test "$(request owner PUT "/boards/$board/star?version=2" "$retry_key" '')" = 204
 test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$committed"
+test "$(admin "SELECT count(*) FROM board_star_events WHERE board_id='$board' AND actor_id='$owner_id';")" = 3
+test "$(admin "SELECT has_table_privilege('strataai_api_runtime','board_star_events','INSERT') OR has_table_privilege('strataai_api_runtime','board_star_events','UPDATE') OR has_table_privilege('strataai_api_runtime','board_star_events','DELETE');")" = f
+if admin "UPDATE board_star_events SET version=version WHERE board_id='$board';" >/dev/null 2>&1; then echo 'Private star history was mutable'; exit 1; fi
+admin "BEGIN; UPDATE user_board_preferences SET starred=false,version=version+1,updated_at=GREATEST(updated_at,clock_timestamp()) WHERE board_id='$board' AND user_id='$owner_id'; ROLLBACK;" >/dev/null
+test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$committed"
+test "$(admin "SELECT count(*) FROM board_star_events WHERE board_id='$board' AND actor_id='$owner_id';")" = 3
 test "$(request owner GET "/boards/$board" "$(uuid)" '')" = 200
 jq -S '{board,lists}' "$scratch/response" > "$scratch/after.json"
 cmp "$scratch/before.json" "$scratch/after.json"

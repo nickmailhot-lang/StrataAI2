@@ -11,6 +11,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
     private readonly Dictionary<Guid, CardRecord> _cards = [];
     private readonly Dictionary<(Guid BoardId, Guid UserId), BoardMemberRecord> _members = [];
     private readonly Dictionary<(Guid BoardId, Guid UserId), StoredBoardStarPreference> _starred = [];
+    private readonly Dictionary<(Guid BoardId, Guid UserId, long Version), BoardStarEvent> _starEvents = [];
     public Task<bool> AcquireOrganizationReadScopeAsync(Guid organizationId, Guid actorId,
         CancellationToken cancellationToken = default) => Task.FromResult(true);
 
@@ -298,10 +299,14 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
         {
             var key = (boardId, userId);
             if (!_starred.TryGetValue(key, out var current))
-                _starred[key] = new(starred, updatedAt, updatedAt, 1);
+                _starred[key] = new(starred, updatedAt, updatedAt, 1, Guid.NewGuid());
             else if (current.Starred != starred)
                 _starred[key] = current with { Starred = starred, UpdatedAt = updatedAt > current.UpdatedAt ? updatedAt : current.UpdatedAt,
                     Version = checked(current.Version + 1) };
+            else return Task.CompletedTask;
+            var preference = _starred[key];
+            _starEvents[(boardId,userId,preference.Version)] = new(Guid.NewGuid(),userId,_boards[boardId].OrganizationId,
+                boardId,preference.Id,preference.Version,preference.UpdatedAt);
         }
 
         return Task.CompletedTask;

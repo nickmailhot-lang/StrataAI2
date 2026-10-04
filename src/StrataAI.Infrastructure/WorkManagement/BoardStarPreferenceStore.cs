@@ -3,7 +3,7 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed record StoredBoardStarPreference(bool Starred, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long Version);
+internal sealed record StoredBoardStarPreference(bool Starred, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long Version, Guid Id);
 
 internal sealed partial class InMemoryWorkManagementStore
 {
