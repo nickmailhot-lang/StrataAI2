@@ -31,9 +31,43 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     await waitForBoardDelivery(owner.request, board);
     phone = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
     const other = await phone.newPage();
+    function observeLive(client: typeof page) {
+      const events: string[] = []; const cursors: (string | null)[] = []; let snapshots = 0;
+      client.on('websocket', socket => {
+        if (new URL(socket.url()).pathname !== '/notifications/live') return;
+        socket.on('framereceived', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const text of frame.payload.split('\u001e').filter(Boolean)) {
+            const message = JSON.parse(text);
+            if (message.type !== 2 || !message.item) continue;
+            const item = message.item;
+            expect(item.organizationId).toBe(org); expect(item.recipientId).toBe(recipient);
+            snapshots++;
+            for (const event of item.events) {
+              expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(recipient);
+              expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
+              events.push(event.eventType);
+            }
+          }
+        });
+        socket.on('framesent', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const text of frame.payload.split('\u001e').filter(Boolean)) {
+            const message = JSON.parse(text);
+            if (message.type === 4 && message.target === 'Watch') {
+              expect(message.arguments[0]).toBe(org); cursors.push(message.arguments[1]);
+            }
+          }
+        });
+      });
+      return { events, cursors, snapshots: () => snapshots };
+    }
+    const desktopLive = observeLive(page); const phoneLive = observeLive(other);
     await page.goto(`/app/${org}/notifications`); await other.goto(`/app/${org}/notifications`);
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible();
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+    await expect.poll(desktopLive.snapshots).toBeGreaterThan(0);
+    await expect.poll(phoneLive.snapshots).toBeGreaterThan(0);
     async function assign(title: string) {
       const reply = await owner.request.post(`/lists/${list}/cards`, { headers, data: { title } });
       expect(reply.status()).toBe(201); const card = (await reply.json()).id;
@@ -41,7 +75,9 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
       return card;
     }
     const card = await assign('First inbox Card');
-    // Both views recover through the bounded HTTP refresh without navigation.
+    // Observe actual private live delivery, then fresh HTTP content in both views.
+    await expect.poll(() => desktopLive.events.filter(type => type === 'NOTIFICATION_CREATED').length).toBe(1);
+    await expect.poll(() => phoneLive.events.filter(type => type === 'NOTIFICATION_CREATED').length).toBe(1);
     await expect(page.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     await expect(other.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     const link = page.getByRole('link', { name: 'Open Card', exact: true });
@@ -61,6 +97,7 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     await expect(read).toBeEnabled(); await read.press('Enter');
     await expect(other.getByRole('button', { name: 'Retry mark read' })).toBeEnabled();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    await expect.poll(() => desktopLive.events.filter(type => type === 'NOTIFICATION_READ').length).toBe(1);
     const retry = other.getByRole('button', { name: 'Retry mark read' }); await expect(retry).toBeEnabled(); await retry.press('Enter');
     await expect(retry).toHaveCount(0);
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible(); expect(writes).toBe(2);
@@ -80,6 +117,8 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     await expect(page.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     await phone.setOffline(false);
     await expect(other.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    await expect.poll(() => phoneLive.cursors.some(cursor => typeof cursor === 'string' && /^[0-9]+$/.test(cursor)), { timeout: 25_000 }).toBe(true);
+    await expect.poll(() => phoneLive.events.filter(type => type === 'NOTIFICATION_CREATED').length, { timeout: 25_000 }).toBe(4);
     await other.getByRole('button', { name: 'Mark read', exact: true }).press('Enter');
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
