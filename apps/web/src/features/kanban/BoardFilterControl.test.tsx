@@ -256,8 +256,8 @@ it('applies due completion and restores it from account-scoped session criteria'
   const fetch = vi.fn(async (path: string) => path.endsWith('/me') ? response({ id: actor }) : path.includes('/cards?') ? results() : choices());
   vi.stubGlobal('fetch', fetch); const view = mount(); await open();
   fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Due completion' }));
-  fireEvent.click(await screen.findByRole('option', { name: 'Due complete', exact: true }));
-  fireEvent.click(screen.getByRole('button', { name: 'Apply filters', exact: true })); await screen.findByRole('link', { name: 'Persisted match — Planning' });
+  fireEvent.click(await screen.findByRole('option', { name: 'Due complete' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await screen.findByRole('link', { name: 'Persisted match — Planning' });
   const request = fetch.mock.calls.find(([path]) => path.includes('/cards?'))![0];
   expect(new URL(request, 'https://example.test').searchParams.get('completion')).toBe('complete');
   expect(JSON.parse(sessionStorage.getItem(storage())!).completion).toBe('complete');
