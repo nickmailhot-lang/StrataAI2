@@ -53,11 +53,24 @@ done
 jq -e --arg id "$attachment" '.items|any(.attachmentId==$id and .attachmentVersion==3)' "$scratch/candidates" >/dev/null
 test "$(cat "$scratch/scans")" -ge 1
 body=$(jq -nc --arg card "$card" --arg attachment "$attachment" '{cardId:$card,attachmentId:$attachment,attachmentVersion:3,boardVersion:1}')
-json -X POST -d "$body" "$base/boards/$board/background/image" > "$scratch/selected"
+selection_key=$(cat /proc/sys/kernel/random/uuid)
+select_image() {
+  curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -H "Idempotency-Key: $selection_key" -X POST -d "$body" "$base/boards/$board/background/image"
+}
+select_image > "$scratch/selected"
 jq -e '.version==2 and .backgroundType=="IMAGE"' "$scratch/selected" >/dev/null
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/background/image?boardVersion=2" > "$scratch/preview"
 ! cmp -s "$scratch/original" "$scratch/preview"
 ! grep -aq 'PRIVATE ORIGINAL' "$scratch/preview"
+test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/boards/$board/background/image")" = 404
+# Real lifecycle command removes the original source from preview admission.
+# Board ownership and original acknowledgment recovery remain independent.
+json -X POST -d '{"cardVersion":2,"version":3}' "$base/cards/$card/attachments/$attachment/archive" > "$scratch/archived-attachment"
+select_image > "$scratch/recovered"
+cmp "$scratch/selected" "$scratch/recovered"
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/background/image?boardVersion=2" > "$scratch/retained-preview"
+cmp "$scratch/preview" "$scratch/retained-preview"
 json -X POST -d '{"name":"Independent owned image","version":2}' "$base/boards/$board/copy" > "$scratch/copied"
 copy=$(jq -r '.id' "$scratch/copied"); [[ "$copy" =~ ^[0-9a-f-]{36}$ ]]
 jq -e --arg source "$(jq -r '.backgroundValue' "$scratch/selected")" '.version==1 and .visibility=="PRIVATE" and .backgroundType=="IMAGE" and .backgroundValue!=$source' "$scratch/copied" >/dev/null
@@ -65,4 +78,11 @@ json -X POST -d '{"version":2}' "$base/boards/$board/archive" >/dev/null
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$copy/background/image?boardVersion=1" > "$scratch/copied-preview"
 cmp "$scratch/preview" "$scratch/copied-preview"
 test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/boards/$copy/background/image")" = 404
-echo 'Exact API/Worker images uploaded, scanned via a declared protocol simulator, decoded/published PNG, selected independent Board ownership and retained copied bytes after source archive. Local private storage; no AWS or real malware-engine claim.'
+json -X PATCH -d '{"visibility":"PUBLIC","version":1}' "$base/boards/$copy/visibility" >/dev/null
+curl --max-time 60 --fail --silent --show-error "$base/boards/$copy/background/image?boardVersion=2" > "$scratch/public-preview"
+cmp "$scratch/preview" "$scratch/public-preview"
+json -X PATCH -d '{"visibility":"PRIVATE","version":2}' "$base/boards/$copy/visibility" >/dev/null
+test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/boards/$copy/background/image")" = 404
+json -X PATCH -d '{"name":"Independent owned image","version":3,"backgroundType":"COLOR","backgroundValue":null}' "$base/boards/$copy" >/dev/null
+test "$(curl --max-time 60 --silent --show-error -b "$scratch/cookies" -o /dev/null -w '%{http_code}' "$base/boards/$copy/background/image")" = 404
+echo 'Exact API/Worker images uploaded, scanned via a declared protocol simulator, decoded/published PNG, recovered owned selection after attachment archive, copied independent bytes, and enforced public/private/retired selection. Local private storage; no AWS or real malware-engine claim.'
