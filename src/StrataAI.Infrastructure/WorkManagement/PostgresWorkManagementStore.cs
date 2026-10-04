@@ -1643,7 +1643,7 @@ internal sealed partial class PostgresWorkManagementStore(
     private const string BoardColumns = """
         id, tenant_id, name, description, visibility,
         background_type, background_value, lifecycle_state,
-        created_at, updated_at, version, date_timezone_override
+        created_at, updated_at, version, date_timezone_override, archived_at, deleted_at
         """;
 
     private const string BoardSelect = "SELECT " + BoardColumns + " FROM boards";
@@ -1660,7 +1660,12 @@ internal sealed partial class PostgresWorkManagementStore(
             ParseBoardLifecycle(reader.GetString(7)),
             reader.GetFieldValue<DateTimeOffset>(8),
             reader.GetFieldValue<DateTimeOffset>(9),
-            reader.GetInt64(10)) { DateTimezoneOverride = reader.IsDBNull(11) ? null : reader.GetString(11) };
+            reader.GetInt64(10))
+        {
+            DateTimezoneOverride = reader.IsDBNull(11) ? null : reader.GetString(11),
+            ArchivedAt = reader.IsDBNull(12) ? null : reader.GetFieldValue<DateTimeOffset>(12),
+            DeletedAt = reader.IsDBNull(13) ? null : reader.GetFieldValue<DateTimeOffset>(13),
+        };
 
     private static BoardListRecord ReadList(NpgsqlDataReader reader) =>
         new(
