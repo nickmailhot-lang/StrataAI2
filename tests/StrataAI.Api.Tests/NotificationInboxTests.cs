@@ -11,6 +11,51 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Private_notification_sync_is_bounded_freshly_admitted_and_recovers_hidden_windows_without_disclosure()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var recipient = app.CreateClient(); using var anonymous = app.CreateClient();
+        var f = await NotificationFixture(app, owner, recipient, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementService>(); var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        for (var index = 0; index < 52; index++)
+        {
+            var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Private journal content", null, null, DateTimeOffset.UtcNow, ct);
+            Assert.True((await work.SetCardMemberAsync(card.Id, f.Recipient, f.Owner, true, 1, "private-sync-test", ct)).Succeeded);
+        }
+        var path = $"/organizations/{f.Organization}/notifications/sync";
+        using var firstReply = await recipient.GetAsync(path, ct); Assert.Equal(HttpStatusCode.OK, firstReply.StatusCode);
+        Assert.True(firstReply.Headers.CacheControl!.NoStore); Assert.True(firstReply.Headers.CacheControl.Private);
+        var first = await firstReply.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal(f.Recipient, first.GetProperty("recipientId").GetGuid()); Assert.Equal("50", first.GetProperty("cursor").GetString());
+        Assert.True(first.GetProperty("hasMore").GetBoolean()); Assert.Equal(50, first.GetProperty("events").GetArrayLength());
+        var second = await recipient.GetFromJsonAsync<JsonElement>(path + "?after=50", ct);
+        Assert.Equal(2, second.GetProperty("events").GetArrayLength()); Assert.Equal("52", second.GetProperty("cursor").GetString());
+        Assert.False(second.GetProperty("hasMore").GetBoolean());
+        Assert.Equal(52, first.GetProperty("events").EnumerateArray().Concat(second.GetProperty("events").EnumerateArray())
+            .Select(e => e.GetProperty("eventId").GetGuid()).Distinct().Count());
+        var own = await owner.GetFromJsonAsync<JsonElement>(path, ct); Assert.Equal(0, own.GetProperty("events").GetArrayLength());
+        using var unauthenticated = await anonymous.GetAsync(path, ct); Assert.Equal(HttpStatusCode.Unauthorized, unauthenticated.StatusCode);
+        foreach (var cursor in new[] { "-1", "", "9223372036854775808", "private-material" })
+        {
+            using var invalid = await recipient.GetAsync(path + "?after=" + cursor, ct); Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        }
+        using var revoke = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
+        Assert.Equal(HttpStatusCode.NoContent, revoke.StatusCode);
+        var hidden = await recipient.GetFromJsonAsync<JsonElement>(path, ct);
+        Assert.Equal(0, hidden.GetProperty("events").GetArrayLength()); Assert.Equal("50", hidden.GetProperty("cursor").GetString());
+        Assert.True(hidden.GetProperty("hasMore").GetBoolean());
+        var hiddenLast = await recipient.GetFromJsonAsync<JsonElement>(path + "?after=50", ct);
+        Assert.Equal(0, hiddenLast.GetProperty("events").GetArrayLength()); Assert.Equal("52", hiddenLast.GetProperty("cursor").GetString());
+        Assert.False(hiddenLast.GetProperty("hasMore").GetBoolean());
+        Assert.DoesNotContain("Private journal content", hidden.GetRawText());
+        Assert.DoesNotContain(first.GetProperty("events")[0].GetProperty("entityId").GetGuid().ToString(), hidden.GetRawText());
+        using var restore = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "MEMBER" });
+        Assert.Equal(HttpStatusCode.OK, restore.StatusCode);
+        var recovered = await recipient.GetFromJsonAsync<JsonElement>(path, ct);
+        Assert.Equal(first.GetProperty("events").GetRawText(), recovered.GetProperty("events").GetRawText());
+    }
+
+    [Fact]
     public async Task Demo_notification_journal_records_first_read_once_across_command_replay_and_new_keys()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
