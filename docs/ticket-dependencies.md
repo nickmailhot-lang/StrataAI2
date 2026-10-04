@@ -278,3 +278,12 @@ The activity denial focus ordering fix passes its 11 focused scenarios with a
 synchronous parent access publication. New managed and release Collector
 execution remains required. Earlier `6574058` has passed web, PostgreSQL and
 managed source jobs in run 37188968317; its complete release gate remains live.
+
+Comment read capacity now has its own mandatory release fixture and retained
+fixed-scope measurements. It reuses the supported Board/archive dataset, adds
+100,000 guarded synthetic comments, verifies unique 50-row cursor pages and a
+final body-redacted tombstone, no-store headers and unchanged full comment/Card
+state and publication counts, then measures 20 first-page requests. See
+[comment capacity](architecture/comment-capacity.md) for scope and limitations.
+Shell syntax passes locally; actual release execution is pending. This does not
+claim synthetic setup as audited mutation history or a browser timing budget.

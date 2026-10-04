@@ -86,4 +86,5 @@ jq -nc --arg revision "$revision" --argjson board "$board_seconds" --argjson arc
  milliseconds:{board:($board*1000),archiveFirst:($archive*1000),archiveLast:($last*1000),itemsFirst:($items*1000)}}' > "$scratch/capacity.json"
 mv "$scratch/capacity.json" artifacts/capacity/checklists.json
 bash scripts/ci/test-activity-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
+bash scripts/ci/test-comment-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 echo 'Exact-image Checklist capacity: 200 Lists, 5,000 active Cards, 100,000 archived Cards, bounded first/seek/final pages, full progress, unchanged read state and versioned completion passed.'
