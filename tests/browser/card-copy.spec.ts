@@ -19,8 +19,14 @@ for (const width of [1280, 390]) {
       expect(l.status()).toBe(201); lists.push((await l.json()).id);
     }
     const created = await context.request.post(`/lists/${lists[0]}/cards`, { headers, data: { title: 'Original copy source', description: 'Retained description' } });
-    expect(created.status()).toBe(201); const sourceCard = await created.json();
-    const peer = await browser.newContext({ viewport: { width, height: 844 } }); let restore = () => {};
+    expect(created.status()).toBe(201); const createdSource = await created.json();
+    // Compare persisted snapshots at the database's timestamp precision.
+    const baselineReply = await context.request.get(`/boards/${boards[0]}`);
+    expect(baselineReply.status()).toBe(200);
+    const sourceCard = (await baselineReply.json()).lists.flatMap((column: { cards: { id: string }[] }) => column.cards)
+      .find((card: { id: string }) => card.id === createdSource.id);
+    expect(sourceCard).toBeDefined();
+    const peer = await browser.newContext({ baseURL: new URL(created.url()).origin, viewport: { width, height: 844 } }); let restore = () => {};
     try {
       expect((await peer.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
       restore = scopedBoardWorker(org); for (const board of boards) await waitForBoardDelivery(context.request, board);
