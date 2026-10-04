@@ -14,6 +14,25 @@ function mount(p: ComponentProps<typeof WatchControl> = props) { return render(<
 async function open(kind = 'Card') { fireEvent.click(screen.getByRole('button', { name: `${kind} watching` })); await screen.findByText(`You are not watching this ${kind}.`); }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
+it('re-admits personal state on online recovery and removes the listener on unmount', async () => {
+  let online = true; let watching = false;
+  const fetch = vi.fn(async (path: string) => {
+    if (!online) throw new Error('private offline diagnostic');
+    if (path === '/me') return response(profile);
+    return response(watching ? { ...changed, changed: false } : empty);
+  });
+  vi.stubGlobal('fetch', fetch); const view = mount(); await open();
+  online = false; fireEvent.click(screen.getByRole('button', { name: 'Check current watching' }));
+  await screen.findByText('Unable to check current watching. Try again.');
+  expect(screen.queryByRole('button', { name: 'Watch Card' })).not.toBeInTheDocument();
+  expect(screen.queryByText('private offline diagnostic')).not.toBeInTheDocument();
+  watching = true; online = true; fireEvent(window, new Event('online'));
+  await screen.findByText('You are watching this Card.');
+  expect(fetch.mock.calls.slice(-3).map(call => call[0])).toEqual(['/me', `/watch/CARD/${entity}`, '/me']);
+  const count = fetch.mock.calls.length; view.unmount(); fireEvent(window, new Event('online'));
+  await act(async () => {}); expect(fetch).toHaveBeenCalledTimes(count);
+});
+
 it.each(['changed', 'malformed', 'unavailable'])('withholds personal watch state until post-read account admission (%s)', async kind => {
   let admit!: (value: Response) => void;
   const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false }))

@@ -86,8 +86,8 @@ function WatchDialog(props: Props) {
   useEffect(() => {
     if (!open || !admitted) return;
     void load(); const check = () => { if (document.visibilityState !== 'hidden') void load(); };
-    const timer = setInterval(check, 10_000); window.addEventListener('focus', check); document.addEventListener('visibilitychange', check);
-    return () => { clearInterval(timer); window.removeEventListener('focus', check); document.removeEventListener('visibilitychange', check); };
+    const timer = setInterval(check, 10_000); window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
+    return () => { clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('online', check); document.removeEventListener('visibilitychange', check); };
   }, [open, admitted, load]);
   async function submit() {
     if (pending.current || !admitted || commandBlocked || denied || (!intent.current && (!current || !current.canChange))) return;
