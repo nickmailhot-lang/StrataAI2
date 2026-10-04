@@ -29,7 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
-var attachmentsEnabled = builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: true);
+var attachmentsEnabled = builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: true, environmentName: builder.Environment.EnvironmentName);
 if (attachmentsEnabled) builder.Services.AddSingleton(AttachmentPreviewRuntimeVerification.CurrentExecutable());
 builder.Services.AddHostedService<WorkerHeartbeat>();
 

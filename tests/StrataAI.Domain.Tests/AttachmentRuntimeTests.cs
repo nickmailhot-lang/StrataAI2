@@ -27,6 +27,32 @@ public sealed class AttachmentRuntimeTests
     };
     private static IConfiguration Config(Dictionary<string, string?> values) => new ConfigurationBuilder().AddInMemoryCollection(values).Build();
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Production")]
+    [InlineData("Development")]
+    public void ARCH_07_Local_attachment_fixture_is_rejected_outside_IntegrationTest(string? environment)
+    {
+        var settings = Settings(); settings["STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT"] = Path.GetTempPath();
+        settings["ASPNETCORE_ENVIRONMENT"] = environment;
+        var error = Assert.Throws<InvalidOperationException>(() => new ServiceCollection().AddAttachmentRuntime(Config(settings), Production, false, environment));
+        Assert.Equal("Local attachment fixtures require the IntegrationTest environment.", error.Message);
+    }
+
+    [Fact]
+    public void ARCH_07_Explicit_local_fixture_registers_storage_without_managed_credentials_and_rejects_conflicting_host_environment()
+    {
+        var settings = Settings(); settings["STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT"] = Path.GetTempPath();
+        settings["ASPNETCORE_ENVIRONMENT"] = "IntegrationTest";
+        settings.Remove("STRATAAI_ATTACHMENT_S3_BUCKET"); settings.Remove("STRATAAI_ATTACHMENT_S3_OWNER"); settings.Remove("STRATAAI_ATTACHMENT_S3_REGION");
+        Assert.Throws<InvalidOperationException>(() => new ServiceCollection().AddAttachmentRuntime(Config(settings), Production, false, "Production"));
+        var services = new ServiceCollection(); Assert.True(services.AddAttachmentRuntime(Config(settings), Production, false, "IntegrationTest"));
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IAttachmentObjectStorage));
+        Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(IAmazonS3) || descriptor.ServiceType == typeof(S3AttachmentObjectStorage));
+        settings["DOTNET_ENVIRONMENT"] = "Production";
+        Assert.Throws<InvalidOperationException>(() => new ServiceCollection().AddAttachmentRuntime(Config(settings), Production, false, "IntegrationTest"));
+    }
+
     [Fact]
     public async Task ARCH_07_Worker_wiring_registers_managed_storage_scanner_and_exact_handler()
     {
@@ -110,6 +136,7 @@ public sealed class AttachmentRuntimeTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<S3AttachmentObjectStorage>(_ => throw new InvalidOperationException("private-credential-chain-detail"));
+        services.AddSingleton<IAttachmentObjectStorage>(provider => provider.GetRequiredService<S3AttachmentObjectStorage>());
         using var provider = services.BuildServiceProvider();
         provider.InitializeAttachmentRuntime(enabled: false);
         var error = Assert.Throws<InvalidOperationException>(() => provider.InitializeAttachmentRuntime(enabled: true));

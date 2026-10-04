@@ -62,7 +62,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddSecurityRateLimits(builder.Configuration);
 
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
-var attachmentsEnabled = builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: false);
+var attachmentsEnabled = builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: false, environmentName: builder.Environment.EnvironmentName);
 builder.Services.AddSingleton(new AttachmentUploadAvailability(attachmentsEnabled));
 builder.Services.AddStrataAiIdentity(builder.Configuration, runtime);
 builder.Services.AddStrataAiOrganizations(runtime);

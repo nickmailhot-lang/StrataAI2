@@ -51,6 +51,9 @@ for image in "$api" "$worker"; do
   expect_failure "$image" production 'A supported explicit attachment storage region is required.' -e STRATAAI_ATTACHMENT_S3_REGION=custom-region
   expect_failure "$image" production 'Attachment upload size policy is invalid.' -e STRATAAI_ATTACHMENT_MAX_BYTES=invalid
   expect_failure "$image" production 'Attachment upload policy is invalid.' -e STRATAAI_ATTACHMENT_ALLOWED_TYPES=image/svg+xml
+  expect_failure "$image" production 'Local attachment fixtures require the IntegrationTest environment.' -e ASPNETCORE_ENVIRONMENT=Production -e STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT=/tmp/private-fixture
+  expect_failure "$image" production 'Local attachment fixtures require the IntegrationTest environment.' -e ASPNETCORE_ENVIRONMENT=IntegrationTest -e DOTNET_ENVIRONMENT=Production -e STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT=/tmp/private-fixture
+  expect_failure "$image" production 'An absolute private attachment fixture root is required.' -e ASPNETCORE_ENVIRONMENT=IntegrationTest -e STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT=relative-fixture
 done
 expect_failure "$worker" production 'Attachment scanning requires explicit Worker Organization scope.' -e STRATAAI_WORKER_ORGANIZATION_IDS=
 expect_failure "$worker" production 'An absolute local scanner socket path is required.' -e STRATAAI_ATTACHMENT_SCANNER_SOCKET=relative.sock
