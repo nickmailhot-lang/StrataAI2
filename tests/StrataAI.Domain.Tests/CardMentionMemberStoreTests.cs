@@ -14,6 +14,8 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class CardMentionMemberStoreTests
 {
+    private sealed class CommandContext : IWorkCommandContext
+    { public Guid? IdempotencyKey => null; }
     private sealed class Actor : ICommandActorAuthorization
     {
         public bool Allowed = true;
@@ -27,6 +29,7 @@ public sealed class CardMentionMemberStoreTests
         var ct = TestContext.Current.CancellationToken;
         var services = new ServiceCollection(); var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
         services.AddSingleton<IClock, SystemClock>(); services.AddSingleton<ICommandActorAuthorization, Actor>();
+        services.AddSingleton<IWorkCommandContext, CommandContext>();
         services.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
         using var provider = services.BuildServiceProvider();
