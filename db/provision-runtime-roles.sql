@@ -68,6 +68,7 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON organizations,boards,board_lists,cards,orga
 GRANT SELECT,INSERT,UPDATE ON checklists,checklist_items TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON attachments TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON card_comments TO strataai_api_runtime;
+GRANT SELECT,INSERT ON comment_mention_snapshots,comment_mention_recipients TO strataai_api_runtime;
 GRANT SELECT ON user_mention_handles TO strataai_api_runtime;
 GRANT UPDATE(handle,updated_at,version) ON user_mention_handles TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON attachment_upload_intents TO strataai_api_runtime;

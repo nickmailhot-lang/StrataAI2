@@ -172,6 +172,8 @@ jobs:
 
       - name: Verify Comment tenant isolation, immutable author and revisioned redaction
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-comment-storage.sql
+      - name: Verify immutable body-free comment mention snapshots and tenant isolation
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-comment-mention-snapshots.sql
 
       - name: Verify canonical mention handles, immutable reservations and account boundaries
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-mention-handle-storage.sql

@@ -798,3 +798,42 @@ Admission in these fixture units is synthetic; this is not Production cookie
 publication or native selector proof. Full local warning-as-error compilation
 passes. Linux execution for these new additions remains pending. No complete
 PRD acceptance or mention notification publication is claimed.
+
+## Durable body-free recipient snapshot schema
+
+Migration 058 adds tenant-scoped comment_mention_snapshots and relational
+comment_mention_recipients. An immutable header records exact comment revision,
+Card, finite comment-update timestamp and declared recipient count (0 through
+20); children retain stable nonempty recipient IDs without comment text or
+mutable handles/profile data. Composite foreign keys bind the comment/Card/
+Organization, snapshot revision and recipient Organization membership. Both
+tables force tenant RLS. Normal trigger functions retain the same RLS context;
+none grants global lookup or security-definer elevation.
+
+Snapshot insertion requires the actual current comment revision and timestamp
+under a comment-row share lock. A deleted comment can retain only an empty
+snapshot. Deferred constraints require the declared child cardinality to match
+at commit, allowing the owning command to insert header and children together
+while refusing incomplete/oversized effects. Prior complete snapshots are not
+replaced when another revision is saved. Runtime receives SELECT/INSERT only;
+UPDATE is additionally fenced by immutable triggers and runtime DELETE is
+unavailable. Worker receives no snapshot access. Future governed purge needs
+its own authority; these grants do not provide one.
+
+Readiness requires all 58 migrations. Exact-image missing-ledger refusal and
+restore fixtures include 058; migration repeat/forward upgrade and serialized/
+failure fixtures were advanced consistently. CI now executes a restricted-role
+snapshot SQL fixture for tenant reads/writes, revision/time fences, immutable
+history, duplicate/foreign recipients, incomplete command rollback, retained
+prior IDs alongside an empty current snapshot and no-context/no-delete denial.
+Actual runtime grant assertions separately check API SELECT/INSERT only and no
+Worker access. Shell syntax and full local warning-as-error compilation pass.
+Actual Linux SQL/release execution of this migration is pending. Storage
+adapters, current-target locking and atomic comment/notification integration
+remain required; existing comments still do not publish mention notifications.
+No complete acceptance criterion or ticket is closed by the schema alone.
+
+Planner commit 311bf72 has now passed its actual restricted PostgreSQL integration
+in run 37171614912, including current eligibility and exact stable edit/self
+recipient delta. Managed tests are still live; this does not prove durable
+publication or complete native/release acceptance.
