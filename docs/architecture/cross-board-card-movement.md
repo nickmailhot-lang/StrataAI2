@@ -121,8 +121,16 @@ events, 20 audits/receipts and unchanged original receipt recovery after 19 late
 moves. The retained fixed-field artifact records all 20 HTTP timings and enforces
 nearest-rank p95 below 500ms. It also retains a failed budget measurement to aid
 repair. This is one serial client with no intentional network latency; it does
-not prove browser feedback, concurrent-client or cached-open budgets. New Linux
-execution is required before any measured performance claim.
+not prove browser feedback, concurrent-client or cached-open budgets.
+
+The exact-image capacity step passed on commit
+`ce8d0909ca842bb5dbedffa43558c658ca702645`,
+[CI run 37196290255](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37196290255).
+Retained artifact `card-move-capacity-ce8d0909ca842bb5dbedffa43558c658ca702645`
+(artifact 11301523832) reports all 20 samples and mutation p95 **49.962ms**,
+below the unchanged 500ms budget under the conditions above. The full release
+gate was still running when this artifact was inspected; this evidence supports
+the command capacity requirement only.
 
 
 The mandatory exact-image command fixture also submits opposing A-to-B and
@@ -146,3 +154,20 @@ under an unheld Board. Read and exact read-receipt retries use the same rule.
 Organization, account, email-policy, Card/List lifecycle, recipient, private
 source and Owner Portal boundaries remain enforced. New API, parser and release
 fixtures cover moved links, hidden ineligible recipients and source revocation.
+
+## Pending file scan after movement
+
+`AttachmentWorkerContract` also claims and loads a pending file scan, moves its
+parent Card using trusted SQL fixture setup, then executes the real restricted
+Worker delivery adapter. The contract requires the same file/uploader identity,
+Clean status, exactly one additional Card revision, one ready event on the
+current destination Board, one audit, and replay without repeated storage or
+scanner I/O. A PDF MIME fixture avoids introducing an unrelated preview job.
+The parent route is restored before subsequent lifecycle contracts.
+
+This proves Worker routing independently of movement authorization. Actor
+admission, routing setup, object bytes and the scanner are synthetic; it does
+not establish HTTP/session admission or deployed storage/antivirus acceptance.
+The fixture compiled with zero warnings/errors at `6c5f91e`; its new Linux
+execution remains pending
+[CI run 37198252289](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37198252289).
