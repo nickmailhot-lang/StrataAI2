@@ -60,7 +60,29 @@ select_image() {
 }
 select_image > "$scratch/selected"
 jq -e '.version==2 and .backgroundType=="IMAGE"' "$scratch/selected" >/dev/null
-curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/background/image?boardVersion=2" > "$scratch/preview"
+owned=$(jq -r '.backgroundValue' "$scratch/selected"); [[ "$owned" =~ ^[0-9a-f-]{36}$ ]]
+test "$owned" != 00000000-0000-0000-0000-000000000000
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -D "$scratch/preview.headers" "$base/boards/$board/background/image?boardVersion=2" > "$scratch/preview"
+python3 - "$scratch/preview" "$scratch/preview.headers" <<'PY'
+import sys
+with open(sys.argv[1], 'rb') as source:
+    png = source.read()
+assert png.startswith(b'\x89PNG\r\n\x1a\n')
+assert png.endswith(bytes.fromhex('0000000049454e44ae426082'))
+headers = {}
+with open(sys.argv[2], encoding='ascii') as source:
+    for line in source:
+        if ':' in line:
+            name, value = line.split(':', 1)
+            headers.setdefault(name.lower(), []).append(value.strip())
+assert headers['content-type'] == ['image/png']
+assert any('private' in value and 'no-store' in value for value in headers['cache-control'])
+assert 'nosniff' in headers['x-content-type-options']
+assert 'none' in headers['accept-ranges']
+assert any('sandbox' in value for value in headers['content-security-policy'])
+assert any('filename=background.png' in value for value in headers['content-disposition'])
+assert 'location' not in headers and 'etag' not in headers
+PY
 ! cmp -s "$scratch/original" "$scratch/preview"
 ! grep -aq 'PRIVATE ORIGINAL' "$scratch/preview"
 test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/boards/$board/background/image")" = 404
