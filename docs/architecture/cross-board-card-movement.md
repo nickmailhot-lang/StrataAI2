@@ -22,6 +22,9 @@ Current API/Worker grants and forced RLS remain unchanged.
 
 The populated migration runner inserts a valid historical notification before
 the upgrade and compares its complete JSON envelope after two migration runs.
+It first injects a source mismatch accepted by the former same-Board FK and
+requires upgrade refusal with all DDL and ledger changes rolled back; only the
+disposable fixture is then repaired before verifying the successful upgrade.
 The restricted storage contract then moves a real database Card to another
 same-tenant Board after clearing its fixture's current assignments, proves all
 notification envelopes unchanged, rejects same-tenant subject rebinding, retains

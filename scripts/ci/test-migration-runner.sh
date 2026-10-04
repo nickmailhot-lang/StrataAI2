@@ -398,6 +398,21 @@ query "INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,eve
  event_id,actor_id,actor_id,1,created_at,'REMINDER_FIRED' FROM work_events WHERE event_id='06600000-0000-0000-0000-000000000093';" >/dev/null
 notification_before=$(query "SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n")
 cp db/migrations/066_notification_historical_card.sql "$scratch/migrations/"
+# The old current-Board FK admits a different Card on the same Board. A
+# populated inconsistent source must refuse upgrade and roll back every DDL
+# change, rather than silently rewriting history or leaving relaxed integrity.
+query "INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at) VALUES
+ ('06600000-0000-0000-0000-000000000099','02100000-0000-0000-0000-000000000011',
+ '02500000-0000-0000-0000-000000000001','04200000-0000-0000-0000-000000000001','Unrelated upgrade subject',
+ '600000000000000000000000000000',now(),now());
+ UPDATE card_assignment_notifications SET card_id='06600000-0000-0000-0000-000000000099'
+ WHERE id='06600000-0000-0000-0000-000000000092';" >/dev/null
+if run; then echo 'Inconsistent historical notification source accepted during upgrade'; exit 1; fi
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='066_notification_historical_card'")" = 0
+test "$(query "SELECT count(*) FROM pg_constraint WHERE conrelid='card_assignment_notifications'::regclass AND conname='notification_stable_card_fk'")" = 0
+test "$(query "SELECT count(*) FROM pg_constraint WHERE conrelid='card_assignment_notifications'::regclass AND confrelid='cards'::regclass AND contype='f' AND pg_get_constraintdef(oid) LIKE 'FOREIGN KEY (card_id, board_id, tenant_id)%'")" = 1
+query "UPDATE card_assignment_notifications SET card_id='04200000-0000-0000-0000-000000000002'
+ WHERE id='06600000-0000-0000-0000-000000000092';" >/dev/null
 run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 66
