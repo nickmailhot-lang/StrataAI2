@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -64,5 +65,22 @@ for (const width of [1280, 390]) {
     await expect.poll(() => copiedImage.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+    // Retire the source selection through the actual command, then discard all
+    // browser state. The destination must still admit its independent owner.
+    const cleared = await context.request.patch(`/boards/${board}`, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { name: source.name, version: source.version, backgroundType: 'COLOR', backgroundValue: null },
+    });
+    expect(cleared.status()).toBe(200);
+    expect(await cleared.json()).toMatchObject({ version: source.version + 1, backgroundType: 'COLOR', backgroundValue: null });
+    expect((await context.request.get(`/boards/${board}/background/image`)).status()).toBe(404);
+    const copiedPath = `/app/${org}/boards/${target}`;
+    const freshReads = trackBoardReads(page, target, copiedPath);
+    await page.reload(); await expect.poll(freshReads).toBeGreaterThanOrEqual(2);
+    await expect.poll(() => copiedImage.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
+    await expect(page.getByRole('button', { name: 'Copy Board', exact: true })).toBeEnabled();
+    const retained = await context.request.get(`/boards/${target}`);
+    expect(retained.status()).toBe(200);
+    expect((await retained.json()).board).toMatchObject({ version: 1, backgroundType: 'IMAGE', backgroundValue: copied.backgroundValue });
   });
 }
