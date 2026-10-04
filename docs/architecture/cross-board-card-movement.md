@@ -75,11 +75,15 @@ failure and unrecorded fixtures are numbered 067–069.
 - New HTTP and exact-image consumer cases now preserve Checklist/item, URL
   attachment and comment records plus personal Card Watch identity; source-only
   readers and edits are refused under current private destination admission.
-  Their new execution is pending. A new Linux HTTP fixture now verifies stable file/preview bytes and refuses
+  The exact-image child fixture passed in run 37196075598. A Linux HTTP fixture verifies stable file/preview bytes and refuses
   source-only readers before provider access, using explicitly synthetic Clean
-  and publication metadata with real private byte staging. Execution is pending;
-  real Worker generation, pending-upload recovery and covers still need explicit
-  moved-entity coverage.
+  and publication metadata with real private byte staging; its Linux managed job
+  passed in run 37197641310. The fixture now also checks selected cover delivery,
+  stale Card revision refusal, PUBLIC destination PNG-only exposure and private
+  destination re-admission. This cover extension uses synthetic selection and
+  requires its own Linux execution. Restricted Worker scan-after-movement passed
+  as described below; real preview generation and pending-upload recovery still
+  need explicit moved-entity coverage.
 - The inbox projection now preserves the historical source Board and binds its
   link to the current Card Board. Both contexts must be currently visible before
   pagination and are gated/rechecked before disclosure or read acknowledgement.
@@ -168,6 +172,7 @@ The parent route is restored before subsequent lifecycle contracts.
 This proves Worker routing independently of movement authorization. Actor
 admission, routing setup, object bytes and the scanner are synthetic; it does
 not establish HTTP/session admission or deployed storage/antivirus acceptance.
-The fixture compiled with zero warnings/errors at `6c5f91e`; its new Linux
-execution remains pending
+The fixture compiled with zero warnings/errors at `6c5f91e` and executed
+successfully in the completed PostgreSQL job (111424468186) of
 [CI run 37198252289](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37198252289).
+The full release/native gate remains pending.

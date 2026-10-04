@@ -165,9 +165,9 @@ public sealed partial class ApiHostTests
     public async Task PRD_08_Moved_file_and_preview_keep_private_bytes_and_recheck_current_destination()
     {
         if (!OperatingSystem.IsLinux()) return;
-        var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects();
-        await using var app = UploadFactory(objects, downloads: true, images: true);
-        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects(); var selection = new CoverSelectionFixture();
+        await using var app = UploadFactory(objects, downloads: true, images: true, covers: selection);
+        using var owner = app.CreateClient(); using var member = app.CreateClient(); using var anonymous = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct); var work = app.Services.GetRequiredService<IWorkManagementStore>();
         var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Moved private image", null, null, DateTimeOffset.UtcNow, ct);
         var png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==");
@@ -175,6 +175,7 @@ public sealed partial class ApiHostTests
         using var upload = FileRequest($"/cards/{card.Id}/attachments", original, Guid.NewGuid(), "Moved image.png");
         using var uploaded = await member.SendAsync(upload, ct); Assert.Equal(HttpStatusCode.OK, uploaded.StatusCode);
         var file = (await uploaded.Content.ReadFromJsonAsync<AttachmentChange>(ct))!.Attachment;
+        selection.Organization = f.Organization; selection.Card = card.Id; selection.Selected = file.Id;
         var metadata = Assert.IsType<DownloadMetadata>(app.Services.GetRequiredService<IAttachmentMetadataStore>()); metadata.Clean = true;
         var reference = AttachmentObjectReference.ForPreview(f.Organization, Guid.NewGuid());
         var stored = await objects.WritePrivateAsync(reference, new MemoryStream(png, false), png.Length, ct);
@@ -210,6 +211,35 @@ public sealed partial class ApiHostTests
         Assert.Equal(reads, objects.Reads);
         Assert.Equal(file, await app.Services.GetRequiredService<IAttachmentMetadataStore>().FindAttachmentAsync(f.Organization, card.Id, file.Id, ct));
         using var stillSource = await member.GetAsync($"/boards/{f.Board}", ct); Assert.Equal(HttpStatusCode.OK, stillSource.StatusCode);
+        var coverPath = $"/cards/{card.Id}/cover/image";
+        foreach (var client in new[] { member, anonymous })
+        {
+            using var refusedCover = await client.GetAsync(coverPath, ct); Assert.Equal(HttpStatusCode.NotFound, refusedCover.StatusCode);
+            Assert.Null(refusedCover.Content.Headers.ContentDisposition);
+        }
+        using (var oldRevision = await owner.GetAsync(coverPath + "?cardVersion=2", ct)) Assert.Equal(HttpStatusCode.NotFound, oldRevision.StatusCode);
+        Assert.Equal(reads, objects.Reads);
+        using (var privateCover = await owner.GetAsync(coverPath + "?cardVersion=3", ct))
+        { Assert.Equal(HttpStatusCode.OK, privateCover.StatusCode); Assert.Equal(png, await privateCover.Content.ReadAsByteArrayAsync(ct)); }
+        using (var publish = await Mutate(owner, HttpMethod.Patch, $"/boards/{board}/visibility", new { visibility = "PUBLIC", version = 1 }))
+            Assert.Equal(HttpStatusCode.OK, publish.StatusCode);
+        using (var publicCover = await anonymous.GetAsync(coverPath, ct))
+        {
+            Assert.Equal(HttpStatusCode.OK, publicCover.StatusCode); Assert.Equal(png, await publicCover.Content.ReadAsByteArrayAsync(ct));
+            Assert.Equal("cover.png", publicCover.Content.Headers.ContentDisposition!.FileName);
+            Assert.True(publicCover.Headers.CacheControl!.Private); Assert.True(publicCover.Headers.CacheControl.NoStore);
+        }
+        reads = objects.Reads;
+        foreach (var path in new[] { downloadPath, previewPath })
+        {
+            using var privateOriginal = await anonymous.GetAsync(path, ct); Assert.Equal(HttpStatusCode.Unauthorized, privateOriginal.StatusCode);
+        }
+        Assert.Equal(reads, objects.Reads);
+        using (var hide = await Mutate(owner, HttpMethod.Patch, $"/boards/{board}/visibility", new { visibility = "PRIVATE", version = 2 }))
+            Assert.Equal(HttpStatusCode.OK, hide.StatusCode);
+        using (var hiddenCover = await anonymous.GetAsync(coverPath, ct)) Assert.Equal(HttpStatusCode.NotFound, hiddenCover.StatusCode);
+        Assert.Equal(reads, objects.Reads);
+        Assert.Equal(3, (await work.FindCardAsync(card.Id, ct))!.Version);
     }
 
     [Theory]
