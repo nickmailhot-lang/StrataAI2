@@ -1374,3 +1374,19 @@ by existing RLS/FK/check boundaries before the AFTER guard; all must preserve
 state. Local warning-as-error compilation, shell syntax and diff checks pass.
 The new generated-source correction and scenarios await actual CI execution.
 PRD-15 remains open at **50% estimated remaining work**.
+
+a451d88 passed actual PostgreSQL CI run 37179984734, including the generated
+Watch/Reminder readiness correction, populated/repeat migrations and restricted
+runtime role checks. All source gates, immutable images and security also pass;
+release-image integration remains live. Earlier 457e73b release-image execution
+passed natural session expiry during the observed Card wait, then failed the
+first full-group wait observation at fixture line 193. Its diagnostic log does
+not establish a product deadlock or group publication failure. The fixture's
+query pattern required a trailing SQL statement delimiter. It now matches the
+distinct full-group ORDER BY/recipient-lock text without that formatting
+assumption, still requiring exactly one actual API Lock wait. Refusals print
+only aggregate API/group lock counts, never body/account/session data. All six
+current-eligibility and original-receipt assertions remain required. Syntax
+passes locally; corrected runtime execution is pending and the inferred query
+format cause is not treated as verified acceptance. Estimated PRD-15 remaining
+work stays **50%**.

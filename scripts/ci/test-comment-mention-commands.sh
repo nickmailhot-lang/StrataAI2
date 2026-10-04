@@ -63,11 +63,17 @@ gate() {
   done
   return 1
 }
+wait_counts() {
+  admin "SELECT jsonb_build_object('apiLockWaits',count(*) FILTER(WHERE wait_event_type='Lock'),
+    'fullGroupLockWaits',count(*) FILTER(WHERE wait_event_type='Lock' AND query LIKE '%ORDER BY m.user_id FOR SHARE OF m,o,u%'))
+    FROM pg_stat_activity WHERE usename='strataai_api_runtime';" >&2
+}
 blocked() {
   for ((attempt=0;attempt<100;attempt++)); do
     if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '$1';")" = 1; then return; fi
-    kill -0 "$request_pid" || return 1; sleep 0.05
+    if ! kill -0 "$request_pid"; then wait_counts; return 1; fi; sleep 0.05
   done
+  wait_counts
   return 1
 }
 release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; rm "$scratch/gate.in" "$scratch/gate.log"; }
@@ -190,7 +196,9 @@ for scope in card board; do
     race_body=$(jq -nc --arg scope "$scope" '{content:("Current @"+$scope),cardVersion:1,massMentionConfirmation:{card:($scope=="card"),board:($scope=="board")}}')
     gate "SELECT 1 FROM $row FOR UPDATE;"
     request owner POST "/cards/$race_card/comments" "$race_key" "$race_body" > "$scratch/status" & request_pid=$!
-    blocked '%FOR SHARE OF m,o,u;%'
+    # Match the full-group query rather than requiring a trailing statement
+    # delimiter in the text actually sent by the database driver.
+    blocked '%ORDER BY m.user_id FOR SHARE OF m,o,u%'
     release "UPDATE ${row%% WHERE*} SET status='$refused' WHERE ${row#* WHERE };"
     wait "$request_pid"; request_pid=''
     test "$(cat "$scratch/status")" = 200
