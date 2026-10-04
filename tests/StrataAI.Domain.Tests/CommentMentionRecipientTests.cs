@@ -6,6 +6,43 @@ namespace StrataAI.Domain.Tests;
 public sealed class CommentMentionRecipientTests
 {
     [Fact]
+    public void PRD_15_ConfirmedGroupsKeepCompleteStableUnionAndOnlyNewNonSelfDelivery()
+    {
+        var actor = Guid.NewGuid(); var members = Enumerable.Range(0, 75).Select(_ => Guid.NewGuid()).ToList();
+        var card = new List<Guid> { actor, members[0] }; var board = members.Append(actor).ToList();
+        var previous = members.Take(70).ToList(); var mapping = new Dictionary<string, Guid> { ["named_user"] = members[0] };
+        var text = CommentMentionText.Parse("@card @board @card @named_user @named_user");
+        var plan = CommentMentionRecipients.CaptureConfirmedGroups(text, actor, mapping, previous, true, true, card, board);
+        Assert.Equal(76, plan.Current.Count); Assert.Equal(2, plan.References.Count);
+        Assert.Equal(members.Skip(70).Order(), plan.Added); Assert.Contains(actor, plan.Current); Assert.DoesNotContain(actor, plan.Added);
+        card.Clear(); board.Clear(); mapping.Clear(); previous.Clear(); members.Clear();
+        Assert.Equal(76, plan.Current.Count); Assert.Equal(5, plan.Added.Count);
+        Assert.Empty(CommentMentionRecipients.CaptureConfirmedGroups(text, actor, new Dictionary<string, Guid>(), plan.Current,
+            true, true, [], plan.Current).Added);
+        var removed = CommentMentionRecipients.Capture(CommentMentionText.Parse("Plain text"), actor, new Dictionary<string, Guid>(), plan.Current);
+        Assert.Empty(removed.Current);
+        Assert.Equal(75, CommentMentionRecipients.CaptureConfirmedGroups(text, actor, new Dictionary<string, Guid>(), removed.Current,
+            true, true, [], plan.Current).Added.Count);
+    }
+    [Fact]
+    public void PRD_15_GroupConfirmationRequiresActualDeclarationAndCanonicalScopedRosters()
+    {
+        var actor = Guid.NewGuid(); var target = Guid.NewGuid(); var handles = new Dictionary<string, Guid>();
+        var text = CommentMentionText.Parse("@card @board");
+        Assert.Empty(CommentMentionRecipients.Capture(text, actor, handles, []).Current);
+        Assert.Empty(CommentMentionRecipients.CaptureConfirmedGroups(text, actor, handles, [], true, true, [], []).Current);
+        Assert.Throws<ArgumentException>(() => CommentMentionRecipients.CaptureConfirmedGroups(text, actor, handles, [], false, true, [target], []));
+        Assert.Throws<ArgumentException>(() => CommentMentionRecipients.CaptureConfirmedGroups(text, actor, handles, [], true, false, [], [target]));
+        foreach (var invalid in new[] { new[] { Guid.Empty }, new[] { target, target } })
+            Assert.Throws<ArgumentException>(() => CommentMentionRecipients.CaptureConfirmedGroups(text, actor, handles, [], true, true, [], invalid));
+        foreach (var literal in new[] { "Plain text", "x@board", "https://example.test/@board", "@board_extra" })
+            Assert.Throws<ArgumentException>(() => CommentMentionRecipients.CaptureConfirmedGroups(CommentMentionText.Parse(literal), actor,
+                handles, [], false, true, [], [target]));
+        var named = Enumerable.Range(0, 21).ToDictionary(n => "user_" + n, _ => Guid.NewGuid());
+        Assert.Throws<ArgumentException>(() => CommentMentionRecipients.CaptureConfirmedGroups(
+            CommentMentionText.Parse("@board " + string.Join(' ', named.Keys.Select(name => "@" + name))), actor, named, [], false, true, [], [target]));
+    }
+    [Fact]
     public void PRD_15_EditDeltaUsesStableRecipientsPreservesReferencesAndSuppressesSelf()
     {
         var actor = Guid.NewGuid(); var retained = Guid.NewGuid(); var added = Guid.NewGuid();

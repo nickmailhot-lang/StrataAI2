@@ -1133,3 +1133,16 @@ the whole PRD, including incomplete mass confirmation/authorization/quota,
 activity projections/history/UI, lifecycle/native acceptance and performance
 evidence. It is not a percentage of passing tests or completed acceptance
 criteria; the issue remains open until every required criterion is satisfied.
+
+The Domain recipient capture now accepts separately confirmed Card/Board groups
+only when the persisted plaintext contains the actual lexical declaration. It
+rejects rosters for unconfirmed scopes, nil or duplicate group IDs, and group
+confirmation for email/URL/lookalike text. It unions the complete group rosters
+with at most 20 direct username recipients, preserves self in immutable history,
+and derives only new non-self stable-ID delivery compared with the prior revision.
+Inputs are copied into sorted immutable outputs; overlaps and repeated declarations
+do not duplicate deliveries. New checks cover 75-member groups, overlapping named
+and Card/Board recipients, unchanged edits, removals/readdition and false declarations.
+Local warning-as-error compilation passed; Linux test execution is pending. This
+is producer preparation, not current actor authorization or durable anti-abuse
+reservation, and HTTP/MUI group mentions remain literal until both are connected.
