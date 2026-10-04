@@ -785,3 +785,11 @@ provider replies retain the original actor/key/digest/bytes for admitted retry.
 All 18 focused upload component tests pass, including post-publication account
 change and both existing pre-write actor checks; typecheck and lint pass.
 Actual Linux/release execution is pending CI.
+
+The first moved-cover PostgreSQL run (37202861596 / 3857b36) failed because its
+actor was an Organization/Board Member and the newly seeded destination omitted
+that actor's Board grant. The canonical command correctly denied recovery. The
+fixture now adds a destination Member grant and explicitly verifies editable
+current destination access to the selected published image before replay.
+No production authorization check is weakened. Compilation passes with zero
+warnings/errors; repaired Linux execution remains pending.

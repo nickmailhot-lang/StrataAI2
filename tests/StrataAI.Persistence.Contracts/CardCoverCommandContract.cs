@@ -156,6 +156,8 @@ internal static class CardCoverCommandContract
         var route = (await work.FindCardAsync(card, ct))!; var movedBoard = Guid.NewGuid(); var movedList = Guid.NewGuid();
         await using (var move = new NpgsqlCommand("""
             INSERT INTO boards(id,tenant_id,name,created_at,updated_at) VALUES(@board,@tenant,'Moved cover receipt',@at,@at);
+            INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+              VALUES(gen_random_uuid(),@tenant,@board,@actor,'MEMBER','ACTIVE',@at,@at);
             INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
               VALUES(@list,@tenant,@board,'Moved cover parent','500000000000000000000000000000',@at,@at);
             UPDATE cards SET board_id=@board,list_id=@list WHERE tenant_id=@tenant AND id=@card;
@@ -163,9 +165,12 @@ internal static class CardCoverCommandContract
         {
             move.Parameters.AddWithValue("board", movedBoard); move.Parameters.AddWithValue("list", movedList);
             move.Parameters.AddWithValue("tenant", tenant); move.Parameters.AddWithValue("at", clock.UtcNow); move.Parameters.AddWithValue("card", card);
+            move.Parameters.AddWithValue("actor", actor);
             await move.ExecuteNonQueryAsync(ct);
         }
         var movedState = await Snapshot();
+        Require((await service.ReadAsync(card, actor, ct)).Value is { CanEdit: true } movedView && movedView.AttachmentId == file,
+            "Moved cover fixture lacks current destination editing access to the selected published source.");
         Require((await service.SetAsync(card, actor, input, "cover-moved-retry", ct)).Value == selected.Value && await Snapshot() == movedState,
             "Moved published cover lost its original receipt or repeated selection effects.");
         foreach (var blockedBoard in new[] { route.BoardId, movedBoard })
