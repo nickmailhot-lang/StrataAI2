@@ -11,7 +11,7 @@ organization="$(
 organization_id="$(printf '%s' "$organization" | jq -r '.organization.id')"
 
 board="$(
-  curl -H 'X-StrataAI-Request: 1' --fail --silent     -b "$COOKIE_JAR"     -H 'Content-Type: application/json'     -d "$(jq -nc --arg org "$organization_id"       '{organizationId:$org,name:"Council Operations",description:"CI Board",visibility:"PRIVATE",backgroundType:"COLOR",backgroundValue:"#0f4c81"}')"     "$BASE_URL/boards"
+  curl -H 'X-StrataAI-Request: 1' --fail --silent     -b "$COOKIE_JAR"     -H 'Content-Type: application/json'     -d "$(jq -nc --arg org "$organization_id"       '{organizationId:$org,name:"Council Operations",description:"CI Board",visibility:"PRIVATE",backgroundType:"COLOR",backgroundValue:"blue"}')"     "$BASE_URL/boards"
 )"
 board_id="$(printf '%s' "$board" | jq -r '.id')"
 board_version="$(printf '%s' "$board" | jq -r '.version')"
