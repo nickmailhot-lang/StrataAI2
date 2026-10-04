@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json.Serialization;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
@@ -6,8 +7,11 @@ using StrataAI.Domain.WorkManagement;
 
 namespace StrataAI.Application.WorkManagement;
 
-public sealed record CreateCardCommentInput(string? Content, long CardVersion);
-public sealed record EditCardCommentInput(string? Content, long CardVersion, long Version);
+public sealed record CardCommentMentionSelection(Guid UserId, string Handle, long HandleVersion);
+public sealed record CreateCardCommentInput(string? Content, long CardVersion,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<CardCommentMentionSelection>? MentionSelections = null);
+public sealed record EditCardCommentInput(string? Content, long CardVersion, long Version,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<CardCommentMentionSelection>? MentionSelections = null);
 public sealed record DeleteCardCommentInput(long CardVersion, long Version, bool Confirmed);
 public sealed record CardCommentChange(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion, CardCommentRecord Comment, bool Changed);
 public sealed record CardCommentPage(Guid OrganizationId, Guid BoardId, Guid CardId, long CardVersion,
@@ -55,14 +59,15 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
     }
 
     public Task<WorkOperation<CardCommentChange>> CreateAsync(Guid cardId, Guid actor, CreateCardCommentInput input, string correlationId, CancellationToken ct = default)
-        => Change(cardId, null, actor, input.CardVersion, null, input.Content, false, false, input, correlationId, ct);
+        => Change(cardId, null, actor, input.CardVersion, null, input.Content, false, false, input.MentionSelections, input, correlationId, ct);
     public Task<WorkOperation<CardCommentChange>> EditAsync(Guid cardId, Guid commentId, Guid actor, EditCardCommentInput input, string correlationId, CancellationToken ct = default)
-        => Change(cardId, commentId, actor, input.CardVersion, input.Version, input.Content, false, false, input, correlationId, ct);
+        => Change(cardId, commentId, actor, input.CardVersion, input.Version, input.Content, false, false, input.MentionSelections, input, correlationId, ct);
     public Task<WorkOperation<CardCommentChange>> DeleteAsync(Guid cardId, Guid commentId, Guid actor, DeleteCardCommentInput input, string correlationId, CancellationToken ct = default)
-        => Change(cardId, commentId, actor, input.CardVersion, input.Version, null, true, input.Confirmed, input, correlationId, ct);
+        => Change(cardId, commentId, actor, input.CardVersion, input.Version, null, true, input.Confirmed, null, input, correlationId, ct);
 
     private async Task<WorkOperation<CardCommentChange>> Change(Guid cardId, Guid? commentId, Guid actor, long cardVersion,
-        long? commentVersion, string? content, bool deleting, bool confirmed, object input, string correlationId, CancellationToken ct)
+        long? commentVersion, string? content, bool deleting, bool confirmed, IReadOnlyList<CardCommentMentionSelection>? selected,
+        object input, string correlationId, CancellationToken ct)
     {
         var hint = await work.FindCardAsync(cardId, ct);
         if (hint is null) return WorkOperation<CardCommentChange>.Failure("card_not_found");
@@ -98,7 +103,7 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                     try { normalized = CardComment.RequireContent(content!); }
                     catch (ArgumentException) { return WorkOperation<Receipt>.Failure("invalid_comment_content"); }
                 }
-                if (child is not null && (deleting ? child.DeletedAt is not null : child.Content == normalized))
+                if (child is not null && (deleting ? child.DeletedAt is not null : child.Content == normalized) && selected is not { Count: > 0 })
                     return await Complete(hint, actor, current.Version, child, false, ct);
                 var previous = child is null ? null : await snapshots.FindSnapshotAsync(hint.OrganizationId, cardId, child.Id, child.Version, ct);
                 CardCommentMentionPlan? plan = null;
@@ -107,9 +112,13 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                     var prepared = await mentions.ResolveAsync(hint.OrganizationId, hint.BoardId, actor, normalized!, previous?.Recipients ?? [], ct);
                     if (!prepared.Succeeded || prepared.Value is null) return WorkOperation<Receipt>.Failure(prepared.ErrorCode ?? "invalid_comment_mentions");
                     plan = prepared.Value;
+                    var selection = mentions.ValidateSelections(plan, selected);
+                    if (!selection.Succeeded) return WorkOperation<Receipt>.Failure(selection.ErrorCode!);
                     var targets = await mentions.RevalidateAsync(hint.OrganizationId, hint.BoardId, plan, ct);
                     if (!targets.Succeeded) return WorkOperation<Receipt>.Failure(targets.ErrorCode!);
                 }
+                if (child is not null && !deleting && child.Content == normalized)
+                    return await Complete(hint, actor, current.Version, child, false, ct);
                 var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
                 if (current.Version == long.MaxValue || now < current.UpdatedAt || child is not null && (child.Version == long.MaxValue || now < child.UpdatedAt))
                     return WorkOperation<Receipt>.Failure("version_conflict");

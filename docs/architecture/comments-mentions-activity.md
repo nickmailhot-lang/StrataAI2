@@ -991,3 +991,45 @@ both private and no-store. This repairs the demonstrated issue; rerun execution
 and all later release gates remain pending. No tests or security boundaries were
 removed or weakened. The preceding failed source gate correctly skipped image,
 security/container and release stages rather than producing a release bundle.
+
+### Native teammate discovery and selected recipient intent
+
+The MUI comment editor now offers bounded username-prefix search and explicit
+teammate selection. Each lookup uses the existing protected Card mention-options
+route, validates exact scope/revision/seek metadata and checks the same active
+cookie account before and after reading. Stale, unavailable and unmounted Card
+contexts retire results. Selecting a teammate inserts plaintext and captures a
+copied stable account/handle revision. The selected command body survives lost
+reply recovery unchanged with the original key. Ordinary manual mentions remain
+supported; moving/repeating a selected token retains its expectation, while
+removing its actual lexical token retires that expectation. Email/URL/malformed
+Unicode lookalikes cannot retain a selected binding.
+
+Optional create/edit mentionSelections are validated inside the already admitted
+owning command against actual lexical declarations and current eligible handle
+metadata, before writes and also before unchanged-body no-op completion. Wrong
+account, stale/reclaimed revision and removed participation refuse rather than
+substitute a current target. Subsequent existing recipient locks/final checks
+still apply. Omitted selection fields are ignored during internal serialization
+so pre-feature command fingerprints remain identical; the HTTP contract checks
+the actual previous/new WorkCommand hash, not just a serialization appearance.
+Current receipts remain body-free and current-author/session governed.
+
+Local warning-as-error compilation passes with zero warnings/errors. Web
+TypeScript/lint pass; 31 component/parser/lookup tests pass, including selected
+lost reply retry and late Card revision response retirement. A fixture initially
+used forbidden U+0085 control text; retain the original rejection and use valid
+U+00A0 in the positive Unicode case. The mandatory exact-image command fixture
+now also refuses a stale selected revision with unchanged full state. Shell
+syntax passes. Two new native desktop/phone scenarios are discovered by
+Playwright: actual scoped lookup, keyboard focus, recipient rename-and-reclaim
+revision refusal, fresh selection, already-committed reply loss/recovery, private
+recipient inbox and post-revocation exclusion. Discovery is not execution; new
+API/Production/native tests remain pending Linux and exact-image CI.
+
+The preceding inbox fix 48c185c has successful web/.NET/PostgreSQL/source/image
+and security gates in run 37174155043, with actual 611 Domain and 287 API cases,
+zero failures/skips. Its container job remains live; release/native completion
+is not inferred. Full PRD-15/17 acceptance remains open for Production lock waits,
+mass mention policy/confirmation/rate control/full recipient history, activity
+feeds/historical identity and capacity/native evidence. No full ticket closes.

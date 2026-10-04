@@ -5,9 +5,11 @@ import { isNotificationProfile } from '../notifications/notificationInbox';
 import { normalizeComment, parseCardCommentChange, parseCardCommentPage, type CardComment, type CardCommentChange, type CardCommentPage, type CommentIntent } from './cardComments';
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import type { UrlAttachmentCreateProps } from './UrlAttachmentCreateControl';
+import { CommentMentionPicker } from './CommentMentionPicker';
+import { selectedCommentMentions, type CommentMentionSelection } from './commentMentionSelection';
 
 type Review = { actor: string; page: CardCommentPage; cursor?: string };
-type Draft = { actor: string; version: number; original: CardComment | null; text: string; deleting: boolean; confirmed: boolean };
+type Draft = { actor: string; version: number; original: CardComment | null; text: string; deleting: boolean; confirmed: boolean; selections: readonly CommentMentionSelection[] };
 type Intent = { actor: string; key: string; path: string; method: string; body: string; check: CommentIntent };
 export type CardCommentsProps = UrlAttachmentCreateProps & { reconnectSequence?: number };
 export function CardCommentsControl(props: CardCommentsProps) {
@@ -18,12 +20,13 @@ function CommentsControl(props: CardCommentsProps) {
   const [intent, setIntent] = useState<Intent>(); const [blocked, setBlocked] = useState(false); const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string>(); const pending = useRef<AbortController | undefined>(undefined);
   const [acknowledged, setAcknowledged] = useState<CardCommentChange>();
+  const [mentionBusy, setMentionBusy] = useState(false);
   const observedReconnect = useRef(props.reconnectSequence);
   const mounted = useRef(false); const callbacks = useRef(props); callbacks.current = props;
   const primary = useRef<HTMLButtonElement>(null); const editor = useRef<HTMLInputElement>(null); const consent = useRef<HTMLInputElement>(null);
   const retry = useRef<HTMLButtonElement>(null); const discard = useRef<HTMLButtonElement>(null);
   const focusOwner = useRef<HTMLElement | null>(null); const focusDialog = useRef<HTMLElement | null>(null); const restoreFocus = useRef(false);
-  const disabled = busy || props.disabled || props.unavailable; const conflict = !!draft && draft.version !== props.version;
+  const disabled = busy || mentionBusy || props.disabled || props.unavailable; const conflict = !!draft && draft.version !== props.version;
   const path = `/cards/${encodeURIComponent(props.cardId)}/comments`;
   function focus(owner: HTMLElement) {
     focusOwner.current = owner; focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner);
@@ -68,7 +71,7 @@ function CommentsControl(props: CardCommentsProps) {
     if (!review || disabled || draft || intent || blocked || !props.editable || !review.page.canComment || review.page.cardVersion !== props.version
       || original && (original.authorId.toLowerCase() !== review.actor.toLowerCase() || original.deletedAt !== null)) return;
     focus(owner); setDraft({ actor: review.actor, version: review.page.cardVersion, original: original ? { ...original } : null,
-      text: original?.content ?? '', deleting, confirmed: false });
+      text: original?.content ?? '', deleting, confirmed: false, selections: [] });
   }
   async function save(owner: HTMLElement) {
     if (pending.current || disabled || blocked || !draft || !intent && (conflict || !props.editable || draft.deleting && !draft.confirmed)) return;
@@ -79,10 +82,14 @@ function CommentsControl(props: CardCommentsProps) {
       catch { setNotice('Enter valid comment text, up to 10000 characters.'); editor.current?.focus(); return; }
       const check: CommentIntent = { actor: draft.actor, cardVersion: draft.version, original: draft.original,
         content: text, deleting: draft.deleting, confirmed: draft.confirmed };
+      let selections: CommentMentionSelection[] = [];
+      try { if (text !== undefined) selections = selectedCommentMentions(text, draft.selections); }
+      catch { setNotice('Review the comment mentions before saving.'); editor.current?.focus(); return; }
       command = { actor: draft.actor, key: crypto.randomUUID(), path: path + (draft.original ? '/' + encodeURIComponent(draft.original.id) : ''),
         method: draft.deleting ? 'DELETE' : draft.original ? 'PATCH' : 'POST', check,
         body: JSON.stringify(draft.deleting ? { cardVersion: draft.version, version: draft.original!.version, confirmed: true }
-          : { content: text, cardVersion: draft.version, ...(draft.original ? { version: draft.original.version } : {}) }) };
+          : { content: text, cardVersion: draft.version, ...(draft.original ? { version: draft.original.version } : {}),
+            ...(selections.length ? { mentionSelections: selections } : {}) }) };
     }
     const originalRetry = !!intent; const captured = command;
     focus(owner); const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
@@ -143,6 +150,15 @@ function CommentsControl(props: CardCommentsProps) {
           <TextField label={draft.original ? 'Edit your comment' : 'New comment'} multiline minRows={3} inputRef={editor} value={draft.text}
             disabled={disabled || !!intent || blocked || conflict || !props.editable} slotProps={{ htmlInput: { maxLength: 10000 } }}
             onChange={event => setDraft({ ...draft, text: event.target.value })} />}
+        {!draft.deleting && !intent && !blocked && !conflict && props.editable && <CommentMentionPicker {...props} actor={draft.actor} version={draft.version}
+          disabled={busy || props.disabled || props.unavailable} onBusyChange={setMentionBusy} onSelect={option => {
+            if (disabled || intent || conflict) return;
+            let text: string; try { text = normalizeComment(`${draft.text}\n@${option.handle}`); } catch { setNotice('Review the comment text before adding a teammate.'); return; }
+            const selections = [...draft.selections.filter(item => item.userId.toLowerCase() !== option.userId.toLowerCase()),
+              { userId: option.userId, handle: option.handle, handleVersion: option.handleVersion }];
+            if (selections.length > 20) { setNotice('Use at most 20 teammate mentions in a comment.'); return; }
+            setDraft({ ...draft, text, selections }); setNotice(undefined); editor.current?.focus();
+          }} />}
         {intent ? <Button ref={retry} disabled={disabled} onBlur={blur} onClick={event => void save(event.currentTarget)}>Retry original comment change</Button> :
           <Button disabled={disabled || blocked || conflict || !props.editable || draft.deleting && !draft.confirmed} onBlur={blur}
             onClick={event => void save(event.currentTarget)}>{draft.deleting ? 'Confirm comment removal' : 'Save comment'}</Button>}

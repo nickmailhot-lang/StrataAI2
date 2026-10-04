@@ -11,6 +11,24 @@ public sealed record CardCommentMentionPlan(string Content, CommentMentionRecipi
 // Publication must revalidate current targets and atomically retain the snapshot.
 public sealed class CardCommentMentionPlanning(ICardMentionMemberStore members, IdentityPolicy policy)
 {
+    public WorkOperation<bool> ValidateSelections(CardCommentMentionPlan plan, IReadOnlyList<CardCommentMentionSelection>? selected)
+    {
+        if (selected is null || selected.Count == 0) return WorkOperation<bool>.Success(true);
+        if (selected.Count > CommentMentionText.MaximumUserRecipients || selected.Any(row => row is null
+            || row.UserId == Guid.Empty || row.HandleVersion < 1 || row.Handle is null)
+            || selected.Select(row => row.UserId).Distinct().Count() != selected.Count
+            || selected.Select(row => row.Handle).Distinct(StringComparer.Ordinal).Count() != selected.Count)
+            return WorkOperation<bool>.Failure("invalid_comment_mentions");
+        var declared = CommentMentionText.Parse(plan.Content).Tokens.Where(row => row.Kind == CommentMentionKind.User).Select(row => row.Handle).ToHashSet(StringComparer.Ordinal);
+        foreach (var row in selected)
+        {
+            try { if (MentionHandle.Normalize(row.Handle) != row.Handle || !declared.Contains(row.Handle)) return WorkOperation<bool>.Failure("invalid_comment_mentions"); }
+            catch (ArgumentException) { return WorkOperation<bool>.Failure("invalid_comment_mentions"); }
+            if (!plan.CurrentMembers.Any(current => current.UserId == row.UserId && current.Handle == row.Handle && current.HandleVersion == row.HandleVersion))
+                return WorkOperation<bool>.Failure("mention_targets_changed");
+        }
+        return WorkOperation<bool>.Success(true);
+    }
     public async Task<WorkOperation<CardCommentMentionPlan>> ResolveAsync(Guid organization, Guid board, Guid actor,
         string content, IReadOnlyList<Guid> previous, CancellationToken ct = default)
     {

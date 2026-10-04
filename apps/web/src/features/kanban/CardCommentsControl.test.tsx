@@ -20,6 +20,38 @@ function mock(write: () => unknown = () => ack, value: unknown = page) {
 async function review() { fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' })); await screen.findByRole('button', { name: 'Add comment' }); }
 async function create() { await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' })); fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } }); }
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+it('inserts an explicitly reviewed teammate with immutable account/handle revision and preserves the same selection on lost-reply recovery', async () => {
+  const teammate = { userId: id(9), handle: 'current_teammate', displayName: 'Current teammate', handleVersion: 3 };
+  let attempts = 0;
+  vi.mocked(workRequest).mockImplementation(async (path, init) => {
+    if (path === '/me') return profile;
+    if (init?.method) { if (++attempts === 1) throw new WorkRequestError(503, null); return { ...ack, comment: { ...row, content: '@current_teammate' } }; }
+    return path.includes('/mention-options') ? { ...scope, cardVersion: 4, prefix: 'current_', items: [teammate], nextCursor: null } : page;
+  });
+  render(<CardCommentsControl {...props()} />); await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+  fireEvent.change(screen.getByRole('textbox', { name: 'Teammate username prefix' }), { target: { value: 'current_' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Find teammates' }));
+  const option = await screen.findByRole('button', { name: 'Mention Current teammate (@current_teammate)' });
+  fireEvent.click(option); expect(screen.getByRole('textbox', { name: 'New comment' })).toHaveValue('@current_teammate');
+  fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Retry original comment change' }));
+  await screen.findByText('Comment added.'); expect(writes()).toHaveLength(2);
+  expect(JSON.parse(writes()[0][1]!.body as string)).toEqual({ content: '@current_teammate', cardVersion: 4,
+    mentionSelections: [{ userId: teammate.userId, handle: teammate.handle, handleVersion: 3 }] });
+  expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body); expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+});
+it('retires pending teammate metadata when the Card revision changes before lookup admission', async () => {
+  let finish!: (value: unknown) => void;
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : path.includes('/mention-options')
+    ? new Promise(resolve => { finish = resolve; }) : page);
+  const p = props(); const view = render(<CardCommentsControl {...p} />); await review();
+  fireEvent.click(screen.getByRole('button', { name: 'Add comment' })); fireEvent.click(screen.getByRole('button', { name: 'Find teammates' }));
+  await waitFor(() => expect(finish).toBeDefined());
+  view.rerender(<CardCommentsControl {...p} version={5} />);
+  finish({ ...scope, cardVersion: 4, prefix: '', items: [{ userId: id(9), handle: 'former_teammate', displayName: 'Former choice', handleVersion: 2 }], nextCursor: null });
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Save comment' })).toBeDisabled());
+  expect(screen.queryByText(/Former choice/)).not.toBeInTheDocument(); expect(writes()).toHaveLength(0);
+});
 it('renders literal plaintext safely and submits a normalized scoped create with a fresh retry key', async () => {
   mock(); const p = props(); const view = render(<CardCommentsControl {...p} />); expect(workRequest).not.toHaveBeenCalled();
   await review(); expect(screen.getByText(row.content)).toBeInTheDocument(); expect(view.container.querySelector('script')).toBeNull();

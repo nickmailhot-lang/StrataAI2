@@ -10,6 +10,44 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_15_SelectedMentionIdentityAndRevisionAreValidatedBeforeWritesAndNoOps()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        var f = await NotificationFixture(app, owner, recipient, ct); var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Selected mention", null, null, DateTimeOffset.UtcNow, ct);
+        var path = $"/cards/{card.Id}/comments"; var handle = $"u_{f.Recipient:N}"; var text = $"Hello @{handle}";
+        var key = Guid.NewGuid().ToString();
+        var selection = new CardCommentMentionSelection(f.Recipient, handle, 1);
+        using var stale = await Mutate(owner, HttpMethod.Post, path, new CreateCardCommentInput(text, 1, [selection with { HandleVersion = 2 }]), key);
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        using var substituted = await Mutate(owner, HttpMethod.Post, path, new CreateCardCommentInput(text, 1, [selection with { UserId = f.Owner }]), key);
+        Assert.Equal(HttpStatusCode.Conflict, substituted.StatusCode);
+        using var notDeclared = await Mutate(owner, HttpMethod.Post, path, new CreateCardCommentInput("Literal", 1, [selection]), key);
+        Assert.Equal(HttpStatusCode.BadRequest, notDeclared.StatusCode);
+        using var duplicate = await Mutate(owner, HttpMethod.Post, path, new CreateCardCommentInput(text, 1, [selection, selection]), key);
+        Assert.Equal(HttpStatusCode.BadRequest, duplicate.StatusCode);
+        Assert.Equal(1, (await work.FindCardAsync(card.Id, ct))!.Version);
+        var inbox = app.Services.GetRequiredService<IWorkNotificationStore>();
+        Assert.Empty(await inbox.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct));
+        var input = new CreateCardCommentInput(text, 1, [selection]);
+        using var created = await Mutate(owner, HttpMethod.Post, path, input, key);
+        Assert.Equal(HttpStatusCode.OK, created.StatusCode); var change = (await created.Content.ReadFromJsonAsync<CardCommentChange>(ct))!;
+        using var retry = await Mutate(owner, HttpMethod.Post, path, input, key);
+        Assert.Equal(change, await retry.Content.ReadFromJsonAsync<CardCommentChange>(ct));
+        using var staleNoop = await Mutate(owner, HttpMethod.Patch, $"{path}/{change.Comment.Id}", new EditCardCommentInput(text, 2, 1, [selection with { HandleVersion = 2 }]));
+        Assert.Equal(HttpStatusCode.Conflict, staleNoop.StatusCode);
+        using var noop = await Mutate(owner, HttpMethod.Patch, $"{path}/{change.Comment.Id}", new EditCardCommentInput(text, 2, 1, [selection]));
+        Assert.Equal(HttpStatusCode.OK, noop.StatusCode); Assert.False((await noop.Content.ReadFromJsonAsync<CardCommentChange>(ct))!.Changed);
+        Assert.Single(await inbox.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct));
+        Assert.DoesNotContain("MentionSelections", JsonSerializer.Serialize(new CreateCardCommentInput("Old request", 1)));
+        Assert.DoesNotContain("MentionSelections", JsonSerializer.Serialize(new EditCardCommentInput("Old request", 1, 1)));
+        var oldFingerprint = WorkCommand.Create(f.Owner, Guid.Parse(key), "COMMENT_ADDED", card.Id,
+            new { cardId = card.Id, input = new { Content = "Old request", CardVersion = 1L } }, "comment_not_found").Fingerprint;
+        Assert.Equal(oldFingerprint, WorkCommand.Create(f.Owner, Guid.Parse(key), "COMMENT_ADDED", card.Id,
+            new { cardId = card.Id, input = new CreateCardCommentInput("Old request", 1) }, "comment_not_found").Fingerprint);
+    }
+    [Fact]
     public async Task PRD_15_HTTPUsernameMentionRetryPublishesPrivateInboxOnceAndRevokedBoardHidesIt()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();

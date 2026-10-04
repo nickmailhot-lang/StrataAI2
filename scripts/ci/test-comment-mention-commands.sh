@@ -31,7 +31,8 @@ path="/cards/$card/comments"
 inbox="/organizations/$org/notifications"
 key=21111111-1111-1111-1111-111111111115
 text="Private comment @u_${recipient//-/} @u_${recipient//-/} @u_${owner//-/} @unknown_user"
-body=$(jq -nc --arg text "$text" '{content:$text,cardVersion:1}')
+body=$(jq -nc --arg text "$text" --arg recipient "$recipient" --arg handle "u_${recipient//-/}" '{content:$text,cardVersion:1,
+ mentionSelections:[{userId:$recipient,handle:$handle,handleVersion:1}]}')
 state() { admin "SELECT md5(jsonb_build_object(
  'card',(SELECT to_jsonb(c) FROM cards c WHERE id='$card'),
  'comments',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM card_comments c WHERE tenant_id='$org'),
@@ -43,6 +44,9 @@ state() { admin "SELECT md5(jsonb_build_object(
  'notifications',(SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
 before=$(state)
+stale_body=$(jq '.mentionSelections[0].handleVersion=2' <<< "$body")
+test "$(request owner POST "$path" "$key" "$stale_body")" = 409
+test "$before" = "$(state)"
 admin 'REVOKE INSERT ON card_assignment_notifications FROM strataai_api_runtime;' >/dev/null
 test "$(request owner POST "$path" "$key" "$body")" = 503
 admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null
