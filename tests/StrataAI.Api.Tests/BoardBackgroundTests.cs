@@ -10,6 +10,28 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_04_Generic_Board_commands_cannot_manufacture_or_select_unowned_images()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var before = await work.FindBoardAsync(f.Board, ct);
+        foreach (var value in new[] { Guid.NewGuid().ToString("D"), "https://example.test/private.png", "url(private)", Guid.Empty.ToString("D") })
+        {
+            using var created = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization,
+                name = "Unowned image", visibility = "PRIVATE", backgroundType = "IMAGE", backgroundValue = value });
+            Assert.Equal(HttpStatusCode.BadRequest, created.StatusCode);
+            Assert.Contains("invalid_background", await created.Content.ReadAsStringAsync(ct));
+            using var updated = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}", new { name = "Must remain unchanged",
+                version = before!.Version, backgroundType = "IMAGE", backgroundValue = value });
+            Assert.Equal(HttpStatusCode.BadRequest, updated.StatusCode);
+            Assert.Contains("invalid_background", await updated.Content.ReadAsStringAsync(ct));
+            Assert.Equal(before, await work.FindBoardAsync(f.Board, ct));
+        }
+    }
+
+    [Fact]
     public async Task PRD_04_Built_in_backgrounds_are_canonical_and_unknown_selections_leave_state_unchanged()
     {
         var ct = TestContext.Current.CancellationToken;
