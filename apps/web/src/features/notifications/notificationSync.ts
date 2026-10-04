@@ -1,6 +1,9 @@
 import { notificationInstant, notificationUuid } from './notificationInbox';
 
 const maximum = 9223372036854775807n;
+const pageFields = new Set(['organizationId', 'recipientId', 'cursor', 'hasMore', 'resetRequired', 'events']);
+const eventFields = new Set(['eventId', 'eventType', 'actorId', 'recipientId', 'organizationId', 'boardId',
+  'entityType', 'entityId', 'version', 'sequence', 'createdAt', 'metadata']);
 function sequence(value: unknown): bigint | undefined {
   if (typeof value !== 'string' || !/^(0|[1-9][0-9]{0,18})$/.test(value)) return;
   const parsed = BigInt(value);
@@ -13,6 +16,7 @@ export function validateNotificationSync(value: unknown, organizationId: string,
   after: string | undefined, seen: ReadonlySet<string>): NotificationSync | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return;
   const data = value as Record<string, unknown>;
+  if (Object.keys(data).some(key => !pageFields.has(key))) return;
   if (!notificationUuid(data.organizationId) || data.organizationId.toLowerCase() !== organizationId.toLowerCase() ||
     !notificationUuid(data.recipientId) || data.recipientId.toLowerCase() !== recipientId.toLowerCase() ||
     typeof data.hasMore !== 'boolean' || typeof data.resetRequired !== 'boolean' ||
@@ -29,6 +33,7 @@ export function validateNotificationSync(value: unknown, organizationId: string,
   for (const value of data.events) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return;
     const event = value as Record<string, unknown>; const next = sequence(event.sequence);
+    if (Object.keys(event).some(key => !eventFields.has(key))) return;
     if (!notificationUuid(event.eventId) || !notificationUuid(event.actorId) || !notificationUuid(event.entityId) ||
       !notificationUuid(event.boardId) || !notificationUuid(event.organizationId) ||
       event.organizationId.toLowerCase() !== organizationId.toLowerCase() || !notificationUuid(event.recipientId) ||

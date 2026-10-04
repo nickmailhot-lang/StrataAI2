@@ -44,4 +44,8 @@ describe('private notification replay validation', () => {
     expect(parse({ ...page, events: [event, event] })).toBeUndefined();
     expect(parse({ ...page, events: [{ ...event, eventType: 'NOTIFICATION_READ', version: 2, actorId: recipient }] })).toBeDefined();
   });
+  it.each(['title', 'body', 'entityLink', 'cardId', 'email', 'diagnostic', 'readAt'])('rejects unexpected private fields before accepting the cursor (%s)', field => {
+    expect(parse({ ...page, [field]: 'private material' })).toBeUndefined();
+    expect(parse({ ...page, events: [{ ...event, [field]: 'private material' }] })).toBeUndefined();
+  });
 });
