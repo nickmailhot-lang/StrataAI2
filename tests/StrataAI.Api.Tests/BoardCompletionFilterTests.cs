@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using StrataAI.Application.Common;
 using StrataAI.Application.WorkManagement;
 using Xunit;
 
@@ -6,6 +7,41 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    private sealed class FilterBoundaryClock(DateTimeOffset instant) : IClock
+    {
+        public DateTimeOffset UtcNow => instant;
+    }
+
+    [Fact]
+    public async Task Filter_time_boundaries_are_inclusive_at_database_precision()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var boundary = new DateTimeOffset(2026, 10, 4, 12, 0, 0, TimeSpan.Zero);
+        await using var app = new ApiFactory(configureServices: services =>
+            services.AddSingleton<IClock>(new FilterBoundaryClock(boundary.AddTicks(9))));
+        var fixture = await BoardInvitationFixtureAsync(app, ct);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var dates = app.Services.GetRequiredService<ICardDateStore>();
+        var work = app.Services.GetRequiredService<IWorkManagementService>();
+        var list = await store.CreateListAsync(fixture.Board.Id, Guid.NewGuid(), "Boundary", null, boundary, ct);
+        var earlier = await store.CreateCardAsync(list.Id, Guid.NewGuid(), "Earlier", null, null, boundary.AddDays(-1).AddTicks(-10), ct);
+        var exact = await store.CreateCardAsync(list.Id, Guid.NewGuid(), "Exact", null, null, boundary.AddDays(-1), ct);
+        var overdue = await store.CreateCardAsync(list.Id, Guid.NewGuid(), "Past deadline", null, null, boundary, ct);
+        var upcoming = await store.CreateCardAsync(list.Id, Guid.NewGuid(), "Exact deadline", null, null, boundary, ct);
+        Assert.NotNull(await dates.SetDatesAsync(fixture.Board.OrganizationId, fixture.Board.Id, overdue.Id,
+            new(null, boundary.AddTicks(-10), "UTC", true, false), 1, boundary, ct));
+        Assert.NotNull(await dates.SetDatesAsync(fixture.Board.OrganizationId, fixture.Board.Id, upcoming.Id,
+            new(null, boundary, "UTC", true, false), 1, boundary, ct));
+        var past = await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, null, [], "all", cancellationToken: ct, due: "overdue");
+        Assert.True(past.Succeeded); Assert.Equal(overdue.Id, Assert.Single(past.Value!.Items).Id);
+        var future = await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, null, [], "all", cancellationToken: ct, due: "upcoming");
+        Assert.True(future.Succeeded); Assert.Equal(upcoming.Id, Assert.Single(future.Value!.Items).Id);
+        var recent = await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, null, [], "all", cancellationToken: ct, activity: "day");
+        Assert.True(recent.Succeeded);
+        Assert.Equal(new[] { exact.Id, overdue.Id, upcoming.Id }.Order(), recent.Value!.Items.Select(c => c.Id));
+        Assert.DoesNotContain(recent.Value.Items, c => c.Id == earlier.Id);
+    }
+
     [Fact]
     public async Task Recent_update_filters_use_canonical_Card_timestamps_and_compose_without_widening_admission()
     {
