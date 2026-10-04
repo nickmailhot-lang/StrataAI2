@@ -23,8 +23,11 @@ curl -H 'X-StrataAI-Request: 1' --fail --silent --show-error -X PATCH -b "$scrat
   -d "$(jq -nc --argjson version "$version" '{version:$version,avatarUrl:""}')" \
   "$BASE_URL/me" | jq -e '.avatarUrl == null' >/dev/null
 curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$scratch/cookies" "$BASE_URL/me" | jq -e '.avatarUrl == null and .locale == "fr-CA"' >/dev/null
+bash "$(dirname "$0")/test-account-mention-handle.sh" "$BASE_URL" "$scratch/cookies"
+version="$(curl --fail --silent -b "$scratch/cookies" "$BASE_URL/me" | jq -r '.version')"
 curl -H 'X-StrataAI-Request: 1' --fail --silent --show-error -X POST -b "$scratch/cookies" "$BASE_URL/me/deactivate" >/dev/null
 status="$(curl -H 'X-StrataAI-Request: 1' --silent --show-error -o /dev/null -w '%{http_code}' -X PATCH -b "$scratch/cookies" \
   -H 'Content-Type: application/json' -d "$(jq -nc --argjson version "$((version + 1))" '{version:$version,displayName:"Denied"}')" "$BASE_URL/me")"
 test "$status" = "401"
+test "$(curl --silent --show-error -b "$scratch/cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me/mention-handle")" = 401
 echo 'PostgreSQL profile persistence, avatar removal and revoked-session checks passed.'

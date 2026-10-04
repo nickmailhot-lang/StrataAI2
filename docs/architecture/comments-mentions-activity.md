@@ -506,3 +506,14 @@ and complete rollback/retry/current-only hydration assertions. The first fixture
 commit omitted required account timestamps; d9488b9 supplies finite server
 timestamps and the corrected contract passes. This does not substitute for the
 new HTTP tests or completion of the full build-once release pipeline.
+
+The release profile scenario now invokes a real handle HTTP contract using its
+existing authenticated cookie against the exact built API and restricted
+PostgreSQL runtime. It checks private current-setting responses, changed/no-op
+dual revisions, original retries/collisions, actual body-free audit/event/receipt
+rows, recovery after a separate profile edit, refusal after rename and protected
+GET denial after deactivation. Its queries use the disposable account only;
+no credential/provider fixture substitutes for actual account commands. Shell
+syntax passes. Execution awaits the new immutable-image CI run. Session expiry
+and revocation during live waits, native account UI and full mention acceptance
+remain unfinished.
