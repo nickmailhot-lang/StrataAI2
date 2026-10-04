@@ -30,7 +30,7 @@ for (const width of [1280, 390]) {
     await page.route(`**${path}/${attachment}/download-options`, route => route.fulfill({ json: {
       organizationId: org, boardId: board, cardId: card, cardVersion: 1, attachmentId: attachment, attachmentVersion: 2, actorId: actor
     } }));
-    await page.route(`**${path}/${attachment}/download?*`, route => {
+    await context.route(`**${path}/${attachment}/download?*`, route => {
       const request = new URL(route.request().url()); expect(request.searchParams.get('actorId')).toBe(actor);
       expect(request.searchParams.get('attachmentVersion')).toBe('2'); downloaded = true;
       return route.fulfill({ headers: { 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="native-client-proof.pdf"',
