@@ -597,6 +597,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 90
 
+      - name: Retain fixed-scope attachment capacity measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: attachment-capacity-${{ github.sha }}
+          path: artifacts/capacity/attachments.json
+          if-no-files-found: ignore
+          retention-days: 90
+
       - name: Authorized contiguous event replay and mid-read revocation against exact release API
         run: scripts/ci/test-work-sync.sh
       - name: Check concurrent and large-board rank allocation

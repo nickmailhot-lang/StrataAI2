@@ -721,3 +721,15 @@ digests, excluding only Worker readiness timestamps; legitimate membership
 command effects establish a fresh baseline before each comparison. No fixture
 publication or routing mutation substitutes for these commands. Shell syntax
 checks pass; actual release-image execution remains pending CI.
+
+The supported-capacity release fixture now runs 20 actual URL creations, 20
+archives and 20 confirmed deletions on the existing 200-List/5,000-active-Card
+Board with 100,000 archived Cards in the Organization. It requires independent
+attachment IDs, exactly 60 Card revisions/audits/events/receipts, retained deleted
+tombstones and an unchanged original deletion retry after the later commands.
+The retained `attachment-capacity` artifact contains all timing samples and
+nearest-rank p95 for each mutation, requiring each below 500 ms. Conditions are
+one serial client through Nginx with no intentional network delay. It measures
+URL metadata/lifecycle commands; binary provider, scanner, preview, concurrent
+clients and browser timing are not measured by this fixture. Shell syntax and
+diff checks pass; actual execution/performance evidence remains pending CI.
