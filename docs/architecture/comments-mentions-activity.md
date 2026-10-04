@@ -1282,3 +1282,15 @@ run has since failed the mention fixture; it does not establish release
 acceptance. PRD-15 remains open with **50% estimated remaining work**, including
 complete runtime/native lifecycle acceptance, capacity/cardinality cost,
 retention and the activity/event/historical-actor projections and MUI feeds.
+
+Four owning Demo producer scenarios now model a changed complete roster at final
+admission, covering both added and departed recipients for Card and Board
+groups. The test double changes only the final roster read; the actual comment,
+snapshot, source-event, notification and quota adapters execute. Two failed
+attempts with the original key must leave the Card, comment collection, event
+stream and inbox unchanged. Recovery must publish once, exact replay must stay
+free, and all three fresh quota slots must remain usable before a fourth command
+is refused. This is atomic producer boundary coverage with a controlled roster
+read, not actual concurrent PostgreSQL membership execution. Warning-as-error
+compilation passes locally; managed execution awaits CI. PRD-15 remains open at
+**50% estimated remaining work**.

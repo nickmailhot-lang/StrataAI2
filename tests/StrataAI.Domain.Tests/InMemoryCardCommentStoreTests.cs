@@ -128,17 +128,88 @@ public sealed class InMemoryCardCommentStoreTests
     }
     private sealed class CommandContext : IWorkCommandContext
     { public Guid? IdempotencyKey { get; set; } }
-    private static ServiceProvider Demo(Actor actor)
+    private sealed class RosterChange
+    { public bool Enabled = true; public bool Add; public int Reads; public Guid NewRecipient = Guid.NewGuid(); }
+    private sealed class ChangingMassRoster(ICardMassMentionMemberStore inner, RosterChange change) : ICardMassMentionMemberStore
+    {
+        public async Task<IReadOnlyList<Guid>> LockRecipientsAsync(Guid organization, Guid board, Guid card,
+            bool includeCard, bool includeBoard, bool requireVerifiedEmail, CancellationToken ct = default)
+        {
+            var current = await inner.LockRecipientsAsync(organization, board, card, includeCard, includeBoard, requireVerifiedEmail, ct);
+            // Model a different complete roster at final admission, after the
+            // real producer has tentatively appended its source and inbox batch.
+            if (!change.Enabled || ++change.Reads != 2) return current;
+            return change.Add ? current.Append(change.NewRecipient).Order().ToArray() : [];
+        }
+    }
+    private static ServiceProvider Demo(Actor actor, RosterChange? rosterChange = null)
     {
         var services = new ServiceCollection(); var runtime = new RuntimeDescriptor(RuntimeMode.Demo, "test", "test");
         services.AddSingleton<IClock, SystemClock>(); services.AddStrataAiIdentity(new ConfigurationBuilder().Build(), runtime);
         services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
+        if (rosterChange is not null)
+        {
+            var massStore = services.Single(item => item.ServiceType == typeof(ICardMassMentionMemberStore));
+            services.AddSingleton<ICardMassMentionMemberStore>(provider => new ChangingMassRoster(
+                (ICardMassMentionMemberStore)ActivatorUtilities.CreateInstance(provider, massStore.ImplementationType!), rosterChange));
+        }
         var notificationStore = services.Single(item => item.ServiceType == typeof(IWorkNotificationStore));
         services.AddSingleton<IWorkNotificationStore>(provider => new LateMentionRefusal(
             (IWorkNotificationStore)notificationStore.ImplementationFactory!(provider)!, actor));
         services.AddSingleton<ICommandActorAuthorization>(actor);
         services.AddSingleton<CommandContext>(); services.AddSingleton<IWorkCommandContext>(p => p.GetRequiredService<CommandContext>());
         return services.BuildServiceProvider();
+    }
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task PRD_15_FinalGroupRosterChangeRollsBackPublicationAndQuotaThenOriginalKeyRecovers(bool cardScope, bool added)
+    {
+        var ct = TestContext.Current.CancellationToken; var change = new RosterChange { Add = added };
+        using var services = Demo(new(), change); var parent = await Parent(services, ct); var recipient = Guid.NewGuid();
+        var at = DateTimeOffset.UtcNow; var email = $"{recipient:N}@example.test";
+        Assert.True(await services.GetRequiredService<IIdentityStore>().TryCreateUserAsync(new(recipient, email, email.ToUpperInvariant(),
+            "Current recipient", null, "en", "UTC", AccountStatus.Active, true, "fixture", at, at, 1), null, null, ct));
+        await services.GetRequiredService<IOrganizationStore>().AddOrRestoreMemberAsync(parent.Org, recipient, OrganizationRole.Member, at, ct);
+        var work = services.GetRequiredService<IWorkManagementStore>();
+        await work.UpsertBoardMemberAsync(parent.Card.BoardId, recipient, BoardRole.Member, at, ct);
+        var initial = parent.Card;
+        if (cardScope)
+            initial = (await Scoped(services, parent.Org, () => work.SetCardMemberAsync(initial.Id, recipient, parent.User, true, initial.Version, at, ct), ct))!.Card;
+        var context = services.GetRequiredService<CommandContext>(); context.IdempotencyKey = Guid.NewGuid();
+        var service = services.GetRequiredService<CardCommentService>(); var notifications = services.GetRequiredService<IWorkNotificationStore>();
+        var reader = services.GetRequiredService<IWorkEventReader>();
+        var input = new CreateCardCommentInput(cardScope ? "Notify @card" : "Notify @board", initial.Version,
+            MassMentionConfirmation: new(cardScope, !cardScope));
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            change.Reads = 0;
+            Assert.Equal("mention_targets_changed", (await service.CreateAsync(initial.Id, parent.User, input, "group-race", ct)).ErrorCode);
+            Assert.Equal(initial, await work.FindCardAsync(initial.Id, ct));
+            Assert.Empty((await service.ListAsync(initial.Id, parent.User, null, ct)).Value!.Items);
+            Assert.Empty(await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct));
+            Assert.Empty((await reader.ReadAsync(parent.Org, initial.BoardId, 0, 50, ct)).Events);
+        }
+        change.Enabled = false;
+        var committed = await service.CreateAsync(initial.Id, parent.User, input, "group-recovery", ct);
+        Assert.True(committed.Succeeded);
+        Assert.Equal(committed.Value, (await service.CreateAsync(initial.Id, parent.User, input, "group-original-retry", ct)).Value);
+        Assert.Single(await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct));
+        for (var index = 1; index <= 2; index++)
+        {
+            context.IdempotencyKey = Guid.NewGuid();
+            Assert.True((await service.CreateAsync(initial.Id, parent.User, input with
+                { Content = $"{input.Content} {index}", CardVersion = initial.Version + index }, "group-capacity", ct)).Succeeded);
+        }
+        context.IdempotencyKey = Guid.NewGuid();
+        Assert.Equal("mass_mention_rate_limited", (await service.CreateAsync(initial.Id, parent.User, input with
+            { Content = $"{input.Content} fourth", CardVersion = initial.Version + 3 }, "group-limit", ct)).ErrorCode);
+        Assert.Equal(initial.Version + 3, (await work.FindCardAsync(initial.Id, ct))!.Version);
+        Assert.Equal(3, (await service.ListAsync(initial.Id, parent.User, null, ct)).Value!.Items.Count);
+        Assert.Equal(3, (await notifications.ListCardNotificationsAsync(parent.Org, recipient, cancellationToken: ct)).Count);
+        Assert.Equal(6, (await reader.ReadAsync(parent.Org, initial.BoardId, 0, 50, ct)).Events.Count);
     }
     [Theory]
     [InlineData(false)]
