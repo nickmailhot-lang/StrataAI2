@@ -233,7 +233,27 @@ underlying history. A new session and freshly admitted continuation can page old
 sources. A managed HTTP scenario advances a controlled clock five years after
 66 real Card history mutations, verifies the old session and cursor are refused,
 then uses fresh authentication to read all 67 old/current events. This is Demo
-HTTP/clock evidence pending Linux CI execution, not a real five-year deployment
+HTTP/clock evidence passed in Linux CI for `2b49be4` (run 37188015571), not a real five-year deployment
 or a new configurable retention/erasure policy. Cross-PRD data-retention changes
 must preserve explicitly approved activity/audit rules rather than silently
 purging immutable sources.
+
+That revision's managed, PostgreSQL and web source jobs all passed; immutable
+image build and full release checks remain separate gates. The `13865bf` run
+37187388271 passed the exact-image unsafe-role/ledger step and activity step 37:
+complete tied cursor seek, binding refusal, persisted-key API restart recovery,
+immutable actor captions, historical/current Board post-wait revocation,
+issuing-session revocation and natural session expiry during a live Board gate
+wait. Its full container/native browser gate remains pending. This establishes
+the scoped activity fixture, not full PRD acceptance or actual Card movement.
+
+The MUI activity reader now treats 401/403/404 as a terminal denial for the
+current parent access generation. It discards rows and continuation, stops
+protected requests, hides retry and disables refresh/newest controls until a
+fresh Board access generation arrives. Previously resetting pagination on a
+denial could launch another read before the parent cleared its view. Keyboard
+focus moves to the available close action. Three component scenarios exercise
+each denial after a valid older-page continuation, requiring exactly one denial,
+no automatic retry, cleared protected rows and a cursor-free read only after
+fresh parent admission. This does not replace real post-wait revocation or
+native browser execution. PRD-15 remains open with approximately **45%** remaining.

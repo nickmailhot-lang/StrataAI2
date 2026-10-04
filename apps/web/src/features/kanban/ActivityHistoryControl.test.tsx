@@ -51,6 +51,29 @@ it('offers recoverable retry and newest history after an expired cursor response
   fireEvent.click(screen.getByRole('button', { name: 'Newest activity' }));
   await screen.findByText('No activity to review yet. Authorized changes will appear here.');
 });
+it.each([401, 403, 404])('stops protected reads after a %s denial and resumes only with fresh parent admission', async status => {
+  const first = page(Array.from({ length: 50 }, (_, index) => item(100 - index)), 'opaque');
+  vi.mocked(workRequest).mockImplementation(async path => {
+    if (path === '/me') return profile;
+    if (path.includes('?after=')) throw new WorkRequestError(status, null);
+    return first;
+  });
+  const p = props(); const view = render(wrap(p));
+  fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
+  await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(50));
+  fireEvent.click(screen.getByRole('button', { name: 'Older activity' }));
+  await screen.findByText('Activity is unavailable. Refresh the Board to check access.');
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Close activity' })).toHaveFocus());
+  expect(screen.queryByRole('listitem')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Retry activity page' })).toBeNull();
+  expect(screen.getByRole('button', { name: 'Refresh Card activity' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Newest activity' })).toBeDisabled();
+  expect(p.onDenied).toHaveBeenCalledTimes(1); expect(reads()).toHaveLength(2);
+  view.rerender(wrap({ ...p, refreshSequence: '2' }));
+  await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(50));
+  expect(reads()).toHaveLength(3); expect(reads().at(-1)?.[0]).toBe(`/cards/${id(3)}/activity`);
+  expect(p.onDenied).toHaveBeenCalledTimes(1);
+});
 it('excludes delayed replies from an old Board read generation', async () => {
   let release: (value: unknown) => void = () => {}; let calls = 0;
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : ++calls === 1 ? new Promise(resolve => { release = resolve; }) : page([]));

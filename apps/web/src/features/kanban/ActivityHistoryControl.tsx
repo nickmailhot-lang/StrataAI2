@@ -15,7 +15,7 @@ export function ActivityHistoryControl(props: Props) {
 function History(props: Props) {
   const [opened, setOpened] = useState(false); const [view, setView] = useState<View>();
   const [notice, setNotice] = useState<{ epoch: string; message: string }>(); const [busy, setBusy] = useState(false);
-  const [navigation, setNavigation] = useState({ refresh: props.refreshSequence, unavailable: props.unavailable, generation: 0, positions: [{}] as Position[] });
+  const [navigation, setNavigation] = useState({ refresh: props.refreshSequence, unavailable: props.unavailable, generation: 0, denied: false, positions: [{}] as Position[] });
   const [attempt, setAttempt] = useState(0);
   const positions = navigation.positions;
   const setPositions = (update: Position[] | ((previous: Position[]) => Position[])) => setNavigation(previous => ({
@@ -24,17 +24,18 @@ function History(props: Props) {
   const pending = useRef<AbortController | undefined>(undefined); const callbacks = useRef(props); callbacks.current = props;
   const primary = useRef<HTMLButtonElement>(null); const older = useRef<HTMLButtonElement>(null);
   const newer = useRef<HTMLButtonElement>(null); const newest = useRef<HTMLButtonElement>(null); const retry = useRef<HTMLButtonElement>(null);
+  const close = useRef<HTMLButtonElement>(null);
   const focusOwner = useRef<HTMLElement | null>(null); const restoreFocus = useRef(false);
   function ownFocus(owner: HTMLElement) { focusOwner.current = owner; restoreFocus.current = true; parkRecoveryFocus(owner); }
   const epoch = `${props.refreshSequence}/${navigation.generation}`;
   // A changed parent read/realtime generation discards both the previous page
   // and its continuation. Rendering hides it immediately, before effects run.
   if (navigation.refresh !== props.refreshSequence || navigation.unavailable !== props.unavailable) {
-    setNavigation({ refresh: props.refreshSequence, unavailable: props.unavailable, generation: navigation.generation + 1, positions: [{}] });
+    setNavigation({ refresh: props.refreshSequence, unavailable: props.unavailable, generation: navigation.generation + 1, denied: false, positions: [{}] });
     setView(undefined); setNotice(undefined); setBusy(false);
   }
   useEffect(() => {
-    if (!opened || props.unavailable) return;
+    if (!opened || props.unavailable || navigation.denied) return;
     const controller = new AbortController(); pending.current?.abort(); pending.current = controller;
     setBusy(true); setView(undefined); setNotice(undefined);
     const captured = `${props.refreshSequence}/${navigation.generation}`;
@@ -52,29 +53,33 @@ function History(props: Props) {
     }).catch((error: unknown) => {
       if (controller.signal.aborted || pending.current !== controller) return;
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
-        setView(undefined); setPositions([{}]); callbacks.current.onDenied(error);
+        setView(undefined); setBusy(false);
+        // Discard the continuation without scheduling another protected read.
+        // Only a fresh parent access generation may resume this viewer.
+        setNavigation(previous => ({ ...previous, positions: [{}], denied: true }));
+        callbacks.current.onDenied(error);
         setNotice({ epoch: captured, message: 'Activity is unavailable. Refresh the Board to check access.' });
       } else setNotice({ epoch: captured, message: error instanceof WorkRequestError && error.status === 400
         ? 'This history page expired. Return to newest activity.' : 'Activity could not be loaded. Retry this page or return to newest activity.' });
     }).finally(() => { if (pending.current === controller) { pending.current = undefined; setBusy(false); } });
     return () => { controller.abort(); if (pending.current === controller) pending.current = undefined; };
-  }, [opened, props.organizationId, props.boardId, props.kind, props.targetId, props.refreshSequence, props.unavailable, navigation.generation, positions, attempt]);
+  }, [opened, props.organizationId, props.boardId, props.kind, props.targetId, props.refreshSequence, props.unavailable, navigation.generation, navigation.denied, positions, attempt]);
   const admitted = !props.unavailable && view?.epoch === epoch ? view : undefined;
   const message = !props.unavailable && notice?.epoch === epoch ? notice.message : undefined;
   useEffect(() => {
     if (busy || pending.current || props.unavailable || !restoreFocus.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current)) return;
-    const target = !opened ? primary.current : message ? retry.current : admitted?.page.nextCursor ? older.current : positions.length > 1 ? newer.current : newest.current;
+    const target = navigation.denied ? close.current : !opened ? primary.current : message ? retry.current : admitted?.page.nextCursor ? older.current : positions.length > 1 ? newer.current : newest.current;
     if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = false; }
-  }, [busy, props.unavailable, opened, message, admitted, positions.length]);
+  }, [busy, props.unavailable, opened, message, admitted, positions.length, navigation.denied]);
   const name = props.kind === 'BOARD' ? 'Board' : 'Card';
   return <Stack spacing={1} sx={{ minWidth: 0 }} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current)) restoreFocus.current = false; }}>
-    <Button ref={primary} disabled={props.unavailable || busy} onClick={event => { ownFocus(event.currentTarget); if (opened) { setPositions([{}]); setAttempt(value => value + 1); } else setOpened(true); }}>
+    <Button ref={primary} disabled={props.unavailable || busy || navigation.denied} onClick={event => { ownFocus(event.currentTarget); if (opened) { setPositions([{}]); setAttempt(value => value + 1); } else setOpened(true); }}>
       {opened ? `Refresh ${name} activity` : `Review ${name} activity`}
     </Button>
     {opened && <Box component="section" aria-label={`${name} activity`} aria-busy={busy}>
       <Typography role="status" aria-live="polite">{props.unavailable ? 'Checking activity access…' : busy ? 'Loading activity…' : admitted ? `${admitted.page.items.length} activity events on this page.` : ''}</Typography>
       {message && <Alert severity="warning">{message}</Alert>}
-      {message && <Button ref={retry} disabled={busy} onClick={event => { ownFocus(event.currentTarget); setAttempt(value => value + 1); }}>Retry activity page</Button>}
+      {message && !navigation.denied && <Button ref={retry} disabled={busy} onClick={event => { ownFocus(event.currentTarget); setAttempt(value => value + 1); }}>Retry activity page</Button>}
       {admitted && <>
         {admitted.page.items.length === 0 && <Typography>No activity to review yet. Authorized changes will appear here.</Typography>}
         <Box component="ol" sx={{ pl: 3, m: 0 }}>
@@ -92,8 +97,8 @@ function History(props: Props) {
         setPositions(previous => [...previous, { cursor: admitted.page.nextCursor!, before: admitted.page.items.at(-1) }]);
       }}>Older activity</Button>
       <Button ref={newer} disabled={busy || props.unavailable || positions.length < 2} onClick={event => { ownFocus(event.currentTarget); setPositions(previous => previous.slice(0, -1)); }}>Newer activity</Button>
-      <Button ref={newest} disabled={busy || props.unavailable} onClick={event => { ownFocus(event.currentTarget); setPositions([{}]); setAttempt(value => value + 1); }}>Newest activity</Button>
-      <Button onClick={event => { ownFocus(event.currentTarget); pending.current?.abort(); setOpened(false); setView(undefined); setNotice(undefined); setPositions([{}]); setBusy(false); }}>Close activity</Button>
+      <Button ref={newest} disabled={busy || props.unavailable || navigation.denied} onClick={event => { ownFocus(event.currentTarget); setPositions([{}]); setAttempt(value => value + 1); }}>Newest activity</Button>
+      <Button ref={close} onClick={event => { ownFocus(event.currentTarget); pending.current?.abort(); setOpened(false); setView(undefined); setNotice(undefined); setPositions([{}]); setBusy(false); }}>Close activity</Button>
     </Box>}
   </Stack>;
 }
