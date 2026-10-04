@@ -78,11 +78,18 @@ admin "UPDATE work_events SET ready_at=clock_timestamp() WHERE tenant_id='$organ
 sync "$public_route" visitor | jq -e '(.events|length)==3 and all(.events[];.actorId==null and .metadata=={})' >/dev/null
 # A damaged event referring to another private Board's entity is coarsened too;
 # Organization scope by itself never authorizes that entity reference.
-admin "UPDATE work_events SET entity_id='$card' WHERE tenant_id='$organization' AND board_id='$public_board' AND sequence=3;" >/dev/null
+# Deliberately damaged historical data is a privileged disposable fixture.
+# Runtime activity sources cannot be rewritten; bypass only its source guard
+# inside this one administrative transaction, restoring it before commit.
+admin "BEGIN; ALTER TABLE work_events DISABLE TRIGGER work_event_activity_immutable;
+ UPDATE work_events SET entity_id='$card' WHERE tenant_id='$organization' AND board_id='$public_board' AND sequence=3;
+ ALTER TABLE work_events ENABLE TRIGGER work_event_activity_immutable; COMMIT;" >/dev/null
 sync "$public_route?since=2" visitor > "$scratch/wrong-board.json"
 jq -e --arg board "$public_board" '.events[0].entityId==$board and .events[0].entityType=="Board" and .events[0].eventType=="BOARD_INVALIDATED"' "$scratch/wrong-board.json" >/dev/null
 scripts/ci/assert-file-excludes.sh "$card" "$scratch/wrong-board.json"
-admin "UPDATE work_events SET entity_id='$public_card' WHERE tenant_id='$organization' AND board_id='$public_board' AND sequence=3;" >/dev/null
+admin "BEGIN; ALTER TABLE work_events DISABLE TRIGGER work_event_activity_immutable;
+ UPDATE work_events SET entity_id='$public_card' WHERE tenant_id='$organization' AND board_id='$public_board' AND sequence=3;
+ ALTER TABLE work_events ENABLE TRIGGER work_event_activity_immutable; COMMIT;" >/dev/null
 request POST "/cards/$public_card/archive" '{"version":1}' >/dev/null
 admin "UPDATE work_events SET ready_at=clock_timestamp() WHERE tenant_id='$organization' AND board_id='$public_board';" >/dev/null
 sync "$public_route?since=2" visitor > "$scratch/hidden.json"

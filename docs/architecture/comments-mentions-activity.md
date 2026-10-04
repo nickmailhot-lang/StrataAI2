@@ -42,9 +42,9 @@ bodies into public event or notification payloads.
 | COMMENT-FR-005 @username | Bounded username parsing, current handle account UI, protected teammate selection, recipient locks, immutable history and atomic username event/inbox publication implemented | Complete native selection/receipt/current-recipient lifecycle, Production lock waits and capacity evidence |
 | COMMENT-FR-006 @card/@board | Confirmed full group producer, current actor policy, durable quota and explicit MUI scopes implemented; new execution pending | Complete exact-image/native group, lifecycle/concurrency and capacity/performance evidence |
 | COMMENT-FR-007 mention notifications | Atomic username/group event/in-app inbox producer, exact-source batch storage and durable group quota implemented | Complete actual native/Production group lifecycle and performance evidence |
-| COMMENT-FR-008 immutable activity | Existing Work events/audit; no complete activity projection | Every significant domain event, immutable interpreter/projection, complete lifecycle and replay coverage |
-| COMMENT-FR-009 event fields | Existing canonical Work event envelope | Current-authorized paginated activity DTO/projection with required safe metadata and complete event coverage |
-| COMMENT-FR-010 historical actor deactivation | Domain retains stable author ID | Historical actor interpretation after deactivation without granting current access or replacing past attribution with mutable profile data |
+| COMMENT-FR-008 immutable activity | Work journal source fields protected from rewrites; no complete activity projection | Every significant domain event, immutable interpreter/projection, complete lifecycle and replay coverage |
+| COMMENT-FR-009 event fields | Canonical Work event envelope with body-free metadata and saved actor label | Current-authorized paginated activity DTO/projection with required safe metadata and complete event coverage |
+| COMMENT-FR-010 historical actor deactivation | Migration captures immutable event-time caption and stable actor ID; new execution pending | Actual populated upgrade/storage and complete authorized native interpretation after deactivation |
 | COMMENT-FR-011 paginated Board/Card activity | Unimplemented | Bounded indexed cursor reads, current scope/parents, move/archive/deletion and mid-read revocation, MUI paging |
 
 All AC-COMMENT-15-01/02/03 and TC-01 through TC-13 remain unproven at their full
@@ -1309,3 +1309,46 @@ wait are real. Syntax and diff checks pass locally; actual execution is pending.
 This covers eligibility changed before initial roster capture, distinct from
 the controlled final-roster-change refusal test. No closure or performance
 acceptance is inferred; estimated remaining PRD-15 work stays **50%**.
+
+Run 37179075875 for 457e73b now passes web, actual PostgreSQL integration,
+managed tests (619 Domain and 290 API, zero failures), source gate and immutable
+image builds. Security and release-image integration remain live. Run
+37178258422 for 5627cad has passed the mandatory mention command fixture,
+including its actual 26-participant complete group fanout, overlap/self handling,
+source quota, atomic late quota/inbox refusal, exact recovery and repeat rate
+refusal. That older commit does not contain the later native group, natural
+session expiry or six group-recipient wait scenarios; those remain pending.
+
+Migration 062 adds the Production activity storage foundation to the existing
+Work journal. New sources capture a database-selected actor caption from that
+same Organization's membership; caller labels are overridden. Invalid captions
+and nonparticipants use the stable-ID fallback. Existing sources receive a
+stable-ID label, since their event-time names cannot be reconstructed from a
+mutable current profile. A source-field trigger refuses changing identity,
+type/entity/version, metadata, timestamp, correlation or actor attribution;
+Worker readiness remains mutable delivery state. Runtime grants still prohibit
+API historical updates/deletes and Worker caption reads or source rewrites.
+Body-free metadata and forced tenant RLS remain unchanged. Board/time/ID and
+Card/time/ID seek indexes prepare bounded protected pagination.
+
+The readiness ledger now requires all 62 migrations. Repeat/forward upgrade
+fixtures include a populated older journal, stable historical fallback, current
+caption capture after upgrade and preserved attribution across another profile
+change. Synthetic serialization/failure/unrecorded fixtures move to 063/064/065.
+The new mandatory PostgreSQL fixture requires captured captions despite forged
+inputs, immutable source fields, readiness-only updates, rename/deactivation
+history, foreign-account caption refusal and cross-tenant/missing-tenant denial.
+Runtime role checks require no callable caption/immutability trigger capability
+and no Worker caption reads. The existing damaged-source sync test uses an
+explicit disposable privileged transaction to temporarily bypass only this
+new guard, restore it before commit, and retain its adversarial read-coarsening
+assertions; normal runtime constraints and privileges remain enforced.
+
+Warning-as-error .NET compilation passes with zero warnings/errors, and changed
+shell scripts pass syntax checks. New migrated PostgreSQL execution is pending.
+This storage foundation does not provide a feed endpoint, caption admission,
+Demo projection parity, event interpretation or MUI activity views. All current
+Board/Card rights, moves/archive/deletion, private watch/reminder scopes, atomic
+read waits, pagination, historical actor display, retention and full capacity
+evidence still need their own complete implementation and tests. PRD-15 remains
+open at **50% estimated remaining work**; no acceptance criterion is closed.
