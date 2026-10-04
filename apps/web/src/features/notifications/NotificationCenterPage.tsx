@@ -49,7 +49,11 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
         const user = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(user)) throw new Error('Invalid current profile');
         const data = await workRequest<unknown>(`${path}${after ? `?after=${encodeURIComponent(after)}` : ''}`, { signal });
-        return { user, page: parseInbox(data, organizationId, user.id, after) };
+        const page = parseInbox(data, organizationId, user.id, after);
+        const current = await workRequest<unknown>('/me', { signal });
+        if (!isNotificationProfile(current)) throw new Error('Invalid current profile');
+        if (current.id.toLowerCase() !== user.id.toLowerCase()) throw new ChangedNotificationIdentity();
+        return { user: current, page };
       }, controller.signal);
       if (!mounted.current || ticket !== epoch.current || controller.signal.aborted) return;
       if (currentProfile.current && currentProfile.current.id.toLowerCase() !== result.user.id.toLowerCase()) {
@@ -59,7 +63,8 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
       setSelected(previous => previous.filter(id => result.page.items.some(n => n.id === id && n.readAt === null)));
     } catch (reason) {
       if (!mounted.current || ticket !== epoch.current) return;
-      if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Notifications are unavailable. Check access again or sign in.');
+      if (reason instanceof ChangedNotificationIdentity) retire('Your account changed. Check notifications again.');
+      else if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Notifications are unavailable. Check access again or sign in.');
       else { setPage(undefined); setNotice('Unable to load current notifications. Try again.'); }
     } finally {
       if (mounted.current && ticket === epoch.current) { pending.current = undefined; setBusy(false); }
