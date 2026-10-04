@@ -807,3 +807,12 @@ terminal access refusal. It offers keyboard-focused fresh Card admission without
 retaining a private selection. Lost mutation replies still retain exact retry
 intent; revision/validation refusals preserve explicit fresh review. All 13 cover
 component tests pass, including three post-write admission/refusal cases.
+
+The moved published-cover persistence contract now observes the exact restricted
+command blocked by a real canonical Board row lock using the blocker backend PID.
+It independently withdraws original and destination Board membership during that
+wait, requires refusal without receipt disclosure or Card/File/command effects,
+then restores membership and recovers the unchanged original acknowledgment.
+Membership and routing setup remain explicit trusted fixtures; published-image
+metadata and the command use genuine restricted adapters. Linux execution is
+pending; compilation alone does not prove this race.

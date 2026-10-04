@@ -184,6 +184,70 @@ internal static class CardCoverCommandContract
         }
         Require((await service.SetAsync(card, actor, input, "cover-moved-restored", ct)).Value == selected.Value && await Snapshot() == movedState,
             "Restored moved cover receipt changed its original acknowledgment.");
+        // Observe this exact runtime command blocked by a real Board row lock,
+        // then withdraw membership without changing the Card or receipt.
+        // Both original and destination permission must be refreshed after wait.
+        foreach (var withdrawnBoard in new[] { route.BoardId, movedBoard })
+        {
+            await using var gate = new NpgsqlConnection(admin.ConnectionString);
+            await gate.OpenAsync(ct);
+            await using var gateTransaction = await gate.BeginTransactionAsync(ct);
+            await using (var rowLock = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@tenant AND id=@board FOR UPDATE;", gate, gateTransaction))
+            {
+                rowLock.Parameters.AddWithValue("tenant", tenant);
+                rowLock.Parameters.AddWithValue("board", new[] { route.BoardId, movedBoard }.Order().First());
+                Require(await rowLock.ExecuteScalarAsync(ct) is Guid, "Moved cover retry gate did not lock its owning Board.");
+            }
+            var pendingRetry = service.SetAsync(card, actor, input, "cover-moved-wait-withdrawal", ct);
+            var released = false; var membershipWithdrawn = false;
+            try
+            {
+                var observed = false; var deadline = DateTimeOffset.UtcNow.AddSeconds(15);
+                while (!pendingRetry.IsCompleted && DateTimeOffset.UtcNow < deadline)
+                {
+                    await using var waiting = new NpgsqlCommand("""
+                        SELECT EXISTS(SELECT 1 FROM pg_stat_activity
+                         WHERE @blocker=ANY(pg_blocking_pids(pid)) AND wait_event_type='Lock');
+                        """, admin);
+                    waiting.Parameters.AddWithValue("blocker", gate.ProcessID);
+                    if ((bool)(await waiting.ExecuteScalarAsync(ct))!) { observed = true; break; }
+                    await Task.Delay(50, ct);
+                }
+                Require(observed && !pendingRetry.IsCompleted, "Moved cover retry did not reach the observed database lock wait.");
+                await using (var withdraw = new NpgsqlCommand("UPDATE board_members SET status='REMOVED' WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor AND status='ACTIVE';", admin))
+                {
+                    withdraw.Parameters.AddWithValue("tenant", tenant); withdraw.Parameters.AddWithValue("board", withdrawnBoard);
+                    withdraw.Parameters.AddWithValue("actor", actor);
+                    Require(await withdraw.ExecuteNonQueryAsync(ct) == 1, "Moved cover wait fixture did not withdraw exactly one current Board membership.");
+                    membershipWithdrawn = true;
+                }
+                await gateTransaction.CommitAsync(ct); released = true;
+                var refused = await pendingRetry.WaitAsync(TimeSpan.FromSeconds(30), ct);
+                Require(refused.ErrorCode == "card_not_found" && await Snapshot() == movedState,
+                    "Moved cover receipt disclosed its acknowledgment or retained effects after post-wait membership withdrawal.");
+            }
+            finally
+            {
+                try
+                {
+                    if (!released) await gateTransaction.RollbackAsync(CancellationToken.None);
+                    await pendingRetry.WaitAsync(TimeSpan.FromSeconds(30), CancellationToken.None);
+                }
+                finally
+                {
+                    if (membershipWithdrawn)
+                    {
+                        await using var restoreMembership = new NpgsqlCommand("UPDATE board_members SET status='ACTIVE' WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor AND status='REMOVED';", admin);
+                        restoreMembership.Parameters.AddWithValue("tenant", tenant); restoreMembership.Parameters.AddWithValue("board", withdrawnBoard);
+                        restoreMembership.Parameters.AddWithValue("actor", actor);
+                        Require(await restoreMembership.ExecuteNonQueryAsync(CancellationToken.None) == 1,
+                            "Moved cover wait fixture did not restore its original membership.");
+                    }
+                }
+            }
+            Require((await service.SetAsync(card, actor, input, "cover-moved-wait-restored", ct)).Value == selected.Value && await Snapshot() == movedState,
+                "Restored post-wait moved cover recovery changed its original acknowledgment or effects.");
+        }
         await using (var restore = new NpgsqlCommand("UPDATE cards SET board_id=@board,list_id=@list WHERE tenant_id=@tenant AND id=@card;", admin))
         {
             restore.Parameters.AddWithValue("board", route.BoardId); restore.Parameters.AddWithValue("list", route.ListId);
