@@ -1,8 +1,10 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { NotificationCenterPage } from './NotificationCenterPage';
+import { watchNotifications } from './notificationLive';
 import { configureActivityTelemetry, flushActivityTelemetry } from '../kanban/activityTelemetry';
 vi.mock('../auth/identityLive', () => ({ watchIdentity: vi.fn(() => vi.fn()) }));
+vi.mock('./notificationLive', () => ({ watchNotifications: vi.fn(() => vi.fn()) }));
 const org = '11111111-1111-1111-1111-111111111111', recipient = '22222222-2222-2222-2222-222222222222';
 const board = '44444444-4444-4444-4444-444444444444', card = '55555555-5555-5555-5555-555555555555';
 const id = (n: number) => `66666666-6666-6666-6666-${String(n).padStart(12, '0')}`;
@@ -16,6 +18,23 @@ function mount() { return render(<MemoryRouter initialEntries={[`/app/${org}/not
   <Route path="/app/:organizationId/notifications" element={<NotificationCenterPage />} />
 </Routes></MemoryRouter>); }
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.useRealTimers(); });
+
+it('retains live invalidation received during a pending canonical inbox read', async () => {
+  let reads = 0; let release: (value: Response) => void = () => {};
+  const held = new Promise<Response>(resolve => { release = resolve; });
+  const fetch = vi.fn(async (path: string) => {
+    if (path === '/me') return response(profile);
+    reads++;
+    return reads === 2 ? held : response(data(reads >= 3 ? [item(2), item(1)] : [item()]));
+  });
+  vi.stubGlobal('fetch', fetch); mount(); await screen.findByText('1 unread on this page.');
+  const invalidate = vi.mocked(watchNotifications).mock.calls.at(-1)![0].invalidate;
+  act(() => invalidate()); await waitFor(() => expect(reads).toBe(2));
+  act(() => invalidate());
+  await act(async () => { release(response(data())); });
+  await screen.findByText('2 unread on this page.');
+  expect(reads).toBe(3);
+});
 
 it.each([['CARD_MOVED', 'Card moved'], ['LABEL_REMOVED', 'Label removed']])('renders %s activity with the existing accessible read and Card-link controls', async (type, label) => {
   const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(data([{ ...item(), type }]))).mockResolvedValueOnce(response(profile));

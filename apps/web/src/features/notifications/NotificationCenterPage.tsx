@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { watchIdentity } from '../auth/identityLive';
+import { watchNotifications } from './notificationLive';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { isNotificationProfile, notificationLabels, notificationUuid, parseInbox, validateReadAcknowledgment,
   type InboxPage, type NotificationProfile } from './notificationInbox';
@@ -24,6 +25,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
   const currentProfile = useRef<NotificationProfile | undefined>(undefined); const intent = useRef<ReadIntent | undefined>(undefined);
   const currentCursor = useRef<string | undefined>(undefined); const refresh = useRef<HTMLButtonElement>(null);
   const retry = useRef<HTMLButtonElement>(null);
+  const invalidated = useRef(false);
   const list = useRef<HTMLDivElement>(null); const focusTarget = useRef<string | undefined>(undefined);
   const path = `/organizations/${encodeURIComponent(organizationId)}/notifications`;
   const rememberFocus = () => {
@@ -82,14 +84,31 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     const interval = setInterval(check, 10_000); window.addEventListener('focus', check); window.addEventListener('online', reconnect); document.addEventListener('visibilitychange', check);
     return () => {
       mounted.current = false; ++epoch.current; pending.current?.abort(); pending.current = undefined; intent.current = undefined;
+      invalidated.current = false;
       clearInterval(interval); window.removeEventListener('focus', check); window.removeEventListener('online', reconnect); document.removeEventListener('visibilitychange', check);
     };
   }, [load]);
   const subject = profile?.id;
+  const invalidate = useCallback(() => {
+    if (!mounted.current) return;
+    if (pending.current) { invalidated.current = true; return; }
+    void load(currentCursor.current);
+  }, [load]);
+  useEffect(() => {
+    if (!busy && invalidated.current && !pending.current) {
+      invalidated.current = false;
+      void load(currentCursor.current);
+    }
+  }, [busy, load]);
   useEffect(() => {
     if (!subject) return;
-    return watchIdentity({ subject, isProfile: isNotificationProfile, invalidate: () => { void load(currentCursor.current); } });
-  }, [subject, load]);
+    return watchIdentity({ subject, isProfile: isNotificationProfile, invalidate });
+  }, [subject, invalidate]);
+  useEffect(() => {
+    if (!subject) return;
+    return watchNotifications({ organizationId, recipientId: subject,
+      invalidate });
+  }, [organizationId, subject, invalidate]);
   useEffect(() => {
     if (busy || !focusTarget.current) return;
     if (document.activeElement !== document.body && document.activeElement !== refresh.current
