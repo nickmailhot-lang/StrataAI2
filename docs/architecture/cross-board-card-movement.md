@@ -77,9 +77,12 @@ failure and unrecorded fixtures are numbered 067–069.
   readers and edits are refused under current private destination admission.
   Their new execution is pending. File downloads, previews and covers still need
   explicit moved-entity coverage.
-- Update notification admission/projection: the existing inbox joins current Card
-  Board to historical source Board, so moved notifications remain hidden until
-  a current-authorized projection is implemented.
+- The inbox projection now preserves the historical source Board and binds its
+  link to the current Card Board. Both contexts must be currently visible before
+  pagination and are gated/rechecked before disclosure or read acknowledgement.
+  New movement/read-receipt execution is pending. The release fixture also
+  observes a live canonical Board gate wait, withdraws destination membership,
+  and requires refusal without disclosure or command effects.
 - The MUI cross-Board selector now loads authorized destination Boards and
   checks an active destination List, binds account identity and original source,
   and keeps receipt recovery after canonical source removal. Unit and integrated
@@ -123,3 +126,20 @@ The mandatory exact-image command fixture also submits opposing A-to-B and
 B-to-A moves simultaneously on two distinct Cards. It requires both commands to
 commit with the correct routes/revisions, four Board events and two audits. This
 exercises canonical gate ordering with actual PostgreSQL; execution is pending.
+
+
+## Historical inbox projection contract
+
+Stored notification envelopes remain unchanged. `boardId` continues to denote
+the historical source. Only a moved item adds `currentBoardId`; its `entityLink`
+uses that current Board. Same-Board responses preserve their previous shape.
+The MUI parser validates the current Board GUID and binds the exact same-origin
+Card link to it, preserving the historical source separately. A source-only or
+destination-only reader cannot disclose a moved historical item. SQL applies both
+Board visibility predicates before its 51-row seek window. The command gathers
+all historical/current gates in canonical order and verifies the same current
+routing after waits; a movement during planning is refused rather than admitted
+under an unheld Board. Read and exact read-receipt retries use the same rule.
+Organization, account, email-policy, Card/List lifecycle, recipient, private
+source and Owner Portal boundaries remain enforced. New API, parser and release
+fixtures cover moved links, hidden ineligible recipients and source revocation.

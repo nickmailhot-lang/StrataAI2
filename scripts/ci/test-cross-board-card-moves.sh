@@ -97,9 +97,22 @@ before=$(state)
 test "$(request member POST "/cards/$card/move" "$body" "$key")" = 200
 test "$(jq -Sc . "$scratch/response.json")" = "$(jq -Sc . "$scratch/ack.json")"
 test "$(state)" = "$before"
+# Historical source attribution is preserved while the admitted link follows
+# the current Card. Both contexts remain mandatory for list and read receipts.
+member_notice=$(admin "SELECT id FROM card_assignment_notifications WHERE tenant_id='$org' AND card_id='$card' AND recipient_id='$member' AND notification_type='CARD_ASSIGNED';")
+[[ "$member_notice" =~ ^[0-9a-f-]{36}$ ]]
+get member "/organizations/$org/notifications" | jq -e --arg id "$member_notice" --arg source "$source" --arg current "$destination" --arg link "/app/$org/boards/$destination/cards/$card" \
+ '[.items[]|select(.id==$id)] as $rows | ($rows|length)==1 and $rows[0].boardId==$source and $rows[0].currentBoardId==$current and $rows[0].entityLink==$link' >/dev/null
+get other "/organizations/$org/notifications" | jq -e '(.items|length)==0' >/dev/null
+bash scripts/ci/test-moved-notification-admission.sh "$org" "$source" "$destination" "$member" "$scratch/member.cookies" "$scratch/owner.cookies"
+read_key=$(uuid)
+test "$(request member POST "/organizations/$org/notifications/$member_notice/read" '{}' "$read_key")" = 200
 test "$(request owner DELETE "/boards/$source/members/$member" '{}')" = 204
 before=$(state)
 test "$(request member POST "/cards/$card/move" "$body" "$key")" = 404
+test "$(state)" = "$before"
+get member "/organizations/$org/notifications" | jq -e --arg source "$source" 'all(.items[];.boardId!=$source)' >/dev/null
+test "$(request member POST "/organizations/$org/notifications/$member_notice/read" '{}' "$read_key")" = 404
 test "$(state)" = "$before"
 get member "/boards/$destination" | jq -e '.access.canEdit==true' >/dev/null
 get owner "/cards/$card/members" | jq -e --arg member "$member" --arg destination "$destination" '.boardId==$destination and .cardVersion==6 and (.items|length)==1 and .items[0].userId==$member' >/dev/null

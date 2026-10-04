@@ -6,6 +6,9 @@ public sealed record CardNotification(Guid Id, Guid OrganizationId, Guid BoardId
     Guid CardId, Guid EventId, Guid RecipientId, Guid ActorId, long CardVersion,
     DateTimeOffset CreatedAt, DateTimeOffset? ReadAt)
 {
+    // Read projection only; never persisted into the historical envelope.
+    [System.Text.Json.Serialization.JsonIgnore]
+    public Guid? CurrentBoardId { get; init; }
     public const string Type = "CARD_ASSIGNED";
     public string NotificationType { get; init; } = Type;
 

@@ -5,7 +5,7 @@ const id = (n: number) => `66666666-6666-6666-6666-${String(n).padStart(12, '0')
 const item = (n = 1, createdAt = '2026-10-02T10:00:00.000001Z') => ({ id: id(n), actorId: actor, recipientId: recipient,
   boardId: board, entityId: card, type: 'CARD_ASSIGNED', entityType: 'Card', createdAt, readAt: null as string | null,
   entityLink: `/app/${org}/boards/${board}/cards/${card}` });
-const page = (items = [item()], nextCursor: string | null = null) => ({ organizationId: org, items, nextCursor });
+const page = (items: unknown[] = [item()], nextCursor: string | null = null) => ({ organizationId: org, items, nextCursor });
 
 it.each(Object.keys(notificationLabels))('accepts configured notification %s with its canonical Card link', type => {
   expect(parseInbox(page([{ ...item(), type }]), org, recipient).items[0].type).toBe(type);
@@ -55,4 +55,14 @@ it('validates active profile formatting settings before displaying private dates
   const profile = { id: recipient, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
   expect(isNotificationProfile(profile)).toBe(true);
   for (const change of [{ timezone: 'unknown' }, { status: 'DEACTIVATED' }, { version: 0 }, { locale: '?' }]) expect(isNotificationProfile({ ...profile, ...change })).toBe(false);
+});
+
+it('preserves historical source scope while validating a moved Card link against its current Board', () => {
+  const destination = '77777777-7777-7777-7777-777777777777';
+  const moved = { ...item(), currentBoardId: destination, entityLink: `/app/${org}/boards/${destination}/cards/${card}` };
+  const parsed = parseInbox(page([moved]), org, recipient).items[0];
+  expect(parsed.boardId).toBe(board); expect(parsed.currentBoardId).toBe(destination); expect(parsed.entityLink).toBe(moved.entityLink);
+  expect(() => parseInbox(page([{ ...moved, entityLink: item().entityLink }]), org, recipient)).toThrow();
+  expect(() => parseInbox(page([{ ...item(), currentBoardId: null }]), org, recipient)).toThrow();
+  expect(() => parseInbox(page([{ ...item(), currentBoardId: '../private' }]), org, recipient)).toThrow();
 });

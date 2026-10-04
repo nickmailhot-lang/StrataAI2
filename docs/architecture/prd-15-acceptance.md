@@ -75,8 +75,9 @@ within the same Organization, with original-source receipt admission and both
 Board stream events. Revision `73812de` passed Linux managed/API and PostgreSQL
 checks, including real HTTP movement, label/assignment policy and personal
 Reminder owner checks. Exact-image release and native movement execution remain
-required. Attachments, comments, checklist and notification projection still need
-explicit moved-entity consumer coverage before complete acceptance.
+required. New Checklist, URL attachment, comment, Watch and historical inbox movement
+cases now exist; their execution, file/cover consumers and complete native
+acceptance remain required.
 
 `BoardScreen` now falls back to an independently admitted archived detail reader
 when a Card is absent from the active canvas. It supports archived Cards and

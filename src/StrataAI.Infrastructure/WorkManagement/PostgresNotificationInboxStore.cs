@@ -9,19 +9,23 @@ internal sealed partial class PostgresWorkNotificationStore
     // Eligibility precedes ordering/limit; departed private Board notifications
     // never consume the bounded visible window or expose a pagination cursor.
     private const string VisibleNotifications = """
-        SELECT n.id,n.tenant_id,n.board_id,n.card_id,n.event_id,n.recipient_id,n.actor_id,n.card_version,n.created_at,n.read_at,n.notification_type
+        SELECT n.id,n.tenant_id,n.board_id,n.card_id,n.event_id,n.recipient_id,n.actor_id,n.card_version,n.created_at,n.read_at,n.notification_type,c.board_id
         FROM card_assignment_notifications n
         JOIN organizations o ON o.id=n.tenant_id
         JOIN organization_members m ON m.tenant_id=n.tenant_id AND m.user_id=n.recipient_id
         JOIN users u ON u.id=n.recipient_id
         JOIN boards b ON b.tenant_id=n.tenant_id AND b.id=n.board_id
-        JOIN cards c ON c.tenant_id=n.tenant_id AND c.board_id=n.board_id AND c.id=n.card_id
+        JOIN cards c ON c.tenant_id=n.tenant_id AND c.id=n.card_id
+        JOIN boards current_board ON current_board.tenant_id=c.tenant_id AND current_board.id=c.board_id
         JOIN board_lists l ON l.tenant_id=c.tenant_id AND l.board_id=c.board_id AND l.id=c.list_id
         WHERE n.tenant_id=@tenant AND n.recipient_id=@recipient AND o.status IN ('ACTIVE','ARCHIVED')
           AND m.status='ACTIVE' AND u.status='ACTIVE' AND (NOT @verified OR u.email_verified)
-          AND b.lifecycle_state='ACTIVE' AND c.lifecycle_state='ACTIVE' AND l.lifecycle_state='ACTIVE'
+          AND b.lifecycle_state='ACTIVE' AND current_board.lifecycle_state='ACTIVE' AND c.lifecycle_state='ACTIVE' AND l.lifecycle_state='ACTIVE'
           AND (m.role IN ('OWNER','ADMIN') OR b.visibility IN ('PUBLIC','ORGANIZATION') OR EXISTS(
             SELECT 1 FROM board_members bm WHERE bm.tenant_id=n.tenant_id AND bm.board_id=n.board_id
+              AND bm.user_id=n.recipient_id AND bm.status='ACTIVE'))
+          AND (m.role IN ('OWNER','ADMIN') OR current_board.visibility IN ('PUBLIC','ORGANIZATION') OR EXISTS(
+            SELECT 1 FROM board_members bm WHERE bm.tenant_id=n.tenant_id AND bm.board_id=c.board_id
               AND bm.user_id=n.recipient_id AND bm.status='ACTIVE'))
         """;
 
@@ -57,7 +61,7 @@ internal sealed partial class PostgresWorkNotificationStore
             result.Add(new(reader.GetGuid(0), reader.GetGuid(1), reader.GetGuid(2), reader.GetGuid(3),
                 reader.GetGuid(4), reader.GetGuid(5), reader.GetGuid(6), reader.GetInt64(7),
                 reader.GetFieldValue<DateTimeOffset>(8), reader.IsDBNull(9) ? null : reader.GetFieldValue<DateTimeOffset>(9))
-                { NotificationType = reader.GetString(10) });
+                { NotificationType = reader.GetString(10), CurrentBoardId = reader.GetGuid(11) });
         return result;
     }
 

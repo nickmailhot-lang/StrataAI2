@@ -372,3 +372,15 @@ current destination admission. Former source members retain source Board access
 but cannot read/edit moved private Card children. Local full managed compilation
 and shell syntax pass; new Linux execution is required. No percentage reduction
 or issue closure is inferred from compilation alone.
+
+
+PRD-08/15/17 historical inbox continuation: stored source Board/event envelopes
+remain immutable while a moved notification adds currentBoardId and links to the
+Card's current Board. Current access to both source and destination is filtered
+before pagination and rechecked under all canonical gates for list/read/receipt
+admission. Same-Board response shape remains unchanged. New HTTP, MUI parser and
+mandatory release cases cover moved links, hidden ineligible recipients, revoked
+read receipts and destination revocation during an observed database gate wait.
+Local managed compilation, 49 notification tests, typecheck/lint/build and shell
+syntax pass; new Linux execution remains required. PRD-08/15 remain open with
+approximately 40% estimated remaining work.

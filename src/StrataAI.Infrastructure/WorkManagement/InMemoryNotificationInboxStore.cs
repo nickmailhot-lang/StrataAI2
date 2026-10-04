@@ -33,9 +33,12 @@ internal sealed class InMemoryNotificationInboxStore(InMemoryWorkNotificationSto
             var view = await boards.GetSyncScopeAsync(item.BoardId, recipient, ct);
             var card = await work.FindCardAsync(item.CardId, ct);
             if (view.Value is not { Access.CanView: true, Board.LifecycleState: BoardLifecycleState.Active } || view.Value.Board.OrganizationId != org ||
-                card is not { LifecycleState: WorkItemLifecycleState.Active } || card.OrganizationId != org || card.BoardId != item.BoardId) continue;
+                card is not { LifecycleState: WorkItemLifecycleState.Active } || card.OrganizationId != org) continue;
+            var destination = await boards.GetSyncScopeAsync(card.BoardId, recipient, ct);
+            if (destination.Value is not { Access.CanView: true, Board.LifecycleState: BoardLifecycleState.Active }
+                || destination.Value.Board.OrganizationId != org) continue;
             var list = await work.FindListAsync(card.ListId, ct);
-            if (list is { LifecycleState: WorkItemLifecycleState.Active } && list.OrganizationId == org && list.BoardId == item.BoardId) result.Add(item);
+            if (list is { LifecycleState: WorkItemLifecycleState.Active } && list.OrganizationId == org && list.BoardId == card.BoardId) result.Add(item with { CurrentBoardId = card.BoardId });
         }
         return result;
     }

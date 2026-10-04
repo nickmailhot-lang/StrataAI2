@@ -11,7 +11,7 @@ export type NotificationType = keyof typeof notificationLabels;
 function notificationType(value: unknown): value is NotificationType {
   return typeof value === 'string' && Object.hasOwn(notificationLabels, value);
 }
-export type InboxItem = { id: string; type: NotificationType; actorId: string; recipientId: string; boardId: string; entityId: string; entityLink: string;
+export type InboxItem = { id: string; type: NotificationType; actorId: string; recipientId: string; boardId: string; currentBoardId?: string; entityId: string; entityLink: string;
   createdAt: string; createdTicks: bigint; readAt: string | null };
 export type InboxPage = { items: InboxItem[]; nextCursor: string | null };
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -53,12 +53,15 @@ export function parseInbox(value: unknown, organizationId: string, recipientId: 
       n.recipientId.toLowerCase() !== recipientId.toLowerCase() ||
       n.actorId.toLowerCase() === recipientId.toLowerCase() && n.type !== 'REMINDER_FIRED' ||
       !notificationType(n.type) || n.entityType !== 'Card' || !notificationUuid(n.entityId) || !notificationUuid(n.boardId)) throw new Error('Invalid notification');
+    const currentBoard = n.currentBoardId === undefined ? n.boardId : n.currentBoardId;
+    if (!notificationUuid(currentBoard)) throw new Error('Invalid current notification scope');
     const id = n.id.toLowerCase(); const created = instant(n.createdAt);
     const read = n.readAt === null ? null : instant(n.readAt);
-    const link = `/app/${organizationId.toLowerCase()}/boards/${n.boardId.toLowerCase()}/cards/${n.entityId.toLowerCase()}`;
+    const link = `/app/${organizationId.toLowerCase()}/boards/${currentBoard.toLowerCase()}/cards/${n.entityId.toLowerCase()}`;
     if (n.entityLink !== link || ids.has(id) || previous && !before(created.ticks, id, previous) || read && read.ticks < created.ticks) throw new Error('Invalid notification order or link');
     ids.add(id); previous = { ticks: created.ticks, id };
     return { id, type: n.type, actorId: n.actorId.toLowerCase(), recipientId: n.recipientId.toLowerCase(), boardId: n.boardId.toLowerCase(),
+      ...(currentBoard.toLowerCase() !== n.boardId.toLowerCase() ? { currentBoardId: currentBoard.toLowerCase() } : {}),
       entityId: n.entityId.toLowerCase(), entityLink: link, createdAt: created.text, createdTicks: created.ticks, readAt: read?.text ?? null };
   });
   if (p.nextCursor !== null) {

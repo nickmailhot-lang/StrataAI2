@@ -19,7 +19,9 @@ public sealed record NotificationCursor(DateTimeOffset CreatedAt, Guid Id)
 }
 
 public sealed record NotificationInboxItem(Guid Id, Guid RecipientId, Guid ActorId, string Type,
-    string EntityType, Guid EntityId, Guid BoardId, string EntityLink, DateTimeOffset CreatedAt, DateTimeOffset? ReadAt);
+    string EntityType, Guid EntityId, Guid BoardId, string EntityLink, DateTimeOffset CreatedAt, DateTimeOffset? ReadAt,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    Guid? CurrentBoardId = null);
 public sealed record NotificationInboxPage(Guid OrganizationId, IReadOnlyList<NotificationInboxItem> Items, string? NextCursor);
 public sealed record NotificationReadAcknowledgment(Guid Id, DateTimeOffset ReadAt);
 public sealed record NotificationReadResult(Guid OrganizationId, IReadOnlyList<NotificationReadAcknowledgment> Items);
@@ -63,7 +65,8 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
                     .Take(50).ToArray();
                 return WorkOperation<NotificationInboxPage>.Success(new(organizationId, items.Select(n => new NotificationInboxItem(
                     n.Id, n.RecipientId, n.ActorId, n.NotificationType, "Card", n.CardId, n.BoardId,
-                    $"/app/{organizationId:D}/boards/{n.BoardId:D}/cards/{n.CardId:D}", n.CreatedAt, n.ReadAt)).ToArray(),
+                    $"/app/{organizationId:D}/boards/{n.CurrentBoardId ?? n.BoardId:D}/cards/{n.CardId:D}", n.CreatedAt, n.ReadAt,
+                    n.CurrentBoardId == n.BoardId ? null : n.CurrentBoardId)).ToArray(),
                     current.Count > 50 ? new NotificationCursor(items[^1].CreatedAt, items[^1].Id).ToString() : null));
             }, ct);
     }
@@ -104,7 +107,8 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
 
     private async Task<bool> LockAndVerify(Guid org, Guid recipient, IReadOnlyList<CardNotification> rows, CancellationToken ct)
     {
-        foreach (var boardId in rows.Select(n => n.BoardId).Distinct().OrderBy(id => id.ToString("N"), StringComparer.Ordinal))
+        if (rows.Any(n => n.CurrentBoardId is null || n.CurrentBoardId == Guid.Empty)) return false;
+        foreach (var boardId in rows.SelectMany(n => new[] { n.BoardId, n.CurrentBoardId ?? n.BoardId }).Distinct().OrderBy(id => id.ToString("N"), StringComparer.Ordinal))
         {
             if (!await work.AcquireBoardReadScopeAsync(org, recipient, boardId, ct)) return false;
             var view = await boards.GetSyncScopeAsync(boardId, recipient, ct);
@@ -116,6 +120,8 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
         if (rows.Any(n => n.OrganizationId != org || n.RecipientId != recipient)) return false;
         var ids = rows.Select(n => n.Id).ToArray();
         var current = await notifications.FindVisibleAsync(org, recipient, ids, policy.RequireVerifiedEmail, ct);
-        return current.Count == rows.Count && current.Select(n => n.Id).ToHashSet().SetEquals(ids);
+        return current.Count == rows.Count && current.Select(n => n.Id).ToHashSet().SetEquals(ids)
+            && current.All(n => rows.Any(planned => planned.Id == n.Id && planned.BoardId == n.BoardId
+                && planned.CardId == n.CardId && planned.CurrentBoardId == n.CurrentBoardId));
     }
 }
