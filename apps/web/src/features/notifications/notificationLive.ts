@@ -10,11 +10,12 @@ export function createNotificationConnection() {
 
 export function watchNotifications(options: {
   organizationId: string; recipientId: string; invalidate: () => void;
+  observe?: (kind: 'reconnect' | 'exception') => void;
   connection?: ReturnType<typeof createNotificationConnection>;
 }) {
   let connection: ReturnType<typeof createNotificationConnection>;
   try { connection = options.connection ?? createNotificationConnection(); }
-  catch { options.invalidate(); return () => {}; } // Existing bounded HTTP recovery stays active.
+  catch { options.observe?.('exception'); options.invalidate(); return () => {}; } // Existing bounded HTTP recovery stays active.
   let disposed = false, generation = 0, attempt = 0;
   let cursor: string | undefined;
 
@@ -54,6 +55,7 @@ export function watchNotifications(options: {
       queueMicrotask(() => {
         if (disposed || active !== generation) return;
         ++generation;
+        options.observe?.('exception');
         invalidate();
         void connection.stop().catch(() => {}).finally(schedule);
       });
@@ -64,11 +66,12 @@ export function watchNotifications(options: {
     try {
       await connection.start();
       if (disposed) { await connection.stop(); return; }
+      if (attempt > 0 && cursor !== undefined) options.observe?.('reconnect');
       subscribe();
-    } catch { if (!disposed) { invalidate(); schedule(); } }
+    } catch { if (!disposed) { options.observe?.('exception'); invalidate(); schedule(); } }
   }
   connection.onreconnecting(() => { if (!disposed) { ++generation; invalidate(); } });
-  connection.onreconnected(() => { if (!disposed) { subscribe(); invalidate(); } });
+  connection.onreconnected(() => { if (!disposed) { options.observe?.('reconnect'); subscribe(); invalidate(); } });
   connection.onclose(() => { if (!disposed) { ++generation; invalidate(); schedule(); } });
   void start();
   return () => {

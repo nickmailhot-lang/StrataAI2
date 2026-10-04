@@ -107,7 +107,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
   useEffect(() => {
     if (!subject) return;
     return watchNotifications({ organizationId, recipientId: subject,
-      invalidate });
+      invalidate, observe: kind => activityEvent('notification_read', kind) });
   }, [organizationId, subject, invalidate]);
   useEffect(() => {
     if (busy || !focusTarget.current) return;

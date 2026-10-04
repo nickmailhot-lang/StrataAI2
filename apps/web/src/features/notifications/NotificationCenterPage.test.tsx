@@ -235,12 +235,15 @@ it('reports fixed inbox retry/reconnect and mutation observations without privat
   online = false; fireEvent.click(screen.getByRole('button', { name: 'Refresh notifications' }));
   await screen.findByText('Unable to load current notifications. Try again.');
   online = true; fireEvent(window, new Event('online')); await screen.findByText('0 unread on this page.');
+  const observe = vi.mocked(watchNotifications).mock.calls.at(-1)![0].observe!;
+  observe('reconnect'); observe('exception');
   await flushActivityTelemetry();
   const serialized = reports.join(''); const events = reports.flatMap(report => JSON.parse(report).events);
-  for (const [action, kind] of [['notification_disclosure', 'open'], ['notification_read', 'retry'], ['notification_read', 'reconnect'],
+  for (const [action, kind] of [['notification_disclosure', 'open'], ['notification_read', 'retry'], ['notification_read', 'reconnect'], ['notification_read', 'exception'],
     ['notification_mark_read', 'use'], ['notification_mark_read', 'retry'], ['notification_mark_read', 'failure'], ['notification_mark_read', 'success']]) {
     expect(events).toContainEqual(expect.objectContaining({ action, kind }));
   }
+  expect(events.find(event => event.action === 'notification_read' && event.kind === 'reconnect').count).toBe(2);
   for (const event of events) expect(Object.keys(event).every(key => ['action', 'kind', 'count', 'durationMs'].includes(key))).toBe(true);
   for (const privateValue of [org, recipient, board, card, id(1), item().entityLink, 'diagnostic', 'Idempotency-Key']) expect(serialized).not.toContain(privateValue);
   expect(writes).toBe(2);
