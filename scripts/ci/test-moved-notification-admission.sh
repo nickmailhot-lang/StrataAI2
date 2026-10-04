@@ -27,7 +27,7 @@ gate=$(printf '%s\n%s\n' "$source" "$destination" | LC_ALL=C sort | head -n 1)
 mkfifo "$scratch/gate.in"
 docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.log" 2>&1 & gate_pid=$!
 exec 3> "$scratch/gate.in"
-printf "BEGIN;\nSELECT id FROM boards WHERE tenant_id='%s' AND id='%s' FOR UPDATE;\n\\echo gate_locked\n" "$org" "$gate" >&3
+printf 'BEGIN;\nSELECT id FROM boards WHERE tenant_id=%s AND id=%s FOR UPDATE;\n\\echo gate_locked\n' "'$org'" "'$gate'" >&3
 locked=false
 for ((attempt=0;attempt<100;attempt++)); do
  if grep -q '^gate_locked$' "$scratch/gate.log"; then locked=true; break; fi
@@ -43,7 +43,7 @@ for ((attempt=0;attempt<100;attempt++)); do
  kill -0 "$request_pid"; sleep 0.05
 done
 $blocked
-admin "UPDATE board_members SET status='INACTIVE',version=version+1,updated_at=GREATEST(updated_at,now())
+admin "UPDATE board_members SET status='REMOVED',version=version+1,updated_at=GREATEST(updated_at,now())
  WHERE tenant_id='$org' AND board_id='$destination' AND user_id='$recipient';" >/dev/null
 printf 'COMMIT;\n\\q\n' >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''
 wait "$request_pid"; request_pid=''
