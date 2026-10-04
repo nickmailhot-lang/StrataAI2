@@ -1,0 +1,91 @@
+# PRD-15 acceptance map — open
+
+Scope is the complete issue #16 specification. This map does not close the
+issue or replace its dependencies (PRD-08, PRD-17 and PRD-24). Source tests,
+restricted database contracts, exact-image HTTP/Worker checks and native UI
+checks establish different claims; none substitutes for all the others.
+
+## Functional requirements
+
+| Requirement | Implementation / scoped evidence | Remaining verification or dependency |
+| --- | --- | --- |
+| FR-001 comment participation | `CardCommentService`, POST endpoint, guarded PostgreSQL/Demo stores, MUI author commands; managed HTTP and exact comment command fixture | Current immutable-image native author workflow and complete release gate |
+| FR-002 author/content/timestamps/edited state | Stable author identity, created/updated/edited timestamps, revisioned content; SQL ownership/revision guard and MUI plaintext/edited state | Current native rendering and lifecycle gate |
+| FR-003/004 own edit/delete | Current participation/author checks, dual Card/comment revisions, confirmed redaction, body-free receipts, protected original acknowledgment hydration | Full current native conflict/retry/redaction and parent lifecycle matrix |
+| FR-005 username mentions | Canonical reserved handles, explicit selected identity/revision, bounded current teammate lookup, immutable revision snapshots, MUI picker | Current native selected-handle/identity recovery and cross-feature account lifecycle |
+| FR-006 groups | Explicit @card/@board consent, current assignment/Board recipients, elevated Board administration, rolling three-delivery/ten-minute quota, atomic rollback | Current native group consent/quota/role gate and large recipient behavior |
+| FR-007 notifications | Immutable source identities, distinct non-self deltas, current recipient admission, atomic source/inbox/jobs/receipts; managed and exact command/Worker fixtures | Current native private inbox and full PRD-17 consumer/lifecycle requirements |
+| FR-008/009 immutable activity/envelope | Append-only Work journal, stable IDs/typed targets/versions, captured actor label, body-free metadata, historical Board coordinates, migrations 062–065; restricted SQL contracts | Complete producer/event coverage as remaining domain features are implemented; full release gate |
+| FR-010 historical actor | SQL caption immutability through rename/deactivation/reused identity, exact API rename fixture, plaintext safe rendering | New actual HTTP legal teammate deactivation and native historical caption case must execute |
+| FR-011 paginated Board/Card views | Visibility-before-limit 51-source window, 50-row pages, complete eligible historical Board lookup, opaque viewer/target-bound expiring cursor, persistent API keys, MUI bounded pages | Current native paging/reconnect/access and remaining move/archive detail dependencies |
+
+## Acceptance criteria and linked scenarios
+
+| Criterion / test | Evidence scope | Remaining gap |
+| --- | --- | --- |
+| AC-15-01 / TC-01 primary action | Real HTTP comment commands/revisions/receipts, actual restricted persistence and MUI author controls | Full current native authoritative-result proof |
+| AC-15-02 / TC-03/04 invalid/unauthorized | Stable errors, rejected effects unchanged, author/participant/tenant and current role checks; whole-batch telemetry privacy tests | Complete cross-feature/current native gate |
+| AC-15-03 / TC-08/09 two clients/reconnect | Worker/SignalR invalidation and clean-view reload; native comments/activity scenarios use two issuing sessions, actual commands and interrupted live transport | Execute complete native suite; synthetic historical source setup is not Card movement |
+| TC-02 empty state | Source component tests and real empty comment browser path | Current native execution |
+| TC-05 access loss | Source UI clears protected state; exact-image source/current Board, account/session revocation and natural expiry during observed lock waits passed | Current native access-loss proof and remaining parent/producer lifecycle |
+| TC-06/07 timeout/retry | Real committed request with lost reply in browser fixture, original body/key recovery, scope/version revalidation and no duplicate effects in runtime fixture | Current native run and new supported-size real command/retry fixture |
+| TC-10 archive/delete | HTTP frozen writes/read-only archive, current elevated body-free deleted target history, role-revoked receipt refusal; native Board tombstone scenario exists | Archived Card/List detail controls and real cross-Board move producer remain unfinished |
+| TC-11/12 keyboard/mobile | MUI names, consent, focus recovery/no focus stealing, desktop/390px native scenarios; Axe and viewport checks exist | Current complete native WCAG/keyboard/mobile execution |
+| TC-13 large data | Actual supported Board/archive activity fixture passed with 100,000 sources and retained timings; comment fixture adds bounded first/seek/final redaction plus real commands | Execute comment fixture and its p95 <500ms/recovery/publication assertions; browser capacity remains separate |
+
+## Evidence ledger and limits
+
+- `13865bf`, run 37187388271: exact-image activity step 37 passed historical
+  tied seek, cursor binding/restart, immutable actor rename, source/current Board
+  post-wait denial, issuing-session revocation and natural expiry. Native/full
+  release remains live; this is not real cross-Board movement evidence.
+- `080f448`, run 37187706476: supported-size activity step 41 passed, artifact
+  11297303825 inspected. Twenty samples gave Board read p95 1,015.804 ms and
+  Card read p95 994.213 ms. These are activity-read measurements, not mutation,
+  cached detail or browser rendering budgets.
+- `2b49be4`, run 37188015571: managed five-year controlled-clock history/session/
+  cursor scenario passed. It is actual HTTP/Demo execution, not five deployed
+  years or a new configurable purge/erasure policy.
+- `6574058`, run 37188968317: source gates passed; exact-image operator steps
+  42–44 passed Collector configuration, actual activity observation ingestion/
+  private-field exclusion and retained evidence. This revision predates comment
+  observation extension and comment capacity/mutation checks.
+- `54cf6bd`, run 37189695461: all source jobs passed the comment/mention
+  observation extension and focus recovery regression. Its new Collector/native
+  runtime claims still require the corresponding release steps.
+
+The shared normal Kanban benchmark preserves <1,500ms usable Board rendering,
+<200ms cached detail, <100ms movement feedback and <500ms mutation p95, with
+fixed normal conditions and retained measurements (`docs/kanban-performance.md`).
+Historical green evidence does not establish the current feature set. Comment
+capacity now gates real command p95 separately, and its execution is pending.
+
+Telemetry is aggregate, fixed-category and separate from immutable audit;
+correlation/errors, read success/denial, feature use, retry/conflict/reconnect and
+client exceptions retain no protected body/identity/cursor/key material. Existing
+and new tests must execute at their stated scopes before final closure. Retention
+keeps append-only body-free sources without an automatic age purge, while all
+reads retain current admission. Future cross-PRD erasure policy requires explicit
+compatible rules, not silent source deletion.
+
+## Producer gaps that cannot be waived
+
+Current `WorkManagementService.MoveCardAsync` rejects a destination in a different
+Board. Activity supports historical/current Board plans, but its synthetic
+cross-Board source fixtures do not implement or validate that producer command.
+PRD-08 movement, related assignments/labels/attachments/watch/Reminder and current
+authorization/event contracts must be implemented consistently before claiming
+real moved-entity acceptance.
+
+Current `BoardScreen` resolves Card detail from the active Board snapshot. An
+archived Card or Card in an archived List can be absent there, leaving a generic
+unavailable detail instead of the permitted read-only comments/activity controls.
+API archive admission and Board history do not complete that MUI detail path.
+PRD-09/18 detail/lifecycle integration remains required. Deleted target history
+stays body-free/current-admin-only; this gap does not authorize deleted body
+disclosure or an anonymous/Owner Portal activity projection.
+
+The issue remains open. Current estimated remaining work is **45%**, covering
+these producer/UI dependencies, full current native/runtime proof, remaining
+capacity/performance and cross-feature acceptance rather than only the recently
+implemented readers.

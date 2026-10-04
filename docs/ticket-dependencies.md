@@ -297,3 +297,21 @@ acknowledgments must meet the PRD p95 <500 ms target under the documented single
 serial-client/no-intentional-latency condition. Only fixed verification flags and
 numeric timings reach the retained artifact. Shell syntax passes; actual runtime
 execution and timing proof remain pending.
+
+The [PRD-15 acceptance map](architecture/prd-15-acceptance.md) now records every
+functional requirement, numbered acceptance criterion/linked scenario, current
+evidence scope and remaining producer/runtime gap. It explicitly retains actual
+cross-Board movement (PRD-08) and archived Card/List detail controls (PRD-09/18),
+which API/synthetic history checks cannot complete. Current code inspection
+confirms those gaps; neither is waived by the audit.
+
+FR-010 now has an actual HTTP scenario: a participating non-owner teammate
+authors a Card mutation, renames the profile and legally deactivates the account,
+then a current owner reads the identical captured event/caption in both Board
+and Card history while the former session is refused. Native desktop/mobile
+activity scenarios now include a real teammate mutation, renamed/deactivated
+account and original caption in the older Board page after permitted tombstone
+lifecycle. Compilation/discovery is separate from Linux/runtime/browser execution,
+which remains pending for these new cases. The optional activity Collector gate
+at `6574058` has passed exact-image steps 42–44 in run 37188968317; comment
+observation/capacity/runtime claims remain separate requirements.

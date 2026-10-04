@@ -33,7 +33,9 @@ for (const width of [1280, 390]) {
       expect(listResult.status()).toBe(201); const list = (await listResult.json()).id;
       const cardResult = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Activity Card' } });
       expect(cardResult.status()).toBe(201); const card = (await cardResult.json()).id;
-      let version = 1;
+      const authored = await peer.request.patch(`/cards/${card}`, { headers, data: { title: 'Peer authored history', version: 1 } });
+      expect(authored.status()).toBe(200);
+      let version = 2;
       for (let index = 1; index <= 65; index++) {
         const changed = await context.request.patch(`/cards/${card}`, { headers, data: { title: `Activity Card ${index}`, version } });
         expect(changed.status()).toBe(200); version++;
@@ -59,7 +61,8 @@ for (const width of [1280, 390]) {
       expect(await cardHistory.locator('script').count()).toBe(0);
       await expect(cardHistory.getByText(`${caption} updated a Card.`, { exact: true })).toHaveCount(50);
       const older = cardHistory.getByRole('button', { name: 'Older activity', exact: true }); await expect(older).toBeFocused();
-      await older.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(16);
+      await older.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(17);
+      await expect(cardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1);
       const newer = cardHistory.getByRole('button', { name: 'Newer activity', exact: true }); await expect(newer).toBeFocused();
       await newer.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(50); await expect(older).toBeFocused();
       const peerPage = await peer.newPage(); const cardPath = `${boardPath}/cards/${card}`;
@@ -104,6 +107,14 @@ for (const width of [1280, 390]) {
       expect(deleted.status()).toBe(200);
       await expect(boardHistory.getByText(`${caption} deleted a Card.`, { exact: true })).toHaveCount(1, { timeout: 30_000 });
       expect((await context.request.get(`/cards/${card}/activity`)).status()).toBe(200);
+      const peerProfile = await (await peer.request.get('/me')).json();
+      expect((await peer.request.patch('/me', { headers, data: { displayName: 'Renamed activity reader', version: peerProfile.version } })).status()).toBe(200);
+      expect((await peer.request.post('/me/deactivate', { headers, data: {} })).status()).toBe(204);
+      expect((await peer.request.get(`/cards/${card}/activity`)).status()).toBe(401);
+      const boardOlder = boardHistory.getByRole('button', { name: 'Older activity', exact: true });
+      await expect(boardOlder).toBeEnabled(); await boardOlder.press('Enter');
+      await expect(boardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1);
+      await expect(boardHistory.getByText('Renamed activity reader updated a Card.', { exact: true })).toHaveCount(0);
     } finally { try { restoreWorker(); } finally { await peer.close(); } }
   });
 }
