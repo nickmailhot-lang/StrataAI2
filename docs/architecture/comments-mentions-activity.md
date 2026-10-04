@@ -611,3 +611,29 @@ Corrected fixture commit bc81736 has passed source gates and immutable image
 build in run 37168895243; security/container checks are live. UI commit 2a530b4
 has passed web/PostgreSQL checks in run 37169116417 while managed tests are live.
 No broad release, native, live-wait or complete ticket claim follows from this.
+
+## Actual handle command session lifetime during database waits
+
+The exact-image identity transaction fixture now records an original no-op
+handle receipt without changing the existing account/event fixture. Using the
+actual cookie and restricted API login, it admits a request, observes its real
+PostgreSQL account-row lock wait, then revokes or expires that original session
+before releasing the lock. Current-setting GET, a fresh changed claim and
+original receipt recovery must each return session_unavailable without handle
+content or account identity. Exact before/after account/audit/event/profile-
+receipt and handle/reservation/handle-receipt state must match. An independent
+current session of the same active account remains readable.
+
+A separate late-expiry case holds the handle row, gives the actual cookie a
+finite 15-second future expiry and observes the real handle CAS wait after
+initial actor checks. It asserts the session is still valid at that wait, then
+waits for database time to cross expiry before releasing the row. The producer's
+final admission must refuse the acknowledgment and roll back its tentative
+alias/account/audit/event/receipt despite owning the account/session locks.
+The fixture uses existing CI-only lock/cleanup helpers and restores a fresh
+session for subsequent tests. Shell syntax passes; execution remains pending.
+
+Corrected release run 37168895243 has now passed its actual PostgreSQL profile
+step, which invokes the complete corrected handle HTTP contract and post-
+deactivation protected-read denial. Its later runtime stages are still live;
+the new wait cases and native UI scenarios require their own new exact-image run.

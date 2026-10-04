@@ -179,6 +179,77 @@ for operation in profile deactivate replay profile_retry; do
   curl --fail --silent --show-error -b "$scratch/other.cookies" "$BASE_URL/me" | jq -e '.version==2' >/dev/null
   login
 done
+handle_retry_key="$(cat /proc/sys/kernel/random/uuid)"
+curl --fail --silent --show-error -b "$scratch/primary.cookies" "$BASE_URL/me/mention-handle" > "$scratch/handle-before.json"
+handle_retry_body="$(jq -c '{handle:.handle,userVersion:.userVersion,handleVersion:.handleVersion}' "$scratch/handle-before.json")"
+test "$(request PATCH /me/mention-handle "$handle_retry_body" "$handle_retry_key")" = 200
+jq -e '.changed==false and .userVersion==2 and .handleVersion==1' "$scratch/response.json" >/dev/null
+handle_state() {
+  admin "SELECT jsonb_build_object('current',(SELECT to_jsonb(h) FROM user_mention_handles h WHERE user_id='$user'),
+    'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY handle) FROM mention_handle_reservations r WHERE user_id='$user'),
+    'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM identity_handle_claim_replays r WHERE user_id='$user'))::text;"
+}
+# Actual cookie admission occurs before the controlled account lock. Revoke or
+# expire that original session while the verified command waits, then require
+# read, new claim and existing receipt recovery to fail after lock acquisition.
+for session_change in revoke expire; do
+  for handle_operation in read claim retry; do
+    before="$(profile_state)"; before_handles="$(handle_state)"
+    hash="$(awk '$6=="strataai_session" {print $7}' "$scratch/primary.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1)"
+    [[ "$hash" =~ ^[0-9a-f]{64}$ ]]
+    hold "SELECT id FROM users WHERE id='$user' FOR UPDATE;"
+    if test "$handle_operation" = read; then
+      request GET /me/mention-handle '{}' > "$scratch/status" &
+    elif test "$handle_operation" = claim; then
+      new_handle_body="$(jq -c --arg handle "wait_${user//-/}" '.handle=$handle' <<< "$handle_retry_body")"
+      request PATCH /me/mention-handle "$new_handle_body" "$(cat /proc/sys/kernel/random/uuid)" > "$scratch/status" &
+    else
+      request PATCH /me/mention-handle "$handle_retry_body" "$handle_retry_key" > "$scratch/status" &
+    fi
+    request_pid=$!
+    blocked '%SELECT id FROM users%FOR UPDATE%'
+    if test "$session_change" = revoke; then
+      release "UPDATE sessions SET revoked_at=clock_timestamp() WHERE token_hash='$hash';"
+    else
+      release "UPDATE sessions SET expires_at=clock_timestamp() WHERE token_hash='$hash';"
+    fi
+    wait "$request_pid"; request_pid=''
+    test "$(cat "$scratch/status")" = 401
+    jq -e '.code=="session_unavailable" and (has("handle")|not) and (has("userId")|not)' "$scratch/response.json" >/dev/null
+    test "$before" = "$(profile_state)"; test "$before_handles" = "$(handle_state)"
+    test "$(curl --silent --show-error -b "$scratch/primary.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me/mention-handle")" = 401
+    curl --fail --silent --show-error -b "$scratch/other.cookies" "$BASE_URL/me" | jq -e '.version==2' >/dev/null
+    login
+  done
+done
+echo 'Exact-image account handles: current read, fresh claim and original receipt deny revoked/expired cookies after verified live lock waits without account/handle/reservation/event/audit/receipt changes.'
+# Let expiry pass after all initial actor reads, while the actual handle CAS
+# waits. The producer must undo its tentative alias/user/audit/event/receipt at
+# final admission even though it owns the account and session row locks.
+before="$(profile_state)"; before_handles="$(handle_state)"
+hash="$(awk '$6=="strataai_session" {print $7}' "$scratch/primary.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1)"
+[[ "$hash" =~ ^[0-9a-f]{64}$ ]]
+hold "SELECT user_id FROM user_mention_handles WHERE user_id='$user' FOR UPDATE;"
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '15 seconds' WHERE token_hash='$hash';" >/dev/null
+late_handle_body="$(jq -c --arg handle "late_${user//-/}" '.handle=$handle' <<< "$handle_retry_body")"
+request PATCH /me/mention-handle "$late_handle_body" "$(cat /proc/sys/kernel/random/uuid)" > "$scratch/status" &
+request_pid=$!
+blocked '%FROM user_mention_handles%FOR UPDATE%'
+test "$(admin "SELECT expires_at>clock_timestamp() FROM sessions WHERE token_hash='$hash';")" = t
+expired=false
+for ((attempt=0; attempt<100; attempt++)); do
+  if test "$(admin "SELECT expires_at<=clock_timestamp() FROM sessions WHERE token_hash='$hash';")" = t; then expired=true; break; fi
+  sleep 0.1
+done
+test "$expired" = true
+release ''
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/status")" = 401
+jq -e '.code=="session_unavailable" and (has("handle")|not)' "$scratch/response.json" >/dev/null
+test "$before" = "$(profile_state)"; test "$before_handles" = "$(handle_state)"
+curl --fail --silent --show-error -b "$scratch/other.cookies" "$BASE_URL/me" | jq -e '.version==2' >/dev/null
+login
+echo 'Exact-image account handles: session expiry after initial admission during verified handle CAS wait rolls back tentative alias/account/audit/event/receipt at final admission.'
 # Sign-in must check the account again after waiting, before issuing a session.
 before="$(admin "SELECT jsonb_build_object('sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$user'),'audits',(SELECT count(*) FROM audit_events WHERE actor_id='$user'))::text;")"
 hold "SELECT id FROM users WHERE id='$user' FOR UPDATE;"
