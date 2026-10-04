@@ -508,6 +508,9 @@ jobs:
       - name: Personal watch revisions, atomic publication and post-wait revocation through exact release images
         run: scripts/ci/test-watch-subscriptions.sh
 
+      - name: Atomic username mentions, source notifications and redaction history through exact release images
+        run: scripts/ci/test-comment-mention-commands.sh
+
       - name: UTC Card dates, atomic notification rollback and private retry recovery through exact release images
         run: scripts/ci/test-card-dates.sh
 

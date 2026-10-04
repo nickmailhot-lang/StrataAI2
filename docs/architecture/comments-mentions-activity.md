@@ -966,3 +966,17 @@ refusal, exact notification duplicate identity and actor self suppression, then
 deliberately refuses and checks every effect and the Card revision rolled back.
 Admission is synthetic and it does not claim Production cookie command coverage.
 Local compilation passes; Linux execution of this new contract remains pending.
+
+A mandatory exact-image Production cookie fixture is now registered after the
+watch fixture. It creates its own private Board and checks a late restricted
+notification INSERT refusal after preceding comment/Card/snapshot/audit/event
+writes, unchanged complete state, same-key recovery and duplicate stability,
+actual MENTION_CREATED source affinity, private recipient/self inbox behavior,
+stable edits/removal/readdition, redaction history and fresh Board revocation.
+Fixture shell syntax passes. Its release execution remains pending; this is not
+proof of Production lock-wait races or native selection.
+
+Commit 0aa719c now has successful web and PostgreSQL jobs in run 37173850493.
+The actual restricted mention publication contract logged successful exact
+source/duplicate/self/revision and full dependent-effect rollback checks.
+Managed/API source tests and later immutable release gates remain live.
