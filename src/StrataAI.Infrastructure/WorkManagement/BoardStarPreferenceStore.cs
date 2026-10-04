@@ -2,11 +2,13 @@ using Npgsql;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
+internal sealed record StoredBoardStarPreference(bool Starred, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, long Version);
+
 internal sealed partial class InMemoryWorkManagementStore
 {
     public Task<bool> GetStarAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default)
     {
-        lock (_sync) return Task.FromResult(_starred.Contains((boardId, userId)));
+        lock (_sync) return Task.FromResult(_starred.TryGetValue((boardId, userId), out var preference) && preference.Starred);
     }
 }
 

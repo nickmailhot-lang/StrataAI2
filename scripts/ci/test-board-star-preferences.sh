@@ -45,6 +45,10 @@ preference member "$member_id" false
 key="$(uuid)"
 test "$(request owner PUT "/boards/$board/star" "$key" '')" = 204
 test ! -s "$scratch/response"
+test "$(admin "SELECT version=1 AND created_at IS NOT NULL AND created_at=updated_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
+creation="$(admin "SELECT created_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")"
+test "$(request owner PUT "/boards/$board/star" "$(uuid)" '')" = 204
+test "$(admin "SELECT version FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = 1
 preference owner "$owner_id" true
 preference member "$member_id" false
 # The same key belongs to a different actor namespace.
@@ -53,6 +57,8 @@ test "$(request owner DELETE "/boards/$board/star" "$(uuid)" '')" = 204
 test "$(request owner PUT "/boards/$board/star" "$key" '')" = 204
 preference owner "$owner_id" false
 preference member "$member_id" true
+test "$(admin "SELECT version=2 AND NOT starred AND created_at<=updated_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
+test "$(admin "SELECT created_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = "$creation"
 test "$(request owner DELETE "/boards/$board/star" "$key" '')" = 409
 jq -e '.code == "idempotency_key_reused"' "$scratch/response" >/dev/null
 test "$(request owner GET "/boards/$board" "$(uuid)" '')" = 200

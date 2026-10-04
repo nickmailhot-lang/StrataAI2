@@ -10,7 +10,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
     private readonly Dictionary<Guid, BoardListRecord> _lists = [];
     private readonly Dictionary<Guid, CardRecord> _cards = [];
     private readonly Dictionary<(Guid BoardId, Guid UserId), BoardMemberRecord> _members = [];
-    private readonly HashSet<(Guid BoardId, Guid UserId)> _starred = [];
+    private readonly Dictionary<(Guid BoardId, Guid UserId), StoredBoardStarPreference> _starred = [];
     public Task<bool> AcquireOrganizationReadScopeAsync(Guid organizationId, Guid actorId,
         CancellationToken cancellationToken = default) => Task.FromResult(true);
 
@@ -186,7 +186,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 .ToArray();
 
             var starred =
-                userId.HasValue && _starred.Contains((boardId, userId.Value));
+                userId.HasValue && _starred.TryGetValue((boardId, userId.Value), out var preference) && preference.Starred;
 
             return Task.FromResult<BoardSnapshot?>(
                   new BoardSnapshot(board, lists, starred, access, LabelPreviews(lists)));
@@ -296,14 +296,11 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
     {
         lock (_sync)
         {
-            if (starred)
-            {
-                _starred.Add((boardId, userId));
-            }
-            else
-            {
-                _starred.Remove((boardId, userId));
-            }
+            var key = (boardId, userId);
+            if (!_starred.TryGetValue(key, out var current))
+                _starred[key] = new(starred, updatedAt, updatedAt, 1);
+            else if (current.Starred != starred)
+                _starred[key] = current with { Starred = starred, UpdatedAt = updatedAt, Version = checked(current.Version + 1) };
         }
 
         return Task.CompletedTask;

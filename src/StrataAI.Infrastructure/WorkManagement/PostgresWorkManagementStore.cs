@@ -679,42 +679,21 @@ internal sealed partial class PostgresWorkManagementStore(
                 tenantId.Value,
                 cancellationToken);
 
-        if (starred)
-        {
-            await using var command = new NpgsqlCommand(
-                """
-                INSERT INTO user_board_preferences(
-                    tenant_id, board_id, user_id, starred, updated_at)
-                VALUES (
-                    @tenant_id, @board_id, @user_id, true, @updated_at)
-                ON CONFLICT (board_id, user_id)
-                DO UPDATE SET
-                    starred = true,
-                    updated_at = EXCLUDED.updated_at;
-                """,
-                session.Connection,
-                session.Transaction);
-            command.Parameters.AddWithValue("tenant_id", tenantId.Value);
-            command.Parameters.AddWithValue("board_id", boardId);
-            command.Parameters.AddWithValue("user_id", userId);
-            command.Parameters.AddWithValue("updated_at", updatedAt);
-            await command.ExecuteNonQueryAsync(cancellationToken);
-        }
-        else
-        {
-            await using var command = new NpgsqlCommand(
-                """
-                DELETE FROM user_board_preferences
-                WHERE board_id = @board_id
-                  AND user_id = @user_id;
-                """,
-                session.Connection,
-                session.Transaction);
-            command.Parameters.AddWithValue("board_id", boardId);
-            command.Parameters.AddWithValue("user_id", userId);
-            await command.ExecuteNonQueryAsync(cancellationToken);
-        }
-
+        await using var command = new NpgsqlCommand(
+            """
+            INSERT INTO user_board_preferences(tenant_id,board_id,user_id,starred,created_at,updated_at,version)
+            VALUES(@tenant_id,@board_id,@user_id,@starred,@updated_at,@updated_at,1)
+            ON CONFLICT (board_id,user_id) DO UPDATE SET
+                starred=EXCLUDED.starred, updated_at=EXCLUDED.updated_at,
+                version=user_board_preferences.version+1
+            WHERE user_board_preferences.starred IS DISTINCT FROM EXCLUDED.starred;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant_id", tenantId.Value);
+        command.Parameters.AddWithValue("board_id", boardId);
+        command.Parameters.AddWithValue("user_id", userId);
+        command.Parameters.AddWithValue("starred", starred);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+        await command.ExecuteNonQueryAsync(cancellationToken);
         await session.CommitAsync(cancellationToken);
     }
 
