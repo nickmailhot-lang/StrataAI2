@@ -158,6 +158,60 @@ public sealed partial class ApiHostTests
         Assert.Equal(current, await work.FindCardAsync(card.Id, ct));
     }
 
+    // Publication metadata is synthetic, as in the existing private download
+    // contracts. Real sessions, move admission, private byte staging and delivery
+    // execute normally; this does not claim real Worker preview generation.
+    [Fact]
+    public async Task PRD_08_Moved_file_and_preview_keep_private_bytes_and_recheck_current_destination()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects();
+        await using var app = UploadFactory(objects, downloads: true, images: true);
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct); var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Moved private image", null, null, DateTimeOffset.UtcNow, ct);
+        var png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==");
+        var original = png.Concat("PRIVATE ORIGINAL METADATA"u8.ToArray()).ToArray();
+        using var upload = FileRequest($"/cards/{card.Id}/attachments", original, Guid.NewGuid(), "Moved image.png");
+        using var uploaded = await member.SendAsync(upload, ct); Assert.Equal(HttpStatusCode.OK, uploaded.StatusCode);
+        var file = (await uploaded.Content.ReadFromJsonAsync<AttachmentChange>(ct))!.Attachment;
+        var metadata = Assert.IsType<DownloadMetadata>(app.Services.GetRequiredService<IAttachmentMetadataStore>()); metadata.Clean = true;
+        var reference = AttachmentObjectReference.ForPreview(f.Organization, Guid.NewGuid());
+        var stored = await objects.WritePrivateAsync(reference, new MemoryStream(png, false), png.Length, ct);
+        metadata.PublishedPreview = new(new(reference, stored.SizeBytes, stored.Sha256), 1, 1);
+        var downloadPath = $"/cards/{card.Id}/attachments/{file.Id}/download";
+        var previewPath = $"/cards/{card.Id}/attachments/{file.Id}/preview";
+        var oldOptions = (await member.GetFromJsonAsync<AttachmentDownloadOptions>(downloadPath + "-options", ct))!;
+        Assert.Equal(f.Board, oldOptions.BoardId); Assert.Equal(2, oldOptions.CardVersion);
+        using var destination = await Mutate(owner, HttpMethod.Post, "/boards", new { organizationId = f.Organization, name = "Private image destination", visibility = "PRIVATE" });
+        var board = (await destination.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var parent = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/lists", new { name = "Destination" });
+        var list = (await parent.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var moved = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/move", new { sourceBoardId = f.Board, destinationListId = list, expectedVersion = 2 });
+        Assert.Equal(HttpStatusCode.OK, moved.StatusCode);
+        foreach (var (path, expected) in new[] { (downloadPath, original), (previewPath, png) })
+        {
+            using var optionsResponse = await owner.GetAsync(path + "-options", ct); Assert.Equal(HttpStatusCode.OK, optionsResponse.StatusCode);
+            var options = (await optionsResponse.Content.ReadFromJsonAsync<AttachmentDownloadOptions>(ct))!;
+            Assert.Equal(board, options.BoardId); Assert.Equal(3, options.CardVersion); Assert.Equal(file.Id, options.AttachmentId);
+            var json = await optionsResponse.Content.ReadAsStringAsync(ct);
+            Assert.DoesNotContain(reference.ObjectKey, json); Assert.DoesNotContain(stored.Sha256, json);
+            using var delivered = await owner.GetAsync(path, ct); Assert.Equal(HttpStatusCode.OK, delivered.StatusCode);
+            Assert.Equal(expected, await delivered.Content.ReadAsByteArrayAsync(ct));
+            Assert.True(delivered.Headers.CacheControl!.Private); Assert.True(delivered.Headers.CacheControl.NoStore);
+        }
+        var reads = objects.Reads;
+        foreach (var path in new[] { downloadPath, previewPath, downloadPath + "-options", previewPath + "-options",
+            $"/attachments/{file.Id}/download?cardId={card.Id}", $"/attachments/{file.Id}/preview?cardId={card.Id}" })
+        {
+            using var refused = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, refused.StatusCode);
+            Assert.Null(refused.Content.Headers.ContentDisposition);
+        }
+        Assert.Equal(reads, objects.Reads);
+        Assert.Equal(file, await app.Services.GetRequiredService<IAttachmentMetadataStore>().FindAttachmentAsync(f.Organization, card.Id, file.Id, ct));
+        using var stillSource = await member.GetAsync($"/boards/{f.Board}", ct); Assert.Equal(HttpStatusCode.OK, stillSource.StatusCode);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

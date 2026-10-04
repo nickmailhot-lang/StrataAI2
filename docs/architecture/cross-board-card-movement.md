@@ -75,8 +75,11 @@ failure and unrecorded fixtures are numbered 067–069.
 - New HTTP and exact-image consumer cases now preserve Checklist/item, URL
   attachment and comment records plus personal Card Watch identity; source-only
   readers and edits are refused under current private destination admission.
-  Their new execution is pending. File downloads, previews and covers still need
-  explicit moved-entity coverage.
+  Their new execution is pending. A new Linux HTTP fixture now verifies stable file/preview bytes and refuses
+  source-only readers before provider access, using explicitly synthetic Clean
+  and publication metadata with real private byte staging. Execution is pending;
+  real Worker generation, pending-upload recovery and covers still need explicit
+  moved-entity coverage.
 - The inbox projection now preserves the historical source Board and binds its
   link to the current Card Board. Both contexts must be currently visible before
   pagination and are gated/rechecked before disclosure or read acknowledgement.

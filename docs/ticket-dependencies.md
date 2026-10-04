@@ -384,3 +384,13 @@ read receipts and destination revocation during an observed database gate wait.
 Local managed compilation, 49 notification tests, typecheck/lint/build and shell
 syntax pass; new Linux execution remains required. PRD-08/15 remain open with
 approximately 40% estimated remaining work.
+
+
+Moved file/preview consumer fixture: authenticated HTTP movement retains uploaded
+original bytes and a published preview identity; current destination options and
+private/no-store deliveries are verified. Former source-only readers cannot
+access original/canonical file or preview/options paths, and are refused before
+provider reads. Clean/publication metadata is explicitly synthetic, as in the
+existing attachment delivery contracts; this is not real Worker generation or
+pending-upload/cover acceptance. Local compilation passes; Linux execution is
+pending. The related issues remain open.
