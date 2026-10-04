@@ -14,39 +14,56 @@ function mount(p: ComponentProps<typeof WatchControl> = props) { return render(<
 async function open(kind = 'Card') { fireEvent.click(screen.getByRole('button', { name: `${kind} watching` })); await screen.findByText(`You are not watching this ${kind}.`); }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
+it.each(['changed', 'malformed', 'unavailable'])('withholds personal watch state until post-read account admission (%s)', async kind => {
+  let admit!: (value: Response) => void;
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false }))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { admit = resolve; }));
+  vi.stubGlobal('fetch', fetch); mount(); fireEvent.click(screen.getByRole('button', { name: 'Card watching' }));
+  await waitFor(() => expect(admit).toBeDefined());
+  expect(screen.queryByText('You are watching this Card.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Unwatch Card' })).not.toBeInTheDocument();
+  await act(async () => admit(kind === 'changed' ? response({ ...profile, id: board }) :
+    kind === 'malformed' ? response({ ...profile, status: 'DEACTIVATED' }) : response({ detail: 'private admission diagnostic' }, 503)));
+  await screen.findByText(kind === 'changed' ? 'Your account changed. Check watching again.' : 'Unable to check current watching. Try again.');
+  expect(screen.queryByText('You are watching this Card.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Unwatch Card' })).not.toBeInTheDocument();
+  expect(screen.queryByText('private admission diagnostic')).not.toBeInTheDocument();
+  expect(fetch.mock.calls.map(call => call[0])).toEqual(['/me', `/watch/CARD/${entity}`, '/me']);
+});
+
 it('permits a freshly authorized read during Board refresh while keeping commands disabled until refresh finishes', async () => {
-  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty));
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile));
   vi.stubGlobal('fetch', fetch); const view = mount({ ...props, refreshing: true });
   expect(screen.getByRole('button', { name: 'Card watching' })).toBeEnabled(); await open();
   expect(screen.getByRole('button', { name: 'Watch Card' })).toBeDisabled();
-  expect(screen.getByRole('button', { name: 'Done watching' })).toBeEnabled(); expect(fetch).toHaveBeenCalledTimes(2);
+  expect(screen.getByRole('button', { name: 'Done watching' })).toBeEnabled(); expect(fetch).toHaveBeenCalledTimes(3);
   view.rerender(<MemoryRouter><WatchControl {...props} refreshing={false} /></MemoryRouter>);
-  expect(screen.getByRole('button', { name: 'Watch Card' })).toBeEnabled(); expect(fetch).toHaveBeenCalledTimes(2);
+  expect(screen.getByRole('button', { name: 'Watch Card' })).toBeEnabled(); expect(fetch).toHaveBeenCalledTimes(3);
 });
 
 it('dismisses a pending read-only check, aborts it and preserves a fresh reopen without applying the late result', async () => {
   let finish!: (value: Response) => void;
-  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty))
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile))
     .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
-    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty));
+    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile));
   vi.stubGlobal('fetch', fetch); mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Check current watching' }));
-  await waitFor(() => expect(finish).toBeDefined()); const signal = fetch.mock.calls[2][1]?.signal as AbortSignal;
+  await waitFor(() => expect(finish).toBeDefined()); const signal = fetch.mock.calls[3][1]?.signal as AbortSignal;
   expect(screen.getByRole('button', { name: 'Done watching' })).toBeEnabled(); fireEvent.click(screen.getByRole('button', { name: 'Done watching' }));
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument()); expect(signal.aborted).toBe(true);
-  await act(async () => finish(response(profile))); expect(fetch).toHaveBeenCalledTimes(3);
-  await open(); expect(fetch).toHaveBeenCalledTimes(5);
+  await act(async () => finish(response(profile))); expect(fetch).toHaveBeenCalledTimes(4);
+  await open(); expect(fetch).toHaveBeenCalledTimes(7);
 });
 
 it.each(['CARD', 'LIST', 'BOARD'] as const)('loads %s state on demand, submits its revision and reconciles canonical state', async type => {
   const kind = type === 'CARD' ? 'Card' : type === 'LIST' ? 'List' : 'Board';
   const target = type === 'BOARD' ? board : entity;
-  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...empty, entityType: type, entityId: target }))
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...empty, entityType: type, entityId: target })).mockResolvedValueOnce(response(profile))
     .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, entityType: type, entityId: target }))
-    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, entityType: type, entityId: target, changed: false }));
+    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, entityType: type, entityId: target, changed: false })).mockResolvedValueOnce(response(profile));
   vi.stubGlobal('fetch', fetch); mount({ ...props, entityType: type, entityId: target }); expect(fetch).not.toHaveBeenCalled(); await open(kind);
   fireEvent.click(screen.getByRole('button', { name: `Watch ${kind}` })); await screen.findByText(`You are watching this ${kind}.`);
-  expect(fetch.mock.calls[3][0]).toBe(`/watch/${type}/${target}?version=0`); expect(fetch.mock.calls[3][1].method).toBe('PUT');
-  expect(new Headers(fetch.mock.calls[3][1].headers).get('Idempotency-Key')).toMatch(/^[a-f0-9-]{36}$/);
+  expect(fetch.mock.calls[4][0]).toBe(`/watch/${type}/${target}?version=0`); expect(fetch.mock.calls[4][1].method).toBe('PUT');
+  expect(new Headers(fetch.mock.calls[4][1].headers).get('Idempotency-Key')).toMatch(/^[a-f0-9-]{36}$/);
   fireEvent.click(screen.getByRole('button', { name: 'Done watching' }));
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument(), { timeout: 5_000 });
   await waitFor(() => expect(screen.getByRole('button', { name: `${kind} watching` })).toHaveFocus());
@@ -68,24 +85,24 @@ it('keeps the same recipient, revision, method and retry key after a lost respon
   expect(new Headers(commands[1][1]?.headers).get('Idempotency-Key')).toBe(new Headers(commands[0][1]?.headers).get('Idempotency-Key'));
 });
 it('unwatches using DELETE at the latest personal revision', async () => {
-  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false }))
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false })).mockResolvedValueOnce(response(profile))
     .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, watching: false, version: 2 }))
-    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, watching: false, version: 2, changed: false }));
+    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, watching: false, version: 2, changed: false })).mockResolvedValueOnce(response(profile));
   vi.stubGlobal('fetch', fetch); mount(); fireEvent.click(screen.getByRole('button', { name: 'Card watching' }));
   fireEvent.click(await screen.findByRole('button', { name: 'Unwatch Card' })); await screen.findByText('You are not watching this Card.');
-  expect(fetch.mock.calls[3][0]).toBe(`/watch/CARD/${entity}?version=1`); expect(fetch.mock.calls[3][1].method).toBe('DELETE');
+  expect(fetch.mock.calls[4][0]).toBe(`/watch/CARD/${entity}?version=1`); expect(fetch.mock.calls[4][1].method).toBe('DELETE');
 });
 it.each([401, 403, 404])('clears denied personal state without exposing server content (%s)', async status => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty))
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile))
     .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ detail: 'raw private detail' }, status)));
   mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Watch Card' })); await screen.findByText('Watching is unavailable. Check access or sign in.');
   expect(screen.queryByText('You are not watching this Card.')).not.toBeInTheDocument(); expect(screen.queryByText('Retry same watch change')).not.toBeInTheDocument();
   expect(screen.queryByText('raw private detail')).not.toBeInTheDocument();
 });
 it('retires an old account intent before any write under the new account', async () => {
-  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response({ ...profile, id: board }));
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...profile, id: board }));
   vi.stubGlobal('fetch', fetch); mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Watch Card' }));
-  await screen.findByText('Your account changed. Check watching again.'); expect(fetch).toHaveBeenCalledTimes(3);
+  await screen.findByText('Your account changed. Check watching again.'); expect(fetch).toHaveBeenCalledTimes(4);
 });
 it.each([{ ...empty, userId: board }, { ...empty, entityId: board }, { ...empty, organizationId: board },
   { ...empty, watching: true }, { ...changed, changed: false, version: 0 }, { ...changed, changed: false, subscriptionId: null }])('rejects malformed or cross-scope personal state (%j)', async data => {
@@ -94,13 +111,13 @@ it.each([{ ...empty, userId: board }, { ...empty, entityId: board }, { ...empty,
   expect(screen.queryByRole('button', { name: 'Watch Card' })).not.toBeInTheDocument();
 });
 it('disables mutation for the server-admitted archived Organization read state', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...empty, canChange: false })));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...empty, canChange: false })).mockResolvedValueOnce(response(profile)));
   mount(); await open(); expect(screen.getByRole('button', { name: 'Watch Card' })).toBeDisabled();
   expect(screen.getByText('Watching is read-only while this Organization is archived.')).toBeInTheDocument();
 });
 it('fences a late mutation after entity permission loss', async () => {
   let resolve!: (value: Response) => void;
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty))
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile))
     .mockResolvedValueOnce(response(profile)).mockImplementationOnce(() => new Promise(r => { resolve = r; })));
   const view = mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Watch Card' })); await waitFor(() => expect(resolve).toBeDefined());
   view.rerender(<MemoryRouter><WatchControl {...props} admitted={false} /></MemoryRouter>);
@@ -108,7 +125,7 @@ it('fences a late mutation after entity permission loss', async () => {
   expect(screen.getByText('Watching is unavailable for this entity.')).toBeInTheDocument();
 });
 it.each([400, 409])('retires a rejected revision and requires a fresh canonical check (%s)', async status => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty))
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile))
     .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ detail: 'raw conflict detail' }, status)));
   mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Watch Card' }));
   await screen.findByText('Watching changed. Check the current state before trying again.');
@@ -116,7 +133,7 @@ it.each([400, 409])('retires a rejected revision and requires a fresh canonical 
   expect(screen.queryByRole('button', { name: 'Watch Card' })).not.toBeInTheDocument();
 });
 it('requires recovery when a mutation acknowledgment has the wrong revision', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty))
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile))
     .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, version: 2 })));
   mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Watch Card' }));
   await screen.findByRole('button', { name: 'Retry same watch change' });
@@ -125,14 +142,14 @@ it('requires recovery when a mutation acknowledgment has the wrong revision', as
 });
 it('automatically recovers another client watch change while the dialog remains open', async () => {
   vi.useFakeTimers();
-  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty))
-    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false }));
+  const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response(empty)).mockResolvedValueOnce(response(profile))
+    .mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false })).mockResolvedValueOnce(response(profile));
   vi.stubGlobal('fetch', fetch);
   mount();
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Card watching' })); await vi.advanceTimersByTimeAsync(0); });
   expect(screen.getByText('You are not watching this Card.')).toBeInTheDocument();
   await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
-  expect(screen.getByText('You are watching this Card.')).toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(4);
+  expect(screen.getByText('You are watching this Card.')).toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(6);
 });
 
 it.each([
@@ -150,7 +167,7 @@ it.each([
 
 it('accepts canonical microsecond watch timestamps without rounding their revision order', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ ...changed, changed: false,
-    createdAt: '2026-10-02T12:00:00.000001Z', updatedAt: '2026-10-02T12:00:00.000002Z' })));
+    createdAt: '2026-10-02T12:00:00.000001Z', updatedAt: '2026-10-02T12:00:00.000002Z' })).mockResolvedValueOnce(response(profile)));
   mount(); fireEvent.click(screen.getByRole('button', { name: 'Card watching' }));
   await screen.findByText('You are watching this Card.');
   expect(screen.getByRole('button', { name: 'Unwatch Card' })).toBeEnabled();

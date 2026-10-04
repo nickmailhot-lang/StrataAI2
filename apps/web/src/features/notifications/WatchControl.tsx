@@ -52,6 +52,9 @@ function WatchDialog(props: Props) {
         if (!isNotificationProfile(profile)) throw new Error('Invalid current account');
         const value = state(await workRequest<unknown>(path, { signal }), { organizationId, boardId, entityType, entityId, admitted, disabled: false }, profile.id);
         if (value.changed) throw new Error('Invalid watch read');
+        const current = await workRequest<unknown>('/me', { signal });
+        if (!isNotificationProfile(current)) throw new Error('Invalid current account');
+        if (current.id !== profile.id) throw new ChangedWatchIdentity();
         return value;
       }, controller.signal);
       if (!mounted.current || epoch.current !== ticket || controller.signal.aborted) return;
@@ -60,7 +63,8 @@ function WatchDialog(props: Props) {
       user.current = result.userId; setCurrent(result); setDenied(false);
     } catch (reason) {
       if (!mounted.current || epoch.current !== ticket) return;
-      if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Watching is unavailable. Check access or sign in.');
+      if (reason instanceof ChangedWatchIdentity) retire('Your account changed. Check watching again.');
+      else if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) retire('Watching is unavailable. Check access or sign in.');
       else setNotice('Unable to check current watching. Try again.');
     } finally { if (mounted.current && epoch.current === ticket) { pending.current = undefined; setBusy(false); } }
   }, [admitted, organizationId, boardId, entityType, entityId, path, retire]);
