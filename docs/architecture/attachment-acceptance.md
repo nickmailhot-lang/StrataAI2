@@ -833,3 +833,12 @@ private-field and URL validation remain mandatory; late aborted responses cannot
 restore private content. All 15 focused attachment-list component tests pass,
 including the three post-read account failure cases. This complements server
 authorization and does not substitute for enabled-provider release acceptance.
+
+Run 37204236956 exposed a moved-cover wait fixture ordering error: the unit of
+work admits the current Board before loading a receipt. Locking the UUID-first
+Board could therefore let the retry hold destination membership before the
+fixture withdrew it, producing a timeout. The fixture now locks the initial
+current Board so both membership withdrawals happen before either membership
+gate. Refusal/unchanged effects/restored original receipt assertions are retained.
+The earlier passing run does not establish deterministic execution of the old
+fixture; corrected Linux execution is pending.

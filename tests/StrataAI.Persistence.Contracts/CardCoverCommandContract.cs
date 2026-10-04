@@ -184,6 +184,8 @@ internal static class CardCoverCommandContract
         }
         Require((await service.SetAsync(card, actor, input, "cover-moved-restored", ct)).Value == selected.Value && await Snapshot() == movedState,
             "Restored moved cover receipt changed its original acknowledgment.");
+        // Gate the initial current-Board admission, before receipt lookup and
+        // before either Board membership can be held by this command.
         // Observe this exact runtime command blocked by a real Board row lock,
         // then withdraw membership without changing the Card or receipt.
         // Both original and destination permission must be refreshed after wait.
@@ -195,7 +197,7 @@ internal static class CardCoverCommandContract
             await using (var rowLock = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@tenant AND id=@board FOR UPDATE;", gate, gateTransaction))
             {
                 rowLock.Parameters.AddWithValue("tenant", tenant);
-                rowLock.Parameters.AddWithValue("board", new[] { route.BoardId, movedBoard }.Order().First());
+                rowLock.Parameters.AddWithValue("board", movedBoard);
                 Require(await rowLock.ExecuteScalarAsync(ct) is Guid, "Moved cover retry gate did not lock its owning Board.");
             }
             var pendingRetry = service.SetAsync(card, actor, input, "cover-moved-wait-withdrawal", ct);
@@ -224,7 +226,7 @@ internal static class CardCoverCommandContract
                 await gateTransaction.CommitAsync(ct); released = true;
                 var refused = await pendingRetry.WaitAsync(TimeSpan.FromSeconds(30), ct);
                 Require(refused.ErrorCode == "card_not_found" && await Snapshot() == movedState,
-                    "Moved cover receipt disclosed its acknowledgment or retained effects after post-wait membership withdrawal.");
+                    $"Moved cover receipt disclosed its acknowledgment or retained effects after post-wait membership withdrawal (outcome: {refused.ErrorCode}).");
             }
             finally
             {
