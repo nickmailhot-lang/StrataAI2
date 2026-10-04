@@ -15,7 +15,9 @@ These internal methods support the global-search API and MUI page below.
 The cross-Organization cursor codec uses ASP.NET Data Protection with a distinct
 versioned purpose. It binds the actor, normalized keyword/label/member strings,
 ANY/ALL mode and active/archive scope to the Organization/Board/Card seek
-position, expires after 15 minutes, and caps decoding input at 4,096 characters.
+position, expires after 15 minutes, and caps decoding input at 8,192 characters.
+The cap admits JSON-escaped multilingual criteria at all three 160-character
+limits before encryption/base64 expansion; it also bounds client cursor parsing.
 Positions are routing state, never proof of authorization; every resumed content
 read must recheck current admission. Account changes or changed criteria reject
 the old token. This codec is registered in both runtimes and connected to the

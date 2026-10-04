@@ -6,7 +6,7 @@ function text(value: unknown, max = 160): value is string { return typeof value 
 export function parseSearchPage(value: unknown, after?: string): SearchPage {
   const p = value as Record<string, unknown> | null;
   if (!p || !Array.isArray(p.items) || p.items.length > 50
-    || p.nextCursor !== null && (!text(p.nextCursor, 4096) || !p.nextCursor.length || p.nextCursor === after)) throw new Error('Invalid search page');
+    || p.nextCursor !== null && (!text(p.nextCursor, 8192) || !p.nextCursor.length || p.nextCursor === after)) throw new Error('Invalid search page');
   const ids = new Set<string>();
   const items = p.items.map((value: unknown): SearchItem => {
     const d = value as Record<string, unknown> | null; const c = d?.card as Record<string, unknown> | null;

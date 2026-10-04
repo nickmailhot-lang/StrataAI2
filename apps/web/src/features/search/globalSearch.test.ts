@@ -14,6 +14,10 @@ describe('global search response admission', () => {
     expect(() => parseSearchPage({ items: [document(), document()], nextCursor: null })).toThrow();
     expect(() => parseSearchPage({ items: [], nextCursor: 'same' }, 'same')).toThrow();
   });
+  it('admits bounded expanded multilingual cursors and rejects oversized tokens', () => {
+    expect(parseSearchPage({ items: [], nextCursor: 'x'.repeat(8192) }).nextCursor?.length).toBe(8192);
+    expect(() => parseSearchPage({ items: [], nextCursor: 'x'.repeat(8193) })).toThrow();
+  });
   it.each(['deleted', 'unknown'])('rejects unsupported lifecycle %s', lifecycleState => {
     const item = document(); item.card.lifecycleState = lifecycleState;
     expect(() => parseSearchPage({ items: [item], nextCursor: null })).toThrow();

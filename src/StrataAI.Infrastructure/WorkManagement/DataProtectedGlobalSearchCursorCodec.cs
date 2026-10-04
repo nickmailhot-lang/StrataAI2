@@ -18,7 +18,9 @@ internal sealed class DataProtectedGlobalSearchCursorCodec(IDataProtectionProvid
     public bool TryDecode(GlobalSearchBinding binding, string token, out GlobalSearchPosition? position)
     {
         position = null;
-        if (!Valid(binding) || string.IsNullOrEmpty(token) || token.Length > 4096) return false;
+        // Three 160-UTF16-unit criteria may expand to six-byte JSON escapes
+        // before encryption/base64. The cap must admit every valid binding.
+        if (!Valid(binding) || string.IsNullOrEmpty(token) || token.Length > 8192) return false;
         try
         {
             var payload = JsonSerializer.Deserialize<Payload>(_protector.Unprotect(token));
