@@ -61,13 +61,55 @@ for ((sample=0;sample<20;sample++)); do
  printf '%s\n' "$elapsed" >> "$scratch/seconds"
 done
 test "$before" = "$(state)"
+effects() { admin "SELECT jsonb_build_object(
+ 'comments',(SELECT count(*) FROM card_comments WHERE tenant_id='$org' AND card_id='$card'),
+ 'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org' AND entity_id='$card' AND event_type='COMMENT_ADDED'),
+ 'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
+ 'snapshots',(SELECT count(*) FROM comment_mention_snapshots WHERE tenant_id='$org' AND card_id='$card'),
+ 'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'),
+ 'version',(SELECT version FROM cards WHERE tenant_id='$org' AND id='$card'));"; }
+effects > "$scratch/effects-before.json"
+: > "$scratch/mutation-seconds"
+write_comment() {
+ curl --max-time 60 --fail --silent --show-error -b "$cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: $1" --data-binary "@$2" -o "$3" -w '%{time_total}' "$base$path"
+}
+# Real serial commands exercise the PRD mutation budget, separate from the
+# synthetic read fixture and its already-proven unchanged-state boundary.
+for ((sample=0;sample<20;sample++)); do
+ key=$(cat /proc/sys/kernel/random/uuid)
+ jq -nc --argjson version "$((version+sample))" '{content:"Measured comment",cardVersion:$version}' > "$scratch/write-$sample.json"
+ elapsed=$(write_comment "$key" "$scratch/write-$sample.json" "$scratch/ack-$sample.json")
+ jq -e --arg org "$org" --arg board "$board" --arg card "$card" --arg actor "$owner" --argjson version "$((version+sample+1))" \
+  '.organizationId==$org and .boardId==$board and .cardId==$card and .changed==true and .cardVersion==$version and
+   .comment.organizationId==$org and .comment.cardId==$card and .comment.authorId==$actor and .comment.content=="Measured comment" and .comment.version==1' "$scratch/ack-$sample.json" >/dev/null
+ printf '%s\n' "$elapsed" >> "$scratch/mutation-seconds"
+ if test "$sample" = 0; then first_key=$key; fi
+done
+jq -se 'length==20 and ([.[].comment.id]|unique|length)==20' "$scratch"/ack-*.json >/dev/null
+effects > "$scratch/effects-after.json"
+jq -se --argjson version "$version" '.[1].comments==.[0].comments+20 and .[1].events==.[0].events+20 and
+ .[1].audits==.[0].audits+20 and .[1].snapshots==.[0].snapshots+20 and .[1].receipts==.[0].receipts+20 and
+ .[0].version==$version and .[1].version==$version+20' "$scratch/effects-before.json" "$scratch/effects-after.json" >/dev/null
+after_commands=$(state)
+write_comment "$first_key" "$scratch/write-0.json" "$scratch/replay.json" >/dev/null
+jq -e --slurpfile original "$scratch/ack-0.json" '.==$original[0]' "$scratch/replay.json" >/dev/null
+test "$(curl --max-time 60 --silent --show-error -b "$cookies" --get --data-urlencode "after=$cursor" -o "$scratch/stale.json" -w '%{http_code}' "$base$path")" = 409
+jq -e '.code=="version_conflict" and (has("items")|not)' "$scratch/stale.json" >/dev/null
+test "$after_commands" = "$(state)"
+# Nearest-rank p95 over 20 complete HTTP acknowledgments. The condition is
+# one serial authenticated client, with no intentional latency/concurrent work.
+jq -se 'length==20 and all(.[];type=="number" and .>=0) and (sort|.[18])<0.5' "$scratch/mutation-seconds" >/dev/null
 revision=${GITHUB_SHA:-}; [[ "$revision" =~ ^[0-9a-f]{40,64}$ ]]
 mkdir -p artifacts/capacity
 # Bodies, authors, scopes and cursors never enter the retained artifact.
-jq -nc --arg revision "$revision" --slurpfile samples "$scratch/seconds" \
+jq -nc --arg revision "$revision" --slurpfile samples "$scratch/seconds" --slurpfile mutation "$scratch/mutation-seconds" \
  '{schemaVersion:1,revision:$revision,topology:"exact release images through Nginx",status:"passed",
- fixture:{lists:200,activeCards:5000,archivedCards:100000,seededComments:100000,pageSize:50,samples:20},
- verified:{pages:[50,50,1],uniqueSeek:true,redactedFinalPage:true,noStore:true,readStateUnchanged:true},
- milliseconds:{samples:($samples|map(.*1000)),p95:($samples|sort|.[18]*1000)}}' > "$scratch/capacity.json"
+ fixture:{lists:200,activeCards:5000,archivedCards:100000,seededComments:100000,pageSize:50,samples:20,realCommentCommands:20},
+ condition:"one serial authenticated client; no intentional latency or concurrent commands",
+ verified:{pages:[50,50,1],uniqueSeek:true,redactedFinalPage:true,noStore:true,readStateUnchanged:true,
+  atomicPublication:true,retryStateUnchanged:true,staleCursorRefused:true,mutationP95Under500ms:true},
+ milliseconds:{samples:($samples|map(.*1000)),p95:($samples|sort|.[18]*1000),
+  mutationSamples:($mutation|map(.*1000)),mutationP95:($mutation|sort|.[18]*1000)}}' > "$scratch/capacity.json"
 mv "$scratch/capacity.json" artifacts/capacity/comments.json
-echo 'Exact comment capacity: 100,000 comments at supported Board/archive size; unique bounded seek/final redaction, no-store and unchanged reads passed. Timings do not claim a browser or mutation budget.'
+echo 'Exact comment capacity: bounded unique read/redaction pages, no-store, unchanged reads, 20 real atomic commands, exact retry/stale-cursor refusal and mutation p95 below 500 ms passed. This does not claim browser rendering or a concurrent/load-test budget.'

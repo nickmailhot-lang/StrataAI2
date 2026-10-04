@@ -287,3 +287,13 @@ state and publication counts, then measures 20 first-page requests. See
 [comment capacity](architecture/comment-capacity.md) for scope and limitations.
 Shell syntax passes locally; actual release execution is pending. This does not
 claim synthetic setup as audited mutation history or a browser timing budget.
+
+The comment capacity fixture now separately measures twenty real serial comment
+creates through the authenticated immutable API/Nginx path after its read-only
+boundary. It requires distinct replies, exact Card revision and comment/event/
+audit/snapshot/receipt count advances, original acknowledgment recovery without
+duplicate effects and stable old-cursor version refusal. Complete HTTP mutation
+acknowledgments must meet the PRD p95 <500 ms target under the documented single
+serial-client/no-intentional-latency condition. Only fixed verification flags and
+numeric timings reach the retained artifact. Shell syntax passes; actual runtime
+execution and timing proof remain pending.
