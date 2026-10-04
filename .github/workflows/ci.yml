@@ -485,6 +485,8 @@ jobs:
 
       - name: Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime
         run: bash scripts/ci/test-board-star-preferences.sh
+      - name: Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime
+        run: bash scripts/ci/test-board-copy.sh
 
       - name: Board administrator demotion continuity and atomic recovery
         run: scripts/ci/test-board-admin-continuity.sh

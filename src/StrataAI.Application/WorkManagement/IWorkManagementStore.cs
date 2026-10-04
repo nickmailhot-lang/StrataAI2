@@ -2,6 +2,9 @@ namespace StrataAI.Application.WorkManagement;
 
 public interface IWorkManagementStore
 {
+    // Owning source Board command and tenant transaction required. Target is a
+    // newly created empty Board; no membership, preferences or history copied.
+    Task CopyBoardContentsAsync(Guid sourceBoardId, Guid destinationBoardId, DateTimeOffset now, CancellationToken ct);
     Task<IReadOnlyList<ArchivedBoardSummary>> ListArchivedBoardsAsync(Guid organizationId, Guid actorId,
         bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default);
     Task<CardRecord?> CopyCardAsync(Guid sourceCardId, Guid destinationListId, Guid copiedCardId,

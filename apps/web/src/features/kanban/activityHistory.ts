@@ -46,7 +46,7 @@ export function parseActivityPage(value: unknown, scope: ActivityScope, before?:
   return page as ActivityPage;
 }
 const labels: Record<string, string> = {
-  BOARD_CREATED: 'created the Board', BOARD_UPDATED: 'updated the Board', BOARD_ARCHIVED: 'archived the Board', BOARD_RESTORED: 'restored the Board',
+  BOARD_CREATED: 'created the Board', BOARD_COPIED: 'copied the Board', BOARD_UPDATED: 'updated the Board', BOARD_ARCHIVED: 'archived the Board', BOARD_RESTORED: 'restored the Board',
   LIST_CREATED: 'created a List', LIST_UPDATED: 'updated a List', LIST_MOVED: 'moved a List', LIST_ARCHIVED: 'archived a List', LIST_RESTORED: 'restored a List', LIST_DELETED: 'deleted a List',
   CARD_CREATED: 'created a Card', CARD_COPIED: 'copied a Card', CARD_UPDATED: 'updated a Card', CARD_MOVED: 'moved a Card', CARD_ARCHIVED: 'archived a Card', CARD_RESTORED: 'restored a Card', CARD_DELETED: 'deleted a Card',
   COMMENT_ADDED: 'added a comment', COMMENT_EDITED: 'edited a comment', COMMENT_DELETED: 'removed a comment body', MENTION_CREATED: 'created comment mentions',

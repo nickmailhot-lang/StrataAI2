@@ -77,6 +77,7 @@ public sealed class BoardSharingTelemetry
             ("/cards/{cardId:guid}/labels", "GET") => "card_label_read",
             ("/cards/{cardId:guid}/label-options", "GET") => "card_label_options",
             ("/cards/{cardId:guid}/copy", "POST") => "card_copy",
+            ("/boards/{boardId:guid}/copy", "POST") => "board_copy",
             ("/cards/{cardId:guid}/labels/{labelId:guid}", "PUT") => "card_label_assign",
             ("/cards/{cardId:guid}/labels/{labelId:guid}", "DELETE") => "card_label_remove",
             ("/boards/{boardId:guid}/members", "GET") => "member_read",
