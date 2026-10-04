@@ -29,6 +29,7 @@ import { PortalShell } from "../portal/PortalShell";
 import { appTheme } from "../theme/appTheme";
 import { BuildIdentityFooter } from './BuildIdentityFooter';
 import { NotificationCenterPage } from '../features/notifications/NotificationCenterPage';
+import { GlobalSearchPage } from '../features/search/GlobalSearchPage';
 
 const routes = [
   { path: "/app", element: <OrganizationHome /> },
@@ -53,6 +54,7 @@ const routes = [
       { index: true, element: <OrganizationHome /> },
       { path: "settings", element: <OrganizationSettingsPage /> },
       { path: "notifications", element: <NotificationCenterPage /> },
+      { path: "search", element: <GlobalSearchPage /> },
       { path: "members", element: <OrganizationMembersPage /> },
       { path: "invite", element: <OrganizationInvitationPage /> },
       { path: "boards/:boardId/invite", element: <BoardInvitationPage /> },

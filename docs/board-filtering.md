@@ -11,20 +11,16 @@ must verify the actor again before responding. Private Board eligibility applies
 before the Board page limit. Archived Board candidates may appear in traversal;
 the requested search lifecycle scope must be enforced at content admission.
 
-These methods are prerequisites, not a shipped global-search API or UI.
+These internal methods support the global-search API and MUI page below.
 The cross-Organization cursor codec uses ASP.NET Data Protection with a distinct
 versioned purpose. It binds the actor, normalized keyword/label/member strings,
 ANY/ALL mode and active/archive scope to the Organization/Board/Card seek
 position, expires after 15 minutes, and caps decoding input at 4,096 characters.
 Positions are routing state, never proof of authorization; every resumed content
 read must recheck current admission. Account changes or changed criteria reject
-the old token. This codec is registered in both runtimes; the search coordinator
-and API must still be connected to it.
-Remaining implementation includes cross-Organization cursor coordination,
-title/description and label/member matching, authorized Board/List/label/member/
-deadline context, explicit archive scope, an extensible projected-document
-contract for later comment indexing, MUI interaction, and real authorization,
-reconnect, accessibility and large-data acceptance evidence.
+the old token. This codec is registered in both runtimes and connected to the
+coordinator/API. Remaining acceptance includes runtime authorization, database,
+reconnect, accessibility and large-data evidence.
 
 The scoped search store now matches case-insensitive literal substrings against
 Card title/description, active assigned label names and currently eligible
@@ -35,9 +31,8 @@ ignored; no selected dimensions lists the admitted lifecycle scope.
 Deleted Cards, Lists and Boards are always excluded. Active scope requires all
 three parents active; archive scope includes an archived Card or an archived
 List/Board ancestor. PostgreSQL evaluates all predicates before UUID seek and
-the 51-row limit, under the owning Board transaction. The future coordinator
-must enforce the applicable archive-read permission before invoking this store.
-This store is not yet exposed through a search endpoint and does not replace
+the 51-row limit, under the owning Board transaction. The coordinator uses fresh
+Board read admission before invoking this store; the store never replaces
 fresh Board admission or actor verification.
 
 The Application Board-search read now holds the owning Board read scope,
@@ -47,8 +42,7 @@ Board and List names, and up to 50 active labels/eligible assignees with explici
 overflow flags. The document source kind is currently CARD; future comment
 projections can use a distinct kind instead of overwriting Card descriptions.
 An explicit archived search remains a read under view admission; it grants no
-archive, restore or edit permission. Cross-Organization coordination and the
-public search endpoint/UI are still outstanding.
+archive, restore or edit permission.
 
 The global coordinator now traverses membership routes and visible Boards in
 UUID order, re-admits each Organization (including cursor resumes), then uses
@@ -61,7 +55,7 @@ keep that continuation available instead of declaring a final empty result.
 Exhaustion is reported only by a null cursor. A final actor verification fences
 the whole response. This is a sequence of authorized tenant reads, not an atomic
 cross-tenant snapshot; resumed pages always use current admission and data.
-The coordinator is registered, but GET /search and MUI integration remain.
+The coordinator is connected to GET /search and the internal MUI page.
 
 The authenticated API now exposes
 `GET /search?q=...&label=...&member=...&match=all|any&scope=active|archived&after=...`.
@@ -72,7 +66,19 @@ Invalid criteria, scope, composition or cursor return `invalid_search` (400)
 after actor verification; unavailable sessions return 401. Responses use
 `private, no-store`. Clients must URL-encode the opaque continuation, keep the
 same criteria, and allow an empty continuation page until `nextCursor` is null.
-MUI integration and runtime/acceptance evidence remain outstanding.
+Runtime/acceptance evidence remains outstanding.
+
+The internal shell now links to `/app/:organizationId/search`, with MUI text,
+label/member name, composition and lifecycle controls. A submitted search
+replaces its current page rather than accumulating an unbounded collection.
+Results show Board/List, label/member previews, deadlines and canonical Card
+links. Empty continuation pages retain a Next action. Pre/post-response profile
+validation and request retirement fence late or other-account content; account
+changes clear query drafts and results. Focus, online/visibility recovery and a
+10-second foreground refresh re-read the current submitted page; the global
+page does not claim a cross-Board SignalR subscription. Seven parser/component
+contracts passed locally; typecheck/lint passed. Native keyboard/mobile/Axe,
+runtime/SQL and exact-image acceptance remain pending.
 
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.

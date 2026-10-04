@@ -6,6 +6,7 @@ import MeetingRoomOutlinedIcon from "@mui/icons-material/MeetingRoomOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import ViewKanbanOutlinedIcon from "@mui/icons-material/ViewKanbanOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import {
   AppBar,
   Box,
@@ -99,6 +100,11 @@ function InternalLayout() {
               sx={{ display: { xs: "inline-flex", sm: "none" } }}
             >
               <ViewKanbanOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Search Cards">
+            <IconButton component={Link} to={`/app/${organizationId}/search`} color="inherit" aria-label="Search Cards">
+              <SearchOutlinedIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Profile">
