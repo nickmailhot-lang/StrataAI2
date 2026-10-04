@@ -1390,3 +1390,34 @@ current-eligibility and original-receipt assertions remain required. Syntax
 passes locally; corrected runtime execution is pending and the inferred query
 format cause is not treated as verified acceptance. Estimated PRD-15 remaining
 work stays **50%**.
+
+Production and Demo now implement an internal activity-source reader over the
+same immutable journal. Each owning Board window returns at most 51 records in
+newest-first createdAt/eventId seek order, including committed sources whose
+realtime delivery is not ready. Cursor components must be paired UTC
+microsecond time and stable identity. The source projection has required
+event/Organization/Board/actor/type/entity/version/time fields, saved actor label
+and read-only body-free metadata; operational correlation/readiness fields do
+not become activity metadata. Demo captures the caption on first append and
+rolls it back with the journal/stream, rather than binding each read or retry to
+the current profile. Missing/foreign membership uses the stable-ID fallback.
+
+New Demo tests require outside-scope refusal, 65 same-time sources across a
+bounded window and exact seek tail, repeat ordering, immutable metadata/view
+copies, caption stability after rename/deactivation and exact retry, owning
+failure rollback/recovery, foreign-caption refusal and Board affinity. The
+mandatory real restricted C# persistence executable now exercises the actual
+PostgreSQL reader and event adapter, including the same 65 ties, pending-source
+visibility, repeat reads/retry, historical captions, rollback/recovery and its
+own temporary Board cleanup. Its actor/source setup is synthetic and does not
+prove HTTP session or feed audience admission. Warning-as-error compilation
+passes locally; new managed and PostgreSQL-adapter execution is pending CI.
+
+This is an internal source-store boundary, not an exposed feed or a substitute
+for activity authorization. Complete Card history must account for every past
+source Board plus current Card context, rather than truncating to the current
+Board. The consumer must admit historical/current entities and Boards, private
+Watch/Reminder audiences, current account/session, archive/move/deletion and
+mid-read changes before returning a page or cursor. Protected Board/Card APIs,
+interpreter, MUI views/realtime recovery, full pagination/access/performance and
+retention remain unfinished. Estimated PRD-15 remaining work stays **50%**.

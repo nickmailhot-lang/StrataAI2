@@ -1,37 +1,65 @@
 using StrataAI.Application.WorkManagement;
+using StrataAI.Application.Identity;
+using StrataAI.Application.Organizations;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class InMemoryWorkEventStore(IWorkManagementStore work) : IWorkEventStore, IWorkEventReader, IDemoWorkTransactionParticipant
+internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentityStore identities,
+    IOrganizationStore organizations, DemoWorkTransactionScope scope) : IWorkEventStore, IWorkEventReader, IActivityEventSourceStore, IDemoWorkTransactionParticipant
 {
     public Action CaptureRollback()
     {
         lock (_events)
         {
             var events = DemoRollback.Dictionary(_events); var streams = DemoRollback.Dictionary(_streams);
-            return () => { lock (_events) { events(); streams(); } };
+            var activity = DemoRollback.Dictionary(_activity);
+            return () => { lock (_events) { events(); streams(); activity(); } };
         }
     }
     private readonly Dictionary<(Guid Organization, Guid Id), (long Sequence, WorkEvent Event)> _events = [];
     private readonly Dictionary<(Guid Organization, Guid Board), long> _streams = [];
+    private readonly Dictionary<(Guid Organization, Guid Id), ActivityEventSource> _activity = [];
     internal bool ContainsExact(WorkEvent source)
     { lock (_events) return _events.TryGetValue((source.OrganizationId, source.EventId), out var row) && row.Event == source; }
-    public Task AppendAsync(WorkEvent change, CancellationToken cancellationToken = default)
+    public async Task AppendAsync(WorkEvent change, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        var member = await organizations.FindMembershipAsync(change.OrganizationId, change.ActorId, cancellationToken);
+        var user = member is null ? null : await identities.FindUserByIdAsync(change.ActorId, cancellationToken);
+        var caption = user?.DisplayName;
+        if (caption is null || caption.EnumerateRunes().Count() is < 1 or > 160 || caption.Any(char.IsControl))
+            caption = $"Member {change.ActorId:D}";
         lock (_events)
         {
             var key = (change.OrganizationId, change.EventId);
             if (_events.TryGetValue(key, out var existing))
             {
                 if (existing.Event != change) throw new InvalidOperationException("Work event identity was reused.");
-                return Task.CompletedTask;
+                return;
             }
             var stream = (change.OrganizationId, change.BoardId);
             var sequence = _streams.GetValueOrDefault(stream) + 1;
             _streams[stream] = sequence;
             _events[key] = (sequence, change);
+            _activity[key] = new(change.EventId, change.OrganizationId, change.BoardId, change.ActorId, caption,
+                change.EventType, change.EntityType, change.EntityId, change.Version, change.CreatedAt);
         }
-        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<ActivityEventSource>> ReadBoardWindowAsync(Guid organizationId, Guid boardId,
+        DateTimeOffset? beforeCreatedAt, Guid? beforeEventId, CancellationToken ct = default)
+    {
+        if (organizationId == Guid.Empty || boardId == Guid.Empty || !scope.Owns(organizationId))
+            throw new InvalidOperationException("Activity sources require the owning Work transaction.");
+        ActivityEventSourceWindow.RequireCursor(beforeCreatedAt, beforeEventId); ct.ThrowIfCancellationRequested();
+        lock (_events)
+        {
+            var rows = _activity.Values.Where(row => row.OrganizationId == organizationId && row.BoardId == boardId
+                && (beforeCreatedAt is null || row.CreatedAt < beforeCreatedAt || row.CreatedAt == beforeCreatedAt
+                    && string.CompareOrdinal(row.EventId.ToString("N"), beforeEventId!.Value.ToString("N")) < 0))
+                .OrderByDescending(row => row.CreatedAt).ThenByDescending(row => row.EventId.ToString("N"), StringComparer.Ordinal).Take(ActivityEventSourceWindow.MaximumRows).ToArray();
+            return Task.FromResult<IReadOnlyList<ActivityEventSource>>(Array.AsReadOnly(rows));
+        }
     }
 
     public async Task<WorkEventReadPage> ReadAsync(Guid organizationId, Guid boardId, long since, int limit,
