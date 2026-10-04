@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.DataProtection;
+using StrataAI.Application.Common;
 using StrataAI.Application.WorkManagement;
 using Xunit;
 
@@ -8,7 +10,12 @@ public sealed partial class ApiHostTests
     [Fact]
     public async Task Activity_cursors_authenticate_scope_and_reject_noncanonical_positions()
     {
-        await using var app = new ApiFactory();
+        var clock = new ReceiptTestClock();
+        await using var app = new ApiFactory(configureServices: services =>
+        {
+            services.AddSingleton<IClock>(clock);
+            services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
+        });
         var codec = app.Services.GetRequiredService<IActivityCursorCodec>();
         var binding = new ActivityCursorBinding(Guid.NewGuid(), Guid.NewGuid(), ActivityTargetKind.Card, Guid.NewGuid());
         var at = new DateTimeOffset(DateTimeOffset.UtcNow.UtcTicks / 10 * 10, TimeSpan.Zero);
@@ -23,5 +30,9 @@ public sealed partial class ApiHostTests
         Assert.Throws<ArgumentException>(() => codec.Encode(binding, position with { CreatedAt = at.AddTicks(1) }));
         Assert.Throws<ArgumentException>(() => codec.Encode(binding, position with { CreatedAt = at.ToOffset(TimeSpan.FromHours(1)) }));
         Assert.Throws<ArgumentException>(() => codec.Encode(binding, position with { EventId = Guid.Empty }));
+        clock.UtcNow = clock.UtcNow.AddMinutes(15).AddTicks(-1);
+        Assert.True(codec.TryDecode(binding, token, out _));
+        clock.UtcNow = clock.UtcNow.AddTicks(1);
+        Assert.False(codec.TryDecode(binding, token, out var expired)); Assert.Null(expired);
     }
 }
