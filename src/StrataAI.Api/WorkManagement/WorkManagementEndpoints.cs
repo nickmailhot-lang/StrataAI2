@@ -818,6 +818,7 @@ public static partial class WorkManagementEndpoints
             "invalid_board_date_policy" => Problem(400, errorCode, "Use a valid IANA timezone or null and the current Board revision."),
             "invalid_watch_version" => Problem(400, errorCode, "Use the current watch revision, or zero for a new subscription."),
             "invalid_board_star_version" => Problem(400, errorCode, "Use the current personal preference revision, or zero for a new preference."),
+            "invalid_board_star_cursor" => Problem(400, errorCode, "Use a nonnegative personal event revision."),
             "invalid_notification_cursor" => Problem(400, errorCode, "Use the notification page's current cursor."),
             "invalid_notification_selection" => Problem(400, errorCode, "Select between one and 50 distinct notifications."),
             "invalid_label_name" => Problem(400, errorCode, "A label name must contain at most 160 characters."),

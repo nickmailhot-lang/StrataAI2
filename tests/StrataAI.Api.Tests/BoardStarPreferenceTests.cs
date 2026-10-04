@@ -60,9 +60,44 @@ public sealed partial class ApiHostTests
         var after = await owner.GetFromJsonAsync<JsonElement>($"/boards/{f.Board}", ct);
         Assert.Equal(before.GetProperty("board").GetRawText(), after.GetProperty("board").GetRawText());
         Assert.Equal(before.GetProperty("lists").GetRawText(), after.GetProperty("lists").GetRawText());
+        var eventsPath = path + "/events";
+        using var eventRead = await owner.GetAsync(eventsPath, ct);
+        Assert.Equal(HttpStatusCode.OK, eventRead.StatusCode); Assert.True(eventRead.Headers.CacheControl!.NoStore);
+        var journal = await eventRead.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal(f.Owner, journal.GetProperty("userId").GetGuid());
+        var history = journal.GetProperty("items").EnumerateArray().ToArray();
+        Assert.Equal(new long[] { 1, 2 }, history.Select(e => e.GetProperty("version").GetInt64()).ToArray());
+        Assert.Equal(2, history.Select(e => e.GetProperty("eventId").GetGuid()).Distinct().Count());
+        Assert.Single(history.Select(e => e.GetProperty("entityId").GetGuid()).Distinct());
+        foreach (var e in history)
+        {
+            Assert.Equal(f.Owner, e.GetProperty("actorId").GetGuid()); Assert.Equal(f.Board, e.GetProperty("boardId").GetGuid());
+            Assert.Equal(f.Organization, e.GetProperty("organizationId").GetGuid());
+            Assert.Equal("BOARD_STARRED", e.GetProperty("eventType").GetString());
+            Assert.Equal("UserBoardPreference", e.GetProperty("entityType").GetString());
+            Assert.Empty(e.GetProperty("metadata").EnumerateObject());
+            Assert.False(e.TryGetProperty("starred", out _));
+        }
+        var memberHistory = await member.GetFromJsonAsync<JsonElement>(eventsPath, ct);
+        Assert.Single(memberHistory.GetProperty("items").EnumerateArray());
+        Assert.Equal(f.Recipient, memberHistory.GetProperty("items")[0].GetProperty("actorId").GetGuid());
+        using var badCursor = await owner.GetAsync(eventsPath + "?after=invalid", ct); Assert.Equal(HttpStatusCode.BadRequest, badCursor.StatusCode);
+        Assert.Empty((await owner.GetFromJsonAsync<JsonElement>(eventsPath + "?after=2", ct)).GetProperty("items").EnumerateArray());
+        var service = app.Services.GetRequiredService<StrataAI.Application.WorkManagement.IWorkManagementService>();
+        for (long version = 2; version < 53; version++)
+            Assert.True((await service.SetStarAsync(f.Board, f.Owner, version % 2 == 0, ct, version)).Succeeded);
+        var firstPage = await owner.GetFromJsonAsync<JsonElement>(eventsPath, ct);
+        Assert.Equal(50, firstPage.GetProperty("items").GetArrayLength()); Assert.Equal(50, firstPage.GetProperty("nextAfter").GetInt64());
+        var tail = await owner.GetFromJsonAsync<JsonElement>(eventsPath + "?after=50", ct);
+        Assert.Equal(new long[] { 51,52,53 }, tail.GetProperty("items").EnumerateArray().Select(e => e.GetProperty("version").GetInt64()).ToArray());
+        Assert.Equal(JsonValueKind.Null, tail.GetProperty("nextAfter").ValueKind);
         using var absent = await anonymous.GetAsync(path, ct); Assert.Equal(HttpStatusCode.Unauthorized, absent.StatusCode);
+        using var noJournal = await anonymous.GetAsync(eventsPath, ct); Assert.Equal(HttpStatusCode.Unauthorized, noJournal.StatusCode);
         await app.Services.GetRequiredService<IOrganizationStore>().RemoveMemberAsync(f.Organization, f.Recipient, DateTimeOffset.UtcNow, ct);
         using var revoked = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, revoked.StatusCode);
+        using var revokedJournal = await member.GetAsync(eventsPath + "?after=invalid", ct);
+        Assert.Equal(HttpStatusCode.NotFound, revokedJournal.StatusCode);
+        Assert.DoesNotContain("BOARD_STARRED", await revokedJournal.Content.ReadAsStringAsync(ct));
         Assert.DoesNotContain("starred", await revoked.Content.ReadAsStringAsync(ct));
     }
 }

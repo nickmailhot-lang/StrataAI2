@@ -116,6 +116,7 @@ public interface IWorkManagementStore
         CancellationToken cancellationToken = default, Guid? actorUserId = null);
 
     Task<BoardStarState> GetStarAsync(Guid boardId, Guid userId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<BoardStarEvent>> ListStarEventsAsync(Guid boardId, Guid userId, long after, int limit, CancellationToken cancellationToken = default);
 
     Task SetStarAsync(
         Guid boardId,

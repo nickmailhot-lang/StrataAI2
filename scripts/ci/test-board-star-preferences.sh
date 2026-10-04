@@ -92,6 +92,16 @@ committed="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE
 test "$(request owner PUT "/boards/$board/star?version=2" "$retry_key" '')" = 204
 test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$committed"
 test "$(admin "SELECT count(*) FROM board_star_events WHERE board_id='$board' AND actor_id='$owner_id';")" = 3
+test "$(request owner GET "/boards/$board/star/events" "$(uuid)" '')" = 200
+jq -e --arg actor "$owner_id" --arg board "$board" --arg org "$organization" '
+ .userId==$actor and .boardId==$board and .organizationId==$org and .nextAfter==null and
+ ([.items[].version]==[1,2,3]) and all(.items[]; .actorId==$actor and .boardId==$board and
+ .organizationId==$org and .eventType=="BOARD_STARRED" and .entityType=="UserBoardPreference" and .metadata=={} and (has("starred")|not))
+' "$scratch/response" >/dev/null
+test "$(request member GET "/boards/$board/star/events" "$(uuid)" '')" = 200
+jq -e --arg actor "$member_id" '.userId==$actor and (.items|length)==1 and .items[0].actorId==$actor' "$scratch/response" >/dev/null
+test "$(request owner GET "/boards/$board/star/events?after=2" "$(uuid)" '')" = 200
+jq -e '[.items[].version]==[3]' "$scratch/response" >/dev/null
 test "$(admin "SELECT has_table_privilege('strataai_api_runtime','board_star_events','INSERT') OR has_table_privilege('strataai_api_runtime','board_star_events','UPDATE') OR has_table_privilege('strataai_api_runtime','board_star_events','DELETE');")" = f
 if admin "UPDATE board_star_events SET version=version WHERE board_id='$board';" >/dev/null 2>&1; then echo 'Private star history was mutable'; exit 1; fi
 admin "BEGIN; UPDATE user_board_preferences SET starred=false,version=version+1,updated_at=GREATEST(updated_at,clock_timestamp()) WHERE board_id='$board' AND user_id='$owner_id'; ROLLBACK;" >/dev/null
@@ -107,5 +117,7 @@ for method in GET PUT; do
   jq -e '.code == "board_not_found"' "$scratch/response" >/dev/null
   scripts/ci/assert-file-excludes.sh 'starred|Private personal preferences|Npgsql|user_board_preferences|work_command_replays' "$scratch/response"
 done
+test "$(request member GET "/boards/$board/star/events?after=invalid" "$(uuid)" '')" = 404
+scripts/ci/assert-file-excludes.sh 'BOARD_STARRED|actorId|entityId' "$scratch/response"
 test "$(curl --max-time 30 --silent --show-error -o "$scratch/response" -w '%{http_code}' "$BASE_URL/boards/$board/star")" = 401
 echo 'Exact release API proves private star reads, retained revisions, atomic rollback/recovery, receipt isolation, replay without overwrite and revoked admission.'
