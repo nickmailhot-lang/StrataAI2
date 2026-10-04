@@ -75,7 +75,7 @@ public sealed partial class ApiHostTests
         using var owner = app.CreateClient(); using var member = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct);
         using var removed = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
-        Assert.Equal(HttpStatusCode.OK, removed.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         using var visible = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/visibility", new { visibility = "PUBLIC", version = 1 });
         Assert.Equal(HttpStatusCode.OK, visible.StatusCode);
         var viewer = await member.GetFromJsonAsync<JsonElement>($"/boards/{f.Board}", ct);
