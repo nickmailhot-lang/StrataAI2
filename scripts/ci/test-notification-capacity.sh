@@ -76,21 +76,38 @@ for ((sample=0;sample<20;sample++)); do
  jq -se '.[0]==.[1]' "$scratch/read.json" "$scratch/replay.json" >/dev/null
 done
 test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$recipient' AND read_at IS NOT NULL;")" = 20
-test "$(admin "SELECT last_sequence FROM notification_event_streams WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100020
-test "$(admin "SELECT count(*) FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient' AND event_type='NOTIFICATION_READ';")" = 20
+# Two real clients race distinct command keys against the same ten unread rows.
+# Their acknowledgments must retain the same first read time, not the later clock.
+jq -c '{ids:[.items[20:30][].id]}' "$scratch/first.json" > "$scratch/concurrent-body.json"
+concurrent_read() {
+ local name=$1 key; key=$(uuid)
+ curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: $key" --data-binary @"$scratch/concurrent-body.json" "$base$path/read" > "$scratch/concurrent-$name.json"
+}
+concurrent_read first & first_pid=$!
+concurrent_read second & second_pid=$!
+wait "$first_pid"; wait "$second_pid"
+jq -se --arg org "$org" '.[0]==.[1] and .[0].organizationId==$org and (.[0].items|length)==10 and
+ ([.[0].items[].id]|unique|length)==10 and all(.[0].items[]; (.readAt|type)=="string")' \
+ "$scratch/concurrent-first.json" "$scratch/concurrent-second.json" >/dev/null
+jq -c '.items[]' "$scratch/concurrent-first.json" >> "$scratch/receipts.jsonl"
+test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$recipient' AND read_at IS NOT NULL;")" = 30
+test "$(admin "SELECT last_sequence FROM notification_event_streams WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100030
+test "$(admin "SELECT count(*) FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient' AND event_type='NOTIFICATION_READ';")" = 30
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base$path/sync?after=100000" > "$scratch/read-events.json"
 jq -e --arg org "$org" --arg recipient "$recipient" --slurpfile receipts "$scratch/receipts.jsonl" '
- .organizationId==$org and .recipientId==$recipient and .cursor=="100020" and (.hasMore|not) and (.resetRequired|not) and (.events|length)==20 and
- ([.events[].sequence|tonumber]==[range(100001;100021)]) and
+ .organizationId==$org and .recipientId==$recipient and .cursor=="100030" and (.hasMore|not) and (.resetRequired|not) and (.events|length)==30 and
+ ([.events[].sequence|tonumber]==[range(100001;100031)]) and
  all(.events[]; . as $event | .organizationId==$org and .recipientId==$recipient and .actorId==$recipient and .entityType=="Notification" and
  .eventType=="NOTIFICATION_READ" and .version==2 and .metadata=={} and
  any($receipts[]; .id==$event.entityId and .readAt==$event.createdAt)) and
- ([.events[].eventId]|unique|length)==20' "$scratch/read-events.json" >/dev/null
+ ([.events[].eventId]|unique|length)==30' "$scratch/read-events.json" >/dev/null
 revision=${GITHUB_SHA:-}; [[ "$revision" =~ ^[0-9a-f]{40,64}$ ]]; mkdir -p artifacts/capacity
 jq -nc --arg revision "$revision" --slurpfile first "$scratch/first.seconds" --slurpfile seek "$scratch/seek.seconds" --slurpfile read "$scratch/read.seconds" '{schemaVersion:1,revision:$revision,status:"passed",topology:"exact release images through Nginx",
- fixture:{lists:200,activeCards:5000,archivedCards:100000,notifications:100000,pageSize:50,samplesPerOperation:20,clients:1},
- verified:{uniqueSeek:true,persistedOrder:true,readStateUnchanged:true,exactReplay:true,readCount:20,
- journalCreatedCount:100000,journalReadCount:20,boundedJournalSeek:true,journalReset:true,exactPersistedReadEvents:true},
+ fixture:{lists:200,activeCards:5000,archivedCards:100000,notifications:100000,pageSize:50,samplesPerOperation:20,clients:2,latencyClients:1},
+ verified:{uniqueSeek:true,persistedOrder:true,readStateUnchanged:true,exactReplay:true,readCount:30,
+ journalCreatedCount:100000,journalReadCount:30,boundedJournalSeek:true,journalReset:true,exactPersistedReadEvents:true,
+ concurrentReaders:2,overlappingConcurrentSelection:10,concurrentFirstReadRetained:true},
  milliseconds:{first:($first|map(.*1000)),seek:($seek|map(.*1000)),markRead:($read|map(.*1000)),markReadP95:($read|sort|.[18]*1000)}}' > "$scratch/report.json"
 jq -e '.milliseconds.markReadP95<500' "$scratch/report.json" >/dev/null
 mv "$scratch/report.json" artifacts/capacity/notifications.json
