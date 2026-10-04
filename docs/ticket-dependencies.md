@@ -181,3 +181,17 @@ controls. No key material belongs in web roots, CI artifacts or release bundles.
 A mandatory managed test opens two independently constructed providers on the
 same persisted directory and rejects a third unrelated application domain;
 exact-image restart/replica execution still requires release verification.
+
+Required immutable-image CI now runs `test-activity-feeds.sh` after comment
+mention checks. It uses real sessions, current entity parents and restricted API
+transactions to verify complete tied history pages, cursor target/viewer binding,
+API container recreation with preserved continuation keys, immutable actor
+captions after rename, observed source/current Board lock waits with membership
+revocation, an observed account lock wait with issuing-session revocation and
+natural session expiry across a late Board wait. Historical source birth is an
+explicit SQL fixture, not an implemented cross-Board Card movement claim. It
+retains the existing isolated auth fixture configuration across recreation and
+waits for the edge to resolve the replacement API. Shell syntax passes locally;
+actual PostgreSQL/image execution occurs only in the mandatory Linux release
+pipeline. These scenarios are not claimed passed until their exact-image step
+finishes successfully.
