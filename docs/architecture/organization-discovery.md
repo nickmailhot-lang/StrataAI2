@@ -25,7 +25,9 @@ The organization board endpoint now asks the Work Management store for authorize
 summaries instead of returning every board name in the organization. It first
 requires active organization membership. Public and organization boards are
 visible to that member; private boards additionally require active board
-membership or organization owner/admin status. Deleted boards are excluded.
+membership or organization owner/admin status. Only active Boards appear in this
+directory; archived Boards use the separate current-administrator archive directory,
+and deleted Boards are excluded. Restoring a Board makes its active entry reappear.
 The PostgreSQL query runs within the organization RLS session and filters before
 returning names. Demo mode uses the same Work Management store that creates
 boards, replacing its previously always-empty discovery result.

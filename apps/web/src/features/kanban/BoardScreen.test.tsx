@@ -63,6 +63,32 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it('recovers a Board archive after canonical read-only state without releasing competing commands', async () => {
+    let current: BoardSnapshot = { ...structuredClone(fixture), board: { ...fixture.board, version: 2 } };
+    const attempts: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, request?: RequestInit) => {
+      if (String(input) === '/boards/board-1/archive') {
+        attempts.push(request!); current = { ...current, board: { ...current.board, lifecycleState: 'archived', version: 3 },
+          access: { ...current.access, canEdit: false, canMove: false } };
+        return attempts.length === 1 ? response({ detail: 'Private failure' }, 503) : response(current.board);
+      }
+      return response(current);
+    }));
+    mount(); const archive = await screen.findByRole('button', { name: 'Archive Board' });
+    await waitFor(() => expect(archive).toBeEnabled()); fireEvent.click(archive);
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm archive' }));
+    const retry = await screen.findByRole('button', { name: 'Retry this archive' });
+    await waitFor(() => expect(retry).toBeEnabled());
+    expect(screen.getByText('This board is archived. Editing is unavailable.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add list' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Refresh board', hidden: true })).toBeDisabled();
+    fireEvent.click(retry); await screen.findByText('Board archive acknowledged. Current Board state is being checked.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toBeEnabled());
+    expect(attempts).toHaveLength(2); expect(attempts[0].body).toBe(attempts[1].body);
+    expect(new Headers(attempts[0].headers).get('Idempotency-Key')).toBe(new Headers(attempts[1].headers).get('Idempotency-Key'));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toHaveFocus());
+  });
+
   it('fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot', async () => {
     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
     const org = uuid(1), board = uuid(2), card = uuid(3), actor = uuid(8); const file = uuid(4);

@@ -33,6 +33,13 @@ test "$status" = 404
 scripts/ci/assert-file-excludes.sh 'Discovery PRIVATE' "$scratch/denied.json"
 admin "INSERT INTO board_members(id,tenant_id,board_id,user_id,role,created_at,updated_at) VALUES (gen_random_uuid(),'$organization_id','$private_id','$member_id','MEMBER',now(),now());"
 list member | jq -e 'length == 3' >/dev/null
+request owner POST "/boards/$private_id/archive" "$(jq -nc --argjson version "$(jq '.version' "$scratch/PRIVATE.json")" '{version:$version}')" > "$scratch/archived.json"
+list owner | jq -e 'length == 2 and all(.[]; .name != "Discovery PRIVATE")' >/dev/null
+list member | jq -e 'length == 2 and all(.[]; .name != "Discovery PRIVATE")' >/dev/null
+curl --fail --silent --show-error -b "$scratch/owner.cookies" "$BASE_URL/organizations/$organization_id/archived-boards" | jq -e --arg id "$private_id" 'any(.items[]; .id == $id)' >/dev/null
+request owner POST "/boards/$private_id/restore" "$(jq -nc --argjson version "$(jq '.version' "$scratch/archived.json")" '{version:$version}')" > "$scratch/restored.json"
+list owner | jq -e 'length == 3' >/dev/null
+list member | jq -e 'length == 3' >/dev/null
 admin "UPDATE board_members SET status='REMOVED' WHERE board_id='$private_id' AND user_id='$member_id';"
 list member | jq -e 'length == 2' >/dev/null
 admin "UPDATE organization_members SET role='ADMIN' WHERE tenant_id='$organization_id' AND user_id='$member_id';"
@@ -54,4 +61,4 @@ curl --fail --silent --show-error -b "$scratch/member.cookies" "$BASE_URL/boards
 status="$(curl --silent --show-error -b "$scratch/member.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"name":"Revoked contributor write"}' -o /dev/null -w '%{http_code}' "$BASE_URL/boards/$public_board_id/lists")"
 test "$status" = 404
 done
-echo 'Exact release API filters private/deleted board discovery and membership revocation using restricted PostgreSQL credentials.'
+echo 'Exact release API filters private/archived/deleted board discovery, restores active entries and enforces membership revocation using restricted PostgreSQL credentials.'

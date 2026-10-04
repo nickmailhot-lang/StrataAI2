@@ -173,7 +173,7 @@ internal sealed partial class PostgresWorkManagementStore(
             SELECT b.id, b.name, b.version
             FROM boards b
             WHERE b.tenant_id = @tenant_id
-              AND b.lifecycle_state <> 'DELETED'
+              AND b.lifecycle_state = 'ACTIVE'
               AND (b.visibility <> 'PRIVATE' OR @organization_admin OR EXISTS (
                   SELECT 1 FROM board_members m
                   WHERE m.tenant_id = b.tenant_id AND m.board_id = b.id

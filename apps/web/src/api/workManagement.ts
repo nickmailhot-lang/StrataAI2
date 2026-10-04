@@ -21,6 +21,7 @@ export type BoardSnapshot = {
     name: string;
     description: string | null;
     lifecycleState: string;
+    version?: number;
     dateTimezoneOverride?: string | null;
   };
   lists: {

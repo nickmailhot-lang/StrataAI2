@@ -11,6 +11,40 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_04_Board_archive_hides_active_discovery_restores_and_recovers_the_original_receipt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var id = Guid.Parse("71000000-0000-4000-8000-000000000001");
+        await app.Services.GetRequiredService<IWorkManagementStore>().CreateBoardAsync(f.Organization, f.Owner, id,
+            "Lifecycle discovery", "Private body", BoardVisibility.Private, "COLOR", "blue", DateTimeOffset.UtcNow, ct);
+        var directory = $"/organizations/{f.Organization}/boards";
+        var initial = await owner.GetFromJsonAsync<JsonElement>(directory, ct);
+        Assert.Contains(initial.EnumerateArray(), item => item.GetProperty("id").GetGuid() == id);
+        var key = Guid.NewGuid().ToString();
+        async Task<HttpResponseMessage> Archive(string commandKey, long version)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"/boards/{id}/archive") { Content = JsonContent.Create(new { version }) };
+            request.Headers.Add("Idempotency-Key", commandKey); return await owner.SendAsync(request, ct);
+        }
+        using var archived = await Archive(key, 1); Assert.Equal(HttpStatusCode.OK, archived.StatusCode);
+        var bytes = await archived.Content.ReadAsStringAsync(ct);
+        var hidden = await owner.GetFromJsonAsync<JsonElement>(directory, ct);
+        Assert.DoesNotContain(hidden.EnumerateArray(), item => item.GetProperty("id").GetGuid() == id);
+        using var replay = await Archive(key, 1); Assert.Equal(HttpStatusCode.OK, replay.StatusCode);
+        Assert.Equal(bytes, await replay.Content.ReadAsStringAsync(ct));
+        var current = await owner.GetFromJsonAsync<JsonElement>($"/boards/{id}", ct);
+        Assert.Equal("archived", current.GetProperty("board").GetProperty("lifecycleState").GetString());
+        Assert.True(current.GetProperty("access").GetProperty("canAdminister").GetBoolean());
+        Assert.False(current.GetProperty("access").GetProperty("canEdit").GetBoolean());
+        using var restored = await owner.PostAsJsonAsync($"/boards/{id}/restore", new { version = 2 }, ct);
+        Assert.Equal(HttpStatusCode.OK, restored.StatusCode);
+        var visible = await owner.GetFromJsonAsync<JsonElement>(directory, ct);
+        Assert.Contains(visible.EnumerateArray(), item => item.GetProperty("id").GetGuid() == id && item.GetProperty("version").GetInt64() == 3);
+    }
+
+    [Fact]
     public async Task PRD_18_Board_archive_directory_is_bounded_admin_filtered_and_excludes_active_deleted_and_private_bodies()
     {
         var ct = TestContext.Current.CancellationToken;

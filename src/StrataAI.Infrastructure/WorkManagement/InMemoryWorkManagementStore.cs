@@ -38,7 +38,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
         {
             return Task.FromResult<IReadOnlyList<OrganizationBoardSummary>>(
                 _boards.Values.Where(board => board.OrganizationId == organizationId &&
-                    board.LifecycleState != BoardLifecycleState.Deleted &&
+                    board.LifecycleState == BoardLifecycleState.Active &&
                     (board.Visibility != BoardVisibility.Private || organizationAdministrator ||
                         (_members.TryGetValue((board.Id, userId), out var member) && member.Active)))
                     .OrderBy(board => board.Name).ThenBy(board => board.Id)
