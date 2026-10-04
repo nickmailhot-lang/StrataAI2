@@ -25,6 +25,7 @@ it('requires explicit confirmation and sends the current version with a retry ke
   const next = { ...board, visibility: 'PUBLIC', version: 5 };
   const mock = mount(response(scope), response(next), response({ ...scope, board: next }));
   await choose(); await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+  expect(screen.getByText('Selected Card covers and the Board background image will also be publicly visible.')).toBeInTheDocument();
   expect(screen.queryByRole('textbox', { name: 'Public Board link' })).not.toBeInTheDocument();
   expect(mock).toHaveBeenCalledTimes(1);
   fireEvent.click(screen.getByRole('button', { name: 'Confirm visibility change' }));

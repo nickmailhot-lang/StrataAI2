@@ -62,5 +62,23 @@ public sealed partial class ApiHostTests
         using (var stale = await owner.GetAsync(copyPath + "?boardVersion=2", ct)) Assert.Equal(HttpStatusCode.NotFound, stale.StatusCode);
         Assert.Equal(reads, objects.Reads); objects.CorruptReads = true;
         using (var corrupt = await owner.GetAsync(copyPath, ct)) Assert.Equal(HttpStatusCode.ServiceUnavailable, corrupt.StatusCode);
+        objects.CorruptReads = false;
+        using var publishedCopy = await Mutate(owner, HttpMethod.Patch, $"/boards/{target.Id}/visibility", new { visibility = "PUBLIC", version = 1 });
+        Assert.Equal(HttpStatusCode.OK, publishedCopy.StatusCode);
+        using (var publicImage = await anonymous.GetAsync(copyPath + "?boardVersion=2", ct))
+        {
+            Assert.Equal(HttpStatusCode.OK, publicImage.StatusCode);
+            Assert.Equal(bytes, await publicImage.Content.ReadAsByteArrayAsync(ct));
+            Assert.True(publicImage.Headers.CacheControl!.NoStore);
+        }
+        using var narrowedCopy = await Mutate(owner, HttpMethod.Patch, $"/boards/{target.Id}/visibility", new { visibility = "PRIVATE", version = 2 });
+        Assert.Equal(HttpStatusCode.OK, narrowedCopy.StatusCode); reads = objects.Reads;
+        using (var withdrawn = await anonymous.GetAsync(copyPath, ct)) Assert.Equal(HttpStatusCode.NotFound, withdrawn.StatusCode);
+        Assert.Equal(reads, objects.Reads);
+        using var clearedCopy = await Mutate(owner, HttpMethod.Patch, $"/boards/{target.Id}", new { name = target.Name,
+            version = 3, backgroundType = "COLOR", backgroundValue = (string?)null });
+        Assert.Equal(HttpStatusCode.OK, clearedCopy.StatusCode); reads = objects.Reads;
+        using (var retired = await owner.GetAsync(copyPath, ct)) Assert.Equal(HttpStatusCode.NotFound, retired.StatusCode);
+        Assert.Equal(reads, objects.Reads);
     }
 }

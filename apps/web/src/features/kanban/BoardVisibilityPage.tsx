@@ -122,7 +122,9 @@ function Visibility({ org, id }: { org: string; id: string }) {
     <Dialog open={review && !!board} onClose={() => { if (!busy) setReview(false); }} aria-labelledby="visibility-title"
       slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: restoreFocus } }}>
       <DialogTitle id="visibility-title">Change Board visibility?</DialogTitle>
-      <DialogContent><Typography>{board?.name}: {draft}</Typography><Typography>{draft === 'PUBLIC' ? 'Anyone, including people who are not signed in, can read this Board.' : 'This changes who can discover and read this Board.'} Existing membership and edit permissions are managed separately.</Typography></DialogContent>
+      <DialogContent><Typography>{board?.name}: {draft}</Typography><Typography>{draft === 'PUBLIC' ? 'Anyone, including people who are not signed in, can read this Board.' : 'This changes who can discover and read this Board.'} Existing membership and edit permissions are managed separately.</Typography>
+        {draft === 'PUBLIC' && <Typography>Selected Card covers and the Board background image will also be publicly visible.</Typography>}
+      </DialogContent>
       <DialogActions><Button ref={cancel} disabled={busy} onClick={() => setReview(false)}>Cancel</Button>
         <Button disabled={busy || !board} onClick={() => board && void run({ visibility: draft.toUpperCase(), version: board.version })}>Confirm visibility change</Button></DialogActions>
     </Dialog>
