@@ -69,6 +69,9 @@ for (const width of [1280, 390]) {
       await expect(peer.getByText('Complete: Recovered during socket outage', { exact: true })).toBeVisible();
       unavailable = false; await expect(peer.getByText('Live updates connected.', { exact: true })).toBeVisible({ timeout: 45_000 });
       const pushed = await context.request.patch(`${path}/${item.id}`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { text: 'After socket reconnect', completed: false, cardVersion: 5, checklistVersion: 4, version: 3 } }); expect(pushed.status()).toBe(200);
+      // Complete this command's real durable delivery before beginning the
+      // next independent review. Pending delivery still invalidates admission.
+      await waitForBoardDelivery(context.request, board);
       await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible({ timeout: 20_000 }); await expect(dirty).toHaveValue('Draft during socket outage');
       await expect(peer.getByRole('button', { name: 'Save checklist item', exact: true })).toBeDisabled();
       expect((await new AxeBuilder({ page: peer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
