@@ -586,3 +586,28 @@ to one space on each side (39 total), preserving the server/client bound. Shell
 syntax and the actual generated-length assertion pass. Corrected run
 37168895243 is live; exact-image execution remains unproven until it passes.
 No full ticket or acceptance criterion is closed by this UI slice.
+
+## Native account handle release scenarios
+
+Two Playwright cases now register/login actual release accounts and drive the
+Profile-page dialog at 1280px and 390px. They submit with real keyboard events,
+check dialog accessibility and page overflow, then let the actual handle PATCH
+commit before replacing its first response with 503. Recovery must focus the
+original-retry control, keep editing/dismissal and competing account actions
+disabled, and resend the identical key/body. Actual protected reads and the
+identity stream must show one changed handle/account revision and one empty-
+metadata USER_PROFILE_UPDATED event after the duplicate HTTP calls.
+
+The scenarios retain an unsaved profile draft across modal closure, require
+explicit review after an actual peer profile mutation, submit a fresh handle
+intent with the new root revision and independent key, refuse the original
+former-alias receipt after rename, then revoke the actual session and require
+sign-in before another handle command can be sent. No synthetic response
+supplies account/handle/receipt content; only the committed first reply is lost.
+Both cases register successfully with Playwright. This is registration evidence,
+not native execution success. The full exact-image CI must execute them.
+
+Corrected fixture commit bc81736 has passed source gates and immutable image
+build in run 37168895243; security/container checks are live. UI commit 2a530b4
+has passed web/PostgreSQL checks in run 37169116417 while managed tests are live.
+No broad release, native, live-wait or complete ticket claim follows from this.
