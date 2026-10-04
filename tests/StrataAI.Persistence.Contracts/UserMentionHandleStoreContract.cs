@@ -69,6 +69,16 @@ internal static class UserMentionHandleStoreContract
             try { await store.ClaimAsync(first, "unowned", 1, at, ct); throw new InvalidOperationException("Unowned handle claim was accepted."); }
             catch (InvalidOperationException error) when (error.Message == "Mention handles require an owning identity transaction.") { }
             var initial = await Current(first);
+            var isolated = await unit.ExecuteAsync<bool>(first, async () =>
+            {
+                try { await store.FindAsync(users[1], ct); throw new InvalidOperationException("Foreign subject handle read was accepted."); }
+                catch (InvalidOperationException error) when (error.Message == "Mention handles require an owning identity transaction.") { }
+                try { await store.ClaimAsync(users[1], "foreign_scope", 1, at.AddMinutes(1), ct); throw new InvalidOperationException("Foreign subject handle claim was accepted."); }
+                catch (InvalidOperationException error) when (error.Message == "Mention handles require an owning identity transaction.") { }
+                return IdentityOperation<bool>.Success(true);
+            }, ct);
+            Require(isolated.Succeeded && (await Current(users[1])).Version == 1,
+                "Owning identity subject was not isolated or foreign claim advanced identity.");
             Require(initial.UserId == first && initial.Handle == $"u_{first:N}" && initial.Version == 1
                 && initial.CreatedAt == initial.UpdatedAt, "Adapter lost seeded account identity/history.");
             var claimed = "handle_" + Guid.NewGuid().ToString("N")[..16];
@@ -139,6 +149,6 @@ internal static class UserMentionHandleStoreContract
             await using var cleanup = new NpgsqlCommand("DELETE FROM users WHERE id=ANY(@users);", admin);
             cleanup.Parameters.AddWithValue("users", users); await cleanup.ExecuteNonQueryAsync(ct);
         }
-        Console.WriteLine("Restricted mention-handle adapter: owning scope, normalization, CAS/no-op, rollback, concurrent collision, former/default reclaim, reservation bound and recovered savepoints passed.");
+        Console.WriteLine("Restricted mention-handle adapter: owning subject/read-write isolation, normalization, CAS/no-op, rollback, concurrent collision, former/default reclaim, reservation bound and recovered savepoints passed.");
     }
 }

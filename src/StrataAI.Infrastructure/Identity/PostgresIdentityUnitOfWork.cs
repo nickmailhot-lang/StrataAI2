@@ -143,6 +143,7 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
                 gate.Parameters.AddWithValue("actor", actorId);
                 if (await gate.ExecuteScalarAsync(cancellationToken) is null || !await actors.VerifyAsync(actorId, cancellationToken))
                     return IdentityOperation<T>.Failure("session_unavailable");
+                using var subject = connections.EnterIdentitySubject(actorId);
                 return await operation();
             }, result => result.Succeeded, cancellationToken);
         }

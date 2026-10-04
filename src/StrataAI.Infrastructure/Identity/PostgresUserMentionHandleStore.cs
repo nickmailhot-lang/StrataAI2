@@ -10,7 +10,7 @@ public sealed class PostgresUserMentionHandleStore(PostgresConnectionFactory con
     private const string Fields = "user_id,handle,created_at,updated_at,version";
     private void RequireScope(Guid user)
     {
-        if (!connections.HasIdentityCommandScope)
+        if (!connections.OwnsIdentitySubject(user))
             throw new InvalidOperationException("Mention handles require an owning identity transaction.");
         if (user == Guid.Empty) throw new ArgumentException("Mention account is required.");
     }

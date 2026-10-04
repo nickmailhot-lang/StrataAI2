@@ -35,34 +35,37 @@ bodies into public event or notification payloads.
 
 | Requirement | Current state | Evidence still required |
 | --- | --- | --- |
-| COMMENT-FR-001 authorized Card comments | Domain producer exists; no route or persistence yet | Current actor/Board participation, active parents, atomic create, forced RLS, authoritative MUI result |
-| COMMENT-FR-002 author/content/time/edited state | Domain identity, content and timestamps implemented | Tenant-safe persistence/DTOs, exact UTC revision reads and bounded metadata disclosure |
-| COMMENT-FR-003 author edits | Necessary author/revision/validation rules implemented | Current session/parent checks before and after lock waits, dual Card/comment concurrency policy, atomic audit/event/receipt, UI reconciliation |
-| COMMENT-FR-004 author deletion | Domain body-redacting tombstone implemented | Explicit confirmation, current rights and revision checks, atomic persisted tombstone/history, replay and safe MUI removal |
-| COMMENT-FR-005 @username | Unimplemented | Canonical unambiguous teammate handle/selection, current authorized recipient resolution, bounded structured references and safe UI |
-| COMMENT-FR-006 @card/@board | Unimplemented | Current authorized mass-mention policy, bounded fanout, durable rate limits and stable refusal without partial effects |
+| COMMENT-FR-001 authorized Card comments | Owning commands, protected HTTP, forced RLS storage and guarded MUI controls implemented; scoped source/storage checks pass | Complete actual API/DB/Worker native scenarios, lifecycle races and performance acceptance |
+| COMMENT-FR-002 author/content/time/edited state | PostgreSQL/HTTP DTOs and bounded MUI parser retain canonical author/history, UTC revisions and redacted tombstones | Complete native rendering and historical-readable-author/lifecycle evidence |
+| COMMENT-FR-003 author edits | Author/current rights admission, dual revisions, body-free receipts, atomic audit/events and guarded UI edits implemented | Complete session/grant/parent changes under live waits, native reconciliation and performance evidence |
+| COMMENT-FR-004 author deletion | Confirmed author deletion persists a redacted tombstone; original former-body receipt is refused; MUI removal/retry guards implemented | Complete actual native confirmation/replay/lifecycle evidence and retention/purge policy |
+| COMMENT-FR-005 @username | Bounded plaintext tokens and globally unique reserved handle registry/storage implemented; no comment recipient resolver/notification producer yet | Current-session account setting/receipts/audit/events, scoped teammate resolution/selection and safe mention UI |
+| COMMENT-FR-006 @card/@board | Bounded lexical declarations exist; actual mass-mention producer unimplemented | Explicit confirmation, current authorization, bounded fanout, durable rate limits and stable refusal without partial effects |
 | COMMENT-FR-007 mention notifications | Existing PRD-17 infrastructure; no comment mention producer | Atomic recipient intent, current eligibility/notification delivery, idempotent edits/replays, no protected body leakage |
 | COMMENT-FR-008 immutable activity | Existing Work events/audit; no complete activity projection | Every significant domain event, immutable interpreter/projection, complete lifecycle and replay coverage |
 | COMMENT-FR-009 event fields | Existing canonical Work event envelope | Current-authorized paginated activity DTO/projection with required safe metadata and complete event coverage |
 | COMMENT-FR-010 historical actor deactivation | Domain retains stable author ID | Historical actor interpretation after deactivation without granting current access or replacing past attribution with mutable profile data |
 | COMMENT-FR-011 paginated Board/Card activity | Unimplemented | Bounded indexed cursor reads, current scope/parents, move/archive/deletion and mid-read revocation, MUI paging |
 
-All AC-COMMENT-15-01/02/03 and TC-01 through TC-13 remain incomplete at their full
-server/state/client scopes. Domain tests cover only their named necessary rules.
-Local warning-as-error compilation passes; new Linux test execution is pending.
+All AC-COMMENT-15-01/02/03 and TC-01 through TC-13 remain unproven at their full
+server/state/client scopes. Domain, protected HTTP, restricted database and MUI
+tests prove their named checks; registered native scenarios are not execution
+proof. Local warning-as-error compilation passes. Each committed slice's Linux
+source, storage and immutable release gates are recorded separately below.
 Windows Application Control prevents local .NET test execution and is preserved.
 
-The remaining work includes ordered migrations and restricted grants, atomic
-idempotent commands and event/audit/notification production, immutable activity,
-authorization and rollback under live waits, safe MUI comment/mention/activity
-controls, two-client/reconnect recovery, native keyboard/mobile/accessibility,
+The remaining work includes account-setting and mention producer migrations,
+atomic recipient intents and notification delivery, immutable activity,
+authorization and rollback under all live waits, mention/activity MUI controls,
+complete two-client/reconnect proof, native keyboard/mobile/accessibility,
 error/empty/loading states, operator-safe telemetry and the unchanged PRD
 performance/capacity budgets. No endpoint may expose this Domain foundation
 without completing its current actor and owning transaction boundary.
 
-The account model currently has stable IDs and display names, without a proven
-unique @username contract. Recipient resolution and mass-mention permissions
-must be made explicit in the subsequent Application/account/UI implementation;
+The account model now has a persisted globally unique current-handle registry
+with immutable alias reservations, alongside stable IDs and display names.
+Account setting and recipient resolution still need their current-session and
+Board scopes. Mass-mention permissions must be made explicit in Application/UI;
 they must not infer authority from arbitrary body text, display-name uniqueness,
 an email address or a current generic Board view permission. These unresolved
 cross-PRD choices do not waive mentions or their notifications.
@@ -388,3 +391,15 @@ Their execution requires Linux CI; local test execution remains blocked by
 Windows Application Control and is not bypassed. The actual session command,
 handle receipts/events/UI, teammate lookup and complete PRD acceptance remain
 unfinished.
+
+Production handle storage now additionally requires the exact owning identity
+subject. The generic identity unit establishes an in-process subject lease only
+after locking the account and verifying its actor/session; unrelated accounts
+cannot be supplied to handle reads or claims inside that transaction. The lease
+and transaction scope clear on every exit. This actor-bound capability is
+separate from the SQL identity-subject GUC, whose value alone never grants
+Application admission. The restricted C# contract now checks both foreign read
+and foreign write rejection without advancing the other account. Compilation
+passes; these expanded Production subject checks await their exact commit's
+Linux execution. Current-session handle setting and all remaining mention/
+activity acceptance are still unfinished.

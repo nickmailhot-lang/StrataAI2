@@ -12,6 +12,7 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
     private readonly NpgsqlDataSource _dataSource;
     private readonly AsyncLocal<TenantDbSession?> _commandSession = new();
     private readonly AsyncLocal<RoutingDbSession?> _identityCommandSession = new();
+    private readonly AsyncLocal<Guid?> _identityCommandSubject = new();
 
     public PostgresConnectionFactory(string connectionString)
     {
@@ -109,6 +110,15 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
 
     internal bool HasCommandScope(Guid organizationId) => _commandSession.Value?.OrganizationId == organizationId;
     internal bool HasIdentityCommandScope => _identityCommandSession.Value is not null;
+    internal bool OwnsIdentitySubject(Guid user) => user != Guid.Empty && HasIdentityCommandScope && _identityCommandSubject.Value == user;
+    internal IDisposable EnterIdentitySubject(Guid user)
+    {
+        if (user == Guid.Empty || !HasIdentityCommandScope || _identityCommandSubject.Value is not null)
+            throw new InvalidOperationException("An owning identity subject is unavailable.");
+        _identityCommandSubject.Value = user;
+        return new IdentitySubjectLease(() => _identityCommandSubject.Value = null);
+    }
+    private sealed class IdentitySubjectLease(Action release) : IDisposable { public void Dispose() => release(); }
 
     // Only lifecycle cleanup of previously locked Organization parents borrows
     // this scope. It uses the same identity transaction/connection and restores
@@ -194,6 +204,6 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
             if (succeeded(result)) await transaction.CommitAsync(cancellationToken);
             return result;
         }
-        finally { _identityCommandSession.Value = null; }
+        finally { _identityCommandSubject.Value = null; _identityCommandSession.Value = null; }
     }
 }
