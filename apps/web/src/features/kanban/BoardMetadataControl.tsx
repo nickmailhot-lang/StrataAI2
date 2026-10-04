@@ -77,6 +77,7 @@ export function BoardMetadataControl({ snapshot, disabled, onBusyChange, onRecov
           <MenuItem value="preserve">Keep current background</MenuItem><MenuItem value="default">Default background</MenuItem>
           {boardColors.map(color => <MenuItem key={color} value={color}>{color[0].toUpperCase() + color.slice(1)}</MenuItem>)}
         </TextField>
+        <Typography>To use an image background, open a Card with a checked image attachment and choose Review Board background images in its details.</Typography>
         {notice && review && <Alert severity="info" role="status">{notice}</Alert>}
         {(changed || conflict) && !intent && <Alert severity="warning">This review changed. Keep your draft and review the current Board revision before saving.</Alert>}
         {(changed || conflict) && available && !intent && <Stack sx={{ overflowWrap: 'anywhere' }}>

@@ -61,6 +61,7 @@ import { BoardStarControl } from './BoardStarControl';
 import { BoardCopyControl } from './BoardCopyControl';
 import { boardBackgroundColor } from './boardBackground';
 import { BoardBackgroundImage } from './BoardBackgroundImage';
+import { BoardBackgroundImageControl } from './BoardBackgroundImageControl';
 import { ListCopyControl } from './ListCopyControl';
 import { CardReminderControl } from './CardReminderControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
@@ -129,14 +130,15 @@ function BoardContent() {
   const [urlAttachmentRecovery, setAttachmentRecovery] = useState(false);
   const [attachmentLifecycleRecovery, setAttachmentLifecycleRecovery] = useState(false);
   const [coverRecovery, setCoverRecovery] = useState(false);
+  const [backgroundRecovery, setBackgroundRecovery] = useState(false);
   const [commentRecovery, setCommentRecovery] = useState(false);
-  const attachmentRecovery = urlAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery;
+  const attachmentRecovery = urlAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery || backgroundRecovery;
   const [fileAttachmentRecovery, setFileAttachmentRecovery] = useState(false);
   const checklistRecovery = checklistCreateRecovery || checklistManageRecovery;
   const otherBusy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery;
   const [crossBoardMoveRecovery, setCrossBoardMoveRecovery] = useState(false);
   const [cardCopyRecovery, setCardCopyRecovery] = useState(false);
-  const cardCommandRecovery = crossBoardMoveRecovery || cardCopyRecovery;
+  const cardCommandRecovery = crossBoardMoveRecovery || cardCopyRecovery || backgroundRecovery;
   const [crossBoardMoved, setCrossBoardMoved] = useState<{ cardId: string; boardId: string }>();
   const busy = otherBusy || dateRecovery || crossBoardMoveRecovery || cardCopyRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
@@ -776,6 +778,13 @@ function BoardContent() {
               cardId={card.id} version={card.version} editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))} unavailable={snapshotReading || !!loadError}
               disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || attachmentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setFileAttachmentRecovery}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            {cardId && <BoardBackgroundImageControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              cardId={card.id} version={card.version} boardVersion={snapshot.board.version!}
+              editable={snapshot.access.canEdit && Boolean(editable) && snapshot.board.lifecycleState === 'active' && snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === card.id))}
+              unavailable={snapshotReading || !!loadError}
+              disabled={crossBoardMoveRecovery || cardCopyRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery}
+              onBusyChange={setBusy} onRecoveryChange={setBackgroundRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardCoverControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))}
