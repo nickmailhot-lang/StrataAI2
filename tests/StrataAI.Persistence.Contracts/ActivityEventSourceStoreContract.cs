@@ -95,6 +95,44 @@ internal static class ActivityEventSourceStoreContract
             Require(cardTail.Count == 15 && cardFirst.Take(50).Concat(cardTail).Select(row => row.EventId).Distinct().Count() == 65, "Card activity tied seek lost or duplicated a source.");
             Require((await Scope(() => sources.ReadCardWindowAsync(tenant, otherBoard, board, null, null, ct))).Count == 1, "Explicit historical Card Board slice was unavailable.");
             Require((await Scope(() => sources.ReadCardWindowAsync(tenant, board, Guid.NewGuid(), null, null, ct))).Count == 0, "Card activity identity widened.");
+            // Materialize the previously synthetic identity in the other Board:
+            // these historical sources are deliberate fixtures, not a move command.
+            await using (var current = new NpgsqlCommand("""
+                UPDATE users SET status=@status WHERE id=@actor;
+                INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
+                  VALUES(@list,@tenant,@other,'Activity current List','500000000000000000000000000000',@at,@at);
+                INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+                  VALUES(@card,@tenant,@other,@list,'Activity current Card','500000000000000000000000000000',@at,@at);
+                """, admin))
+            {
+                current.Parameters.AddWithValue("status", originalStatus); current.Parameters.AddWithValue("actor", actor);
+                current.Parameters.AddWithValue("list", Guid.NewGuid()); current.Parameters.AddWithValue("tenant", tenant);
+                current.Parameters.AddWithValue("other", otherBoard); current.Parameters.AddWithValue("card", board);
+                current.Parameters.AddWithValue("at", at); await current.ExecuteNonQueryAsync(ct);
+            }
+            var cardBinding = new ActivityCursorBinding(tenant, actor, ActivityTargetKind.Card, board);
+            var history = await Scope(() => feed.ReadAsync(cardBinding, null, ct));
+            Require(history.Count == 51 && history[0].BoardId == otherBoard && history.Skip(1).All(row => row.BoardId == board),
+                "Authorized Card candidate query narrowed history to its current Board.");
+            var historyAnchor = history[49];
+            var historyTail = await Scope(() => feed.ReadAsync(cardBinding, new(historyAnchor.CreatedAt, historyAnchor.EventId), ct));
+            Require(historyTail.Count == 16 && history.Take(50).Concat(historyTail).Select(row => row.EventId).Distinct().Count() == 66,
+                "Authorized cross-Board Card history seek lost or duplicated an event.");
+            await using (var hideSource = new NpgsqlCommand("UPDATE boards SET visibility='PRIVATE' WHERE tenant_id=@tenant AND id=@board;", admin))
+            {
+                hideSource.Parameters.AddWithValue("tenant", tenant); hideSource.Parameters.AddWithValue("board", board);
+                await hideSource.ExecuteNonQueryAsync(ct);
+            }
+            var admittedCurrent = await Scope(() => feed.ReadAsync(cardBinding, null, ct));
+            Require(admittedCurrent.Count == 1 && admittedCurrent[0].BoardId == otherBoard,
+                "Card history admitted an inaccessible historical source Board.");
+            await using (var hideCurrent = new NpgsqlCommand("UPDATE boards SET visibility='PRIVATE' WHERE tenant_id=@tenant AND id=@board;", admin))
+            {
+                hideCurrent.Parameters.AddWithValue("tenant", tenant); hideCurrent.Parameters.AddWithValue("board", otherBoard);
+                await hideCurrent.ExecuteNonQueryAsync(ct);
+            }
+            Require((await Scope(() => feed.ReadAsync(cardBinding, null, ct))).Count == 0,
+                "Card history admitted an inaccessible current Board.");
             Console.WriteLine("Real restricted activity source adapter: bounded same-time seek, immutable captions after rename/deactivation, pending source visibility, exact retry, owning rollback and recovery passed. Raw sources do not establish HTTP/feed audience admission.");
             Console.WriteLine("Real restricted Card activity source slices: bounded tied seek, entity-type/identity/source-Board isolation and explicit historical Board reads passed. Synthetic source setup does not prove actual Card movement or authorized feeds.");
         }
@@ -105,6 +143,8 @@ internal static class ActivityEventSourceStoreContract
                 DELETE FROM background_jobs WHERE tenant_id=@tenant AND safe_metadata->>'boardId'=ANY(@board_texts);
                 DELETE FROM work_events WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM work_event_streams WHERE tenant_id=@tenant AND board_id=ANY(@boards);
+                DELETE FROM cards WHERE tenant_id=@tenant AND board_id=ANY(@boards);
+                DELETE FROM board_lists WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM boards WHERE tenant_id=@tenant AND id=ANY(@boards);
                 """, admin);
             cleanup.Parameters.AddWithValue("caption", originalCaption); cleanup.Parameters.AddWithValue("status", originalStatus);
