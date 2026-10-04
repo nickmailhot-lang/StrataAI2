@@ -980,3 +980,14 @@ Commit 0aa719c now has successful web and PostgreSQL jobs in run 37173850493.
 The actual restricted mention publication contract logged successful exact
 source/duplicate/self/revision and full dependent-effect rollback checks.
 Managed/API source tests and later immutable release gates remain live.
+
+The new Linux whole-command Domain cases passed: 611 succeeded, zero failed or
+skipped in run 37173850493. The actual API job reached a new inbox privacy
+assertion and failed because the existing notification endpoints emitted no
+Cache-Control header (286 succeeded, one failed). Preserve that assertion and
+fix the product: inbox reads and single/bulk read acknowledgments now emit
+private, no-store before service execution. The HTTP test explicitly requires
+both private and no-store. This repairs the demonstrated issue; rerun execution
+and all later release gates remain pending. No tests or security boundaries were
+removed or weakened. The preceding failed source gate correctly skipped image,
+security/container and release stages rather than producing a release bundle.

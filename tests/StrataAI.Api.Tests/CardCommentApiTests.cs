@@ -25,7 +25,9 @@ public sealed partial class ApiHostTests
         Assert.Equal(change, await retry.Content.ReadFromJsonAsync<CardCommentChange>(ct));
         var inbox = $"/organizations/{f.Organization}/notifications";
         using var response = await recipient.GetAsync(inbox, ct);
-        Assert.True(response.Headers.CacheControl!.NoStore);
+        Assert.NotNull(response.Headers.CacheControl);
+        Assert.True(response.Headers.CacheControl.NoStore);
+        Assert.True(response.Headers.CacheControl.Private);
         var page = (await response.Content.ReadFromJsonAsync<JsonElement>(ct));
         var item = Assert.Single(page.GetProperty("items").EnumerateArray());
         Assert.Equal("MENTION_CREATED", item.GetProperty("type").GetString());
