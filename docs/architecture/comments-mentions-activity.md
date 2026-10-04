@@ -1468,3 +1468,28 @@ still need current owner/session, source/current Board and target lifecycle
 admission before returning these events or page cursors. Authorized APIs,
 interpreter/MUI/realtime, retention and full performance acceptance are still
 unfinished. Estimated PRD-15 remaining work stays **50%**.
+
+The private target contract passed against PostgreSQL in run 37182194574,
+job 111376834762. Its synthetic different-actor source resolved the actual
+stored owner/parent after watch removal and Reminder cancellation, with source
+identity and tenant isolation checks. The web gate passed; complete managed,
+exact-image and native browser execution remains pending.
+
+Ordered migration 064 now protects the personal identities underlying those
+historical source references. Watch tenant/ID/owner/type/target/reference/time
+and Reminder tenant/ID/owner/Card/creation time cannot be reassigned by UPDATE,
+even to a valid different member or target in the same tenant. Normal watching,
+interval/scheduling/cancellation/generation/revision/time updates remain
+available. AFTER UPDATE guards raise a check violation and atomically roll back
+identity changes; no direct runtime function capability is exposed. Application
+and Demo stores already preserve those identity fields when changing intent.
+
+Readiness now requires all 64 ledger entries. Repeat/forward upgrade fixtures
+include 064; serialization, failure and missing-ledger fixtures advance to
+065/066/067. The mandatory activity SQL contract now attempts otherwise valid
+same-tenant owner/target/creation-time rewrites and requires this precise guard
+failure plus unchanged rows, then positively exercises watch removal and
+Reminder cancellation with retained identity. Compilation passed with zero
+warnings/errors; new migration/runtime execution awaits CI. This does not
+complete authorized activity feeds, private current owner/parent admission,
+MUI/realtime or retention/capacity acceptance. PRD-15 remains **50%** unfinished.

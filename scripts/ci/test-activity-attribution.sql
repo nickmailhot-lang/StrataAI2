@@ -122,7 +122,59 @@ DO $$ BEGIN
 END $$;
 RESET ROLE;
 UPDATE users SET display_name='Later name',status='DEACTIVATED' WHERE id='06200000-0000-0000-0000-000000000041';
+-- Valid same-tenant replacement identities must fail the identity guard, not
+-- merely an unrelated FK. Ordinary intent transitions must still succeed.
+INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at)
+ VALUES('06200000-0000-0000-0000-000000000043','private-target@example.test','PRIVATE-TARGET@EXAMPLE.TEST','Other personal owner','ACTIVE','fixture',now(),now());
+INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+ VALUES(gen_random_uuid(),'06200000-0000-0000-0000-000000000001','06200000-0000-0000-0000-000000000043','MEMBER','ACTIVE');
+INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+ VALUES('06200000-0000-0000-0000-000000000032','06200000-0000-0000-0000-000000000001',
+ '06200000-0000-0000-0000-000000000011','06200000-0000-0000-0000-000000000021',
+ 'Other activity Card','600000000000000000000000000000',now(),now());
+GRANT SELECT,UPDATE ON watch_subscriptions,card_reminders TO strataai_activity_storage_ci;
 SET LOCAL ROLE strataai_activity_storage_ci;
+DO $$ DECLARE mutation text; baseline jsonb; BEGIN
+ SELECT to_jsonb(w) INTO baseline FROM watch_subscriptions w;
+ FOREACH mutation IN ARRAY ARRAY[
+  'user_id=''06200000-0000-0000-0000-000000000043''',
+  'entity_type=''CARD'',entity_id=''06200000-0000-0000-0000-000000000031'',board_id=NULL,card_id=''06200000-0000-0000-0000-000000000031''',
+  'created_at=created_at-interval ''1 second'''] LOOP
+  BEGIN
+   EXECUTE 'UPDATE watch_subscriptions SET '||mutation;
+   RAISE EXCEPTION 'Private watch identity was rewritten';
+  EXCEPTION WHEN check_violation THEN
+   IF SQLERRM<>'Private activity identity is immutable' THEN RAISE; END IF;
+  END;
+  IF (SELECT to_jsonb(w) FROM watch_subscriptions w) IS DISTINCT FROM baseline THEN
+   RAISE EXCEPTION 'Refused private watch rewrite survived'; END IF;
+ END LOOP;
+ SELECT to_jsonb(r) INTO baseline FROM card_reminders r;
+ FOREACH mutation IN ARRAY ARRAY[
+  'user_id=''06200000-0000-0000-0000-000000000043''',
+  'card_id=''06200000-0000-0000-0000-000000000032''',
+  'created_at=created_at-interval ''1 second'''] LOOP
+  BEGIN
+   EXECUTE 'UPDATE card_reminders SET '||mutation;
+   RAISE EXCEPTION 'Private Reminder identity was rewritten';
+  EXCEPTION WHEN check_violation THEN
+   IF SQLERRM<>'Private activity identity is immutable' THEN RAISE; END IF;
+  END;
+  IF (SELECT to_jsonb(r) FROM card_reminders r) IS DISTINCT FROM baseline THEN
+   RAISE EXCEPTION 'Refused private Reminder rewrite survived'; END IF;
+ END LOOP;
+ UPDATE watch_subscriptions SET watching=false,version=version+1,updated_at=clock_timestamp();
+ UPDATE card_reminders SET enabled=false,status='CANCELLED',due_at=NULL,trigger_at=NULL,
+  version=version+1,generation=generation+1,updated_at=clock_timestamp();
+ IF NOT EXISTS(SELECT 1 FROM watch_subscriptions WHERE NOT watching AND version=2
+  AND user_id='06200000-0000-0000-0000-000000000041' AND entity_type='BOARD'
+  AND entity_id='06200000-0000-0000-0000-000000000011') OR
+  NOT EXISTS(SELECT 1 FROM card_reminders WHERE status='CANCELLED' AND NOT enabled AND version=2 AND generation=2
+   AND user_id='06200000-0000-0000-0000-000000000041' AND card_id='06200000-0000-0000-0000-000000000031') THEN
+  RAISE EXCEPTION 'Normal private intent transitions or retained identity failed'; END IF;
+ IF has_function_privilege(current_user,'enforce_private_activity_identity()','EXECUTE') THEN
+  RAISE EXCEPTION 'Private activity identity trigger was exposed as a direct capability'; END IF;
+END $$;
 DO $$ BEGIN
  IF (SELECT activity_actor_label FROM work_events WHERE event_id='06200000-0000-0000-0000-000000000051')<>'Original name' OR
   (SELECT actor_id FROM work_events WHERE event_id='06200000-0000-0000-0000-000000000051')<>'06200000-0000-0000-0000-000000000041'::uuid THEN
