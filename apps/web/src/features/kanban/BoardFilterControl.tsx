@@ -6,7 +6,7 @@ import { filterPageMatchesSnapshot, type BoardCanvasFilter } from './boardFilter
 
 const uuid = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v) && v !== '00000000-0000-0000-0000-000000000000';
 const palette = ['green', 'yellow', 'orange', 'red', 'purple', 'blue', 'sky', 'lime', 'pink', 'black'];
-type Criteria = { keyword: string; labels: string[]; members: string[]; match: 'all' | 'any'; completion?: 'all' | 'complete' | 'incomplete' };
+type Criteria = { keyword: string; labels: string[]; members: string[]; match: 'all' | 'any'; completion?: 'all' | 'complete' | 'incomplete'; due?: 'all' | 'none' | 'overdue' | 'upcoming' };
 type Label = { id: string; name: string; color: string };
 type Member = { userId: string; displayName: string };
 type Result = { items: (WorkCard & { listId: string })[]; next: string | null };
@@ -18,9 +18,10 @@ function saved(key: string): { criteria: Criteria; canvas: boolean } {
     if (c && typeof c.keyword === 'string' && c.keyword.length <= 160 && (c.match === 'all' || c.match === 'any')
       && Array.isArray(c.labels) && c.labels.length <= 25 && c.labels.every(uuid) && new Set(c.labels).size === c.labels.length
       && (c.members === undefined || (Array.isArray(c.members) && c.members.length <= 25 && c.members.every(uuid) && new Set(c.members.map(id => id.toLowerCase())).size === c.members.length))
-      && (c.completion === undefined || ['all', 'complete', 'incomplete'].includes(c.completion)))
+      && (c.completion === undefined || ['all', 'complete', 'incomplete'].includes(c.completion))
+      && (c.due === undefined || ['all', 'none', 'overdue', 'upcoming'].includes(c.due)))
       return { criteria: { keyword: c.keyword, labels: c.labels, members: (c.members ?? []).map(id => id.toLowerCase()), match: c.match,
-        ...(c.completion === undefined ? {} : { completion: c.completion }) }, canvas: c.canvas === true };
+        ...(c.completion === undefined ? {} : { completion: c.completion }), ...(c.due === undefined ? {} : { due: c.due }) }, canvas: c.canvas === true };
   } catch { /* Storage is optional; admitted server reads remain authoritative. */ }
   return { criteria: empty(), canvas: false };
 }
@@ -147,6 +148,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     let active = true; const controller = new AbortController(); setResult(undefined); setLoading(true); setNotice(undefined);
     const query = new URLSearchParams({ keyword: applied.keyword, labels: applied.labels.join(','), match: applied.match });
     if (applied.completion && applied.completion !== 'all') query.set('completion', applied.completion);
+    if (applied.due && applied.due !== 'all') query.set('due', applied.due);
     if (applied.members.length) query.set('members', applied.members.join(','));
     if (cursor) query.set('after', cursor);
     void boundedWorkRead(signal => workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/cards?${query}`, { signal }), controller.signal).then(p => {
@@ -208,6 +210,12 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
           const completion = e.target.value as Criteria['completion']; setCriteria(c => ({ ...c, completion }));
         }} disabled={disabled || labelLoading || !identity}>
           <MenuItem value="all">Any completion state</MenuItem><MenuItem value="complete">Due complete</MenuItem><MenuItem value="incomplete">Not due complete</MenuItem>
+        </TextField>
+        <TextField select label="Deadline state" value={criteria.due ?? 'all'} onChange={e => {
+          const due = e.target.value as Criteria['due']; setCriteria(c => ({ ...c, due }));
+        }} disabled={disabled || labelLoading || !identity}>
+          <MenuItem value="all">Any deadline state</MenuItem><MenuItem value="none">No deadline</MenuItem>
+          <MenuItem value="overdue">Overdue</MenuItem><MenuItem value="upcoming">Upcoming</MenuItem>
         </TextField>
         <Typography>Choose up to 25 labels. Selected labels stay selected when you change choice pages.</Typography>
         {labelLoading && <Typography role="status">Loading filter choices…</Typography>}

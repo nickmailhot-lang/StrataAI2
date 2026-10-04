@@ -28,15 +28,20 @@ internal sealed partial class PostgresWorkManagementStore
               WHERE a.tenant_id=c.tenant_id AND a.board_id=c.board_id AND a.card_id=c.id AND a.user_id=ANY(@members)
                 AND m.status='ACTIVE' AND o.status='ACTIVE' AND u.status='ACTIVE' AND (NOT @verified OR u.email_verified)
             ) assignees
+            CROSS JOIN LATERAL (SELECT CASE @due
+              WHEN 'none' THEN c.due_at IS NULL
+              WHEN 'overdue' THEN c.due_at IS NOT NULL AND NOT c.due_complete AND c.due_at<@now
+              WHEN 'upcoming' THEN c.due_at IS NOT NULL AND NOT c.due_complete AND c.due_at>=@now
+              ELSE false END AS hit) deadline
             WHERE c.tenant_id=@tenant AND c.board_id=@board AND c.lifecycle_state='ACTIVE' AND parent.lifecycle_state='ACTIVE'
               AND (@after IS NULL OR c.id>@after)
               AND (
-                (@keyword='' AND cardinality(@labels)=0 AND cardinality(@members)=0 AND @completion IS NULL)
+                (@keyword='' AND cardinality(@labels)=0 AND cardinality(@members)=0 AND @completion IS NULL AND @due='all')
                 OR (@all AND (@keyword='' OR strpos(lower(c.title),lower(@keyword))>0 OR strpos(lower(coalesce(c.description,'')),lower(@keyword))>0)
                     AND matches.hits=cardinality(@labels) AND assignees.hits=cardinality(@members)
-                    AND (@completion IS NULL OR c.due_complete=@completion))
+                    AND (@completion IS NULL OR c.due_complete=@completion) AND (@due='all' OR deadline.hit))
                 OR (NOT @all AND ((@keyword<>'' AND (strpos(lower(c.title),lower(@keyword))>0 OR strpos(lower(coalesce(c.description,'')),lower(@keyword))>0))
-                    OR matches.hits>0 OR assignees.hits>0 OR (@completion IS NOT NULL AND c.due_complete=@completion)))
+                    OR matches.hits>0 OR assignees.hits>0 OR (@completion IS NOT NULL AND c.due_complete=@completion) OR deadline.hit))
               )
             ORDER BY c.id LIMIT 51;
             """, session.Connection, session.Transaction);
@@ -45,6 +50,8 @@ internal sealed partial class PostgresWorkManagementStore
         command.Parameters.AddWithValue("members", NpgsqlDbType.Array | NpgsqlDbType.Uuid, (filter.MemberIds ?? []).ToArray());
         command.Parameters.AddWithValue("verified", filter.RequireVerifiedEmail);
         command.Parameters.AddWithValue("completion", NpgsqlDbType.Boolean, (object?)filter.DueComplete ?? DBNull.Value);
+        command.Parameters.AddWithValue("due", filter.DueState);
+        command.Parameters.AddWithValue("now", NpgsqlDbType.TimestampTz, (filter.EvaluatedAt ?? DateTimeOffset.UtcNow).ToUniversalTime());
         command.Parameters.AddWithValue("keyword", filter.Keyword); command.Parameters.AddWithValue("all", filter.MatchAll);
         command.Parameters.AddWithValue("after", NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
         var result = new List<CardRecord>(); await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -68,16 +75,22 @@ internal sealed partial class InMemoryWorkManagementStore
         {
             bool Matches(CardRecord card)
             {
-                if (filter.Keyword.Length == 0 && filter.LabelIds.Count == 0 && memberIds.Count == 0 && filter.DueComplete is null) return true;
+                if (filter.Keyword.Length == 0 && filter.LabelIds.Count == 0 && memberIds.Count == 0 && filter.DueComplete is null && filter.DueState == "all") return true;
                 var text = card.Title.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase)
                     || (card.Description ?? "").Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase);
                 bool Assigned(Guid id) => _labels.TryGetValue(id, out var label) && !label.Deleted
                     && label.OrganizationId == card.OrganizationId && label.BoardId == boardId && _cardLabels.Contains((card.Id, id));
                 bool MemberAssigned(Guid id) => eligible.Contains(id) && _members.TryGetValue((boardId, id), out var m) && m.Active && _cardMembers.ContainsKey((card.Id, id));
+                var now = filter.EvaluatedAt ?? DateTimeOffset.UtcNow;
+                var deadline = filter.DueState switch {
+                    "none" => card.DueAt is null,
+                    "overdue" => card.DueAt is { } past && !card.DueComplete && past < now,
+                    "upcoming" => card.DueAt is { } future && !card.DueComplete && future >= now,
+                    _ => false };
                 return filter.MatchAll ? (filter.Keyword.Length == 0 || text) && filter.LabelIds.All(Assigned) && memberIds.All(MemberAssigned)
-                        && (filter.DueComplete is null || card.DueComplete == filter.DueComplete)
+                        && (filter.DueComplete is null || card.DueComplete == filter.DueComplete) && (filter.DueState == "all" || deadline)
                     : (filter.Keyword.Length > 0 && text) || filter.LabelIds.Any(Assigned) || memberIds.Any(MemberAssigned)
-                        || (filter.DueComplete is not null && card.DueComplete == filter.DueComplete);
+                        || (filter.DueComplete is not null && card.DueComplete == filter.DueComplete) || deadline;
             }
             return _cards.Values.Where(card => card.BoardId == boardId
                 && card.LifecycleState == WorkItemLifecycleState.Active && _lists.TryGetValue(card.ListId, out var parent)

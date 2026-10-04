@@ -2,9 +2,32 @@
 
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
-The server read supports keyword, label, eligible member and due-completion
-predicates. Due-date state, recent-activity filters, anonymous PUBLIC Board parity,
+The server read supports keyword, label, eligible member, due-completion and
+deadline-state predicates. Recent-activity filters, anonymous PUBLIC Board parity,
 and global search remain required PRD-16 work.
+
+`due=none` selects Cards without a deadline. `due=overdue` requires an incomplete
+deadline strictly before the server's current UTC instant; `due=upcoming`
+requires an incomplete deadline at or after that instant. Upcoming includes all
+future deadlines, with no hidden horizon. The Application captures one clock
+value per read and both stores apply the same comparisons before pagination.
+The captured value uses PostgreSQL microsecond precision to preserve the same
+strict/inclusive boundary in the demo and persisted stores.
+Date-only deadlines already retain PRD-12's timezone-aware end-of-day UTC
+normalization; filtering never treats the client timezone as authoritative.
+Omission/`due=all` adds no predicate. The dimension composes under ANY/ALL and
+persists with the MUI Deadline state selector. Invalid admitted API input returns
+`invalid_board_filter`; inaccessible Boards retain the ordinary safe refusal.
+The directory remains live: each page is evaluated at its own server time.
+
+The deadline increment has 31 passing filter component tests, passing typecheck
+and lint, and zero-warning solution compilation. New host cases cover absent,
+past, future and completed deadlines, ANY/ALL and safe validation admission.
+The mandatory release dates fixture covers completed exclusion, no deadline,
+overdue and an explicitly seeded UTC-relative future deadline through the exact
+restricted API. It removes its own future fixture after composition checks.
+Actual new Linux host/release execution remains pending; local compilation and
+fixture syntax checks do not prove that execution.
 
 `completion=complete` selects the canonical PRD-12 `dueComplete` flag;
 `completion=incomplete` selects its false value, including Cards without a due

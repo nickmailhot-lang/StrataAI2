@@ -269,3 +269,21 @@ it('ignores an invalid stored completion predicate', async () => {
   mount(); await open(); expect(screen.getByRole('combobox', { name: 'Due completion' })).toHaveTextContent('Any completion state');
   expect(screen.getByLabelText('Card keyword')).toHaveValue('');
 });
+
+it('applies and restores the deadline predicate within account-scoped session criteria', async () => {
+  const fetch = vi.fn(async (path: string) => path.endsWith('/me') ? response({ id: actor }) : path.includes('/cards?') ? results() : choices());
+  vi.stubGlobal('fetch', fetch); const view = mount(); await open();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Deadline state' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Upcoming' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await screen.findByRole('link', { name: 'Persisted match — Planning' });
+  const request = fetch.mock.calls.find(([path]) => path.includes('/cards?'))![0];
+  expect(new URL(request, 'https://example.test').searchParams.get('due')).toBe('upcoming');
+  expect(JSON.parse(sessionStorage.getItem(storage())!).due).toBe('upcoming');
+  view.unmount(); mount(); await open(); expect(screen.getByRole('combobox', { name: 'Deadline state' })).toHaveTextContent('Upcoming');
+});
+it('ignores an invalid stored deadline predicate', async () => {
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Stale criterion', labels: [], members: [], match: 'all', due: 'unknown' }));
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path.endsWith('/me') ? response({ id: actor }) : choices()));
+  mount(); await open(); expect(screen.getByRole('combobox', { name: 'Deadline state' })).toHaveTextContent('Any deadline state');
+  expect(screen.getByLabelText('Card keyword')).toHaveValue('');
+});

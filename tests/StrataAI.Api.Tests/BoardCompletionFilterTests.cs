@@ -7,6 +7,34 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Deadline_filters_exclude_completed_dates_and_compose_with_keyword_and_completion()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        var fixture = await BoardInvitationFixtureAsync(app, ct); var now = DateTimeOffset.UtcNow;
+        var store = app.Services.GetRequiredService<IWorkManagementStore>(); var dates = app.Services.GetRequiredService<ICardDateStore>();
+        var work = app.Services.GetRequiredService<IWorkManagementService>();
+        var list = await store.CreateListAsync(fixture.Board.Id, Guid.NewGuid(), "Deadline filters", null, now, ct);
+        var expected = new Dictionary<string, Guid>();
+        foreach (var state in new[] { "none", "overdue", "upcoming", "completed" })
+        {
+            var card = await store.CreateCardAsync(list.Id, Guid.NewGuid(), state, null, null, now, ct); expected[state] = card.Id;
+            if (state != "none") Assert.NotNull(await dates.SetDatesAsync(fixture.Board.OrganizationId, fixture.Board.Id, card.Id,
+                new(null, state == "overdue" ? now.AddDays(-1) : now.AddDays(1), "UTC", true, state == "completed"), 1, now, ct));
+        }
+        foreach (var state in new[] { "none", "overdue", "upcoming" })
+        {
+            var result = await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, null, [], "all", cancellationToken: ct, due: state);
+            Assert.True(result.Succeeded); Assert.Equal(expected[state], Assert.Single(result.Value!.Items).Id);
+        }
+        var incompatible = await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, null, [], "all", cancellationToken: ct, completion: "complete", due: "overdue");
+        Assert.True(incompatible.Succeeded); Assert.Empty(incompatible.Value!.Items);
+        var any = await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, "none", [], "any", cancellationToken: ct, due: "overdue");
+        Assert.True(any.Succeeded); Assert.Equal(new[] { expected["none"], expected["overdue"] }.Order(), any.Value!.Items.Select(c => c.Id));
+        Assert.Equal("invalid_board_filter", (await work.FilterBoardCardsAsync(fixture.Board.Id, fixture.Owner.Id, null, [], "all", cancellationToken: ct, due: "unknown")).ErrorCode);
+        Assert.Equal("board_not_found", (await work.FilterBoardCardsAsync(fixture.Board.Id, Guid.NewGuid(), null, [], "all", cancellationToken: ct, due: "unknown")).ErrorCode);
+    }
+
+    [Fact]
     public async Task Completion_predicate_precedes_page_limit_and_seek_returns_each_matching_Card_once()
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();

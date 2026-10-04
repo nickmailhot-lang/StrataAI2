@@ -77,6 +77,13 @@ jq -e '.changed and .card.version==3 and .card.dueComplete and .card.lifecycleSt
 # release API/PostgreSQL path, with normal admission before invalid input.
 filterBaseline=$(state)
 filter_read() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -o "$scratch/filter.json" -w '%{http_code}' "$base/boards/$board/cards?$2"; }
+for dueState in overdue upcoming none; do
+ test "$(filter_read owner "due=$dueState")" = 200
+ jq -e '.items|length==0' "$scratch/filter.json" >/dev/null
+done
+test "$(filter_read owner 'due=unknown')" = 400
+jq -e '.code=="invalid_board_filter"' "$scratch/filter.json" >/dev/null
+test "$(filter_read outsider 'due=unknown')" = 404
 test "$(filter_read owner 'completion=complete')" = 200
 jq -e --arg card "$card" '.items | length==1 and .[0].id==$card and .[0].dueComplete' "$scratch/filter.json" >/dev/null
 test "$(filter_read owner 'completion=incomplete')" = 200
@@ -116,8 +123,27 @@ test "$(filter_read owner 'completion=complete')" = 200
 jq -e '.items | length==0' "$scratch/filter.json" >/dev/null
 test "$(filter_read owner 'completion=incomplete')" = 200
 jq -e --arg card "$card" '.items | length==1 and .[0].id==$card and (.[0].dueComplete|not)' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'due=overdue')" = 200
+jq -e --arg card "$card" '.items|length==1 and .[0].id==$card' "$scratch/filter.json" >/dev/null
+# One explicit trusted future-deadline fixture verifies actual PostgreSQL UTC
+# comparison without relying on a fixed calendar date becoming overdue later.
+futureCard=$(uuid)
+admin "INSERT INTO cards SELECT populated.* FROM cards c CROSS JOIN LATERAL
+ jsonb_populate_record(NULL::cards,to_jsonb(c)||jsonb_build_object('id','$futureCard',
+ 'title','Future deadline fixture','rank','400000000000000000000000000000',
+ 'due_at',clock_timestamp()+interval '1 day','due_timezone','UTC','due_has_time',true)) populated
+ WHERE c.tenant_id='$org' AND c.id='$card';" >/dev/null
+test "$(filter_read owner 'due=upcoming')" = 200
+jq -e --arg card "$futureCard" '.items|length==1 and .[0].id==$card' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'due=overdue&keyword=Future&match=any')" = 200
+jq -e '.items|length==2' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'due=overdue&keyword=Future&match=all')" = 200
+jq -e '.items|length==0' "$scratch/filter.json" >/dev/null
+admin "DELETE FROM cards WHERE tenant_id='$org' AND id='$futureCard' AND title='Future deadline fixture';" >/dev/null
 test "$(request owner PATCH "$path" "$(uuid)" '{"version":4,"dueHasTime":false,"dueComplete":false}')" = 200
 jq -e '.card.version==5 and .card.startAt==null and .card.dueAt==null and .card.dueTimezone==null and .card.dueComplete==false' "$scratch/response.json" >/dev/null
+test "$(filter_read owner 'due=none')" = 200
+jq -e --arg card "$card" '.items|length==1 and .[0].id==$card' "$scratch/filter.json" >/dev/null
 test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$member';")" = 4
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type IN ('CARD_DATE_CHANGED','CARD_DUE_COMPLETED','CARD_DUE_REOPENED');")" = 4
 # Snapshot and mutation readers must carry canonical dates through unrelated revisions.
