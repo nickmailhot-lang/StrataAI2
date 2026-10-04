@@ -8,7 +8,8 @@ internal static class ActivityEventSourceStoreContract
     { if (!condition) throw new InvalidOperationException(invariant); }
     public static async Task RunAsync(NpgsqlConnection admin, IServiceProvider provider, Guid tenant, Guid actor, CancellationToken ct)
     {
-        var board = Guid.NewGuid(); var otherBoard = Guid.NewGuid(); var at = AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
+        var board = Guid.NewGuid(); var otherBoard = Guid.NewGuid(); var personalOwner = Guid.NewGuid();
+        var at = AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
         var sources = provider.GetRequiredService<IActivityEventSourceStore>(); var events = provider.GetRequiredService<IWorkEventStore>();
         var unit = provider.GetRequiredService<IWorkManagementUnitOfWork>(); string originalCaption; string originalStatus;
         var feed = provider.GetRequiredService<IActivityFeedStore>();
@@ -133,6 +134,60 @@ internal static class ActivityEventSourceStoreContract
             }
             Require((await Scope(() => feed.ReadAsync(cardBinding, null, ct))).Count == 0,
                 "Card history admitted an inaccessible current Board.");
+            await using (var personalFixture = new NpgsqlCommand("""
+                UPDATE boards SET visibility='ORGANIZATION' WHERE tenant_id=@tenant AND id=ANY(@boards);
+                INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at)
+                  VALUES(@owner,@email,upper(@email),'Private activity owner','ACTIVE','unused-contract-hash',@at,@at);
+                INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(@owner,@tenant,@owner,'MEMBER','ACTIVE');
+                """, admin))
+            {
+                personalFixture.Parameters.AddWithValue("tenant", tenant); personalFixture.Parameters.AddWithValue("boards", new[] { board, otherBoard });
+                personalFixture.Parameters.AddWithValue("owner", personalOwner); personalFixture.Parameters.AddWithValue("email", $"activity-{personalOwner:N}@example.test");
+                personalFixture.Parameters.AddWithValue("at", at); await personalFixture.ExecuteNonQueryAsync(ct);
+            }
+            var ownPrivate = new HashSet<Guid>(); var hiddenPrivate = new HashSet<Guid>();
+            await Scope(async () =>
+            {
+                var work = provider.GetRequiredService<IWorkManagementStore>();
+                var watches = provider.GetRequiredService<IWatchSubscriptionStore>();
+                var reminders = provider.GetRequiredService<ICardReminderStore>();
+                var currentCard = await work.FindCardAsync(board, ct) ?? throw new InvalidOperationException("Activity private Card fixture missing.");
+                var ownWatch = await watches.SetAsync(tenant, actor, "CARD", board, true, 0, at, ct)
+                    ?? throw new InvalidOperationException("Own activity Watch fixture failed.");
+                var hiddenWatch = await watches.SetAsync(tenant, personalOwner, "CARD", board, true, 0, at, ct)
+                    ?? throw new InvalidOperationException("Other activity Watch fixture failed.");
+                var ownReminder = await reminders.SetAsync(currentCard, actor, "AT_DUE", true, 0, at, ct)
+                    ?? throw new InvalidOperationException("Own activity Reminder fixture failed.");
+                var watchSource = new WorkEvent(Guid.NewGuid(), tenant, board, personalOwner, "WATCH_CREATED", "WatchSubscription", ownWatch.Id, ownWatch.Version, "private-feed-owner", at.AddSeconds(4));
+                var reminderSource = new WorkEvent(Guid.NewGuid(), tenant, board, personalOwner,
+                    ownReminder.Status == "SCHEDULED" ? "REMINDER_SCHEDULED" : "REMINDER_CANCELLED", "Reminder", ownReminder.Id,
+                    ownReminder.Version, "private-feed-owner", at.AddSeconds(4));
+                ownPrivate.Add(watchSource.EventId); ownPrivate.Add(reminderSource.EventId);
+                await events.AppendAsync(watchSource, ct); await events.AppendAsync(reminderSource, ct);
+                for (var index = 0; index < 100; index++)
+                {
+                    var change = new WorkEvent(Guid.NewGuid(), tenant, board, actor, "WATCH_CREATED", "WatchSubscription", hiddenWatch.Id,
+                        hiddenWatch.Version, "private-feed-hidden", at.AddSeconds(5));
+                    hiddenPrivate.Add(change.EventId); await events.AppendAsync(change, ct);
+                }
+                return true;
+            });
+            var personalHistory = await Scope(() => feed.ReadAsync(cardBinding, null, ct));
+            Require(personalHistory.Count == 51 && personalHistory.Take(2).All(row => ownPrivate.Contains(row.EventId)) &&
+                personalHistory.All(row => !hiddenPrivate.Contains(row.EventId)), "Private Card history filtered after its window or followed the source actor.");
+            var personalAnchor = personalHistory[49];
+            var personalTail = await Scope(() => feed.ReadAsync(cardBinding, new(personalAnchor.CreatedAt, personalAnchor.EventId), ct));
+            Require(personalTail.Count == 18 && personalHistory.Take(50).Concat(personalTail).Select(row => row.EventId).Distinct().Count() == 68,
+                "Private history displaced, truncated or duplicated shared Card sources.");
+            var boardPersonal = await Scope(() => feed.ReadAsync(binding, null, ct));
+            Require(boardPersonal.Count == 51 && boardPersonal.Take(2).All(row => ownPrivate.Contains(row.EventId)) &&
+                boardPersonal.All(row => !hiddenPrivate.Contains(row.EventId)), "Board activity window disclosed another person's private history.");
+            await using (var elevate = new NpgsqlCommand("UPDATE organization_members SET role='ADMIN' WHERE tenant_id=@tenant AND user_id=@actor;", admin))
+            {
+                elevate.Parameters.AddWithValue("tenant", tenant); elevate.Parameters.AddWithValue("actor", actor); await elevate.ExecuteNonQueryAsync(ct);
+            }
+            Require((await Scope(() => feed.ReadAsync(cardBinding, null, ct))).SequenceEqual(personalHistory),
+                "Organization administration widened private activity ownership.");
             Console.WriteLine("Real restricted activity source adapter: bounded same-time seek, immutable captions after rename/deactivation, pending source visibility, exact retry, owning rollback and recovery passed. Raw sources do not establish HTTP/feed audience admission.");
             Console.WriteLine("Real restricted Card activity source slices: bounded tied seek, entity-type/identity/source-Board isolation and explicit historical Board reads passed. Synthetic source setup does not prove actual Card movement or authorized feeds.");
         }
@@ -140,15 +195,21 @@ internal static class ActivityEventSourceStoreContract
         {
             await using var cleanup = new NpgsqlCommand("""
                 UPDATE users SET display_name=@caption,status=@status WHERE id=@actor;
+                UPDATE organization_members SET role='MEMBER' WHERE tenant_id=@tenant AND user_id=@actor;
                 DELETE FROM background_jobs WHERE tenant_id=@tenant AND safe_metadata->>'boardId'=ANY(@board_texts);
                 DELETE FROM work_events WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM work_event_streams WHERE tenant_id=@tenant AND board_id=ANY(@boards);
+                DELETE FROM watch_subscriptions WHERE tenant_id=@tenant AND card_id=ANY(@boards);
+                DELETE FROM card_reminders WHERE tenant_id=@tenant AND card_id=ANY(@boards);
                 DELETE FROM cards WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM board_lists WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM boards WHERE tenant_id=@tenant AND id=ANY(@boards);
+                DELETE FROM organization_members WHERE tenant_id=@tenant AND user_id=@personal_owner;
+                DELETE FROM users WHERE id=@personal_owner;
                 """, admin);
             cleanup.Parameters.AddWithValue("caption", originalCaption); cleanup.Parameters.AddWithValue("status", originalStatus);
             cleanup.Parameters.AddWithValue("actor", actor); cleanup.Parameters.AddWithValue("tenant", tenant);
+            cleanup.Parameters.AddWithValue("personal_owner", personalOwner);
             cleanup.Parameters.AddWithValue("boards", new[] { board, otherBoard });
             cleanup.Parameters.AddWithValue("board_texts", new[] { board.ToString("D"), otherBoard.ToString("D") });
             await cleanup.ExecuteNonQueryAsync(ct);

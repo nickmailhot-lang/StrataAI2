@@ -27,6 +27,7 @@ import { CardAttachments } from './CardAttachments';
 import { AttachmentManageControl } from './AttachmentManageControl';
 import { CardCoverControl } from './CardCoverControl';
 import { CardCommentsControl } from './CardCommentsControl';
+import { ActivityHistoryControl } from './ActivityHistoryControl';
 import { CardCoverImage } from './CardCoverImage';
 import { UrlAttachmentCreateControl } from './UrlAttachmentCreateControl';
 import { FileAttachmentCreateControl } from './FileAttachmentCreateControl';
@@ -507,6 +508,9 @@ function BoardContent() {
         </Stack>
       </Stack>
       {saved && <Typography role="status">Changes saved.</Typography>}
+      <ActivityHistoryControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+        kind="BOARD" targetId={snapshot.board.id} unavailable={snapshotReading || !!loadError}
+        refreshSequence={`${reload}/${reconnectSequence}`} onDenied={clearDeniedScope} />
       <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0 || !!cardId || !!creation}
         onRefresh={refreshFilteredBoard} onCanvasChange={setCanvasFilter} />
       {snapshot.board.lifecycleState !== "active" && (
@@ -722,6 +726,9 @@ function BoardContent() {
             {cardId && <CardChecklists reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            {cardId && <ActivityHistoryControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              kind="CARD" targetId={card.id} unavailable={snapshotReading || !!loadError}
+              refreshSequence={`${reload}/${reconnectSequence}/${card.version}`} onDenied={clearDeniedScope} />}
             {cardId && <UrlAttachmentCreateControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} editable={Boolean(editable) && snapshot.lists.some(column => column.list.lifecycleState === "active" && column.cards.some(item => item.id === card.id))} unavailable={snapshotReading || !!loadError}
               disabled={operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery}

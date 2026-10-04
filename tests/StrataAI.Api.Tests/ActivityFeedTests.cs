@@ -43,6 +43,7 @@ public sealed partial class ApiHostTests
         using var response = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(response.Headers.CacheControl?.NoStore);
         var first = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal("CARD", first.GetProperty("kind").GetString());
         var items = first.GetProperty("items").EnumerateArray().ToArray(); Assert.Equal(50, items.Length);
         Assert.All(items, item => { Assert.Equal("Card", item.GetProperty("entityType").GetString());
             Assert.Equal(JsonValueKind.String, item.GetProperty("version").ValueKind);
@@ -59,7 +60,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.BadRequest, wrongTarget.StatusCode);
         using var tampered = await member.GetAsync($"{path}?after=invalid", ct); Assert.Equal(HttpStatusCode.BadRequest, tampered.StatusCode);
         using var revoke = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
-        Assert.Equal(HttpStatusCode.OK, revoke.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, revoke.StatusCode);
         using var denied = await member.GetAsync($"{path}?after=invalid", ct); Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
     }
 }

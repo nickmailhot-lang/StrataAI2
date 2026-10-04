@@ -24,6 +24,9 @@ builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.W
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter<StrataAI.Application.WorkManagement.ActivityTargetKind>(
+            System.Text.Json.JsonNamingPolicy.SnakeCaseUpper, allowIntegerValues: false));
+    options.SerializerOptions.Converters.Add(
         new System.Text.Json.Serialization.JsonStringEnumConverter<StrataAI.Application.Onboarding.InvitationSurface>(
             System.Text.Json.JsonNamingPolicy.SnakeCaseUpper, allowIntegerValues: false));
     options.SerializerOptions.Converters.Add(

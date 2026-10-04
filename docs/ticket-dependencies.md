@@ -156,3 +156,14 @@ SQL/private-owner stress, exact-image lock waits/session expiry, MUI rendering,
 realtime refresh, accessibility/mobile, capacity, retention and shared persistent
 Data Protection key deployment still require validation and implementation.
 PRD-15 remains open, estimated 50% remaining until those criteria are proven.
+
+The activity views now render in the existing MUI Board and Card screens on
+explicit review. Each page holds at most 50 DOM rows, with older/newer/newest
+navigation across the full history. The parser validates source/current tenant
+and target identities, safe body-free fields, exact microsecond order and string
+bigint versions. Captured captions render as literal text and Card links use the
+current Board. Reads verify `/me` before and after the feed; parent read epochs,
+realtime invalidations and reconnects retire prior pages/cursors, abort old reads
+and exclude delayed replies. Access loss purges protected state. Loading, empty,
+error/expired-cursor retry and keyboard focus recovery are provided. This is
+component-level evidence pending native desktop/mobile/two-client CI acceptance.
