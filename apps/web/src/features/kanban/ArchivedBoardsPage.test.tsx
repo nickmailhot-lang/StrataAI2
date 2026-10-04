@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { ArchivedBoardsPage } from './ArchivedBoardsPage';
+import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
 const org = '10000000-0000-4000-8000-000000000001', id = '20000000-0000-4000-8000-000000000001', user = '30000000-0000-4000-8000-000000000001';
 const profile = { id: user, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
 const board = { id, organizationId: org, name: 'Planning', version: 2, archivedAt: '2026-10-04T12:00:00Z' };
@@ -11,7 +12,7 @@ function mount(fetch: ReturnType<typeof vi.fn>) {
   return render(<RouterProvider router={createMemoryRouter([{ path: '/app/:organizationId/archived-boards', element: <ArchivedBoardsPage /> }],
     { initialEntries: [`/app/${org}/archived-boards`] })} />);
 }
-afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.useRealTimers(); });
 it.each([
   { ...page, organizationId: user },
   { ...page, items: [{ ...board, organizationId: user }] },
@@ -90,4 +91,77 @@ it('retires a pending write after online permission denial and ignores its late 
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument()); expect(screen.queryByRole('article')).not.toBeInTheDocument();
   const count = fetch.mock.calls.length; view.unmount(); fireEvent(window, new Event('online')); await act(async () => {});
   expect(fetch).toHaveBeenCalledTimes(count);
+});
+
+async function observations(fetch: ReturnType<typeof vi.fn>) {
+  await flushActivityTelemetry();
+  const reports = fetch.mock.calls.filter(call => call[0] === '/me/activity-client-events');
+  expect(reports).toHaveLength(1);
+  const value = JSON.parse(reports[0][1].body);
+  for (const secret of [org, id, user, board.name, board.archivedAt, 'Private failure', 'Idempotency-Key'])
+    expect(JSON.stringify(value)).not.toContain(secret);
+  for (const event of value.events) expect(Object.keys(event).sort()).toEqual(event.durationMs === undefined
+    ? ['action', 'count', 'kind'] : ['action', 'count', 'durationMs', 'kind']);
+  return value.events as { action: string; kind: string; count: number; durationMs?: number }[];
+}
+it('observes Board deletion retry after canonical removal without retaining private material', async () => {
+  configureActivityTelemetry(true); let writes = 0;
+  const fetch = vi.fn((path: string, init: RequestInit) => {
+    if (path === '/me/activity-client-events') return Promise.resolve(new Response(null, { status: 204 }));
+    if (path === '/me') return Promise.resolve(response(profile));
+    if (init.method === 'DELETE') return Promise.resolve(++writes === 1 ? response({ detail: 'Private failure' }, 503)
+      : response({ ...board, version: 3, lifecycleState: 'deleted', deletedBy: user }));
+    return Promise.resolve(response(writes ? { ...page, items: [] } : page));
+  });
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Permanently delete Planning board' }));
+  fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm permanent deletion' }));
+  const retry = await screen.findByRole('button', { name: 'Retry this change' }); await waitFor(() => expect(retry).toBeEnabled());
+  fireEvent.click(retry); await screen.findByText('No administrable archived Boards on this page.');
+  const events = await observations(fetch);
+  expect(events).toContainEqual({ action: 'archive_board_disclosure', kind: 'open', count: 1 });
+  for (const kind of ['open', 'use', 'retry', 'exception']) expect(events).toContainEqual({ action: 'archive_board_delete', kind, count: 1 });
+  for (const kind of ['success', 'failure']) expect(events).toContainEqual({ action: 'archive_board_delete', kind, count: 1, durationMs: expect.any(Number) });
+  const commands = fetch.mock.calls.filter(call => call[1].method === 'DELETE');
+  expect(new Headers(commands[0][1].headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1].headers).get('Idempotency-Key'));
+});
+it('observes Board restore conflicts as failure and foreground denial as recovery', async () => {
+  configureActivityTelemetry(true); let denied = false;
+  const fetch = vi.fn((path: string, init: RequestInit) => {
+    if (path === '/me/activity-client-events') return Promise.resolve(new Response(null, { status: 204 }));
+    if (path === '/me') return Promise.resolve(response(profile));
+    return Promise.resolve(init.method === 'POST' ? response({ detail: 'Private failure' }, 409)
+      : denied ? response({ detail: 'Private failure' }, 403) : response(page));
+  });
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' }));
+  await screen.findByText('This change could not be applied. Cancel and review the current archive.');
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Check current archive for this change' })).toBeEnabled());
+  denied = true; fireEvent(document, new Event('visibilitychange'));
+  await screen.findByText('Unable to confirm current Board archive access. Check again before continuing.');
+  const events = await observations(fetch);
+  expect(events).toContainEqual({ action: 'archive_board_restore', kind: 'conflict', count: 1 });
+  expect(events).toContainEqual({ action: 'archive_board_restore', kind: 'failure', count: 1, durationMs: expect.any(Number) });
+  expect(events.some(event => event.action === 'archive_board_restore' && event.kind === 'success')).toBe(false);
+  expect(events).toContainEqual({ action: 'archive_board_read', kind: 'reconnect', count: 1 });
+  expect(events).toContainEqual({ action: 'archive_board_read', kind: 'failure', count: 1, durationMs: expect.any(Number) });
+});
+it('preserves Board reconnect classification while directory invalidations coalesce', async () => {
+  configureActivityTelemetry(true); let reads = 0; let finish!: (value: Response) => void;
+  const fetch = vi.fn((path: string) => {
+    if (path === '/me/activity-client-events') return Promise.resolve(new Response(null, { status: 204 }));
+    if (path === '/me') return Promise.resolve(response(profile));
+    if (++reads === 2) return new Promise<Response>(resolve => { finish = resolve; });
+    return Promise.resolve(response(page));
+  });
+  mount(fetch); await screen.findByRole('button', { name: 'Restore Planning board' });
+  fireEvent.click(screen.getByRole('button', { name: 'Check current archived boards' }));
+  await waitFor(() => expect(finish).toBeDefined());
+  fireEvent(window, new Event('online')); fireEvent(document, new Event('visibilitychange'));
+  expect(reads).toBe(2); await act(async () => finish(response(page)));
+  await waitFor(() => expect(reads).toBe(3));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Check current archived boards' })).toBeEnabled());
+  const events = await observations(fetch);
+  expect(events).toContainEqual({ action: 'archive_board_read', kind: 'retry', count: 1 });
+  expect(events).toContainEqual({ action: 'archive_board_read', kind: 'reconnect', count: 1 });
 });

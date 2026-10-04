@@ -3,6 +3,7 @@ import { Alert, Button, Checkbox, CircularProgress, Container, Dialog, DialogAct
 import { Link, useParams } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile, notificationInstant, notificationUuid } from '../notifications/notificationInbox';
+import { activityEvent, activityResult } from './activityTelemetry';
 
 type Board = { id: string; organizationId: string; name: string; version: number; archivedAt: string | null };
 type Page = { organizationId: string; items: Board[]; nextCursor: string | null };
@@ -30,6 +31,7 @@ function Archive({ org }: { org: string }) {
   const mounted = useRef(false); const actor = useRef<string | undefined>(undefined); const read = useRef<AbortController | undefined>(undefined);
   const write = useRef<AbortController | undefined>(undefined); const position = useRef<{ cursor: string | null; trail: (string | null)[] }>({ cursor: null, trail: [] });
   const refresh = useRef<HTMLButtonElement>(null); const queued = useRef(false);
+  const queuedKind = useRef<'use' | 'retry' | 'reconnect'>('use');
   const focusRequested = useRef(false); const focusFrame = useRef<number | undefined>(undefined);
   function restoreFocus() {
     focusRequested.current = true; if (!refresh.current || refresh.current.disabled) return;
@@ -43,8 +45,11 @@ function Archive({ org }: { org: string }) {
   }
   useEffect(() => { if (!reading && !writing && !review && focusRequested.current) restoreFocus(); }, [reading, writing, review]);
   function retire() { write.current?.abort(); write.current = undefined; setWriting(false); setReview(undefined); setIntent(undefined); setConfirmed(false); }
-  async function load(cursor = position.current.cursor, trail = position.current.trail) {
-    if (read.current) { queued.current = true; return; }
+  async function load(cursor = position.current.cursor, trail = position.current.trail, kind: 'use' | 'retry' | 'reconnect' = 'use') {
+    if (read.current) { queued.current = true;
+      if (kind === 'reconnect' || kind === 'retry' && queuedKind.current !== 'reconnect') queuedKind.current = kind;
+      return; }
+    const started = performance.now(); activityEvent('archive_board_read', kind);
     const c = new AbortController(); read.current = c; position.current = { cursor, trail }; setHistory(trail); setReading(true); setReady(false);
     try {
       const result = await boundedWorkRead(async signal => {
@@ -58,18 +63,25 @@ function Archive({ org }: { org: string }) {
       if (!mounted.current || read.current !== c) return;
       if (actor.current && actor.current !== result.actor) retire();
       actor.current = result.actor; setCurrent(result.directory); setReady(true);
+      activityResult('archive_board_read', true, started);
       setNotice(value => value === 'Unable to confirm current Board archive access. Check again before continuing.' ? undefined : value);
     } catch (error) { if (mounted.current && read.current === c) {
+      if (!(error instanceof WorkRequestError)) activityEvent('archive_board_read', 'exception');
+      activityResult('archive_board_read', false, started);
       setCurrent(undefined); setReady(false);
       if (error instanceof ChangedArchiveIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { retire(); actor.current = undefined; }
       setNotice('Unable to confirm current Board archive access. Check again before continuing.');
     } } finally { if (mounted.current && read.current === c) {
-      read.current = undefined; setReading(false); if (queued.current) { queued.current = false; void load(); }
+      read.current = undefined; setReading(false); if (queued.current) {
+        queued.current = false; const nextKind = queuedKind.current; queuedKind.current = 'use'; void load(undefined, undefined, nextKind);
+      }
     } }
   }
   useEffect(() => {
-    mounted.current = true; void load(); const recover = () => { if (document.visibilityState !== 'hidden') void load(); };
-    const timer = setInterval(recover, 10_000); window.addEventListener('online', recover); document.addEventListener('visibilitychange', recover);
+    mounted.current = true; activityEvent('archive_board_disclosure', 'open'); void load();
+    const poll = () => { if (document.visibilityState !== 'hidden') void load(); };
+    const recover = () => { if (document.visibilityState !== 'hidden') void load(undefined, undefined, 'reconnect'); };
+    const timer = setInterval(poll, 10_000); window.addEventListener('online', recover); document.addEventListener('visibilitychange', recover);
     return () => { mounted.current = false; read.current?.abort(); write.current?.abort(); clearInterval(timer); window.removeEventListener('online', recover); document.removeEventListener('visibilitychange', recover);
       if (focusFrame.current !== undefined) cancelAnimationFrame(focusFrame.current); };
   }, [org]);
@@ -79,6 +91,8 @@ function Archive({ org }: { org: string }) {
     if (write.current || reading || !ready || !review || !actor.current || !intent && (changed || conflict || deleting && !confirmed)) return;
     const command = intent ?? { board: review, deleting, key: crypto.randomUUID(), actor: actor.current };
     if (command.actor !== actor.current) { retire(); return; }
+    const action = command.deleting ? 'archive_board_delete' : 'archive_board_restore';
+    const started = performance.now(); activityEvent(action, intent ? 'retry' : 'use');
     const c = new AbortController(); write.current = c; setWriting(true); setNotice(undefined);
     try {
       const value = await boundedWorkRead(signal => workRequest<unknown>(command.deleting
@@ -90,10 +104,12 @@ function Archive({ org }: { org: string }) {
       if (value?.id !== command.board.id || value.organizationId !== org || value.name !== command.board.name || value.version !== command.board.version + 1 ||
         value.lifecycleState !== (command.deleting ? 'deleted' : 'active') || command.deleting && value.deletedBy !== command.actor) throw new Error('Invalid acknowledgment');
       setIntent(undefined); setReview(undefined); setNotice(command.deleting ? 'Board deletion acknowledged.' : 'Board restore acknowledged.');
+      activityResult(action, true, started);
     } catch (error) { if (mounted.current && write.current === c) {
+      activityResult(action, false, started);
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { retire(); setCurrent(undefined); setReady(false); setNotice('Board administration is unavailable.'); }
-      else if (error instanceof WorkRequestError && [400, 409].includes(error.status)) { setIntent(undefined); setConflict(true); setNotice('This change could not be applied. Cancel and review the current archive.'); }
-      else { setIntent(command); setNotice('This change is unconfirmed. Retry the same request to recover its acknowledgment.'); }
+      else if (error instanceof WorkRequestError && [400, 409].includes(error.status)) { activityEvent(action, 'conflict'); setIntent(undefined); setConflict(true); setNotice('This change could not be applied. Cancel and review the current archive.'); }
+      else { activityEvent(action, 'exception'); setIntent(command); setNotice('This change is unconfirmed. Retry the same request to recover its acknowledgment.'); }
     } } finally { if (mounted.current && write.current === c) { write.current = undefined; setWriting(false); void load(); } }
   }
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
@@ -101,12 +117,12 @@ function Archive({ org }: { org: string }) {
     <Button component={Link} to={`/app/${org}`} disabled={writing || !!intent}>Back to Organization</Button>
     <Typography>Only Boards you currently administer appear here. Restore a Board to use it again.</Typography>
     {notice && !review && <Alert severity="info" role="status">{notice}</Alert>}
-    <Button ref={refresh} disabled={reading || writing} onClick={() => void load()}>Check current archived boards</Button>
+    <Button ref={refresh} disabled={reading || writing} onClick={() => void load(undefined, undefined, 'retry')}>Check current archived boards</Button>
     {reading && <CircularProgress aria-label="Checking archived Boards" />}
     {current?.items.map(b => <Paper component="article" aria-label={b.name} key={b.id} sx={{ p: 2, overflowWrap: 'anywhere' }}>
       <Typography component="h3" variant="h6">{b.name}</Typography>
-      <Button disabled={!ready || reading || writing || !!intent} onClick={() => { setReview(b); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined); }} aria-label={`Restore ${b.name} board`}>Restore Board</Button>
-      <Button color="error" disabled={!ready || reading || writing || !!intent} onClick={() => { setReview(b); setDeleting(true); setConfirmed(false); setConflict(false); setNotice(undefined); }} aria-label={`Permanently delete ${b.name} board`}>Permanently delete Board</Button>
+      <Button disabled={!ready || reading || writing || !!intent} onClick={() => { activityEvent('archive_board_restore', 'open'); setReview(b); setDeleting(false); setConfirmed(false); setConflict(false); setNotice(undefined); }} aria-label={`Restore ${b.name} board`}>Restore Board</Button>
+      <Button color="error" disabled={!ready || reading || writing || !!intent} onClick={() => { activityEvent('archive_board_delete', 'open'); setReview(b); setDeleting(true); setConfirmed(false); setConflict(false); setNotice(undefined); }} aria-label={`Permanently delete ${b.name} board`}>Permanently delete Board</Button>
     </Paper>)}
     {ready && current?.items.length === 0 && <Typography>No administrable archived Boards on this page.</Typography>}
     <Stack direction="row"><Button disabled={!ready || reading || writing || !!intent || !history.length} onClick={() => void load(history.at(-1)!, history.slice(0, -1))}>Previous archived boards</Button>
@@ -120,7 +136,7 @@ function Archive({ org }: { org: string }) {
         : <Typography>Restoration makes the Board active again. Its Lists and Cards retain their own lifecycle states.</Typography>}
       {notice && review && <Alert severity="info" role="status">{notice}</Alert>}{(changed || conflict) && !intent && <Alert severity="warning">This review changed. Cancel and review current archive information.</Alert>}
       {intent && <Typography>The original request is unresolved. Retry that same request.</Typography>}
-      <Button disabled={reading || writing} onClick={() => void load()}>Check current archive for this change</Button>
+      <Button disabled={reading || writing} onClick={() => void load(undefined, undefined, 'retry')}>Check current archive for this change</Button>
     </DialogContent><DialogActions>{!intent && <Button disabled={writing} onClick={() => setReview(undefined)}>Cancel change</Button>}
       <Button color={deleting ? 'error' : 'primary'} disabled={reading || writing || !ready || !intent && (changed || conflict || deleting && !confirmed)} onClick={() => void change()}>
         {intent ? 'Retry this change' : deleting ? 'Confirm permanent deletion' : 'Confirm restore'}</Button>

@@ -21,6 +21,10 @@ public sealed partial class ApiHostTests
     [InlineData("archive_card_delete")]
     [InlineData("list_archive")]
     [InlineData("card_archive")]
+    [InlineData("archive_board_disclosure")]
+    [InlineData("archive_board_read")]
+    [InlineData("archive_board_restore")]
+    [InlineData("archive_board_delete")]
     public void PRD_18_Archive_observations_accept_fixed_actions_and_reject_private_material(string action)
     {
         using var valid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
