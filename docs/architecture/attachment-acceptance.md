@@ -757,3 +757,12 @@ retry and clear private title/URL drafts; terminal access denial does the same.
 Validation/version refusals preserve drafts for fresh review. Nine focused
 tests pass, including account change after a committed reply and pre-write
 actor refusal. Typecheck and lint pass; actual Linux/release execution is pending.
+
+The moved-receipt release fixture now observes each real retry waiting at its
+first canonical Board gate before withdrawing original-source authority. A
+trusted membership update removes edit membership (URL/archive/restore) or
+demotes administrator to Member (delete); no receipt or domain state is edited.
+After release, the request must return 404 without attachment disclosure or
+command effects. A real Owner restoration command then recovers the unchanged
+original acknowledgment. This tests fresh permission admission after lock waits
+for all four receipt types. Shell syntax/diff checks pass; execution is pending.
