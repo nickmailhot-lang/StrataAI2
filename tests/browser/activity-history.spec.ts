@@ -109,7 +109,7 @@ for (const width of [1280, 390]) {
       const archivedComments = page.getByRole('button', { name: 'Review Card comments', exact: true });
       await expect(archivedComments).toBeEnabled(); await archivedComments.press('Enter');
       await expect(page.getByText('Recovery body excluded from activity', { exact: true })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Add comment', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Add comment', exact: true })).toBeDisabled();
       await page.goto(boardPath); await expect(boardOpen).toBeEnabled(); await boardOpen.press('Enter');
       await expect(boardHistory.getByText(`${caption} archived a Card.`, { exact: true })).toHaveCount(1);
       const deleted = await context.request.delete(`/cards/${card}?version=${version}&confirmed=true`, { headers });

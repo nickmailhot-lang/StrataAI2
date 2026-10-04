@@ -22,6 +22,8 @@ it('reads scoped archived details, exposes comments and history without mutation
   fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
   await waitFor(() => expect(requests.some(path => path.endsWith('/activity'))).toBe(true));
   expect(screen.getByRole('button', { name: 'Review Card comments' })).toBeEnabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Add comment' })).toBeDisabled());
   view.rerender(<MemoryRouter><ArchivedCardDetail {...props} unavailable refreshSequence="2" /></MemoryRouter>);
   expect(screen.queryByText(detail.title)).toBeNull(); expect(screen.queryByRole('button', { name: 'Review Card activity' })).toBeNull();
 });
