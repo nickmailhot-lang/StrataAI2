@@ -15,7 +15,11 @@ namespace StrataAI.Domain.Tests;
 public sealed class CardMentionMemberStoreTests
 {
     private sealed class Actor : ICommandActorAuthorization
-    { public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(true); }
+    {
+        public bool Allowed = true;
+        public Func<bool>? Probe;
+        public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(Probe?.Invoke() ?? Allowed);
+    }
 
     [Fact]
     public async Task PRD_15_CurrentBoardParticipantsSeekAcrossMembershipPagesWithoutGlobalAliasOrTenantDisclosure()
@@ -77,5 +81,29 @@ public sealed class CardMentionMemberStoreTests
         await orgs.RemoveMemberAsync(org, users[2], at.AddSeconds(3), ct);
         Assert.True(await identity.DeactivateUserAsync(users[3], at.AddSeconds(3), ct));
         Assert.Empty(await Scoped(org, () => store.ResolveAsync(org, board.Id, ["member_01", "member_02", "member_03"], true, ct)));
+
+        var list = await work.CreateListAsync(board.Id, Guid.NewGuid(), "List", null, at, ct);
+        var card = await work.CreateCardAsync(list.Id, Guid.NewGuid(), "Card", null, null, at, ct);
+        var options = provider.GetRequiredService<CardMentionOptionsService>();
+        var first = await options.ListAsync(card.Id, users[0], " MEMBER_ ", null, ct);
+        Assert.True(first.Succeeded); Assert.Equal("member_", first.Value!.Prefix); Assert.Equal(20, first.Value.Items.Count);
+        Assert.NotNull(first.Value.NextCursor); Assert.Equal(card.Id, first.Value.CardId);
+        var next = await options.ListAsync(card.Id, users[0], "member_", first.Value.NextCursor, ct);
+        Assert.True(next.Succeeded); Assert.Empty(first.Value.Items.Select(x => x.UserId).Intersect(next.Value!.Items.Select(x => x.UserId)));
+        Assert.Equal("invalid_mention_cursor", (await options.ListAsync(card.Id, users[0], "renamed_", first.Value.NextCursor, ct)).ErrorCode);
+        Assert.Equal("invalid_mention_cursor", (await options.ListAsync(card.Id, users[0], "member_", new string('x', 161), ct)).ErrorCode);
+        Assert.Equal("mention_prefix_invalid", (await options.ListAsync(card.Id, users[0], "@member", null, ct)).ErrorCode);
+        // Organization governance does not confer current Board participation.
+        await orgs.AddOrRestoreMemberAsync(org, users[1], OrganizationRole.Admin, at.AddSeconds(4), ct);
+        Assert.Equal("card_not_found", (await options.ListAsync(card.Id, users[1], "member_", null, ct)).ErrorCode);
+        var actor = (Actor)provider.GetRequiredService<ICommandActorAuthorization>(); actor.Allowed = false;
+        Assert.Equal("session_unavailable", (await options.ListAsync(card.Id, users[0], "member_", null, ct)).ErrorCode);
+        actor.Allowed = true; var checks = 0; actor.Probe = () => ++checks == 1;
+        Assert.Equal("session_unavailable", (await options.ListAsync(card.Id, users[0], "member_", null, ct)).ErrorCode);
+        Assert.Equal(2, checks); actor.Probe = null;
+        Assert.NotNull(await work.UpdateCardAsync(card.Id, "Changed", null, 1, at.AddSeconds(4), ct));
+        Assert.Equal("version_conflict", (await options.ListAsync(card.Id, users[0], "member_", first.Value.NextCursor, ct)).ErrorCode);
+        Assert.NotNull(await work.SetCardLifecycleAsync(card.Id, WorkItemLifecycleState.Active, WorkItemLifecycleState.Archived, 2, at.AddSeconds(5), ct));
+        Assert.Equal("card_not_found", (await options.ListAsync(card.Id, users[0], "member_", null, ct)).ErrorCode);
     }
 }

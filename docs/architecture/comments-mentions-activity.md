@@ -673,3 +673,30 @@ immutable image build and security gates pass in run 37169585086. Its exact-imag
 identity transaction step has passed the actual session revocation/expiry and
 late-expiry handle wait fixtures; browser stages are still pending. No complete
 PRD requirement, native browser proof or release pass is credited here.
+
+## Application admission for teammate options
+
+CardMentionOptionsService now admits teammate discovery only within the owning
+Work transaction, through current COMMENT editing rights, active Card/List/Board
+and Organization context, explicit active Board membership and the shared
+current-session checks before and after the read. The caller cannot use public
+visibility or Organization administration as a substitute for participation.
+Search inputs normalize before storage; bounded cursors bind exact Card ID,
+Card revision, canonical prefix and current-handle seek anchor. A stale Card
+revision requires fresh review. Results remain metadata hints and confer no
+recipient authorization on a later comment command. No HTTP route is added by
+this slice.
+
+The Demo fixture adds actual Application calls for normalized lookahead/seek,
+cross-prefix and malformed cursors, invalid prefixes, governance without Board
+membership, initially unavailable and mid-read revoked synthetic session actor,
+Card revision changes and archived Card refusal. These exercise the actual
+Application and Demo adapter with a synthetic authorization probe; protected
+cookie/DB wait/native options evidence remains required. Local full compilation
+passes with zero warnings/errors; Linux execution of these additions is pending.
+
+Storage commit fd23dac has passed actual restricted PostgreSQL integration in
+run 37170517190. Its new current-member contract emitted its full passing summary
+for active membership/account/email filtering, literal prefix bounds, seek,
+current-only handles and shared-user isolation. Managed/web/release gates are
+still being inspected. No complete ticket or mention notification is claimed.
