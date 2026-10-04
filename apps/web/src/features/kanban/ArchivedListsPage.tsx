@@ -62,6 +62,7 @@ function Archive({ org, board }: { org: string; board: string }) {
   const changed = !!selected && !intent && (!current || current.list.version !== selected.list.version
     || current.list.name !== selected.list.name || current.list.rank !== selected.list.rank || current.containedCardCount !== selected.containedCardCount);
   function deny() {
+    write.current?.abort(); write.current = undefined; setWriting(false);
     setPage(undefined); setSelected(undefined); setIntent(undefined); setReady(false); setSubscribed(false);
     setRetryRead(false); setNotice(undefined); setError('Archived List administration is unavailable.');
   }

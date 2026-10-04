@@ -48,6 +48,24 @@ it('preserves the archive return focus through a real-time read after acknowledg
   await waitFor(() => expect(check).toHaveFocus());
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); vi.clearAllMocks(); });
+it('retires a pending restore when fresh archive admission denies access and ignores its late acknowledgment', async () => {
+  let finish!: (value: Response) => void;
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
+    .mockResolvedValueOnce(reply({ detail: 'private denied archive' }, 403));
+  mount(fetch); await review(); fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' }));
+  await waitFor(() => expect(finish).toBeDefined());
+  const signal = fetch.mock.calls[1][1].signal as AbortSignal;
+  act(() => vi.mocked(watchBoard).mock.calls.at(-1)![0].invalidate());
+  await screen.findByText('Archived List administration is unavailable.');
+  expect(signal.aborted).toBe(true);
+  await act(async () => finish(reply(ack)));
+  expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(screen.queryByText('List restore acknowledged. Current archived Lists are being checked.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry this restore' })).not.toBeInTheDocument();
+  expect(screen.queryByText('private denied archive')).not.toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledTimes(3);
+});
 it('shows counted archived Lists, submits a reviewed keyed restore and refreshes authoritative data', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockResolvedValueOnce(reply(ack))
     .mockResolvedValueOnce(reply({ ...page, items: [] })); mount(fetch);

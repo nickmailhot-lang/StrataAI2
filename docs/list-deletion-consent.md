@@ -50,3 +50,5 @@ removal, identical retry, focus/reload, denied child restoration/movement and an
 unchanged active neighbor. Runtime execution in Linux CI remains required; collected
 cases do not prove browser acceptance. Archived-card browsing and remaining PRD-07/18
 requirements stay open. Retention/purge policy is required under the wider tickets.
+
+Fresh archive denial now aborts and retires an outstanding List lifecycle request, clears writing state and removes its private review/intent. A late restore/deletion acknowledgment is ignored after that denial and cannot publish state, recreate recovery controls or trigger an obsolete reload. This is client disclosure fencing; aborting a response does not undo an already committed server operation. A component regression holds an actual restore response, injects a fresh denied archive read through the live invalidation callback and releases the old success afterward. All 24 archive List component tests pass; SPA typechecking and lint pass. Actual native/runtime PRD-18 acceptance remains pending CI.
