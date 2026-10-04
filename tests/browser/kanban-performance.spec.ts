@@ -79,7 +79,11 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
     }, { id: feedbackCard, destination: lists[0] });
     await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
     await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 12 }); await page.mouse.up();
-    feedbackMs = await page.evaluate(() => (window as Window & { kanbanFeedback: Promise<number> }).kanbanFeedback);
+    feedbackMs = await page.evaluate(() => {
+      const feedback = (window as Window & { kanbanFeedback?: Promise<number> }).kanbanFeedback;
+      if (!feedback) throw new Error('Kanban feedback observer was not installed.');
+      return feedback;
+    });
     await expect.poll(() => heldMove).toBe(true);
     const acknowledgment = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === `/cards/${feedbackCard}/move`);
     releaseMove();

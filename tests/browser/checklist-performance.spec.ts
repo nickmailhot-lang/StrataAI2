@@ -101,7 +101,11 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
     });
     const create = page.getByRole('button', { name: 'Create checklist', exact: true });
     await expect(create).toBeEnabled(); await create.press('Enter');
-    const feedbackMs = await page.evaluate(() => (window as Window & { checklistFeedback: Promise<number> }).checklistFeedback);
+    const feedbackMs = await page.evaluate(() => {
+      const feedback = (window as Window & { checklistFeedback?: Promise<number> }).checklistFeedback;
+      if (!feedback) throw new Error('Checklist feedback observer was not installed.');
+      return feedback;
+    });
     await expect.poll(() => held).toBe(true);
     const created = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === path);
     releaseCreate(); const response = await created; expect(response.status()).toBe(200);

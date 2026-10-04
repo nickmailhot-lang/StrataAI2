@@ -66,7 +66,11 @@ test('PRD-06: desktop list drop feedback precedes persistence and meets its budg
     }, { moved: ids[1] });
     await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
     await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 12 }); await page.mouse.up();
-    feedbackMs = await page.evaluate(() => (window as Window & { listFeedback: Promise<number> }).listFeedback);
+    feedbackMs = await page.evaluate(() => {
+      const feedback = (window as Window & { listFeedback?: Promise<number> }).listFeedback;
+      if (!feedback) throw new Error('List feedback observer was not installed.');
+      return feedback;
+    });
     await expect.poll(() => writes).toBe(1);
     // The provisional projection must not have changed persisted ordering.
     const heldResponse = await context.request.get(`/boards/${board}`);

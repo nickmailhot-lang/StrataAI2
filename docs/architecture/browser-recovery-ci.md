@@ -128,3 +128,5 @@ submit control, and waits for a paint. Unrelated form submissions cannot consume
 the observer. Missing feedback still fails; the 100ms feedback, 200ms detail,
 1500ms usable Board and 500ms mutation p95 budgets remain unchanged. Browser
 discovery is not execution evidence and none of these repairs closes a ticket.
+
+Browser acceptance source validation now has an explicit strict TypeScript project covering playwright.config.ts and every tests/browser TypeScript fixture/helper. The root pins Node 24 declarations to 24.19.1 in the lockfile and exposes npm run typecheck:browser; web-quality executes it after the SPA typecheck, before browser runtime stages. Three performance fixtures now explicitly reject a missing browser observer before awaiting feedback, with their existing budgets and sampling unchanged. Full browser and SPA typechecks pass locally, along with both readiness tracker regressions and all seven retained performance-evidence cases. This resolves the missing-declaration limitation recorded for the notification fixtures; static validation is still distinct from actual exact-image runtime acceptance, which remains pending.

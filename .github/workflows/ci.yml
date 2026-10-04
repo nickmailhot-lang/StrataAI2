@@ -44,6 +44,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Typecheck browser acceptance fixtures
+        run: npm run typecheck:browser
+
       - name: Verify browser readiness excludes previous-screen responses
         run: node --experimental-strip-types --test tests/browser/boardReadTracker.test.mjs
 
