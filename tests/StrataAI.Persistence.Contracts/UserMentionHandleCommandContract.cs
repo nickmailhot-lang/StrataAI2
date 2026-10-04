@@ -12,8 +12,8 @@ internal static class UserMentionHandleCommandContract
     {
         var user = Guid.NewGuid();
         await using (var seed = new NpgsqlCommand("""
-            INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash)
-            VALUES(@user,@email,upper(@email),'Command account','ACTIVE',true,'fixture');
+            INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+            VALUES(@user,@email,upper(@email),'Command account','ACTIVE',true,'fixture',statement_timestamp(),statement_timestamp());
             """, admin))
         {
             seed.Parameters.AddWithValue("user", user); seed.Parameters.AddWithValue("email", $"handle-command-{user:N}@example.test");
