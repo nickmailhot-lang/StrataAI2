@@ -2,9 +2,23 @@
 
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
-This initial server read supports keyword and label predicates. Member,
-completion, due-date, recent-activity filters, anonymous PUBLIC Board parity,
+The server read supports keyword, label, eligible member and due-completion
+predicates. Due-date state, recent-activity filters, anonymous PUBLIC Board parity,
 and global search remain required PRD-16 work.
+
+`completion=complete` selects the canonical PRD-12 `dueComplete` flag;
+`completion=incomplete` selects its false value, including Cards without a due
+date. Omission or `completion=all` adds no predicate. This does not introduce a
+second general Card completion field. Completion participates as one selected
+dimension in MATCH ALL/ANY alongside keyword, labels and members. Unknown values
+return `invalid_board_filter` only after Board admission. PostgreSQL applies the
+predicate before its 51-row limit; the demo store uses identical composition.
+The MUI Due completion selector persists under the existing account/Board session
+key and is restored for fresh admitted reads. Invalid stored values are ignored.
+Host coverage includes composition, no-date Cards, denied validation and archived
+parents; the existing mandatory exact-image Card dates fixture checks complete,
+incomplete, reopen, ANY/ALL, stable invalid input and unauthorized reads without
+effects. Actual Linux/release execution of this increment remains pending.
 
 Keyword matching is a case-insensitive literal substring of title or description;
 SQL wildcard characters such as `%` and `_` are literal. The trimmed keyword is

@@ -73,7 +73,27 @@ test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_i
 complete=$(jq -c '.card | {startAt,dueAt,dueTimezone,dueHasTime,dueComplete:true,version}' "$scratch/changed.json")
 test "$(request owner PATCH "$path" "$(uuid)" "$complete")" = 200
 jq -e '.changed and .card.version==3 and .card.dueComplete and .card.lifecycleState=="active"' "$scratch/response.json" >/dev/null
+# PRD-16 completion filtering uses the canonical dates state through the exact
+# release API/PostgreSQL path, with normal admission before invalid input.
+filterBaseline=$(state)
+filter_read() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -o "$scratch/filter.json" -w '%{http_code}' "$base/boards/$board/cards?$2"; }
+test "$(filter_read owner 'completion=complete')" = 200
+jq -e --arg card "$card" '.items | length==1 and .[0].id==$card and .[0].dueComplete' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'completion=incomplete')" = 200
+jq -e '.items | length==0' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'completion=complete&keyword=absent&match=all')" = 200
+jq -e '.items | length==0' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'completion=complete&keyword=absent&match=any')" = 200
+jq -e --arg card "$card" '.items | length==1 and .[0].id==$card' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'completion=unknown')" = 400
+jq -e '.code=="invalid_board_filter"' "$scratch/filter.json" >/dev/null
+test "$(filter_read outsider 'completion=unknown')" = 404
+test "$(state)" = "$filterBaseline"
 test "$(request owner PATCH "$path" "$(uuid)" "$(jq -c '.dueComplete=false | .version=3' <<< "$complete")")" = 200
+test "$(filter_read owner 'completion=complete')" = 200
+jq -e '.items | length==0' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'completion=incomplete')" = 200
+jq -e --arg card "$card" '.items | length==1 and .[0].id==$card and (.[0].dueComplete|not)' "$scratch/filter.json" >/dev/null
 test "$(request owner PATCH "$path" "$(uuid)" '{"version":4,"dueHasTime":false,"dueComplete":false}')" = 200
 jq -e '.card.version==5 and .card.startAt==null and .card.dueAt==null and .card.dueTimezone==null and .card.dueComplete==false' "$scratch/response.json" >/dev/null
 test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$member';")" = 4

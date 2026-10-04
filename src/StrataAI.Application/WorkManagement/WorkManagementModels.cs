@@ -14,7 +14,7 @@ public sealed record AssignableBoardMemberPage(Guid OrganizationId, Guid BoardId
     IReadOnlyList<AssignableBoardMember> Items, Guid? NextCursor);
 
 public sealed record BoardCardFilter(string Keyword, IReadOnlyList<Guid> LabelIds, bool MatchAll,
-    IReadOnlyList<Guid>? MemberIds = null, bool RequireVerifiedEmail = false);
+    IReadOnlyList<Guid>? MemberIds = null, bool RequireVerifiedEmail = false, bool? DueComplete = null);
 public sealed record BoardCardFilterPage(Guid OrganizationId, Guid BoardId, IReadOnlyList<CardRecord> Items, Guid? NextCursor);
 
 public sealed record CardLabelChange(CardRecord Card, Guid LabelId, bool Assigned, bool Changed);

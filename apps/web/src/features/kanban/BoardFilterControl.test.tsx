@@ -251,3 +251,21 @@ it('restores member canvas criteria using fresh identity and an admitted result 
   await screen.findByText('Filtered Board: 1 matching Cards on this page.');
   expect(new URL(fetch.mock.calls[2][0], 'https://example.test').searchParams.get('members')).toBe(member.userId);
 });
+
+it('applies due completion and restores it from account-scoped session criteria', async () => {
+  const fetch = vi.fn(async (path: string) => path.endsWith('/me') ? response({ id: actor }) : path.includes('/cards?') ? results() : choices());
+  vi.stubGlobal('fetch', fetch); const view = mount(); await open();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Due completion' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Due complete', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters', exact: true })); await screen.findByRole('link', { name: 'Persisted match — Planning' });
+  const request = fetch.mock.calls.find(([path]) => path.includes('/cards?'))![0];
+  expect(new URL(request, 'https://example.test').searchParams.get('completion')).toBe('complete');
+  expect(JSON.parse(sessionStorage.getItem(storage())!).completion).toBe('complete');
+  view.unmount(); mount(); await open(); expect(screen.getByRole('combobox', { name: 'Due completion' })).toHaveTextContent('Due complete');
+});
+it('ignores an invalid stored completion predicate', async () => {
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Private stale criterion', labels: [], members: [], match: 'all', completion: 'unknown' }));
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path.endsWith('/me') ? response({ id: actor }) : choices()));
+  mount(); await open(); expect(screen.getByRole('combobox', { name: 'Due completion' })).toHaveTextContent('Any completion state');
+  expect(screen.getByLabelText('Card keyword')).toHaveValue('');
+});
