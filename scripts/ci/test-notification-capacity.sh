@@ -26,7 +26,11 @@ admin "INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,e
  FROM work_events WHERE tenant_id='$org' AND board_id='$board' AND entity_id='$card' AND correlation_id='activity-capacity';
  ANALYZE card_assignment_notifications;" >/dev/null
 test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100000
+test "$(admin "SELECT count(*) FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100000
+test "$(admin "SELECT last_sequence FROM notification_event_streams WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100000
 state() { admin "SELECT md5(jsonb_build_object('notifications',(SELECT md5(string_agg(md5(to_jsonb(n)::text),'' ORDER BY id)) FROM card_assignment_notifications n WHERE tenant_id='$org' AND recipient_id='$recipient'),
+ 'journal',(SELECT md5(string_agg(md5(to_jsonb(e)::text),'' ORDER BY sequence)) FROM notification_events e WHERE tenant_id='$org' AND recipient_id='$recipient'),
+ 'stream',(SELECT last_sequence FROM notification_event_streams WHERE tenant_id='$org' AND recipient_id='$recipient'),
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'),
  'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$org' AND id='$card'))::text);"; }
 path="/organizations/$org/notifications"
@@ -36,6 +40,17 @@ read_page() {
  curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "${args[@]}" -o "$scratch/$output.json" -w '%{time_total}\n' "$base$path"
 }
 before=$(state); read_page '' first >/dev/null
+for after in 0 50; do
+ curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base$path/sync?after=$after" > "$scratch/sync-$after.json"
+ jq -e --arg org "$org" --arg recipient "$recipient" --arg actor "$owner" --arg board "$board" --argjson after "$after" '
+ .organizationId==$org and .recipientId==$recipient and .cursor==(($after+50)|tostring) and .hasMore and (.resetRequired|not) and (.events|length)==50 and
+ all(.events[]; .organizationId==$org and .recipientId==$recipient and .actorId==$actor and .boardId==$board and .entityType=="Notification" and
+ .eventType=="NOTIFICATION_CREATED" and .version==1 and .metadata=={}) and
+ ([.events[].sequence|tonumber]==[range($after+1;$after+51)])' "$scratch/sync-$after.json" >/dev/null
+done
+jq -se '[.[].events[].eventId]|length==100 and (unique|length)==100' "$scratch/sync-0.json" "$scratch/sync-50.json" >/dev/null
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base$path/sync?after=100001" > "$scratch/reset.json"
+jq -e '.cursor=="100000" and .resetRequired and (.hasMore|not) and (.events|length)==0' "$scratch/reset.json" >/dev/null
 jq -e --arg org "$org" --arg recipient "$recipient" --arg actor "$owner" --arg card "$card" --arg board "$board" '.organizationId==$org and (.items|length)==50 and .nextCursor!=null and all(.items[];.recipientId==$recipient and .actorId==$actor and .entityId==$card and .boardId==$board and .type=="CARD_UPDATED" and .readAt==null and .entityLink==("/app/"+$org+"/boards/"+$board+"/cards/"+$card))' "$scratch/first.json" >/dev/null
 cursor=$(jq -r '.nextCursor' "$scratch/first.json"); read_page "$cursor" seek >/dev/null
 jq -se '[.[].items[].id]|length==100 and (unique|length)==100' "$scratch/first.json" "$scratch/seek.json" >/dev/null
@@ -51,18 +66,31 @@ for kind in first seek; do
 done
 test "$before" = "$(state)"
 : > "$scratch/read.seconds"
+: > "$scratch/receipts.jsonl"
 for ((sample=0;sample<20;sample++)); do
  id=$(jq -r --argjson index "$sample" '.items[$index].id' "$scratch/first.json"); key=$(uuid); body=$(jq -nc --arg id "$id" '{ids:[$id]}')
  curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $key" -d "$body" -o "$scratch/read.json" -w '%{time_total}\n' "$base$path/read" >> "$scratch/read.seconds"
  jq -e --arg org "$org" --arg id "$id" '.organizationId==$org and (.items|length)==1 and .items[0].id==$id and (.items[0].readAt|type)=="string"' "$scratch/read.json" >/dev/null
+ jq -c '.items[0]' "$scratch/read.json" >> "$scratch/receipts.jsonl"
  curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $key" -d "$body" "$base$path/read" > "$scratch/replay.json"
  jq -se '.[0]==.[1]' "$scratch/read.json" "$scratch/replay.json" >/dev/null
 done
 test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$recipient' AND read_at IS NOT NULL;")" = 20
+test "$(admin "SELECT last_sequence FROM notification_event_streams WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100020
+test "$(admin "SELECT count(*) FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient' AND event_type='NOTIFICATION_READ';")" = 20
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base$path/sync?after=100000" > "$scratch/read-events.json"
+jq -e --arg org "$org" --arg recipient "$recipient" --slurpfile receipts "$scratch/receipts.jsonl" '
+ .organizationId==$org and .recipientId==$recipient and .cursor=="100020" and (.hasMore|not) and (.resetRequired|not) and (.events|length)==20 and
+ ([.events[].sequence|tonumber]==[range(100001;100021)]) and
+ all(.events[]; . as $event | .organizationId==$org and .recipientId==$recipient and .actorId==$recipient and .entityType=="Notification" and
+ .eventType=="NOTIFICATION_READ" and .version==2 and .metadata=={} and
+ any($receipts[]; .id==$event.entityId and .readAt==$event.createdAt)) and
+ ([.events[].eventId]|unique|length)==20' "$scratch/read-events.json" >/dev/null
 revision=${GITHUB_SHA:-}; [[ "$revision" =~ ^[0-9a-f]{40,64}$ ]]; mkdir -p artifacts/capacity
 jq -nc --arg revision "$revision" --slurpfile first "$scratch/first.seconds" --slurpfile seek "$scratch/seek.seconds" --slurpfile read "$scratch/read.seconds" '{schemaVersion:1,revision:$revision,status:"passed",topology:"exact release images through Nginx",
  fixture:{lists:200,activeCards:5000,archivedCards:100000,notifications:100000,pageSize:50,samplesPerOperation:20,clients:1},
- verified:{uniqueSeek:true,persistedOrder:true,readStateUnchanged:true,exactReplay:true,readCount:20},
+ verified:{uniqueSeek:true,persistedOrder:true,readStateUnchanged:true,exactReplay:true,readCount:20,
+ journalCreatedCount:100000,journalReadCount:20,boundedJournalSeek:true,journalReset:true,exactPersistedReadEvents:true},
  milliseconds:{first:($first|map(.*1000)),seek:($seek|map(.*1000)),markRead:($read|map(.*1000)),markReadP95:($read|sort|.[18]*1000)}}' > "$scratch/report.json"
 jq -e '.milliseconds.markReadP95<500' "$scratch/report.json" >/dev/null
 mv "$scratch/report.json" artifacts/capacity/notifications.json
