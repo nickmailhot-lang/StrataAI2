@@ -153,6 +153,7 @@ try
     await CardMentionMemberStoreContract.RunAsync(admin,provider,organization,foreignOrganization,board,foreignBoard,foreignUser,card,ct);
     await CommentMentionSnapshotStoreContract.RunAsync(admin,provider,organization,foreignOrganization,card,foreignCard,user,foreignUser,ct);
     await CommentMentionNotificationContract.RunAsync(admin,provider,organization,card,user,foreignUser,ct);
+    await CardMassMentionQuotaContract.RunAsync(admin,provider,organization,card,user,foreignOrganization,foreignCard,foreignUser,ct);
     await UserMentionHandleStoreContract.RunAsync(admin,apiConnection,ct);
     Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, metadata/scan-job rollback and retained expiry passed.");
 }

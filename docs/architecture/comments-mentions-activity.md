@@ -1158,3 +1158,37 @@ and refuses missing Cards, absent group scopes and foreign tenant parents.
 Compilation passed; new Card-assignment contract execution is pending. These
 checks are storage-policy evidence with synthetic actor admission, not complete
 Production group confirmation, quota, HTTP/native or performance acceptance.
+
+The internal group quota now has Production and Demo adapters. The adopted
+policy is **three new group-delivery reservations per actor and canonical Board
+in a rolling ten-minute window**, shared across Card and Board group scopes.
+Reserve only after the actual MENTION_CREATED source exists in the owning
+comment transaction, and only for a new non-self mass recipient delta. Source
+tenant/Board/Card/actor/revision/time must agree. Original event identity retries
+remain free even after the rolling window expires. The API port serializes
+lookup/count/insert at the canonical Board; the database trigger independently
+serializes and enforces the limit, assigns database time, validates the source
+and refuses revision updates. The ledger is forced-RLS tenant data; API gets
+SELECT/INSERT only and Worker gets no ledger access. Full migration/readiness
+and role checks include migration 061; migration race/failure fixtures advance
+to 062–064. No external provider or architecture change is introduced.
+
+Demo uses the injected server clock and exact event-store source, participates
+in owning Work rollback, and retains original event reservations. New tests
+cover late actor refusal rollback, exact retries, actor/Board/tenant independence,
+the ten-minute boundary and backward clocks. Mandatory restricted PostgreSQL
+contracts cover full quota refusal/event rollback, duplicate identity, absent
+source and changed source refusal, foreign-tenant read isolation, actual expiry
+and concurrent competing reservations. Trusted administrative aging is a clock
+fixture; runtime has no UPDATE/trigger-control authority. Local compilation
+passes with zero warnings/errors and shell syntax checks pass. New Linux tests
+are pending. The quota is not yet called by comment publication; current group
+authorization, explicit HTTP/MUI confirmation and complete atomic fanout still
+need integration before mass declarations deliver notifications. Historical
+ledger retention/purge and complete lifecycle/performance acceptance remain
+open. PRD-15 estimated remaining work remains 55% pending runtime evidence and
+the substantial unfinished activity/group producer requirements.
+
+At the latest observation, run 37176935303 (4fa3fcd) passed all source gates,
+including the new restricted Card-assignment group roster tests; its immutable
+image build is live. Full runtime/release acceptance is still unproven.

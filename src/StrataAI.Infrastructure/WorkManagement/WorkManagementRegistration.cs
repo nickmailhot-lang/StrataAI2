@@ -15,6 +15,9 @@ public static class WorkManagementRegistration
             services.AddSingleton<DemoWorkTransactionScope>();
             services.AddSingleton<ICardMentionMemberStore, InMemoryCardMentionMemberStore>();
             services.AddSingleton<ICardMassMentionMemberStore, InMemoryCardMassMentionMemberStore>();
+            services.AddSingleton<InMemoryCardMassMentionQuota>();
+            services.AddSingleton<ICardMassMentionQuota>(provider => provider.GetRequiredService<InMemoryCardMassMentionQuota>());
+            services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryCardMassMentionQuota>());
             services.AddSingleton<InMemoryWorkManagementStore>();
             services.AddSingleton<IWorkManagementStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
             services.AddSingleton<ICardCommentStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
@@ -39,6 +42,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWorkManagementStore, PostgresWorkManagementStore>();
             services.AddSingleton<ICardMentionMemberStore, PostgresCardMentionMemberStore>();
             services.AddSingleton<ICardMassMentionMemberStore, PostgresCardMassMentionMemberStore>();
+            services.AddSingleton<ICardMassMentionQuota, PostgresCardMassMentionQuota>();
             services.AddSingleton<ICardCommentStore, PostgresCardCommentStore>();
             services.AddSingleton<ICommentMentionSnapshotStore, PostgresCommentMentionSnapshotStore>();
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();

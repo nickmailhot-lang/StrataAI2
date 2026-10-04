@@ -14,6 +14,8 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work) : IWorkE
     }
     private readonly Dictionary<(Guid Organization, Guid Id), (long Sequence, WorkEvent Event)> _events = [];
     private readonly Dictionary<(Guid Organization, Guid Board), long> _streams = [];
+    internal bool ContainsExact(WorkEvent source)
+    { lock (_events) return _events.TryGetValue((source.OrganizationId, source.EventId), out var row) && row.Event == source; }
     public Task AppendAsync(WorkEvent change, CancellationToken cancellationToken = default)
     {
         lock (_events)
