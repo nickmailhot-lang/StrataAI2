@@ -837,3 +837,41 @@ Planner commit 311bf72 has now passed its actual restricted PostgreSQL integrati
 in run 37171614912, including current eligibility and exact stable edit/self
 recipient delta. Managed tests are still live; this does not prove durable
 publication or complete native/release acceptance.
+
+## Owning snapshot persistence adapters
+
+ICommentMentionSnapshotStore now exposes only an owning-transaction exact
+Organization/Card/comment/revision lookup and immutable append. Its typed
+snapshot copies/sorts at most 20 unique nonempty recipient IDs, validates parent
+identity and UTC microsecond timestamp, and contains no body/profile/handle.
+The PostgreSQL adapter reads a bounded 21-row corruption sentinel and checks
+actual header cardinality; complete metadata retries match the retained header
+and recipients exactly. A differing Card/time/target set cannot replace that
+revision. New header and child inserts share the owning restricted tenant
+transaction and existing database revision/cardinality/FK guards. Exact
+historical retries perform no write after a later comment revision.
+
+Demo implements the same scope/current comment/time/recipient membership and
+immutable matching rules, including historical retries and empty snapshots.
+Its dictionary is now included in canonical Work rollback alongside comments.
+It does not add current-recipient admission: retained membership exists even
+after removal; fresh eligibility and target locks remain producer obligations.
+
+Four actual Demo storage/owning-unit cases cover failed result, exception,
+cancellation and late synthetic actor revocation restoring comment and snapshot
+together, exact duplicate retry, immutable copied metadata, body-free serialized
+snapshot, empty current revision retaining prior IDs, different revision target
+refusal, malformed/bounded IDs and wrong-Card reads. A new restricted C# contract
+checks owning scope, real FK failure rolling back a tentative header, comment/
+snapshot command refusal rollback, exact/historical retry, immutable mismatch,
+empty snapshot history and tenant/Card isolation. Its administrative cleanup is
+one explicit transaction so deferred cardinality checks see the completed
+fixture purge. These fixture actor predicates are synthetic, not HTTP cookie
+or actual recipient publication proof.
+
+Full local warning-as-error compilation passes. Linux execution of the new
+adapters remains pending. Schema commit 62e26ac has passed source gates and its
+immutable image build in run 37171932768; security/container stages are live.
+No mention notification, complete release/native pass or ticket closure is
+claimed. Current-target locking, atomic notification effects, mass-mention
+policy and native teammate controls remain necessary before full acceptance.

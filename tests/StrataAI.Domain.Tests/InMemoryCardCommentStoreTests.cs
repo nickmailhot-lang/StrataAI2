@@ -14,6 +14,59 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class InMemoryCardCommentStoreTests
 {
+    [Theory]
+    [InlineData("failure")]
+    [InlineData("exception")]
+    [InlineData("cancel")]
+    [InlineData("session")]
+    public async Task PRD_15_DemoMentionSnapshotsRetainImmutableHistoryAndRollBackWithTheirComment(string mode)
+    {
+        var ct = TestContext.Current.CancellationToken; var actor = new Actor(); using var services = Demo(actor);
+        var parent = await Parent(services, ct); var comments = services.GetRequiredService<ICardCommentStore>();
+        var snapshots = services.GetRequiredService<ICommentMentionSnapshotStore>(); var unit = services.GetRequiredService<IWorkManagementUnitOfWork>();
+        var id = Guid.NewGuid(); var at = DateTimeOffset.UtcNow;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => snapshots.FindSnapshotAsync(parent.Org, parent.Card.Id, id, 1, ct));
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        async Task<WorkOperation<CommentMentionSnapshot>> Attempt()
+            => await unit.ExecuteReadAsync(parent.Org, parent.User, "fixture_denied", () => Task.FromResult(true), async () =>
+            {
+                var comment = await comments.CreateAsync(id, parent.Org, parent.Card.Id, parent.User, "Private comment body", at, ct);
+                var input = new List<Guid> { parent.User }; var snapshot = new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 1, comment.UpdatedAt, input);
+                input.Clear(); await snapshots.AppendSnapshotAsync(snapshot, ct);
+                if (mode == "exception") throw new InvalidOperationException("fixture refusal");
+                if (mode == "cancel") { cancellation.Cancel(); cancellation.Token.ThrowIfCancellationRequested(); }
+                if (mode == "session") { actor.Allowed = false; return WorkOperation<CommentMentionSnapshot>.Success(snapshot); }
+                return WorkOperation<CommentMentionSnapshot>.Failure("fixture_refused");
+            }, ct);
+        if (mode == "exception") await Assert.ThrowsAsync<InvalidOperationException>(() => Attempt());
+        else if (mode == "cancel") await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Attempt());
+        else Assert.Equal(mode == "session" ? "session_unavailable" : "fixture_refused", (await Attempt()).ErrorCode);
+        actor.Allowed = true;
+        Assert.Null(await Scoped(services, parent.Org, () => comments.FindAsync(parent.Org, parent.Card.Id, id, ct), ct));
+        Assert.Null(await Scoped(services, parent.Org, () => snapshots.FindSnapshotAsync(parent.Org, parent.Card.Id, id, 1, ct), ct));
+        var initial = await Scoped(services, parent.Org, async () =>
+        {
+            var comment = await comments.CreateAsync(id, parent.Org, parent.Card.Id, parent.User, "Private comment body", at, ct);
+            var snapshot = new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 1, comment.UpdatedAt, [parent.User]);
+            await snapshots.AppendSnapshotAsync(snapshot, ct); await snapshots.AppendSnapshotAsync(snapshot, ct); return snapshot;
+        }, ct);
+        Assert.Single(initial.Recipients); Assert.DoesNotContain("Private comment body", System.Text.Json.JsonSerializer.Serialize(initial));
+        await Scoped(services, parent.Org, async () =>
+        {
+            var edited = await comments.EditAsync(parent.Org, parent.Card.Id, id, parent.User, 1, "Edited", at.AddSeconds(1), ct);
+            await snapshots.AppendSnapshotAsync(new(parent.Org, parent.Card.Id, id, 2, edited!.UpdatedAt, []), ct);
+            await snapshots.AppendSnapshotAsync(initial, ct); // Exact historical retry has no write.
+            Assert.Single((await snapshots.FindSnapshotAsync(parent.Org, parent.Card.Id, id, 1, ct))!.Recipients);
+            Assert.Empty((await snapshots.FindSnapshotAsync(parent.Org, parent.Card.Id, id, 2, ct))!.Recipients);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => snapshots.AppendSnapshotAsync(new(parent.Org, parent.Card.Id, id, 1, initial.CreatedAt, []), ct));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => snapshots.AppendSnapshotAsync(new(parent.Org, parent.Card.Id, id, 3, edited.UpdatedAt, []), ct));
+            Assert.Null(await snapshots.FindSnapshotAsync(parent.Org, Guid.NewGuid(), id, 1, ct));
+            return true;
+        }, ct);
+        Assert.Throws<ArgumentException>(() => new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 2, initial.CreatedAt, [Guid.Empty]));
+        Assert.Throws<ArgumentException>(() => new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 2, initial.CreatedAt, [parent.User, parent.User]));
+        Assert.Throws<ArgumentException>(() => new CommentMentionSnapshot(parent.Org, parent.Card.Id, id, 2, initial.CreatedAt, Enumerable.Range(0,21).Select(_ => Guid.NewGuid()).ToArray()));
+    }
     private sealed class Actor : ICommandActorAuthorization
     { public bool Allowed = true; public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(Allowed); }
     private sealed class CommandContext : IWorkCommandContext

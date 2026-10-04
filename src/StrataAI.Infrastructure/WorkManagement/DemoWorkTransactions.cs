@@ -36,7 +36,7 @@ internal sealed partial class InMemoryWorkManagementStore : IDemoWorkTransaction
                 DemoRollback.Dictionary(_members), DemoRollback.Set(_starred), DemoRollback.Dictionary(_labels), DemoRollback.Set(_cardLabels),
                 DemoRollback.Dictionary(_cardMembers), DemoRollback.Dictionary(_checklists), DemoRollback.Dictionary(_checklistItems),
                 DemoRollback.Dictionary(_attachmentMetadata), DemoRollback.Dictionary(_attachmentIntegrity), DemoRollback.Dictionary(_uploads),
-                DemoRollback.Dictionary(_cardCovers), DemoRollback.Dictionary(_comments)];
+                DemoRollback.Dictionary(_cardCovers), DemoRollback.Dictionary(_comments), DemoRollback.Dictionary(_mentionSnapshots)];
             return () => { lock (_sync) foreach (var action in restore) action(); };
         }
     }
