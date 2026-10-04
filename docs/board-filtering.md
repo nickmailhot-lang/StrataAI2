@@ -26,6 +26,20 @@ deadline context, explicit archive scope, an extensible projected-document
 contract for later comment indexing, MUI interaction, and real authorization,
 reconnect, accessibility and large-data acceptance evidence.
 
+The scoped search store now matches case-insensitive literal substrings against
+Card title/description, active assigned label names and currently eligible
+assignee display names. A member must have active Board and Organization
+membership and an active account (verified when required). ANY combines selected
+dimensions with OR; ALL requires each selected dimension. Empty dimensions are
+ignored; no selected dimensions lists the admitted lifecycle scope.
+Deleted Cards, Lists and Boards are always excluded. Active scope requires all
+three parents active; archive scope includes an archived Card or an archived
+List/Board ancestor. PostgreSQL evaluates all predicates before UUID seek and
+the 51-row limit, under the owning Board transaction. The future coordinator
+must enforce the applicable archive-read permission before invoking this store.
+This store is not yet exposed through a search endpoint and does not replace
+fresh Board admission or actor verification.
+
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and
