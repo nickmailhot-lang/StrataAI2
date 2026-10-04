@@ -733,3 +733,13 @@ one serial client through Nginx with no intentional network delay. It measures
 URL metadata/lifecycle commands; binary provider, scanner, preview, concurrent
 clients and browser timing are not measured by this fixture. Shell syntax and
 diff checks pass; actual execution/performance evidence remains pending CI.
+
+Two native browser scenarios at 1280 and 390 px now cover moved attachment
+identity and current destination lifecycle through the real scoped Worker.
+Independent authorized contexts open source/destination Boards before a real
+HTTP Card move, then require destination appearance and source disappearance
+without manual reload. Keyboard interaction opens the moved Card, verifies its
+unchanged URL attachment and archives that stable child on the destination;
+current metadata and an accessibility scan are checked. No publication or
+delivery replies are simulated. Discovery registers both scenarios; actual
+release-browser execution remains pending CI. Binary pipeline proof is separate.
