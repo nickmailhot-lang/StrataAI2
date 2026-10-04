@@ -3,6 +3,7 @@ import { forgetInvitationIntents } from '../organizations/invitationIntent';
 import { formatUserDateTime } from './userDateTime';
 import { validateIdentitySync } from './identitySync';
 import { watchIdentity } from './identityLive';
+import { MentionHandleDialog } from './MentionHandleDialog';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   Alert,
@@ -71,6 +72,7 @@ export function ProfilePage() {
   const [error, setError] = useState<string>();
   const [draft, setDraft] = useState<UserProfile>();
   const [busy, setBusy] = useState(false);
+  const [handleDialog, setHandleDialog] = useState(false);
   const [saved, setSaved] = useState(false);
   const [reload, setReload] = useState(0);
   const [conflict, setConflict] = useState(false);
@@ -96,7 +98,7 @@ export function ProfilePage() {
       deactivateRetry.current = undefined;
     };
   }, []);
-  const canRead = useEffectEvent(() => !busy && !mutation.current && !deactivateUncertain);
+  const canRead = useEffectEvent(() => !busy && !handleDialog && !mutation.current && !deactivateUncertain);
   const deny = useEffectEvent(() => {
     setProfile(undefined); setDraft(undefined);
     navigate('/login', { replace: true });
@@ -187,7 +189,7 @@ export function ProfilePage() {
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft || busy || conflict || deactivateUncertain || mutation.current) return;
+    if (!draft || busy || handleDialog || conflict || deactivateUncertain || mutation.current) return;
     const submitted = draft;
     const epoch = ++mutationEpoch.current;
     const controller = new AbortController();
@@ -239,7 +241,7 @@ export function ProfilePage() {
   }
 
   async function logout() {
-    if (busy || deactivateUncertain || mutation.current) return;
+    if (busy || handleDialog || deactivateUncertain || mutation.current) return;
     const epoch = ++mutationEpoch.current;
     const controller = new AbortController();
     mutation.current = controller;
@@ -265,7 +267,7 @@ export function ProfilePage() {
   }
 
   async function deactivate() {
-    if (busy || mutation.current || (!deactivateDialog && !deactivateUncertain)) return;
+    if (busy || handleDialog || mutation.current || (!deactivateDialog && !deactivateUncertain)) return;
     const epoch = ++mutationEpoch.current;
     const controller = new AbortController();
     mutation.current = controller;
@@ -356,15 +358,19 @@ export function ProfilePage() {
         <TextField label="Avatar URL" type="url" value={draft.avatarUrl ?? ''} disabled={busy} onChange={event => { setDraft({ ...draft, avatarUrl: event.target.value }); setSaved(false); }} helperText="Use an HTTPS image URL, or leave blank to remove it." />
         <TextField label="Locale" required value={draft.locale} disabled={busy} onChange={event => { setDraft({ ...draft, locale: event.target.value }); setSaved(false); }} helperText="For example, en-CA." />
         <TextField label="Timezone" required value={draft.timezone} disabled={busy} onChange={event => { setDraft({ ...draft, timezone: event.target.value }); setSaved(false); }} helperText="For example, America/Vancouver." />
-        <Button type="submit" variant="contained" disabled={busy || conflict}>{busy ? 'Please wait…' : 'Save profile'}</Button>
-        <Button type="button" disabled={busy || conflict} onClick={() => { setDraft(profile); setError(undefined); setSaved(false); }}>Discard changes</Button>
-        <Button type="button" disabled={busy} onClick={logout} variant="outlined" sx={{ alignSelf: 'flex-start' }}>
+        <Button type="submit" variant="contained" disabled={busy || handleDialog || conflict}>{busy ? 'Please wait…' : 'Save profile'}</Button>
+        <Button type="button" disabled={busy || handleDialog || conflict} onClick={() => { setDraft(profile); setError(undefined); setSaved(false); }}>Discard changes</Button>
+        <Button type="button" disabled={busy || handleDialog} onClick={logout} variant="outlined" sx={{ alignSelf: 'flex-start' }}>
           Sign out
         </Button>
-        <Button type="button" disabled={busy} color="error" variant="outlined" sx={{ alignSelf: 'flex-start' }} onClick={() => setDeactivateDialog(true)}>
+        <Button type="button" disabled={busy || handleDialog} color="error" variant="outlined" sx={{ alignSelf: 'flex-start' }} onClick={() => setDeactivateDialog(true)}>
           Deactivate account
         </Button>
+        <Button type="button" disabled={busy || conflict || !!profileRetry.current || !!logoutRetry.current} onClick={() => setHandleDialog(true)}>Change mention handle</Button>
       </Stack>
+      <MentionHandleDialog key={profile.id} open={handleDialog} subject={profile.id}
+        onClose={() => { setHandleDialog(false); setReload(value => value + 1); }}
+        onDenied={() => { setHandleDialog(false); setProfile(undefined); setDraft(undefined); navigate('/login', { replace: true }); }} />
       <Dialog open={deactivateDialog} onClose={() => { if (!busy) setDeactivateDialog(false); }} aria-labelledby="confirm-account-deactivation"
         slotProps={{ transition: { onEntered: () => deactivateCancel.current?.focus() } }}>
         <DialogTitle id="confirm-account-deactivation">Deactivate your account?</DialogTitle>

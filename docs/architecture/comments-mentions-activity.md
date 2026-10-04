@@ -39,7 +39,7 @@ bodies into public event or notification payloads.
 | COMMENT-FR-002 author/content/time/edited state | PostgreSQL/HTTP DTOs and bounded MUI parser retain canonical author/history, UTC revisions and redacted tombstones | Complete native rendering and historical-readable-author/lifecycle evidence |
 | COMMENT-FR-003 author edits | Author/current rights admission, dual revisions, body-free receipts, atomic audit/events and guarded UI edits implemented | Complete session/grant/parent changes under live waits, native reconciliation and performance evidence |
 | COMMENT-FR-004 author deletion | Confirmed author deletion persists a redacted tombstone; original former-body receipt is refused; MUI removal/retry guards implemented | Complete actual native confirmation/replay/lifecycle evidence and retention/purge policy |
-| COMMENT-FR-005 @username | Bounded plaintext tokens, globally unique reserved handle registry/storage and owning account command implemented; no comment recipient resolver/notification producer yet | HTTP/current-session lifecycle and MUI account setting, scoped teammate resolution/selection and safe mention UI |
+| COMMENT-FR-005 @username | Bounded plaintext tokens, globally unique reserved handle registry/storage, owning account command, protected HTTP and guarded MUI account dialog implemented; no comment recipient resolver/notification producer yet | Production session lifecycle under waits, native account UI, scoped teammate resolution/selection and safe mention UI |
 | COMMENT-FR-006 @card/@board | Bounded lexical declarations exist; actual mass-mention producer unimplemented | Explicit confirmation, current authorization, bounded fanout, durable rate limits and stable refusal without partial effects |
 | COMMENT-FR-007 mention notifications | Existing PRD-17 infrastructure; no comment mention producer | Atomic recipient intent, current eligibility/notification delivery, idempotent edits/replays, no protected body leakage |
 | COMMENT-FR-008 immutable activity | Existing Work events/audit; no complete activity projection | Every significant domain event, immutable interpreter/projection, complete lifecycle and replay coverage |
@@ -540,3 +540,49 @@ The protected HTTP commit 35733d9 now passes its complete source gate in CI run
 web and restricted PostgreSQL checks. The new seven host cases include actual
 cookie authorization and revocation. Immutable image build/security/runtime
 stages remain separate live evidence; this is not a full release success claim.
+
+## Visible MUI account handle setting and recovery
+
+The Profile page opens a named modal account handle setting with a bounded
+plaintext field, native form submission, explicit save/review/close controls
+and status/error feedback. Reads bracket the protected setting with fresh
+current-account admissions and matching root versions before displaying it.
+Fresh saves check the current root version; original retry recovery retains
+the frozen original handle/body/key and both original revisions. Success must
+match the original intent and pass a fresh protected setting read before
+confirmation. A later current handle is displayed only through that fresh
+admission, never copied from an obsolete acknowledgment.
+
+Network/503/malformed acknowledgment or stalled transport/body retains the
+original attempt and blocks editing and modal dismissal. Definitive refusal
+retires the attempt and requires explicit current-setting review. Account
+switch/revocation clears protected state and returns to sign-in. The complete
+operation has a 15-second deadline; abort, unmount and operation epochs reject
+late results and prevent follow-up protected requests after cancellation.
+Keyboard retry focus is restored only for an interaction inside the visible
+dialog; it does not pull focus from another control or a hidden document.
+
+While the dialog is open, competing profile save/logout/deactivation commands
+are refused and their controls disabled; ordinary profile polling pauses.
+Closing triggers a fresh profile read. Existing unsaved profile edits survive
+the resulting account-version conflict and cannot overwrite it with a stale
+version. The dialog is keyed to the actual account, fencing account switches.
+It is disabled while the profile/logout has an unresolved original attempt.
+
+Local component fixtures cover committed-but-lost reply recovery with identical
+key/body, transport/body deadlines and ignored late replies, no-dismiss/edit
+recovery, wrong-revision acknowledgment, explicit review after conflict,
+account switch before display, aborted unmount, guarded retry focus and the
+actual Profile-page interaction with unsaved edits. These are client protocol
+fixtures, not actual browser/API/DB native execution. Typecheck/lint pass;
+37 selected dialog/Profile/deactivation component cases passed; the final focus
+addition also passed its eight-case dialog/Profile-interaction rerun. Native desktop,
+mobile, keyboard/axe and Production live-wait session checks remain required.
+
+Release runs 37168007618 and 37168307460 failed the newly added fixture because
+its 37-character canonical handle plus four padding spaces exceeded the
+Domain's 40-code-unit raw-input bound. bc81736 changes only the fixture padding
+to one space on each side (39 total), preserving the server/client bound. Shell
+syntax and the actual generated-length assertion pass. Corrected run
+37168895243 is live; exact-image execution remains unproven until it passes.
+No full ticket or acceptance criterion is closed by this UI slice.
