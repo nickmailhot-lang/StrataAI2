@@ -70,12 +70,13 @@ compatible rules, not silent source deletion.
 
 ## Producer gaps that cannot be waived
 
-Current `WorkManagementService.MoveCardAsync` rejects a destination in a different
-Board. Activity supports historical/current Board plans, but its synthetic
-cross-Board source fixtures do not implement or validate that producer command.
-PRD-08 movement, related assignments/labels/attachments/watch/Reminder and current
-authorization/event contracts must be implemented consistently before claiming
-real moved-entity acceptance.
+The authorized move command now supports a destination in a different Board
+within the same Organization, with original-source receipt admission and both
+Board stream events. Revision `73812de` passed Linux managed/API and PostgreSQL
+checks, including real HTTP movement, label/assignment policy and personal
+Reminder owner checks. Exact-image release and native movement execution remain
+required. Attachments, comments, checklist and notification projection still need
+explicit moved-entity consumer coverage before complete acceptance.
 
 `BoardScreen` now falls back to an independently admitted archived detail reader
 when a Card is absent from the active canvas. It supports archived Cards and
@@ -83,8 +84,8 @@ active Cards in archived Lists, with read-only title/description, comments and
 activity. The archive directory links to this detail. Scoped admission uses the
 existing authenticated read transaction, current Organization/Board access and
 fresh Card/List checks under the Board gate; deleted content remains unavailable.
-API lifecycle cases compile and focused component tests pass locally; current
-Linux API and exact-image desktop/mobile execution remain required. Deleted target history
+Archived lifecycle API cases passed Linux CI at `8b9623e`; focused component tests
+also passed locally. Full exact-image desktop/mobile execution remains required. Deleted target history
 stays body-free/current-admin-only; this gap does not authorize deleted body
 disclosure or an anonymous/Owner Portal activity projection.
 
@@ -97,5 +98,5 @@ implemented readers.
 Cross-Board producer continuation adds both Board stream events, stable Card
 routing and original-source receipt admission. New HTTP tests cover current
 history after movement; an exact-image rollback/retry fixture is mandatory.
-These additions compile locally; new Linux execution and full native acceptance
-remain pending. PRD-15 remains open with approximately 40% remaining.
+The producer and new HTTP cases passed Linux managed/API execution; full release
+and native acceptance remain pending. PRD-15 remains open with approximately 40% remaining.

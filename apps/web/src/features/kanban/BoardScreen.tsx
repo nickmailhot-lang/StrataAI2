@@ -47,6 +47,7 @@ import { LabelCreateControl } from './LabelCreateControl';
 import { LabelManageControl } from './LabelManageControl';
 import { BoardFilterControl } from './BoardFilterControl';
 import { filteredBoardCanvas, type BoardCanvasFilter } from './boardFilterCanvas';
+import { CrossBoardCardMoveControl } from "./CrossBoardCardMoveControl";
 import { CardMoveControls, type CardDropRequest } from "./CardMoveControls";
 import { CardArchiveControl } from './CardArchiveControl';
 import { CardDragItem, CardListEndTarget } from './CardDragItem';
@@ -122,7 +123,9 @@ function BoardContent() {
   const [fileAttachmentRecovery, setFileAttachmentRecovery] = useState(false);
   const checklistRecovery = checklistCreateRecovery || checklistManageRecovery;
   const otherBusy = operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery;
-  const busy = otherBusy || dateRecovery;
+  const [crossBoardMoveRecovery, setCrossBoardMoveRecovery] = useState(false);
+  const [crossBoardMoved, setCrossBoardMoved] = useState<{ cardId: string; boardId: string }>();
+  const busy = otherBusy || dateRecovery || crossBoardMoveRecovery;
   const [movePreview, setMovePreview] = useState<CardMovePreview>();
   const [listPreview, setListPreview] = useState<ListMovePreview>();
   const [listDrop, setListDrop] = useState<ListDropRequest>();
@@ -690,7 +693,10 @@ function BoardContent() {
         <DialogTitle>Card details</DialogTitle>
         <DialogContent>
           {!card ? (
-            cardId ? <ArchivedCardDetail organizationId={organizationId} boardId={boardId} cardId={cardId}
+            crossBoardMoveRecovery ? <Typography role="status">Checking the original cross-Board move.</Typography>
+              : crossBoardMoved && crossBoardMoved.cardId === cardId ? <Button component={Link}
+                to={`/app/${organizationId}/boards/${crossBoardMoved.boardId}/cards/${cardId}`}>Open Card on destination Board</Button>
+              : cardId ? <ArchivedCardDetail organizationId={organizationId} boardId={boardId} cardId={cardId}
               unavailable={snapshotReading || !!loadError || !snapshot || busy} refreshSequence={`${reload}/${reconnectSequence}`}
               reconnectSequence={reconnectSequence} onDenied={clearDeniedScope}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
@@ -787,6 +793,11 @@ function BoardContent() {
               onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
           )}
+          {cardId && <CrossBoardCardMoveControl key={`cross-move-${cardId}`} card={card} selectedCardId={cardId}
+            snapshot={snapshot} disabled={otherBusy || dateRecovery || cardRecovery} unavailable={snapshotReading || !!loadError}
+            onBusyChange={setBusy} onRecoveryChange={setCrossBoardMoveRecovery}
+            onAcknowledged={(movedCardId, movedBoardId) => setCrossBoardMoved({ cardId: movedCardId, boardId: movedBoardId })}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {cardId && <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="CARD" entityId={cardId}
             admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active' && !!card &&
               snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === cardId))}

@@ -77,11 +77,23 @@ failure and unrecorded fixtures are numbered 067–069.
 - Update notification admission/projection: the existing inbox joins current Card
   Board to historical source Board, so moved notifications remain hidden until
   a current-authorized projection is implemented.
-- Add MUI destination selection, concurrent retry and revocation cases, actual
-  two-client movement/reconnect and native keyboard/mobile acceptance.
+- The MUI cross-Board selector now loads authorized destination Boards and
+  checks an active destination List, binds account identity and original source,
+  and keeps receipt recovery after canonical source removal. Unit and integrated
+  Board tests cover that recovery, access refusal and stale reviews. Native
+  keyboard scenarios at 1280/390 pixels exercise both streams and lost replies;
+  actual native execution and concurrent/reconnect acceptance remain required.
 - Verify supported capacity, visual feedback and acknowledgement budgets before
   closing PRD-08/15.
 
 Baseline `850daff` passed web, managed/API, PostgreSQL, source-quality, image build
 and security jobs in run 37193132162; container integration was still running
 when this implementation began. No issue is closed by this stage.
+
+
+The command revision `73812de` passed web, managed/API, PostgreSQL, source-quality
+and immutable image build jobs in run 37195010808. Release integration and
+security were still running when the MUI continuation was prepared. Local MUI
+checks passed 60 related tests before the final integration case; the final
+42-test selector/Board rerun and separate integrated recovery case passed.
+No native execution is inferred from Playwright test discovery.

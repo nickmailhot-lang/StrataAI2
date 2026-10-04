@@ -763,6 +763,44 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
   });
+  it('keeps cross-Board recovery after source removal without treating the moved Card as denied archived detail', async () => {
+    const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+    const org = uuid(1), board = uuid(2), cardId = uuid(3), destination = uuid(4), list = uuid(5);
+    const active = structuredClone(fixture); active.board.id = board; active.board.organizationId = org;
+    active.lists[0].cards[0].id = cardId;
+    const target = { ...active, board: { ...active.board, id: destination, name: 'Destination' },
+      lists: [{ list: { id: list, name: 'Destination List', rank: '1', lifecycleState: 'active' }, cards: [] }] };
+    const writes: RequestInit[] = []; let moved = false; let archivedReads = 0;
+    vi.stubGlobal('fetch', vi.fn((path: string, init?: RequestInit) => {
+      if (path === '/me') return Promise.resolve(response({ id: uuid(8), status: 'ACTIVE', version: 1, emailVerified: true, locale: 'en-US', timezone: 'UTC' }));
+      if (path === `/organizations/${org}/boards`) return Promise.resolve(response([{ id: destination, name: 'Destination', version: 1 }]));
+      if (path === `/boards/${destination}`) return Promise.resolve(response(target));
+      if (path.endsWith('/archived-details')) { archivedReads++; return Promise.resolve(response({}, 404)); }
+      if (path === `/cards/${cardId}/move`) {
+        writes.push(init!); moved = true;
+        return writes.length === 1 ? Promise.reject(new Error('Lost move response')) : Promise.resolve(response({ ...active.lists[0].cards[0],
+          organizationId: org, boardId: destination, listId: list, rank: '500000000000000000000000000000', version: 4 }));
+      }
+      return Promise.resolve(response(moved ? { ...active, lists: [] } : active));
+    }));
+    mount(`/app/${org}/boards/${board}/cards/${cardId}`);
+    fireEvent.click(await screen.findByRole('button', { name: 'Move to another Board' }));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Destination Board' })).not.toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination Board' })); fireEvent.click(await screen.findByRole('option', { name: 'Destination' }));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Destination List on another Board' })).not.toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination List on another Board' })); fireEvent.click(await screen.findByRole('option', { name: 'Destination List' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm move to another Board' }));
+    const retry = await screen.findByRole('button', { name: 'Retry this cross-Board move' }); await waitFor(() => expect(retry).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled(); expect(archivedReads).toBe(0);
+    expect(screen.getByText('Persisted board', { selector: 'h2' })).toBeVisible(); fireEvent.click(retry);
+    await screen.findByText('Move acknowledged. Check the destination Board for current placement.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Close' })).toBeEnabled());
+    expect(screen.getByRole('link', { name: 'Open Card on destination Board' })).toHaveAttribute('href', `/app/${org}/boards/${destination}/cards/${cardId}`);
+    expect(archivedReads).toBe(0); expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
+    expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toHaveFocus());
+  });
   it('keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery', async () => {
     const board = '11111111-1111-1111-1111-111111111111'; const org = '22222222-2222-2222-2222-222222222222';
     const list = '33333333-3333-3333-3333-333333333333'; const copiedId = '44444444-4444-4444-4444-444444444444';

@@ -355,3 +355,12 @@ stable Card routing, both Board events and personal Reminder owner rechecks.
 New API and mandatory immutable-image rollback/retry fixtures cover the command;
 Linux execution, MUI destination selection and full native/capacity acceptance
 remain required. PRD-08 and PRD-15 stay open (estimated 45% and 40% remaining).
+
+
+MUI continuation: a separate cross-Board Card selector admits destinations,
+checks the signed-in identity before/after each request, and preserves original
+receipt input after the source Card disappears. The Board keeps recovery outside
+the removed editor and does not invoke archived-detail denial for that pending
+move. Final 42 related unit/Board checks and an explicit recovery integration
+case passed; two native keyboard/mobile scenarios are discovered but require
+Linux immutable-image execution. PRD-08/15 remain open.
