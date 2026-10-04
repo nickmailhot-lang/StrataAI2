@@ -32,7 +32,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         const visibility = page.getByRole('combobox', { name: 'Board visibility' });
         await expect(visibility).toBeEnabled(); await visibility.press('ArrowDown');
         await expect(page.getByRole('listbox', { name: 'Board visibility' })).toBeVisible();
-        await page.getByRole('option', { name: 'Public', exact: true }).focus(); await page.keyboard.press('Enter');
+        const publicOption = page.getByRole('option', { name: 'Public', exact: true });
+        await expect(publicOption).toBeVisible(); await publicOption.press('Enter');
         await page.getByRole('button', { name: 'Review visibility change' }).focus(); await page.keyboard.press('Enter');
         await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
         await expect(page.getByText(/Anyone, including people who are not signed in/)).toBeVisible();
@@ -60,6 +61,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByRole('button', { name: 'Check current visibility' })).toBeEnabled();
       await page.getByRole('button', { name: 'Check current visibility' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('combobox', { name: 'Board visibility' })).toHaveText('Organization');
+      await waitForBoardDelivery(context.request, board);
+      await expect(page.getByRole('progressbar', { name: 'Checking Board visibility' })).toHaveCount(0);
       await choosePublic();
       await page.getByRole('button', { name: 'Confirm visibility change' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText(/Unable to confirm current Board visibility/)).toBeVisible();
