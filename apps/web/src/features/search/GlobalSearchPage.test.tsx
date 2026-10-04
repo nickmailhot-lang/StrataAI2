@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { workRequest } from '../../api/workManagement';
+import { workRequest, WorkRequestError } from '../../api/workManagement';
 import { GlobalSearchPage } from './GlobalSearchPage';
-vi.mock('../../api/workManagement', () => ({
+vi.mock('../../api/workManagement', async () => ({
   workRequest: vi.fn(),
+  WorkRequestError: (await vi.importActual<typeof import('../../api/workManagement')>('../../api/workManagement')).WorkRequestError,
   boundedWorkRead: (read: (signal: AbortSignal) => Promise<unknown>) => read(new AbortController().signal),
 }));
 const id = '11111111-1111-4111-8111-111111111111';
@@ -33,6 +34,35 @@ it('withholds protected results and clears criteria when the account changes acr
   fireEvent.change(screen.getByRole('textbox', { name: 'Card text' }), { target: { value: 'private needle' } });
   fireEvent.click(screen.getByRole('button', { name: 'Search' }));
   expect(await screen.findByText(/Search is unavailable/)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Admitted Card' })).not.toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: 'Card text' })).toHaveValue('');
+});
+it('recovers an admitted search after a transient offline read without manual reload', async () => {
+  const request = vi.mocked(workRequest);
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce(result()).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.change(screen.getByRole('textbox', { name: 'Card text' }), { target: { value: 'needle' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+  await screen.findByRole('link', { name: 'Admitted Card' });
+  request.mockRejectedValueOnce(new TypeError('offline'));
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh results' }));
+  await screen.findByText(/Search is unavailable/);
+  expect(screen.queryByRole('link', { name: 'Admitted Card' })).not.toBeInTheDocument();
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce(result()).mockResolvedValueOnce(profile());
+  fireEvent(window, new Event('online'));
+  expect(await screen.findByRole('link', { name: 'Admitted Card' })).toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: 'Card text' })).toHaveValue('needle');
+});
+it.each([401, 403, 404])('purges retained query state after terminal denial %s', async status => {
+  const request = vi.mocked(workRequest);
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce(result()).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.change(screen.getByRole('textbox', { name: 'Card text' }), { target: { value: 'private needle' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+  await screen.findByRole('link', { name: 'Admitted Card' });
+  request.mockRejectedValueOnce(new WorkRequestError(status, null));
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh results' }));
+  await screen.findByText(/Search is unavailable/);
   expect(screen.queryByRole('link', { name: 'Admitted Card' })).not.toBeInTheDocument();
   expect(screen.getByRole('textbox', { name: 'Card text' })).toHaveValue('');
 });

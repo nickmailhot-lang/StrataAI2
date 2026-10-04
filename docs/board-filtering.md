@@ -80,6 +80,14 @@ page does not claim a cross-Board SignalR subscription. Seven parser/component
 contracts passed locally; typecheck/lint passed. Native keyboard/mobile/Axe,
 runtime/SQL and exact-image acceptance remain pending.
 
+Search transient-read recovery retains the admitted actor and current cursor
+while withholding all result content. Online/focus recovery can then re-run the
+same submitted page with fresh pre/post-account checks. Terminal 401/403/404 or
+an account change purge actor, cursor, submitted criteria and drafts. Eleven
+focused parser/component cases passed locally, including offline-read recovery
+and each terminal denial; typecheck/lint passed. This mocked component recovery
+is not native browser/realtime acceptance evidence.
+
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and

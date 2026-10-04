@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Button, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { boundedWorkRead, workRequest } from '../../api/workManagement';
+import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { parseSearchPage, type SearchPage } from './globalSearch';
 
@@ -33,8 +33,10 @@ export function GlobalSearchPage() {
       actor.current = result.actor; applied.current = criteria; cursor.current = after; setPage(result.page);
     } catch (reason) {
       if (!alive.current || ticket !== epoch.current) return;
-      actor.current = undefined; cursor.current = undefined; setPage(undefined);
-      if (reason instanceof ChangedSearchAccount) { applied.current = empty(); setDraft(empty()); }
+      setPage(undefined);
+      if (reason instanceof ChangedSearchAccount || reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) {
+        actor.current = undefined; cursor.current = undefined; applied.current = empty(); setDraft(empty());
+      }
       setNotice('Search is unavailable. Check your account and access, then search again.');
     } finally {
       if (alive.current && ticket === epoch.current) { pending.current = undefined; setBusy(false); }
