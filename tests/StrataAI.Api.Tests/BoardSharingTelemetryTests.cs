@@ -12,6 +12,27 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_16_Global_search_metrics_measure_outcomes_without_query_names_or_cursor_material()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var anonymous = app.CreateClient();
+        await RegisterAndLogin(owner);
+        using var capture = new SharingMetricCapture(app.Services.GetRequiredService<BoardSharingTelemetry>().Meter);
+        using var searched = await owner.GetAsync("/search?q=private-search-body&label=private-label&member=private-person", ct);
+        Assert.Equal(HttpStatusCode.OK, searched.StatusCode);
+        using var invalid = await owner.GetAsync("/search?q=private-search-body&after=private-cursor-material", ct);
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        using var denied = await anonymous.GetAsync("/search?q=private-search-body", ct);
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
+        var samples = await capture.WaitAsync(3, ct); AssertSafeSharingSamples(samples, 3);
+        Assert.All(samples, sample => Assert.Equal("global_search", sample.Tags["operation"]));
+        Assert.Contains(samples, sample => sample.Tags["outcome"] as string == "success");
+        Assert.Contains(samples, sample => sample.Tags["error_code"] as string == "invalid_search");
+        Assert.Contains(samples, sample => sample.Tags["error_code"] as string == "unauthenticated");
+        Assert.DoesNotContain(samples.SelectMany(sample => sample.Tags.Values.OfType<string>()), value => value.Contains("private", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Board_sharing_metrics_capture_response_outcomes_without_private_or_unbounded_labels()
     {
         var ct = TestContext.Current.CancellationToken;

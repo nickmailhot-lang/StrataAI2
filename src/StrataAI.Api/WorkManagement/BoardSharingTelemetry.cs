@@ -24,6 +24,7 @@ public sealed class BoardSharingTelemetry
     internal static string? Operation(HttpContext context) =>
         ((context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText, context.Request.Method.ToUpperInvariant()) switch
         {
+            ("/search", "GET") => "global_search",
             ("/boards/{boardId:guid}", "GET") => "board_read",
             ("/boards/{boardId:guid}/activity", "GET") => "board_activity_read",
             ("/cards/{cardId:guid}/activity", "GET") => "card_activity_read",
@@ -139,7 +140,7 @@ public sealed class BoardSharingTelemetry
                 or "invalid_lifecycle_transition" or "delete_confirmation_required"
                 or "deletion_impact_required" or "deletion_impact_changed"
                 or "invalid_archive_cursor" or "invalid_card_title"
-                or "label_not_found" or "invalid_label_name" or "invalid_label_color" or "invalid_label_cursor" or "invalid_board_filter" or "invalid_card_member_version" => code,
+                or "label_not_found" or "invalid_label_name" or "invalid_label_color" or "invalid_label_cursor" or "invalid_board_filter" or "invalid_search" or "invalid_card_member_version" => code,
             _ => "other_error",
         };
     }

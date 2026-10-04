@@ -70,6 +70,18 @@ after actor verification; unavailable sessions return 401. Responses use
 same criteria, and allow an empty continuation page until `nextCursor` is null.
 Runtime/acceptance evidence remains outstanding.
 
+Production Nginx and the Vite development proxy route `/search` to the API.
+The required exact-image container stage runs `test-global-search.sh` through
+that web proxy: anonymous denial, an outsider's empty private result, literal
+`100%_` matching, all 52 persisted IDs across 50+2 seek pages, opaque cursor
+binding to actor/query, explicit exhaustion and archived-List scope. This
+fixture's execution is pending; shell syntax alone is not runtime evidence.
+Server request counts, outcomes, stable `invalid_search` errors and durations
+use the existing BoardSharing meter with fixed `global_search` operation tags.
+Search text, label/member criteria and cursor material never become metric tags.
+Client use/retry/reconnect instrumentation and large-data search measurements
+remain outstanding.
+
 The internal shell now links to `/app/:organizationId/search`, with MUI text,
 label/member name, composition and lifecycle controls. A submitted search
 replaces its current page rather than accumulating an unbounded collection.

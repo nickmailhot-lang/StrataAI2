@@ -495,6 +495,9 @@ jobs:
       - name: Authorized bounded Organization member directory and post-wait revocation
         run: scripts/ci/test-organization-member-directory.sh
 
+      - name: Authorized global search, literal matching, cursor binding and archived scope through exact release images
+        run: bash scripts/ci/test-global-search.sh
+
       - name: Durable work retry keys against exact release API
         run: scripts/ci/test-work-idempotency.sh
 
