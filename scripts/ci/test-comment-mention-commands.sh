@@ -89,11 +89,13 @@ for boundary in board organization account; do
   test "$before" = "$(state)"
   admin "UPDATE ${row%% WHERE*} SET $column='ACTIVE' WHERE ${row#* WHERE };" >/dev/null
 done
-# A revoked issuing session during the parent Card lock also rolls back the
-# whole command; a fresh cookie can subsequently use the uncommitted key.
-gate "SELECT 1 FROM cards WHERE tenant_id='$org' AND id='$card' FOR UPDATE;"
+# Hold the account before command verification locks its issuing session.
+# Deleting an already SHARE-locked session from a Card gate would invert the
+# lock order. Observe the actual account wait before revocation; the command
+# must refuse and a fresh cookie may use the uncommitted key.
+gate "SELECT 1 FROM users WHERE id='$owner' FOR UPDATE;"
 request owner POST "$path" "$key" "$body" > "$scratch/status" & request_pid=$!
-blocked '%cards%'
+blocked '%FROM users WHERE id%FOR SHARE%'
 release "DELETE FROM sessions WHERE user_id='$owner';"
 wait "$request_pid"; request_pid=''
 test "$(cat "$scratch/status")" = 401

@@ -1240,3 +1240,16 @@ native and Production lifecycle/race scenarios, group capacity (including the
 deferred cardinality cost), retention and activity/event/historical-actor
 projections and MUI feeds remain substantial unfinished requirements. No issue
 is closed and no full acceptance criterion is inferred from local source checks.
+
+The older 714a9e3 container run reached the username mention fixture and failed
+its session-revocation assertion at line 97. Downloaded diagnostics confirm
+database code 40P01: the API held the issuing session FOR SHARE while waiting
+to UPDATE the gated Card, and the administrative gate tried to delete that
+already locked session. The fixture now gates the issuing account before its
+session lock and observes the actual API account FOR SHARE wait before deleting
+the session. The required 401, whole-state equality and fresh-cookie same-key
+recovery checks remain. Product session/account locks and required CI gates are
+preserved. This proves a different explicit boundary (revocation while account
+verification waits), not deletion through a transaction-held session lock.
+Natural session expiry during a late parent wait still needs its own complete
+mention scenario. Local shell syntax passes; corrected actual execution is pending.
