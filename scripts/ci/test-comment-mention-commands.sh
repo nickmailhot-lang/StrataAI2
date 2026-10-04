@@ -3,8 +3,14 @@ set -euo pipefail
 test "${CI:-}" = true || { echo 'Disposable comment fixtures require CI.' >&2; exit 1; }
 base=http://localhost:8088
 scratch=$(mktemp -d)
+gate_pid=''; request_pid=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
-cleanup() { admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null || true; rm -rf "$scratch"; }
+cleanup() {
+  if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
+  if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
+  admin 'GRANT INSERT ON card_assignment_notifications TO strataai_api_runtime;' >/dev/null || true
+  rm -rf "$scratch"
+}
 trap cleanup EXIT
 trap 'echo "Comment mention fixture failed at line $LINENO" >&2' ERR
 for actor in owner recipient; do
@@ -44,6 +50,53 @@ state() { admin "SELECT md5(jsonb_build_object(
  'notifications',(SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"; }
 before=$(state)
+gate() {
+  mkfifo "$scratch/gate.in"
+  docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.log" 2>&1 & gate_pid=$!
+  exec 3> "$scratch/gate.in"
+  printf 'BEGIN;\n%s\nSELECT '\''mention_locked'\'';\n' "$1" >&3
+  for ((attempt=0;attempt<100;attempt++)); do
+    if grep -q '^mention_locked$' "$scratch/gate.log"; then return; fi
+    kill -0 "$gate_pid" || return 1; sleep 0.05
+  done
+  return 1
+}
+blocked() {
+  for ((attempt=0;attempt<100;attempt++)); do
+    if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '$1';")" = 1; then return; fi
+    kill -0 "$request_pid" || return 1; sleep 0.05
+  done
+  return 1
+}
+release() { printf '%s\nCOMMIT;\n\\q\n' "$1" >&3; exec 3>&-; wait "$gate_pid"; gate_pid=''; rm "$scratch/gate.in" "$scratch/gate.log"; }
+# Each request must actually be waiting in the recipient locking query before
+# eligibility changes. No comment, receipt, event or notification may survive.
+for boundary in board organization account; do
+  case "$boundary" in
+    board) row="board_members WHERE tenant_id='$org' AND board_id='$board' AND user_id='$recipient'"; column=status; refused=REMOVED; ;;
+    organization) row="organization_members WHERE tenant_id='$org' AND user_id='$recipient'"; column=status; refused=REMOVED; ;;
+    account) row="users WHERE id='$recipient'"; column=status; refused=DEACTIVATED; ;;
+  esac
+  gate "SELECT 1 FROM $row FOR UPDATE;"
+  request owner POST "$path" "$key" "$body" > "$scratch/status" & request_pid=$!
+  blocked '%FOR SHARE OF m,o,u,h%'
+  release "UPDATE ${row%% WHERE*} SET $column='$refused' WHERE ${row#* WHERE };"
+  wait "$request_pid"; request_pid=''
+  test "$(cat "$scratch/status")" = 409
+  jq -e '.code=="mention_targets_changed"' "$scratch/response.json" >/dev/null
+  test "$before" = "$(state)"
+  admin "UPDATE ${row%% WHERE*} SET $column='ACTIVE' WHERE ${row#* WHERE };" >/dev/null
+done
+# A revoked issuing session during the parent Card lock also rolls back the
+# whole command; a fresh cookie can subsequently use the uncommitted key.
+gate "SELECT 1 FROM cards WHERE tenant_id='$org' AND id='$card' FOR UPDATE;"
+request owner POST "$path" "$key" "$body" > "$scratch/status" & request_pid=$!
+blocked '%cards%'
+release "DELETE FROM sessions WHERE user_id='$owner';"
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/status")" = 401
+test "$before" = "$(state)"
+curl --fail --silent --show-error -c "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/owner.credentials")" "$base/auth/login" >/dev/null
 stale_body=$(jq '.mentionSelections[0].handleVersion=2' <<< "$body")
 test "$(request owner POST "$path" "$key" "$stale_body")" = 409
 test "$before" = "$(state)"
@@ -83,4 +136,4 @@ admin "UPDATE board_members SET status='REMOVED',version=version+1 WHERE tenant_
 test "$(get recipient "$inbox")" = 200
 jq -e '.items|length==0' "$scratch/response.json" >/dev/null
 test "$(get recipient "$path")" = 404
-echo 'Exact-image username mentions: atomic late-storage refusal, same-key recovery, actual source affinity, self suppression, stable recipient deltas, redaction history and current inbox authorization passed.'
+echo 'Exact-image username mentions: recipient Board/Organization/account and issuing session lock waits, atomic late-storage refusal, same-key recovery, actual source affinity, self suppression, stable recipient deltas, redaction history and current inbox authorization passed.'

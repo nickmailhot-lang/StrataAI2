@@ -1033,3 +1033,18 @@ zero failures/skips. Its container job remains live; release/native completion
 is not inferred. Full PRD-15/17 acceptance remains open for Production lock waits,
 mass mention policy/confirmation/rate control/full recipient history, activity
 feeds/historical identity and capacity/native evidence. No full ticket closes.
+
+The exact-release-image mention command fixture additionally gates actual
+recipient Board membership, Organization membership and account rows. It must
+observe the request waiting specifically in the four-table recipient locking
+query before changing eligibility and releasing the lock. Each request must
+refuse with mention_targets_changed and retain no Card/comment/snapshot/receipt/
+event/inbox/delivery effects. It restores each disposable recipient boundary.
+A separate Card parent lock wait revokes the issuing cookie session, requires
+401 with unchanged effects, signs in freshly and uses the original uncommitted
+retry key through the later notification failure/recovery scenario. Gate/request
+cleanup is bounded and restores runtime notification privileges. Shell syntax
+passes; actual new lock-wait execution remains pending exact-image CI, not
+inferred from the earlier internal row-lock contract. These negative fixtures
+change disposable authoritative rows administratively and do not claim full
+Organization leave/account-deactivation workflow coverage.
