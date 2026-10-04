@@ -131,7 +131,8 @@ futureCard=$(uuid)
 admin "INSERT INTO cards SELECT populated.* FROM cards c CROSS JOIN LATERAL
  jsonb_populate_record(NULL::cards,to_jsonb(c)||jsonb_build_object('id','$futureCard',
  'title','Future deadline fixture','rank','400000000000000000000000000000',
- 'due_at',clock_timestamp()+interval '1 day','due_timezone','UTC','due_has_time',true)) populated
+ 'due_at',clock_timestamp()+interval '1 day','due_timezone','UTC','due_has_time',true,
+ 'created_at',statement_timestamp()-interval '14 days','updated_at',statement_timestamp()-interval '14 days')) populated
  WHERE c.tenant_id='$org' AND c.id='$card';" >/dev/null
 test "$(filter_read owner 'due=upcoming')" = 200
 jq -e --arg card "$futureCard" '.items|length==1 and .[0].id==$card' "$scratch/filter.json" >/dev/null
@@ -139,6 +140,21 @@ test "$(filter_read owner 'due=overdue&keyword=Future&match=any')" = 200
 jq -e '.items|length==2' "$scratch/filter.json" >/dev/null
 test "$(filter_read owner 'due=overdue&keyword=Future&match=all')" = 200
 jq -e '.items|length==0' "$scratch/filter.json" >/dev/null
+recentBaseline=$(state)
+for window in day week; do
+ test "$(filter_read owner "activity=$window")" = 200
+ jq -e --arg card "$card" '.items|length==1 and .[0].id==$card' "$scratch/filter.json" >/dev/null
+done
+test "$(filter_read owner 'activity=month')" = 200
+jq -e '.items|length==2' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'activity=day&keyword=Future&match=any')" = 200
+jq -e '.items|length==2' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'activity=day&keyword=Future&match=all')" = 200
+jq -e '.items|length==0' "$scratch/filter.json" >/dev/null
+test "$(filter_read owner 'activity=unknown')" = 400
+jq -e '.code=="invalid_board_filter"' "$scratch/filter.json" >/dev/null
+test "$(filter_read outsider 'activity=unknown')" = 404
+test "$(state)" = "$recentBaseline"
 admin "DELETE FROM cards WHERE tenant_id='$org' AND id='$futureCard' AND title='Future deadline fixture';" >/dev/null
 test "$(request owner PATCH "$path" "$(uuid)" '{"version":4,"dueHasTime":false,"dueComplete":false}')" = 200
 jq -e '.card.version==5 and .card.startAt==null and .card.dueAt==null and .card.dueTimezone==null and .card.dueComplete==false' "$scratch/response.json" >/dev/null

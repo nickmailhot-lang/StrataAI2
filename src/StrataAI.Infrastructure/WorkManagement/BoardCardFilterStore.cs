@@ -36,12 +36,14 @@ internal sealed partial class PostgresWorkManagementStore
             WHERE c.tenant_id=@tenant AND c.board_id=@board AND c.lifecycle_state='ACTIVE' AND parent.lifecycle_state='ACTIVE'
               AND (@after IS NULL OR c.id>@after)
               AND (
-                (@keyword='' AND cardinality(@labels)=0 AND cardinality(@members)=0 AND @completion IS NULL AND @due='all')
+                (@keyword='' AND cardinality(@labels)=0 AND cardinality(@members)=0 AND @completion IS NULL AND @due='all' AND @recent IS NULL)
                 OR (@all AND (@keyword='' OR strpos(lower(c.title),lower(@keyword))>0 OR strpos(lower(coalesce(c.description,'')),lower(@keyword))>0)
                     AND matches.hits=cardinality(@labels) AND assignees.hits=cardinality(@members)
-                    AND (@completion IS NULL OR c.due_complete=@completion) AND (@due='all' OR deadline.hit))
+                    AND (@completion IS NULL OR c.due_complete=@completion) AND (@due='all' OR deadline.hit)
+                    AND (@recent IS NULL OR c.updated_at>=@recent))
                 OR (NOT @all AND ((@keyword<>'' AND (strpos(lower(c.title),lower(@keyword))>0 OR strpos(lower(coalesce(c.description,'')),lower(@keyword))>0))
-                    OR matches.hits>0 OR assignees.hits>0 OR (@completion IS NOT NULL AND c.due_complete=@completion) OR deadline.hit))
+                    OR matches.hits>0 OR assignees.hits>0 OR (@completion IS NOT NULL AND c.due_complete=@completion) OR deadline.hit
+                    OR (@recent IS NOT NULL AND c.updated_at>=@recent)))
               )
             ORDER BY c.id LIMIT 51;
             """, session.Connection, session.Transaction);
@@ -51,6 +53,7 @@ internal sealed partial class PostgresWorkManagementStore
         command.Parameters.AddWithValue("verified", filter.RequireVerifiedEmail);
         command.Parameters.AddWithValue("completion", NpgsqlDbType.Boolean, (object?)filter.DueComplete ?? DBNull.Value);
         command.Parameters.AddWithValue("due", filter.DueState);
+        command.Parameters.AddWithValue("recent", NpgsqlDbType.TimestampTz, (object?)filter.UpdatedSince?.ToUniversalTime() ?? DBNull.Value);
         command.Parameters.AddWithValue("now", NpgsqlDbType.TimestampTz, (filter.EvaluatedAt ?? DateTimeOffset.UtcNow).ToUniversalTime());
         command.Parameters.AddWithValue("keyword", filter.Keyword); command.Parameters.AddWithValue("all", filter.MatchAll);
         command.Parameters.AddWithValue("after", NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
@@ -75,7 +78,7 @@ internal sealed partial class InMemoryWorkManagementStore
         {
             bool Matches(CardRecord card)
             {
-                if (filter.Keyword.Length == 0 && filter.LabelIds.Count == 0 && memberIds.Count == 0 && filter.DueComplete is null && filter.DueState == "all") return true;
+                if (filter.Keyword.Length == 0 && filter.LabelIds.Count == 0 && memberIds.Count == 0 && filter.DueComplete is null && filter.DueState == "all" && filter.UpdatedSince is null) return true;
                 var text = card.Title.Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase)
                     || (card.Description ?? "").Contains(filter.Keyword, StringComparison.OrdinalIgnoreCase);
                 bool Assigned(Guid id) => _labels.TryGetValue(id, out var label) && !label.Deleted
@@ -89,8 +92,10 @@ internal sealed partial class InMemoryWorkManagementStore
                     _ => false };
                 return filter.MatchAll ? (filter.Keyword.Length == 0 || text) && filter.LabelIds.All(Assigned) && memberIds.All(MemberAssigned)
                         && (filter.DueComplete is null || card.DueComplete == filter.DueComplete) && (filter.DueState == "all" || deadline)
+                        && (filter.UpdatedSince is null || card.UpdatedAt >= filter.UpdatedSince)
                     : (filter.Keyword.Length > 0 && text) || filter.LabelIds.Any(Assigned) || memberIds.Any(MemberAssigned)
-                        || (filter.DueComplete is not null && card.DueComplete == filter.DueComplete) || deadline;
+                        || (filter.DueComplete is not null && card.DueComplete == filter.DueComplete) || deadline
+                        || (filter.UpdatedSince is not null && card.UpdatedAt >= filter.UpdatedSince);
             }
             return _cards.Values.Where(card => card.BoardId == boardId
                 && card.LifecycleState == WorkItemLifecycleState.Active && _lists.TryGetValue(card.ListId, out var parent)

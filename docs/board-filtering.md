@@ -3,8 +3,25 @@
 Authenticated viewers of an active Board can read
 `GET /boards/{boardId}/cards?keyword=...&labels=uuid,uuid&match=all&after=uuid`.
 The server read supports keyword, label, eligible member, due-completion and
-deadline-state predicates. Recent-activity filters, anonymous PUBLIC Board parity,
+deadline-state and recent-update predicates. Anonymous PUBLIC Board parity,
 and global search remain required PRD-16 work.
+
+`activity=day/week/month` selects canonical Card `updatedAt` at or after the
+server's captured instant minus 1/7/30 rolling UTC days. `month` means 30 days,
+not a calendar-month boundary. Omission/`activity=all` adds no predicate. Recent
+activity here means persisted Card revision changes, including child commands
+that advance its revision; Board label-definition changes alone do not change
+this timestamp. The query does not inspect protected activity bodies or derive
+state from telemetry. This dimension composes under ANY/ALL before pagination,
+uses the same clock as deadline filters, and persists via Recent Card updates.
+Each page remains a live read at its own server time.
+
+Host coverage checks fresh/3-day/14-day/60-day Cards, all windows, composition,
+safe input admission and parent archival. The required release dates fixture
+uses its genuinely changed Card plus the explicit older metadata fixture to
+check each window, ANY/ALL, denial and unchanged command effects. Component
+coverage checks persisted criterion restoration and invalid saved input. New
+Linux host/release execution remains pending.
 
 `due=none` selects Cards without a deadline. `due=overdue` requires an incomplete
 deadline strictly before the server's current UTC instant; `due=upcoming`

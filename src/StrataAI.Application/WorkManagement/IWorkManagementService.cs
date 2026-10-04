@@ -8,7 +8,7 @@ public interface IWorkManagementService
     Task<WorkOperation<CardAssigneePage>> ListCardMembersAsync(Guid cardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default);
     Task<WorkOperation<CardMemberChange>> SetCardMemberAsync(Guid cardId, Guid userId, Guid actorId, bool assigned, long version, string correlationId, CancellationToken cancellationToken = default);
     Task<WorkOperation<AssignableBoardMemberPage>> ListAssignableBoardMembersAsync(Guid boardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default);
-    Task<WorkOperation<BoardCardFilterPage>> FilterBoardCardsAsync(Guid boardId, Guid actorId, string? keyword, IReadOnlyList<Guid> labelIds, string? match, Guid? after = null, CancellationToken cancellationToken = default, IReadOnlyList<Guid>? memberIds = null, string? completion = null, string? due = null);
+    Task<WorkOperation<BoardCardFilterPage>> FilterBoardCardsAsync(Guid boardId, Guid actorId, string? keyword, IReadOnlyList<Guid> labelIds, string? match, Guid? after = null, CancellationToken cancellationToken = default, IReadOnlyList<Guid>? memberIds = null, string? completion = null, string? due = null, string? activity = null);
     Task<WorkOperation<CardLabelOptionsPage>> ListCardLabelOptionsAsync(Guid cardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default);
     Task<WorkOperation<BoardLabelRecord>> MoveLabelAsync(Guid labelId, Guid actorId, Guid? beforeLabelId, long version, string correlationId, CancellationToken cancellationToken = default);
     Task<WorkOperation<CardLabelPage>> ListCardLabelsAsync(Guid cardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default);

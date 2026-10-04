@@ -287,3 +287,21 @@ it('ignores an invalid stored deadline predicate', async () => {
   mount(); await open(); expect(screen.getByRole('combobox', { name: 'Deadline state' })).toHaveTextContent('Any deadline state');
   expect(screen.getByLabelText('Card keyword')).toHaveValue('');
 });
+
+it('applies and restores recent updates from account-scoped session criteria', async () => {
+  const fetch = vi.fn(async (path: string) => path.endsWith('/me') ? response({ id: actor }) : path.includes('/cards?') ? results() : choices());
+  vi.stubGlobal('fetch', fetch); const view = mount(); await open();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Recent Card updates' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Last 7 days' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await screen.findByRole('link', { name: 'Persisted match — Planning' });
+  const request = fetch.mock.calls.find(([path]) => path.includes('/cards?'))![0];
+  expect(new URL(request, 'https://example.test').searchParams.get('activity')).toBe('week');
+  expect(JSON.parse(sessionStorage.getItem(storage())!).activity).toBe('week');
+  view.unmount(); mount(); await open(); expect(screen.getByRole('combobox', { name: 'Recent Card updates' })).toHaveTextContent('Last 7 days');
+});
+it('ignores an invalid stored recent-updates predicate', async () => {
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Stale criterion', labels: [], members: [], match: 'all', activity: 'unknown' }));
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path.endsWith('/me') ? response({ id: actor }) : choices()));
+  mount(); await open(); expect(screen.getByRole('combobox', { name: 'Recent Card updates' })).toHaveTextContent('Any update time');
+  expect(screen.getByLabelText('Card keyword')).toHaveValue('');
+});
