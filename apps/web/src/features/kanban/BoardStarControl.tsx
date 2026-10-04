@@ -7,7 +7,7 @@ import { activityEvent, activityResult } from './activityTelemetry';
 type Props = { organizationId: string; boardId: string; admitted: boolean; disabled: boolean };
 type Preference = { organizationId: string; boardId: string; userId: string; starred: boolean;
   createdAt: string | null; updatedAt: string | null; version: number };
-type Intent = { userId: string; starred: boolean; key: string };
+type Intent = { userId: string; starred: boolean; version: number; key: string };
 class ChangedStarAccount extends Error {}
 function preference(value: unknown, scope: Props, actor: string): Preference {
   const p = value as Preference | null;
@@ -88,7 +88,7 @@ function StarDialog(props: Props) {
   async function change() {
     if (pending.current || !admitted || disabled || !current || current.userId !== actor.current) return;
     const started = performance.now(); activityEvent('board_star_change', intent.current ? 'retry' : 'use');
-    const command = intent.current ?? { userId: current.userId, starred: !current.starred, key: crypto.randomUUID() };
+    const command = intent.current ?? { userId: current.userId, starred: !current.starred, version: current.version, key: crypto.randomUUID() };
     intent.current = command; const c = new AbortController(); pending.current = c;
     setBusy(true); setCurrent(undefined); setNotice(undefined); restore.current = true;
     let refresh = false;
@@ -96,7 +96,7 @@ function StarDialog(props: Props) {
       await boundedWorkRead(async signal => {
         const before = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(before) || before.id !== command.userId) throw new ChangedStarAccount();
-        const acknowledgment = await workRequest<unknown>(path, { method: command.starred ? 'PUT' : 'DELETE', signal,
+        const acknowledgment = await workRequest<unknown>(path + '?version=' + command.version, { method: command.starred ? 'PUT' : 'DELETE', signal,
           headers: { 'Idempotency-Key': command.key } });
         if (acknowledgment !== undefined) throw new Error('Unconfirmed personal change');
         const after = await workRequest<unknown>('/me', { signal });

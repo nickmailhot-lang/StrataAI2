@@ -108,8 +108,8 @@ public sealed partial class TransactionalWorkManagementService(
         Guid boardId,
         Guid actorUserId,
         bool starred,
-        CancellationToken cancellationToken = default) =>
-        BoardCommand(boardId, actorUserId, "view", WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetStarAsync", boardId, new { starred }, "board_not_found"), () => inner.SetStarAsync(boardId, actorUserId, starred, cancellationToken), cancellationToken);
+        CancellationToken cancellationToken = default, long? expectedVersion = null) =>
+        BoardCommand(boardId, actorUserId, "view", WorkCommand.Create(actorUserId, context.IdempotencyKey, "SetStarAsync", boardId, new { starred, expectedVersion }, "board_not_found"), () => inner.SetStarAsync(boardId, actorUserId, starred, cancellationToken, expectedVersion), cancellationToken);
 
     public Task<WorkOperation<IReadOnlyList<BoardMemberDirectoryEntry>>> ListBoardMembersAsync(
         Guid boardId,

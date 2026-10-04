@@ -25,9 +25,18 @@ public sealed partial class ApiHostTests
         Assert.Equal(JsonValueKind.Null, minimal.GetProperty("updatedAt").ValueKind);
         Assert.Equal(f.Owner, minimal.GetProperty("userId").GetGuid()); Assert.Equal(f.Organization, minimal.GetProperty("organizationId").GetGuid());
         Assert.Equal(f.Board, minimal.GetProperty("boardId").GetGuid()); Assert.False(minimal.GetProperty("starred").GetBoolean());
-        async Task<HttpResponseMessage> Change(HttpClient client, HttpMethod method, string key)
+        foreach (var query in new[] { "", "?version=not-a-revision", "?version=-1", "?version=0.5" })
         {
-            using var request = new HttpRequestMessage(method, path); request.Headers.Add("X-StrataAI-Request", "1"); request.Headers.Add("Idempotency-Key", key);
+            using var invalidRequest = new HttpRequestMessage(HttpMethod.Put, path + query);
+            invalidRequest.Headers.Add("X-StrataAI-Request", "1");
+            invalidRequest.Headers.Add("Idempotency-Key", Guid.NewGuid().ToString());
+            using var invalid = await owner.SendAsync(invalidRequest, ct);
+            Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+            Assert.Equal("invalid_board_star_version", (await invalid.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        }
+        async Task<HttpResponseMessage> Change(HttpClient client, HttpMethod method, string key, long version = 0)
+        {
+            using var request = new HttpRequestMessage(method, path + "?version=" + version); request.Headers.Add("X-StrataAI-Request", "1"); request.Headers.Add("Idempotency-Key", key);
             return await client.SendAsync(request, ct);
         }
         var key = Guid.NewGuid().ToString(); using var starred = await Change(owner, HttpMethod.Put, key);
@@ -39,8 +48,10 @@ public sealed partial class ApiHostTests
         var theirs = await member.GetFromJsonAsync<JsonElement>(path, ct); Assert.False(theirs.GetProperty("starred").GetBoolean());
         Assert.Equal(f.Recipient, theirs.GetProperty("userId").GetGuid());
         using var memberStar = await Change(member, HttpMethod.Put, Guid.NewGuid().ToString()); Assert.Equal(HttpStatusCode.NoContent, memberStar.StatusCode);
-        using var unstar = await Change(owner, HttpMethod.Delete, Guid.NewGuid().ToString()); Assert.Equal(HttpStatusCode.NoContent, unstar.StatusCode);
+        using var stale = await Change(owner, HttpMethod.Delete, Guid.NewGuid().ToString()); Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        using var unstar = await Change(owner, HttpMethod.Delete, Guid.NewGuid().ToString(), 1); Assert.Equal(HttpStatusCode.NoContent, unstar.StatusCode);
         using var replay = await Change(owner, HttpMethod.Put, key); Assert.Equal(HttpStatusCode.NoContent, replay.StatusCode);
+        using var changedRevision = await Change(owner, HttpMethod.Put, key, 2); Assert.Equal(HttpStatusCode.Conflict, changedRevision.StatusCode);
         var recovered = await owner.GetFromJsonAsync<JsonElement>(path, ct);
         Assert.False(recovered.GetProperty("starred").GetBoolean()); Assert.Equal(2, recovered.GetProperty("version").GetInt64());
         Assert.Equal(createdAt, recovered.GetProperty("createdAt").GetDateTimeOffset());

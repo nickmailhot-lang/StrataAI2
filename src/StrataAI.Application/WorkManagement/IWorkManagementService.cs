@@ -92,7 +92,7 @@ public interface IWorkManagementService
         Guid boardId,
         Guid actorUserId,
         bool starred,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, long? expectedVersion = null);
 
     Task<WorkOperation<IReadOnlyList<BoardMemberDirectoryEntry>>> ListBoardMembersAsync(
         Guid boardId,

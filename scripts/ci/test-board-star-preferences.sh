@@ -48,23 +48,25 @@ jq -S '{board,lists}' "$scratch/response" > "$scratch/before.json"
 preference owner "$owner_id" false
 preference member "$member_id" false
 key="$(uuid)"
-test "$(request owner PUT "/boards/$board/star" "$key" '')" = 204
+test "$(request owner PUT "/boards/$board/star?version=0" "$key" '')" = 204
 test ! -s "$scratch/response"
 test "$(admin "SELECT version=1 AND created_at IS NOT NULL AND created_at=updated_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
 creation="$(admin "SELECT created_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")"
-test "$(request owner PUT "/boards/$board/star" "$(uuid)" '')" = 204
+test "$(request owner PUT "/boards/$board/star?version=1" "$(uuid)" '')" = 204
 test "$(admin "SELECT version FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = 1
 preference owner "$owner_id" true
 preference member "$member_id" false
 # The same key belongs to a different actor namespace.
-test "$(request member PUT "/boards/$board/star" "$key" '')" = 204
-test "$(request owner DELETE "/boards/$board/star" "$(uuid)" '')" = 204
-test "$(request owner PUT "/boards/$board/star" "$key" '')" = 204
+test "$(request member PUT "/boards/$board/star?version=0" "$key" '')" = 204
+test "$(request owner DELETE "/boards/$board/star?version=0" "$(uuid)" '')" = 409
+jq -e '.code == "version_conflict"' "$scratch/response" >/dev/null
+test "$(request owner DELETE "/boards/$board/star?version=1" "$(uuid)" '')" = 204
+test "$(request owner PUT "/boards/$board/star?version=0" "$key" '')" = 204
 preference owner "$owner_id" false
 preference member "$member_id" true
 test "$(admin "SELECT version=2 AND NOT starred AND created_at<=updated_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
 test "$(admin "SELECT created_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = "$creation"
-test "$(request owner DELETE "/boards/$board/star" "$key" '')" = 409
+test "$(request owner DELETE "/boards/$board/star?version=0" "$key" '')" = 409
 jq -e '.code == "idempotency_key_reused"' "$scratch/response" >/dev/null
 # A failed restricted write must roll back its tentative receipt and retain all
 # preference clocks/revision. The same intent may then commit after recovery.
@@ -72,17 +74,17 @@ retry_key="$(uuid)"
 preference_before="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")"
 preference_permission_withdrawn=1
 admin 'REVOKE UPDATE ON user_board_preferences FROM strataai_api_runtime;' >/dev/null
-test "$(request owner PUT "/boards/$board/star" "$retry_key" '')" = 503
+test "$(request owner PUT "/boards/$board/star?version=2" "$retry_key" '')" = 503
 jq -e '.code == "work_storage_unavailable"' "$scratch/response" >/dev/null
 scripts/ci/assert-file-excludes.sh 'Npgsql|permission denied|user_board_preferences|work_command_replays|INSERT INTO' "$scratch/response"
 test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$preference_before"
 test "$(admin "SELECT count(*) FROM work_command_replays WHERE tenant_id='$organization' AND actor_id='$owner_id' AND key_id='$retry_key';")" = 0
 restore
 preference_permission_withdrawn=0
-test "$(request owner PUT "/boards/$board/star" "$retry_key" '')" = 204
+test "$(request owner PUT "/boards/$board/star?version=2" "$retry_key" '')" = 204
 test "$(admin "SELECT version=3 AND starred FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
 committed="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")"
-test "$(request owner PUT "/boards/$board/star" "$retry_key" '')" = 204
+test "$(request owner PUT "/boards/$board/star?version=2" "$retry_key" '')" = 204
 test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$committed"
 test "$(request owner GET "/boards/$board" "$(uuid)" '')" = 200
 jq -S '{board,lists}' "$scratch/response" > "$scratch/after.json"
@@ -90,7 +92,7 @@ cmp "$scratch/before.json" "$scratch/after.json"
 # Retain the Board grant and preference to prove current Organization eligibility.
 admin "UPDATE organization_members SET status='SUSPENDED' WHERE tenant_id='$organization' AND user_id='$member_id';" >/dev/null
 for method in GET PUT; do
-  test "$(request member "$method" "/boards/$board/star" "$key" '')" = 404
+  test "$(request member "$method" "/boards/$board/star?version=0" "$key" '')" = 404
   jq -e '.code == "board_not_found"' "$scratch/response" >/dev/null
   scripts/ci/assert-file-excludes.sh 'starred|Private personal preferences|Npgsql|user_board_preferences|work_command_replays' "$scratch/response"
 done

@@ -306,7 +306,7 @@ public sealed partial class WorkManagementService(
         Guid boardId,
         Guid actorUserId,
         bool starred,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, long? expectedVersion = null)
     {
         var resolved = await ResolveAccessAsync(
             boardId,
@@ -318,6 +318,9 @@ public sealed partial class WorkManagementService(
             return WorkOperation<bool>.Failure("board_not_found");
         }
 
+        if (expectedVersion is null or < 0) return WorkOperation<bool>.Failure("invalid_board_star_version");
+        var preference = await store.GetStarAsync(boardId, actorUserId, cancellationToken);
+        if (preference.Version != expectedVersion) return WorkOperation<bool>.Failure("version_conflict");
         await store.SetStarAsync(
             boardId,
             actorUserId,

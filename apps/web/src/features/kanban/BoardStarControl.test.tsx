@@ -40,6 +40,8 @@ it('retains the original operation and key through an unknown result and a newer
   fireEvent.click(retry); await screen.findByRole('button', { name: 'Unstar Board' });
   const commands = fetch.mock.calls.filter(([, options]) => options?.method === 'PUT');
   expect(commands).toHaveLength(2);
+  expect(commands[0][0]).toBe('/boards/' + board + '/star?version=0');
+  expect(commands[1][0]).toBe(commands[0][0]);
   expect(new Headers(commands[0][1]?.headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1]?.headers).get('Idempotency-Key'));
   expect(screen.queryByText('Private response diagnostic')).not.toBeInTheDocument();
 });

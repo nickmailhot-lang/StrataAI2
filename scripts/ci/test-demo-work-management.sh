@@ -74,7 +74,7 @@ test "$(printf '%s' "$snapshot" | jq '[.lists[].cards[]] | length')" = "0"
 
 curl -H 'X-StrataAI-Request: 1' --fail --silent   -b "$COOKIE_JAR"   -H 'Content-Type: application/json'   -d '{"version":4}'   "$BASE_URL/cards/$card_id/restore" >/tmp/card-restored.json
 
-curl -H 'X-StrataAI-Request: 1' --fail --silent   -X PUT   -b "$COOKIE_JAR"   "$BASE_URL/boards/$board_id/star" >/dev/null
+curl -H 'X-StrataAI-Request: 1' --fail --silent   -X PUT   -b "$COOKIE_JAR"   "$BASE_URL/boards/$board_id/star?version=0" >/dev/null
 snapshot="$(curl -H 'X-StrataAI-Request: 1' --fail --silent -b "$COOKIE_JAR" "$BASE_URL/boards/$board_id")"
 test "$(printf '%s' "$snapshot" | jq -r '.starred')" = "true"
 

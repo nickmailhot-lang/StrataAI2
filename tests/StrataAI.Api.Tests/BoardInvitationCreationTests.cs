@@ -142,7 +142,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(System.Net.HttpStatusCode.Conflict, conflict.StatusCode);
         using var invalid = await Create("OWNER"); Assert.Equal(System.Net.HttpStatusCode.BadRequest, invalid.StatusCode);
         var otherBoard = (await app.Services.GetRequiredService<IWorkManagementService>().CreateBoardAsync(fixture.Board.OrganizationId,
-            fixture.Owner.Id, "Other private Board", null, BoardVisibility.Private, "COLOR", "#112233", "fixture", ct)).Value!;
+            fixture.Owner.Id, "Other private Board", null, BoardVisibility.Private, "COLOR", "blue", "fixture", ct)).Value!;
         var otherInvitation = (await app.Services.GetRequiredService<BoardInvitationService>().CreateAsync(otherBoard.Id,
             fixture.Owner.Id, fixture.Recipient.Email, role, "fixture", ct)).Value!.Invitation.Id;
         var ordinaryInvitation = (await app.Services.GetRequiredService<IInvitationService>().CreateAsync(fixture.Board.OrganizationId,
@@ -203,8 +203,10 @@ public sealed partial class ApiHostTests
         await organizations.AddOrRestoreMemberAsync(org, inviter.Id, OrganizationRole.Member, DateTimeOffset.UtcNow, ct);
         await organizations.AddOrRestoreMemberAsync(org, recipient.Id, OrganizationRole.Member, DateTimeOffset.UtcNow, ct);
         var work = app.Services.GetRequiredService<IWorkManagementService>();
-        var board = (await work.CreateBoardAsync(org, owner.Id, "Private Board", null, BoardVisibility.Private,
-            "COLOR", "#112233", "fixture", ct)).Value!;
+        var createdBoard = await work.CreateBoardAsync(org, owner.Id, "Private Board", null, BoardVisibility.Private,
+            "COLOR", "blue", "fixture", ct);
+        Assert.True(createdBoard.Succeeded, createdBoard.ErrorCode);
+        var board = createdBoard.Value!;
         Assert.True((await work.SetBoardMemberAsync(board.Id, owner.Id, inviter.Id, BoardRole.Admin, "fixture", ct)).Succeeded);
         return (owner, inviter, recipient, board);
     }

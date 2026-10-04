@@ -30,14 +30,14 @@ for (const width of [1280, 390]) {
       const before = await context.request.get(`/boards/${board.id}`); expect(before.status()).toBe(200);
       const beforeState = await before.json();
       const keys: (string | undefined)[] = [];
-      await page.route(`**/boards/${board.id}/star`, async route => {
+      await page.route(`**/boards/${board.id}/star?*`, async route => {
         if (route.request().method() !== 'PUT') { await route.continue(); return; }
         keys.push(route.request().headers()['idempotency-key']);
         const acknowledgment = await route.fetch(); expect(acknowledgment.status()).toBe(204);
         if (keys.length === 1) {
           // A later authorized change commits after the first star, before its
           // acknowledgment reaches the original client.
-          const unstar = await context.request.delete(`/boards/${board.id}/star`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() } });
+          const unstar = await context.request.delete(`/boards/${board.id}/star?version=1`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() } });
           expect(unstar.status()).toBe(204); await route.abort('failed');
         } else await route.fulfill({ response: acknowledgment });
       });
