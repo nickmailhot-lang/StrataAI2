@@ -767,6 +767,8 @@ public static partial class WorkManagementEndpoints
             "attachment_upload_unavailable" => Problem(409, errorCode, "Unable to resume this upload. Check the current Card before starting another change."),
             "invalid_checklist_cursor" => Problem(400, errorCode, "Use the continuation cursor for this Card."),
             "invalid_comment_cursor" => Problem(400, errorCode, "Use the continuation cursor for this Card."),
+            "invalid_mention_cursor" => Problem(400, errorCode, "Use the continuation cursor for this Card and search."),
+            "mention_prefix_invalid" => Problem(400, errorCode, "Use a bounded username prefix containing letters, digits or underscores."),
             "invalid_comment_version" => Problem(400, errorCode, "Use the current Card and comment revisions."),
             "invalid_comment_content" => Problem(400, errorCode, "Comment text must be nonblank, valid Unicode and at most 10000 characters."),
             "comment_delete_confirmation_required" => Problem(400, errorCode, "Confirm removal of this comment body."),

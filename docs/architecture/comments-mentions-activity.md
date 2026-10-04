@@ -700,3 +700,29 @@ run 37170517190. Its new current-member contract emitted its full passing summar
 for active membership/account/email filtering, literal prefix bounds, seek,
 current-only handles and shared-user isolation. Managed/web/release gates are
 still being inspected. No complete ticket or mention notification is claimed.
+
+Application run 37170679196 passed restricted PostgreSQL integration but failed
+its new Demo test before Application admission because the fixture omitted the
+IWorkCommandContext needed by the canonical Board authorization service. The
+fixture now registers that actual interface with a null read-only retry key;
+product admission and all assertions remain unchanged. Full local compilation
+passes; corrected Linux execution must pass before crediting the service test.
+
+## Protected HTTP teammate options
+
+Authenticated GET /cards/{cardId}/mention-options now invokes the owning Card
+Application boundary using only the cookie actor, with bounded prefix/after
+query inputs and no-store responses. Repeated query values fail with stable
+Problem codes; telemetry uses an approved operation/error label and retains no
+handles or search text. Returned items contain exactly userId, handle,
+displayName and handleVersion, alongside the admitted Card context/cursor.
+This is an internal current-comment capability, not a global account directory.
+
+The real-cookie Demo API fixture checks authentication, canonical current
+handles and exact metadata keys, invalid/repeated/empty cursors and prefixes,
+exact current prefix filtering, Board membership revocation, remaining eligible
+participants and archived Card refusal. It uses the actual API session and
+Application/adapter, but not a Production database or native selector. Local
+warning-as-error compilation passes; Linux host/release execution is pending.
+Mention UI, atomic recipient notifications, mass-mention controls and complete
+activity acceptance remain outstanding. No ticket or full criterion is closed.
