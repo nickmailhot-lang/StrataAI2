@@ -57,7 +57,8 @@ internal static class BoardBackgroundImageContract
         }
         finally { await using var grant = new NpgsqlCommand("GRANT INSERT ON audit_events TO strataai_api_runtime;", admin); await grant.ExecuteNonQueryAsync(ct); }
         var selected = await select.SelectAsync(board, actor, input, "image-atomic-retry", ct);
-        Require(selected.Value is { BackgroundType: "IMAGE" } && selected.Value.Version == revision + 1, "Board image retry lost its original version/ownership contract.");
+        Require(selected.Value is { BackgroundType: "IMAGE" } && selected.Value.Version == revision + 1,
+            $"Board image retry lost its original version/ownership contract: succeeded={selected.Succeeded}, code={selected.ErrorCode ?? "none"}, expectedRevision={revision + 1}, actualRevision={selected.Value?.Version.ToString() ?? "none"}.");
         var original = selected.Value!; before = await Snapshot();
         Require((await select.SelectAsync(board, actor, input, "image-ack-replay", ct)).Value == original && await Snapshot() == before,
             "Board image replay created another owner or changed current state.");
