@@ -554,3 +554,14 @@ intent and retain the original acknowledgment through request retry; those reads
 must not all become `BOARD_FILTER_CHANGED` events. Anonymous filters must not
 fabricate an actor. Required change-intent delivery, protected bounded replay and
 reconnect consumption remain outstanding; PRD-16 stays open at 20% estimated remaining.
+
+The browser canonical parser also admits `BOARD_FILTER_CHANGED` originals against
+an independently supplied current actor and Organization/Board pair. It requires
+the exact ten-field envelope, BoardFilter type, original entity identity, version
+1, empty metadata and valid UTC clock; anonymous or foreign-scope acknowledgments
+are refused. The bounded acknowledgment consumer compares the complete original
+type, actor, scope, entity, version and clock before suppressing a duplicate
+EventId. A changed scope or type cannot pass simply by retaining the clock.
+Twenty-one focused search parser/component tests pass locally. This parser is a
+delivery prerequisite; Board Apply/Clear does not call it until change-intent
+HTTP production and original-source retry are implemented.
