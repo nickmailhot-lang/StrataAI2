@@ -32,6 +32,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWorkEventStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkEventReader>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IOrganizationBoardEventReader>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
+            services.AddKeyedSingleton<IOrganizationBoardEventReader, InMemoryOrganizationBoardDiscoveryReader>(OrganizationBoardAudience.BoardDiscovery);
             services.AddSingleton<IActivityEventSourceStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IActivityPrivateTargetStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IActivityFeedStore, InMemoryActivityFeedStore>();
@@ -60,6 +61,9 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();
             services.AddSingleton<IWorkEventReader, PostgresWorkEventReader>();
             services.AddSingleton<IOrganizationBoardEventReader, PostgresOrganizationBoardEventReader>();
+            services.AddKeyedSingleton<IOrganizationBoardEventReader>(OrganizationBoardAudience.BoardDiscovery,
+                (provider, _) => new PostgresOrganizationBoardEventReader(provider.GetRequiredService<StrataAI.Infrastructure.Persistence.PostgresConnectionFactory>(),
+                    OrganizationBoardAudience.BoardDiscovery));
             services.AddSingleton<PostgresActivityEventSourceStore>();
             services.AddSingleton<IActivityEventSourceStore>(provider => provider.GetRequiredService<PostgresActivityEventSourceStore>());
             services.AddSingleton<IActivityPrivateTargetStore>(provider => provider.GetRequiredService<PostgresActivityEventSourceStore>());
@@ -84,6 +88,12 @@ public static class WorkManagementRegistration
         services.AddSingleton<WorkSynchronizationService>();
         services.AddSingleton<OrganizationBoardSynchronizationService>();
         services.AddSingleton<TransactionalOrganizationBoardSynchronization>();
+        services.AddKeyedSingleton<TransactionalOrganizationBoardSynchronization>(OrganizationBoardAudience.BoardDiscovery,
+            (provider, _) => new(new OrganizationBoardSynchronizationService(
+                provider.GetRequiredKeyedService<IOrganizationBoardEventReader>(OrganizationBoardAudience.BoardDiscovery),
+                provider.GetRequiredService<IOrganizationBoardCursorCodec>()),
+                provider.GetRequiredService<IWorkManagementUnitOfWork>(), provider.GetRequiredService<IWorkManagementStore>(),
+                provider.GetRequiredService<StrataAI.Application.Organizations.IOrganizationStore>()));
         services.AddSingleton<ActivitySourceScopeResolver>();
         services.AddSingleton<ActivityFeedService>();
         services.AddSingleton<NotificationInboxService>();

@@ -116,3 +116,18 @@ Run 37267135324 passed PostgreSQL checks but its web suite failed one of 112
 files: the Board copy recovery callback assertion ran before the passive effect.
 Commit 929c1fd waits for the exact existing callback assertion; all 13 focused
 copy tests pass. No browser retry, pacing, timeout or acceptance predicate changed.
+
+The discovery audience is now registered separately in both runtime modes. Demo
+replay uses actual Board visibility and active grant eligibility before its
+window bound. Actor reader-grant and Organization visibility revisions have
+rollback snapshots alongside existing archive revisions. An API-host contract
+seeds 64 inaccessible canonical sources before an eligible MEMBER source,
+checks the original event ID and audience isolation, then exercises admission
+withdrawal and a refused transaction restoring visibility, grant and cursor
+state. These are adapter assertions, not Worker/native acceptance. The full
+solution builds with zero warnings/errors; execution awaits Linux CI because
+local application control prevents .NET test execution. f65a9e8 run 37267850262
+has passed web and PostgreSQL jobs, including the new restricted ordinary-reader
+storage assertions; .NET and immutable-image stages remain pending at inspection.
+Discovery transport and active directory UI still remain. PRD-04 estimate stays
+20% remaining; issue remains open.
