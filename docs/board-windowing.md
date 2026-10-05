@@ -145,3 +145,22 @@ can change within a drag; cancel/end retire admission. Unowned surfaces remain
 excluded. Two focused policy regressions pass; source checks and immutable-image
 native execution remain required. This changes production auto-scroll routing,
 without reducing the existing native movement or persisted-state assertions.
+
+
+### Pointer activation waits for current Board admission
+
+Run 37345327320 failed phone pointer activation before its List keyboard case.
+Artifact 11361983531 was verified with SHA-256
+`7fe20b9135ba99e1f69e433a352d230043794c50320fd623eef8f6209be3a8f1`.
+The phone trace records mouse-down at 72371ms and initial movement at 72376ms;
+main-frame snapshots at 72353ms, 72370ms and 72378ms show the Board workspace
+`aria-busy=true`, becoming false at 72509ms. The screenshot retains text
+selection rather than an activated drag. A previously enabled handle did not
+prove current admission at the pointer action boundary.
+
+Both within-List and cross-List pointer setup now wait for the existing Board
+workspace admission signal to settle and require an enabled handle again before
+binding geometry. This uses the existing assertion budget, with no new sleeps,
+request retries, larger timeouts or reduced activation/movement assertions.
+Browser typecheck and collection remain source evidence; native execution of
+the corrected admission boundary is required.

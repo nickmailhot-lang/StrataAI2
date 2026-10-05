@@ -123,6 +123,10 @@ for (const width of [1280, 390]) {
       // where a pointer at the browser edge cannot reach the container edge.
       await cards.evaluate(node => node.scrollIntoView({ block: 'end', inline: 'nearest', behavior: 'instant' }));
       await settleDrag();
+      // Worker-delivered reconciliation can disable the handle after it was
+      // first focused. Bind pointer geometry only after current admission.
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+      await expect(handle).toBeEnabled();
       const initial = await mounted.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')?.split('/').at(-1)));
       const minimum = Math.max(...initial.map(id => currentOrder.get(id ?? '') ?? -1));
       const start = await handle.boundingBox(); const viewport = await cards.boundingBox(); const outer = await section.boundingBox();
@@ -192,6 +196,8 @@ for (const width of [1280, 390]) {
     // an empty destination outside the initial List buffer. Source retention
     // must not confine a real pointer drag to the originally mounted columns.
     await expect(handle).toBeEnabled(); await handle.focus(); await settleDrag();
+    await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+    await expect(handle).toBeEnabled();
     const initialColumns = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
     const initialColumnIndices = initialColumns.map(id => pointerSnapshot.lists.findIndex(value => value.list.id === id));
     const initialColumnFirst = Math.min(...initialColumnIndices), initialColumnLast = Math.max(...initialColumnIndices);
