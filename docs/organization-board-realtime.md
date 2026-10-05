@@ -241,3 +241,16 @@ original archived version. Regranting ADMIN must emit another reset and recover
 the current archive snapshot without restoring old consent. Only then does the
 scenario remove Organization membership. Compilation and collection are local
 evidence; current exact-image execution is still required.
+
+Migration 075 begins the ordinary-reader discovery extension. Separate reader
+revision/clock fields track personal nonadmin grant admission and ordinary
+Organization members' Board visibility transitions, while existing archive
+revision/clock fields retain their original semantics. Content edits and no-op
+visibility writes do not create private activity signals for ungranted readers.
+The migration retains forced tenant RLS and SELECT-only runtime epoch access;
+new trigger capabilities cannot be called directly. Upgrade evidence must prove
+existing archive metadata and original Work sources unchanged. CI adds actual
+reader grant/withdrawal, role/no-op, visibility, rollback and capability tests.
+The warning-free build passes. New PostgreSQL execution is pending, and wider
+reader cursors, audience replay, transport and active-directory UI are not yet
+implemented; this foundation does not complete active Board directory realtime.

@@ -23,14 +23,14 @@ SET LOCAL ROLE strataai_directory_epochs_ci;
 SET LOCAL app.tenant_id='07400000-0000-0000-0000-000000000001';
 DO $$ DECLARE before_row jsonb; unchanged_b jsonb; next_revision bigint; BEGIN
  IF (SELECT count(*) FROM organization_board_directory_epochs)<>2 THEN RAISE EXCEPTION 'Epoch tenant RLS failed'; END IF;
- SELECT to_jsonb(e) INTO before_row FROM organization_board_directory_epochs e
+ SELECT (to_jsonb(e)-'reader_revision'-'reader_updated_at') INTO before_row FROM organization_board_directory_epochs e
  WHERE user_id='07400000-0000-0000-0000-000000000041';
- SELECT to_jsonb(e) INTO unchanged_b FROM organization_board_directory_epochs e
+ SELECT (to_jsonb(e)-'reader_revision'-'reader_updated_at') INTO unchanged_b FROM organization_board_directory_epochs e
  WHERE user_id='07400000-0000-0000-0000-000000000042';
  INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES
  ('07400000-0000-0000-0000-000000000051','07400000-0000-0000-0000-000000000001',
  '07400000-0000-0000-0000-000000000011','07400000-0000-0000-0000-000000000041','MEMBER','ACTIVE',now(),now());
- IF (SELECT to_jsonb(e) FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000041') IS DISTINCT FROM before_row THEN
+ IF (SELECT (to_jsonb(e)-'reader_revision'-'reader_updated_at') FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000041') IS DISTINCT FROM before_row THEN
   RAISE EXCEPTION 'Nonadministrative membership changed directory epoch'; END IF;
  UPDATE board_members SET role='ADMIN' WHERE id='07400000-0000-0000-0000-000000000051';
  IF (SELECT permission_revision FROM organization_board_directory_epochs WHERE user_id='07400000-0000-0000-0000-000000000041')<>2 THEN
@@ -38,16 +38,16 @@ DO $$ DECLARE before_row jsonb; unchanged_b jsonb; next_revision bigint; BEGIN
  UPDATE board_members SET role='MEMBER' WHERE id='07400000-0000-0000-0000-000000000051';
  IF (SELECT permission_revision FROM organization_board_directory_epochs WHERE user_id='07400000-0000-0000-0000-000000000041')<>3 THEN
   RAISE EXCEPTION 'Administration withdrawal did not revise subject epoch'; END IF;
- IF (SELECT to_jsonb(e) FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000042') IS DISTINCT FROM unchanged_b THEN
+ IF (SELECT (to_jsonb(e)-'reader_revision'-'reader_updated_at') FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000042') IS DISTINCT FROM unchanged_b THEN
   RAISE EXCEPTION 'Another actor grant activity changed subject epoch'; END IF;
- SELECT to_jsonb(e) INTO before_row FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000041';
+ SELECT (to_jsonb(e)-'reader_revision'-'reader_updated_at') INTO before_row FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000041';
  BEGIN
   UPDATE board_members SET role='ADMIN' WHERE id='07400000-0000-0000-0000-000000000051';
   IF (SELECT permission_revision FROM organization_board_directory_epochs WHERE user_id='07400000-0000-0000-0000-000000000041')<>4 THEN
    RAISE EXCEPTION 'Declared rollback did not reach epoch'; END IF;
   RAISE EXCEPTION 'Declared late refusal' USING ERRCODE='23514';
  EXCEPTION WHEN check_violation THEN NULL; END;
- IF (SELECT to_jsonb(e) FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000041') IS DISTINCT FROM before_row THEN
+ IF (SELECT (to_jsonb(e)-'reader_revision'-'reader_updated_at') FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000041') IS DISTINCT FROM before_row THEN
   RAISE EXCEPTION 'Owning rollback retained epoch revision or clock'; END IF;
  UPDATE organization_members SET role='ADMIN',status='REMOVED'
  WHERE tenant_id='07400000-0000-0000-0000-000000000001' AND user_id='07400000-0000-0000-0000-000000000041';
