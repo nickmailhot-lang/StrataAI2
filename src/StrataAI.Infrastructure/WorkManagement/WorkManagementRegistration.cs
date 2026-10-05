@@ -16,6 +16,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<IOrganizationBoardCursorCodec, DataProtectedOrganizationBoardCursorCodec>();
         services.AddSingleton<GlobalSearchService>();
         services.AddSingleton<SearchInteractionEventProducer>();
+        services.AddSingleton<BoardFilterInteractionChangeProducer>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<DemoWorkTransactionScope>();

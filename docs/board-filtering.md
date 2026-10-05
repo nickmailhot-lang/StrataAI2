@@ -529,31 +529,42 @@ passed at revision `94988a5` in [CI run 37274882801](https://github.com/nickmail
 
 ### Board filter producer boundary
 
-The registered producer now has `BoardFilterChangedAsync(actor, organization,
-board)` for an actual validated change intent. It generates the canonical
-BoardFilter source inside the owning identity transaction; the source adapter
-freshly checks the real active Organization/Board and required private grant.
-After the original-session proof, the producer re-admits the identical source
-through the adapter, preserving its EventId, sequence and clock. A withdrawal
-during session-proof IO therefore refuses the acknowledgment and rolls back the
-original. Personal source production does not advance Board/work versions.
+`BoardFilterInteractionChangeProducer` is the registered change-intent producer.
+It creates a server-owned candidate inside the identity transaction, obtains the
+original from retry storage, verifies the original request session, and freshly
+re-admits the identical Board source afterward. A final session refusal or Board
+grant withdrawal returns no acknowledgment and rolls back a newly appended
+source, counter and receipt. Replaying an existing receipt also requires these
+current proofs. Board change intents use this retry-aware path. Personal sources do not advance
+Board/work versions or enter shared activity history.
 
-The Demo service test covers private nonmember refusal, active MEMBER admission,
-canonical scope/metadata, unchanged Board version, final session refusal and
-actual grant withdrawal during that proof. Changed-clock replacement with the
-refused EventId after restoration proves rollback. Actor session proof is a
-synthetic fixture. These tests executed successfully with the complete API-host
-suite at revision `6bd80c8` in [CI run 37275597353](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37275597353).
-That revision also passed the web and restricted PostgreSQL source gates;
-immutable-image native acceptance remains separate and unproven.
+Authenticated `POST /boards/{boardId}/cards/filter-change` accepts query fields
+`change=apply|clear`, keyword, labels, members, match, completion, due and
+activity, plus a nonempty UUID `Idempotency-Key` and the existing CSRF header.
+The required `X-StrataAI-Expected-Actor` UUID binds the intent to the account
+independently admitted by the client. A different authenticated account is
+refused before dispatch; canonical ActorId still comes from server authentication.
+It admits the Board and validates filter input before producing a source. Clear
+requires empty/default criteria; pagination, unknown query fields and request
+bodies are refused. The server derives the private digest from normalized input;
+clients never supply canonical event identity, actor, metadata or timestamps.
+The response is exactly the canonical ten-field source with private/no-store
+caching. A repeated key and normalized input returns the same original. The
+existing GET remains a read and has no interaction acknowledgment.
 
-This method is not yet called by Board filter HTTP/client flows. Those flows
-apply session-local criteria and also fetch Cards for initial restoration,
-pagination, canonical refresh and reconnect. Wiring must identify actual change
-intent and retain the original acknowledgment through request retry; those reads
-must not all become `BOARD_FILTER_CHANGED` events. Anonymous filters must not
-fabricate an actor. Required change-intent delivery, protected bounded replay and
-reconnect consumption remain outstanding; PRD-16 stays open at 20% estimated remaining.
+New HTTP tests exercise the real authenticated host, exact envelope, normalized
+retry, changed input, independent Clear, unchanged Board state, validation, CSRF
+and anonymous refusal. The new synthetic-session producer fixture covers private
+nonmember refusal, active MEMBER admission, fresh and replayed final session
+refusal, late actual Board-grant withdrawal, and full source/receipt rollback.
+These new tests compile with zero warnings/errors; their execution awaits CI.
+
+Browser Apply/Clear is not yet connected to this endpoint. Session-local
+criteria reads for restoration, pagination, canonical refresh and reconnect must
+remain distinct from actual change intents. Browser original-key retry, canonical
+acknowledgment consumption, current-account fences and native acceptance remain
+required. Anonymous filtering must never fabricate a personal actor/event.
+PRD-16 stays open at 20% estimated remaining.
 
 The browser canonical parser also admits `BOARD_FILTER_CHANGED` originals against
 an independently supplied current actor and Organization/Board pair. It requires
@@ -563,8 +574,8 @@ are refused. The bounded acknowledgment consumer compares the complete original
 type, actor, scope, entity, version and clock before suppressing a duplicate
 EventId. A changed scope or type cannot pass simply by retaining the clock.
 Twenty-one focused search parser/component tests pass locally. This parser is a
-delivery prerequisite; Board Apply/Clear does not call it until change-intent
-HTTP production and original-source retry are implemented.
+delivery prerequisite; browser Apply/Clear does not yet call the new endpoint
+or consume its canonical original.
 
 ### Board filter retry storage
 
@@ -598,7 +609,10 @@ rollback. The upgrade fixture applies 077 over existing canonical sources and
 verifies their records remain unchanged. The restricted C# adapter contract
 checks actual original identity/clock and full source/stream/receipt rollback.
 The Demo service fixture covers retry, changed input, owning rollback, grant
-withdrawal and expiry while preserving Board version. All compile with zero
-warnings/errors; executed new PostgreSQL/API tests await CI. Apply/Clear HTTP
-production, final session proof, browser retry/recovery and native acceptance
-remain outstanding. PRD-16 stays open at 20% estimated remaining.
+withdrawal and expiry while preserving Board version. These storage fixtures
+executed successfully in the full source gate at revision `79788f6`,
+[CI run 37332882372](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37332882372).
+That evidence includes actual restricted C# original identity/clock and full
+rollback, ordered upgrade/repeat and SQL capability checks. It does not establish
+new HTTP producer execution, browser retry/recovery or native acceptance.
+PRD-16 stays open at 20% estimated remaining.

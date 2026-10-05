@@ -32,6 +32,76 @@ public sealed partial class ApiHostTests
         { await inner.AppendAsync(source, cancellationToken); Last = source; }
     }
 
+    private sealed class ObservedFilterReplay(IBoardFilterInteractionReplayStore inner) : IBoardFilterInteractionReplayStore
+    {
+        public SearchInteractionEvent? Candidate { get; private set; }
+        public async Task<SearchInteractionEvent> AppendOrReplayAsync(Guid key, string digest, SearchInteractionEvent candidate, CancellationToken ct = default)
+        { Candidate = candidate; return await inner.AppendOrReplayAsync(key, digest, candidate, ct); }
+    }
+
+    [Fact]
+    public async Task Retry_aware_filter_producer_rechecks_session_and_grant_and_rolls_back_fresh_receipt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<ICommandActorAuthorization, SearchSourceActorFixture>());
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(member);
+        var actor = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var other = (await member.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var org = (await app.Services.GetRequiredService<IOrganizationService>().CreateAsync(actor, "Filter proof", null, "fixture", ct)).Value!.Organization.Id;
+        await app.Services.GetRequiredService<IOrganizationStore>().AddOrRestoreMemberAsync(org, other, OrganizationRole.Member, DateTimeOffset.UtcNow, ct);
+        var board = (await app.Services.GetRequiredService<IWorkManagementService>().CreateBoardAsync(org, actor, "Filter proof", null, BoardVisibility.Private, "COLOR", null, "fixture", ct)).Value!;
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var sources = app.Services.GetRequiredService<ISearchInteractionEventStore>();
+        var replays = new ObservedFilterReplay(app.Services.GetRequiredService<IBoardFilterInteractionReplayStore>());
+        var unit = app.Services.GetRequiredService<IIdentityUnitOfWork>();
+        var proof = (SearchSourceActorFixture)app.Services.GetRequiredService<ICommandActorAuthorization>();
+        var producer = new BoardFilterInteractionChangeProducer(replays, sources, unit, proof, app.Services.GetRequiredService<IClock>());
+        var digest = new string('a',64); var key = Guid.NewGuid();
+        var denied = await producer.ProduceAsync(other, org, board.Id, Guid.NewGuid(), digest, ct);
+        Assert.False(denied.Succeeded); Assert.Null(denied.Value);
+        await work.UpsertBoardMemberAsync(board.Id, other, BoardRole.Member, DateTimeOffset.UtcNow, ct);
+        proof.RefuseAt(4);
+        var refused = await producer.ProduceAsync(other, org, board.Id, key, digest, ct);
+        Assert.Equal("session_unavailable", refused.ErrorCode); Assert.Null(refused.Value); Assert.NotNull(replays.Candidate);
+        var failedCandidate = replays.Candidate;
+        proof.RefuseAt(null);
+        var accepted = await producer.ProduceAsync(other, org, board.Id, key, digest, ct);
+        Assert.True(accepted.Succeeded); Assert.NotEqual(failedCandidate.EventId, accepted.Value!.EventId);
+        Assert.Equal("BOARD_FILTER_CHANGED", accepted.Value.EventType); Assert.Equal("BoardFilter", accepted.Value.EntityType);
+        Assert.Equal(other, accepted.Value.ActorId); Assert.Equal(org, accepted.Value.OrganizationId); Assert.Equal(board.Id, accepted.Value.BoardId);
+        Assert.Equal(accepted.Value.EventId, accepted.Value.EntityId); Assert.Equal(1, accepted.Value.Version); Assert.Empty(accepted.Value.Metadata);
+        Assert.True((await unit.ExecuteAsync<bool>(other, async () =>
+        {
+            await sources.AppendAsync(SearchInteractionEvent.BoardFilterChanged(failedCandidate.EventId, other, org, board.Id, failedCandidate.CreatedAt.AddSeconds(1)), ct);
+            return IdentityOperation<bool>.Success(true);
+        }, ct)).Succeeded); // no source survived the initial owning refusal
+        proof.RefuseAt(4);
+        var refusedReplay = await producer.ProduceAsync(other, org, board.Id, key, digest, ct);
+        Assert.Equal("session_unavailable", refusedReplay.ErrorCode); Assert.Null(refusedReplay.Value);
+        proof.RefuseAt(null);
+        Assert.Equal(accepted.Value, (await producer.ProduceAsync(other, org, board.Id, key, digest, ct)).Value);
+        var withdrawalKey = Guid.NewGuid();
+        proof.RefuseAt(null);
+        proof.OnProof = async check => { if (check == 4) await work.RemoveBoardMemberAsync(board.Id, other, DateTimeOffset.UtcNow, ct); };
+        var withdrawn = await producer.ProduceAsync(other, org, board.Id, withdrawalKey, digest, ct);
+        Assert.False(withdrawn.Succeeded); Assert.Null(withdrawn.Value); Assert.NotNull(replays.Candidate);
+        var withdrawnCandidate = replays.Candidate;
+        proof.OnProof = null; proof.RefuseAt(null);
+        await work.UpsertBoardMemberAsync(board.Id, other, BoardRole.Member, DateTimeOffset.UtcNow, ct);
+        var restored = await producer.ProduceAsync(other, org, board.Id, withdrawalKey, digest, ct);
+        Assert.True(restored.Succeeded); Assert.NotEqual(withdrawnCandidate.EventId, restored.Value!.EventId);
+        Assert.True((await unit.ExecuteAsync<bool>(other, async () =>
+        {
+            await sources.AppendAsync(SearchInteractionEvent.BoardFilterChanged(withdrawnCandidate.EventId, other, org, board.Id, withdrawnCandidate.CreatedAt.AddSeconds(1)), ct);
+            return IdentityOperation<bool>.Success(true);
+        }, ct)).Succeeded);
+        Assert.Equal(board.Version, (await work.FindBoardAsync(board.Id, ct))!.Version);
+        await work.RemoveBoardMemberAsync(board.Id, other, DateTimeOffset.UtcNow, ct);
+        var lostReplay = await producer.ProduceAsync(other, org, board.Id, key, digest, ct);
+        Assert.False(lostReplay.Succeeded); Assert.Null(lostReplay.Value);
+    }
+
     [Fact]
     public async Task Board_filter_retry_store_preserves_original_and_rolls_back_receipt_with_source()
     {
@@ -176,56 +246,4 @@ public sealed partial class ApiHostTests
         Assert.True((await Append(SearchInteractionEvent.SearchExecuted(Guid.NewGuid(), other, at))).Succeeded);
     }
 
-    [Fact]
-    public async Task Board_filter_producer_requires_actual_private_grant_preserves_work_version_and_rolls_back_final_session_refusal()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<ICommandActorAuthorization, SearchSourceActorFixture>());
-        using var owner = app.CreateClient(); using var member = app.CreateClient();
-        await RegisterAndLogin(owner); await RegisterAndLogin(member);
-        var actor = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
-        var other = (await member.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
-        var organization = (await app.Services.GetRequiredService<IOrganizationService>().CreateAsync(actor, "Filter producer", null, "fixture", ct)).Value!.Organization.Id;
-        await app.Services.GetRequiredService<IOrganizationStore>().AddOrRestoreMemberAsync(organization, other, OrganizationRole.Member, DateTimeOffset.UtcNow, ct);
-        var board = (await app.Services.GetRequiredService<IWorkManagementService>().CreateBoardAsync(organization, actor, "Filter source", null, BoardVisibility.Private, "COLOR", null, "fixture", ct)).Value!;
-        var work = app.Services.GetRequiredService<IWorkManagementStore>();
-        var producer = app.Services.GetRequiredService<SearchInteractionEventProducer>();
-        var denied = await producer.BoardFilterChangedAsync(other, organization, board.Id, ct);
-        Assert.False(denied.Succeeded); Assert.Null(denied.Value);
-        await work.UpsertBoardMemberAsync(board.Id, other, BoardRole.Member, DateTimeOffset.UtcNow, ct);
-        var accepted = await producer.BoardFilterChangedAsync(other, organization, board.Id, ct);
-        Assert.True(accepted.Succeeded); Assert.NotNull(accepted.Value);
-        Assert.Equal("BOARD_FILTER_CHANGED", accepted.Value.EventType); Assert.Equal("BoardFilter", accepted.Value.EntityType);
-        Assert.Equal(other, accepted.Value.ActorId); Assert.Equal(organization, accepted.Value.OrganizationId); Assert.Equal(board.Id, accepted.Value.BoardId);
-        Assert.Equal(accepted.Value.EventId, accepted.Value.EntityId); Assert.Equal(1, accepted.Value.Version); Assert.Empty(accepted.Value.Metadata);
-        Assert.Equal(board.Version, (await work.FindBoardAsync(board.Id, ct))!.Version);
-        var sources = app.Services.GetRequiredService<ISearchInteractionEventStore>();
-        var observed = new ObservedSearchSource(sources);
-        var unit = app.Services.GetRequiredService<IIdentityUnitOfWork>();
-        var proof = (SearchSourceActorFixture)app.Services.GetRequiredService<ICommandActorAuthorization>();
-        var controlled = new SearchInteractionEventProducer(observed, unit, proof, app.Services.GetRequiredService<IClock>());
-        proof.RefuseAt(4); // identity admission, Work pre/post proofs, producer final proof
-        var refused = await controlled.BoardFilterChangedAsync(other, organization, board.Id, ct);
-        Assert.Equal("session_unavailable", refused.ErrorCode); Assert.Null(refused.Value); Assert.NotNull(observed.Last);
-        proof.RefuseAt(null);
-        var replacement = SearchInteractionEvent.BoardFilterChanged(observed.Last.EventId, other, organization, board.Id, observed.Last.CreatedAt.AddSeconds(1));
-        Assert.True((await unit.ExecuteAsync<bool>(other, async () =>
-        { await sources.AppendAsync(replacement, ct); return IdentityOperation<bool>.Success(true); }, ct)).Succeeded);
-        proof.RefuseAt(null);
-        proof.OnProof = async check =>
-        {
-            if (check == 4) await work.RemoveBoardMemberAsync(board.Id, other, DateTimeOffset.UtcNow, ct);
-        };
-        var lostDuringProof = await controlled.BoardFilterChangedAsync(other, organization, board.Id, ct);
-        Assert.False(lostDuringProof.Succeeded); Assert.Null(lostDuringProof.Value);
-        proof.OnProof = null; proof.RefuseAt(null);
-        Assert.NotNull(observed.Last);
-        await work.UpsertBoardMemberAsync(board.Id, other, BoardRole.Member, DateTimeOffset.UtcNow, ct);
-        var afterWithdrawal = SearchInteractionEvent.BoardFilterChanged(observed.Last.EventId, other, organization, board.Id, observed.Last.CreatedAt.AddSeconds(2));
-        Assert.True((await unit.ExecuteAsync<bool>(other, async () =>
-        { await sources.AppendAsync(afterWithdrawal, ct); return IdentityOperation<bool>.Success(true); }, ct)).Succeeded);
-        await work.RemoveBoardMemberAsync(board.Id, other, DateTimeOffset.UtcNow, ct);
-        var withdrawn = await producer.BoardFilterChangedAsync(other, organization, board.Id, ct);
-        Assert.False(withdrawn.Succeeded); Assert.Null(withdrawn.Value);
-    }
 }
