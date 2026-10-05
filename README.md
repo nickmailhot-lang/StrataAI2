@@ -1,6 +1,6 @@
 # StrataAI2
 
-StrataAI2 is a strata/condominium governance and operations platform organized around collaborative Boards, Lists, and Cards. The repository contains the web application, API, background Worker, database migrations, automated acceptance checks, and implementation documentation.
+StrataAI2 is a strata/condominium governance and operations platform organized around collaborative Boards, Lists, and Cards. Organizations provide the membership and access boundary; Boards organize work into Lists and Cards. The repository contains the React/MUI web application, ASP.NET Core API, separate background Worker, database migrations, automated acceptance checks, and implementation documentation.
 
 Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues). The code includes identity and Organization management, Board collaboration and lifecycle controls, attachments, comments, notifications, and live updates. Implementation is ongoing: a feature document or passing source check does not mean its full PRD acceptance is complete. Consult the acceptance records and CI for the relevant revision.
 
@@ -9,17 +9,26 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 | What you need | Where to start |
 | --- | --- |
 | Find any document | [Complete documentation index](docs/README.md) |
+| Explore implemented workflows | [Boards and collaboration](docs/README.md#boards-and-collaboration), [Lists and Cards](docs/README.md#lists-and-cards), [accounts and invitations](docs/README.md#identity-profiles-and-invitations) |
 | Understand the system | [Architecture overview](docs/architecture/README.md), [runtime modes](docs/architecture/runtime-modes.md), [web routing and state](docs/architecture/web-spa-boundary.md) |
 | Configure a local or production runtime | [Configuration reference](docs/architecture/configuration.md), [database roles](docs/architecture/runtime-database-roles.md), [schema upgrades](docs/architecture/schema-upgrades.md) |
 | Run a tested Docker release | [Release bundle guide](docs/release/README.md) |
 | Choose the next implementation dependency | [Canonical ticket dependency audit](docs/ticket-dependencies.md), [linked ticket dependency map](docs/ticket-dependency-map.md) |
 | Review outstanding acceptance and evidence | [Board acceptance](docs/architecture/prd-04-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
+| Check current requirements and builds | [Open PRD/architecture issues](https://github.com/nickmailhot-lang/StrataAI2/issues), [CI workflow runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) |
 
 If you are new to the project, follow the architecture and runtime guides before the local checks below. For a feature question, choose a subject in the documentation index and start with its behavior guide. For deployment, start with the release guide and use the configuration and migration references alongside it.
 
 ## Navigating the documentation
 
 The [docs index](docs/README.md) links to every document, grouped by subject. Use it when you know a feature but not its filename.
+
+Choose a reading path based on your task:
+
+1. **Understand a feature:** open its subject below, read the behavior guide, then follow its links to permissions, storage, and recovery contracts.
+2. **Develop a change:** read the [architecture overview](docs/architecture/README.md), [dependency audit](docs/ticket-dependencies.md), and relevant feature guide; use [API host testing](docs/architecture/api-host-testing.md) and the local checks below to verify it.
+3. **Review readiness:** read the feature's acceptance or evidence record, compare its tested revision with [CI](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml), and check the corresponding open issue.
+4. **Deploy or operate:** follow the [release guide](docs/release/README.md), [configuration reference](docs/architecture/configuration.md), [database role setup](docs/architecture/runtime-database-roles.md), and [schema upgrade guide](docs/architecture/schema-upgrades.md).
 
 | Documentation topic | Browse the complete section |
 | --- | --- |
@@ -40,6 +49,8 @@ The [docs index](docs/README.md) links to every document, grouped by subject. Us
 - **Ticket dependency documents** connect implementation work to the authoritative GitHub requirements. Their dated inventories are snapshots; check current issue state before planning work.
 
 For a feature change, read its behavior document, the related architecture contract, and its acceptance/evidence record. Evidence documents identify what was actually tested and what remains unresolved; older green runs apply to their recorded revision.
+
+Titles containing **acceptance**, **evidence**, or **audit** help assess completion. Titles containing **foundation**, **partial**, or **implementation in progress** describe a limited implemented scope. Read the remaining-work notes before treating either kind of document as a finished feature specification.
 
 The index provides descriptive document titles rather than requiring you to infer a subject from a filename. Links resolve relative to the current README, so they work in GitHub and a local Markdown viewer. To find a term across the documentation from the repository root, use `rg -n "search term" docs`. When adding a document, add it to the appropriate subject in [the index](docs/README.md).
 
