@@ -138,11 +138,60 @@ internal static class BoardBackgroundImageContract
         finally { afterRead(null); await ChangeCopy("background_type='IMAGE',background_value='" + copiedImage.ToString("D") + "'"); }
         Require(await Snapshot() == sourceBeforeWithdrawal, "Copied Board withdrawal changed source Board ownership or effects.");
         await Bytes(board, actor); await Bytes(copy.Value.Id, actor);
+        // PRD-04-TC-05/10: private copied ownership cannot preserve disclosure
+        // after its actor loses Organization membership or its parent closes.
+        // Changes use the trusted fixture connection; the reads and re-admission
+        // execute the genuine restricted adapter and current scope transaction.
+        async Task ChangeOrganization(string status)
+        {
+            await using var query = new NpgsqlCommand("UPDATE organizations SET status=@status WHERE id=@tenant;", admin);
+            query.Parameters.AddWithValue("tenant", tenant); query.Parameters.AddWithValue("status", status);
+            Require(await query.ExecuteNonQueryAsync(ct) == 1, "Image parent withdrawal fixture lost its Organization.");
+        }
+        async Task ChangeMembership(string status)
+        {
+            await using var query = new NpgsqlCommand("UPDATE organization_members SET status=@status WHERE tenant_id=@tenant AND user_id=@actor;", admin);
+            query.Parameters.AddWithValue("tenant", tenant); query.Parameters.AddWithValue("actor", actor); query.Parameters.AddWithValue("status", status);
+            Require(await query.ExecuteNonQueryAsync(ct) == 1, "Image membership withdrawal fixture lost its actor.");
+        }
+        async Task<string> OwnedState() => await Snapshot() + await BoardScalar<string>("""
+            SELECT jsonb_build_object(
+              'boards',(SELECT jsonb_agg(to_jsonb(b) ORDER BY b.id) FROM boards b WHERE b.tenant_id=@tenant),
+              'images',(SELECT jsonb_agg(to_jsonb(i) ORDER BY i.id) FROM board_background_images i WHERE i.tenant_id=@tenant)
+            )::text;
+            """);
+        foreach (var withdrawMembership in new[] { true, false })
+        {
+            var baseline = await OwnedState();
+            var grant = (await admission.AdmitAsync(copy.Value.Id, actor, ct)).Value;
+            Require(grant is not null, "Copied image withdrawal fixture lacks an admitted private owner.");
+            Task Withdraw() => withdrawMembership ? ChangeMembership("REMOVED") : ChangeOrganization("ARCHIVED");
+            afterRead(Withdraw);
+            try
+            {
+                Require((await read.PrepareAsync(copy.Value.Id, actor, ct)).ErrorCode == "board_not_found",
+                    "Organization/membership withdrawal during staging retained copied image bytes.");
+                afterRead(null); initialReads = reads();
+                Require((await admission.RevalidateAsync(grant!, actor, ct)).ErrorCode == "board_not_found"
+                    && (await read.PrepareAsync(copy.Value.Id, actor, ct)).ErrorCode == "board_not_found"
+                    && reads() == initialReads,
+                    "Withdrawn image admission reused its grant or reached provider bytes again.");
+                Require(await OwnedState() == baseline,
+                    "Image admission withdrawal changed Board ownership, audit, events, jobs or receipts.");
+            }
+            finally
+            {
+                afterRead(null);
+                if (withdrawMembership) await ChangeMembership("ACTIVE"); else await ChangeOrganization("ACTIVE");
+            }
+            await Bytes(copy.Value.Id, actor); await Bytes(board, actor);
+            Require(await OwnedState() == baseline, "Restored image readmission changed protected Board state.");
+        }
         revision = await BoardScalar<long>("SELECT version FROM boards WHERE tenant_id=@tenant AND id=@board;");
         var cleared = await provider.GetRequiredService<IWorkManagementService>().UpdateBoardAsync(board, actor, original.Name, original.Description,
             "COLOR", null, revision, "image-selection-clear", ct);
         Require(cleared.Value is { BackgroundType: "COLOR", BackgroundValue: null }, "Board image could not return to its approved default.");
         await Bytes(copy.Value.Id, actor);
-        Console.WriteLine("Restricted Board images: published private PNG ownership, late audit rollback/same-key recovery, private/stale admission, public consent/staging withdrawal, independent copy, copied-owner archive/selection withdrawal and attachment archive survival passed.");
+        Console.WriteLine("Restricted Board images: published private PNG ownership, late audit rollback/same-key recovery, private/stale admission, public consent/staging withdrawal, independent copy, copied-owner archive/selection and staged Organization/membership withdrawal, fresh readmission and attachment archive survival passed.");
     }
 }
