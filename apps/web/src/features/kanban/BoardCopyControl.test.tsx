@@ -73,7 +73,8 @@ it('preserves original review, name and key through a lost response and a newer 
   expect(commands[0][1]?.body).toBe(commands[1][1]?.body);
   for (const command of commands) expect(new Headers(command[1]?.headers).get('Content-Type')).toBe('application/json');
   expect(new Headers(commands[0][1]?.headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1]?.headers).get('Idempotency-Key'));
-  expect(props.onRecoveryChange).toHaveBeenCalledWith(true); expect(props.onRecoveryChange).toHaveBeenLastCalledWith(false);
+  expect(props.onRecoveryChange).toHaveBeenCalledWith(true);
+  await waitFor(() => expect(props.onRecoveryChange).toHaveBeenLastCalledWith(false));
 });
 it('retires recovery before resubmitting under a changed account', async () => {
   let changed = false;
