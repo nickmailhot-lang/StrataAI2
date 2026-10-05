@@ -31,14 +31,22 @@ raw activity-source contract cleans its explicitly synthetic history through
 an administrative transaction, including its dependent projection, and restores
 the guard before commit; this does not expose a runtime retention path.
 
-Strict local .NET build and migration-runner syntax checks pass. Actual new
-migration/storage execution is pending CI. The separate required concurrency fixture holds a first restricted runtime
+Strict local .NET build and migration-runner syntax checks pass. The new migration/storage checks passed PostgreSQL job 111598807028 in
+[run 37257907574](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37257907574)
+at `bf241b5`, including populated upgrade/repeat and the restricted projection
+assertions. The enclosing genuine C# persistence fixtures also passed, including
+synthetic source cleanup and all three staged image-admission variants. The separate required concurrency fixture holds a first restricted runtime
 transaction after its real Board source insertion, observes a second Board's
 actual transaction-ID lock wait, then releases and verifies committed sequence
 order despite reversed source clocks. Neither source may be visible before
 release or acquire fabricated readiness. Its observation loop is bounded and
 fails if the lock is not observed; it is not a browser retry/pacing change.
-Actual concurrency execution is pending CI. Current actor/Organization/qualifying Board administration before and after IO,
+The concurrency case passed PostgreSQL job 111599823121 in
+[run 37258258099](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37258258099)
+at `ca227ec`. Its inspected success marker follows the actual counter wait,
+pre-release visibility check, both commits, exact ordered original event IDs,
+head two and zero fabricated ready-source assertions. This is restricted-role
+source/storage evidence, not an HTTP session/audience or live-browser result. Current actor/Organization/qualifying Board administration before and after IO,
 privacy-bound cursor recovery, bounded delivered reads, the demo adapter,
 SignalR session withdrawal and the MUI archive consumer still need implementation
 and executed acceptance. No raw journal endpoint is exposed. Current foreground
