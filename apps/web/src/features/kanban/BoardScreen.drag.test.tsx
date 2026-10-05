@@ -46,7 +46,12 @@ it('renders provisional drop placement before starting persistence and rolls it 
     { initialEntries: ['/app/org/boards/board'] });
   render(<RouterProvider router={router} />);
   await waitFor(() => expect(screen.getByRole('button', { name: `Drag ${card.title} card` })).toBeEnabled());
-  act(() => drag.current!.onDragStart!({ active: { id: 'card:card' } } as DragStartEvent));
+  const handle = screen.getByRole('button', { name: `Drag ${card.title} card` });
+  const activatorEvent = new MouseEvent('pointerdown', { bubbles: true });
+  handle.dispatchEvent(activatorEvent);
+  const active: DragStartEvent['active'] = { id: 'card:card', data: { current: {} },
+    rect: { current: { initial: null, translated: null } } };
+  act(() => drag.current!.onDragStart!({ active, activatorEvent }));
   act(() => drag.current!.onDragEnd!({ active: { id: 'card:card' }, over: { id: 'card-end:dest' } } as DragEndEvent));
   expect(fetcher.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
   expect(JSON.parse(fetcher.mock.calls.find(call => call[1]?.method === 'POST')![1]!.body as string))
