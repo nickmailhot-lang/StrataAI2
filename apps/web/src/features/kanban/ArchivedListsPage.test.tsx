@@ -66,6 +66,7 @@ it('coalesces repeated live invalidations during a read and admits the latest ar
     .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }))
     .mockResolvedValueOnce(reply(latest));
   mount(fetch); await screen.findByRole('button', { name: 'Restore Planning list' });
+  await waitFor(() => expect(watchBoard).toHaveBeenCalled());
   const invalidate = vi.mocked(watchBoard).mock.calls.at(-1)![0].invalidate;
   act(() => invalidate()); await waitFor(() => expect(finish).toBeDefined());
   const signal = fetch.mock.calls[1][1].signal as AbortSignal;
