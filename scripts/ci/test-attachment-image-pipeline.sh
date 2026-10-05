@@ -130,6 +130,14 @@ json -X POST -d "$(jq -nc --argjson version "$selected_version" '{name:"Independ
 copy=$(jq -r '.id' "$scratch/copied"); [[ "$copy" =~ ^[0-9a-f-]{36}$ ]]
 jq -e --arg source "$(jq -r '.backgroundValue' "$scratch/selected")" '.version==1 and .visibility=="PRIVATE" and .backgroundType=="IMAGE" and .backgroundValue!=$source' "$scratch/copied" >/dev/null
 json -X POST -d "$(jq -nc --argjson version "$selected_version" '{version:$version}')" "$base/boards/$board/archive" >/dev/null
+# The original receipt is not continuing authorization. Archiving the source
+# withdraws its command recovery and image route, without withdrawing a copy.
+curl --max-time 60 --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: $selection_key" -X POST -d "$body" -o "$scratch/archived-source-recovery.body" -w '%{http_code}' \
+  "$base/boards/$board/background/image" > "$scratch/archived-source-recovery.status"
+test "$(cat "$scratch/archived-source-recovery.status")" = 404
+jq -e '.code=="board_not_found"' "$scratch/archived-source-recovery.body" >/dev/null
+test "$(curl --max-time 60 --silent --show-error -b "$scratch/cookies" -o /dev/null -w '%{http_code}' "$base/boards/$board/background/image")" = 404
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$copy/background/image?boardVersion=1" > "$scratch/copied-preview"
 cmp "$scratch/preview" "$scratch/copied-preview"
 test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/boards/$copy/background/image")" = 404
@@ -138,6 +146,13 @@ curl --max-time 60 --fail --silent --show-error "$base/boards/$copy/background/i
 cmp "$scratch/preview" "$scratch/public-preview"
 json -X PATCH -d '{"visibility":"PRIVATE","version":2}' "$base/boards/$copy/visibility" >/dev/null
 test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/boards/$copy/background/image")" = 404
+# Keep the revoked cookie deliberately: the handshake/session that once
+# admitted this owner must not disclose its private copy after real logout.
+json -X POST -d '{}' "$base/auth/logout" >/dev/null
+test "$(curl --max-time 60 --silent --show-error -b "$scratch/cookies" -o /dev/null -w '%{http_code}' "$base/boards/$copy/background/image")" = 404
+json -c "$scratch/cookies" -X POST -d "$(cat "$scratch/account")" "$base/auth/login" >/dev/null
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$copy/background/image?boardVersion=3" > "$scratch/readmitted-preview"
+cmp "$scratch/preview" "$scratch/readmitted-preview"
 json -X PATCH -d '{"name":"Independent owned image","version":3,"backgroundType":"COLOR","backgroundValue":null}' "$base/boards/$copy" >/dev/null
 test "$(curl --max-time 60 --silent --show-error -b "$scratch/cookies" -o /dev/null -w '%{http_code}' "$base/boards/$copy/background/image")" = 404
 echo 'Exact API/Worker images uploaded, scanned via a declared protocol simulator, decoded/published PNG, recovered owned selection after attachment archive, copied independent bytes, and enforced public/private/retired selection. Local private storage; no AWS or real malware-engine claim.'
