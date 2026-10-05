@@ -1,76 +1,85 @@
 # StrataAI2
 
-StrataAI2 is a strata/condominium governance and operations platform built from the PRD backlog in this repository.
+StrataAI2 is a strata/condominium governance and operations platform organized around collaborative Boards, Lists, and Cards. The repository contains the web application, API, background Worker, database migrations, automated acceptance checks, and implementation documentation.
+
+Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues). The code includes identity and Organization management, Board collaboration and lifecycle controls, attachments, comments, notifications, and live updates. Implementation is ongoing: a feature document or passing source check does not mean its full PRD acceptance is complete. Consult the acceptance records and CI for the relevant revision.
+
+## Start here
+
+| What you need | Where to start |
+| --- | --- |
+| Find any document | [Complete documentation index](docs/README.md) |
+| Understand the system | [Architecture overview](docs/architecture/README.md), [runtime modes](docs/architecture/runtime-modes.md), [web routing and state](docs/architecture/web-spa-boundary.md) |
+| Configure a local or production runtime | [Configuration reference](docs/architecture/configuration.md), [database roles](docs/architecture/runtime-database-roles.md), [schema upgrades](docs/architecture/schema-upgrades.md) |
+| Run a tested Docker release | [Release bundle guide](docs/release/README.md) |
+| Choose the next implementation dependency | [Canonical ticket dependency audit](docs/ticket-dependencies.md), [linked ticket dependency map](docs/ticket-dependency-map.md) |
+| Review outstanding acceptance and evidence | [Board acceptance](docs/architecture/prd-04-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
+
+## Navigating the documentation
+
+The [docs index](docs/README.md) links to every document, grouped by subject. Use it when you know a feature but not its filename.
+
+- **`docs/architecture/`** explains shared contracts, security boundaries, persistence, runtime configuration, background processing, testing, and acceptance gaps. Start with its [overview](docs/architecture/README.md).
+- **Documents directly in `docs/`** describe specific Board, List, Card, identity, invitation, and collaboration behavior. They also retain browser evidence, performance notes, and focused implementation decisions.
+- **`docs/release/`** explains how to load, configure, migrate, and run the exact images produced by CI.
+- **Ticket dependency documents** connect implementation work to the authoritative GitHub requirements. Their dated inventories are snapshots; check current issue state before planning work.
+
+For a feature change, read its behavior document, the related architecture contract, and its acceptance/evidence record. Evidence documents identify what was actually tested and what remains unresolved; older green runs apply to their recorded revision.
+
+Useful routes through the docs include:
+
+- **Board collaboration:** [Board interface](docs/architecture/board-interface.md) → [windowing](docs/board-windowing.md) → [work synchronization](docs/architecture/work-synchronization.md) → [Organization Board realtime](docs/organization-board-realtime.md) → [Board acceptance](docs/architecture/prd-04-acceptance.md).
+- **Safe writes and recovery:** [command transactions](docs/architecture/work-command-transactions.md) → [command scopes](docs/architecture/work-command-scopes.md) → [command retries](docs/architecture/work-command-retries.md) → [current actor sessions](docs/architecture/command-actor-sessions.md).
+- **Files and backgrounds:** [object storage](docs/architecture/attachment-object-storage.md) → [attachment acceptance](docs/architecture/attachment-acceptance.md) → [Board background images](docs/board-background-images.md) → [cover lifecycle](docs/architecture/attachment-covers-lifecycle.md).
+- **Operating a release:** [release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [operator metrics](docs/architecture/operator-metrics.md).
 
 ## Adopted architecture
 
-StrataAI2 is a modular monolith delivered as a small containerized system:
+StrataAI2 is a modular monolith delivered as three application processes:
 
-- React + TypeScript + Vite + MUI web application
-- ASP.NET Core API
-- Separate .NET Worker process from the same codebase
-- PostgreSQL as the primary relational datastore
-- PostgreSQL RLS for defence-in-depth Organization isolation
-- pgvector for semantic retrieval when AI retrieval is introduced
-- Object storage for document/file binaries
-- SignalR for realtime collaboration
-- PostgreSQL-backed transactional outbox/durable jobs initially
-- Immutable web/API/Worker Docker images produced by CI
+- **Web:** React, TypeScript, Vite, and MUI.
+- **API:** ASP.NET Core, with Domain, Application, and Infrastructure layers.
+- **Worker:** a separate .NET process sharing the same domain and application contracts.
 
-The canonical product hierarchy is:
+PostgreSQL is the primary datastore, with forced row-level security for Organization isolation, pgvector for retrieval capabilities, and transactional durable jobs. File binaries use private object storage behind application interfaces; see the [storage decision](docs/architecture/attachment-object-storage.md). SignalR provides authorized live collaboration. CI builds immutable web/API/Worker images once and verifies those images before assembling a release bundle.
 
-```text
-User -> Organization -> Board -> List -> Card
-```
-
-`Organization` is the domain-facing tenant boundary. Infrastructure may use `tenant_id` to represent the same boundary.
+The canonical work hierarchy is `Organization → Board → List → Card`. Users join Organizations; `Organization` is the tenant boundary represented by `tenant_id` in persistence. See [Organization access integrity](docs/architecture/organization-access-integrity.md) and [routing isolation](docs/architecture/routing-isolation.md).
 
 ## Repository layout
 
-```text
-apps/
-  web/                       React/MUI SPA (introduced by ARCH-02)
-src/
-  StrataAI.Domain/           Domain entities and rules
-  StrataAI.Application/      Use cases and application contracts
-  StrataAI.Infrastructure/   Persistence and provider adapters
-  StrataAI.Api/              HTTP/auth/realtime host
-  StrataAI.Worker/           Background processing host
-tests/                       Automated test projects
-docs/                        Architecture/ADR/product documentation
-scripts/                     Operational/developer scripts
-.github/workflows/           CI and repository automation
-```
+| Path | Contents |
+| --- | --- |
+| `apps/web/` | React/MUI application and component tests |
+| `src/StrataAI.Domain/` | Domain entities and rules |
+| `src/StrataAI.Application/` | Use cases and application contracts |
+| `src/StrataAI.Infrastructure/` | Persistence and provider adapters |
+| `src/StrataAI.Api/` | HTTP, authentication, and realtime host |
+| `src/StrataAI.Worker/` | Background processing host |
+| `db/` | Ordered migrations and restricted runtime role provisioning |
+| `tests/` | Domain, API-host, restricted persistence, and browser acceptance checks |
+| `docs/` | [Documentation index and subject guides](docs/README.md) |
+| `scripts/` | Release, operational, and CI verification scripts |
+| `.github/workflows/` | [Build-once CI](.github/workflows/ci.yml) and repository automation |
 
-## Current implementation sequence
+## Local source checks
 
-Work is processed in dependency order from the GitHub PRD and architecture issues. Initial commits establish ARCH-01/ARCH-03 foundations and the PRD-01 canonical hierarchy before authentication, persistence, Kanban behavior, realtime, AI, and portal features are layered on.
+Use the .NET 10 SDK, Node.js 24, and the npm version declared in [package.json](package.json). Docker Engine/Desktop and Compose v2 are needed for container runtime checks.
 
-## Toolchains
-
-- .NET 10 SDK
-- Node.js 24 for web tooling
-- Docker/Compose for the deployable runtime
-
-From a clean checkout, run the local source checks at the repository root:
+From a clean checkout at the repository root:
 
 ```sh
 npm ci
 npm run typecheck
+npm run typecheck:browser
 npm run lint
 npm test
 npm run build
 dotnet restore StrataAI2.slnx --locked-mode
-dotnet build StrataAI2.slnx --configuration Release --no-restore
+dotnet build StrataAI2.slnx --configuration Release --no-restore -warnaserror
 dotnet test tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj --configuration Release --no-build
 dotnet test tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj --configuration Release --no-build
 ```
 
-The API host tests select an isolated Demo runtime automatically; they do not
-require database or provider credentials. See
-[API host testing](docs/architecture/api-host-testing.md) and
-[dependency locking](docs/architecture/dependency-locking.md). CI additionally
-requires real PostgreSQL isolation tests, exact-release-image integration,
-browser workflows and security scans before producing the tested Docker bundle.
+API-host tests select an isolated Demo runtime without production database or provider credentials. Read [API host testing](docs/architecture/api-host-testing.md) and [dependency locking](docs/architecture/dependency-locking.md) for the test boundaries and locked dependency workflow.
 
-See GitHub issues `ARCH-01` through `ARCH-12` and `PRD-01` through `PRD-80` for the authoritative implementation requirements.
+These source checks are only part of release validation. [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) also verify real PostgreSQL/RLS behavior, restricted runtime capabilities, exact-image integration, native browser workflows, and security evidence. Deploy the tested artifacts using the [release bundle guide](docs/release/README.md).
