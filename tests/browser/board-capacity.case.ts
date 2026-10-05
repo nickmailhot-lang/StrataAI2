@@ -267,7 +267,14 @@ for (const width of [1280, 390]) {
     await expect(listHandle).toBeEnabled(); await listHandle.press('Space');
     await expect(listHandle).toHaveAttribute('aria-pressed', 'true'); await settleDrag();
     const initialListIds = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
-    const initialListLast = Math.max(...initialListIds.map(id => settledSnapshot.lists.findIndex(value => value.list.id === id)));
+    // Focus/detail retention can pin a distant column outside the viewport.
+    // Bind the contiguous initial buffer around the source, rather than letting
+    // that unrelated retained column become the window's far boundary.
+    expect(initialListIds).toContain(sourceList.list.id);
+    let initialListLast = listSourceIndex;
+    while (initialListLast + 1 < settledSnapshot.lists.length
+      && initialListIds.includes(settledSnapshot.lists[initialListLast + 1].list.id)) initialListLast++;
+    expect(initialListIds).not.toContain(settledSnapshot.lists[listSourceIndex + 8].list.id);
     for (let step = 0; step < 8; step++) {
       await page.keyboard.press('ArrowRight');
       const neighbor = settledSnapshot.lists[listSourceIndex + step + 1].list;
@@ -282,7 +289,8 @@ for (const width of [1280, 390]) {
       }).toBe(true);
     }
     const mountedListIds = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
-    expect(mountedListIds.some(id => settledSnapshot.lists.findIndex(value => value.list.id === id) > initialListLast)).toBe(true);
+    expect(mountedListIds.some(id => !initialListIds.includes(id)
+      && settledSnapshot.lists.findIndex(value => value.list.id === id) > initialListLast)).toBe(true);
     await expect(listHandle).toHaveAttribute('aria-pressed', 'true');
     let listWrites = 0;
     page.on('request', request => { if (request.method() === 'PATCH' && new URL(request.url()).pathname === `/lists/${sourceList.list.id}`) listWrites++; });

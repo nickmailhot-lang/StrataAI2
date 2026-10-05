@@ -44,3 +44,13 @@ it('uses committed target positions after virtual row refinement and excludes th
   // must not become an eligible destination ahead of the actual next Card.
   expect(cardKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowDown' }), args)).toEqual({ x: 20, y: 141 });
 });
+
+it('advances beyond the already reached target when smooth scrolling leaves a fractional pixel remainder', () => {
+  const args = fixture();
+  args.context.droppableRects.set('card:down', { ...args.context.collisionRect!, top: 101.5 });
+  args.context.droppableRects.set('card:far', { ...args.context.collisionRect!, top: 210 });
+  expect(cardKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowDown' }), args)).toEqual({ x: 20, y: 130 });
+  args.context.droppableRects.set('card:up', { ...args.context.collisionRect!, top: 98.5 });
+  args.context.droppableRects.set('card:far', { ...args.context.collisionRect!, top: -10 });
+  expect(cardKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowUp' }), args)).toEqual({ x: 20, y: -90 });
+});

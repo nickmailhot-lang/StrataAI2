@@ -16,7 +16,10 @@ export const cardKeyboardCoordinates: KeyboardCoordinateGetter = (event, { activ
     // the scheduled droppable measurement can still describe its old layout.
     const rect = container.node.current?.getBoundingClientRect() ?? context.droppableRects.get(container.id); if (!rect) return [];
     const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
-    if (horizontal ? (x - center.x) * direction <= 1 : Math.abs(x - center.x) > 1 || (y - center.y) * direction <= 1) return [];
+    // Smooth scrolling rounds fractional row positions to physical pixels.
+    // A target within the settled center tolerance is the current destination,
+    // not another adjacent move; selecting it again can interrupt the scroll.
+    if (horizontal ? (x - center.x) * direction <= 2 : Math.abs(x - center.x) > 1 || (y - center.y) * direction <= 2) return [];
     return [{ x, y }];
   }).sort((a, b) => horizontal
     ? Math.abs(a.x - center.x) - Math.abs(b.x - center.x) || Math.abs(a.y - center.y) - Math.abs(b.y - center.y)
