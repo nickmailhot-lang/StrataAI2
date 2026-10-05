@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { ArchivedBoardsPage } from './ArchivedBoardsPage';
 import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
+import { watchOrganizationBoards } from './organizationBoardLive';
+vi.mock('./organizationBoardLive', () => ({ watchOrganizationBoards: vi.fn(() => () => {}) }));
 const org = '10000000-0000-4000-8000-000000000001', id = '20000000-0000-4000-8000-000000000001', user = '30000000-0000-4000-8000-000000000001';
 const profile = { id: user, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
 const board = { id, organizationId: org, name: 'Planning', version: 2, archivedAt: '2026-10-04T12:00:00Z' };
@@ -12,7 +14,44 @@ function mount(fetch: ReturnType<typeof vi.fn>) {
   return render(<RouterProvider router={createMemoryRouter([{ path: '/app/:organizationId/archived-boards', element: <ArchivedBoardsPage /> }],
     { initialEntries: [`/app/${org}/archived-boards`] })} />);
 }
-afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.useRealTimers(); });
+afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.useRealTimers(); vi.clearAllMocks(); });
+it('withdraws cached names immediately on live reset and fences the previous read', async () => {
+  let finish!: (value: Response) => void; let reads = 0;
+  const fetch = vi.fn((path: string) => {
+    if (path === '/me') return Promise.resolve(response(profile));
+    if (++reads === 1) return Promise.resolve(response(page));
+    return new Promise<Response>(resolve => { finish = resolve; });
+  });
+  mount(fetch); await screen.findByRole('article', { name: 'Planning' });
+  await waitFor(() => expect(watchOrganizationBoards).toHaveBeenCalled());
+  const callbacks = vi.mocked(watchOrganizationBoards).mock.calls.at(-1)![0];
+  act(() => callbacks.reset());
+  expect(screen.queryByRole('article')).not.toBeInTheDocument(); expect(screen.queryByText('Planning')).not.toBeInTheDocument();
+  await waitFor(() => expect(finish).toBeDefined());
+  await act(async () => finish(response({ ...page, items: [] })));
+  await screen.findByText('No administrable archived Boards on this page.');
+});
+it('keeps the original unconfirmed key while a live reset withholds its private review', async () => {
+  let writes = 0;
+  const fetch = vi.fn((path: string, init: RequestInit) => {
+    if (path === '/me') return Promise.resolve(response(profile));
+    if (init.method === 'POST') return Promise.resolve(++writes === 1 ? response({ detail: 'Private failure' }, 503)
+      : response({ ...board, version: 3, lifecycleState: 'active' }));
+    return Promise.resolve(response(writes ? { ...page, items: [] } : page));
+  });
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' }));
+  await screen.findByRole('button', { name: 'Retry this change' });
+  await waitFor(() => expect(watchOrganizationBoards).toHaveBeenCalled());
+  act(() => vi.mocked(watchOrganizationBoards).mock.calls.at(-1)![0].reset());
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.queryByText('Planning')).not.toBeInTheDocument();
+  const retry = await screen.findByRole('button', { name: 'Retry this change' }); await waitFor(() => expect(retry).toBeEnabled());
+  fireEvent.click(retry); await screen.findByText('Board restore acknowledged.');
+  const commands = fetch.mock.calls.filter(call => call[1].method === 'POST');
+  expect(commands).toHaveLength(2);
+  expect(new Headers(commands[0][1].headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1].headers).get('Idempotency-Key'));
+});
 it.each([
   { ...page, organizationId: user },
   { ...page, items: [{ ...board, organizationId: user }] },

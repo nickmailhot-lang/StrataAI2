@@ -192,3 +192,23 @@ checks the final cursor proof after a permission change following an admitted
 page. These additions compile with warnings as errors but await CI execution.
 They do not prove PostgreSQL Worker readiness, proxy traversal or the MUI
 two-client experience; those require the current exact-image acceptance fixture.
+
+The browser connector now validates exact Organization/current-viewer scope,
+opaque cursor shape, the six body-free source types, UUIDs, timestamps, safe
+versions, bounded pages and reset semantics before retaining a cursor. The
+private transport explicitly names only its current viewer, never the source
+actor, so a changed-session packet cannot bind to an old browser identity.
+Reused canonical event identity with different content is refused. Known
+duplicates do not refresh the directory, and newly encrypted empty heartbeat
+cursors do not masquerade as domain changes. Seen identity retention is capped
+at 1,000; actual invalidation is coalesced across a short source burst.
+
+The connector resumes the exact opaque cursor, fences old streams by generation,
+and cancels subscription/recovery/refresh timers on disposal. Reset and transport
+unavailability have distinct callbacks for the archive UI's disclosure and
+pending-command handling. Its 14 focused validation/connector tests pass locally,
+including foreign viewer refusal, malformed/private fields, corruption-shaped
+cursors, duplicate identity, reset, heartbeat and stale subscription/cleanup.
+It is not yet connected to ArchivedBoardsPage; that integration must preserve
+unconfirmed command identity while withdrawing unauthorised cached content.
+Native two-client/proxy/Worker evidence is still outstanding.

@@ -34,6 +34,7 @@ public sealed partial class ApiHostTests
         await SendFrame(socket, new { type = 4, invocationId = "watch", target = "Watch", arguments = new string?[] { f.Organization.ToString(), null } });
         var initial = await StreamItem(socket);
         Assert.Equal(f.Organization, initial.GetProperty("organizationId").GetGuid());
+        Assert.Equal(f.Recipient, initial.GetProperty("userId").GetGuid());
         Assert.True(initial.GetProperty("page").GetProperty("resetRequired").GetBoolean());
         Assert.Empty(initial.GetProperty("page").GetProperty("events").EnumerateArray());
         Assert.False(long.TryParse(initial.GetProperty("page").GetProperty("cursor").GetString(), out _));

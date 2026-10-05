@@ -6,7 +6,7 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Api.WorkManagement;
 
-public sealed record OrganizationBoardLivePage(Guid OrganizationId, OrganizationBoardSyncPage Page);
+public sealed record OrganizationBoardLivePage(Guid OrganizationId, Guid UserId, OrganizationBoardSyncPage Page);
 public sealed class OrganizationBoardRealtimeHub(TransactionalOrganizationBoardSynchronization replay,
     IIdentityService identities, IdentityPolicy policy, ILogger<OrganizationBoardRealtimeHub> logger) : Hub
 {
@@ -53,7 +53,7 @@ public sealed class OrganizationBoardRealtimeHub(TransactionalOrganizationBoardS
                 if (!current.Succeeded || !current.Value) Denied(current.ErrorCode ?? "organization_sync_unavailable");
                 if (initial || page.Events.Count > 0 || page.ResetRequired || ++heartbeat >= 20)
                 {
-                    yield return new(organizationId, page);
+                    yield return new(organizationId, actor, page);
                     heartbeat = 0;
                 }
                 initial = false; cursor = page.Cursor;

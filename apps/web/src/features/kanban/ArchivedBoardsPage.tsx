@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile, notificationInstant, notificationUuid } from '../notifications/notificationInbox';
 import { activityEvent, activityResult } from './activityTelemetry';
+import { watchOrganizationBoards } from './organizationBoardLive';
 
 type Board = { id: string; organizationId: string; name: string; version: number; archivedAt: string | null };
 type Page = { organizationId: string; items: Board[]; nextCursor: string | null };
@@ -28,6 +29,7 @@ function Archive({ org }: { org: string }) {
   const [review, setReview] = useState<Board>(); const [deleting, setDeleting] = useState(false); const [confirmed, setConfirmed] = useState(false);
   const [intent, setIntent] = useState<Intent>(); const [writing, setWriting] = useState(false); const [conflict, setConflict] = useState(false);
   const [notice, setNotice] = useState<string>(); const [history, setHistory] = useState<(string | null)[]>([]);
+  const [liveActor, setLiveActor] = useState<string>();
   const mounted = useRef(false); const actor = useRef<string | undefined>(undefined); const read = useRef<AbortController | undefined>(undefined);
   const write = useRef<AbortController | undefined>(undefined); const position = useRef<{ cursor: string | null; trail: (string | null)[] }>({ cursor: null, trail: [] });
   const refresh = useRef<HTMLButtonElement>(null); const queued = useRef(false);
@@ -62,14 +64,14 @@ function Archive({ org }: { org: string }) {
       }, c.signal);
       if (!mounted.current || read.current !== c) return;
       if (actor.current && actor.current !== result.actor) retire();
-      actor.current = result.actor; setCurrent(result.directory); setReady(true);
+      actor.current = result.actor; setLiveActor(result.actor); setCurrent(result.directory); setReady(true);
       activityResult('archive_board_read', true, started);
       setNotice(value => value === 'Unable to confirm current Board archive access. Check again before continuing.' ? undefined : value);
     } catch (error) { if (mounted.current && read.current === c) {
       if (!(error instanceof WorkRequestError)) activityEvent('archive_board_read', 'exception');
       activityResult('archive_board_read', false, started);
       setCurrent(undefined); setReady(false);
-      if (error instanceof ChangedArchiveIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { retire(); actor.current = undefined; }
+      if (error instanceof ChangedArchiveIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { retire(); actor.current = undefined; setLiveActor(undefined); }
       setNotice('Unable to confirm current Board archive access. Check again before continuing.');
     } } finally { if (mounted.current && read.current === c) {
       read.current = undefined; setReading(false); if (queued.current) {
@@ -85,11 +87,25 @@ function Archive({ org }: { org: string }) {
     return () => { mounted.current = false; read.current?.abort(); write.current?.abort(); clearInterval(timer); window.removeEventListener('online', recover); document.removeEventListener('visibilitychange', recover);
       if (focusFrame.current !== undefined) cancelAnimationFrame(focusFrame.current); };
   }, [org]);
+  useEffect(() => {
+    if (!liveActor) return;
+    const recover = () => {
+      if (!mounted.current) return;
+      // Fence an older read before a new canonical invalidation. Withdraw the
+      // cached directory/review immediately, but retain any original command
+      // key in memory for private acknowledgment recovery after re-admission.
+      read.current?.abort(); read.current = undefined; queued.current = false;
+      setReading(false); setReady(false); setCurrent(undefined); setReview(undefined); setConfirmed(false);
+      void load(undefined, undefined, 'reconnect');
+    };
+    return watchOrganizationBoards({ organizationId: org, userId: liveActor,
+      invalidate: recover, reset: recover, unavailable: recover });
+  }, [org, liveActor]);
   const latest = current?.items.find(b => b.id === review?.id);
   const changed = !!review && !intent && (!latest || latest.version !== review.version || latest.name !== review.name || latest.archivedAt !== review.archivedAt);
   async function change() {
-    if (write.current || reading || !ready || !review || !actor.current || !intent && (changed || conflict || deleting && !confirmed)) return;
-    const command = intent ?? { board: review, deleting, key: crypto.randomUUID(), actor: actor.current };
+    if (write.current || reading || !ready || !review && !intent || !actor.current || !intent && (changed || conflict || deleting && !confirmed)) return;
+    const command = intent ?? { board: review!, deleting, key: crypto.randomUUID(), actor: actor.current };
     if (command.actor !== actor.current) { retire(); return; }
     const action = command.deleting ? 'archive_board_delete' : 'archive_board_restore';
     const started = performance.now(); activityEvent(action, intent ? 'retry' : 'use');
@@ -117,6 +133,7 @@ function Archive({ org }: { org: string }) {
     <Button component={Link} to={`/app/${org}`} disabled={writing || !!intent}>Back to Organization</Button>
     <Typography>Only Boards you currently administer appear here. Restore a Board to use it again.</Typography>
     {notice && !review && <Alert severity="info" role="status">{notice}</Alert>}
+    {intent && !review && <Button disabled={reading || writing || !ready} onClick={() => void change()}>Retry this change</Button>}
     <Button ref={refresh} disabled={reading || writing} onClick={() => void load(undefined, undefined, 'retry')}>Check current archived boards</Button>
     {reading && <CircularProgress aria-label="Checking archived Boards" />}
     {current?.items.map(b => <Paper component="article" aria-label={b.name} key={b.id} sx={{ p: 2, overflowWrap: 'anywhere' }}>
