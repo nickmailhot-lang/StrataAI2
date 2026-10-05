@@ -439,7 +439,7 @@ clock. API grants are SELECT plus this narrow capability, with no raw table
 writes or Worker capability. The PostgreSQL adapter requires an owning identity
 subject transaction and neither starts nor commits it. Both runtime adapters are
 registered through Work Management; the global search producer calls them after
-successful traversal. The Board filter producer remains pending.
+successful traversal. Board filter change-intent HTTP/client wiring remains pending.
 
 Startup now requires schema 076. Populated forward/repeat upgrade checks retain
 original account and shared Work source bytes and require empty new history.
@@ -525,3 +525,28 @@ The producer CI run 37273958250 passed 414 of 415 API tests. Its sole failure wa
 the extended HTTP fixture reading the continuation stream twice. The fixture now
 parses once and reuses the same page for both original-ID and continuation
 assertions; neither assertion is relaxed. Full repaired execution awaits CI.
+
+### Board filter producer boundary
+
+The registered producer now has `BoardFilterChangedAsync(actor, organization,
+board)` for an actual validated change intent. It generates the canonical
+BoardFilter source inside the owning identity transaction; the source adapter
+freshly checks the real active Organization/Board and required private grant.
+After the original-session proof, the producer re-admits the identical source
+through the adapter, preserving its EventId, sequence and clock. A withdrawal
+during session-proof IO therefore refuses the acknowledgment and rolls back the
+original. Personal source production does not advance Board/work versions.
+
+The Demo service test covers private nonmember refusal, active MEMBER admission,
+canonical scope/metadata, unchanged Board version, final session refusal and
+actual grant withdrawal during that proof. Changed-clock replacement with the
+refused EventId after restoration proves rollback. Actor session proof is a
+synthetic fixture; these tests compile with zero warnings/errors and await CI.
+
+This method is not yet called by Board filter HTTP/client flows. Those flows
+apply session-local criteria and also fetch Cards for initial restoration,
+pagination, canonical refresh and reconnect. Wiring must identify actual change
+intent and retain the original acknowledgment through request retry; those reads
+must not all become `BOARD_FILTER_CHANGED` events. Anonymous filters must not
+fabricate an actor. Required change-intent delivery, protected bounded replay and
+reconnect consumption remain outstanding; PRD-16 stays open at 20% estimated remaining.
