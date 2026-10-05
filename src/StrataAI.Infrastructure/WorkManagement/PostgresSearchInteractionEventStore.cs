@@ -7,8 +7,37 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 // Source adapter only. The admitted producer must own the identity transaction
 // and its final session proof; this adapter never starts or commits that scope.
-public sealed class PostgresSearchInteractionEventStore(PostgresConnectionFactory connections) : ISearchInteractionEventStore
+public sealed class PostgresSearchInteractionEventStore(PostgresConnectionFactory connections) : ISearchInteractionEventStore, IBoardFilterInteractionReplayStore
 {
+    public async Task<SearchInteractionEvent> AppendOrReplayAsync(Guid requestId, string fingerprint,
+        SearchInteractionEvent candidate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+        if (!connections.OwnsIdentitySubject(candidate.ActorId))
+            throw new InvalidOperationException("Search interaction requires the owning identity subject transaction.");
+        if (requestId == Guid.Empty || fingerprint is null || fingerprint.Length != 64
+            || fingerprint.Any(c => c is not (>= '0' and <= '9') and not (>= 'a' and <= 'f'))
+            || candidate.EventType != "BOARD_FILTER_CHANGED") throw new InvalidOperationException("Search interaction unavailable.");
+        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await using (var subject = new NpgsqlCommand("SELECT set_config('app.identity_subject',@subject,true);", session.Connection, session.Transaction))
+        {
+            subject.Parameters.AddWithValue("subject", candidate.ActorId.ToString("D"));
+            await subject.ExecuteNonQueryAsync(cancellationToken);
+        }
+        await using var command = new NpgsqlCommand("SELECT original_event,original_created FROM public.append_or_replay_board_filter_interaction(@request,@fingerprint,@event,@actor,@organization,@board,@created);",
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("request", requestId); command.Parameters.AddWithValue("fingerprint", fingerprint);
+        command.Parameters.AddWithValue("event", candidate.EventId); command.Parameters.AddWithValue("actor", candidate.ActorId);
+        command.Parameters.AddWithValue("organization", candidate.OrganizationId!.Value); command.Parameters.AddWithValue("board", candidate.BoardId!.Value);
+        command.Parameters.AddWithValue("created", candidate.CreatedAt);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken)) throw new InvalidOperationException("Search interaction unavailable.");
+        var original = SearchInteractionEvent.BoardFilterChanged(reader.GetGuid(0), candidate.ActorId,
+            candidate.OrganizationId.Value, candidate.BoardId.Value, reader.GetFieldValue<DateTimeOffset>(1));
+        if (await reader.ReadAsync(cancellationToken)) throw new InvalidOperationException("Search interaction unavailable.");
+        return original;
+    }
+
     public async Task AppendAsync(SearchInteractionEvent source, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);

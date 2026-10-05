@@ -33,6 +33,60 @@ public sealed partial class ApiHostTests
     }
 
     [Fact]
+    public async Task Board_filter_retry_store_preserves_original_and_rolls_back_receipt_with_source()
+    {
+        var ct = TestContext.Current.CancellationToken; var clock = new ReceiptTestClock();
+        await using var app = new ApiFactory(configureServices: services =>
+        { services.AddSingleton<ICommandActorAuthorization, SearchSourceActorFixture>(); services.AddSingleton<IClock>(clock); });
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(member);
+        var actor = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var other = (await member.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var org = (await app.Services.GetRequiredService<IOrganizationService>().CreateAsync(actor, "Filter retry", null, "fixture", ct)).Value!.Organization.Id;
+        await app.Services.GetRequiredService<IOrganizationStore>().AddOrRestoreMemberAsync(org, other, OrganizationRole.Member, clock.UtcNow, ct);
+        var board = (await app.Services.GetRequiredService<IWorkManagementService>().CreateBoardAsync(org, actor, "Retry Board", null, BoardVisibility.Private, "COLOR", null, "fixture", ct)).Value!;
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        await work.UpsertBoardMemberAsync(board.Id, other, BoardRole.Member, clock.UtcNow, ct);
+        var replays = app.Services.GetRequiredService<IBoardFilterInteractionReplayStore>();
+        var unit = app.Services.GetRequiredService<IIdentityUnitOfWork>();
+        var request = Guid.NewGuid(); var digest = new string('a', 64);
+        var first = SearchInteractionEvent.BoardFilterChanged(Guid.NewGuid(), other, org, board.Id, clock.UtcNow);
+        Task<IdentityOperation<SearchInteractionEvent>> Append(Guid key, string fingerprint, SearchInteractionEvent candidate) =>
+            unit.ExecuteAsync(candidate.ActorId, async () => IdentityOperation<SearchInteractionEvent>.Success(
+                await replays.AppendOrReplayAsync(key, fingerprint, candidate, ct)), ct);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => replays.AppendOrReplayAsync(request, digest, first, ct));
+        Assert.Equal(first, (await Append(request, digest, first)).Value);
+        var retry = SearchInteractionEvent.BoardFilterChanged(Guid.NewGuid(), other, org, board.Id, clock.UtcNow.AddSeconds(1));
+        Assert.Equal(first, (await Append(request, digest, retry)).Value);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Append(request, new string('b', 64), retry));
+        var lateKey = Guid.NewGuid();
+        var refused = await unit.ExecuteAsync<bool>(other, async () =>
+        {
+            await replays.AppendOrReplayAsync(lateKey, digest, retry, ct);
+            return IdentityOperation<bool>.Failure("retry_late_refusal");
+        }, ct);
+        Assert.Equal("retry_late_refusal", refused.ErrorCode);
+        var replacement = SearchInteractionEvent.BoardFilterChanged(retry.EventId, other, org, board.Id, retry.CreatedAt.AddSeconds(1));
+        Assert.Equal(replacement, (await Append(lateKey, digest, replacement)).Value);
+        await work.RemoveBoardMemberAsync(board.Id, other, clock.UtcNow, ct);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Append(request, digest, retry));
+        await work.UpsertBoardMemberAsync(board.Id, other, BoardRole.Member, clock.UtcNow, ct);
+        clock.UtcNow = clock.UtcNow.AddHours(24);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Append(request, digest, retry));
+        // A new request can remove expired receipts while leaving their source
+        // originals immutable; failed/caught inner receipt writes never survive.
+        var fresh = SearchInteractionEvent.BoardFilterChanged(Guid.NewGuid(), other, org, board.Id, clock.UtcNow);
+        Assert.Equal(fresh, (await Append(Guid.NewGuid(), digest, fresh)).Value);
+        var sources = app.Services.GetRequiredService<ISearchInteractionEventStore>();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => unit.ExecuteAsync<bool>(other, async () =>
+        {
+            await sources.AppendAsync(SearchInteractionEvent.BoardFilterChanged(first.EventId, other, org, board.Id, first.CreatedAt.AddSeconds(1)), ct);
+            return IdentityOperation<bool>.Success(true);
+        }, ct));
+        Assert.Equal(board.Version, (await work.FindBoardAsync(board.Id, ct))!.Version);
+    }
+
+    [Fact]
     public async Task Search_producer_final_session_refusal_rolls_back_original_and_returns_no_acknowledgment()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -4,7 +4,9 @@ BEGIN;
 CREATE ROLE strataai_search_source_ci NOSUPERUSER NOBYPASSRLS NOLOGIN;
 GRANT USAGE ON SCHEMA public TO strataai_search_source_ci;
 GRANT SELECT ON search_interaction_events,search_interaction_streams TO strataai_search_source_ci;
+GRANT SELECT ON board_filter_interaction_replays TO strataai_search_source_ci;
 GRANT EXECUTE ON FUNCTION append_search_interaction(uuid,uuid,text,uuid,uuid,timestamptz) TO strataai_search_source_ci;
+GRANT EXECUTE ON FUNCTION append_or_replay_board_filter_interaction(uuid,text,uuid,uuid,uuid,uuid,timestamptz) TO strataai_search_source_ci;
 INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at) VALUES
  ('07600000-0000-0000-0000-000000000001','search-a@example.test','SEARCH-A@EXAMPLE.TEST','Search A','ACTIVE','fixture',now(),now()),
  ('07600000-0000-0000-0000-000000000002','search-b@example.test','SEARCH-B@EXAMPLE.TEST','Search B','ACTIVE','fixture',now(),now());
@@ -70,6 +72,95 @@ DO $$ BEGIN
   RAISE EXCEPTION 'Private nonmember source accepted';
  EXCEPTION WHEN SQLSTATE 'P0001' THEN IF SQLERRM<>'Search interaction unavailable' THEN RAISE; END IF; END;
 END $$;
+RESET ROLE;
+SAVEPOINT retry_receipt_contract;
+SET LOCAL ROLE strataai_search_source_ci;
+SELECT set_config('app.identity_subject','07600000-0000-0000-0000-000000000001',true);
+DO $$ DECLARE result record; stream_clock timestamptz; BEGIN
+ SELECT * INTO result FROM append_or_replay_board_filter_interaction('07700000-0000-0000-0000-000000000040',repeat('a',64),
+  '07700000-0000-0000-0000-000000000036','07600000-0000-0000-0000-000000000001',
+  '07600000-0000-0000-0000-000000000010','07600000-0000-0000-0000-000000000020','2026-10-05T12:00:04Z');
+ IF result.original_event<>'07700000-0000-0000-0000-000000000036' OR result.original_created<>'2026-10-05T12:00:04Z'::timestamptz
+  OR (SELECT count(*) FROM board_filter_interaction_replays)<>1 OR (SELECT last_sequence FROM search_interaction_streams)<>3 THEN
+  RAISE EXCEPTION 'Retry receipt did not bind the first canonical original'; END IF;
+ SELECT updated_at INTO stream_clock FROM search_interaction_streams;
+ SELECT * INTO result FROM append_or_replay_board_filter_interaction('07700000-0000-0000-0000-000000000040',repeat('a',64),
+  '07700000-0000-0000-0000-000000000037','07600000-0000-0000-0000-000000000001',
+  '07600000-0000-0000-0000-000000000010','07600000-0000-0000-0000-000000000020','2026-10-05T12:00:05Z');
+ IF result.original_event<>'07700000-0000-0000-0000-000000000036' OR result.original_created<>'2026-10-05T12:00:04Z'::timestamptz
+  OR (SELECT last_sequence FROM search_interaction_streams)<>3 OR (SELECT updated_at FROM search_interaction_streams) IS DISTINCT FROM stream_clock THEN
+  RAISE EXCEPTION 'Retry allocated another source or changed its original clock'; END IF;
+ BEGIN
+  PERFORM append_or_replay_board_filter_interaction('07700000-0000-0000-0000-000000000040',repeat('b',64),
+   gen_random_uuid(),'07600000-0000-0000-0000-000000000001','07600000-0000-0000-0000-000000000010',
+   '07600000-0000-0000-0000-000000000020',now());
+  RAISE EXCEPTION 'Changed retry intent accepted';
+ EXCEPTION WHEN SQLSTATE 'P0001' THEN IF SQLERRM<>'Search interaction unavailable' THEN RAISE; END IF; END;
+ BEGIN
+  DELETE FROM board_filter_interaction_replays;
+  RAISE EXCEPTION 'Direct runtime receipt deletion accepted';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+END $$;
+SAVEPOINT retry_receipt_late_refusal;
+SELECT * FROM append_or_replay_board_filter_interaction('07700000-0000-0000-0000-000000000041',repeat('a',64),
+ '07700000-0000-0000-0000-000000000037','07600000-0000-0000-0000-000000000001',
+ '07600000-0000-0000-0000-000000000010','07600000-0000-0000-0000-000000000020',now());
+ROLLBACK TO retry_receipt_late_refusal;
+DO $$ BEGIN
+ IF (SELECT count(*) FROM board_filter_interaction_replays)<>1 OR (SELECT last_sequence FROM search_interaction_streams)<>3 THEN
+  RAISE EXCEPTION 'Late refusal retained receipt or source'; END IF;
+END $$;
+SELECT set_config('app.identity_subject','07600000-0000-0000-0000-000000000002',true);
+DO $$ BEGIN
+ IF EXISTS(SELECT 1 FROM board_filter_interaction_replays) THEN RAISE EXCEPTION 'Foreign actor read retry receipt'; END IF;
+ BEGIN
+  PERFORM append_or_replay_board_filter_interaction('07700000-0000-0000-0000-000000000040',repeat('a',64),
+   gen_random_uuid(),'07600000-0000-0000-0000-000000000001','07600000-0000-0000-0000-000000000010',
+   '07600000-0000-0000-0000-000000000020',now());
+  RAISE EXCEPTION 'Foreign actor replay accepted';
+ EXCEPTION WHEN SQLSTATE 'P0001' THEN IF SQLERRM<>'Search interaction unavailable' THEN RAISE; END IF; END;
+END $$;
+RESET ROLE;
+INSERT INTO board_filter_interaction_replays(actor_id,request_id,event_id,fingerprint,created_at,expires_at) VALUES
+ ('07600000-0000-0000-0000-000000000001','07700000-0000-0000-0000-000000000042','07600000-0000-0000-0000-000000000031',
+ repeat('a',64),now()-interval '25 hours',now()-interval '1 hour');
+SET LOCAL ROLE strataai_search_source_ci;
+SELECT set_config('app.identity_subject','07600000-0000-0000-0000-000000000001',true);
+DO $$ DECLARE sequence_before bigint; BEGIN
+ BEGIN
+  PERFORM append_or_replay_board_filter_interaction('07700000-0000-0000-0000-000000000042',repeat('a',64),
+   gen_random_uuid(),'07600000-0000-0000-0000-000000000001','07600000-0000-0000-0000-000000000010',
+   '07600000-0000-0000-0000-000000000020',now());
+  RAISE EXCEPTION 'Expired retry accepted';
+ EXCEPTION WHEN SQLSTATE 'P0001' THEN IF SQLERRM<>'Search interaction unavailable' THEN RAISE; END IF; END;
+ FOR i IN 1..999 LOOP
+  PERFORM append_or_replay_board_filter_interaction(gen_random_uuid(),repeat('a',64),gen_random_uuid(),
+   '07600000-0000-0000-0000-000000000001','07600000-0000-0000-0000-000000000010','07600000-0000-0000-0000-000000000020',now());
+ END LOOP;
+ IF (SELECT count(*) FROM board_filter_interaction_replays)<>1000
+  OR EXISTS(SELECT 1 FROM board_filter_interaction_replays WHERE expires_at<=clock_timestamp()) THEN
+  RAISE EXCEPTION 'Bounded expired-only retry cleanup failed'; END IF;
+ SELECT last_sequence INTO sequence_before FROM search_interaction_streams;
+ BEGIN
+  PERFORM append_or_replay_board_filter_interaction(gen_random_uuid(),repeat('a',64),gen_random_uuid(),
+   '07600000-0000-0000-0000-000000000001','07600000-0000-0000-0000-000000000010','07600000-0000-0000-0000-000000000020',now());
+  RAISE EXCEPTION 'Live receipt evicted at capacity';
+ EXCEPTION WHEN SQLSTATE 'P0001' THEN IF SQLERRM<>'Search interaction unavailable' THEN RAISE; END IF; END;
+ IF (SELECT last_sequence FROM search_interaction_streams)<>sequence_before THEN RAISE EXCEPTION 'Capacity refusal retained new source'; END IF;
+END $$;
+RESET ROLE;
+UPDATE board_members SET status='REMOVED',version=version+1,updated_at=clock_timestamp()
+ WHERE id='07600000-0000-0000-0000-000000000021';
+SET LOCAL ROLE strataai_search_source_ci;
+DO $$ BEGIN
+ BEGIN
+  PERFORM append_or_replay_board_filter_interaction('07700000-0000-0000-0000-000000000040',repeat('a',64),
+   gen_random_uuid(),'07600000-0000-0000-0000-000000000001','07600000-0000-0000-0000-000000000010',
+   '07600000-0000-0000-0000-000000000020',now());
+  RAISE EXCEPTION 'Stored receipt bypassed withdrawn Board grant';
+ EXCEPTION WHEN SQLSTATE 'P0001' THEN IF SQLERRM<>'Search interaction unavailable' THEN RAISE; END IF; END;
+END $$;
+ROLLBACK TO retry_receipt_contract;
 RESET ROLE;
 UPDATE board_members SET status='REMOVED',version=version+1,updated_at=clock_timestamp()
  WHERE id='07600000-0000-0000-0000-000000000021';

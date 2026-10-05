@@ -565,3 +565,40 @@ EventId. A changed scope or type cannot pass simply by retaining the clock.
 Twenty-one focused search parser/component tests pass locally. This parser is a
 delivery prerequisite; Board Apply/Clear does not call it until change-intent
 HTTP production and original-source retry are implemented.
+
+### Board filter retry storage
+
+Migration 077 adds actor-private retry receipts, separate from the immutable
+canonical event and its empty metadata. Each receipt binds a request UUID and
+private intent digest to one original event. It retains no criteria, result body
+or response JSON. The narrow append-or-replay capability serializes on the actor
+stream, checks the active account and current Board grant, and returns the stored
+original EventId and clock rather than a retry candidate. Changed intent/scope,
+expired receipts and withdrawn grants are refused. A duplicate does not advance
+the source counter or its clock.
+
+Receipts have a 24-hour lifetime and a limit of 1,000 per actor. New requests can
+remove at most 100 expired receipts in one operation; live receipts are never
+evicted to make room, and immutable source events are never removed by receipt
+cleanup. An expired request is not replayable; clients must discard expired
+retry intents rather than reuse their keys. Runtime API access is through the
+narrow capability, without direct receipt writes or Worker grants. Forced actor
+RLS, canonical actor/event foreign keys and immutable receipt updates provide
+additional storage boundaries.
+
+The registered PostgreSQL adapter borrows the owning identity transaction and
+establishes its SQL subject explicitly. Demo uses the same owned actor, scope,
+digest, lifetime and capacity rules, with receipts included in identity rollback.
+Its inner refusal also restores source/counter/receipt state if a caller catches
+the failure. Neither adapter owns the final original-session proof.
+
+Mandatory SQL fixtures cover duplicate identity/clock, changed digest, actor
+isolation, withdrawn grants, expiry, expired-only cleanup, capacity and late
+rollback. The upgrade fixture applies 077 over existing canonical sources and
+verifies their records remain unchanged. The restricted C# adapter contract
+checks actual original identity/clock and full source/stream/receipt rollback.
+The Demo service fixture covers retry, changed input, owning rollback, grant
+withdrawal and expiry while preserving Board version. All compile with zero
+warnings/errors; executed new PostgreSQL/API tests await CI. Apply/Clear HTTP
+production, final session proof, browser retry/recovery and native acceptance
+remain outstanding. PRD-16 stays open at 20% estimated remaining.

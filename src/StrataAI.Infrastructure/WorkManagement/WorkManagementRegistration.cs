@@ -21,6 +21,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<DemoWorkTransactionScope>();
             services.AddSingleton<InMemorySearchInteractionEventStore>();
             services.AddSingleton<ISearchInteractionEventStore>(provider => provider.GetRequiredService<InMemorySearchInteractionEventStore>());
+            services.AddSingleton<IBoardFilterInteractionReplayStore>(provider => provider.GetRequiredService<InMemorySearchInteractionEventStore>());
             services.AddSingleton<StrataAI.Infrastructure.Identity.IDemoIdentityTransactionParticipant>(provider => provider.GetRequiredService<InMemorySearchInteractionEventStore>());
             services.AddSingleton<ICardMentionMemberStore, InMemoryCardMentionMemberStore>();
             services.AddSingleton<ICardMassMentionMemberStore, InMemoryCardMassMentionMemberStore>();
@@ -63,7 +64,9 @@ public static class WorkManagementRegistration
             services.AddSingleton<ICardCommentStore, PostgresCardCommentStore>();
             services.AddSingleton<ICommentMentionSnapshotStore, PostgresCommentMentionSnapshotStore>();
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();
-            services.AddSingleton<ISearchInteractionEventStore, PostgresSearchInteractionEventStore>();
+            services.AddSingleton<PostgresSearchInteractionEventStore>();
+            services.AddSingleton<ISearchInteractionEventStore>(provider => provider.GetRequiredService<PostgresSearchInteractionEventStore>());
+            services.AddSingleton<IBoardFilterInteractionReplayStore>(provider => provider.GetRequiredService<PostgresSearchInteractionEventStore>());
             services.AddSingleton<IWorkEventReader, PostgresWorkEventReader>();
             services.AddSingleton<IOrganizationBoardEventReader, PostgresOrganizationBoardEventReader>();
             services.AddKeyedSingleton<IOrganizationBoardEventReader>(OrganizationBoardAudience.BoardDiscovery,

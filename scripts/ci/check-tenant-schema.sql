@@ -5,7 +5,7 @@ DO $$
 DECLARE
     relation record;
     isolation_key record;
-    actor_tables constant text[] := ARRAY['search_interaction_streams','search_interaction_events'];
+    actor_tables constant text[] := ARRAY['search_interaction_streams','search_interaction_events','board_filter_interaction_replays'];
     global_tables constant text[] := ARRAY[
       'schema_migrations','users','sessions','password_reset_tokens','email_verification_tokens',
       'identity_delivery_jobs','identity_event_streams','identity_events','identity_profile_replays',

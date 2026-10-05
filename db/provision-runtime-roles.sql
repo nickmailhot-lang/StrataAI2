@@ -20,6 +20,7 @@ GRANT USAGE ON SCHEMA public TO strataai_api_runtime,strataai_worker_runtime;
 GRANT SELECT ON schema_migrations TO strataai_api_runtime,strataai_worker_runtime;
 GRANT SELECT ON search_interaction_streams,search_interaction_events TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION append_search_interaction(uuid,uuid,text,uuid,uuid,timestamptz) TO strataai_api_runtime;
+GRANT EXECUTE ON FUNCTION append_or_replay_board_filter_interaction(uuid,text,uuid,uuid,uuid,uuid,timestamptz) TO strataai_api_runtime;
 GRANT SELECT ON attachment_previews,attachment_preview_publications TO strataai_api_runtime;
 GRANT SELECT,INSERT ON board_background_images TO strataai_api_runtime;
 REVOKE UPDATE,DELETE ON board_background_images FROM strataai_api_runtime;
