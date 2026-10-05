@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Npgsql;
 using StrataAI.Application.Identity;
+using StrataAI.Application.Common;
 using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.Runtime;
 using StrataAI.Application.WorkManagement;
@@ -49,6 +50,7 @@ async Task Seed(Guid tenant, Guid actor, Guid boardId, Guid listId, Guid cardId)
 }
 void Require(bool condition, string invariant) { if (!condition) throw new InvalidOperationException(invariant); }
 var services = new ServiceCollection(); services.AddLogging(); services.AddSingleton(new PostgresConnectionFactory(apiConnection));
+services.AddSingleton<IClock, SystemClock>();
 services.AddSingleton<PostgresBackgroundJobStore>();
 services.AddSingleton<ICommandActorAuthorization, NoActorFixture>();
 services.AddStrataAiWorkManagement(new(RuntimeMode.Production,"contract","contract"));

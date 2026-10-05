@@ -120,3 +120,9 @@ withdrawal, change-and-restoration during replay and original source identity.
 These additions compile but await CI execution. The coordinator remains
 unregistered until the owning read transaction, demo parity, authenticated
 transport and UI are implemented and verified.
+
+At `550308e`, PostgreSQL job 111609411638 reached the coordinator fixture but
+could not construct the cursor codec because the minimal persistence provider
+did not register `IClock`. The fixture now explicitly registers the application's
+`SystemClock`, matching API startup. Codec expiry and every reader/coordinator
+assertion remain unchanged; actual repaired execution is still pending CI.
