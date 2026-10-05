@@ -31,7 +31,7 @@ DO $$ DECLARE before_clock timestamptz; BEGIN
    OR EXISTS(SELECT 1 FROM search_interaction_events WHERE metadata<>'{}' OR entity_id<>event_id OR entity_version<>1)
  THEN RAISE EXCEPTION 'Canonical source identity/deduplication lost'; END IF;
  SELECT updated_at INTO before_clock FROM search_interaction_streams;
- PERFORM append_search_interaction('07600000-0000-0000-000000000030','07600000-0000-0000-0000-000000000001','SEARCH_EXECUTED',null,null,'2026-10-05T12:00:00Z');
+ PERFORM append_search_interaction('07600000-0000-0000-0000-000000000030','07600000-0000-0000-0000-000000000001','SEARCH_EXECUTED',null,null,'2026-10-05T12:00:00Z');
  IF (SELECT updated_at FROM search_interaction_streams) IS DISTINCT FROM before_clock THEN
   RAISE EXCEPTION 'Duplicate source changed original stream clock'; END IF;
  BEGIN
