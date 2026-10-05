@@ -219,11 +219,10 @@ function BoardContent() {
   function finishRead(controller: AbortController) {
     if (activeRead.current !== controller) return;
     reading.current = false;
-    setSnapshotReading(false);
     if (queuedRefresh.current && !controller.signal.aborted) {
       queuedRefresh.current = false;
       setReload((value) => value + 1);
-    }
+    } else setSnapshotReading(false);
   }
   useEffect(() => () => activeRead.current?.abort(), []);
   useEffect(() => {
@@ -453,7 +452,7 @@ function BoardContent() {
     );
   if (!snapshot) return <CircularProgress aria-label="Loading board" />;
   return (
-    <Stack role="region" aria-label="Board workspace" spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1, position: 'relative', isolation: 'isolate' }}>
+    <Stack role="region" aria-label="Board workspace" aria-busy={snapshotReading} spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1, position: 'relative', isolation: 'isolate' }}>
       <BoardBackgroundImage snapshot={snapshot} unavailable={snapshotReading || !!loadError} />
       {loadError && message(loadError)}
       <Typography role="status" aria-live="polite" variant="body2">
@@ -534,7 +533,7 @@ function BoardContent() {
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           {editable && (
             <Button
-              disabled={busy}
+              disabled={busy || snapshotReading || !!loadError}
               onClick={() => {
                 setError(undefined);
                 setCreation({ kind: "list" });
@@ -649,6 +648,7 @@ function BoardContent() {
             )}
             {editable && column.list.lifecycleState === "active" && (
               <Button
+                disabled={busy || snapshotReading || !!loadError}
                 onClick={() => {
                   setError(undefined);
                   setCreation({ kind: "card", listId: column.list.id });

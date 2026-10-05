@@ -5,6 +5,12 @@ issue or replace its dependencies (PRD-08, PRD-17 and PRD-24). Source tests,
 restricted database contracts, exact-image HTTP/Worker checks and native UI
 checks establish different claims; none substitutes for all the others.
 
+## Current native recovery investigation
+
+At `e77195d`, run [37241937689](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37241937689) completed with 129 native passes, 15 failures and one skipped case. The desktop comment scenario passed; the phone scenario did not acknowledge its original retry. The retained diagnostic archive has SHA-256 `889994bbda2f0bc36868ce2740949547f49fb9e857d46a7ec164ddb79a05be48`. Its phone trace contains the initial substituted 503 and underlying committed 200, followed by a retry identity preflight and overlapping/aborted Board reads without a second comment POST. The original unconfirmed intent remains visible rather than being discarded.
+
+BoardScreen now retains its admission-checking state across queued refreshes instead of briefly enabling controls between reads; List/Card creation controls also wait for current admission. Its Board workspace reports that state with `aria-busy`. The native comment fixture waits for actual Worker delivery, the rendered changed-Card review and a non-busy Board workspace before activating the original retry. Existing original body/key, no duplicate comment, two-client plaintext/edit/redaction, focus and accessibility assertions remain required. All 36 BoardScreen component cases, web/browser typechecks, lint, production build and both native scenario collection checks pass locally. The new component regression observes DOM disabled-state transitions across two controlled reads and current edit-access withdrawal; it proves no intervening enabled creation control. Current immutable-image native execution remains required before treating this repair as full acceptance. PRD-15 remains open, with an estimated 40% remaining.
+
 ## Functional requirements
 
 | Requirement | Implementation / scoped evidence | Remaining verification or dependency |

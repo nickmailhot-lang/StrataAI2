@@ -63,6 +63,36 @@ function response(data: unknown, status = 200) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it('keeps mutation admission busy across a queued refresh until the final read withdraws edit access', async () => {
+    let invalidate = () => {};
+    vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+    const waiting: ((value: Response) => void)[] = [];
+    let reads = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      if (++reads === 1) return response(fixture);
+      return new Promise<Response>(resolve => waiting.push(resolve));
+    }));
+    mount(); const workspace = await screen.findByRole('region', { name: 'Board workspace' });
+    await waitFor(() => expect(workspace).toHaveAttribute('aria-busy', 'false'));
+    const add = screen.getByRole('button', { name: 'Add list' });
+    const enabledTransitions: boolean[] = [];
+    const observer = new MutationObserver(() => enabledTransitions.push(!add.hasAttribute('disabled')));
+    observer.observe(add, { attributes: true, attributeFilter: ['disabled'] });
+    try {
+      act(() => invalidate()); await waitFor(() => expect(waiting).toHaveLength(1));
+      expect(add).toBeDisabled(); expect(workspace).toHaveAttribute('aria-busy', 'true');
+      act(() => invalidate());
+      await act(async () => waiting[0](response(fixture)));
+      await waitFor(() => expect(waiting).toHaveLength(2));
+      expect(add).toBeDisabled(); expect(workspace).toHaveAttribute('aria-busy', 'true');
+      expect(enabledTransitions).not.toContain(true);
+      await act(async () => waiting[1](response({ ...fixture, access: { canView: true, canEdit: false, canMove: false, canAdminister: false } })));
+      await waitFor(() => expect(workspace).toHaveAttribute('aria-busy', 'false'));
+      expect(screen.queryByRole('button', { name: 'Add list' })).not.toBeInTheDocument();
+      expect(enabledTransitions).not.toContain(true);
+    } finally { observer.disconnect(); }
+  });
+
   it('fences competing Board commands while recovering an original metadata save after newer canonical data', async () => {
     let current: BoardSnapshot = { ...structuredClone(fixture), board: { ...fixture.board, version: 2, backgroundType: 'COLOR', backgroundValue: 'blue' } };
     const attempts: RequestInit[] = [];
