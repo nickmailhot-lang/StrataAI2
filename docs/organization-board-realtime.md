@@ -51,3 +51,17 @@ privacy-bound cursor recovery, bounded delivered reads, the demo adapter,
 SignalR session withdrawal and the MUI archive consumer still need implementation
 and executed acceptance. No raw journal endpoint is exposed. Current foreground
 polling must not be described as completed Organization live updates.
+
+The next storage increment adds an unregistered PostgreSQL reader that locks the
+active Organization and actor membership, derives Organization administration
+from the locked role, and filters qualifying Board administrator tuples before
+the bounded limit+1 read. Board and qualifying grant tuples are locked together
+to recheck demotion after a lock wait. It retains canonical source readiness and
+original event identity, emits no actor/correlation/body fields, and accepts gaps
+from other Boards without skipping an eligible pending source. Internal numeric
+positions are not a client cursor and must not be exposed. Unit cases cover
+gaps, pending recovery, lookahead replay and malformed ordering; the mandatory
+restricted C# persistence contract adds storage audience, source identity and
+demotion checks. Their execution is pending CI. This reader is not registered as
+a service or endpoint; permission epochs, protected cursors, post-IO session
+admission, demo parity and the live UI remain outstanding.

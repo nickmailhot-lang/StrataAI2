@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Infrastructure.Persistence;
+using StrataAI.Infrastructure.WorkManagement;
 
 internal static class ActivityEventSourceStoreContract
 {
@@ -44,6 +46,44 @@ internal static class ActivityEventSourceStoreContract
                 }
                 return true;
             });
+            var journalReader = new PostgresOrganizationBoardEventReader(provider.GetRequiredService<PostgresConnectionFactory>());
+            var ungranted = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
+            Require(ungranted.Succeeded && ungranted.Value is { Pending: false, Events.Count: 0 },
+                "Organization journal disclosed pending source activity without Board administration.");
+            await using (var grant = new NpgsqlCommand("INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES(@id,@tenant,@board,@actor,'ADMIN','ACTIVE',clock_timestamp(),clock_timestamp());", admin))
+            {
+                grant.Parameters.AddWithValue("id", Guid.NewGuid()); grant.Parameters.AddWithValue("tenant", tenant);
+                grant.Parameters.AddWithValue("board", board); grant.Parameters.AddWithValue("actor", actor);
+                await grant.ExecuteNonQueryAsync(ct);
+            }
+            var pendingJournal = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
+            Require(pendingJournal.Succeeded && pendingJournal.Value is { Cursor: 0, Pending: true, Events.Count: 0 },
+                "Organization journal skipped its first eligible pending canonical source.");
+            await using (var ready = new NpgsqlCommand("UPDATE work_events SET ready_at=clock_timestamp() WHERE tenant_id=@tenant AND event_id=@event;", admin))
+            {
+                ready.Parameters.AddWithValue("tenant", tenant); ready.Parameters.AddWithValue("event", recorded[0].EventId);
+                await ready.ExecuteNonQueryAsync(ct);
+            }
+            var deliveredJournal = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
+            Require(deliveredJournal.Succeeded && deliveredJournal.Value is { Pending: true, Events.Count: 1 } &&
+                deliveredJournal.Value.Events[0].EventId == recorded[0].EventId && deliveredJournal.Value.Events[0].BoardId == board,
+                "Organization journal lost original source identity or skipped later pending delivery.");
+            await using (var resetReady = new NpgsqlCommand("UPDATE work_events SET ready_at=NULL WHERE tenant_id=@tenant AND event_id=@event;", admin))
+            {
+                resetReady.Parameters.AddWithValue("tenant", tenant); resetReady.Parameters.AddWithValue("event", recorded[0].EventId);
+                await resetReady.ExecuteNonQueryAsync(ct);
+            }
+            await using (var demote = new NpgsqlCommand("UPDATE board_members SET role='MEMBER' WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor;", admin))
+            {
+                demote.Parameters.AddWithValue("tenant", tenant); demote.Parameters.AddWithValue("board", board);
+                demote.Parameters.AddWithValue("actor", actor); await demote.ExecuteNonQueryAsync(ct);
+            }
+            var demotedJournal = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
+            Require(demotedJournal.Succeeded && demotedJournal.Value is { Pending: false, Events.Count: 0 },
+                "Organization journal retained a withdrawn administrative audience.");
+            Require((await journalReader.ReadAsync(tenant, Guid.NewGuid(), 0, 50, ct)).ErrorCode == "organization_not_found",
+                "Organization journal admitted an actor without Organization membership.");
+            Console.WriteLine("Real restricted Organization Board reader: current administrative audience before bound, pending canonical source barrier, original delivered source identity, Board demotion and missing Organization membership passed. Readiness is explicitly administrative fixture setup; this is storage admission, not Worker/live/session/cursor proof.");
             var first = await Scope(() => sources.ReadBoardWindowAsync(tenant, board, null, null, ct));
             Require(first.Count == 51 && first.All(row => row.ActorLabel == originalCaption && row.Metadata.Count == 0), "Activity bounded window or captured attribution failed.");
             Require(first.Select(row => row.EventId).SequenceEqual(recorded.Select(row => row.EventId).OrderByDescending(id => id.ToString("N"), StringComparer.Ordinal).Take(51)),
@@ -213,6 +253,7 @@ internal static class ActivityEventSourceStoreContract
                 DELETE FROM card_reminders WHERE tenant_id=@tenant AND card_id=ANY(@boards);
                 DELETE FROM cards WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM board_lists WHERE tenant_id=@tenant AND board_id=ANY(@boards);
+                DELETE FROM board_members WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM boards WHERE tenant_id=@tenant AND id=ANY(@boards);
                 DELETE FROM organization_members WHERE tenant_id=@tenant AND user_id=@personal_owner;
                 DELETE FROM users WHERE id=@personal_owner;
