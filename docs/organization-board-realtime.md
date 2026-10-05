@@ -155,3 +155,11 @@ grant demotion and source projection to require complete rollback. It then
 checks a real committed demotion invalidates the protected cursor. This is
 storage/transaction coverage, not lifecycle/Worker/browser proof. These new
 runtime registrations and tests compile; actual execution remains pending CI.
+
+The complete enclosing PostgreSQL fixture passed job 111610757085 at `5a8de82`
+and job 111611269739 at `7e2fe4a`, including directory permission epochs, actual
+reader/protected-cursor checks, the subsequent private historical Card refusal,
+and the final restricted persistence success marker. This verifies retirement
+of the temporary grant without weakening either audience boundary. The new
+demo adapter test still requires its own .NET execution; PostgreSQL success is
+not demo, authenticated SignalR or native two-client evidence.

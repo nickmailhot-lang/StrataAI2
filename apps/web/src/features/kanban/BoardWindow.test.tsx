@@ -4,7 +4,8 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { BoardWindow, type BoardWindowHeights } from './BoardWindow';
 
 let active: { id: string } | null = null;
-vi.mock('@dnd-kit/core', () => ({ useDndContext: () => ({ active }) }));
+const measureDroppableContainers = vi.fn();
+vi.mock('@dnd-kit/core', () => ({ useDndContext: () => ({ active, measureDroppableContainers }) }));
 const cards = Array.from({ length: 5000 }, (_, i) => ({ id: `card-${i}` }));
 const lists = Array.from({ length: 200 }, (_, i) => ({ id: `list-${i}` }));
 const renderItem = (item: { id: string }) => <><button>Drag {item.id}</button><a href={'#' + item.id}>Open {item.id}</a></>;
@@ -14,6 +15,7 @@ function mount(items = cards, axis: 'lists' | 'cards' = 'cards', options: { pinn
 }
 beforeEach(() => {
   active = null;
+  measureDroppableContainers.mockClear();
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1280);
   vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
 });
@@ -49,6 +51,26 @@ it('preserves active drag identities while their original row scrolls out of vie
   active = { id: 'card:card-0' }; mount();
   fireEvent.scroll(screen.getByLabelText('Cards'), { target: { scrollTop: 20000 } });
   expect(screen.getByRole('button', { name: 'Drag card-0' })).toBeVisible();
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+});
+it.each([false, true])('refreshes moved drop positions after measured window layout changes only during a drag: %s', dragging => {
+  const observers: { callback: ResizeObserverCallback; nodes: Set<Element> }[] = [];
+  class Observer {
+    nodes = new Set<Element>();
+    constructor(callback: ResizeObserverCallback) { observers.push({ callback, nodes: this.nodes }); }
+    observe(node: Element) { this.nodes.add(node); }
+    unobserve(node: Element) { this.nodes.delete(node); }
+    disconnect() { this.nodes.clear(); }
+  }
+  vi.stubGlobal('ResizeObserver', Observer);
+  active = dragging ? { id: 'card:card-0' } : null;
+  mount();
+  const row = screen.getByRole('link', { name: 'Open card-1' }).closest('[data-board-window-id]')!;
+  const observer = observers.find(value => value.nodes.has(row))!;
+  measureDroppableContainers.mockClear();
+  act(() => observer.callback([{ target: row, borderBoxSize: [{ blockSize: 100 }] } as unknown as ResizeObserverEntry], {} as ResizeObserver));
+  if (dragging) expect(measureDroppableContainers).toHaveBeenCalled();
+  else expect(measureDroppableContainers).not.toHaveBeenCalled();
   expect(screen.getAllByRole('link').length).toBeLessThan(30);
 });
 it('keeps the List owning an active Card drag mounted', () => {

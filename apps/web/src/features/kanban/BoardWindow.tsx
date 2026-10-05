@@ -29,7 +29,7 @@ export function BoardWindow<T extends Item>(props: Props<T>) {
 function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory, pinned = [], end, renderItem, ownsDrag }: Props<T>) {
   const horizontal = axis === 'lists'; const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('sm'));
-  const { active } = useDndContext();
+  const { active, measureDroppableContainers } = useDndContext();
   const root = useRef<HTMLDivElement>(null); const rows = useRef(new Map<string, HTMLDivElement>());
   const [viewport, setViewport] = useState({ offset: memory.get(memoryKey) ?? 0, size: horizontal ? 1280 : 400, width: 1280 });
   const [heights, setHeights] = useState(() => heightMemory?.get(memoryKey)?.rows ?? new Map<string, number>());
@@ -63,6 +63,13 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     layout.entries.forEach((row, i) => { if (retained.has(row.item.id) || activeId && ownsDrag?.(row.item, activeId)) selected.add(i); });
     return [...selected].sort((a, b) => a - b);
   }, [layout, viewport.offset, viewport.size, items.length, pinned, focused, activeId, ownsDrag]);
+
+  useLayoutEffect(() => {
+    // A newly mounted row replaces its estimated height and moves later drop
+    // targets without resizing those targets. Their ResizeObservers cannot
+    // invalidate dnd-kit's cached positions; refresh after the committed layout.
+    if (active) measureDroppableContainers([]);
+  }, [active, layout, measureDroppableContainers]);
 
   useLayoutEffect(() => {
     const element = root.current; if (!element) return;

@@ -73,3 +73,11 @@ The existing image/ownership/focus/session assertions and execution budgets
 remain. Browser type checking and collection do not establish executed repair;
 current immutable-image proof is required. This earlier failure also skipped
 the large-Board stage, so it supplies no native proof for the spacing fix.
+
+At `4aefb6f`, [run 37259415792](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37259415792)
+container job 111605472900 step 59 passed both genuine image-background cases:
+desktop 1280px and phone 390px. This executes the current confirmation repair,
+including one copy POST, HTTP 201 and the matching private revision-one image
+acknowledgment, alongside the existing explicit-provider pipeline. The local
+private object-store/scanner fixture limitations remain. It is not a green
+release: the job later failed the large-Board keyboard stage 63.

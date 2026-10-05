@@ -34,6 +34,24 @@ Paths ending in `.cs` above are under `tests/StrataAI.Api.Tests`, except `BoardB
 
 ## Executed evidence and known limitations
 
+At `4aefb6f`, [run 37259415792](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37259415792)
+container job 111605472900 step 59 passed both current genuine image-background
+cases, including the one-request/201 copy confirmation repair. The same job's
+step 63 passed the concurrent 5,000-Card rank-free move/replay check, but both
+native capacity cases failed after their fourth keyboard ArrowDown at the real
+dragged/target rectangle assertion. They progressed beyond the earlier seeded
+List mounting failure; this does not satisfy complete windowing/keyboard proof.
+Retained artifact 11325426430 (15,816,930 bytes) has SHA-256
+`ef0578a780cd53dc42b1ee83b9874c0427dcde0082328a1f25bc9a39e2da98ec`.
+The screenshots and native action traces were inspected. Newly measured
+window rows can reposition later drop targets without resizing those targets,
+leaving dnd-kit's cached rectangles stale. BoardWindow now requests a mounted
+drop-target measurement refresh after committed layout changes during a drag;
+idle layout changes do not refresh the drag cache. The focused window/keyboard/
+Board drag suite passes 19 cases, with typecheck and lint passing. Native repair
+verification remains pending; assertions, timeouts, budgets and retries stay
+unchanged. The release is failed and the ticket remains open.
+
 At `1655ef8`, [run 37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119) container job 111586592581 step 59 passed the complete current genuine desktop/phone image-backed cases and HTTP archive/race/copy/private/public/revoked-session/clearing fixture; see `../board-background-images.md` for its exact scope and provider limitations. This resolves the earlier stale upload-Card revision failure. The container job subsequently failed step 63: both large-Board browser cases could not mount the seeded List after scrolling. The adopted CSS-variable MUI spacing expression had been parsed as a number, yielding invalid row positions. The current correction measures resolved browser spacing; all 13 focused BoardWindow regressions pass. Current exact-image capacity and complete browser acceptance remain pending. It is scoped background-image evidence, not a completed release or ticket closure.
 
 At `e77195d`, run [37241937689](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37241937689) has successful .NET/API, PostgreSQL, web, image-build and security jobs. Its container job's step 57 passed the then-current actual upload/Worker publication, sanitization, private image selection, independent Board copy, source archive and anonymous denial assertions. The complete native suite was still running when this audit was written. This proves neither a green release nor later extensions to that fixture.
