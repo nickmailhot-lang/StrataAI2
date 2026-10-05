@@ -65,3 +65,32 @@ restricted C# persistence contract adds storage audience, source identity and
 demotion checks. Their execution is pending CI. This reader is not registered as
 a service or endpoint; permission epochs, protected cursors, post-IO session
 admission, demo parity and the live UI remain outstanding.
+
+Migration 074 introduces per-subject permission admission metadata, populated
+from canonical Organization memberships. Actual administrative Board grant
+expansion/withdrawal and Organization role/status changes revise only the
+affected subject, in the same owning transaction. A fresh random generation
+survives ordinary removal/restoration and changes on hard membership replacement;
+the foreign key cascades explicit parent cleanup. No-op writes and unrelated
+nonadministrative Board memberships do not revise it. Runtime access is SELECT
+only; narrow parent-row trigger capabilities cannot be directly called by the
+API. The revision is not a Board event or an audit substitute.
+
+The registered cursor codec encrypts internal bigint positions using a separate
+Data Protection purpose. Binding includes actor, Organization, actual membership
+identity, parent version, permission generation and revision, with a 15-minute
+expiry. A changed grant/rejoin/parent binding rejects the old token without
+returning its numeric position. This does not yet wire the codec into a live
+endpoint or implement permission reset behavior. Required SQL tests cover tenant
+isolation, actor-only revisions, rollback of revision and clock, withdrawal and
+restoration, no-op/direct-write/capability refusal and replacement generations;
+cursor tests cover binding dimensions, exact bigint preservation, corruption,
+purpose separation and expiry. Migration upgrade/repeat checks require exact
+backfill counts and unchanged canonical membership/source bytes. Execution of
+these new checks remains pending CI.
+
+The first reader CI at `13631fd` failed its initial composite storage-audience
+assertion in PostgreSQL job 111606784110. The fixture now separates active-member
+admission, envelope audience and pending-state assertions, retaining all three
+requirements to identify the cause. No runtime success is claimed for that
+reader until the failure is resolved and its mandatory contract passes.

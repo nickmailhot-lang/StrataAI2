@@ -181,6 +181,9 @@ jobs:
       - name: Verify ordered Organization Board journal and restricted source projection
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-organization-board-journal.sql
 
+      - name: Verify actor-specific directory permission epochs and rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-organization-board-directory-epochs.sql
+
       - name: Verify immutable activity attribution and historical account interpretation
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-activity-attribution.sql
       - name: Verify immutable body-free comment mention snapshots and tenant isolation

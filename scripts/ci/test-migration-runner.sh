@@ -471,37 +471,47 @@ test "$(query "SELECT count(*) FROM organization_board_events")" = "$(query "SEL
 test "$(query 'SELECT count(*) FROM organization_board_event_streams s WHERE s.last_sequence<>(SELECT count(*) FROM organization_board_events e WHERE e.tenant_id=s.tenant_id)')" = 0
 test "$(query "SELECT md5(COALESCE(string_agg(to_jsonb(e)::text,chr(10) ORDER BY tenant_id,board_id,sequence),'')) FROM work_events e")" = "$board_sources_before"
 
-cat > "$scratch/migrations/074_serialization_fixture.sql" <<'SQL'
+directory_members_before=$(query "SELECT md5(COALESCE(string_agg(to_jsonb(m)::text,chr(10) ORDER BY tenant_id,user_id),'')) FROM organization_members m")
+cp db/migrations/074_organization_board_directory_epochs.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 74
+test "$(query 'SELECT count(*) FROM organization_board_directory_epochs')" = "$(query 'SELECT count(*) FROM organization_members')"
+test "$(query 'SELECT count(*) FROM organization_board_directory_epochs WHERE permission_revision<>1 OR generation IS NULL')" = 0
+test "$(query "SELECT md5(COALESCE(string_agg(to_jsonb(m)::text,chr(10) ORDER BY tenant_id,user_id),'')) FROM organization_members m")" = "$directory_members_before"
+test "$(query "SELECT md5(COALESCE(string_agg(to_jsonb(e)::text,chr(10) ORDER BY tenant_id,board_id,sequence),'')) FROM work_events e")" = "$board_sources_before"
+
+cat > "$scratch/migrations/075_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('074_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('075_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='074_serialization_fixture'")" = 1
-cat > "$scratch/migrations/075_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='075_serialization_fixture'")" = 1
+cat > "$scratch/migrations/076_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('075_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('076_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='075_failure_fixture'")" = 0
-rm "$scratch/migrations/075_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='076_failure_fixture'")" = 0
+rm "$scratch/migrations/076_failure_fixture.sql"
 run
-cat > "$scratch/migrations/076_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/077_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='076_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/076_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='077_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/077_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

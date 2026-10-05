@@ -48,8 +48,9 @@ internal static class ActivityEventSourceStoreContract
             });
             var journalReader = new PostgresOrganizationBoardEventReader(provider.GetRequiredService<PostgresConnectionFactory>());
             var ungranted = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
-            Require(ungranted.Succeeded && ungranted.Value is { Pending: false, Events.Count: 0 },
-                "Organization journal disclosed pending source activity without Board administration.");
+            Require(ungranted.Succeeded, $"Organization journal active-member storage admission failed: {ungranted.ErrorCode}.");
+            Require(ungranted.Value is { Events.Count: 0 }, "Organization journal disclosed envelopes without Board administration.");
+            Require(ungranted.Value is { Pending: false }, "Organization journal disclosed pending source activity without Board administration.");
             await using (var grant = new NpgsqlCommand("INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES(@id,@tenant,@board,@actor,'ADMIN','ACTIVE',clock_timestamp(),clock_timestamp());", admin))
             {
                 grant.Parameters.AddWithValue("id", Guid.NewGuid()); grant.Parameters.AddWithValue("tenant", tenant);

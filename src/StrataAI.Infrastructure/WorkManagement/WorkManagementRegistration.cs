@@ -13,6 +13,7 @@ public static class WorkManagementRegistration
         services.AddDataProtection();
         services.AddSingleton<IActivityCursorCodec, DataProtectedActivityCursorCodec>();
         services.AddSingleton<IGlobalSearchCursorCodec, DataProtectedGlobalSearchCursorCodec>();
+        services.AddSingleton<IOrganizationBoardCursorCodec, DataProtectedOrganizationBoardCursorCodec>();
         services.AddSingleton<GlobalSearchService>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
