@@ -6,6 +6,9 @@ GRANT USAGE ON SCHEMA public TO strataai_reader_epochs_ci;
 GRANT SELECT ON organization_board_directory_epochs TO strataai_reader_epochs_ci;
 GRANT SELECT,INSERT,UPDATE,DELETE ON board_members TO strataai_reader_epochs_ci;
 GRANT SELECT,UPDATE ON boards TO strataai_reader_epochs_ci;
+-- Board metadata updates maintain the existing tenant-scoped routing row.
+-- Match the production API capability; forced routing RLS remains effective.
+GRANT SELECT,INSERT,UPDATE,DELETE ON board_routes TO strataai_reader_epochs_ci;
 INSERT INTO organizations(id,name,created_at,updated_at) VALUES
  ('07500000-0000-0000-0000-000000000001','Reader A',now(),now()),
  ('07500000-0000-0000-0000-000000000002','Reader B',now(),now());
