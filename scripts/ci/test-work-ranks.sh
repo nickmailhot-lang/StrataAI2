@@ -162,3 +162,6 @@ STRATAAI_TEST_EVENT_ORGANIZATION_ID="$organization" docker compose -f compose.re
   -f scripts/ci/compose.work-event-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 STRATAAI_BOARD_CAPACITY_FIXTURE="$scratch/browser-capacity" STRATAAI_E2E_RATE_PACING=1 STRATAAI_E2E_RELEASE_HEADERS=1 \
   npx playwright test --config playwright.capacity.config.ts
+test "$(admin "SELECT count(*)=100000 FROM cards WHERE tenant_id='$organization' AND board_id='$board' AND list_id='$list' AND lifecycle_state='ARCHIVED';")" = t
+test "$(admin "SELECT md5(string_agg(row_to_json(c)::text,'' ORDER BY c.id)) FROM cards c WHERE tenant_id='$organization' AND board_id='$board' AND list_id='$list' AND lifecycle_state='ARCHIVED';")" = "$archive_fingerprint"
+echo 'Native large-Board keyboard moves preserve all 100,000 complete archived records.'

@@ -16,7 +16,7 @@ for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 844 });
     expect((await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' }, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
     const result = await context.request.get(`/boards/${fixture.boardId}`); expect(result.status()).toBe(200);
-    const snapshot = await result.json() as { lists: { list: { id: string }; cards: { id: string }[] }[] };
+    const snapshot = await result.json() as { lists: { list: { id: string }; cards: { id: string; version: number }[] }[] };
     expect(snapshot.lists).toHaveLength(200);
     const index = snapshot.lists.findIndex(column => column.list.id === fixture.listId);
     expect(index).toBeGreaterThanOrEqual(0); const column = snapshot.lists[index];
@@ -40,13 +40,59 @@ for (const width of [1280, 390]) {
     expect(await cards.locator('[data-board-window-axis="cards"]').count()).toBeLessThan(40);
     await cards.evaluate(node => { node.scrollTop = node.scrollHeight / 2; });
     const mounted = cards.locator('a[href*="/cards/"]');
-    const middle = mounted.last(); const href = await middle.getAttribute('href');
+    // Native scrolling delivers its event after the evaluate call. Require a
+    // canonical middle identity before capturing the keyboard starting point.
+    await expect.poll(async () => {
+      const hrefs = await mounted.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
+      return hrefs.some(href => column.cards.findIndex(card => href?.endsWith('/' + card.id)) >= column.cards.length / 4);
+    }).toBe(true);
+    const href = await mounted.last().getAttribute('href');
     const cardIndex = column.cards.findIndex(card => href?.endsWith('/' + card.id)); expect(cardIndex).toBeGreaterThan(0);
     expect(cardIndex + 1).toBeLessThan(column.cards.length);
+    // Measurements can change the mounted range. Activate the captured
+    // identity, rather than a positional locator that could select another row.
+    const middle = cards.locator(`a[href$="/cards/${column.cards[cardIndex].id}"]`);
     await middle.press('Tab');
     const next = cards.locator(`a[href$="/cards/${column.cards[cardIndex + 1].id}"]`);
     await expect(next.locator('..').getByRole('button', { name: /^Drag .* card$/ })).toBeFocused();
     await page.keyboard.press('Shift+Tab'); await expect(cards.locator(`a[href$="/cards/${column.cards[cardIndex].id}"]`)).toBeFocused();
+    const moving = column.cards[cardIndex];
+    const handle = middle.locator('..').getByRole('button', { name: /^Drag .* card$/ });
+    await expect(handle).toBeEnabled(); await handle.press('Space'); await expect(handle).toHaveAttribute('aria-pressed', 'true');
+    const settleDrag = () => page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    await settleDrag();
+    const initialMounted = await mounted.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
+    const lastInitialIndex = Math.max(...initialMounted.map(href => column.cards.findIndex(card => href?.endsWith('/' + card.id))));
+    // Twelve adjacent keyboard targets exceed the initial mounted buffer.
+    // Real keyboard scrolling must mount later targets while retaining source.
+    for (let step = 0; step < 12; step++) {
+      await page.keyboard.press('ArrowDown');
+      const target = cards.locator(`a[href$="/cards/${column.cards[cardIndex + step + 1].id}"]`).locator('..');
+      // The adopted KeyboardSensor scrolls smoothly. Require its real dragged
+      // rectangle to reach each adjacent canonical target before the next key.
+      await expect.poll(async () => {
+        const [sourceBox, targetBox] = await Promise.all([handle.locator('..').boundingBox(), target.boundingBox()]);
+        return !!sourceBox && !!targetBox
+          && Math.abs(sourceBox.y + sourceBox.height / 2 - targetBox.y - targetBox.height / 2) < 2;
+      }).toBe(true);
+    }
+    await expect(handle).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(async () => {
+      const hrefs = await mounted.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
+      return hrefs.some(href => column.cards.findIndex(card => href?.endsWith('/' + card.id)) > lastInitialIndex);
+    }).toBe(true);
+    const moveReply = page.waitForResponse(response => response.request().method() === 'POST'
+      && new URL(response.url()).pathname === `/cards/${moving.id}/move`);
+    await page.keyboard.press('Space'); expect((await moveReply).status()).toBe(200);
+    await expect(page.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
+    await waitForBoardDelivery(context.request, fixture.boardId);
+    const movedResponse = await context.request.get(`/boards/${fixture.boardId}`); expect(movedResponse.status()).toBe(200);
+    const movedSnapshot = await movedResponse.json() as typeof snapshot;
+    const movedColumn = movedSnapshot.lists.find(value => value.list.id === fixture.listId)!;
+    expect(movedColumn.cards[cardIndex + 11]).toMatchObject({ id: moving.id, version: moving.version + 1 });
+    expect(movedColumn.cards.filter(card => card.id !== moving.id)).toEqual(column.cards.filter(card => card.id !== moving.id));
+    expect(movedSnapshot.lists.filter(value => value.list.id !== fixture.listId)).toEqual(snapshot.lists.filter(value => value.list.id !== fixture.listId));
+    await expect(middle).toBeFocused(); await expect(middle).toBeInViewport();
     await cards.evaluate(node => { node.scrollTop = node.scrollHeight; });
     const last = cards.locator(`a[href$="/cards/${column.cards.at(-1)!.id}"]`);
     await expect(last).toBeVisible(); await last.press('Enter');
