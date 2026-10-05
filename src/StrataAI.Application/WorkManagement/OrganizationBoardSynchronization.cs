@@ -15,6 +15,14 @@ public sealed record OrganizationBoardSyncPage(string Cursor, bool HasMore, bool
 // transaction and revalidate the authenticated session before disclosing pages.
 public sealed class OrganizationBoardSynchronizationService(IOrganizationBoardEventReader reader, IOrganizationBoardCursorCodec cursors)
 {
+    public async Task<WorkOperation<bool>> IsCursorCurrentAsync(Guid organizationId, Guid actorId, string cursor,
+        CancellationToken cancellationToken = default)
+    {
+        var scope = await reader.GetScopeAsync(organizationId, actorId, cancellationToken);
+        if (scope is null || scope.OrganizationId != organizationId || scope.ActorId != actorId)
+            return WorkOperation<bool>.Failure("organization_not_found");
+        return WorkOperation<bool>.Success(cursors.TryDecode(scope, cursor, out _));
+    }
     public async Task<WorkOperation<OrganizationBoardSyncPage>> ReadAsync(Guid organizationId, Guid actorId,
         string? cursor, int limit = 50, CancellationToken cancellationToken = default)
     {

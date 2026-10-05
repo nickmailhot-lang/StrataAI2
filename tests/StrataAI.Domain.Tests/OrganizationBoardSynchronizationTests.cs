@@ -76,6 +76,20 @@ public sealed class OrganizationBoardSynchronizationTests
 
     private static OrganizationBoardEventPage Page() => new(7, false, false, false,
         [new(7, Guid.NewGuid(), Guid.NewGuid(), "BOARD_ARCHIVED", 2, DateTimeOffset.UtcNow, true)]);
+    [Fact]
+    public async Task FinalCursorProofRejectsPermissionChangeAfterAnAdmittedPage()
+    {
+        var reader = new Reader(); var codec = new Codec();
+        var service = new OrganizationBoardSynchronizationService(reader, codec);
+        var page = await service.ReadAsync(Organization, Actor, null, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(page.Succeeded);
+        reader.Binding = reader.Binding! with { PermissionRevision = reader.Binding.PermissionRevision + 1 };
+        var changed = await service.IsCursorCurrentAsync(Organization, Actor, page.Value!.Cursor, TestContext.Current.CancellationToken);
+        Assert.True(changed.Succeeded); Assert.False(changed.Value);
+        reader.Binding = null;
+        var withdrawn = await service.IsCursorCurrentAsync(Organization, Actor, page.Value.Cursor, TestContext.Current.CancellationToken);
+        Assert.Equal("organization_not_found", withdrawn.ErrorCode);
+    }
     private sealed class Reader : IOrganizationBoardEventReader
     {
         public OrganizationBoardCursorBinding? Binding = Scope();

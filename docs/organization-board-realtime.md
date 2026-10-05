@@ -2,7 +2,9 @@
 
 PRD-04 requires other authorized clients to receive or recover relevant shared
 Board changes. The archive directory currently uses foreground/poll recovery;
-its Organization-wide SignalR subscription is still unfinished.
+its Organization-wide client subscription and native acceptance are still
+unfinished. The server now exposes the protected `/organizations/live` SignalR
+transport described below; execution of its new transport tests is pending CI.
 
 Migration 073 introduces an Organization-ordered projection of the six canonical
 shared Board lifecycle/metadata events. The rows reference existing Work event
@@ -163,3 +165,30 @@ and the final restricted persistence success marker. This verifies retirement
 of the temporary grant without weakening either audience boundary. The new
 demo adapter test still requires its own .NET execution; PostgreSQL success is
 not demo, authenticated SignalR or native two-client evidence.
+
+The full source .NET job 111611269561 passed at `7e2fe4a`; CI runs the complete
+Domain/API assemblies without a test filter, including the new demo adapter and
+transaction case. The PostgreSQL and web jobs also passed for that revision.
+This is source/adapter execution, not a green immutable-image release.
+
+The server's `/organizations/live` hub requires authentication and the existing
+strict configured-origin middleware. Each connection has at most one stream,
+with cancellation releasing its slot. The current cookie session and verified
+email policy are checked before and after replay selection; the delivered
+opaque cursor is then checked against current permission scope after session IO
+before yield. Losing admission closes the stream without disclosing its page.
+Pages are bounded by the coordinator and retain no actor/correlation/body fields
+or raw positions. Bootstrap, changed permission bindings and expired cursors
+require a fresh snapshot; normal resume uses canonical delivered sources.
+The existing one-second server idle cadence and twenty-cycle heartbeat are used.
+Nginx and Vite route the new WebSocket path with the adopted same-origin proxy
+behavior; other deployment components and immutable-image gates are unchanged.
+
+New WebSocket cases use actual HTTP Board archive/restore producers in demo,
+check body-free event shape, disconnect/restore/replay, administrative demotion
+reset, Organization membership withdrawal, logout, one-stream bounds and slot
+release, plus missing/foreign-origin refusal. A coordinator test additionally
+checks the final cursor proof after a permission change following an admitted
+page. These additions compile with warnings as errors but await CI execution.
+They do not prove PostgreSQL Worker readiness, proxy traversal or the MUI
+two-client experience; those require the current exact-image acceptance fixture.

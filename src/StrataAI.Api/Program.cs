@@ -182,6 +182,12 @@ app.MapHub<BoardStarRealtimeHub>("/boards/live/stars", options =>
     options.TransportMaxBufferSize = 4096;
 }).RequireAuthorization();
 
+app.MapHub<OrganizationBoardRealtimeHub>("/organizations/live", options =>
+{
+    options.ApplicationMaxBufferSize = 131072;
+    options.TransportMaxBufferSize = 4096;
+}).RequireAuthorization();
+
 app.Run();
 
 public partial class Program;
