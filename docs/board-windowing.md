@@ -184,3 +184,30 @@ The earlier fractional source case now expects the actual live source-to-target
 distance. Native two-pixel alignment, all eight keys and persisted List placement
 assertions remain unchanged. Current native execution remains required; the
 phone pass is scoped to its recorded revision, not a complete release claim.
+
+
+### Pointer source frame when hovered ancestors change
+
+Run 37349484259 failed both cross-List destination polls. Artifact 11363453738
+was verified with SHA-256
+`b9cddb274428c339f74fcbefaa69ef74db9f15d79fc504fa4442c04e277745af`.
+Phone Board scrollLeft advances from 61787 to 61704 before stopping; desktop
+advances from 61824 to 61725. Active Card transforms then acquire Y=-343243
+on phone and Y=-343307 on desktop. These offsets correspond to the original
+large nested Card scroll frame, not a pointer movement. Initial mounted ranges
+are contiguous in both traces, so changing their boundary does not fix this.
+
+The dnd-kit source switches scroll accounting to the hovered destination's
+ancestors while retaining the original total offset for its delta. Pointer Card
+drags now retain the original source ancestors and compensate the difference
+between their current offsets and the hovered ancestors' offsets before the
+library applies that delta. Source scrolling still contributes its real change;
+added destination offsets do not displace the visual source. Pointer collisions
+continue to use pointerWithin and actual pointer coordinates. Keyboard gestures
+and List gestures retain their existing path. Cancellation and completion clear
+the frame, and another active identity cannot borrow it.
+
+Two focused regressions cover removing/adding ancestors, actual source offset
+changes, returning to the original parents, unrelated identities and cleanup.
+Forty BoardScreen and scroll-policy tests, web typecheck, focused lint and diff checks pass. Native capacity and the original persistence/alignment
+assertions remain mandatory; this correction is not a completed release claim.
