@@ -12,7 +12,11 @@ public sealed partial class ApiHostTests
 {
     private sealed class SearchSourceActorFixture : ICommandActorAuthorization
     {
-        public Task<bool> VerifyAsync(Guid actorId, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        private int _checks;
+        private int? _refuseAt;
+        public void RefuseAt(int? check) { _checks = 0; _refuseAt = check; }
+        public Task<bool> VerifyAsync(Guid actorId, CancellationToken cancellationToken = default)
+            => Task.FromResult(++_checks != _refuseAt);
     }
 
     // Demo store/transaction parity with synthetic actor admission. No source
@@ -62,6 +66,19 @@ public sealed partial class ApiHostTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => Append(boardSource));
         await workStore.UpsertBoardMemberAsync(board.Id, other, BoardRole.Member, at, ct);
         Assert.True((await Append(boardSource)).Succeeded);
+        var proof = (SearchSourceActorFixture)app.Services.GetRequiredService<ICommandActorAuthorization>();
+        var lateId = Guid.NewGuid();
+        proof.RefuseAt(3); // identity admission, Work pre-proof, Work final proof
+        var caught = await unit.ExecuteAsync<bool>(other, async () =>
+        {
+            var refusal = await Assert.ThrowsAsync<InvalidOperationException>(() => sources.AppendAsync(
+                SearchInteractionEvent.BoardFilterChanged(lateId, other, organization, board.Id, at), ct));
+            Assert.Equal("Search interaction unavailable.", refusal.Message);
+            return IdentityOperation<bool>.Success(true);
+        }, ct);
+        Assert.True(caught.Succeeded);
+        proof.RefuseAt(null);
+        Assert.True((await Append(SearchInteractionEvent.BoardFilterChanged(lateId, other, organization, board.Id, at.AddSeconds(2)))).Succeeded);
         await workStore.RemoveBoardMemberAsync(board.Id, other, at.AddSeconds(1), ct);
         // Duplicate identity is freshly admitted too; withdrawing a grant must
         // not be bypassed by an earlier successful append.

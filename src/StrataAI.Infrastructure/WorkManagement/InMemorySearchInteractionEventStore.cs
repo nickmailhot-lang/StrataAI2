@@ -38,9 +38,19 @@ internal sealed class InMemorySearchInteractionEventStore(DemoIdentityTransactio
             return current.Visibility != BoardVisibility.Private || member.Role is OrganizationRole.Owner or OrganizationRole.Admin
                 || await work.FindBoardMemberAsync(board, source.ActorId, cancellationToken) is { Active: true };
         }
-        var result = await transactions.ExecuteReadAsync(organization, source.ActorId, "search_interaction_unavailable",
-            Admitted, () => { AppendOriginal(source); return Task.FromResult(WorkOperation<bool>.Success(true)); }, cancellationToken);
-        if (!result.Succeeded) throw new InvalidOperationException("Search interaction unavailable.");
+        var rollback = CaptureRollback();
+        try
+        {
+            var result = await transactions.ExecuteReadAsync(organization, source.ActorId, "search_interaction_unavailable",
+                Admitted, () => { AppendOriginal(source); return Task.FromResult(WorkOperation<bool>.Success(true)); }, cancellationToken);
+            if (!result.Succeeded) throw new InvalidOperationException("Search interaction unavailable.");
+        }
+        catch
+        {
+            // The nested Work boundary does not own personal source state.
+            // Restore it even if an identity caller catches this refusal.
+            rollback(); throw;
+        }
     }
 
     private void AppendOriginal(SearchInteractionEvent source)
