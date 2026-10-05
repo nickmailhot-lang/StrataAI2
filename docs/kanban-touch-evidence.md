@@ -24,3 +24,17 @@ release claim. This case does
 not prove physical-device behavior, vertical touch boundary scrolling,
 screen-reader behavior, or the visual feedback latency requirement.
 Those remaining requirements are not removed by this check.
+
+The boundary-scrolling release fixture now also runs at 390x844 with Chromium
+touch dispatch. It requires the actual Card handle to enter its pressed drag
+state, vertical scrolling inside the source List, then horizontal scrolling of
+the Board canvas. Native touch cancellation must end the drag without a move
+request; a fresh PostgreSQL-backed Board read must preserve the complete List
+and Card baseline. Opening and closing Card details afterward must restore the
+focused link and both scroll offsets. The existing desktop and phone mouse
+cases remain, with the same assertion and execution budgets.
+
+Browser type checking and collection of all three boundary cases pass locally.
+Execution against the immutable release images remains pending. This adds
+coverage for vertical touch scrolling and cancellation; it does not establish
+physical-device behavior, touch performance, or complete PRD-06 acceptance.
