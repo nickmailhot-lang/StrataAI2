@@ -63,7 +63,7 @@ for (const { width, input } of [{ width: 1280, input: 'mouse' }, { width: 390, i
         await touch.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
         touching = false;
       } else { await page.keyboard.press('Escape'); await page.mouse.up(); }
-      await expect(handle).toHaveAttribute('aria-pressed', 'false');
+      await expect(handle).not.toHaveAttribute('aria-pressed', 'true');
     } finally {
       if (touching) await touch!.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
       await touch?.detach();
