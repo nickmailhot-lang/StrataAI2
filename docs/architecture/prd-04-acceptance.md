@@ -170,3 +170,21 @@ retains that exact predicate and adds only operation status/code and numeric
 revision diagnostics to distinguish the cause. No object location, content,
 identity or credentials are emitted. This is diagnostic progress, not a repair
 or green CI claim; full .NET warnings-as-errors build passes.
+
+Two new native discovery scenarios (1280px/390px) are collected in the existing
+release-proxy Organization live suite. Each registers a real ordinary account,
+accepts a MEMBER invitation, admits one private Board through a MEMBER grant,
+opens two clients and observes genuine upstream frames. An inaccessible actual
+Board source precedes the admitted archive; both clients must retain the
+original /sync event ID, withdraw the active Board, recover its real restore,
+and then clear private names and creation consent after grant removal without
+logging out. Envelope allowlists and viewport overflow assertions are retained.
+Browser fixtures typecheck and all five Organization live cases collect. These
+new native cases have not executed yet; immutable-image acceptance is pending.
+PRD-04 remains open, estimated 20% remaining.
+
+Run 37268321264's web failure was a test reading watchBoard's callback before
+its passive subscription effect ran. 3c596b8 waits for that exact registration;
+all 26 ArchivedListsPage component cases pass. No assertion, pacing, browser
+retry or timeout was relaxed. Later b481732 PostgreSQL and full web jobs passed;
+the earlier background retry failure remains under diagnostic observation.

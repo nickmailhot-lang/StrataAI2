@@ -2,6 +2,91 @@ import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) {
+  test(`PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at ${width}px`, async ({ browser, context }) => {
+    test.setTimeout(150_000);
+    const headers = { 'X-StrataAI-Request': '1' };
+    const reader = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
+    let restoreWorker = () => {};
+    try {
+      const accounts = [context, reader].map((_, index) => ({ email: `ordinary-directory-${width}-${index}-${Date.now()}@example.test`,
+        password: 'ordinary-directory-correct-horse', displayName: `Ordinary directory actor ${index}` }));
+      for (const [index, client] of [context, reader].entries()) {
+        expect((await client.request.post('/auth/register', { headers, data: accounts[index] })).status()).toBe(201);
+        expect((await client.request.post('/auth/login', { headers, data: accounts[index] })).status()).toBe(200);
+      }
+      const organization = await context.request.post('/organizations', { headers, data: { name: 'Ordinary directory admission' } });
+      expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
+      const invitation = await context.request.post(`/organizations/${org}/invitations`, { headers,
+        data: { email: accounts[1].email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
+      expect(invitation.status()).toBe(201);
+      expect((await reader.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
+      const me = await reader.request.get('/me'); expect(me.status()).toBe(200); const user = (await me.json()).id;
+      const boards: { id: string; name: string; version: number }[] = [];
+      for (const name of ['Ordinary admitted private Board', 'Ordinary withheld private Board']) {
+        const created = await context.request.post('/boards', { headers, data: { organizationId: org, name, visibility: 'PRIVATE' } });
+        expect(created.status()).toBe(201); boards.push(await created.json());
+      }
+      expect((await context.request.patch(`/boards/${boards[0].id}/members/${user}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
+      const state = await context.request.get(`/boards/${boards[0].id}`); expect(state.status()).toBe(200);
+      const version = (await state.json()).board.version;
+      restoreWorker = scopedBoardWorker(org);
+      for (const board of boards) await waitForBoardDelivery(context.request, board.id);
+      const pages = [await reader.newPage(), await reader.newPage()];
+      const frames: { resets: number; ids: string[] }[] = [{ resets: 0, ids: [] }, { resets: 0, ids: [] }];
+      for (const [index, page] of pages.entries()) {
+        page.on('websocket', socket => {
+          if (!socket.url().includes('/organizations/live')) return;
+          socket.on('framereceived', frame => {
+            for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
+              const message = JSON.parse(raw); if (message.type !== 2) continue;
+              expect(Object.keys(message.item).sort()).toEqual(['organizationId', 'page', 'userId']);
+              expect(message.item.organizationId).toBe(org); expect(message.item.userId).toBe(user);
+              if (message.item.page.resetRequired) { frames[index].resets++; expect(message.item.page.events).toEqual([]); }
+              for (const event of message.item.page.events) {
+                expect(Object.keys(event).sort()).toEqual(['boardId', 'createdAt', 'eventId', 'eventType', 'version']);
+                expect(event.boardId).toBe(boards[0].id); frames[index].ids.push(event.eventId);
+              }
+            }
+          });
+        });
+        await page.goto(`/app/${org}`);
+        await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toBeVisible();
+        await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
+        await expect.poll(() => frames[index].resets).toBeGreaterThan(0);
+      }
+      // An actual inaccessible source precedes the admitted lifecycle source.
+      expect((await context.request.post(`/boards/${boards[1].id}/archive`, { headers, data: { version: boards[1].version } })).status()).toBe(200);
+      const archive = await context.request.post(`/boards/${boards[0].id}/archive`, { headers, data: { version } });
+      expect(archive.status()).toBe(200); const archived = await archive.json();
+      await waitForBoardDelivery(context.request, boards[0].id);
+      const sync = await context.request.get(`/boards/${boards[0].id}/sync`); expect(sync.status()).toBe(200);
+      const source = (await sync.json()).events.find((event: { eventType: string }) => event.eventType === 'BOARD_ARCHIVED');
+      expect(source).toBeDefined();
+      for (const [index, page] of pages.entries()) {
+        await expect.poll(() => frames[index].ids.includes(source.eventId)).toBe(true);
+        await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toHaveCount(0);
+      }
+      expect((await context.request.post(`/boards/${boards[0].id}/restore`, { headers, data: { version: archived.version } })).status()).toBe(200);
+      for (const page of pages) await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toBeVisible();
+      await pages[1].getByRole('button', { name: 'Create board', exact: true }).click();
+      await expect(pages[1].getByRole('dialog')).toBeVisible();
+      const resetCounts = frames.map(frame => frame.resets);
+      expect((await context.request.delete(`/boards/${boards[0].id}/members/${user}`, { headers })).status()).toBe(204);
+      for (const [index, page] of pages.entries()) {
+        await expect.poll(() => frames[index].resets).toBeGreaterThan(resetCounts[index]);
+        await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toHaveCount(0);
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      }
+      expect((await reader.request.get('/me')).status()).toBe(200);
+      const withheld = await reader.request.get(`/boards/${boards[0].id}`); expect(withheld.status()).toBe(404);
+      expect(await withheld.text()).not.toContain(boards[0].name);
+    } finally { await reader.close(); restoreWorker(); }
+  });
+}
+
+for (const width of [1280, 390]) {
   test(`PRD-04/18: archive directory consumes original Worker events and recovers private scope at ${width}px`, async ({ page, context }) => {
     test.setTimeout(150_000);
     await page.setViewportSize({ width, height: 844 });
