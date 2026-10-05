@@ -112,6 +112,77 @@ for (const width of [1280, 390]) {
     expect(movedColumn.cards.filter(card => card.id !== moving.id)).toEqual(column.cards.filter(card => card.id !== moving.id));
     expect(movedSnapshot.lists.filter(value => value.list.id !== fixture.listId)).toEqual(snapshot.lists.filter(value => value.list.id !== fixture.listId));
     await expect(middle).toBeFocused(); await expect(middle).toBeInViewport();
+    let pointerWrites = 0;
+    page.on('request', request => { if (request.method() === 'POST'
+      && new URL(request.url()).pathname === `/cards/${moving.id}/move`) pointerWrites++; });
+    const currentOrder = new Map(movedColumn.cards.map((card, index) => [card.id, index]));
+    async function pointerAcrossBuffer(cancel: boolean): Promise<string | null> {
+      await expect(handle).toBeEnabled(); await handle.focus(); await settleDrag();
+      const initial = await mounted.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')?.split('/').at(-1)));
+      const minimum = Math.max(...initial.map(id => currentOrder.get(id ?? '') ?? -1));
+      const start = await handle.boundingBox(); const viewport = await cards.boundingBox(); const outer = await section.boundingBox();
+      expect(start).not.toBeNull(); expect(viewport).not.toBeNull(); expect(outer).not.toBeNull();
+      const x = start!.x + start!.width / 2;
+      const top = Math.max(0, viewport!.y, outer!.y);
+      const bottom = Math.min(844, viewport!.y + viewport!.height, outer!.y + outer!.height);
+      expect(bottom - top).toBeGreaterThan(100);
+      const offset = await cards.evaluate(node => node.scrollTop);
+      await page.mouse.move(x, start!.y + start!.height / 2); await page.mouse.down();
+      await page.mouse.move(x + 12, start!.y + start!.height / 2);
+      await page.mouse.move(x, bottom - 12, { steps: 12 });
+      await expect(handle).toHaveAttribute('aria-pressed', 'true');
+      const laterVisible = async () => {
+        const candidates = await mounted.evaluateAll((nodes, sourceId) => {
+          const root = nodes[0]?.closest('[aria-label="Cards"]'); const section = root?.closest('section[aria-labelledby]');
+          if (!root || !section) return [];
+          const inner = root.getBoundingClientRect(), outer = section.getBoundingClientRect();
+          const top = Math.max(0, inner.top, outer.top), bottom = Math.min(window.innerHeight, inner.bottom, outer.bottom);
+          return nodes.flatMap(node => {
+            const id = node.getAttribute('href')?.split('/').at(-1), rect = node.parentElement!.getBoundingClientRect();
+            return id && id !== sourceId && rect.top >= top && rect.bottom <= bottom
+              ? [{ id, distance: Math.abs(rect.top + rect.height / 2 - (top + bottom) / 2) }] : [];
+          }).sort((a, b) => a.distance - b.distance);
+        }, moving.id);
+        return candidates.find(value => (currentOrder.get(value.id) ?? -1) > minimum)?.id ?? null;
+      };
+      await expect.poll(() => cards.evaluate(node => node.scrollTop)).toBeGreaterThan(offset);
+      await expect.poll(laterVisible).not.toBeNull();
+      await expect(middle).toBeAttached();
+      expect(await cards.locator('[data-board-window-axis="cards"]').count()).toBeLessThan(40);
+      if (cancel) {
+        await page.keyboard.press('Escape'); await page.mouse.up();
+        await expect(handle).not.toHaveAttribute('aria-pressed', 'true'); return null;
+      }
+      // Move away from the edge to stop auto-scroll before binding a real,
+      // fully visible destination. No application responses are intercepted.
+      const currentViewport = await cards.boundingBox(), currentOuter = await section.boundingBox();
+      expect(currentViewport).not.toBeNull(); expect(currentOuter).not.toBeNull();
+      const centerTop = Math.max(0, currentViewport!.y, currentOuter!.y);
+      const centerBottom = Math.min(844, currentViewport!.y + currentViewport!.height, currentOuter!.y + currentOuter!.height);
+      await page.mouse.move(x, (centerTop + centerBottom) / 2); await settleDrag();
+      const id = await laterVisible(); expect(id).not.toBeNull();
+      const target = cards.locator(`a[href$="/cards/${id}"]`).locator('..'); const box = await target.boundingBox(); expect(box).not.toBeNull();
+      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      const reply = page.waitForResponse(response => response.request().method() === 'POST'
+        && new URL(response.url()).pathname === `/cards/${moving.id}/move`);
+      await page.mouse.up(); expect((await reply).status()).toBe(200); return id;
+    }
+    await pointerAcrossBuffer(true); expect(pointerWrites).toBe(0);
+    const cancelled = await context.request.get(`/boards/${fixture.boardId}`); expect(cancelled.status()).toBe(200);
+    expect((await cancelled.json()).lists).toEqual(movedSnapshot.lists);
+    const pointerTarget = await pointerAcrossBuffer(false);
+    expect(pointerWrites).toBe(1);
+    await expect(page.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
+    await waitForBoardDelivery(context.request, fixture.boardId);
+    const pointerResult = await context.request.get(`/boards/${fixture.boardId}`); expect(pointerResult.status()).toBe(200);
+    const pointerSnapshot = await pointerResult.json() as typeof snapshot;
+    const pointerColumn = pointerSnapshot.lists.find(value => value.list.id === fixture.listId)!;
+    const targetIndex = pointerColumn.cards.findIndex(card => card.id === pointerTarget);
+    expect(targetIndex).toBeGreaterThan(0);
+    expect(pointerColumn.cards[targetIndex - 1]).toMatchObject({ id: moving.id, version: moving.version + 2 });
+    expect(pointerColumn.cards.filter(card => card.id !== moving.id)).toEqual(movedColumn.cards.filter(card => card.id !== moving.id));
+    expect(pointerSnapshot.lists.filter(value => value.list.id !== fixture.listId)).toEqual(movedSnapshot.lists.filter(value => value.list.id !== fixture.listId));
+    await expect(middle).toBeFocused(); await expect(middle).toBeInViewport();
     await cards.evaluate(node => { node.scrollTop = node.scrollHeight; });
     const last = cards.locator(`a[href$="/cards/${column.cards.at(-1)!.id}"]`);
     await expect(last).toBeVisible(); await last.press('Enter');
