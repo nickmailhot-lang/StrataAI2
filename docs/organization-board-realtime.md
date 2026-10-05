@@ -126,3 +126,32 @@ could not construct the cursor codec because the minimal persistence provider
 did not register `IClock`. The fixture now explicitly registers the application's
 `SystemClock`, matching API startup. Codec expiry and every reader/coordinator
 assertion remain unchanged; actual repaired execution is still pending CI.
+
+The reader/coordinator cases reached their success marker in PostgreSQL job
+111609976527 at `b4e0cd3`, including the actual bound-cursor reset checks before
+that marker. The enclosing legacy private Card-history refusal then failed
+because the temporary reader grant was still present after demotion: a Member
+grant still authorizes normal private Board viewing. Commit `5a8de82` retires
+that exact synthetic grant before the historical refusal starts, preserving
+both sets of assertions. Full enclosing execution still needs verification.
+
+Both runtime modes now register the coordinator behind an owning Work read
+wrapper. It checks current parent/membership and delegates to the existing
+transaction's initial/final actor proof. Demo projects only actual six canonical
+Board sources into its own Organization order, preserving IDs and rolling back
+the projection/head with its source. Demo's existing immediate delivery behavior
+is retained; it is not evidence for PostgreSQL Worker readiness. Administrative
+Board membership transitions revise an actor-specific counter, included in the
+Work rollback snapshot; the actual Organization membership identity/version
+covers its role/withdrawal/restoration. These values compose the demo permission
+binding without content hashes or another user's grant activity. Demo metadata
+version updates can conservatively reset a cursor even without a role change.
+The registered coordinator is not yet exposed through a live endpoint.
+
+A demo adapter test seeds explicitly synthetic canonical sources, proves 64
+ineligible events do not displace an eligible event before the page cap, checks
+50+15 owner paging/source identity, and declares a late refusal after both a
+grant demotion and source projection to require complete rollback. It then
+checks a real committed demotion invalidates the protected cursor. This is
+storage/transaction coverage, not lifecycle/Worker/browser proof. These new
+runtime registrations and tests compile; actual execution remains pending CI.

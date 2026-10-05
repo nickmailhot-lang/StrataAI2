@@ -10,6 +10,20 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
     private readonly Dictionary<Guid, BoardListRecord> _lists = [];
     private readonly Dictionary<Guid, CardRecord> _cards = [];
     private readonly Dictionary<(Guid BoardId, Guid UserId), BoardMemberRecord> _members = [];
+    private readonly Dictionary<(Guid OrganizationId, Guid UserId), long> _directoryPermissionRevisions = [];
+    internal long DirectoryPermissionRevision(Guid organizationId, Guid actorId)
+    { lock (_sync) return _directoryPermissionRevisions.GetValueOrDefault((organizationId, actorId)); }
+    internal IReadOnlySet<Guid> AdministeredBoardIds(Guid organizationId, Guid actorId, bool organizationAdministrator)
+    {
+        lock (_sync) return _boards.Values.Where(b => b.OrganizationId == organizationId &&
+            (organizationAdministrator || _members.TryGetValue((b.Id, actorId), out var member) &&
+                member is { Active: true, Role: BoardRole.Admin })).Select(b => b.Id).ToHashSet();
+    }
+    private void ReviseDirectoryPermission(Guid boardId, Guid actorId)
+    {
+        var key = (_boards[boardId].OrganizationId, actorId);
+        _directoryPermissionRevisions[key] = checked(_directoryPermissionRevisions.GetValueOrDefault(key) + 1);
+    }
     private readonly Dictionary<(Guid BoardId, Guid UserId), StoredBoardStarPreference> _starred = [];
     private readonly Dictionary<(Guid BoardId, Guid UserId, long Version), BoardStarEvent> _starEvents = [];
     public Task<bool> AcquireOrganizationReadScopeAsync(Guid organizationId, Guid actorId,
@@ -127,6 +141,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                     createdAt,
                     1);
 
+            ReviseDirectoryPermission(boardId, actorUserId);
             return Task.FromResult(board);
         }
     }
@@ -347,6 +362,8 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                     Version = existing.Version + 1,
                 };
                 _members[(boardId, userId)] = updated;
+                if ((existing.Active && existing.Role == BoardRole.Admin) != (role == BoardRole.Admin))
+                    ReviseDirectoryPermission(boardId, userId);
                 return Task.FromResult(updated);
             }
 
@@ -359,6 +376,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 updatedAt,
                 1);
             _members[(boardId, userId)] = created;
+            if (role == BoardRole.Admin) ReviseDirectoryPermission(boardId, userId);
             return Task.FromResult(created);
         }
     }
@@ -383,6 +401,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 UpdatedAt = updatedAt,
                 Version = existing.Version + 1,
             };
+            if (existing.Role == BoardRole.Admin) ReviseDirectoryPermission(boardId, userId);
 
             return Task.FromResult(true);
         }

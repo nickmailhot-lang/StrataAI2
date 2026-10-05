@@ -31,6 +31,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<InMemoryWorkEventStore>();
             services.AddSingleton<IWorkEventStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IWorkEventReader>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
+            services.AddSingleton<IOrganizationBoardEventReader>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IActivityEventSourceStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IActivityPrivateTargetStore>(provider => provider.GetRequiredService<InMemoryWorkEventStore>());
             services.AddSingleton<IActivityFeedStore, InMemoryActivityFeedStore>();
@@ -58,6 +59,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<ICommentMentionSnapshotStore, PostgresCommentMentionSnapshotStore>();
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();
             services.AddSingleton<IWorkEventReader, PostgresWorkEventReader>();
+            services.AddSingleton<IOrganizationBoardEventReader, PostgresOrganizationBoardEventReader>();
             services.AddSingleton<PostgresActivityEventSourceStore>();
             services.AddSingleton<IActivityEventSourceStore>(provider => provider.GetRequiredService<PostgresActivityEventSourceStore>());
             services.AddSingleton<IActivityPrivateTargetStore>(provider => provider.GetRequiredService<PostgresActivityEventSourceStore>());
@@ -80,6 +82,8 @@ public static class WorkManagementRegistration
         services.AddSingleton<IWorkBoardAuthorization>(provider => (IWorkBoardAuthorization)provider.GetRequiredService<IWorkManagementService>());
         services.AddSingleton<CardMassMentionPlanning>();
         services.AddSingleton<WorkSynchronizationService>();
+        services.AddSingleton<OrganizationBoardSynchronizationService>();
+        services.AddSingleton<TransactionalOrganizationBoardSynchronization>();
         services.AddSingleton<ActivitySourceScopeResolver>();
         services.AddSingleton<ActivityFeedService>();
         services.AddSingleton<NotificationInboxService>();

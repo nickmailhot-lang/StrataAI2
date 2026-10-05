@@ -4,9 +4,9 @@ using StrataAI.Application.Organizations;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentityStore identities,
+internal sealed partial class InMemoryWorkEventStore(IWorkManagementStore work, IIdentityStore identities,
     IOrganizationStore organizations, DemoWorkTransactionScope scope, InMemoryWatchSubscriptionStore watches,
-    InMemoryCardReminderStore reminders) : IWorkEventStore, IWorkEventReader, IActivityEventSourceStore, IActivityPrivateTargetStore, IDemoWorkTransactionParticipant
+    InMemoryCardReminderStore reminders) : IWorkEventStore, IWorkEventReader, IOrganizationBoardEventReader, IActivityEventSourceStore, IActivityPrivateTargetStore, IDemoWorkTransactionParticipant
 {
     internal IReadOnlyList<ActivityEventSource> ActivitySources(Guid organizationId)
     {
@@ -34,12 +34,16 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentit
         {
             var events = DemoRollback.Dictionary(_events); var streams = DemoRollback.Dictionary(_streams);
             var activity = DemoRollback.Dictionary(_activity);
-            return () => { lock (_events) { events(); streams(); activity(); } };
+            var organizationEvents = DemoRollback.Dictionary(_organizationEvents);
+            var organizationStreams = DemoRollback.Dictionary(_organizationStreams);
+            return () => { lock (_events) { events(); streams(); activity(); organizationEvents(); organizationStreams(); } };
         }
     }
     private readonly Dictionary<(Guid Organization, Guid Id), (long Sequence, WorkEvent Event)> _events = [];
     private readonly Dictionary<(Guid Organization, Guid Board), long> _streams = [];
     private readonly Dictionary<(Guid Organization, Guid Id), ActivityEventSource> _activity = [];
+    private readonly Dictionary<(Guid Organization, Guid Id), OrganizationBoardEventCandidate> _organizationEvents = [];
+    private readonly Dictionary<Guid, long> _organizationStreams = [];
     internal bool ContainsExact(WorkEvent source)
     { lock (_events) return _events.TryGetValue((source.OrganizationId, source.EventId), out var row) && row.Event == source; }
     public async Task AppendAsync(WorkEvent change, CancellationToken cancellationToken = default)
@@ -65,6 +69,16 @@ internal sealed class InMemoryWorkEventStore(IWorkManagementStore work, IIdentit
             _activity[key] = new(change.EventId, change.OrganizationId, change.BoardId, change.ActorId, caption,
                 change.EventType, change.EntityType, change.EntityId, change.Version,
                 new DateTimeOffset(change.CreatedAt.UtcTicks / 10 * 10, TimeSpan.Zero));
+            if (change.EntityType == "Board" && change.EntityId == change.BoardId && change.EventType is
+                "BOARD_CREATED" or "BOARD_UPDATED" or "BOARD_COPIED" or "BOARD_ARCHIVED" or "BOARD_RESTORED" or "BOARD_DELETED")
+            {
+                var organizationSequence = checked(_organizationStreams.GetValueOrDefault(change.OrganizationId) + 1);
+                _organizationStreams[change.OrganizationId] = organizationSequence;
+                // Demo delivery is immediate, as in its existing Board reader;
+                // production readiness remains the separate Worker's source.
+                _organizationEvents[key] = new(organizationSequence, change.EventId, change.BoardId,
+                    change.EventType, change.Version, change.CreatedAt, true);
+            }
         }
     }
 
