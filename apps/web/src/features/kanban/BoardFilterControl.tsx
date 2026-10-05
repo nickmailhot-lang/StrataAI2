@@ -1,8 +1,12 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
 import { filterPageMatchesSnapshot, type BoardCanvasFilter } from './boardFilterCanvas';
+import { boardFilterChangeCriteria, createBoardFilterChange, discardBoardFilterChange, restoreBoardFilterChange, retainBoardFilterChange,
+  submitBoardFilterChange, verifyBoardFilterActor, ExpiredBoardFilterChange, BoardFilterRecoveryConflict, type BoardFilterChangeIntent } from '../search/boardFilterChange';
+import { ChangedSearchInteractionActor, SearchInteractionAcknowledgments } from '../search/searchInteraction';
+import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 
 const uuid = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v) && v !== '00000000-0000-0000-0000-000000000000';
 class ChangedFilterIdentity extends Error {}
@@ -17,12 +21,12 @@ function saved(key: string): { criteria: Criteria; canvas: boolean } {
   try {
     const c = JSON.parse(sessionStorage.getItem(key) ?? 'null') as (Criteria & { canvas?: unknown }) | null;
     if (c && typeof c.keyword === 'string' && c.keyword.length <= 160 && (c.match === 'all' || c.match === 'any')
-      && Array.isArray(c.labels) && c.labels.length <= 25 && c.labels.every(uuid) && new Set(c.labels).size === c.labels.length
+      && Array.isArray(c.labels) && c.labels.length <= 25 && c.labels.every(uuid) && new Set(c.labels.map(id => id.toLowerCase())).size === c.labels.length
       && (c.members === undefined || (Array.isArray(c.members) && c.members.length <= 25 && c.members.every(uuid) && new Set(c.members.map(id => id.toLowerCase())).size === c.members.length))
       && (c.completion === undefined || ['all', 'complete', 'incomplete'].includes(c.completion))
       && (c.due === undefined || ['all', 'none', 'overdue', 'upcoming'].includes(c.due))
       && (c.activity === undefined || ['all', 'day', 'week', 'month'].includes(c.activity)))
-      return { criteria: { keyword: c.keyword, labels: c.labels, members: (c.members ?? []).map(id => id.toLowerCase()), match: c.match,
+      return { criteria: { keyword: c.keyword, labels: c.labels.map(id => id.toLowerCase()), members: (c.members ?? []).map(id => id.toLowerCase()), match: c.match,
         ...(c.completion === undefined ? {} : { completion: c.completion }), ...(c.due === undefined ? {} : { due: c.due }),
         ...(c.activity === undefined ? {} : { activity: c.activity }) }, canvas: c.canvas === true };
   } catch { /* Storage is optional; admitted server reads remain authoritative. */ }
@@ -30,6 +34,14 @@ function saved(key: string): { criteria: Criteria; canvas: boolean } {
 }
 export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChange }: Props) {
   const [canvasMode, setCanvasMode] = useState(false);
+  const [changeIntent, setChangeIntent] = useState<BoardFilterChangeIntent>();
+  const [changeBusy, setChangeBusy] = useState(false); const [changeNotice, setChangeNotice] = useState<string>();
+  const changePending = useRef<AbortController | undefined>(undefined);
+  const acknowledgments = useRef(new SearchInteractionAcknowledgments());
+  const applyAction = useRef<HTMLButtonElement>(null), clearAction = useRef<HTMLButtonElement>(null), retryAction = useRef<HTMLButtonElement>(null);
+  const filterTrigger = useRef<HTMLButtonElement>(null), changeOwner = useRef<HTMLElement | null>(null), restoreChangeFocus = useRef(false);
+  const changeDialog = useRef<HTMLElement | null>(null);
+  const changeAction = useRef<'apply' | 'clear'>('apply');
   const [openingPending, setOpeningPending] = useState<string>();
   const [open, setOpen] = useState(false); const [criteria, setCriteria] = useState<Criteria>(empty);
   const [applied, setApplied] = useState<Criteria>(); const [labels, setLabels] = useState<Label[]>([]);
@@ -45,6 +57,12 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const org = snapshot.board.organizationId, board = snapshot.board.id;
   const available = snapshot.access.canView && snapshot.board.lifecycleState === 'active';
   const storageKey = (actor: string) => `strataai:board-filter:v1:${actor}:${org}:${board}`;
+  useLayoutEffect(() => {
+    if (!restoreChangeFocus.current || changeBusy || disabled || labelLoading || memberLoading
+      || !open && changeDialog.current || !(ownsRecoveryFocus(document.activeElement, changeOwner.current) || document.activeElement === changeDialog.current)) return;
+    const target = changeIntent ? retryAction.current : changeAction.current === 'clear' ? (open ? clearAction.current : filterTrigger.current) : applyAction.current;
+    if (target && !target.disabled) target.focus({ preventScroll: true });
+  }, [changeBusy, disabled, labelLoading, memberLoading, open, changeIntent]);
   async function filterIdentity(signal: AbortSignal) {
     try {
       const me = await workRequest<{ id: unknown }>('/me', { signal });
@@ -59,11 +77,14 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   async function admitAnonymous(signal: AbortSignal) {
     if (await filterIdentity(signal) !== 'anonymous') throw new ChangedFilterIdentity();
   }
+  async function admitIdentity(signal: AbortSignal, expected: string) {
+    if (expected === 'anonymous') await admitAnonymous(signal); else await verifyBoardFilterActor(expected, signal);
+  }
   useEffect(() => {
     onCanvasChange?.(canvasMode && applied && available ? { snapshot, items: !disabled && result ? result.items : [] } : undefined);
   }, [canvasMode, applied, available, disabled, result, snapshot, onCanvasChange]);
   useEffect(() => () => onCanvasChange?.(undefined), [onCanvasChange]);
-  useEffect(() => () => { epoch.current++; pending.current?.abort(); memberPending.current?.abort(); }, []);
+  useEffect(() => () => { epoch.current++; pending.current?.abort(); memberPending.current?.abort(); changePending.current?.abort(); }, []);
   useEffect(() => {
     epoch.current++; pending.current?.abort(); pending.current = undefined;
     memberPending.current?.abort(); memberPending.current = undefined; setMemberOpen(false); setMembers([]); setMemberCursor(null); setMemberLoading(false); setMemberNotice(undefined);
@@ -72,6 +93,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     setCriteria(empty()); setOpen(false); setCursor(undefined);
     setOpeningPending(undefined);
     setCanvasMode(false);
+    changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false); setChangeIntent(undefined); setChangeNotice(undefined); acknowledgments.current.clear();
   }, [org, board, available]);
   async function loadLabels(after?: string, opening = false, restoring = false) {
     if (!available || disabled || pending.current) return;
@@ -90,12 +112,17 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
         const stored = saved(storageKey(binding));
         if (binding === 'anonymous') stored.criteria.members = [];
         setIdentity(binding); setCriteria(stored.criteria);
+        if (binding !== 'anonymous') {
+          let original: BoardFilterChangeIntent | undefined;
+          try { original = restoreBoardFilterChange(sessionStorage, { actor: binding, organization: org, board }); } catch { /* Optional storage. */ }
+          setChangeIntent(original); setChangeNotice(original ? 'An earlier filter change is unconfirmed. Retry the original change.' : undefined);
+        }
         if (restoring && stored.canvas) { setApplied(stored.criteria); setCanvasMode(true); }
         if (!restoring) try { sessionStorage.setItem(storageKey(binding), JSON.stringify(stored.criteria)); } catch { /* Optional storage. */ }
       }
-      if (binding === 'anonymous' && !opening) await boundedWorkRead(admitAnonymous, controller.signal);
+      if (binding && !opening) await boundedWorkRead(signal => admitIdentity(signal, binding!), controller.signal);
       const p = await boundedWorkRead(signal => workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/labels${after ? `?after=${encodeURIComponent(after)}` : ''}`, { signal }), controller.signal);
-      if (binding === 'anonymous') await boundedWorkRead(admitAnonymous, controller.signal);
+      if (binding) await boundedWorkRead(signal => admitIdentity(signal, binding!), controller.signal);
       if (ticket !== epoch.current) return;
       if (p.organizationId !== org || p.boardId !== board || !Array.isArray(p.items) || p.items.length > 50) throw new Error('Invalid labels');
       const items = p.items.map((value: unknown) => {
@@ -110,9 +137,10 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     } catch (error) {
       if (ticket !== epoch.current) return;
       setLabelNotice('Label choices could not be loaded. Reload choices to continue.');
-      if (error instanceof ChangedFilterIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+      if (error instanceof ChangedFilterIdentity || error instanceof ChangedSearchInteractionActor || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
         memberPending.current?.abort(); memberPending.current = undefined; setMembers([]); setMemberLoading(false);
         setLabelNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); setOpen(false); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCanvasMode(false); onRefresh();
+        setCriteria(empty()); setChangeIntent(undefined); setChangeNotice(undefined); acknowledgments.current.clear(); changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false);
       }
     } finally { if (ticket === epoch.current) { pending.current = undefined; setLabelLoading(false); } }
   }
@@ -121,7 +149,11 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     const controller = new AbortController(); memberPending.current = controller; const ticket = epoch.current;
     setMemberOpen(true); setMemberLoading(true); setMemberNotice(undefined); setMembers([]); setMemberCursor(null);
     try {
-      const p = await boundedWorkRead(signal => workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/assignable-members${after ? `?after=${encodeURIComponent(after)}` : ''}`, { signal }), controller.signal);
+      const p = await boundedWorkRead(async signal => {
+        await admitIdentity(signal, identity);
+        const page = await workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/assignable-members${after ? `?after=${encodeURIComponent(after)}` : ''}`, { signal });
+        await admitIdentity(signal, identity); return page;
+      }, controller.signal);
       if (ticket !== epoch.current || controller.signal.aborted) return;
       if (p.organizationId !== org || p.boardId !== board || !Array.isArray(p.items) || p.items.length > 50) throw new Error('Invalid member choices');
       let previous = after?.toLowerCase();
@@ -136,8 +168,9 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     } catch (error) {
       if (ticket !== epoch.current || controller.signal.aborted) return;
       setMembers([]); setMemberNotice('Assignee choices could not be loaded. Reload choices to continue.');
-      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+      if (error instanceof ChangedSearchInteractionActor || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
         setOpen(false); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCanvasMode(false); onRefresh();
+        setCriteria(empty()); setChangeIntent(undefined); setChangeNotice(undefined); acknowledgments.current.clear(); changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false);
       }
     } finally { if (ticket === epoch.current) { memberPending.current = undefined; setMemberLoading(false); } }
   }
@@ -174,9 +207,9 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     if (applied.members.length) query.set('members', applied.members.join(','));
     if (cursor) query.set('after', cursor);
     void boundedWorkRead(async signal => {
-      if (identity === 'anonymous') await admitAnonymous(signal);
+      await admitIdentity(signal, identity);
       const result = await workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/cards?${query}`, { signal });
-      if (identity === 'anonymous') await admitAnonymous(signal);
+      await admitIdentity(signal, identity);
       return result;
     }, controller.signal).then(p => {
       if (!active) return;
@@ -197,23 +230,64 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     }).catch(error => {
       if (!active) return;
       setResult(undefined); setNotice('Filtered Cards could not be loaded. Try again or refresh the Board.');
-      if (error instanceof ChangedFilterIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { setOpen(false); setIdentity(undefined); setApplied(undefined); setCanvasMode(false); onRefresh(); }
+      if (error instanceof ChangedFilterIdentity || error instanceof ChangedSearchInteractionActor || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+        setOpen(false); setIdentity(undefined); setApplied(undefined); setCanvasMode(false); setCriteria(empty()); setChangeIntent(undefined); setChangeNotice(undefined);
+        acknowledgments.current.clear(); changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false); onRefresh();
+      }
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); setLoading(false); };
   }, [open, canvasMode, applied, identity, disabled, available, org, board, snapshot, cursor, retry, onRefresh, onCanvasChange]);
-  function clear() {
+  function commitClear() {
     setCanvasMode(false); setCriteria(empty()); setApplied(undefined); setResult(undefined); setCursor(undefined);
     if (identity) try { sessionStorage.removeItem(storageKey(identity)); } catch { /* Optional storage. */ }
   }
-  function apply() {
-    if (!identity || disabled || labelLoading || memberLoading) return;
-    const next = { ...criteria, keyword: criteria.keyword.trim(), labels: [...criteria.labels], members: [...criteria.members] };
+  function commitApply(next: Criteria) {
+    if (!identity) return;
     try { sessionStorage.setItem(storageKey(identity), JSON.stringify(next)); } catch { /* Optional persistence. */ }
     setApplied(next); setCursor(undefined);
   }
-  function close() { epoch.current++; pending.current?.abort(); pending.current = undefined; memberPending.current?.abort(); memberPending.current = undefined; setMemberLoading(false); setMembers([]); setMemberOpen(false); setLabelLoading(false); setOpen(false); setOpeningPending(undefined); setResult(undefined); }
+  async function change(action: 'apply' | 'clear', original?: BoardFilterChangeIntent, owner?: HTMLElement) {
+    if (!identity || disabled || !available || labelLoading || memberLoading || changePending.current || changeIntent && !original) return;
+    const next = action === 'clear' ? empty() : { ...criteria, keyword: criteria.keyword.trim(), labels: [...criteria.labels], members: [...criteria.members] };
+    if (identity === 'anonymous') { if (action === 'clear') commitClear(); else commitApply(next); return; }
+    let intent: BoardFilterChangeIntent;
+    try { intent = original ?? createBoardFilterChange({ actor: identity, organization: org, board }, action, next); }
+    catch { setChangeNotice('Check the current filter criteria before applying again.'); return; }
+    changeOwner.current = owner ?? null; restoreChangeFocus.current = !!owner; changeAction.current = action; parkRecoveryFocus(owner ?? null);
+    changeDialog.current = owner?.closest('[role="dialog"][data-mui-focusable]') ?? null;
+    const controller = new AbortController(); changePending.current = controller; setChangeIntent(intent); setChangeBusy(true); setChangeNotice(undefined);
+    try {
+      try { retainBoardFilterChange(sessionStorage, intent); }
+      catch (error) { if (error instanceof BoardFilterRecoveryConflict || error instanceof ExpiredBoardFilterChange) throw error; /* Optional storage failure keeps the in-memory original. */ }
+      const result = await submitBoardFilterChange(intent, controller.signal, acknowledgments.current);
+      if (changePending.current !== controller || controller.signal.aborted) return;
+      try { discardBoardFilterChange(sessionStorage, intent); } catch { /* Optional storage. */ }
+      setChangeIntent(undefined);
+      if (new URLSearchParams(intent.query).get('change') === 'clear') commitClear(); else commitApply(boardFilterChangeCriteria(intent));
+      if (result.firstAcknowledgment) setChangeNotice('Filter change acknowledged.');
+    } catch (error) {
+      if (changePending.current !== controller || controller.signal.aborted) return;
+      if (error instanceof BoardFilterRecoveryConflict) {
+        let previous: BoardFilterChangeIntent | undefined;
+        try { previous = restoreBoardFilterChange(sessionStorage, intent); } catch { /* Optional storage. */ }
+        setChangeIntent(previous); setChangeNotice(previous ? 'An earlier filter change is unconfirmed. Retry the original change.'
+          : 'Filter recovery storage is full. Recover pending changes before applying another filter.');
+      } else if (error instanceof ExpiredBoardFilterChange) {
+        try { discardBoardFilterChange(sessionStorage, intent); } catch { /* Optional storage. */ }
+        setChangeIntent(undefined); setApplied(undefined); setResult(undefined); setCanvasMode(false);
+        setChangeNotice('The original filter change expired. Review the current filters before applying again.'); onRefresh();
+      } else if (error instanceof ChangedSearchInteractionActor || error instanceof WorkRequestError && [400, 401, 403, 404].includes(error.status)) {
+        try { discardBoardFilterChange(sessionStorage, intent); } catch { /* Optional storage. */ }
+        setChangeIntent(undefined); acknowledgments.current.clear(); setCriteria(empty()); setApplied(undefined); setResult(undefined); setCanvasMode(false);
+        setIdentity(undefined); setOpen(false); setChangeNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); onRefresh();
+      } else setChangeNotice('The filter change is unconfirmed. Retry the original change to recover its acknowledgment.');
+    } finally { if (changePending.current === controller) { changePending.current = undefined; setChangeBusy(false); } }
+  }
+  function clear(event: React.MouseEvent<HTMLButtonElement>) { void change('clear', undefined, event.currentTarget); }
+  function apply(event: React.MouseEvent<HTMLButtonElement>) { void change('apply', undefined, event.currentTarget); }
+  function close() { restoreChangeFocus.current = false; epoch.current++; pending.current?.abort(); pending.current = undefined; memberPending.current?.abort(); memberPending.current = undefined; changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false); setMemberLoading(false); setMembers([]); setMemberOpen(false); setLabelLoading(false); setOpen(false); setOpeningPending(undefined); setResult(undefined); }
   return <>
-    {available && <Button onClick={() => { setOpen(true); setOpeningPending(`${org}/${board}`); }}>Filter Board Cards</Button>}
+    {available && <Button ref={filterTrigger} onClick={() => { setOpen(true); setOpeningPending(`${org}/${board}`); }}>Filter Board Cards</Button>}
     {canvasMode && !open && <Stack spacing={1}>
       <Typography role="status">{result ? `Filtered Board: ${result.items.length} matching Cards on this page.` : 'Checking filtered Board Cards…'}</Typography>
       <Typography variant="body2">Open a Card to move it, or clear filters to reorder the full Board.</Typography>
@@ -221,11 +295,12 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
       <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
         {result?.next && <Button disabled={disabled || loading} onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
         {cursor && <Button disabled={disabled || loading} onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
-        <Button disabled={disabled} onClick={clear}>Clear Board filters</Button>
+        <Button disabled={disabled || changeBusy || !!changeIntent} onClick={clear}>Clear Board filters</Button>
         {notice && <Button disabled={disabled || loading} onClick={() => setRetry(n => n + 1)}>Retry filtered Cards</Button>}
       </Stack>
     </Stack>}
     {!open && (notice || labelNotice) && <Typography role="status">{notice || labelNotice}</Typography>}
+    {!open && changeNotice && <Typography role="status">{changeNotice}</Typography>}
     <Dialog open={open && available} onClose={close} fullWidth maxWidth="sm">
       <DialogTitle>Filter Board Cards</DialogTitle>
       <DialogContent>{openingPending ? <Typography role="status">Checking current Board access…</Typography> : <Stack spacing={2}>
@@ -270,9 +345,13 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
         <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
           <Button disabled={disabled || labelLoading} onClick={() => void loadLabels()}>Reload label choices</Button>
           {labelCursor && <Button disabled={disabled || labelLoading} onClick={() => void loadLabels(labelCursor!)}>Next label choices</Button>}
-          <Button disabled={disabled || labelLoading || memberLoading || !identity} onClick={apply}>Apply filters</Button>
-          <Button disabled={disabled || labelLoading || !identity} onClick={clear}>Clear filters</Button>
+          <Button ref={applyAction} disabled={disabled || labelLoading || memberLoading || !identity || changeBusy || !!changeIntent} onClick={apply}>Apply filters</Button>
+          <Button ref={clearAction} disabled={disabled || labelLoading || !identity || changeBusy || !!changeIntent} onClick={clear}>Clear filters</Button>
         </Stack>
+        {changeBusy && <Typography role="status">Checking filter change…</Typography>}
+        {changeNotice && <Typography role="status">{changeNotice}</Typography>}
+        {changeIntent && <Button ref={retryAction} disabled={disabled || changeBusy || labelLoading || memberLoading || !identity}
+          onClick={event => void change(new URLSearchParams(changeIntent.query).get('change') === 'clear' ? 'clear' : 'apply', changeIntent, event.currentTarget)}>Retry original filter change</Button>}
         {loading && <Typography role="status">Loading filtered Cards…</Typography>}
         {notice && <Alert severity="warning">{notice}</Alert>}
         {notice && <Button disabled={disabled || loading} onClick={() => setRetry(n => n + 1)}>Retry filtered Cards</Button>}

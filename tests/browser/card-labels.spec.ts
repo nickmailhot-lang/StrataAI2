@@ -103,6 +103,19 @@ for (const width of [1280, 390]) {
       const remainingItems = (await remaining.json()).items; expect(remainingItems).toHaveLength(1); expect(remainingItems[0].id).toBe(labels[0]);
       await navigate(`/app/${org}/boards/${board}`);
       const edits: { url: string; key: string | undefined; body: string | null }[] = [];
+      const filterActor = (await (await context.request.get('/me')).json()).id;
+      const filterChanges: { url: string; key: string | undefined; source: Record<string, unknown> }[] = [];
+      await page.route(`**/boards/${board}/cards/filter-change?*`, async route => {
+        const request = route.request(); expect(request.method()).toBe('POST'); expect(request.postData()).toBeNull();
+        expect(request.headers()['x-strataai-expected-actor']).toBe(filterActor);
+        const reply = await route.fetch(); expect(reply.status()).toBe(200); expect(reply.headers()['cache-control']).toContain('no-store');
+        const source = await reply.json();
+        expect(Object.keys(source).sort()).toEqual(['actorId','boardId','createdAt','entityId','entityType','eventId','eventType','metadata','organizationId','version']);
+        expect(source).toMatchObject({ actorId: filterActor, organizationId: org, boardId: board, eventType: 'BOARD_FILTER_CHANGED', entityType: 'BoardFilter', version: 1, metadata: {} });
+        expect(source.entityId).toBe(source.eventId); expect(source.eventId).toMatch(/^[0-9a-f-]{36}$/); expect(Number.isFinite(Date.parse(source.createdAt))).toBe(true);
+        filterChanges.push({ url: request.url(), key: request.headers()['idempotency-key'], source });
+        if (filterChanges.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
+      });
       const filterButton = page.getByRole('button', { name: 'Filter Board Cards', exact: true });
       await expect(filterButton).toBeEnabled(); await filterButton.press('Enter');
       const filters = page.getByRole('dialog', { name: 'Filter Board Cards' });
@@ -111,17 +124,26 @@ for (const width of [1280, 390]) {
       await filters.getByLabel('Card keyword').fill('absent');
       const apply = filters.getByRole('button', { name: 'Apply filters', exact: true });
       await expect(apply).toBeEnabled(); await apply.press('Enter');
+      const originalRetry = filters.getByRole('button', { name: 'Retry original filter change', exact: true });
+      await expect(originalRetry).toBeEnabled(); await expect(originalRetry).toBeFocused(); await originalRetry.press('Enter');
+      await expect(filters.getByText('Filter change acknowledged.', { exact: true })).toBeVisible();
+      expect(filterChanges).toHaveLength(2); expect(filterChanges[1]).toEqual(filterChanges[0]); await expect(apply).toBeFocused();
       await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
       await filters.getByRole('combobox', { name: 'Match filters' }).press('Enter');
       await page.getByRole('option', { name: 'Match ANY', exact: true }).press('Enter');
       await expect(apply).toBeEnabled(); await apply.press('Enter');
       await expect(filters.getByRole('link', { name: 'Labeled work — Planning', exact: true })).toBeVisible();
+      expect(filterChanges).toHaveLength(3); expect(filterChanges[2].key).not.toBe(filterChanges[0].key);
+      expect(filterChanges[2].source.eventId).not.toBe(filterChanges[0].source.eventId);
       await page.reload(); await expect(filterButton).toBeEnabled(); await filterButton.press('Enter');
       await expect(filters.getByLabel('Card keyword')).toHaveValue('absent');
       await expect(filters.getByRole('checkbox', { name: 'Priority (red)', exact: true })).toBeChecked();
       await expect(filters.getByRole('combobox', { name: 'Match filters' })).toHaveText('Match ANY');
+      expect(filterChanges).toHaveLength(3);
       await filters.getByRole('button', { name: 'Clear filters', exact: true }).press('Enter');
       await expect(filters.getByLabel('Card keyword')).toHaveValue('');
+      expect(filterChanges).toHaveLength(4); expect(new URL(filterChanges[3].url).searchParams.get('change')).toBe('clear');
+      expect(filterChanges[3].key).not.toBe(filterChanges[2].key);
       await filters.getByRole('button', { name: 'Close filters', exact: true }).press('Enter'); await expect(filters).toHaveCount(0);
       await page.route(`**/labels/${labels[0]}`, async route => {
         if (route.request().method() !== 'PATCH') return route.continue();

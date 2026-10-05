@@ -6,7 +6,7 @@ At `e77195d`, [run 37241937689](https://github.com/nickmailhot-lang/StrataAI2/ac
 
 The same run retained `search-capacity-e77195d81c018db6631c4f0e69baddc23dce7cbc`, artifact `11318292455`, SHA-256 `849211625cb03cdc4b8aa7508618485d5def38f37a4545d0410405622f2de327`. The inspected report confirms 200 Lists, 5,000 active Cards and 100,000 archived Cards; active/archive first and seek pages each contain 50 matching persisted IDs, with no overlap and unchanged read state. Twenty serial warm samples per page yielded p95 206.047/210.616 ms (active first/seek) and 207.680/206.544 ms (archive first/seek), under the unchanged 500 ms engineering read budget. This is one-client bounded-page evidence, not concurrent-load or native large-result rendering proof.
 
-The native global-search cases now additionally withdraw the actual reader session while results are visible, require automatic foreground withdrawal of result links/continuation and all three criteria, require HTTP 401, and compare the independent editor's full Board snapshot before/after. Fresh login and explicit search must recover without navigation or reload. Browser TypeScript and collection pass; this new extension still requires real-image execution. The specification's `SEARCH_EXECUTED`/`BOARD_FILTER_CHANGED` event contracts remain unresolved; bounded observation counters do not prove durable domain events. PRD-16 remains open, estimated 20% remaining.
+The native global-search cases now additionally withdraw the actual reader session while results are visible, require automatic foreground withdrawal of result links/continuation and all three criteria, require HTTP 401, and compare the independent editor's full Board snapshot before/after. Fresh login and explicit search must recover without navigation or reload. Browser TypeScript and collection pass; this new extension still requires real-image execution. Private `SEARCH_EXECUTED`/`BOARD_FILTER_CHANGED` producers and canonical acknowledgment consumers are implemented. The new Board Apply/Clear browser integration has local test proof; native canonical/recovery assertions still require exact-image CI. PRD-16 remains open, estimated 18% remaining.
 
 Anonymous PUBLIC Board filtering now uses the owning tenant read transaction with a null actor, locked active Organization and PUBLIC active Board, and admission revalidation before and after content selection. The shared public read gate also retains its existing Board image consumer. Bounded Card filters and label choices admit public keyword/label/completion/deadline/recent-update criteria; member predicates still require current Organization membership, and anonymous label choices grant neither editing nor deletion. PRIVATE, archived or unavailable parents remain concealed before input validation. Global search still requires authentication.
 
@@ -417,17 +417,16 @@ client's filter criteria. Source clocks are UTC at database precision.
 
 The source envelope now has registered PostgreSQL and process-local Demo append
 adapters. Successful `GET /search` pages now produce and return their private
-execution source. Board filter changes do not yet produce their source. Required
-next integration includes the Board producer, current session/Board proof before
-replay, protected bounded cursors, and actual client consumption/recovery.
+execution source. Authenticated Board Apply/Clear intents now use the private
+retry-aware producer described below. Current-account fences and original-key
+HTTP recovery are implemented; full native/reconnect acceptance remains pending.
 Anonymous filtering must not fabricate an actor or emit an authenticated source.
 The identity account-event allowlist and shared Work stream remain unchanged.
 Two contract tests cover canonical serialization, absence of fabricated
 tenant/content metadata and invalid scope/identity refusal. Domain tests passed
 in CI for the source contract. The full .NET build passes with zero warnings/errors;
 new runtime tests execute in Linux CI because local application control prevents
-.NET test execution. Domain events emitted
-and consumed remain incomplete; PRD-16 stays open, estimated 20% remaining.
+.NET test execution. Native proof of emitted and consumed domain events remains incomplete; PRD-16 stays open, estimated 18% remaining.
 
 Migration 076 adds actor-private search interaction streams and immutable source
 rows with forced subject RLS, paired tenant/Board foreign keys, fixed canonical
@@ -467,7 +466,7 @@ inside the Work read boundary for every Board-scoped append, including duplicate
 It refuses at its process-local capacity rather than evicting originals. A Demo
 host test covers original-ID deduplication, changed-clock refusal, late rollback,
 private nonmember refusal, actual MEMBER admission, and withdrawn-grant duplicate
-refusal. Its zero-warning build passes; execution awaits CI. This test's actor
+refusal. Its zero-warning build and full API-host execution pass in source CI. This test's actor
 authorization is synthetic and does not prove HTTP source production.
 ### Successful global search source production
 
@@ -492,10 +491,10 @@ The HTTP host test checks the exact acknowledgment allowlist, authenticated
 actor, canonical type/entity/version, null tenant scope, empty metadata, and
 distinct original IDs across successful pages. A synthetic final-session refusal
 test proves owning rollback by establishing a changed-clock original with the
-refused EventId afterward. These new tests compile with zero warnings/errors;
-actual execution awaits CI. Board filter production, protected bounded replay
-and reconnect recovery remain outstanding;
-PRD-16 stays open at 20% estimated remaining.
+refused EventId afterward. These tests have executed in passing source CI;
+the run-specific evidence below distinguishes source from native release proof.
+Full reconnect/native recovery acceptance remains outstanding;
+PRD-16 stays open at 18% estimated remaining.
 
 The browser `boardFilterChange` transport/recovery module is now implemented as
 the prerequisite for wiring these controls. It creates a frozen normalized
@@ -509,16 +508,17 @@ original idempotency headers, and parses/deduplicates the canonical source only
 after both checks and cancellation fences. Thirty focused search tests pass,
 including lost response/navigation retry, changed accounts before/after dispatch,
 foreign-scope acknowledgment, cancellation and storage capacity. Web typecheck
-and lint pass. The existing BoardFilterControl does not yet invoke this module;
-this is transport/recovery evidence, not completed Apply/Clear or native proof.
+and lint pass. BoardFilterControl now invokes this module for authenticated
+Apply/Clear, as described below. Transport tests alone do not prove native UX.
 
 HTTP producer run 37336426132 passed web and restricted PostgreSQL jobs but
 failed one API test assertion: the changed-account guard correctly returned
 the existing `401 session_unavailable` envelope, whereas the fixture expected
 403. Commit `0d96188` corrects that expectation without changing production
 behavior or removing the code/no-receipt assertions. The corrected full API suite, web and restricted PostgreSQL jobs pass in
-run 37337412135. Exact images are still building; release acceptance remains
-unproven. The browser transport module added afterward has local proof only.
+run 37337412135. Build-once images and security checks also pass; container
+integration remains live. The browser integration added afterward has local
+proof only, and full release acceptance remains unproven.
 
 ### Browser consumption of global search acknowledgments
 
@@ -580,14 +580,31 @@ retry, changed input, independent Clear, unchanged Board state, validation, CSRF
 and anonymous refusal. The new synthetic-session producer fixture covers private
 nonmember refusal, active MEMBER admission, fresh and replayed final session
 refusal, late actual Board-grant withdrawal, and full source/receipt rollback.
-These new tests compile with zero warnings/errors; their execution awaits CI.
+These tests execute in the passing full API-host suite for `0d96188`,
+run 37337412135. This proves the declared host/session boundary, not native UX.
 
-Browser Apply/Clear is not yet connected to this endpoint. Session-local
-criteria reads for restoration, pagination, canonical refresh and reconnect must
-remain distinct from actual change intents. Browser original-key retry, canonical
-acknowledgment consumption, current-account fences and native acceptance remain
-required. Anonymous filtering must never fabricate a personal actor/event.
-PRD-16 stays open at 20% estimated remaining.
+BoardFilterControl now sends authenticated Apply/Clear through this endpoint
+and commits applied criteria only after the admitted canonical acknowledgment.
+Uncertain replies retain the immutable original and expose an explicitly named
+retry; replacement actions stay disabled. Close/remount restores the actor/Board
+original without replacing its key or input. A newly edited draft does not alter
+the recovered intent. Canonical acknowledgment and retry restore owned keyboard
+focus. Known account/access denial withdraws criteria, directories, results and
+pending UI; expiry retires the old request and requires review before another
+Apply. Storage conflicts recover an existing original rather than dispatching a
+replacement. Storage-provider failure can retain an original in memory only;
+remount recovery requires functioning session storage.
+
+Label, member and result reads now fence disclosure with current-account checks
+before/after IO. Anonymous PUBLIC filtering stays read-only, with no fabricated
+personal source. Restoration, paging, canonical refresh and reconnect are GETs
+and do not manufacture change events. The new native desktop/phone label cases
+inspect exact canonical sources, drop one committed reply, recover identical
+input/key/source, then check independent Apply/Clear originals and zero writes
+on reload. The anonymous native case requires zero filter-change POSTs. Native
+execution remains pending; two-client/reconnect acceptance still requires the
+full release suite.
+PRD-16 stays open at 18% estimated remaining.
 
 The browser canonical parser also admits `BOARD_FILTER_CHANGED` originals against
 an independently supplied current actor and Organization/Board pair. It requires
@@ -596,9 +613,9 @@ the exact ten-field envelope, BoardFilter type, original entity identity, versio
 are refused. The bounded acknowledgment consumer compares the complete original
 type, actor, scope, entity, version and clock before suppressing a duplicate
 EventId. A changed scope or type cannot pass simply by retaining the clock.
-Twenty-one focused search parser/component tests pass locally. This parser is a
-delivery prerequisite; browser Apply/Clear does not yet call the new endpoint
-or consume its canonical original.
+The parser is now consumed by Board Apply/Clear through the admitted browser
+transport. Focused parser, transport, criteria/result and real-transport component
+tests pass locally; native acceptance remains pending.
 
 ### Board filter retry storage
 
@@ -638,4 +655,18 @@ executed successfully in the full source gate at revision `79788f6`,
 That evidence includes actual restricted C# original identity/clock and full
 rollback, ordered upgrade/repeat and SQL capability checks. It does not establish
 new HTTP producer execution, browser retry/recovery or native acceptance.
-PRD-16 stays open at 20% estimated remaining.
+PRD-16 stays open at 18% estimated remaining.
+
+
+Current Board filter integration validation: 35 criteria/directory/result tests
+use an explicitly mocked acknowledgment/account-probe boundary; 11 separate
+component tests use the actual same-origin transport and canonical parser with
+only declared HTTP response fixtures. The latter cover Apply/Clear originals,
+no change writes on refresh, lost-response remount recovery despite a newer
+draft, account changes before/after POST and during label/member/result reads,
+foreign-scope response withholding, cancellation, owned keyboard focus and a
+competing retained original. Thirty parser/transport/global-search tests also
+pass. These are local source checks; they do not establish actual PostgreSQL
+browser delivery or immutable native acceptance. Web/browser typecheck and lint
+pass. Estimated PRD-16 work remaining is 18%; full native recovery, reconnect,
+two-client and release acceptance remain required before closure.

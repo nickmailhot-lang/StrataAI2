@@ -26,6 +26,8 @@ for (const width of [1280, 390]) {
     try {
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(request, board);
       expect((await context.request.get('/me')).status()).toBe(401);
+      let privateFilterWrites = 0;
+      page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/cards/filter-change')) privateFilterWrites++; });
       const beforeReply = await request.get(`/boards/${board}`); expect(beforeReply.status()).toBe(200);
       const before = await beforeReply.json();
       const path = `/app/${org}/boards/${board}`; const reads = trackBoardReads(page, board, path);
@@ -48,6 +50,7 @@ for (const width of [1280, 390]) {
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const retainedReply = await request.get(`/boards/${board}`); expect(retainedReply.status()).toBe(200);
       expect(await retainedReply.json()).toEqual(before);
+      expect(privateFilterWrites).toBe(0);
       const withdraw = await request.patch(`/boards/${board}/visibility`, {
         headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { visibility: 'PRIVATE', version: before.board.version },
       });

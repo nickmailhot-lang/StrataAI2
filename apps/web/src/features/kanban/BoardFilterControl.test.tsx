@@ -4,6 +4,17 @@ import type { ComponentProps } from 'react';
 import { BoardFilterControl } from './BoardFilterControl';
 import type { BoardSnapshot } from '../../api/workManagement';
 import { filteredBoardCanvas } from './boardFilterCanvas';
+// These fixtures isolate criteria, directories and result reconciliation.
+// BoardFilterInteractionControl.test.tsx exercises the real transport and
+// account probes; search/boardFilterChange.test.ts exercises retry protocol.
+vi.mock('../search/boardFilterChange', async importOriginal => ({
+  ...await importOriginal<typeof import('../search/boardFilterChange')>(),
+  verifyBoardFilterActor: vi.fn(async () => {}),
+  submitBoardFilterChange: vi.fn(async (intent: import('../search/boardFilterChange').BoardFilterChangeIntent) => ({
+    firstAcknowledgment: true, source: { eventId: intent.key, actorId: intent.actor, organizationId: intent.organization, boardId: intent.board,
+      eventType: 'BOARD_FILTER_CHANGED', entityType: 'BoardFilter', entityId: intent.key, version: 1, metadata: {}, createdAt: new Date().toISOString() },
+  })),
+}));
 const board = '11111111-1111-1111-1111-111111111111', org = '22222222-2222-2222-2222-222222222222';
 const actor = '33333333-3333-3333-3333-333333333333', list = '44444444-4444-4444-4444-444444444444';
 const label = { id: '55555555-5555-5555-5555-555555555555', organizationId: org, boardId: board, name: 'Priority', color: 'red', deleted: false };
@@ -78,7 +89,7 @@ it('lets a viewer apply canonical label and keyword predicates and persists only
   expect(JSON.parse(sessionStorage.getItem(storage())!)).toEqual({ keyword: 'roof', labels: [label.id], members: [], match: 'all' });
   expect(sessionStorage.getItem(storage())).not.toContain('Persisted match');
   fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-  expect(sessionStorage.getItem(storage())).toBeNull(); expect(screen.queryByRole('link', { name: 'Persisted match — Planning' })).not.toBeInTheDocument();
+  await waitFor(() => expect(sessionStorage.getItem(storage())).toBeNull()); expect(screen.queryByRole('link', { name: 'Persisted match — Planning' })).not.toBeInTheDocument();
 });
 it('restores valid criteria and does not reuse another signed-in user’s criteria', async () => {
   sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Saved text', labels: [label.id], members: [actor], match: 'any' }));
@@ -126,9 +137,12 @@ it('paginates Cards without accumulating an unbounded result set', async () => {
 });
 it('retires late result responses after a canonical refresh', async () => {
   let resolve!: (value: Response) => void;
-  const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices())
-    .mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })).mockResolvedValueOnce(choices([{ ...label, name: 'Updated Priority' }]))
-    .mockResolvedValueOnce(results([{ ...card, title: 'Fresh match' }]));
+  let labelReads = 0, cardReads = 0;
+  const fetch = vi.fn((path: string) => {
+    if (path === '/me') return Promise.resolve(response({ id: actor }));
+    if (path.includes('/labels')) return Promise.resolve(choices(++labelReads === 1 ? [label] : [{ ...label, name: 'Updated Priority' }]));
+    return ++cardReads === 1 ? new Promise<Response>(done => { resolve = done; }) : Promise.resolve(results([{ ...card, title: 'Fresh match' }]));
+  });
   vi.stubGlobal('fetch', fetch); const p = props(); const view = mount(p); await open(); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
   await waitFor(() => expect(resolve).toBeDefined());
   view.rerender(<MemoryRouter><BoardFilterControl {...p} snapshot={{ ...snapshot, lists: [...snapshot.lists] }} /></MemoryRouter>);
@@ -234,7 +248,7 @@ it('applies named assignees with labels and stores only user IDs under the admit
   const query = new URL(fetch.mock.calls[3][0], 'https://example.test').searchParams;
   expect(query.get('members')).toBe(member.userId); expect(query.get('labels')).toBe(label.id);
   const stored = sessionStorage.getItem(storage())!; expect(JSON.parse(stored).members).toEqual([member.userId]); expect(stored).not.toContain('Taylor');
-  fireEvent.click(screen.getByRole('button', { name: 'Clear filters' })); expect(screen.getByText('0 selected assignees')).toBeInTheDocument(); expect(sessionStorage.getItem(storage())).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Clear filters' })); await waitFor(() => expect(screen.getByText('0 selected assignees')).toBeInTheDocument()); expect(sessionStorage.getItem(storage())).toBeNull();
 });
 it('replaces bounded member pages while retaining selected IDs and enforces the 25-member cap', async () => {
   const items = Array.from({ length: 50 }, (_, i) => ({ userId: `88888888-8888-8888-8888-${String(i + 1).padStart(12, '0')}`, displayName: `Person ${i}` }));

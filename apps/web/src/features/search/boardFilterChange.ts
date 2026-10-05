@@ -7,7 +7,21 @@ export type BoardFilterCriteria = { keyword: string; labels: string[]; members: 
 export type BoardFilterChangeScope = { actor: string; organization: string; board: string };
 export type BoardFilterChangeIntent = Readonly<BoardFilterChangeScope & { key: string; query: string; createdAt: number }>;
 const lifetime = 24 * 60 * 60 * 1000;
+export class ExpiredBoardFilterChange extends Error {}
+export class BoardFilterRecoveryConflict extends Error {}
+export async function verifyBoardFilterActor(actor: string, signal: AbortSignal) {
+  const profile = await workRequest<{ id: unknown }>('/me', { signal });
+  if (!uuid(actor) || !uuid(profile?.id) || profile.id.toLowerCase() !== actor.toLowerCase()) throw new ChangedSearchInteractionActor();
+}
 const fields = ['actor', 'board', 'createdAt', 'key', 'organization', 'query'];
+export function boardFilterChangeCriteria(intent: BoardFilterChangeIntent): BoardFilterCriteria {
+  const query = new URLSearchParams(intent.query);
+  return { keyword: query.get('keyword') ?? '', labels: query.get('labels')?.split(',').filter(Boolean) ?? [],
+    members: query.get('members')?.split(',').filter(Boolean) ?? [], match: query.get('match') as BoardFilterCriteria['match'],
+    ...(query.get('completion') === 'all' ? {} : { completion: query.get('completion') as BoardFilterCriteria['completion'] }),
+    ...(query.get('due') === 'all' ? {} : { due: query.get('due') as BoardFilterCriteria['due'] }),
+    ...(query.get('activity') === 'all' ? {} : { activity: query.get('activity') as BoardFilterCriteria['activity'] }) };
+}
 function scopeKey(scope: BoardFilterChangeScope) {
   if (![scope.actor, scope.organization, scope.board].every(uuid)) throw new Error('Invalid filter account or scope');
   return `strataai:board-filter-change:v1:${scope.actor.toLowerCase()}:${scope.organization.toLowerCase()}:${scope.board.toLowerCase()}`;
@@ -33,14 +47,15 @@ export function createBoardFilterChange(scope: BoardFilterChangeScope, change: '
     key: crypto.randomUUID(), query: canonicalQuery(change, criteria), createdAt: now });
 }
 function validateIntent(value: BoardFilterChangeIntent, scope: BoardFilterChangeScope, now: number) {
+  if (!Number.isSafeInteger(now) || !Number.isSafeInteger(value.createdAt) || value.createdAt < 0
+    || now < value.createdAt || now - value.createdAt >= lifetime) throw new ExpiredBoardFilterChange('Invalid or expired filter intent');
   const query = new URLSearchParams(value.query);
   const expected = canonicalQuery(query.get('change') ?? '', { keyword: query.get('keyword') ?? '',
     labels: query.get('labels')?.split(',').filter(Boolean) ?? [], members: query.get('members')?.split(',').filter(Boolean) ?? [],
     match: query.get('match') as BoardFilterCriteria['match'], completion: query.get('completion') as BoardFilterCriteria['completion'],
     due: query.get('due') as BoardFilterCriteria['due'], activity: query.get('activity') as BoardFilterCriteria['activity'] });
   if (Object.keys(value).sort().join(',') !== fields.join(',') || !uuid(value.key) || scopeKey(value) !== scopeKey(scope)
-    || value.query !== expected || !Number.isSafeInteger(value.createdAt) || value.createdAt < 0
-    || !Number.isSafeInteger(now) || now < value.createdAt || now - value.createdAt >= lifetime) throw new Error('Invalid or expired filter intent');
+    || value.query !== expected) throw new Error('Invalid filter intent');
 }
 export function restoreBoardFilterChange(storage: Storage, scope: BoardFilterChangeScope, now = Date.now()): BoardFilterChangeIntent | undefined {
   const key = scopeKey(scope);
@@ -55,9 +70,9 @@ export function retainBoardFilterChange(storage: Storage, intent: BoardFilterCha
   // One unresolved original per actor/Board; retain before the first request.
   validateIntent(intent, intent, now);
   const key = scopeKey(intent), previous = restoreBoardFilterChange(storage, intent, now);
-  if (previous && JSON.stringify(previous) !== JSON.stringify(intent)) throw new Error('Recover the original filter intent first');
+  if (previous && JSON.stringify(previous) !== JSON.stringify(intent)) throw new BoardFilterRecoveryConflict('Recover the original filter intent first');
   if (!previous && Object.keys(storage).filter(key => key.startsWith('strataai:board-filter-change:v1:')).length >= 1000)
-    throw new Error('Filter recovery storage is full');
+    throw new BoardFilterRecoveryConflict('Filter recovery storage is full');
   storage.setItem(key, JSON.stringify(intent));
 }
 export function discardBoardFilterChange(storage: Storage, scope: BoardFilterChangeScope) { storage.removeItem(scopeKey(scope)); }
@@ -65,14 +80,10 @@ export async function submitBoardFilterChange(intent: BoardFilterChangeIntent, s
   acknowledgments: SearchInteractionAcknowledgments, now = Date.now()) {
   validateIntent(intent, intent, now);
   return boundedWorkRead(async currentSignal => {
-    async function currentActor() {
-      const profile = await workRequest<{ id: unknown }>('/me', { signal: currentSignal });
-      if (!uuid(profile?.id) || profile.id.toLowerCase() !== intent.actor) throw new ChangedSearchInteractionActor();
-    }
-    await currentActor();
+    await verifyBoardFilterActor(intent.actor, currentSignal);
     const value = await workRequest<unknown>(`/boards/${encodeURIComponent(intent.board)}/cards/filter-change?${intent.query}`, {
       method: 'POST', signal: currentSignal, headers: { 'Idempotency-Key': intent.key, 'X-StrataAI-Expected-Actor': intent.actor } });
-    await currentActor(); currentSignal.throwIfAborted(); signal.throwIfAborted();
+    await verifyBoardFilterActor(intent.actor, currentSignal); currentSignal.throwIfAborted(); signal.throwIfAborted();
     const source = parseBoardFilterInteraction(value, intent.actor, intent.organization, intent.board);
     return { source, firstAcknowledgment: acknowledgments.consume(source) };
   }, signal);
