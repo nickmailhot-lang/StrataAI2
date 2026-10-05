@@ -205,12 +205,18 @@ for (const width of [1280, 390]) {
     // Travel toward the half with available canonical destination columns.
     const goRight = index < 100;
     const emptyColumns = new Set(pointerSnapshot.lists.filter(value => value.cards.length === 0).map(value => value.list.id));
-    const sourceBox = await handle.boundingBox(), canvasBox = await canvas.boundingBox();
-    expect(sourceBox).not.toBeNull(); expect(canvasBox).not.toBeNull();
     const horizontalOffset = await canvas.evaluate(node => node.scrollLeft);
+    // Window inventory and scroll reads above can overlap a live refresh.
+    // Bind the native input after those reads, with freshly admitted geometry.
+    await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+    await expect(handle).toBeEnabled();
+    const [sourceBox, canvasBox] = await Promise.all([handle.boundingBox(), canvas.boundingBox()]);
+    expect(sourceBox).not.toBeNull(); expect(canvasBox).not.toBeNull();
     const left = Math.max(0, canvasBox!.x), right = Math.min(width, canvasBox!.x + canvasBox!.width);
     const dragY = sourceBox!.y + sourceBox!.height / 2;
-    await page.mouse.move(sourceBox!.x + sourceBox!.width / 2, dragY); await page.mouse.down();
+    await page.mouse.move(sourceBox!.x + sourceBox!.width / 2, dragY);
+    await expect(handle).toBeEnabled();
+    await page.mouse.down();
     await page.mouse.move(sourceBox!.x + sourceBox!.width / 2 + 12, dragY);
     await page.mouse.move(goRight ? right - 12 : left + 12, dragY, { steps: 12 });
     await expect(handle).toHaveAttribute('aria-pressed', 'true');
