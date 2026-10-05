@@ -30,6 +30,7 @@ function Archive({ org }: { org: string }) {
   const [intent, setIntent] = useState<Intent>(); const [writing, setWriting] = useState(false); const [conflict, setConflict] = useState(false);
   const [notice, setNotice] = useState<string>(); const [history, setHistory] = useState<(string | null)[]>([]);
   const [liveActor, setLiveActor] = useState<string>();
+  const [liveNotice, setLiveNotice] = useState<string>();
   const mounted = useRef(false); const actor = useRef<string | undefined>(undefined); const read = useRef<AbortController | undefined>(undefined);
   const write = useRef<AbortController | undefined>(undefined); const position = useRef<{ cursor: string | null; trail: (string | null)[] }>({ cursor: null, trail: [] });
   const refresh = useRef<HTMLButtonElement>(null); const queued = useRef(false);
@@ -65,12 +66,14 @@ function Archive({ org }: { org: string }) {
       if (!mounted.current || read.current !== c) return;
       if (actor.current && actor.current !== result.actor) retire();
       actor.current = result.actor; setLiveActor(result.actor); setCurrent(result.directory); setReady(true);
+      setLiveNotice(value => value ? 'Current archived boards checked.' : undefined);
       activityResult('archive_board_read', true, started);
       setNotice(value => value === 'Unable to confirm current Board archive access. Check again before continuing.' ? undefined : value);
     } catch (error) { if (mounted.current && read.current === c) {
       if (!(error instanceof WorkRequestError)) activityEvent('archive_board_read', 'exception');
       activityResult('archive_board_read', false, started);
       setCurrent(undefined); setReady(false);
+      setLiveNotice(undefined);
       if (error instanceof ChangedArchiveIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { retire(); actor.current = undefined; setLiveActor(undefined); }
       setNotice('Unable to confirm current Board archive access. Check again before continuing.');
     } } finally { if (mounted.current && read.current === c) {
@@ -89,17 +92,20 @@ function Archive({ org }: { org: string }) {
   }, [org]);
   useEffect(() => {
     if (!liveActor) return;
-    const recover = () => {
+    const recover = (message: string) => {
       if (!mounted.current) return;
       // Fence an older read before a new canonical invalidation. Withdraw the
       // cached directory/review immediately, but retain any original command
       // key in memory for private acknowledgment recovery after re-admission.
       read.current?.abort(); read.current = undefined; queued.current = false;
       setReading(false); setReady(false); setCurrent(undefined); setReview(undefined); setConfirmed(false);
+      setLiveNotice(message);
       void load(undefined, undefined, 'reconnect');
     };
     return watchOrganizationBoards({ organizationId: org, userId: liveActor,
-      invalidate: recover, reset: recover, unavailable: recover });
+      invalidate: () => recover('Archived boards changed. Checking current access.'),
+      reset: () => recover('Checking current archive access.'),
+      unavailable: () => recover('Live updates interrupted. Checking current access.') });
   }, [org, liveActor]);
   const latest = current?.items.find(b => b.id === review?.id);
   const changed = !!review && !intent && (!latest || latest.version !== review.version || latest.name !== review.name || latest.archivedAt !== review.archivedAt);
@@ -132,6 +138,7 @@ function Archive({ org }: { org: string }) {
     <Typography component="h2" variant="h4">Archived boards</Typography>
     <Button component={Link} to={`/app/${org}`} disabled={writing || !!intent}>Back to Organization</Button>
     <Typography>Only Boards you currently administer appear here. Restore a Board to use it again.</Typography>
+    <Typography role="status" aria-live="polite" aria-atomic="true">{liveNotice}</Typography>
     {notice && !review && <Alert severity="info" role="status">{notice}</Alert>}
     {intent && !review && <Button disabled={reading || writing || !ready} onClick={() => void change()}>Retry this change</Button>}
     <Button ref={refresh} disabled={reading || writing} onClick={() => void load(undefined, undefined, 'retry')}>Check current archived boards</Button>

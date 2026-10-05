@@ -30,10 +30,12 @@ it('withdraws cached names immediately on live reset and fences the previous rea
   await waitFor(() => expect(older).toBeDefined());
   act(() => callbacks.reset());
   expect(oldSignal!.aborted).toBe(true);
+  expect(screen.getByText('Checking current archive access.')).toHaveAttribute('aria-live', 'polite');
   expect(screen.queryByRole('article')).not.toBeInTheDocument(); expect(screen.queryByText('Planning')).not.toBeInTheDocument();
   await waitFor(() => expect(finish).toBeDefined());
   await act(async () => finish(response({ ...page, items: [] })));
   await screen.findByText('No administrable archived Boards on this page.');
+  expect(screen.getByText('Current archived boards checked.')).toHaveAttribute('aria-atomic', 'true');
   // A canceled network peer may still return. Its private snapshot must not
   // replace the later admitted empty directory or resurrect stale consent.
   await act(async () => older(response(page)));
