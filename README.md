@@ -19,6 +19,19 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 The [docs index](docs/README.md) links to every document, grouped by subject. Use it when you know a feature but not its filename.
 
+| Documentation topic | Browse the complete section |
+| --- | --- |
+| Requirements and implementation order | [Planning and dependency order](docs/README.md#planning-and-dependency-order) |
+| Configuration, deployment, and monitoring | [Runtime, deployment, and operations](docs/README.md#runtime-deployment-and-operations) |
+| Accounts, profiles, and invitations | [Identity, profiles, and invitations](docs/README.md#identity-profiles-and-invitations) |
+| Organization membership and permissions | [Organizations and access](docs/README.md#organizations-and-access) |
+| Board discovery, administration, and live collaboration | [Boards and collaboration](docs/README.md#boards-and-collaboration) |
+| List and Card workflows | [Lists and Cards](docs/README.md#lists-and-cards) |
+| Uploads, downloads, covers, and backgrounds | [Attachments and file storage](docs/README.md#attachments-and-file-storage) |
+| Personal notifications and activity history | [Notifications and activity](docs/README.md#notifications-and-activity) |
+| Verification results and remaining acceptance work | [Testing, security, performance, and acceptance](docs/README.md#testing-security-performance-and-acceptance) |
+| Transactions, retries, routing, and other shared contracts | [Shared architecture contracts](docs/README.md#shared-architecture-contracts) |
+
 - **`docs/architecture/`** explains shared contracts, security boundaries, persistence, runtime configuration, background processing, testing, and acceptance gaps. Start with its [overview](docs/architecture/README.md).
 - **Documents directly in `docs/`** describe specific Board, List, Card, identity, invitation, and collaboration behavior. They also retain browser evidence, performance notes, and focused implementation decisions.
 - **`docs/release/`** explains how to load, configure, migrate, and run the exact images produced by CI.
@@ -26,11 +39,14 @@ The [docs index](docs/README.md) links to every document, grouped by subject. Us
 
 For a feature change, read its behavior document, the related architecture contract, and its acceptance/evidence record. Evidence documents identify what was actually tested and what remains unresolved; older green runs apply to their recorded revision.
 
+The index provides descriptive document titles rather than requiring you to infer a subject from a filename. Links resolve relative to the current README, so they work in GitHub and a local Markdown viewer. To find a term across the documentation from the repository root, use `rg -n "search term" docs`. When adding a document, add it to the appropriate subject in [the index](docs/README.md).
+
 Useful routes through the docs include:
 
 - **Board collaboration:** [Board interface](docs/architecture/board-interface.md) → [windowing](docs/board-windowing.md) → [work synchronization](docs/architecture/work-synchronization.md) → [Organization Board realtime](docs/organization-board-realtime.md) → [Board acceptance](docs/architecture/prd-04-acceptance.md).
 - **Safe writes and recovery:** [command transactions](docs/architecture/work-command-transactions.md) → [command scopes](docs/architecture/work-command-scopes.md) → [command retries](docs/architecture/work-command-retries.md) → [current actor sessions](docs/architecture/command-actor-sessions.md).
 - **Files and backgrounds:** [object storage](docs/architecture/attachment-object-storage.md) → [attachment acceptance](docs/architecture/attachment-acceptance.md) → [Board background images](docs/board-background-images.md) → [cover lifecycle](docs/architecture/attachment-covers-lifecycle.md).
+- **Search and filters:** [Board filtering and private search interaction sources](docs/board-filtering.md) → [Organization access integrity](docs/architecture/organization-access-integrity.md) → [work synchronization](docs/architecture/work-synchronization.md). The filtering guide identifies the remaining producer, replay, and consumer work for private interaction events.
 - **Operating a release:** [release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [operator metrics](docs/architecture/operator-metrics.md).
 
 ## Adopted architecture
