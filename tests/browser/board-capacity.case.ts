@@ -16,7 +16,7 @@ for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 844 });
     expect((await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' }, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
     const result = await context.request.get(`/boards/${fixture.boardId}`); expect(result.status()).toBe(200);
-    const snapshot = await result.json() as { lists: { list: { id: string; name: string }; cards: { id: string; version: number }[] }[] };
+    const snapshot = await result.json() as { lists: { list: { id: string; name: string; version: number }; cards: { id: string; version: number }[] }[] };
     expect(snapshot.lists).toHaveLength(200);
     const index = snapshot.lists.findIndex(column => column.list.id === fixture.listId);
     expect(index).toBeGreaterThanOrEqual(0); const column = snapshot.lists[index];
@@ -188,6 +188,46 @@ for (const width of [1280, 390]) {
     await expect(last).toBeVisible(); await last.press('Enter');
     const close = page.getByRole('button', { name: 'Close', exact: true }); await expect(close).toBeEnabled(); await close.press('Enter');
     await expect(last).toBeFocused(); await expect(last).toBeInViewport();
+    const listSourceIndex = pointerSnapshot.lists.findIndex((value, index) => index + 8 < 200 && value.cards.length === 0);
+    expect(listSourceIndex).toBeGreaterThanOrEqual(0);
+    const sourceList = pointerSnapshot.lists[listSourceIndex];
+    await scrollToColumn(listSourceIndex);
+    const listRow = canvas.locator(`[data-board-window-id="${sourceList.list.id}"]`);
+    const listHandle = listRow.getByRole('button', { name: /^Drag .* list$/ });
+    await expect(listHandle).toBeEnabled(); await listHandle.press('Space');
+    await expect(listHandle).toHaveAttribute('aria-pressed', 'true'); await settleDrag();
+    const initialListIds = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
+    const initialListLast = Math.max(...initialListIds.map(id => pointerSnapshot.lists.findIndex(value => value.list.id === id)));
+    for (let step = 0; step < 8; step++) {
+      await page.keyboard.press('ArrowRight');
+      const neighbor = pointerSnapshot.lists[listSourceIndex + step + 1].list;
+      const target = canvas.locator(`[data-board-window-id="${neighbor.id}"]`).getByRole('region', { name: neighbor.name, exact: true });
+      await expect.poll(async () => {
+        const [sourceBox, targetBox] = await Promise.all([
+          listRow.getByRole('region', { name: sourceList.list.name, exact: true }).boundingBox(), target.boundingBox(),
+        ]);
+        return !!sourceBox && !!targetBox
+          && Math.abs(sourceBox.x + sourceBox.width / 2 - targetBox.x - targetBox.width / 2) < 2
+          && Math.abs(sourceBox.y + sourceBox.height / 2 - targetBox.y - targetBox.height / 2) < 2;
+      }).toBe(true);
+    }
+    const mountedListIds = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
+    expect(mountedListIds.some(id => pointerSnapshot.lists.findIndex(value => value.list.id === id) > initialListLast)).toBe(true);
+    await expect(listHandle).toHaveAttribute('aria-pressed', 'true');
+    let listWrites = 0;
+    page.on('request', request => { if (request.method() === 'PATCH' && new URL(request.url()).pathname === `/lists/${sourceList.list.id}`) listWrites++; });
+    const listReply = page.waitForResponse(response => response.request().method() === 'PATCH'
+      && new URL(response.url()).pathname === `/lists/${sourceList.list.id}`);
+    await page.keyboard.press('Space'); expect((await listReply).status()).toBe(200); expect(listWrites).toBe(1);
+    await expect(listRow.getByText('List move acknowledged. Current ordering is being checked.', { exact: true })).toBeVisible();
+    await waitForBoardDelivery(context.request, fixture.boardId);
+    const listResult = await context.request.get(`/boards/${fixture.boardId}`); expect(listResult.status()).toBe(200);
+    const listSnapshot = await listResult.json() as typeof snapshot;
+    expect(listSnapshot.lists[listSourceIndex + 7].list).toMatchObject({ id: sourceList.list.id, version: sourceList.list.version + 1 });
+    expect(listSnapshot.lists[listSourceIndex + 7].cards).toEqual(sourceList.cards);
+    expect(listSnapshot.lists.filter(value => value.list.id !== sourceList.list.id)).toEqual(pointerSnapshot.lists.filter(value => value.list.id !== sourceList.list.id));
+    const listFocus = listRow.getByRole('button', { name: `Move ${sourceList.list.name} list`, exact: true });
+    await expect(listFocus).toBeFocused(); await expect(listFocus).toBeInViewport();
     expect(await canvas.locator('[data-board-window-axis="lists"]').count()).toBeLessThan(15);
     expect(await cards.locator('[data-board-window-axis="cards"]').count()).toBeLessThan(40);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
