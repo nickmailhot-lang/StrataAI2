@@ -209,6 +209,20 @@ unavailability have distinct callbacks for the archive UI's disclosure and
 pending-command handling. Its 14 focused validation/connector tests pass locally,
 including foreign viewer refusal, malformed/private fields, corruption-shaped
 cursors, duplicate identity, reset, heartbeat and stale subscription/cleanup.
-It is not yet connected to ArchivedBoardsPage; that integration must preserve
-unconfirmed command identity while withdrawing unauthorised cached content.
+ArchivedBoardsPage now subscribes after current profile and directory admission.
+Canonical invalidation, reset and transport loss immediately withdraw cached
+names and review consent and fence older reads before re-admission. Unconfirmed
+commands retain their original key for an explicit private retry; confirmed
+identity or scope loss retires them. The combined connector and archive suite
+passes 29 local tests. The preceding transport revision 9c4eaeb passed CI
+Domain/API host tests, web quality and PostgreSQL integration; exact-image
+release acceptance and this browser increment are still pending.
 Native two-client/proxy/Worker evidence is still outstanding.
+
+The desktop and phone organization-board-live browser scenarios now collect real
+upstream WebSocket frames, compare lifecycle IDs with the original Board replay,
+exercise disconnect/resume without fabricated messages, and require cached names
+and destructive review to disappear on logout. The lifecycle receipt scenario
+now requires canonical deletion to remove stale consent while preserving the
+original retry key. Browser fixture typecheck and discovery pass locally; these
+new cases await exact-image execution and are not claimed as passed acceptance.

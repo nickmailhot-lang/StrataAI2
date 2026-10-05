@@ -102,7 +102,11 @@ for (const width of [1280, 390]) {
       await page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true }).focus(); await page.keyboard.press('Space');
       await page.getByRole('button', { name: 'Confirm permanent deletion', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Retry this change', exact: true })).toBeEnabled();
-      await expect(page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true })).toBeDisabled();
+      // The canonical deletion withdraws private review content even while the
+      // original command acknowledgment remains unresolved. Its key survives
+      // for the explicit retry below; stale destructive consent does not.
+      await expect(page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: board.name, exact: true })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Cancel change', exact: true })).toHaveCount(0);
       await expect(other.getByRole('alert')).toContainText('This board or action is unavailable.');
       await expect(other.getByRole('heading', { name: board.name, exact: true })).toHaveCount(0);
