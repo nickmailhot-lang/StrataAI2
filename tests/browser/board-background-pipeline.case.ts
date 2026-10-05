@@ -41,7 +41,7 @@ for (const width of [1280, 390]) {
       data: { cardId: fixture.cardId, attachmentId: candidate.attachmentId,
         attachmentVersion: candidate.attachmentVersion, boardVersion: before.version + 1 },
     });
-    expect(deniedSelection.status()).toBe(409);
+    expect(deniedSelection.status()).toBe(400);
     expect(await deniedSelection.json()).toMatchObject({ code: 'background_public_confirmation_required' });
     const unchanged = await context.request.get(`/boards/${board}`);
     expect(unchanged.status()).toBe(200);
