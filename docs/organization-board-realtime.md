@@ -32,8 +32,13 @@ an administrative transaction, including its dependent projection, and restores
 the guard before commit; this does not expose a runtime retention path.
 
 Strict local .NET build and migration-runner syntax checks pass. Actual new
-migration/storage execution is pending CI. Concurrent commit-order testing,
-current actor/Organization/qualifying Board administration before and after IO,
+migration/storage execution is pending CI. The separate required concurrency fixture holds a first restricted runtime
+transaction after its real Board source insertion, observes a second Board's
+actual transaction-ID lock wait, then releases and verifies committed sequence
+order despite reversed source clocks. Neither source may be visible before
+release or acquire fabricated readiness. Its observation loop is bounded and
+fails if the lock is not observed; it is not a browser retry/pacing change.
+Actual concurrency execution is pending CI. Current actor/Organization/qualifying Board administration before and after IO,
 privacy-bound cursor recovery, bounded delivered reads, the demo adapter,
 SignalR session withdrawal and the MUI archive consumer still need implementation
 and executed acceptance. No raw journal endpoint is exposed. Current foreground
