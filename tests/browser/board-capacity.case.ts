@@ -16,7 +16,7 @@ for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 844 });
     expect((await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' }, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
     const result = await context.request.get(`/boards/${fixture.boardId}`); expect(result.status()).toBe(200);
-    const snapshot = await result.json() as { lists: { list: { id: string }; cards: { id: string; version: number }[] }[] };
+    const snapshot = await result.json() as { lists: { list: { id: string; name: string }; cards: { id: string; version: number }[] }[] };
     expect(snapshot.lists).toHaveLength(200);
     const index = snapshot.lists.findIndex(column => column.list.id === fixture.listId);
     expect(index).toBeGreaterThanOrEqual(0); const column = snapshot.lists[index];
@@ -56,6 +56,25 @@ for (const width of [1280, 390]) {
     const next = cards.locator(`a[href$="/cards/${column.cards[cardIndex + 1].id}"]`);
     await expect(next.locator('..').getByRole('button', { name: /^Drag .* card$/ })).toBeFocused();
     await page.keyboard.press('Shift+Tab'); await expect(cards.locator(`a[href$="/cards/${column.cards[cardIndex].id}"]`)).toBeFocused();
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+    const retainedScroll = await cards.evaluate(node => node.scrollTop);
+    const section = list.getByRole('region', { name: column.list.name, exact: true });
+    const retainedSection = await section.evaluate(node => node.scrollTop);
+    const awayIndex = index < 100 ? 199 : 0;
+    const scrollToColumn = async (target: number) => canvas.evaluate((node, target) => {
+      const row = node.querySelector('[data-board-window-axis="lists"]')!;
+      node.scrollLeft = target * (row.getBoundingClientRect().width + 16);
+    }, target);
+    await scrollToColumn(awayIndex);
+    const awayList = canvas.locator(`[data-board-window-id="${snapshot.lists[awayIndex].list.id}"]`);
+    await expect(awayList).toBeVisible(); await awayList.getByRole('button', { name: /^Drag .* list$/ }).focus();
+    // Focus the destination to release the old List's focus retention, proving
+    // an actual unmount rather than a still-mounted offscreen source.
+    await expect(list).toHaveCount(0);
+    await scrollToColumn(index); await expect(list).toBeVisible();
+    await expect.poll(() => cards.evaluate(node => node.scrollTop)).toBe(retainedScroll);
+    await expect.poll(() => section.evaluate(node => node.scrollTop)).toBe(retainedSection);
+    await expect(middle).toBeVisible();
     const moving = column.cards[cardIndex];
     const handle = middle.locator('..').getByRole('button', { name: /^Drag .* card$/ });
     await expect(handle).toBeEnabled(); await handle.press('Space'); await expect(handle).toHaveAttribute('aria-pressed', 'true');

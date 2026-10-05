@@ -3,8 +3,10 @@ import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useDndContext } from '@dnd-kit/core';
 
 type Item = { id: string };
+export type BoardWindowHeights = Map<string, { width: number; rows: Map<string, number> }>;
 type Props<T extends Item> = {
   items: T[]; axis: 'lists' | 'cards'; memory: Map<string, number>; memoryKey: string;
+  heightMemory?: BoardWindowHeights;
   pinned?: string[]; end?: ReactNode; renderItem: (item: T) => ReactNode;
   ownsDrag?: (item: T, activeId: string) => boolean;
 };
@@ -24,13 +26,14 @@ export function BoardWindow<T extends Item>(props: Props<T>) {
       : <Stack spacing={1} sx={{ mt: 2 }}>{props.items.map(item => <Box key={item.id}>{props.renderItem(item)}</Box>)}</Stack>;
 }
 
-function Windowed<T extends Item>({ items, axis, memory, memoryKey, pinned = [], end, renderItem, ownsDrag }: Props<T>) {
+function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory, pinned = [], end, renderItem, ownsDrag }: Props<T>) {
   const horizontal = axis === 'lists'; const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('sm'));
   const { active } = useDndContext();
   const root = useRef<HTMLDivElement>(null); const rows = useRef(new Map<string, HTMLDivElement>());
   const [viewport, setViewport] = useState({ offset: memory.get(memoryKey) ?? 0, size: horizontal ? 1280 : 400, width: 1280 });
-  const [heights, setHeights] = useState(new Map<string, number>());
+  const [heights, setHeights] = useState(() => heightMemory?.get(memoryKey)?.rows ?? new Map<string, number>());
+  const measuredWidth = useRef(heightMemory?.get(memoryKey)?.width);
   const [focused, setFocused] = useState<string>();
   const pendingFocus = useRef<{ id: string; reverse: boolean } | undefined>(undefined);
   const pendingAnchor = useRef<number | undefined>(undefined);
@@ -63,14 +66,29 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, pinned = [],
     const element = root.current; if (!element) return;
     if (horizontal) element.scrollLeft = memory.get(memoryKey) ?? 0;
     else element.scrollTop = memory.get(memoryKey) ?? 0;
-    const measure = () => setViewport(value => ({ ...value,
-      size: (horizontal ? element.clientWidth : element.clientHeight) || value.size,
-      width: window.innerWidth,
-    }));
+    const measure = () => {
+      const width = element.clientWidth;
+      if (!horizontal && width > 0 && measuredWidth.current !== width) {
+        if (measuredWidth.current !== undefined) {
+          // Text/cover heights at another width cannot recover this viewport.
+          // Retain the canonical anchor while rebuilding its measurements.
+          const previous = positions.current.entries;
+          const index = previous.findIndex(row => row.start + row.size > element.scrollTop);
+          if (index >= 0) pendingAnchor.current = index * (128 + gap) + Math.min(127, Math.max(0, element.scrollTop - previous[index].start));
+          const cleared = new Map<string, number>(); measured.current = cleared; setHeights(cleared);
+        }
+        measuredWidth.current = width;
+        heightMemory?.set(memoryKey, { width, rows: measured.current });
+      }
+      setViewport(value => ({ ...value,
+        size: (horizontal ? width : element.clientHeight) || value.size,
+        width: window.innerWidth,
+      }));
+    };
     measure();
     if (typeof ResizeObserver === 'undefined') { window.addEventListener('resize', measure); return () => window.removeEventListener('resize', measure); }
     const observer = new ResizeObserver(measure); observer.observe(element); return () => observer.disconnect();
-  }, [horizontal, memory, memoryKey]);
+  }, [horizontal, memory, memoryKey, heightMemory, gap]);
 
   useLayoutEffect(() => {
     if (horizontal || typeof ResizeObserver === 'undefined') return;
@@ -89,11 +107,14 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, pinned = [],
         return previous && previous.start + previous.size <= offset ? sum + row.height - previous.size : sum;
       }, 0);
       if (delta) pendingAnchor.current = offset + delta;
-      setHeights(previous => { const next = new Map(previous); for (const row of changed) next.set(row.id, row.height); return next; });
+      const next = new Map(measured.current); for (const row of changed) next.set(row.id, row.height);
+      measured.current = next;
+      if (measuredWidth.current !== undefined) heightMemory?.set(memoryKey, { width: measuredWidth.current, rows: next });
+      setHeights(next);
     });
     for (const i of indices) { const node = rows.current.get(items[i].id); if (node) observer.observe(node); }
     return () => observer.disconnect();
-  }, [horizontal, indices, items]);
+  }, [horizontal, indices, items, heightMemory, memoryKey]);
 
   useLayoutEffect(() => {
     const maximum = Math.max(0, layout.total + (horizontal && end ? 100 + gap : 0) - viewport.size);

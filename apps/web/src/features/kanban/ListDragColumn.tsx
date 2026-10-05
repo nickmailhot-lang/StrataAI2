@@ -1,10 +1,13 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Box, Button } from '@mui/material';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 export type ListDropRequest = { listId: string; name: string; version: number; before: string; nonce: string };
-export function ListDragColumn({ id, name, disabled, available, children }: { id: string; name: string; disabled: boolean; available: boolean; children: ReactNode }) {
+export function ListDragColumn({ id, name, disabled, available, children, scrollMemory }: { id: string; name: string; disabled: boolean; available: boolean; children: ReactNode; scrollMemory?: Map<string, number> }) {
   const drag = useDraggable({ id, disabled: disabled || !available }); const drop = useDroppable({ id, disabled: disabled || !available });
-  return <Box component="section" data-kanban-scroll aria-labelledby={`list-name-${id}`} ref={node => { drag.setNodeRef(node as HTMLElement | null); drop.setNodeRef(node as HTMLElement | null); }}
+  const element = useRef<HTMLElement | null>(null);
+  useLayoutEffect(() => { if (element.current) element.current.scrollTop = scrollMemory?.get(`section:${id}`) ?? 0; }, [id, scrollMemory]);
+  return <Box component="section" data-kanban-scroll aria-labelledby={`list-name-${id}`} ref={node => { element.current = node as HTMLElement | null; drag.setNodeRef(element.current); drop.setNodeRef(element.current); }}
+    onScroll={event => { if (event.target === event.currentTarget) scrollMemory?.set(`section:${id}`, event.currentTarget.scrollTop); }}
     sx={{ bgcolor: 'grey.100', borderRadius: 2, p: 2, minHeight: 240, maxHeight: '70vh', overflowY: 'auto', position: 'relative', zIndex: drag.isDragging ? 2 : 'auto',
       outline: drop.isOver && !drag.isDragging ? '2px solid' : undefined, outlineColor: 'primary.main',
       transform: drag.transform ? `translate3d(${drag.transform.x}px,${drag.transform.y}px,0)` : undefined }}>

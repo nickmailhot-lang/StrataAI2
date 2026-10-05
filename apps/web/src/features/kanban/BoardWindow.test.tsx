@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { BoardWindow } from './BoardWindow';
+import { BoardWindow, type BoardWindowHeights } from './BoardWindow';
 
 let active: { id: string } | null = null;
 vi.mock('@dnd-kit/core', () => ({ useDndContext: () => ({ active }) }));
@@ -106,4 +106,29 @@ it('remeasures variable-height Cards without moving the retained scroll anchor',
   await waitFor(() => expect(memory.get('cards')).toBe(20128));
   expect(viewport.scrollTop).toBe(20128);
   expect(screen.getAllByRole('link').length).toBeLessThan(30);
+});
+it('restores the same canonical Card range using measured heights after a List unmounts', () => {
+  const memory = new Map<string, number>([['cards', 10400]]);
+  const heightMemory: BoardWindowHeights = new Map([['cards', {
+    width: 1280, rows: new Map(cards.slice(0, 200).map(card => [card.id, 200])),
+  }]]);
+  const tree = () => <BoardWindow items={cards} axis="cards" memory={memory} memoryKey="cards" heightMemory={heightMemory} renderItem={renderItem} />;
+  const first = render(tree());
+  expect(screen.getByRole('link', { name: 'Open card-50' })).toBeVisible();
+  const retained = screen.getAllByRole('link').map(link => link.getAttribute('href'));
+  first.unmount(); render(tree());
+  expect(screen.getAllByRole('link').map(link => link.getAttribute('href'))).toEqual(retained);
+  expect(screen.getByLabelText('Cards').scrollTop).toBe(10400);
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+});
+it('invalidates another width’s row heights while retaining the canonical Card anchor', () => {
+  const memory = new Map<string, number>([['cards', 10400]]);
+  const heightMemory: BoardWindowHeights = new Map([['cards', {
+    width: 640, rows: new Map(cards.slice(0, 200).map(card => [card.id, 200])),
+  }]]);
+  render(<BoardWindow items={cards} axis="cards" memory={memory} memoryKey="cards" heightMemory={heightMemory} renderItem={renderItem} />);
+  expect(screen.getByRole('link', { name: 'Open card-50' })).toBeVisible();
+  expect(memory.get('cards')).toBe(6800);
+  expect(heightMemory.get('cards')?.width).toBe(1280);
+  expect(heightMemory.get('cards')?.rows.size).toBe(0);
 });

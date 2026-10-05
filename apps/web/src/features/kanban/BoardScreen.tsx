@@ -37,7 +37,7 @@ import { ChecklistManageControl } from './ChecklistManageControl';
 import { CardDateDisplay } from './CardDateDisplay';
 import { BoardDateProvider } from './BoardDateBadges';
 import { BoardCardLink } from './BoardCardLink';
-import { BoardWindow } from './BoardWindow';
+import { BoardWindow, type BoardWindowHeights } from './BoardWindow';
 import { CardDateEditor } from './CardDateEditor';
 import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
@@ -173,6 +173,7 @@ function BoardContent() {
   const [snapshotReading, setSnapshotReading] = useState(true);
   const cardLinks = useRef(new Map<string, HTMLAnchorElement>());
   const windowMemory = useRef(new Map<string, number>());
+  const windowHeights = useRef<BoardWindowHeights>(new Map());
   const closeFocusCard = useRef<string | undefined>(undefined);
   const cardClose = useRef<HTMLButtonElement>(null);
   const canvasFocus = useRef<{ scope: string; cardId: string } | undefined>(undefined);
@@ -608,6 +609,7 @@ function BoardContent() {
           <ListDragColumn
             key={column.list.id}
             id={column.list.id} name={column.list.name}
+            scrollMemory={windowMemory.current}
             disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id) || renameRecovery.has(column.list.id)}
             available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
           >
@@ -629,7 +631,7 @@ function BoardContent() {
               onRecoveryChange={updateListRecovery}
               dropRequest={listDrop?.listId === column.list.id ? listDrop : undefined}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            <BoardWindow axis="cards" memory={windowMemory.current} memoryKey={column.list.id}
+            <BoardWindow axis="cards" memory={windowMemory.current} memoryKey={column.list.id} heightMemory={windowHeights.current}
               items={column.cards} pinned={[cardId, closeFocusCard.current, canvasFocus.current?.cardId].filter((id): id is string => !!id)}
               renderItem={item => (
                 <CardDragItem key={item.id} id={item.id} title={item.title}
