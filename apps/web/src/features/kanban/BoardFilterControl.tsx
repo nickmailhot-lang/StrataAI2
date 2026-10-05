@@ -17,6 +17,7 @@ type Member = { userId: string; displayName: string };
 type Result = { items: (WorkCard & { listId: string })[]; next: string | null };
 type Props = { snapshot: BoardSnapshot; disabled: boolean; onRefresh: () => void; onCanvasChange?: (page: BoardCanvasFilter | undefined) => void };
 const empty = (): Criteria => ({ keyword: '', labels: [], members: [], match: 'all' });
+const foregroundVisible = () => document.visibilityState !== 'hidden';
 function saved(key: string): { criteria: Criteria; canvas: boolean } {
   try {
     const c = JSON.parse(sessionStorage.getItem(key) ?? 'null') as (Criteria & { canvas?: unknown }) | null;
@@ -54,6 +55,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const [memberCursor, setMemberCursor] = useState<string | null>(null); const [memberLoading, setMemberLoading] = useState(false);
   const [memberNotice, setMemberNotice] = useState<string>(); const memberPending = useRef<AbortController | undefined>(undefined);
   const epoch = useRef(0); const pending = useRef<AbortController | undefined>(undefined);
+  const foregroundPending = useRef<AbortController | undefined>(undefined);
   const org = snapshot.board.organizationId, board = snapshot.board.id;
   const available = snapshot.access.canView && snapshot.board.lifecycleState === 'active';
   const storageKey = (actor: string) => `strataai:board-filter:v1:${actor}:${org}:${board}`;
@@ -80,6 +82,46 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   async function admitIdentity(signal: AbortSignal, expected: string) {
     if (expected === 'anonymous') await admitAnonymous(signal); else await verifyBoardFilterActor(expected, signal);
   }
+  function withdrawIdentity() {
+    epoch.current++; pending.current?.abort(); pending.current = undefined;
+    memberPending.current?.abort(); memberPending.current = undefined;
+    changePending.current?.abort(); changePending.current = undefined;
+    foregroundPending.current?.abort(); foregroundPending.current = undefined;
+    restoreChangeFocus.current = false; acknowledgments.current.clear();
+    setOpen(false); setOpeningPending(undefined); setIdentity(undefined); setCriteria(empty()); setApplied(undefined); setResult(undefined); setCanvasMode(false);
+    setLabels([]); setLabelCursor(null); setMembers([]); setMemberCursor(null); setMemberOpen(false);
+    setLoading(false); setLabelLoading(false); setMemberLoading(false); setChangeBusy(false); setChangeIntent(undefined); setChangeNotice(undefined);
+    setNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); onRefresh();
+  }
+  const revalidateForeground = useEffectEvent(async () => {
+    if (!identity || !available || disabled || (!open && !canvasMode) || !foregroundVisible()
+      || pending.current || memberPending.current || changePending.current || foregroundPending.current) return;
+    const controller = new AbortController(); foregroundPending.current = controller; const ticket = epoch.current;
+    try {
+      await boundedWorkRead(signal => admitIdentity(signal, identity), controller.signal);
+      if (ticket !== epoch.current || controller.signal.aborted || !foregroundVisible()
+        || pending.current || memberPending.current || changePending.current) return;
+      // Current Board/directory/result admission is authoritative. These GETs
+      // recover missed changes without manufacturing another Apply/Clear.
+      void loadLabels(); if (memberOpen) void loadMembers(); if (applied) setRetry(value => value + 1);
+    } catch (error) {
+      if (ticket !== epoch.current || controller.signal.aborted) return;
+      setResult(undefined); setLabels([]); setMembers([]);
+      if (error instanceof ChangedFilterIdentity || error instanceof ChangedSearchInteractionActor
+        || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) withdrawIdentity();
+      else setNotice('Current filter access could not be checked. Retry when connected.');
+    } finally { if (foregroundPending.current === controller) foregroundPending.current = undefined; }
+  });
+  useEffect(() => {
+    if (!identity || !available || (!open && !canvasMode)) return;
+    const refresh = () => { void revalidateForeground(); };
+    window.addEventListener('focus', refresh); window.addEventListener('online', refresh); document.addEventListener('visibilitychange', refresh);
+    const interval = setInterval(refresh, 10_000);
+    return () => {
+      clearInterval(interval); window.removeEventListener('focus', refresh); window.removeEventListener('online', refresh);
+      document.removeEventListener('visibilitychange', refresh); foregroundPending.current?.abort(); foregroundPending.current = undefined;
+    };
+  }, [identity, available, open, canvasMode, org, board]);
   useEffect(() => {
     onCanvasChange?.(canvasMode && applied && available ? { snapshot, items: !disabled && result ? result.items : [] } : undefined);
   }, [canvasMode, applied, available, disabled, result, snapshot, onCanvasChange]);
@@ -138,9 +180,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
       if (ticket !== epoch.current) return;
       setLabelNotice('Label choices could not be loaded. Reload choices to continue.');
       if (error instanceof ChangedFilterIdentity || error instanceof ChangedSearchInteractionActor || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
-        memberPending.current?.abort(); memberPending.current = undefined; setMembers([]); setMemberLoading(false);
-        setLabelNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); setOpen(false); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCanvasMode(false); onRefresh();
-        setCriteria(empty()); setChangeIntent(undefined); setChangeNotice(undefined); acknowledgments.current.clear(); changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false);
+        setLabelNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); withdrawIdentity();
       }
     } finally { if (ticket === epoch.current) { pending.current = undefined; setLabelLoading(false); } }
   }
@@ -169,8 +209,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
       if (ticket !== epoch.current || controller.signal.aborted) return;
       setMembers([]); setMemberNotice('Assignee choices could not be loaded. Reload choices to continue.');
       if (error instanceof ChangedSearchInteractionActor || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
-        setOpen(false); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCanvasMode(false); onRefresh();
-        setCriteria(empty()); setChangeIntent(undefined); setChangeNotice(undefined); acknowledgments.current.clear(); changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false);
+        withdrawIdentity();
       }
     } finally { if (ticket === epoch.current) { memberPending.current = undefined; setMemberLoading(false); } }
   }
@@ -231,8 +270,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
       if (!active) return;
       setResult(undefined); setNotice('Filtered Cards could not be loaded. Try again or refresh the Board.');
       if (error instanceof ChangedFilterIdentity || error instanceof ChangedSearchInteractionActor || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
-        setOpen(false); setIdentity(undefined); setApplied(undefined); setCanvasMode(false); setCriteria(empty()); setChangeIntent(undefined); setChangeNotice(undefined);
-        acknowledgments.current.clear(); changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false); onRefresh();
+        withdrawIdentity();
       }
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); setLoading(false); };
@@ -278,8 +316,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
         setChangeNotice('The original filter change expired. Review the current filters before applying again.'); onRefresh();
       } else if (error instanceof ChangedSearchInteractionActor || error instanceof WorkRequestError && [400, 401, 403, 404].includes(error.status)) {
         try { discardBoardFilterChange(sessionStorage, intent); } catch { /* Optional storage. */ }
-        setChangeIntent(undefined); acknowledgments.current.clear(); setCriteria(empty()); setApplied(undefined); setResult(undefined); setCanvasMode(false);
-        setIdentity(undefined); setOpen(false); setChangeNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); onRefresh();
+        withdrawIdentity();
       } else setChangeNotice('The filter change is unconfirmed. Retry the original change to recover its acknowledgment.');
     } finally { if (changePending.current === controller) { changePending.current = undefined; setChangeBusy(false); } }
   }

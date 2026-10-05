@@ -670,3 +670,30 @@ pass. These are local source checks; they do not establish actual PostgreSQL
 browser delivery or immutable native acceptance. Web/browser typecheck and lint
 pass. Estimated PRD-16 work remaining is 18%; full native recovery, reconnect,
 two-client and release acceptance remain required before closure.
+
+
+Board filter foreground admission now checks idle open dialogs and active canvas
+filters on focus, online recovery, visibility return and a visible-page 10-second
+interval. It skips active operations/hidden pages and keeps its timer stable
+through temporary parent loading. Successful checks refresh directory/result
+GETs without another Apply/Clear event. Observed account/access loss cancels all
+pending lanes and withdraws criteria, labels, assignees, results and acknowledgment
+UI together. Transient check failure withholds directory/result data until a
+fresh admitted read. Thirteen real-transport component tests plus the 35 scoped
+criteria tests and 30 search tests pass locally (78 total); web/browser typecheck
+and lint pass. These fixtures prove control behavior, not real release delivery.
+
+New native desktop/phone cases replace the actual browser cookie with a second
+account while keeping the PUBLIC Board viewable. They require idle withdrawal,
+empty criteria after reopening, no additional source POST, and an unchanged full
+Board snapshot read through an independent original-account session. The existing
+two-client socket-recovery case also counts exactly the user's Apply/Clear intents;
+remote label/date/member edits, reconnect, canvas navigation and archive withdrawal
+must not manufacture extra source events. All three scenarios collect locally;
+exact-image execution remains pending.
+
+Revision `771f2a0`, run 37341364055, now passes web, full API/.NET and restricted
+PostgreSQL source jobs and the source-quality gate. Its build-once images are
+being exported; native integration remains unproven. PRD-16 stays open at 18%
+estimated remaining pending the declared native/reconnect/two-client and release
+acceptance.

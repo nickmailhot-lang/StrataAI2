@@ -81,6 +81,25 @@ it('withholds successful result pages after an account changes during the read',
   await waitFor(() => expect(view.onRefresh).toHaveBeenCalled());
   expect(screen.queryByRole('link', { name: 'Admitted match — Planning' })).not.toBeInTheDocument();
 });
+it('withdraws idle personal criteria, directories and results after foreground account change without another POST', async () => {
+  const { state } = setup(); const view = mount(); await open();
+  fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: 'Personal roof' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Choose assignees' })); await screen.findByRole('checkbox', { name: 'Taylor' });
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await screen.findByRole('link', { name: 'Admitted match — Planning' });
+  state.actor = list; fireEvent(window, new Event('focus'));
+  await waitFor(() => expect(view.onRefresh).toHaveBeenCalled());
+  expect(screen.queryByDisplayValue('Personal roof')).not.toBeInTheDocument();
+  expect(screen.queryByRole('checkbox', { name: 'Priority (red)' })).not.toBeInTheDocument(); expect(screen.queryByRole('checkbox', { name: 'Taylor' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Admitted match — Planning' })).not.toBeInTheDocument(); expect(state.writes).toBe(1);
+});
+it('recovers current pages through read-only reconnect without another filter change', async () => {
+  const { state, fetch } = setup(); mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await screen.findByRole('link', { name: 'Admitted match — Planning' });
+  const before = fetch.mock.calls.filter(([path]) => path.includes('/cards?')).length;
+  fireEvent(window, new Event('online'));
+  await waitFor(() => expect(fetch.mock.calls.filter(([path]) => path.includes('/cards?')).length).toBeGreaterThan(before));
+  await screen.findByRole('link', { name: 'Admitted match — Planning' }); expect(state.writes).toBe(1);
+});
 it('withholds label choices when the opening account changes during directory IO', async () => {
   const { state } = setup(); state.switchedAfterLabels = true; const view = mount();
   fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' })); await waitFor(() => expect(view.onRefresh).toHaveBeenCalled());

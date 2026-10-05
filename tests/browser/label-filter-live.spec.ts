@@ -22,6 +22,9 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
   expect(labelReply.status()).toBe(201); const label = (await labelReply.json()).id;
   const phone = await browser.newContext({ baseURL: new URL(cardReply.url()).origin, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
   const other = await phone.newPage(); let unavailable = false; let socket: WebSocketRoute | undefined;
+  let filterChanges = 0;
+  other.on('request', request => { if (request.method() === 'POST'
+    && new URL(request.url()).pathname === `/boards/${board}/cards/filter-change`) filterChanges++; });
   await phone.routeWebSocket('**/boards/live*', route => {
     if (unavailable) { route.close({ code: 1013 }); return; }
     socket = route; route.connectToServer();
@@ -40,6 +43,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(priority).toBeEnabled(); await priority.press('Space');
     await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
     await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
+    expect(filterChanges).toBe(1);
     await page.goto(`${boardPath}/cards/${card}`);
     await expect(page.getByText('Live updates connected.', { exact: true })).toBeVisible();
     const assignees = page.getByRole('button', { name: 'Show assignees', exact: true });
@@ -66,6 +70,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     unavailable = false;
     await expect(other.getByText('Live updates connected.', { exact: true })).toBeVisible({ timeout: 45_000 });
     await assignment('Add label Urgent'); await expect(matching).toBeVisible({ timeout: 20_000 });
+    expect(filterChanges).toBe(1);
     const completion = filters.getByRole('combobox', { name: 'Due completion', exact: true });
     await completion.press('Enter'); await other.getByRole('option', { name: 'Due complete', exact: true }).press('Enter');
     await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
@@ -82,6 +87,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(matching).toHaveCount(0, { timeout: 20_000 });
     const recompleted = await context.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { ...dates, version: reopenedVersion } });
     expect(recompleted.status()).toBe(200); await expect(matching).toBeVisible({ timeout: 20_000 });
+    expect(filterChanges).toBe(2);
     await expect(filters.getByLabel('Card keyword')).toHaveValue('');
     const show = filters.getByRole('button', { name: 'Show this page on Board', exact: true });
     await expect(show).toBeEnabled(); await show.press('Enter');
@@ -97,6 +103,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     const clear = other.getByRole('button', { name: 'Clear Board filters', exact: true });
     await expect(clear).toBeEnabled(); await clear.press('Enter');
     await expect(other.getByText('Unmatched canvas Card', { exact: true })).toBeVisible();
+    expect(filterChanges).toBe(3);
     await expect(other.getByRole('button', { name: 'Drag Collaborative labeled Card card', exact: true })).toBeEnabled();
     await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
     await other.goto(`${boardPath}/cards/${card}`);
@@ -133,10 +140,12 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible({ timeout: 20_000 });
     await expect(selectedMember).toBeChecked();
     await memberChange('Assign'); await expect(matching).toBeVisible({ timeout: 20_000 });
+    expect(filterChanges).toBe(4);
     expect((await context.request.post(`/boards/${board}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
     await expect(filters).toHaveCount(0, { timeout: 20_000 });
     await expect(other.getByText('This board is archived. Editing is unavailable.', { exact: true })).toBeVisible();
     await expect(other.getByRole('button', { name: 'Filter Board Cards', exact: true })).toHaveCount(0);
+    expect(filterChanges).toBe(4);
     expect((await context.request.get(`/boards/${board}/cards?labels=${label}`)).status()).toBe(404);
     expect(await other.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   } finally { await phone.close(); restoreWorker?.(); }
