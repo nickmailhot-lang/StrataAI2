@@ -301,6 +301,10 @@ for (const width of [1280, 390]) {
       && initialListIds.includes(settledSnapshot.lists[initialListLast + 1].list.id)) initialListLast++;
     expect(initialListIds).not.toContain(settledSnapshot.lists[listSourceIndex + 8].list.id);
     for (let step = 0; step < 8; step++) {
+      // A current Board refresh withdraws all drop targets until admission
+      // settles. Send the key against enabled, committed geometry.
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+      await expect(listHandle).toBeEnabled();
       await page.keyboard.press('ArrowRight');
       const neighbor = settledSnapshot.lists[listSourceIndex + step + 1].list;
       const target = canvas.locator(`[data-board-window-id="${neighbor.id}"]`).getByRole('region', { name: neighbor.name, exact: true });
