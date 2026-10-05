@@ -42,7 +42,8 @@ The mandatory release fixture now uploads through the actual API and publishes a
 
 The restricted persistence contract now stages a PRIVATE copied Board image and
 withdraws either the reader's Organization membership or the parent
-Organization's ACTIVE status before the provider read returns. Both variants
+Organization's ACTIVE status before the provider read returns. A third variant stages anonymous bytes from the PUBLIC copied Board and
+archives its Organization. All variants
 require `board_not_found`, refusal of the earlier admission, and zero further
 provider reads while withdrawn. Every tenant Board and immutable image owner,
 plus the existing source/effect snapshot, must remain unchanged. Restoring the

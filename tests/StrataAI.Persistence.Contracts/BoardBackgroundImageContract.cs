@@ -160,20 +160,21 @@ internal static class BoardBackgroundImageContract
               'images',(SELECT jsonb_agg(to_jsonb(i) ORDER BY i.id) FROM board_background_images i WHERE i.tenant_id=@tenant)
             )::text;
             """);
-        foreach (var withdrawMembership in new[] { true, false })
+        foreach (var scenario in new (bool Membership, Guid? Viewer)[] { (true, actor), (false, actor), (false, null) })
         {
+            if (scenario.Viewer is null) await ChangeCopy("visibility='PUBLIC'");
             var baseline = await OwnedState();
-            var grant = (await admission.AdmitAsync(copy.Value.Id, actor, ct)).Value;
-            Require(grant is not null, "Copied image withdrawal fixture lacks an admitted private owner.");
-            Task Withdraw() => withdrawMembership ? ChangeMembership("REMOVED") : ChangeOrganization("ARCHIVED");
+            var grant = (await admission.AdmitAsync(copy.Value.Id, scenario.Viewer, ct)).Value;
+            Require(grant is not null, "Copied image withdrawal fixture lacks its current image admission.");
+            Task Withdraw() => scenario.Membership ? ChangeMembership("REMOVED") : ChangeOrganization("ARCHIVED");
             afterRead(Withdraw);
             try
             {
-                Require((await read.PrepareAsync(copy.Value.Id, actor, ct)).ErrorCode == "board_not_found",
+                Require((await read.PrepareAsync(copy.Value.Id, scenario.Viewer, ct)).ErrorCode == "board_not_found",
                     "Organization/membership withdrawal during staging retained copied image bytes.");
                 afterRead(null); initialReads = reads();
-                Require((await admission.RevalidateAsync(grant!, actor, ct)).ErrorCode == "board_not_found"
-                    && (await read.PrepareAsync(copy.Value.Id, actor, ct)).ErrorCode == "board_not_found"
+                Require((await admission.RevalidateAsync(grant!, scenario.Viewer, ct)).ErrorCode == "board_not_found"
+                    && (await read.PrepareAsync(copy.Value.Id, scenario.Viewer, ct)).ErrorCode == "board_not_found"
                     && reads() == initialReads,
                     "Withdrawn image admission reused its grant or reached provider bytes again.");
                 Require(await OwnedState() == baseline,
@@ -182,10 +183,11 @@ internal static class BoardBackgroundImageContract
             finally
             {
                 afterRead(null);
-                if (withdrawMembership) await ChangeMembership("ACTIVE"); else await ChangeOrganization("ACTIVE");
+                if (scenario.Membership) await ChangeMembership("ACTIVE"); else await ChangeOrganization("ACTIVE");
             }
-            await Bytes(copy.Value.Id, actor); await Bytes(board, actor);
+            await Bytes(copy.Value.Id, scenario.Viewer); await Bytes(board, actor);
             Require(await OwnedState() == baseline, "Restored image readmission changed protected Board state.");
+            if (scenario.Viewer is null) await ChangeCopy("visibility='PRIVATE'");
         }
         revision = await BoardScalar<long>("SELECT version FROM boards WHERE tenant_id=@tenant AND id=@board;");
         var cleared = await provider.GetRequiredService<IWorkManagementService>().UpdateBoardAsync(board, actor, original.Name, original.Description,
