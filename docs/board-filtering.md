@@ -445,6 +445,16 @@ Required restricted SQL fixtures cover forced actor isolation, current private
 MEMBER admission, foreign actor/private nonmember and withdrawn-grant refusal,
 canonical identity, duplicate/changed-source behavior, counter rollback and
 immutable administrative history. Full zero-warning .NET build and migration
-runner shell syntax pass. Actual migration/capability/C# adapter execution is
-pending CI. Demo parity, producer admission/final session proof, protected replay
+runner shell syntax pass. Migration and restricted SQL capability checks passed
+in [run 37272101256](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37272101256),
+including forward/repeat upgrades, forced RLS, original-ID deduplication and rollback.
+The C# adapter explicitly establishes the transaction-local SQL actor only after
+checking its owning application subject; it does not depend on an earlier adapter
+having set the database context. The mandatory restricted persistence executable
+now checks that an unowned/foreign append is rejected, an original source can be
+appended twice inside its owning transaction, and a declared late refusal leaves
+neither sources nor its newly allocated stream. This C# runtime check awaits CI;
+its build passes with zero warnings or errors. Actor admission in this contract
+is synthetic, so it does not prove HTTP session admission or final session fencing.
+Demo parity, producer admission/final session proof, protected replay
 and consumers remain outstanding; PRD-16 remains open at 20% estimated remaining.

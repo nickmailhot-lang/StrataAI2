@@ -15,6 +15,15 @@ public sealed class PostgresSearchInteractionEventStore(PostgresConnectionFactor
         if (!connections.OwnsIdentitySubject(source.ActorId))
             throw new InvalidOperationException("Search interaction requires the owning identity subject transaction.");
         await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        // The owning subject lease is an application guard. Forced database
+        // RLS also needs that same admitted actor in this borrowed transaction;
+        // do not rely on another adapter having established the SQL subject.
+        await using (var subject = new NpgsqlCommand("SELECT set_config('app.identity_subject',@subject,true);",
+            session.Connection, session.Transaction))
+        {
+            subject.Parameters.AddWithValue("subject", source.ActorId.ToString("D"));
+            await subject.ExecuteNonQueryAsync(cancellationToken);
+        }
         await using var command = new NpgsqlCommand("SELECT public.append_search_interaction(@event,@actor,@type,@organization,@board,@created);",
             session.Connection, session.Transaction);
         command.Parameters.AddWithValue("event", source.EventId);

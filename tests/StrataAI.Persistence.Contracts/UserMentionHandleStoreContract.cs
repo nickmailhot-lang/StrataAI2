@@ -48,6 +48,7 @@ internal static class UserMentionHandleStoreContract
         }).Build();
         services.AddStrataAiIdentity(settings, runtime); services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
         await using var provider = services.BuildServiceProvider();
+        await SearchInteractionSourceContract.RunAsync(admin, provider, first, users[1], ct);
         var store = provider.GetRequiredService<IUserMentionHandleStore>(); var unit = provider.GetRequiredService<IIdentityUnitOfWork>();
         async Task<UserMentionHandle> Current(Guid user)
         {
