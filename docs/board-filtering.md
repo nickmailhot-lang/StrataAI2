@@ -516,8 +516,9 @@ HTTP producer run 37336426132 passed web and restricted PostgreSQL jobs but
 failed one API test assertion: the changed-account guard correctly returned
 the existing `401 session_unavailable` envelope, whereas the fixture expected
 403. Commit `0d96188` corrects that expectation without changing production
-behavior or removing the code/no-receipt assertions. Execution of the corrected
-full API suite remains pending in run 37337412135.
+behavior or removing the code/no-receipt assertions. The corrected full API suite, web and restricted PostgreSQL jobs pass in
+run 37337412135. Exact images are still building; release acceptance remains
+unproven. The browser transport module added afterward has local proof only.
 
 ### Browser consumption of global search acknowledgments
 

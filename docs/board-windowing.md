@@ -37,3 +37,24 @@ Native capacity cases also hold a real pointer drag at the clipped viewport edge
 The same native cases move an actual empty List across eight adjacent keyboard targets beyond the initially mounted horizontal buffer. They observe the source and target rectangles at each step, retain the active source and require newly mounted later columns. The actual List producer must return one successful PATCH; fresh canonical state must place the source immediately before the eighth target with one revision advancement, retaining its Cards and every complete neighboring List/Card record unchanged. The reviewed move control must regain visible focus. These assertions keep the existing scenario timeout and production limits; executed horizontal-window drag proof remains pending.
 
 Large-Board pointer coverage also transfers the actual middle Card into an empty List beyond the initially mounted horizontal buffer. The drag travels toward available columns on either side because the real preceding rank commands can leave the populated List near either end. It requires actual horizontal auto-scroll, bounded mounted Lists, retained source attachment and a fully visible newly mounted destination. The drop targets the existing named Card end target, then requires one additional successful move, atomic destination placement/revision, unchanged source/destination List records, all unaffected Cards/Lists unchanged and visible focus on the transferred Card. Later List movement compares the resulting authoritative transfer snapshot. Browser typecheck and both configured scenarios are collected locally; executed cross-List capacity proof remains pending.
+
+
+Run [37332882372](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37332882372)
+executes the current keyboard repairs: the complete desktop capacity scenario
+passes, including Card/List keyboard moves and persisted pointer transfer. Phone
+passes the twelve Card keyboard targets and reaches cross-List pointer transfer,
+but fails at line 226 when reselecting a wholly visible column after stopping
+edge scroll. Retained artifact 11356672774 has SHA256
+`e5542a8925834a98defff8d228837aef50f009e32d30f9693c24c156fdc02d43`.
+The trace records scrollLeft 65801 when the newly mounted destination at layout
+left 65816.8, width 319.8 is visible. Moving the pointer to the middle settles
+scrollLeft at 65761; the same destination remains mounted but its far edge is
+clipped on the phone. Reselecting only wholly visible columns returns null.
+
+The fixture now retains the later destination identified during edge scrolling,
+then requires its named drop target in the viewport and its actual center inside
+the canvas before releasing the pointer. Actual response, placement/revision,
+unchanged neighboring records, bounded rows and source/focus assertions remain.
+Scenario budgets, key pacing and retries are unchanged. Browser typecheck passes;
+immutable-image phone execution of this fixture correction remains pending. The
+failed enclosing run is not a green release or full PRD-06 acceptance.

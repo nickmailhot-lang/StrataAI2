@@ -219,19 +219,25 @@ for (const width of [1280, 390]) {
     };
     if (goRight) await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeGreaterThan(horizontalOffset);
     else await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeLessThan(horizontalOffset);
-    await expect.poll(laterEmptyColumn).not.toBeNull();
+    // Retain the admitted later target while edge scrolling is active. Moving
+    // back to the middle stops scrolling, but the final animation frame can
+    // leave that column partially visible on a one-column phone viewport.
+    let destinationId: string | null = null;
+    await expect.poll(async () => { destinationId = await laterEmptyColumn(); return destinationId; }).not.toBeNull();
     await expect(middle).toBeAttached();
     expect(await canvas.locator('[data-board-window-axis="lists"]').count()).toBeLessThan(15);
     await page.mouse.move((left + right) / 2, dragY); await settleDrag();
-    const destinationId = await laterEmptyColumn(); expect(destinationId).not.toBeNull();
+    expect(destinationId).not.toBeNull();
     const destination = pointerSnapshot.lists.find(value => value.list.id === destinationId)!;
     const destinationRow = canvas.locator(`[data-board-window-id="${destinationId}"]`);
     const destinationDrop = destinationRow.getByText(`Drop card at end of ${destination.list.name}`, { exact: true });
     await expect(destinationDrop).toBeInViewport();
     const destinationBox = await destinationDrop.boundingBox();
     expect(destinationBox).not.toBeNull();
+    const destinationX = destinationBox!.x + destinationBox!.width / 2;
+    expect(destinationX).toBeGreaterThan(left); expect(destinationX).toBeLessThan(right);
     const destinationY = (Math.max(0, destinationBox!.y) + Math.min(844, destinationBox!.y + destinationBox!.height)) / 2;
-    await page.mouse.move(destinationBox!.x + destinationBox!.width / 2, destinationY);
+    await page.mouse.move(destinationX, destinationY);
     const transferReply = page.waitForResponse(response => response.request().method() === 'POST'
       && new URL(response.url()).pathname === `/cards/${moving.id}/move`);
     await page.mouse.up(); expect((await transferReply).status()).toBe(200);
