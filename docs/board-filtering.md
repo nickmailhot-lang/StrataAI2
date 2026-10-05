@@ -400,3 +400,30 @@ UI/browser checks remains pending. Server commit cc030b6 passed Linux .NET/web/
 PostgreSQL/source gates, image build and security in run 37051528948; its complete
 container/required-ci gate is still live. PRD-16's other required filters/search
 and full acceptance evidence remain outstanding.
+
+## Canonical private interaction event contract (PRD-16 section 14)
+
+SEARCH_EXECUTED and BOARD_FILTER_CHANGED are personal interaction sources,
+separate from optional telemetry and shared Board Work history. The new
+SearchInteractionEvent Application contract fixes the required canonical fields
+and permits only the two source factories. Metadata is an immutable empty
+mapping: no query strings, selected members/labels, result identities/snippets,
+criteria hashes or content are carried. Global search has null Organization and
+Board context because it traverses admitted Organizations; it does not invent a
+tenant. Board filter changes require both real context IDs. Each immutable
+execution/change source uses its event ID as its entity ID and version 1;
+recording it must not increment Board/Card/profile versions or alter another
+client's filter criteria. Source clocks are UTC at database precision.
+
+This is the source envelope and append contract only. It is not registered,
+persisted, produced by current GETs or disclosed by a transport. Required next
+integration includes actor-private durable storage and original-ID deduplication,
+validated/admitted successful producers, current session/Board proof before
+replay, protected bounded cursors, and actual client consumption/recovery.
+Anonymous filtering must not fabricate an actor or emit an authenticated source.
+The identity account-event allowlist and shared Work stream remain unchanged.
+Two contract tests compile for canonical serialization, absence of fabricated
+tenant/content metadata and invalid scope/identity refusal. The full .NET build
+passes with zero warnings/errors; actual test execution awaits Linux CI because
+local application control prevents .NET test execution. Domain events emitted
+and consumed remain incomplete; PRD-16 stays open, estimated 20% remaining.
