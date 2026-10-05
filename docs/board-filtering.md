@@ -493,6 +493,35 @@ actor, canonical type/entity/version, null tenant scope, empty metadata, and
 distinct original IDs across successful pages. A synthetic final-session refusal
 test proves owning rollback by establishing a changed-clock original with the
 refused EventId afterward. These new tests compile with zero warnings/errors;
-actual execution awaits CI. Board filter production, protected bounded replay,
-real browser consumption/deduplication and reconnect recovery remain outstanding;
+actual execution awaits CI. Board filter production, protected bounded replay
+and reconnect recovery remain outstanding;
 PRD-16 stays open at 20% estimated remaining.
+
+### Browser consumption of global search acknowledgments
+
+The browser requires the canonical interaction before disclosing a result page.
+After matching `/me` reads before and after the response, it checks the exact ten
+fields, current actor, original EventId/entity identity, type/version, null global
+scope, empty object metadata and valid UTC clock. Missing or malformed sources
+withhold results. A source attributed to another actor also clears private query
+criteria, continuation and acknowledgment memory, even when both profile reads
+match. Aborted, superseded and unmounted reads do not consume an acknowledgment.
+
+The account-specific consumer retains only the latest 1,000 original IDs and
+their clocks in process memory. It suppresses duplicate acknowledgment effects
+without preventing fresh result reconciliation, and refuses a changed clock for
+a retained original. It clears on terminal account/access loss. A newly consumed
+source produces the polite, body-free confirmation “Search acknowledged.” No
+source identity, query, result content or canonical event is sent to optional
+analytics. This bounded acknowledgment window is not durable replay/history.
+
+All 19 focused parser/component tests pass, with web typecheck, browser fixture
+typecheck and lint. They cover strict admission, foreign actor refusal, missing
+sources, duplicate acknowledgment handling and continued result reconciliation.
+The desktop/phone native fixture now asserts the actual canonical HTTP envelope
+and its user-visible consumption; exact-image execution remains pending CI.
+
+The producer CI run 37273958250 passed 414 of 415 API tests. Its sole failure was
+the extended HTTP fixture reading the continuation stream twice. The fixture now
+parses once and reuses the same page for both original-ID and continuation
+assertions; neither assertion is relaxed. Full repaired execution awaits CI.

@@ -36,7 +36,16 @@ for (const width of [1280, 390]) {
       await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('needle');
       await page.getByRole('textbox', { name: 'Label name', exact: true }).fill('prior');
       await page.getByRole('textbox', { name: 'Member name', exact: true }).fill('search reader');
+      const searchReply = page.waitForResponse(response => response.request().method() === 'GET'
+        && new URL(response.url()).pathname === '/search' && response.status() === 200);
       await page.getByRole('button', { name: 'Search', exact: true }).press('Enter');
+      const searchPage = await (await searchReply).json(); const source = searchPage.interaction;
+      expect(Object.keys(source).sort()).toEqual(['actorId', 'boardId', 'createdAt', 'entityId', 'entityType', 'eventId', 'eventType', 'metadata', 'organizationId', 'version']);
+      expect(source.eventType).toBe('SEARCH_EXECUTED'); expect(source.entityType).toBe('Search');
+      expect(source.actorId).toBe(actor); expect(source.organizationId).toBeNull(); expect(source.boardId).toBeNull();
+      expect(source.eventId).toMatch(/^[0-9a-f-]{36}$/); expect(source.entityId).toBe(source.eventId);
+      expect(source.version).toBe(1); expect(source.metadata).toEqual({}); expect(Number.isFinite(Date.parse(source.createdAt))).toBe(true);
+      await expect(page.getByText('Search acknowledged.', { exact: true })).toBeVisible();
       const firstLink = page.getByRole('link', { name: /^Global needle/ });
       await expect(firstLink).toHaveCount(1);
       const firstTitle = await firstLink.innerText(); const current = records.find(r => r.title === firstTitle)!;

@@ -5,6 +5,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { parseSearchPage, type SearchPage } from './globalSearch';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
+import { ChangedSearchInteractionActor, SearchInteractionAcknowledgments } from './searchInteraction';
 
 type Criteria = { q: string; label: string; member: string; match: 'all' | 'any'; scope: 'active' | 'archived' };
 const empty = (): Criteria => ({ q: '', label: '', member: '', match: 'all', scope: 'active' });
@@ -12,12 +13,14 @@ class ChangedSearchAccount extends Error {}
 export function GlobalSearchPage() {
   const [draft, setDraft] = useState<Criteria>(empty); const [page, setPage] = useState<SearchPage>();
   const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<string>();
+  const [acknowledged, setAcknowledged] = useState(false);
+  const acknowledgments = useRef(new SearchInteractionAcknowledgments());
   const applied = useRef<Criteria>(empty()); const cursor = useRef<string | undefined>(undefined);
   const actor = useRef<string | undefined>(undefined); const pending = useRef<AbortController | undefined>(undefined);
   const epoch = useRef(0); const alive = useRef(false);
   const load = useCallback(async (criteria: Criteria, after?: string, kind: 'use' | 'retry' | 'reconnect' = 'use') => {
     pending.current?.abort(); const controller = new AbortController(); pending.current = controller;
-    const ticket = ++epoch.current; setBusy(true); setPage(undefined); setNotice(undefined);
+    const ticket = ++epoch.current; setBusy(true); setPage(undefined); setNotice(undefined); setAcknowledged(false);
     const started = performance.now(); activityEvent('search_read', kind);
     try {
       const result = await boundedWorkRead(async signal => {
@@ -29,18 +32,21 @@ export function GlobalSearchPage() {
         const afterProfile = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(afterProfile) || before.id.toLowerCase() !== afterProfile.id.toLowerCase())
           throw new ChangedSearchAccount();
-        return { actor: afterProfile.id.toLowerCase(), page: parseSearchPage(response, after) };
+        return { actor: afterProfile.id.toLowerCase(), page: parseSearchPage(response, afterProfile.id, after) };
       }, controller.signal);
       if (!alive.current || ticket !== epoch.current || controller.signal.aborted) return;
+      const freshAcknowledgment = acknowledgments.current.consume(result.page.interaction);
       activityResult('search_read', true, started);
       actor.current = result.actor; applied.current = criteria; cursor.current = after; setPage(result.page);
+      setAcknowledged(freshAcknowledgment);
     } catch (reason) {
       if (!alive.current || ticket !== epoch.current) return;
       activityResult('search_read', false, started);
-      if (!(reason instanceof WorkRequestError) && !(reason instanceof ChangedSearchAccount)) activityEvent('search_read', 'exception');
+      if (!(reason instanceof WorkRequestError) && !(reason instanceof ChangedSearchAccount) && !(reason instanceof ChangedSearchInteractionActor)) activityEvent('search_read', 'exception');
       setPage(undefined);
-      if (reason instanceof ChangedSearchAccount || reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) {
+      if (reason instanceof ChangedSearchAccount || reason instanceof ChangedSearchInteractionActor || reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) {
         actor.current = undefined; cursor.current = undefined; applied.current = empty(); setDraft(empty());
+        acknowledgments.current.clear();
       }
       setNotice('Search is unavailable. Check your account and access, then search again.');
     } finally {
@@ -76,6 +82,7 @@ export function GlobalSearchPage() {
     <Stack role="status" aria-live="polite">{busy && <Typography>Searching…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
       {page && <Typography>{page.items.length} results on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
+      {acknowledged && <Typography>Search acknowledged.</Typography>}
     </Stack>
     {page?.items.map(item => <Paper key={item.id} variant="outlined" sx={{ p: 2 }}>
       <Typography component={Link} to={`/app/${item.organizationId}/boards/${item.boardId}/cards/${item.id}`}>{item.title}</Typography>
