@@ -135,7 +135,12 @@ test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' 
 echo 'Owned private PNG bytes, response headers, sanitization and anonymous denial passed.'
 # Real lifecycle command removes the original source from preview admission.
 # Board ownership and original acknowledgment recovery remain independent.
-json -X POST -d '{"cardVersion":2,"version":3}' "$base/cards/$card/attachments/$attachment/archive" > "$scratch/archived-attachment"
+json "$base/cards/$card/attachments" > "$scratch/archive-review"
+# Upload, scan completion and preview publication each advance the Card. The
+# reviewed archive command must use the published revision, not the upload's.
+jq -e --arg id "$attachment" '.cardVersion==4 and (.items|any(.id==$id and .version==3))' "$scratch/archive-review" >/dev/null
+json -X POST -d "$(jq -nc --slurpfile review "$scratch/archive-review" '{cardVersion:$review[0].cardVersion,version:3}')" "$base/cards/$card/attachments/$attachment/archive" > "$scratch/archived-attachment"
+jq -e --arg id "$attachment" '.cardVersion==5 and .attachment.id==$id and .attachment.version==4' "$scratch/archived-attachment" >/dev/null
 select_image > "$scratch/recovered"
 cmp "$scratch/selected" "$scratch/recovered"
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/background/image?boardVersion=$selected_version" > "$scratch/retained-preview"
