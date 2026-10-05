@@ -82,9 +82,19 @@ for (const width of [1280, 390]) {
     expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
     await page.getByRole('button', { name: 'Close', exact: true }).press('Enter');
     const copy = page.getByRole('button', { name: 'Copy Board', exact: true }); await expect(copy).toBeEnabled(); await copy.press('Enter');
-    const create = page.getByRole('button', { name: 'Create Board copy', exact: true }); await expect(create).toBeEnabled(); await create.press('Enter');
+    let copyWrites = 0;
+    page.on('request', request => { if (request.method() === 'POST'
+      && new URL(request.url()).pathname === `/boards/${board}/copy`) copyWrites++; });
+    const copyResponse = page.waitForResponse(response => response.request().method() === 'POST'
+      && new URL(response.url()).pathname === `/boards/${board}/copy`);
+    // A current Board read can disable confirmation after an enabled assertion.
+    // Native click waits for actual actionability before dispatching one command.
+    const create = page.getByRole('button', { name: 'Create Board copy', exact: true }); await create.click();
+    const copyReceipt = await copyResponse; expect(copyReceipt.status()).toBe(201); expect(copyWrites).toBe(1);
+    const acknowledgedCopy = await copyReceipt.json();
     const open = page.getByRole('link', { name: 'Open copied Board', exact: true }); await expect(open).toBeVisible(); await expect(open).toBeFocused();
     const href = await open.getAttribute('href'); const target = href!.split('/').at(-1)!; expect(target).not.toBe(board);
+    expect(acknowledgedCopy).toMatchObject({ id: target, organizationId: org, visibility: 'PRIVATE', version: 1, backgroundType: 'IMAGE' });
     await waitForBoardDelivery(context.request, target);
     const copiedResponse = await context.request.get(`/boards/${target}`); expect(copiedResponse.status()).toBe(200);
     const copied = (await copiedResponse.json()).board;

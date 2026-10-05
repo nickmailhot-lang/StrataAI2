@@ -57,3 +57,19 @@ the anonymous PUBLIC-parent variant before its success marker. The enclosing
 fixture then passes the existing exact five canonical outbox-effects assertion.
 This proves the declared persistence/admission boundary, not a completed release
 or native Organization lifecycle workflow.
+
+Run [37256340452](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37256340452)
+at `59fa223` failed the genuine desktop image-backed copy at step 59. Its
+retained browser artifact 11323816970 has SHA-256
+`0776b403db3d40d9aad92a111226c67a46a640dbb7356f4a11cb2e499b918799`.
+The inspected trace has no copy POST: after the enabled assertion, the native
+keypress targeted an already-disabled confirmation during a current Board
+read. The dialog later remained at its unchanged review. The following phone
+case then encountered the still-PUBLIC shared source because the failed desktop
+case never reached restoration. Current confirmation uses native click
+(actionability checks) and explicitly requires one actual copy POST, HTTP 201
+and a destination link matching the private revision-one image acknowledgment.
+The existing image/ownership/focus/session assertions and execution budgets
+remain. Browser type checking and collection do not establish executed repair;
+current immutable-image proof is required. This earlier failure also skipped
+the large-Board stage, so it supplies no native proof for the spacing fix.
