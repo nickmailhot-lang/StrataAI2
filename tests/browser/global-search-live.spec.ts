@@ -79,6 +79,27 @@ for (const width of [1280, 390]) {
       await context.setOffline(false);
       await expect(page.getByRole('link', { name: 'Global needle recovered', exact: true })).toBeVisible({ timeout: 30_000 });
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      // A real session withdrawal must purge current result disclosure and
+      // submitted criteria through foreground recovery, without a page reload.
+      // The independent editor session remains admitted and proves that the
+      // withdrawal does not mutate the protected Board graph.
+      const beforeWithdrawal = await peer.request.get(`/boards/${current.board}`);
+      expect(beforeWithdrawal.status()).toBe(200); const protectedBefore = await beforeWithdrawal.json();
+      expect((await context.request.post('/auth/logout', {
+        headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: {},
+      })).status()).toBe(204);
+      await expect(page.getByText('Search is unavailable. Check your account and access, then search again.', { exact: true })).toBeVisible({ timeout: 25_000 });
+      await expect(page.getByRole('link', { name: /^Global needle/ })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Next search page', exact: true })).toHaveCount(0);
+      for (const name of ['Card text', 'Label name', 'Member name'])
+        await expect(page.getByRole('textbox', { name, exact: true })).toHaveValue('');
+      expect((await context.request.get('/search?q=needle')).status()).toBe(401);
+      const afterWithdrawal = await peer.request.get(`/boards/${current.board}`);
+      expect(afterWithdrawal.status()).toBe(200); expect(await afterWithdrawal.json()).toEqual(protectedBefore);
+      expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+      await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('needle recovered');
+      await page.getByRole('button', { name: 'Search', exact: true }).press('Enter');
+      await expect(page.getByRole('link', { name: 'Global needle recovered', exact: true })).toBeVisible();
     } finally { try { await context.setOffline(false); } finally { try { restoreWorker(); } finally { await closePeer(); } } }
   });
 }

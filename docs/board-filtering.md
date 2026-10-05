@@ -1,5 +1,17 @@
 # Board filtering (PRD-10 / PRD-16)
 
+## Current executed evidence
+
+At `e77195d`, [run 37241937689](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37241937689) passed the exact-image global search fixture (private isolation, literal matching, 50+2 UUID continuation, actor/query binding and archived-List scope). Both 1280px and 390px native global-search cases passed: two independently authenticated browser contexts, cross-Organization contextual results and keyboard pagination, actual MUI Card edits, foreground refresh, offline disclosure withdrawal, online recovery after scoped Worker delivery and Axe checks. Both native deadline-filter cases and the two-browser label/member filtering case also passed. The release failed other native cases; this evidence does not establish a green release or complete PRD-16 acceptance.
+
+The same run retained `search-capacity-e77195d81c018db6631c4f0e69baddc23dce7cbc`, artifact `11318292455`, SHA-256 `849211625cb03cdc4b8aa7508618485d5def38f37a4545d0410405622f2de327`. The inspected report confirms 200 Lists, 5,000 active Cards and 100,000 archived Cards; active/archive first and seek pages each contain 50 matching persisted IDs, with no overlap and unchanged read state. Twenty serial warm samples per page yielded p95 206.047/210.616 ms (active first/seek) and 207.680/206.544 ms (archive first/seek), under the unchanged 500 ms engineering read budget. This is one-client bounded-page evidence, not concurrent-load or native large-result rendering proof.
+
+The native global-search cases now additionally withdraw the actual reader session while results are visible, require automatic foreground withdrawal of result links/continuation and all three criteria, require HTTP 401, and compare the independent editor's full Board snapshot before/after. Fresh login and explicit search must recover without navigation or reload. Browser TypeScript and collection pass; this new extension still requires real-image execution. Anonymous PUBLIC Board filter parity and the specification's `SEARCH_EXECUTED`/`BOARD_FILTER_CHANGED` event contracts remain unresolved; bounded observation counters do not prove durable domain events. PRD-16 remains open, estimated 20% remaining.
+
+## Implementation history
+
+The implementation notes below record earlier development checks and pending states. The executed evidence above supersedes their collection-only status for the unchanged fixtures at `e77195d`; subsequent extensions remain pending unless separately verified.
+
 Global search traversal is being implemented separately from Board-local
 filtering. The store now provides UUID-seek pages of Organization membership
 routing hints and visible Boards, each capped at 51 rows (50 plus lookahead).
