@@ -1,6 +1,6 @@
 import type { KeyboardCoordinateGetter } from '@dnd-kit/core';
 
-export const cardKeyboardCoordinates: KeyboardCoordinateGetter = (event, { currentCoordinates, context }) => {
+export const cardKeyboardCoordinates: KeyboardCoordinateGetter = (event, { active, currentCoordinates, context }) => {
   const horizontal = event.code === 'ArrowLeft' || event.code === 'ArrowRight';
   const direction = event.code === 'ArrowLeft' || event.code === 'ArrowUp' ? -1
     : event.code === 'ArrowRight' || event.code === 'ArrowDown' ? 1 : 0;
@@ -9,8 +9,12 @@ export const cardKeyboardCoordinates: KeyboardCoordinateGetter = (event, { curre
   const current = context.collisionRect;
   const center = { x: current.left + current.width / 2, y: current.top + current.height / 2 };
   const targets = context.droppableContainers.getEnabled().flatMap(container => {
+    if (container.id === active) return [];
     if (!String(container.id).startsWith('card:') && !String(container.id).startsWith('card-end:')) return [];
-    const rect = context.droppableRects.get(container.id); if (!rect) return [];
+    // Windowed rows can move when neighboring measurements refine, without
+    // resizing this target. Read the committed position at the key boundary;
+    // the scheduled droppable measurement can still describe its old layout.
+    const rect = container.node.current?.getBoundingClientRect() ?? context.droppableRects.get(container.id); if (!rect) return [];
     const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
     if (horizontal ? (x - center.x) * direction <= 1 : Math.abs(x - center.x) > 1 || (y - center.y) * direction <= 1) return [];
     return [{ x, y }];

@@ -5,7 +5,7 @@ function fixture() {
   const rect = (left: number, top: number, height = 80) => ({ left, top, width: 280, height });
   return { active: 'card:source', currentCoordinates: { x: 20, y: 20 }, context: {
     collisionRect: rect(0, 100),
-    droppableContainers: { getEnabled: () => ['card:source', 'card:up', 'card:down', 'card:right', 'card:right-low', 'card:far', 'card-end:first', 'list-end', 'card:unmeasured'].map(id => ({ id })) },
+    droppableContainers: { getEnabled: () => ['card:source', 'card:up', 'card:down', 'card:right', 'card:right-low', 'card:far', 'card-end:first', 'list-end', 'card:unmeasured'].map(id => ({ id, node: { current: null } })) },
     droppableRects: new Map([
       ['card:source', rect(0, 100)], ['card:up', rect(0, 0)], ['card:down', rect(0, 200)],
       ['card:right', rect(320, 90)], ['card:right-low', rect(320, 300)], ['card:far', rect(640, 100)],
@@ -27,4 +27,20 @@ it('supports the shorter end target and stops at vertical boundaries', () => {
   args.context.collisionRect = { ...args.context.collisionRect!, top: 320, height: 64 };
   expect(cardKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowDown' }), args)).toBeUndefined();
   expect(cardKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'Escape' }), args)).toBeUndefined();
+});
+
+it('uses committed target positions after virtual row refinement and excludes the translated source', () => {
+  const args = fixture();
+  const source = document.createElement('div');
+  const destination = document.createElement('div');
+  source.getBoundingClientRect = () => ({ left: 0, top: 150, width: 280, height: 80 }) as DOMRect;
+  destination.getBoundingClientRect = () => ({ left: 0, top: 221, width: 280, height: 80 }) as DOMRect;
+  args.context.droppableContainers.getEnabled = () => [
+    { id: 'card:source', node: { current: source } },
+    { id: 'card:down', node: { current: destination } },
+  ].map(container => ({ ...container, key: String(container.id), disabled: false,
+    data: { current: {} }, rect: { current: null } }));
+  // Cached destination remains at 200; the source's translated DOM position
+  // must not become an eligible destination ahead of the actual next Card.
+  expect(cardKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowDown' }), args)).toEqual({ x: 20, y: 141 });
 });
