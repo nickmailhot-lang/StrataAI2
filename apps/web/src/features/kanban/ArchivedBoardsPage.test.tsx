@@ -16,20 +16,29 @@ function mount(fetch: ReturnType<typeof vi.fn>) {
 }
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.useRealTimers(); vi.clearAllMocks(); });
 it('withdraws cached names immediately on live reset and fences the previous read', async () => {
-  let finish!: (value: Response) => void; let reads = 0;
-  const fetch = vi.fn((path: string) => {
+  let finish!: (value: Response) => void; let older!: (value: Response) => void; let oldSignal: AbortSignal | undefined; let reads = 0;
+  const fetch = vi.fn((path: string, init: RequestInit) => {
     if (path === '/me') return Promise.resolve(response(profile));
     if (++reads === 1) return Promise.resolve(response(page));
+    if (reads === 2) { oldSignal = init.signal!; return new Promise<Response>(resolve => { older = resolve; }); }
     return new Promise<Response>(resolve => { finish = resolve; });
   });
   mount(fetch); await screen.findByRole('article', { name: 'Planning' });
   await waitFor(() => expect(watchOrganizationBoards).toHaveBeenCalled());
   const callbacks = vi.mocked(watchOrganizationBoards).mock.calls.at(-1)![0];
+  fireEvent.click(screen.getByRole('button', { name: 'Check current archived boards' }));
+  await waitFor(() => expect(older).toBeDefined());
   act(() => callbacks.reset());
+  expect(oldSignal!.aborted).toBe(true);
   expect(screen.queryByRole('article')).not.toBeInTheDocument(); expect(screen.queryByText('Planning')).not.toBeInTheDocument();
   await waitFor(() => expect(finish).toBeDefined());
   await act(async () => finish(response({ ...page, items: [] })));
   await screen.findByText('No administrable archived Boards on this page.');
+  // A canceled network peer may still return. Its private snapshot must not
+  // replace the later admitted empty directory or resurrect stale consent.
+  await act(async () => older(response(page)));
+  expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(screen.getByText('No administrable archived Boards on this page.')).toBeVisible();
 });
 it('keeps the original unconfirmed key while a live reset withholds its private review', async () => {
   let writes = 0;
