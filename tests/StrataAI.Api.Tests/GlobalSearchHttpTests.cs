@@ -45,8 +45,8 @@ public sealed partial class ApiHostTests
         Assert.DoesNotContain("Private search result", await otherActorCursor.Content.ReadAsStringAsync(ct));
         using var tail = await owner.GetAsync($"/search?q=100%25_&after={Uri.EscapeDataString(cursor!)}", ct);
         Assert.Equal(HttpStatusCode.OK, tail.StatusCode);
-        Assert.NotEqual(eventId, (await tail.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("interaction").GetProperty("eventId").GetGuid());
         var tailPage = await tail.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.NotEqual(eventId, tailPage.GetProperty("interaction").GetProperty("eventId").GetGuid());
         Assert.Empty(tailPage.GetProperty("items").EnumerateArray()); Assert.Equal(JsonValueKind.Null, tailPage.GetProperty("nextCursor").ValueKind);
         foreach (var client in new[] { owner, outsider })
         {
