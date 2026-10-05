@@ -82,3 +82,25 @@ the actual pointer drop. All successful HTTP response, full persisted placement,
 revision, unaffected-neighbor and focus assertions remain. No execution budgets,
 retries or keyboard predicates change. Typecheck/collection are source evidence;
 immutable-image execution of this correction remains pending.
+
+
+### Phone List keyboard correction after the third key
+
+Run [37338765264](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37338765264)
+passed the complete desktop capacity scenario. The phone case passed Card
+keyboard movement and cross-List pointer transfer, then failed the per-key
+List center alignment assertion on the third ArrowRight. Its retained capacity
+artifact (11358714110), verified SHA-256
+`fdffcefac35d6c8cb8e20149ff898a0d313f90a65493bc5bb94c5f124fcb7d20`,
+shows List transforms progressing through 336px and 672px, then remaining at
+672px after the third key while the canvas scrollLeft stays at 672. This is
+a per-step movement failure, not the subsequent mounted-window coverage check.
+
+List keyboard targeting now reads committed target DOM positions at the key
+boundary, excludes the active source, and advances past targets within the
+existing two-pixel settled tolerance. This matches the Card targeting policy.
+Focused regression tests cover stale cached target positions, an active source
+whose measured position is slightly ahead, and fractional already-aligned
+destinations in both directions. Five focused tests pass locally. The native
+release assertion, key count, pacing, budgets and retries remain unchanged;
+immutable-image execution is still required before claiming this failure fixed.

@@ -27,6 +27,22 @@ describe('keyboard list targets', () => {
     args.context.collisionRect = { ...args.context.collisionRect!, left: 1008, width: 100 };
     expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toBeUndefined();
   });
+  it('uses committed column positions after scrolling instead of stale cached targets', () => {
+    const args = fixture();
+    args.context.droppableContainers.getEnabled = () => [
+      { id: 'middle', node: { current: { getBoundingClientRect: () => ({ left: 337.5, top: 10, width: 320, height: 240 }) } } },
+      { id: 'last', node: { current: { getBoundingClientRect: () => ({ left: 672, top: 10, width: 320, height: 240 }) } } },
+    ] as unknown as ReturnType<typeof args.context.droppableContainers.getEnabled>;
+    args.context.droppableRects.set('last', { ...args.context.collisionRect!, left: 337.5 });
+    expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 436, y: 20 });
+  });
+  it('advances past an already aligned destination during fractional phone scrolling', () => {
+    const args = fixture();
+    args.context.collisionRect = { ...args.context.collisionRect!, left: 670.5 };
+    expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 327.5, y: 40 });
+    args.context.collisionRect = { ...args.context.collisionRect!, left: 337.5 };
+    expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowLeft' }), args)).toEqual({ x: -237.5, y: 20 });
+  });
   it('leaves unrelated keys and missing measurements alone', () => {
     const args = fixture();
     expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'Escape' }), args)).toBeUndefined();
