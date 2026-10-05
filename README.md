@@ -15,6 +15,8 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 | Choose the next implementation dependency | [Canonical ticket dependency audit](docs/ticket-dependencies.md), [linked ticket dependency map](docs/ticket-dependency-map.md) |
 | Review outstanding acceptance and evidence | [Board acceptance](docs/architecture/prd-04-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
 
+If you are new to the project, follow the architecture and runtime guides before the local checks below. For a feature question, choose a subject in the documentation index and start with its behavior guide. For deployment, start with the release guide and use the configuration and migration references alongside it.
+
 ## Navigating the documentation
 
 The [docs index](docs/README.md) links to every document, grouped by subject. Use it when you know a feature but not its filename.
@@ -46,7 +48,7 @@ Useful routes through the docs include:
 - **Board collaboration:** [Board interface](docs/architecture/board-interface.md) → [windowing](docs/board-windowing.md) → [work synchronization](docs/architecture/work-synchronization.md) → [Organization Board realtime](docs/organization-board-realtime.md) → [Board acceptance](docs/architecture/prd-04-acceptance.md).
 - **Safe writes and recovery:** [command transactions](docs/architecture/work-command-transactions.md) → [command scopes](docs/architecture/work-command-scopes.md) → [command retries](docs/architecture/work-command-retries.md) → [current actor sessions](docs/architecture/command-actor-sessions.md).
 - **Files and backgrounds:** [object storage](docs/architecture/attachment-object-storage.md) → [attachment acceptance](docs/architecture/attachment-acceptance.md) → [Board background images](docs/board-background-images.md) → [cover lifecycle](docs/architecture/attachment-covers-lifecycle.md).
-- **Search and filters:** [Board filtering and private search interaction sources](docs/board-filtering.md) → [Organization access integrity](docs/architecture/organization-access-integrity.md) → [work synchronization](docs/architecture/work-synchronization.md). The filtering guide identifies the remaining producer, replay, and consumer work for private interaction events.
+- **Search and filters:** [Board filtering and private search interaction sources](docs/board-filtering.md) → [Organization access integrity](docs/architecture/organization-access-integrity.md) → [work synchronization](docs/architecture/work-synchronization.md). The filtering guide covers global search, Board criteria, private interaction acknowledgments, and remaining acceptance work.
 - **Operating a release:** [release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [operator metrics](docs/architecture/operator-metrics.md).
 
 ## Adopted architecture
