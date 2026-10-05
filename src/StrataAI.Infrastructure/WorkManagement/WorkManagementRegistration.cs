@@ -18,6 +18,9 @@ public static class WorkManagementRegistration
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<DemoWorkTransactionScope>();
+            services.AddSingleton<InMemorySearchInteractionEventStore>();
+            services.AddSingleton<ISearchInteractionEventStore>(provider => provider.GetRequiredService<InMemorySearchInteractionEventStore>());
+            services.AddSingleton<StrataAI.Infrastructure.Identity.IDemoIdentityTransactionParticipant>(provider => provider.GetRequiredService<InMemorySearchInteractionEventStore>());
             services.AddSingleton<ICardMentionMemberStore, InMemoryCardMentionMemberStore>();
             services.AddSingleton<ICardMassMentionMemberStore, InMemoryCardMassMentionMemberStore>();
             services.AddSingleton<InMemoryCardMassMentionQuota>();
@@ -59,6 +62,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<ICardCommentStore, PostgresCardCommentStore>();
             services.AddSingleton<ICommentMentionSnapshotStore, PostgresCommentMentionSnapshotStore>();
             services.AddSingleton<IWorkEventStore, PostgresWorkEventStore>();
+            services.AddSingleton<ISearchInteractionEventStore, PostgresSearchInteractionEventStore>();
             services.AddSingleton<IWorkEventReader, PostgresWorkEventReader>();
             services.AddSingleton<IOrganizationBoardEventReader, PostgresOrganizationBoardEventReader>();
             services.AddKeyedSingleton<IOrganizationBoardEventReader>(OrganizationBoardAudience.BoardDiscovery,

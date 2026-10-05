@@ -415,17 +415,18 @@ execution/change source uses its event ID as its entity ID and version 1;
 recording it must not increment Board/Card/profile versions or alter another
 client's filter criteria. Source clocks are UTC at database precision.
 
-This is the source envelope and append contract only. It is not registered,
-persisted, produced by current GETs or disclosed by a transport. Required next
-integration includes actor-private durable storage and original-ID deduplication,
-validated/admitted successful producers, current session/Board proof before
+The source envelope now has registered PostgreSQL and process-local Demo append
+adapters. Current GETs do not yet produce these sources or disclose them through
+a transport. Required next integration includes validated/admitted successful
+producers, current session/Board proof before
 replay, protected bounded cursors, and actual client consumption/recovery.
 Anonymous filtering must not fabricate an actor or emit an authenticated source.
 The identity account-event allowlist and shared Work stream remain unchanged.
-Two contract tests compile for canonical serialization, absence of fabricated
-tenant/content metadata and invalid scope/identity refusal. The full .NET build
-passes with zero warnings/errors; actual test execution awaits Linux CI because
-local application control prevents .NET test execution. Domain events emitted
+Two contract tests cover canonical serialization, absence of fabricated
+tenant/content metadata and invalid scope/identity refusal. Domain tests passed
+in CI for the source contract. The full .NET build passes with zero warnings/errors;
+new runtime tests execute in Linux CI because local application control prevents
+.NET test execution. Domain events emitted
 and consumed remain incomplete; PRD-16 stays open, estimated 20% remaining.
 
 Migration 076 adds actor-private search interaction streams and immutable source
@@ -436,8 +437,8 @@ Board and required membership tuples before a Board-scoped append. Original IDs
 are reused only for an identical source; replay does not advance its counter or
 clock. API grants are SELECT plus this narrow capability, with no raw table
 writes or Worker capability. The PostgreSQL adapter requires an owning identity
-subject transaction and neither starts nor commits it. It is not yet registered
-or called by search/filter producers.
+subject transaction and neither starts nor commits it. Both runtime adapters are
+registered through Work Management; search/filter producers do not yet call them.
 
 Startup now requires schema 076. Populated forward/repeat upgrade checks retain
 original account and shared Work source bytes and require empty new history.
@@ -453,8 +454,19 @@ checking its owning application subject; it does not depend on an earlier adapte
 having set the database context. The mandatory restricted persistence executable
 now checks that an unowned/foreign append is rejected, an original source can be
 appended twice inside its owning transaction, and a declared late refusal leaves
-neither sources nor its newly allocated stream. This C# runtime check awaits CI;
-its build passes with zero warnings or errors. Actor admission in this contract
+neither sources nor its newly allocated stream. This C# runtime check passed in
+[run 37272879344](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37272879344)
+(PostgreSQL job 111643440980); its log includes the explicit adapter success marker.
+Actor admission in this contract
 is synthetic, so it does not prove HTTP session admission or final session fencing.
-Demo parity, producer admission/final session proof, protected replay
+The Demo adapter retains immutable original source identities and per-actor
+sequences, participates in the owning identity rollback snapshot, refuses foreign
+subjects, and freshly checks active Organization/Board visibility and grants
+inside the Work read boundary for every Board-scoped append, including duplicates.
+It refuses at its process-local capacity rather than evicting originals. A Demo
+host test covers original-ID deduplication, changed-clock refusal, late rollback,
+private nonmember refusal, actual MEMBER admission, and withdrawn-grant duplicate
+refusal. Its zero-warning build passes; execution awaits CI. This test's actor
+authorization is synthetic and does not prove HTTP source production.
+Producer admission/final session proof, protected replay
 and consumers remain outstanding; PRD-16 remains open at 20% estimated remaining.
