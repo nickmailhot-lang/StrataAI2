@@ -187,6 +187,9 @@ jobs:
       - name: Verify reader directory epochs, visibility withdrawal and archive separation
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-organization-board-reader-epochs.sql
 
+      - name: Verify actor-private search source capability, deduplication and rollback
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-search-interaction-sources.sql
+
       - name: Verify immutable activity attribution and historical account interpretation
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-activity-attribution.sql
       - name: Verify immutable body-free comment mention snapshots and tenant isolation

@@ -427,3 +427,24 @@ tenant/content metadata and invalid scope/identity refusal. The full .NET build
 passes with zero warnings/errors; actual test execution awaits Linux CI because
 local application control prevents .NET test execution. Domain events emitted
 and consumed remain incomplete; PRD-16 stays open, estimated 20% remaining.
+
+Migration 076 adds actor-private search interaction streams and immutable source
+rows with forced subject RLS, paired tenant/Board foreign keys, fixed canonical
+entity/version semantics and empty-only metadata. A hardened append capability
+checks the current subject/active account and locks actual active Organization,
+Board and required membership tuples before a Board-scoped append. Original IDs
+are reused only for an identical source; replay does not advance its counter or
+clock. API grants are SELECT plus this narrow capability, with no raw table
+writes or Worker capability. The PostgreSQL adapter requires an owning identity
+subject transaction and neither starts nor commits it. It is not yet registered
+or called by search/filter producers.
+
+Startup now requires schema 076. Populated forward/repeat upgrade checks retain
+original account and shared Work source bytes and require empty new history.
+Required restricted SQL fixtures cover forced actor isolation, current private
+MEMBER admission, foreign actor/private nonmember and withdrawn-grant refusal,
+canonical identity, duplicate/changed-source behavior, counter rollback and
+immutable administrative history. Full zero-warning .NET build and migration
+runner shell syntax pass. Actual migration/capability/C# adapter execution is
+pending CI. Demo parity, producer admission/final session proof, protected replay
+and consumers remain outstanding; PRD-16 remains open at 20% estimated remaining.
