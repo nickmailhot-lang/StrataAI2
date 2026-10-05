@@ -10,5 +10,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["playwright.config.ts", "playwright.attachment.config.ts", "tests/browser/**/*.ts"]
+  "include": ["playwright.config.ts", "playwright.attachment.config.ts", "playwright.capacity.config.ts", "tests/browser/**/*.ts"]
 }

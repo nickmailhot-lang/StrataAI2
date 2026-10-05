@@ -37,6 +37,7 @@ import { ChecklistManageControl } from './ChecklistManageControl';
 import { CardDateDisplay } from './CardDateDisplay';
 import { BoardDateProvider } from './BoardDateBadges';
 import { BoardCardLink } from './BoardCardLink';
+import { BoardWindow } from './BoardWindow';
 import { CardDateEditor } from './CardDateEditor';
 import { CardLabels } from './CardLabels';
 import { CardAssignees } from './CardAssignees';
@@ -171,6 +172,7 @@ function BoardContent() {
   const reading = useRef(false);
   const [snapshotReading, setSnapshotReading] = useState(true);
   const cardLinks = useRef(new Map<string, HTMLAnchorElement>());
+  const windowMemory = useRef(new Map<string, number>());
   const closeFocusCard = useRef<string | undefined>(undefined);
   const cardClose = useRef<HTMLButtonElement>(null);
   const canvasFocus = useRef<{ scope: string; cardId: string } | undefined>(undefined);
@@ -596,19 +598,13 @@ function BoardContent() {
         if (!source || !event.over || event.over.id === source.listId || busy || snapshotReading || loadError) return;
         setListDrop({ ...source, before: event.over.id === 'list-end' ? '' : String(event.over.id), nonce: crypto.randomUUID() });
       }}>
-      <Box
-        aria-label="Kanban board"
-        data-kanban-scroll
-        sx={{
-          display: "grid",
-          gridAutoFlow: "column",
-          gridAutoColumns: { xs: "82vw", sm: 320 },
-          gap: 2,
-          overflowX: "auto",
-          pb: 2,
-        }}
-      >
-        {(canvasFilter ? filteredBoardCanvas(snapshot, canvasFilter) : previewListMove(previewCardMove(snapshot, movePreview), listPreview)).lists.map((column) => (
+      <BoardWindow axis="lists" memory={windowMemory.current} memoryKey="lists"
+        items={(canvasFilter ? filteredBoardCanvas(snapshot, canvasFilter) : previewListMove(previewCardMove(snapshot, movePreview), listPreview)).lists.map(column => ({ ...column, id: column.list.id }))}
+        pinned={[...listRecovery, ...renameRecovery, ...(listDrop ? [listDrop.listId] : []), ...(creation?.listId ? [creation.listId] : []),
+          ...snapshot.lists.filter(column => column.cards.some(item => [cardId, closeFocusCard.current, canvasFocus.current?.cardId].includes(item.id))).map(column => column.list.id)]}
+        ownsDrag={(column, id) => column.cards.some(item => item.id === id)}
+        end={snapshot.access.canMove && snapshot.board.lifecycleState === 'active' ? <ListEndTarget disabled={!!canvasFilter || busy || snapshotReading || !!loadError} /> : undefined}
+        renderItem={column => (
           <ListDragColumn
             key={column.list.id}
             id={column.list.id} name={column.list.name}
@@ -633,8 +629,9 @@ function BoardContent() {
               onRecoveryChange={updateListRecovery}
               dropRequest={listDrop?.listId === column.list.id ? listDrop : undefined}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            <Stack spacing={1} sx={{ mt: 2 }}>
-              {column.cards.map((item) => (
+            <BoardWindow axis="cards" memory={windowMemory.current} memoryKey={column.list.id}
+              items={column.cards} pinned={[cardId, closeFocusCard.current, canvasFocus.current?.cardId].filter((id): id is string => !!id)}
+              renderItem={item => (
                 <CardDragItem key={item.id} id={item.id} title={item.title}
                   disabled={busy || snapshotReading || !!loadError || cardRecovery || !!cardId}
                   available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(item.version) && item.version > 0}>
@@ -643,8 +640,7 @@ function BoardContent() {
                   coverUnavailable={snapshotReading || !!loadError || snapshot.board.lifecycleState !== 'active' || column.list.lifecycleState !== 'active'}
                   labels={snapshot.cardLabels?.[item.id]} members={snapshotReading || loadError ? undefined : snapshot.cardMembers?.[item.id]} />
                 </CardDragItem>
-              ))}
-            </Stack>
+              )} />
             {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && <CardListEndTarget id={column.list.id} name={column.list.name} disabled={!!canvasFilter || busy || snapshotReading || !!loadError || cardRecovery || !!cardId} />}
             {column.cards.length === 0 && (
               <Typography sx={{ my: 2 }}>{canvasFilter ? 'No matching Cards on this page.' : 'No cards yet.'}</Typography>
@@ -660,9 +656,7 @@ function BoardContent() {
               </Button>
             )}
           </ListDragColumn>
-        ))}
-        {snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && <ListEndTarget disabled={!!canvasFilter || busy || snapshotReading || !!loadError} />}
-      </Box>
+        )} />
       </DndContext>
       </BoardDateProvider>
       {cardDrop && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && (() => {

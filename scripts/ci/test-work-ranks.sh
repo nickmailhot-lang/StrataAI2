@@ -3,7 +3,16 @@ set -euo pipefail
 test "${CI:-}" = true || { echo 'Disposable rank fixtures may run only in CI.' >&2; exit 1; }
 BASE_URL="${1:-http://localhost:8080}"
 scratch="$(mktemp -d)"
-trap 'rm -rf "$scratch"' EXIT
+capacity_worker=0
+cleanup() {
+  local status=$?
+  if ((capacity_worker)); then
+    docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null || status=1
+  fi
+  rm -rf "$scratch"
+  exit "$status"
+}
+trap cleanup EXIT
 trap 'echo "Rank allocation check failed at line $LINENO" >&2' ERR
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 body="$(jq -nc --arg email "rank-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"rank-correct-horse-battery",displayName:"Rank fixture"}')"
@@ -142,3 +151,14 @@ later_rank="$(jq -r '.rank' "$scratch/list-position-later.json")"
 [[ "$later_rank" =~ ^[0-9]{30}$ ]]
 test "$(admin "SELECT rank='$later_rank' AND version=3 FROM board_lists WHERE tenant_id='$organization' AND board_id='$board' AND id='$moving_list';")" = t
 echo 'Concurrent relative list positions and non-reapplying durable replay passed.'
+
+# The same actual restricted PostgreSQL data now exercises the release web
+# image. Keep credentials private and restore the normal Worker even on failure.
+umask 077
+jq -nc --argjson account "$body" --arg org "$organization" --arg board "$board" --arg list "$list" \
+  '$account | {email,password,organizationId:$org,boardId:$board,listId:$list}' > "$scratch/browser-capacity"
+capacity_worker=1
+STRATAAI_TEST_EVENT_ORGANIZATION_ID="$organization" docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml \
+  -f scripts/ci/compose.work-event-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
+STRATAAI_BOARD_CAPACITY_FIXTURE="$scratch/browser-capacity" STRATAAI_E2E_RATE_PACING=1 STRATAAI_E2E_RELEASE_HEADERS=1 \
+  npx playwright test --config playwright.capacity.config.ts

@@ -656,6 +656,15 @@ jobs:
       - name: Check concurrent and large-board rank allocation
         run: scripts/ci/test-work-ranks.sh
 
+      - name: Retain actual large-Board native capacity diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: board-capacity-browser-${{ github.sha }}
+          path: test-results/board-capacity
+          if-no-files-found: ignore
+          retention-days: 90
+
       - name: Check write authorization and lifecycle during live database lock waits
         run: scripts/ci/test-work-command-scopes.sh
 

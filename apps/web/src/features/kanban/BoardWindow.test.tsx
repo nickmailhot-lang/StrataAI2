@@ -1,0 +1,109 @@
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { BoardWindow } from './BoardWindow';
+
+let active: { id: string } | null = null;
+vi.mock('@dnd-kit/core', () => ({ useDndContext: () => ({ active }) }));
+const cards = Array.from({ length: 5000 }, (_, i) => ({ id: `card-${i}` }));
+const lists = Array.from({ length: 200 }, (_, i) => ({ id: `list-${i}` }));
+const renderItem = (item: { id: string }) => <><button>Drag {item.id}</button><a href={'#' + item.id}>Open {item.id}</a></>;
+function mount(items = cards, axis: 'lists' | 'cards' = 'cards', options: { pinned?: string[]; memory?: Map<string, number> } = {}) {
+  const memory = options.memory ?? new Map<string, number>();
+  return { memory, ...render(<BoardWindow items={items} axis={axis} memory={memory} memoryKey={axis} pinned={options.pinned} renderItem={renderItem} />) };
+}
+beforeEach(() => {
+  active = null;
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1280);
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(400);
+});
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+
+it('bounds mounted work for 5000 Cards and renders the canonical end after scrolling', () => {
+  const { memory } = mount();
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+  expect(screen.queryByRole('link', { name: 'Open card-4999' })).not.toBeInTheDocument();
+  const viewport = screen.getByLabelText('Cards');
+  fireEvent.scroll(viewport, { target: { scrollTop: 679400 } });
+  expect(screen.getByRole('link', { name: 'Open card-4999' })).toBeVisible();
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+  expect(memory.get('cards')).toBe(679400);
+});
+it('bounds mounted Lists at 200 and restores a retained Board scroll position after remount', () => {
+  const memory = new Map<string, number>();
+  const first = mount(lists, 'lists', { memory });
+  expect(screen.getAllByRole('link').length).toBeLessThan(15);
+  fireEvent.scroll(screen.getByLabelText('Kanban board'), { target: { scrollLeft: 4000 } });
+  first.unmount(); mount(lists, 'lists', { memory });
+  expect(screen.getByLabelText('Kanban board').scrollLeft).toBe(4000);
+});
+it('keeps admitted open work mounted and makes its focus visible after a detail closes', async () => {
+  const { memory } = mount(cards, 'cards', { pinned: ['card-4999'] });
+  const link = screen.getByRole('link', { name: 'Open card-4999' });
+  act(() => link.focus());
+  await waitFor(() => expect(link).toHaveFocus());
+  expect(memory.get('cards')).toBeGreaterThan(600000);
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+});
+it('preserves active drag identities while their original row scrolls out of view', () => {
+  active = { id: 'card:card-0' }; mount();
+  fireEvent.scroll(screen.getByLabelText('Cards'), { target: { scrollTop: 20000 } });
+  expect(screen.getByRole('button', { name: 'Drag card-0' })).toBeVisible();
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+});
+it('keeps the List owning an active Card drag mounted', () => {
+  active = { id: 'card:source-card' };
+  render(<BoardWindow items={lists} axis="lists" memory={new Map()} memoryKey="lists"
+    ownsDrag={(item, id) => item.id === 'list-199' && id === 'source-card'} renderItem={renderItem} />);
+  expect(screen.getByRole('button', { name: 'Drag list-199' })).toBeVisible();
+  expect(screen.getAllByRole('link').length).toBeLessThan(15);
+});
+it('tabs forward and backward across a window boundary in canonical order', async () => {
+  mount(); const last = screen.getAllByRole('link').at(-1)!;
+  const index = Number(last.getAttribute('href')!.split('-').at(-1));
+  act(() => last.focus()); fireEvent.keyDown(last, { key: 'Tab' });
+  const next = await screen.findByRole('button', { name: `Drag card-${index + 1}` });
+  await waitFor(() => expect(next).toHaveFocus());
+  fireEvent.keyDown(next, { key: 'Tab', shiftKey: true });
+  await waitFor(() => expect(screen.getByRole('link', { name: `Open card-${index}` })).toHaveFocus());
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+});
+it('preserves normal Board markup and all Cards below the virtualization threshold', () => {
+  mount(cards.slice(0, 50));
+  expect(screen.getAllByRole('link')).toHaveLength(50);
+  expect(screen.queryByLabelText('Cards')).not.toBeInTheDocument();
+});
+it('bounds work and clamps the viewport after a canonical snapshot removes most rows', () => {
+  const memory = new Map<string, number>([['cards', 679400]]);
+  const view = mount(cards, 'cards', { memory });
+  view.rerender(<BoardWindow items={cards.slice(0, 200)} axis="cards" memory={memory} memoryKey="cards" renderItem={renderItem} />);
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+  expect(screen.getByRole('link', { name: 'Open card-199' })).toBeVisible();
+  expect(memory.get('cards')).toBeLessThan(30000);
+});
+it('does not skip offscreen Cards when a readonly List is nested in the horizontal window', async () => {
+  const memory = new Map<string, number>();
+  render(<BoardWindow items={lists} axis="lists" memory={memory} memoryKey="lists" renderItem={list =>
+    <BoardWindow items={cards.slice(0, 200).map(card => ({ id: list.id + '/' + card.id }))} axis="cards" memory={memory} memoryKey={list.id}
+      renderItem={item => <a href={'#' + item.id}>Open {item.id}</a>} />} />);
+  const firstListLinks = screen.getAllByRole('link').filter(link => link.getAttribute('href')?.startsWith('#list-0/'));
+  const last = firstListLinks.at(-1)!; const index = Number(last.getAttribute('href')!.split('-').at(-1));
+  act(() => last.focus()); fireEvent.keyDown(last, { key: 'Tab' });
+  await waitFor(() => expect(screen.getByRole('link', { name: `Open list-0/card-${index + 1}` })).toHaveFocus());
+});
+it('remeasures variable-height Cards without moving the retained scroll anchor', async () => {
+  const observers: { callback: ResizeObserverCallback; nodes: Set<Element> }[] = [];
+  class Observer {
+    nodes = new Set<Element>();
+    constructor(callback: ResizeObserverCallback) { observers.push({ callback, nodes: this.nodes }); }
+    observe(node: Element) { this.nodes.add(node); }
+    disconnect() { this.nodes.clear(); }
+  }
+  vi.stubGlobal('ResizeObserver', Observer);
+  const { memory } = mount(cards, 'cards', { pinned: ['card-0'] });
+  const viewport = screen.getByLabelText('Cards'); fireEvent.scroll(viewport, { target: { scrollTop: 20000 } });
+  const row = screen.getByRole('link', { name: 'Open card-0' }).parentElement!;
+  const observer = observers.find(value => value.nodes.has(row))!;
+  act(() => observer.callback([{ target: row, borderBoxSize: [{ blockSize: 256 }] } as unknown as ResizeObserverEntry], {} as ResizeObserver));
+  await waitFor(() => expect(memory.get('cards')).toBe(20128));
+  expect(viewport.scrollTop).toBe(20128);
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+});
