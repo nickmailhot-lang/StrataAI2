@@ -125,18 +125,20 @@ for (const width of [1280, 390]) {
       await settleDrag();
       // Worker-delivered reconciliation can disable the handle after it was
       // first focused. Bind pointer geometry only after current admission.
-      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
-      await expect(handle).toBeEnabled();
       const initial = await mounted.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')?.split('/').at(-1)));
       const minimum = Math.max(...initial.map(id => currentOrder.get(id ?? '') ?? -1));
-      const start = await handle.boundingBox(); const viewport = await cards.boundingBox(); const outer = await section.boundingBox();
+      const offset = await cards.evaluate(node => node.scrollTop);
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+      await expect(handle).toBeEnabled();
+      const [start, viewport, outer] = await Promise.all([handle.boundingBox(), cards.boundingBox(), section.boundingBox()]);
       expect(start).not.toBeNull(); expect(viewport).not.toBeNull(); expect(outer).not.toBeNull();
       const x = start!.x + start!.width / 2;
       const top = Math.max(0, viewport!.y, outer!.y);
       const bottom = Math.min(844, viewport!.y + viewport!.height, outer!.y + outer!.height);
       expect(bottom - top).toBeGreaterThan(100);
-      const offset = await cards.evaluate(node => node.scrollTop);
-      await page.mouse.move(x, start!.y + start!.height / 2); await page.mouse.down();
+      await page.mouse.move(x, start!.y + start!.height / 2);
+      await expect(handle).toBeEnabled();
+      await page.mouse.down();
       await page.mouse.move(x + 12, start!.y + start!.height / 2);
       await page.mouse.move(x, bottom - 12, { steps: 12 });
       await expect(handle).toHaveAttribute('aria-pressed', 'true');
