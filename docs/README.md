@@ -108,7 +108,7 @@ Use this index to find every document in `docs/`. Architecture documents describ
 - [Board visibility administration](board-visibility-ui.md)
 - [Large-Board viewport rendering](board-windowing.md)
 - [Keyboard pickup instructions](kanban-pickup-announcement.md)
-- [Organization Board archive realtime acceptance](organization-board-realtime.md)
+- [Organization Board directory realtime](organization-board-realtime.md)
 - [Public Board link](public-board-sharing.md)
 
 ## Lists and Cards
