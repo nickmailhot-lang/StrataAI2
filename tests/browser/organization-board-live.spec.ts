@@ -90,3 +90,72 @@ for (const width of [1280, 390]) {
     } finally { await mirror.close(); restoreWorker(); }
   });
 }
+
+test('PRD-04/05: phone archive scope excludes other Boards and withdraws review after Organization membership removal', async ({ context, browser }) => {
+  test.setTimeout(150_000);
+  const headers = { 'X-StrataAI-Request': '1' };
+  const phone = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width: 390, height: 844 } });
+  let restoreWorker = () => {};
+  try {
+    const accounts = [context, phone].map((_, index) => ({ email: `directory-scope-${index}-${Date.now()}@example.test`, password: 'directory-scope-correct-horse', displayName: `Directory actor ${index}` }));
+    for (const [index, client] of [context, phone].entries()) {
+      expect((await client.request.post('/auth/register', { headers, data: accounts[index] })).status()).toBe(201);
+      expect((await client.request.post('/auth/login', { headers, data: accounts[index] })).status()).toBe(200);
+    }
+    const organization = await context.request.post('/organizations', { headers, data: { name: 'Audience admission fixture' } });
+    expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
+    const invitation = await context.request.post(`/organizations/${org}/invitations`, { headers, data: { email: accounts[1].email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
+    expect(invitation.status()).toBe(201);
+    expect((await phone.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
+    const me = await phone.request.get('/me'); expect(me.status()).toBe(200); const user = (await me.json()).id;
+    const boards: { id: string; name: string; version: number }[] = [];
+    for (const name of ['Admitted private archive', 'Withheld private archive']) {
+      const created = await context.request.post('/boards', { headers, data: { organizationId: org, name, visibility: 'PRIVATE' } });
+      expect(created.status()).toBe(201); boards.push(await created.json());
+    }
+    expect((await context.request.patch(`/boards/${boards[0].id}/members/${user}`, { headers, data: { role: 'ADMIN' } })).status()).toBe(200);
+    const admittedReply = await context.request.get(`/boards/${boards[0].id}`); expect(admittedReply.status()).toBe(200);
+    const admittedVersion = (await admittedReply.json()).board.version;
+    const hiddenArchive = await context.request.post(`/boards/${boards[1].id}/archive`, { headers, data: { version: boards[1].version } });
+    expect(hiddenArchive.status()).toBe(200); const hidden = await hiddenArchive.json();
+    restoreWorker = scopedBoardWorker(org);
+    for (const board of boards) await waitForBoardDelivery(context.request, board.id);
+    const page = await phone.newPage();
+    let bootstrap = false, canonicalArchive = false;
+    page.on('websocket', connection => {
+      if (!connection.url().includes('/organizations/live')) return;
+      connection.on('framereceived', frame => {
+        for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
+          const message = JSON.parse(raw); if (message.type !== 2) continue;
+          expect(message.item.organizationId).toBe(org); expect(message.item.userId).toBe(user);
+          bootstrap ||= message.item.page.resetRequired;
+          for (const event of message.item.page.events) {
+            expect(event.boardId).toBe(boards[0].id);
+            if (event.eventType === 'BOARD_ARCHIVED') canonicalArchive = true;
+          }
+        }
+      });
+    });
+    await page.goto(`/app/${org}/archived-boards`);
+    await expect.poll(() => bootstrap).toBe(true);
+    await expect(page.getByText('No administrable archived Boards on this page.', { exact: true })).toBeVisible();
+    await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
+    // An ineligible source precedes an eligible one. Audience filtering must
+    // retain the later real source without leaking the private Board envelope.
+    expect((await context.request.post(`/boards/${boards[1].id}/restore`, { headers, data: { version: hidden.version } })).status()).toBe(200);
+    expect((await context.request.post(`/boards/${boards[0].id}/archive`, { headers, data: { version: admittedVersion } })).status()).toBe(200);
+    await expect.poll(() => canonicalArchive).toBe(true);
+    await expect(page.getByRole('article', { name: boards[0].name, exact: true })).toBeVisible();
+    await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: `Permanently delete ${boards[0].name} board`, exact: true }).press('Enter');
+    await expect(page.getByRole('dialog')).toBeVisible();
+    const directory = await context.request.get(`/organizations/${org}/members`); expect(directory.status()).toBe(200);
+    const member = (await directory.json()).items.find((item: { userId: string }) => item.userId === user); expect(member).toBeDefined();
+    expect((await context.request.delete(`/organizations/${org}/members/${user}?expectedVersion=${member.version}`, { headers })).status()).toBe(204);
+    await expect(page.getByRole('article', { name: boards[0].name, exact: true })).toHaveCount(0);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    const refused = await phone.request.get(`/organizations/${org}/archived-boards`); expect(refused.status()).toBe(404);
+    expect(await refused.text()).not.toContain(boards[0].name);
+    expect((await phone.request.get('/me')).status()).toBe(200);
+  } finally { await phone.close(); restoreWorker(); }
+});

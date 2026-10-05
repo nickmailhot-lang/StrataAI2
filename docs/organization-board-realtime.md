@@ -226,3 +226,10 @@ and destructive review to disappear on logout. The lifecycle receipt scenario
 now requires canonical deletion to remove stale consent while preserving the
 original retry key. Browser fixture typecheck and discovery pass locally; these
 new cases await exact-image execution and are not claimed as passed acceptance.
+
+A further phone scenario uses a MEMBER with one explicit Board Admin grant.
+It places a real ineligible Board lifecycle source before an eligible source,
+requires only the admitted Board envelope and archive name, then removes the
+Organization membership while destructive review is open. The session remains
+valid but directory access must refuse and private review must disappear.
+This fixture compiles; its actual PostgreSQL/proxy execution remains pending.
