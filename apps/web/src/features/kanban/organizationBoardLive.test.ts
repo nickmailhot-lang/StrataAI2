@@ -6,19 +6,27 @@ const event = { eventId, boardId: board, eventType: 'BOARD_ARCHIVED', version: 2
 const head = { organizationId: org, userId: user, page: { cursor: 'protected-cursor_A', events: [], hasMore: false, pending: false, resetRequired: true } };
 const delivered = { ...head, page: { ...head.page, resetRequired: false, events: [event] } };
 type Observer = { next(value: unknown): void; error(error: unknown): void; complete(): void };
-function fixture() {
+function fixture(audience?: 'discovery') {
   let observer: Observer; let reconnect: () => void = () => {};
   const dispose = vi.fn(); const stop = vi.fn().mockResolvedValue(undefined);
   const stream = vi.fn(() => ({ subscribe: (value: Observer) => { observer = value; return { dispose }; } }));
   const connection = { start: vi.fn().mockResolvedValue(undefined), stop, stream, onreconnecting: vi.fn(),
     onreconnected: (value: () => void) => { reconnect = value; }, onclose: vi.fn() };
   const invalidate = vi.fn(), reset = vi.fn(), unavailable = vi.fn();
-  const cleanup = watchOrganizationBoards({ organizationId: org, userId: user, invalidate, reset, unavailable,
+  const cleanup = watchOrganizationBoards({ organizationId: org, userId: user, invalidate, reset, unavailable, audience,
     connection: connection as unknown as ReturnType<typeof createOrganizationBoardConnection> });
   return { stream, stop, dispose, invalidate, reset, unavailable, cleanup, next: (value: unknown) => observer.next(value),
     previous: () => observer, reconnect: () => reconnect() };
 }
 afterEach(() => vi.useRealTimers());
+it('uses the ordinary reader method and retains its opaque cursor through reconnect', async () => {
+  vi.useFakeTimers(); const f = fixture('discovery'); await Promise.resolve();
+  expect(f.stream).toHaveBeenLastCalledWith('WatchBoards', org, null);
+  f.next(head); f.next(delivered); await vi.advanceTimersByTimeAsync(100);
+  expect(f.reset).toHaveBeenCalledTimes(1); expect(f.invalidate).toHaveBeenCalledTimes(1);
+  f.reconnect(); expect(f.stream).toHaveBeenLastCalledWith('WatchBoards', org, head.page.cursor);
+  f.cleanup();
+});
 it('resets bootstrap, invalidates canonical sources once and resumes the exact opaque cursor', async () => {
   vi.useFakeTimers(); const f = fixture(); await Promise.resolve();
   expect(f.stream).toHaveBeenLastCalledWith('Watch', org, null);

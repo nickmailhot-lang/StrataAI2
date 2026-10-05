@@ -144,3 +144,11 @@ is not disclosed. Full warnings-as-errors build passes; actual hub contract
 execution and immutable-image coverage remain pending CI. The active directory
 browser consumer still needs integration. PRD-04 remains open at 20% estimated
 remaining work.
+
+The browser live connector can now select the fixed WatchBoards discovery
+method while archive callers retain Watch. A regression verifies initial reset,
+canonical invalidation and exact opaque discovery cursor reconnect. All 15
+connector tests, typecheck and lint pass locally. This does not yet integrate
+OrganizationHome or prove a native ordinary-reader scenario. Current c820b65
+CI run 37268321264 is live; demo increment run 37268199264 has passed PostgreSQL
+and its API execution remains pending. No running CI has been cancelled.

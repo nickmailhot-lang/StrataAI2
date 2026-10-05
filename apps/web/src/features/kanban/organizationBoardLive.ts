@@ -9,6 +9,7 @@ export function createOrganizationBoardConnection() {
 }
 export function watchOrganizationBoards(options: {
   organizationId: string; userId: string; invalidate: () => void; reset: () => void; unavailable: () => void;
+  audience?: 'discovery';
   connection?: ReturnType<typeof createOrganizationBoardConnection>;
 }) {
   let connection: ReturnType<typeof createOrganizationBoardConnection>;
@@ -33,7 +34,7 @@ export function watchOrganizationBoards(options: {
     clearTimeout(retry); retry = undefined;
     const active = ++generation;
     subscription?.dispose();
-    subscription = connection.stream<unknown>('Watch', options.organizationId, cursor ?? null).subscribe({
+    subscription = connection.stream<unknown>(options.audience === 'discovery' ? 'WatchBoards' : 'Watch', options.organizationId, cursor ?? null).subscribe({
       next: value => {
         if (disposed || active !== generation) return;
         const page = validateOrganizationBoardSync(value, options.organizationId, options.userId, seen);
