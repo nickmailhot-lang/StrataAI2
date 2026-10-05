@@ -74,6 +74,21 @@ remain. Browser type checking and collection do not establish executed repair;
 current immutable-image proof is required. This earlier failure also skipped
 the large-Board stage, so it supplies no native proof for the spacing fix.
 
+Run [37330291144](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37330291144)
+passed the desktop genuine-image case but failed phone original-request recovery
+before the large-Board stage. The retained browser artifact (11355908694,
+SHA256 `27ac8f59039eb5437635f4e96fd0797061b31a4b4d2a3f11eff09f965b3aaffc`)
+shows a successful retry account proof, no second image POST, and a permanent
+unavailable notice. A concurrent Board refresh set the temporary unavailable
+flag while that proof awaited IO; it was classified as a permission denial.
+Recovery now performs a fresh actual Board read checking the expected scope,
+active lifecycle and view/edit admission before sending the original request.
+It keeps the original version, bytes and key; the server remains authoritative
+for receipt admission. Twelve focused component tests pass, including refresh
+during the account proof and actual edit withdrawal before retry dispatch.
+Typecheck and lint pass. Genuine immutable-image execution of this repair is
+pending; neither this failed run nor component checks prove native Kanban repair.
+
 At `4aefb6f`, [run 37259415792](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37259415792)
 container job 111605472900 step 59 passed both genuine image-background cases:
 desktop 1280px and phone 390px. This executes the current confirmation repair,

@@ -88,7 +88,14 @@ function Control(props: Props) {
     try {
       await boundedWorkRead(async signal => {
         await actor(signal, command.actor);
-        if (!callbacks.current.editable || callbacks.current.unavailable) throw new WorkRequestError(403, null);
+        if (!callbacks.current.editable) throw new WorkRequestError(403, null);
+        // A background refresh may begin while the account proof awaits IO.
+        // Check actual current Board admission rather than treating that
+        // temporary loading flag as permanent loss of the original intent.
+        const currentBoard = await workRequest<BoardSnapshot>(`/boards/${encodeURIComponent(props.boardId)}`, { signal });
+        if (currentBoard.board?.id !== props.boardId || currentBoard.board.organizationId !== props.organizationId
+          || currentBoard.board.lifecycleState !== 'active' || currentBoard.access?.canView !== true || currentBoard.access.canEdit !== true)
+          throw new WorkRequestError(403, null);
         const value = await workRequest<unknown>(`/boards/${encodeURIComponent(props.boardId)}/background/image`, { method: 'POST', signal,
           headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(command.input) });
         acknowledgment(value, props, command); await actor(signal, command.actor);

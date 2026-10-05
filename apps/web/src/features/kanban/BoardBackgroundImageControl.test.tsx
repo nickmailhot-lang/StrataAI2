@@ -67,6 +67,31 @@ it('retires an uncertain intent before a changed account can resubmit it', async
   await screen.findByText('This background change is unavailable. Review the current Board and images before another change.');
   expect(writes()).toHaveLength(1); expect(screen.queryByText('Private diagnostics')).not.toBeInTheDocument();
 });
+it('recovers the original intent through a background refresh using fresh Board admission', async () => {
+  let attempts = 0; mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
+  const p = props(); const view = render(<BoardBackgroundImageControl {...p} />); await choose();
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm Board background image' }));
+  const retry = await screen.findByRole('button', { name: 'Retry original Board background change' });
+  await waitFor(() => expect(retry).toBeEnabled());
+  let release!: (value: typeof profile) => void;
+  vi.mocked(workRequest).mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+  fireEvent.click(retry);
+  await waitFor(() => expect(release).toBeTypeOf('function'));
+  view.rerender(<BoardBackgroundImageControl {...p} unavailable version={10} boardVersion={12} />);
+  release(profile); await screen.findByText('Board background updated.');
+  expect(writes()).toHaveLength(2); expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
+  expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+});
+it('refuses a retry when fresh Board admission is withdrawn during its account proof', async () => {
+  mock(() => { throw new WorkRequestError(503, null); }); render(<BoardBackgroundImageControl {...props()} />); await choose();
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm Board background image' }));
+  const retry = await screen.findByRole('button', { name: 'Retry original Board background change' });
+  await waitFor(() => expect(retry).toBeEnabled());
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : { ...source, access: { canView: true, canEdit: false } });
+  fireEvent.click(retry);
+  await screen.findByText('This background change is unavailable. Review the current Board and images before another change.');
+  expect(writes()).toHaveLength(1);
+});
 it('requires fresh review after a known stale Board conflict', async () => {
   mock(() => { throw new WorkRequestError(409, null); }); render(<BoardBackgroundImageControl {...props()} />); await choose();
   fireEvent.click(screen.getByRole('button', { name: 'Confirm Board background image' }));
