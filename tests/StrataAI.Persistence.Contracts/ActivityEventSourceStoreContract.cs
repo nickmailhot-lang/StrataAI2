@@ -194,10 +194,19 @@ internal static class ActivityEventSourceStoreContract
         }
         finally
         {
+            await using var cleanupTransaction = await admin.BeginTransactionAsync(ct);
             await using var cleanup = new NpgsqlCommand("""
                 UPDATE users SET display_name=@caption,status=@status WHERE id=@actor;
                 UPDATE organization_members SET role='MEMBER' WHERE tenant_id=@tenant AND user_id=@actor;
                 DELETE FROM background_jobs WHERE tenant_id=@tenant AND safe_metadata->>'boardId'=ANY(@board_texts);
+                -- Administrative cleanup of explicitly synthetic history, not a
+                -- runtime retention path. The DDL/data reset is one transaction.
+                ALTER TABLE organization_board_events DISABLE TRIGGER organization_board_event_history;
+                DELETE FROM organization_board_events j USING work_events e
+                  WHERE j.tenant_id=e.tenant_id AND j.event_id=e.event_id AND e.tenant_id=@tenant AND e.board_id=ANY(@boards);
+                ALTER TABLE organization_board_events ENABLE TRIGGER organization_board_event_history;
+                UPDATE organization_board_event_streams s SET last_sequence=COALESCE(
+                  (SELECT max(j.sequence) FROM organization_board_events j WHERE j.tenant_id=s.tenant_id),0) WHERE s.tenant_id=@tenant;
                 DELETE FROM work_events WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM work_event_streams WHERE tenant_id=@tenant AND board_id=ANY(@boards);
                 DELETE FROM watch_subscriptions WHERE tenant_id=@tenant AND card_id=ANY(@boards);
@@ -207,13 +216,14 @@ internal static class ActivityEventSourceStoreContract
                 DELETE FROM boards WHERE tenant_id=@tenant AND id=ANY(@boards);
                 DELETE FROM organization_members WHERE tenant_id=@tenant AND user_id=@personal_owner;
                 DELETE FROM users WHERE id=@personal_owner;
-                """, admin);
+                """, admin, cleanupTransaction);
             cleanup.Parameters.AddWithValue("caption", originalCaption); cleanup.Parameters.AddWithValue("status", originalStatus);
             cleanup.Parameters.AddWithValue("actor", actor); cleanup.Parameters.AddWithValue("tenant", tenant);
             cleanup.Parameters.AddWithValue("personal_owner", personalOwner);
             cleanup.Parameters.AddWithValue("boards", new[] { board, otherBoard });
             cleanup.Parameters.AddWithValue("board_texts", new[] { board.ToString("D"), otherBoard.ToString("D") });
             await cleanup.ExecuteNonQueryAsync(ct);
+            await cleanupTransaction.CommitAsync(ct);
         }
     }
 }
