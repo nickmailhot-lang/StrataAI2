@@ -33,7 +33,9 @@ keyed_json() {
   fi
   if [[ "$status" != 2[0-9][0-9] ]]; then
     code=$(jq -r 'if type=="object" and (.code|type)=="string" and (.code|test("^[a-z0-9_]{1,64}$")) then .code else "unclassified_error" end' "$scratch/json-response" 2>/dev/null) || code=unclassified_error
-    printf 'Image pipeline JSON refusal: status=%s code=%s caller-line=%s\n' "$status" "$code" "${BASH_LINENO[0]}" >&2
+    # Retain the numeric helper and action call sites. The first frame alone
+    # identifies json(), obscuring which lifecycle operation was refused.
+    printf 'Image pipeline JSON refusal: status=%s code=%s caller-lines=%s\n' "$status" "$code" "${BASH_LINENO[*]}" >&2
     return 1
   fi
   cat "$scratch/json-response"
