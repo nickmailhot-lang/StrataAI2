@@ -62,6 +62,22 @@ Useful routes through the docs include:
 - **Search and filters:** [Board filtering and private search interaction sources](docs/board-filtering.md) → [Organization access integrity](docs/architecture/organization-access-integrity.md) → [work synchronization](docs/architecture/work-synchronization.md). The filtering guide covers global search, Board criteria, private interaction acknowledgments, and remaining acceptance work.
 - **Operating a release:** [release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [operator metrics](docs/architecture/operator-metrics.md).
 
+### Find a workflow quickly
+
+These links open the behavior or contract guide directly. Use the subject sections in [the complete index](docs/README.md) for related implementation notes and evidence.
+
+| Workflow | Primary guides |
+| --- | --- |
+| Sign in, recover an account, or manage a profile | [Sign-in recovery and retries](docs/identity-login-retries.md), [recovery requests](docs/identity-recovery-request-retries.md), [profile management](docs/architecture/profile-management.md) |
+| Invite people and manage access | [Invitation administration](docs/architecture/invitation-administration-ui.md), [recipient invitation review](docs/invitation-link-review.md), [Organization members](docs/architecture/organization-member-administration.md), [Board members](docs/board-members-ui.md) |
+| Find, filter, share, or copy a Board | [Search and filtering](docs/board-filtering.md), [public sharing](docs/public-board-sharing.md), [Board copies](docs/board-copy.md) |
+| Move and organize work | [Card movement](docs/card-movement-ui.md), [List ordering](docs/list-position-persistence.md), [large-Board rendering](docs/board-windowing.md) |
+| Assign work, set dates, and track checklists | [Assignments](docs/card-assignment.md), [Card dates](docs/architecture/card-dates.md), [checklists](docs/architecture/checklists.md) |
+| Follow discussions and notifications | [Comments, mentions, and activity](docs/architecture/comments-mentions-activity.md), [notification inbox](docs/architecture/notification-inbox.md), [watch subscriptions](docs/architecture/watch-subscriptions.md) |
+| Archive, restore, or delete work | [Board archive controls](docs/board-archive-control.md), [archived Lists](docs/archived-list-directory.md), [archived Cards](docs/archived-card-directory.md), [lifecycle acceptance](docs/architecture/lifecycle-acceptance.md) |
+
+For each workflow, read the guide's scope and remaining-work notes first. Follow its contract links for implementation details, then consult the acceptance record and the CI run for the revision you are reviewing. The documentation is organized by subject rather than numbered ticket order; use the [dependency map](docs/ticket-dependency-map.md) to connect a subject to its PRD or architecture ticket.
+
 ## Adopted architecture
 
 StrataAI2 is a modular monolith delivered as three application processes:
