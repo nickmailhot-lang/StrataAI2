@@ -66,7 +66,7 @@ import { BoardBackgroundImageControl } from './BoardBackgroundImageControl';
 import { ListCopyControl } from './ListCopyControl';
 import { CardReminderControl } from './CardReminderControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
-import { DndContext, PointerSensor, KeyboardSensor, closestCenter, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, PointerSensor, KeyboardSensor, TraversalOrder, closestCenter, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
 import { listKeyboardCoordinates } from './listKeyboardCoordinates';
 import { cardKeyboardCoordinates } from './cardKeyboardCoordinates';
@@ -562,7 +562,8 @@ function BoardContent() {
       )}
       <BoardDateProvider key={`${snapshot.board.organizationId}/${snapshot.board.id}`} snapshot={snapshot} unavailable={snapshotReading || !!loadError}
         onRevalidate={() => { setSnapshotReading(true); setReload(value => value + 1); }}>
-      <DndContext sensors={sensors} autoScroll={{ canScroll: element => element.hasAttribute('data-kanban-scroll') }} collisionDetection={args => {
+      <DndContext sensors={sensors} autoScroll={{ order: TraversalOrder.ReversedTreeOrder,
+        canScroll: element => element.hasAttribute('data-kanban-scroll') }} collisionDetection={args => {
         const movingCard = String(args.active.id).startsWith('card:');
         const droppableContainers = args.droppableContainers.filter(value => {
           const cardTarget = String(value.id).startsWith('card:') || String(value.id).startsWith('card-end:');

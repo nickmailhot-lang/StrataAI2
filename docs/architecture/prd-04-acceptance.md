@@ -86,3 +86,14 @@ restoration and bounded mounting. The window/Card/List keyboard suite passes
 22 local tests with typecheck and lint. Exact-image verification remains pending;
 the separate desktop pointer failure remains unresolved, and neither viewport
 is claimed complete.
+
+The desktop pointer trace places the pointer at the clipped Card viewport's
+lower edge after a successful keyboard move. The installed dnd-kit auto-scroller
+defaults to outer-first traversal, prioritizing the scrollable List section over
+its nested Card viewport. BoardScreen now selects the supported inner-first
+traversal order, retaining the existing admitted-container predicate and outer
+scroll fallback for List/cross-List movement. The existing Board drag, Card
+keyboard and BoardWindow suites pass 20 local cases; typecheck and lint pass.
+This is a targeted nested-scroll repair awaiting native execution, not proof
+that the desktop failure is resolved. Native predicates and budgets remain
+unchanged.
