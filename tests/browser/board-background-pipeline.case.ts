@@ -119,5 +119,23 @@ for (const width of [1280, 390]) {
       data: { visibility: 'PRIVATE', version: source.version + 1 },
     });
     expect(privateVisibility.status()).toBe(200);
+    // The destination is still open with genuine private image bytes. A real
+    // session withdrawal must retire rendered disclosure without a reload.
+    await expect(page.getByText('Live updates connected.', { exact: true })).toBeVisible();
+    expect((await context.request.post('/auth/logout', {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() }, data: {},
+    })).status()).toBe(204);
+    await expect(copiedImage).toHaveCount(0, { timeout: 10_000 });
+    await expect(page.getByRole('button', { name: 'Copy Board', exact: true })).toHaveCount(0);
+    expect((await context.request.get(`/boards/${target}/background/image`)).status()).toBe(404);
+    expect((await context.request.post('/auth/login', {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { email: fixture.email, password: fixture.password },
+    })).status()).toBe(200);
+    const readmitted = await context.request.get(`/boards/${target}`); expect(readmitted.status()).toBe(200);
+    expect((await readmitted.json()).board).toEqual(copied);
+    const admittedReads = trackBoardReads(page, target, copiedPath);
+    await page.goto(copiedPath); await expect.poll(admittedReads).toBeGreaterThanOrEqual(2);
+    await expect.poll(() => copiedImage.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
   });
 }
