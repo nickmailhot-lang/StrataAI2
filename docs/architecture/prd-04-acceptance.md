@@ -1,0 +1,40 @@
+# PRD-04 acceptance and closure audit
+
+This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 20%.
+
+## Functional traceability
+
+| Requirement | Current implementation and relevant coverage | Evidence still required for closure |
+| --- | --- | --- |
+| BOARD-FR-001: authorized creation | OrganizationHome submits a private Board through the keyed work mutation transport; `tests/browser/board.spec.ts` exercises persisted creation and isolation at desktop and phone widths. | Execute the corrected built-in background submission against current release images, including denied creation and empty states. |
+| BOARD-FR-002: canonical fields | Board snapshots and typed metadata/visibility producers retain Organization scope, name, description, background, lifecycle, clocks and revisions. | Complete current schema/migration, API and native acceptance; malformed responses must remain withheld. |
+| BOARD-FR-003: rename and description | BoardMetadataControl owns reviewed revisions, retained drafts, conflict review and bound same-key recovery. `tests/browser/board-metadata.spec.ts` exercises two clients and lost committed replies. | Current-image native execution, permission withdrawal and unchanged protected state on rejected writes. |
+| BOARD-FR-004: approved backgrounds | Fixed named colors plus Board-owned sanitized PNG references; selection uses checked Card attachments, separate Worker publication and explicit public exposure consent. See `board-background-images.md` and `BoardBackgroundImageContract.cs`. | Execute the current genuine publication/native/copy/race fixture; complete additional admission-withdrawal variants. Synthetic native cases alone do not prove publication. |
+| BOARD-FR-005: independent stars | Retained actor-scoped preferences, optimistic version checks, keyed receipts and separate current preference reads. `test-board-star-preferences.sh` and `tests/browser/board-star.spec.ts` cover persistence and clients. | Current release-image native recovery, independent actors and current grant withdrawal. |
+| BOARD-FR-006: authorized copy | BoardCopyService atomically creates the independent graph, admission, fresh history and receipt. BoardCopyControl validates the original acknowledgment and current destination disclosure separately. | Execute corrected JSON requests in `tests/browser/board-copy.spec.ts` and real image-backed native cases; retain late rollback and admission tests. |
+| BOARD-FR-007: defined copy policy | See `board-copy.md`: non-deleted Lists/Cards, labels and checklists copy with new IDs; completion resets; membership, personal preferences, attachment metadata and source history are excluded. Board-owned image ownership copies independently. | Current restricted PostgreSQL full-graph fixture, source invariance, same-key recovery and native semantic assertions. Capacity correctness does not prove rendering latency. |
+| BOARD-FR-008: archive and reopen | Reviewed Board archive and bounded authorized archive directory restore; `test-board-discovery.sh` and `tests/browser/board-lifecycle.spec.ts` cover both transitions. | Current-image desktop/phone keyboard execution, concurrent lifecycle changes and current admission withdrawal. |
+| BOARD-FR-009: confirmed permanent deletion | Archived-only deletion requires elevated admission, reviewed version and explicit irreversible consent. `BoardDeletionConsentTests.cs` and native lifecycle coverage exercise refusal and recovery. | Current-image runtime proof, unchanged child state on refusal, inaccessible deleted-parent routes and retained original receipt semantics. |
+| BOARD-FR-010: authorized activity | ActivityHistoryControl uses bounded current-scope history; ActivityFeedTests, ActivitySourceScopeTests and ActivityHistoryLifecycleTests cover scope and lifecycle. | Verify two-client current history and reconnect recovery against current images, including withdrawal of disclosure after admission loss. |
+
+Paths ending in `.cs` above are under `tests/StrataAI.Api.Tests`, except `BoardBackgroundImageContract.cs` under `tests/StrataAI.Persistence.Contracts`. Shell fixtures are under `scripts/ci`. Feature controls are under `apps/web/src/features/kanban` except OrganizationHome under `features/organizations`.
+
+## Acceptance criteria and full definition of done
+
+- **AC-BOARD-04-01:** authorized creation must persist and render its authoritative result. Local component assertions or an HTTP response alone cannot prove the complete client action.
+- **AC-BOARD-04-02:** unauthorized/invalid metadata writes must return the stable refusal, leave protected state unchanged and avoid protected disclosure. Run both current API authorization coverage and restricted persistence/release assertions.
+- **AC-BOARD-04-03:** authorized clients must receive or recover current Board activity without a full manual reload. Inspect executed two-client/reconnect results, not just the presence of event producers.
+- Every relevant mutation must retain atomic authorization, audit/event envelopes, durable outbox delivery and idempotency semantics; source tests and immutable-image runtime checks cover different boundaries.
+- All thirteen linked test scenarios remain required. In particular, current desktop/phone keyboard, focus, WCAG, late responses, lifecycle withdrawal, concurrency and disconnect/reconnect results must pass. Collection/type checking does not execute them.
+- BoardScreen still maps all Lists and Cards. Large-Board virtualization remains an implementation gap. Required 200-List/5,000-active-Card browser capacity and latency evidence is absent. Existing PostgreSQL coverage with 100,000 archived Cards is database correctness evidence only.
+- Retain the documented normal-condition budgets: Board usable rendering <1.5s, movement feedback <100ms, mutation p95 <500ms and cached detail <200ms. Existing normal desktop measurements do not establish the large-data case.
+- Archive directory organization-wide SignalR invalidation remains unfinished; its current visible polling/foreground recovery must not be described as live organization event subscription.
+- Complete schema/migration review, privacy-safe telemetry documentation, current source/integration/native checks and the no-known-P0/P1 audit before closure. The adopted deployment architecture and build-once release gates remain mandatory.
+
+## Executed evidence and known limitations
+
+At `e77195d`, run [37241937689](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37241937689) has successful .NET/API, PostgreSQL, web, image-build and security jobs. Its container job's step 57 passed the then-current actual upload/Worker publication, sanitization, private image selection, independent Board copy, source archive and anonymous denial assertions. The complete native suite was still running when this audit was written. This proves neither a green release nor later extensions to that fixture.
+
+At `b56d14b`, run [37242836614](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37242836614) failed the genuine native image-selection cases with HTTP 415. Commit `2873f38` fixes the missing JSON Content-Type on selection. Commit `f77a215` repairs the same omission in Board copying; all 13 focused copy tests, web typecheck and lint passed locally. The genuine current-image runtime remains pending. These fixes do not justify checking off the whole native or copy acceptance scope.
+
+Only close the issue after the current implementation passes the full relevant runtime coverage and the gaps above are resolved. Do not infer closure from a previously green revision, compiled tests, a collected scenario, simulated application replies or an individual successful CI step.
