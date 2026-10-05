@@ -524,7 +524,8 @@ and its user-visible consumption; exact-image execution remains pending CI.
 The producer CI run 37273958250 passed 414 of 415 API tests. Its sole failure was
 the extended HTTP fixture reading the continuation stream twice. The fixture now
 parses once and reuses the same page for both original-ID and continuation
-assertions; neither assertion is relaxed. Full repaired execution awaits CI.
+assertions; neither assertion is relaxed. The complete repaired API-host suite
+passed at revision `94988a5` in [CI run 37274882801](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37274882801).
 
 ### Board filter producer boundary
 
@@ -541,7 +542,10 @@ The Demo service test covers private nonmember refusal, active MEMBER admission,
 canonical scope/metadata, unchanged Board version, final session refusal and
 actual grant withdrawal during that proof. Changed-clock replacement with the
 refused EventId after restoration proves rollback. Actor session proof is a
-synthetic fixture; these tests compile with zero warnings/errors and await CI.
+synthetic fixture. These tests executed successfully with the complete API-host
+suite at revision `6bd80c8` in [CI run 37275597353](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37275597353).
+That revision also passed the web and restricted PostgreSQL source gates;
+immutable-image native acceptance remains separate and unproven.
 
 This method is not yet called by Board filter HTTP/client flows. Those flows
 apply session-local criteria and also fetch Cards for initial restoration,
