@@ -126,3 +126,22 @@ or geometry tolerances change. Browser typecheck and collection are source
 evidence only; immutable-image execution remains pending. The phone failure
 in the same older run was at the post-stop cross-List destination lookup,
 covered by the separately pending retained-target correction.
+
+
+### Horizontal overflow consumed by the nested Card viewport
+
+Run 37343517613's phone capacity case reached cross-List dragging but the Board
+scrollLeft stayed at 1007. Verified artifact 11362325030, SHA-256
+`63bc7f40fd2b16c201585758aaa0a90a3dec22afa33e76b8176631e9291f04fd`,
+shows the nested Cards viewport instead scrolling horizontally from 0 to 102
+and then 6276, while its vertical offset stays 343512. A translated draggable
+creates horizontal overflow in that vertical surface, and the inner-first
+auto-scroller consumes it rather than scrolling the Board.
+
+Owned scroll surfaces now declare their responsible axis. Drag start, movement
+and completion maintain directional admission: horizontal movement admits the
+Board canvas, and vertical movement admits nested Cards/List surfaces. Direction
+can change within a drag; cancel/end retire admission. Unowned surfaces remain
+excluded. Two focused policy regressions pass; source checks and immutable-image
+native execution remain required. This changes production auto-scroll routing,
+without reducing the existing native movement or persisted-state assertions.

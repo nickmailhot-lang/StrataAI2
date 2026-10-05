@@ -20,7 +20,7 @@ export function BoardWindow<T extends Item>(props: Props<T>) {
   return props.items.length > (props.axis === 'lists' ? 20 : 100)
     ? <Windowed {...props} />
     : props.axis === 'lists'
-      ? <Box aria-label="Kanban board" data-kanban-scroll sx={{ display: 'grid', gridAutoFlow: 'column', gridAutoColumns: { xs: '82vw', sm: 320 }, gap: 2, overflowX: 'auto', pb: 2 }}>
+      ? <Box aria-label="Kanban board" data-kanban-scroll data-kanban-scroll-axis="horizontal" sx={{ display: 'grid', gridAutoFlow: 'column', gridAutoColumns: { xs: '82vw', sm: 320 }, gap: 2, overflowX: 'auto', pb: 2 }}>
         {props.items.map(item => <Box key={item.id}>{props.renderItem(item)}</Box>)}{props.end}
       </Box>
       : <Stack spacing={1} sx={{ mt: 2 }}>{props.items.map(item => <Box key={item.id}>{props.renderItem(item)}</Box>)}</Stack>;
@@ -166,7 +166,7 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     memory.set(memoryKey, offset); setViewport(value => ({ ...value, offset }));
   }
 
-  return <Box ref={root} role="group" aria-label={horizontal ? 'Kanban board' : 'Cards'} data-kanban-scroll
+  return <Box ref={root} role="group" aria-label={horizontal ? 'Kanban board' : 'Cards'} data-kanban-scroll data-kanban-scroll-axis={horizontal ? 'horizontal' : 'vertical'}
     onKeyDown={keyDown} onScroll={event => {
       const offset = horizontal ? event.currentTarget.scrollLeft : event.currentTarget.scrollTop;
       memory.set(memoryKey, offset); setViewport(value => value.offset === offset ? value : { ...value, offset });
