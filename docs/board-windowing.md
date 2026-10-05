@@ -1,5 +1,14 @@
 # Large-Board viewport rendering
 
+List-move focus recovery now waits for the canonical List revision to reach the
+acknowledged revision and for the control to be admitted and enabled. A stale
+pre-move snapshot cannot consume that request before the following Board refresh
+disables controls. The request is cleared only after the intended control has
+actually received focus. A component regression covers stale enabled state,
+the acknowledged revision while disabled, and final admitted focus restoration.
+All eight List-position tests, web TypeScript and focused lint pass locally;
+native release verification of the phone focus failure remains pending.
+
 PRD-04/06 now use the existing MUI and dnd-kit canvas with actual viewport windowing. No new framework, datastore, service or provider is introduced. Boards with more than 20 Lists mount the visible columns plus two neighboring columns on either side. Lists with more than 100 Cards use a measured vertical viewport with the same bounded overscan. Smaller Boards retain their existing complete layout.
 
 Card row heights are measured through ResizeObserver, including text, indicators and covers. Measurements above the viewport preserve its scroll anchor. Native browser scroll anchoring is disabled in that viewport so the two mechanisms do not compete. Removed rows clamp retained offsets rather than mounting an entire shortened collection. Per-Board horizontal, per-List Card and outer List-section offsets survive a column's unmount/remount. The Board also retains measured Card heights by List and viewport width, so a restored pixel offset identifies the same canonical Card range. A width change invalidates incompatible heights while retaining the canonical anchor. Scope navigation discards this memory.

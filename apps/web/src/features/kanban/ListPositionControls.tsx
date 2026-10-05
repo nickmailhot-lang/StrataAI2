@@ -15,8 +15,15 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
   const [busy, setBusy] = useState(false); const [blocked, setBlocked] = useState(false); const [notice, setNotice] = useState<string>();
   useEffect(() => { onRecoveryChange?.(list.id, !!intent || blocked); return () => onRecoveryChange?.(list.id, false); }, [list.id, intent, blocked, onRecoveryChange]);
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(true); const action = useRef<HTMLButtonElement>(null);
-  const focusRequested = useRef(false);
-  useEffect(() => { if (focusRequested.current && !disabled && !busy && !review) { action.current?.focus(); focusRequested.current = false; } }, [disabled, busy, review]);
+  const focusRequested = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    const expectedVersion = focusRequested.current;
+    if (expectedVersion === undefined || disabled || busy || review || Number(list.version) < expectedVersion
+      || !snapshot.access.canMove || snapshot.board.lifecycleState !== 'active' || list.lifecycleState !== 'active'
+      || !action.current || action.current.disabled) return;
+    action.current.focus();
+    if (document.activeElement === action.current) focusRequested.current = undefined;
+  }, [disabled, busy, review, list.version, list.lifecycleState, snapshot.access.canMove, snapshot.board.lifecycleState]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false;
     if (pending.current) { pending.current.abort(); onBusyChange(false); onPreview?.(); }
   }; }, [onBusyChange, onPreview]);
@@ -34,7 +41,7 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
     setReview(selected); void move(selected);
   });
   useEffect(() => { if (dropRequest) consumeDrop(); }, [dropRequest]);
-  function close() { focusRequested.current = true; setReview(undefined); setBlocked(false); setNotice(undefined); }
+  function close() { focusRequested.current = Number(list.version); setReview(undefined); setBlocked(false); setNotice(undefined); }
   async function move(selected?: Review) {
     const proposed = selected ?? review;
     const available = !!proposed && (!proposed.before || neighbors.some(column => column.list.id === proposed.before));
@@ -62,7 +69,7 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
         || typeof value.rank !== 'string' || !/^\d{30}$/.test(value.rank) || BigInt(value.rank) <= 0n || BigInt(value.rank) >= 10n ** 30n - 1n
         || !Number.isSafeInteger(value.version) || Number(value.version) <= command.version) throw new Error('Unconfirmed');
       setIntent(undefined); setReview(undefined); setNotice('List move acknowledged. Current ordering is being checked.');
-      focusRequested.current = true; onRefresh();
+      focusRequested.current = Number(value.version); onRefresh();
     } catch {
       if (mounted.current && pending.current === controller) { setIntent(command); setNotice('The list move could not be confirmed. Retry this same move to recover its acknowledgment.'); onRefresh(); }
     } finally {

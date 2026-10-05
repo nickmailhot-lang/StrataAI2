@@ -30,14 +30,27 @@ it('does not persist a drop captured before a newer canonical revision', async (
 });
 it('submits a reviewed position with the current name/version and a bound key, then reads current order', async () => {
   const fetcher = vi.fn().mockResolvedValue(reply(ack)); vi.stubGlobal('fetch', fetcher);
-  render(<ListPositionControls {...props} />); await choose();
+  const view = render(<ListPositionControls {...props} />); await choose();
   fireEvent.click(screen.getByRole('button', { name: 'Confirm list move' }));
   await screen.findByText('List move acknowledged. Current ordering is being checked.');
+  view.rerender(<ListPositionControls {...props} list={ack} />);
   await waitFor(() => expect(screen.getByRole('button', { name: 'Move Planning list' })).toHaveFocus());
   expect(fetcher.mock.calls[0][0]).toBe('/lists/moving');
   expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ name: 'Planning', version: 1, beforeListId: 'anchor' });
   expect(fetcher.mock.calls[0][1].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
   expect(props.onRefresh).toHaveBeenCalledOnce();
+});
+it('retains drop focus recovery until the acknowledged canonical revision is admitted', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply(ack)));
+  const dropRequest = { listId: list.id, name: list.name, version: 1, before: 'anchor', nonce: 'focus-drop' };
+  const view = render(<ListPositionControls {...props} dropRequest={dropRequest} />);
+  await screen.findByText('List move acknowledged. Current ordering is being checked.');
+  const action = screen.getByRole('button', { name: 'Move Planning list' });
+  expect(action).not.toHaveFocus();
+  view.rerender(<ListPositionControls {...props} dropRequest={dropRequest} list={ack} disabled />);
+  expect(action).not.toHaveFocus();
+  view.rerender(<ListPositionControls {...props} dropRequest={dropRequest} list={ack} />);
+  await waitFor(() => expect(action).toHaveFocus());
 });
 it('preserves original name/position/version/key after uncertainty and a newer canonical rename', async () => {
   const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost')).mockResolvedValueOnce(reply(ack)); vi.stubGlobal('fetch', fetcher);
