@@ -84,3 +84,18 @@ it('bounds retained recovery originals without evicting live requests', () => {
   expect(() => retainBoardFilterChange(sessionStorage, createBoardFilterChange(scope, 'apply', criteria(), now), now)).toThrow('full');
   expect(sessionStorage.length).toBe(1000);
 });
+
+it('reclaims only canonical expired originals of the current account at the storage limit', () => {
+  const expired = createBoardFilterChange({ ...scope, board: event }, 'apply', criteria(), now - 86400000);
+  const otherAccount = createBoardFilterChange({ ...scope, actor: event }, 'apply', criteria(), now - 86400000);
+  const live = createBoardFilterChange({ ...scope, organization: event }, 'apply', criteria(), now - 1);
+  const key = (value: typeof expired) => `strataai:board-filter-change:v1:${value.actor}:${value.organization}:${value.board}`;
+  for (let index = 0; index < 997; index++) sessionStorage.setItem(`strataai:board-filter-change:v1:existing:${index}`, 'retained');
+  for (const value of [expired, otherAccount, live]) sessionStorage.setItem(key(value), JSON.stringify(value));
+  const fresh = createBoardFilterChange(scope, 'apply', criteria(), now);
+  retainBoardFilterChange(sessionStorage, fresh, now);
+  expect(sessionStorage.length).toBe(1000); expect(sessionStorage.getItem(key(expired))).toBeNull();
+  expect(sessionStorage.getItem(key(otherAccount))).toBe(JSON.stringify(otherAccount));
+  expect(restoreBoardFilterChange(sessionStorage, { ...scope, organization: event }, now)).toEqual(live);
+  expect(restoreBoardFilterChange(sessionStorage, scope, now)).toEqual(fresh);
+});

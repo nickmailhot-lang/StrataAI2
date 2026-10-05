@@ -728,3 +728,18 @@ alone does not prove successful account-bound recovery. Browser TypeScript and
 collection pass for both cases. Real immutable-image execution remains pending;
 PRD-16 remains open at 18% estimated work remaining. Existing scenario timeout,
 request pacing, workers and retries are unchanged.
+
+
+### Recovery storage expiration at capacity
+
+The browser recovery store retains at most 1,000 originals. At capacity, a new
+intent can reclaim canonical originals whose 24-hour lifetime has elapsed,
+restricted to the current account's key prefix. Cleanup examines at most 1,000
+current-account candidates and removes at most 100 expired records per attempt.
+Live originals, other accounts' records, and malformed records are retained;
+none can be evicted merely to admit a new request. If capacity remains full,
+the existing recoverable conflict is preserved and no replacement is dispatched.
+The original scope, query and request key remain immutable. Ten focused transport
+and recovery tests pass locally, including capacity recovery that preserves
+a live original and an expired original belonging to another account. Native
+release acceptance is still pending; PRD-16 remains open at 18% estimated remaining.

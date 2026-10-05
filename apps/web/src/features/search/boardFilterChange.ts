@@ -71,8 +71,26 @@ export function retainBoardFilterChange(storage: Storage, intent: BoardFilterCha
   validateIntent(intent, intent, now);
   const key = scopeKey(intent), previous = restoreBoardFilterChange(storage, intent, now);
   if (previous && JSON.stringify(previous) !== JSON.stringify(intent)) throw new BoardFilterRecoveryConflict('Recover the original filter intent first');
-  if (!previous && Object.keys(storage).filter(key => key.startsWith('strataai:board-filter-change:v1:')).length >= 1000)
-    throw new BoardFilterRecoveryConflict('Filter recovery storage is full');
+  if (!previous) {
+    const prefix = 'strataai:board-filter-change:v1:';
+    const keys = Object.keys(storage).filter(key => key.startsWith(prefix));
+    if (keys.length >= 1000) {
+      let removed = 0;
+      // Reclaim only canonical expired originals owned by this account. Never
+      // replace a live request or inspect another account's retained criteria.
+      for (const candidateKey of keys.filter(key => key.startsWith(`${prefix}${intent.actor.toLowerCase()}:`)).slice(0, 1000)) {
+        if (removed >= 100) break;
+        try {
+          const candidate = JSON.parse(storage.getItem(candidateKey) ?? 'null') as BoardFilterChangeIntent | null;
+          if (!candidate || candidate.actor !== intent.actor || scopeKey(candidate) !== candidateKey) continue;
+          validateIntent(candidate, candidate, candidate.createdAt);
+          if (now - candidate.createdAt < lifetime) continue;
+          storage.removeItem(candidateKey); removed++;
+        } catch { /* Invalid records do not authorize discarding an original. */ }
+      }
+      if (keys.length - removed >= 1000) throw new BoardFilterRecoveryConflict('Filter recovery storage is full');
+    }
+  }
   storage.setItem(key, JSON.stringify(intent));
 }
 export function discardBoardFilterChange(storage: Storage, scope: BoardFilterChangeScope) { storage.removeItem(scopeKey(scope)); }
