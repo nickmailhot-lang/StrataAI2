@@ -25,6 +25,7 @@ for (const width of [1280, 390]) {
       expect((await incoming.request.post('/auth/login', { headers, data: visitor })).status()).toBe(200);
       const visitorActor = (await (await incoming.request.get('/me')).json()).id;
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
+      const ownerActor = (await (await observer.request.get('/me')).json()).id;
       const beforeReply = await observer.request.get(`/boards/${board}`); expect(beforeReply.status()).toBe(200); const before = await beforeReply.json();
       let changes = 0;
       page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === `/boards/${board}/cards/filter-change`) changes++; });
@@ -32,7 +33,11 @@ for (const width of [1280, 390]) {
       const trigger = page.getByRole('button', { name: 'Filter Board Cards', exact: true }); await expect(trigger).toBeEnabled(); await trigger.press('Enter');
       const dialog = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
       const keyword = dialog.getByRole('textbox', { name: 'Card keyword', exact: true }); await expect(keyword).toBeEnabled(); await keyword.fill('Personal roof');
-      const apply = dialog.getByRole('button', { name: 'Apply filters', exact: true }); await expect(apply).toBeEnabled(); await apply.press('Enter');
+      const apply = dialog.getByRole('button', { name: 'Apply filters', exact: true }); await expect(apply).toBeEnabled();
+      const originalSourceReply = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === `/boards/${board}/cards/filter-change`);
+      await apply.press('Enter');
+      const originalReply = await originalSourceReply; expect(originalReply.status()).toBe(200); const originalSource = await originalReply.json();
+      expect(originalSource).toMatchObject({ actorId: ownerActor, organizationId: org, boardId: board, eventType: 'BOARD_FILTER_CHANGED' });
       await expect(dialog.getByRole('link', { name: 'Personal roof match — Planning', exact: true })).toBeVisible(); expect(changes).toBe(1);
       // Replace the actual browser cookie, retaining the old session in the
       // independent observer. The PUBLIC Board remains viewable, so loss of
@@ -45,6 +50,26 @@ for (const width of [1280, 390]) {
       const retainedReply = await observer.request.get(`/boards/${board}`); expect(retainedReply.status()).toBe(200); expect(await retainedReply.json()).toEqual(before);
       await expect(trigger).toBeEnabled(); await trigger.press('Enter'); await expect(keyword).toBeEnabled(); await expect(keyword).toHaveValue('');
       await expect(dialog.getByRole('button', { name: 'Retry original filter change', exact: true })).toHaveCount(0); expect(changes).toBe(1);
+      // Recovery must create an incoming-actor observation, without borrowing
+      // the previous account's acknowledgment or writing shared Board state.
+      await keyword.fill('Personal roof'); await expect(apply).toBeEnabled();
+      const recoveredSourceReply = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === `/boards/${board}/cards/filter-change`);
+      await apply.press('Enter'); const recoveredReply = await recoveredSourceReply;
+      expect(recoveredReply.status()).toBe(200); expect(recoveredReply.headers()['cache-control']).toContain('no-store');
+      expect(recoveredReply.request().headers()['x-strataai-expected-actor']).toBe(visitorActor);
+      expect(recoveredReply.request().headers()['idempotency-key']).not.toBe(originalReply.request().headers()['idempotency-key']);
+      expect(recoveredReply.request().postData()).toBeNull();
+      const recoveredSource = await recoveredReply.json();
+      expect(Object.keys(recoveredSource).sort()).toEqual(['actorId','boardId','createdAt','entityId','entityType','eventId','eventType','metadata','organizationId','version']);
+      expect(recoveredSource).toMatchObject({ actorId: visitorActor, organizationId: org, boardId: board, eventType: 'BOARD_FILTER_CHANGED', entityType: 'BoardFilter', version: 1, metadata: {} });
+      expect(recoveredSource.entityId).toBe(recoveredSource.eventId); expect(recoveredSource.eventId).not.toBe(originalSource.eventId);
+      expect(recoveredSource.eventId).toMatch(/^[0-9a-f-]{36}$/); expect(Number.isFinite(Date.parse(recoveredSource.createdAt))).toBe(true);
+      await expect(dialog.getByRole('link', { name: 'Personal roof match — Planning', exact: true })).toBeVisible(); expect(changes).toBe(2);
+      await dialog.getByRole('button', { name: 'Show this page on Board', exact: true }).press('Enter');
+      await expect(page.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true })).toBeVisible();
+      await page.reload(); await expect(page.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Personal roof match', exact: true })).toBeVisible(); expect(changes).toBe(2);
+      const recoveredBoard = await observer.request.get(`/boards/${board}`); expect(recoveredBoard.status()).toBe(200); expect(await recoveredBoard.json()).toEqual(before);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     } finally { await observer.close(); await incoming.close(); restoreWorker?.(); }
   });

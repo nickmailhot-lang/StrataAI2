@@ -707,3 +707,24 @@ still requires functioning session storage. Fourteen real-transport component
 tests pass, including storage refusal with a lost committed reply; web typecheck
 and lint pass. Together with the previously passing 35 criteria and 30 search
 tests, the focused validation covers 79 cases. Native delivery remains pending.
+
+
+### Incoming-account filter recovery acceptance
+
+The native `board-filter-account.spec.ts` cases at 1280px and 390px now
+continue after actual cookie replacement and idle withdrawal. The independently
+authenticated observer retains the original account session and full Board
+snapshot. The incoming account explicitly applies its own filter on the still
+viewable PUBLIC Board. The response must be private/no-store, contain the exact
+ten canonical fields with the incoming actor and actual Organization/Board,
+and use a different event ID and request key from the previous actor. The
+request must contain the expected incoming actor header and no body.
+
+Showing the recovered result page on the canvas and reloading must retain the
+incoming account's criteria and result, without emitting another filter-change
+POST. The independent observer's full Board snapshot must remain unchanged.
+These assertions cover recovery as well as withdrawal; an empty reopened dialog
+alone does not prove successful account-bound recovery. Browser TypeScript and
+collection pass for both cases. Real immutable-image execution remains pending;
+PRD-16 remains open at 18% estimated work remaining. Existing scenario timeout,
+request pacing, workers and retries are unchanged.
