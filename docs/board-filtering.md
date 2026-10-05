@@ -697,3 +697,13 @@ PostgreSQL source jobs and the source-quality gate. Its build-once images are
 being exported; native integration remains unproven. PRD-16 stays open at 18%
 estimated remaining pending the declared native/reconnect/two-client and release
 acceptance.
+
+
+In-memory original recovery also survives close/reopen of the same component
+when session-storage reads/writes fail. The fallback is admitted only for the
+same actual actor/Organization/Board and live 24-hour original; it never binds
+another account or creates a replacement key. A new component/browser reload
+still requires functioning session storage. Fourteen real-transport component
+tests pass, including storage refusal with a lost committed reply; web typecheck
+and lint pass. Together with the previously passing 35 criteria and 30 search
+tests, the focused validation covers 79 cases. Native delivery remains pending.

@@ -157,6 +157,10 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
         if (binding !== 'anonymous') {
           let original: BoardFilterChangeIntent | undefined;
           try { original = restoreBoardFilterChange(sessionStorage, { actor: binding, organization: org, board }); } catch { /* Optional storage. */ }
+          const instant = Date.now();
+          if (!original && changeIntent?.actor === binding.toLowerCase() && changeIntent.organization === org.toLowerCase()
+            && changeIntent.board === board.toLowerCase() && instant >= changeIntent.createdAt && instant - changeIntent.createdAt < 86_400_000)
+            original = changeIntent;
           setChangeIntent(original); setChangeNotice(original ? 'An earlier filter change is unconfirmed. Retry the original change.' : undefined);
         }
         if (restoring && stored.canvas) { setApplied(stored.criteria); setCanvasMode(true); }

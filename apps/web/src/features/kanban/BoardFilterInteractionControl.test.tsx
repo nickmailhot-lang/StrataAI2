@@ -35,7 +35,7 @@ function setup() {
 }
 function mount(onRefresh = vi.fn()) { return { ...render(<MemoryRouter><BoardFilterControl snapshot={snapshot} disabled={false} onRefresh={onRefresh} /></MemoryRouter>), onRefresh }; }
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' })); await screen.findByRole('checkbox', { name: 'Priority (red)' }); }
-beforeEach(() => sessionStorage.clear()); afterEach(() => vi.unstubAllGlobals());
+beforeEach(() => sessionStorage.clear()); afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 it('admits Apply/Clear originals through the actual same-origin transport without emitting for read refresh', async () => {
   const { state, fetch } = setup(); const view = mount(); await open();
   fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: ' roof ' } });
@@ -66,6 +66,18 @@ it('recovers the retained original after a lost response, close and remount with
   expect(posts[1][0]).toBe(posts[0][0]); expect(new Headers(posts[1][1]?.headers).get('Idempotency-Key')).toBe(new Headers(posts[0][1]?.headers).get('Idempotency-Key'));
   expect(state.originals.size).toBe(1);
   expect(JSON.parse(sessionStorage.getItem(`strataai:board-filter:v1:${actor}:${org}:${board}`)!).keyword).toBe('roof');
+});
+it('keeps the in-memory original through close/reopen when optional session storage is unavailable', async () => {
+  vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('Storage unavailable'); });
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('Storage unavailable'); });
+  const { state, fetch } = setup(); state.loseFirstResponse = true; mount(); await open();
+  fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: 'Original roof' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' })); await screen.findByText('The filter change is unconfirmed. Retry the original change to recover its acknowledgment.');
+  fireEvent.click(screen.getByRole('button', { name: 'Close filters' })); await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await open(); fireEvent.click(screen.getByRole('button', { name: 'Retry original filter change' })); await screen.findByRole('link', { name: 'Admitted match — Planning' });
+  const posts = fetch.mock.calls.filter(([path]) => path.includes('/filter-change?')); expect(posts).toHaveLength(2);
+  expect(posts[1][0]).toBe(posts[0][0]); expect(new Headers(posts[1][1]?.headers).get('Idempotency-Key')).toBe(new Headers(posts[0][1]?.headers).get('Idempotency-Key'));
+  expect(state.originals.size).toBe(1);
 });
 it.each(['before', 'after'])('retires changed-account intent %s POST without exposing results or acknowledgment', async when => {
   const { state } = setup(); const view = mount(); await open();
