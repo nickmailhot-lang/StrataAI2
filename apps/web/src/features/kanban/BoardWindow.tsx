@@ -52,6 +52,12 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
   const measured = useRef(heights); measured.current = heights;
   const positions = useRef(layout); positions.current = layout;
   const activeId = active ? String(active.id).replace(/^card:/, '') : undefined;
+  const dragAnchor = useRef<{ activeId: string; itemId: string; start: number } | undefined>(undefined);
+  if (!activeId) dragAnchor.current = undefined;
+  else if (dragAnchor.current?.activeId !== activeId) {
+    const source = layout.entries.find(row => row.item.id === activeId || ownsDrag?.(row.item, activeId));
+    dragAnchor.current = source ? { activeId, itemId: source.item.id, start: source.start } : undefined;
+  }
   const indices = useMemo(() => {
     const selected = new Set<number>();
     const visible = layout.entries.findIndex(row => row.start + row.size >= viewport.offset);
@@ -168,7 +174,12 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     <Box sx={{ position: 'relative', ...(horizontal
       ? { width: layout.total + (end ? 100 + gap : 0), height: '70vh', minHeight: 240 }
       : { height: layout.total }) }}>
-      {indices.map(i => { const row = layout.entries[i]; return <Box key={row.item.id}
+      {indices.map(i => { const row = layout.entries[i];
+        // Sensors retain the source's initial client rect. Measurements above
+        // it may refine canonical row positions while a drag is in flight;
+        // don't add that layout shift to the sensor's translated source.
+        const start = dragAnchor.current?.itemId === row.item.id ? dragAnchor.current.start : row.start;
+        return <Box key={row.item.id}
         data-board-window-axis={axis} data-board-window-id={row.item.id}
         ref={(node: HTMLDivElement | null) => { if (node) rows.current.set(row.item.id, node); else rows.current.delete(row.item.id); }}
         onFocus={event => {
@@ -183,7 +194,7 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
           const target = event.target as HTMLElement;
           target.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
         }}
-        sx={{ position: 'absolute', ...(horizontal ? { left: row.start, top: 0, width: columnSize } : { top: row.start, left: 0, right: 0 }) }}>
+        sx={{ position: 'absolute', ...(horizontal ? { left: start, top: 0, width: columnSize } : { top: start, left: 0, right: 0 }) }}>
         {renderItem(row.item)}
       </Box>; })}
       {end && <Box sx={{ position: 'absolute', top: 0, left: layout.total + gap }}>{end}</Box>}

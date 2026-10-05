@@ -71,3 +71,18 @@ At `e77195d`, run [37241937689](https://github.com/nickmailhot-lang/StrataAI2/ac
 At `b56d14b`, run [37242836614](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37242836614) failed the genuine native image-selection cases with HTTP 415. Commit `2873f38` fixes the missing JSON Content-Type on selection. Commit `f77a215` repairs the same omission in Board copying; all 13 focused copy tests, web typecheck and lint passed locally. The genuine current-image runtime remains pending. These fixes do not justify checking off the whole native or copy acceptance scope.
 
 Only close the issue after the current implementation passes the full relevant runtime coverage and the gaps above are resolved. Do not infer closure from a previously green revision, compiled tests, a collected scenario, simulated application replies or an individual successful CI step.
+
+At 9c4eaeb, run 37263319182 container job 111617294144 passed both
+genuine background cases and concurrent 5,000-Card rank-free movement/replay.
+Native step 63 failed: desktop reached pointerAcrossBuffer but found no later
+fully visible target; phone failed the keyboard rectangle alignment predicate.
+Artifact 11326093609 retains both screenshots and traces, now inspected. The
+window source itself can move when estimated heights above it are refined;
+refreshing target measurements does not change the sensor's original source
+rectangle. BoardWindow now retains the source row's starting layout position
+for the active drag and restores its canonical position after drag completion.
+A regression verifies source stability, moved target positions, canonical
+restoration and bounded mounting. The window/Card/List keyboard suite passes
+22 local tests with typecheck and lint. Exact-image verification remains pending;
+the separate desktop pointer failure remains unresolved, and neither viewport
+is claimed complete.

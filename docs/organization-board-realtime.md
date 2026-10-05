@@ -254,3 +254,10 @@ reader grant/withdrawal, role/no-op, visibility, rollback and capability tests.
 The warning-free build passes. New PostgreSQL execution is pending, and wider
 reader cursors, audience replay, transport and active-directory UI are not yet
 implemented; this foundation does not complete active Board directory realtime.
+
+At 101e1be, run 37266353340 PostgreSQL job 111623913733 passed the complete
+new migration/upgrade, ordinary-reader admission fixture, archive separation and
+restricted C# persistence integration. The fixture now includes the existing
+tenant-scoped routing write capability needed by real Board metadata updates;
+production permissions are unchanged. This proves the reader epoch storage
+foundation, not the still-required wider audience/cursor/transport/UI extension.

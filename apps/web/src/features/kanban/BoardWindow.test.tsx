@@ -53,6 +53,30 @@ it('preserves active drag identities while their original row scrolls out of vie
   expect(screen.getByRole('button', { name: 'Drag card-0' })).toBeVisible();
   expect(screen.getAllByRole('link').length).toBeLessThan(30);
 });
+it('keeps the sensor source anchored while earlier row estimates refine, then restores canonical layout', () => {
+  const observers: { callback: ResizeObserverCallback; nodes: Set<Element> }[] = [];
+  class Observer {
+    nodes = new Set<Element>();
+    constructor(callback: ResizeObserverCallback) { observers.push({ callback, nodes: this.nodes }); }
+    observe(node: Element) { this.nodes.add(node); }
+    disconnect() { this.nodes.clear(); }
+  }
+  vi.stubGlobal('ResizeObserver', Observer);
+  active = { id: 'card:card-2' };
+  const memory = new Map<string, number>();
+  const tree = () => <BoardWindow items={cards} axis="cards" memory={memory} memoryKey="cards" renderItem={renderItem} />;
+  const view = render(tree());
+  const source = screen.getByRole('link', { name: 'Open card-2' }).parentElement!;
+  const before = getComputedStyle(source).top;
+  const prior = screen.getByRole('link', { name: 'Open card-0' }).parentElement!;
+  const observer = observers.find(value => value.nodes.has(prior))!;
+  act(() => observer.callback([{ target: prior, borderBoxSize: [{ blockSize: 100 }] } as unknown as ResizeObserverEntry], {} as ResizeObserver));
+  expect(getComputedStyle(source).top).toBe(before);
+  expect(screen.getByRole('link', { name: 'Open card-3' }).parentElement).toHaveStyle({ top: '380px' });
+  active = null; view.rerender(tree());
+  expect(source).toHaveStyle({ top: '244px' });
+  expect(screen.getAllByRole('link').length).toBeLessThan(30);
+});
 it.each([false, true])('refreshes moved drop positions after measured window layout changes only during a drag: %s', dragging => {
   const observers: { callback: ResizeObserverCallback; nodes: Set<Element> }[] = [];
   class Observer {
