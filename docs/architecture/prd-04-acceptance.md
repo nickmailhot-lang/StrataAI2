@@ -34,6 +34,18 @@ Paths ending in `.cs` above are under `tests/StrataAI.Api.Tests`, except `BoardB
 
 ## Executed evidence and known limitations
 
+At `4955e6f`, run 37262699727 passed source, image-build and security checks,
+but container job 111615492874 failed step 59. The genuine desktop image/copy
+case passed; the phone timed out before copy submission. Artifact 11325912285
+retains the screenshot and native trace. The trace shows Copy Board enabled at
+the assertion and disabled when the subsequent Enter keypress resolved it. The
+failure screenshot retains Card details; no copy confirmation appeared. The
+fixture now uses native click actionability for Close and Copy Board and proves
+the Card dialog is gone and the copy dialog is visible before the existing
+one-request/201 assertion. Timeouts, retries and assertions are not relaxed.
+This repair awaits execution. Native capacity step 63 was skipped, so this run
+neither proves nor disproves the BoardWindow measurement repair.
+
 At `4aefb6f`, [run 37259415792](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37259415792)
 container job 111605472900 step 59 passed both current genuine image-background
 cases, including the one-request/201 copy confirmation repair. The same job's

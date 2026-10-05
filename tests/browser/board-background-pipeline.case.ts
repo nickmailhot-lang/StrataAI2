@@ -80,8 +80,12 @@ for (const width of [1280, 390]) {
     await expect.poll(() => image.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
     await expect(image).toHaveAttribute('alt', '');
     expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
-    await page.getByRole('button', { name: 'Close', exact: true }).press('Enter');
-    const copy = page.getByRole('button', { name: 'Copy Board', exact: true }); await expect(copy).toBeEnabled(); await copy.press('Enter');
+    // Wait for native actionability through the current Card/Board read. A
+    // keypress can target a control that became disabled since an assertion.
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    const copy = page.getByRole('button', { name: 'Copy Board', exact: true }); await copy.click();
+    await expect(page.getByRole('dialog', { name: 'Copy Board', exact: true })).toBeVisible();
     let copyWrites = 0;
     page.on('request', request => { if (request.method() === 'POST'
       && new URL(request.url()).pathname === `/boards/${board}/copy`) copyWrites++; });
