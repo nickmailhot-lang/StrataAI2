@@ -497,6 +497,28 @@ actual execution awaits CI. Board filter production, protected bounded replay
 and reconnect recovery remain outstanding;
 PRD-16 stays open at 20% estimated remaining.
 
+The browser `boardFilterChange` transport/recovery module is now implemented as
+the prerequisite for wiring these controls. It creates a frozen normalized
+Apply/Clear intent, retains one original under its actor/Organization/Board
+session-storage key, refuses replacement of a live original, and caps retained
+records at 1,000 without evicting live requests. Restoration validates the exact
+record shape, scope, key, query and 24-hour lifetime; invalid/expired records are
+discarded without silently allocating another request key. Submission performs
+pre/post current-account checks, sends no body, includes the expected-account and
+original idempotency headers, and parses/deduplicates the canonical source only
+after both checks and cancellation fences. Thirty focused search tests pass,
+including lost response/navigation retry, changed accounts before/after dispatch,
+foreign-scope acknowledgment, cancellation and storage capacity. Web typecheck
+and lint pass. The existing BoardFilterControl does not yet invoke this module;
+this is transport/recovery evidence, not completed Apply/Clear or native proof.
+
+HTTP producer run 37336426132 passed web and restricted PostgreSQL jobs but
+failed one API test assertion: the changed-account guard correctly returned
+the existing `401 session_unavailable` envelope, whereas the fixture expected
+403. Commit `0d96188` corrects that expectation without changing production
+behavior or removing the code/no-receipt assertions. Execution of the corrected
+full API suite remains pending in run 37337412135.
+
 ### Browser consumption of global search acknowledgments
 
 The browser requires the canonical interaction before disclosing a result page.
