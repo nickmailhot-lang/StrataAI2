@@ -100,3 +100,17 @@ test('checklist evidence retains paging and mutation samples, rejects malformed 
     { ...value, mutationP95Ms: 1 }, { ...value, itemPageMs: Infinity }, { ...value, nextItemPageMs: -1 }])
     assert.equal(performanceEntry('checklist-performance.json', invalid, 'passed'), undefined);
 });
+
+
+test('phone List feedback retains touch conditions, failures and its unchanged budget', () => {
+  const value = { ...sample, fixture: { ...fixture, viewport: '390x844', input: 'chromium-touch', title: 'private-title' }, token: 'private-token' };
+  const entry = performanceEntry('list-feedback-performance.json', value, 'failed');
+  assert.equal(entry.metric, 'phone-list-feedback'); assert.equal(entry.status, 'failed');
+  assert.equal(entry.fixture.viewport, '390x844'); assert.equal(entry.fixture.input, 'chromium-touch');
+  assert.equal(entry.budgetsMs.feedback, 100); assert.equal(entry.feedbackMs, 43.5);
+  assert.ok(!JSON.stringify(entry).includes('private'));
+  for (const input of [undefined, 'chromium-mouse'])
+    assert.equal(performanceEntry('list-feedback-performance.json', { ...value, fixture: { ...value.fixture, input } }, 'passed'), undefined);
+  const missing = performanceEntry('list-feedback-performance.json', { ...value, feedbackObserved: false, feedbackMs: null }, 'failed');
+  assert.equal(missing.feedbackObserved, false); assert.equal(missing.feedbackMs, null);
+});

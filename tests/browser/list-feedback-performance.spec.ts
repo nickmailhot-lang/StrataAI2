@@ -1,9 +1,10 @@
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
 
-test('PRD-06: desktop list drop feedback precedes persistence and meets its budget', async ({ page, context }) => {
+for (const width of [1280, 390]) {
+test(`PRD-06: list drop feedback precedes persistence and meets its budget at ${width}px`, async ({ page, context }) => {
   test.setTimeout(60_000);
-  await page.setViewportSize({ width: 1280, height: 844 });
+  await page.setViewportSize({ width, height: 844 });
   const headers = { 'X-StrataAI-Request': '1' };
   const account = { email: `list-feedback-${Date.now()}@example.test`, password: 'list-feedback-correct-horse', displayName: 'List feedback fixture' };
   expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
@@ -22,6 +23,9 @@ test('PRD-06: desktop list drop feedback precedes persistence and meets its budg
   const reads = trackBoardReads(page, board, `/app/${org}/boards/${board}`);
   await page.goto(`/app/${org}/boards/${board}`); await expect.poll(reads).toBeGreaterThanOrEqual(2);
   const handle = page.getByRole('button', { name: 'Drag Feedback moving list', exact: true });
+  const canvas = page.getByLabel('Kanban board', { exact: true });
+  await handle.scrollIntoViewIfNeeded();
+  await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
   await expect(handle).toBeEnabled();
   const source = await handle.boundingBox();
   const target = await page.getByRole('region', { name: 'Feedback anchor', exact: true }).boundingBox();
@@ -37,6 +41,8 @@ test('PRD-06: desktop list drop feedback precedes persistence and meets its budg
     expect(route.request().postDataJSON()).toMatchObject({ name: 'Feedback moving', version: 1, beforeListId: ids[0] });
     await writeGate; await route.continue();
   });
+  const touch = width === 390 ? await context.newCDPSession(page) : undefined;
+  let touching = false;
   let feedbackMs: number;
   try {
     // Measure a painted optimistic order while the API request cannot reach
@@ -62,10 +68,32 @@ test('PRD-06: desktop list drop feedback precedes persistence and meets its budg
         };
         window.addEventListener('pointerup', release, { capture: true, once: true });
         window.addEventListener('mouseup', release, { capture: true, once: true });
+        window.addEventListener('touchend', release, { capture: true, once: true });
       });
     }, { moved: ids[1] });
-    await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
-    await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 12 }); await page.mouse.up();
+    await expect(handle).toBeEnabled();
+    if (touch) {
+      await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+      const x = source!.x + source!.width / 2, y = source!.y + source!.height / 2;
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] }); touching = true;
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + 12, y, id: 1 }] });
+      await expect(handle).toHaveAttribute('aria-pressed', 'true');
+      const box = await canvas.boundingBox(); expect(box).not.toBeNull();
+      const offset = await canvas.evaluate(node => node.scrollLeft); expect(offset).toBeGreaterThan(0);
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: Math.max(0, box!.x) + 10, y, id: 1 }] });
+      const anchor = page.getByRole('region', { name: 'Feedback anchor', exact: true });
+      await expect.poll(async () => {
+        const rect = await anchor.boundingBox();
+        return await canvas.evaluate(node => node.scrollLeft) < offset && !!rect
+          && rect.x + rect.width / 2 > 0 && rect.x + rect.width / 2 < width;
+      }).toBe(true);
+      const destination = await anchor.boundingBox(); expect(destination).not.toBeNull();
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: destination!.x + destination!.width / 2, y: destination!.y + destination!.height / 2, id: 1 }] });
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); touching = false;
+    } else {
+      await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
+      await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 12 }); await page.mouse.up();
+    }
     feedbackMs = await page.evaluate(() => {
       const feedback = (window as Window & { listFeedback?: Promise<number> }).listFeedback;
       if (!feedback) throw new Error('List feedback observer was not installed.');
@@ -88,11 +116,14 @@ test('PRD-06: desktop list drop feedback precedes persistence and meets its budg
     await expect(page.locator('[aria-label="Kanban board"]').getByRole('region').first()).toHaveAccessibleName('Feedback moving');
     expect(writes).toBe(1);
   } finally {
-    releaseWrite(); await page.unroute(routePath);
+    releaseWrite();
+    try { if (touching) await touch?.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] }); }
+    finally { await touch?.detach(); await page.unroute(routePath); }
   }
   await test.info().attach('list-feedback-performance.json', { contentType: 'application/json', body: JSON.stringify({
-    fixture: { lists: 2, cards: 0, viewport: '1280x844', topology: 'exact release images through Nginx' },
+    fixture: { lists: 2, cards: 0, viewport: `${width}x844`, input: width === 390 ? 'chromium-touch' : 'chromium-mouse', topology: 'exact release images through Nginx' },
     feedbackObserved: Number.isFinite(feedbackMs), feedbackMs: Number.isFinite(feedbackMs) ? feedbackMs : null,
   }) });
   expect(feedbackMs).toBeLessThan(100);
 });
+}

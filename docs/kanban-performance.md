@@ -143,3 +143,9 @@ p95; invalid topology, undated fixtures or malformed samples produce no entry.
 Reporter tests and scenario parsing pass locally. Actual dated-Board timing is
 pending exact-image CI and does not establish 200-List/5000-Card rendering or
 virtualization acceptance.
+
+## Phone List feedback coverage
+
+The two-empty-List feedback fixture now also runs at 390x844 with Chromium touch input. It reveals the moving List, activates its actual handle, and uses the left canvas boundary to auto-scroll until the anchor center is reachable. Touch release starts the same browser-clock sample used by the desktop pointer case. The first painted optimistic order must intersect the viewport and meet the unchanged <100ms budget while the keyed PATCH is held before dispatch. The fixture requires exactly one write, unchanged canonical ordering while held, the intended acknowledgment at revision two, an unchanged neighboring List, and persisted order after reload. Touch cancellation and session cleanup run on failure.
+
+The reporter retains this result as `phone-list-feedback`, with fixed touch input and viewport, original outcome and the 100ms budget. It rejects phone records without touch input, preserves missing feedback as null, and strips private or arbitrary fields. All nine reporter regressions and browser typechecking pass locally. Native execution against the exact release images remains pending; fixture coverage does not prove the mobile latency target or physical-device behavior.

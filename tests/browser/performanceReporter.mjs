@@ -23,12 +23,12 @@ export function performanceEntry(name, value, status) {
   }
   const feedback = value.feedbackObserved === true && duration(value.feedbackMs) ? value.feedbackMs
     : value.feedbackObserved === false && value.feedbackMs === null ? null : undefined;
-  const viewport = name === 'kanban-performance.json' && value.fixture?.viewport === '390x844' ? '390x844' : '1280x844';
+  const viewport = ['kanban-performance.json', 'list-feedback-performance.json'].includes(name) && value.fixture?.viewport === '390x844' ? '390x844' : '1280x844';
   if (feedback === undefined || value.fixture?.viewport !== viewport
     || viewport === '390x844' && value.fixture.input !== 'chromium-touch'
     || value.fixture?.topology !== 'exact release images through Nginx') return undefined;
   if (name === 'list-feedback-performance.json' && value.fixture.lists === 2 && value.fixture.cards === 0) {
-    return { metric: 'desktop-list-feedback', status, fixture: { lists: 2, cards: 0, viewport: '1280x844' },
+    return { metric: viewport === '390x844' ? 'phone-list-feedback' : 'desktop-list-feedback', status, fixture: { lists: 2, cards: 0, viewport, ...(viewport === '390x844' ? { input: 'chromium-touch' } : {}) },
       feedbackObserved: feedback !== null, feedbackMs: feedback, budgetsMs: { feedback: 100 } };
   }
   const checklist = name === 'checklist-performance.json';
