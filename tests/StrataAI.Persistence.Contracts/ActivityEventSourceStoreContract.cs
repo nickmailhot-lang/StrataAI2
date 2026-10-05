@@ -36,6 +36,18 @@ internal static class ActivityEventSourceStoreContract
         {
             try { await sources.ReadBoardWindowAsync(tenant, board, null, null, ct); throw new InvalidOperationException("Unowned activity source read accepted."); }
             catch (InvalidOperationException exception) when (exception.Message == "Activity sources require the owning Work transaction.") { }
+            var journalReader = new PostgresOrganizationBoardEventReader(provider.GetRequiredService<PostgresConnectionFactory>());
+            // Earlier mandatory fixtures retain real events on other Boards that
+            // this same actor administers. Fence this fixture's own source range
+            // instead of treating their legitimately visible history as a leak.
+            var journalStart = await journalReader.GetHeadAsync(tenant, ct);
+            var journalScopeStart = await journalReader.GetScopeAsync(tenant, actor, ct);
+            Require(journalScopeStart is { ActorId: var scopedActor, OrganizationId: var scopedOrganization } && scopedActor == actor && scopedOrganization == tenant,
+                "Organization journal permission binding was unavailable to the active fixture member.");
+            var journalSync = new OrganizationBoardSynchronizationService(journalReader, provider.GetRequiredService<IOrganizationBoardCursorCodec>());
+            var bootstrap = await journalSync.ReadAsync(tenant, actor, null, cancellationToken: ct);
+            Require(bootstrap.Succeeded && bootstrap.Value is { ResetRequired: true, Events.Count: 0 },
+                "Organization journal bootstrap failed its current permission snapshot boundary.");
             var recorded = new List<WorkEvent>();
             await Scope(async () =>
             {
@@ -46,8 +58,7 @@ internal static class ActivityEventSourceStoreContract
                 }
                 return true;
             });
-            var journalReader = new PostgresOrganizationBoardEventReader(provider.GetRequiredService<PostgresConnectionFactory>());
-            var ungranted = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
+            var ungranted = await journalReader.ReadAsync(tenant, actor, journalStart, 50, ct);
             Require(ungranted.Succeeded, $"Organization journal active-member storage admission failed: {ungranted.ErrorCode}.");
             Require(ungranted.Value is { Events.Count: 0 }, "Organization journal disclosed envelopes without Board administration.");
             Require(ungranted.Value is { Pending: false }, "Organization journal disclosed pending source activity without Board administration.");
@@ -57,15 +68,22 @@ internal static class ActivityEventSourceStoreContract
                 grant.Parameters.AddWithValue("board", board); grant.Parameters.AddWithValue("actor", actor);
                 await grant.ExecuteNonQueryAsync(ct);
             }
-            var pendingJournal = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
-            Require(pendingJournal.Succeeded && pendingJournal.Value is { Cursor: 0, Pending: true, Events.Count: 0 },
+            var grantScope = await journalReader.GetScopeAsync(tenant, actor, ct);
+            Require(grantScope is not null && grantScope.PermissionRevision == journalScopeStart!.PermissionRevision + 1 &&
+                grantScope.PermissionGeneration == journalScopeStart.PermissionGeneration,
+                "Actual Board administration expansion did not revise the reader binding.");
+            var invalidatedBootstrap = await journalSync.ReadAsync(tenant, actor, bootstrap.Value!.Cursor, cancellationToken: ct);
+            Require(invalidatedBootstrap.Succeeded && invalidatedBootstrap.Value is { ResetRequired: true, Events.Count: 0 },
+                "Organization journal grant expansion retained its old protected replay cursor.");
+            var pendingJournal = await journalReader.ReadAsync(tenant, actor, journalStart, 50, ct);
+            Require(pendingJournal.Succeeded && pendingJournal.Value is { Pending: true, Events.Count: 0 } && pendingJournal.Value.Cursor == journalStart,
                 "Organization journal skipped its first eligible pending canonical source.");
             await using (var ready = new NpgsqlCommand("UPDATE work_events SET ready_at=clock_timestamp() WHERE tenant_id=@tenant AND event_id=@event;", admin))
             {
                 ready.Parameters.AddWithValue("tenant", tenant); ready.Parameters.AddWithValue("event", recorded[0].EventId);
                 await ready.ExecuteNonQueryAsync(ct);
             }
-            var deliveredJournal = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
+            var deliveredJournal = await journalReader.ReadAsync(tenant, actor, journalStart, 50, ct);
             Require(deliveredJournal.Succeeded && deliveredJournal.Value is { Pending: true, Events.Count: 1 } &&
                 deliveredJournal.Value.Events[0].EventId == recorded[0].EventId && deliveredJournal.Value.Events[0].BoardId == board,
                 "Organization journal lost original source identity or skipped later pending delivery.");
@@ -79,9 +97,15 @@ internal static class ActivityEventSourceStoreContract
                 demote.Parameters.AddWithValue("tenant", tenant); demote.Parameters.AddWithValue("board", board);
                 demote.Parameters.AddWithValue("actor", actor); await demote.ExecuteNonQueryAsync(ct);
             }
-            var demotedJournal = await journalReader.ReadAsync(tenant, actor, 0, 50, ct);
+            var demotedJournal = await journalReader.ReadAsync(tenant, actor, journalStart, 50, ct);
             Require(demotedJournal.Succeeded && demotedJournal.Value is { Pending: false, Events.Count: 0 },
                 "Organization journal retained a withdrawn administrative audience.");
+            var demotedScope = await journalReader.GetScopeAsync(tenant, actor, ct);
+            Require(demotedScope is not null && demotedScope.PermissionRevision == grantScope!.PermissionRevision + 1,
+                "Actual Board demotion did not revise the reader binding.");
+            var invalidatedGrant = await journalSync.ReadAsync(tenant, actor, invalidatedBootstrap.Value!.Cursor, cancellationToken: ct);
+            Require(invalidatedGrant.Succeeded && invalidatedGrant.Value is { ResetRequired: true, Events.Count: 0 },
+                "Organization journal demotion retained its old protected replay cursor.");
             Require((await journalReader.ReadAsync(tenant, Guid.NewGuid(), 0, 50, ct)).ErrorCode == "organization_not_found",
                 "Organization journal admitted an actor without Organization membership.");
             Console.WriteLine("Real restricted Organization Board reader: current administrative audience before bound, pending canonical source barrier, original delivered source identity, Board demotion and missing Organization membership passed. Readiness is explicitly administrative fixture setup; this is storage admission, not Worker/live/session/cursor proof.");

@@ -7,8 +7,42 @@ namespace StrataAI.Infrastructure.WorkManagement;
 // Storage foundation only: intentionally not registered or exposed by an API.
 // The live service must additionally bind cursors to current permission epochs,
 // revalidate the session after IO, and reset the directory on grant changes.
-public sealed class PostgresOrganizationBoardEventReader(PostgresConnectionFactory connections)
+public sealed class PostgresOrganizationBoardEventReader(PostgresConnectionFactory connections) : IOrganizationBoardEventReader
 {
+    public async Task<OrganizationBoardCursorBinding?> GetScopeAsync(Guid organizationId, Guid actorId,
+        CancellationToken cancellationToken = default)
+    {
+        if (organizationId == Guid.Empty || actorId == Guid.Empty) return null;
+        await using var session = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);
+        // Do not lock e: grant writers already hold their membership tuple before
+        // revising the epoch. Locking epoch first would invert that lock order.
+        await using var command = new NpgsqlCommand("""
+            SELECT m.id,o.version,e.generation,e.permission_revision FROM organizations o
+            JOIN organization_members m ON m.tenant_id=o.id
+            JOIN organization_board_directory_epochs e ON e.tenant_id=m.tenant_id AND e.user_id=m.user_id
+            WHERE o.id=@tenant AND o.status='ACTIVE' AND m.user_id=@actor AND m.status='ACTIVE'
+            FOR SHARE OF o,m;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("actor", actorId);
+        OrganizationBoardCursorBinding? binding = null;
+        await using (var result = await command.ExecuteReaderAsync(cancellationToken))
+            if (await result.ReadAsync(cancellationToken))
+                binding = new(organizationId, actorId, result.GetGuid(0), result.GetInt64(1), result.GetGuid(2), result.GetInt64(3));
+        await session.CommitAsync(cancellationToken);
+        return binding;
+    }
+
+    public async Task<long> GetHeadAsync(Guid organizationId, CancellationToken cancellationToken = default)
+    {
+        await using var session = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);
+        await using var command = new NpgsqlCommand("SELECT last_sequence FROM organization_board_event_streams WHERE tenant_id=@tenant;",
+            session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organizationId);
+        var head = await command.ExecuteScalarAsync(cancellationToken) is long value ? value : 0;
+        await session.CommitAsync(cancellationToken);
+        return head;
+    }
+
     public async Task<WorkOperation<OrganizationBoardEventPage>> ReadAsync(Guid organizationId,
         Guid actorId, long since, int limit, CancellationToken cancellationToken = default)
     {

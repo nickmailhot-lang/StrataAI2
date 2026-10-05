@@ -94,3 +94,29 @@ assertion in PostgreSQL job 111606784110. The fixture now separates active-membe
 admission, envelope audience and pending-state assertions, retaining all three
 requirements to identify the cause. No runtime success is claimed for that
 reader until the failure is resolved and its mandatory contract passes.
+
+The separated assertion at `02d1680` identified legitimate earlier Board
+envelopes, rather than failed Organization admission or unauthorized pending
+state. Earlier mandatory fixtures retain sources on Boards this shared actor
+administers. The reader fixture now captures the journal head immediately before
+its own 65 source insertions and applies every audience/pending/identity/demotion
+assertion to that exact source range. It retains the zero-envelope and no-pending
+requirements before its own grant and after demotion; no production audience
+filter is relaxed. The required permission-epoch SQL check passed in PostgreSQL
+job 111608298905 at `02d1680`; the enclosing C# reader case remains pending repair
+verification. This is metadata/storage proof, not live transport acceptance.
+
+An unregistered Application coordinator now binds replay to the actual current
+scope before and after awaited reads. Bootstrap or an invalidated protected
+cursor yields a fresh snapshot boundary with no historical envelopes. Withdrawal
+or a changed permission binding during the read rejects the whole response,
+including empty pages and cursors. Event payloads contain original event/Board
+identity and canonical type/version/time without numeric positions, actor,
+correlation or body fields. PostgreSQL scope reads lock parent/member tuples but
+do not lock the epoch before Board grant tuples, avoiding inversion against
+grant writers. The mandatory C# fixture exercises real bound-cursor reset on
+grant expansion and demotion; unit coverage exercises scope denial, empty-page
+withdrawal, change-and-restoration during replay and original source identity.
+These additions compile but await CI execution. The coordinator remains
+unregistered until the owning read transaction, demo parity, authenticated
+transport and UI are implemented and verified.
