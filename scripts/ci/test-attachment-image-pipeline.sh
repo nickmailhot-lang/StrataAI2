@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 test "${CI:-}" = true || { echo 'Attachment pipeline fixtures require CI.' >&2; exit 1; }
 umask 077
 scratch=$(mktemp -d /tmp/strata-attachment-release.XXXXXXXX)
@@ -25,7 +25,20 @@ for attempt in $(seq 1 20); do [ ! -S "$scratch/scanner.sock" ] || break; sleep 
 test -S "$scratch/scanner.sock"
 docker compose "${fixture[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 180 api web >/dev/null
 base=http://localhost:8088
-json() { curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(cat /proc/sys/kernel/random/uuid)" "$@"; }
+keyed_json() {
+  local key=$1 status code; shift
+  if ! status=$(curl --max-time 60 --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -H "Idempotency-Key: $key" -o "$scratch/json-response" -w '%{http_code}' "$@"); then
+    echo 'Image pipeline JSON transport unavailable.' >&2; return 1
+  fi
+  if [[ "$status" != 2[0-9][0-9] ]]; then
+    code=$(jq -r 'if type=="object" and (.code|type)=="string" and (.code|test("^[a-z0-9_]{1,64}$")) then .code else "unclassified_error" end' "$scratch/json-response" 2>/dev/null) || code=unclassified_error
+    printf 'Image pipeline JSON refusal: status=%s code=%s caller-line=%s\n' "$status" "$code" "${BASH_LINENO[0]}" >&2
+    return 1
+  fi
+  cat "$scratch/json-response"
+}
+json() { keyed_json "$(cat /proc/sys/kernel/random/uuid)" "$@"; }
 jq -nc --arg email "image-pipeline-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"image-pipeline-correct-horse",displayName:"Image pipeline owner"}' > "$scratch/account"
 json -X POST -d "$(cat "$scratch/account")" "$base/auth/register" > "$scratch/registered"
 json -c "$scratch/cookies" -X POST -d "$(cat "$scratch/account")" "$base/auth/login" >/dev/null
@@ -85,14 +98,14 @@ race_selection "$losing_key" race-loser-retry
 test "$(cat "$scratch/race-loser-retry.status")" = 409
 jq -e '.code=="version_conflict"' "$scratch/race-loser-retry.body" >/dev/null
 select_image() {
-  curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
-    -H "Idempotency-Key: $selection_key" -X POST -d "$body" "$base/boards/$board/background/image"
+  keyed_json "$selection_key" -X POST -d "$body" "$base/boards/$board/background/image"
 }
 select_image > "$scratch/race-winner-recovered"
 cmp "$scratch/selected" "$scratch/race-winner-recovered"
 json "$base/boards/$board" > "$scratch/race-current"
 jq -e --slurpfile selected "$scratch/selected" '.board.version==$selected[0].version and .board.backgroundValue==$selected[0].backgroundValue' "$scratch/race-current" >/dev/null
 jq -e --argjson version "$selected_version" '.version==$version and .backgroundType=="IMAGE"' "$scratch/selected" >/dev/null
+echo 'Owned image race, stale-key refusal and byte-identical original receipt recovery passed.'
 owned=$(jq -r '.backgroundValue' "$scratch/selected"); [[ "$owned" =~ ^[0-9a-f-]{36}$ ]]
 test "$owned" != 00000000-0000-0000-0000-000000000000
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -D "$scratch/preview.headers" "$base/boards/$board/background/image?boardVersion=$selected_version" > "$scratch/preview"
@@ -119,6 +132,7 @@ PY
 ! cmp -s "$scratch/original" "$scratch/preview"
 ! grep -aq 'PRIVATE ORIGINAL' "$scratch/preview"
 test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/boards/$board/background/image")" = 404
+echo 'Owned private PNG bytes, response headers, sanitization and anonymous denial passed.'
 # Real lifecycle command removes the original source from preview admission.
 # Board ownership and original acknowledgment recovery remain independent.
 json -X POST -d '{"cardVersion":2,"version":3}' "$base/cards/$card/attachments/$attachment/archive" > "$scratch/archived-attachment"
