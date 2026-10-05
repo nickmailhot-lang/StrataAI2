@@ -46,6 +46,7 @@ it('reviews the bound source before copying and reads current destination before
   const command = fetch.mock.calls.find(([, options]) => options?.method === 'POST')!;
   expect(command[0]).toBe('/boards/' + id + '/copy');
   expect(JSON.parse(command[1]!.body as string)).toEqual({ name: 'Planning copy', version: 1 });
+  expect(new Headers(command[1]?.headers).get('Content-Type')).toBe('application/json');
   expect(new Headers(command[1]?.headers).get('Idempotency-Key')).toBeTruthy();
   expect(new Headers(command[1]?.headers).get('X-StrataAI-Request')).toBe('1');
   await waitFor(() => expect(link).toHaveFocus());
@@ -70,6 +71,7 @@ it('preserves original review, name and key through a lost response and a newer 
   fireEvent.click(retry); await screen.findByRole('link', { name: 'Open copied Board' });
   const commands = fetch.mock.calls.filter(([, options]) => options?.method === 'POST'); expect(commands).toHaveLength(2);
   expect(commands[0][1]?.body).toBe(commands[1][1]?.body);
+  for (const command of commands) expect(new Headers(command[1]?.headers).get('Content-Type')).toBe('application/json');
   expect(new Headers(commands[0][1]?.headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1]?.headers).get('Idempotency-Key'));
   expect(props.onRecoveryChange).toHaveBeenCalledWith(true); expect(props.onRecoveryChange).toHaveBeenLastCalledWith(false);
 });

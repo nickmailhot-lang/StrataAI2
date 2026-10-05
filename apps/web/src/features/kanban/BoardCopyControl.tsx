@@ -130,7 +130,7 @@ function CopyDialog(props: Props) {
       confirmed = await boundedWorkRead(async signal => {
         await actor(signal, command.review.userId);
         const result = acknowledgment(await workRequest<unknown>('/boards/' + encodeURIComponent(command.review.id) + '/copy', {
-          method: 'POST', signal, headers: { 'Idempotency-Key': command.key }, body: JSON.stringify({ name: command.name, version: command.review.version }),
+          method: 'POST', signal, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify({ name: command.name, version: command.review.version }),
         }), command);
         await actor(signal, command.review.userId); return result;
       }, c.signal);
