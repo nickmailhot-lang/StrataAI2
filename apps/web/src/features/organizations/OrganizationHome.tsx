@@ -21,6 +21,8 @@ import {
   WorkRequestError,
   WorkInputError,
 } from "../../api/workManagement";
+import { isNotificationProfile } from "../notifications/notificationInbox";
+import { watchOrganizationBoards } from "../kanban/organizationBoardLive";
 
 type OrganizationSummary = {
   organization: {
@@ -55,10 +57,18 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
   const [error, setError] = useState<Error>();
+  const actor = useRef<string | undefined>(undefined);
+  const read = useRef<AbortController | undefined>(undefined);
+  const [liveActor, setLiveActor] = useState<string>();
+  const [liveNotice, setLiveNotice] = useState<string>();
   const navigate = useNavigate();
   useEffect(() => {
     const controller = new AbortController();
+    read.current = controller;
     void (async () => {
+      const before = await workRequest<unknown>("/me", { signal: controller.signal });
+      if (!isNotificationProfile(before) || actor.current && actor.current !== before.id)
+        throw new WorkRequestError(401, null);
       const organizations = await workRequest<OrganizationSummary[]>(
         "/organizations",
         { signal: controller.signal },
@@ -74,12 +84,17 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             { signal: controller.signal },
           )
         : [];
+      const after = await workRequest<unknown>("/me", { signal: controller.signal });
+      if (!isNotificationProfile(after) || after.id !== before.id) throw new WorkRequestError(401, null);
       if (!controller.signal.aborted) {
+        actor.current = after.id; setLiveActor(after.id);
         setData({ organizations, boards });
         setLoadError(undefined);
+        setLiveNotice(value => value ? "Current Board access checked." : undefined);
       }
     })().catch((reason: unknown) => {
       if (controller.signal.aborted) return;
+      actor.current = undefined; setLiveActor(undefined); setData(undefined);
       if (reason instanceof WorkRequestError && reason.status === 401)
         navigate("/login", { replace: true });
       else {
@@ -89,8 +104,19 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         );
       }
     });
-    return () => controller.abort();
+    return () => { controller.abort(); if (read.current === controller) read.current = undefined; };
   }, [organizationId, reload, navigate]);
+  useEffect(() => {
+    if (!organizationId || !liveActor) return;
+    const recover = (message: string) => {
+      read.current?.abort(); setData(undefined); setLoadError(undefined);
+      setCreating(false); setLiveNotice(message); setReload(value => value + 1);
+    };
+    return watchOrganizationBoards({ organizationId, userId: liveActor, audience: 'discovery',
+      invalidate: () => recover("Boards changed. Checking current access."),
+      reset: () => recover("Checking current Board access."),
+      unavailable: () => recover("Live updates interrupted. Checking current access.") });
+  }, [organizationId, liveActor]);
   const organization = data?.organizations.find(
     (item) => item.organization.id === organizationId,
   )?.organization;
@@ -162,6 +188,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Stack spacing={2}>
+        {liveNotice && <Typography role="status" aria-live="polite" aria-atomic="true">{liveNotice}</Typography>}
         <Stack direction="row" spacing={2}>
           <Button component={Link} to="/app">
             Organizations
@@ -250,7 +277,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             )}
           </>
         )}
-        <Dialog
+        {creating && <Dialog
           open={creating}
           onClose={() => {
             if (!busy) setCreating(false);
@@ -308,7 +335,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               </Button>
             </DialogActions>
           </Box>
-        </Dialog>
+        </Dialog>}
       </Stack>
     </Container>
   );

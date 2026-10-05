@@ -1,6 +1,13 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { OrganizationHome } from "./OrganizationHome";
+const live = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string; audience: string;
+  invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
+vi.mock('../kanban/organizationBoardLive', () => ({ watchOrganizationBoards: live.watch }));
+const profile = { id: '22222222-2222-4222-8222-222222222222', version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
+function stubFetch(delegate: (path: string, options?: RequestInit) => unknown) {
+  vi.stubGlobal('fetch', (path: string, options?: RequestInit) => path === '/me' ? Promise.resolve(response(profile)) : delegate(path, options));
+}
 
 const organizations = [
   {
@@ -32,10 +39,50 @@ function mount(path = "/app") {
   render(<RouterProvider router={router} />);
   return router;
 }
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 describe("PRD-01/03/04 organization discovery", () => {
+  it('withdraws cached names and creation consent when live admission is withdrawn', async () => {
+    let withdrawn = false;
+    stubFetch(vi.fn(async (path: string) => path === '/organizations' ? response(organizations)
+      : withdrawn ? response({}, 404) : response([{ id: 'private-board', name: 'Private current Board', version: 1 }])));
+    mount('/app/org-1'); await screen.findByRole('link', { name: 'Private current Board' });
+    await waitFor(() => expect(live.watch).toHaveBeenCalledWith(expect.objectContaining({ userId: profile.id, audience: 'discovery' })));
+    fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    withdrawn = true; act(() => live.watch.mock.calls[0][0].reset());
+    expect(screen.queryByRole('link', { name: 'Private current Board' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await screen.findByRole('alert'); expect(screen.queryByText('Council')).not.toBeInTheDocument();
+  });
+  it('fences an older directory response after a newer canonical invalidation', async () => {
+    let reads = 0; let finish!: (value: Response) => void; let oldSignal: AbortSignal | null | undefined;
+    stubFetch(vi.fn(async (path: string, options?: RequestInit) => {
+      if (path === '/organizations') return response(organizations);
+      if (++reads === 2) { oldSignal = options?.signal; return new Promise<Response>(resolve => { finish = resolve; }); }
+      return response([{ id: 'current-board', name: reads === 1 ? 'Original Board' : 'New current Board', version: reads }]);
+    }));
+    mount('/app/org-1'); await screen.findByRole('link', { name: 'Original Board' });
+    await waitFor(() => expect(live.watch).toHaveBeenCalledTimes(1));
+    act(() => live.watch.mock.calls[0][0].invalidate());
+    await waitFor(() => expect(finish).toBeDefined());
+    act(() => live.watch.mock.calls[0][0].invalidate());
+    expect(oldSignal?.aborted).toBe(true);
+    await screen.findByRole('link', { name: 'New current Board' });
+    await act(async () => finish(response([{ id: 'old-board', name: 'Withdrawn old Board', version: 1 }])));
+    expect(screen.queryByText('Withdrawn old Board')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'New current Board' })).toBeInTheDocument();
+  });
+  it('withholds names if the current account changes during directory IO', async () => {
+    let profiles = 0;
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me'
+      ? response({ ...profile, id: ++profiles === 1 ? profile.id : '33333333-3333-4333-8333-333333333333' })
+      : path === '/organizations' ? response(organizations) : response([{ id: 'board', name: 'Previous account Board', version: 1 }])));
+    mount('/app/org-1'); await screen.findByText('Sign in destination');
+    expect(screen.queryByText('Previous account Board')).not.toBeInTheDocument();
+    expect(screen.queryByText('Council')).not.toBeInTheDocument(); expect(live.watch).not.toHaveBeenCalled();
+  });
   it("displays an honest empty state and creation action for a new account", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response([])));
+    stubFetch(vi.fn().mockResolvedValue(response([])));
     mount();
     expect(
       await screen.findByText(/You have no organizations yet/),
@@ -52,7 +99,7 @@ describe("PRD-01/03/04 organization discovery", () => {
       .mockResolvedValueOnce(response(organizations[0], 201))
       .mockResolvedValueOnce(response(organizations))
       .mockResolvedValueOnce(response([]));
-    vi.stubGlobal("fetch", fetcher);
+    stubFetch(fetcher);
     const router = mount();
     fireEvent.click(
       await screen.findByRole("button", { name: "Create organization" }),
@@ -79,7 +126,7 @@ describe("PRD-01/03/04 organization discovery", () => {
       .mockResolvedValueOnce(response(organizations))
       .mockResolvedValueOnce(response([]))
       .mockResolvedValueOnce(response({ id: "new-board" }, 201));
-    vi.stubGlobal("fetch", fetcher);
+    stubFetch(fetcher);
     const router = mount("/app/org-1");
     fireEvent.click(
       await screen.findByRole("button", { name: "Create board" }),
@@ -99,13 +146,13 @@ describe("PRD-01/03/04 organization discovery", () => {
     });
   });
   it("redirects expired sessions to sign in", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response({}, 401)));
+    stubFetch(vi.fn().mockResolvedValue(response({}, 401)));
     mount();
     expect(await screen.findByText("Sign in destination")).toBeVisible();
   });
   it("does not request or expose boards for an organization outside active membership", async () => {
     const fetcher = vi.fn().mockResolvedValue(response(organizations));
-    vi.stubGlobal("fetch", fetcher);
+    stubFetch(fetcher);
     mount("/app/another-org");
     expect(await screen.findByRole("alert")).toHaveTextContent("unavailable");
     expect(fetcher).toHaveBeenCalledTimes(1);
@@ -126,7 +173,7 @@ describe("PRD-01/03/04 organization discovery", () => {
       .mockResolvedValueOnce(
         response([{ id: "board-2", name: "Accessible board", version: 1 }]),
       );
-    vi.stubGlobal("fetch", fetcher);
+    stubFetch(fetcher);
     const router = mount();
     await screen.findByText("Council");
     await router.navigate("/app/org-2");

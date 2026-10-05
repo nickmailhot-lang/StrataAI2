@@ -152,3 +152,21 @@ connector tests, typecheck and lint pass locally. This does not yet integrate
 OrganizationHome or prove a native ordinary-reader scenario. Current c820b65
 CI run 37268321264 is live; demo increment run 37268199264 has passed PostgreSQL
 and its API execution remains pending. No running CI has been cancelled.
+
+OrganizationHome now subscribes to ordinary discovery after fresh account and
+server-authorized directory admission. It verifies the current profile before
+and after directory IO, withdraws cached Organization/Board names and creation
+consent immediately on canonical invalidation/reset/interruption, aborts older
+reads and reloads the authorized snapshot. Account changes redirect to sign-in
+without exposing previous names. Content-free polite announcements describe the
+access check. Nine component tests pass, including membership refusal after a
+live reset, a delayed stale directory reply fenced by a newer invalidation, and
+an account switch during IO; typecheck and lint pass. Native two-client/Worker
+verification remains outstanding. PRD-04 stays open at 20% estimated remaining.
+
+Run 37268321264 PostgreSQL failed at the existing Board background image atomic
+retry assertion, after earlier preview/cover contracts passed. Commit b481732
+retains that exact predicate and adds only operation status/code and numeric
+revision diagnostics to distinguish the cause. No object location, content,
+identity or credentials are emitted. This is diagnostic progress, not a repair
+or green CI claim; full .NET warnings-as-errors build passes.
