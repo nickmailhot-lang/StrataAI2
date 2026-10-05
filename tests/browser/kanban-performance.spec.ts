@@ -2,9 +2,10 @@ import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
 
-test('PRD-06: normal Board readiness, cached detail and mutation latency meet budgets', async ({ page, context }) => {
+for (const width of [1280, 390]) {
+test(`PRD-06: normal Board readiness, cached detail and mutation latency meet budgets at ${width}px`, async ({ page, context }) => {
   test.setTimeout(120_000);
-  await page.setViewportSize({ width: 1280, height: 844 });
+  await page.setViewportSize({ width, height: 844 });
   const headers = { 'X-StrataAI-Request': '1' };
   const account = { email: `kanban-performance-${Date.now()}@example.test`, password: 'kanban-performance-correct-horse', displayName: 'Performance fixture' };
   expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
@@ -46,13 +47,24 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   let heldMove = false;
   const feedbackRoute = `**/cards/${feedbackCard}/move`;
   await page.route(feedbackRoute, async route => { heldMove = true; await gate; await route.continue(); });
+  const touch = width === 390 ? await context.newCDPSession(page) : undefined;
+  let touching = false; let pointerX = 0, pointerY = 0;
+  async function move(x: number, y: number, steps = 1) {
+    if (!touch) { await page.mouse.move(x, y, { steps }); return; }
+    const fromX = pointerX, fromY = pointerY;
+    for (let step = 1; step <= steps; step++) await touch.send('Input.dispatchTouchEvent', {
+      type: 'touchMove', touchPoints: [{ x: fromX + (x - fromX) * step / steps, y: fromY + (y - fromY) * step / steps, id: 1 }],
+    });
+    pointerX = x; pointerY = y;
+  }
   let feedbackMs: number;
   try {
+    if (touch) await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
     await page.getByRole('button', { name: 'Drag Performance card 2 card', exact: true }).scrollIntoViewIfNeeded();
-    await page.getByRole('link', { name: 'Performance card 4', exact: true }).scrollIntoViewIfNeeded();
+    if (width === 1280) await page.getByRole('link', { name: 'Performance card 4', exact: true }).scrollIntoViewIfNeeded();
     const source = await page.getByRole('button', { name: 'Drag Performance card 2 card', exact: true }).boundingBox();
-    const target = await page.getByRole('link', { name: 'Performance card 4', exact: true }).boundingBox();
-    expect(source).not.toBeNull(); expect(target).not.toBeNull();
+    const anchorLink = page.getByRole('link', { name: 'Performance card 4', exact: true });
+    expect(source).not.toBeNull();
     await page.evaluate(({ id, destination }) => {
       const state = window as Window & { kanbanFeedback?: Promise<number> };
       state.kanbanFeedback = new Promise<number>(resolve => {
@@ -75,10 +87,32 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
         };
         window.addEventListener('pointerup', release, { capture: true, once: true });
         window.addEventListener('mouseup', release, { capture: true, once: true });
+        window.addEventListener('touchend', release, { capture: true, once: true });
       });
     }, { id: feedbackCard, destination: lists[0] });
-    await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
-    await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 12 }); await page.mouse.up();
+    pointerX = source!.x + source!.width / 2; pointerY = source!.y + source!.height / 2;
+    if (touch) {
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: pointerX, y: pointerY, id: 1 }] }); touching = true;
+    } else { await page.mouse.move(pointerX, pointerY); await page.mouse.down(); }
+    if (width === 390) {
+      // Both columns do not fit on a phone. Retain the same real cross-List
+      // movement and use native boundary auto-scroll before the timed drop.
+      await move(source!.x + source!.width / 2 + 12, source!.y + source!.height / 2);
+      const canvas = page.getByLabel('Kanban board', { exact: true }); const box = await canvas.boundingBox();
+      expect(box).not.toBeNull();
+      const offset = await canvas.evaluate(node => node.scrollLeft); expect(offset).toBeGreaterThan(0);
+      await move(Math.max(0, box!.x) + 10, source!.y + source!.height / 2, 12);
+      await expect.poll(async () => {
+        const target = await anchorLink.boundingBox();
+        return await canvas.evaluate(node => node.scrollLeft) < offset && !!target
+          && target.x + target.width / 2 > 0 && target.x + target.width / 2 < width;
+      }).toBe(true);
+    }
+    const target = await anchorLink.boundingBox(); expect(target).not.toBeNull();
+    await move(target!.x + target!.width / 2, target!.y + target!.height / 2, 12);
+    await expect(page.getByText('Performance card 2 card can be dropped before Performance card 4.', { exact: true })).toBeAttached();
+    if (touch) { await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); touching = false; }
+    else await page.mouse.up();
     feedbackMs = await page.evaluate(() => {
       const feedback = (window as Window & { kanbanFeedback?: Promise<number> }).kanbanFeedback;
       if (!feedback) throw new Error('Kanban feedback observer was not installed.');
@@ -100,7 +134,9 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
     expect(destinationCards[movedIndex + 1]).toEqual(feedbackAnchor);
     expect(persisted.lists[1].cards.some((item: { id: string }) => item.id === feedbackCard)).toBe(false);
   } finally {
-    releaseMove(); await page.unroute(feedbackRoute);
+    releaseMove();
+    try { if (touching) await touch?.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] }); }
+    finally { await touch?.detach(); await page.unroute(feedbackRoute); }
   }
   const detailStarted = performance.now();
   await page.getByRole('link', { name: 'Performance card 1', exact: true }).click();
@@ -116,7 +152,7 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   }
   const p95Ms = [...mutations].sort((a, b) => a - b)[Math.ceil(mutations.length * .95) - 1];
   await test.info().attach('kanban-performance.json', { contentType: 'application/json', body: JSON.stringify({
-    fixture: { lists: 3, cards: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
+    fixture: { lists: 3, cards: 50, samples: 20, viewport: `${width}x844`, input: width === 390 ? 'chromium-touch' : 'chromium-mouse', assets: 'warm', topology: 'exact release images through Nginx' },
     usableMs, feedbackMs: Number.isFinite(feedbackMs) ? feedbackMs : null, feedbackObserved: Number.isFinite(feedbackMs),
     detailMs, mutationP95Ms: p95Ms, mutationSamplesMs: mutations,
   }) });
@@ -125,3 +161,4 @@ test('PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   expect(detailMs).toBeLessThan(200);
   expect(p95Ms).toBeLessThan(500);
 });
+}

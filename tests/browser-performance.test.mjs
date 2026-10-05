@@ -39,6 +39,26 @@ test('normal benchmark retains all twenty samples and its original budgets', () 
   assert.equal(performanceEntry('kanban-performance.json', { ...value, mutationP95Ms: 1 }, 'passed'), undefined);
 });
 
+test('phone Kanban evidence retains all samples and unchanged budgets without broadening other fixtures', () => {
+  const value = { ...sample, fixture: { ...fixture, lists: 3, cards: 50, samples: 20, assets: 'warm', viewport: '390x844', input: 'chromium-touch', organizationId: 'private-id' },
+    usableMs: 600, detailMs: 150, mutationP95Ms: 49, mutationSamplesMs: Array.from({ length: 20 }, (_, index) => index + 31),
+    body: 'private-content', bearer: 'private-token' };
+  const entry = performanceEntry('kanban-performance.json', value, 'failed');
+  assert.equal(entry.metric, 'normal-phone-kanban'); assert.equal(entry.status, 'failed');
+  assert.equal(entry.fixture.viewport, '390x844'); assert.deepEqual(entry.mutationSamplesMs, value.mutationSamplesMs);
+  assert.equal(entry.fixture.input, 'chromium-touch');
+  assert.deepEqual(entry.budgetsMs, { usable: 1500, feedback: 100, detail: 200, mutationP95: 500 });
+  assert.ok(!JSON.stringify(entry).includes('private'));
+  for (const invalid of [{ ...value, fixture: { ...value.fixture, viewport: '391x844' } },
+    { ...value, fixture: { ...value.fixture, input: 'chromium-mouse' } },
+    { ...value, fixture: { ...value.fixture, input: undefined } },
+    { ...value, fixture: { ...value.fixture, topology: 'mocked reads' } },
+    { ...value, mutationP95Ms: 1 }, { ...value, mutationSamplesMs: [50] }])
+    assert.equal(performanceEntry('kanban-performance.json', invalid, 'passed'), undefined);
+  assert.equal(performanceEntry('list-feedback-performance.json', { ...sample, fixture: { ...fixture, viewport: '390x844' } }, 'passed'), undefined);
+  assert.equal(performanceEntry('checklist-performance.json', { ...value, fixture: { ...value.fixture, checklists: 2, items: 63, pageSize: 50 }, itemPageMs: 30, nextItemPageMs: 20 }, 'passed'), undefined);
+});
+
 test('dated Board evidence retains strict budgets and twenty valid samples without private fields', () => {
   const value = { fixture: { ...fixture, lists: 3, cards: 50, datedCards: 50, samples: 20, assets: 'warm', cardId: 'private-id' },
     usableMs: 600, detailMs: 150, mutationP95Ms: 49, mutationSamplesMs: Array.from({ length: 20 }, (_, index) => index + 31),

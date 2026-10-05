@@ -1,6 +1,6 @@
 # Kanban performance acceptance
 
-The required release browser benchmark uses Chromium at 1280x844, one browser
+The required release browser benchmark uses Chromium at 1280x844 and 390x844, one browser
 worker, exact web/API/Worker images behind Nginx and real PostgreSQL. Normal
 conditions are three lists and fifty active cards, one signed-in Organization
 owner, warm application assets, and a Board snapshot not previously opened in
@@ -18,6 +18,10 @@ The benchmark attaches kanban-performance.json with fixture conditions and
 durations only. No identities, titles, tenant/object IDs, bearer or retry-key
 material is retained. The overall setup deadline is separate from the unchanged
 performance thresholds; release retries remain zero.
+
+The phone case retains the same three Lists, fifty Cards, real cross-List move and twenty alternating keyed mutation samples. It uses Chromium touch dispatch through the actual drag handle, holding at the left canvas boundary until native auto-scroll reveals the original destination. The named destination announcement must identify that target before touch release. Pointer/mouse/touch release starts one browser-clock feedback measurement; persistence remains held until its visual update is observed. Readiness <1500ms, feedback <100ms, cached detail <200ms and mutation p95 <500ms remain unchanged. The desktop case continues to use mouse input. This measures browser touch behavior on the documented runner, without a physical-device claim.
+
+The reporter retains the phone result separately as `normal-phone-kanban`, including the fixed 390x844 viewport and `chromium-touch` input, its original outcome and every mutation sample. It rejects missing/wrong phone input labels, arbitrary viewports, invalid sample sets and inconsistent p95 values; other performance fixtures retain their original desktop-only validation. Private/arbitrary payload fields are stripped. Eight reporter regressions, browser TypeScript and both benchmark scenario collection checks pass locally. Actual phone timing and current immutable-image execution remain pending; adding or collecting a case does not establish its latency acceptance.
 
 The performance reporter now retains a separate `browser-performance-{sha}`
 artifact on successful and failed CI runs. It copies only approved numeric

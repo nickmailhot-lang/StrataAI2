@@ -23,7 +23,9 @@ export function performanceEntry(name, value, status) {
   }
   const feedback = value.feedbackObserved === true && duration(value.feedbackMs) ? value.feedbackMs
     : value.feedbackObserved === false && value.feedbackMs === null ? null : undefined;
-  if (feedback === undefined || value.fixture?.viewport !== '1280x844'
+  const viewport = name === 'kanban-performance.json' && value.fixture?.viewport === '390x844' ? '390x844' : '1280x844';
+  if (feedback === undefined || value.fixture?.viewport !== viewport
+    || viewport === '390x844' && value.fixture.input !== 'chromium-touch'
     || value.fixture?.topology !== 'exact release images through Nginx') return undefined;
   if (name === 'list-feedback-performance.json' && value.fixture.lists === 2 && value.fixture.cards === 0) {
     return { metric: 'desktop-list-feedback', status, fixture: { lists: 2, cards: 0, viewport: '1280x844' },
@@ -39,8 +41,9 @@ export function performanceEntry(name, value, status) {
   if (p95 !== value.mutationP95Ms) return undefined;
   if (checklist && (value.fixture.checklists !== 2 || value.fixture.items !== 63 || value.fixture.pageSize !== 50
     || ![value.itemPageMs, value.nextItemPageMs].every(duration))) return undefined;
-  return { metric: checklist ? 'normal-desktop-checklist' : 'normal-desktop-kanban', status,
-    fixture: { lists: 3, cards: 50, samples: 20, viewport: '1280x844', assets: 'warm',
+  return { metric: checklist ? 'normal-desktop-checklist' : viewport === '390x844' ? 'normal-phone-kanban' : 'normal-desktop-kanban', status,
+    fixture: { lists: 3, cards: 50, samples: 20, viewport, assets: 'warm',
+      ...(viewport === '390x844' ? { input: 'chromium-touch' } : {}),
       ...(checklist ? { checklists: 2, items: 63, pageSize: 50 } : {}) },
     ...(checklist ? { itemPageMs: value.itemPageMs, nextItemPageMs: value.nextItemPageMs } : {}),
     usableMs: value.usableMs, detailMs: value.detailMs, feedbackObserved: feedback !== null, feedbackMs: feedback,
