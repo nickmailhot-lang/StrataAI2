@@ -97,3 +97,22 @@ keyboard and BoardWindow suites pass 20 local cases; typecheck and lint pass.
 This is a targeted nested-scroll repair awaiting native execution, not proof
 that the desktop failure is resolved. Native predicates and budgets remain
 unchanged.
+
+Ordinary Board discovery now has a separate server-owned replay audience and
+positive reader revision in the protected cursor. Archive cursors cannot be
+reused for discovery, or vice versa; admission changes invalidate discovery
+bindings. The PostgreSQL reader admits ordinary active Organization members to
+Organization/public Boards and private Boards with an actual active Board grant.
+Eligibility is checked before each bounded source query and private grants use
+an inner join with tuple locks. Canonical source identity and readiness barriers
+are retained. Restricted persistence assertions cover visibility withdrawal,
+private MEMBER admission, grant withdrawal and original delivered event identity.
+The full solution builds with warnings treated as errors. Runtime database and
+cursor execution await CI; discovery transport, demo parity and active directory
+UI are not yet implemented by this increment. PRD-04 remains open, estimated
+20% remaining; no wider live acceptance is claimed.
+
+Run 37267135324 passed PostgreSQL checks but its web suite failed one of 112
+files: the Board copy recovery callback assertion ran before the passive effect.
+Commit 929c1fd waits for the exact existing callback assertion; all 13 focused
+copy tests pass. No browser retry, pacing, timeout or acceptance predicate changed.

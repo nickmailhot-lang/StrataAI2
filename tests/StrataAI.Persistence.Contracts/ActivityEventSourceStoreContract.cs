@@ -37,6 +37,7 @@ internal static class ActivityEventSourceStoreContract
             try { await sources.ReadBoardWindowAsync(tenant, board, null, null, ct); throw new InvalidOperationException("Unowned activity source read accepted."); }
             catch (InvalidOperationException exception) when (exception.Message == "Activity sources require the owning Work transaction.") { }
             var journalReader = new PostgresOrganizationBoardEventReader(provider.GetRequiredService<PostgresConnectionFactory>());
+            var discoveryReader = new PostgresOrganizationBoardEventReader(provider.GetRequiredService<PostgresConnectionFactory>(), OrganizationBoardAudience.BoardDiscovery);
             // Earlier mandatory fixtures retain real events on other Boards that
             // this same actor administers. Fence this fixture's own source range
             // instead of treating their legitimately visible history as a leak.
@@ -62,6 +63,9 @@ internal static class ActivityEventSourceStoreContract
             Require(ungranted.Succeeded, $"Organization journal active-member storage admission failed: {ungranted.ErrorCode}.");
             Require(ungranted.Value is { Events.Count: 0 }, "Organization journal disclosed envelopes without Board administration.");
             Require(ungranted.Value is { Pending: false }, "Organization journal disclosed pending source activity without Board administration.");
+            var ordinaryPending = await discoveryReader.ReadAsync(tenant, actor, journalStart, 50, ct);
+            Require(ordinaryPending.Succeeded && ordinaryPending.Value is { Pending: true, Events.Count: 0 },
+                "Ordinary Organization Board reader skipped its actual eligible pending source.");
             await using (var grant = new NpgsqlCommand("INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES(@id,@tenant,@board,@actor,'ADMIN','ACTIVE',clock_timestamp(),clock_timestamp());", admin))
             {
                 grant.Parameters.AddWithValue("id", Guid.NewGuid()); grant.Parameters.AddWithValue("tenant", tenant);
@@ -87,6 +91,10 @@ internal static class ActivityEventSourceStoreContract
             Require(deliveredJournal.Succeeded && deliveredJournal.Value is { Pending: true, Events.Count: 1 } &&
                 deliveredJournal.Value.Events[0].EventId == recorded[0].EventId && deliveredJournal.Value.Events[0].BoardId == board,
                 "Organization journal lost original source identity or skipped later pending delivery.");
+            var ordinaryDelivered = await discoveryReader.ReadAsync(tenant, actor, journalStart, 50, ct);
+            Require(ordinaryDelivered.Succeeded && ordinaryDelivered.Value is { Pending: true, Events.Count: 1 } &&
+                ordinaryDelivered.Value.Events[0].EventId == recorded[0].EventId,
+                "Ordinary reader replaced canonical identity or bypassed pending delivery.");
             await using (var resetReady = new NpgsqlCommand("UPDATE work_events SET ready_at=NULL WHERE tenant_id=@tenant AND event_id=@event;", admin))
             {
                 resetReady.Parameters.AddWithValue("tenant", tenant); resetReady.Parameters.AddWithValue("event", recorded[0].EventId);
@@ -117,6 +125,32 @@ internal static class ActivityEventSourceStoreContract
                 retireGrant.Parameters.AddWithValue("tenant", tenant); retireGrant.Parameters.AddWithValue("board", board);
                 retireGrant.Parameters.AddWithValue("actor", actor); await retireGrant.ExecuteNonQueryAsync(ct);
             }
+            async Task Metadata(string sql)
+            {
+                await using var command = new NpgsqlCommand(sql, admin);
+                command.Parameters.AddWithValue("tenant", tenant); command.Parameters.AddWithValue("board", board);
+                command.Parameters.AddWithValue("actor", actor); await command.ExecuteNonQueryAsync(ct);
+            }
+            var discoveryScope = await discoveryReader.GetScopeAsync(tenant, actor, ct);
+            Require(discoveryScope is { Audience: OrganizationBoardAudience.BoardDiscovery, ReaderRevision: > 0 },
+                "Discovery cursor did not retain a separate reader admission binding.");
+            await Metadata("UPDATE boards SET visibility='PRIVATE' WHERE tenant_id=@tenant AND id=@board;");
+            var privateScope = await discoveryReader.GetScopeAsync(tenant, actor, ct);
+            Require(privateScope!.ReaderRevision > discoveryScope!.ReaderRevision,
+                "Board visibility withdrawal did not invalidate discovery admission.");
+            var hiddenReader = await discoveryReader.ReadAsync(tenant, actor, journalStart, 50, ct);
+            Require(hiddenReader.Succeeded && hiddenReader.Value is { Pending: false, Events.Count: 0 },
+                "Ordinary reader disclosed ungranted private source activity.");
+            await Metadata("INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES(gen_random_uuid(),@tenant,@board,@actor,'MEMBER','ACTIVE',clock_timestamp(),clock_timestamp());");
+            var memberReader = await discoveryReader.ReadAsync(tenant, actor, journalStart, 50, ct);
+            Require(memberReader.Succeeded && memberReader.Value is { Pending: true, Events.Count: 0 },
+                "Private ordinary Board membership did not admit the canonical pending barrier.");
+            await Metadata("DELETE FROM board_members WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor;");
+            var withdrawnReader = await discoveryReader.ReadAsync(tenant, actor, journalStart, 50, ct);
+            Require(withdrawnReader.Succeeded && withdrawnReader.Value is { Pending: false, Events.Count: 0 },
+                "Private ordinary reader retained a withdrawn grant.");
+            await Metadata("UPDATE boards SET visibility='ORGANIZATION' WHERE tenant_id=@tenant AND id=@board;");
+            Console.WriteLine("Restricted ordinary Organization Board discovery: audience binding, canonical delivered identity, pending barrier, visibility withdrawal, private MEMBER admission and grant withdrawal passed. Transport/Worker/UI remain separate acceptance.");
             var first = await Scope(() => sources.ReadBoardWindowAsync(tenant, board, null, null, ct));
             Require(first.Count == 51 && first.All(row => row.ActorLabel == originalCaption && row.Metadata.Count == 0), "Activity bounded window or captured attribution failed.");
             Require(first.Select(row => row.EventId).SequenceEqual(recorded.Select(row => row.EventId).OrderByDescending(id => id.ToString("N"), StringComparer.Ordinal).Take(51)),

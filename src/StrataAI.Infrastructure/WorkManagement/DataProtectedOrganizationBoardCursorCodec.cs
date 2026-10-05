@@ -33,5 +33,7 @@ internal sealed class DataProtectedOrganizationBoardCursorCodec(IDataProtectionP
     }
     private static bool Valid(OrganizationBoardCursorBinding? binding) => binding is not null &&
         binding.OrganizationId != Guid.Empty && binding.ActorId != Guid.Empty && binding.MembershipId != Guid.Empty &&
-        binding.OrganizationVersion > 0 && binding.PermissionGeneration != Guid.Empty && binding.PermissionRevision > 0;
+        binding.OrganizationVersion > 0 && binding.PermissionGeneration != Guid.Empty && binding.PermissionRevision > 0 &&
+        Enum.IsDefined(binding.Audience) && (binding.Audience == OrganizationBoardAudience.ArchiveAdministration
+            ? binding.ReaderRevision == 0 : binding.ReaderRevision > 0);
 }
