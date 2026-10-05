@@ -121,14 +121,14 @@ test('PRD-04/05: phone archive scope excludes other Boards and withdraws review 
     restoreWorker = scopedBoardWorker(org);
     for (const board of boards) await waitForBoardDelivery(context.request, board.id);
     const page = await phone.newPage();
-    let bootstrap = false, canonicalArchive = false;
+    let resets = 0, canonicalArchive = false;
     page.on('websocket', connection => {
       if (!connection.url().includes('/organizations/live')) return;
       connection.on('framereceived', frame => {
         for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
           const message = JSON.parse(raw); if (message.type !== 2) continue;
           expect(message.item.organizationId).toBe(org); expect(message.item.userId).toBe(user);
-          bootstrap ||= message.item.page.resetRequired;
+          if (message.item.page.resetRequired) { resets++; expect(message.item.page.events).toEqual([]); }
           for (const event of message.item.page.events) {
             expect(event.boardId).toBe(boards[0].id);
             if (event.eventType === 'BOARD_ARCHIVED') canonicalArchive = true;
@@ -137,18 +137,38 @@ test('PRD-04/05: phone archive scope excludes other Boards and withdraws review 
       });
     });
     await page.goto(`/app/${org}/archived-boards`);
-    await expect.poll(() => bootstrap).toBe(true);
+    await expect.poll(() => resets).toBeGreaterThan(0);
     await expect(page.getByText('No administrable archived Boards on this page.', { exact: true })).toBeVisible();
     await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
     // An ineligible source precedes an eligible one. Audience filtering must
     // retain the later real source without leaking the private Board envelope.
     expect((await context.request.post(`/boards/${boards[1].id}/restore`, { headers, data: { version: hidden.version } })).status()).toBe(200);
-    expect((await context.request.post(`/boards/${boards[0].id}/archive`, { headers, data: { version: admittedVersion } })).status()).toBe(200);
+    const archivedReply = await context.request.post(`/boards/${boards[0].id}/archive`, { headers, data: { version: admittedVersion } });
+    expect(archivedReply.status()).toBe(200); const archivedVersion = (await archivedReply.json()).version;
     await expect.poll(() => canonicalArchive).toBe(true);
     await expect(page.getByRole('article', { name: boards[0].name, exact: true })).toBeVisible();
     await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: `Permanently delete ${boards[0].name} board`, exact: true }).press('Enter');
     await expect(page.getByRole('dialog')).toBeVisible();
+    const beforeDemotion = resets;
+    expect((await context.request.patch(`/boards/${boards[0].id}/members/${user}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
+    await expect.poll(() => resets).toBeGreaterThan(beforeDemotion);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.getByRole('article', { name: boards[0].name, exact: true })).toHaveCount(0);
+    await expect(page.getByText('No administrable archived Boards on this page.', { exact: true })).toBeVisible();
+    const deniedRestore = await phone.request.post(`/boards/${boards[0].id}/restore`, { headers, data: { version: archivedVersion } });
+    expect(deniedRestore.status()).toBe(404); expect(await deniedRestore.text()).not.toContain(boards[0].name);
+    const unchanged = await context.request.get(`/boards/${boards[0].id}`); expect(unchanged.status()).toBe(200);
+    expect((await unchanged.json()).board).toMatchObject({ version: archivedVersion, lifecycleState: 'archived' });
+    const beforeGrant = resets;
+    expect((await context.request.patch(`/boards/${boards[0].id}/members/${user}`, { headers, data: { role: 'ADMIN' } })).status()).toBe(200);
+    await expect.poll(() => resets).toBeGreaterThan(beforeGrant);
+    await expect(page.getByRole('article', { name: boards[0].name, exact: true })).toBeVisible();
+    // New permission starts a fresh private snapshot; old destructive consent
+    // remains retired even though the same archive is administrable again.
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.getByRole('button', { name: `Permanently delete ${boards[0].name} board`, exact: true }).press('Enter');
+    await expect(page.getByRole('button', { name: 'Confirm permanent deletion', exact: true })).toBeDisabled();
     const directory = await context.request.get(`/organizations/${org}/members`); expect(directory.status()).toBe(200);
     const member = (await directory.json()).items.find((item: { userId: string }) => item.userId === user); expect(member).toBeDefined();
     expect((await context.request.delete(`/organizations/${org}/members/${user}?expectedVersion=${member.version}`, { headers })).status()).toBe(204);

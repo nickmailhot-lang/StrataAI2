@@ -233,3 +233,11 @@ requires only the admitted Board envelope and archive name, then removes the
 Organization membership while destructive review is open. The session remains
 valid but directory access must refuse and private review must disappear.
 This fixture compiles; its actual PostgreSQL/proxy execution remains pending.
+
+The phone audience scenario also changes only the explicit Board Admin role
+to MEMBER on an archived Board and requires a genuine empty reset, removed
+archive name and retired destructive review. A refused restore must retain the
+original archived version. Regranting ADMIN must emit another reset and recover
+the current archive snapshot without restoring old consent. Only then does the
+scenario remove Organization membership. Compilation and collection are local
+evidence; current exact-image execution is still required.
