@@ -1,10 +1,74 @@
-# Organization Board archive realtime acceptance
+# Organization Board directory realtime
 
 PRD-04 requires other authorized clients to receive or recover relevant shared
-Board changes. The archive directory currently uses foreground/poll recovery;
-its Organization-wide client subscription and native acceptance are still
-unfinished. The server now exposes the protected `/organizations/live` SignalR
-transport described below; execution of its new transport tests is pending CI.
+Board changes. Both the active Board directory and archive directory now use
+the protected `/organizations/live` SignalR transport, with fresh authorized
+snapshot recovery. Full native release acceptance remains pending. See the
+[Board acceptance record](architecture/prd-04-acceptance.md) for outstanding
+requirements and revision-specific evidence, or return to the
+[documentation index](README.md).
+
+## Current implementation
+
+The server selects two separate replay audiences:
+
+| Hub method | Consumer | Board admission |
+| --- | --- | --- |
+| `WatchBoards` | Active Organization Board directory | Active Organization membership plus public/Organization visibility or an actual active private Board grant; Organization Owner/Admin may view all Boards. |
+| `Watch` | Archived Board administration directory | Current Organization Owner/Admin or actual active Board ADMIN grant. |
+
+Both streams contain only the six canonical shared Board lifecycle/metadata
+event types. An admitted archived/deleted Board can still supply a body-free
+invalidation so its old directory entry is withdrawn. Neither stream includes
+Card bodies, Board names, source actors, private star preferences or filter
+criteria. The root envelope binds the Organization and current viewer; event
+envelopes contain only event ID, Board ID, event type, version and timestamp.
+
+Protected cursors bind the current actor, Organization admission and replay
+audience. Discovery additionally binds the reader revision from migration 075.
+A cursor from one audience cannot resume the other. Visibility/private grant
+changes invalidate reader admission; current archive permissions retain their
+separate revision. Eligibility is applied before the bounded query window,
+including real private grant tuple locks. Source identity, Organization commit
+order and Worker readiness remain authoritative.
+
+Both runtime modes use the owning Work read transaction and final permission
+proof. The hub checks the authenticated session before and after replay IO,
+then verifies the delivered cursor against current admission after session IO.
+Origin enforcement and the single active subscription limit apply to either
+method. Cancellation releases that connection's subscription slot.
+
+The browser connector validates the envelope and current viewer, deduplicates
+canonical IDs, resumes an opaque cursor, and fences old subscription callbacks.
+Directory changes, reset or interruption immediately withdraw cached names and
+creation/destructive review consent. Each fresh directory read checks the
+current profile before and after content IO; aborted older reads cannot publish
+their results. The archive directory also retains foreground/poll recovery and
+an original unconfirmed command key for explicit acknowledgment recovery after
+fresh admission. Live delivery does not automatically submit mutations.
+
+## Verification status
+
+At `1a85a28`, [run 37268821070](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37268821070)
+passed all web, .NET/Domain/API-host and restricted PostgreSQL source checks.
+This covers the separate cursor audiences, storage eligibility, demo rollback,
+authenticated hub contracts and directory component recovery. Source checks do
+not prove release-proxy/Worker/native browser acceptance.
+
+The native release suite now collects five cases: desktop/phone ordinary
+directory replay, desktop/phone archive replay, and phone archive admission.
+The ordinary cases observe genuine Worker event IDs in two clients, withhold
+inaccessible Board sources, verify archive/restore, withdraw private MEMBER
+access, re-grant without old consent, then remove Organization membership while
+the login remains valid. Browser fixture compilation and collection pass;
+execution against the tested images remains required. PRD-04 remains open.
+
+## Implementation and verification history
+
+The notes below retain earlier scoped checks and pending states. The current
+implementation and verification sections above supersede their descriptions
+of unfinished wiring; individual historical green runs still prove only their
+recorded revision and scope.
 
 Migration 073 introduces an Organization-ordered projection of the six canonical
 shared Board lifecycle/metadata events. The rows reference existing Work event
