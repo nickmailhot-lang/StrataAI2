@@ -50,5 +50,10 @@ plus the existing source/effect snapshot, must remain unchanged. Restoring the
 fixture grant/parent must permit a fresh byte-identical read without changing
 that protected state. These direct fixture changes test current admission;
 they are not audited user lifecycle commands or live-browser proof. The strict
-local build passes; restricted PostgreSQL execution of the additions is pending
-CI. Existing five canonical outbox effects remain required.
+local build passes. All three variants passed the actual restricted PostgreSQL
+job 111595627132 in [run 37256837493](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37256837493)
+at `6fcc174`: the exact-revision contract executes both private variants and
+the anonymous PUBLIC-parent variant before its success marker. The enclosing
+fixture then passes the existing exact five canonical outbox-effects assertion.
+This proves the declared persistence/admission boundary, not a completed release
+or native Organization lifecycle workflow.
