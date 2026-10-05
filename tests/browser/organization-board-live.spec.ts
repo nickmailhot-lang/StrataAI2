@@ -82,6 +82,23 @@ for (const width of [1280, 390]) {
       expect((await reader.request.get('/me')).status()).toBe(200);
       const withheld = await reader.request.get(`/boards/${boards[0].id}`); expect(withheld.status()).toBe(404);
       expect(await withheld.text()).not.toContain(boards[0].name);
+      expect((await context.request.patch(`/boards/${boards[0].id}/members/${user}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
+      for (const page of pages) {
+        await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toBeVisible();
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+      }
+      const membershipReply = await context.request.get(`/organizations/${org}/members`); expect(membershipReply.status()).toBe(200);
+      const membership = (await membershipReply.json()).items.find((item: { userId: string }) => item.userId === user);
+      expect(membership).toBeDefined();
+      expect((await context.request.delete(`/organizations/${org}/members/${user}?expectedVersion=${membership.version}`, { headers })).status()).toBe(204);
+      for (const page of pages) {
+        await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toHaveCount(0);
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect(page.getByText('Ordinary directory admission', { exact: true })).toHaveCount(0);
+      }
+      const deniedDirectory = await reader.request.get(`/organizations/${org}/boards`); expect(deniedDirectory.status()).toBe(404);
+      expect(await deniedDirectory.text()).not.toContain(boards[0].name);
+      expect((await reader.request.get('/me')).status()).toBe(200);
     } finally { await reader.close(); restoreWorker(); }
   });
 }

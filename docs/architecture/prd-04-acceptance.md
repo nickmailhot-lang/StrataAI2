@@ -188,3 +188,12 @@ its passive subscription effect ran. 3c596b8 waits for that exact registration;
 all 26 ArchivedListsPage component cases pass. No assertion, pacing, browser
 retry or timeout was relaxed. Later b481732 PostgreSQL and full web jobs passed;
 the earlier background retry failure remains under diagnostic observation.
+
+The ordinary directory native scenarios now also re-grant the actual private
+MEMBER permission, require a fresh visible Board without resurrecting the old
+creation dialog, and remove actual Organization membership by its current
+version. Both clients must then withdraw Organization/Board names, while a fresh
+Board-directory request returns 404 and the current login remains valid. Browser
+fixture typecheck and five-case collection pass. Actual release execution remains
+pending; this is additional acceptance coverage, not proof of completion.
+PRD-04 stays open at 20% estimated remaining.
