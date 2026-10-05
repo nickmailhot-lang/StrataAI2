@@ -208,8 +208,16 @@ for (const width of [1280, 390]) {
         const canvas = nodes[0]?.closest('[aria-label="Kanban board"]'); if (!canvas) return [];
         const viewport = canvas.getBoundingClientRect();
         return nodes.flatMap(node => {
-          const rect = node.getBoundingClientRect(); const id = (node as HTMLElement).dataset.boardWindowId;
-          return id && rect.left >= Math.max(0, viewport.left) && rect.right <= Math.min(window.innerWidth, viewport.right) ? [id] : [];
+          const id = (node as HTMLElement).dataset.boardWindowId;
+          const target = node.querySelector<HTMLElement>('[data-card-list-end]'); if (!target || target.dataset.cardListEnd !== id) return [];
+          const rect = target.getBoundingClientRect(), center = rect.left + rect.width / 2;
+          const left = Math.max(0, viewport.left), right = Math.min(window.innerWidth, viewport.right), quarter = (right - left) / 4;
+          // Observe a real drop center in the middle half of the viewport,
+          // leaving room for the final edge-scroll frames before stopping.
+          // Requiring the whole column misses valid phone targets between
+          // sampled frames even while many new columns are traversed.
+          return id && rect.width > 0 && rect.height > 0 && center > left + quarter && center < right - quarter
+            && Math.min(844, viewport.bottom, rect.bottom) > Math.max(0, viewport.top, rect.top) ? [id] : [];
         });
       });
       return visible.find(id => {
@@ -219,7 +227,7 @@ for (const width of [1280, 390]) {
     };
     if (goRight) await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeGreaterThan(horizontalOffset);
     else await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeLessThan(horizontalOffset);
-    // Retain the admitted later target while edge scrolling is active. Moving
+    // Retain the observed later drop target while edge scrolling is active. Moving
     // back to the middle stops scrolling, but the final animation frame can
     // leave that column partially visible on a one-column phone viewport.
     let destinationId: string | null = null;

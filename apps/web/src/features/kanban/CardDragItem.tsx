@@ -14,7 +14,7 @@ export function CardDragItem({ id, title, disabled, available, children }: { id:
 }
 export function CardListEndTarget({ id, name, disabled }: { id: string; name: string; disabled: boolean }) {
   const drop = useDroppable({ id: `card-end:${id}`, disabled });
-  return <Box ref={drop.setNodeRef} sx={{ minHeight: 64, border: '2px dashed', borderColor: drop.isOver ? 'primary.main' : 'grey.300', p: 1 }}>
+  return <Box data-card-list-end={id} ref={drop.setNodeRef} sx={{ minHeight: 64, border: '2px dashed', borderColor: drop.isOver ? 'primary.main' : 'grey.300', p: 1 }}>
     Drop card at end of {name}
   </Box>;
 }

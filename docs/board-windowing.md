@@ -58,3 +58,27 @@ unchanged neighboring records, bounded rows and source/focus assertions remain.
 Scenario budgets, key pacing and retries are unchanged. Browser typecheck passes;
 immutable-image phone execution of this fixture correction remains pending. The
 failed enclosing run is not a green release or full PRD-06 acceptance.
+
+
+Run [37337412135](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37337412135)
+again passes the complete desktop native capacity case. Phone instead fails
+inside the earlier wholly-visible-column poll (line 222), before stopping the
+pointer. Artifact 11358149612, SHA256
+`cb8752cd558e3e454826296cb7ef67d9066a17725298c929feda635f8677f4a6`,
+shows horizontal scrollLeft falling from 64809 to 58338 across over twenty
+columns. Sampled later rows remain mounted with width 319.8, but their far edges
+are clipped in the narrow viewport; the whole-column predicate finds no target.
+At scrollLeft 62418, a later column starts at 62458.8, leaving its center visible
+while its far edge extends outside the viewport. This differs from the later
+post-stop re-selection failure recorded above.
+
+The fixture now identifies the actual named List-end drop surface through its
+stable `data-card-list-end` identity and observes its center in the middle half
+of the canvas viewport, with a visible vertical intersection. It still requires
+an empty canonical destination beyond the original mounted boundary, real edge
+scrolling, retained source and bounded rows. After stopping, the target must
+remain in the viewport and its measured center must be inside the canvas before
+the actual pointer drop. All successful HTTP response, full persisted placement,
+revision, unaffected-neighbor and focus assertions remain. No execution budgets,
+retries or keyboard predicates change. Typecheck/collection are source evidence;
+immutable-image execution of this correction remains pending.
