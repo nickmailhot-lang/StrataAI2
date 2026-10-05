@@ -183,24 +183,94 @@ for (const width of [1280, 390]) {
     expect(pointerColumn.cards.filter(card => card.id !== moving.id)).toEqual(movedColumn.cards.filter(card => card.id !== moving.id));
     expect(pointerSnapshot.lists.filter(value => value.list.id !== fixture.listId)).toEqual(movedSnapshot.lists.filter(value => value.list.id !== fixture.listId));
     await expect(middle).toBeFocused(); await expect(middle).toBeInViewport();
+    // Cross-List movement must still work when horizontal auto-scroll mounts
+    // an empty destination outside the initial List buffer. Source retention
+    // must not confine a real pointer drag to the originally mounted columns.
+    await expect(handle).toBeEnabled(); await handle.focus(); await settleDrag();
+    const initialColumns = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
+    const initialColumnIndices = initialColumns.map(id => pointerSnapshot.lists.findIndex(value => value.list.id === id));
+    const initialColumnFirst = Math.min(...initialColumnIndices), initialColumnLast = Math.max(...initialColumnIndices);
+    // Earlier real rank commands can place the populated List near either end.
+    // Travel toward the half with available canonical destination columns.
+    const goRight = index < 100;
+    const emptyColumns = new Set(pointerSnapshot.lists.filter(value => value.cards.length === 0).map(value => value.list.id));
+    const sourceBox = await handle.boundingBox(), canvasBox = await canvas.boundingBox();
+    expect(sourceBox).not.toBeNull(); expect(canvasBox).not.toBeNull();
+    const horizontalOffset = await canvas.evaluate(node => node.scrollLeft);
+    const left = Math.max(0, canvasBox!.x), right = Math.min(width, canvasBox!.x + canvasBox!.width);
+    const dragY = sourceBox!.y + sourceBox!.height / 2;
+    await page.mouse.move(sourceBox!.x + sourceBox!.width / 2, dragY); await page.mouse.down();
+    await page.mouse.move(sourceBox!.x + sourceBox!.width / 2 + 12, dragY);
+    await page.mouse.move(goRight ? right - 12 : left + 12, dragY, { steps: 12 });
+    await expect(handle).toHaveAttribute('aria-pressed', 'true');
+    const laterEmptyColumn = async () => {
+      const visible = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => {
+        const canvas = nodes[0]?.closest('[aria-label="Kanban board"]'); if (!canvas) return [];
+        const viewport = canvas.getBoundingClientRect();
+        return nodes.flatMap(node => {
+          const rect = node.getBoundingClientRect(); const id = (node as HTMLElement).dataset.boardWindowId;
+          return id && rect.left >= Math.max(0, viewport.left) && rect.right <= Math.min(window.innerWidth, viewport.right) ? [id] : [];
+        });
+      });
+      return visible.find(id => {
+        const ordinal = pointerSnapshot.lists.findIndex(value => value.list.id === id);
+        return emptyColumns.has(id) && (goRight ? ordinal > initialColumnLast : ordinal < initialColumnFirst);
+      }) ?? null;
+    };
+    if (goRight) await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeGreaterThan(horizontalOffset);
+    else await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeLessThan(horizontalOffset);
+    await expect.poll(laterEmptyColumn).not.toBeNull();
+    await expect(middle).toBeAttached();
+    expect(await canvas.locator('[data-board-window-axis="lists"]').count()).toBeLessThan(15);
+    await page.mouse.move((left + right) / 2, dragY); await settleDrag();
+    const destinationId = await laterEmptyColumn(); expect(destinationId).not.toBeNull();
+    const destination = pointerSnapshot.lists.find(value => value.list.id === destinationId)!;
+    const destinationRow = canvas.locator(`[data-board-window-id="${destinationId}"]`);
+    const destinationDrop = destinationRow.getByText(`Drop card at end of ${destination.list.name}`, { exact: true });
+    await expect(destinationDrop).toBeInViewport();
+    const destinationBox = await destinationDrop.boundingBox();
+    expect(destinationBox).not.toBeNull();
+    const destinationY = (Math.max(0, destinationBox!.y) + Math.min(844, destinationBox!.y + destinationBox!.height)) / 2;
+    await page.mouse.move(destinationBox!.x + destinationBox!.width / 2, destinationY);
+    const transferReply = page.waitForResponse(response => response.request().method() === 'POST'
+      && new URL(response.url()).pathname === `/cards/${moving.id}/move`);
+    await page.mouse.up(); expect((await transferReply).status()).toBe(200);
+    expect(pointerWrites).toBe(2);
+    await expect(page.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
+    await waitForBoardDelivery(context.request, fixture.boardId);
+    const transferResult = await context.request.get(`/boards/${fixture.boardId}`); expect(transferResult.status()).toBe(200);
+    const settledSnapshot = await transferResult.json() as typeof snapshot;
+    const transferredSource = settledSnapshot.lists.find(value => value.list.id === fixture.listId)!;
+    const transferredDestination = settledSnapshot.lists.find(value => value.list.id === destinationId)!;
+    expect(transferredSource.list).toEqual(pointerColumn.list);
+    expect(transferredSource.cards).toEqual(pointerColumn.cards.filter(card => card.id !== moving.id));
+    expect(transferredDestination.list).toEqual(destination.list);
+    expect(transferredDestination.cards).toHaveLength(1);
+    expect(transferredDestination.cards[0]).toMatchObject({ id: moving.id, version: moving.version + 3,
+      listId: destinationId, boardId: fixture.boardId, organizationId: fixture.organizationId });
+    expect(settledSnapshot.lists.filter(value => ![fixture.listId, destinationId].includes(value.list.id)))
+      .toEqual(pointerSnapshot.lists.filter(value => ![fixture.listId, destinationId].includes(value.list.id)));
+    const transferredLink = destinationRow.locator(`a[href$="/cards/${moving.id}"]`);
+    await expect(transferredLink).toBeFocused(); await expect(transferredLink).toBeInViewport();
+    await scrollToColumn(index); await expect(list).toBeVisible();
     await cards.evaluate(node => { node.scrollTop = node.scrollHeight; });
     const last = cards.locator(`a[href$="/cards/${column.cards.at(-1)!.id}"]`);
     await expect(last).toBeVisible(); await last.press('Enter');
     const close = page.getByRole('button', { name: 'Close', exact: true }); await expect(close).toBeEnabled(); await close.press('Enter');
     await expect(last).toBeFocused(); await expect(last).toBeInViewport();
-    const listSourceIndex = pointerSnapshot.lists.findIndex((value, index) => index + 8 < 200 && value.cards.length === 0);
+    const listSourceIndex = settledSnapshot.lists.findIndex((value, index) => index + 8 < 200 && value.cards.length === 0);
     expect(listSourceIndex).toBeGreaterThanOrEqual(0);
-    const sourceList = pointerSnapshot.lists[listSourceIndex];
+    const sourceList = settledSnapshot.lists[listSourceIndex];
     await scrollToColumn(listSourceIndex);
     const listRow = canvas.locator(`[data-board-window-id="${sourceList.list.id}"]`);
     const listHandle = listRow.getByRole('button', { name: /^Drag .* list$/ });
     await expect(listHandle).toBeEnabled(); await listHandle.press('Space');
     await expect(listHandle).toHaveAttribute('aria-pressed', 'true'); await settleDrag();
     const initialListIds = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
-    const initialListLast = Math.max(...initialListIds.map(id => pointerSnapshot.lists.findIndex(value => value.list.id === id)));
+    const initialListLast = Math.max(...initialListIds.map(id => settledSnapshot.lists.findIndex(value => value.list.id === id)));
     for (let step = 0; step < 8; step++) {
       await page.keyboard.press('ArrowRight');
-      const neighbor = pointerSnapshot.lists[listSourceIndex + step + 1].list;
+      const neighbor = settledSnapshot.lists[listSourceIndex + step + 1].list;
       const target = canvas.locator(`[data-board-window-id="${neighbor.id}"]`).getByRole('region', { name: neighbor.name, exact: true });
       await expect.poll(async () => {
         const [sourceBox, targetBox] = await Promise.all([
@@ -212,7 +282,7 @@ for (const width of [1280, 390]) {
       }).toBe(true);
     }
     const mountedListIds = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
-    expect(mountedListIds.some(id => pointerSnapshot.lists.findIndex(value => value.list.id === id) > initialListLast)).toBe(true);
+    expect(mountedListIds.some(id => settledSnapshot.lists.findIndex(value => value.list.id === id) > initialListLast)).toBe(true);
     await expect(listHandle).toHaveAttribute('aria-pressed', 'true');
     let listWrites = 0;
     page.on('request', request => { if (request.method() === 'PATCH' && new URL(request.url()).pathname === `/lists/${sourceList.list.id}`) listWrites++; });
@@ -225,7 +295,7 @@ for (const width of [1280, 390]) {
     const listSnapshot = await listResult.json() as typeof snapshot;
     expect(listSnapshot.lists[listSourceIndex + 7].list).toMatchObject({ id: sourceList.list.id, version: sourceList.list.version + 1 });
     expect(listSnapshot.lists[listSourceIndex + 7].cards).toEqual(sourceList.cards);
-    expect(listSnapshot.lists.filter(value => value.list.id !== sourceList.list.id)).toEqual(pointerSnapshot.lists.filter(value => value.list.id !== sourceList.list.id));
+    expect(listSnapshot.lists.filter(value => value.list.id !== sourceList.list.id)).toEqual(settledSnapshot.lists.filter(value => value.list.id !== sourceList.list.id));
     const listFocus = listRow.getByRole('button', { name: `Move ${sourceList.list.name} list`, exact: true });
     await expect(listFocus).toBeFocused(); await expect(listFocus).toBeInViewport();
     expect(await canvas.locator('[data-board-window-axis="lists"]').count()).toBeLessThan(15);
