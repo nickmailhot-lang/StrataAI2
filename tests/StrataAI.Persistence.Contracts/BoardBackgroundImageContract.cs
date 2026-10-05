@@ -99,11 +99,50 @@ internal static class BoardBackgroundImageContract
         afterRead(async () => { await BoardScalar<int>("UPDATE boards SET visibility='PRIVATE',version=version+1,updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND id=@board RETURNING 1;"); });
         try { Require(!(await read.PrepareAsync(board, null, ct)).Succeeded, "Visibility withdrawal during staging retained anonymous image bytes."); }
         finally { afterRead(null); }
+        // A copied owner must re-admit its own Board after provider IO. Source
+        // ownership and source Card admission cannot authorize this delivery.
+        var sourceBeforeWithdrawal = await Snapshot();
+        async Task ChangeCopy(string change)
+        {
+            await using var query = new NpgsqlCommand("UPDATE boards SET " + change +
+                ",version=version+1,updated_at=GREATEST(updated_at,statement_timestamp()) WHERE tenant_id=@tenant AND id=@copy;", admin);
+            query.Parameters.AddWithValue("tenant", tenant); query.Parameters.AddWithValue("copy", copy.Value.Id);
+            Require(await query.ExecuteNonQueryAsync(ct) == 1, "Copied Board withdrawal fixture lost its owner.");
+        }
+        var copiedGrant = (await admission.AdmitAsync(copy.Value.Id, actor, ct)).Value;
+        Require(copiedGrant is not null, "Copied Board lost its private image grant.");
+        afterRead(() => ChangeCopy("lifecycle_state='ARCHIVED'"));
+        try
+        {
+            Require(!(await read.PrepareAsync(copy.Value.Id, actor, ct)).Succeeded,
+                "Copied Board archive during staging retained private image bytes.");
+            initialReads = reads();
+            Require(!(await read.PrepareAsync(copy.Value.Id, actor, ct)).Succeeded
+                && !(await admission.RevalidateAsync(copiedGrant!, actor, ct)).Succeeded && reads() == initialReads,
+                "Archived copied Board reused a grant or reached provider bytes.");
+        }
+        finally { afterRead(null); await ChangeCopy("lifecycle_state='ACTIVE'"); }
+        Require(!(await admission.RevalidateAsync(copiedGrant!, actor, ct)).Succeeded,
+            "Restored copied Board revived a pre-archive image grant.");
+        await Bytes(copy.Value.Id, actor);
+        var copiedImage = Guid.Parse(copy.Value.BackgroundValue!);
+        afterRead(() => ChangeCopy("background_type='COLOR',background_value=NULL"));
+        try
+        {
+            Require(!(await read.PrepareAsync(copy.Value.Id, actor, ct)).Succeeded,
+                "Copied image selection withdrawal during staging retained private bytes.");
+            initialReads = reads();
+            Require(!(await read.PrepareAsync(copy.Value.Id, actor, ct)).Succeeded && reads() == initialReads,
+                "Cleared copied Board reached its old provider object.");
+        }
+        finally { afterRead(null); await ChangeCopy("background_type='IMAGE',background_value='" + copiedImage.ToString("D") + "'"); }
+        Require(await Snapshot() == sourceBeforeWithdrawal, "Copied Board withdrawal changed source Board ownership or effects.");
+        await Bytes(board, actor); await Bytes(copy.Value.Id, actor);
         revision = await BoardScalar<long>("SELECT version FROM boards WHERE tenant_id=@tenant AND id=@board;");
         var cleared = await provider.GetRequiredService<IWorkManagementService>().UpdateBoardAsync(board, actor, original.Name, original.Description,
             "COLOR", null, revision, "image-selection-clear", ct);
         Require(cleared.Value is { BackgroundType: "COLOR", BackgroundValue: null }, "Board image could not return to its approved default.");
         await Bytes(copy.Value.Id, actor);
-        Console.WriteLine("Restricted Board images: published private PNG ownership, late audit rollback/same-key recovery, private/stale admission, public consent/staging withdrawal, independent copy and attachment archive survival passed.");
+        Console.WriteLine("Restricted Board images: published private PNG ownership, late audit rollback/same-key recovery, private/stale admission, public consent/staging withdrawal, independent copy, copied-owner archive/selection withdrawal and attachment archive survival passed.");
     }
 }
