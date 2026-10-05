@@ -1,3 +1,5 @@
+import { ThemeProvider } from '@mui/material/styles';
+import { appTheme } from '../../theme/appTheme';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { BoardWindow, type BoardWindowHeights } from './BoardWindow';
 
@@ -131,4 +133,24 @@ it('invalidates another width’s row heights while retaining the canonical Card
   expect(memory.get('cards')).toBe(6800);
   expect(heightMemory.get('cards')?.width).toBe(1280);
   expect(heightMemory.get('cards')?.rows.size).toBe(0);
+});
+
+it('uses resolved CSS-variable theme spacing to mount the actual distant List', () => {
+  expect(appTheme.spacing(2)).toContain('var(');
+  vi.stubGlobal('matchMedia', (query: string) => ({ matches: true, media: query, onchange: null,
+    addListener: vi.fn(), removeListener: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn() }));
+  const computed = window.getComputedStyle.bind(window);
+  vi.spyOn(window, 'getComputedStyle').mockImplementation((node, pseudo) => {
+    const style = computed(node, pseudo);
+    return node.getAttribute('aria-label') === 'Kanban board'
+      ? new Proxy(style, { get: (target, property) => property === 'gap' ? '24px' : Reflect.get(target, property) })
+      : style;
+  });
+  render(<ThemeProvider theme={appTheme}><BoardWindow items={lists} axis="lists"
+    memory={new Map()} memoryKey="lists" renderItem={renderItem} /></ThemeProvider>);
+  fireEvent.scroll(screen.getByLabelText('Kanban board'), { target: { scrollLeft: 194 * (320 + 24) } });
+  const row = screen.getByRole('link', { name: 'Open list-194' }).closest('[data-board-window-axis="lists"]');
+  expect(row).toHaveStyle({ left: `${194 * (320 + 24)}px` });
+  expect(screen.getAllByRole('link').length).toBeLessThan(15);
+  expect(screen.queryByRole('link', { name: 'Open list-0' })).not.toBeInTheDocument();
 });

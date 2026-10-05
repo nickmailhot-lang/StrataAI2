@@ -38,7 +38,9 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
   const pendingFocus = useRef<{ id: string; reverse: boolean } | undefined>(undefined);
   const pendingAnchor = useRef<number | undefined>(undefined);
   const columnSize = desktop ? 320 : viewport.width * 0.82;
-  const gap = Number.parseFloat(theme.spacing(horizontal ? 2 : 1));
+  // CSS-variable themes return calc(...), not a numeric spacing string.
+  // Resolve the gap through the browser before using it for row arithmetic.
+  const [gap, setGap] = useState(horizontal ? 16 : 8);
   const layout = useMemo(() => {
     let total = 0;
     const entries = items.map(item => {
@@ -68,6 +70,8 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     else element.scrollTop = memory.get(memoryKey) ?? 0;
     const measure = () => {
       const width = element.clientWidth;
+      const resolvedGap = Number.parseFloat(getComputedStyle(element).gap);
+      if (Number.isFinite(resolvedGap) && resolvedGap >= 0) setGap(resolvedGap);
       if (!horizontal && width > 0 && measuredWidth.current !== width) {
         if (measuredWidth.current !== undefined) {
           // Text/cover heights at another width cannot recover this viewport.
@@ -153,7 +157,7 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     onKeyDown={keyDown} onScroll={event => {
       const offset = horizontal ? event.currentTarget.scrollLeft : event.currentTarget.scrollTop;
       memory.set(memoryKey, offset); setViewport(value => value.offset === offset ? value : { ...value, offset });
-    }} sx={horizontal ? { overflowX: 'auto', overflowAnchor: 'none', pb: 2 } : { overflowY: 'auto', overflowAnchor: 'none', height: 'min(50vh, 480px)', mt: 2 }}>
+    }} sx={horizontal ? { overflowX: 'auto', overflowAnchor: 'none', gap: 2, pb: 2 } : { overflowY: 'auto', overflowAnchor: 'none', gap: 1, height: 'min(50vh, 480px)', mt: 2 }}>
     <Box sx={{ position: 'relative', ...(horizontal
       ? { width: layout.total + (end ? 100 + gap : 0), height: '70vh', minHeight: 240 }
       : { height: layout.total }) }}>

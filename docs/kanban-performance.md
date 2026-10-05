@@ -1,5 +1,20 @@
 # Kanban performance acceptance
 
+## Current large-Board runtime correction
+
+Exact-image run [37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119)
+at `1655ef8` passed restricted PostgreSQL rank allocation and the complete genuine
+image pipeline, then failed both capacity browser cases at their initial List
+scroll. Its retained Board response contained 200 Lists and 5,017 active Cards
+in List index 194. The adopted MUI CSS-variable theme returns spacing as
+`calc(2 * var(--mui-spacing, 8px))`; parsing that as a number produced `NaN`
+row positions, so the target List never mounted. BoardWindow now measures the
+resolved browser gap and keeps its initial geometry finite. A regression uses
+the adopted CSS-variable theme and a resolved 24px gap to scroll to canonical
+List 194 with bounded mounted rows. Current native capacity execution remains
+pending; this correction does not establish interaction or timing acceptance.
+
+
 The required release browser benchmark uses Chromium at 1280x844 and 390x844, one browser
 worker, exact web/API/Worker images behind Nginx and real PostgreSQL. Normal
 conditions are three lists and fifty active cards, one signed-in Organization
