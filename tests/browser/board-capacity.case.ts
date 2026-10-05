@@ -117,7 +117,12 @@ for (const width of [1280, 390]) {
       && new URL(request.url()).pathname === `/cards/${moving.id}/move`) pointerWrites++; });
     const currentOrder = new Map(movedColumn.cards.map((card, index) => [card.id, index]));
     async function pointerAcrossBuffer(cancel: boolean): Promise<string | null> {
-      await expect(handle).toBeEnabled(); await handle.focus(); await settleDrag();
+      await expect(handle).toBeEnabled(); await handle.focus();
+      // Reveal the actual nested Card scroll surface before using its edge.
+      // A focused source alone can leave the viewport bottom below the window,
+      // where a pointer at the browser edge cannot reach the container edge.
+      await cards.evaluate(node => node.scrollIntoView({ block: 'end', inline: 'nearest', behavior: 'instant' }));
+      await settleDrag();
       const initial = await mounted.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')?.split('/').at(-1)));
       const minimum = Math.max(...initial.map(id => currentOrder.get(id ?? '') ?? -1));
       const start = await handle.boundingBox(); const viewport = await cards.boundingBox(); const outer = await section.boundingBox();

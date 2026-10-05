@@ -104,3 +104,25 @@ whose measured position is slightly ahead, and fractional already-aligned
 destinations in both directions. Five focused tests pass locally. The native
 release assertion, key count, pacing, budgets and retries remain unchanged;
 immutable-image execution is still required before claiming this failure fixed.
+
+
+### Desktop vertical pointer surface admission
+
+Run 37341364055 failed the desktop within-List pointer case while polling for
+a later visible destination, before the stop-and-reselect step. Capacity
+artifact 11360866452 was downloaded and verified against SHA-256
+`4119071007c9c21ccc6e206ad397ae888d3f49ea12c1f29552f5186a3dd1bf40`.
+Its desktop trace shows Card scrollTop advancing from 342740 to 343016
+while the pointer stays at browser y=832; the retained screenshot shows the
+Card viewport clipped below the browser bottom. Focusing the source alone
+does not ensure the actual nested scroll edge is reachable.
+
+The within-List pointer fixture now reveals the Card scroll surface through
+its actual ancestor scrolling before measuring source and edge coordinates.
+It retains the original mounted-boundary requirement, real auto-scroll,
+source retention, bounded rows, cancellation without writes, persisted move
+placement and unaffected-neighbor assertions. No budgets, retries, key pacing
+or geometry tolerances change. Browser typecheck and collection are source
+evidence only; immutable-image execution remains pending. The phone failure
+in the same older run was at the post-stop cross-List destination lookup,
+covered by the separately pending retained-target correction.
