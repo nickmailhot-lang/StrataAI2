@@ -63,7 +63,7 @@ public sealed partial class ApiHostTests
         using var switchedRequest = new HttpRequestMessage(HttpMethod.Post, $"/boards/{board}/cards/filter-change?change=apply");
         switchedRequest.Headers.Add("X-StrataAI-Request", "1"); switchedRequest.Headers.Add("Idempotency-Key", fencedKey.ToString("D"));
         switchedRequest.Headers.Add("X-StrataAI-Expected-Actor", Guid.NewGuid().ToString("D"));
-        using var switched = await owner.SendAsync(switchedRequest, ct); Assert.Equal(HttpStatusCode.Forbidden, switched.StatusCode);
+        using var switched = await owner.SendAsync(switchedRequest, ct); Assert.Equal(HttpStatusCode.Unauthorized, switched.StatusCode);
         Assert.Equal("session_unavailable", (await switched.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
         using var afterFence = await Change(owner, "change=apply", fencedKey); Assert.Equal(HttpStatusCode.OK, afterFence.StatusCode);
         using var invalid = await Change(owner, "change=apply&keyword=" + new string('a', 161), Guid.NewGuid()); Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
