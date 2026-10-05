@@ -109,6 +109,14 @@ internal static class ActivityEventSourceStoreContract
             Require((await journalReader.ReadAsync(tenant, Guid.NewGuid(), 0, 50, ct)).ErrorCode == "organization_not_found",
                 "Organization journal admitted an actor without Organization membership.");
             Console.WriteLine("Real restricted Organization Board reader: current administrative audience before bound, pending canonical source barrier, original delivered source identity, Board demotion and missing Organization membership passed. Readiness is explicitly administrative fixture setup; this is storage admission, not Worker/live/session/cursor proof.");
+            // The subsequent private historical-Board refusal requires its
+            // original no-membership fixture. Retire this synthetic grant now;
+            // demotion still grants ordinary Board viewing and is insufficient.
+            await using (var retireGrant = new NpgsqlCommand("DELETE FROM board_members WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor;", admin))
+            {
+                retireGrant.Parameters.AddWithValue("tenant", tenant); retireGrant.Parameters.AddWithValue("board", board);
+                retireGrant.Parameters.AddWithValue("actor", actor); await retireGrant.ExecuteNonQueryAsync(ct);
+            }
             var first = await Scope(() => sources.ReadBoardWindowAsync(tenant, board, null, null, ct));
             Require(first.Count == 51 && first.All(row => row.ActorLabel == originalCaption && row.Metadata.Count == 0), "Activity bounded window or captured attribution failed.");
             Require(first.Select(row => row.EventId).SequenceEqual(recorded.Select(row => row.EventId).OrderByDescending(id => id.ToString("N"), StringComparer.Ordinal).Take(51)),
