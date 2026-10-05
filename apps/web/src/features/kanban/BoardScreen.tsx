@@ -70,6 +70,7 @@ import { DndContext, PointerSensor, KeyboardSensor, TraversalOrder, closestCente
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
 import { listKeyboardCoordinates } from './listKeyboardCoordinates';
 import { cardKeyboardCoordinates } from './cardKeyboardCoordinates';
+import { KanbanDragMeasurement } from './kanbanDragMeasurement';
 import { listDragAnnouncements, listDragInstructions } from './listDragAccessibility';
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
@@ -166,6 +167,7 @@ function BoardContent() {
     const next = new Set(previous); if (unresolved) next.add(id); else next.delete(id); return next;
   }), []);
   const dragList = useRef<{ listId: string; name: string; version: number } | undefined>(undefined);
+  const [dragMeasurement] = useState(() => new KanbanDragMeasurement());
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: (event, args) => String(args.active).startsWith('card:') ? cardKeyboardCoordinates(event, args) : listKeyboardCoordinates(event, args) }));
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
@@ -562,7 +564,7 @@ function BoardContent() {
       )}
       <BoardDateProvider key={`${snapshot.board.organizationId}/${snapshot.board.id}`} snapshot={snapshot} unavailable={snapshotReading || !!loadError}
         onRevalidate={() => { setSnapshotReading(true); setReload(value => value + 1); }}>
-      <DndContext sensors={sensors} autoScroll={{ order: TraversalOrder.ReversedTreeOrder,
+      <DndContext sensors={sensors} measuring={{ draggable: { measure: dragMeasurement.measure } }} autoScroll={{ order: TraversalOrder.ReversedTreeOrder,
         canScroll: element => element.hasAttribute('data-kanban-scroll') }} collisionDetection={args => {
         const movingCard = String(args.active.id).startsWith('card:');
         const droppableContainers = args.droppableContainers.filter(value => {
@@ -572,6 +574,7 @@ function BoardContent() {
         return args.pointerCoordinates ? pointerWithin({ ...args, droppableContainers }) : closestCenter({ ...args, droppableContainers });
       }}
         accessibility={{ announcements: listDragAnnouncements(snapshot), screenReaderInstructions: listDragInstructions }} onDragStart={event => {
+        dragMeasurement.start(String(event.active.id));
         dragCard.current = undefined; dragList.current = undefined;
         if (String(event.active.id).startsWith('card:')) {
           const item = snapshot.lists.flatMap(value => value.cards).find(value => `card:${value.id}` === event.active.id);
@@ -580,7 +583,8 @@ function BoardContent() {
         }
         const column = snapshot.lists.find(value => value.list.id === event.active.id);
         if (column && Number.isSafeInteger(column.list.version)) dragList.current = { listId: column.list.id, name: column.list.name, version: column.list.version! };
-      }} onDragCancel={() => { dragList.current = undefined; dragCard.current = undefined; }} onDragEnd={event => {
+      }} onDragCancel={() => { dragMeasurement.finish(); dragList.current = undefined; dragCard.current = undefined; }} onDragEnd={event => {
+        dragMeasurement.finish();
         const sourceCard = dragCard.current; dragCard.current = undefined;
         if (sourceCard) {
           if (!event.over || event.over.id === `card:${sourceCard.cardId}` || busy || snapshotReading || loadError || cardRecovery) return;
