@@ -56,7 +56,7 @@ test(`PRD-06: list drop feedback precedes persistence and meets its budget at ${
           if (started) return; started = true;
           const began = window.performance.now();
           const check = () => {
-            const first = document.querySelector('[aria-label="Kanban board"] > section');
+            const first = document.querySelector('[aria-label="Kanban board"] section[aria-labelledby^="list-name-"]');
             const rect = first?.getBoundingClientRect();
             if (first?.getAttribute('aria-labelledby') === `list-name-${moved}` && rect && rect.width > 0 && rect.height > 0
               && rect.left < innerWidth && rect.right > 0 && rect.top < innerHeight && rect.bottom > 0) {
@@ -89,6 +89,7 @@ test(`PRD-06: list drop feedback precedes persistence and meets its budget at ${
       }).toBe(true);
       const destination = await anchor.boundingBox(); expect(destination).not.toBeNull();
       await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: destination!.x + destination!.width / 2, y: destination!.y + destination!.height / 2, id: 1 }] });
+      await expect(page.getByText('Feedback moving list can be dropped before Feedback anchor.', { exact: true })).toBeAttached();
       await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); touching = false;
     } else {
       await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
