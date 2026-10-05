@@ -82,8 +82,14 @@ for (const width of [1280, 390]) {
     expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
     // Wait for native actionability through the current Card/Board read. A
     // keypress can target a control that became disabled since an assertion.
+    const boardPath = `/app/${org}/boards/${board}`;
+    const closedDetailReads = trackBoardReads(page, board, boardPath);
     await page.getByRole('button', { name: 'Close', exact: true }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
+    // Closing detail starts fresh Board admission. Its first usable frame can
+    // precede the follow-up read and disable Copy Board during pointer dispatch.
+    await expect.poll(closedDetailReads).toBeGreaterThanOrEqual(2);
+    await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
     const copy = page.getByRole('button', { name: 'Copy Board', exact: true }); await copy.click();
     await expect(page.getByRole('dialog', { name: 'Copy Board', exact: true })).toBeVisible();
     let copyWrites = 0;
