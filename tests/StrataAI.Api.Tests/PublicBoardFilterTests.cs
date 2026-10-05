@@ -47,7 +47,21 @@ public sealed partial class ApiHostTests
         }
         var after = await owner.GetFromJsonAsync<JsonElement>($"/boards/{board}", ct);
         Assert.Equal(before.GetRawText(), after.GetRawText());
-        using var withdraw = await Mutate(owner, HttpMethod.Patch, $"/boards/{board}/visibility", new { visibility = "PRIVATE", version = 2 });
+        using var archived = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/archive", new { version = 2 });
+        Assert.Equal(HttpStatusCode.OK, archived.StatusCode);
+        foreach (var path in new[] { $"/boards/{board}/cards?keyword=100%25_", $"/boards/{board}/labels?after=invalid" })
+        {
+            using var denied = await visitor.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+            Assert.DoesNotContain("Public priority", await denied.Content.ReadAsStringAsync(ct));
+            Assert.DoesNotContain("Public 100%_", await denied.Content.ReadAsStringAsync(ct));
+        }
+        using var restored = await Mutate(owner, HttpMethod.Post, $"/boards/{board}/restore", new { version = 3 });
+        Assert.Equal(HttpStatusCode.OK, restored.StatusCode);
+        var readmitted = await visitor.GetFromJsonAsync<JsonElement>($"/boards/{board}/cards?keyword=100%25_", ct);
+        Assert.Equal(card, Assert.Single(readmitted.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
+        var current = await owner.GetFromJsonAsync<JsonElement>($"/boards/{board}", ct);
+        Assert.Equal(before.GetProperty("lists").GetRawText(), current.GetProperty("lists").GetRawText());
+        using var withdraw = await Mutate(owner, HttpMethod.Patch, $"/boards/{board}/visibility", new { visibility = "PRIVATE", version = 4 });
         Assert.Equal(HttpStatusCode.OK, withdraw.StatusCode);
         using var unavailable = await visitor.GetAsync($"/boards/{board}/cards?keyword=100%25_", ct);
         Assert.Equal(HttpStatusCode.NotFound, unavailable.StatusCode);

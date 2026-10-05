@@ -108,7 +108,11 @@ hold() {
   mkfifo "$scratch/gate.in"
   docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$scratch/gate.in" > "$scratch/gate.log" 2>&1 & gate_pid=$!
   exec 3> "$scratch/gate.in"
-  printf 'BEGIN;\nSELECT id FROM boards WHERE id=\047%s\047 FOR UPDATE;\n\\echo label_locked\n' "$board" >&3
+  if test "${1:-board}" = organization; then
+    printf 'BEGIN;\nSELECT id FROM organizations WHERE id=\047%s\047 FOR UPDATE;\n\\echo label_locked\n' "$org" >&3
+  else
+    printf 'BEGIN;\nSELECT id FROM boards WHERE id=\047%s\047 FOR UPDATE;\n\\echo label_locked\n' "$board" >&3
+  fi
   for ((attempt=0;attempt<100;attempt++)); do if grep -q '^label_locked$' "$scratch/gate.log"; then return; fi; kill -0 "$gate_pid" || return 1; sleep 0.05; done
   return 1
 }
@@ -252,3 +256,25 @@ wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh 'Filter result|Retained Card|"items"' "$scratch/response.json"
 test "$(anonymous_get "/boards/$board/labels?after=invalid")" = 404
 echo 'Anonymous PUBLIC Board filters: exact 50+2 IDs, read-only choices, member nondisclosure, unchanged state and observed post-wait private-visibility withdrawal passed.'
+
+# An otherwise PUBLIC active Board is not an anonymous admission when its
+# Organization is archived. Observe the parent-gate wait before withdrawing it.
+admin "UPDATE boards SET visibility='PUBLIC' WHERE id='$board';" >/dev/null
+for path in "/boards/$board/cards?keyword=100%25_" "/boards/$board/labels?after=invalid"; do
+  hold organization; anonymous_get "$path" > "$scratch/status" & request_pid=$!
+  for ((attempt=0;attempt<100;attempt++)); do
+    if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%SELECT id FROM organizations%status=%FOR SHARE%';")" -ge 1; then break; fi
+    sleep 0.05
+  done
+  test "$attempt" -lt 100
+  release "UPDATE organizations SET status='ARCHIVED' WHERE id='$org';"
+  wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+  scripts/ci/assert-file-excludes.sh 'Filter result|Retained Card|"items"' "$scratch/response.json"
+  test "$(anonymous_get "/boards/$board/cards?match=invalid")" = 404
+  admin "UPDATE organizations SET status='ACTIVE' WHERE id='$org';" >/dev/null
+  test "$(anonymous_get "/boards/$board/cards?keyword=100%25_")" = 200
+  jq -e '(.items|length)==50' "$scratch/response.json" >/dev/null
+done
+test "$public_before" = "$(state)"
+admin "UPDATE boards SET visibility='PRIVATE' WHERE id='$board';" >/dev/null
+echo 'Anonymous public Card/label reads recheck archived Organization admission after observed parent-gate waits and recover under a fresh active parent.'

@@ -14,6 +14,8 @@ The MUI filter admits an anonymous identity only after HTTP 401 and an explicitl
 
 ## Implementation history
 
+Current anonymous lifecycle extensions remain pending runtime verification: the host contract archives/restores the actual PUBLIC Board, requires safe denial of Card/label reads while archived and unchanged child state after restoration. The mandatory release fixture separately observes both anonymous Card and label reads waiting on the Organization parent gate, archives that parent, requires a 404 without result disclosure (including malformed input), then requires fresh active-parent recovery. Fixture restoration leaves labels, Card associations/revisions and audit/event/job/receipt effects unchanged. Shell syntax and the zero-warning full solution build pass locally; these checks do not replace real native or restricted PostgreSQL execution.
+
 The implementation notes below record earlier development checks and pending states. The executed evidence above supersedes their collection-only status for the unchanged fixtures at `e77195d`; subsequent extensions remain pending unless separately verified.
 
 Global search traversal is being implemented separately from Board-local
