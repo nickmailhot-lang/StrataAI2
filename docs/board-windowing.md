@@ -164,3 +164,23 @@ binding geometry. This uses the existing assertion budget, with no new sleeps,
 request retries, larger timeouts or reduced activation/movement assertions.
 Browser typecheck and collection remain source evidence; native execution of
 the corrected admission boundary is required.
+
+
+### Desktop List keyboard source center after scrolling
+
+Run 37346893239 passed the complete 390px capacity case (18.9s), but desktop
+failed per-key List alignment at line 308. Its verified artifact 11362637540 has
+SHA-256 `f590685c519714dfe912cf3540c8a1d1fde70ded7b22ac1622602527c8018bec`.
+The desktop trace shows the first List key reaching translateX=336, the second
+reaching 672, and the third leaving translateX=672 with translateY=34.5, while
+the Board scrollLeft becomes 336. The targets already use committed DOM
+positions; the source collision rectangle can lag its separate scroll delta.
+
+List keyboard targeting now uses the committed rendered source center as well
+as target centers. Cached source geometry remains the fallback when no DOM node
+is available. A regression supplies different live and cached source positions
+in both axes and requires the adjacent target with full vertical correction.
+The earlier fractional source case now expects the actual live source-to-target
+distance. Native two-pixel alignment, all eight keys and persisted List placement
+assertions remain unchanged. Current native execution remains required; the
+phone pass is scoped to its recorded revision, not a complete release claim.

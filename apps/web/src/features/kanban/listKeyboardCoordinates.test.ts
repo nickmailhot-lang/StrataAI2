@@ -34,7 +34,7 @@ describe('keyboard list targets', () => {
       { id: 'last', node: { current: { getBoundingClientRect: () => ({ left: 672, top: 10, width: 320, height: 240 }) } } },
     ] as unknown as ReturnType<typeof args.context.droppableContainers.getEnabled>;
     args.context.droppableRects.set('last', { ...args.context.collisionRect!, left: 337.5 });
-    expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 436, y: 20 });
+    expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 434.5, y: 20 });
   });
   it('advances past an already aligned destination during fractional phone scrolling', () => {
     const args = fixture();
@@ -42,6 +42,16 @@ describe('keyboard list targets', () => {
     expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 327.5, y: 40 });
     args.context.collisionRect = { ...args.context.collisionRect!, left: 337.5 };
     expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowLeft' }), args)).toEqual({ x: -237.5, y: 20 });
+  });
+  it('uses the rendered source center when its collision rect lags horizontal and vertical scroll', () => {
+    const args = fixture();
+    args.context.collisionRect = { ...args.context.collisionRect!, left: 672 };
+    args.context.droppableContainers.getEnabled = () => [
+      { id: 'middle', node: { current: { getBoundingClientRect: () => ({ left: 336, top: 44.5, width: 320, height: 240 }) } } },
+      { id: 'last', node: { current: { getBoundingClientRect: () => ({ left: 672, top: 10, width: 320, height: 240 }) } } },
+      { id: 'list-end' },
+    ] as unknown as ReturnType<typeof args.context.droppableContainers.getEnabled>;
+    expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 436, y: -14.5 });
   });
   it('leaves unrelated keys and missing measurements alone', () => {
     const args = fixture();

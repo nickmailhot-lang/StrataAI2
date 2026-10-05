@@ -5,7 +5,10 @@ export const listKeyboardCoordinates: KeyboardCoordinateGetter = (event, { activ
   const direction = event.code === 'ArrowRight' ? 1 : event.code === 'ArrowLeft' ? -1 : 0;
   if (!direction || !context.collisionRect) return;
   event.preventDefault();
-  const current = context.collisionRect;
+  // The sensor collision rect can lag the source's separate scroll delta.
+  // Use the rendered source and target in the same committed coordinate frame.
+  const current = context.droppableContainers.getEnabled().find(container => container.id === active)
+    ?.node?.current?.getBoundingClientRect() ?? context.collisionRect;
   const center = { x: current.left + current.width / 2, y: current.top + current.height / 2 };
   const targets = context.droppableContainers.getEnabled().flatMap(container => {
     if (container.id === active) return [];
