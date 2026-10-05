@@ -5,6 +5,7 @@ DO $$
 DECLARE
     relation record;
     isolation_key record;
+    actor_tables constant text[] := ARRAY['search_interaction_streams','search_interaction_events'];
     global_tables constant text[] := ARRAY[
       'schema_migrations','users','sessions','password_reset_tokens','email_verification_tokens',
       'identity_delivery_jobs','identity_event_streams','identity_events','identity_profile_replays',
@@ -20,6 +21,21 @@ BEGIN
           AND d.objid=c.oid AND d.deptype='e')
       ORDER BY c.relname
     LOOP
+      IF relation.relname = ANY(actor_tables) THEN
+        SELECT a.attnotnull,a.atttypid INTO isolation_key FROM pg_attribute a
+          WHERE a.attrelid=relation.oid AND NOT a.attisdropped AND a.attname='actor_id';
+        IF NOT FOUND OR isolation_key.atttypid<>'uuid'::regtype OR isolation_key.attnotnull IS NOT TRUE
+          OR NOT relation.relrowsecurity OR NOT relation.relforcerowsecurity THEN
+          RAISE EXCEPTION 'Actor schema invariant failed: % requires non-null UUID actor and forced RLS',relation.relname;
+        END IF;
+        IF (SELECT count(*) FROM pg_policy WHERE polrelid=relation.oid)<>1 OR NOT EXISTS (
+          SELECT 1 FROM pg_policy p WHERE p.polrelid=relation.oid AND p.polcmd='*'
+            AND pg_get_expr(p.polqual,p.polrelid) LIKE '%actor_id%app.identity_subject%'
+            AND pg_get_expr(p.polwithcheck,p.polrelid) LIKE '%actor_id%app.identity_subject%') THEN
+          RAISE EXCEPTION 'Actor schema invariant failed: % requires explicit subject read/write policy',relation.relname;
+        END IF;
+        CONTINUE;
+      END IF;
       IF relation.relname = ANY(global_tables) THEN CONTINUE; END IF;
       SELECT a.attnotnull, a.atttypid INTO isolation_key
       FROM pg_attribute a WHERE a.attrelid=relation.oid AND NOT a.attisdropped
