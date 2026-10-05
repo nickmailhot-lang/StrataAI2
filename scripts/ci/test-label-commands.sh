@@ -221,3 +221,34 @@ blocked; release "UPDATE sessions SET revoked_at=now() WHERE user_id='$owner' AN
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
 scripts/ci/assert-file-excludes.sh 'Filter result|Retained Card|"items"' "$scratch/response.json"
 echo 'Label commands: exact-image CRUD, admission, retry identity, atomic audit rollback and association removal, Card revisions, full-association bounded ANY/ALL filters, and observed post-wait authorization passed.'
+
+# Anonymous reads retain the same bounded filter semantics without a fabricated
+# session actor. Direct fixture visibility changes isolate post-wait admission;
+# native coverage separately uses the canonical visibility command.
+anonymous_get() { curl --max-time 60 --silent --show-error -o "$scratch/response.json" -w '%{http_code}' "$base$1"; }
+admin "UPDATE boards SET visibility='PUBLIC' WHERE id='$board';" >/dev/null
+public_before=$(state)
+test "$(anonymous_get "/boards/$board/cards?keyword=100%25_")" = 200
+jq -e '(.items|length)==50 and .nextCursor==.items[-1].id' "$scratch/response.json" >/dev/null
+public_cursor=$(jq -r '.nextCursor' "$scratch/response.json"); cp "$scratch/response.json" "$scratch/public-first.json"
+test "$(anonymous_get "/boards/$board/cards?keyword=100%25_&after=$public_cursor")" = 200
+jq -e '(.items|length)==2 and .nextCursor==null' "$scratch/response.json" >/dev/null
+jq -se --slurpfile expected "$scratch/filter-first.json" '([.[0].items[].id]==[$expected[0].items[].id]) and ([.[0].items[].id,.[1].items[].id]|unique|length)==52' "$scratch/public-first.json" "$scratch/response.json" >/dev/null
+test "$(anonymous_get "/boards/$board/labels")" = 200
+jq -e '.canEdit==false and .canDelete==false' "$scratch/response.json" >/dev/null
+test "$(anonymous_get "/boards/$board/cards?members=$editor")" = 404
+scripts/ci/assert-file-excludes.sh 'Filter result|Retained Card|"items"' "$scratch/response.json"
+test "$(anonymous_get "/boards/$board/cards?match=invalid")" = 400
+jq -e '.code=="invalid_board_filter"' "$scratch/response.json" >/dev/null
+test "$public_before" = "$(state)"
+hold; anonymous_get "/boards/$board/cards?keyword=100%25_&after=$public_cursor" > "$scratch/status" & request_pid=$!
+for ((attempt=0;attempt<100;attempt++)); do
+  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%SELECT id FROM boards%visibility=%FOR SHARE%';")" -ge 1; then break; fi
+  sleep 0.05
+done
+test "$attempt" -lt 100
+release "UPDATE boards SET visibility='PRIVATE' WHERE id='$board';"
+wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
+scripts/ci/assert-file-excludes.sh 'Filter result|Retained Card|"items"' "$scratch/response.json"
+test "$(anonymous_get "/boards/$board/labels?after=invalid")" = 404
+echo 'Anonymous PUBLIC Board filters: exact 50+2 IDs, read-only choices, member nondisclosure, unchanged state and observed post-wait private-visibility withdrawal passed.'

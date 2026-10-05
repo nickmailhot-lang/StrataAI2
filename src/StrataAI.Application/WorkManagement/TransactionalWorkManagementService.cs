@@ -324,6 +324,17 @@ public sealed partial class TransactionalWorkManagementService(
             await transactions.ExecuteAsync(resource.OrganizationId, command, _ => AuthorizeBoard(resource.Id, actorId, permission, cancellationToken), operation, cancellationToken);
     }
 
+    private async Task<WorkOperation<T>> AnonymousPublicBoardRead<T>(Guid boardId,
+        Func<Task<WorkOperation<T>>> operation, CancellationToken cancellationToken)
+    {
+        var hint = await store.FindBoardAsync(boardId, cancellationToken);
+        if (hint is null) return WorkOperation<T>.Failure("board_not_found");
+        return await transactions.ExecuteReadAsync(hint.OrganizationId, null, "board_not_found",
+            async () => await store.AcquirePublicBoardReadScopeAsync(hint.OrganizationId, boardId, cancellationToken)
+                && await organizations.FindOrganizationAsync(hint.OrganizationId, cancellationToken) is { Status: OrganizationStatus.Active },
+            operation, cancellationToken);
+    }
+
     private async Task<WorkOperation<BoardSnapshot>> BoardSnapshotRead(Guid boardId, Guid actorId,
         Func<Task<WorkOperation<BoardSnapshot>>> operation, CancellationToken cancellationToken)
     {

@@ -43,11 +43,10 @@ public static partial class WorkManagementEndpoints
         app.MapGet("/boards/{boardId:guid}/labels", async (Guid boardId, string? after, HttpContext context, IWorkManagementService service, CancellationToken ct) =>
         {
             var actor = GetUserId(context);
-            if (actor is null) return Results.Unauthorized();
             Guid? cursor = after is null ? null : Guid.TryParse(after, out var parsed) ? parsed : Guid.Empty;
-            var result = await service.ListLabelsAsync(boardId, actor.Value, cursor, ct);
+            var result = await service.ListLabelsAsync(boardId, actor, cursor, ct);
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
-        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
+        }).AllowAnonymous().AddEndpointFilter<BoardSharingResultFilter>();
         app.MapPost("/boards/{boardId:guid}/labels", async (Guid boardId, CreateLabelRequest request, HttpContext context, IWorkManagementService service, CancellationToken ct) =>
         {
             var actor = GetUserId(context);

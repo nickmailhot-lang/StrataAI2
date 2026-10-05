@@ -17,6 +17,35 @@ const storage = (id = actor) => `strataai:board-filter:v1:${id}:${org}:${board}`
 function mount(p: ComponentProps<typeof BoardFilterControl> = props()) { return render(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>); }
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' })); await screen.findByRole('checkbox', { name: 'Priority (red)' }); }
 beforeEach(() => sessionStorage.clear()); afterEach(() => vi.unstubAllGlobals());
+it('lets an admitted anonymous PUBLIC visitor filter without assignee discovery or another actor criteria', async () => {
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Private actor criterion', labels: [], members: [actor], match: 'all' }));
+  const fetch = vi.fn((path: string) => Promise.resolve(path === '/me' ? response({}, 401)
+    : path.includes('/labels') ? choices() : results()));
+  vi.stubGlobal('fetch', fetch);
+  mount({ ...props(), snapshot: { ...snapshot, board: { ...snapshot.board, visibility: 'PUBLIC' }, cardMembers: null } });
+  await open(); expect(screen.getByLabelText('Card keyword')).toHaveValue('');
+  expect(screen.queryByRole('button', { name: 'Choose assignees' })).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: 'Public criterion' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await screen.findByRole('link', { name: 'Persisted match — Planning' });
+  expect(fetch.mock.calls.some(([path]) => path.includes('members=') || path.includes('assignable-members'))).toBe(false);
+  expect(JSON.parse(sessionStorage.getItem(storage('anonymous'))!).keyword).toBe('Public criterion');
+  expect(JSON.parse(sessionStorage.getItem(storage())!).keyword).toBe('Private actor criterion');
+});
+it('withholds anonymous filter results when an account appears during the read', async () => {
+  let signedIn = false;
+  const fetch = vi.fn((path: string) => {
+    if (path === '/me') return Promise.resolve(signedIn ? response({ id: actor }) : response({}, 401));
+    if (path.includes('/labels')) return Promise.resolve(choices());
+    signedIn = true; return Promise.resolve(results());
+  });
+  vi.stubGlobal('fetch', fetch); const p = props();
+  mount({ ...p, snapshot: { ...snapshot, board: { ...snapshot.board, visibility: 'PUBLIC' }, cardMembers: null } });
+  await open(); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await waitFor(() => expect(p.onRefresh).toHaveBeenCalled());
+  expect(screen.queryByRole('link', { name: 'Persisted match — Planning' })).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});
 it('accepts filter opening intent during admission without reading choices until available', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices());
   vi.stubGlobal('fetch', fetch); const p = props(); const view = mount({ ...p, disabled: true });

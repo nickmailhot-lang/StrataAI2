@@ -5,11 +5,13 @@ public sealed partial class TransactionalWorkManagementService
     public Task<WorkOperation<BoardLabelRecord>> MoveLabelAsync(Guid labelId, Guid actorId, Guid? beforeLabelId, long version, string correlationId, CancellationToken cancellationToken = default) =>
         LabelCommand(labelId, actorId, "edit", WorkCommand.Create(actorId, context.IdempotencyKey, "MoveLabelAsync", labelId,
             new { beforeLabelId, version }, "label_not_found"), () => inner.MoveLabelAsync(labelId, actorId, beforeLabelId, version, correlationId, cancellationToken), cancellationToken);
-    public Task<WorkOperation<BoardLabelPage>> ListLabelsAsync(Guid boardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default) =>
-        BoardCommand(boardId, actorId, "view", WorkCommand.Create(actorId, null, "ListLabelsAsync", boardId, new { }, "board_not_found"), async () =>
+    public Task<WorkOperation<BoardLabelPage>> ListLabelsAsync(Guid boardId, Guid? actorId, Guid? after = null, CancellationToken cancellationToken = default) =>
+        actorId is not { } actor ? AnonymousPublicBoardRead(boardId,
+            () => inner.ListLabelsAsync(boardId, null, after, cancellationToken), cancellationToken) :
+        BoardCommand(boardId, actor, "view", WorkCommand.Create(actor, null, "ListLabelsAsync", boardId, new { }, "board_not_found"), async () =>
         {
             var result = await inner.ListLabelsAsync(boardId, actorId, after, cancellationToken);
-            return result.Succeeded && !await actors.VerifyAsync(actorId, cancellationToken)
+            return result.Succeeded && !await actors.VerifyAsync(actor, cancellationToken)
                 ? WorkOperation<BoardLabelPage>.Failure("session_unavailable") : result;
         }, cancellationToken);
     public Task<WorkOperation<BoardLabelRecord>> CreateLabelAsync(Guid boardId, Guid actorId, string name, string color,

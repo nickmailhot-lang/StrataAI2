@@ -25,7 +25,7 @@ public sealed partial class WorkManagementService
     }
     private static readonly HashSet<string> LabelColors = new(StringComparer.Ordinal)
         { "green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black" };
-    public async Task<WorkOperation<BoardLabelPage>> ListLabelsAsync(Guid boardId, Guid actorId, Guid? after = null, CancellationToken cancellationToken = default)
+    public async Task<WorkOperation<BoardLabelPage>> ListLabelsAsync(Guid boardId, Guid? actorId, Guid? after = null, CancellationToken cancellationToken = default)
     {
         var access = await ResolveAccessAsync(boardId, actorId, cancellationToken);
         if (access is not { Access.CanView: true }) return WorkOperation<BoardLabelPage>.Failure("board_not_found");

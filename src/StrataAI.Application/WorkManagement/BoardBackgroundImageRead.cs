@@ -54,7 +54,7 @@ public sealed class BoardBackgroundImageAdmissionService(IWorkManagementStore wo
         var initial = (await boards.GetSyncScopeAsync(hint.Id, actor, ct)).Value;
         if (initial is null || !initial.Access.CanView || initial.Board.OrganizationId != hint.OrganizationId) return false;
         if (initial.Board.Visibility == BoardVisibility.Public)
-        { if (!await work.AcquirePublicBoardBackgroundReadScopeAsync(hint.OrganizationId, hint.Id, ct)) return false; }
+        { if (!await work.AcquirePublicBoardReadScopeAsync(hint.OrganizationId, hint.Id, ct)) return false; }
         else if (actor is not { } member || !await work.AcquireBoardReadScopeAsync(hint.OrganizationId, member, hint.Id, ct)
             || await organizations.FindMembershipAsync(hint.OrganizationId, member, ct) is not { Active: true }) return false;
         var current = (await boards.GetSyncScopeAsync(hint.Id, actor, ct)).Value;

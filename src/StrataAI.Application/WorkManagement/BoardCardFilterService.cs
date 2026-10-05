@@ -2,7 +2,7 @@ namespace StrataAI.Application.WorkManagement;
 
 public sealed partial class WorkManagementService
 {
-    public async Task<WorkOperation<BoardCardFilterPage>> FilterBoardCardsAsync(Guid boardId, Guid actorId, string? keyword,
+    public async Task<WorkOperation<BoardCardFilterPage>> FilterBoardCardsAsync(Guid boardId, Guid? actorId, string? keyword,
         IReadOnlyList<Guid> labelIds, string? match, Guid? after = null, CancellationToken cancellationToken = default, IReadOnlyList<Guid>? memberIds = null, string? completion = null, string? due = null, string? activity = null)
     {
         var access = await ResolveAccessAsync(boardId, actorId, cancellationToken);
@@ -33,12 +33,14 @@ public sealed partial class WorkManagementService
 
 public sealed partial class TransactionalWorkManagementService
 {
-    public Task<WorkOperation<BoardCardFilterPage>> FilterBoardCardsAsync(Guid boardId, Guid actorId, string? keyword,
+    public Task<WorkOperation<BoardCardFilterPage>> FilterBoardCardsAsync(Guid boardId, Guid? actorId, string? keyword,
         IReadOnlyList<Guid> labelIds, string? match, Guid? after = null, CancellationToken cancellationToken = default, IReadOnlyList<Guid>? memberIds = null, string? completion = null, string? due = null, string? activity = null) =>
-        BoardCommand(boardId, actorId, "view", WorkCommand.Create(actorId, null, "FilterBoardCardsAsync", boardId, new { }, "board_not_found"), async () =>
+        actorId is not { } actor ? AnonymousPublicBoardRead(boardId,
+            () => inner.FilterBoardCardsAsync(boardId, null, keyword, labelIds, match, after, cancellationToken, memberIds, completion, due, activity), cancellationToken) :
+        BoardCommand(boardId, actor, "view", WorkCommand.Create(actor, null, "FilterBoardCardsAsync", boardId, new { }, "board_not_found"), async () =>
         {
             var result = await inner.FilterBoardCardsAsync(boardId, actorId, keyword, labelIds, match, after, cancellationToken, memberIds, completion, due, activity);
-            return result.Succeeded && !await actors.VerifyAsync(actorId, cancellationToken)
+            return result.Succeeded && !await actors.VerifyAsync(actor, cancellationToken)
                 ? WorkOperation<BoardCardFilterPage>.Failure("session_unavailable") : result;
         }, cancellationToken);
 }

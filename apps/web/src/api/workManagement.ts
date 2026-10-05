@@ -21,6 +21,7 @@ export type BoardSnapshot = {
     name: string;
     description: string | null;
     lifecycleState: string;
+    visibility?: 'PRIVATE' | 'ORGANIZATION' | 'PUBLIC';
     version?: number;
     backgroundType?: string;
     backgroundValue?: string | null;

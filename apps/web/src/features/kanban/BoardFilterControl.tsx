@@ -5,6 +5,7 @@ import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, typ
 import { filterPageMatchesSnapshot, type BoardCanvasFilter } from './boardFilterCanvas';
 
 const uuid = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v) && v !== '00000000-0000-0000-0000-000000000000';
+class ChangedFilterIdentity extends Error {}
 const palette = ['green', 'yellow', 'orange', 'red', 'purple', 'blue', 'sky', 'lime', 'pink', 'black'];
 type Criteria = { keyword: string; labels: string[]; members: string[]; match: 'all' | 'any'; completion?: 'all' | 'complete' | 'incomplete'; due?: 'all' | 'none' | 'overdue' | 'upcoming'; activity?: 'all' | 'day' | 'week' | 'month' };
 type Label = { id: string; name: string; color: string };
@@ -44,6 +45,20 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const org = snapshot.board.organizationId, board = snapshot.board.id;
   const available = snapshot.access.canView && snapshot.board.lifecycleState === 'active';
   const storageKey = (actor: string) => `strataai:board-filter:v1:${actor}:${org}:${board}`;
+  async function filterIdentity(signal: AbortSignal) {
+    try {
+      const me = await workRequest<{ id: unknown }>('/me', { signal });
+      if (!uuid(me?.id)) throw new ChangedFilterIdentity();
+      return me.id;
+    } catch (error) {
+      if (error instanceof WorkRequestError && error.status === 401 && snapshot.board.visibility === 'PUBLIC' && snapshot.cardMembers === null)
+        return 'anonymous';
+      throw error;
+    }
+  }
+  async function admitAnonymous(signal: AbortSignal) {
+    if (await filterIdentity(signal) !== 'anonymous') throw new ChangedFilterIdentity();
+  }
   useEffect(() => {
     onCanvasChange?.(canvasMode && applied && available ? { snapshot, items: !disabled && result ? result.items : [] } : undefined);
   }, [canvasMode, applied, available, disabled, result, snapshot, onCanvasChange]);
@@ -68,15 +83,19 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     }
     setLabelLoading(true); setLabelNotice(undefined); setLabels([]); setLabelCursor(null);
     try {
+      let binding = identity;
       if (opening) {
-        const me = await boundedWorkRead(signal => workRequest<{ id: unknown }>('/me', { signal }), controller.signal);
+        binding = await boundedWorkRead(filterIdentity, controller.signal);
         if (ticket !== epoch.current) return;
-        if (!uuid(me?.id)) throw new Error('Invalid identity');
-        const stored = saved(storageKey(me.id)); setIdentity(me.id); setCriteria(stored.criteria);
+        const stored = saved(storageKey(binding));
+        if (binding === 'anonymous') stored.criteria.members = [];
+        setIdentity(binding); setCriteria(stored.criteria);
         if (restoring && stored.canvas) { setApplied(stored.criteria); setCanvasMode(true); }
-        if (!restoring) try { sessionStorage.setItem(storageKey(me.id), JSON.stringify(stored.criteria)); } catch { /* Optional storage. */ }
+        if (!restoring) try { sessionStorage.setItem(storageKey(binding), JSON.stringify(stored.criteria)); } catch { /* Optional storage. */ }
       }
+      if (binding === 'anonymous' && !opening) await boundedWorkRead(admitAnonymous, controller.signal);
       const p = await boundedWorkRead(signal => workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/labels${after ? `?after=${encodeURIComponent(after)}` : ''}`, { signal }), controller.signal);
+      if (binding === 'anonymous') await boundedWorkRead(admitAnonymous, controller.signal);
       if (ticket !== epoch.current) return;
       if (p.organizationId !== org || p.boardId !== board || !Array.isArray(p.items) || p.items.length > 50) throw new Error('Invalid labels');
       const items = p.items.map((value: unknown) => {
@@ -91,7 +110,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     } catch (error) {
       if (ticket !== epoch.current) return;
       setLabelNotice('Label choices could not be loaded. Reload choices to continue.');
-      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+      if (error instanceof ChangedFilterIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
         memberPending.current?.abort(); memberPending.current = undefined; setMembers([]); setMemberLoading(false);
         setLabelNotice('Filters are unavailable. Sign in or refresh the Board to check your access.'); setOpen(false); setIdentity(undefined); setResult(undefined); setApplied(undefined); setCanvasMode(false); onRefresh();
       }
@@ -154,7 +173,12 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     if (applied.activity && applied.activity !== 'all') query.set('activity', applied.activity);
     if (applied.members.length) query.set('members', applied.members.join(','));
     if (cursor) query.set('after', cursor);
-    void boundedWorkRead(signal => workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/cards?${query}`, { signal }), controller.signal).then(p => {
+    void boundedWorkRead(async signal => {
+      if (identity === 'anonymous') await admitAnonymous(signal);
+      const result = await workRequest<Record<string, unknown>>(`/boards/${encodeURIComponent(board)}/cards?${query}`, { signal });
+      if (identity === 'anonymous') await admitAnonymous(signal);
+      return result;
+    }, controller.signal).then(p => {
       if (!active) return;
       if (p.organizationId !== org || p.boardId !== board || !Array.isArray(p.items) || p.items.length > 50) throw new Error('Invalid result');
       const items = p.items.map((value: unknown) => {
@@ -173,7 +197,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     }).catch(error => {
       if (!active) return;
       setResult(undefined); setNotice('Filtered Cards could not be loaded. Try again or refresh the Board.');
-      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { setOpen(false); setIdentity(undefined); setApplied(undefined); onRefresh(); }
+      if (error instanceof ChangedFilterIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { setOpen(false); setIdentity(undefined); setApplied(undefined); setCanvasMode(false); onRefresh(); }
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); setLoading(false); };
   }, [open, canvasMode, applied, identity, disabled, available, org, board, snapshot, cursor, retry, onRefresh, onCanvasChange]);

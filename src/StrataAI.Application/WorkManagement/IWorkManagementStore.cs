@@ -5,7 +5,7 @@ public interface IWorkManagementStore
     Task<BoardBackgroundImage?> FindBoardBackgroundImageAsync(Guid organization, Guid board, Guid image, CancellationToken ct);
     Task<BoardBackgroundImage> CreateBoardBackgroundImageAsync(BoardBackgroundImage image, CancellationToken ct);
     Task<BoardRecord?> InitializeCopiedBoardBackgroundAsync(Guid organization, Guid board, Guid image, DateTimeOffset createdAt, CancellationToken ct);
-    Task<bool> AcquirePublicBoardBackgroundReadScopeAsync(Guid organization, Guid board, CancellationToken ct);
+    Task<bool> AcquirePublicBoardReadScopeAsync(Guid organization, Guid board, CancellationToken ct);
     // Owning source Board command and tenant transaction required. Target is a
     // newly created empty Board; no membership, preferences or history copied.
     Task CopyBoardContentsAsync(Guid sourceBoardId, Guid destinationBoardId, DateTimeOffset now, CancellationToken ct);

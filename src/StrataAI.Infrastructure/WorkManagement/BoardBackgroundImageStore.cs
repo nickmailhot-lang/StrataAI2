@@ -64,9 +64,9 @@ internal sealed partial class PostgresWorkManagementStore
         return found ? await FindBoardAsync(board, ct) : null;
     }
 
-    public async Task<bool> AcquirePublicBoardBackgroundReadScopeAsync(Guid organization, Guid board, CancellationToken ct)
+    public async Task<bool> AcquirePublicBoardReadScopeAsync(Guid organization, Guid board, CancellationToken ct)
     {
-        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Public Board image reads require their owning read transaction.");
+        if (!connectionFactory.HasCommandScope(organization)) throw new InvalidOperationException("Public Board reads require their owning read transaction.");
         await using var session = await connectionFactory.OpenTenantSessionAsync(organization, ct);
         await using (var parent = new NpgsqlCommand("SELECT id FROM organizations WHERE id=@tenant AND status='ACTIVE' FOR SHARE;", session.Connection, session.Transaction))
         { parent.Parameters.AddWithValue("tenant", organization); if (await parent.ExecuteScalarAsync(ct) is not Guid) return false; }
@@ -112,7 +112,7 @@ internal sealed partial class InMemoryWorkManagementStore
             _boards[board] = result; return Task.FromResult<BoardRecord?>(result);
         }
     }
-    public Task<bool> AcquirePublicBoardBackgroundReadScopeAsync(Guid organization, Guid board, CancellationToken ct)
+    public Task<bool> AcquirePublicBoardReadScopeAsync(Guid organization, Guid board, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested(); lock (_sync) return Task.FromResult(transactionScope.Owns(organization)
             && _boards.TryGetValue(board, out var row) && row.OrganizationId == organization && row.Visibility == BoardVisibility.Public && row.LifecycleState == BoardLifecycleState.Active);
