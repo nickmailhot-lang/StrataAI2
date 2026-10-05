@@ -23,6 +23,18 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.OK, read.StatusCode);
         Assert.True(read.Headers.CacheControl!.Private); Assert.True(read.Headers.CacheControl.NoStore);
         var page = await read.Content.ReadFromJsonAsync<JsonElement>(ct);
+        var interaction = page.GetProperty("interaction");
+        Assert.Equal(new[] { "actorId", "boardId", "createdAt", "entityId", "entityType", "eventId", "eventType", "metadata", "organizationId", "version" },
+            interaction.EnumerateObject().Select(property => property.Name).Order().ToArray());
+        Assert.Equal("SEARCH_EXECUTED", interaction.GetProperty("eventType").GetString());
+        Assert.Equal("Search", interaction.GetProperty("entityType").GetString());
+        var eventId = interaction.GetProperty("eventId").GetGuid(); Assert.NotEqual(Guid.Empty, eventId);
+        Assert.Equal(eventId, interaction.GetProperty("entityId").GetGuid());
+        Assert.Equal((await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid(), interaction.GetProperty("actorId").GetGuid());
+        Assert.Equal(JsonValueKind.Null, interaction.GetProperty("organizationId").ValueKind);
+        Assert.Equal(JsonValueKind.Null, interaction.GetProperty("boardId").ValueKind);
+        Assert.Empty(interaction.GetProperty("metadata").EnumerateObject());
+        Assert.Equal(1, interaction.GetProperty("version").GetInt64());
         var document = Assert.Single(page.GetProperty("items").EnumerateArray());
         Assert.Equal(card, document.GetProperty("card").GetProperty("id").GetGuid());
         Assert.Equal("Search List", document.GetProperty("listName").GetString());
@@ -33,6 +45,7 @@ public sealed partial class ApiHostTests
         Assert.DoesNotContain("Private search result", await otherActorCursor.Content.ReadAsStringAsync(ct));
         using var tail = await owner.GetAsync($"/search?q=100%25_&after={Uri.EscapeDataString(cursor!)}", ct);
         Assert.Equal(HttpStatusCode.OK, tail.StatusCode);
+        Assert.NotEqual(eventId, (await tail.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("interaction").GetProperty("eventId").GetGuid());
         var tailPage = await tail.Content.ReadFromJsonAsync<JsonElement>(ct);
         Assert.Empty(tailPage.GetProperty("items").EnumerateArray()); Assert.Equal(JsonValueKind.Null, tailPage.GetProperty("nextCursor").ValueKind);
         foreach (var client in new[] { owner, outsider })

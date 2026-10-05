@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
@@ -17,6 +18,36 @@ public sealed partial class ApiHostTests
         public void RefuseAt(int? check) { _checks = 0; _refuseAt = check; }
         public Task<bool> VerifyAsync(Guid actorId, CancellationToken cancellationToken = default)
             => Task.FromResult(++_checks != _refuseAt);
+    }
+
+    private sealed class ObservedSearchSource(ISearchInteractionEventStore inner) : ISearchInteractionEventStore
+    {
+        public SearchInteractionEvent? Last { get; private set; }
+        public async Task AppendAsync(SearchInteractionEvent source, CancellationToken cancellationToken = default)
+        { await inner.AppendAsync(source, cancellationToken); Last = source; }
+    }
+
+    [Fact]
+    public async Task Search_producer_final_session_refusal_rolls_back_original_and_returns_no_acknowledgment()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<ICommandActorAuthorization, SearchSourceActorFixture>());
+        using var client = app.CreateClient(); await RegisterAndLogin(client);
+        var actor = (await client.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var sources = app.Services.GetRequiredService<ISearchInteractionEventStore>();
+        var unit = app.Services.GetRequiredService<IIdentityUnitOfWork>();
+        var proof = (SearchSourceActorFixture)app.Services.GetRequiredService<ICommandActorAuthorization>();
+        var observed = new ObservedSearchSource(sources);
+        var producer = new SearchInteractionEventProducer(observed, unit, proof, app.Services.GetRequiredService<IClock>());
+        proof.RefuseAt(2); // owning admission succeeds; final original-session proof fails
+        var refused = await producer.SearchExecutedAsync(actor, ct);
+        Assert.Equal("session_unavailable", refused.ErrorCode); Assert.Null(refused.Value);
+        Assert.NotNull(observed.Last);
+        proof.RefuseAt(null);
+        var replacement = SearchInteractionEvent.SearchExecuted(observed.Last.EventId, actor, observed.Last.CreatedAt.AddSeconds(1));
+        var appended = await unit.ExecuteAsync<bool>(actor, async () =>
+        { await sources.AppendAsync(replacement, ct); return IdentityOperation<bool>.Success(true); }, ct);
+        Assert.True(appended.Succeeded); // changed original proves the refused source did not survive
     }
 
     // Demo store/transaction parity with synthetic actor admission. No source

@@ -416,9 +416,9 @@ recording it must not increment Board/Card/profile versions or alter another
 client's filter criteria. Source clocks are UTC at database precision.
 
 The source envelope now has registered PostgreSQL and process-local Demo append
-adapters. Current GETs do not yet produce these sources or disclose them through
-a transport. Required next integration includes validated/admitted successful
-producers, current session/Board proof before
+adapters. Successful `GET /search` pages now produce and return their private
+execution source. Board filter changes do not yet produce their source. Required
+next integration includes the Board producer, current session/Board proof before
 replay, protected bounded cursors, and actual client consumption/recovery.
 Anonymous filtering must not fabricate an actor or emit an authenticated source.
 The identity account-event allowlist and shared Work stream remain unchanged.
@@ -438,7 +438,8 @@ are reused only for an identical source; replay does not advance its counter or
 clock. API grants are SELECT plus this narrow capability, with no raw table
 writes or Worker capability. The PostgreSQL adapter requires an owning identity
 subject transaction and neither starts nor commits it. Both runtime adapters are
-registered through Work Management; search/filter producers do not yet call them.
+registered through Work Management; the global search producer calls them after
+successful traversal. The Board filter producer remains pending.
 
 Startup now requires schema 076. Populated forward/repeat upgrade checks retain
 original account and shared Work source bytes and require empty new history.
@@ -468,5 +469,30 @@ host test covers original-ID deduplication, changed-clock refusal, late rollback
 private nonmember refusal, actual MEMBER admission, and withdrawn-grant duplicate
 refusal. Its zero-warning build passes; execution awaits CI. This test's actor
 authorization is synthetic and does not prove HTTP source production.
-Producer admission/final session proof, protected replay
-and consumers remain outstanding; PRD-16 remains open at 20% estimated remaining.
+### Successful global search source production
+
+After a successful authorized and validated `GET /search` page, the endpoint
+invokes the registered producer in a separate owning identity transaction. This
+preserves the search traversal's existing independent tenant read boundaries.
+The producer generates the original EventId and UTC clock server-side, appends
+through the private source adapter, and rechecks the original authenticated
+session before commit. A final session refusal rolls back the source and counter
+and returns no acknowledgment. Storage refusal uses `work_storage_unavailable`;
+identity storage failures map to that existing stable API boundary.
+
+The successful page includes `interaction`, containing only the ten canonical
+fields above. Every successful page execution, including an empty page or a
+valid continuation, is a distinct observation with a new original EventId.
+Invalid inputs/cursors and failed admission never invoke the producer. Repeated
+GET execution is a new observation; replay of an existing source must reuse its
+original identity. There is no criteria, result, snippet, or hash in the source.
+Global scope uses null Organization/Board fields and does not mutate work state.
+
+The HTTP host test checks the exact acknowledgment allowlist, authenticated
+actor, canonical type/entity/version, null tenant scope, empty metadata, and
+distinct original IDs across successful pages. A synthetic final-session refusal
+test proves owning rollback by establishing a changed-clock original with the
+refused EventId afterward. These new tests compile with zero warnings/errors;
+actual execution awaits CI. Board filter production, protected bounded replay,
+real browser consumption/deduplication and reconnect recovery remain outstanding;
+PRD-16 stays open at 20% estimated remaining.

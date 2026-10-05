@@ -3,7 +3,10 @@ using StrataAI.Application.Organizations;
 
 namespace StrataAI.Application.WorkManagement;
 
-public sealed record GlobalSearchPage(IReadOnlyList<SearchCardDocument> Items, string? NextCursor);
+public sealed record GlobalSearchPage(IReadOnlyList<SearchCardDocument> Items, string? NextCursor)
+{
+    public SearchInteractionEvent? Interaction { get; init; }
+}
 public sealed class GlobalSearchService(IOrganizationStore organizations, IWorkManagementStore store,
     IWorkManagementService work, IWorkManagementUnitOfWork transactions, ICommandActorAuthorization actors,
     IGlobalSearchCursorCodec cursors)

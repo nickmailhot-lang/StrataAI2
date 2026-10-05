@@ -7,7 +7,7 @@ public static partial class WorkManagementEndpoints
     private static void MapGlobalSearchEndpoints(WebApplication app)
     {
         app.MapGet("/search", async (string? q, string? label, string? member, string? match, string? scope, string? after,
-            HttpContext context, GlobalSearchService service, CancellationToken ct) =>
+            HttpContext context, GlobalSearchService service, SearchInteractionEventProducer interactions, CancellationToken ct) =>
         {
             context.Response.Headers.CacheControl = "private, no-store";
             var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
@@ -24,7 +24,11 @@ public static partial class WorkManagementEndpoints
             var binding = new GlobalSearchBinding(actor.Value, (q ?? "").Trim(), (label ?? "").Trim(), (member ?? "").Trim(),
                 mode == "all", lifecycle);
             var result = await service.SearchAsync(binding, after, ct);
-            return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+            if (!result.Succeeded || result.Value is null) return ErrorFor(result.ErrorCode);
+            var source = await interactions.SearchExecutedAsync(actor.Value, ct);
+            if (!source.Succeeded || source.Value is null)
+                return ErrorFor(source.ErrorCode == "identity_storage_unavailable" ? "work_storage_unavailable" : source.ErrorCode);
+            return Results.Ok(result.Value with { Interaction = source.Value });
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
     }
 }
