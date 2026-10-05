@@ -131,3 +131,16 @@ has passed web and PostgreSQL jobs, including the new restricted ordinary-reader
 storage assertions; .NET and immutable-image stages remain pending at inspection.
 Discovery transport and active directory UI still remain. PRD-04 estimate stays
 20% remaining; issue remains open.
+
+The existing authenticated Organization live hub now exposes server-selected
+WatchBoards discovery beside Watch archive administration. Both methods share
+the same connection subscription bound, cancellation release, origin routing,
+pre/post-IO current-session checks and final delivered-cursor admission proof.
+The client does not choose a reader audience through a cursor. A new API-host
+WebSocket contract checks ordinary private MEMBER lifecycle delivery, rejects
+reuse of a discovery cursor by the archive stream through a body-free reset,
+then withdraws the private grant and confirms that a later canonical restore
+is not disclosed. Full warnings-as-errors build passes; actual hub contract
+execution and immutable-image coverage remain pending CI. The active directory
+browser consumer still needs integration. PRD-04 remains open at 20% estimated
+remaining work.

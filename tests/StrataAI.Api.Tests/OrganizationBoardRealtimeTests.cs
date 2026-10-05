@@ -9,6 +9,44 @@ using Xunit;
 namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
+    [Fact]
+    public async Task Ordinary_Organization_live_delivers_MEMBER_sources_isolates_archive_cursor_and_resets_after_private_withdrawal()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        await store.UpsertBoardMemberAsync(f.Board, f.Recipient, BoardRole.Member, DateTimeOffset.UtcNow, ct);
+        var board = await store.FindBoardAsync(f.Board, ct); Assert.NotNull(board);
+        if (board.Visibility != BoardVisibility.Private)
+            board = await store.SetBoardVisibilityAsync(f.Board, BoardVisibility.Private, board.Version, DateTimeOffset.UtcNow, ct);
+        Assert.NotNull(board);
+        using var socket = await LiveSocket(app, f.RecipientCookie, "/organizations/live");
+        await SendFrame(socket, new { type = 4, invocationId = "reader", target = "WatchBoards", arguments = new string?[] { f.Organization.ToString(), null } });
+        var initial = await StreamItem(socket);
+        Assert.Equal(f.Recipient, initial.GetProperty("userId").GetGuid());
+        Assert.True(initial.GetProperty("page").GetProperty("resetRequired").GetBoolean());
+        using var archive = await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/archive", new { version = board.Version });
+        Assert.Equal(HttpStatusCode.OK, archive.StatusCode);
+        var page = (await StreamItem(socket)).GetProperty("page");
+        var change = Assert.Single(page.GetProperty("events").EnumerateArray());
+        Assert.Equal(f.Board, change.GetProperty("boardId").GetGuid());
+        Assert.Equal("BOARD_ARCHIVED", change.GetProperty("eventType").GetString());
+        var cursor = page.GetProperty("cursor").GetString();
+        using var other = await LiveSocket(app, f.RecipientCookie, "/organizations/live");
+        await SendFrame(other, new { type = 4, invocationId = "archive", target = "Watch", arguments = new[] { f.Organization.ToString(), cursor } });
+        var rejected = (await StreamItem(other)).GetProperty("page");
+        Assert.True(rejected.GetProperty("resetRequired").GetBoolean()); Assert.Empty(rejected.GetProperty("events").EnumerateArray());
+        await store.RemoveBoardMemberAsync(f.Board, f.Recipient, DateTimeOffset.UtcNow, ct);
+        var withdrawn = (await StreamItem(socket)).GetProperty("page");
+        Assert.True(withdrawn.GetProperty("resetRequired").GetBoolean()); Assert.Empty(withdrawn.GetProperty("events").EnumerateArray());
+        using var restore = await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/restore", new { version = board.Version + 1 });
+        Assert.Equal(HttpStatusCode.OK, restore.StatusCode);
+        using var resumed = await LiveSocket(app, f.RecipientCookie, "/organizations/live");
+        await SendFrame(resumed, new { type = 4, invocationId = "withdrawn", target = "WatchBoards", arguments = new[] { f.Organization.ToString(), withdrawn.GetProperty("cursor").GetString() } });
+        Assert.Empty((await StreamItem(resumed)).GetProperty("page").GetProperty("events").EnumerateArray());
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("http://evil.example.test")]

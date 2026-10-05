@@ -8,10 +8,16 @@ namespace StrataAI.Api.WorkManagement;
 
 public sealed record OrganizationBoardLivePage(Guid OrganizationId, Guid UserId, OrganizationBoardSyncPage Page);
 public sealed class OrganizationBoardRealtimeHub(TransactionalOrganizationBoardSynchronization replay,
+    [FromKeyedServices(OrganizationBoardAudience.BoardDiscovery)] TransactionalOrganizationBoardSynchronization discovery,
     IIdentityService identities, IdentityPolicy policy, ILogger<OrganizationBoardRealtimeHub> logger) : Hub
 {
     private const string SubscriptionKey = "StrataAI.OrganizationBoardRealtime.Subscription";
-    public async IAsyncEnumerable<OrganizationBoardLivePage> Watch(Guid organizationId, string? cursor,
+    public IAsyncEnumerable<OrganizationBoardLivePage> Watch(Guid organizationId, string? cursor,
+        CancellationToken cancellationToken) => WatchCore(replay, organizationId, cursor, cancellationToken);
+    public IAsyncEnumerable<OrganizationBoardLivePage> WatchBoards(Guid organizationId, string? cursor,
+        CancellationToken cancellationToken) => WatchCore(discovery, organizationId, cursor, cancellationToken);
+    private async IAsyncEnumerable<OrganizationBoardLivePage> WatchCore(TransactionalOrganizationBoardSynchronization selected,
+        Guid organizationId, string? cursor,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (organizationId == Guid.Empty || cursor is { Length: > 4096 }) throw new HubException("invalid_sync_cursor");
@@ -32,7 +38,7 @@ public sealed class OrganizationBoardRealtimeHub(TransactionalOrganizationBoardS
                 token.ThrowIfCancellationRequested();
                 if (await CurrentActorAsync() != actor) Denied("session_unavailable");
                 WorkOperation<OrganizationBoardSyncPage> result;
-                try { result = await replay.ReadAsync(organizationId, actor, cursor, cancellationToken: token); }
+                try { result = await selected.ReadAsync(organizationId, actor, cursor, cancellationToken: token); }
                 catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
                 {
                     logger.LogWarning("Organization live replay unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
@@ -44,7 +50,7 @@ public sealed class OrganizationBoardRealtimeHub(TransactionalOrganizationBoardS
                 // delivered cursor binding against current scope after that IO.
                 if (await CurrentActorAsync() != actor) Denied("session_unavailable");
                 WorkOperation<bool> current;
-                try { current = await replay.IsCursorCurrentAsync(organizationId, actor, page.Cursor, token); }
+                try { current = await selected.IsCursorCurrentAsync(organizationId, actor, page.Cursor, token); }
                 catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
                 {
                     logger.LogWarning("Organization live admission unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
