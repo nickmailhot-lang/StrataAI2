@@ -21,7 +21,7 @@ public sealed partial class ApiHostTests
             var original = services.Single(item => item.ServiceType == typeof(IInvitationStore));
             services.Remove(original);
             services.AddSingleton<IInvitationStore>(provider => new PrecisionInvitationStore(
-                (IInvitationStore)ActivatorUtilities.CreateInstance(provider, original.ImplementationType!)));
+                (IInvitationStore)original.ImplementationFactory!(provider)));
         });
         using var owner = app.CreateClient(); await RegisterAndLogin(owner);
         using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Persisted invitation precision" });

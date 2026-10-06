@@ -221,3 +221,18 @@ Original immutable request/key, competing-command fences, provisional placement,
 canonical reload and focus assertions remain; the 5-second timeout is unchanged.
 Both focused cases and web TypeScript pass after the query changes. Full
 revalidation remains pending.
+
+The stable full web recheck at `97f723a` passed all 1,530 tests across 124 files
+(220.77 seconds), including creation recovery and both scoped Board cases.
+This establishes web source evidence at that revision; native exact-image
+Organization acceptance remains pending.
+
+CI run [37433183371](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37433183371)
+at `eda44a7` confirms the logging repair: all 643 Domain tests pass. Web and
+PostgreSQL quality stages also pass. API-host tests finish with 498 passes and
+one invitation microsecond-precision fixture failure. The fixture dereferenced
+`ImplementationType` although Demo invitation storage now registers an interface
+factory over a singleton rollback participant. Its wrapper now invokes the
+original factory, preserving that underlying participant and precision assertions.
+Compilation cannot establish fixture repair; API-host CI re-execution is pending.
+Image/container/security/release stages were skipped by the failed source gate.
