@@ -128,7 +128,7 @@ test('PRD-60-TC-07/11/15: verified email discovers an invitation and retries los
     expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
     expect((await issuer.request.post(`/organizations/${org}/invitations`, { headers, data: { email: recipient.email, surface: 'INTERNAL', targetRole: 'MEMBER' } })).status()).toBe(201);
     let attempts = 0; const paths: string[] = [];
-    await page.route('**/me/invitations/*/accept', async route => {
+    await page.route(url => /^\/me\/invitations\/[^/]+\/accept$/.test(url.pathname), async route => {
       paths.push(new URL(route.request().url()).pathname);
       if (++attempts === 1) { expect((await route.fetch()).status()).toBe(200); await route.abort('timedout'); }
       else await route.continue();

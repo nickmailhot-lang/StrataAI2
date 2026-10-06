@@ -237,4 +237,8 @@ The separate leased Worker marks the source ready; current Organization admissio
 still controls replay. Browser validation accepts only a typed Invitation with a
 revision greater than one and empty metadata, then the existing live history
 binding rereads the protected history and withdraws reviewed revocation consent.
-Required PostgreSQL and exact-image browser checks remain pending CI execution.
+Migration 100 clean/repeat/forward-upgrade and rollback checks, restricted
+source/transition/outbox contracts, and leased delivery after actor departure
+passed at `6cbfe65` in [run 37542655174](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37542655174).
+The two-history ordinary HTTP/browser scenario still requires its exact-image
+acceptance result; these PostgreSQL contracts do not establish browser success.

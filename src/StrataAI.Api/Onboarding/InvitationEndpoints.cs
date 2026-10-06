@@ -157,6 +157,7 @@ public static class InvitationEndpoints
                 "/me/invitations",
                 async (
                     string? after,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IInvitationService service,
                     CancellationToken cancellationToken) =>
@@ -167,6 +168,8 @@ public static class InvitationEndpoints
                         return Results.Unauthorized();
                     }
 
+                    if (expectedActorId is { } reviewedActor && (reviewedActor == Guid.Empty || reviewedActor != userId.Value))
+                        return ErrorFor("session_unavailable");
                     Guid? cursor = null;
                     if (after is not null)
                     {
@@ -179,11 +182,13 @@ public static class InvitationEndpoints
                 })
             .RequireAuthorization().RequireRateLimiting("invitation");
 
-        app.MapPost("/me/invitations/{invitationId:guid}/accept", async (Guid invitationId, HttpContext context,
+        app.MapPost("/me/invitations/{invitationId:guid}/accept", async (Guid invitationId, Guid? expectedActorId, HttpContext context,
             IInvitationService service, CancellationToken cancellationToken) =>
         {
             var userId = GetUserId(context);
             if (userId is null) return Results.Unauthorized();
+            if (expectedActorId is { } reviewedActor && (reviewedActor == Guid.Empty || reviewedActor != userId.Value))
+                return ErrorFor("session_unavailable");
             var result = await service.AcceptPendingAsync(userId.Value, invitationId, context.TraceIdentifier, cancellationToken);
             return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().RequireRateLimiting("invitation");

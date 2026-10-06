@@ -52,6 +52,65 @@ public sealed partial class ApiHostTests
         Assert.Equal(original.GetProperty("id").GetGuid(), Assert.Single(final.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
     }
 
+    // PRD-60-TC-04/06/07: bind recipient disclosure and acceptance to the
+    // reviewed account before cursor parsing, protected reads or a mutation.
+    [Theory]
+    [InlineData("INTERNAL")]
+    [InlineData("PORTAL")]
+    [InlineData("BOARD")]
+    public async Task Recipient_invitation_rejects_a_different_reviewed_actor_without_disclosure_or_acceptance(string surface)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(recipient);
+        var ownerId = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var user = await recipient.GetFromJsonAsync<JsonElement>("/me", ct);
+        var actor = user.GetProperty("id").GetGuid(); var email = user.GetProperty("email").GetString();
+        using var creation = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Protected recipient scope" });
+        var org = (await creation.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var root = $"/organizations/{org}/invitations"; Guid? boardId = null;
+        object input = new { email, surface = surface == "PORTAL" ? "PORTAL" : "INTERNAL", targetRole = surface == "PORTAL" ? "OWNER" : "MEMBER" };
+        if (surface == "BOARD")
+        {
+            using var enrolled = await Mutate(owner, HttpMethod.Post, root, new { email, surface = "INTERNAL", targetRole = "MEMBER" });
+            var enrollmentId = (await enrolled.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+            using var enrollment = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{enrollmentId}/accept", new { });
+            Assert.Equal(HttpStatusCode.OK, enrollment.StatusCode);
+            var board = await app.Services.GetRequiredService<IWorkManagementService>().CreateBoardAsync(org, ownerId,
+                "Protected recipient Board", null, BoardVisibility.Private, "COLOR", "blue", "fixture", ct);
+            Assert.True(board.Succeeded, board.ErrorCode); boardId = board.Value!.Id;
+            root = $"/boards/{boardId}/invitations"; input = new { email, role = "MEMBER" };
+        }
+        using var issued = await Mutate(owner, HttpMethod.Post, root, input);
+        Assert.Equal(HttpStatusCode.Created, issued.StatusCode);
+        var id = (await issued.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        foreach (var expected in new[] { Guid.NewGuid(), Guid.Empty })
+        {
+            using var read = await recipient.GetAsync($"/me/invitations?expectedActorId={expected}&after=invalid", ct);
+            Assert.Equal(HttpStatusCode.Unauthorized, read.StatusCode);
+            using var write = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{id}/accept?expectedActorId={expected}", new { });
+            Assert.Equal(HttpStatusCode.Unauthorized, write.StatusCode);
+            foreach (var response in new[] { read, write })
+            {
+                var text = await response.Content.ReadAsStringAsync(ct);
+                Assert.Contains("session_unavailable", text, StringComparison.Ordinal);
+                Assert.DoesNotContain("Protected recipient", text, StringComparison.Ordinal);
+                Assert.DoesNotContain(id.ToString(), text, StringComparison.OrdinalIgnoreCase);
+            }
+            var history = await owner.GetFromJsonAsync<JsonElement>(root, ct);
+            var original = history.GetProperty("items").EnumerateArray().Single(row => row.GetProperty("id").GetGuid() == id);
+            Assert.Equal(JsonValueKind.Null, original.GetProperty("acceptedAt").ValueKind);
+            if (boardId is { } board) Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(board, actor, ct));
+        }
+        var page = await recipient.GetFromJsonAsync<JsonElement>($"/me/invitations?expectedActorId={actor}", ct);
+        Assert.Equal(id, Assert.Single(page.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
+        using var accepted = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{id}/accept?expectedActorId={actor}", new { });
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode); var originalAck = await accepted.Content.ReadAsStringAsync(ct);
+        using var retry = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{id}/accept?expectedActorId={actor}", new { });
+        Assert.Equal(HttpStatusCode.OK, retry.StatusCode); Assert.Equal(originalAck, await retry.Content.ReadAsStringAsync(ct));
+        Assert.Empty((await recipient.GetFromJsonAsync<JsonElement>($"/me/invitations?expectedActorId={actor}", ct)).GetProperty("items").EnumerateArray());
+    }
+
     // PRD-03-TC-05 / PRD-60: a cookie switch must not reuse another actor's consent.
     [Theory]
     [InlineData(false)]

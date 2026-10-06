@@ -41,6 +41,15 @@ for surface in INTERNAL PORTAL; do
   scripts/ci/assert-file-excludes.sh 'tokenHash|invitationToken|acceptedByUserId' "$scratch/page"
   test "$(post wrong "/me/invitations/$id/accept" '{}')" = 400
   before="$(state)"
+  # Reviewed-recipient binding precedes cursor validation and protected work.
+  for expected in "$(jq -r '.user.id' "$scratch/wrong.user")" 00000000-0000-0000-0000-000000000000; do
+    test "$(curl --max-time 60 --silent --show-error -b "$scratch/recipient.cookies" -o "$scratch/reviewed-read" -w '%{http_code}' "$BASE_URL/me/invitations?expectedActorId=$expected&after=invalid")" = 401
+    jq -e '.code=="session_unavailable"' "$scratch/reviewed-read" >/dev/null
+    scripts/ci/assert-file-excludes.sh 'Release invitation council|invitationId|organizationId|token' "$scratch/reviewed-read"
+    test "$(post recipient "/me/invitations/$id/accept?expectedActorId=$expected" '{}')" = 401
+    jq -e '.code=="session_unavailable"' "$scratch/response" >/dev/null
+    test "$before" = "$(state)"
+  done
   admin 'REVOKE INSERT ON audit_events FROM strataai_api_runtime;' >/dev/null
   test "$(post recipient "/me/invitations/$id/accept" '{}')" = 503
   test "$before" = "$(state)"
@@ -56,7 +65,7 @@ for surface in INTERNAL PORTAL; do
     admin 'DROP TRIGGER ci_member_added_publication_failure ON audit_events; DROP FUNCTION public.ci_member_added_publication_failure();' >/dev/null
   fi
   for n in 1 2 3; do
-    curl --max-time 60 --silent --show-error -b "$scratch/recipient.cookies" -H 'X-StrataAI-Request: 1' -X POST -o "$scratch/ack-$n" -w '%{http_code}' "$BASE_URL/me/invitations/$id/accept" > "$scratch/status-$n" &
+    curl --max-time 60 --silent --show-error -b "$scratch/recipient.cookies" -H 'X-StrataAI-Request: 1' -X POST -o "$scratch/ack-$n" -w '%{http_code}' "$BASE_URL/me/invitations/$id/accept?expectedActorId=$user" > "$scratch/status-$n" &
     pids+=($!)
   done
   for pid in "${pids[@]}"; do wait "$pid"; done; pids=()

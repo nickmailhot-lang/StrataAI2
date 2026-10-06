@@ -44,6 +44,8 @@ async function request(path: string, controller: AbortController, method = 'GET'
   }
 }
 
+class AccountUnavailable extends Error { constructor(readonly status: number) { super('Invitation account unavailable'); } }
+
 export function InvitationsPage() {
   const [page, setPage] = useState<Page>();
   const [busy, setBusy] = useState(false);
@@ -52,20 +54,50 @@ export function InvitationsPage() {
   const [uncertain, setUncertain] = useState<Invitation>();
   const current = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(true);
+  const reviewedActor = useRef<string | undefined>(undefined);
+  const [accountReady, setAccountReady] = useState(false);
   const navigate = useNavigate();
+  function valid(controller: AbortController) { return mounted.current && current.current === controller && !controller.signal.aborted; }
+  async function verifyAccount(controller: AbortController, expected?: string) {
+    try {
+      const response = await request('/me', controller);
+      if (!valid(controller)) throw new AccountUnavailable(503);
+      const id = (response.body as { id?: unknown } | undefined)?.id;
+      if (response.status === 401) throw new AccountUnavailable(401);
+      if (response.status !== 200 || typeof id !== 'string' || !uuid.test(id) || id === '00000000-0000-0000-0000-000000000000')
+        throw new AccountUnavailable(503);
+      if (expected && id !== expected) throw new AccountUnavailable(401);
+      return id;
+    } catch (reason) {
+      throw reason instanceof AccountUnavailable ? reason : new AccountUnavailable(503);
+    }
+  }
+  function withdrawAccount(status: number) {
+    setPage(undefined); setAccepted(undefined); setAccountReady(false);
+    if (status === 401) { setUncertain(undefined); navigate('/login', { replace: true }); }
+    else setError('Unable to confirm the reviewed account. Refresh invitations before continuing.');
+  }
   async function load(after?: string) {
     if (current.current) return;
     const controller = new AbortController(); current.current = controller;
-    setBusy(true); setError(undefined); setPage(undefined); setAccepted(undefined);
+    setBusy(true); setError(undefined); setPage(undefined); setAccepted(undefined); setAccountReady(false);
     try {
-      const response = await request(after ? `/me/invitations?after=${encodeURIComponent(after)}` : '/me/invitations', controller);
+      const actor = await verifyAccount(controller, reviewedActor.current);
+      if (!valid(controller)) return;
+      const query = new URLSearchParams({ expectedActorId: actor }); if (after) query.set('after', after);
+      const response = await request(`/me/invitations?${query}`, controller);
+      await verifyAccount(controller, actor); if (!valid(controller)) return;
+      reviewedActor.current = actor; setAccountReady(true);
       if (!mounted.current || current.current !== controller) return;
       if (response.status === 401) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); navigate('/login', { replace: true }); return; }
       if (response.status === 403) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); setError('Verify your email before viewing invitations.'); return; }
       if (response.status !== 200 || !validPage(response.body) || (after && response.body.nextCursor !== null && response.body.nextCursor.toLowerCase() <= after.toLowerCase())) throw new Error('Invalid invitation page');
       setPage(response.body);
-    } catch {
-      if (mounted.current && current.current === controller) setError('Unable to load invitations. Please refresh and try again.');
+    } catch (reason) {
+      if (mounted.current && current.current === controller) {
+        if (reason instanceof AccountUnavailable) withdrawAccount(reason.status);
+        else setError('Unable to load invitations. Please refresh and try again.');
+      }
     } finally {
       if (current.current === controller) { current.current = undefined; if (mounted.current) setBusy(false); }
     }
@@ -77,11 +109,15 @@ export function InvitationsPage() {
     // This owns the initial read; explicit refresh/paging owns subsequent reads.
   }, []);
   async function accept(invitation: Invitation) {
-    if (current.current || (uncertain && uncertain.id !== invitation.id)) return;
+    if (current.current || !accountReady || !reviewedActor.current || (uncertain && uncertain.id !== invitation.id)) return;
+    const actor = reviewedActor.current; let submitted = false;
     const controller = new AbortController(); current.current = controller;
     setBusy(true); setError(undefined); setAccepted(undefined);
     try {
-      const response = await request(`/me/invitations/${invitation.id}/accept`, controller, 'POST');
+      await verifyAccount(controller, actor); if (!valid(controller)) return;
+      submitted = true;
+      const response = await request(`/me/invitations/${invitation.id}/accept?expectedActorId=${encodeURIComponent(actor)}`, controller, 'POST');
+      await verifyAccount(controller, actor); if (!valid(controller)) return;
       if (!mounted.current || current.current !== controller) return;
       if (response.status === 401) { setPage(undefined); setUncertain(undefined); navigate('/login', { replace: true }); return; }
       if (response.status === 400 || response.status === 403 || response.status === 404 || response.status === 409) {
@@ -97,10 +133,11 @@ export function InvitationsPage() {
       setAccepted(invitation);
       setUncertain(undefined);
       setPage(previous => previous && { ...previous, items: previous.items.filter(item => item.id !== invitation.id) });
-    } catch {
+    } catch (reason) {
       if (mounted.current && current.current === controller) {
-        setUncertain(invitation);
-        setError('Unable to confirm acceptance. You can retry this invitation safely.');
+        if (submitted) { setUncertain(invitation); setPage(undefined); }
+        if (reason instanceof AccountUnavailable) withdrawAccount(reason.status);
+        else setError('Unable to confirm acceptance. You can retry this invitation safely.');
       }
     } finally {
       if (current.current === controller) { current.current = undefined; if (mounted.current) setBusy(false); }
@@ -115,7 +152,7 @@ export function InvitationsPage() {
     {busy && <CircularProgress aria-label="Loading invitation request" />}
     {uncertain && <Paper variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>
       <Typography>An invitation acceptance still needs confirmation. Refreshing the list will preserve this attempt.</Typography>
-      <Button disabled={busy} variant="contained" onClick={() => void accept(uncertain)}>Retry invitation acceptance</Button>
+      <Button disabled={busy || !accountReady} variant="contained" onClick={() => void accept(uncertain)}>Retry invitation acceptance</Button>
     </Stack></Paper>}
     {page?.items.length === 0 && !uncertain && <Typography>No pending invitations on this page.</Typography>}
     {page?.items.filter(invitation => invitation.id !== uncertain?.id).map(invitation => <Paper key={invitation.id} variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>

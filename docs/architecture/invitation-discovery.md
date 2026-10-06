@@ -68,3 +68,25 @@ Current 401/403 discovery still clears that attempt. Two component cases verify
 in-flight/failing refresh disclosure clearing and generic retry recovering the
 matching Board acknowledgment. All 21 invitation discovery component cases pass
 locally; lint passes. Exact-image release regression remains pending.
+
+## Reviewed recipient account
+
+The recipient listing and natural-ID acceptance endpoints accept an optional
+`expectedActorId`. An empty or mismatched value receives neutral
+`session_unavailable` before cursor parsing, protected discovery or acceptance.
+The browser captures the current account, binds listing/paging and acceptance to
+it, and confirms `/me` before and after each read or command. A changed account
+withdraws labels, consent and acknowledgment links and returns to sign-in.
+Temporary or malformed account confirmation also withdraws private display and
+blocks acceptance. A submitted attempt remains as generic process-local recovery;
+fresh discovery must confirm the original account before explicit same-ID retry.
+Recovery never automatically posts or interprets an empty list as acceptance.
+
+Component/API checks cover account changes on both sides of recipient operations
+and Organization, Portal and Board target separation. Required release
+fixtures compare complete persisted state for refused reviewed actors. New native
+browser scenarios inject a cookie switch or account-read failure after a real
+committed acceptance, check withheld disclosure, and verify original-account
+recovery with exact natural-ID acknowledgment and unchanged history. Their runtime
+results remain pending exact-image CI. This does not establish a recipient live
+event stream or complete the remaining onboarding lifecycle requirements.
