@@ -71,7 +71,9 @@ window and final session/scope proof. Nine ordering/coordinator checks and the
 cursor security test passed locally; restricted PostgreSQL replay passed at
 `fe3376f`, including pending-prefix ordering, bounded continuation, final
 synthetic session refusal and membership withdrawal/restoration. Exact-image
-replay remains pending CI. SignalR and browser consumption remain required.
+replay remains pending CI. Production SignalR transport is implemented with
+session and cursor authority rechecks before each delivered page; stream
+execution against release images and browser consumption remain required.
 Worker readiness does not establish browser event consumption.
 
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and

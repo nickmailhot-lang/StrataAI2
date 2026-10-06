@@ -54,6 +54,17 @@ public sealed record OrganizationMetadataSyncPage(string Cursor, bool HasMore, b
 // Coordinator requires its owning transaction wrapper before transport use.
 public sealed class OrganizationMetadataSynchronizationService(IOrganizationMetadataEventReader reader, IOrganizationMetadataCursorCodec cursors)
 {
+    public async Task<WorkOperation<bool>> IsCursorCurrentAsync(Guid organizationId, Guid actorId, string cursor,
+        CancellationToken cancellationToken = default)
+    {
+        if (organizationId == Guid.Empty || actorId == Guid.Empty)
+            return WorkOperation<bool>.Failure("organization_not_found");
+        var scope = await reader.GetScopeAsync(organizationId, actorId, cancellationToken);
+        if (scope is null || scope.OrganizationId != organizationId || scope.ActorId != actorId)
+            return WorkOperation<bool>.Failure("organization_not_found");
+        return WorkOperation<bool>.Success(scope.MembershipId != Guid.Empty && scope.MembershipVersion > 0
+            && cursors.TryDecode(scope, cursor, out _));
+    }
     public async Task<WorkOperation<OrganizationMetadataSyncPage>> ReadAsync(Guid organizationId, Guid actorId,
         string? cursor, int limit = 50, CancellationToken cancellationToken = default)
     {
@@ -88,6 +99,18 @@ public sealed class OrganizationMetadataSynchronizationService(IOrganizationMeta
 public sealed class TransactionalOrganizationMetadataSynchronization(OrganizationMetadataSynchronizationService replay,
     IWorkManagementUnitOfWork transactions, IWorkManagementStore work, IOrganizationStore organizations)
 {
+    public Task<WorkOperation<bool>> IsCursorCurrentAsync(Guid organizationId, Guid actorId, string cursor,
+        CancellationToken cancellationToken = default)
+    {
+        if (organizationId == Guid.Empty || actorId == Guid.Empty)
+            return Task.FromResult(WorkOperation<bool>.Failure("organization_not_found"));
+        return transactions.ExecuteReadAsync(organizationId, actorId, "organization_not_found", async () =>
+        {
+            if (!await work.AcquireOrganizationReadScopeAsync(organizationId, actorId, cancellationToken)) return false;
+            return await organizations.FindOrganizationAsync(organizationId, cancellationToken) is { Status: OrganizationStatus.Active }
+                && await organizations.FindMembershipAsync(organizationId, actorId, cancellationToken) is { Active: true };
+        }, () => replay.IsCursorCurrentAsync(organizationId, actorId, cursor, cancellationToken), cancellationToken);
+    }
     public Task<WorkOperation<OrganizationMetadataSyncPage>> ReadAsync(Guid organizationId, Guid actorId,
         string? cursor, int limit = 50, CancellationToken cancellationToken = default)
     {

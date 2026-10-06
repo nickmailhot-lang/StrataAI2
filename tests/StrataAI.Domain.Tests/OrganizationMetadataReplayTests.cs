@@ -81,6 +81,20 @@ public sealed class OrganizationMetadataReplayTests
             TestContext.Current.CancellationToken);
         Assert.Equal("invalid_sync_limit", result.ErrorCode); Assert.Equal(0, reader.EventReads);
     }
+    [Fact]
+    public async Task PRD_03_Metadata_delivery_rechecks_cursor_authority_after_session_IO()
+    {
+        var reader = new Reader(); var codec = new Codec();
+        var service = new OrganizationMetadataSynchronizationService(reader, codec);
+        var ct = TestContext.Current.CancellationToken;
+        var cursor = codec.Encode(reader.Binding!, 1);
+        Assert.True((await service.IsCursorCurrentAsync(Organization, Actor, cursor, ct)).Value);
+        reader.Binding = reader.Binding! with { MembershipVersion = 2 };
+        Assert.False((await service.IsCursorCurrentAsync(Organization, Actor, cursor, ct)).Value);
+        reader.Binding = null;
+        Assert.Equal("organization_not_found", (await service.IsCursorCurrentAsync(Organization, Actor, cursor, ct)).ErrorCode);
+        Assert.Equal(0, reader.EventReads);
+    }
     private sealed class Reader : IOrganizationMetadataEventReader
     {
         public OrganizationMetadataCursorBinding? Binding { get; set; } = new(Organization, Actor, Guid.NewGuid(), 1);

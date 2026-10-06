@@ -47,7 +47,7 @@ request-bound endpoint. Access withdrawal is not a fabricated terminal event.
 
 ## Evidence boundary
 
-Nine local replay-ordering/coordinator tests passed. The protected-cursor test
+Ten local replay-ordering/coordinator and cursor-admission tests passed. The protected-cursor test
 passed for account/Organization/membership/revision binding, wrong purpose,
 malformed/oversized tokens, maximum internal position and expiry. The restricted
 PostgreSQL fixture exercises the real owning read transaction, out-of-order
@@ -60,5 +60,16 @@ The exact-image fixture now bootstraps through the normal endpoint, observes
 pending events before Worker delivery, resumes its original cursor after a
 metadata edit, checks content-free source envelopes and wrong-actor/deleting
 refusals. Exact-image execution for replay remains pending CI.
-SignalR transport, browser reconnect/consumption, real mid-read session
+Production also maps the authenticated SignalR endpoint
+`/organizations/live/metadata`, with stream method `Watch(organizationId, cursor)`.
+It shares the existing same-origin guard and transport buffer limits. One
+subscription is allowed per connection; cancellation releases that slot.
+Every replay iteration checks the cookie session, reads through the owning
+transaction, then checks the session and current cursor binding again before
+delivery. Permission changes during session I/O discard the page. Cancellation
+and connection loss stop the loop. Idle connections receive periodic heartbeat
+pages; pending sources do not cause a busy loop. Stream execution against release
+images is still unverified. Two API-host origin-denial checks passed locally.
+
+Browser reconnect/consumption, real mid-read session
 withdrawal, remaining event types and Demo parity are still unfinished.
