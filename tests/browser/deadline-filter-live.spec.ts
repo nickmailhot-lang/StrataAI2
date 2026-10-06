@@ -33,8 +33,15 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: 'Filter Board Cards', exact: true }).press('Enter');
       const dialog = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
       async function select(label: string, option: string) {
-        const field = dialog.getByRole('combobox', { name: label, exact: true }); await expect(field).toBeEnabled();
-        await field.press('Enter'); await page.getByRole('option', { name: option, exact: true }).press('Enter');
+        const field = dialog.getByRole('combobox', { name: label, exact: true });
+        // Live recovery can disable the field between admission and keydown.
+        // Retry only opening the menu, never selection or an applied write.
+        await expect(async () => {
+          await expect(field).toBeEnabled({ timeout: 500 });
+          if (await field.getAttribute('aria-expanded') !== 'true') await field.press('Enter', { timeout: 500 });
+          await expect(field).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
+        }).toPass({ timeout: 5_000 });
+        await page.getByRole('option', { name: option, exact: true }).press('Enter');
         await dialog.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
       }
       await select('Deadline state', 'Upcoming');
