@@ -74,12 +74,15 @@ These links open the behavior or contract guide directly. Use the subject sectio
 | Sign in, recover an account, or manage a profile | [Sign-in recovery and retries](docs/identity-login-retries.md), [recovery requests](docs/identity-recovery-request-retries.md), [profile management](docs/architecture/profile-management.md) |
 | Invite people and manage access | [Invitation administration](docs/architecture/invitation-administration-ui.md), [recipient invitation review](docs/invitation-link-review.md), [Organization members](docs/architecture/organization-member-administration.md), [Board members](docs/board-members-ui.md) |
 | Find, filter, share, or copy a Board | [Search and filtering](docs/board-filtering.md), [public sharing](docs/public-board-sharing.md), [Board copies](docs/board-copy.md) |
+| Navigate between Organizations, Boards, and Cards | [Navigation observations and recovery](docs/navigation-observations.md), [web routing and state](docs/architecture/web-spa-boundary.md), [Organization routing integrity](docs/architecture/organization-access-integrity.md) |
 | Move and organize work | [Card movement](docs/card-movement-ui.md), [List ordering](docs/list-position-persistence.md), [large-Board rendering](docs/board-windowing.md) |
 | Assign work, set dates, and track checklists | [Assignments](docs/card-assignment.md), [Card dates](docs/architecture/card-dates.md), [checklists](docs/architecture/checklists.md) |
 | Follow discussions and notifications | [Comments, mentions, and activity](docs/architecture/comments-mentions-activity.md), [notification inbox](docs/architecture/notification-inbox.md), [watch subscriptions](docs/architecture/watch-subscriptions.md) |
 | Archive, restore, or delete work | [Board archive controls](docs/board-archive-control.md), [archived Lists](docs/archived-list-directory.md), [archived Cards](docs/archived-card-directory.md), [lifecycle acceptance](docs/architecture/lifecycle-acceptance.md) |
 
 For each workflow, read the guide's scope and remaining-work notes first. Follow its contract links for implementation details, then consult the acceptance record and the CI run for the revision you are reviewing. The documentation is organized by subject rather than numbered ticket order; use the [dependency map](docs/ticket-dependency-map.md) to connect a subject to its PRD or architecture ticket.
+
+The [navigation guide](docs/navigation-observations.md) describes account-bound context changes and Board/Card opens, lost-response recovery, and current access checks. Its verification section identifies the source, database, container, and browser checks that must be reviewed before claiming PRD-01 acceptance.
 
 ## Adopted architecture
 
