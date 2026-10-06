@@ -10,10 +10,11 @@ for (const width of [1280, 390]) {
   test(`PRD-15 native author commands, two-client recovery and redaction at ${width}px`, async ({ page, context, browser }) => {
     test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
-    const credentials = { email: `comments-${width}-${Date.now()}@example.test`, password: 'comments-fixture-battery-horse', displayName: 'Comment author' };
+    const credentials = { email: `comments-${width}-${Date.now()}@example.test`, password: 'comments-fixture-battery-horse', displayName: 'Comment author', locale: 'en-US', timezone: 'Pacific/Honolulu' };
     expect((await context.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
     expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
-    const actor = (await (await context.request.get('/me')).json()).id;
+    const profile = await (await context.request.get('/me')).json(); const actor = profile.id;
+    expect(profile).toMatchObject({ locale: credentials.locale, timezone: credentials.timezone });
     const org = (await (await context.request.post('/organizations', { headers, data: { name: 'Comment Organization' } })).json()).organization.id;
     const board = (await (await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Comment Board' } })).json()).id;
     const list = (await (await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Comment List' } })).json()).id;
@@ -62,9 +63,14 @@ for (const width of [1280, 390]) {
       expect(JSON.parse(writes[0].body!)).toEqual({ content: 'Literal <script>🙂', cardVersion: 1 });
       const stored = (await (await context.request.get(path)).json()).items;
       expect(stored).toHaveLength(1); expect(stored[0]).toMatchObject({ authorId: actor, version: 1, content: 'Literal <script>🙂' });
+      const displayed = await page.evaluate(({ instant, locale, timezone }) => new Intl.DateTimeFormat(locale, {
+        timeZone: timezone, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+      }).format(new Date(instant)), { instant: stored[0].createdAt, locale: credentials.locale, timezone: credentials.timezone });
+      await expect(page.locator('section[aria-label="Card comments"]').getByText(`You · ${displayed}`, { exact: true })).toBeVisible();
       const comment = stored[0].id;
       await expect(review).toBeEnabled(); await review.press('Enter');
       await expect(page.getByText('Literal <script>🙂', { exact: true })).toBeVisible();
+      await expect(page.locator('section[aria-label="Card comments"]').getByText(`You · ${displayed}`, { exact: true })).toBeVisible();
       expect(await page.locator('section[aria-label="Card comments"] script').count()).toBe(0);
       await page.getByRole('button', { name: 'Edit comment', exact: true }).press('Enter');
       const edit = page.getByRole('textbox', { name: 'Edit your comment', exact: true }); await expect(edit).toBeFocused();

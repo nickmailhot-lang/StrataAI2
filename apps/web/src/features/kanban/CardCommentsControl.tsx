@@ -8,8 +8,10 @@ import type { UrlAttachmentCreateProps } from './UrlAttachmentCreateControl';
 import { CommentMentionPicker } from './CommentMentionPicker';
 import { commentMassMentionScopes, selectedCommentMentions, type CommentMentionSelection } from './commentMentionSelection';
 import { activityEvent, activityResult } from './activityTelemetry';
+import { formatUserDateTime } from '../auth/userDateTime';
 
-type Review = { actor: string; page: CardCommentPage; cursor?: string };
+type Preferences = { locale: string; timezone: string };
+type Review = { actor: string; page: CardCommentPage; cursor?: string; preferences: Preferences };
 type Draft = { actor: string; version: number; original: CardComment | null; text: string; deleting: boolean; confirmed: boolean; selections: readonly CommentMentionSelection[]; cardGroup: boolean; boardGroup: boolean };
 type Intent = { actor: string; key: string; path: string; method: string; body: string; check: CommentIntent };
 export type CardCommentsProps = UrlAttachmentCreateProps & { reconnectSequence?: number; canAdminister?: boolean };
@@ -20,7 +22,7 @@ function CommentsControl(props: CardCommentsProps) {
   const [review, setReview] = useState<Review>(); const [draft, setDraft] = useState<Draft>();
   const [intent, setIntent] = useState<Intent>(); const [blocked, setBlocked] = useState(false); const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string>(); const pending = useRef<AbortController | undefined>(undefined);
-  const [acknowledged, setAcknowledged] = useState<CardCommentChange>();
+  const [acknowledged, setAcknowledged] = useState<CardCommentChange & { preferences: Preferences }>();
   const [mentionBusy, setMentionBusy] = useState(false);
   const observedReconnect = useRef(props.reconnectSequence);
   const mounted = useRef(false); const callbacks = useRef(props); callbacks.current = props;
@@ -66,7 +68,7 @@ function CommentsControl(props: CardCommentsProps) {
         const page = parseCardCommentPage(await workRequest<unknown>(path + (cursor ? '?after=' + encodeURIComponent(cursor) : ''), { signal }), props, version, cursor);
         const current = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(current) || current.id.toLowerCase() !== profile.id.toLowerCase()) throw new WorkRequestError(401, null);
-        return { actor: profile.id, page, cursor };
+        return { actor: profile.id, page, cursor, preferences: { locale: current.locale, timezone: current.timezone } };
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (callbacks.current.unavailable || callbacks.current.version !== version) throw new Error();
@@ -120,7 +122,7 @@ function CommentsControl(props: CardCommentsProps) {
         const admitted = parseCardCommentChange(result, props, captured.check);
         const current = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(current) || current.id.toLowerCase() !== captured.actor.toLowerCase()) throw new WorkRequestError(401, null);
-        return admitted;
+        return { ...admitted, preferences: { locale: current.locale, timezone: current.timezone } };
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       activityResult(action, true, started);
@@ -148,14 +150,14 @@ function CommentsControl(props: CardCommentsProps) {
     {notice && <Typography role="status">{notice}</Typography>}
     {props.unavailable ? <Typography role="status">Checking current Card access…</Typography> : <>
       {acknowledged && acknowledged.cardVersion === props.version && !review && !draft && <Stack aria-label="Acknowledged comment">
-        <Typography variant="caption">You · {acknowledged.comment.createdAt}{acknowledged.comment.editedAt ? ' · Edited' : ''}</Typography>
+        <Typography variant="caption">You · {formatUserDateTime(acknowledged.comment.createdAt, acknowledged.preferences) ?? 'Date unavailable'}{acknowledged.comment.editedAt ? ' · Edited' : ''}</Typography>
         <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{acknowledged.comment.deletedAt ? 'Comment body removed.' : acknowledged.comment.content}</Typography>
       </Stack>}
       {review && !current && <Alert severity="warning">This Card changed. Review the latest comments.</Alert>}
       {review && current && !draft && <>
         {review.page.items.length === 0 && <Typography>No comments on this page.{review.page.canComment ? ' Add the first comment.' : ''}</Typography>}
         {review.page.items.map(item => <Stack key={item.id} spacing={0.5}>
-          <Typography variant="caption" sx={{ overflowWrap: 'anywhere' }}>{item.authorId.toLowerCase() === review.actor.toLowerCase() ? 'You' : `Account ${item.authorId}`} · {item.createdAt}{item.editedAt ? ' · Edited' : ''}</Typography>
+          <Typography variant="caption" sx={{ overflowWrap: 'anywhere' }}>{item.authorId.toLowerCase() === review.actor.toLowerCase() ? 'You' : `Account ${item.authorId}`} · {formatUserDateTime(item.createdAt, review.preferences) ?? 'Date unavailable'}{item.editedAt ? ' · Edited' : ''}</Typography>
           <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{item.deletedAt ? 'Comment body removed.' : item.content}</Typography>
           {item.deletedAt === null && item.authorId.toLowerCase() === review.actor.toLowerCase() && <Stack direction={{ xs: 'column', sm: 'row' }}>
             <Button disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(item, false, event.currentTarget)}>Edit comment</Button>

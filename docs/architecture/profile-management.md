@@ -62,26 +62,27 @@ PRD-02 remains open. Verify current account lifecycle, preference consumers,
 accessibility and all remaining acceptance requirements against the current
 release images before closure.
 
-### Known timezone acceptance gap
+### Comment timezone display and remaining acceptance
 
 AUTH-FR-010 applies to timestamp displays as well as Card date controls.
-[Notifications](../../apps/web/src/features/notifications/NotificationCenterPage.tsx)
-use the [shared user date/time formatter](../../apps/web/src/features/auth/userDateTime.ts),
-and [activity history](../../apps/web/src/features/kanban/ActivityHistoryControl.tsx)
-retains the current account's locale/timezone alongside its admitted page.
-However, [Card comments](../../apps/web/src/features/kanban/CardCommentsControl.tsx)
-currently render `createdAt` directly for both reviewed comments and newly
-acknowledged comments. Their review retains the actor but discards the validated
-profile preferences. That display does not satisfy the profile-timezone rule.
+[Card comments](../../apps/web/src/features/kanban/CardCommentsControl.tsx) now
+retain locale/timezone from the validated current account after the review read
+and after mutation acknowledgment. Both reviewed and newly acknowledged comments
+use the [shared date/time formatter](../../apps/web/src/features/auth/userDateTime.ts).
+Formatting changes display only; immutable UTC timestamps and original command
+keys, bodies and versions remain unchanged. Failed formatting displays an explicit
+unavailable date rather than silently using the browser timezone. Account refusal
+and cancellation retain the existing protected-state and late-response fences.
 
-The repair must retain independently validated current-account preferences for
-both review and acknowledgment, format the immutable instant for display, and
-preserve canonical stored timestamps and replay payloads. Verify a timezone that
-changes the displayed calendar day, account replacement, late responses,
-reconnect recovery and an unchanged original acknowledgment. Use the existing
-[comment component fixtures](../../apps/web/src/features/kanban/CardCommentsControl.test.tsx)
-and native browser coverage; the current passing formatter tests alone do not
-prove this consumer's acceptance.
+The [comment component fixtures](../../apps/web/src/features/kanban/CardCommentsControl.test.tsx)
+verify Honolulu's previous calendar day and Tokyo's later time after preference
+changes during lost-response recovery, with the original request and timestamp
+unchanged. The desktop/phone [native comment fixture](../../tests/browser/card-comments.spec.ts)
+registers real Honolulu preferences and checks both acknowledgment and reviewed
+captions against the stored instant. Its execution remains pending in CI.
+Notifications and activity history already use account preferences. Broader
+preference-consumer and current-release acceptance remains required; these scoped
+checks do not complete PRD-02.
 
 `tests/browser/account.spec.ts` runs Chromium against the actual web/API release
 images and PostgreSQL. It checks registration, sign-in through Nginx, profile

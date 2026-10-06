@@ -23,6 +23,29 @@ async function create() { await review(); fireEvent.click(screen.getByRole('butt
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 function telemetry() { configureActivityTelemetry(true); const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetch); return fetch; }
+it('PRD-02 AUTH-FR-010 uses admitted timezone for review and fresh preferences for original acknowledgment recovery', async () => {
+  let timezone = 'Pacific/Honolulu'; let attempts = 0;
+  vi.mocked(workRequest).mockImplementation(async (path, init) => {
+    if (path === '/me') return { ...profile, timezone };
+    if (init?.method) { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; }
+    return page;
+  });
+  const p = props(); const view = render(<CardCommentsControl {...p} />); await review();
+  expect(screen.getByText(/You · Oct 2, 2026, 22:00/)).toBeInTheDocument();
+  expect(screen.queryByText(new RegExp(row.createdAt))).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
+  fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
+  await screen.findByRole('button', { name: 'Retry original comment change' });
+  timezone = 'Asia/Tokyo'; view.rerender(<CardCommentsControl {...p} version={5} />);
+  const retry = screen.getByRole('button', { name: 'Retry original comment change' });
+  await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry);
+  await screen.findByText('Comment added.');
+  expect(screen.getByText(/You · Oct 3, 2026, 17:00/)).toBeInTheDocument();
+  expect(writes()).toHaveLength(2); expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
+  expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+  expect(ack.comment.createdAt).toBe('2026-10-03T08:00:00.123456Z');
+});
 it('retains the original comment intent when admission becomes unavailable during retry preflight', async () => {
   let attempts = 0;
   mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
