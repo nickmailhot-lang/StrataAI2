@@ -151,7 +151,7 @@ internal static class BoardBackgroundImageContract
         }
         async Task ChangeMembership(string status)
         {
-            await using var query = new NpgsqlCommand("UPDATE organization_members SET status=@status WHERE tenant_id=@tenant AND user_id=@actor;", admin);
+            await using var query = new NpgsqlCommand("UPDATE organization_members SET status=@status,version=version+1,updated_at=clock_timestamp() WHERE tenant_id=@tenant AND user_id=@actor;", admin);
             query.Parameters.AddWithValue("tenant", tenant); query.Parameters.AddWithValue("actor", actor); query.Parameters.AddWithValue("status", status);
             Require(await query.ExecuteNonQueryAsync(ct) == 1, "Image membership withdrawal fixture lost its actor.");
         }
