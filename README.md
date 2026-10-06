@@ -2,7 +2,7 @@
 
 StrataAI2 is a strata/condominium governance and operations platform organized around collaborative Boards, Lists, and Cards. Organizations provide the membership and access boundary; Boards organize work into Lists and Cards. The repository contains the React/MUI web application, ASP.NET Core modular monolith API, separate background Worker, PostgreSQL migrations with forced row-level security, private object storage integrations, automated acceptance checks, and implementation documentation.
 
-Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues). The code includes identity and Organization management, Board collaboration and lifecycle controls, attachments, comments, notifications, and live updates. Implementation is ongoing: a feature document or passing source check does not mean its full PRD acceptance is complete. Consult the acceptance records and CI for the relevant revision.
+Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues). Implemented workflows include account and profile management, bounded Organization discovery with direct deep links, membership administration, Board collaboration and lifecycle controls, Lists and Cards, attachments, comments, notifications, and live updates. Account-bound navigation observations and retry recovery are also documented. Implementation is ongoing: a feature document or passing source check does not mean its full PRD acceptance is complete. Consult the acceptance records and CI for the relevant revision.
 
 ## Start here
 
@@ -72,7 +72,7 @@ These links open the behavior or contract guide directly. Use the subject sectio
 | Workflow | Primary guides |
 | --- | --- |
 | Sign in, recover an account, or manage a profile | [Sign-in recovery and retries](docs/identity-login-retries.md), [recovery requests](docs/identity-recovery-request-retries.md), [profile management and local-time display](docs/architecture/profile-management.md) |
-| Read Organization details and manage settings | [Organization discovery](docs/architecture/organization-discovery.md), [current membership and canonical Organization reads](docs/architecture/organization-access-integrity.md), [Organization settings](docs/architecture/organization-settings.md) |
+| Browse Organizations, follow deep links, and manage settings | [Paged Organization directory and browser navigation](docs/architecture/organization-discovery.md), [current membership and canonical Organization reads](docs/architecture/organization-access-integrity.md), [Organization settings](docs/architecture/organization-settings.md) |
 | Invite people and manage access | [Invitation administration](docs/architecture/invitation-administration-ui.md), [recipient invitation review](docs/invitation-link-review.md), [Organization members](docs/architecture/organization-member-administration.md), [Board members](docs/board-members-ui.md) |
 | Find, filter, share, or copy a Board | [Search and filtering](docs/board-filtering.md), [public sharing](docs/public-board-sharing.md), [Board copies](docs/board-copy.md) |
 | Navigate between Organizations, Boards, and Cards | [Navigation observations and recovery](docs/navigation-observations.md), [web routing and state](docs/architecture/web-spa-boundary.md), [Organization routing integrity](docs/architecture/organization-access-integrity.md) |
@@ -84,6 +84,22 @@ These links open the behavior or contract guide directly. Use the subject sectio
 For each workflow, read the guide's scope and remaining-work notes first. Follow its contract links for implementation details, then consult the acceptance record and the CI run for the revision you are reviewing. The documentation is organized by subject rather than numbered ticket order; use the [dependency map](docs/ticket-dependency-map.md) to connect a subject to its PRD or architecture ticket.
 
 The [navigation guide](docs/navigation-observations.md) describes account-bound context changes and Board/Card opens, lost-response recovery, and current access checks. Its verification section identifies the source, database, container, and browser checks that must be reviewed before claiming PRD-01 acceptance.
+
+### Read the docs in the right order
+
+The folder names describe where a document lives; the subject index describes what it covers. Feature guides also live in `docs/architecture/`, so use the [complete subject index](docs/README.md#browse-by-subject) instead of assuming all feature documentation sits at the top level.
+
+| If you are looking for… | Read this sequence |
+| --- | --- |
+| A product workflow | [Workflow links above](#find-a-workflow-quickly) → related contracts in that guide → its acceptance/evidence record |
+| Organization paging and deep links | [Directory behavior and browser paging](docs/architecture/organization-discovery.md#browser-paging-and-direct-organization-admission) → [bounded directory API](docs/architecture/organization-discovery.md#bounded-organization-directory-api) → [current access checks](docs/architecture/organization-access-integrity.md) |
+| Organization write integrity | [Organization transactions](docs/architecture/organization-command-transactions.md) → [remaining Demo transaction gap](docs/architecture/organization-command-transactions.md#remaining-demo-transaction-integrity) → [current actor sessions](docs/architecture/command-actor-sessions.md) |
+| Navigation behavior and recovery proof | [Navigation observations](docs/navigation-observations.md) → [SPA routing contracts](docs/architecture/web-spa-boundary.md) → [browser recovery evidence](docs/architecture/browser-recovery-ci.md) |
+| A release or deployment decision | [Release instructions](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [database roles](docs/architecture/runtime-database-roles.md) → [schema readiness and upgrades](docs/architecture/schema-upgrades.md) → [CI evidence retention](docs/architecture/ci-run-retention.md) |
+
+A behavior description explains the implemented contract. An acceptance record explains which requirements remain open. An evidence record reports a particular revision and test environment. Review all three when deciding whether a ticket or release is ready; Demo checks, restricted PostgreSQL checks, and tests against the final Docker images establish different parts of that proof.
+
+The [documentation index](docs/README.md) is the exhaustive file list. Its [maintenance guidance](docs/README.md#keeping-this-index-current) explains how to keep new and moved documents discoverable. GitHub issues remain the source for current ticket status; dated dependency inventories and historical CI evidence should be read with their recorded date and revision.
 
 ## Adopted architecture
 
