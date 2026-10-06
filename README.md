@@ -25,6 +25,18 @@ If you are new to the project, follow the architecture and runtime guides before
 
 The [docs index](docs/README.md) links to every document, grouped by subject. Use it when you know a feature but not its filename.
 
+```text
+docs/
+├── README.md          Complete index: browse every guide by subject
+├── architecture/     Architecture overview, runtime and feature contracts
+│   └── README.md      Start here to understand the system's boundaries
+├── release/
+│   └── README.md      Configure and run the Docker release verified by CI
+└── *.md              Feature guides, dependency maps, and verification records
+```
+
+Open [docs/README.md](docs/README.md), choose **Browse by subject**, and select a descriptive document title. Each guide's relative links lead to related contracts; the index's **project README** link returns here. For the full file inventory on GitHub, open the [docs folder](https://github.com/nickmailhot-lang/StrataAI2/tree/main/docs).
+
 Choose a reading path based on your task:
 
 1. **Understand a feature:** open its subject below, read the behavior guide, then follow its links to permissions, storage, and recovery contracts.
@@ -72,6 +84,7 @@ These links open the behavior or contract guide directly. Use the subject sectio
 | Workflow | Primary guides |
 | --- | --- |
 | Sign in, recover an account, or manage a profile | [Sign-in recovery and retries](docs/identity-login-retries.md), [recovery requests](docs/identity-recovery-request-retries.md), [profile management and local-time display](docs/architecture/profile-management.md) |
+| Verify an email, reset a password, sign out, or deactivate an account | [Single-use verification and reset tokens](docs/identity-token-consumption-retries.md), [logout and deactivation retries](docs/architecture/identity-command-retries.md), [account ownership continuity](docs/architecture/account-owner-continuity.md) |
 | Browse Organizations, follow deep links, and manage settings | [Paged Organization directory and browser navigation](docs/architecture/organization-discovery.md), [current membership and canonical Organization reads](docs/architecture/organization-access-integrity.md), [Organization settings](docs/architecture/organization-settings.md) |
 | Register from an invitation and accept access | [Invitation-backed registration](docs/invitation-registration.md), [registration retries](docs/identity-registration-retries.md), [verified-email discovery and acceptance](docs/architecture/invitation-discovery.md) |
 | Invite people and manage access | [Invitation administration](docs/architecture/invitation-administration-ui.md), [recipient invitation review](docs/invitation-link-review.md), [Organization members](docs/architecture/organization-member-administration.md), [Board members](docs/board-members-ui.md) |
