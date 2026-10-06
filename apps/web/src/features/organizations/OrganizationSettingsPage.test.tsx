@@ -36,15 +36,48 @@ describe('PRD-03-TC-01/05/06/08 Organization metadata administration', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Keep draft after review' })); fireEvent.click(save());
     await screen.findByText('Organization settings saved.'); expect(JSON.parse(fetcher.mock.calls[3][1].body).version).toBe(2);
   });
-  it('recovers a lost acknowledgment by comparing authoritative metadata without another mutation', async () => {
+  it('recovers a lost acknowledgment with the original key and then reviews later authoritative metadata', async () => {
     const fetcher = vi.fn().mockResolvedValueOnce(reply([summary])).mockRejectedValueOnce(new Error('lost response'))
-      .mockResolvedValueOnce(reply([{ ...summary, organization: { ...org, name: 'My draft', version: 2 } }]));
+      .mockResolvedValueOnce(reply({ ...org, name: 'My draft', version: 2 }))
+      .mockResolvedValueOnce(reply([{ ...summary, organization: { ...org, name: 'Later edit', version: 3 } }]));
     vi.stubGlobal('fetch', fetcher); mount();
     fireEvent.change(await screen.findByLabelText(/^Organization name/), { target: { value: 'My draft' } }); fireEvent.click(save());
     await screen.findByText(/Your save could not be confirmed/); expect(save()).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Load current settings' })); await screen.findByText(/Current Organization settings match your draft/);
-    expect(fetcher.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Load current settings' })).toBeDisabled();
+    expect(screen.getByLabelText(/^Organization name/)).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry original save' }));
+    await screen.findByText(/Original save acknowledgment recovered/);
+    expect(fetcher.mock.calls[2][1].body).toBe(fetcher.mock.calls[1][1].body);
+    expect(fetcher.mock.calls[2][1].headers.get('Idempotency-Key')).toBe(fetcher.mock.calls[1][1].headers.get('Idempotency-Key'));
+    expect(fetcher.mock.calls[1][1].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
+    expect(save()).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Load current settings' })); await screen.findByText('Name: Later edit');
+    expect(fetcher.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(2);
     expect(screen.queryByText('Organization settings saved.')).not.toBeInTheDocument();
+  });
+  it.each([401, 403, 404])('clears the preserved retry and private draft when recovery loses access (%s)', async status => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply([summary])).mockRejectedValueOnce(new Error('Lost'))
+      .mockResolvedValueOnce(reply({}, status)));
+    mount(); await screen.findByLabelText(/^Organization name/); fireEvent.click(save());
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry original save' }));
+    await screen.findByText(status === 401 ? 'Sign in destination' : 'Organization settings are unavailable to your account.');
+    expect(screen.queryByRole('button', { name: 'Retry original save' })).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue(org.description)).not.toBeInTheDocument();
+  });
+  it('keeps the same command after repeated uncertainty and releases it only after an expired refusal', async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(reply([summary])).mockRejectedValueOnce(new Error('Lost'))
+      .mockResolvedValueOnce(reply({}, 503)).mockResolvedValueOnce(reply({ code: 'idempotency_expired' }, 409));
+    vi.stubGlobal('fetch', fetcher); mount(); await screen.findByLabelText(/^Organization name/); fireEvent.click(save());
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry original save' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Retry original save' })).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Load current settings' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry original save' }));
+    await screen.findByText(/The Organization changed elsewhere/);
+    expect(screen.queryByRole('button', { name: 'Retry original save' })).not.toBeInTheDocument();
+    expect(save()).toBeDisabled(); expect(screen.getByRole('button', { name: 'Load current settings' })).toBeEnabled();
+    const writes = fetcher.mock.calls.slice(1);
+    expect(new Set(writes.map(call => call[1].body)).size).toBe(1);
+    expect(new Set(writes.map(call => call[1].headers.get('Idempotency-Key'))).size).toBe(1);
   });
   it.each([401, 403, 404])('clears private metadata when a save loses access (%s)', async status => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply([summary])).mockResolvedValueOnce(reply({}, status)));

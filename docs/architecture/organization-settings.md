@@ -6,7 +6,7 @@ The screen edits name, description and optional logo URL. HTTPS absolute URLs wi
 
 Metadata PATCH carries the last reviewed Organization version. Only a valid 200 response naming the same Organization, matching the submitted metadata and advancing the version exactly once produces a saved acknowledgment. A conflict preserves the draft and disables further saves until current authorized settings load. The user can discard the draft or explicitly retain it after reviewing the current saved metadata. Permission/session loss clears draft and saved metadata; expired sessions return to sign-in.
 
-A lost, timed-out or malformed save acknowledgment also requires an authoritative read before another save. When current metadata matches the draft, the screen reports that fact and explicitly says the earlier acknowledgment was unavailable; it issues no second mutation and does not invent a success receipt. Otherwise the user reviews the current metadata before deciding whether to replace it. This provides version-based reconciliation; durable Organization retry receipts and transactional Organization domain-event publication remain outstanding.
+A lost, timed-out or malformed save acknowledgment preserves the original metadata, version and retry key. The screen offers **Retry original save** and prevents editing or a replacement save while recovery is unresolved. The retry submits the same command to recover its durable acknowledgment. After recovery, a current authorized read is required before editing again; an old acknowledgment cannot replace another administrator's later settings. A definite conflict or expired acknowledgment requires current-state review before a new save. Organization domain-event publication remains outstanding.
 
 Reads and writes have a 15-second deadline, duplicate in-flight submission is refused, unmount aborts pending work, and late responses cannot replace a different route or restore private data. The settings route remounts on Organization change. Server/edge error text is not displayed as trusted product content.
 
@@ -16,8 +16,9 @@ Full PRD-03 remains open. Follow-up commits provide member administration, bound
 
 ## Keyed metadata API recovery
 
-Metadata PATCH now accepts an optional nonempty UUID `Idempotency-Key`. The
-existing unkeyed browser reconciliation remains supported. A keyed edit binds
+Metadata PATCH accepts an optional nonempty UUID `Idempotency-Key`; the settings
+screen supplies one for each new reviewed edit. Unkeyed API callers retain
+version-based reconciliation. A keyed edit binds
 the Organization, actor, submitted metadata and expected version to an immutable
 acknowledgment. Its receipt, edit and audit commit together under the owning
 Organization transaction. Receipt failure rolls back the edit and audit.
@@ -36,4 +37,9 @@ native Organization fixture covers denied receipt INSERT, unchanged edit/audit
 state, original replay after a later edit, mismatched input and expiry. The
 API-host scenario also checks withdrawal of admin membership. Strict compilation
 and fixture syntax pass; runtime execution remains pending CI. Browser same-key
-recovery, concurrency and post-receipt final-admission coverage remain to verify.
+recovery now preserves input/key across repeated uncertainty, clears private
+state on access withdrawal, and requires current settings after original replay.
+The desktop/phone keyboard fixture drops a committed response, applies a later
+edit, recovers the original receipt and verifies the later persisted revision
+survives reload. It includes WCAG 2.2 AA automated checks. Native browser execution,
+concurrency and post-receipt final-admission coverage remain to verify.
