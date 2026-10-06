@@ -20,6 +20,27 @@ history, no write or document reload, and accessibility checks. Actual execution
 remains pending exact-image CI; advancing browser time does not prove server
 expiry policy or mail delivery.
 
+## Temporary account uncertainty
+
+An unavailable, malformed or interrupted account check before revocation clears
+private history and consent without inventing an unknown mutation: the page
+states that no revocation was sent and requires a fresh protected history read
+before another review. If the DELETE was submitted, an unavailable subsequent
+account check instead retains the original invitation ID in memory for read-only
+canonical recovery. A 204 response alone is withheld until the original account
+is reconfirmed. Failed history refreshes also withdraw previous success notices.
+Neither path resubmits a DELETE automatically.
+
+Component coverage exercises both Organization and Board histories before and
+after submission, stale success withdrawal during refresh, and noncooperating
+account responses arriving after the request deadline. Late responses cannot
+send a previously unsent command or publish an unverified receipt. The required
+`invitation-history-account.spec.ts` adds desktop/mobile normal API scenarios
+with a one-time unavailable profile response, unchanged history before an
+unsent command, actual committed revocation afterward, and read-only recovery
+with exactly one DELETE, no document reload and accessibility checks. Native
+execution remains pending exact-image CI.
+
 `GET /organizations/{organizationId}/invitations?after={uuid}` returns at most
 50 issued invitations with an optional next cursor. Only a currently active
 Organization Owner/Admin may read it. The command rechecks the actor after

@@ -196,6 +196,86 @@ it('withdraws Board invitation history and revocation consent when heartbeat adm
   expect(screen.queryByText('Private maintenance')).not.toBeInTheDocument();
   expect(live.watch).not.toHaveBeenCalled();
 });
+it.each(['Organization', 'Board'])('withdraws %s history after temporary account failure without inventing a submitted revocation', async surface => {
+  let unavailable = false;
+  const mock = vi.fn(async (path: string, _options?: RequestInit) => reply(path === '/me' ? unavailable ? {} : profile
+    : path === `/boards/${board}` ? boardScope : { items: [surface === 'Board' ? boardRow : row], nextCursor: null },
+  path === '/me' && unavailable ? 503 : 200));
+  vi.stubGlobal('fetch', mock); if (surface === 'Board') boardMount(); else mount(); await review();
+  unavailable = true; fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+  await screen.findByText('Your account could not be confirmed. No revocation was sent. Refresh invitations before reviewing again.');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Private maintenance' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Check revocation' })).not.toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+  unavailable = false; fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+  await screen.findByRole('button', { name: `Revoke invitation for ${row.email}` });
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
+it.each(['Organization', 'Board'])('keeps actual %s revocation recovery when its acknowledgment is followed by an unavailable account', async surface => {
+  let revoked = false, unavailable = false;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (options?.method === 'DELETE') { revoked = true; unavailable = true; return reply(null, 204); }
+    return reply(path === '/me' ? unavailable ? {} : profile : path === `/boards/${board}` ? boardScope
+      : { items: [{ ...(surface === 'Board' ? boardRow : row), revokedAt: revoked ? '2034-01-02T00:00:00Z' : null }], nextCursor: null },
+    path === '/me' && unavailable ? 503 : 200);
+  });
+  vi.stubGlobal('fetch', mock); if (surface === 'Board') boardMount(); else mount(); await review();
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+  await screen.findByText('Revocation could not be confirmed. Check the current invitation state before another action.');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+  expect(screen.queryByText('Invitation revocation confirmed.')).not.toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+  unavailable = false; fireEvent.click(screen.getByRole('button', { name: 'Check revocation' }));
+  await screen.findByText('Invitation revocation confirmed.'); expect(screen.getByText('Revoked')).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+});
+it('withdraws a previous success notice when refresh cannot confirm the current account', async () => {
+  let revoked = false, unavailable = false;
+  vi.stubGlobal('fetch', vi.fn(async (path: string, options?: RequestInit) => {
+    if (options?.method === 'DELETE') { revoked = true; return reply(null, 204); }
+    return reply(path === '/me' ? unavailable ? {} : profile
+      : { items: [{ ...row, revokedAt: revoked ? '2034-01-02T00:00:00Z' : null }], nextCursor: null },
+    path === '/me' && unavailable ? 503 : 200);
+  }));
+  mount(); await review(); fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+  await screen.findByText('Revoked'); expect(screen.getByText('Invitation revocation confirmed.')).toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  unavailable = true; fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+  await screen.findByText('Unable to confirm invitation history. Please retry.');
+  expect(screen.queryByText('Invitation revocation confirmed.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+});
+it.each(['before', 'after'])('fences a noncooperating account response that times out %s revocation submission', async phase => {
+  let blockProfile = false, revoked = false, resolve: ((response: Response) => void) | undefined;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (options?.method === 'DELETE') { revoked = true; blockProfile = phase === 'after'; return reply(null, 204); }
+    if (path === '/me' && blockProfile) {
+      blockProfile = false; return new Promise<Response>(done => { resolve = done; });
+    }
+    return reply(path === '/me' ? profile : { items: [{ ...row, revokedAt: revoked ? '2034-01-02T00:00:00Z' : null }], nextCursor: null });
+  });
+  vi.stubGlobal('fetch', mock); mount(); await review();
+  vi.useFakeTimers(); blockProfile = phase === 'before';
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' })));
+  expect(resolve).toBeDefined();
+  await act(async () => vi.advanceTimersByTimeAsync(15_500));
+  await act(async () => vi.advanceTimersByTimeAsync(500));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByText(phase === 'before'
+    ? 'Your account could not be confirmed. No revocation was sent. Refresh invitations before reviewing again.'
+    : 'Revocation could not be confirmed. Check the current invitation state before another action.')).toBeInTheDocument();
+  await act(async () => { resolve!(reply(profile)); });
+  expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+  expect(screen.queryByText('Invitation revocation confirmed.')).not.toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(phase === 'before' ? 0 : 1);
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: phase === 'before' ? 'Refresh invitations' : 'Check revocation' })));
+  expect(screen.getByRole('heading', { name: row.email })).toBeInTheDocument();
+  if (phase === 'after') expect(screen.getByText('Invitation revocation confirmed.')).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(phase === 'before' ? 0 : 1);
+});
 it('shows the exact Board role and recovers a lost revocation from canonical history', async () => {
   const mock = fetcher(reply(profile), reply(boardScope), reply({ items: [boardRow], nextCursor: null }), new Error('Lost committed acknowledgment'),
     reply(profile), reply(boardScope), reply({ items: [{ ...boardRow, revokedAt: '2034-01-02T00:00:00Z' }], nextCursor: null }));

@@ -156,20 +156,24 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
             ? 'This invitation was accepted. Existing access is managed separately.' : 'Revocation was not confirmed. Review the current invitation before trying again.');
         } else setError('Revocation is still unconfirmed. Review the remaining invitation pages to locate its current state.');
       }
-    } catch { if (mounted.current && pending.current === controller) setError('Unable to confirm invitation history. Please retry.'); }
+    } catch { if (mounted.current && pending.current === controller) {
+      setBoardName(undefined); setRows(undefined); setSelected(undefined); setPreferences(undefined); setNotice(undefined);
+      setError('Unable to confirm invitation history. Please retry.');
+    } }
     finally { finish(controller); }
   }
   async function revoke() {
     if (!selected || unconfirmed) return;
     const target = selected; const controller = begin(); if (!controller) return;
     const started = epoch.current;
-    setError(undefined); setNotice(undefined); let reload = false;
+    setError(undefined); setNotice(undefined); let reload = false, submitted = false;
     try {
       const current = await account(controller); if (!current) return;
       if (started !== epoch.current) return;
       if (Date.parse(target.expiresAt) <= Date.now()) {
         setNotice('This invitation reached its expiry time. Review its current state.'); reload = true; return;
       }
+      submitted = true;
       const result = await request(`${root}/${target.id}?expectedActorId=${encodeURIComponent(current.id)}`, { method: 'DELETE' }, controller); if (!valid(controller)) return;
       if ([401, 403].includes(result.status) || boardId !== undefined && (result.body as { code?: string } | undefined)?.code === 'board_not_found') { deny(result.status); return; }
       if (!await account(controller, current.id)) return;
@@ -179,8 +183,11 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
         setError('Revocation could not be confirmed. Check the current invitation state before another action.');
       }
     } catch { if (mounted.current && pending.current === controller) {
-      recoveryId.current = target.id; setUnconfirmed(target.id); setBoardName(undefined); setRows(undefined);
-      setError('Revocation could not be confirmed. Check the current invitation state before another action.');
+      setBoardName(undefined); setRows(undefined); setPreferences(undefined); setNotice(undefined);
+      if (submitted) {
+        recoveryId.current = target.id; setUnconfirmed(target.id);
+        setError('Revocation could not be confirmed. Check the current invitation state before another action.');
+      } else setError('Your account could not be confirmed. No revocation was sent. Refresh invitations before reviewing again.');
     } } finally {
       if (mounted.current) setSelected(undefined); finish(controller);
       if (reload && mounted.current) await load(cursor, previous);
