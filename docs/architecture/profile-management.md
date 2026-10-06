@@ -156,3 +156,13 @@ rules. Two API-host cases expire the clock after a real profile event appears,
 check unchanged account/event state and absent failed receipt, then retry once
 and check keyed replay without duplicate publication. Native execution remains
 pending CI; compilation alone does not establish these acceptance outcomes.
+
+The mandatory `test-identity-command-transactions.sh` release fixture adds a
+CI-only invoker trigger that waits after inserting a real profile retry receipt.
+It shortens the original session lifetime, requires observation of that exact
+runtime-role INSERT in PostgreSQL `PgSleep`, and then requires HTTP 401 without
+profile disclosure or a cookie. Complete account/session/audit/stream/event/receipt
+state must match the pre-request snapshot. The trigger is removed, the original
+expiry restored, and the existing concurrent same-key success/replay checks run
+afterward. Bash syntax passes; exact-image execution remains pending CI. Runtime
+grants and production schema remain unchanged.

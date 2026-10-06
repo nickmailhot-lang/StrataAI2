@@ -14,6 +14,7 @@ cleanup() {
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   for pid in "${retry_pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
   admin 'GRANT INSERT ON audit_events,identity_events,identity_profile_replays TO strataai_api_runtime;' >/dev/null
+  admin 'DROP TRIGGER IF EXISTS ci_profile_receipt_wait ON identity_profile_replays; DROP FUNCTION IF EXISTS public.ci_profile_receipt_wait();' >/dev/null
   if test "$small_pool_started" = 1; then
     docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api >/dev/null
   fi
@@ -81,6 +82,36 @@ test "$(request PATCH /me "$saved_body" "$retry_key")" = 503
 jq -e '.code=="identity_storage_unavailable"' "$scratch/response.json" >/dev/null
 test "$before" = "$(state)"
 admin 'GRANT INSERT ON identity_profile_replays TO strataai_api_runtime;' >/dev/null
+# Observe real receipt publication before the original session expires. The
+# final profile admission must roll back user, audit, event stream and receipt.
+primary_session="$(admin "SELECT id FROM sessions WHERE user_id='$user' ORDER BY created_at,id LIMIT 1;")"
+original_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$primary_session';")"
+admin "CREATE FUNCTION public.ci_profile_receipt_wait() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+BEGIN
+  IF NEW.user_id='$user'::uuid THEN PERFORM pg_sleep(12); END IF;
+  RETURN NEW;
+END;
+\$\$;
+CREATE TRIGGER ci_profile_receipt_wait AFTER INSERT ON identity_profile_replays
+  FOR EACH ROW EXECUTE FUNCTION public.ci_profile_receipt_wait();" >/dev/null
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$primary_session';" >/dev/null
+publication_before="$(state)"
+request PATCH /me "$saved_body" "$retry_key" > "$scratch/publication.status" &
+request_pid=$!
+for attempt in $(seq 1 100); do
+  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_profile_replays%';")" = 1; then break; fi
+  sleep 0.1
+done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_profile_replays%';")" = 1
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/publication.status")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/response.json" >/dev/null
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
+scripts/ci/assert-file-excludes.sh "$user|Atomic profile saved" "$scratch/response.json"
+test "$publication_before" = "$(state)"
+admin 'DROP TRIGGER ci_profile_receipt_wait ON identity_profile_replays; DROP FUNCTION public.ci_profile_receipt_wait();' >/dev/null
+admin "UPDATE sessions SET expires_at='$original_expiry'::timestamptz WHERE id='$primary_session';" >/dev/null
+test "$before" = "$(state)"
 # Three concurrent copies of the initial intent commit only once.
 retry_pids=()
 for n in 1 2 3; do
