@@ -20,11 +20,14 @@ public sealed partial class ApiHostTests
         var clock = new SignInReceiptExpiryClock();
         await using var app = new ApiFactory(configureServices: services => services.AddSingleton<IClock>(clock));
         using var client = app.CreateClient();
-        await RegisterAndLogin(client);
+        var cookie = await RegisterAndLogin(client);
         var profile = await client.GetFromJsonAsync<JsonElement>("/me", ct);
         var actor = profile.GetProperty("id").GetGuid();
         var store = app.Services.GetRequiredService<IIdentityStore>();
         var receipts = app.Services.GetRequiredService<IIdentityProfileReplayStore>();
+        var sessionHash = app.Services.GetRequiredService<ISecureTokenService>().Hash(cookie.Split('=', 2)[1]);
+        var originalSession = await store.FindRevocationSessionProofAsync(sessionHash, ct);
+        Assert.NotNull(originalSession);
         var original = await store.FindUserByIdAsync(actor, ct);
         var events = (await store.ReadEventsAsync(actor, 0, ct)).Value!.Events.ToArray();
         var key = Guid.NewGuid(); var observed = false;
@@ -33,7 +36,7 @@ public sealed partial class ApiHostTests
             if (current.Count == events.Length) return null;
             Assert.Equal("USER_PROFILE_UPDATED", current.Last().EventType);
             observed = true;
-            return clock.Instant.AddYears(10);
+            return originalSession.ExpiresAt;
         };
         var body = new { displayName = "Final admission profile", version = original!.Version };
         using var denied = await Mutate(client, HttpMethod.Patch, "/me", body, keyed ? key.ToString() : null);
@@ -41,6 +44,8 @@ public sealed partial class ApiHostTests
         Assert.DoesNotContain("Final admission profile", await denied.Content.ReadAsStringAsync(ct));
         clock.AfterReceipt = null;
         Assert.Equal(original, await store.FindUserByIdAsync(actor, ct));
+        Assert.Equal(originalSession, await store.FindRevocationSessionProofAsync(sessionHash, ct));
+        Assert.NotNull(await store.FindActiveSessionAsync(sessionHash, clock.Instant, ct));
         Assert.Equal(events, (await store.ReadEventsAsync(actor, 0, ct)).Value!.Events.ToArray());
         Assert.Null(await receipts.ReadAsync(actor, key, ct));
         using var retry = await Mutate(client, HttpMethod.Patch, "/me", body, keyed ? key.ToString() : null);

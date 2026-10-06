@@ -137,7 +137,8 @@ for (const width of [1280, 390]) {
     } })).status()).toBe(200);
     await page.goto(`/app/${org}/search`);
     await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('Timezone deadline fixture');
-    await page.getByRole('button', { name: 'Search', exact: true }).press('Enter');
+    const search = page.getByRole('button', { name: 'Search', exact: true });
+    await search.focus(); await expect(search).toBeFocused(); await search.press('Enter');
     await expect(page.getByText(/Due Jan 1, 2040, 14:30/)).toBeVisible();
     const profile = await (await context.request.get('/me')).json();
     expect((await context.request.patch('/me', { headers, data: { timezone: 'Asia/Tokyo', version: profile.version } })).status()).toBe(200);
@@ -164,5 +165,6 @@ for (const width of [1280, 390]) {
       expect(persistedCard).toBeDefined();
       expect(new Date(persistedCard.dueAt).toISOString()).toBe('2040-01-02T00:30:00.000Z');
     }
+    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
   });
 }

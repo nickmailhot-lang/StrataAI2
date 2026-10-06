@@ -175,3 +175,12 @@ the original fixture session must return the committed acknowledgment without
 another state/event/receipt change. This covers final admission of existing
 receipts separately from rollback of fresh saves. Syntax passes; execution is
 pending the exact-image CI run.
+
+The profile final-admission API-host cases now derive the actual original session
+proof from its issued cookie, advance the injected clock to that exact expiry
+after real profile event publication, and require the session proof to be restored
+alongside account/events/receipt state. Strict compilation passes with no warnings
+or errors; execution remains pending. The desktop/phone search timezone fixtures
+also require keyboard Search focus and no automated WCAG 2.2 AA-tagged violations
+after Board-policy changes/clearing. Browser TypeScript passes; automated checks
+do not replace the remaining accessibility and native release acceptance work.
