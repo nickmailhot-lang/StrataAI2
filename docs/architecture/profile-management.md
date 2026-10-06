@@ -202,3 +202,11 @@ cleared. The Honolulu date-only case requires the final PostgreSQL microsecond
 of that local day; setting Board display policy must preserve it. Initial no-date
 projection and outsider policy privacy checks remain covered. Strict compilation
 is verified separately; API-host execution remains pending CI.
+
+The mandatory native global-search fixture now edits an existing private Card to
+a timed deadline and then a Honolulu date-only deadline, requiring search to
+retain the timed flag, date context and final-microsecond UTC precision. Its
+outsider query requires no date/context/Board/List disclosure. These checks run
+after the original 50+2 continuation checks and before archived-parent checks;
+the original collection coverage remains required. Bash syntax passes; native
+exact-image execution remains pending.

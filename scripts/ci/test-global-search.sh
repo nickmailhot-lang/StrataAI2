@@ -67,6 +67,21 @@ diff -u "$scratch/expected.sorted" "$scratch/actual.sorted"
 cursor=$(jq -r '.nextCursor' "$scratch/page.json")
 test "$(search owner active "$cursor")" = 200
 jq -e '.items==[] and .nextCursor==null' "$scratch/page.json" >/dev/null
+date_card="$(head -n 1 "$scratch/expected.ids")"
+test "$(request owner PATCH "/cards/$date_card/dates" '{"startAt":null,"dueAt":"2040-01-02T00:30:00Z","dueTimezone":"UTC","dueHasTime":true,"dueComplete":false,"version":1}')" = 200
+test "$(search owner active '' 'Search 1 100%_')" = 200
+jq -e --arg card "$date_card" '(.items|length)==1 and .items[0].card.id==$card and .items[0].card.dueHasTime==true
+  and (.items[0].card.dueAt|test("^2040-01-02T00:30:00(Z|\\+00:00)$"))' "$scratch/page.json" >/dev/null
+test "$(request owner PATCH "/cards/$date_card/dates" '{"startAt":null,"dueAt":"2040-01-02","dueTimezone":"Pacific/Honolulu","dueHasTime":false,"dueComplete":false,"version":2}')" = 200
+test "$(search owner active '' 'Search 1 100%_')" = 200
+grep -iq '^cache-control: private, no-store' "$scratch/headers"
+jq -e --arg card "$date_card" '(.items|length)==1 and .items[0].card.id==$card and .items[0].card.dueHasTime==false
+  and .items[0].card.dueTimezone=="Pacific/Honolulu"
+  and (.items[0].card.dueAt|test("^2040-01-03T09:59:59\\.9999990?(Z|\\+00:00)$"))' "$scratch/page.json" >/dev/null
+test "$(search outsider active '' 'Search 1 100%_')" = 200
+jq -e '.items==[] and .nextCursor==null' "$scratch/page.json" >/dev/null
+scripts/ci/assert-file-excludes.sh 'Pacific/Honolulu|2040-01|Search Board|Search List' "$scratch/page.json"
+
 test "$(search owner unexpected)" = 400
 jq -e '.code=="invalid_search"' "$scratch/page.json" >/dev/null
 test "$(request owner POST "/lists/$list/archive" '{"version":1}')" = 200
