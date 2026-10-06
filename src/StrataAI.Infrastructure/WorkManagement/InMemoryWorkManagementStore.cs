@@ -79,10 +79,19 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
     }
 
     public Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsPageAsync(
-        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default)
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default) =>
+        ListVisibleBoardsPageCoreAsync(organizationId, userId, organizationAdministrator, after, false, cancellationToken);
+
+    public Task<IReadOnlyList<OrganizationBoardSummary>> ListActiveVisibleBoardsPageAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default) =>
+        ListVisibleBoardsPageCoreAsync(organizationId, userId, organizationAdministrator, after, true, cancellationToken);
+
+    private Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsPageCoreAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, bool activeOnly, CancellationToken cancellationToken)
     {
         lock (_sync) return Task.FromResult<IReadOnlyList<OrganizationBoardSummary>>(
             _boards.Values.Where(b => b.OrganizationId == organizationId && b.LifecycleState != BoardLifecycleState.Deleted
+                && (!activeOnly || b.LifecycleState == BoardLifecycleState.Active)
                 && (after is null || b.Id.CompareTo(after.Value) > 0)
                 && (b.Visibility != BoardVisibility.Private || organizationAdministrator
                     || (_members.TryGetValue((b.Id, userId), out var member) && member.Active)))

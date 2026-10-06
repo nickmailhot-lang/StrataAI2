@@ -58,6 +58,11 @@ public interface IWorkManagementStore
         bool organizationAdministrator,
         CancellationToken cancellationToken = default);
 
+    // Active home directory only. Current Organization admission must be held;
+    // lifecycle and visibility eligibility precede the UUID seek / 51-row cap.
+    Task<IReadOnlyList<StrataAI.Application.Organizations.OrganizationBoardSummary>> ListActiveVisibleBoardsPageAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default);
+
     // Caller must freshly authorize the owning Organization. UUID seek,
     // 51 rows; Board admission is still required before reading Card content.
     Task<IReadOnlyList<StrataAI.Application.Organizations.OrganizationBoardSummary>> ListVisibleBoardsPageAsync(

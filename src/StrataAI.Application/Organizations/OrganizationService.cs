@@ -237,6 +237,32 @@ public sealed class OrganizationService(
         return OrganizationOperation<OrganizationRecord>.Success(updated);
     }
 
+    public Task<OrganizationOperation<OrganizationBoardDirectoryPage>> ListBoardsPageAsync(
+        Guid organizationId, Guid actorUserId, Guid? after, CancellationToken cancellationToken = default)
+    {
+        if (organizationId == Guid.Empty)
+            return Task.FromResult(OrganizationOperation<OrganizationBoardDirectoryPage>.Failure("organization_not_found"));
+        if (after == Guid.Empty)
+            return Task.FromResult(OrganizationOperation<OrganizationBoardDirectoryPage>.Failure("invalid_board_directory_cursor"));
+        return unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false, async () =>
+        {
+            var member = await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken);
+            if (member is not { Active: true })
+                return OrganizationOperation<OrganizationBoardDirectoryPage>.Failure("organization_not_found");
+            var rows = await workStore.ListActiveVisibleBoardsPageAsync(organizationId, actorUserId,
+                member.Role is OrganizationRole.Owner or OrganizationRole.Admin, after, cancellationToken);
+            // Refuse the whole page if admission changed during the read. The
+            // owning production transaction holds the parent/member locks.
+            var current = await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken);
+            if (current is not { Active: true } || current.Role != member.Role
+                || (await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
+                return OrganizationOperation<OrganizationBoardDirectoryPage>.Failure("organization_not_found");
+            var items = rows.Take(50).ToArray();
+            return OrganizationOperation<OrganizationBoardDirectoryPage>.Success(new(organizationId, items,
+                rows.Count > 50 ? items[^1].Id : null));
+        }, cancellationToken);
+    }
+
     public async Task<OrganizationOperation<IReadOnlyList<OrganizationBoardSummary>>> ListBoardsAsync(
         Guid organizationId,
         Guid actorUserId,

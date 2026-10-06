@@ -25,6 +25,22 @@ public static class OrganizationEndpoints
             return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         });
 
+        group.MapGet("/{organizationId:guid}/boards/directory", async (Guid organizationId, string? after,
+            HttpContext context, IOrganizationService service, CancellationToken cancellationToken) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            Guid? cursor = null;
+            if (after is not null)
+            {
+                if (after.Length != 36 || !Guid.TryParseExact(after, "D", out var parsed) || parsed == Guid.Empty)
+                    return ErrorFor("invalid_board_directory_cursor");
+                cursor = parsed;
+            }
+            var result = await service.ListBoardsPageAsync(organizationId, actor.Value, cursor, cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+
         group.MapGet("/{organizationId:guid}", async (Guid organizationId, HttpContext context,
             IOrganizationService service, CancellationToken cancellationToken) =>
         {
@@ -267,6 +283,8 @@ public static class OrganizationEndpoints
                 "A positive membership version is required."),
             "member_version_conflict" => Problem(StatusCodes.Status409Conflict, errorCode,
                 "The membership changed elsewhere. Review the current membership before removing it."),
+            "invalid_board_directory_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode,
+                "The Board directory page cursor is invalid."),
             "invalid_organization_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode,
                 "The Organization page cursor is invalid."),
             "invalid_member_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode,

@@ -147,3 +147,31 @@ refusal. The native `organization-directory.spec.ts` creates 51 actual acknowled
 Organizations and checks keyboard paging and a later-page direct deep link at
 1280px and 390px. Browser TypeScript checks passed; native execution remains
 pending the exact-image CI gate. Source checks do not complete PRD-03 acceptance.
+
+## Bounded active Board directory API
+
+`GET /organizations/{organizationId}/boards/directory?after={uuid}` returns
+`{organizationId, items, nextCursor}`. Each page returns at most 50 active,
+currently discoverable Board summaries, ordered by UUID, with one lookahead row.
+A nonempty canonical UUID is required when `after` is supplied; malformed
+cursors return `invalid_board_directory_cursor` (400). Responses are private and
+no-store. A null cursor ends traversal; follow the returned cursor to visit the
+remaining rows without accumulating an unbounded response.
+
+The owning Organization transaction holds current parent and member admission.
+Private Board eligibility and active lifecycle filtering happen before the seek
+and 51-row limit in both providers. Member departure, inactive Organizations and
+final actor loss refuse the page. A current role change during the read discards
+the whole result. Production storage errors use the existing masked Organization
+failure contract. Archived Boards retain their separate administrator directory;
+the internal search traversal continues to include its existing archived scope.
+
+The API-host fixture covers 52 visible Boards behind more than a page of earlier
+private and archived candidates, exact continuation, explicit private membership,
+Owner discovery, malformed cursors, outsider denial, revocation and parent
+deletion admission. The restricted PostgreSQL contract adds 51 earlier archived
+Boards and checks active pre-limit filtering, complete seek, tenant isolation and
+preservation of the existing search traversal. Compilation is not runtime proof;
+CI execution remains required. The browser and legacy `/boards` array still use
+their existing contract pending the browser migration. Full PRD-03/04 acceptance
+remains unfinished.

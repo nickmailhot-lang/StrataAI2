@@ -41,6 +41,9 @@ public sealed record OrganizationSummary(
     OrganizationRecord Organization,
     OrganizationRole Role);
 
+public sealed record OrganizationBoardDirectoryPage(Guid OrganizationId,
+    IReadOnlyList<OrganizationBoardSummary> Items, Guid? NextCursor);
+
 public sealed record OrganizationDirectoryPage(IReadOnlyList<OrganizationSummary> Items, Guid? NextCursor);
 
 public sealed record OrganizationMemberSummary(Guid MembershipId, Guid UserId, string DisplayName,

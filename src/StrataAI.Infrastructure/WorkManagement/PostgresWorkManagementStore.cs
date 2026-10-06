@@ -190,13 +190,22 @@ internal sealed partial class PostgresWorkManagementStore(
         return result;
     }
 
-    public async Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsPageAsync(
-        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsPageAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default) =>
+        ListVisibleBoardsPageCoreAsync(organizationId, userId, organizationAdministrator, after, false, cancellationToken);
+
+    public Task<IReadOnlyList<OrganizationBoardSummary>> ListActiveVisibleBoardsPageAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, CancellationToken cancellationToken = default) =>
+        ListVisibleBoardsPageCoreAsync(organizationId, userId, organizationAdministrator, after, true, cancellationToken);
+
+    private async Task<IReadOnlyList<OrganizationBoardSummary>> ListVisibleBoardsPageCoreAsync(
+        Guid organizationId, Guid userId, bool organizationAdministrator, Guid? after, bool activeOnly, CancellationToken cancellationToken)
     {
         await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT b.id,b.name,b.version FROM boards b
             WHERE b.tenant_id=@tenant AND b.lifecycle_state<>'DELETED'
+              AND (NOT @active_only OR b.lifecycle_state='ACTIVE')
               AND (@after IS NULL OR b.id>@after)
               AND (b.visibility<>'PRIVATE' OR @admin OR EXISTS (
                 SELECT 1 FROM board_members m WHERE m.tenant_id=b.tenant_id AND m.board_id=b.id
@@ -206,6 +215,7 @@ internal sealed partial class PostgresWorkManagementStore(
         command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("user", userId);
         command.Parameters.AddWithValue("admin", organizationAdministrator);
         command.Parameters.AddWithValue("after", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        command.Parameters.AddWithValue("active_only", activeOnly);
         var result = new List<OrganizationBoardSummary>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken)) result.Add(new(reader.GetGuid(0), reader.GetString(1), reader.GetInt64(2)));

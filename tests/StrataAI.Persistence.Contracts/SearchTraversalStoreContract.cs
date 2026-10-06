@@ -16,7 +16,9 @@ internal static class SearchTraversalStoreContract
         var tenants = Enumerable.Range(0, 52).Select(_ => Guid.NewGuid()).ToArray();
         var boards = Enumerable.Range(0, 52).Select(n => Guid.Parse($"80000000-0000-4000-8000-{n + 1:000000000000}")).ToArray();
         var hidden = Guid.Parse("00000000-0000-4000-8000-000000000001");
-        var allBoards = boards.Append(hidden).ToArray();
+        var archivedBoards = Enumerable.Range(1, 51).Select(n => Guid.Parse($"30000000-0000-4000-8000-{n:000000000000}")).ToArray();
+        var searchBoards = boards.Append(hidden).ToArray();
+        var allBoards = searchBoards.Concat(archivedBoards).ToArray();
         void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
         try
         {
@@ -34,7 +36,7 @@ internal static class SearchTraversalStoreContract
             {
                 seed.Parameters.AddWithValue("tenants", tenants); seed.Parameters.AddWithValue("inactive", tenants[0]);
                 seed.Parameters.AddWithValue("tenant", tenant); seed.Parameters.AddWithValue("user", user);
-                seed.Parameters.AddWithValue("boards", boards); seed.Parameters.AddWithValue("all_boards", allBoards);
+                seed.Parameters.AddWithValue("boards", boards); seed.Parameters.AddWithValue("all_boards", searchBoards);
                 await seed.ExecuteNonQueryAsync(ct);
             }
             var services = new ServiceCollection(); services.AddLogging();
@@ -62,6 +64,30 @@ internal static class SearchTraversalStoreContract
                 "Private Board traversal admitted an unknown actor.");
             Require((await work.ListVisibleBoardsPageAsync(tenants[1], user, true, null, ct)).Count == 0,
                 "Board traversal crossed its tenant.");
+            await using (var archiveSeed = new NpgsqlCommand("""
+                INSERT INTO boards(id,tenant_id,name,visibility,lifecycle_state,archived_at,created_at,updated_at)
+                  SELECT id,@tenant,'Archived home-directory exclusion','ORGANIZATION','ARCHIVED',now(),now(),now()
+                  FROM unnest(@archived) id;
+                """, admin))
+            {
+                archiveSeed.Parameters.AddWithValue("tenant", tenant);
+                archiveSeed.Parameters.AddWithValue("archived", archivedBoards);
+                await archiveSeed.ExecuteNonQueryAsync(ct);
+            }
+            var active = await work.ListActiveVisibleBoardsPageAsync(tenant, user, false, null, ct);
+            Require(active.Count == 51 && active.All(row => boards.Contains(row.Id)),
+                "Active Board directory did not apply lifecycle/private eligibility before its page cap.");
+            var activeTail = await work.ListActiveVisibleBoardsPageAsync(tenant, user, false, active[49].Id, ct);
+            Require(active.Take(50).Concat(activeTail).Select(row => row.Id).SequenceEqual(boards.Order()),
+                "Active Board directory seek lost, duplicated or widened visible rows.");
+            Require((await work.ListActiveVisibleBoardsPageAsync(tenant, Guid.NewGuid(), false, null, ct)).Count == 0,
+                "Active Board directory exposed archived metadata to an unknown actor.");
+            Require((await work.ListActiveVisibleBoardsPageAsync(tenants[1], user, true, null, ct)).Count == 0,
+                "Active Board directory crossed its tenant.");
+            Require((await work.ListVisibleBoardsPageAsync(tenant, user, false, null, ct))
+                .Select(row => row.Id).SequenceEqual(archivedBoards),
+                "Active-only home discovery accidentally changed archived search traversal.");
+            Console.WriteLine("Restricted active Board directory: pre-limit lifecycle/visibility exclusion, bounded UUID seek and tenant isolation passed.");
             Console.WriteLine("Restricted search traversal: bounded routing, inactive hints, UUID seeks, private pre-limit eligibility and tenant isolation passed.");
         }
         finally
