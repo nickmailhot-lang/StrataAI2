@@ -3,7 +3,7 @@ using StrataAI.Application.Identity;
 
 namespace StrataAI.Infrastructure.Organizations;
 
-internal sealed class InMemoryOrganizationStore(IIdentityStore identities, IdentityPolicy policy) : IOrganizationStore
+internal sealed partial class InMemoryOrganizationStore(IIdentityStore identities, IdentityPolicy policy) : IOrganizationStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<Guid, OrganizationRecord> _organizations = [];
@@ -281,4 +281,17 @@ internal sealed class InMemoryOrganizationStore(IIdentityStore identities, Ident
         string correlationId,
         CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
+}
+
+internal sealed partial class InMemoryOrganizationStore : StrataAI.Infrastructure.WorkManagement.IDemoWorkTransactionParticipant
+{
+    public Action CaptureRollback()
+    {
+        lock (_sync)
+        {
+            var organizations = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_organizations);
+            var members = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_members);
+            return () => { lock (_sync) { organizations(); members(); } };
+        }
+    }
 }

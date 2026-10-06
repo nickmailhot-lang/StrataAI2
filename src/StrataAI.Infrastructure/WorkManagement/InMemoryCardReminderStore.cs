@@ -2,10 +2,18 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class InMemoryCardReminderStore : ICardReminderStore
+internal sealed class InMemoryCardReminderStore : ICardReminderStore, IDemoWorkTransactionParticipant
 {
     private readonly object _gate = new();
     private readonly Dictionary<(Guid Organization, Guid User, Guid Card), CardReminder> _rows = [];
+    public Action CaptureRollback()
+    {
+        lock (_gate)
+        {
+            var restore = DemoRollback.Dictionary(_rows);
+            return () => { lock (_gate) restore(); };
+        }
+    }
     internal ActivityPrivateTarget? FindActivityTarget(Guid organizationId, Guid reminderId)
     {
         lock (_gate)

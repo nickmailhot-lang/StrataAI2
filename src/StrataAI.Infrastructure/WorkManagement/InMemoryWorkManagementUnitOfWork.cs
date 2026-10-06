@@ -7,9 +7,10 @@ namespace StrataAI.Infrastructure.WorkManagement;
 
 // Demo has no PostgreSQL dependency. Results live only for this host lifetime.
 internal sealed class InMemoryWorkManagementUnitOfWork(IClock clock, ICommandActorAuthorization actors,
-    DemoWorkTransactionScope scope, IEnumerable<IDemoWorkTransactionParticipant> participants) : IWorkManagementUnitOfWork
+    DemoWorkTransactionScope scope, IEnumerable<IDemoWorkTransactionParticipant> participants,
+    StrataAI.Infrastructure.Persistence.InMemoryAccountOrganizationGate gate) : IWorkManagementUnitOfWork
 {
-    private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly SemaphoreSlim _gate = gate.WorkCommands;
     private readonly ConcurrentDictionary<(Guid Organization, Guid Actor, Guid Key), (string Fingerprint, DateTimeOffset Expires, object Result)> _results = new();
 
     public async Task<WorkOperation<T>> ExecuteReadAsync<T>(Guid organizationId, Guid? actorId, string scopeFailureCode,

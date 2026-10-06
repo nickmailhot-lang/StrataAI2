@@ -59,7 +59,10 @@ public static class WorkManagementRegistration
             services.AddSingleton<IWatchSubscriptionStore>(provider => provider.GetRequiredService<InMemoryWatchSubscriptionStore>());
             services.AddSingleton<InMemoryCardReminderStore>();
             services.AddSingleton<ICardReminderStore>(provider => provider.GetRequiredService<InMemoryCardReminderStore>());
-            services.AddSingleton<ICardReminderJobPublisher, InMemoryCardReminderJobPublisher>();
+            services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryCardReminderStore>());
+            services.AddSingleton<InMemoryCardReminderJobPublisher>();
+            services.AddSingleton<ICardReminderJobPublisher>(provider => provider.GetRequiredService<InMemoryCardReminderJobPublisher>());
+            services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryCardReminderJobPublisher>());
             services.AddSingleton<IAttachmentScanJobPublisher, InMemoryAttachmentScanJobPublisher>();
         }
         else

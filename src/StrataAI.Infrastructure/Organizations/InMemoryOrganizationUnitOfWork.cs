@@ -1,28 +1,50 @@
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Identity;
 using StrataAI.Infrastructure.Persistence;
+using StrataAI.Infrastructure.WorkManagement;
 
 namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, ICommandActorAuthorization actors,
-    InMemoryAccountOrganizationGate gate) : IOrganizationUnitOfWork
+    InMemoryAccountOrganizationGate gate, DemoWorkTransactionScope scope,
+    IEnumerable<IDemoWorkTransactionParticipant> participants) : IOrganizationUnitOfWork
 {
-    private readonly SemaphoreSlim _commands = gate.Commands;
-
     public async Task<OrganizationOperation<T>> ExecuteAsync<T>(
         Guid organizationId, Guid actorUserId, Guid? targetUserId, bool creating,
         Func<Task<OrganizationOperation<T>>> operation,
         CancellationToken cancellationToken = default)
     {
-        await _commands.WaitAsync(cancellationToken);
+        await gate.Commands.WaitAsync(cancellationToken);
         try
         {
-            if (!creating && (await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
-                return OrganizationOperation<T>.Failure("organization_not_found");
-            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
-                return OrganizationOperation<T>.Failure("session_unavailable");
-            return await operation();
+            await gate.WorkCommands.WaitAsync(cancellationToken);
+            try
+            {
+                using var owned = scope.Enter(organizationId);
+                Action[] rollback = []; var committed = false;
+                try
+                {
+                    // Both gates exclude account cleanup and Work mutations while
+                    // capturing/restoring the cross-store Organization command.
+                    rollback = participants.Prepend((IDemoWorkTransactionParticipant)store)
+                        .Select(participant => participant.CaptureRollback()).ToArray();
+                    if (!creating && (await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
+                        return OrganizationOperation<T>.Failure("organization_not_found");
+                    if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                        return OrganizationOperation<T>.Failure("session_unavailable");
+                    var result = await operation();
+                    if (!result.Succeeded) return result;
+                    // A successful departure intentionally retires membership;
+                    // the final fence checks the session rather than the old grant.
+                    if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                        return OrganizationOperation<T>.Failure("session_unavailable");
+                    cancellationToken.ThrowIfCancellationRequested();
+                    committed = true; return result;
+                }
+                finally { if (!committed) foreach (var restore in rollback.Reverse()) restore(); }
+            }
+            finally { gate.WorkCommands.Release(); }
         }
-        finally { _commands.Release(); }
+        finally { gate.Commands.Release(); }
     }
 }

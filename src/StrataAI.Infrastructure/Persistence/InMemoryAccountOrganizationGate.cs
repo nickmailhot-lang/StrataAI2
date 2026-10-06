@@ -5,4 +5,7 @@ namespace StrataAI.Infrastructure.Persistence;
 internal sealed class InMemoryAccountOrganizationGate
 {
     internal SemaphoreSlim Commands { get; } = new(1, 1);
+    // Acquire Commands before WorkCommands when a command needs both.
+    // Navigation already follows this order through its owning identity scope.
+    internal SemaphoreSlim WorkCommands { get; } = new(1, 1);
 }
