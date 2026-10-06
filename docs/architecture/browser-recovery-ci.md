@@ -180,3 +180,12 @@ then reads the same actor FOR SHARE before releasing the Board. Both database
 completion and a canonical navigation 200 are required; the old cycle would
 fail this check. API/persistence compilation and Bash syntax are source evidence;
 native execution and complete browser acceptance remain pending CI.
+
+The full web run at `64ad06f` completed with 1,514 passes and one existing
+List copy discovery/current-revision case exceeding its 5-second timeout
+(123 files, 194.03 seconds). All member-removal cases passed. The List copy
+case passed in isolation with the original source; its reload/review/confirm
+controls are now queried once and checked for attachment after rerenders.
+The original refresh/version invalidation, disabled/enabled controls, exact
+read count and 5-second timeout remain asserted. All 17 List copy tests, web
+type checking and lint pass after this change. Full revalidation is pending.
