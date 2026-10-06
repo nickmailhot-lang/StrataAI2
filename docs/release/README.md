@@ -45,14 +45,20 @@ It needs no manual Organization list and continues routing pending completion
 delivery after the parent becomes DELETED. Set that flag to `false` to suspend
 automatic deletion processing. Read the
 [deletion lifecycle and discovery contract](../architecture/organization-deletion-lifecycle.md#automatic-production-deletion-discovery).
+Metadata event delivery also has independent automatic routing, enabled by
+default with `STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true`. It needs
+no manual scope list and claims only metadata jobs, leaving provider and Work
+event jobs for their existing scopes. Set it to `false` to suspend metadata
+routing. See [metadata delivery](../architecture/organization-metadata-events.md).
 The Worker marks persisted events ready for authorized replay and SignalR streams;
 The Board UI consumes these streams with reconnect and snapshot fallback. Configure `STRATAAI_REALTIME_PUBLIC_ORIGIN`
 with the exact public browser origin (scheme, hostname and port). If it is empty,
 the API uses `STRATAAI_PUBLIC_ORIGIN`; if both are empty, live transport is disabled
 while normal read/write APIs remain available. Invalid configured origins reject
 startup. Nginx supports the `/boards/live` WebSocket upgrade route in the tested image.
-Automatic Organization discovery is not implemented. Review this scope when adding
-Organizations. Identity mail delivery uses its separate configuration and role.
+Automatic routing is available for deletion and metadata delivery. Review the
+explicit general-job scope when adding Organizations that need other Work or
+provider processing. Identity mail delivery uses its separate configuration and role.
 
 ## Stop
 

@@ -9,6 +9,7 @@ using StrataAI.Application.Onboarding;
 using StrataAI.Infrastructure.Onboarding;
 using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.WorkManagement;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 if (args.Contains("--decode-private-attachment-preview", StringComparer.Ordinal))
 {
@@ -84,6 +85,19 @@ var deletionDiscovery = deletionDiscoverySetting is null ? runtime.Mode == Runti
     : throw new InvalidOperationException("Organization deletion discovery setting must be true or false.");
 if (deletionDiscovery && runtime.Mode != RuntimeMode.Production)
     throw new InvalidOperationException("Organization deletion discovery requires Production mode.");
+var metadataDiscoverySetting = builder.Configuration["STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED"];
+var metadataDiscovery = metadataDiscoverySetting is null ? runtime.Mode == RuntimeMode.Production
+    : bool.TryParse(metadataDiscoverySetting, out var metadataEnabled) ? metadataEnabled
+    : throw new InvalidOperationException("Organization metadata discovery setting must be true or false.");
+if (metadataDiscovery && runtime.Mode != RuntimeMode.Production)
+    throw new InvalidOperationException("Organization metadata discovery requires Production mode.");
+if (metadataDiscovery)
+{
+    builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationMetadataScopeReader,
+        StrataAI.Infrastructure.Organizations.PostgresOrganizationMetadataScopeReader>();
+    builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
+    builder.Services.AddHostedService<OrganizationMetadataDiscoveryWorker>();
+}
 if (InvitationMailRegistration.IsEnabled(builder.Configuration, runtime))
 {
     if (string.IsNullOrWhiteSpace(jobScope))
@@ -105,7 +119,7 @@ if (!string.IsNullOrWhiteSpace(jobScope))
         throw new InvalidOperationException("Worker Organization scope exceeds 100 IDs.");
     builder.Services.AddSingleton(new OrganizationJobScope(organizationIds));
     builder.Services.AddSingleton<BackgroundJobProcessor>();
-    builder.Services.AddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
+    builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
     builder.Services.AddHostedService<OrganizationJobWorker>();
     if (attachmentsEnabled) builder.Services.AddHostedService<AttachmentPreviewBackfillWorker>();
     if (attachmentsEnabled) builder.Services.AddHostedService<AttachmentScanRecoveryWorker>();
@@ -118,7 +132,7 @@ if (deletionDiscovery)
     if (string.IsNullOrWhiteSpace(jobScope))
     {
         builder.Services.AddSingleton<BackgroundJobProcessor>();
-        builder.Services.AddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
+        builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
     }
     builder.Services.AddHostedService<OrganizationDeletionDiscoveryWorker>();
 }

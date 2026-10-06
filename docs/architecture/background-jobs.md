@@ -29,7 +29,7 @@ must not be persisted; failure accepts a bounded stable error code only.
 
 The separate Worker now hosts the application dispatcher when explicitly scoped
 with `STRATAAI_WORKER_ORGANIZATION_IDS` (comma-separated, nonempty UUIDs, maximum
-100 unique Organizations). Missing scope disables Organization job processing;
+100 unique Organizations). Missing scope disables this general-job loop;
 invalid IDs, Demo execution or enabled scope without handlers fail startup.
 Database grants must restrict this service identity; configuration is not a
 replacement for database authorization. No Organization discovery or bypass of
@@ -64,7 +64,10 @@ as `ORGANIZATION_METADATA_EVENT_READY` under `organization-metadata-delivery`.
 The reference-only job is published atomically with its source audit/event and
 marks readiness under an initial and final lease fence. Historical actor
 departure does not strand committed events; fresh reader authorization remains
-required. Automatic metadata routing and live consumption are still pending.
+required. Production metadata routing is enabled by default with
+`STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true` and needs no explicit
+scope list. Its dedicated invoker queue claim leaves other job types untouched.
+Authorized live consumption is still pending.
 
 Work mutations publish their audit, event, board sequence and queue job inside the
 owning command transaction. The publisher refuses standalone transactions.

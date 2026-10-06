@@ -2,6 +2,11 @@ using StrataAI.Application.BackgroundJobs;
 
 namespace StrataAI.Application.Organizations;
 
+public interface IOrganizationMetadataScopeReader
+{
+    Task<IReadOnlyList<Guid>> ReadAsync(Guid? after, int limit, CancellationToken cancellationToken);
+}
+
 public interface IOrganizationMetadataDeliveryStore
 {
     Task<bool> MarkReadyAsync(ClaimedBackgroundJob job, Guid eventId, CancellationToken cancellationToken);

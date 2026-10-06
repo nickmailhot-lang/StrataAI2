@@ -45,9 +45,23 @@ first readiness timestamp; runtime roles cannot directly update source history
 or readiness. Historical committed events can be delivered after later edits or
 the actor's departure, without authorizing that former actor to read them.
 
-This handler currently runs through existing explicit general-job scopes, or
-when automatic deletion processing drains that Organization's queued jobs.
-Automatic routing for metadata events in other Organizations is still required.
+Migration 096 adds automatic metadata routing, enabled by default in Production
+with `STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true`. The independent
+loop seeks through pages of at most 100 Organization UUIDs, processes at most 32
+jobs or 250 ms per Organization per pass, and wraps to revisit lower UUIDs,
+delayed retries and expired crash leases. It needs no explicit Organization list.
+Disable it independently with `false`; invalid settings or enabling it in Demo
+reject startup. Explicit general-job and deletion processing remain available.
+
+The Worker-only routing capability returns UUIDs from actual immutable source
+events and matching jobs, binding actor, correlation, service, key and exact
+reference metadata. Routing is read-only. A separate invoker claim function
+retains ordinary queue grants and forced tenant RLS and selects or retires only
+metadata jobs. The automatic loop never claims unrelated provider or Work jobs
+in the same Organization. A final expired attempt reaches FAILED; completed
+readiness with an unacknowledged expired claim is retried without changing its
+first timestamp. Normal role grants do not expose source content to the Worker.
+
 Readers must withhold later events behind any earlier unready sequence and
 freshly authorize current account, membership and surface before returning data.
 
@@ -76,7 +90,16 @@ Logs confirm source and delivery contracts, migration upgrade/repeat,
 failure rollback and runtime schema readiness. Exact-image command and browser
 integration still await their runtime results.
 
-Automatic metadata routing, bounded authorized replay, SignalR
+New migration 096 fixtures cover 109 real source Organizations, bounded
+seek/wrap, delayed/live-lease/mismatched source exclusion, API/content denial,
+read-only routing, typed claims, final expiry and unrelated provider isolation.
+The exact-image fixture uses normal API creation/editing, enables automatic
+metadata delivery with an empty explicit scope, requires ready events and
+successful jobs, and verifies that the unrelated Board Work event stays queued.
+The full solution build and shell syntax checks passed; real database and
+exact-image execution for automatic metadata routing remain pending CI.
+
+Bounded authorized replay, SignalR
 invalidation/reconnect and browser consumption are still required.
 Invitation/member events and the existing terminal deletion event
 also need integration into the Organization delivery contract. Journal

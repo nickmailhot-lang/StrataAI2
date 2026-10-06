@@ -58,6 +58,8 @@ GRANT EXECUTE ON FUNCTION public.finish_organization_deletion(uuid,uuid,uuid,uui
 GRANT EXECUTE ON FUNCTION public.deliver_organization_lifecycle_event(uuid,uuid,uuid,uuid,uuid,uuid) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.deliver_organization_metadata_event(uuid,uuid,uuid,uuid,uuid,uuid) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.discover_organization_deletion_scopes(uuid,integer) TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.discover_organization_metadata_scopes(uuid,integer) TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.claim_organization_metadata_job(uuid) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.load_organization_deletion_page(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,integer) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.apply_organization_deletion_page(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint,integer) TO strataai_worker_runtime;
 GRANT SELECT ON organization_deletion_steps TO strataai_worker_runtime;

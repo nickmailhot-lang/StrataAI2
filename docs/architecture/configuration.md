@@ -30,6 +30,14 @@ discovery. Invalid values and enabled Demo discovery fail startup. The separate
 provider processing for active Organizations. See
 [deletion discovery](organization-deletion-lifecycle.md#automatic-production-deletion-discovery).
 
+Production Workers also default `STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED`
+to `true`. This independent loop routes committed metadata source events with
+bounded UUID pages and claims only metadata delivery jobs under tenant RLS.
+New Organizations need no manual scope update for metadata readiness. Set it to
+`false` to suspend metadata routing independently. Invalid values and enabled
+Demo metadata discovery reject startup. See
+[metadata routing and delivery](organization-metadata-events.md).
+
 Additional provider credentials are introduced only with the corresponding PRD and must be
 provided by deployment secret management/environment variables. Real secrets are never
 committed to `.env.example`, image layers, or CI artifacts.

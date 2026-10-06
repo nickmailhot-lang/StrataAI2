@@ -379,6 +379,7 @@ jobs:
       # Command fixtures deliberately retain PENDING requests until their
       # explicit real-Worker completion phase enables automatic discovery.
       STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED: 'false'
+      STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v7
 
@@ -520,6 +521,8 @@ jobs:
 
       - name: Organization audit rollback, revoked actor waits and concurrent owner departures
         run: scripts/ci/test-organization-commands.sh
+      - name: Automatic Organization metadata delivery with typed queue isolation
+        run: bash scripts/ci/test-organization-metadata-delivery.sh
 
       - name: Account deactivation and Organization active-owner continuity
         run: scripts/ci/test-account-owner-continuity.sh

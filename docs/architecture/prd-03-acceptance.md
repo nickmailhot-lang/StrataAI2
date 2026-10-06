@@ -58,8 +58,11 @@ metadata source contract at `010324c` and strengthened assertions at `bf20c67`.
 Exact-image rollback/retry fixtures still await runtime results. Migration 095
 adds atomic reference jobs and leased Worker readiness with 17 local handler
 tests passed; real database/upgrade/late-fence checks passed at `ab9a389`.
-Automatic metadata routing and authorized realtime/reconnect consumption remain
-unfinished; this source foundation does not establish delivered events.
+Migration 096 adds bounded automatic metadata routing and a typed invoker queue
+claim with source/job fences and provider isolation. The full solution builds
+cleanly; restricted database and exact-image automatic delivery checks are
+pending CI. Authorized realtime/reconnect consumption remains unfinished;
+Worker readiness does not establish browser event consumption.
 
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and
 MarkDeletingAsync enter the Organization unit of work. MarkDeletingCoreAsync

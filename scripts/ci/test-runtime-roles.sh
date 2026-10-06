@@ -296,3 +296,7 @@ done
 
 test "$(worker "SELECT has_function_privilege(current_user,'discover_organization_deletion_scopes(uuid,integer)','EXECUTE')")" = t
 test "$(api "SELECT has_function_privilege(current_user,'discover_organization_deletion_scopes(uuid,integer)','EXECUTE')")" = f
+for function in 'discover_organization_metadata_scopes(uuid,integer)' 'claim_organization_metadata_job(uuid)'; do
+ test "$(worker "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = t
+ test "$(api "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
+done
