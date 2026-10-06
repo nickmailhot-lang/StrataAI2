@@ -15,7 +15,7 @@ trap cleanup EXIT
 trap 'echo "Member directory check failed at line $LINENO" >&2' ERR
 docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.atomic-test.yml up -d --wait --wait-timeout 180 api >/dev/null
 login() { curl --fail --silent --show-error -c "$scratch/$1.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/$1.credentials")" "$base/auth/login" >/dev/null; }
-for actor in owner member portal; do
+for actor in owner member portal empty; do
   jq -nc --arg email "directory-$actor-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"directory-correct-horse-battery",displayName:"Directory fixture"}' > "$scratch/$actor.credentials"
   curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$(cat "$scratch/$actor.credentials")" "$base/auth/register" > "$scratch/$actor.user"
   login "$actor"
@@ -75,6 +75,25 @@ for cursor in invalid 00000000-0000-0000-0000-000000000000; do
   test "$(get member "/organizations/directory?after=$cursor" directory-invalid)" = 400
   jq -e '.code=="invalid_organization_cursor"' "$scratch/directory-invalid.json" >/dev/null
 done
+# A wholly omitted first page must continue to the later current grant.
+empty_actor="$(jq -r '.user.id' "$scratch/empty.user")"
+[[ "$empty_actor" =~ ^[0-9a-fA-F-]{36}$ ]]
+admin "WITH seed AS (SELECT gen_random_uuid() id FROM generate_series(1,51))
+  INSERT INTO organizations(id,name,owner_user_id,created_at,updated_at)
+  SELECT id,'Empty-page fixture $empty_actor','$portal',now(),now() FROM seed;
+  INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+  SELECT gen_random_uuid(),id,'$portal','OWNER','ACTIVE' FROM organizations WHERE name='Empty-page fixture $empty_actor';
+  WITH ordered AS (SELECT id,row_number() OVER (ORDER BY id) ordinal FROM organizations WHERE name='Empty-page fixture $empty_actor')
+  INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+  SELECT gen_random_uuid(),id,'$empty_actor','MEMBER',CASE WHEN ordinal<=50 THEN 'REMOVED' ELSE 'ACTIVE' END FROM ordered;" >/dev/null
+test "$(get empty '/organizations/directory' directory-empty)" = 200
+jq -e '(.items|length)==0 and .nextCursor!=null' "$scratch/directory-empty.json" >/dev/null
+scripts/ci/assert-file-excludes.sh 'Empty-page fixture|ownerUserId|createdAt' "$scratch/directory-empty.json"
+empty_cursor="$(jq -r '.nextCursor' "$scratch/directory-empty.json")"
+test "$(get empty "/organizations/directory?after=$empty_cursor" directory-empty-tail)" = 200
+jq -e '(.items|length)==1 and .nextCursor==null and .items[0].role==2' "$scratch/directory-empty-tail.json" >/dev/null
+expected_empty_tail="$(admin "SELECT tenant_id FROM organization_members WHERE user_id='$empty_actor' AND status='ACTIVE';")"
+jq -e --arg expected "$expected_empty_tail" '.items[0].organization.id==$expected' "$scratch/directory-empty-tail.json" >/dev/null
 test "$(get owner "/organizations/$org/members" first)" = 200
 jq -e --arg org "$org" '.organizationId==$org and (.items|length)==50 and .nextCursor==.items[-1].userId' "$scratch/first.json" >/dev/null
 cursor="$(jq -r '.nextCursor' "$scratch/first.json")"

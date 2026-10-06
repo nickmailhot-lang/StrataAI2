@@ -101,3 +101,11 @@ hints. It requires an empty first page with a non-null cursor, no revoked
 Organization name, and continuation into the same later authorized page. This
 covers the distinction between an empty page and terminal traversal; browser
 consumers must preserve that distinction when migrating to this contract.
+
+The exact-image PostgreSQL fixture separately registers an account with 51
+Organization routing hints ordered by UUID: 50 removed grants and one later
+active grant. Its first HTTP page must be empty but resumable and contain no
+Organization metadata. Continuation must return exactly the independently
+queried final active Organization with Member role and a terminal cursor. Each
+seeded Organization retains a separate active Owner. Shell syntax checks passed;
+current-image runtime execution is still pending.
