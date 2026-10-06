@@ -45,3 +45,21 @@ missing isolation keys, disabled or unforced RLS and absent policies. Each failu
 must originate from the guard, roll back its disposable DDL and leave the valid
 migrated catalog intact. Local shell syntax/diff checks pass; first Linux execution
 of this new catalog guard is still required before treating it as release evidence.
+
+## Runtime migration readiness
+
+Production connections require every named migration through
+`081_navigation_original_recovery`. The readiness query checks for missing
+required ledger entries directly, avoiding a separately maintained numeric total.
+Extra later migrations do not substitute for a missing required entry.
+
+CI run `37407613926` exposed the prior mismatch: the required list contained
+81 migrations while the connection check expected 77, so a fully migrated database
+was rejected before restricted search traversal. The corrected check preserves
+fail-closed handling for unavailable ledgers and missing privileges.
+`RuntimeSchemaReadinessContract` runs in the mandatory PostgreSQL contract job
+using the restricted API login. It checks complete-ledger admission, refusal when
+foundation or navigation entries are temporarily hidden by the fixture admin,
+and recovery after each entry is restored. Fixture mutations are confined to the
+disposable CI database and restored in `finally`. Compilation passed with zero
+warnings/errors; native execution of this repair remains pending CI.
