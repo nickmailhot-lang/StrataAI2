@@ -211,3 +211,13 @@ host-configured providers and transaction diagnostics. Source compilation does
 not establish runtime repair; the Domain/API stages must run again in CI.
 Images/container/security/release stages were skipped after the failed source
 gate, so this run provides no exact-image browser or release acceptance.
+
+The stable expanded web run at `5cfe5af` completed with 1,528 passes and two
+5-second timeouts in existing Board metadata-recovery and append-move cases
+(124 files, 208.84 seconds). Both cases passed in isolation with original
+source. Their field/action queries now use the accessible dialog scope, with
+close/current-move controls retained and checked for document attachment.
+Original immutable request/key, competing-command fences, provisional placement,
+canonical reload and focus assertions remain; the 5-second timeout is unchanged.
+Both focused cases and web TypeScript pass after the query changes. Full
+revalidation remains pending.

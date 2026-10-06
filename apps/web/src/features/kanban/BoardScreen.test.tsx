@@ -115,9 +115,10 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     }));
     mount(); const edit = await screen.findByRole('button', { name: 'Edit Board details' });
     await waitFor(() => expect(edit).toBeEnabled()); fireEvent.click(edit);
-    fireEvent.change(screen.getByRole('textbox', { name: 'Board name' }), { target: { value: 'Updated Board' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save Board details' }));
-    const retry = await screen.findByRole('button', { name: 'Retry this Board save' }); await waitFor(() => expect(retry).toBeEnabled());
+    const dialog = screen.getByRole('dialog'); const controls = within(dialog);
+    fireEvent.change(controls.getByLabelText('Board name'), { target: { value: 'Updated Board' } });
+    fireEvent.click(controls.getByRole('button', { name: 'Save Board details' }));
+    const retry = await controls.findByRole('button', { name: 'Retry this Board save' }); await waitFor(() => expect(retry).toBeEnabled());
     expect(screen.getByRole('button', { name: 'Archive Board', hidden: true })).toBeDisabled();
     const addList = screen.getByRole('button', { name: 'Add list', hidden: true });
     expect(addList).toBeDisabled();
@@ -788,21 +789,24 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       .mockImplementationOnce(() => new Promise<Response>(resolve => { completeMove = resolve; }))
       .mockResolvedValueOnce(response(latest));
     vi.stubGlobal('fetch', fetcher); mount('/app/org-1/boards/board-1/cards/card-1');
-    fireEvent.click(await screen.findByRole('button', { name: 'Move card' }));
-    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination list' }));
+    const move = await screen.findByRole('button', { name: 'Move card' });
+    const dialog = screen.getByRole('dialog'); const controls = within(dialog);
+    const close = controls.getByRole('button', { name: 'Close' }); fireEvent.click(move);
+    fireEvent.mouseDown(controls.getByRole('combobox', { name: 'Destination list' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm card move' }));
+    fireEvent.click(controls.getByRole('button', { name: 'Confirm card move' }));
     expect(screen.getByText('Saving move. Placement is provisional until confirmed.')).toHaveAttribute('role', 'status');
     expect(screen.getByText('Complete', { selector: 'h3' }).closest('section')).toHaveTextContent('Inspect roof');
-    expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
+    expect(close).toBeInTheDocument(); expect(close).toBeDisabled();
     await act(async () => { completeMove?.(response(moved)); });
     await screen.findByText('Move acknowledged. Current placement is being checked.');
     await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Move card' })).toBeEnabled());
+    const currentMove = await controls.findByRole('button', { name: 'Move card' });
+    await waitFor(() => { expect(currentMove).toBeInTheDocument(); expect(currentMove).toBeEnabled(); });
     expect(fetcher.mock.calls[1][0]).toBe('/cards/card-1/move');
     expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({ destinationListId: 'list-2', expectedVersion: 3 });
     expect(fetcher.mock.calls[2][0]).toBe('/boards/board-1');
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(close).toBeInTheDocument(); expect(close).toBeEnabled(); fireEvent.click(close);
     await waitFor(() => expect(screen.getByRole('link', { name: 'Inspect roof' })).toHaveFocus());
   });
   it('shows provisional list order before persistence and restores canonical order after an uncertain result', async () => {
