@@ -22,6 +22,7 @@ import { ArchivedBoardsPage } from "../features/kanban/ArchivedBoardsPage";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
 import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
+import { OrganizationLeavePage } from "../features/organizations/OrganizationLeavePage";
 import { OrganizationInvitationPage, BoardInvitationPage } from "../features/organizations/OrganizationInvitationPage";
 import { OrganizationInvitationHistoryPage, BoardInvitationHistoryPage } from "../features/organizations/OrganizationInvitationHistoryPage";
 import { InvitationsPage } from "../features/auth/InvitationsPage";
@@ -58,6 +59,7 @@ const routes = [
       { path: "search", element: <GlobalSearchPage /> },
       { path: "archived-boards", element: <ArchivedBoardsPage /> },
       { path: "members", element: <OrganizationMembersPage /> },
+      { path: "leave", element: <OrganizationLeavePage /> },
       { path: "invite", element: <OrganizationInvitationPage /> },
       { path: "boards/:boardId/invite", element: <BoardInvitationPage /> },
       { path: "boards/:boardId/visibility", element: <BoardVisibilityPage /> },
