@@ -1,4 +1,6 @@
 using Npgsql;
+using Microsoft.Extensions.Logging.Abstractions;
+using StrataAI.Application.Identity;
 using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.Common;
 using StrataAI.Application.Organizations;
@@ -145,6 +147,22 @@ internal static class OrganizationDeletionPagesContract
             await command.ExecuteNonQueryAsync(ct); Require(await new PostgresBackgroundJobStore(api).PublishAsync(publish,job,ct),"Page fixture publication failed.");
             await publish.CommitAsync(ct);
         }
+        // Real restricted metadata/read boundaries with a synthetic account
+        // fence. Actual HTTP cookie/session behavior is covered by API-host tests.
+        var admission=new ObservationAccountFixture(api,tenant);
+        var observation=new PostgresOrganizationDeletionObservationReader(api,admission,
+            NullLogger<PostgresOrganizationDeletionObservationReader>.Instance);
+        var pending=await observation.ReadAsync(tenant,actor,request,ct);
+        Require(pending.Succeeded&&pending.Value is {State:"PENDING",Version:2,EventId:null,CompletedAt:null},
+            "Accepted deletion request could not be observed independently of ordinary parent admission.");
+        Require((await observation.ReadAsync(tenant,actor,Guid.NewGuid(),ct)).ErrorCode=="organization_not_found"
+            &&(await observation.ReadAsync(Guid.NewGuid(),actor,request,ct)).ErrorCode=="organization_not_found"
+            &&(await observation.ReadAsync(tenant,historic,request,ct)).ErrorCode=="organization_not_found",
+            "Deletion observation admitted a foreign request, scope or requester.");
+        admission.RefuseFinal=true;
+        Require((await observation.ReadAsync(tenant,actor,request,ct)).ErrorCode=="session_unavailable",
+            "Deletion observation disclosed pending status after final admission failure.");
+        admission.RefuseFinal=false;
         var jobs=new PostgresBackgroundJobStore(worker); var store=new PostgresOrganizationDeletionPageStore(worker);
         var claim=await jobs.ClaimAsync(tenant,Guid.NewGuid(),ct)??throw new InvalidOperationException("Page fixture claim missing.");
         var attempt=new OrganizationDeletionAttempt(request,request,2);
@@ -251,7 +269,40 @@ internal static class OrganizationDeletionPagesContract
               WHERE a.lifecycle_state='DELETED' AND a.archived_at IS NULL AND a.scan_status='CLEAN'
                AND a.storage_key='private-fixture/'||@tenant::text||'/image.png' AND a.sha256=repeat('a',64)))::text;
             """)=="true","Selected cover/background cleanup or immutable preview ownership retention failed.");
+        Require((await observation.ReadAsync(tenant,actor,request,ct)).ErrorCode=="session_unavailable",
+            "Deactivated deleting actor observed completion.");
+        // Re-enable only the disposable fixture account after proving the Worker
+        // finished without it, to test current Owner observation of terminal state.
+        await Admin("UPDATE users SET status='ACTIVE',updated_at=now(),version=version+1 WHERE id=@actor;");
+        var terminal=await observation.ReadAsync(tenant,actor,request,ct);
+        Require(terminal.Succeeded&&terminal.Value is {State:"COMPLETED",Version:3,EventId:not null,CompletedAt:not null}
+            &&terminal.Value.RequestId==request,"Authoritative terminal completion observation failed.");
+        var again=await observation.ReadAsync(tenant,actor,request,ct);
+        Require(again.Value==terminal.Value,"Completion recovery rewrote the original event/time/version.");
+        await Admin("UPDATE organization_members SET role='ADMIN',version=version+1 WHERE tenant_id=@tenant AND user_id=@actor;");
+        Require((await observation.ReadAsync(tenant,actor,request,ct)).ErrorCode=="organization_not_found",
+            "Former Owner observed terminal completion after demotion.");
+        await Admin("UPDATE organization_members SET role='OWNER',version=version+1 WHERE tenant_id=@tenant AND user_id=@actor;");
+        admission.RefuseFinal=true;
+        Require((await observation.ReadAsync(tenant,actor,request,ct)).ErrorCode=="session_unavailable",
+            "Deletion observation disclosed completion after final admission failure.");
+        admission.RefuseFinal=false;
+        Console.WriteLine("Organization deletion observation: restricted pending/terminal reads, foreign requester/scope denial, current Owner/account admission, final fence and stable completion recovery passed.");
         await Admin("DROP TABLE deletion_page_archive_history,deletion_page_deleted_history,deletion_page_provider_history,deletion_page_image_fixture;");
         Console.WriteLine("Organization deletion pages: all graph stages, 128-candidate bounds, late rollback, duplicate/reclaim recovery, selected cover/background cleanup, retained prior history/provider metadata and independent actor completion passed.");
+    }
+    private sealed class ObservationAccountFixture(PostgresConnectionFactory connections,Guid tenant):ICommandActorAuthorization
+    {
+        private int _calls;
+        private bool _refuseFinal;
+        public bool RefuseFinal {get=>_refuseFinal;set{_refuseFinal=value;_calls=0;}}
+        public async Task<bool> VerifyAsync(Guid actorId,CancellationToken cancellationToken=default)
+        {
+            if(_refuseFinal&&++_calls==2)return false;
+            await using var scope=await connections.OpenTenantSessionAsync(tenant,cancellationToken);
+            await using var query=new NpgsqlCommand("SELECT status='ACTIVE' FROM users WHERE id=@actor FOR SHARE;",scope.Connection,scope.Transaction);
+            query.Parameters.AddWithValue("actor",actorId);
+            return await query.ExecuteScalarAsync(cancellationToken) is true;
+        }
     }
 }

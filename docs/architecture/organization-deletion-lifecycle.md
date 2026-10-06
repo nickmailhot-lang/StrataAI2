@@ -292,8 +292,9 @@ That run covers the original 260-Card/130-attachment fixture, bounded pages,
 late-expiry rollback, replay/reclaim recovery, retained history/provider metadata,
 and terminal readiness after actor deactivation. The explicit API/Worker private-helper privilege assertions added at `173c665`
 also passed in [PostgreSQL CI job 112399819815](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37501631140/job/112399819815).
-Runtime results for the added selected preview-backed cover/image fixture remain
-pending CI. Large mutation throughput, HTTP/product integration
+The added selected preview-backed cover/image fixture passed at `b043f5c` in
+[PostgreSQL CI job 112401327853](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37502071534/job/112401327853),
+including cover/background cleanup and unchanged prior history/provider evidence. Large mutation throughput, HTTP/product integration
 and live browser completion require further evidence before PRD acceptance.
 
 The product API does not publish deletion work yet. Existing 202 acknowledgments
@@ -321,3 +322,41 @@ product service does not invoke either publisher yet. Demo page execution,
 completion observation and browser integration remain required; an in-memory
 journal is not durable across process restarts and does not replace production
 PostgreSQL jobs or the separate Worker.
+
+## Independent original-Owner observation
+
+`GET /organizations/{organizationId}/deletion-requests/{requestId}` now exposes a
+minimal request-bound observation with `private, no-store` caching. The optional
+`expectedActorId` must match the signed-in account. The response contains only
+`requestId`, `state`, `version`, `eventId` and `completedAt`; it contains no
+Organization name, descendants, counts, storage keys or private content.
+
+Admission requires the original accepted requester to remain a current active
+Owner and have current account/session authority. Normal Organization and Board
+reads remain withdrawn. PostgreSQL takes the parent lock before membership,
+account and session admission, then validates the immutable request and progress.
+`PENDING` requires DELETING at the accepted version with incomplete progress.
+`COMPLETED` requires DELETED at accepted version plus one, matching retained actor,
+COMPLETE checkpoint/time and the original terminal event identity/version/time/
+correlation. Event transport readiness is independent of committed completion.
+A final actor/session check discards the observation if authority expires during
+its read. Missing/foreign requests and former/nonoriginal Owners return the same
+`organization_not_found`; actor/session failure returns `session_unavailable`;
+unconfirmed storage returns `organization_storage_unavailable`. A missing normal
+GET or an unavailable status must never be interpreted as completed deletion.
+
+Demo reads use both owning gates and the accepted journal. They can report a
+proven pending request; Demo terminal graph/event execution remains unfinished,
+so no completed snapshot is invented. Existing product deletion commands do not
+publish roots yet: this endpoint is implemented against accepted storage/journal
+records, and publication/retry/browser integration still needs completion.
+Legacy DELETING rows without a canonical accepted request are unavailable here.
+
+API-host cases exercise pending status after ordinary access withdrawal, exact
+content-free fields, original/current Owner admission, account-switch refusal,
+foreign request/scope denial and final actor failure. The restricted PostgreSQL
+graph fixture exercises pending and actual terminal reads, disabled account and
+Owner demotion denial, final admission failure, and stable event/time recovery.
+Its account/session admission fixture is synthetic and does not prove production
+HTTP session expiry. API and persistence contract compilation passed with zero
+warnings/errors; runtime execution for this observation change is pending CI.

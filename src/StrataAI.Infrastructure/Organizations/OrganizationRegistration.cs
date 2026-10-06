@@ -20,6 +20,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationStore>());
             services.AddSingleton<IOrganizationUnitOfWork, InMemoryOrganizationUnitOfWork>();
             services.AddSingleton<InMemoryOrganizationDeletionJobPublisher>();
+            services.AddSingleton<IOrganizationDeletionObservationReader, InMemoryOrganizationDeletionObservationReader>();
             services.AddSingleton<IOrganizationDeletionJobPublisher>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionJobPublisher>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionJobPublisher>());
             services.AddSingleton<InMemoryOrganizationRemovalReplayStore>();
@@ -48,6 +49,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationCreationReplayStore, PostgresOrganizationCreationReplayStore>();
             services.AddSingleton<IOrganizationDeletionReplayStore, PostgresOrganizationDeletionReplayStore>();
             services.AddSingleton<IOrganizationDeletionJobPublisher, PostgresOrganizationDeletionJobPublisher>();
+            services.AddSingleton<IOrganizationDeletionObservationReader, PostgresOrganizationDeletionObservationReader>();
         }
 
         services.AddSingleton<IOrganizationService, OrganizationService>();

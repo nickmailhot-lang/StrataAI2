@@ -9,6 +9,18 @@ public static class OrganizationEndpoints
     {
         var group = app.MapGroup("/organizations").RequireAuthorization();
 
+        group.MapGet("/{organizationId:guid}/deletion-requests/{requestId:guid}", async (Guid organizationId,
+            Guid requestId, Guid? expectedActorId, HttpContext context,
+            IOrganizationDeletionObservationReader reader, CancellationToken cancellationToken) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            if (expectedActorId is Guid expected && expected != actor.Value)
+                return ErrorFor("session_unavailable");
+            var result = await reader.ReadAsync(organizationId, actor.Value, requestId, cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+
         group.MapGet("/directory", async (string? after, HttpContext context,
             IOrganizationService service, CancellationToken cancellationToken) =>
         {

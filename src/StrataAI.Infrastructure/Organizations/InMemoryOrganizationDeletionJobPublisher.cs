@@ -39,6 +39,13 @@ internal sealed class InMemoryOrganizationDeletionJobPublisher(IOrganizationStor
         return true;
     }
 
+    internal OrganizationDeletionAttempt? ReadAccepted(Guid organizationId, Guid actorId, Guid requestId)
+    {
+        if (!scope.OwnsOrganizationCommand(organizationId)) throw Unavailable();
+        return _publications.TryGetValue(organizationId, out var publication)
+            && publication.Actor == actorId && publication.Root.RequestId == requestId ? publication.Root : null;
+    }
+
     public Action CaptureRollback()
     {
         var snapshot = _publications.ToArray();
