@@ -51,6 +51,13 @@ still apply to implemented permissions and lifecycle behavior.
 
 ## Evidence boundary
 
+The [Organization metadata event source](organization-metadata-events.md)
+projects creation and editing audits into a private, forced-RLS, immutable
+journal in the owning command transaction. Its restricted persistence and
+exact-image rollback/retry fixtures are added with database execution pending
+CI. Worker readiness and authorized realtime/reconnect consumption remain
+unfinished; this source foundation does not establish delivered events.
+
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and
 MarkDeletingAsync enter the Organization unit of work. MarkDeletingCoreAsync
 marks status, reschedules reminders, audits and publishes the accepted request

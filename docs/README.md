@@ -100,6 +100,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Authorized Organization member directory](architecture/organization-member-directory.md)
 - [Membership removal consent](architecture/organization-member-removal-consent.md)
 - [Organization metadata settings](architecture/organization-settings.md)
+- [Organization metadata event source and remaining delivery work](architecture/organization-metadata-events.md)
 
 ## Boards and collaboration
 

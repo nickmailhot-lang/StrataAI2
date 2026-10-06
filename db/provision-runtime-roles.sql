@@ -39,6 +39,7 @@ GRANT SELECT,INSERT ON card_assignment_notifications TO strataai_api_runtime;
 GRANT SELECT ON notification_events,notification_event_streams TO strataai_api_runtime;
 GRANT SELECT ON board_star_events TO strataai_api_runtime;
 GRANT SELECT ON organization_board_events,organization_board_event_streams TO strataai_api_runtime;
+GRANT SELECT ON organization_metadata_events,organization_metadata_event_streams TO strataai_api_runtime;
 GRANT SELECT ON organization_board_directory_epochs TO strataai_api_runtime;
 GRANT UPDATE(read_at) ON card_assignment_notifications TO strataai_api_runtime;
 GRANT SELECT,INSERT ON watch_subscriptions TO strataai_api_runtime;

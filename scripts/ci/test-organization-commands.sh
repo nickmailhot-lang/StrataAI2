@@ -296,6 +296,8 @@ retry_metadata() {
 }
 metadata_state() {
   admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$retry_org'),
+    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$retry_org'),
+    'stream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$retry_org'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_metadata_replays r WHERE tenant_id='$retry_org'))::text;"
 }
@@ -354,6 +356,7 @@ test "$(cat "$scratch/metadata-second.status")" = 200
 test "$(jq -Sc . "$scratch/metadata-first.json")" = "$(jq -Sc . "$scratch/metadata-second.json")"
 test "$(admin "SELECT count(*)=1 FROM organization_metadata_replays WHERE tenant_id='$retry_org';")" = t
 test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_UPDATED';")" = t
+test "$(admin "SELECT count(*)=1 FROM organization_metadata_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_UPDATED' AND entity_version=2 AND sequence=2 AND metadata='{}';")" = t
 cp "$scratch/metadata-first.json" "$scratch/original-metadata.json"
 jq -e '.name=="First metadata edit" and .version==2' "$scratch/original-metadata.json" >/dev/null
 test "$(request PATCH "/organizations/$retry_org" '{"name":"Later metadata edit","version":2}')" = 200
@@ -600,6 +603,8 @@ creation_request() {
 }
 creation_state() {
   admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$creation_org'),
+    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$creation_org'),
+    'stream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$creation_org'),
     'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$creation_org'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$creation_org'),
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_creation_replays r WHERE tenant_id='$creation_org'))::text;"
@@ -662,6 +667,7 @@ jq -e --arg org "$creation_org" --arg actor "$owner" '.organization.id==$org and
 test "$(admin "SELECT count(*)=1 FROM organization_creation_replays WHERE tenant_id='$creation_org' AND actor_id='$owner';")" = t
 test "$(admin "SELECT count(*)=1 FROM organization_members WHERE tenant_id='$creation_org' AND user_id='$owner' AND role='OWNER' AND status='ACTIVE';")" = t
 test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$creation_org' AND event_type='ORGANIZATION_CREATED' AND actor_id='$owner';")" = t
+test "$(admin "SELECT count(*)=1 FROM organization_metadata_events WHERE tenant_id='$creation_org' AND event_type='ORGANIZATION_CREATED' AND actor_id='$owner' AND entity_version=1 AND sequence=1 AND metadata='{}';")" = t
 test "$(request PATCH "/organizations/$creation_org" '{"name":"Later creation metadata","version":1}')" = 200
 creation_later="$(creation_state)"
 test "$(creation_request creation-replay)" = 201

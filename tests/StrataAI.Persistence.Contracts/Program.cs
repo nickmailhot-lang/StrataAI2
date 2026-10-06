@@ -77,6 +77,7 @@ AttachmentUploadIntent Intent(Guid? retry = null) => AttachmentUploadIntent.Prep
 try
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,ct);
     await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionPublicationContract.RunAsync(admin,apiConnection,ct);
     await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);

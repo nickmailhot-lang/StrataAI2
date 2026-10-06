@@ -596,37 +596,44 @@ run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 93
 test "$(query "SELECT prosecdef AND proconfig=ARRAY['search_path=pg_catalog, public'] FROM pg_proc WHERE oid='discover_organization_deletion_scopes(uuid,integer)'::regprocedure")" = t
 
-cat > "$scratch/migrations/094_serialization_fixture.sql" <<'SQL'
+cp db/migrations/094_organization_metadata_events.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 94
+test "$(query "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='organization_metadata_events'::regclass")" = t
+test "$(query "SELECT prosecdef AND proconfig=ARRAY['search_path=pg_catalog, public'] FROM pg_proc WHERE oid='journal_organization_metadata_event()'::regprocedure")" = t
+
+cat > "$scratch/migrations/095_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('094_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('095_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='094_serialization_fixture'")" = 1
-cat > "$scratch/migrations/095_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='095_serialization_fixture'")" = 1
+cat > "$scratch/migrations/096_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('095_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('096_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='095_failure_fixture'")" = 0
-rm "$scratch/migrations/095_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='096_failure_fixture'")" = 0
+rm "$scratch/migrations/096_failure_fixture.sql"
 run
-cat > "$scratch/migrations/096_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/097_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='096_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/096_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='097_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/097_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'
