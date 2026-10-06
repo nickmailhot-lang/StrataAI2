@@ -53,7 +53,9 @@ for (const width of [1280, 390]) {
       // A received snapshot is not yet rendered admission: the current actor
       // and any queued live refresh still have to finish before retrying.
       await expect(page.getByRole('alert').filter({ hasText: 'This Card changed. Review the latest comments.' })).toBeVisible();
-      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+      // Card details is modal, so its background Board is hidden from the
+      // accessibility tree while still owning the current read admission.
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
       await expect(retry).toBeEnabled(); await retry.press('Enter'); await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
       await expect(peerPage.getByText('Literal <script>🙂', { exact: true })).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
