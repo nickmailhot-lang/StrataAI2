@@ -5,6 +5,12 @@ namespace StrataAI.Api.WorkManagement;
 
 public static partial class WorkManagementEndpoints
 {
+    // Optional for existing API clients; browser archive reviews always bind
+    // discovery and commands to their authenticated reviewed actor.
+    private static bool ArchiveActorMatches(HttpContext context, Guid actor) =>
+        !context.Request.Headers.TryGetValue("X-StrataAI-Expected-Actor", out var expected) ||
+        expected.Count == 1 && Guid.TryParse(expected[0], out var id) && id != Guid.Empty && id == actor;
+
     public static void MapWorkManagementEndpoints(this WebApplication app)
     {
         MapLabelEndpoints(app);
@@ -56,6 +62,7 @@ public static partial class WorkManagementEndpoints
             var actor = GetUserId(context);
             if (actor is null) return Results.Unauthorized();
             context.Response.Headers.CacheControl = "private, no-store";
+            if (!ArchiveActorMatches(context, actor.Value)) return ErrorFor("session_unavailable");
             Guid? cursor = after is null ? null : Guid.TryParse(after, out var parsed) ? parsed : Guid.Empty;
             var result = await service.ListArchivedBoardsAsync(organizationId, actor.Value, cursor, cancellationToken);
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
@@ -231,6 +238,8 @@ public static partial class WorkManagementEndpoints
                         return Results.Unauthorized();
                     }
 
+                    if (!ArchiveActorMatches(context, userId.Value)) return ErrorFor("session_unavailable");
+
                     return ToMutationResult(
                         await service.RestoreBoardAsync(
                             boardId,
@@ -256,6 +265,8 @@ public static partial class WorkManagementEndpoints
                     {
                         return Results.Unauthorized();
                     }
+
+                    if (!ArchiveActorMatches(context, userId.Value)) return ErrorFor("session_unavailable");
 
                     return ToMutationResult(
                         await service.DeleteBoardAsync(

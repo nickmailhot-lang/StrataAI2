@@ -234,3 +234,80 @@ it('preserves Board reconnect classification while directory invalidations coale
   expect(events).toContainEqual({ action: 'archive_board_read', kind: 'retry', count: 1 });
   expect(events).toContainEqual({ action: 'archive_board_read', kind: 'reconnect', count: 1 });
 });
+
+it.each([false, true])('withdraws consent on an account switch %s after command submission', async after => {
+  let checks = 0; let writes = 0;
+  const fetch = vi.fn(async (path: string, init: RequestInit) => {
+    if (path === '/me') return response(++checks === (after ? 4 : 3) ? { ...profile, id: org } : profile);
+    if (init.method === 'POST') { writes++; return response({ ...board, version: 3, lifecycleState: 'active' }); }
+    return response(page);
+  });
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' }));
+  await screen.findByText('Board administration is unavailable.');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(writes).toBe(after ? 1 : 0); expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(screen.queryByText('Board restore acknowledged.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry this change' })).not.toBeInTheDocument();
+});
+it.each([false, true])('withholds uncertain account confirmation %s after submission and recovers only a submitted key', async after => {
+  let checks = 0; let writes = 0;
+  const fetch = vi.fn(async (path: string, init: RequestInit) => {
+    if (path === '/me') return ++checks === (after ? 4 : 3) ? response({}, 503) : response(profile);
+    if (init.method === 'POST') { writes++; return response({ ...board, version: 3, lifecycleState: 'active' }); }
+    return response(writes ? { ...page, items: [] } : page);
+  });
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' }));
+  await screen.findByText(after
+    ? 'This change is unconfirmed. Check current archived boards, then retry the same request to recover its acknowledgment.'
+    : 'Unable to confirm the current account. No Board change was sent. Check current archived boards before reviewing again.');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(writes).toBe(after ? 1 : 0); expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(screen.queryByText('Board restore acknowledged.')).not.toBeInTheDocument();
+  if (after) expect(screen.getByRole('button', { name: 'Retry this change' })).toBeDisabled();
+  else expect(screen.queryByRole('button', { name: 'Retry this change' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Check current archived boards' }));
+  if (after) {
+    const retry = screen.getByRole('button', { name: 'Retry this change' }); await waitFor(() => expect(retry).toBeEnabled());
+    fireEvent.click(retry); await screen.findByText('Board restore acknowledged.');
+    const commands = fetch.mock.calls.filter(call => call[1].method === 'POST'); expect(commands).toHaveLength(2);
+    expect(new Headers(commands[0][1].headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1].headers).get('Idempotency-Key'));
+    expect(new Headers(commands[0][1].headers).get('X-StrataAI-Expected-Actor')).toBe(user);
+  } else { await screen.findByRole('article', { name: 'Planning' }); expect(writes).toBe(0); }
+});
+
+it('sends no command when live admission withdraws consent during the account check', async () => {
+  let checks = 0; let finish!: (value: Response) => void;
+  const fetch = vi.fn((path: string, _init: RequestInit) => {
+    if (path === '/me') return ++checks === 3 ? new Promise<Response>(resolve => { finish = resolve; }) : Promise.resolve(response(profile));
+    return Promise.resolve(response(page));
+  });
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' })); await waitFor(() => expect(finish).toBeDefined());
+  act(() => vi.mocked(watchOrganizationBoards).mock.calls.at(-1)![0].reset());
+  await act(async () => finish(response(profile)));
+  await screen.findByText('Unable to confirm the current account. No Board change was sent. Check current archived boards before reviewing again.');
+  expect(fetch.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(0);
+});
+it.each([false, true])('bounds noncooperative account checks %s after submission and fences their late replies', async after => {
+  let checks = 0; let finish!: (value: Response) => void; let signal!: AbortSignal; let writes = 0;
+  const fetch = vi.fn((path: string, init: RequestInit) => {
+    if (path === '/me') {
+      if (++checks === (after ? 4 : 3)) { signal = init.signal!; return new Promise<Response>(resolve => { finish = resolve; }); }
+      return Promise.resolve(response(profile));
+    }
+    if (init.method === 'POST') { writes++; return Promise.resolve(response({ ...board, version: 3, lifecycleState: 'active' })); }
+    return Promise.resolve(response(page));
+  });
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  vi.useFakeTimers(); await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' })));
+  expect(finish).toBeDefined(); await act(async () => vi.advanceTimersByTimeAsync(15_001));
+  expect(signal.aborted).toBe(true); expect(writes).toBe(after ? 1 : 0);
+  await act(async () => vi.advanceTimersByTimeAsync(500));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  await act(async () => finish(response(profile)));
+  expect(writes).toBe(after ? 1 : 0); expect(screen.queryByText('Board restore acknowledged.')).not.toBeInTheDocument();
+  if (after) expect(screen.getByRole('button', { name: 'Retry this change' })).toBeDisabled();
+  else expect(screen.queryByRole('button', { name: 'Retry this change' })).not.toBeInTheDocument();
+});

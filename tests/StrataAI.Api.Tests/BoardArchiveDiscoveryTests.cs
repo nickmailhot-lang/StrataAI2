@@ -10,6 +10,41 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Board_archive_review_actor_guard_rejects_wrong_malformed_and_empty_identity_before_mutation(bool deleting)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        using var archive = await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/archive", new { version = 1 });
+        Assert.Equal(HttpStatusCode.OK, archive.StatusCode);
+        var path = deleting ? $"/boards/{f.Board}?version=2&confirmed=true" : $"/boards/{f.Board}/restore";
+        var key = Guid.NewGuid().ToString();
+        foreach (var expected in new[] { f.Recipient.ToString(), "invalid", Guid.Empty.ToString() })
+        {
+            owner.DefaultRequestHeaders.Remove("X-StrataAI-Expected-Actor");
+            owner.DefaultRequestHeaders.Add("X-StrataAI-Expected-Actor", expected);
+            using var read = await owner.GetAsync($"/organizations/{f.Organization}/archived-boards", ct);
+            Assert.Equal(HttpStatusCode.Unauthorized, read.StatusCode);
+            Assert.DoesNotContain("items", await read.Content.ReadAsStringAsync(ct));
+            using var denied = await Mutate(owner, deleting ? HttpMethod.Delete : HttpMethod.Post, path, new { version = 2 }, key);
+            Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
+            Assert.Equal("session_unavailable", (await denied.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+            var unchanged = await store.FindBoardAsync(f.Board, ct);
+            Assert.Equal(2, unchanged!.Version); Assert.Equal(BoardLifecycleState.Archived, unchanged.LifecycleState);
+        }
+        owner.DefaultRequestHeaders.Remove("X-StrataAI-Expected-Actor");
+        owner.DefaultRequestHeaders.Add("X-StrataAI-Expected-Actor", f.Owner.ToString());
+        using var accepted = await Mutate(owner, deleting ? HttpMethod.Delete : HttpMethod.Post, path, new { version = 2 }, key);
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+        using var replay = await Mutate(owner, deleting ? HttpMethod.Delete : HttpMethod.Post, path, new { version = 2 }, key);
+        Assert.Equal(HttpStatusCode.OK, replay.StatusCode);
+        Assert.Equal(await accepted.Content.ReadAsStringAsync(ct), await replay.Content.ReadAsStringAsync(ct));
+    }
+
     [Fact]
     public async Task PRD_04_Board_archive_hides_active_discovery_restores_and_recovers_the_original_receipt()
     {

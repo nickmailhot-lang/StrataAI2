@@ -33,6 +33,7 @@ function Archive({ org }: { org: string }) {
   const [liveNotice, setLiveNotice] = useState<string>();
   const mounted = useRef(false); const actor = useRef<string | undefined>(undefined); const read = useRef<AbortController | undefined>(undefined);
   const write = useRef<AbortController | undefined>(undefined); const position = useRef<{ cursor: string | null; trail: (string | null)[] }>({ cursor: null, trail: [] });
+  const reviewEpoch = useRef(0);
   const refresh = useRef<HTMLButtonElement>(null); const queued = useRef(false);
   const queuedKind = useRef<'use' | 'retry' | 'reconnect'>('use');
   const focusRequested = useRef(false); const focusFrame = useRef<number | undefined>(undefined);
@@ -47,7 +48,7 @@ function Archive({ org }: { org: string }) {
     }); });
   }
   useEffect(() => { if (!reading && !writing && !review && focusRequested.current) restoreFocus(); }, [reading, writing, review]);
-  function retire() { write.current?.abort(); write.current = undefined; setWriting(false); setReview(undefined); setIntent(undefined); setConfirmed(false); }
+  function retire() { reviewEpoch.current++; write.current?.abort(); write.current = undefined; setWriting(false); setReview(undefined); setIntent(undefined); setConfirmed(false); }
   async function load(cursor = position.current.cursor, trail = position.current.trail, kind: 'use' | 'retry' | 'reconnect' = 'use') {
     if (read.current) { queued.current = true;
       if (kind === 'reconnect' || kind === 'retry' && queuedKind.current !== 'reconnect') queuedKind.current = kind;
@@ -59,7 +60,7 @@ function Archive({ org }: { org: string }) {
       const result = await boundedWorkRead(async signal => {
         const before = await workRequest<unknown>('/me', { signal }); if (!isNotificationProfile(before)) throw new ChangedArchiveIdentity();
         if (actor.current && actor.current !== before.id) throw new ChangedArchiveIdentity();
-        const directory = page(await workRequest<unknown>(`/organizations/${encodeURIComponent(org)}/archived-boards${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`, { signal }), org, cursor);
+        const directory = page(await workRequest<unknown>(`/organizations/${encodeURIComponent(org)}/archived-boards${cursor ? `?after=${encodeURIComponent(cursor)}` : ''}`, { signal, headers: { 'X-StrataAI-Expected-Actor': before.id } }), org, cursor);
         const after = await workRequest<unknown>('/me', { signal }); if (!isNotificationProfile(after)) throw new ChangedArchiveIdentity();
         if (after.id !== before.id) throw new ChangedArchiveIdentity();
         return { directory, actor: after.id };
@@ -98,7 +99,7 @@ function Archive({ org }: { org: string }) {
       // Fence an older read before a new canonical invalidation. Withdraw the
       // cached directory/review immediately, but retain any original command
       // key in memory for private acknowledgment recovery after re-admission.
-      read.current?.abort(); read.current = undefined; queued.current = false;
+      reviewEpoch.current++; read.current?.abort(); read.current = undefined; queued.current = false;
       setReading(false); setReady(false); setCurrent(undefined); setReview(undefined); setConfirmed(false);
       setLiveNotice(message);
       void load(undefined, undefined, 'reconnect');
@@ -117,12 +118,25 @@ function Archive({ org }: { org: string }) {
     const action = command.deleting ? 'archive_board_delete' : 'archive_board_restore';
     const started = performance.now(); activityEvent(action, intent ? 'retry' : 'use');
     const c = new AbortController(); write.current = c; setWriting(true); setNotice(undefined);
+    const epoch = reviewEpoch.current;
+    let submitted = false; let mutationReturned = false; let refreshAfter = true;
     try {
-      const value = await boundedWorkRead(signal => workRequest<unknown>(command.deleting
+      const value = await boundedWorkRead(async signal => {
+        const before = await workRequest<unknown>('/me', { signal });
+        if (!isNotificationProfile(before) || before.id !== command.actor) throw new ChangedArchiveIdentity();
+        if (!mounted.current || write.current !== c) throw new ChangedArchiveIdentity();
+        if (reviewEpoch.current !== epoch) throw new Error('Archive review withdrawn');
+        submitted = true;
+        const receipt = await workRequest<unknown>(command.deleting
         ? `/boards/${command.board.id}?version=${command.board.version}&confirmed=true` : `/boards/${command.board.id}/restore`, {
-        method: command.deleting ? 'DELETE' : 'POST', signal, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key },
+        method: command.deleting ? 'DELETE' : 'POST', signal, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key, 'X-StrataAI-Expected-Actor': command.actor },
         ...(command.deleting ? {} : { body: JSON.stringify({ version: command.board.version }) }),
-      }), c.signal) as { id?: string; organizationId?: string; name?: string; version?: number; lifecycleState?: string; deletedBy?: string };
+        });
+        mutationReturned = true;
+        const after = await workRequest<unknown>('/me', { signal });
+        if (!isNotificationProfile(after) || after.id !== command.actor) throw new ChangedArchiveIdentity();
+        return receipt;
+      }, c.signal) as { id?: string; organizationId?: string; name?: string; version?: number; lifecycleState?: string; deletedBy?: string };
       if (!mounted.current || write.current !== c) return;
       if (value?.id !== command.board.id || value.organizationId !== org || value.name !== command.board.name || value.version !== command.board.version + 1 ||
         value.lifecycleState !== (command.deleting ? 'deleted' : 'active') || command.deleting && value.deletedBy !== command.actor) throw new Error('Invalid acknowledgment');
@@ -133,10 +147,17 @@ function Archive({ org }: { org: string }) {
       activityResult(action, true, started);
     } catch (error) { if (mounted.current && write.current === c) {
       activityResult(action, false, started);
-      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { retire(); setCurrent(undefined); setReady(false); setNotice('Board administration is unavailable.'); }
+      if (error instanceof ChangedArchiveIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+        refreshAfter = false; retire(); actor.current = undefined; setLiveActor(undefined); setCurrent(undefined); setReady(false); setLiveNotice(undefined); setNotice('Board administration is unavailable.');
+      }
       else if (error instanceof WorkRequestError && [400, 409].includes(error.status)) { activityEvent(action, 'conflict'); setIntent(undefined); setConflict(true); setNotice('This change could not be applied. Cancel and review the current archive.'); }
-      else { activityEvent(action, 'exception'); setIntent(command); setNotice('This change is unconfirmed. Retry the same request to recover its acknowledgment.'); }
-    } } finally { if (mounted.current && write.current === c) { write.current = undefined; setWriting(false); void load(); } }
+      else if (submitted && !mutationReturned) { activityEvent(action, 'exception'); setIntent(command); setNotice('This change is unconfirmed. Retry the same request to recover its acknowledgment.'); }
+      else {
+        activityEvent(action, 'exception'); refreshAfter = false; setCurrent(undefined); setReady(false); setReview(undefined); setConfirmed(false); setLiveNotice(undefined);
+        if (submitted || intent) { setIntent(command); setNotice('This change is unconfirmed. Check current archived boards, then retry the same request to recover its acknowledgment.'); }
+        else { setNotice('Unable to confirm the current account. No Board change was sent. Check current archived boards before reviewing again.'); }
+      }
+    } } finally { if (mounted.current && write.current === c) { write.current = undefined; setWriting(false); if (refreshAfter) void load(); } }
   }
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
     <Typography component="h2" variant="h4">Archived boards</Typography>

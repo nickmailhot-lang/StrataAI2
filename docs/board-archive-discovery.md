@@ -17,3 +17,38 @@ Thirteen archive component cases and six Organization cases pass. These cover ma
 Board archive observations use four fixed actions: archive_board_disclosure, archive_board_read, archive_board_restore and archive_board_delete. They report opens, use/retry/reconnect, success/failure duration, conflicts and exceptions through the existing bounded best-effort pipeline. Current-page polling is ordinary use; online/foreground recovery is reconnect. A reconnect queued behind another read keeps its classification. Client/server allowlists exclude scope IDs, names, clocks, versions, command keys and private diagnostics; parser source cases reject private extras atomically.
 
 The Board screen now offers a reviewed archive control and its own fixed observation action; see board-archive-control.md. Native keyboard/mobile execution, Organization archive directory SignalR invalidation and large-data acceptance remain unfinished. Board directory observations do not establish lifecycle capacity.
+
+## Reviewed account binding
+
+Archive discovery, restore and permanent deletion support the optional
+`X-StrataAI-Expected-Actor` header. When supplied, it must be exactly one nonempty
+UUID matching the authenticated account. A mismatch returns neutral
+`session_unavailable` before directory disclosure, command execution or receipt
+lookup. Existing clients without this header retain the same authorization
+requirements. The browser always sends the reviewed actor.
+
+A restore/delete attempt has one bounded 15-second operation covering the
+before-command profile, command response body and after-command profile. A
+confirmed account change withdraws the private review and original intent. A
+temporary failure before submission withdraws names and consent and states that
+no Board change was sent; it does not create an unresolved command. Temporary
+uncertainty after submission withholds the acknowledgment and retains only the
+original command intent for explicit current-access verification and same-key
+retry. A command transport failure keeps the existing canonical read/retry
+recovery. A live invalidation during the before-command profile check withdraws
+consent and fences the unsent command. Late replies cannot resurrect retired
+reviews or receipts.
+
+Validation: 23 archived Board component cases pass, including account switches
+before/after submission, transient profile failures, noncooperative profile
+requests bounded by the deadline, late replies and live review withdrawal before
+submission. Two API cases pass for restore/deletion: wrong, malformed and empty
+UUID actor headers disclose no directory and leave the archived revision
+unchanged; the matching actor can execute and recover a byte-identical receipt
+using the original key. Release compilation passes with zero warnings/errors.
+Four native desktop/mobile cases in `board-archive-account.spec.ts` use normal
+registration, authentication and persisted Board lifecycle endpoints. They
+require zero commands/unchanged state before uncertain account admission and
+exact-key recovery after a real committed command, keyboard use, focus return,
+no document reload and Axe checks. These native cases remain pending exact-image
+CI; local collection/typechecking alone does not prove runtime acceptance.

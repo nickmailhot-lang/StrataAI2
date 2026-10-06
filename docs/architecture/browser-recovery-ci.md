@@ -343,3 +343,13 @@ for the initial live reset's protected archive-read announcement before opening
 restore consent. It retains the keyboard command, lost actual acknowledgment,
 original-key retry, observer delivery and child-state assertions. Current native
 execution remains pending exact-image CI.
+
+The older `180b46c` run `37545735746` subsequently reached a terminal container
+failure in job `112552757473`: the comment-mention fixture attempted to recreate
+an Organization membership activation without advancing its entity version,
+violating `organization_membership_activations_pkey`. Its actual release identity
+and invitation command checks had passed before that step. This image predates
+the `f3daad3` fixture repair; it is not evidence against that later repair. The
+`f3daad3` run `37547634517` has passed source gates and build-once image creation;
+its security and container jobs remain live. Do not close dependent PRDs until
+the repaired images have actually completed the required gates.
