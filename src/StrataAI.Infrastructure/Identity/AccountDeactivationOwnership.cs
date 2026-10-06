@@ -13,8 +13,8 @@ internal interface IAccountDeactivationOwnership
     Task CleanupAssignmentsAsync(AccountOwnershipPlan plan, string correlationId, CancellationToken cancellationToken);
 }
 
-// The caller holds the shared Demo identity/Organization command gate throughout.
-// This is process-local admission, not PostgreSQL transaction/rollback evidence.
+// The caller holds the shared Demo account/Organization and Work gates throughout
+// and owns Identity/Work rollback snapshots. This is process-local evidence only.
 internal sealed class InMemoryAccountDeactivationOwnership(IOrganizationStore organizations,
     IIdentityStore identities, IdentityPolicy policy, IWorkManagementStore work, IWorkEventStore events, IClock clock) : IAccountDeactivationOwnership
 {

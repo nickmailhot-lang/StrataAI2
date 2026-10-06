@@ -19,3 +19,36 @@ Local verification covers seven component cases and three real-browser scenarios
 The earlier schema-021 CI run exposed a shared-fixture rate-limit failure: its retained trace shows successful registration followed by sign-in receiving 429 with Retry-After. Before the profile browser suite, CI now recreates only API and web processes from the already loaded exact release images, preserving database data and production rate limits. Explicit API and edge abuse tests remain required after the browser suite.
 
 Release execution evidence remains in CI; a clean build or local Demo browser pass alone is insufficient durable proof. Broader ownership administration/transfer, Organization events, lifecycle processing, telemetry and remaining PRD acceptance are still open. This increment does not close PRD-02/03 or architecture issues.
+
+## Demo account and assignment rollback
+
+Both keyed and unkeyed Demo deactivation now enter the owning Identity rollback
+boundary. Deactivation acquires the account/Organization gate followed by the
+Work gate, captures Identity participants and Work participants, and holds both
+until account/session changes, assignment cleanup, events and any revocation
+receipt have completed. Failure results, exceptions and cancellation restore the
+snapshots in reverse order before releasing the gates. Keyed logout also uses
+Identity rollback participants; it does not acquire the Work gate.
+
+A successful deactivation intentionally retires the account and sessions, so a
+post-mutation active-session check would reject its own valid result. Initial
+actor/session proof, ownership continuity, the keyed receipt executor's expiry
+checks and final cancellation fence retain their operation-specific admission.
+Historical matching deactivation receipts still acknowledge without repeating
+cleanup or requiring a new ownership-floor decision.
+
+Four new API-host cases inject exception or cancellation only after a real
+`CARD_MEMBER_REMOVED` event has been appended during cleanup, for both keyed and
+unkeyed commands. They require exact restoration of account and session state,
+Identity events, Card version, assignment and Work events, plus absence of the
+failed receipt. A fresh request must deactivate once and remove the assignment;
+a keyed replay must preserve the committed event counts.
+
+A fifth case pauses cleanup after publication, queues an owning Work command,
+and requires that command to stay outside its operation until deactivation
+rollback completes. Its subsequent Card commit must survive, and a fresh
+deactivation must acquire both gates without deadlock. Observation waits are
+bounded to ten seconds. All five cases compile with warnings as errors; native
+API-host CI execution remains required. Demo snapshots and its no-op audit store
+do not establish durable PostgreSQL, mail or multi-host rollback. Production
+transaction behavior is unchanged, and full PRD-02/03 acceptance remains open.
