@@ -32,7 +32,9 @@ public sealed partial class ApiHostTests
         var organizations=app.Services.GetRequiredService<IOrganizationStore>();var before=await organizations.FindOrganizationAsync(org,ct);
         var receipts=app.Services.GetRequiredService<IOrganizationDeletionReplayStore>();
         using var refused=await Mutate(owner,HttpMethod.Delete,path,new{},key.ToString());
-        Assert.Equal(actorLoss?HttpStatusCode.Unauthorized:HttpStatusCode.InternalServerError,refused.StatusCode);
+        Assert.Equal(actorLoss?HttpStatusCode.Unauthorized:HttpStatusCode.ServiceUnavailable,refused.StatusCode);
+        var problem=await refused.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal(actorLoss?"session_unavailable":"organization_storage_unavailable",problem.GetProperty("code").GetString());
         Assert.NotNull(publication);Assert.True(publication.LastPublished);
         Assert.Equal(before,await organizations.FindOrganizationAsync(org,ct));Assert.Null(await receipts.ReadAsync(org,actor,key,ct));
         publication.Armed=false;fence.Allowed=true;
@@ -52,7 +54,7 @@ public sealed partial class ApiHostTests
             if(Armed)
             {
                 if(actorLoss)fence.Allowed=false;
-                else throw new InvalidOperationException("Fixture failure after root publication.");
+                else throw new OrganizationDeletionPublicationUnavailableException();
             }
             return LastPublished;
         }
@@ -92,7 +94,7 @@ public sealed partial class ApiHostTests
             Assert.True(await organizations.MarkDeletingAsync(org,1,DateTimeOffset.UtcNow,ct));
             Assert.True(await publisher.PublishAsync(org,actor,request,2,"first",ct));
             Assert.False(await publisher.PublishAsync(org,actor,request,2,"later",ct));
-            await Assert.ThrowsAsync<InvalidOperationException>(()=>publisher.PublishAsync(org,actor,Guid.NewGuid(),2,"other",ct));
+            await Assert.ThrowsAsync<OrganizationDeletionPublicationUnavailableException>(()=>publisher.PublishAsync(org,actor,Guid.NewGuid(),2,"other",ct));
             await Assert.ThrowsAsync<InvalidOperationException>(()=>publisher.PublishAsync(Guid.NewGuid(),actor,request,2,"other",ct));
             if(outcome=="actor")fence.Allowed=false;
             if(outcome=="exception")throw new InvalidOperationException("after publication");

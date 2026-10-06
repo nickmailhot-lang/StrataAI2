@@ -590,8 +590,17 @@ public sealed class OrganizationService(
         // Same owning transaction as DELETING, reminder suspension, audit and
         // the acknowledgment saved by the caller. Final actor failure rolls all
         // of them back; receipt recovery never republishes or resets this root.
-        await deletionJobs.PublishAsync(organizationId, actorUserId, requestId,
-            checked(expectedVersion + 1), correlationId, cancellationToken);
+        try
+        {
+            await deletionJobs.PublishAsync(organizationId, actorUserId, requestId,
+                checked(expectedVersion + 1), correlationId, cancellationToken);
+        }
+        catch (OrganizationDeletionPublicationUnavailableException)
+        {
+            // Failure prevents the owning unit from committing the parent,
+            // reminder changes, audit, publication or acknowledgment receipt.
+            return OrganizationOperation<bool>.Failure("organization_storage_unavailable");
+        }
         return OrganizationOperation<bool>.Success(true);
     }
 

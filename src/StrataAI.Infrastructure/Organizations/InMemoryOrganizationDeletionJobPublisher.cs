@@ -51,5 +51,5 @@ internal sealed class InMemoryOrganizationDeletionJobPublisher(IOrganizationStor
         var snapshot = _publications.ToArray();
         return () => { _publications.Clear(); foreach (var row in snapshot) _publications.Add(row.Key, row.Value); };
     }
-    private static InvalidOperationException Unavailable() => new("Organization deletion publication is unavailable.");
+    private static OrganizationDeletionPublicationUnavailableException Unavailable() => new();
 }

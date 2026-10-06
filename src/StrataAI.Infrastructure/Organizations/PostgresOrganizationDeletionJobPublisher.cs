@@ -72,5 +72,5 @@ public sealed class PostgresOrganizationDeletionJobPublisher(PostgresConnectionF
         // Borrowed transaction: only the owning command may commit all effects.
         return true;
     }
-    private static InvalidOperationException Unavailable() => new("Organization deletion publication is unavailable.");
+    private static OrganizationDeletionPublicationUnavailableException Unavailable() => new();
 }

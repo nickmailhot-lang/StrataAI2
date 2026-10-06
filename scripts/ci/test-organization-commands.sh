@@ -16,8 +16,12 @@ creation_session=''
 creation_session_expiry=''
 deletion_session=''
 deletion_session_expiry=''
+deletion_worker_scoped=false
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
+  if test "$deletion_worker_scoped" = true; then
+    docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null || true
+  fi
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
@@ -796,6 +800,49 @@ test "$deletion_demoted" = "$(deletion_state)"
 admin "UPDATE organization_members SET role='OWNER',version=version+1 WHERE tenant_id='$retry_org' AND user_id='$owner';" >/dev/null
 test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_deletion_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
 test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_deletion_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','DELETE');")" = f
+# PRD-03-TC-01/06/07/10: let the actual release Worker consume only the
+# product-published Organization scope. No fixture edits advance checkpoints,
+# mutate descendants, create completion events, or mark jobs successful.
+export STRATAAI_TEST_EVENT_ORGANIZATION_ID="$retry_org"
+deletion_worker_scoped=true
+docker compose -f compose.release.yml -f scripts/ci/compose.work-event-test.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
+deletion_finished() {
+  admin "SELECT EXISTS(SELECT 1 FROM organizations o JOIN organization_deletion_progress p ON p.tenant_id=o.id
+    JOIN organization_lifecycle_events e ON e.tenant_id=o.id
+    WHERE o.id='$retry_org' AND o.status='DELETED' AND o.version=$((deletion_version+2)) AND o.deleted_by='$owner'
+     AND p.phase='COMPLETE' AND p.completed_at=o.deleted_at AND e.event_type='ORGANIZATION_DELETED'
+     AND e.entity_version=o.version AND e.actor_id='$owner' AND e.created_at=o.deleted_at AND e.ready_at IS NOT NULL)
+    AND EXISTS(SELECT 1 FROM background_jobs WHERE tenant_id='$retry_org' AND job_type='ORGANIZATION_DELETE_PAGE')
+    AND NOT EXISTS(SELECT 1 FROM background_jobs WHERE tenant_id='$retry_org'
+     AND job_type IN ('ORGANIZATION_DELETE_PAGE','ORGANIZATION_LIFECYCLE_EVENT_READY') AND state<>'SUCCEEDED');"
+}
+for ((attempt=0; attempt<90; attempt++)); do
+  if test "$(deletion_finished)" = t; then break; fi
+  sleep 1
+done
+test "$(deletion_finished)" = t
+docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
+deletion_worker_scoped=false
+test "$(admin "SELECT NOT EXISTS(SELECT 1 FROM boards WHERE tenant_id='$retry_org' AND status<>'DELETED')
+ AND NOT EXISTS(SELECT 1 FROM lists WHERE tenant_id='$retry_org' AND status<>'DELETED')
+ AND NOT EXISTS(SELECT 1 FROM cards WHERE tenant_id='$retry_org' AND (status<>'DELETED' OR cover_attachment_id IS NOT NULL))
+ AND NOT EXISTS(SELECT 1 FROM attachments WHERE tenant_id='$retry_org' AND status<>'DELETED');")" = t
+test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -D "$scratch/deletion-complete.headers" -o "$scratch/deletion-complete.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/deletion-requests/$deletion_key?expectedActorId=$owner")" = 200
+jq -e --arg key "$deletion_key" --argjson version "$((deletion_version+2))" 'keys==["completedAt","eventId","requestId","state","version"] and .requestId==$key and .state=="COMPLETED" and .version==$version and (.eventId|type)=="string" and (.completedAt|type)=="string"' "$scratch/deletion-complete.json" >/dev/null
+grep -Eiq '^Cache-Control:.*no-store' "$scratch/deletion-complete.headers"
+completion_event="$(jq -r '.eventId' "$scratch/deletion-complete.json")"
+[[ "$completion_event" =~ ^[0-9a-fA-F-]{36}$ ]]
+test "$(admin "SELECT count(*)=1 FROM organization_lifecycle_events WHERE tenant_id='$retry_org' AND event_id='$completion_event';")" = t
+deletion_terminal="$(deletion_state)"
+test "$(deletion_request deletion-terminal-replay)" = 202
+jq -e --arg key "$deletion_key" 'keys==["requestId"] and .requestId==$key' "$scratch/deletion-terminal-replay.json" >/dev/null
+test "$deletion_terminal" = "$(deletion_state)"
+test "$(request GET "/organizations/$retry_org" '')" = 404
+test "$(curl --max-time 30 --silent --show-error -b "$scratch/other.cookies" -o "$scratch/deletion-other-status.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/deletion-requests/$deletion_key")" = 404
+test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/deletion-repeat-status.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/deletion-requests/$deletion_key?expectedActorId=$owner")" = 200
+test "$(jq -Sc . "$scratch/deletion-complete.json")" = "$(jq -Sc . "$scratch/deletion-repeat-status.json")"
+test "$deletion_terminal" = "$(deletion_state)"
+echo 'Product deletion API publication, release Worker graph completion/event delivery, original Owner status and unchanged terminal acknowledgment replay passed.'
 admin "UPDATE organization_deletion_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$retry_org' AND key_id='$deletion_key';" >/dev/null
 deletion_expired="$(deletion_state)"
 test "$(deletion_request deletion-expired)" = 409

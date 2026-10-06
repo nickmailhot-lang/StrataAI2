@@ -45,6 +45,11 @@ public static class OrganizationDeletionJobs
     }
 }
 
+// Expected refusal to establish a consistent root/checkpoint/job publication.
+// The owning Organization command must roll back every effect before replying.
+public sealed class OrganizationDeletionPublicationUnavailableException()
+    : InvalidOperationException("Organization deletion publication is unavailable.");
+
 public interface IOrganizationDeletionJobPublisher
 {
     // Accepted request/checkpoint/first job borrow the owning Organization command.
