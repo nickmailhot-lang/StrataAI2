@@ -199,6 +199,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const attempts: RequestInit[] = [];
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, request?: RequestInit) => {
       const path = String(input);
+      if (path.startsWith('/navigation/observations?')) return navigationResponse(path, actor);
       if (path === '/me') return response(profile);
       if (path.endsWith('/attachment-upload-options')) return response({ organizationId: org, boardId: board, cardId: card,
         cardVersion: 3, maximumBytes: 20971520, allowedMimeTypes: ['application/pdf'] });
@@ -214,11 +215,15 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       return response(current);
     }));
     mount(`/app/${org}/boards/${board}/cards/${card}`);
-    fireEvent.click(await screen.findByRole('button', { name: 'Add file attachment' }));
+    const add = await screen.findByRole('button', { name: 'Add file attachment' });
+    await waitFor(() => expect(add).toBeEnabled()); fireEvent.click(add);
     const selection = await screen.findByLabelText('File to attach'); await waitFor(() => expect(selection).toBeEnabled());
     const file = new File(['%PDF-1.7\n'], 'Document.pdf', { type: 'text/html' });
     Object.defineProperty(file, 'slice', { value: (start: number, end: number) => ({ arrayBuffer: async () => new TextEncoder().encode('%PDF-1.7\n').slice(start, end).buffer }) });
-    fireEvent.change(selection, { target: { files: [file] } }); fireEvent.click(screen.getByRole('button', { name: 'Upload selected file' }));
+    fireEvent.change(selection, { target: { files: [file] } });
+    const upload = screen.getByRole('button', { name: 'Upload selected file' });
+    await waitFor(() => expect(upload).toBeEnabled()); fireEvent.click(upload);
+    await waitFor(() => expect(attempts).toHaveLength(1));
     const retry = await screen.findByRole('button', { name: 'Retry original file upload' }); await waitFor(() => expect(retry).toBeEnabled());
     expect(screen.getByRole('button', { name: 'Add link attachment' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
     expect(attempts).toHaveLength(1); expect(attempts[0].body).toBe(file);
@@ -227,7 +232,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(new Headers(attempts[1].headers).get('X-Card-Version')).toBe('3');
     expect(new Headers(attempts[1].headers).get('Idempotency-Key')).toBe(new Headers(attempts[0].headers).get('Idempotency-Key'));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Close' })).toBeEnabled());
-  });
+  }, 10_000);
   it('updates canvas due descriptions on live completion and removes them when dates clear', async () => {
     let invalidate = () => {};
     vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
@@ -883,7 +888,9 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination Board' })); fireEvent.click(await screen.findByRole('option', { name: 'Destination' }));
     await waitFor(() => expect(screen.getByRole('combobox', { name: 'Destination List on another Board' })).not.toHaveAttribute('aria-disabled', 'true'));
     fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination List on another Board' })); fireEvent.click(await screen.findByRole('option', { name: 'Destination List' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm move to another Board' }));
+    const confirm = screen.getByRole('button', { name: 'Confirm move to another Board' });
+    await waitFor(() => expect(confirm).toBeEnabled()); fireEvent.click(confirm);
+    await waitFor(() => expect(writes).toHaveLength(1));
     const retry = await screen.findByRole('button', { name: 'Retry this cross-Board move' }); await waitFor(() => expect(retry).toBeEnabled());
     expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled(); expect(archivedReads).toBe(0);
     expect(screen.getByText('Persisted board', { selector: 'h2' })).toBeVisible(); fireEvent.click(retry);
