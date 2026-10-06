@@ -72,6 +72,62 @@ DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; org uuid:='078
  IF (SELECT count(*) FROM navigation_interaction_replays)<>1 THEN RAISE EXCEPTION 'Duplicate navigation receipt'; END IF;
 END $$;
 RESET ROLE;
+-- PRD-01-TC-05/06/07: receipts and sources roll back together.
+SET LOCAL ROLE strataai_navigation_ci;
+DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; candidate uuid:=gen_random_uuid(); request uuid:=gen_random_uuid(); sources bigint; receipts bigint; BEGIN
+ SELECT count(*) INTO sources FROM navigation_interaction_events;
+ SELECT count(*) INTO receipts FROM navigation_interaction_replays;
+ BEGIN
+  PERFORM * FROM append_or_replay_navigation_interaction(request,repeat('c',64),candidate,actor,'APPLICATION_CONTEXT_CHANGED',NULL,NULL,candidate,1,now());
+  IF NOT FOUND THEN RAISE EXCEPTION 'Rollback receipt not admitted'; END IF;
+  RAISE EXCEPTION 'Late refusal fixture' USING ERRCODE='P0002';
+ EXCEPTION WHEN SQLSTATE 'P0002' THEN NULL; END;
+ IF (SELECT count(*) FROM navigation_interaction_events)<>sources OR (SELECT count(*) FROM navigation_interaction_replays)<>receipts
+ THEN RAISE EXCEPTION 'Receipt/source survived late refusal'; END IF;
+END $$;
+SELECT set_config('app.identity_subject','07800000-0000-0000-0000-000000000002',true);
+DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000002'; candidate uuid:=gen_random_uuid(); BEGIN
+ IF EXISTS(SELECT 1 FROM navigation_interaction_replays) THEN RAISE EXCEPTION 'Foreign receipt disclosed'; END IF;
+ PERFORM * FROM append_or_replay_navigation_interaction('08000000-0000-0000-0000-000000000001',repeat('a',64),candidate,actor,'APPLICATION_CONTEXT_CHANGED',NULL,NULL,candidate,1,now());
+ IF NOT FOUND THEN RAISE EXCEPTION 'Actor retry namespace not independent'; END IF;
+ IF (SELECT count(*) FROM navigation_interaction_replays)<>1 THEN RAISE EXCEPTION 'Actor receipt RLS failed'; END IF;
+ PERFORM * FROM append_or_replay_navigation_interaction(gen_random_uuid(),repeat('a',64),candidate,'07800000-0000-0000-0000-000000000001','APPLICATION_CONTEXT_CHANGED',NULL,NULL,candidate,1,now());
+ IF FOUND THEN RAISE EXCEPTION 'Forged actor admitted'; END IF;
+END $$;
+RESET ROLE;
+-- Populate canonical global originals without changing immutable rows.
+INSERT INTO navigation_interaction_events(event_id,actor_id,event_type,entity_type,entity_id,entity_version,created_at)
+SELECT md5('navigation-capacity-event-'||n)::uuid,'07800000-0000-0000-0000-000000000002','APPLICATION_CONTEXT_CHANGED','ApplicationContext',md5('navigation-capacity-event-'||n)::uuid,1,now()
+FROM generate_series(1,999) n;
+INSERT INTO navigation_interaction_replays(actor_id,request_id,event_id,fingerprint,created_at,expires_at)
+SELECT '07800000-0000-0000-0000-000000000002',md5('navigation-capacity-request-'||n)::uuid,md5('navigation-capacity-event-'||n)::uuid,repeat('d',64),now(),now()+interval '24 hours'
+FROM generate_series(1,999) n;
+SET LOCAL ROLE strataai_navigation_ci;
+DO $$ DECLARE candidate uuid:=gen_random_uuid(); BEGIN
+ IF (SELECT count(*) FROM navigation_interaction_replays)<>1000 THEN RAISE EXCEPTION 'Capacity fixture incomplete'; END IF;
+ BEGIN
+  PERFORM * FROM append_or_replay_navigation_interaction(gen_random_uuid(),repeat('e',64),candidate,'07800000-0000-0000-0000-000000000002','APPLICATION_CONTEXT_CHANGED',NULL,NULL,candidate,1,now());
+  RAISE EXCEPTION 'Capacity overflow admitted' USING ERRCODE='P0002';
+ EXCEPTION WHEN SQLSTATE 'P0001' THEN NULL; END;
+ IF EXISTS(SELECT 1 FROM navigation_interaction_events WHERE event_id=candidate)
+  OR (SELECT count(*) FROM navigation_interaction_replays)<>1000 THEN RAISE EXCEPTION 'Capacity refusal left source or evicted live receipt'; END IF;
+END $$;
+RESET ROLE;
+DELETE FROM navigation_interaction_replays WHERE actor_id='07800000-0000-0000-0000-000000000002' AND request_id=md5('navigation-capacity-request-1')::uuid;
+INSERT INTO navigation_interaction_replays(actor_id,request_id,event_id,fingerprint,created_at,expires_at)
+VALUES('07800000-0000-0000-0000-000000000002',md5('navigation-capacity-request-1')::uuid,md5('navigation-capacity-event-1')::uuid,repeat('d',64),'2000-01-01T00:00:00Z','2000-01-02T00:00:00Z');
+SET LOCAL ROLE strataai_navigation_ci;
+DO $$ DECLARE candidate uuid:=gen_random_uuid(); BEGIN
+ PERFORM * FROM append_or_replay_navigation_interaction(md5('navigation-capacity-request-1')::uuid,repeat('d',64),candidate,'07800000-0000-0000-0000-000000000002','APPLICATION_CONTEXT_CHANGED',NULL,NULL,candidate,1,now());
+ IF FOUND THEN RAISE EXCEPTION 'Expired receipt replayed'; END IF;
+ PERFORM * FROM append_or_replay_navigation_interaction(gen_random_uuid(),repeat('e',64),candidate,'07800000-0000-0000-0000-000000000002','APPLICATION_CONTEXT_CHANGED',NULL,NULL,candidate,1,now());
+ IF NOT FOUND OR (SELECT count(*) FROM navigation_interaction_replays)<>1000 THEN RAISE EXCEPTION 'Expired capacity not reclaimed'; END IF;
+ IF EXISTS(SELECT 1 FROM navigation_interaction_replays WHERE request_id=md5('navigation-capacity-request-1')::uuid)
+  OR NOT EXISTS(SELECT 1 FROM navigation_interaction_events WHERE event_id=md5('navigation-capacity-event-1')::uuid)
+ THEN RAISE EXCEPTION 'Expiry cleanup changed immutable source'; END IF;
+END $$;
+SELECT set_config('app.identity_subject','07800000-0000-0000-0000-000000000001',true);
+RESET ROLE;
 UPDATE board_members SET status='REMOVED' WHERE id='07800000-0000-0000-0000-000000000021';
 SET LOCAL ROLE strataai_navigation_ci;
 DO $$ BEGIN
@@ -83,5 +139,6 @@ DO $$ BEGIN
  IF (SELECT version FROM cards WHERE id='07800000-0000-0000-0000-000000000041')<>1
   OR (SELECT version FROM boards WHERE id='07800000-0000-0000-0000-000000000020')<>1 THEN RAISE EXCEPTION 'Navigation changed shared revisions'; END IF;
  IF NOT (SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='navigation_interaction_events'::regclass) THEN RAISE EXCEPTION 'Forced RLS missing'; END IF;
+ IF NOT (SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='navigation_interaction_replays'::regclass) THEN RAISE EXCEPTION 'Receipt forced RLS missing'; END IF;
 END $$;
 ROLLBACK;
