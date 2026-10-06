@@ -6,6 +6,8 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 ## Start here
 
+Jump to [documentation navigation](#navigating-the-documentation), [workflow guides](#find-a-workflow-quickly), [adopted architecture](#adopted-architecture), [repository layout](#repository-layout), or [local source checks](#local-source-checks).
+
 | What you need | Where to start |
 | --- | --- |
 | Find any document | [Complete documentation index](docs/README.md) |
@@ -61,6 +63,7 @@ Useful routes through the docs include:
 - **Files and backgrounds:** [object storage](docs/architecture/attachment-object-storage.md) → [attachment acceptance](docs/architecture/attachment-acceptance.md) → [Board background images](docs/board-background-images.md) → [cover lifecycle](docs/architecture/attachment-covers-lifecycle.md).
 - **Search and filters:** [Board filtering and private search interaction sources](docs/board-filtering.md) → [Organization access integrity](docs/architecture/organization-access-integrity.md) → [work synchronization](docs/architecture/work-synchronization.md). The filtering guide covers global search, Board criteria, private interaction acknowledgments, and remaining acceptance work.
 - **Operating a release:** [release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [operator metrics](docs/architecture/operator-metrics.md).
+- **Checking build evidence:** [build identity](docs/architecture/build-identity.md) → [CI evidence retention](docs/architecture/ci-run-retention.md) → [browser recovery checks](docs/architecture/browser-recovery-ci.md) → [Kanban release evidence](docs/kanban-release-evidence.md). Match the application revision to the retained results before relying on a release claim.
 
 ### Find a workflow quickly
 
