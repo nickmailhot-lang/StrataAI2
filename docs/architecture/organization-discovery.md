@@ -81,11 +81,9 @@ partial results.
 The API-host fixture seeds 52 routing candidates and checks bounded traversal,
 removed/deleting omission, complete nonduplicated continuation, foreign-account
 isolation, private caching and invalid cursors. Compilation is source evidence;
-native API-host and PostgreSQL execution remain required. The existing
-`GET /organizations` response and browser discovery still use the legacy array
-contract. Migrating those consumers, production large-directory evidence and
-full PRD-03 acceptance remain unfinished; this API increment does not complete
-Organization discovery pagination across the product.
+native API-host and PostgreSQL execution remain required. The existing `GET /organizations` legacy array response remains for older clients.
+Browser discovery now uses the paged contract described below. Production
+large-directory evidence and full PRD-03 acceptance remain unfinished.
 
 The mandatory exact-image `test-organization-member-directory.sh` fixture also
 checks the paged contract through Nginx against PostgreSQL and the restricted API
@@ -124,3 +122,28 @@ exact-image fixture temporarily denies the restricted API route-table read,
 requires the stable masked error, restores the grant, and requires a successful
 fresh directory read. Cleanup also restores the fixture grant on failure.
 Native runtime execution remains pending CI.
+
+## Browser paging and direct Organization admission
+
+The global `/app` directory displays one page of at most 50 Organizations.
+**Next Organization page** replaces the displayed page; **First Organization
+page** resets traversal and remains available after a failed later page. An empty
+nonterminal page explains that later Organizations can still be checked and
+keeps continuation available. Page changes withdraw old names immediately and
+close creation consent; pages are not accumulated in browser state.
+
+An Organization deep link reads `GET /organizations/{id}` directly, verifies the
+returned ID and active state, then loads its Board directory. It does not scan
+Organization pages or reject access merely because the Organization is beyond
+page one. Profile checks before and after the protected read preserve account
+binding. The complete read has a 15-second deadline, aborts on scope changes,
+and ignores late canceled responses. Malformed, duplicate, over-capacity and
+nonadvancing-cursor pages are refused before their names are displayed.
+
+Component coverage retains creation/default-private Board, realtime withdrawal,
+late-response, account replacement and scope-clearing scenarios, and adds empty
+page continuation, first-page reset, failed-page recovery and malformed page
+refusal. The native `organization-directory.spec.ts` creates 51 actual acknowledged
+Organizations and checks keyboard paging and a later-page direct deep link at
+1280px and 390px. Browser TypeScript checks passed; native execution remains
+pending the exact-image CI gate. Source checks do not complete PRD-03 acceptance.

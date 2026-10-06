@@ -17,6 +17,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   workRequest,
+  boundedWorkRead,
   WorkMutationIntent,
   WorkRequestError,
   WorkInputError,
@@ -38,7 +39,25 @@ type BoardSummary = { id: string; name: string; version: number };
 type Discovery = {
   organizations: OrganizationSummary[];
   boards: BoardSummary[];
+  nextCursor: string | null;
 };
+function summary(value: unknown): value is OrganizationSummary {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Partial<OrganizationSummary>; const org = item.organization;
+  return !!org && typeof org.id === "string" && org.id.length > 0 && typeof org.name === "string"
+    && org.name.length > 0 && org.name.length <= 160 && (org.description === null || typeof org.description === "string")
+    && org.status === 0 && Number.isInteger(item.role) && item.role! >= 0 && item.role! <= 2;
+}
+function directory(value: unknown, after?: string): { items: OrganizationSummary[]; nextCursor: string | null } {
+  if (!value || typeof value !== "object") throw new WorkRequestError(503, null);
+  const page = value as { items?: unknown; nextCursor?: unknown };
+  if (!Array.isArray(page.items) || page.items.length > 50 || !page.items.every(summary)
+    || new Set(page.items.map(item => item.organization.id)).size !== page.items.length) throw new WorkRequestError(503, null);
+  const cursor = page.nextCursor;
+  if (cursor !== null && (typeof cursor !== "string" || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(cursor)
+    || cursor === "00000000-0000-0000-0000-000000000000" || after && cursor <= after)) throw new WorkRequestError(503, null);
+  return { items: page.items, nextCursor: cursor as string | null };
+}
 
 // PRD-01/03/04: server-authorized discovery and persisted organization/board creation.
 export function OrganizationHome() {
@@ -54,6 +73,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const [data, setData] = useState<Discovery>();
   const [loadError, setLoadError] = useState<Error>();
   const [reload, setReload] = useState(0);
+  const [cursor, setCursor] = useState<string>();
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
@@ -66,34 +86,35 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   useEffect(() => {
     const controller = new AbortController();
     read.current = controller;
-    void (async () => {
-      const before = await workRequest<unknown>("/me", { signal: controller.signal });
+    void boundedWorkRead(async (signal) => {
+      const before = await workRequest<unknown>("/me", { signal });
       if (!isNotificationProfile(before) || actor.current && actor.current !== before.id)
         throw new WorkRequestError(401, null);
-      const organizations = await workRequest<OrganizationSummary[]>(
-        "/organizations",
-        { signal: controller.signal },
-      );
-      if (
-        organizationId &&
-        !organizations.some((item) => item.organization.id === organizationId)
-      )
-        throw new WorkRequestError(404, null);
+      let organizations: OrganizationSummary[]; let nextCursor: string | null = null;
+      if (organizationId) {
+        const current = await workRequest<unknown>(`/organizations/${encodeURIComponent(organizationId)}`, { signal });
+        if (!summary(current) || current.organization.id !== organizationId) throw new WorkRequestError(404, null);
+        organizations = [current];
+      } else {
+        const page = directory(await workRequest<unknown>(`/organizations/directory${cursor ? `?after=${encodeURIComponent(cursor)}` : ""}`,
+          { signal }), cursor);
+        organizations = page.items; nextCursor = page.nextCursor;
+      }
       const boards = organizationId
         ? await workRequest<BoardSummary[]>(
             `/organizations/${encodeURIComponent(organizationId)}/boards`,
-            { signal: controller.signal },
+            { signal },
           )
         : [];
-      const after = await workRequest<unknown>("/me", { signal: controller.signal });
+      const after = await workRequest<unknown>("/me", { signal });
       if (!isNotificationProfile(after) || after.id !== before.id) throw new WorkRequestError(401, null);
-      if (!controller.signal.aborted) {
+      if (!signal.aborted) {
         actor.current = after.id; setLiveActor(after.id);
-        setData({ organizations, boards });
+        setData({ organizations, boards, nextCursor });
         setLoadError(undefined);
         setLiveNotice(value => value ? "Current Board access checked." : undefined);
       }
-    })().catch((reason: unknown) => {
+    }, controller.signal).catch((reason: unknown) => {
       if (controller.signal.aborted) return;
       actor.current = undefined; setLiveActor(undefined); setData(undefined);
       if (reason instanceof WorkRequestError && reason.status === 401)
@@ -106,7 +127,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       }
     });
     return () => { controller.abort(); if (read.current === controller) read.current = undefined; };
-  }, [organizationId, reload, navigate]);
+  }, [organizationId, cursor, reload, navigate]);
   useEffect(() => {
     if (!organizationId || !liveActor) return;
     const recover = (message: string) => {
@@ -264,7 +285,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               )
             ) : data.organizations.length === 0 ? (
               <Typography>
-                You have no organizations yet. Create one to begin.
+                {cursor || data.nextCursor ? "No available organizations on this page. Continue to check later organizations." : "You have no organizations yet. Create one to begin."}
               </Typography>
             ) : (
               data.organizations.map((item) => (
@@ -280,6 +301,10 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             )}
           </>
         )}
+        {!organizationId && (data || cursor) && <Stack direction="row" spacing={2}>
+          {cursor && <Button onClick={() => { read.current?.abort(); setData(undefined); setLoadError(undefined); setCreating(false); setCursor(undefined); }}>First Organization page</Button>}
+          {data?.nextCursor && <Button onClick={() => { read.current?.abort(); setData(undefined); setCreating(false); setCursor(data.nextCursor!); }}>Next Organization page</Button>}
+        </Stack>}
         {creating && <Dialog
           open={creating}
           onClose={() => {
