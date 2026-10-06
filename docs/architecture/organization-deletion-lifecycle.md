@@ -195,11 +195,45 @@ reclaimed delivery preserves the original readiness timestamp.
 Seventeen handler cases and the actual restricted PostgreSQL delivery contract
 cover bad references/scope, cancellation, unavailable delivery, API refusal,
 late readiness rollback, duplicate delivery, expired and superseded claims,
-reclaimed acknowledgment and disabled direct event mutation. Domain test,
-persistence contract and Worker projects compiled with zero warnings/errors;
-runtime execution of this delivery revision is pending CI.
+reclaimed acknowledgment and disabled direct event mutation. Domain test, persistence contract and Worker projects compiled with zero
+warnings/errors. The restricted delivery contract passed at `736b386` in
+[CI run 37497033927](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37497033927/job/112384103047),
+including late readiness rollback, duplicate/reclaimed delivery and disabled
+direct mutation. Handler runtime tests and overall release results must be
+reviewed separately from this database result.
 
 Readiness is a durable delivery milestone. It does not establish SignalR/browser
 consumption or Owner completion observation. The deletion producer/finalizer
 remain disconnected from production until bounded graph processing and the
 remaining product flow are implemented and verified.
+
+## Bounded graph candidate traversal
+
+Migration `091_organization_deletion_candidates` and
+`PostgresOrganizationDeletionCandidateReader` provide a Worker-only reference
+snapshot for every deletion stage. Parent/request/checkpoint and the exact
+current claim must match before disclosure, and a final lease check follows the
+read. Pages use UUID seek with a maximum of 128 candidates. Archived descendants
+and archived parents remain in scope; already deleted Cards/Boards with selected
+cover/image references remain candidates for reference cleanup.
+
+The projection contains IDs, parent references, revisions and lifecycle states.
+It exposes no names, content, URLs, object keys or provider credentials. The API
+cannot invoke the capability and the Worker receives no direct descendant table
+access. FINALIZE returns an explicit empty-stage envelope, rather than claiming
+completion from an empty user directory.
+
+The mandatory restricted traversal contract seeds 100,000 archived Cards plus
+two active Cards, 200 Lists, active/archived Boards, and active/archived/deleted
+attachments. It walks bounded pages, checks ordering/continuations and complete
+counts, and tests current scope/request/step/version/lease and page-limit fences.
+Checkpoints are admin-staged and the scale fixture extends its disposable claim;
+this tests traversal, not mutation, normal lease throughput or product deletion.
+Compilation passed with zero warnings/errors; this revision's migration/runtime
+scale result remains pending CI.
+
+Candidate reads alone grant no mutation authority. The pending page processor
+must couple current row/version/lease validation, tombstones, reference cleanup,
+audit/events, checkpoint advancement and next-job publication in one transaction.
+It must preserve prior deletion/archive attribution and provider evidence. The
+reader is not registered as a production deletion processor.
