@@ -87,6 +87,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Boards and collaboration
 
+- [Navigation observations and recovery (PRD-01; implementation in progress)](navigation-observations.md)
+
 - [Persisted board interface](architecture/board-interface.md)
 - [Cross-Board Card movement: implementation dependencies](architecture/cross-board-card-movement.md)
 - [Work rank allocation](architecture/rank-allocation.md)

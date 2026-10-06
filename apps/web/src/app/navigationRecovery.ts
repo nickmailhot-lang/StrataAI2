@@ -27,8 +27,24 @@ export function retainNavigationIntent(storage: Storage, intent: NavigationInten
   const key = storageKey(intent.actor, intent.target);
   const original = restoreNavigationIntent(storage, intent.actor, intent.target, now);
   if (original && JSON.stringify(original) !== JSON.stringify(intent)) throw new Error('Recover the original navigation first');
-  if (!original && Object.keys(storage).filter(candidate => candidate.startsWith(prefix)).length >= 1000)
-    throw new Error('Navigation recovery storage is full');
+  if (!original) {
+    const keys = Object.keys(storage).filter(candidate => candidate.startsWith(prefix));
+    let removed = 0;
+    if (keys.length >= 1000) {
+      // Reclaim at most 100 canonical expired originals for this account.
+      // Foreign, malformed and still-recoverable records remain untouched.
+      for (const candidate of keys.filter(candidate => candidate.startsWith(`${prefix}${intent.actor.toLowerCase()}:`)).slice(0, 1000)) {
+        if (removed >= 100) break;
+        try {
+          const value = JSON.parse(storage.getItem(candidate) ?? 'null') as NavigationIntent;
+          validateNavigationIntent(value, value.createdAt);
+          if (value.actor !== intent.actor || storageKey(value.actor, value.target) !== candidate || now - value.createdAt < 86400000) continue;
+          storage.removeItem(candidate); removed++;
+        } catch { /* A malformed record cannot authorize eviction. */ }
+      }
+    }
+    if (keys.length - removed >= 1000) throw new Error('Navigation recovery storage is full');
+  }
   storage.setItem(key, JSON.stringify(intent));
 }
 export function completeNavigationIntent(storage: Storage, intent: NavigationIntent): void {

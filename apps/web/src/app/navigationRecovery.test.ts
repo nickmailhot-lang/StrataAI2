@@ -29,3 +29,17 @@ it('PRD-01 refuses to evict live originals when recovery capacity is full', () =
   expect(() => retainNavigationIntent(sessionStorage, createNavigationIntent(actor, target, now), now)).toThrow('full');
   expect(sessionStorage.length).toBe(1000);
 });
+it('PRD-01 reclaims only expired canonical originals owned by the current account', () => {
+  const old = createNavigationIntent(actor, target, now);
+  retainNavigationIntent(sessionStorage, old, now);
+  const foreign = createNavigationIntent(organization, target, now);
+  retainNavigationIntent(sessionStorage, foreign, now);
+  for (let index = 0; index < 998; index++) sessionStorage.setItem(`strataai:navigation:v1:retained:${index}`, 'retained');
+  const current = createNavigationIntent(actor, { ...target, board: organization }, now + 86400000);
+  retainNavigationIntent(sessionStorage, current, now + 86400000);
+  expect(sessionStorage.length).toBe(1000);
+  expect(restoreNavigationIntent(sessionStorage, actor, target, now + 86400000)).toBeUndefined();
+  // Reading an unrelated account's original is not part of reclamation.
+  expect(Object.values(sessionStorage)).toContain(JSON.stringify(foreign));
+  expect(restoreNavigationIntent(sessionStorage, actor, current.target, now + 86400000)).toEqual(current);
+});
