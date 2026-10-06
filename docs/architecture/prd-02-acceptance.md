@@ -29,6 +29,16 @@ Current changes must pass the complete pipeline against their exact revision.
 
 ## Evidence boundaries
 
+Valid unknown-address sign-in attempts now perform adaptive verification against
+a process-local dummy hash created once with the configured password provider.
+The result never authorizes an account/session and the credential is never stored
+or returned. A probe using the actual framework hasher checks unknown/known/unknown
+wrong-password attempts all invoke verification, reuse the dummy hash, return the
+same credential error, preserve the real account/events and create no dummy user.
+Strict compilation passes; execution remains pending CI. This removes the missing
+verification-work distinction, not every possible timing difference (database
+work and legacy hash costs may differ); production abuse limits remain required.
+
 The framework password-hash adapter treats malformed persisted Base64 encoding
 as failed verification, preserving the ordinary `invalid_credentials` response.
 It catches encoding `FormatException` only; unrelated infrastructure errors keep

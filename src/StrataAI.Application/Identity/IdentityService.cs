@@ -18,6 +18,9 @@ public sealed class IdentityService(
     IIdentityTokenConsumptionReplayStore? consumptionReplays = null, IIdentityTokenConsumptionRetrySecrets? consumptionSecrets = null,
     IInvitationRegistrationProofStore? invitationRegistrations = null) : IIdentityService
 {
+    // Unknown addresses still perform adaptive verification. This process-local
+    // dummy credential is never persisted or used to admit an account/session.
+    private readonly string _unknownAccountHash = passwordHashes.Hash(Guid.Empty, tokens.Generate());
     public async Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default)
     {
@@ -239,6 +242,7 @@ public sealed class IdentityService(
 
         if (user is null)
         {
+            _ = passwordHashes.Verify(Guid.Empty, _unknownAccountHash, password);
             return IdentityOperation<LoginOutcome>.Failure("invalid_credentials");
         }
 
