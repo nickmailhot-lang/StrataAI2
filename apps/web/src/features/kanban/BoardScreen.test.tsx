@@ -1042,16 +1042,16 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const review = await screen.findByRole('button', { name: 'Review Card comments' }); await waitFor(() => expect(review).toBeEnabled()); fireEvent.click(review);
     fireEvent.click(await screen.findByRole('button', { name: 'Add comment' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: 'Shared comment' } });
-    for (const name of ['Add checklist', 'Save card', 'Add link attachment', 'Manage attachments', 'Review Card cover', 'Close'])
-      expect(screen.getByRole('button', { name })).toBeDisabled();
+    const competing = ['Add checklist', 'Save card', 'Add link attachment', 'Manage attachments', 'Review Card cover', 'Close']
+      .map(name => screen.getByRole('button', { name }));
+    for (const control of competing) expect(control).toBeDisabled();
     const saveComment = screen.getByRole('button', { name: 'Save comment' });
     await waitFor(() => expect(saveComment).toBeEnabled()); fireEvent.click(saveComment);
     await waitFor(() => expect(writes).toHaveLength(1));
     const retry = await screen.findByRole('button', { name: 'Retry original comment change' }); await waitFor(() => expect(retry).toBeEnabled());
-    for (const name of ['Add checklist', 'Save card', 'Add link attachment', 'Manage attachments', 'Review Card cover', 'Close'])
-      expect(screen.getByRole('button', { name })).toBeDisabled();
+    for (const control of competing) { expect(control).toBeInTheDocument(); expect(control).toBeDisabled(); }
     fireEvent.click(retry); await screen.findByText('Comment added.');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Close' })).toBeEnabled());
+    await waitFor(() => { expect(competing[5]).toBeInTheDocument(); expect(competing[5]).toBeEnabled(); });
     expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
     expect(JSON.parse(writes[0].body as string)).toEqual({ content: 'Shared comment', cardVersion: 3 });
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
