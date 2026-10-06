@@ -94,12 +94,21 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.BadRequest, withBody.StatusCode);
         using var missingKey = await Observe("/navigation/observations?kind=context", actor, null);
         Assert.Equal(HttpStatusCode.BadRequest, missingKey.StatusCode);
+        foreach (var invalidKey in new[] { "invalid-key", Guid.Empty.ToString("D"), Guid.NewGuid().ToString("N") })
+        {
+            using var invalid = await Observe("/navigation/observations?kind=context", actor, invalidKey);
+            Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+            var error = await invalid.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct);
+            Assert.Equal("invalid_idempotency_key", error.GetProperty("code").GetString());
+        }
         using var first = await Observe("/navigation/observations?kind=context", actor, key);
         Assert.Equal(HttpStatusCode.OK, first.StatusCode);
         Assert.Contains("no-store", first.Headers.CacheControl!.ToString());
         var original = await first.Content.ReadAsStringAsync(ct);
         using var repeat = await Observe("/navigation/observations?kind=context", actor, key);
         Assert.Equal(HttpStatusCode.OK, repeat.StatusCode); Assert.Equal(original, await repeat.Content.ReadAsStringAsync(ct));
+        using var trailingSlash = await Observe("/navigation/observations/?kind=context", actor, key);
+        Assert.Equal(HttpStatusCode.OK, trailingSlash.StatusCode); Assert.Equal(original, await trailingSlash.Content.ReadAsStringAsync(ct));
         using var source = JsonDocument.Parse(original);
         Assert.Equal("APPLICATION_CONTEXT_CHANGED", source.RootElement.GetProperty("eventType").GetString());
         Assert.Equal(actor, source.RootElement.GetProperty("actorId").GetGuid());

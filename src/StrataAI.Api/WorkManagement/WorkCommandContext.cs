@@ -12,12 +12,14 @@ public sealed class WorkIdempotencyMiddleware(RequestDelegate next)
     public async Task InvokeAsync(HttpContext context)
     {
         var workPath = new[] { "/boards", "/lists", "/cards", "/labels", "/watch", "/attachments" }.Any(path => context.Request.Path.StartsWithSegments(path));
+        var navigationObservation = (context.GetEndpoint() as Microsoft.AspNetCore.Routing.RouteEndpoint)?.RoutePattern.RawText
+            == "/navigation/observations";
         var notificationRead = (context.GetEndpoint() as Microsoft.AspNetCore.Routing.RouteEndpoint)?.RoutePattern.RawText is
             "/organizations/{organizationId:guid}/notifications/{notificationId:guid}/read" or
             "/organizations/{organizationId:guid}/notifications/read";
         var mutation = HttpMethods.IsPost(context.Request.Method) || HttpMethods.IsPatch(context.Request.Method)
             || HttpMethods.IsPut(context.Request.Method) || HttpMethods.IsDelete(context.Request.Method);
-        if ((workPath || notificationRead) && mutation && context.Request.Headers.TryGetValue("Idempotency-Key", out var values))
+        if ((workPath || notificationRead || navigationObservation) && mutation && context.Request.Headers.TryGetValue("Idempotency-Key", out var values))
         {
             if (values.Count != 1 || values[0]?.Length != 36 || !Guid.TryParseExact(values[0], "D", out var key) || key == Guid.Empty)
             {
