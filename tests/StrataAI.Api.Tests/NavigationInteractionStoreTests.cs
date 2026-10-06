@@ -44,6 +44,13 @@ public sealed partial class ApiHostTests
         Assert.Equal("late_navigation_refusal", refused.ErrorCode);
         // A different immutable clock can become original only after rollback.
         Assert.True((await Append(NavigationInteractionEvent.BoardOpened(rollbackId, actor, org, board.Id, board.Version, at.AddSeconds(2)))).Value);
+        var list = (await work.CreateListAsync(board.Id, actor, "Navigation List", null, "fixture", ct)).Value!;
+        var card = (await work.CreateCardAsync(list.Id, actor, "Navigation Card", null, null, "fixture", ct)).Value!;
+        var otherBoard = (await work.CreateBoardAsync(org, actor, "Other navigation Board", null, BoardVisibility.Private, "COLOR", null, "fixture", ct)).Value!;
+        Assert.True((await Append(NavigationInteractionEvent.CardOpened(Guid.NewGuid(), actor, org, board.Id, card.Id, card.Version, at))).Value);
+        Assert.False((await Append(NavigationInteractionEvent.CardOpened(Guid.NewGuid(), actor, org, otherBoard.Id, card.Id, card.Version, at))).Value);
+        Assert.False((await Append(NavigationInteractionEvent.CardOpened(Guid.NewGuid(), actor, org, board.Id, card.Id, card.Version + 1, at))).Value);
+        Assert.Equal(card.Version, (await app.Services.GetRequiredService<IWorkManagementStore>().FindCardAsync(card.Id, ct))!.Version);
         Assert.Equal(board.Version, (await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardAsync(board.Id, ct))!.Version);
     }
 }
