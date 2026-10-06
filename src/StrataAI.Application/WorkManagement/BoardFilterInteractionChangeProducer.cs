@@ -16,7 +16,7 @@ public sealed class BoardFilterInteractionChangeProducer(IBoardFilterInteraction
         if (organization == Guid.Empty || board == Guid.Empty || requestId == Guid.Empty || fingerprint is null
             || fingerprint.Length != 64 || fingerprint.Any(c => c is not (>= '0' and <= '9') and not (>= 'a' and <= 'f')))
             return Task.FromResult(IdentityOperation<SearchInteractionEvent>.Failure("invalid_search"));
-        return transactions.ExecuteAsync(actor, async () =>
+        return transactions.ExecuteObservationAsync(actor, organization, async () =>
         {
             var candidate = SearchInteractionEvent.BoardFilterChanged(Guid.NewGuid(), actor, organization, board, clock.UtcNow);
             SearchInteractionEvent original;

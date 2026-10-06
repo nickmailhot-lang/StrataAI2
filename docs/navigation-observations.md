@@ -84,3 +84,15 @@ or whole-ticket acceptance.
   passed. PostgreSQL failed with the same runtime schema readiness exception
   before restricted search traversal; that revision predates `e158969`.
   Whole-release and current-main acceptance remain unproven.
+
+## Observation transaction admission
+
+Navigation originals and retries use the dedicated identity observation boundary.
+Production locks the scoped Organization parent before shared actor admission,
+then serializes private interaction history with a transaction advisory lock.
+Migration 085 updates restricted append/replay functions to the same order.
+This avoids the observed account/Board lock inversion while retaining current
+session checks before/after storage, current target access, private subject RLS
+and atomic source/receipt publication. Demo retains its account-before-Work gates.
+The [CI investigation](architecture/browser-recovery-ci.md) records the failed
+revision and the mandatory native lock-order regression; execution is pending.

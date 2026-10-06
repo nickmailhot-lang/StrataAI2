@@ -23,6 +23,11 @@ public interface IIdentityUnitOfWork
     Task<IdentityOperation<LoginOutcome>> ExecuteSignInAsync(
         Func<Task<IdentityOperation<LoginOutcome>>> operation, CancellationToken cancellationToken = default);
 
+    // Private interaction history writes hold shared account admission, after
+    // the target Organization parent, rather than an exclusive profile lock.
+    Task<IdentityOperation<T>> ExecuteObservationAsync<T>(Guid actorId, Guid? organizationId,
+        Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default);
+
     Task<IdentityOperation<T>> ExecuteAsync<T>(Guid actorId,
         Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default);
 }

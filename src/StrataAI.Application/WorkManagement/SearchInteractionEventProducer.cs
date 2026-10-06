@@ -19,7 +19,7 @@ public sealed class SearchInteractionEventProducer(ISearchInteractionEventStore 
     {
         if (actor == Guid.Empty)
             return Task.FromResult(IdentityOperation<SearchInteractionEvent>.Failure("session_unavailable"));
-        return transactions.ExecuteAsync(actor, async () =>
+        return transactions.ExecuteObservationAsync(actor, null, async () =>
         {
             var source = create();
             try { await sources.AppendAsync(source, cancellationToken); }

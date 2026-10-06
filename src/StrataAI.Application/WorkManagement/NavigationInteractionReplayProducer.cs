@@ -35,7 +35,7 @@ public sealed class NavigationInteractionReplayProducer(INavigationInteractionRe
         NavigationInteractionEvent candidate;
         try { candidate = create(); }
         catch (ArgumentException) { return Task.FromResult(IdentityOperation<NavigationInteractionEvent>.Failure("invalid_navigation")); }
-        return transactions.ExecuteAsync(actor, async () => {
+        return transactions.ExecuteObservationAsync(actor, candidate.OrganizationId, async () => {
             if (!await actors.VerifyAsync(actor, ct)) return IdentityOperation<NavigationInteractionEvent>.Failure("session_unavailable");
             var original = await receipts.AppendOrReplayAuthorizedAsync(requestId, fingerprint, candidate, ct);
             if (original is null || original.ActorId != actor || original.EventType != candidate.EventType

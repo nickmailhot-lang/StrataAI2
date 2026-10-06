@@ -132,15 +132,36 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
         }
     }
 
-    public async Task<IdentityOperation<T>> ExecuteAsync<T>(Guid actorId,
+    public Task<IdentityOperation<T>> ExecuteObservationAsync<T>(Guid actorId, Guid? organizationId,
         Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default)
+        => ExecuteActorAsync(actorId, operation, cancellationToken, organizationId, observation: true);
+
+    public Task<IdentityOperation<T>> ExecuteAsync<T>(Guid actorId,
+        Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default)
+        => ExecuteActorAsync(actorId, operation, cancellationToken, null, observation: false);
+
+    private async Task<IdentityOperation<T>> ExecuteActorAsync<T>(Guid actorId,
+        Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken, Guid? organizationId, bool observation)
     {
         try
         {
             return await connections.ExecuteIdentityCommandAsync(async () =>
             {
+                if (observation && organizationId is Guid organization)
+                    await connections.ExecuteIdentityOrganizationCleanupAsync(organization, async () => {
+                        await using var tenant = await connections.OpenTenantSessionAsync(organization, cancellationToken);
+                        await using var parent = new NpgsqlCommand("SELECT id FROM organizations WHERE id=@tenant AND status='ACTIVE' FOR SHARE;", tenant.Connection, tenant.Transaction);
+                        parent.Parameters.AddWithValue("tenant", organization);
+                        await parent.ExecuteScalarAsync(cancellationToken);
+                    }, cancellationToken);
                 await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
-                await using var gate = new NpgsqlCommand("SELECT id FROM users WHERE id=@actor FOR UPDATE;", session.Connection, session.Transaction);
+                if (observation) {
+                    await using var history = new NpgsqlCommand("SELECT pg_advisory_xact_lock(hashtextextended('strataai:interaction:' || @actor::text,0));", session.Connection, session.Transaction);
+                    history.Parameters.AddWithValue("actor", actorId); await history.ExecuteNonQueryAsync(cancellationToken);
+                }
+                await using var gate = new NpgsqlCommand(observation
+                    ? "SELECT id FROM users WHERE id=@actor FOR SHARE;"
+                    : "SELECT id FROM users WHERE id=@actor FOR UPDATE;", session.Connection, session.Transaction);
                 gate.Parameters.AddWithValue("actor", actorId);
                 if (await gate.ExecuteScalarAsync(cancellationToken) is null || !await actors.VerifyAsync(actorId, cancellationToken))
                     return IdentityOperation<T>.Failure("session_unavailable");

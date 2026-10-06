@@ -155,3 +155,28 @@ The next stable full web run at `52e8287` passed: 1,509 tests in 123 files,
 query changes and all current departure source cases. Browser files remained
 unchanged during the run. Backend-only removal receipt work does not extend
 this source result to API, PostgreSQL or exact-image browser acceptance.
+
+Container job 112108234170, run 37410994157 at `400db3c`, finished with
+128 browser passes, 31 failures and one skipped case. Its retained compose
+diagnostics show repeated PostgreSQL 40P01 cycles: a Work request holds a
+Board lock and waits for users FOR SHARE, while navigation holds users
+FOR UPDATE and waits inside append_or_replay_navigation_interaction for the
+Board. These storage refusals affect checklist/filter/live recovery and direct
+Board reads; increasing browser timeouts would not repair the transaction cycle.
+
+Interaction producers now use a distinct observation boundary. A scoped
+Organization parent is admitted before the account, then an actor-private
+transaction advisory lock serializes history/receipt work, and account admission
+uses FOR SHARE. Profile commands retain FOR UPDATE. Migration 085 applies the
+same parent/advisory/shared-account order to the restricted navigation, search
+and filter functions, including direct database calls. Current account/session
+checks, target visibility, original receipt identity, expiry, private metadata
+and final-session rollback remain required. The actor gate also serializes
+search-stream and filter/navigation receipt writes across interaction types.
+
+The mandatory native navigation fixture holds the actual Organization/Board
+locks under the API runtime role, observes a real navigation function waiting,
+then reads the same actor FOR SHARE before releasing the Board. Both database
+completion and a canonical navigation 200 are required; the old cycle would
+fail this check. API/persistence compilation and Bash syntax are source evidence;
+native execution and complete browser acceptance remain pending CI.

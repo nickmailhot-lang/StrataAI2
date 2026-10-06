@@ -33,7 +33,7 @@ public sealed class NavigationInteractionEventProducer(INavigationInteractionEve
         NavigationInteractionEvent source;
         try { source = create(); }
         catch (ArgumentException) { return Task.FromResult(IdentityOperation<NavigationInteractionEvent>.Failure("invalid_navigation")); }
-        return transactions.ExecuteAsync(actor, async () => {
+        return transactions.ExecuteObservationAsync(actor, source.OrganizationId, async () => {
             if (!await actors.VerifyAsync(actor, ct))
                 return IdentityOperation<NavigationInteractionEvent>.Failure("session_unavailable");
             if (!await sources.AppendAuthorizedAsync(source, ct))

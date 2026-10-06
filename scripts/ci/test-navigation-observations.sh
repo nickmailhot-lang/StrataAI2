@@ -4,7 +4,15 @@ test "${CI:-}" = true || { echo 'Disposable navigation fixtures may run only in 
 umask 077
 base=http://localhost:8088
 scratch=$(mktemp -d)
-trap 'rm -rf "$scratch"' EXIT
+gate_pid=''
+observation_pid=''
+admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
+cleanup() {
+  if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
+  if test -n "$observation_pid"; then kill "$observation_pid" 2>/dev/null || true; wait "$observation_pid" 2>/dev/null || true; fi
+  rm -rf "$scratch"
+}
+trap cleanup EXIT
 trap 'echo "Navigation observation check failed at line $LINENO" >&2' ERR
 uuid() { cat /proc/sys/kernel/random/uuid; }
 request() {
@@ -59,6 +67,31 @@ for pid in "${pids[@]}"; do wait "$pid"; done
 cmp "$scratch/concurrent-1.json" "$scratch/concurrent-2.json"
 cmp "$scratch/concurrent-1.json" "$scratch/concurrent-3.json"
 jq -e --arg actor "$actor" '.actorId==$actor and .eventType=="APPLICATION_CONTEXT_CHANGED" and .organizationId==null and .boardId==null and .entityId==.eventId and .metadata=={}' "$scratch/concurrent-1.json" >/dev/null
+# Reproduce the former Board -> account / account -> Board deadlock deterministically.
+mkfifo "$scratch/interaction-gate"
+docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  < "$scratch/interaction-gate" > "$scratch/interaction-gate.log" 2>&1 & gate_pid=$!
+exec 3> "$scratch/interaction-gate"
+printf "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','%s',true); SELECT id FROM organizations WHERE id='%s' FOR SHARE; SELECT id FROM boards WHERE id='%s' FOR UPDATE; SELECT 'board-held';\n" "$org" "$org" "$board" >&3
+for ((attempt=0; attempt<100; attempt++)); do
+  if grep -q '^board-held$' "$scratch/interaction-gate.log"; then break; fi
+  sleep 0.1
+done
+grep -q '^board-held$' "$scratch/interaction-gate.log"
+observe owner "$actor" "$(uuid)" "kind=board&organizationId=$org&boardId=$board&version=$board_version" > "$scratch/lock-order.status" & observation_pid=$!
+for ((attempt=0; attempt<100; attempt++)); do
+  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%append_or_replay_navigation_interaction%';")" = 1; then break; fi
+  sleep 0.1
+done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%append_or_replay_navigation_interaction%';")" = 1
+printf "SELECT id FROM users WHERE id='%s' FOR SHARE; SELECT 'actor-read'; COMMIT;\n\\q\n" "$actor" >&3
+exec 3>&-
+wait "$gate_pid"; gate_pid=''
+wait "$observation_pid"; observation_pid=''
+grep -q '^actor-read$' "$scratch/interaction-gate.log"
+test "$(cat "$scratch/lock-order.status")" = 200
+jq -e --arg actor "$actor" '.actorId==$actor and .eventType=="BOARD_OPENED"' "$scratch/response.json" >/dev/null
+
 test "$(observe owner "$actor" "$card_key" "$card_query")" = 200
 jq -e --arg card "$card" '.eventType=="CARD_OPENED" and .entityType=="Card" and .entityId==$card and .metadata=={}' "$scratch/response.json" >/dev/null
 cp "$scratch/response.json" "$scratch/card-original.json"

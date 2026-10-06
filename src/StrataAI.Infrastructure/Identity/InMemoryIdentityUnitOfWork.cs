@@ -69,6 +69,10 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
         Func<Task<IdentityOperation<LoginOutcome>>> operation, CancellationToken cancellationToken = default)
         => ExecuteOwnedAsync(null, operation, cancellationToken);
 
+    public Task<IdentityOperation<T>> ExecuteObservationAsync<T>(Guid actorId, Guid? organizationId,
+        Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default)
+        => ExecuteAsync(actorId, operation, cancellationToken);
+
     public Task<IdentityOperation<T>> ExecuteAsync<T>(Guid actorId,
         Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default)
         => ExecuteOwnedAsync(actorId, async () => await actors.VerifyAsync(actorId, cancellationToken)
