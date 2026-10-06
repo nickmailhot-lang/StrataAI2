@@ -7,11 +7,13 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task Demo_recovery_request_rolls_back_new_token_and_receipt_after_exception_or_cancellation(bool verification, bool cancel)
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, true)]
+    public async Task Demo_recovery_request_rolls_back_new_token_and_receipt_after_exception_or_cancellation(bool verification, bool cancel, bool failureAfterCancellation)
     {
         var ct = TestContext.Current.CancellationToken;
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -46,6 +48,7 @@ public sealed partial class ApiHostTests
             Assert.Equal(userId, (await store.FindSecurityTokenRetryProofAsync(tokens.Hash(failedToken), purpose, DateTimeOffset.UtcNow, ct))!.User.Id);
             if (!cancel) throw new InvalidOperationException("Recovery request failed after receipt publication.");
             cancellation.Cancel();
+            if (failureAfterCancellation) throw new InvalidOperationException("Recovery storage failed while cancellation was pending.");
             return failedToken;
         }, null, cancellation.Token);
         if (cancel) await Assert.ThrowsAnyAsync<OperationCanceledException>(() => changing);

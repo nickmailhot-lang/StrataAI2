@@ -72,11 +72,13 @@ commits only after the final cancellation check. Exceptions and cancellation
 restore new recovery tokens and retry receipts before releasing the gate.
 An operation/storage `InvalidOperationException` now returns the supplied neutral
 result only after owning rollback completes, with a content-free warning.
-Cancellation and unrelated exception types still propagate. The production
-PostgreSQL adapter retains its existing masked database-failure/neutral-result
-policy. A request acknowledgment still does not prove email delivery.
+Cancellation and unrelated exception types still propagate. Both Demo and
+PostgreSQL recovery adapters recheck cancellation before masking a storage
+failure, so a concurrent cancellation cannot become a neutral success response.
+The PostgreSQL adapter otherwise retains its masked database-failure policy.
+A request acknowledgment still does not prove email delivery.
 
-Four API-host cases run actual password-reset requests or verification resends,
+Six API-host cases run actual password-reset requests or verification resends,
 observe real token and recovery-receipt writes, then introduce an exception or
 cancellation. They require the failed token and receipt to disappear. The
 non-cancellation failure returns a neutral result; cancellation still propagates.

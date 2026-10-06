@@ -80,6 +80,7 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
         }
         catch (NpgsqlException exception)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             logger.LogWarning("Recovery request rolled back; code {DatabaseCode}. No delivery acknowledgment is claimed.",
                 exception is PostgresException postgres ? postgres.SqlState : "connection_error");
             return neutralResult;

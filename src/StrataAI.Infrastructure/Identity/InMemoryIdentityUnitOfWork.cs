@@ -49,6 +49,7 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
         }
         catch (InvalidOperationException)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             // Owning rollback completes before returning the public neutral
             // acknowledgment. Do not log email, token or receipt details.
             logger.LogWarning("Demo recovery request rolled back. No delivery acknowledgment is claimed.");
