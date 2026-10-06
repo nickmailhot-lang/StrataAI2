@@ -90,7 +90,7 @@ export function GlobalSearchPage() {
       <Typography>{item.boardName} / {item.listName}</Typography>
       <Typography>Labels: {item.labels.join(', ') || 'None'}{item.moreLabels ? ' (more on Card)' : ''}</Typography>
       <Typography>Members: {item.members.join(', ') || 'None'}{item.moreMembers ? ' (more on Card)' : ''}</Typography>
-      <Typography>{item.dueAt ? `Due ${formatUserDateTime(item.dueAt, page) ?? 'Date unavailable'}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
+      <Typography>{item.dueAt ? `Due ${formatUserDateTime(item.dueAt, { locale: page.locale, timezone: item.boardDateTimezone ?? page.timezone }) ?? 'Date unavailable'}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
     </Paper>)}
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
     {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}

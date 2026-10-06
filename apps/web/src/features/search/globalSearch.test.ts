@@ -6,8 +6,16 @@ const interaction = () => ({ eventId: id, entityId: id, actorId: id, eventType: 
 const parseSearchPage = (value: Record<string, unknown>, after?: string) => parseActualPage({ ...value, interaction: interaction() }, id, after);
 const document = () => ({ sourceKind: 'CARD', card: { id, organizationId: id, boardId: id, listId: id,
   title: 'Card', version: 1, lifecycleState: 'active', dueAt: null, dueComplete: false },
-  boardName: 'Board', listName: 'List', labels: [], members: [], hasMoreLabels: false, hasMoreMembers: false });
+  boardDateTimezone: null, boardName: 'Board', listName: 'List', labels: [], members: [], hasMoreLabels: false, hasMoreMembers: false });
 describe('global search response admission', () => {
+  it('requires a valid nullable Board date policy before admitting results', () => {
+    for (const boardDateTimezone of [null, 'UTC', 'Pacific/Honolulu', 'Asia/Tokyo']) {
+      expect(parseSearchPage({ items: [{ ...document(), boardDateTimezone }], nextCursor: null }).items[0].boardDateTimezone).toBe(boardDateTimezone);
+    }
+    for (const boardDateTimezone of [undefined, '', ' UTC ', 'invalid/timezone', 7, 'x'.repeat(101)]) {
+      expect(() => parseSearchPage({ items: [{ ...document(), boardDateTimezone }], nextCursor: null })).toThrow();
+    }
+  });
   it('withholds otherwise valid protected results without a canonical interaction', () => {
     expect(() => parseActualPage({ items: [document()], nextCursor: null }, id)).toThrow();
   });

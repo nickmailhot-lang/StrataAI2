@@ -127,3 +127,13 @@ execution is pending. The complete web run against unchanged browser source at
 process exit 0 (508.60 seconds). This verifies the account-preference display
 increment across the web suite; backend/fixture coverage does not prove browser
 Board-policy precedence or native release acceptance.
+
+Search now validates the required nullable `boardDateTimezone` before admitting
+each result. Invalid or missing policy rejects the page rather than using the
+browser timezone. Display uses that Board policy when present and otherwise the
+final admitted account timezone; account locale applies in both cases. A focused
+component case checks Honolulu, a change to UTC, and clearing back to Tokyo with
+the same stored UTC deadline. Parser cases cover valid/null policies and malformed
+values. All 19 focused search tests pass. Desktop and phone native fixtures now
+change and clear the actual Board policy, refresh results, and verify that the
+stored deadline remains the same instant; their execution remains pending CI.
