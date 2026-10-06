@@ -29,6 +29,16 @@ Current changes must pass the complete pipeline against their exact revision.
 
 ## Evidence boundaries
 
+The sign-in final-admission API-host theory now also seeds a real framework
+Identity V2 password hash and requires the configured hash provider to request
+rehashing. After observing the actual upgraded hash/version and stored sign-in
+receipt, the injected clock reaches the new session's expiry. Refusal must restore
+the original legacy hash/account version and remove the failed session/receipt.
+A fresh same-key retry must upgrade exactly once to a hash that verifies without
+requesting another upgrade; acknowledgment replay must preserve that version.
+Strict compilation passes; native execution remains pending. This is scoped
+rollback/upgrade coverage, not complete password-policy or release acceptance.
+
 The complete web suite at unchanged browser revision `28f9355` passed with exit
 0: 1,494 tests in 122 files (491.71 seconds). Strict API-test project compilation
 also passed for the recent profile/sync admission and date-projection increments.
