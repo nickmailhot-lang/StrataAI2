@@ -531,3 +531,38 @@ private Organization reads or another DELETE. WCAG checks run on the completed
 page. No privileged SQL fabricates completion. The fixture restores the shared
 CI Worker configuration afterward. Type checking and test discovery are source
 checks; current native execution must pass before this establishes acceptance.
+
+## Current Internal member terminal replay
+
+Production provides `GET /organizations/{id}/lifecycle-events`, optionally bound
+to `expectedActorId`. This content-free channel is separate from the original
+Owner's deletion receipt/status route. It admits current active Internal
+membership for any Organization role and an active account/session, including
+after ordinary graph reads have been withdrawn. Portal access alone, removed
+membership, foreign scope and changed reviewed identity do not grant admission.
+
+The bounded response contains `state` and at most one canonical terminal event.
+An active parent returns `ACTIVE` with no event. A proven accepted deletion or a
+sealed terminal source awaiting Worker delivery returns `PENDING` with no event.
+`COMPLETED` requires the actual original request, matching COMPLETE progress,
+terminal parent/version/time/actor and ready `ORGANIZATION_DELETED` source. Its
+event uses the existing source ID, original actor, actual Organization revision
+and timestamp, with null Board ID and empty metadata. No request key, graph
+content, provider reference or cached completion is returned.
+
+Each read owns a forced-RLS tenant transaction. Parent, membership and account
+locks follow command order; session verification runs before and after reading
+the source. Responses are private/no-store. Repeated reads recover the same
+immutable source and require fresh admission. Legacy parents lacking canonical
+request/progress/source proof cannot produce invented completion.
+
+The full Release build and browser type checks passed locally. Required restricted
+PostgreSQL checks exercise the real Worker-sealed source before and after ready
+delivery, current Member/Owner access, removed/foreign/outsider denial and final
+session refusal. That session seam does not prove a real HTTP cookie withdrawal.
+The release fixture therefore also enrolls a separate Member through ordinary
+invitation acceptance, checks pending/ready HTTP envelopes and original source
+identity, denies the Owner-only request route and checks actual logout refusal.
+Those new runtime checks await CI. Browser view consumption, reconnect handling
+and Demo terminal parity remain unfinished; the endpoint alone does not satisfy
+the complete two-client acceptance criterion.

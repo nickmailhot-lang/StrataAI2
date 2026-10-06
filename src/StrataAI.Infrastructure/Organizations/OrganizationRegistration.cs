@@ -43,6 +43,7 @@ public static class OrganizationRegistration
         else
         {
             services.AddSingleton<IOrganizationMetadataEventReader, PostgresOrganizationMetadataEventReader>();
+            services.AddSingleton<IOrganizationLifecycleEventReader, PostgresOrganizationLifecycleEventReader>();
             services.AddSingleton<OrganizationMetadataSynchronizationService>();
             services.AddSingleton<TransactionalOrganizationMetadataSynchronization>();
             services.AddSingleton<IOrganizationStore, PostgresOrganizationStore>();

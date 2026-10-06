@@ -24,6 +24,7 @@ internal static class OrganizationLifecycleDeliveryContract
             var result = await query.ExecuteScalarAsync(ct); return result is DateTime value ? value : null;
         }
         Require(await ReadyAt() is null, "Lifecycle event was ready before Worker delivery.");
+        await OrganizationLifecycleReplayContract.RunAsync(admin, apiConnection, tenant, actor, eventId, false, ct);
         foreach (var bad in new[] { claim with { OrganizationId = Guid.NewGuid() }, claim with { ActorId = Guid.NewGuid() },
             claim with { LeaseId = Guid.NewGuid() }, claim with { WorkerId = Guid.NewGuid() } })
             Require(!await store.MarkReadyAsync(bad, eventId, ct), "Lifecycle tenant/actor/lease/worker fence failed.");
@@ -72,6 +73,7 @@ internal static class OrganizationLifecycleDeliveryContract
             Require(denied, "Runtime acquired direct lifecycle event mutation.");
         }
         Require(actor == claim.ActorId, "Lifecycle delivery changed retained actor.");
+        await OrganizationLifecycleReplayContract.RunAsync(admin, apiConnection, tenant, actor, eventId, true, ct);
         Console.WriteLine("Organization lifecycle delivery: restricted claim fences, late readiness rollback, duplicate/reclaimed delivery and disabled direct mutation passed.");
     }
 }

@@ -15,7 +15,7 @@ function deletionWorker(enabled: boolean) {
 }
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
-  test(`PRD-03-WS-FR-010/TC-01/06/07/10/11/12: Worker finishes before lost acknowledgment recovery at ${viewport.width}px`, async ({ page, context }) => {
+  test(`PRD-03-WS-FR-010/TC-01/06/07/10/11/12: Worker finishes before lost acknowledgment recovery at ${viewport.width}px`, async ({ page, context, browser }) => {
     test.setTimeout(150_000);
     expect(process.env.CI).toBe('true');
     await page.setViewportSize(viewport);
@@ -28,6 +28,20 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const created = await context.request.post('/organizations', { headers, data: { name: 'Terminal deletion council' } });
     expect(created.status()).toBe(201); const organization = (await created.json()).organization;
     const org = organization.id; const version = organization.version;
+    const member = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+    try {
+    const memberCredentials = { email: `terminal-member-${viewport.width}-${Date.now()}@example.test`,
+      password: 'browser-terminal-member-correct-horse', displayName: 'Deletion observer Member' };
+    const memberRegistration = await member.request.post('/auth/register', { headers, data: memberCredentials });
+    expect(memberRegistration.status()).toBe(201); const memberActor = (await memberRegistration.json()).user.id;
+    expect((await member.request.post('/auth/login', { headers, data: memberCredentials })).status()).toBe(200);
+    const invitation = await context.request.post(`/organizations/${org}/invitations`, { headers,
+      data: { email: memberCredentials.email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
+    expect(invitation.status()).toBe(201);
+    expect((await member.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
+    const lifecyclePath = `/organizations/${org}/lifecycle-events?expectedActorId=${memberActor}`;
+    const initialLifecycle = await member.request.get(lifecyclePath); expect(initialLifecycle.status()).toBe(200);
+    expect(await initialLifecycle.json()).toEqual({ state: 'ACTIVE', events: [] });
     const board = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Terminal deletion Board' } });
     expect(board.status()).toBe(201); const boardId = (await board.json()).id;
     const list = await context.request.post(`/boards/${boardId}/lists`, { headers, data: { name: 'Terminal deletion List' } });
@@ -53,6 +67,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const confirm = page.getByRole('button', { name: 'Confirm deletion request', exact: true }); await confirm.focus(); await confirm.press('Enter');
     const retry = page.getByRole('button', { name: 'Retry original deletion request', exact: true });
     await expect(retry).toBeFocused(); expect(writes).toHaveLength(1);
+    const pendingLifecycle = await member.request.get(lifecyclePath); expect(pendingLifecycle.status()).toBe(200);
+    expect(await pendingLifecycle.json()).toEqual({ state: 'PENDING', events: [] });
     const key = writes[0]; const statusPath = `/organizations/${org}/deletion-requests/${key}?expectedActorId=${actor}`;
     let workerStarted = false;
     try {
@@ -65,6 +81,20 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect(snapshot).toEqual({ requestId: key, state: 'COMPLETED', version: version + 2,
         eventId: expect.stringMatching(/^[0-9a-f-]{36}$/), completedAt: expect.any(String) });
       expect(completed.headers()['cache-control']).toContain('no-store');
+      await expect.poll(async () => {
+        const response = await member.request.get(lifecyclePath); expect(response.status()).toBe(200);
+        return (await response.json()).state;
+      }, { timeout: 30_000 }).toBe('COMPLETED');
+      const terminalLifecycle = await member.request.get(lifecyclePath);
+      expect(terminalLifecycle.headers()['cache-control']).toContain('no-store');
+      expect(await terminalLifecycle.json()).toEqual({ state: 'COMPLETED', events: [{
+        eventId: snapshot.eventId, eventType: 'ORGANIZATION_DELETED', actorId: actor,
+        organizationId: org, boardId: null, entityType: 'Organization', entityId: org,
+        version: snapshot.version, metadata: {}, createdAt: snapshot.completedAt,
+      }] });
+      expect((await member.request.get(`/organizations/${org}`)).status()).toBe(404);
+      expect((await member.request.get(`/organizations/${org}/deletion-requests/${key}`)).status()).toBe(404);
+      expect((await member.request.get(`/organizations/${org}/lifecycle-events?expectedActorId=${actor}`)).status()).toBe(401);
       // This reload precedes acknowledgment replay. Terminal parent admission
       // must recover the original uncertain intent without normal graph reads.
       await page.reload(); await expect(retry).toBeFocused(); expect(writes).toHaveLength(1); expect(ordinaryReads).toBe(0);
@@ -88,6 +118,10 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await check.focus(); await check.press('Enter');
       await expect(notice).toHaveText('Organization deletion confirmed complete.'); await expect(notice).toBeFocused();
       expect(writes).toEqual([key, key]); expect(ordinaryReads).toBe(0);
+      expect((await member.request.post('/auth/logout', { headers, data: {} })).status()).toBe(204);
+      const withdrawn = await member.request.get(lifecyclePath); expect(withdrawn.status()).toBe(401);
+      expect(await withdrawn.text()).not.toContain(snapshot.eventId);
     } finally { if (workerStarted) deletionWorker(false); }
+    } finally { await member.close(); }
   });
 }

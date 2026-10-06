@@ -10,6 +10,15 @@ public static class OrganizationEndpoints
         var group = app.MapGroup("/organizations").RequireAuthorization();
         if (app.Services.GetRequiredService<StrataAI.Application.Runtime.RuntimeDescriptor>().Mode == StrataAI.Application.Runtime.RuntimeMode.Production)
         {
+            group.MapGet("/{organizationId:guid}/lifecycle-events", async (Guid organizationId, Guid? expectedActorId,
+                HttpContext context, IOrganizationLifecycleEventReader reader, CancellationToken cancellationToken) =>
+            {
+                context.Response.Headers.CacheControl = "private, no-store";
+                var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+                if (expectedActorId is Guid expected && expected != actor.Value) return ErrorFor("session_unavailable");
+                var result = await reader.ReadAsync(organizationId, actor.Value, cancellationToken);
+                return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+            });
             group.MapGet("/{organizationId:guid}/metadata-events", async (Guid organizationId, Guid? expectedActorId,
                 string? cursor, int? limit, HttpContext context, TransactionalOrganizationMetadataSynchronization replay,
                 CancellationToken cancellationToken) =>
