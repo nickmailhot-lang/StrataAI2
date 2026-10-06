@@ -563,6 +563,32 @@ session refusal. That session seam does not prove a real HTTP cookie withdrawal.
 The release fixture therefore also enrolls a separate Member through ordinary
 invitation acceptance, checks pending/ready HTTP envelopes and original source
 identity, denies the Owner-only request route and checks actual logout refusal.
-Those new runtime checks await CI. Browser view consumption, reconnect handling
-and Demo terminal parity remain unfinished; the endpoint alone does not satisfy
-the complete two-client acceptance criterion.
+Those native runtime checks await CI. Required PostgreSQL CI at commit `1f03cc2`
+passed the unready and ready lifecycle replay contracts; the final-session seam
+remains narrower than real cookie withdrawal evidence.
+
+Production also exposes the authenticated SignalR stream
+`/organizations/live/lifecycle`. Each subscription repeatedly checks the original
+cookie and reads under fresh current membership/account admission. One stream per
+connection emits only the bounded lifecycle page and periodically rechecks access,
+including after terminal delivery. The existing same-origin live-channel guard and
+proxy route apply. This does not grant access to the deleted Organization graph.
+
+The Organization home subscribes after an account-bound authorized read. Pending
+deletion immediately withdraws names, Board controls and creation consent. The
+completion notice requires the original ready event; disconnect removes the cached
+fact until fresh admission restores it. Ordinary parent denial does not discard
+this separate admission, while confirmed account loss clears the notice and returns
+to sign-in. Late Board-create acknowledgment cannot navigate into the deleted graph.
+The client validates exact envelope fields, typed subject, original attribution,
+revision and timestamp, fences old subscriptions and rechecks the captured account.
+
+Local component/transport tests cover pending versus completion, lost admission,
+parent denial, reconnect, duplicate immutable sources, changed attribution and
+account replacement. Their mocked profile checks do not prove real cookie behavior.
+The native two-client fixture now disconnects the Member while the actual Worker
+finishes, reconnects without a document reload, compares the streamed original
+event with the Owner's status snapshot, checks accessible neutral UI at both widths,
+and withdraws completion after actual logout. Execution against exact release images
+is still required. Demo terminal parity remains unfinished; local tests alone do not
+satisfy the complete two-client acceptance criterion.

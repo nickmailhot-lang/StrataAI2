@@ -48,6 +48,22 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     expect(list.status()).toBe(201); const listId = (await list.json()).id;
     const card = await context.request.post(`/lists/${listId}/cards`, { headers, data: { title: 'Terminal deletion Card' } });
     expect(card.status()).toBe(201); const cardId = (await card.json()).id;
+    const observer = await member.newPage(); await observer.setViewportSize(viewport);
+    let observerNavigations = 0;
+    const terminalFrames: unknown[] = [];
+    observer.on('request', request => { if (request.isNavigationRequest()) observerNavigations++; });
+    observer.on('websocket', socket => {
+      if (!new URL(socket.url()).pathname.endsWith('/organizations/live/lifecycle')) return;
+      socket.on('framereceived', frame => {
+        for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
+          const message = JSON.parse(raw);
+          if (message.type === 2 && message.item?.organizationId === org && message.item?.userId === memberActor
+            && message.item?.page?.state === 'COMPLETED') terminalFrames.push(message.item.page);
+        }
+      });
+    });
+    await observer.goto(`/app/${org}`);
+    await expect(observer.getByRole('heading', { name: 'Terminal deletion council', exact: true })).toBeVisible();
     const writes: string[] = []; let ordinaryReads = 0;
     await page.goto(`/app/${org}/delete`);
     const launcher = page.getByRole('button', { name: 'Review deletion request', exact: true });
@@ -69,6 +85,9 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await expect(retry).toBeFocused(); expect(writes).toHaveLength(1);
     const pendingLifecycle = await member.request.get(lifecyclePath); expect(pendingLifecycle.status()).toBe(200);
     expect(await pendingLifecycle.json()).toEqual({ state: 'PENDING', events: [] });
+    await expect(observer.getByRole('status')).toHaveText('Organization deletion is being confirmed.');
+    await expect(observer.getByText('Terminal deletion council', { exact: true })).toHaveCount(0);
+    await member.setOffline(true);
     const key = writes[0]; const statusPath = `/organizations/${org}/deletion-requests/${key}?expectedActorId=${actor}`;
     let workerStarted = false;
     try {
@@ -81,6 +100,18 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect(snapshot).toEqual({ requestId: key, state: 'COMPLETED', version: version + 2,
         eventId: expect.stringMatching(/^[0-9a-f-]{36}$/), completedAt: expect.any(String) });
       expect(completed.headers()['cache-control']).toContain('no-store');
+      await member.setOffline(false);
+      await expect(observer.getByRole('status')).toHaveText('Organization deletion confirmed complete.', { timeout: 30_000 });
+      await expect.poll(() => terminalFrames.length).toBeGreaterThan(0);
+      expect(terminalFrames[terminalFrames.length - 1]).toEqual({ state: 'COMPLETED', events: [{
+        eventId: snapshot.eventId, eventType: 'ORGANIZATION_DELETED', actorId: actor,
+        organizationId: org, boardId: null, entityType: 'Organization', entityId: org,
+        version: snapshot.version, metadata: {}, createdAt: snapshot.completedAt,
+      }] });
+      expect(observerNavigations).toBe(1);
+      await expect(observer.getByText('Terminal deletion council', { exact: true })).toHaveCount(0);
+      await expect(observer.getByRole('button', { name: 'Create board', exact: true })).toHaveCount(0);
+      expect((await new AxeBuilder({ page: observer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await expect.poll(async () => {
         const response = await member.request.get(lifecyclePath); expect(response.status()).toBe(200);
         return (await response.json()).state;
@@ -121,6 +152,9 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await member.request.post('/auth/logout', { headers, data: {} })).status()).toBe(204);
       const withdrawn = await member.request.get(lifecyclePath); expect(withdrawn.status()).toBe(401);
       expect(await withdrawn.text()).not.toContain(snapshot.eventId);
+      await expect(observer.getByText('Organization deletion confirmed complete.', { exact: true })).toHaveCount(0);
+      await expect(observer).toHaveURL(/\/login(?:\?|$)/);
+      expect(observerNavigations).toBe(1);
     } finally { if (workerStarted) deletionWorker(false); }
     } finally { await member.close(); }
   });

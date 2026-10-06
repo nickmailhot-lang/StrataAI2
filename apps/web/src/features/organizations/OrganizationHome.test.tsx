@@ -7,6 +7,10 @@ vi.mock('../kanban/organizationBoardLive', () => ({ watchOrganizationBoards: liv
 const metadata = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string;
   invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
 vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: metadata.watch }));
+const lifecycle = vi.hoisted(() => ({ watch: vi.fn<(options: {
+  organizationId: string; userId: string; update(state: 'ACTIVE' | 'PENDING' | 'COMPLETED'): void;
+  unavailable(): void; accountUnavailable(): void }) => () => void>(() => vi.fn()) }));
+vi.mock('./organizationLifecycleLive', () => ({ watchOrganizationLifecycle: lifecycle.watch }));
 const profile = { id: '22222222-2222-4222-8222-222222222222', version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
 function stubFetch(delegate: (path: string, options?: RequestInit) => unknown) {
   vi.stubGlobal('fetch', (path: string, options?: RequestInit) => {
@@ -53,6 +57,50 @@ function mount(path = "/app") {
 beforeEach(() => sessionStorage.clear());
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 describe("PRD-01/03/04 organization discovery", () => {
+  it('withdraws private content and creation consent while deletion is pending, then announces completion', async () => {
+    stubFetch(async (path: string) => response(path === '/organizations/org-1' ? organizations[0]
+      : { organizationId: 'org-1', items: [], nextCursor: null }));
+    mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+    await waitFor(() => expect(lifecycle.watch).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
+    act(() => lifecycle.watch.mock.calls[0][0].update('PENDING'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByText('Council')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Organization deletion is being confirmed.');
+    expect(screen.queryByText('Organization deletion confirmed complete.')).not.toBeInTheDocument();
+    act(() => lifecycle.watch.mock.calls[0][0].update('COMPLETED'));
+    expect(screen.getByRole('status')).toHaveTextContent('Organization deletion confirmed complete.');
+    expect(screen.queryByRole('button', { name: 'Create board' })).not.toBeInTheDocument();
+  });
+  it('keeps lifecycle admission after ordinary parent denial and rechecks a disconnected terminal fact', async () => {
+    let deleted = false;
+    stubFetch(async (path: string) => deleted ? response({}, 404) : response(path === '/organizations/org-1'
+      ? organizations[0] : { organizationId: 'org-1', items: [], nextCursor: null }));
+    mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+    await waitFor(() => expect(lifecycle.watch).toHaveBeenCalledTimes(1));
+    const binding = lifecycle.watch.mock.calls[0][0];
+    deleted = true; act(() => metadata.watch.mock.calls[0][0].invalidate());
+    await screen.findByRole('alert');
+    expect(lifecycle.watch).toHaveBeenCalledTimes(1);
+    act(() => binding.update('COMPLETED'));
+    expect(screen.getByRole('status')).toHaveTextContent('Organization deletion confirmed complete.');
+    act(() => binding.unavailable());
+    expect(screen.queryByText('Organization deletion confirmed complete.')).not.toBeInTheDocument();
+    await screen.findByRole('alert');
+    act(() => binding.update('COMPLETED'));
+    expect(screen.getByRole('status')).toHaveTextContent('Organization deletion confirmed complete.');
+  });
+  it('withdraws the terminal notice when lifecycle admission confirms account loss', async () => {
+    stubFetch(async (path: string) => response(path === '/organizations/org-1' ? organizations[0]
+      : { organizationId: 'org-1', items: [], nextCursor: null }));
+    mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+    await waitFor(() => expect(lifecycle.watch).toHaveBeenCalledTimes(1));
+    act(() => lifecycle.watch.mock.calls[0][0].update('COMPLETED'));
+    act(() => lifecycle.watch.mock.calls[0][0].accountUnavailable());
+    await screen.findByRole('heading', { name: 'Sign in destination' });
+    expect(screen.queryByText('Organization deletion confirmed complete.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Council')).not.toBeInTheDocument();
+  });
   it('refreshes Organization metadata after a canonical source without requiring navigation or reload', async () => {
     let renamed = false;
     stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1'

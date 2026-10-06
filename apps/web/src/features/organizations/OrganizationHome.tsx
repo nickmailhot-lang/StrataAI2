@@ -25,6 +25,7 @@ import {
 import { isNotificationProfile } from "../notifications/notificationInbox";
 import { watchOrganizationBoards } from "../kanban/organizationBoardLive";
 import { watchOrganizationMetadata } from './organizationMetadataLive';
+import { watchOrganizationLifecycle, type OrganizationLifecycleState } from './organizationLifecycleLive';
 import { OrganizationCreationDialog } from './OrganizationCreationDialog';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 
@@ -114,9 +115,13 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const actor = useRef<string | undefined>(undefined);
   const read = useRef<AbortController | undefined>(undefined);
   const [liveActor, setLiveActor] = useState<string>();
+  const [lifecycleActor, setLifecycleActor] = useState<string>();
+  const [lifecycleState, setLifecycleState] = useState<OrganizationLifecycleState>();
+  const lifecycle = useRef<OrganizationLifecycleState | undefined>(undefined);
   const [liveNotice, setLiveNotice] = useState<string>();
   const navigate = useNavigate();
   useEffect(() => {
+    if (lifecycleState === 'PENDING' || lifecycleState === 'COMPLETED') return;
     const controller = new AbortController();
     read.current = controller;
     void boundedWorkRead(async (signal) => {
@@ -144,16 +149,18 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       if (!isNotificationProfile(after) || after.id !== before.id) throw new WorkRequestError(401, null);
       if (!signal.aborted) {
         actor.current = after.id; setLiveActor(after.id);
+        if (organizationId) setLifecycleActor(after.id);
         setData({ organizations, boards, nextCursor });
         setLoadError(undefined);
         setLiveNotice(value => value ? "Current Board access checked." : undefined);
       }
     }, controller.signal).catch((reason: unknown) => {
       if (controller.signal.aborted) return;
-      actor.current = undefined; setLiveActor(undefined); setData(undefined);
-      if (reason instanceof WorkRequestError && reason.status === 401)
+      setLiveActor(undefined); setData(undefined);
+      if (reason instanceof WorkRequestError && reason.status === 401) {
+        actor.current = undefined; setLifecycleActor(undefined); lifecycle.current = undefined; setLifecycleState(undefined);
         navigate("/login", { replace: true });
-      else {
+      } else {
         setData(undefined);
         setLoadError(
           reason instanceof Error ? reason : new Error("Unable to load."),
@@ -161,7 +168,28 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       }
     });
     return () => { controller.abort(); if (read.current === controller) read.current = undefined; };
-  }, [organizationId, cursor, reload, navigate]);
+  }, [organizationId, cursor, reload, navigate, lifecycleState]);
+  useEffect(() => {
+    if (!organizationId || !lifecycleActor) return;
+    const withdraw = () => {
+      read.current?.abort(); setData(undefined); setLoadError(undefined); setError(undefined); setCreating(false); setLiveActor(undefined);
+    };
+    return watchOrganizationLifecycle({ organizationId, userId: lifecycleActor,
+      update: state => {
+        if (state === 'ACTIVE') return;
+        lifecycle.current = state; setLifecycleState(state); withdraw();
+        setLiveNotice(state === 'COMPLETED' ? 'Organization deletion confirmed complete.' : 'Organization deletion is being confirmed.');
+      },
+      unavailable: () => {
+        lifecycle.current = undefined; setLifecycleState(undefined); withdraw();
+        setLiveNotice('Checking current Organization lifecycle and access.'); setReload(value => value + 1);
+      },
+      accountUnavailable: () => {
+        actor.current = undefined; setLifecycleActor(undefined); lifecycle.current = undefined; setLifecycleState(undefined);
+        withdraw(); setLiveNotice(undefined); navigate('/login', { replace: true });
+      },
+    });
+  }, [organizationId, lifecycleActor, navigate]);
   useEffect(() => {
     if (!organizationId || !liveActor) return;
     const recover = (message: string) => {
@@ -215,6 +243,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             backgroundValue: "blue",
           },
         );
+        if (lifecycle.current === 'PENDING' || lifecycle.current === 'COMPLETED') return;
         navigate(`/app/${organizationId}/boards/${board.id}`);
       } else {
         return;
@@ -263,7 +292,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             ? (organization?.name ?? "Organization boards")
             : "Your organizations"}
         </Typography>
-        {loadError ? (
+        {lifecycleState === 'PENDING' || lifecycleState === 'COMPLETED' ? (
+          <Typography>Organization content is unavailable.</Typography>
+        ) : loadError ? (
           <>
             {failure(loadError)}
             <Button onClick={() => setReload((value) => value + 1)}>
