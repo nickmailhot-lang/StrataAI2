@@ -257,7 +257,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
         lock (_sync)
         {
             if (!_organizations.TryGetValue(organizationId, out var organization) ||
-                organization.Version != expectedVersion)
+                organization.Version != expectedVersion || organization.Status != OrganizationStatus.Active)
             {
                 return Task.FromResult(false);
             }

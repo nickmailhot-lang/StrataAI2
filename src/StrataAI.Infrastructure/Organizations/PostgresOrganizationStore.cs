@@ -458,7 +458,7 @@ internal sealed class PostgresOrganizationStore(
                 version = version + 1
             WHERE id = @id
               AND version = @expected_version
-              AND status <> 'DELETING';
+              AND status = 'ACTIVE';
             """,
             session.Connection,
             session.Transaction);

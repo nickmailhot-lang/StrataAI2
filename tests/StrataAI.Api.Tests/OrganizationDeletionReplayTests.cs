@@ -11,6 +11,25 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    // PRD-03/18: storage transition guards cannot restart a deleting parent.
+    [Fact]
+    public async Task Organization_store_deletion_transition_requires_active_parent_and_does_not_reapply()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "One lifecycle transition" });
+        var org = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var store = app.Services.GetRequiredService<IOrganizationStore>();
+        var initial = await store.FindOrganizationAsync(org, ct); Assert.NotNull(initial);
+        Assert.False(await store.MarkDeletingAsync(org, initial.Version + 1, initial.UpdatedAt.AddMinutes(1), ct));
+        Assert.Equal(initial, await store.FindOrganizationAsync(org, ct));
+        Assert.True(await store.MarkDeletingAsync(org, initial.Version, initial.UpdatedAt.AddMinutes(1), ct));
+        var deleting = await store.FindOrganizationAsync(org, ct); Assert.NotNull(deleting);
+        Assert.Equal(OrganizationStatus.Deleting, deleting.Status); Assert.Equal(initial.Version + 1, deleting.Version);
+        Assert.False(await store.MarkDeletingAsync(org, deleting.Version, deleting.UpdatedAt.AddMinutes(1), ct));
+        Assert.Equal(deleting, await store.FindOrganizationAsync(org, ct));
+    }
+
     // PRD-03-TC-06/07/08: original 202 acknowledges the request, not completed deletion.
     [Fact]
     public async Task Concurrent_Organization_deletion_retries_acknowledge_once_after_parent_becomes_unavailable()

@@ -114,3 +114,14 @@ See the [acceptance map](prd-03-acceptance.md),
 [Organization transactions](organization-command-transactions.md),
 [creation recovery](organization-creation-retries.md), and
 [departure](organization-departure.md).
+
+## Storage transition invariant
+
+Both Demo and PostgreSQL storage require ACTIVE and the reviewed version to
+enter DELETING. The adapter refuses a second transition even when a caller
+supplies the latest DELETING version; refusal preserves version and timestamps.
+This matches the owning service admission and keeps future lifecycle processing
+from interpreting a repeated storage call as a fresh deletion request. The API
+host regression checks wrong-version refusal, one transition and unchanged
+state on a current-version repeat. Runtime execution of this regression remains
+pending CI; this guard does not implement terminal graph deletion.
