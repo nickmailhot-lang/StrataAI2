@@ -44,6 +44,11 @@ test "$(get owner "/organizations/$foreign" denied)" = 404
 scripts/ci/assert-file-excludes.sh 'Other private directory|ownerUserId|createdAt' "$scratch/denied.json"
 test "$(get owner '/organizations/00000000-0000-0000-0000-000000000000')" = 404
 # PRD-03-TC-01/04/10/13: bounded Organization directory through the release proxy.
+directory_read_state="$(admin "SELECT md5(json_build_array(
+  (SELECT json_agg(row_to_json(o) ORDER BY o.id) FROM organizations o WHERE o.id IN ('$org','$foreign')),
+  (SELECT json_agg(row_to_json(m) ORDER BY m.id) FROM organization_members m WHERE m.tenant_id IN ('$org','$foreign')),
+  (SELECT count(*) FROM audit_events WHERE tenant_id IN ('$org','$foreign'))
+)::text);")"
 for actor in owner member; do
   test "$(get "$actor" '/organizations/directory' directory)" = 200
   jq -e --arg org "$org" '.items|length==1 and .[0].organization.id==$org' "$scratch/directory.json" >/dev/null
@@ -51,6 +56,11 @@ for actor in owner member; do
 test "$(get portal '/organizations/directory' directory)" = 200
 jq -e --arg org "$foreign" '.items|length==1 and .[0].organization.id==$org' "$scratch/directory.json" >/dev/null
 scripts/ci/assert-file-excludes.sh 'Bounded member directory' "$scratch/directory.json"
+test "$(admin "SELECT md5(json_build_array(
+  (SELECT json_agg(row_to_json(o) ORDER BY o.id) FROM organizations o WHERE o.id IN ('$org','$foreign')),
+  (SELECT json_agg(row_to_json(m) ORDER BY m.id) FROM organization_members m WHERE m.tenant_id IN ('$org','$foreign')),
+  (SELECT count(*) FROM audit_events WHERE tenant_id IN ('$org','$foreign'))
+)::text);")" = "$directory_read_state"
 admin "WITH seed AS (SELECT gen_random_uuid() id FROM generate_series(1,52))
   INSERT INTO organizations(id,name,owner_user_id,created_at,updated_at)
   SELECT id,'Paged Organization fixture','$member',now(),now() FROM seed;

@@ -109,3 +109,9 @@ Organization metadata. Continuation must return exactly the independently
 queried final active Organization with Member role and a terminal cursor. Each
 seeded Organization retains a separate active Owner. Shell syntax checks passed;
 current-image runtime execution is still pending.
+
+Before native pagination fixtures seed larger directories, the exact-image check
+hashes complete Organization and membership rows plus scoped audit counts for
+the owner/member/Portal directory reads. It requires identical state afterward,
+covering read-only version, metadata and audit behavior in the production provider.
+This assertion awaits native CI along with the other directory scenarios.
