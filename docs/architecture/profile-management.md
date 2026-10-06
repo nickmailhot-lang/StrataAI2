@@ -137,3 +137,12 @@ the same stored UTC deadline. Parser cases cover valid/null policies and malform
 values. All 19 focused search tests pass. Desktop and phone native fixtures now
 change and clear the actual Board policy, refresh results, and verify that the
 stored deadline remains the same instant; their execution remains pending CI.
+
+The full web suite against unchanged browser source at `ea1e37b` completed with
+exit 0: 122 files and 1,493 tests passed in 498.85 seconds. This includes Board
+timezone precedence, policy changes/clearing and account-preference fallback.
+The native fixture repair in `3a1901c` reads `board.version` and the persisted
+Card from `lists[].cards[]` in the canonical Board snapshot; there is no generic
+Card GET route. Browser TypeScript passes for the repair. Native execution and
+current release-image evidence remain pending, so these results do not close
+PRD-02 or PRD-16.
