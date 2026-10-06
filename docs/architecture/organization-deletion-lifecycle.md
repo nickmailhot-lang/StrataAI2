@@ -83,3 +83,21 @@ terminal completion; and two-client reconnect. Execute the actual Worker and
 browser desktop/phone keyboard/accessibility scenarios against immutable CI
 images. Until those checks and the remaining PRD criteria pass, keep PRD-03,
 PRD-18 and ARCH-07 open.
+
+## Application implementation progress
+
+The bounded-page Application contract now provides `OrganizationDeletionJobs`,
+strict reference-only request/step/accepted-version metadata and an
+`OrganizationDeletionPageHandler`. Durable keys distinguish continuation steps
+while preserving duplicate publication identity. Each dispatch submits exactly
+one 128-record page with the unchanged claimed job, actor, lease and Worker
+identity. Invalid scope/metadata or unavailable storage cannot acknowledge success.
+The storage contract requires atomic effects, progress and continuation publication,
+with final lease fencing and non-repeating committed-step recovery.
+
+Domain fixtures cover duplicate/continuation keys, metadata privacy and invalid
+input, claimed scope, page bounds, lost lease and cancellation. Compilation is
+source evidence only; runtime execution remains pending CI. Restricted PostgreSQL
+progress storage, transactional request publication, production Worker registration,
+graph processing, terminal events and completion observation remain to implement.
+No deletion jobs are enabled or published by this Application foundation.
