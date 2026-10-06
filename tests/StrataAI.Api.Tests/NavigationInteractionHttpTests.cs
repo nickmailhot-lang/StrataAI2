@@ -98,6 +98,7 @@ public sealed partial class ApiHostTests
         {
             using var invalid = await Observe("/navigation/observations?kind=context", actor, invalidKey);
             Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+            Assert.True(invalid.Headers.CacheControl!.Private); Assert.True(invalid.Headers.CacheControl.NoStore);
             var error = await invalid.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct);
             Assert.Equal("invalid_idempotency_key", error.GetProperty("code").GetString());
         }
