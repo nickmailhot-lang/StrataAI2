@@ -140,3 +140,12 @@ checkbox reference; the checkbox type, disabled cap, paging replacement,
 selected count and exact cursor request assertions remain. All 35 filter
 cases pass locally. The original 5-second timeout is unchanged. This focused
 result does not establish full-suite or native release acceptance.
+
+The subsequent stable full web run at `550f7d9` completed with 1,508 passes
+and one 5-second timeout in the existing URL-attachment original-retry Board
+case (123 files, 201.73 seconds). The assignee-cap case passed. The URL case
+passed in isolation before and after scoping its link controls and success
+query to the accessible Create link attachment region. Original body/key,
+newer snapshot, competing-mutation fences and post-recovery enabled controls
+remain asserted, with the original 5-second timeout. Full/native acceptance
+is still pending; these source observations do not establish release readiness.

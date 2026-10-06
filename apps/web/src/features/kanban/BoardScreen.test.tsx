@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { BoardScreen } from "./BoardScreen";
@@ -964,16 +965,18 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       return response(current);
     }));
     mount(`/app/${org}/boards/${board}/cards/${card}`);
-    const add = await screen.findByRole('button', { name: 'Add link attachment' }); await waitFor(() => expect(add).toBeEnabled()); fireEvent.click(add);
-    fireEvent.change(await screen.findByLabelText(/New link attachment title/), { target: { value: 'Reference' } });
-    fireEvent.change(screen.getByLabelText(/Attachment URL/), { target: { value: 'https://example.test/reference' } });
-    const create = screen.getByRole('button', { name: 'Create link attachment' });
+    const attachmentRegion = await screen.findByRole('region', { name: 'Create link attachment' });
+    const attachment = within(attachmentRegion);
+    const add = await attachment.findByRole('button', { name: 'Add link attachment' }); await waitFor(() => expect(add).toBeEnabled()); fireEvent.click(add);
+    fireEvent.change(await attachment.findByLabelText(/New link attachment title/), { target: { value: 'Reference' } });
+    fireEvent.change(attachment.getByLabelText(/Attachment URL/), { target: { value: 'https://example.test/reference' } });
+    const create = attachment.getByRole('button', { name: 'Create link attachment' });
     await waitFor(() => expect(create).toBeEnabled()); fireEvent.click(create);
     await waitFor(() => expect(writes).toHaveLength(1));
-    const retry = await screen.findByRole('button', { name: 'Retry link attachment creation' }); await waitFor(() => expect(retry).toBeEnabled());
+    const retry = await attachment.findByRole('button', { name: 'Retry link attachment creation' }); await waitFor(() => expect(retry).toBeEnabled());
     const addChecklist = screen.getByRole('button', { name: 'Add checklist' });
     expect(addChecklist).toBeDisabled(); expect(screen.getByRole('button', { name: 'Save card' })).toBeDisabled();
-    expect(writes).toHaveLength(1); fireEvent.click(retry); await screen.findByText('Link attachment created.');
+    expect(writes).toHaveLength(1); fireEvent.click(retry); await attachment.findByText('Link attachment created.');
     await waitFor(() => { expect(addChecklist).toBeInTheDocument(); expect(addChecklist).toBeEnabled(); });
     expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
     expect(JSON.parse(writes[0].body as string)).toEqual({ title: 'Reference', url: 'https://example.test/reference', cardVersion: 3 });
