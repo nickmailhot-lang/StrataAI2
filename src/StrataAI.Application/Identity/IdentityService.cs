@@ -621,6 +621,10 @@ public sealed class IdentityService(
             return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
         var expiry = consumed.ExpiresAt < clock.UtcNow.AddHours(24) ? consumed.ExpiresAt : clock.UtcNow.AddHours(24);
         await consumptionReplays.SaveAsync(proof.User.Id, key, purpose, new(proof.TokenId, version, fingerprint, consumedAt, expiry), cancellationToken);
+        // Receipt publication can wait beyond the proof lifetime. Refuse before
+        // profile disclosure so the owning transaction restores consumption.
+        if (consumed.ExpiresAt <= clock.UtcNow || expiry <= clock.UtcNow)
+            return IdentityOperation<UserProfile>.Failure("invalid_or_expired_token");
         return result;
     }
 

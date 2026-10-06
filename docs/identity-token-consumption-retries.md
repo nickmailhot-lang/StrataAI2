@@ -15,3 +15,22 @@ The recovery screens preserve the exact body and UUID after lost, stalled or mal
 Local evidence: the 101-test API suite, seven focused consumption/credential/lifecycle/expiry/rotation/cryptographic cases, 140 web tests, typecheck/lint and a mobile keyboard browser check all pass. The browser deliberately loses committed verification and reset responses, retries each unchanged intent and signs in afterward. Required release fixtures add real-role RLS/column/foreign-key/batching checks, rollback at audit/event/receipt publication, concurrent acknowledgments, restart, original/newer session behavior, expiry during an observed token wait, lifecycle denial and actual Worker cleanup. The separate production mobile mail test loses and retries both Worker-delivered token completion responses. Release verification is pending CI.
 
 These increments do not complete authentication/onboarding: invitation-driven registration and invitation side effects, deactivation ownership continuity, remaining telemetry, full accessibility/performance evidence and other FR/AC/DoD requirements remain outstanding.
+
+## Expiry after receipt publication
+
+Fresh keyed password-reset and email-verification consumption now checks token
+and receipt expiry again after the consumption receipt has been saved. A wait in
+publication cannot turn already expired proof into a successful profile
+acknowledgment. Refusal returns `invalid_or_expired_token` before disclosure and
+rolls back the owning Identity transaction, including password/status/token/event
+and receipt writes. Existing credential-checked acknowledgment behavior remains.
+
+Two API-host regressions use actual Demo token and receipt stores. Their clock
+advances to the original token expiry only after the real consumption receipt is
+visible. They require a failed result with no profile, exact account and unused
+token restoration, no failed receipt or extra event, then successful same-key
+consumption and matching replay with only one new event. Restoring the test clock
+before rollback assertions prevents natural expiry from hiding a residual record.
+These cases require native API-host CI execution; compilation alone is not
+acceptance evidence. Exact-image post-publication expiry coverage and full PRD-02
+acceptance remain outstanding.
