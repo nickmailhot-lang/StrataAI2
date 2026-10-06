@@ -20,6 +20,8 @@ function preview(value: unknown): value is Preview {
     && typeof row.expiresAt === 'string' && /(?:Z|[+-]\d{2}:\d{2})$/.test(row.expiresAt) && Date.parse(row.expiresAt) > Date.now());
 }
 
+class AccountUnavailable extends Error { constructor(readonly status: number) { super('Reviewed invitation account unavailable'); } }
+
 export function InvitationLinkPage() {
   const location = useLocation(); const navigate = useNavigate();
   const [token, setToken] = useState(''); const [review, setReview] = useState<Preview>();
@@ -28,28 +30,53 @@ export function InvitationLinkPage() {
   const [error, setError] = useState<string>();
   const pending = useRef<AbortController | undefined>(undefined);
   const unconfirmed = useRef<Preview | undefined>(undefined);
+  const reviewedActor = useRef<string | undefined>(undefined);
   useLayoutEffect(() => {
     if (!location.hash && !location.search) return;
     pending.current?.abort(); pending.current = undefined;
-    unconfirmed.current = undefined;
+    unconfirmed.current = undefined; reviewedActor.current = undefined;
     const values = new URLSearchParams(location.hash.slice(1)).getAll('token');
     const proof = values.length === 1 && /^[A-Za-z0-9_-]{32,512}$/.test(values[0]) ? values[0] : '';
     setToken(proof); setReview(undefined); setAccepted(undefined); setUncertain(false); setSignIn(false); setBusy(false); setError(undefined);
     navigate(location.pathname, { replace: true });
   }, [location.hash, location.search, location.pathname, navigate]);
   useEffect(() => () => { pending.current?.abort(); pending.current = undefined; }, []);
+  function valid(controller: AbortController) { return pending.current === controller && !controller.signal.aborted; }
+  async function verifyAccount(controller: AbortController, expected?: string) {
+    try {
+      const response = await apiFetch('/me', { signal: controller.signal });
+      const me = await response.json().catch(() => null) as { id?: unknown } | null;
+      if (!valid(controller)) throw new AccountUnavailable(503);
+      if (response.status === 401) throw new AccountUnavailable(401);
+      if (response.status !== 200 || typeof me?.id !== 'string' || !uuid.test(me.id) || me.id === '00000000-0000-0000-0000-000000000000')
+        throw new AccountUnavailable(503);
+      if (expected && me.id !== expected) throw new AccountUnavailable(401);
+      return me.id;
+    } catch (reason) { throw reason instanceof AccountUnavailable ? reason : new AccountUnavailable(503); }
+  }
   async function submit(accept: boolean) {
     if (pending.current || (accept ? !(review ?? unconfirmed.current) : !token)) return;
     const chosen = review ?? unconfirmed.current;
-    if (accept) unconfirmed.current = chosen;
+    let submitted = false;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined);
     let timer: ReturnType<typeof setTimeout> | undefined; let aborted: (() => void) | undefined;
     try {
       const result = await Promise.race([
-        apiFetch(accept ? `/me/invitations/${chosen!.id}/accept` : '/invitations/review', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
-          body: JSON.stringify(accept ? {} : { token }),
-        }).then(async response => ({ status: response.status, value: await response.json().catch(() => null) as unknown })),
+        (async () => {
+          const actor = await verifyAccount(controller, reviewedActor.current);
+          if (!valid(controller) || accept && !reviewedActor.current) throw new AccountUnavailable(503);
+          if (accept) { submitted = true; unconfirmed.current = chosen; }
+          const response = await apiFetch(accept ? `/me/invitations/${chosen!.id}/accept?expectedActorId=${encodeURIComponent(actor)}`
+            : `/invitations/review?expectedActorId=${encodeURIComponent(actor)}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.signal,
+            body: JSON.stringify(accept ? {} : { token }),
+          });
+          const value = await response.json().catch(() => null) as unknown;
+          if (!valid(controller)) throw new AccountUnavailable(503);
+          await verifyAccount(controller, actor);
+          if (!valid(controller)) throw new AccountUnavailable(503);
+          return { status: response.status, value, actor };
+        })(),
         new Promise<never>((_, reject) => {
           aborted = () => reject(new Error('Invitation request interrupted'));
           controller.signal.addEventListener('abort', aborted, { once: true });
@@ -68,7 +95,7 @@ export function InvitationLinkPage() {
       }
       if (!accept) {
         if (result.status !== 200 || !preview(result.value)) throw new Error('Unconfirmed preview');
-        setReview(result.value); setUncertain(false); return;
+        reviewedActor.current = result.actor; setReview(result.value); setUncertain(false); return;
       }
       const ack = result.value as { invitationId?: unknown; organizationId?: unknown; surface?: unknown; targetRole?: unknown; boardTarget?: Preview['boardTarget'] } | null;
       if (result.status !== 200 || ack?.invitationId !== chosen!.id || ack.organizationId !== chosen!.organizationId
@@ -77,10 +104,15 @@ export function InvitationLinkPage() {
           : ack.boardTarget?.boardId !== chosen!.boardTarget.boardId || ack.boardTarget?.role !== chosen!.boardTarget.role)) throw new Error('Unconfirmed acceptance');
       setAccepted(chosen); setReview(undefined); setToken(''); setUncertain(false);
       unconfirmed.current = undefined;
-    } catch {
+    } catch (reason) {
       if (pending.current === controller) {
-        if (accept) setUncertain(true);
-        setError(accept ? 'Acceptance could not be confirmed. Retry this invitation to recover its acknowledgment.'
+        setReview(undefined); setAccepted(undefined);
+        setUncertain(accept && (submitted || !!unconfirmed.current));
+        if (reason instanceof AccountUnavailable) {
+          if (reason.status === 401) setSignIn(true);
+          setError(reason.status === 401 ? 'Sign in with the invited account, then review the invitation again.'
+            : 'The reviewed account could not be confirmed. Retry after account access is available.');
+        } else setError(accept ? 'Acceptance could not be confirmed. Retry this invitation to recover its acknowledgment.'
           : 'The invitation could not be reviewed. Wait and retry.');
       }
     } finally {

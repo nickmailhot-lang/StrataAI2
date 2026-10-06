@@ -136,7 +136,13 @@ for surface in INTERNAL PORTAL; do
   admin "UPDATE invitations SET token_hash='$body_hash' WHERE id='$body_id' AND tenant_id='$body_org';" >/dev/null
   body_json="$(jq -nc --arg token "$body_token" '{token:$token}')"
   test "$(post wrong /invitations/review "$body_json")" = 400
-  test "$(post recipient /invitations/review "$body_json")" = 200
+  # Correct bearer proof cannot override the account that reviewed this action.
+  for expected in "$(jq -r '.user.id' "$scratch/wrong.user")" 00000000-0000-0000-0000-000000000000; do
+    test "$(post recipient "/invitations/review?expectedActorId=$expected" "$body_json")" = 401
+    jq -e '.code=="session_unavailable"' "$scratch/response" >/dev/null
+    scripts/ci/assert-file-excludes.sh "$body_token|tokenHash|invitationToken|Body acceptance fixture|organizationId" "$scratch/response"
+  done
+  test "$(post recipient "/invitations/review?expectedActorId=$user" "$body_json")" = 200
   jq -e --arg id "$body_id" --arg org "$body_org" --arg surface "$surface" --arg role "$role" \
     '.id==$id and .organizationId==$org and .surface==$surface and .targetRole==$role and .organizationName=="Body acceptance fixture"' "$scratch/response" >/dev/null
   scripts/ci/assert-file-excludes.sh "$body_token|tokenHash|invitationToken" "$scratch/response"

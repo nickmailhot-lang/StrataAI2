@@ -83,25 +83,34 @@ public sealed partial class ApiHostTests
         }
         using var issued = await Mutate(owner, HttpMethod.Post, root, input);
         Assert.Equal(HttpStatusCode.Created, issued.StatusCode);
-        var id = (await issued.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        var issuedInvitation = await issued.Content.ReadFromJsonAsync<JsonElement>(ct);
+        var id = issuedInvitation.GetProperty("id").GetGuid();
+        var token = issuedInvitation.GetProperty("invitationToken").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(token));
         foreach (var expected in new[] { Guid.NewGuid(), Guid.Empty })
         {
             using var read = await recipient.GetAsync($"/me/invitations?expectedActorId={expected}&after=invalid", ct);
             Assert.Equal(HttpStatusCode.Unauthorized, read.StatusCode);
             using var write = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{id}/accept?expectedActorId={expected}", new { });
             Assert.Equal(HttpStatusCode.Unauthorized, write.StatusCode);
-            foreach (var response in new[] { read, write })
+            using var review = await Mutate(recipient, HttpMethod.Post, $"/invitations/review?expectedActorId={expected}", new { token });
+            Assert.Equal(HttpStatusCode.Unauthorized, review.StatusCode);
+            foreach (var response in new[] { read, write, review })
             {
                 var text = await response.Content.ReadAsStringAsync(ct);
                 Assert.Contains("session_unavailable", text, StringComparison.Ordinal);
                 Assert.DoesNotContain("Protected recipient", text, StringComparison.Ordinal);
                 Assert.DoesNotContain(id.ToString(), text, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain(token!, text, StringComparison.Ordinal);
             }
             var history = await owner.GetFromJsonAsync<JsonElement>(root, ct);
             var original = history.GetProperty("items").EnumerateArray().Single(row => row.GetProperty("id").GetGuid() == id);
             Assert.Equal(JsonValueKind.Null, original.GetProperty("acceptedAt").ValueKind);
             if (boardId is { } board) Assert.Null(await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardMemberAsync(board, actor, ct));
         }
+        using var confirmedReview = await Mutate(recipient, HttpMethod.Post, $"/invitations/review?expectedActorId={actor}", new { token });
+        Assert.Equal(HttpStatusCode.OK, confirmedReview.StatusCode);
+        Assert.Equal(id, (await confirmedReview.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid());
         var page = await recipient.GetFromJsonAsync<JsonElement>($"/me/invitations?expectedActorId={actor}", ct);
         Assert.Equal(id, Assert.Single(page.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
         using var accepted = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{id}/accept?expectedActorId={actor}", new { });

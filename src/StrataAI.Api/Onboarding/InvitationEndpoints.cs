@@ -193,11 +193,13 @@ public static class InvitationEndpoints
             return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().RequireRateLimiting("invitation");
 
-        app.MapPost("/invitations/review", async (AcceptInvitationRequest request, HttpContext context,
+        app.MapPost("/invitations/review", async (AcceptInvitationRequest request, Guid? expectedActorId, HttpContext context,
             IInvitationService service, CancellationToken cancellationToken) =>
         {
             var userId = GetUserId(context);
             if (userId is null) return Results.Unauthorized();
+            if (expectedActorId is { } reviewedActor && (reviewedActor == Guid.Empty || reviewedActor != userId.Value))
+                return ErrorFor("session_unavailable");
             var result = await service.ReviewTokenAsync(userId.Value, request.Token ?? "", cancellationToken);
             return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().RequireRateLimiting("invitation");
