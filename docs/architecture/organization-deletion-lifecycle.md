@@ -290,11 +290,34 @@ The correction at `8664556` passed the actual restricted graph stages and
 attachment storage contract in [PostgreSQL CI job 112398997723](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37501388855/job/112398997723).
 That run covers the original 260-Card/130-attachment fixture, bounded pages,
 late-expiry rollback, replay/reclaim recovery, retained history/provider metadata,
-and terminal readiness after actor deactivation. Runtime results for the added
-selected preview-backed cover/image fixture and explicit private-helper privilege
-assertions remain pending CI. Large mutation throughput, HTTP/product integration
+and terminal readiness after actor deactivation. The explicit API/Worker private-helper privilege assertions added at `173c665`
+also passed in [PostgreSQL CI job 112399819815](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37501631140/job/112399819815).
+Runtime results for the added selected preview-backed cover/image fixture remain
+pending CI. Large mutation throughput, HTTP/product integration
 and live browser completion require further evidence before PRD acceptance.
 
 The product API does not publish deletion work yet. Existing 202 acknowledgments
 still confirm the request. Demo parity, independent Owner completion observation,
 two-client invalidation/reconnect and exact-image acceptance remain unfinished.
+
+## Demo publication transaction foundation
+
+The registered Demo deletion publisher journals the immutable accepted request,
+initial checkpoint and first reference-only job together in host-local memory.
+It requires an owning Organization command, a DELETING parent at the accepted
+version, the current Owner membership and an active account. A standalone call,
+another Organization scope or a Work-only transaction cannot publish it.
+Matching duplicates preserve the original identity/correlation; conflicting
+requests or versions are rejected. The journal participates in the owning
+Organization rollback alongside the parent and acknowledgment stores.
+
+The Demo scope now distinguishes Organization commands from Work commands while
+preserving existing Work scope admission. Five API-host fixtures cover successful
+publication/replay and rollback on refusal, final actor loss, exception or
+cancellation, followed by recovery that proves the failed journal was removed.
+Compilation passed with zero warnings/errors; runtime execution is pending CI.
+The production publisher is registered alongside the Demo implementation. The
+product service does not invoke either publisher yet. Demo page execution,
+completion observation and browser integration remain required; an in-memory
+journal is not durable across process restarts and does not replace production
+PostgreSQL jobs or the separate Worker.

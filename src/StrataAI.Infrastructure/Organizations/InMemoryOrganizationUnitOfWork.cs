@@ -21,7 +21,7 @@ internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, I
             await gate.WorkCommands.WaitAsync(cancellationToken);
             try
             {
-                using var owned = scope.Enter(organizationId);
+                using var owned = scope.Enter(organizationId, organizationCommand: true);
                 Action[] rollback = []; var committed = false;
                 try
                 {

@@ -6,11 +6,12 @@ internal interface IDemoWorkTransactionParticipant
 }
 internal sealed class DemoWorkTransactionScope
 {
-    private readonly AsyncLocal<Guid?> _organization = new();
-    public bool Owns(Guid organization) => _organization.Value == organization;
-    public IDisposable Enter(Guid organization)
+    private readonly AsyncLocal<(Guid Organization, bool OrganizationCommand)?> _organization = new();
+    public bool Owns(Guid organization) => _organization.Value?.Organization == organization;
+    public bool OwnsOrganizationCommand(Guid organization) => Owns(organization) && _organization.Value?.OrganizationCommand == true;
+    public IDisposable Enter(Guid organization, bool organizationCommand = false)
     {
-        var previous = _organization.Value; _organization.Value = organization;
+        var previous = _organization.Value; _organization.Value = (organization, organizationCommand);
         return new Lease(() => _organization.Value = previous);
     }
     private sealed class Lease(Action release) : IDisposable
