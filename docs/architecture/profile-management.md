@@ -103,7 +103,15 @@ A component case requires Honolulu's previous day and Tokyo's later time after
 a profile preference refresh, with the same UTC search result. Native desktop
 and phone fixtures create an actual timed Card deadline and change the account
 preference before refreshing search. Ten focused component cases, source
-TypeScript and lint pass; native fixture execution remains pending CI. Search
-currently carries no Board timezone policy in its result contract; applying that
-optional policy consistently is remaining work. This account-preference repair
+TypeScript and lint pass; native fixture execution remains pending CI. Search now carries canonical nullable `boardDateTimezone` from its authorized
+Board read. Applying that optional policy in the browser remains the next step. This account-preference repair
 does not establish full AUTH-FR-010/PRD-02 or PRD-16 acceptance.
+
+The search document's `boardDateTimezone` comes from the canonical Board already
+held by the authorized Work read, not from directory routing hints. No extra
+connection, tenant context or database migration is introduced. A new API-host
+case checks null policy, Honolulu, Tokyo and clearing; every fresh search must
+reflect the admitted current policy while an outsider receives no private Card or
+policy metadata. Compilation succeeds; native execution remains pending CI.
+Browser policy precedence is still incomplete, so this contract increment does
+not close the timezone acceptance gap.

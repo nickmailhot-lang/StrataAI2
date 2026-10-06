@@ -6,7 +6,10 @@ public sealed record SearchMemberContext(Guid UserId, string DisplayName);
 // response without treating comment snippets as canonical Card descriptions.
 public sealed record SearchCardDocument(string SourceKind, CardRecord Card, string BoardName, string ListName,
     IReadOnlyList<SearchLabelContext> Labels, bool HasMoreLabels,
-    IReadOnlyList<SearchMemberContext> Members, bool HasMoreMembers);
+    IReadOnlyList<SearchMemberContext> Members, bool HasMoreMembers)
+{
+    public string? BoardDateTimezone { get; init; }
+}
 public sealed record BoardSearchPage(Guid OrganizationId, Guid BoardId, IReadOnlyList<SearchCardDocument> Items, Guid? NextCard);
 
 public sealed partial class WorkManagementService
@@ -33,7 +36,8 @@ public sealed partial class WorkManagementService
             var members = await store.ListCardMembersAsync(card.Id, null, identityPolicy.RequireVerifiedEmail, cancellationToken);
             documents.Add(new("CARD", card, access.Value.Board.Name, list.Name,
                 labels.Take(50).Select(l => new SearchLabelContext(l.Id, l.Name, l.Color)).ToArray(), labels.Count > 50,
-                members.Take(50).Select(m => new SearchMemberContext(m.UserId, m.DisplayName)).ToArray(), members.Count > 50));
+                members.Take(50).Select(m => new SearchMemberContext(m.UserId, m.DisplayName)).ToArray(), members.Count > 50)
+                { BoardDateTimezone = access.Value.Board.DateTimezoneOverride });
         }
         return WorkOperation<BoardSearchPage>.Success(new(access.Value.Board.OrganizationId, boardId, documents,
             rows.Count > 50 ? documents[^1].Card.Id : null));
