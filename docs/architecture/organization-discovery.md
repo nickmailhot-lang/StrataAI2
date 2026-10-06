@@ -184,3 +184,9 @@ query. It verifies private/no-store headers, stable invalid cursor failures,
 outsider and revoked-member denial, and identical Organization/Board/member
 state and audit counts before and after reads. Shell syntax checks passed;
 execution against the retained images remains required in CI.
+
+The active Board directory is also included in the mandatory observed parent-row
+lock-wait/session-revocation fixture. It revokes the real caller session while
+the HTTP request waits for the owning Organization gate, then requires 401 after
+the gate is released. This covers current actor admission on an empty directory
+as well as a populated page; native execution remains pending.

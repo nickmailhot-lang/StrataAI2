@@ -246,7 +246,7 @@ scripts/ci/assert-file-excludes.sh 'Directory seeded member|directory-seed-|Boun
 admin "UPDATE organization_members SET role='OWNER',version=version+1 WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 done
 # The original session revoked during a parent wait cannot authorize disclosure.
-for path in "/organizations/directory" "/organizations/$org" "/organizations/$org/members" "/organizations/$org/members/$member"; do
+for path in "/organizations/directory" "/organizations/$org" "/organizations/$org/boards/directory" "/organizations/$org/members" "/organizations/$org/members/$member"; do
 hold "SELECT id FROM organizations WHERE id='$org' FOR UPDATE;"
 get owner "$path" revoked > "$scratch/status" & request_pid=$!
 blocked '%SELECT id FROM organizations%FOR UPDATE%'
