@@ -112,3 +112,26 @@ progress mutation. Lease-fenced mutation capabilities remain to implement.
 Both runtime hosts require the migration ledger; CI fixtures cover repeat/upgrade,
 rollback, restricted-role isolation and disabled Worker writes. Compilation and
 script syntax checks cannot prove execution; PostgreSQL CI remains required.
+
+## Atomic publication foundation
+
+`PostgresOrganizationDeletionJobPublisher` borrows the owning Organization
+command transaction. It admits the current active Owner against the accepted
+DELETING parent/version, then couples the immutable request, initial checkpoint,
+and reference-only first job. It cannot publish outside that command scope or
+commit independently. Matching retries preserve the original correlation,
+completed first job, and advanced checkpoint; mismatched or partial publication
+is refused.
+
+The mandatory restricted PostgreSQL executable includes
+`OrganizationDeletionPublicationContract`: command refusal, final synthetic actor
+refusal, a queue collision after tentative request/checkpoint writes, concurrent
+replay, changed request/version refusal, and replay after progress advances.
+The contract compiles with zero warnings; its runtime result must be checked in
+CI for the implementing revision. Actor admission is synthetic in this contract,
+so it does not prove HTTP/session authorization.
+
+Publication is not registered or invoked by the production API yet. The
+restricted leased page implementation and its full graph processing must exist
+before accepted product requests enqueue these jobs. Terminal deletion and
+completion observation remain pending.

@@ -45,6 +45,14 @@ public static class OrganizationDeletionJobs
     }
 }
 
+public interface IOrganizationDeletionJobPublisher
+{
+    // Accepted request/checkpoint/first job borrow the owning Organization command.
+    // Matching publication returns false without resetting progress or requeuing.
+    Task<bool> PublishAsync(Guid organizationId, Guid actorId, Guid requestId,
+        long acceptedVersion, string correlationId, CancellationToken cancellationToken);
+}
+
 public interface IOrganizationDeletionPageStore
 {
     // Restricted owning tenant transaction only: validate the current request,
