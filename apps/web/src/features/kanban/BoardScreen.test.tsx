@@ -945,6 +945,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       lifecycleState: 0, archivedAt: null, deletedBy: null } };
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       const path = String(input);
+      if (path.startsWith('/navigation/observations?')) return navigationResponse(path, actor);
       if (path.endsWith('/me')) return response(profile);
       if (path.endsWith('/attachments/url')) {
         writes.push(options!); current = structuredClone(current); current.lists[0].cards[0].version = 4;
@@ -956,7 +957,9 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const add = await screen.findByRole('button', { name: 'Add link attachment' }); await waitFor(() => expect(add).toBeEnabled()); fireEvent.click(add);
     fireEvent.change(await screen.findByLabelText(/New link attachment title/), { target: { value: 'Reference' } });
     fireEvent.change(screen.getByLabelText(/Attachment URL/), { target: { value: 'https://example.test/reference' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create link attachment' }));
+    const create = screen.getByRole('button', { name: 'Create link attachment' });
+    await waitFor(() => expect(create).toBeEnabled()); fireEvent.click(create);
+    await waitFor(() => expect(writes).toHaveLength(1));
     const retry = await screen.findByRole('button', { name: 'Retry link attachment creation' }); await waitFor(() => expect(retry).toBeEnabled());
     expect(screen.getByRole('button', { name: 'Add checklist' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Save card' })).toBeDisabled();
     expect(writes).toHaveLength(1); fireEvent.click(retry); await screen.findByText('Link attachment created.');
