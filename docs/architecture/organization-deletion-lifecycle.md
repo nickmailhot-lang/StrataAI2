@@ -5,7 +5,9 @@
 [ARCH-07](https://github.com/nickmailhot-lang/StrataAI2/issues/88) require
 completion beyond the [deletion request acknowledgment](organization-deletion-retries.md).
 This defines the completion implementation. Publication, graph stages and the terminal storage gate have infrastructure/Worker
-implementations. Product API completion is not enabled.
+implementations. Product deletion now publishes the accepted request and first
+job atomically. Browser completion, Demo terminal processing and full release
+acceptance remain unfinished.
 A 202 remains an acknowledgment of the accepted request.
 
 ## State and graph treatment
@@ -98,10 +100,10 @@ with final lease fencing and non-repeating committed-step recovery.
 
 Domain fixtures cover duplicate/continuation keys, metadata privacy and invalid
 input, claimed scope, page bounds, lost lease and cancellation. Compilation is
-source evidence only; runtime execution remains pending CI. Restricted PostgreSQL
-progress storage, transactional request publication, production Worker registration,
-graph processing, terminal events and completion observation remain to implement.
-No deletion jobs are enabled or published by this Application foundation.
+source evidence only. Restricted PostgreSQL progress, publication, graph stages,
+terminal delivery and observation have runtime results documented below. The
+product command now invokes publication; this Application contract alone does
+not establish browser or exact-image acceptance.
 
 Migration 088 adds immutable accepted-request references and a forced-RLS
 progress checkpoint. Initial storage admission requires the current DELETING
@@ -109,7 +111,8 @@ version and active Owner, with parent-before-membership gates. The initial
 checkpoint must be ATTACHMENTS with the first step equal to the request, no
 cursor or completion and version one. API grants allow only initial insert/read;
 Worker grants allow reference/progress reads, without correlation content or
-progress mutation. Lease-fenced mutation capabilities remain to implement.
+progress mutation. Later migrations add the narrow lease-fenced capabilities
+described below.
 Both runtime hosts require the migration ledger; CI fixtures cover repeat/upgrade,
 rollback, restricted-role isolation and disabled Worker writes. Compilation and
 script syntax checks cannot prove execution; PostgreSQL CI remains required.
@@ -135,10 +138,9 @@ terminal graph processing and exact-image acceptance remain pending.
 Actor admission is synthetic in this contract,
 so it does not prove HTTP/session authorization.
 
-Publication is not registered or invoked by the production API yet. The
-restricted leased page implementation below must pass its runtime checks, and
-product recovery/observation must be implemented before enabling the full flow. Terminal deletion and
-completion observation remain pending.
+The product service now invokes the registered publisher in the same owning
+command. The runtime page and observation results below cover their restricted
+storage boundaries; full HTTP/Worker/browser completion remains to verify.
 
 ## Terminal storage gate
 
@@ -172,9 +174,8 @@ This verifies the terminal gate; preceding graph stages were staged by the fixtu
 
 The standalone finalizer adapter is not separately registered. The Worker page
 processor below invokes its SQL terminal capability inside the page transaction.
-Production API publication, live lifecycle event consumption, independent Owner
-completion observation and full exact-image acceptance remain required before
-enabling the complete product flow. Existing deletion acknowledgments remain request acknowledgments.
+Product API publication and independent Owner observation are implemented below;
+live lifecycle consumption and full exact-image acceptance remain required. Existing deletion acknowledgments remain request acknowledgments.
 
 ## Durable completion readiness
 
@@ -203,8 +204,8 @@ direct mutation. Handler runtime tests and overall release results must be
 reviewed separately from this database result.
 
 Readiness is a durable delivery milestone. It does not establish SignalR/browser
-consumption or Owner completion observation. Product API publication remains disconnected until graph-stage runtime evidence
-and the remaining recovery/observation flow are implemented and verified.
+consumption. Product publication and the independent observation reader are now
+implemented, with their separate verification boundaries recorded below.
 
 ## Bounded graph candidate traversal
 
@@ -297,9 +298,10 @@ The added selected preview-backed cover/image fixture passed at `b043f5c` in
 including cover/background cleanup and unchanged prior history/provider evidence. Large mutation throughput, HTTP/product integration
 and live browser completion require further evidence before PRD acceptance.
 
-The product API does not publish deletion work yet. Existing 202 acknowledgments
-still confirm the request. Demo parity, independent Owner completion observation,
-two-client invalidation/reconnect and exact-image acceptance remain unfinished.
+The product API now publishes deletion work. Its 202 still confirms the request;
+only an authoritative observation confirms completion. Demo terminal parity,
+browser observation, two-client invalidation/reconnect and exact-image acceptance
+remain unfinished.
 
 ## Demo publication transaction foundation
 
@@ -318,7 +320,7 @@ publication/replay and rollback on refusal, final actor loss, exception or
 cancellation, followed by recovery that proves the failed journal was removed.
 Compilation passed with zero warnings/errors; runtime execution is pending CI.
 The production publisher is registered alongside the Demo implementation. The
-product service does not invoke either publisher yet. Demo page execution,
+product service now invokes them atomically with the request. Demo page execution,
 completion observation and browser integration remain required; an in-memory
 journal is not durable across process restarts and does not replace production
 PostgreSQL jobs or the separate Worker.
@@ -347,9 +349,9 @@ GET or an unavailable status must never be interpreted as completed deletion.
 
 Demo reads use both owning gates and the accepted journal. They can report a
 proven pending request; Demo terminal graph/event execution remains unfinished,
-so no completed snapshot is invented. Existing product deletion commands do not
-publish roots yet: this endpoint is implemented against accepted storage/journal
-records, and publication/retry/browser integration still needs completion.
+so no completed snapshot is invented. Product deletion commands now publish
+canonical roots. Browser status consumption and full HTTP/Worker acceptance
+still need completion.
 Legacy DELETING rows without a canonical accepted request are unavailable here.
 
 API-host cases exercise pending status after ordinary access withdrawal, exact
@@ -359,4 +361,43 @@ graph fixture exercises pending and actual terminal reads, disabled account and
 Owner demotion denial, final admission failure, and stable event/time recovery.
 Its account/session admission fixture is synthetic and does not prove production
 HTTP session expiry. API and persistence contract compilation passed with zero
-warnings/errors; runtime execution for this observation change is pending CI.
+warnings/errors. The restricted observation cases passed at `ae4ad1d` in
+[PostgreSQL CI job 112406199262](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37503503720/job/112406199262).
+This does not establish production HTTP session or browser completion acceptance.
+
+## Product publication and retained terminal acknowledgments
+
+The product command now couples DELETING, reminder suspension, request audit,
+accepted root, initial checkpoint, first reference-only job and 24-hour receipt
+in its owning transaction. Keyed requests use their original retry UUID as the
+root reference. Receipt recovery returns the original acceptance without
+republishing a job or resetting progress. The HTTP 202 includes `requestId` and
+a Location pointing to the independent observation endpoint. An unkeyed HTTP
+caller receives a fresh request reference; it must supply a retry key itself to
+recover a lost response.
+
+Only deletion acknowledgment recovery admits DELETED as well as DELETING into
+its owning command scope. It still requires the current active original Owner,
+matching fingerprint, unexpired receipt and final actor/session admission. A
+new request requires ACTIVE; no recovery may reactivate a terminal parent or
+restore normal reads/commands. This closes the race where the Worker finishes
+before a lost 202 can be retried. Old DELETING records without canonical roots
+still require deliberate legacy recovery; replaying their old receipt does not
+invent a new actor/request or silently requeue deletion.
+
+Configured production Workers process only their explicit Organization scopes
+(`STRATAAI_WORKER_ORGANIZATION_IDS`); adding an Organization requires updating
+that scope. Automatic Organization discovery remains unimplemented. Demo now
+journals the actual product request but still lacks terminal page/event execution.
+Browser observation and other-client lifecycle recovery remain required.
+
+API-host checks cover actual DELETE response/reference and journal-backed status,
+concurrent same-key acceptance, and root-publication exception/final actor loss
+rolling back the parent and receipt before successful retry. The exact-image
+Organization command script snapshots roots, progress and deletion jobs alongside
+its existing reminder/audit/receipt rollback checks and asserts atomic API
+publication plus independent pending observation. The restricted graph fixture
+additionally checks terminal receipt recovery scope, normal-command withdrawal,
+final actor refusal and unchanged completion evidence. API/persistence contracts
+compiled with zero warnings/errors and the container script passed syntax checks;
+runtime execution of this product wiring is pending CI.

@@ -703,7 +703,9 @@ deletion_state() {
     'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$retry_org' AND id='$receipt_card'),
     'assignments',(SELECT jsonb_agg(to_jsonb(a) ORDER BY user_id) FROM card_members a WHERE tenant_id='$retry_org' AND card_id='$receipt_card'),
     'reminders',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM card_reminders r WHERE tenant_id='$retry_org'),
-    'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$retry_org' AND job_type='CARD_REMINDER'),
+    'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$retry_org' AND job_type IN ('CARD_REMINDER','ORGANIZATION_DELETE_PAGE')),
+    'deletionRequests',(SELECT jsonb_agg(to_jsonb(r) ORDER BY request_id) FROM organization_deletion_requests r WHERE tenant_id='$retry_org'),
+    'deletionProgress',(SELECT to_jsonb(p) FROM organization_deletion_progress p WHERE tenant_id='$retry_org'),
     'events',(SELECT jsonb_agg(jsonb_build_object('id',e.event_id,'sequence',e.sequence,'type',e.event_type,'actor',e.actor_id,'entityType',e.entity_type,'entity',e.entity_id,'version',e.entity_version,'correlation',e.correlation_id,'metadata',e.metadata,'created',e.created_at) ORDER BY e.sequence) FROM work_events e WHERE tenant_id='$retry_org' AND board_id='$receipt_board'),
     'stream',(SELECT to_jsonb(w) FROM work_event_streams w WHERE tenant_id='$retry_org' AND board_id='$receipt_board'),
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_deletion_replays r WHERE tenant_id='$retry_org'))::text;"
@@ -761,6 +763,15 @@ release ''
 wait "$deletion_first_pid"; wait "$deletion_second_pid"
 test "$(cat "$scratch/deletion-first.status")" = 202
 test "$(cat "$scratch/deletion-second.status")" = 202
+for receipt in deletion-first deletion-second; do
+  jq -e --arg key "$deletion_key" 'keys==["requestId"] and .requestId==$key' "$scratch/$receipt.json" >/dev/null
+done
+test "$(admin "SELECT count(*)=1 FROM organization_deletion_requests WHERE tenant_id='$retry_org' AND request_id='$deletion_key' AND actor_id='$owner' AND accepted_version=$((deletion_version+1));")" = t
+test "$(admin "SELECT count(*)=1 FROM organization_deletion_progress WHERE tenant_id='$retry_org' AND request_id='$deletion_key' AND step_id='$deletion_key' AND phase='ATTACHMENTS';")" = t
+test "$(admin "SELECT count(*)=1 FROM background_jobs j JOIN organization_deletion_requests r USING(tenant_id) WHERE j.tenant_id='$retry_org' AND j.job_type='ORGANIZATION_DELETE_PAGE' AND j.actor_id=r.actor_id AND j.correlation_id=r.correlation_id AND j.service_identity='organization-lifecycle' AND j.safe_metadata=jsonb_build_object('requestId',r.request_id,'stepId',r.request_id,'acceptedVersion',r.accepted_version);")" = t
+test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -o "$scratch/deletion-observation.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/deletion-requests/$deletion_key?expectedActorId=$owner")" = 200
+jq -e --arg key "$deletion_key" --argjson version "$((deletion_version+1))" 'keys==["completedAt","eventId","requestId","state","version"] and .requestId==$key and .state=="PENDING" and .version==$version and .eventId==null and .completedAt==null' "$scratch/deletion-observation.json" >/dev/null
+
 test "$(admin "SELECT status='DELETING' AND version=$((deletion_version+1)) FROM organizations WHERE id='$retry_org';")" = t
 test "$(admin "SELECT count(*)=1 FROM organization_deletion_replays WHERE tenant_id='$retry_org' AND actor_id='$owner';")" = t
 test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_DELETION_REQUESTED' AND actor_id='$owner';")" = t

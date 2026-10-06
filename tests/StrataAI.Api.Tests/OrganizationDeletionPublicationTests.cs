@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,53 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PRD_03_HTTP_deletion_rolls_back_published_root_and_parent_after_publication_failure(bool actorLoss)
+    {
+        var ct=TestContext.Current.CancellationToken;var fence=new OrganizationTransactionActorFixture();
+        PublicationFailureFixture? publication=null;
+        await using var app=new ApiFactory(configureServices:services=>{
+            services.AddSingleton<ICommandActorAuthorization>(fence);
+            var original=services.Last(d=>d.ServiceType==typeof(IOrganizationDeletionJobPublisher));
+            services.AddSingleton<IOrganizationDeletionJobPublisher>(provider=>publication=new(
+                (IOrganizationDeletionJobPublisher)original.ImplementationFactory!(provider),fence,actorLoss));
+        });
+        using var owner=app.CreateClient();await RegisterAndLogin(owner);
+        var actor=(await owner.GetFromJsonAsync<JsonElement>("/me",ct)).GetProperty("id").GetGuid();
+        using var created=await Mutate(owner,HttpMethod.Post,"/organizations",new{name="Atomic publication rollback"});
+        var org=(await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var key=Guid.NewGuid();var path=$"/organizations/{org}?version=1&expectedActorId={actor}";
+        var organizations=app.Services.GetRequiredService<IOrganizationStore>();var before=await organizations.FindOrganizationAsync(org,ct);
+        var receipts=app.Services.GetRequiredService<IOrganizationDeletionReplayStore>();
+        using var refused=await Mutate(owner,HttpMethod.Delete,path,new{},key.ToString());
+        Assert.Equal(actorLoss?HttpStatusCode.Unauthorized:HttpStatusCode.InternalServerError,refused.StatusCode);
+        Assert.NotNull(publication);Assert.True(publication.LastPublished);
+        Assert.Equal(before,await organizations.FindOrganizationAsync(org,ct));Assert.Null(await receipts.ReadAsync(org,actor,key,ct));
+        publication.Armed=false;fence.Allowed=true;
+        using var accepted=await Mutate(owner,HttpMethod.Delete,path,new{},key.ToString());
+        Assert.Equal(HttpStatusCode.Accepted,accepted.StatusCode);Assert.True(publication.LastPublished);
+        using var observed=await owner.GetAsync($"/organizations/{org}/deletion-requests/{key}",ct);
+        Assert.Equal(HttpStatusCode.OK,observed.StatusCode);Assert.Equal("PENDING",(await observed.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("state").GetString());
+    }
+
+    private sealed class PublicationFailureFixture(IOrganizationDeletionJobPublisher inner,
+        OrganizationTransactionActorFixture fence,bool actorLoss):IOrganizationDeletionJobPublisher
+    {
+        public bool Armed{get;set;}=true;public bool LastPublished{get;private set;}
+        public async Task<bool> PublishAsync(Guid organizationId,Guid actorId,Guid requestId,long acceptedVersion,string correlationId,CancellationToken cancellationToken)
+        {
+            LastPublished=await inner.PublishAsync(organizationId,actorId,requestId,acceptedVersion,correlationId,cancellationToken);
+            if(Armed)
+            {
+                if(actorLoss)fence.Allowed=false;
+                else throw new InvalidOperationException("Fixture failure after root publication.");
+            }
+            return LastPublished;
+        }
+    }
+
     [Theory]
     [InlineData("success")]
     [InlineData("failure")]

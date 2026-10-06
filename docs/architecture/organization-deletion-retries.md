@@ -2,7 +2,9 @@
 
 [PRD-03](https://github.com/nickmailhot-lang/StrataAI2/issues/3) WS-FR-009/010
 and TC-05/06/07/08 require safe owner deletion and recovery. This contract
-acknowledges the deletion request; terminal deletion remains incomplete.
+acknowledges the deletion request. Production graph processing and independent
+status are described in the [completion contract](organization-deletion-lifecycle.md);
+Demo terminal processing and browser completion acceptance remain incomplete.
 
 ## Request and recovery
 
@@ -10,15 +12,17 @@ acknowledges the deletion request; terminal deletion remains incomplete.
 accepts an optional single canonical nonzero UUID `Idempotency-Key`. Account
 mismatch returns a private-detail-free `session_unavailable` before mutation.
 The first success returns 202 after committing the DELETING transition,
-reminder suspension, audit and receipt. It does not report completed deletion.
+reminder suspension, audit, accepted root/checkpoint/first Worker job and receipt.
+It includes the request UUID and a Location for independent status observation;
+it does not report completed deletion.
 
 A matching key binds the original Organization and reviewed version. The same
 currently authenticated active Owner can recover the original 202 after
-DELETING has withdrawn ordinary reads. Recovery does not increment the
+DELETING or DELETED has withdrawn ordinary reads. Recovery does not increment the
 Organization or reminder version/generation again, resuspend reminders, append
 another event/audit or restore membership/access. Changed reviewed version
 returns `idempotency_conflict`. Expired receipts return `idempotency_expired`;
-keys stay reserved. A fresh key cannot restart deletion on DELETING.
+keys stay reserved. A fresh key cannot restart deletion on DELETING or DELETED.
 
 Current Owner membership and final session admission are required even for
 receipt recovery. An Admin, departed/removed Owner or changed cookie account
@@ -28,7 +32,7 @@ existing one-request 202 behavior and cannot recover lost acknowledgments.
 
 ## Owning transaction
 
-Deletion alone opts into DELETING parent admission for recovery. Ordinary
+Deletion acknowledgment alone opts into DELETING/DELETED parent admission for recovery. Ordinary
 Organization reads, metadata/member/invitation commands remain ACTIVE-only.
 Both runtimes still lock/admit the parent before membership and final actor
 checks. The service checks current Owner membership before receipt disclosure,
@@ -36,7 +40,8 @@ and a new deletion requires ACTIVE inside that same owning scope.
 
 PostgreSQL borrows the Organization transaction for receipt reads/insertion.
 The parent lock serializes identical retries; Organization, reminders, immutable
-Work events/stream, audit and receipt roll back together on storage failure,
+Work events/stream, audit, accepted root/progress/first job and receipt roll back
+together on storage failure,
 final session expiry or cancellation. Demo retains its account/Work gates and
 captures deletion receipts with the other rollback participants.
 

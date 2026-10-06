@@ -319,6 +319,9 @@ public static class OrganizationEndpoints
                         return ErrorFor("invalid_idempotency_key");
                     key = parsed;
                 }
+                // A caller without a retry key receives a fresh request reference.
+                // The browser supplies its own key so lost responses remain recoverable.
+                key ??= Guid.NewGuid();
                 var result = await service.MarkDeletingAsync(
                     organizationId,
                     userId.Value,
@@ -327,7 +330,7 @@ public static class OrganizationEndpoints
                     cancellationToken, key);
 
                 return result.Succeeded
-                    ? Results.Accepted()
+                    ? Results.Accepted($"/organizations/{organizationId:D}/deletion-requests/{key.Value:D}", new { requestId = key.Value })
                     : ErrorFor(result.ErrorCode);
             });
     }

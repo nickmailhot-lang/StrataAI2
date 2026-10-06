@@ -42,8 +42,20 @@ public sealed partial class ApiHostTests
         var key = Guid.NewGuid(); var path = $"/organizations/{org}?version=1&expectedActorId={actor}";
         var responses = await Task.WhenAll(Mutate(owner, HttpMethod.Delete, path, new { }, key.ToString()),
             Mutate(owner, HttpMethod.Delete, path, new { }, key.ToString()));
-        try { Assert.All(responses, response => Assert.Equal(HttpStatusCode.Accepted, response.StatusCode)); }
+        try
+        {
+            foreach(var response in responses)
+            {
+                Assert.Equal(HttpStatusCode.Accepted,response.StatusCode);
+                Assert.Equal($"/organizations/{org}/deletion-requests/{key}",response.Headers.Location!.ToString());
+                Assert.Equal(key,(await response.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("requestId").GetGuid());
+            }
+        }
         finally { foreach (var response in responses) response.Dispose(); }
+        using var observation=await owner.GetAsync($"/organizations/{org}/deletion-requests/{key}?expectedActorId={actor}",ct);
+        Assert.Equal(HttpStatusCode.OK,observation.StatusCode);
+        var observed=await observation.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal("PENDING",observed.GetProperty("state").GetString());Assert.Equal(key,observed.GetProperty("requestId").GetGuid());
         var store = app.Services.GetRequiredService<IOrganizationStore>();
         var receipts = app.Services.GetRequiredService<IOrganizationDeletionReplayStore>();
         var current = await store.FindOrganizationAsync(org, ct); Assert.NotNull(current);

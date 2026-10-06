@@ -1,5 +1,7 @@
 using Npgsql;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
+using StrataAI.Application.Runtime;
 using StrataAI.Application.Identity;
 using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.Common;
@@ -142,8 +144,12 @@ internal static class OrganizationDeletionPagesContract
                 INSERT INTO organization_deletion_requests(tenant_id,request_id,actor_id,accepted_version,correlation_id)
                  VALUES(@tenant,@request,@actor,2,'page-original');
                 INSERT INTO organization_deletion_progress(tenant_id,request_id,step_id,phase) VALUES(@tenant,@request,@request,'ATTACHMENTS');
+                INSERT INTO organization_deletion_replays(tenant_id,actor_id,key_id,fingerprint,expires_at)
+                 VALUES(@tenant,@actor,@request,@fingerprint,clock_timestamp()+interval '24 hours');
                 """,publish.Connection,publish.Transaction);
             command.Parameters.AddWithValue("tenant",tenant); command.Parameters.AddWithValue("request",request); command.Parameters.AddWithValue("actor",actor);
+            command.Parameters.AddWithValue("fingerprint",Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new{organizationId=tenant,expectedVersion=1L}))));
             await command.ExecuteNonQueryAsync(ct); Require(await new PostgresBackgroundJobStore(api).PublishAsync(publish,job,ct),"Page fixture publication failed.");
             await publish.CommitAsync(ct);
         }
@@ -287,6 +293,28 @@ internal static class OrganizationDeletionPagesContract
         Require((await observation.ReadAsync(tenant,actor,request,ct)).ErrorCode=="session_unavailable",
             "Deletion observation disclosed completion after final admission failure.");
         admission.RefuseFinal=false;
+        var recoveryServices=new ServiceCollection();recoveryServices.AddLogging();
+        recoveryServices.AddSingleton(api);recoveryServices.AddSingleton<ICommandActorAuthorization>(admission);
+        recoveryServices.AddStrataAiOrganizations(new(RuntimeMode.Production,"contract","contract"));
+        await using var recoveryProvider=recoveryServices.BuildServiceProvider();
+        var recoveryUnit=recoveryProvider.GetRequiredService<IOrganizationUnitOfWork>();
+        var receipts=recoveryProvider.GetRequiredService<IOrganizationDeletionReplayStore>();
+        var normalCallback=false;
+        var ordinary=await recoveryUnit.ExecuteAsync(tenant,actor,null,false,()=>{
+            normalCallback=true;return Task.FromResult(OrganizationOperation<bool>.Success(true));
+        },ct);
+        Require(!ordinary.Succeeded&&!normalCallback,"Normal command admitted a terminal Organization.");
+        async Task<OrganizationOperation<bool>> Recover()=>await recoveryUnit.ExecuteAsync(tenant,actor,null,false,async()=>{
+            var receipt=await receipts.ReadAsync(tenant,actor,request,ct);
+            Require(receipt is not null,"Terminal recovery lost the original request acknowledgment.");
+            return OrganizationOperation<bool>.Success(true);
+        },ct,allowDeletionRecovery:true);
+        Require((await Recover()).Succeeded,"Retained acknowledgment could not be read after terminal completion.");
+        admission.RefuseFinal=true;
+        Require((await Recover()).ErrorCode=="session_unavailable","Terminal acknowledgment survived final actor refusal.");
+        admission.RefuseFinal=false;
+        Require((await observation.ReadAsync(tenant,actor,request,ct)).Value==terminal.Value,"Acknowledgment recovery changed completion evidence.");
+        Console.WriteLine("Organization deletion acknowledgment: terminal recovery scope retains receipt, normal commands remain withdrawn, final actor refusal preserves completion passed.");
         Console.WriteLine("Organization deletion observation: restricted pending/terminal reads, foreign requester/scope denial, current Owner/account admission, final fence and stable completion recovery passed.");
         await Admin("DROP TABLE deletion_page_archive_history,deletion_page_deleted_history,deletion_page_provider_history,deletion_page_image_fixture;");
         Console.WriteLine("Organization deletion pages: all graph stages, 128-candidate bounds, late rollback, duplicate/reclaim recovery, selected cover/background cleanup, retained prior history/provider metadata and independent actor completion passed.");

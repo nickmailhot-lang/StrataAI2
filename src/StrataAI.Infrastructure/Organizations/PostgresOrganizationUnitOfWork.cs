@@ -39,7 +39,7 @@ internal sealed class PostgresOrganizationUnitOfWork(
                     // Work commands acquire this parent before their membership/board locks too.
                     await using var parent = new NpgsqlCommand("""
                         SELECT id FROM organizations WHERE id=@tenant
-                          AND (status='ACTIVE' OR (@recovery AND status='DELETING')) FOR UPDATE;
+                          AND (status='ACTIVE' OR (@recovery AND status IN ('DELETING','DELETED'))) FOR UPDATE;
                         """, session.Connection, session.Transaction);
                     parent.Parameters.AddWithValue("tenant", organizationId);
                     parent.Parameters.AddWithValue("recovery", allowDeletionRecovery);

@@ -15,7 +15,7 @@ and remaining work. It does not certify current release acceptance.
 | WS-FR-007 authorized Board directory | Bounded active Board paging and direct reads in [discovery](organization-discovery.md), [access integrity](organization-access-integrity.md), [Board realtime](../organization-board-realtime.md) | Current restricted visibility, paging, access withdrawal and reconnect evidence; verify archived discovery alongside the active directory |
 | WS-FR-008 OWNER/ADMIN/MEMBER roles | Canonical role enum, permission checks, directory and owner-floor rules | Current role-by-operation denial and usable-owner evidence across invitation/removal/departure |
 | WS-FR-009 owner-only confirmed deletion | Server owner/version check transitions Organization to deleting and suspends reminders atomically; [durable request acknowledgments](organization-deletion-retries.md) | Current browser Owner confirmation/retry and native permission/keyboard/mobile evidence; terminal completion remains required, and a request is not completed deletion |
-| WS-FR-010 graph/audit treatment on deletion | Deleting status withdraws normal access; request atomically suspends reminders and audits ORGANIZATION_DELETION_REQUESTED. Restricted terminal graph/lease gate passed real PostgreSQL CI at d715ce5; durable completion readiness passed restricted PostgreSQL CI at 736b386. Bounded reference traversal passed its 100,000-archived-Card contract at e01fa5a. Atomic Worker graph stages have implementation/contract checks pending their runtime CI result | Complete the [lifecycle flow](organization-deletion-lifecycle.md): bounded Board/List/Card/attachment tombstones, retained attribution/provider evidence, product integration and Owner/two-client recovery. Staged terminal fixtures do not prove graph traversal or live consumption |
+| WS-FR-010 graph/audit treatment on deletion | Deleting status withdraws normal access; request atomically suspends reminders and audits ORGANIZATION_DELETION_REQUESTED. Restricted terminal graph/lease gate passed real PostgreSQL CI at d715ce5; durable completion readiness passed restricted PostgreSQL CI at 736b386. Bounded reference traversal passed its 100,000-archived-Card contract at e01fa5a. Atomic Worker graph stages, selected cover/background cleanup and independent terminal observation passed restricted PostgreSQL CI; product atomic publication/terminal acknowledgment recovery is implemented with runtime validation pending | Complete the [lifecycle flow](organization-deletion-lifecycle.md): bounded Board/List/Card/attachment tombstones, retained attribution/provider evidence, product integration and Owner/two-client recovery. Staged terminal fixtures do not prove graph traversal or live consumption |
 
 ## Acceptance criteria and required scenarios
 
@@ -53,12 +53,14 @@ still apply to implemented permissions and lifecycle behavior.
 
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and
 MarkDeletingAsync enter the Organization unit of work. MarkDeletingCoreAsync
-marks status, reschedules reminders and audits a deletion request; it does not
-perform terminal graph deletion. Current metadata, member-removal, departure and creation API contracts include
+marks status, reschedules reminders, audits and publishes the accepted request
+with the first Worker job in the owning transaction. The separate Worker performs
+terminal graph deletion. The Owner status reader checks independent completion
+evidence; browser consumption and end-to-end acceptance remain unfinished. Current metadata, member-removal, departure and creation API contracts include
 durable receipts. Browser creation recovery is implemented with current native evidence pending.
 Deletion request acknowledgments and explicit browser Owner confirmation are
 implemented with native evidence pending; terminal deletion remains incomplete; see their workflow guides for source and CI boundaries.
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**24%**, a planning estimate rather than a count of unchecked rows.
+**22%**, a planning estimate rather than a count of unchecked rows.

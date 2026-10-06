@@ -33,7 +33,7 @@ internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, I
                     {
                         var parent = await store.FindOrganizationAsync(organizationId, cancellationToken);
                         if (parent is null || parent.Status != OrganizationStatus.Active
-                            && !(allowDeletionRecovery && parent.Status == OrganizationStatus.Deleting))
+                            && !(allowDeletionRecovery && parent.Status is OrganizationStatus.Deleting or OrganizationStatus.Deleted))
                             return OrganizationOperation<T>.Failure("organization_not_found");
                     }
                     if (!await actors.VerifyAsync(actorUserId, cancellationToken))

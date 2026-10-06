@@ -12,7 +12,8 @@ public sealed class OrganizationService(
     StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
     CardReminderContainerScheduling reminders, IOrganizationMetadataReplayStore metadataReplays,
     IOrganizationDepartureReplayStore departureReplays, IOrganizationRemovalReplayStore removalReplays,
-    IOrganizationCreationReplayStore creationReplays, IOrganizationDeletionReplayStore deletionReplays) : IOrganizationService
+    IOrganizationCreationReplayStore creationReplays, IOrganizationDeletionReplayStore deletionReplays,
+    IOrganizationDeletionJobPublisher deletionJobs) : IOrganizationService
 {
     public async Task<OrganizationOperation<OrganizationDirectoryPage>> ListPageAsync(Guid actorUserId,
         Guid? after, CancellationToken cancellationToken = default)
@@ -226,7 +227,7 @@ public sealed class OrganizationService(
         unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false, async () =>
         {
             if (idempotencyKey is null)
-                return await MarkDeletingCoreAsync(organizationId, actorUserId, expectedVersion, correlationId, cancellationToken);
+                return await MarkDeletingCoreAsync(organizationId, actorUserId, Guid.NewGuid(), expectedVersion, correlationId, cancellationToken);
             var member = await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken);
             if (member is not { Active: true, Role: OrganizationRole.Owner })
                 return OrganizationOperation<bool>.Failure("organization_not_found");
@@ -241,7 +242,7 @@ public sealed class OrganizationService(
                 if (replay.ExpiresAt <= clock.UtcNow) return OrganizationOperation<bool>.Failure("idempotency_expired");
                 return OrganizationOperation<bool>.Success(true);
             }
-            var result = await MarkDeletingCoreAsync(organizationId, actorUserId, expectedVersion, correlationId, cancellationToken);
+            var result = await MarkDeletingCoreAsync(organizationId, actorUserId, idempotencyKey.Value, expectedVersion, correlationId, cancellationToken);
             if (result.Succeeded)
                 await deletionReplays.SaveAsync(organizationId, actorUserId, idempotencyKey.Value,
                     new(fingerprint, clock.UtcNow.AddHours(24)), cancellationToken);
@@ -533,6 +534,7 @@ public sealed class OrganizationService(
     private async Task<OrganizationOperation<bool>> MarkDeletingCoreAsync(
         Guid organizationId,
         Guid actorUserId,
+        Guid requestId,
         long expectedVersion,
         string correlationId,
         CancellationToken cancellationToken = default)
@@ -551,6 +553,9 @@ public sealed class OrganizationService(
 
         if ((await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
             return OrganizationOperation<bool>.Failure("organization_not_found");
+        // Reserve the accepted and terminal revisions before any mutation.
+        if (expectedVersion >= long.MaxValue - 1)
+            return OrganizationOperation<bool>.Failure("version_conflict");
 
         // The Organization command owns the parent gate. Lock every chosen
         // Board in stable order before making the parent unavailable; never use
@@ -582,6 +587,11 @@ public sealed class OrganizationService(
             correlationId,
             cancellationToken);
 
+        // Same owning transaction as DELETING, reminder suspension, audit and
+        // the acknowledgment saved by the caller. Final actor failure rolls all
+        // of them back; receipt recovery never republishes or resets this root.
+        await deletionJobs.PublishAsync(organizationId, actorUserId, requestId,
+            checked(expectedVersion + 1), correlationId, cancellationToken);
         return OrganizationOperation<bool>.Success(true);
     }
 
