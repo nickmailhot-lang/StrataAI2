@@ -19,6 +19,15 @@ Use this index to find every document in `docs/`. Architecture documents describ
 - Reviewing completion: [Board acceptance](architecture/prd-04-acceptance.md), [activity acceptance](architecture/prd-15-acceptance.md), and the relevant evidence documents. Match every result to its recorded revision and test scope.
 - Operating the application: [release guide](release/README.md), [database roles](architecture/runtime-database-roles.md), [schema upgrades](architecture/schema-upgrades.md), and [operator metrics](architecture/operator-metrics.md).
 
+## How to navigate
+
+1. Choose a subject below, then open the behavior or contract guide that matches your question. Features can have guides both here and in `architecture/`.
+2. Follow the guide's related links to permissions, persistence, retries, and acceptance evidence. On GitHub, use the document outline to jump to a section; locally, follow these same relative links in a Markdown preview.
+3. For completion claims, compare the recorded revision and remaining-work notes with [current issues](https://github.com/nickmailhot-lang/StrataAI2/issues) and [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml).
+4. Return to this index to change subjects, or use the [project README reading paths](../README.md#choose-a-reading-path) for an ordered introduction.
+
+To search the entire folder from the repository root, use `rg -n "search term" docs`. Browse the [full folder on GitHub](https://github.com/nickmailhot-lang/StrataAI2/tree/main/docs) when you need the file layout.
+
 ## Browse by subject
 
 - [Planning and dependency order](#planning-and-dependency-order)
@@ -80,7 +89,7 @@ Use this index to find every document in `docs/`. Architecture documents describ
 ## Organizations and access
 
 - [Organization requirements and acceptance map (PRD-03)](architecture/prd-03-acceptance.md)
-- [Organization deletion completion contract (implementation pending)](architecture/organization-deletion-lifecycle.md)
+- [Organization deletion Worker stages and completion contract (product integration pending)](architecture/organization-deletion-lifecycle.md)
 - [Owner deletion request acknowledgments](architecture/organization-deletion-retries.md)
 - [Durable Organization creation acknowledgments](architecture/organization-creation-retries.md)
 - [Confirmed membership departure and owner continuity](architecture/organization-departure.md)
