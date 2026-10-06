@@ -295,3 +295,10 @@ All 239 tests across the 12 previously failing local UI files passed with
 5-second timeouts. This supports a local concurrency/timing explanation for
 those failures, but is not full-suite evidence. A complete recheck with the same
 worker bound remains required. CI continues to run the normal source gate.
+
+The complete local web recheck with `--maxWorkers=2` passed all 1,550 tests
+across 125 files (769.48 seconds). Browser source remained frozen at `350f042`
+throughout execution; subsequent commits changed documentation and .NET only.
+The default-concurrency CI web gate at `350f042` also passed, followed by
+PostgreSQL, .NET and the source gate. Immutable image build/verification remain
+separate gates; these source results do not close native or release acceptance.
