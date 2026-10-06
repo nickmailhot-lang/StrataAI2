@@ -230,13 +230,16 @@ public static class OrganizationEndpoints
                 Guid organizationId,
                 HttpContext context,
                 IOrganizationService service,
-                CancellationToken cancellationToken) =>
+                CancellationToken cancellationToken, LeaveOrganizationRequest? request = null) =>
             {
                 var userId = GetUserId(context);
                 if (userId is null)
                 {
                     return Results.Unauthorized();
                 }
+
+                if (request?.ExpectedActorId is Guid expected && expected != userId.Value)
+                    return ErrorFor("session_unavailable");
 
                 Guid? key = null;
                 if (context.Request.Headers.TryGetValue("Idempotency-Key", out var keys))

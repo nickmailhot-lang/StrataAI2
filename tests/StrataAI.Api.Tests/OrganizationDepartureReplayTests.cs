@@ -10,6 +10,30 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task Departure_rejects_an_account_switch_before_membership_or_receipt_changes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var member = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(member);
+        var reviewedActor = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var currentActor = (await member.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Account bound departure" });
+        var org = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var store = app.Services.GetRequiredService<IOrganizationStore>();
+        var receipts = app.Services.GetRequiredService<IOrganizationDepartureReplayStore>();
+        await store.AddOrRestoreMemberAsync(org, currentActor, OrganizationRole.Member, DateTimeOffset.UtcNow, ct);
+        var before = await store.FindMembershipAsync(org, currentActor, ct); var key = Guid.NewGuid();
+        using var denied = await Mutate(member, HttpMethod.Post, $"/organizations/{org}/leave", new { expectedActorId = reviewedActor }, key.ToString());
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
+        Assert.Equal(before, await store.FindMembershipAsync(org, currentActor, ct));
+        Assert.Null(await receipts.ReadAsync(org, currentActor, key, ct));
+        Assert.Null(await receipts.ReadAsync(org, reviewedActor, key, ct));
+        using var accepted = await Mutate(member, HttpMethod.Post, $"/organizations/{org}/leave", new { expectedActorId = currentActor }, key.ToString());
+        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode);
+        Assert.False((await store.FindMembershipAsync(org, currentActor, ct))!.Active);
+    }
+
+    [Fact]
     public async Task Concurrent_departure_replay_preserves_a_later_rejoined_membership_and_refuses_revoked_session()
     {
         var ct = TestContext.Current.CancellationToken;

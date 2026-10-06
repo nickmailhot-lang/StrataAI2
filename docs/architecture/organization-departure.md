@@ -17,16 +17,19 @@ The server serializes departures under the Organization parent and membership
 locks, protects the usable-owner floor, and atomically removes assignments and
 records the departure audit. A sole-owner refusal explains the continuity rule.
 The UI clears private review data after refusal or uncertainty and requires a
-fresh membership review before another explicit confirmation. An inaccessible
+fresh membership review after a definitive refusal before another explicit confirmation.
+An uncertain response retains the original command key and blocks fresh review
+until that command is acknowledged or definitively refused. An inaccessible
 read reports unavailable access; it does not infer that a lost request succeeded.
 Server/edge details are never displayed as trusted product text.
 
 Reads and writes have a 15-second deadline, route changes abort pending work,
 and late results are fenced by the mounted route/controller. Leaving does not
-delete the Organization or its shared work. Departure still lacks a durable
-same-key receipt; current-state reconciliation is not acknowledgment replay.
+delete the Organization or its shared work. Departure uses a durable same-key receipt for acknowledgment recovery;
+current-state reconciliation is not acknowledgment replay.
 
-Six focused source cases pass: confirmed success and cancellation, sole-owner
+Ten focused source cases pass, including same-key recovery after later rejoin,
+repeated uncertainty, receipt expiry and access withdrawal. Earlier cases cover: confirmed success and cancellation, sole-owner
 refusal, lost-response review, and 401/403/404 withdrawal. TypeScript and lint
 pass. The desktop/phone keyboard release scenario checks Cancel focus/no write,
 sole-owner refusal, successful member departure, authoritative directory/access
@@ -56,9 +59,14 @@ and cleanup still need a defined operational policy.
 
 Migration 083 forces tenant RLS. The API receives SELECT/INSERT only; the Worker
 has no receipt access. Both runtime hosts require its ledger entry. Demo receipts
-participate in owning Organization rollback. The existing browser screen still
-uses unkeyed reconciliation; browser same-key acknowledgment recovery remains
-the next implementation step.
+participate in owning Organization rollback. The browser retains the original UUID and reviewed account through uncertain
+responses. Retry sends the same body and key. Its acknowledgment describes the
+original departure and requires a new current-membership read before offering
+another departure; it does not retire a later rejoin or claim current access is gone.
+The optional expectedActorId request field binds browser confirmation to the
+reviewed account. A different current principal receives session_unavailable
+before membership mutation or receipt lookup/publication. Legacy callers may
+omit the field; server authorization always uses the current principal.
 
 API-host coverage checks concurrent same-key departure, replay after rejoining,
 unchanged rejoined membership/receipt and revoked-session refusal. The mandatory
@@ -73,3 +81,11 @@ passing cases and one 10-second timeout in the existing Card comment-recovery
 case. That case passed in isolation; its repeated whole-page polling queries
 are being reduced while keeping the same attached/enabled checks and timeout.
 This failed full run does not prove current release acceptance.
+
+The API-host account-switch case checks refusal, unchanged membership and absent
+receipts for both actors, then successful departure with the correctly bound
+account and the same unused key. The desktop/phone browser scenario loses an
+actual committed response, rejoins, replays the original acknowledgment and
+checks preserved current membership, identical request body/key and keyboard
+recovery. Focused browser source tests pass and the API project compiles without
+warnings; native API/database/browser execution remains pending CI.
