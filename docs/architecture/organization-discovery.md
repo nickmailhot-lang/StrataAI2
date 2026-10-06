@@ -95,3 +95,9 @@ IDs. It requires 51 unique results and terminal continuation, rejects malformed
 cursors, excludes Portal-only Organization access, and includes the paged read in
 the existing observed database lock-wait/session-revocation scenario. Shell syntax
 and diff checks passed locally; these production runtime assertions await CI.
+
+The API-host directory regression also retains 50 lower-sorted removed membership
+hints. It requires an empty first page with a non-null cursor, no revoked
+Organization name, and continuation into the same later authorized page. This
+covers the distinction between an empty page and terminal traversal; browser
+consumers must preserve that distinction when migrating to this contract.

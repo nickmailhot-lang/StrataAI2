@@ -46,6 +46,25 @@ public sealed partial class ApiHostTests
             Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
             Assert.Equal("invalid_organization_cursor", (await invalid.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
         }
+        // PRD-03-TC-02/05: a fully omitted page still advances to later active grants.
+        var removedHints = Enumerable.Range(1, 50).Select(n => Guid.Parse($"10000000-0000-4000-8000-{n:000000000000}")).ToArray();
+        foreach (var id in removedHints)
+        {
+            await store.CreateOrganizationAsync(other, id, "Revoked private Organization", null, now, ct);
+            await store.AddOrRestoreMemberAsync(id, actor, OrganizationRole.Member, now, ct);
+            Assert.Equal(OrganizationRemoveMemberResult.Removed, await store.RemoveMemberAsync(id, actor, now, ct));
+        }
+        using var empty = await member.GetAsync("/organizations/directory", ct);
+        var emptyBody = await empty.Content.ReadAsStringAsync(ct);
+        Assert.Equal(HttpStatusCode.OK, empty.StatusCode);
+        using var emptyPage = JsonDocument.Parse(emptyBody);
+        Assert.Empty(emptyPage.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(removedHints[^1], emptyPage.RootElement.GetProperty("nextCursor").GetGuid());
+        Assert.DoesNotContain("Revoked private Organization", emptyBody);
+        var continued = await member.GetFromJsonAsync<JsonElement>($"/organizations/directory?after={removedHints[^1]}", ct);
+        Assert.Equal(firstIds, continued.GetProperty("items").EnumerateArray()
+            .Select(x => x.GetProperty("organization").GetProperty("id").GetGuid()).ToArray());
+        Assert.Equal(ids[49], continued.GetProperty("nextCursor").GetGuid());
         using var denied = await anonymous.GetAsync("/organizations/directory", ct);
         Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
     }
