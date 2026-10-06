@@ -12,6 +12,8 @@ departure_session=''
 departure_session_expiry=''
 removal_session=''
 removal_session_expiry=''
+creation_session=''
+creation_session_expiry=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
@@ -24,6 +26,10 @@ cleanup() {
   admin 'DROP TRIGGER IF EXISTS ci_organization_metadata_wait ON organization_metadata_replays; DROP FUNCTION IF EXISTS public.ci_organization_metadata_wait();' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_departure_wait ON organization_departure_replays; DROP FUNCTION IF EXISTS public.ci_organization_departure_wait();' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_removal_wait ON organization_removal_replays; DROP FUNCTION IF EXISTS public.ci_organization_removal_wait();' >/dev/null
+  admin 'DROP TRIGGER IF EXISTS ci_organization_creation_wait ON organization_creation_replays; DROP FUNCTION IF EXISTS public.ci_organization_creation_wait();' >/dev/null
+  if test -n "$creation_session" && test -n "$creation_session_expiry"; then
+    admin "UPDATE sessions SET expires_at='$creation_session_expiry'::timestamptz WHERE id='$creation_session';" >/dev/null
+  fi
   if test -n "$removal_session" && test -n "$removal_session_expiry"; then
     admin "UPDATE sessions SET expires_at='$removal_session_expiry'::timestamptz WHERE id='$removal_session';" >/dev/null
   fi
@@ -595,6 +601,43 @@ test "$(creation_request creation-denied)" = 503
 jq -e '.code=="organization_storage_unavailable"' "$scratch/creation-denied.json" >/dev/null
 test "$creation_before" = "$(creation_state)"
 admin 'GRANT INSERT ON organization_creation_replays TO strataai_api_runtime;' >/dev/null
+# Observe actual receipt publication while the original cookie session expires.
+creation_hash="$(owner_hash)"
+[[ "$creation_hash" =~ ^[0-9a-f]{64}$ ]]
+creation_session="$(admin "SELECT id FROM sessions WHERE token_hash='$creation_hash' AND user_id='$owner' AND revoked_at IS NULL;")"
+[[ "$creation_session" =~ ^[0-9a-fA-F-]{36}$ ]]
+creation_session_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$creation_session';")"
+test -n "$creation_session_expiry"
+admin "CREATE FUNCTION public.ci_organization_creation_wait() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+BEGIN
+  IF NEW.tenant_id='$creation_org'::uuid THEN PERFORM pg_sleep(12); END IF;
+  RETURN NEW;
+END;
+\$\$;
+CREATE TRIGGER ci_organization_creation_wait AFTER INSERT ON organization_creation_replays
+  FOR EACH ROW EXECUTE FUNCTION public.ci_organization_creation_wait();" >/dev/null
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$creation_session';" >/dev/null
+creation_publication_before="$(creation_state)"
+creation_identity_before="$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$owner'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$owner'))::text;")"
+creation_request creation-expiry > "$scratch/creation-expiry.status" & request_pid=$!
+for ((attempt=0; attempt<100; attempt++)); do
+  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_creation_replays%';")" = 1; then break; fi
+  sleep 0.1
+done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_creation_replays%';")" = 1
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/creation-expiry.status")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/creation-expiry.json" >/dev/null
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/creation-expiry.headers"
+scripts/ci/assert-file-excludes.sh "$creation_org|$owner|Original receipt creation" "$scratch/creation-expiry.json"
+test "$creation_publication_before" = "$(creation_state)"
+test "$creation_identity_before" = "$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$owner'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$owner'))::text;")"
+admin 'DROP TRIGGER ci_organization_creation_wait ON organization_creation_replays; DROP FUNCTION public.ci_organization_creation_wait();' >/dev/null
+admin "UPDATE sessions SET expires_at='$creation_session_expiry'::timestamptz WHERE id='$creation_session';" >/dev/null
+creation_session=''; creation_session_expiry=''
+test "$creation_before" = "$(creation_state)"
 hold "SELECT pg_advisory_xact_lock(hashtextextended('strataai:organization:create:$creation_org',0));"
 creation_request creation-first > "$scratch/creation-first.status" & creation_first_pid=$!
 creation_request creation-second > "$scratch/creation-second.status" & creation_second_pid=$!

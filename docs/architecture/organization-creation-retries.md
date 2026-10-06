@@ -101,8 +101,15 @@ Organization, one Owner membership and unchanged later Organization state.
 Cancellation must produce no Organization and restore keyboard focus; dialog
 WCAG 2.2 AA checks are included. These native checks await CI execution.
 
-Remaining work includes current native keyboard/phone proof and actual-session
-expiry at receipt publication against PostgreSQL.
+The restricted PostgreSQL creation fixture additionally observes a real runtime
+receipt INSERT sleeping in an AFTER INSERT trigger while the original cookie
+session expires. It requires a private-detail-free 401 without Set-Cookie,
+unchanged user/session records and no parent/Owner/audit/receipt publication.
+It restores the original expiry and reuses the same creation key for the
+observed concurrent successful retry. Trigger/session cleanup also runs on
+failure. Bash syntax passes; actual native execution remains pending.
+
+Remaining work includes current native keyboard/phone and receipt-expiry proof.
 Full PRD-03 acceptance also requires completed deletion and Organization
 metadata/lifecycle realtime delivery; see the [acceptance map](prd-03-acceptance.md).
 
