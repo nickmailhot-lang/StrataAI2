@@ -14,8 +14,8 @@ At phone widths, compact organization/board navigation replaces the permanent
 sidebar, retaining the full width for forms and the horizontally scrollable board.
 
 Scopes remount discovery state, abort in-flight reads and clear data/drafts from
-the previous organization. The requested organization must appear in the user's
-membership list before board discovery is attempted. Expired sessions return to
+the previous organization. The requested Organization must pass its canonical current-access read before
+Board discovery is attempted. Expired sessions return to
 sign-in. API errors are sanitized and retain correlation references. Creation
 preserves form input on failure and uses the shared same-origin cookie/CSRF
 transport. Archived/deleting organizations do not expose the creation button.
@@ -53,11 +53,13 @@ tests attempt protected reads and writes with persisted board-admin rows after
 organization revocation. Future board-only guest invitations require their own
 explicit eligibility contract rather than bypassing revocation of internal members.
 
-These features remain partial ticket progress. Invitations and member management
-UI, organization settings/lifecycle, board settings/lifecycle/copy, pagination and
-the remaining PRD acceptance criteria are still outstanding. Live permission
-updates require the planned realtime connection; every API request remains
-independently authorized now.
+These features remain partial ticket progress. The current membership, invitation,
+settings, lifecycle and Board administration guides describe their implemented
+scope and remaining acceptance work. The browser has current-access realtime
+recovery as well as independently authorized requests; bounded directory
+behavior is described below. Complete lifecycle processing, retry contracts,
+performance/accessibility proof and the remaining PRD acceptance criteria still
+require their own current-revision evidence.
 
 ## Bounded Organization directory API
 
@@ -172,8 +174,8 @@ Owner discovery, malformed cursors, outsider denial, revocation and parent
 deletion admission. The restricted PostgreSQL contract adds 51 earlier archived
 Boards and checks active pre-limit filtering, complete seek, tenant isolation and
 preservation of the existing search traversal. Compilation is not runtime proof;
-CI execution remains required. The browser and legacy `/boards` array still use
-their existing contract pending the browser migration. Full PRD-03/04 acceptance
+CI execution remains required. The legacy `/boards` array retains its existing contract for older clients.
+The browser uses the bounded contract described below. Full PRD-03/04 acceptance
 remains unfinished.
 
 The mandatory exact-image Board discovery fixture now also seeds 52 active
@@ -190,3 +192,35 @@ lock-wait/session-revocation fixture. It revokes the real caller session while
 the HTTP request waits for the owning Organization gate, then requires 401 after
 the gate is released. This covers current actor admission on an empty directory
 as well as a populated page; native execution remains pending.
+
+## Browser active Board paging
+
+The Organization home reads the bounded active Board directory and displays a
+single page. **Next Board page** replaces its rows; **First Board page** resets
+traversal and remains available after a failed continuation. Pages are not
+accumulated. Keyboard focus moves to the available first/next-page control after
+loading, or to the heading when no paging control remains. Each page freshly admits its canonical Organization and checks the
+same account before and after the bounded request. Paging aborts the old request,
+withdraws its names immediately and closes creation consent. Scope changes and
+live invalidations preserve the existing cancellation and current-access checks.
+
+The response must match the requested Organization, contain at most 50 unique
+canonical Board UUIDs in increasing order, and include positive safe revisions
+and valid names. Continuation must match the last returned ID and advance beyond
+the previous cursor. Malformed pages are refused before any names are displayed.
+A terminal empty later page offers first-page recovery; a first empty directory
+retains the create-Board empty state.
+
+Component regressions cover page replacement/reset, failed continuation recovery,
+account replacement and malformed binding/UUID/revision/cursor/order/cap refusal,
+while retaining live withdrawal, creation, scope transition and direct admission
+coverage. The native browser fixture creates 51 acknowledged private Boards and
+checks keyboard page navigation and opening the later-page Board at 1280px and
+390px. Native execution against retained images remains pending; source checks
+alone do not close PRD-03/04.
+
+Local validation of the browser Board paging migration: all 29 Organization home
+component cases passed, web source typecheck/lint and native browser TypeScript
+checks passed. The complete 1,476-test web suite passed before this migration;
+a new complete suite is required for the changed source revision. Native browser
+and exact-image acceptance results are still pending CI.

@@ -59,6 +59,31 @@ function directory(value: unknown, after?: string): { items: OrganizationSummary
   return { items: page.items, nextCursor: cursor as string | null };
 }
 
+
+function boardDirectory(value: unknown, organizationId: string, after?: string): { items: BoardSummary[]; nextCursor: string | null } {
+  const uuid = (value: unknown): value is string => typeof value === "string"
+    && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(value)
+    && value !== "00000000-0000-0000-0000-000000000000";
+  if (!value || typeof value !== "object") throw new WorkRequestError(503, null);
+  const page = value as { organizationId?: unknown; items?: unknown; nextCursor?: unknown };
+  if (page.organizationId !== organizationId || !Array.isArray(page.items) || page.items.length > 50)
+    throw new WorkRequestError(503, null);
+  const items: BoardSummary[] = [];
+  for (const value of page.items) {
+    if (!value || typeof value !== "object") throw new WorkRequestError(503, null);
+    const row = value as Partial<BoardSummary>;
+    if (!uuid(row.id) || typeof row.name !== "string" || !row.name.trim() || row.name.length > 160
+      || Array.from(row.name).some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127) || !Number.isSafeInteger(row.version) || row.version! < 1
+      || after && row.id <= after || items.length && row.id <= items[items.length - 1].id)
+      throw new WorkRequestError(503, null);
+    items.push(row as BoardSummary);
+  }
+  const cursor = page.nextCursor;
+  if (cursor !== null && (!uuid(cursor) || after && cursor <= after
+    || !items.length || cursor !== items[items.length - 1].id)) throw new WorkRequestError(503, null);
+  return { items, nextCursor: cursor as string | null };
+}
+
 // PRD-01/03/04: server-authorized discovery and persisted organization/board creation.
 export function OrganizationHome() {
   const { organizationId } = useParams();
@@ -77,6 +102,10 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
+  const pageFocus = useRef(false);
+  const firstPage = useRef<HTMLButtonElement>(null);
+  const nextPage = useRef<HTMLButtonElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
   const [error, setError] = useState<Error>();
   const actor = useRef<string | undefined>(undefined);
   const read = useRef<AbortController | undefined>(undefined);
@@ -100,12 +129,13 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
           { signal }), cursor);
         organizations = page.items; nextCursor = page.nextCursor;
       }
-      const boards = organizationId
-        ? await workRequest<BoardSummary[]>(
-            `/organizations/${encodeURIComponent(organizationId)}/boards`,
-            { signal },
-          )
-        : [];
+      let boards: BoardSummary[] = [];
+      if (organizationId) {
+        const page = boardDirectory(await workRequest<unknown>(
+          `/organizations/${encodeURIComponent(organizationId)}/boards/directory${cursor ? `?after=${encodeURIComponent(cursor)}` : ""}`,
+          { signal }), organizationId, cursor);
+        boards = page.items; nextCursor = page.nextCursor;
+      }
       const after = await workRequest<unknown>("/me", { signal });
       if (!isNotificationProfile(after) || after.id !== before.id) throw new WorkRequestError(401, null);
       if (!signal.aborted) {
@@ -139,6 +169,11 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       reset: () => recover("Checking current Board access."),
       unavailable: () => recover("Live updates interrupted. Checking current access.") });
   }, [organizationId, liveActor]);
+  useEffect(() => {
+    if (!data || !pageFocus.current) return;
+    pageFocus.current = false;
+    (cursor ? firstPage.current : nextPage.current ?? heading.current)?.focus();
+  }, [data, cursor]);
   const organization = data?.organizations.find(
     (item) => item.organization.id === organizationId,
   )?.organization;
@@ -222,7 +257,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
           </Button>
           <Button component={Link} to="/app/invitations">Invitations</Button>
         </Stack>
-        <Typography variant="h4" component="h1">
+        <Typography variant="h4" component="h1" ref={heading} tabIndex={-1}>
           {organizationId
             ? (organization?.name ?? "Organization boards")
             : "Your organizations"}
@@ -235,7 +270,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             </Button>
           </>
         ) : !data ? (
-          <CircularProgress aria-label="Loading organizations" />
+          <CircularProgress aria-label={organizationId ? "Loading boards" : "Loading organizations"} />
         ) : (
           <>
             {organization?.description && (
@@ -270,7 +305,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             </Stack>
             {organizationId ? (
               data.boards.length === 0 ? (
-                <Typography>No accessible boards yet.</Typography>
+                <Typography>{cursor ? "No accessible boards on this page. Return to the first page to check earlier boards." : "No accessible boards yet."}</Typography>
               ) : (
                 data.boards.map((board) => (
                   <Button
@@ -301,9 +336,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             )}
           </>
         )}
-        {!organizationId && (data || cursor) && <Stack direction="row" spacing={2}>
-          {cursor && <Button onClick={() => { read.current?.abort(); setData(undefined); setLoadError(undefined); setCreating(false); setCursor(undefined); }}>First Organization page</Button>}
-          {data?.nextCursor && <Button onClick={() => { read.current?.abort(); setData(undefined); setCreating(false); setCursor(data.nextCursor!); }}>Next Organization page</Button>}
+        {(data || cursor) && <Stack direction="row" spacing={2}>
+          {cursor && <Button ref={firstPage} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setLoadError(undefined); setCreating(false); setCursor(undefined); }}>First {organizationId ? "Board" : "Organization"} page</Button>}
+          {data?.nextCursor && <Button ref={nextPage} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setCreating(false); setCursor(data.nextCursor!); }}>Next {organizationId ? "Board" : "Organization"} page</Button>}
         </Stack>}
         {creating && <Dialog
           open={creating}

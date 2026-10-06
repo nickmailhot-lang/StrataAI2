@@ -88,9 +88,9 @@ describe("PRD-01/03/04 organization discovery", () => {
   });
   it('admits an Organization deep link without reading its directory page', async () => {
     const fetcher = vi.fn(async (path: string) => path === '/organizations/org-1'
-      ? response(organizations[0]) : path === '/organizations/org-1/boards' ? response([]) : response({}, 500));
+      ? response(organizations[0]) : path === '/organizations/org-1/boards/directory' ? response({ organizationId: "org-1", items: [], nextCursor: null }) : response({}, 500));
     stubFetch(fetcher); mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
-    expect(fetcher.mock.calls.map(call => call[0])).toEqual(['/organizations/org-1', '/organizations/org-1/boards']);
+    expect(fetcher.mock.calls.map(call => call[0])).toEqual(['/organizations/org-1', '/organizations/org-1/boards/directory']);
   });
   it.each([
     { items: organizations, nextCursor: 'invalid' },
@@ -104,7 +104,7 @@ describe("PRD-01/03/04 organization discovery", () => {
   it('withdraws cached names and creation consent when live admission is withdrawn', async () => {
     let withdrawn = false;
     stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1' && !withdrawn ? response(organizations[0])
-      : withdrawn ? response({}, 404) : response([{ id: 'private-board', name: 'Private current Board', version: 1 }])));
+      : withdrawn ? response({}, 404) : response({ organizationId: 'org-1', items: [{ id: '44444444-4444-4444-8444-444444444444', name: 'Private current Board', version: 1 }], nextCursor: null })));
     mount('/app/org-1'); await screen.findByRole('link', { name: 'Private current Board' });
     await waitFor(() => expect(live.watch).toHaveBeenCalledWith(expect.objectContaining({ userId: profile.id, audience: 'discovery' })));
     fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
@@ -119,7 +119,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     stubFetch(vi.fn(async (path: string, options?: RequestInit) => {
       if (path === '/organizations/org-1') return response(organizations[0]);
       if (++reads === 2) { oldSignal = options?.signal; return new Promise<Response>(resolve => { finish = resolve; }); }
-      return response([{ id: 'current-board', name: reads === 1 ? 'Original Board' : 'New current Board', version: reads }]);
+      return response({ organizationId: 'org-1', items: [{ id: '44444444-4444-4444-8444-444444444444', name: reads === 1 ? 'Original Board' : 'New current Board', version: reads }], nextCursor: null });
     }));
     mount('/app/org-1'); await screen.findByRole('link', { name: 'Original Board' });
     await waitFor(() => expect(live.watch).toHaveBeenCalledTimes(1));
@@ -128,7 +128,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     act(() => live.watch.mock.calls[0][0].invalidate());
     expect(oldSignal?.aborted).toBe(true);
     await screen.findByRole('link', { name: 'New current Board' });
-    await act(async () => finish(response([{ id: 'old-board', name: 'Withdrawn old Board', version: 1 }])));
+    await act(async () => finish(response({ organizationId: 'org-1', items: [{ id: '44444444-4444-4444-8444-444444444444', name: 'Withdrawn old Board', version: 1 }], nextCursor: null })));
     expect(screen.queryByText('Withdrawn old Board')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'New current Board' })).toBeInTheDocument();
   });
@@ -136,11 +136,93 @@ describe("PRD-01/03/04 organization discovery", () => {
     let profiles = 0;
     vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me'
       ? response({ ...profile, id: ++profiles === 1 ? profile.id : '33333333-3333-4333-8333-333333333333' })
-      : path === '/organizations/org-1' ? response(organizations[0]) : response([{ id: 'board', name: 'Previous account Board', version: 1 }])));
+      : path === '/organizations/org-1' ? response(organizations[0]) : response({ organizationId: 'org-1', items: [{ id: '44444444-4444-4444-8444-444444444444', name: 'Previous account Board', version: 1 }], nextCursor: null })));
     mount('/app/org-1'); await screen.findByText('Sign in destination');
     expect(screen.queryByText('Previous account Board')).not.toBeInTheDocument();
     expect(screen.queryByText('Council')).not.toBeInTheDocument(); expect(live.watch).not.toHaveBeenCalled();
   });
+  it('replaces Board pages and returns to the first page without accumulating names', async () => {
+    const first = { id: '44444444-4444-4444-8444-444444444444', name: 'First page Board', version: 1 };
+    const later = { id: '55555555-5555-4555-8555-555555555555', name: 'Later page Board', version: 2 };
+    const fetcher = vi.fn(async (path: string) => path === '/organizations/org-1' ? response(organizations[0])
+      : response({ organizationId: 'org-1', items: [path.includes('?after=') ? later : first], nextCursor: path.includes('?after=') ? null : first.id }));
+    stubFetch(fetcher); mount('/app/org-1');
+    await screen.findByRole('link', { name: first.name });
+    fireEvent.click(screen.getByRole('button', { name: 'Next Board page' }));
+    expect(screen.queryByText(first.name)).not.toBeInTheDocument();
+    await screen.findByRole('link', { name: later.name });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'First Board page' })).toHaveFocus());
+    expect(fetcher).toHaveBeenCalledWith(`/organizations/org-1/boards/directory?after=${first.id}`, expect.anything());
+    expect(screen.queryByRole('button', { name: 'Next Board page' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'First Board page' }));
+    expect(screen.queryByText(later.name)).not.toBeInTheDocument();
+    await screen.findByRole('link', { name: first.name });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Next Board page' })).toHaveFocus());
+  });
+
+  it('recovers the first Board page after a failed continuation and clears its old names', async () => {
+    const first = { id: '44444444-4444-4444-8444-444444444444', name: 'Recoverable Board', version: 1 };
+    stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1' ? response(organizations[0])
+      : path.includes('?after=') ? response({}, 503) : response({ organizationId: 'org-1', items: [first], nextCursor: first.id })));
+    mount('/app/org-1'); await screen.findByRole('link', { name: first.name });
+    fireEvent.click(screen.getByRole('button', { name: 'Next Board page' }));
+    await screen.findByRole('alert'); expect(screen.queryByText(first.name)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'First Board page' }));
+    await screen.findByRole('link', { name: first.name });
+  });
+
+  it('withdraws Board page names when the account changes during continuation', async () => {
+    const row = { id: '44444444-4444-4444-8444-444444444444', name: 'Previous account directory Board', version: 1 };
+    let replaced = false;
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => {
+      if (path === '/me') return response({ ...profile, id: replaced ? '33333333-3333-4333-8333-333333333333' : profile.id });
+      if (path === '/organizations/org-1') return response(organizations[0]);
+      if (path.includes('?after=')) { replaced = true; return response({ organizationId: 'org-1', items: [], nextCursor: null }); }
+      return response({ organizationId: 'org-1', items: [row], nextCursor: row.id });
+    }));
+    mount('/app/org-1'); await screen.findByRole('link', { name: row.name });
+    fireEvent.click(screen.getByRole('button', { name: 'Next Board page' }));
+    await screen.findByText('Sign in destination');
+    expect(screen.queryByText(row.name)).not.toBeInTheDocument(); expect(screen.queryByText('Council')).not.toBeInTheDocument();
+  });
+
+  it('keeps first-page recovery available when later Boards disappear before continuation', async () => {
+    const row = { id: '44444444-4444-4444-8444-444444444444', name: 'Earlier accessible Board', version: 1 };
+    stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1' ? response(organizations[0])
+      : response({ organizationId: 'org-1', items: path.includes('?after=') ? [] : [row], nextCursor: path.includes('?after=') ? null : row.id })));
+    mount('/app/org-1'); await screen.findByRole('link', { name: row.name });
+    fireEvent.click(screen.getByRole('button', { name: 'Next Board page' }));
+    await screen.findByText(/No accessible boards on this page/);
+    expect(screen.queryByText(row.name)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'First Board page' }));
+    await screen.findByRole('link', { name: row.name });
+  });
+
+  it('refuses nonadvancing Board continuation rows and clears the prior page', async () => {
+    const row = { id: '44444444-4444-4444-8444-444444444444', name: 'Nonadvancing private Board', version: 1 };
+    stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1' ? response(organizations[0])
+      : response({ organizationId: 'org-1', items: [row], nextCursor: path.includes('?after=') ? null : row.id })));
+    mount('/app/org-1'); await screen.findByRole('link', { name: row.name });
+    fireEvent.click(screen.getByRole('button', { name: 'Next Board page' }));
+    await screen.findByRole('alert'); expect(screen.queryByText(row.name)).not.toBeInTheDocument();
+    expect(screen.queryByText('Council')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { organizationId: 'another-org', items: [{ id: '44444444-4444-4444-8444-444444444444', name: 'Private malformed Board', version: 1 }], nextCursor: null },
+    { organizationId: 'org-1', items: [{ id: '55555555-5555-4555-8555-555555555555', name: 'Private malformed Board', version: 1 }, { id: '44444444-4444-4444-8444-444444444444', name: 'Private malformed Board', version: 1 }], nextCursor: null },
+    { organizationId: 'org-1', items: [{ id: 'invalid', name: 'Private malformed Board', version: 1 }], nextCursor: null },
+    { organizationId: 'org-1', items: [{ id: '44444444-4444-4444-8444-444444444444', name: 'Private malformed Board', version: 0 }], nextCursor: null },
+    { organizationId: 'org-1', items: Array.from({ length: 2 }, () => ({ id: '44444444-4444-4444-8444-444444444444', name: 'Private malformed Board', version: 1 })), nextCursor: null },
+    { organizationId: 'org-1', items: Array.from({ length: 51 }, (_, n) => ({ id: `44444444-4444-4444-8444-${String(n + 1).padStart(12, '0')}`, name: 'Private malformed Board', version: 1 })), nextCursor: null },
+    { organizationId: 'org-1', items: [{ id: '44444444-4444-4444-8444-444444444444', name: 'Private malformed Board', version: 1 }], nextCursor: 'invalid' },
+    { organizationId: 'org-1', items: [{ id: '44444444-4444-4444-8444-444444444444', name: 'Private malformed Board', version: 1 }], nextCursor: '33333333-3333-4333-8333-333333333333' },
+  ])('refuses malformed Board pages before displaying protected metadata', async page => {
+    stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1' ? response(organizations[0]) : response(page)));
+    mount('/app/org-1'); await screen.findByRole('alert');
+    expect(screen.queryByText('Private malformed Board')).not.toBeInTheDocument(); expect(screen.queryByText('Council')).not.toBeInTheDocument();
+  });
+
   it("displays an honest empty state and creation action for a new account", async () => {
     stubFetch(vi.fn().mockResolvedValue(response({ items: [], nextCursor: null })));
     mount();
@@ -158,7 +240,7 @@ describe("PRD-01/03/04 organization discovery", () => {
       .mockResolvedValueOnce(response({ items: [], nextCursor: null }))
       .mockResolvedValueOnce(response(organizations[0], 201))
       .mockResolvedValueOnce(response(organizations[0]))
-      .mockResolvedValueOnce(response([]));
+      .mockResolvedValueOnce(response({ organizationId: "org-1", items: [], nextCursor: null }));
     stubFetch(fetcher);
     const router = mount();
     fireEvent.click(
@@ -184,7 +266,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     const fetcher = vi
       .fn()
       .mockResolvedValueOnce(response(organizations[0]))
-      .mockResolvedValueOnce(response([]))
+      .mockResolvedValueOnce(response({ organizationId: "org-1", items: [], nextCursor: null }))
       .mockResolvedValueOnce(response({ id: "new-board" }, 201));
     stubFetch(fetcher);
     const router = mount("/app/org-1");
@@ -229,7 +311,7 @@ describe("PRD-01/03/04 organization discovery", () => {
           }),
       )
       .mockResolvedValueOnce(
-        response([{ id: "board-2", name: "Accessible board", version: 1 }]),
+        response({ organizationId: "org-2", items: [{ id: "44444444-4444-4444-8444-444444444444", name: "Accessible board", version: 1 }], nextCursor: null }),
       );
     stubFetch(fetcher);
     const router = mount();
@@ -238,7 +320,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     await waitFor(() =>
       expect(
         screen.getByRole("link", { name: "Accessible board" }),
-      ).toHaveAttribute("href", "/app/org-2/boards/board-2"),
+      ).toHaveAttribute("href", "/app/org-2/boards/44444444-4444-4444-8444-444444444444"),
     );
     expect(screen.queryByText("Council")).not.toBeInTheDocument();
   });
