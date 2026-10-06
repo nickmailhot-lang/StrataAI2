@@ -56,6 +56,8 @@ export function InvitationsPage() {
   const mounted = useRef(true);
   const reviewedActor = useRef<string | undefined>(undefined);
   const [accountReady, setAccountReady] = useState(false);
+  const epoch = useRef(0); const refreshQueued = useRef(false);
+  const [reloadVersion, setReloadVersion] = useState(0);
   const navigate = useNavigate();
   function valid(controller: AbortController) { return mounted.current && current.current === controller && !controller.signal.aborted; }
   async function verifyAccount(controller: AbortController, expected?: string) {
@@ -80,13 +82,14 @@ export function InvitationsPage() {
   async function load(after?: string) {
     if (current.current) return;
     const controller = new AbortController(); current.current = controller;
+    const started = epoch.current;
     setBusy(true); setError(undefined); setPage(undefined); setAccepted(undefined); setAccountReady(false);
     try {
       const actor = await verifyAccount(controller, reviewedActor.current);
       if (!valid(controller)) return;
       const query = new URLSearchParams({ expectedActorId: actor }); if (after) query.set('after', after);
       const response = await request(`/me/invitations?${query}`, controller);
-      await verifyAccount(controller, actor); if (!valid(controller)) return;
+      await verifyAccount(controller, actor); if (!valid(controller) || started !== epoch.current) return;
       reviewedActor.current = actor; setAccountReady(true);
       if (!mounted.current || current.current !== controller) return;
       if (response.status === 401) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); navigate('/login', { replace: true }); return; }
@@ -108,6 +111,28 @@ export function InvitationsPage() {
     return () => { mounted.current = false; current.current?.abort(); current.current = undefined; };
     // This owns the initial read; explicit refresh/paging owns subsequent reads.
   }, []);
+  function expire() {
+    epoch.current++; refreshQueued.current = true;
+    setPage(undefined); setAccepted(undefined); setAccountReady(false);
+    setReloadVersion(value => value + 1);
+  }
+  useEffect(() => {
+    if (!refreshQueued.current || busy) return;
+    refreshQueued.current = false; void load();
+  }, [reloadVersion, busy]);
+  useEffect(() => {
+    const expiries = page?.items.filter(item => item.id !== uncertain?.id)
+      .map(item => Date.parse(item.expiresAt)).filter(value => value > Date.now());
+    if (!expiries?.length) return;
+    const expires = Math.min(...expiries);
+    let timer: ReturnType<typeof setTimeout>;
+    function check() {
+      const remaining = expires - Date.now();
+      if (remaining > 0) { timer = setTimeout(check, Math.min(remaining, 2_147_483_647)); return; }
+      expire();
+    }
+    check(); return () => clearTimeout(timer);
+  }, [page, uncertain?.id]);
   async function accept(invitation: Invitation) {
     if (current.current || !accountReady || !reviewedActor.current || (uncertain && uncertain.id !== invitation.id)) return;
     const actor = reviewedActor.current; let submitted = false;
@@ -115,6 +140,9 @@ export function InvitationsPage() {
     setBusy(true); setError(undefined); setAccepted(undefined);
     try {
       await verifyAccount(controller, actor); if (!valid(controller)) return;
+      // Keep a submitted attempt's exact-ID recovery; the server still owns
+      // expiry and acknowledgment admission. Unsent acceptance loses consent.
+      if (uncertain?.id !== invitation.id && Date.parse(invitation.expiresAt) <= Date.now()) { expire(); return; }
       submitted = true;
       const response = await request(`/me/invitations/${invitation.id}/accept?expectedActorId=${encodeURIComponent(actor)}`, controller, 'POST');
       await verifyAccount(controller, actor); if (!valid(controller)) return;
@@ -143,6 +171,7 @@ export function InvitationsPage() {
       if (current.current === controller) { current.current = undefined; if (mounted.current) setBusy(false); }
     }
   }
+  const available = page?.items.filter(invitation => invitation.id !== uncertain?.id && Date.parse(invitation.expiresAt) > Date.now());
   return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to="/app">Organizations</Button>
     <Typography variant="h4" component="h1">Your invitations</Typography>
@@ -154,8 +183,8 @@ export function InvitationsPage() {
       <Typography>An invitation acceptance still needs confirmation. Refreshing the list will preserve this attempt.</Typography>
       <Button disabled={busy || !accountReady} variant="contained" onClick={() => void accept(uncertain)}>Retry invitation acceptance</Button>
     </Stack></Paper>}
-    {page?.items.length === 0 && !uncertain && <Typography>No pending invitations on this page.</Typography>}
-    {page?.items.filter(invitation => invitation.id !== uncertain?.id).map(invitation => <Paper key={invitation.id} variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>
+    {available?.length === 0 && !uncertain && <Typography>No pending invitations on this page.</Typography>}
+    {available?.map(invitation => <Paper key={invitation.id} variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>
       <Typography variant="h6" component="h2">{invitation.organizationName}</Typography>
       {invitation.boardTarget && <Typography variant="h6" component="h3">{invitation.boardName}</Typography>}
       <Typography>{invitation.boardTarget ? `Board access \u00b7 ${invitation.boardTarget.role.toLowerCase()}` : <>{invitation.surface === 'PORTAL' ? 'Owner Portal' : 'Internal organization'} access · {invitation.targetRole.toLowerCase().replaceAll('_', ' ')}</>}</Typography>

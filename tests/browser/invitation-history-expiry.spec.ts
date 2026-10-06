@@ -42,6 +42,9 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByRole('dialog')).toBeVisible(); const initialReads = reads;
       await page.clock.runFor(1500);
       await expect(page.getByText('Expired', { exact: true })).toBeVisible();
+      // The protected read can finish after runFor returns. Allow the newly
+      // scheduled MUI dialog exit timer to complete on the paused clock.
+      await page.clock.runFor(500);
       await expect(page.getByRole('dialog')).toHaveCount(0); await expect(action).toHaveCount(0);
       expect(reads).toBeGreaterThan(initialReads); expect(writes).toBe(0); expect(documents).toBe(1);
       const after = await context.request.get(root); expect(after.status()).toBe(200);

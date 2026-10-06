@@ -90,3 +90,27 @@ committed acceptance, check withheld disclosure, and verify original-account
 recovery with exact natural-ID acknowledgment and unchanged history. Their runtime
 results remain pending exact-image CI. This does not establish a recipient live
 event stream or complete the remaining onboarding lifecycle requirements.
+
+## Expiry during recipient review
+
+Recipient discovery schedules a bounded timer for the nearest pending invitation
+expiry. It withdraws the cached page, queues a fresh account-bound first-page read,
+and fences obsolete reads. Expired rows returned by a racing read are hidden;
+they cannot keep an acceptance button or cause an expiry refresh loop. Long
+delays are chunked within browser timer limits. Ordinary acceptance checks expiry
+again after current-account admission, before any POST. This path creates no
+uncertain mutation or inferred grant.
+
+An attempt already submitted retains its generic original-ID recovery even if
+browser time reaches expiry. Explicit retry still checks the original account
+and exact acknowledgment fields; the API retains its current issuer, scope,
+expiry and membership policies. It may refuse recovery. A missing pending row
+or a local expiry never confirms acceptance.
+
+Component checks cover Organization, Portal and Board expiry, delayed admission,
+and explicit submitted-attempt recovery. `recipient-invitation-expiry.spec.ts`
+adds six desktop/mobile normal API scenarios with browser clock control, unchanged
+history and no POST before expiry withdrawal, followed by a lost actual committed
+acceptance response and exact-ID recovery with unchanged history. Only browser
+time advances, so these cases do not prove server-clock expiry or override it.
+Native execution remains pending exact-image CI.

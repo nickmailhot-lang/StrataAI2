@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { InvitationsPage } from './InvitationsPage';
 
-const invitation = { id: '11111111-1111-1111-1111-111111111111', organizationId: '22222222-2222-2222-2222-222222222222', organizationName: 'Council', surface: 'PORTAL', targetRole: 'OWNER', expiresAt: '2026-10-04T00:00:00Z' };
+const invitation = { id: '11111111-1111-1111-1111-111111111111', organizationId: '22222222-2222-2222-2222-222222222222', organizationName: 'Council', surface: 'PORTAL', targetRole: 'OWNER', expiresAt: '2035-01-08T18:00:00Z' };
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 const actor = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const otherActor = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -17,6 +17,57 @@ function mount() {
   return { ...view, router };
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it.each(['INTERNAL', 'PORTAL', 'BOARD'])('withdraws expired %s discovery and rereads current invitations without an acceptance', async surface => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date(Date.parse(invitation.expiresAt) - 1000));
+  const target = surface === 'BOARD' ? boardInvitation : { ...invitation, surface, targetRole: surface === 'PORTAL' ? 'OWNER' : 'MEMBER' };
+  const later = { ...target, id: '33333333-3333-4333-8333-333333333333', organizationName: 'Later Council',
+    ...(surface === 'BOARD' ? { boardName: 'Later Maintenance' } : {}), expiresAt: '2035-01-08T18:01:00Z' };
+  const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [target], nextCursor: null }))
+    .mockResolvedValueOnce(reply({ items: [target, later], nextCursor: null }));
+  stableFetch(fetcher); await act(async () => { mount(); });
+  expect(screen.getByRole('heading', { name: 'Council' })).toBeInTheDocument();
+  await act(async () => vi.advanceTimersByTimeAsync(1000));
+  expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Later Council' })).toBeInTheDocument();
+  expect(fetcher.mock.calls.filter(call => call[1].method === 'POST')).toHaveLength(0);
+  await act(async () => vi.advanceTimersByTimeAsync(1000)); expect(fetcher).toHaveBeenCalledTimes(2);
+});
+it('rechecks ordinary acceptance expiry after a delayed account read without inventing an uncertain attempt', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date(Date.parse(invitation.expiresAt) - 1000));
+  let profiles = 0, reads = 0; let resolve: ((response: Response) => void) | undefined;
+  const commands: string[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit) => {
+    if (path === '/me') {
+      if (++profiles === 3) return new Promise<Response>(done => { resolve = done; });
+      return reply({ id: actor });
+    }
+    if (init.method === 'POST') commands.push(path); else reads++;
+    return reply({ items: [invitation], nextCursor: null });
+  }));
+  await act(async () => { mount(); });
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Accept invitation to Council' })));
+  expect(resolve).toBeDefined(); vi.setSystemTime(new Date(invitation.expiresAt));
+  await act(async () => { resolve!(reply({ id: actor })); });
+  expect(commands).toHaveLength(0); expect(reads).toBe(2);
+  expect(screen.queryByRole('button', { name: 'Retry invitation acceptance' })).not.toBeInTheDocument();
+  expect(screen.getByText('No pending invitations on this page.')).toBeInTheDocument();
+});
+it('preserves explicit original-ID recovery after a submitted acceptance reaches expiry', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date(Date.parse(invitation.expiresAt) - 1000));
+  const fetcher = vi.fn().mockResolvedValueOnce(reply({ items: [invitation], nextCursor: null }))
+    .mockRejectedValueOnce(new Error('Lost committed response')).mockResolvedValueOnce(reply({ items: [], nextCursor: null }))
+    .mockResolvedValueOnce(reply({ invitationId: invitation.id, organizationId: invitation.organizationId, surface: invitation.surface, targetRole: invitation.targetRole }));
+  stableFetch(fetcher); await act(async () => { mount(); });
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Accept invitation to Council' })));
+  vi.setSystemTime(new Date(Date.parse(invitation.expiresAt) + 1000));
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' })));
+  expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+  expect(fetcher.mock.calls.filter(call => call[1].method === 'POST')).toHaveLength(1);
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Retry invitation acceptance' })));
+  expect(screen.getByRole('link', { name: 'Open Owner Portal' })).toBeInTheDocument();
+  const posts = fetcher.mock.calls.filter(call => call[1].method === 'POST'); expect(posts).toHaveLength(2);
+  expect(posts[0][0]).toBe(posts[1][0]);
+});
 describe('PRD-60 verified email invitation discovery', () => {
   it('clears old invitation labels during a refresh and after failure until a fresh read succeeds', async () => {
     let finish: ((response: Response) => void) | undefined;
