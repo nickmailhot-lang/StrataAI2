@@ -165,6 +165,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const attempts: RequestInit[] = [];
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, request?: RequestInit) => {
       const path = String(input); if (path === '/me') return response(profile);
+      if (path.startsWith('/navigation/observations?')) return navigationResponse(path, actor);
       if (path === `/cards/${card}/attachments`) return response({ organizationId: org, boardId: board, cardId: card,
         cardVersion: current.lists[0].cards[0].version, items: [metadata], canEdit: true, nextCursor: null });
       if (path === `/cards/${card}/attachments/${file}/archive`) {
@@ -178,7 +179,9 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     mount(`/app/${org}/boards/${board}/cards/${card}`);
     const manage = await screen.findByRole('button', { name: 'Manage attachments' }); await waitFor(() => expect(manage).toBeEnabled()); fireEvent.click(manage);
     fireEvent.click(await screen.findByRole('button', { name: 'Archive attachment Reference' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm attachment archive' }));
+    const confirmArchive = screen.getByRole('button', { name: 'Confirm attachment archive' });
+    await waitFor(() => expect(confirmArchive).toBeEnabled()); fireEvent.click(confirmArchive);
+    await waitFor(() => expect(attempts).toHaveLength(1));
     const retry = await screen.findByRole('button', { name: 'Retry original attachment change' }); await waitFor(() => expect(retry).toBeEnabled());
     for (const name of ['Add link attachment', 'Add file attachment', 'Add checklist', 'Save card', 'Close'])
       expect(screen.getByRole('button', { name })).toBeDisabled();
