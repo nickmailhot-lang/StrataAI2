@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { NavigationConfirmation } from './NavigationConfirmation';
 import { configureActivityTelemetry, flushActivityTelemetry } from '../features/kanban/activityTelemetry';
@@ -12,6 +12,23 @@ const source = { eventId: event, actorId: actor, organizationId: organization, b
   eventType: 'BOARD_OPENED', entityType: 'Board', entityId: board, version: 3, metadata: {}, createdAt: '2026-10-05T12:00:00Z' };
 afterEach(() => { cleanup(); configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 beforeEach(() => sessionStorage.clear());
+
+it('PRD-01 cancelled confirmation preserves recovery and emits no outcome or exception measurement', async () => {
+  configureActivityTelemetry(true);
+  let finish: ((value: Response) => void) | undefined;
+  let report: { events: { kind: string }[] } | undefined;
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response({ id: actor });
+    if (path === '/me/activity-client-events') { report = JSON.parse(options!.body as string); return new Response(null, { status: 204 }); }
+    return new Promise<Response>(resolve => { finish = resolve; });
+  }); vi.stubGlobal('fetch', fetch);
+  const view = render(<NavigationConfirmation target={target} />);
+  await waitFor(() => expect(finish).toBeDefined());
+  view.unmount(); await act(async () => finish!(response(source)));
+  await flushActivityTelemetry();
+  expect(sessionStorage.length).toBe(1);
+  expect(report!.events.map(entry => entry.kind).sort()).toEqual(['open', 'use']);
+});
 
 it('PRD-01 records content-free confirmation results and explicit retries independently of the original event', async () => {
   configureActivityTelemetry(true);
