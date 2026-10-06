@@ -86,3 +86,12 @@ native API-host and PostgreSQL execution remain required. The existing
 contract. Migrating those consumers, production large-directory evidence and
 full PRD-03 acceptance remain unfinished; this API increment does not complete
 Organization discovery pagination across the product.
+
+The mandatory exact-image `test-organization-member-directory.sh` fixture also
+checks the paged contract through Nginx against PostgreSQL and the restricted API
+role. It seeds 53 membership hints, omits one removed and one deleting candidate,
+and compares both pages with independently queried active membership/Organization
+IDs. It requires 51 unique results and terminal continuation, rejects malformed
+cursors, excludes Portal-only Organization access, and includes the paged read in
+the existing observed database lock-wait/session-revocation scenario. Shell syntax
+and diff checks passed locally; these production runtime assertions await CI.

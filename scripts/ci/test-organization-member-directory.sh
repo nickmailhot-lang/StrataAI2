@@ -43,6 +43,38 @@ scripts/ci/assert-file-excludes.sh 'Bounded member directory|ownerUserId|created
 test "$(get owner "/organizations/$foreign" denied)" = 404
 scripts/ci/assert-file-excludes.sh 'Other private directory|ownerUserId|createdAt' "$scratch/denied.json"
 test "$(get owner '/organizations/00000000-0000-0000-0000-000000000000')" = 404
+# PRD-03-TC-01/04/10/13: bounded Organization directory through the release proxy.
+for actor in owner member; do
+  test "$(get "$actor" '/organizations/directory' directory)" = 200
+  jq -e --arg org "$org" '.items|length==1 and .[0].organization.id==$org' "$scratch/directory.json" >/dev/null
+ done
+test "$(get portal '/organizations/directory' directory)" = 200
+jq -e --arg org "$foreign" '.items|length==1 and .[0].organization.id==$org' "$scratch/directory.json" >/dev/null
+scripts/ci/assert-file-excludes.sh 'Bounded member directory' "$scratch/directory.json"
+admin "WITH seed AS (SELECT gen_random_uuid() id FROM generate_series(1,52))
+  INSERT INTO organizations(id,name,owner_user_id,created_at,updated_at)
+  SELECT id,'Paged Organization fixture','$member',now(),now() FROM seed;
+  INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+  SELECT gen_random_uuid(),id,'$member','OWNER','ACTIVE' FROM organizations
+  WHERE name='Paged Organization fixture' AND owner_user_id='$member';
+  UPDATE organization_members SET status='REMOVED' WHERE user_id='$member' AND tenant_id=(
+    SELECT id FROM organizations WHERE name='Paged Organization fixture' AND owner_user_id='$member' ORDER BY id LIMIT 1);
+  UPDATE organizations SET status='DELETING' WHERE id=(
+    SELECT id FROM organizations WHERE name='Paged Organization fixture' AND owner_user_id='$member' ORDER BY id OFFSET 1 LIMIT 1);" >/dev/null
+test "$(get member '/organizations/directory' directory-first)" = 200
+jq -e '(.items|length)<=50 and .nextCursor!=null' "$scratch/directory-first.json" >/dev/null
+directory_cursor="$(jq -r '.nextCursor' "$scratch/directory-first.json")"
+test "$(get member "/organizations/directory?after=$directory_cursor" directory-tail)" = 200
+jq -e '.nextCursor==null' "$scratch/directory-tail.json" >/dev/null
+jq -s '[.[].items[].organization.id]|sort' "$scratch/directory-first.json" "$scratch/directory-tail.json" > "$scratch/directory-ids.json"
+jq -e 'length==51 and (unique|length)==51' "$scratch/directory-ids.json" >/dev/null
+admin "SELECT json_agg(o.id ORDER BY o.id) FROM organizations o JOIN organization_members m ON m.tenant_id=o.id
+  WHERE m.user_id='$member' AND m.status='ACTIVE' AND o.status='ACTIVE';" > "$scratch/directory-expected.json"
+jq -e --slurpfile expected "$scratch/directory-expected.json" '.==$expected[0]' "$scratch/directory-ids.json" >/dev/null
+for cursor in invalid 00000000-0000-0000-0000-000000000000; do
+  test "$(get member "/organizations/directory?after=$cursor" directory-invalid)" = 400
+  jq -e '.code=="invalid_organization_cursor"' "$scratch/directory-invalid.json" >/dev/null
+done
 test "$(get owner "/organizations/$org/members" first)" = 200
 jq -e --arg org "$org" '.organizationId==$org and (.items|length)==50 and .nextCursor==.items[-1].userId' "$scratch/first.json" >/dev/null
 cursor="$(jq -r '.nextCursor' "$scratch/first.json")"
@@ -174,7 +206,7 @@ scripts/ci/assert-file-excludes.sh 'Directory seeded member|directory-seed-|Boun
 admin "UPDATE organization_members SET role='OWNER',version=version+1 WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 done
 # The original session revoked during a parent wait cannot authorize disclosure.
-for path in "/organizations/$org" "/organizations/$org/members" "/organizations/$org/members/$member"; do
+for path in "/organizations/directory" "/organizations/$org" "/organizations/$org/members" "/organizations/$org/members/$member"; do
 hold "SELECT id FROM organizations WHERE id='$org' FOR UPDATE;"
 get owner "$path" revoked > "$scratch/status" & request_pid=$!
 blocked '%SELECT id FROM organizations%FOR UPDATE%'
