@@ -35,8 +35,13 @@ projection failure rollback, gap-free retry, duplicate-version refusal, tenant
 isolation, restricted capabilities and immutable history. The exact-image
 Organization command fixture includes event and counter rows in its unchanged
 state comparisons during receipt failures and session expiry, and requires one
-event for concurrent same-key creation and editing. Real PostgreSQL execution
-for this migration is pending CI; compilation does not establish those results.
+event for concurrent same-key creation and editing. Restricted PostgreSQL CI
+passed for `010324c` in [run 37514298212](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37514298212):
+the migration clean/repeat/upgrade checks, schema readiness and metadata source
+contract all passed. Follow-up `bf20c67` adds explicit source-audit rollback
+and direct-insert privilege assertions; its runtime checks remain pending.
+Exact-image command and browser integration are also pending; the database
+contract does not establish those results.
 
 This is a durable source foundation. Worker readiness, bounded authorized
 replay, SignalR invalidation/reconnect and browser consumption are still
