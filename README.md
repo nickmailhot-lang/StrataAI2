@@ -1,6 +1,6 @@
 # StrataAI2
 
-StrataAI2 is a strata/condominium governance and operations platform organized around collaborative Boards, Lists, and Cards. Organizations provide the membership and access boundary; Boards organize work into Lists and Cards. The repository contains the React/MUI web application, ASP.NET Core API, separate background Worker, database migrations, automated acceptance checks, and implementation documentation.
+StrataAI2 is a strata/condominium governance and operations platform organized around collaborative Boards, Lists, and Cards. Organizations provide the membership and access boundary; Boards organize work into Lists and Cards. The repository contains the React/MUI web application, ASP.NET Core modular monolith API, separate background Worker, PostgreSQL migrations with forced row-level security, private object storage integrations, automated acceptance checks, and implementation documentation.
 
 Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues). The code includes identity and Organization management, Board collaboration and lifecycle controls, attachments, comments, notifications, and live updates. Implementation is ongoing: a feature document or passing source check does not mean its full PRD acceptance is complete. Consult the acceptance records and CI for the relevant revision.
 
@@ -71,7 +71,8 @@ These links open the behavior or contract guide directly. Use the subject sectio
 
 | Workflow | Primary guides |
 | --- | --- |
-| Sign in, recover an account, or manage a profile | [Sign-in recovery and retries](docs/identity-login-retries.md), [recovery requests](docs/identity-recovery-request-retries.md), [profile management](docs/architecture/profile-management.md) |
+| Sign in, recover an account, or manage a profile | [Sign-in recovery and retries](docs/identity-login-retries.md), [recovery requests](docs/identity-recovery-request-retries.md), [profile management and local-time display](docs/architecture/profile-management.md) |
+| Read Organization details and manage settings | [Organization discovery](docs/architecture/organization-discovery.md), [current membership and canonical Organization reads](docs/architecture/organization-access-integrity.md), [Organization settings](docs/architecture/organization-settings.md) |
 | Invite people and manage access | [Invitation administration](docs/architecture/invitation-administration-ui.md), [recipient invitation review](docs/invitation-link-review.md), [Organization members](docs/architecture/organization-member-administration.md), [Board members](docs/board-members-ui.md) |
 | Find, filter, share, or copy a Board | [Search and filtering](docs/board-filtering.md), [public sharing](docs/public-board-sharing.md), [Board copies](docs/board-copy.md) |
 | Navigate between Organizations, Boards, and Cards | [Navigation observations and recovery](docs/navigation-observations.md), [web routing and state](docs/architecture/web-spa-boundary.md), [Organization routing integrity](docs/architecture/organization-access-integrity.md) |
