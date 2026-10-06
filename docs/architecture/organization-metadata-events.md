@@ -266,5 +266,10 @@ This acceptance source lets existing Organization member/history consumers rerea
 that actual state and withdraw stale consent, while preserving the separate
 member-added event only for real activation. Required source/rollback/private
 capability and forward-upgrade contracts, a ten-source automatic Worker HTTP chain,
-and desktop/mobile ordinary role-grant browser scenarios have been added. Their
-PostgreSQL and exact-image browser execution remains pending CI.
+and desktop/mobile ordinary role-grant browser scenarios have been added.
+Migration 101 clean/repeat/forward-upgrade checks and restricted source,
+rollback, private capability, leased delivery and protected replay contracts
+passed at `3e8f6d8` in
+[run 37545117283](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37545117283).
+The ten-source HTTP chain and native browser role reconciliation still require
+their exact-image CI results.

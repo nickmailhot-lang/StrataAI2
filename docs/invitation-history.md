@@ -1,5 +1,25 @@
 # Administrator invitation history
 
+## Expiry while reviewing
+
+Organization, Portal and Board invitation history schedules a bounded timer for
+the nearest pending invitation's persisted expiry. At that time it withdraws
+private rows and any open revocation consent, fences stale reads, and rereads
+protected history with the current account and scope checks. Already accepted,
+revoked or expired rows do not schedule another expiry refresh. Long delays are
+chunked within the browser timer limit. Revocation also checks expiry after
+account admission, so a delayed timer cannot submit expired consent. Expiry
+never sends a mutation or implies acceptance, revocation, mail delivery or access.
+An unresolved original revocation remains recoverable through canonical history.
+
+Component checks cover all three invitation surfaces and a confirmation racing
+the timer. `invitation-history-expiry.spec.ts` adds desktop/mobile scenarios using
+normal API creation and the real persisted expiry, with only the browser clock
+advanced. They require consent withdrawal, a protected reread, unchanged server
+history, no write or document reload, and accessibility checks. Actual execution
+remains pending exact-image CI; advancing browser time does not prove server
+expiry policy or mail delivery.
+
 `GET /organizations/{organizationId}/invitations?after={uuid}` returns at most
 50 issued invitations with an optional next cursor. Only a currently active
 Organization Owner/Admin may read it. The command rechecks the actor after

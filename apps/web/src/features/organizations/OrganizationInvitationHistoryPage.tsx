@@ -83,6 +83,26 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     if (!refreshQueued.current || busy) return;
     refreshQueued.current = false; void load(null, [], true);
   }, [reloadVersion, busy]);
+  useEffect(() => {
+    if (!rows) return;
+    // Schedule only pending invitations. Historical expiries must not cause a
+    // refresh loop, and long-lived invitations must not overflow browser timers.
+    const expiries = rows.items.filter(row => !row.acceptedAt && !row.revokedAt)
+      .map(row => Date.parse(row.expiresAt)).filter(value => value > Date.now());
+    if (!expiries.length) return;
+    const expires = Math.min(...expiries);
+    let timer: ReturnType<typeof setTimeout>;
+    function check() {
+      const remaining = expires - Date.now();
+      if (remaining > 0) { timer = setTimeout(check, Math.min(remaining, 2_147_483_647)); return; }
+      epoch.current++; refreshQueued.current = true;
+      setBoardName(undefined); setRows(undefined); setSelected(undefined);
+      setLiveNotice('An invitation reached its expiry time. Checking current invitations and access.');
+      setReloadVersion(value => value + 1);
+    }
+    check();
+    return () => clearTimeout(timer);
+  }, [rows]);
   function begin() { if (pending.current) return; const controller = new AbortController(); pending.current = controller; setBusy(true); return controller; }
   const valid = (controller: AbortController) => mounted.current && pending.current === controller && !controller.signal.aborted;
   function finish(controller: AbortController) { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
@@ -147,6 +167,9 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     try {
       const current = await account(controller); if (!current) return;
       if (started !== epoch.current) return;
+      if (Date.parse(target.expiresAt) <= Date.now()) {
+        setNotice('This invitation reached its expiry time. Review its current state.'); reload = true; return;
+      }
       const result = await request(`${root}/${target.id}?expectedActorId=${encodeURIComponent(current.id)}`, { method: 'DELETE' }, controller); if (!valid(controller)) return;
       if ([401, 403].includes(result.status) || boardId !== undefined && (result.body as { code?: string } | undefined)?.code === 'board_not_found') { deny(result.status); return; }
       if (!await account(controller, current.id)) return;
@@ -158,8 +181,10 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     } catch { if (mounted.current && pending.current === controller) {
       recoveryId.current = target.id; setUnconfirmed(target.id); setBoardName(undefined); setRows(undefined);
       setError('Revocation could not be confirmed. Check the current invitation state before another action.');
-    } } finally { if (mounted.current) setSelected(undefined); finish(controller); }
-    if (reload) await load(cursor, previous);
+    } } finally {
+      if (mounted.current) setSelected(undefined); finish(controller);
+      if (reload && mounted.current) await load(cursor, previous);
+    }
   }
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}` : `/app/${organizationId}/members`}>{boardId !== undefined ? 'Back to Board' : 'Organization members'}</Button>

@@ -30,7 +30,7 @@ function fetcher(...responses: (Response | Error)[]) {
   }); vi.stubGlobal('fetch', mock); return mock;
 }
 async function review() { fireEvent.click(await screen.findByRole('button', { name: `Revoke invitation for ${row.email}` })); await screen.findByRole('dialog'); }
-afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 beforeEach(() => { currentProfile = profile; live.watch.mockReset(); live.watch.mockReturnValue(() => {});
   boardLive.watch.mockReset(); boardLive.watch.mockReturnValue(() => {}); });
 async function invalidate() { await act(async () => { live.watch.mock.calls.at(-1)![0].invalidate(); }); }
@@ -152,6 +152,38 @@ function boardMount() {
   return render(<RouterProvider router={createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId/invitations', element: <BoardInvitationHistoryPage /> }],
     { initialEntries: [`/app/${org}/boards/${board}/invitations`] })} />);
 }
+it.each(['Organization', 'Portal', 'Board'])('retires consent at %s invitation expiry and refreshes canonical history without a write', async surface => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date('2035-01-08T17:59:59Z'));
+  const invitation = surface === 'Board' ? boardRow : surface === 'Portal'
+    ? { ...row, surface: 'PORTAL', targetRole: 'OWNER' } : row;
+  const mock = vi.fn(async (path: string) => reply(path === '/me' ? profile : path === `/boards/${board}`
+    ? boardScope : { items: [invitation], nextCursor: null }));
+  vi.stubGlobal('fetch', mock);
+  await act(async () => { if (surface === 'Board') boardMount(); else mount(); });
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: `Revoke invitation for ${row.email}` })));
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  await act(async () => vi.advanceTimersByTimeAsync(1000));
+  expect(screen.getByText('Expired')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: `Revoke invitation for ${row.email}` })).not.toBeInTheDocument();
+  await act(async () => vi.advanceTimersByTimeAsync(1000));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  const historyReads = () => mock.mock.calls.filter(call => call[0].endsWith('/invitations')).length;
+  expect(historyReads()).toBe(2);
+  await act(async () => vi.advanceTimersByTimeAsync(60_000));
+  expect(historyReads()).toBe(2);
+  expect(mock.mock.calls.some(call => (call as unknown as [string, RequestInit?])[1]?.method === 'DELETE')).toBe(false);
+});
+it('rechecks expiry after account admission even when the scheduled expiry callback has not run', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date('2035-01-08T17:59:59Z'));
+  const mock = fetcher(reply(page()), reply(page()));
+  await act(async () => { mount(); });
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: `Revoke invitation for ${row.email}` })));
+  vi.setSystemTime(new Date(row.expiresAt));
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' })));
+  expect(screen.getByText('Expired')).toBeInTheDocument();
+  expect(screen.getByText('This invitation reached its expiry time. Review its current state.')).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
 it('withdraws Board invitation history and revocation consent when heartbeat admission loses administration', async () => {
   let withdrawn = false;
   const mock = vi.fn(async (path: string) => reply(path === '/me' ? profile : path === `/boards/${board}`
