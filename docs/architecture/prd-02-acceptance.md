@@ -39,6 +39,15 @@ Strict compilation passes; execution remains pending CI. This removes the missin
 verification-work distinction, not every possible timing difference (database
 work and legacy hash costs may differ); production abuse limits remain required.
 
+The mandatory native sign-in fixture compares known-address wrong-password and
+unknown-address refusals through the actual API. Public status/title/type/code/
+detail must match; request correlation identifiers are not compared. Neither
+attempt may issue a cookie, disclose the account/email or change the complete
+user/session/audit/event-stream/events/receipt snapshot. The unknown and dummy
+subjects must remain absent from canonical users. Bash syntax passes; native
+execution is pending. These assertions verify public response/state privacy, not
+exact request timing or complete abuse resistance.
+
 The framework password-hash adapter treats malformed persisted Base64 encoding
 as failed verification, preserving the ordinary `invalid_credentials` response.
 It catches encoding `FormatException` only; unrelated infrastructure errors keep

@@ -39,6 +39,8 @@ state() {
   admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$user'),
     'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$user'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE actor_id='$user' AND tenant_id IS NULL),
+    'stream',(SELECT last_sequence FROM identity_event_streams WHERE user_id='$user'),
+    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM identity_events e WHERE user_id='$user'),
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM identity_login_replays r WHERE user_id='$user'))::text;"
 }
 before="$(state)"
@@ -59,6 +61,20 @@ done
 admin "UPDATE users SET password_hash='$hash_fixture_original' WHERE id='$user';" >/dev/null
 hash_fixture_user=''
 test "$before" = "$(state)"
+wrong_credentials="$(jq -c '.password="incorrect-private-password"' <<< "$body")"
+unknown_email="unknown-signin-$(cat /proc/sys/kernel/random/uuid)@example.test"
+unknown_credentials="$(jq -c --arg email "$unknown_email" '.email=$email' <<< "$wrong_credentials")"
+for refused_body in "$wrong_credentials" "$unknown_credentials"; do
+  test "$(request "$key" "$refused_body")" = 401
+  jq -e '.code=="invalid_credentials" and .status==401' "$scratch/response" >/dev/null
+  jq -Sc '{status,title,type,code,detail}' "$scratch/response" > "$scratch/refusal.current"
+  if test -f "$scratch/refusal.expected"; then cmp "$scratch/refusal.expected" "$scratch/refusal.current";
+  else cp "$scratch/refusal.current" "$scratch/refusal.expected"; fi
+  scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
+  scripts/ci/assert-file-excludes.sh "$user|Sign-in retry|$unknown_email" "$scratch/response"
+  test "$before" = "$(state)"
+done
+test "$(admin "SELECT count(*) FROM users WHERE id='00000000-0000-0000-0000-000000000000' OR email_normalized=upper('$unknown_email');")" = 0
 for table in audit_events identity_login_replays; do
   admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
   test "$(request)" = 503
