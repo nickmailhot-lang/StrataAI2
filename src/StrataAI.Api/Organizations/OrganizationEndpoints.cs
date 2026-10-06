@@ -9,6 +9,15 @@ public static class OrganizationEndpoints
     {
         var group = app.MapGroup("/organizations").RequireAuthorization();
 
+        group.MapGet("/{organizationId:guid}", async (Guid organizationId, HttpContext context,
+            IOrganizationService service, CancellationToken cancellationToken) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            var result = await service.ReadAsync(organizationId, actor.Value, cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+
         group.MapGet("/{organizationId:guid}/surface-access", async (Guid organizationId, string? surface,
             HttpContext context, IOrganizationService service, CancellationToken cancellationToken) =>
         {

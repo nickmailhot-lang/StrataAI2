@@ -24,6 +24,8 @@ update_response="$(
 
 updated_version="$(printf '%s' "$update_response" | jq -r '.version')"
 test "$updated_version" = "2"
+detail_response="$(curl --fail --silent --show-error -b "$COOKIE_JAR" "$BASE_URL/organizations/$organization_id")"
+printf '%s' "$detail_response" | jq -e --arg id "$organization_id" '.organization.id==$id and .organization.version==2 and .organization.name=="Quail Ridge Updated" and .role==0' >/dev/null
 
 boards_response="$(
   curl -H 'X-StrataAI-Request: 1' --fail --silent     -b "$COOKIE_JAR"     "$BASE_URL/organizations/$organization_id/boards"
@@ -39,5 +41,6 @@ delete_status="$(
   curl -H 'X-StrataAI-Request: 1' --silent --output /dev/null --write-out '%{http_code}'     -X DELETE     -b "$COOKIE_JAR"     "$BASE_URL/organizations/$organization_id?version=$updated_version"
 )"
 test "$delete_status" = "202"
+test "$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' -b "$COOKIE_JAR" "$BASE_URL/organizations/$organization_id")" = 404
 
 echo "Demo Organization lifecycle checks passed."

@@ -34,6 +34,15 @@ admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES
   SELECT gen_random_uuid(),'$org',id,CASE WHEN status='DEACTIVATED' THEN 'OWNER' ELSE 'MEMBER' END,'ACTIVE'
   FROM users WHERE password_hash='unused-directory-fixture-hash';" >/dev/null
 get() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -o "$scratch/${3:-response}.json" -w '%{http_code}' "$base$2"; }
+test "$(get owner "/organizations/$org" metadata)" = 200
+jq -e --arg org "$org" '.organization.id==$org and .organization.name=="Bounded member directory" and .organization.version==1 and .role==0' "$scratch/metadata.json" >/dev/null
+test "$(get member "/organizations/$org" metadata)" = 200
+jq -e '.role==2' "$scratch/metadata.json" >/dev/null
+test "$(get portal "/organizations/$org" denied)" = 404
+scripts/ci/assert-file-excludes.sh 'Bounded member directory|ownerUserId|createdAt' "$scratch/denied.json"
+test "$(get owner "/organizations/$foreign" denied)" = 404
+scripts/ci/assert-file-excludes.sh 'Other private directory|ownerUserId|createdAt' "$scratch/denied.json"
+test "$(get owner '/organizations/00000000-0000-0000-0000-000000000000')" = 404
 test "$(get owner "/organizations/$org/members" first)" = 200
 jq -e --arg org "$org" '.organizationId==$org and (.items|length)==50 and .nextCursor==.items[-1].userId' "$scratch/first.json" >/dev/null
 cursor="$(jq -r '.nextCursor' "$scratch/first.json")"
@@ -165,7 +174,7 @@ scripts/ci/assert-file-excludes.sh 'Directory seeded member|directory-seed-|Boun
 admin "UPDATE organization_members SET role='OWNER',version=version+1 WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 done
 # The original session revoked during a parent wait cannot authorize disclosure.
-for path in "/organizations/$org/members" "/organizations/$org/members/$member"; do
+for path in "/organizations/$org" "/organizations/$org/members" "/organizations/$org/members/$member"; do
 hold "SELECT id FROM organizations WHERE id='$org' FOR UPDATE;"
 get owner "$path" revoked > "$scratch/status" & request_pid=$!
 blocked '%SELECT id FROM organizations%FOR UPDATE%'

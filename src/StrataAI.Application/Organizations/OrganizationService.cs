@@ -12,6 +12,23 @@ public sealed class OrganizationService(
     StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
     CardReminderContainerScheduling reminders) : IOrganizationService
 {
+    public Task<OrganizationOperation<OrganizationSummary>> ReadAsync(Guid organizationId,
+        Guid actorUserId, CancellationToken cancellationToken = default) =>
+        organizationId == Guid.Empty
+            ? Task.FromResult(OrganizationOperation<OrganizationSummary>.Failure("organization_not_found")) :
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false, async () =>
+        {
+            var membership = await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken);
+            if (membership?.Active != true)
+                return OrganizationOperation<OrganizationSummary>.Failure("organization_not_found");
+            var organization = await store.FindOrganizationAsync(organizationId, cancellationToken);
+            if (organization?.Status != OrganizationStatus.Active)
+                return OrganizationOperation<OrganizationSummary>.Failure("organization_not_found");
+            if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+                return OrganizationOperation<OrganizationSummary>.Failure("session_unavailable");
+            return OrganizationOperation<OrganizationSummary>.Success(new(organization, membership.Role));
+        }, cancellationToken);
+
     // ARCH-02-AC-003: admission is a current read, never a transferable grant.
     public Task<OrganizationOperation<OrganizationSurfaceAdmission>> ReadSurfaceAdmissionAsync(Guid organizationId,
         Guid actorUserId, bool portal, CancellationToken cancellationToken = default) =>
