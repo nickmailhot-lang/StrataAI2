@@ -175,3 +175,12 @@ preservation of the existing search traversal. Compilation is not runtime proof;
 CI execution remains required. The browser and legacy `/boards` array still use
 their existing contract pending the browser migration. Full PRD-03/04 acceptance
 remains unfinished.
+
+The mandatory exact-image Board discovery fixture now also seeds 52 active
+Organization-visible Boards behind 51 private and 51 archived earlier UUIDs.
+Together with two existing visible Boards, it requires 54 unique authorized IDs
+across a 50-row first page and four-row tail, matching an independent fixture
+query. It verifies private/no-store headers, stable invalid cursor failures,
+outsider and revoked-member denial, and identical Organization/Board/member
+state and audit counts before and after reads. Shell syntax checks passed;
+execution against the retained images remains required in CI.

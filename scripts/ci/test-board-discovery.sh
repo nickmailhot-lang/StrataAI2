@@ -108,3 +108,41 @@ status="$(curl --silent --show-error -b "$scratch/member.cookies" -H 'X-StrataAI
 test "$status" = 404
 done
 echo 'Exact release API filters private/archived/deleted board discovery, restores active entries and enforces membership revocation using restricted PostgreSQL credentials.'
+
+# The bounded active home directory is verified through the actual Nginx/API
+# image pair. Restore the member fixture after the legacy revocation checks.
+admin "UPDATE organization_members SET status='ACTIVE',role='MEMBER' WHERE tenant_id='$organization_id' AND user_id='$member_id';
+INSERT INTO boards(id,tenant_id,name,visibility,lifecycle_state,created_at,updated_at)
+ SELECT ('e1000000-1111-4111-8000-' || lpad(n::text,12,'0'))::uuid,'$organization_id','Paged visible Board ' || n,'ORGANIZATION','ACTIVE',now(),now() FROM generate_series(1,52) n;
+INSERT INTO boards(id,tenant_id,name,visibility,lifecycle_state,created_at,updated_at)
+ SELECT ('01000000-1111-4111-8000-' || lpad(n::text,12,'0'))::uuid,'$organization_id','Hidden paged private Board','PRIVATE','ACTIVE',now(),now() FROM generate_series(1,51) n;
+INSERT INTO boards(id,tenant_id,name,visibility,lifecycle_state,archived_at,created_at,updated_at)
+ SELECT ('02000000-1111-4111-8000-' || lpad(n::text,12,'0'))::uuid,'$organization_id','Archived paged Board','ORGANIZATION','ARCHIVED',now(),now(),now() FROM generate_series(1,51) n;"
+board_directory="$BASE_URL/organizations/$organization_id/boards/directory"
+expected_ids="$(scalar "SELECT json_agg(b.id ORDER BY b.id) FROM boards b WHERE b.tenant_id='$organization_id' AND b.lifecycle_state='ACTIVE' AND (b.visibility<>'PRIVATE' OR EXISTS(SELECT 1 FROM board_members m WHERE m.tenant_id=b.tenant_id AND m.board_id=b.id AND m.user_id='$member_id' AND m.status='ACTIVE'));")"
+board_state() { scalar "SELECT md5(json_build_object('organization',(SELECT row_to_json(o) FROM organizations o WHERE o.id='$organization_id'),'boards',(SELECT json_agg(b ORDER BY b.id) FROM boards b WHERE b.tenant_id='$organization_id'),'members',(SELECT json_agg(m ORDER BY m.id) FROM board_members m WHERE m.tenant_id='$organization_id'),'audits',(SELECT count(*) FROM audit_events WHERE tenant_id='$organization_id'))::text);"; }
+state_before="$(board_state)"
+curl --fail --silent --show-error -D "$scratch/board-page.headers" -b "$scratch/member.cookies" "$board_directory" > "$scratch/board-page.json"
+jq -e --arg org "$organization_id" '.organizationId==$org and (.items|length)==50 and (.nextCursor|type)=="string"' "$scratch/board-page.json" >/dev/null
+grep -qi 'cache-control:.*private.*no-store' "$scratch/board-page.headers"
+scripts/ci/assert-file-excludes.sh 'Hidden paged private Board' "$scratch/board-page.json"
+scripts/ci/assert-file-excludes.sh 'Archived paged Board' "$scratch/board-page.json"
+board_cursor="$(jq -r '.nextCursor' "$scratch/board-page.json")"
+[[ "$board_cursor" =~ ^[0-9a-f-]{36}$ ]]
+curl --fail --silent --show-error -b "$scratch/member.cookies" "$board_directory?after=$board_cursor" > "$scratch/board-tail.json"
+jq -e '(.items|length)==4 and .nextCursor==null' "$scratch/board-tail.json" >/dev/null
+jq -s -e --argjson expected "$expected_ids" '([.[].items[].id] == $expected) and ([.[].items[].id]|unique|length)==54' "$scratch/board-page.json" "$scratch/board-tail.json" >/dev/null
+for board_cursor in invalid 00000000-0000-0000-0000-000000000000 e1000000111141118000000000000001; do
+  status="$(curl --silent --show-error -b "$scratch/member.cookies" -o "$scratch/board-invalid.json" -w '%{http_code}' "$board_directory?after=$board_cursor")"
+  test "$status" = 400
+  jq -e '.code=="invalid_board_directory_cursor"' "$scratch/board-invalid.json" >/dev/null
+done
+status="$(curl --silent --show-error -b "$scratch/outsider.cookies" -o "$scratch/board-outsider.json" -w '%{http_code}' "$board_directory")"
+test "$status" = 404
+scripts/ci/assert-file-excludes.sh 'Paged visible Board' "$scratch/board-outsider.json"
+test "$(board_state)" = "$state_before"
+admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$organization_id' AND user_id='$member_id';"
+status="$(curl --silent --show-error -b "$scratch/member.cookies" -o "$scratch/board-revoked.json" -w '%{http_code}' "$board_directory")"
+test "$status" = 404
+scripts/ci/assert-file-excludes.sh 'Paged visible Board' "$scratch/board-revoked.json"
+echo 'Exact-image active Board directory: pre-limit visibility/lifecycle filtering, complete 54-row seek, private caching, stable invalid cursors, unchanged persisted state and revoked member denial passed.'
