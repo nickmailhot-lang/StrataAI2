@@ -608,3 +608,35 @@ identity must refuse transferring its admission to the new account and withdraw
 the completion notice on the next content-free heartbeat (20 seconds). It waits
 for that heartbeat without reloading. This real cookie-replacement assertion
 requires exact-image execution; the local profile race tests do not certify it.
+
+## Actual large graph mutation contract
+
+`OrganizationDeletionScaleContract` is part of the mandatory restricted
+PostgreSQL persistence executable. It seeds one disposable Organization with a
+Board containing 200 Lists, 5,000 active Cards and 100,000 archived Cards. It
+accepts deletion through the owning Organization unit of work and actual request
+publisher, then uses four Worker identities with normal `SKIP LOCKED` claims,
+two-minute leases, page handlers and work/terminal event handlers. Initial graph
+rows and account admission are fixtures; this is narrower than ordinary HTTP
+commands or a deployed Worker process. No checkpoints, queue state or lease
+expiration are staged to accelerate the actual mutations.
+
+The contract requires every Card and List to remain present as a tombstone,
+with exactly one revision advance, the original creation/archive clocks and the
+accepted deleting actor. The sum of actual Card page candidates must be 105,000,
+all mutation pages must stay at or below 128 candidates, and there must be one
+canonical audit and ready work event per deleted Card, all List events and the
+Board deletion event. It drains actual durable jobs and refuses retries, failed
+jobs, lost leases, duplicate effects or unbounded continuation. The final parent
+must be DELETED at version three with COMPLETE progress and exactly one ready
+original terminal source. Restricted Owner observation must recover the same
+source/time/version; existing restricted Member replay checks then compare that
+actual source and test admission withdrawal.
+
+Progress and elapsed/max leased-page measurements are content-free counts and
+durations. They describe this persistence workload, not the separate p95 HTTP
+acknowledgment target. Provider binaries, browser consumption and object/backup
+purge are outside this seeded graph. Full Release compilation passes; actual
+105,000-Card mutation execution remains pending PostgreSQL CI. The earlier
+100,000-archived-Card reference traversal remains valid as traversal evidence
+only. Neither fixture nor compilation closes PRD-03/18 on its own.

@@ -132,3 +132,13 @@ images. Full invitation/view lifecycle coverage, actual session races, Demo
 audit/event/terminal parity and applicable mutation scale remain required.
 Estimated remaining work stays **16%** pending runtime evidence. This ticket
 remains open.
+
+The mandatory restricted persistence executable now also contains
+`OrganizationDeletionScaleContract`, performing actual bounded mutation and
+all durable event delivery for 5,000 active plus 100,000 archived Cards and 200
+Lists. It uses the owning accepted publisher and normal Worker claim/handlers,
+without admin checkpoint or lease staging, and checks retained attribution,
+exact effects and restricted original-source recovery. This closes a missing
+verification path, not a passed capacity claim: execution remains pending CI.
+Estimated remaining work stays **16%** until the scale and full release/native
+acceptance evidence are actually available.

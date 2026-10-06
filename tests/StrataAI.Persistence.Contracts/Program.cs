@@ -85,6 +85,7 @@ try
     await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionCandidatesContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionPagesContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionScaleContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await Seed(organization,user,board,list,card); await Seed(foreignOrganization,foreignUser,foreignBoard,foreignList,foreignCard);
     await SearchTraversalStoreContract.RunAsync(admin,apiConnection,organization,user,ct);
