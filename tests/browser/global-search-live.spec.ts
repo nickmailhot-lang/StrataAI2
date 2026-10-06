@@ -97,15 +97,18 @@ for (const width of [1280, 390]) {
       expect((await context.request.post('/auth/logout', {
         headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: {},
       })).status()).toBe(204);
-      await expect(page.getByText('Search is unavailable. Check your account and access, then search again.', { exact: true })).toBeVisible({ timeout: 25_000 });
+      await expect(page.getByText('Access to this Organization surface is unavailable.', { exact: true })).toBeVisible({ timeout: 25_000 });
       await expect(page.getByRole('link', { name: /^Global needle/ })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Next search page', exact: true })).toHaveCount(0);
       for (const name of ['Card text', 'Label name', 'Member name'])
-        await expect(page.getByRole('textbox', { name, exact: true })).toHaveValue('');
+        await expect(page.getByRole('textbox', { name, exact: true })).toHaveCount(0);
       expect((await context.request.get('/search?q=needle')).status()).toBe(401);
       const afterWithdrawal = await peer.request.get(`/boards/${current.board}`);
       expect(afterWithdrawal.status()).toBe(200); expect(await afterWithdrawal.json()).toEqual(protectedBefore);
       expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+      await page.getByRole('button', { name: 'Check access again', exact: true }).press('Enter');
+      for (const name of ['Card text', 'Label name', 'Member name'])
+        await expect(page.getByRole('textbox', { name, exact: true })).toHaveValue('');
       await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('needle recovered');
       await page.getByRole('button', { name: 'Search', exact: true }).press('Enter');
       await expect(page.getByRole('link', { name: 'Global needle recovered', exact: true })).toBeVisible();
