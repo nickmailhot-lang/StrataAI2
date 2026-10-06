@@ -76,3 +76,11 @@ Full foundation acceptance also requires hierarchy integrity, all mutable-record
 These results identify separate source, HTTP and persistence failures and their
 later repairs. They do not prove exact-image browser, performance, accessibility
 or whole-ticket acceptance.
+
+- Subsequent CI run [37408240323](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37408240323)
+  at `74ce75d` passed .NET quality: 643 Domain tests and 426 API-host tests,
+  with zero failures. This provides native execution evidence for the navigation
+  HTTP middleware/key/cache repairs present at that revision. Web quality also
+  passed. PostgreSQL failed with the same runtime schema readiness exception
+  before restricted search traversal; that revision predates `e158969`.
+  Whole-release and current-main acceptance remain unproven.
