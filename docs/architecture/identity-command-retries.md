@@ -31,3 +31,22 @@ Migration 020 adds original-proof-bound reset and verification completion acknow
 Recovery and verification screens own a 15-second deadline covering both transport and JSON consumption, cancel when closed, reject malformed success responses and display only known safe error messages. Input and exact UUID intents are preserved after uncertain publication and consumption acknowledgments. Expired or inaccessible proofs still offer sign-in or replacement-link recovery. [Commit f778720 CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36860761965) verified the client deadline/acknowledgment increment across all nine jobs and three exact-SHA artifacts, including 14 release browser scenarios and the separate mobile mail flow. Later consumption retry changes require their own release verification.
 
 This boundary does not complete identity idempotency. Invitation side effects still need appropriate fresh-proof and secret-safe retry protocols, including retention for their eventual retry records. The existing email-token key ring is registered only for enabled production delivery and supports reset/verification purposes; sign-in, registration, recovery requests and token consumption use a separate API-only ring with distinct purposes. [Account-deactivation ownership admission](account-owner-continuity.md) now precedes a first lifecycle mutation; a previously completed receipt remains acknowledgment-only. Its verification, confirmation UI and further telemetry remain required. No full PRD or architecture issue closure follows from these retry increments alone.
+
+## Final revocation expiry after receipt publication
+
+Fresh keyed logout and deactivation now retain the original session proof's
+expiry fence through receipt publication. After saving the receipt, the executor
+checks both original session and receipt expiry before acknowledging success.
+Refusal returns `session_unavailable`; the owning transaction restores session,
+account/event and receipt changes, plus assignment cleanup for deactivation.
+It does not require the intentionally revoked session to become active again.
+
+Two API-host regressions observe actual Demo receipts before advancing the clock
+to the original session expiry. They require failure, exact account and session
+restoration, absent failed receipt, unchanged Identity and Work events, and
+restored Card assignment/version. Fresh same-key revocation must then succeed,
+and a matching acknowledgment must not repeat its Identity event. The test clock
+uses a guarded synchronous observation because the Demo receipt reader checks
+expiry through that same clock. Production clock/provider behavior is unchanged.
+Native API-host execution and exact-image post-publication revocation coverage
+remain pending; compilation is not runtime acceptance. Full PRD-02 remains open.

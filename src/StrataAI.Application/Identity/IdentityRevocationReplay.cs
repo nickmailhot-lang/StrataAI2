@@ -37,6 +37,10 @@ public sealed class IdentityRevocationReplayExecutor(IIdentityStore identities, 
         if (proof.ExpiresAt <= now) return IdentityOperation<bool>.Failure("session_unavailable");
         var expiry = proof.ExpiresAt < now.AddHours(24) ? proof.ExpiresAt : now.AddHours(24);
         await receipts.SaveAsync(proof.UserId, key, new IdentityRevocationReceipt(proof.SessionId, kind, expiry), cancellationToken);
+        // Publication can wait. Keep the original session proof's expiry fence
+        // through receipt completion; the owning transaction restores all writes.
+        if (proof.ExpiresAt <= clock.UtcNow || expiry <= clock.UtcNow)
+            return IdentityOperation<bool>.Failure("session_unavailable");
         return result;
     }
 }
