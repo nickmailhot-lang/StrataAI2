@@ -4,7 +4,8 @@ using System.Text.Json;
 namespace StrataAI.Application.Identity;
 
 public sealed class TransactionalIdentityService(IIdentityService inner, IIdentityUnitOfWork commands,
-    IIdentityCommandContext context, IIdentityProfileReplayStore profileReplays, ISecureTokenService tokens) : IIdentityService
+    IIdentityCommandContext context, IIdentityProfileReplayStore profileReplays, ISecureTokenService tokens,
+    ICommandActorAuthorization actors) : IIdentityService
 {
     public Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default) =>
@@ -80,17 +81,21 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
             // Authorization and the subject lock precede any stored acknowledgment disclosure.
             var key = context.IdempotencyKey;
             if (key is null)
-                return await inner.UpdateProfileAsync(userId, displayName, avatarUrl, locale, timezone, expectedVersion, correlationId, cancellationToken);
+                return await AdmitProfile(await inner.UpdateProfileAsync(userId, displayName, avatarUrl, locale, timezone, expectedVersion, correlationId, cancellationToken));
             var fingerprint = Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(
                 new { Operation = "PROFILE_UPDATE", displayName, avatarUrl, locale, timezone, expectedVersion })));
             var prior = await profileReplays.ReadAsync(userId, key.Value, cancellationToken);
             if (prior is not null)
-                return prior.Fingerprint == fingerprint ? IdentityOperation<UserProfile>.Success(prior.Profile)
+                return prior.Fingerprint == fingerprint ? await AdmitProfile(IdentityOperation<UserProfile>.Success(prior.Profile))
                     : IdentityOperation<UserProfile>.Failure("idempotency_key_reused");
             var result = await inner.UpdateProfileAsync(userId, displayName, avatarUrl, locale, timezone, expectedVersion, correlationId, cancellationToken);
             if (result.Succeeded && result.Value is not null)
                 await profileReplays.SaveAsync(userId, key.Value, new IdentityProfileReplay(fingerprint, result.Value), cancellationToken);
-            return result;
+            return await AdmitProfile(result);
+
+            async Task<IdentityOperation<UserProfile>> AdmitProfile(IdentityOperation<UserProfile> outcome) =>
+                outcome.Succeeded && !await actors.VerifyAsync(userId, cancellationToken)
+                    ? IdentityOperation<UserProfile>.Failure("session_unavailable") : outcome;
         }, cancellationToken);
 
     public Task<IdentityOperation<bool>> DeactivateAsync(

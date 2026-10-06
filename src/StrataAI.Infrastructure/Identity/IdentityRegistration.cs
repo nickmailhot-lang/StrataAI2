@@ -104,7 +104,7 @@ public static class IdentityRegistration
         services.AddSingleton<IIdentityService>(provider => new TransactionalIdentityService(
             provider.GetRequiredService<IdentityService>(), provider.GetRequiredService<IIdentityUnitOfWork>(),
             provider.GetRequiredService<IIdentityCommandContext>(), provider.GetRequiredService<IIdentityProfileReplayStore>(),
-            provider.GetRequiredService<ISecureTokenService>()));
+            provider.GetRequiredService<ISecureTokenService>(), provider.GetRequiredService<ICommandActorAuthorization>()));
     }
 
     private static void AddLoginRetrySecrets(IServiceCollection services, IConfiguration configuration, RuntimeDescriptor runtime)

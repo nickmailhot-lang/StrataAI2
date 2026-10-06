@@ -146,3 +146,13 @@ Card from `lists[].cards[]` in the canonical Board snapshot; there is no generic
 Card GET route. Browser TypeScript passes for the repair. Native execution and
 current release-image evidence remain pending, so these results do not close
 PRD-02 or PRD-16.
+
+Profile save acknowledgment now revalidates the current actor session inside the
+owning identity transaction after profile/event writes and any replay receipt.
+Stored same-key acknowledgments also revalidate before disclosure. A final denial
+returns `session_unavailable`, so the owning transaction restores profile, events
+and receipt together. Logout and deactivation retain their separate revocation
+rules. Two API-host cases expire the clock after a real profile event appears,
+check unchanged account/event state and absent failed receipt, then retry once
+and check keyed replay without duplicate publication. Native execution remains
+pending CI; compilation alone does not establish these acceptance outcomes.
