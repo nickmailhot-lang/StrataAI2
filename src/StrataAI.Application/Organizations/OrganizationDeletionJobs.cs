@@ -53,6 +53,12 @@ public interface IOrganizationDeletionJobPublisher
         long acceptedVersion, string correlationId, CancellationToken cancellationToken);
 }
 
+public interface IOrganizationDeletionFinalizer
+{
+    Task<bool> FinishAsync(ClaimedBackgroundJob job, OrganizationDeletionAttempt attempt,
+        CancellationToken cancellationToken);
+}
+
 public interface IOrganizationDeletionPageStore
 {
     // Restricted owning tenant transaction only: validate the current request,

@@ -92,7 +92,7 @@ public sealed class GlobalSearchService(IOrganizationStore organizations, IWorkM
                 if (!await store.AcquireOrganizationReadScopeAsync(organization, actor, ct)) return false;
                 var parent = await organizations.FindOrganizationAsync(organization, ct);
                 var member = await organizations.FindMembershipAsync(organization, actor, ct);
-                return parent is { Status: not OrganizationStatus.Deleting } && member is { Active: true };
+                return parent is { Status: not (OrganizationStatus.Deleting or OrganizationStatus.Deleted) } && member is { Active: true };
             }, async () =>
             {
                 var member = await organizations.FindMembershipAsync(organization, actor, ct);

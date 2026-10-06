@@ -211,7 +211,7 @@ internal sealed class PostgresOrganizationStore(
                 cancellationToken);
 
             if (organization is not null &&
-                organization.Status != OrganizationStatus.Deleting)
+                organization.Status is not (OrganizationStatus.Deleting or OrganizationStatus.Deleted))
             {
                 organizations.Add(
                     new OrganizationSummary(organization, route.Role));
@@ -287,7 +287,7 @@ internal sealed class PostgresOrganizationStore(
                 version = version + 1
             WHERE id = @id
               AND version = @expected_version
-              AND status <> 'DELETING'
+              AND status IN ('ACTIVE','ARCHIVED')
             RETURNING
                 id, name, description, logo_url, owner_user_id,
                 status, created_at, updated_at, version;
@@ -569,6 +569,7 @@ internal sealed class PostgresOrganizationStore(
             "ACTIVE" => OrganizationStatus.Active,
             "ARCHIVED" => OrganizationStatus.Archived,
             "DELETING" => OrganizationStatus.Deleting,
+            "DELETED" => OrganizationStatus.Deleted,
             _ => throw new InvalidOperationException(
                 $"Unknown Organization status '{status}'."),
         };

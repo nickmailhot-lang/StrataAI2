@@ -4,14 +4,16 @@
 [PRD-18](https://github.com/nickmailhot-lang/StrataAI2/issues/19) and
 [ARCH-07](https://github.com/nickmailhot-lang/StrataAI2/issues/88) require
 completion beyond the [deletion request acknowledgment](organization-deletion-retries.md).
-This defines the next implementation; terminal processing is not implemented.
+This defines the completion implementation. Publication and the terminal storage
+gate have implementation foundations; graph page processing and product
+completion are not enabled.
 A 202 remains an acknowledgment of the accepted request.
 
 ## State and graph treatment
 
 ACTIVE transitions to DELETING only through the current Owner/version command.
 DELETING withdraws ordinary Organization and descendant access immediately and
-suspends reminders. The completion implementation adds an irreversible DELETED
+suspends reminders. The terminal storage foundation adds an irreversible DELETED
 state, retained deleting actor, deletion timestamp and terminal version.
 Neither a receipt replay nor membership restoration may reactivate that parent.
 
@@ -138,3 +140,38 @@ Publication is not registered or invoked by the production API yet. The
 restricted leased page implementation and its full graph processing must exist
 before accepted product requests enqueue these jobs. Terminal deletion and
 completion observation remain pending.
+
+## Terminal storage gate
+
+Migration `089_organization_deletion_terminal` adds retained terminal actor/time,
+an immutable DELETED Organization state, a tenant-isolated completion envelope,
+and indexes for final graph proof. The restricted Worker receives only
+`finish_organization_deletion`, not direct Organization or checkpoint mutation.
+The API cannot invoke that capability or directly create the terminal state.
+Normal Organization discovery, metadata writes, search admission and ownership
+continuity treat DELETED as withdrawn access.
+
+`PostgresOrganizationDeletionFinalizer` validates job references and opens an
+explicit tenant transaction. The capability locks the parent before the job,
+checks the accepted request and exact current unexpired lease, and requires the
+FINALIZE checkpoint with the same step. It refuses any remaining Board, List,
+Card or attachment, including archived descendants and selected cover/image
+references. It atomically commits terminal state/version, completed checkpoint,
+one audit entry, one immutable ORGANIZATION_DELETED envelope, and its
+reference-only delivery job. A final lease fence after publication rolls back
+all tentative effects on expiry. Duplicate recovery verifies the original
+terminal envelope and delivery identity without producing another event.
+
+`OrganizationDeletionTerminalContract` exercises the actual restricted adapter
+and SQL capability, including remaining descendants, API refusal, tenant/lease
+fences, late queue-write expiry rollback, one completion across replay, retained
+terminal identity and cross-tenant event isolation. Earlier page processing is
+staged by the administrator fixture: these checks do not establish traversal,
+physical object removal, realtime delivery or browser completion. Compilation
+passed with zero warnings/errors; migration and runtime contract execution are
+pending CI for the implementing revision.
+
+The finalizer is not registered in the Worker or invoked by production requests.
+Bounded graph stages, lifecycle event delivery, independent Owner completion
+observation and full exact-image acceptance remain required before enabling the
+complete flow. Existing deletion acknowledgments remain request acknowledgments.

@@ -965,7 +965,7 @@ public sealed partial class WorkManagementService(
         }
 
         var organization = await organizationStore.FindOrganizationAsync(board.OrganizationId, cancellationToken);
-        if (organization is null || organization.Status == OrganizationStatus.Deleting)
+        if (organization is null || organization.Status is OrganizationStatus.Deleting or OrganizationStatus.Deleted)
         {
             return null;
         }

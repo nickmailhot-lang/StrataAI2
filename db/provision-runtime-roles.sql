@@ -52,7 +52,10 @@ GRANT SELECT,INSERT ON organization_deletion_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_deletion_requests,organization_deletion_progress TO strataai_api_runtime;
 GRANT SELECT(tenant_id,request_id,actor_id,accepted_version) ON organization_deletion_requests TO strataai_worker_runtime;
 GRANT SELECT ON organization_deletion_progress TO strataai_worker_runtime;
--- Page mutation capabilities remain disabled until lease-fenced graph processing is implemented.
+-- Only the graph-proving terminal capability is enabled; no direct graph writes.
+GRANT EXECUTE ON FUNCTION public.finish_organization_deletion(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint) TO strataai_worker_runtime;
+GRANT SELECT ON organization_lifecycle_events TO strataai_api_runtime;
+GRANT SELECT(tenant_id,event_id,actor_id,entity_version,created_at,ready_at) ON organization_lifecycle_events TO strataai_worker_runtime;
 GRANT SELECT,INSERT ON organization_departure_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_removal_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_event_streams TO strataai_api_runtime;

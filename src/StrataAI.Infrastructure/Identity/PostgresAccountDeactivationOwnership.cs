@@ -53,7 +53,7 @@ internal sealed class PostgresAccountDeactivationOwnership(PostgresConnectionFac
                 await using var parent = new NpgsqlCommand("SELECT status FROM organizations WHERE id=@id;", root.Connection, root.Transaction);
                 parent.Parameters.AddWithValue("id", id);
                 if (await parent.ExecuteScalarAsync(cancellationToken) is not string status) return "ownership_changed";
-                if (status == "DELETING") continue;
+                if (status is "DELETING" or "DELETED") continue;
                 var owners = new List<Guid>();
                 await using var members = new NpgsqlCommand("""
                     SELECT user_id FROM organization_members

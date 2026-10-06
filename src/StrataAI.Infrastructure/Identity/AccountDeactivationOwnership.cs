@@ -28,7 +28,7 @@ internal sealed class InMemoryAccountDeactivationOwnership(IOrganizationStore or
             var membership = await organizations.FindMembershipAsync(id, plan.UserId, cancellationToken);
             if (membership is not { Active: true, Role: OrganizationRole.Owner }) continue;
             var organization = await organizations.FindOrganizationAsync(id, cancellationToken);
-            if (organization is null || organization.Status == OrganizationStatus.Deleting) continue;
+            if (organization is null || organization.Status is OrganizationStatus.Deleting or OrganizationStatus.Deleted) continue;
             var remaining = false;
             foreach (var owner in await organizations.ListActiveOwnerUserIdsAsync(id, cancellationToken))
             {

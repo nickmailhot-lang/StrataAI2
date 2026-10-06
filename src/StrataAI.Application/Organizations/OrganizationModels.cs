@@ -14,6 +14,7 @@ public enum OrganizationStatus
     Active,
     Archived,
     Deleting,
+    Deleted,
 }
 
 public sealed record OrganizationRecord(
