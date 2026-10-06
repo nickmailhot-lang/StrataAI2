@@ -33,3 +33,18 @@ Production sources and receipts use PostgreSQL forced RLS with actor-private acc
 Focused model, producer, HTTP, browser consumer, transport, component, and recovery fixtures exist. Local browser tests cover canonical validation, account replacement, cancellation, lost responses, return visits, and bounded recovery storage. Local .NET compilation does not prove runtime acceptance; native SQL and HTTP execution must pass CI for the relevant revision.
 
 Broader native replay expiry/capacity/concurrency evidence and full PRD-01 acceptance remain incomplete. The full Board regression suite has reported timeout failures despite narrower scenarios passing; investigate these rather than treating focused success as a full-suite result. Exact-image browser, performance, accessibility, lifecycle, and realtime acceptance must also be verified before closing the ticket. Navigation observations do not by themselves prove the PRD's telemetry or performance requirements.
+
+### Acceptance evidence map
+
+The following fixtures cover navigation-specific requirements from [PRD-01](https://github.com/nickmailhot-lang/StrataAI2/issues/1). A fixture's existence is not a passing result. Check its execution for the same application revision before using it as acceptance evidence.
+
+| Requirement or scenario | Executable evidence | Verification boundary |
+| --- | --- | --- |
+| Canonical fields, actor and target admission, immutable originals | [Producer tests](../tests/StrataAI.Api.Tests/NavigationInteractionProducerTests.cs), [store tests](../tests/StrataAI.Api.Tests/NavigationInteractionStoreTests.cs), [browser acknowledgment tests](../apps/web/src/app/navigationInteraction.test.ts) | Browser checks execute locally; .NET runtime execution requires CI on this workstation. |
+| Invalid input, anonymous or wrong actor, lost response, duplicate submission, access revocation | [HTTP tests](../tests/StrataAI.Api.Tests/NavigationInteractionHttpTests.cs), [exact-image HTTP checks](../scripts/ci/test-navigation-observations.sh) | Demo host tests and production container checks are distinct requirements. |
+| Forced RLS, private receipts, expired receipt reclamation, capacity, rollback, recovery after revision changes | [Restricted PostgreSQL fixture](../scripts/ci/test-navigation-interaction-sources.sql) | Requires the native PostgreSQL CI job; compilation cannot verify these guarantees. |
+| Concurrent requests with the same original key | [Exact-image HTTP checks](../scripts/ci/test-navigation-observations.sh) | All concurrent responses must contain the same persisted original, through the release proxy. |
+| Retained original, return visit, account isolation, expiry and bounded browser storage | [Recovery tests](../apps/web/src/app/navigationRecovery.test.ts) | Local storage tests do not prove server admission or native browser behavior. |
+| Desktop, tablet, phone, keyboard Back, lost response followed by an entity edit, accessibility | [Native browser checks](../tests/browser/navigation-observations.spec.ts) | Runs at 1280, 768 and 390 pixels against release images; execution remains pending for the current implementation. |
+
+Full foundation acceptance also requires hierarchy integrity, all mutable-record audit fields, lifecycle-aware deep links, preserved Board viewport context, authorized two-client updates and reconnect recovery, and the stated capacity and performance targets. Those requirements span other feature suites and their acceptance records; this navigation evidence map does not establish their completion.
