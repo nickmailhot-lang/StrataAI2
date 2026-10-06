@@ -45,21 +45,32 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     // Organization changes remount the keyed route and fence late results.
   }, []);
   function valid(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
-  function deny(status: number) {
+  function withdrawAccount() {
     reviewedActor.current = undefined;
-    setBoardName(undefined); setActorRole(undefined); setInput(empty); setIntent(undefined); currentIntent.current = undefined; setAck(undefined); setPreferences(undefined); setDenied(true);
+    setStorageKey(undefined); setBoardName(undefined); setActorRole(undefined); setInput(empty); setIntent(undefined);
+    currentIntent.current = undefined; setAck(undefined); setPreferences(undefined); setDenied(false);
+  }
+  function deny(status: number) {
+    withdrawAccount(); setDenied(true);
     setError(`${boardId !== undefined ? 'Board' : 'Organization'} invitations are unavailable to your account.`);
     if (status === 401) navigate('/login', { replace: true });
   }
   function begin() { if (pending.current) return; const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); return controller; }
   function finish(controller: AbortController) { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
   async function verifyAccount(controller: AbortController, expected: string) {
-    const me = await request('/me', {}, controller); if (!valid(controller)) return false;
-    if ([401, 403, 404].includes(me.status)) { deny(me.status); return false; }
-    const id = (me.body as { id?: unknown } | undefined)?.id;
-    if (me.status !== 200 || !validInvitationKey(id)) throw new Error('Invalid actor');
-    if (id !== expected) { deny(401); return false; }
-    return true;
+    try {
+      const me = await request('/me', {}, controller); if (!valid(controller)) return false;
+      if ([401, 403, 404].includes(me.status)) { deny(me.status); return false; }
+      const id = (me.body as { id?: unknown } | undefined)?.id;
+      if (me.status !== 200 || !validInvitationKey(id)) throw new Error('Invalid actor');
+      if (id !== expected) { deny(401); return false; }
+      return true;
+    } catch (reason) {
+      // Temporary uncertainty withdraws display authority, while the saved
+      // original request remains reserved for a fresh permission check.
+      if (mounted.current && pending.current === controller) withdrawAccount();
+      throw reason;
+    }
   }
   async function load() {
     const controller = begin(); if (!controller) return;

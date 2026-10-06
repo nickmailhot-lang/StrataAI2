@@ -1,10 +1,10 @@
 import { expect, test } from './releaseTest';
 
-for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
-  test(`PRD-03/60-TC-05/06/07: committed invitation is withheld after cookie replacement (Board=${boardSurface}, ${width}px)`, async ({ page, context }) => {
+for (const width of [1280, 390]) for (const boardSurface of [false, true]) for (const fault of ['replacement', 'unavailable']) {
+  test(`PRD-03/60-TC-05/06/07: committed invitation is withheld after account ${fault} (Board=${boardSurface}, ${width}px)`, async ({ page, context }) => {
     test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
-    const suffix = `${boardSurface}-${width}-${Date.now()}`;
+    const suffix = `${fault}-${boardSurface}-${width}-${Date.now()}`;
     const owner = { email: `creation-owner-${suffix}@example.test`, password: 'creation-account-correct-horse', displayName: 'Invitation reviewer' };
     const other = { ...owner, email: `creation-other-${suffix}@example.test`, displayName: 'Replacement account' };
     const registered = await context.request.post('/auth/register', { headers, data: owner });
@@ -24,6 +24,14 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
     const email = `creation-recipient-${suffix}@example.test`;
     const writes: { key: string | undefined; body: unknown }[] = [];
     let original: Record<string, unknown> | undefined;
+    let profileUnavailable = false;
+    await page.route(url => url.pathname === '/me', async route => {
+      if (!profileUnavailable) { await route.continue(); return; }
+      profileUnavailable = false;
+      // Inject only account-read transport failure after the real command has
+      // committed. No invitation, grant, receipt or acknowledgment is fabricated.
+      await route.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"session_unavailable"}' });
+    });
     await page.route(url => url.pathname === root, async route => {
       if (route.request().method() !== 'POST') { await route.continue(); return; }
       expect(new URL(route.request().url()).searchParams.get('expectedActorId')).toBe(actor);
@@ -32,22 +40,36 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
       const acknowledgment = await response.json();
       if (writes.length === 1) {
         original = acknowledgment;
-        expect((await context.request.post('/auth/login', { headers, data: other })).status()).toBe(200);
+        if (fault === 'replacement')
+          expect((await context.request.post('/auth/login', { headers, data: other })).status()).toBe(200);
+        else profileUnavailable = true;
       } else expect(acknowledgment).toEqual(original);
       await route.fulfill({ response });
     });
     await page.goto(path); await page.getByLabel(/^Invitation email/).fill(email);
     await page.getByRole('button', { name: 'Create invitation', exact: true }).focus(); await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    if (fault === 'replacement') await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    else {
+      await expect(page.getByRole('button', { name: 'Retry permission check' })).toBeEnabled();
+      await expect(page.getByLabel(/^Invitation email/)).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Private reviewed Board', exact: true })).toHaveCount(0);
+    }
     await expect(page.getByText('Invitation creation acknowledged.', { exact: true })).toHaveCount(0);
     await expect(page.getByText(email, { exact: true })).toHaveCount(0);
     expect(writes).toHaveLength(1);
     const retained = await page.evaluate(key => sessionStorage.getItem(key), storage);
     expect(JSON.parse(retained!).key).toBe(writes[0].key);
-    expect((await context.request.get(root)).status()).toBe(404);
-    expect((await context.request.post('/auth/login', { headers, data: owner })).status()).toBe(200);
-    await page.goto(path);
+    if (fault === 'replacement') {
+      expect((await context.request.get(root)).status()).toBe(404);
+      expect((await context.request.post('/auth/login', { headers, data: owner })).status()).toBe(200);
+      await page.goto(path);
+    } else {
+      const persisted = await context.request.get(root); expect(persisted.status()).toBe(200);
+      expect((await persisted.json()).items).toHaveLength(1);
+      await page.getByRole('button', { name: 'Retry permission check' }).focus(); await page.keyboard.press('Enter');
+    }
     await expect(page.getByText(/prior invitation request is awaiting acknowledgment/)).toBeVisible();
+    expect(writes).toHaveLength(1);
     await page.getByRole('button', { name: 'Retry same invitation' }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('Invitation creation acknowledged.', { exact: true })).toBeVisible();
     expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);

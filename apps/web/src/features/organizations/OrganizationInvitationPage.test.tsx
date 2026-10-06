@@ -35,6 +35,42 @@ function fetcher(...responses: (Response | Error)[]) {
 async function submit() { fireEvent.change(await screen.findByLabelText(/^Invitation email/), { target: { value: input.email } }); fireEvent.click(screen.getByRole('button', { name: 'Create invitation' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); sessionStorage.clear(); });
 describe('Administrator invitation intent and creation acknowledgment', () => {
+  it.each([
+    [false, false, 'unavailable'], [true, false, 'unavailable'],
+    [false, true, 'unavailable'], [true, true, 'unavailable'],
+    [false, true, 'malformed'], [true, true, 'network'],
+  ] as const)('withdraws private display on an unconfirmed account and recovers only the original request (Board=%s, committed=%s, %s)', async (boardSurface, committed, failure) => {
+    let profiles = 0;
+    const mock = vi.fn(async (path: string, options?: RequestInit) => {
+      if (path === '/me') {
+        if (++profiles === (committed ? 4 : 3)) {
+          if (failure === 'network') throw new Error('temporary profile transport failure');
+          return reply(failure === 'malformed' ? { id: 'invalid' } : {}, failure === 'unavailable' ? 503 : 200);
+        }
+        return reply(profile);
+      }
+      if (options?.method === 'POST') return reply(boardSurface ? boardAck : ack, 201);
+      return reply(boardSurface ? boardAdmission : admission);
+    });
+    vi.stubGlobal('fetch', mock); if (boardSurface) boardMount(); else mount();
+    await submit();
+    await screen.findByRole('button', { name: 'Retry permission check' });
+    expect(screen.queryByDisplayValue(input.email)).not.toBeInTheDocument();
+    expect(screen.queryByText('Private maintenance')).not.toBeInTheDocument();
+    expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+    const scopeKey = storedKey + (boardSurface ? `:board:${board}` : '');
+    const saved = sessionStorage.getItem(scopeKey)!;
+    expect(JSON.parse(saved).input).toEqual(input);
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(committed ? 1 : 0);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry permission check' }));
+    await screen.findByText(/prior invitation request is awaiting acknowledgment/);
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(committed ? 1 : 0);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry same invitation' }));
+    await screen.findByText('Invitation creation acknowledged.');
+    const posts = mock.mock.calls.filter(call => call[1]?.method === 'POST');
+    expect(posts).toHaveLength(committed ? 2 : 1);
+    for (const post of posts) expect(new Headers(post[1]?.headers).get('Idempotency-Key')).toBe(JSON.parse(saved).key);
+  });
   it.each([false, true])('withholds saved input and Board names after account replacement during admission (Board=%s)', async boardSurface => {
     let current = profile;
     const scopeKey = storedKey + (boardSurface ? `:board:${board}` : '');
