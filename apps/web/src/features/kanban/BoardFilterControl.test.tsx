@@ -256,12 +256,13 @@ it('replaces bounded member pages while retaining selected IDs and enforces the 
   const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices()).mockResolvedValueOnce(memberChoices(items, items[49].userId)).mockResolvedValueOnce(memberChoices([next]));
   sessionStorage.setItem(storage(), JSON.stringify({ keyword: '', labels: [], members: items.slice(0, 24).map(m => m.userId), match: 'all' }));
   vi.stubGlobal('fetch', fetch); mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Choose assignees' }));
-  await screen.findByRole('checkbox', { name: 'Person 0' });
-  fireEvent.click(screen.getByRole('checkbox', { name: 'Person 24' }));
-  expect(screen.getByRole('checkbox', { name: 'Person 25' })).toBeDisabled();
-  fireEvent.click(screen.getByRole('checkbox', { name: 'Person 0' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Next assignee choices' })); fireEvent.click(await screen.findByRole('checkbox', { name: 'Next person' }));
-  expect(screen.queryByRole('checkbox', { name: 'Person 1' })).not.toBeInTheDocument(); expect(screen.getByText('25 selected assignees')).toBeInTheDocument();
+  const first = await screen.findByLabelText('Person 0');
+  expect(first).toHaveAttribute('type', 'checkbox');
+  fireEvent.click(screen.getByLabelText('Person 24'));
+  expect(screen.getByLabelText('Person 25')).toBeDisabled();
+  fireEvent.click(first);
+  fireEvent.click(screen.getByRole('button', { name: 'Next assignee choices' })); fireEvent.click(await screen.findByLabelText('Next person'));
+  expect(screen.queryByLabelText('Person 1')).not.toBeInTheDocument(); expect(screen.getByText('25 selected assignees')).toBeInTheDocument();
   expect(fetch.mock.calls[3][0]).toBe(`/boards/${board}/assignable-members?after=${items[49].userId}`);
 });
 it('restores selected member criteria after fresh identity admission', async () => {

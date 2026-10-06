@@ -130,3 +130,13 @@ the observer. Missing feedback still fails; the 100ms feedback, 200ms detail,
 discovery is not execution evidence and none of these repairs closes a ticket.
 
 Browser acceptance source validation now has an explicit strict TypeScript project covering playwright.config.ts and every tests/browser TypeScript fixture/helper. The root pins Node 24 declarations to 24.19.1 in the lockfile and exposes npm run typecheck:browser; web-quality executes it after the SPA typecheck, before browser runtime stages. Three performance fixtures now explicitly reject a missing browser observer before awaiting feedback, with their existing budgets and sampling unchanged. Full browser and SPA typechecks pass locally, along with both readiness tracker regressions and all seven retained performance-evidence cases. This resolves the missing-declaration limitation recorded for the notification fixtures; static validation is still distinct from actual exact-image runtime acceptance, which remains pending.
+
+The stable full web run for departure revision `ac4502d` completed with
+1,508 passing tests and one 5-second timeout in the existing Board filter
+50-person paging/25-assignee-cap case (123 files, 202.43 seconds). That case
+passed in isolation with the original source. Its repeated checkbox role
+searches now use accessible label queries and retain the first connected
+checkbox reference; the checkbox type, disabled cap, paging replacement,
+selected count and exact cursor request assertions remain. All 35 filter
+cases pass locally. The original 5-second timeout is unchanged. This focused
+result does not establish full-suite or native release acceptance.
