@@ -13,6 +13,9 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await page.goto(`/app/${org.id}`);
     await page.getByRole('link', { name: 'Organization settings', exact: true }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByLabel(/^Organization name/)).toHaveValue('Organization metadata');
+    const runtime = await context.request.get('/api/runtime'); expect(runtime.status()).toBe(200);
+    if ((await runtime.json()).mode === 'production')
+      await expect(page.getByText('Current settings checked. Review any saved changes before replacing them with your draft.', { exact: true })).toBeVisible();
     await page.getByLabel('Logo URL').fill('http://example.test/logo.png');
     await page.getByRole('button', { name: 'Save Organization settings' }).click();
     await expect(page.getByText('Use a secure HTTPS logo URL without embedded credentials, or leave it empty.')).toBeVisible();

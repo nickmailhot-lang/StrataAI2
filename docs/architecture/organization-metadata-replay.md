@@ -59,7 +59,13 @@ does not establish HTTP session expiry behavior.
 The exact-image fixture now bootstraps through the normal endpoint, observes
 pending events before Worker delivery, resumes its original cursor after a
 metadata edit, checks content-free source envelopes and wrong-actor/deleting
-refusals. Exact-image execution for replay remains pending CI.
+refusals. These checks passed the mandatory exact-image metadata step at
+`fe3376f` ([container job evidence](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37520463190/job/112469522304)).
+That overall job failed later because the Work-event crash-recovery fixture
+reset/count included the new metadata job. The fixture now limits recovery to
+Work jobs and checks that unrelated jobs and metadata readiness stay unchanged;
+its repaired execution is pending. The metadata step alone does not establish
+complete release acceptance.
 Production also maps the authenticated SignalR endpoint
 `/organizations/live/metadata`, with stream method `Watch(organizationId, cursor)`.
 It shares the existing same-origin guard and transport buffer limits. One
@@ -84,6 +90,10 @@ baseline passed 1,567 checks with two workers and unchanged assertions/timeouts;
 that baseline predates the new browser consumer. Current full CI remains required.
 
 The release-image scenario also requires the actual discovery heading to reflect
-the canonical rename; its execution remains pending. Settings draft-preserving
-integration, other applicable views, real mid-read session
+the canonical rename; its execution remains pending. Settings now use the same
+channel with scoped account-bound reads, preserved typing and explicit saved-state
+review, including original-save recovery after a later revision. All 24 focused
+settings checks passed; release-image two-tab execution remains pending. See
+[settings behavior and evidence](organization-settings.md#live-changes-and-preserved-drafts).
+Other applicable views, real mid-read session
 withdrawal, remaining event types and Demo parity are still unfinished.

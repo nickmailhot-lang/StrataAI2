@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { isNotificationProfile } from '../notifications/notificationInbox';
+import { watchOrganizationMetadata } from './organizationMetadataLive';
 
 type Organization = { id: string; name: string; description: string | null; logoUrl: string | null; status: number; version: number };
 type Draft = Pick<Organization, 'name' | 'description' | 'logoUrl'>;
@@ -47,6 +49,13 @@ function Settings({ organizationId }: { organizationId: string }) {
   const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
   const [review, setReview] = useState(false); const [unavailable, setUnavailable] = useState(false);
   const [intent, setIntent] = useState<Intent>();
+  const [liveActor, setLiveActor] = useState<string>();
+  const [liveNotice, setLiveNotice] = useState<string>();
+  const [reload, setReload] = useState(0);
+  const [backgroundReading, setBackgroundReading] = useState(false);
+  const actor = useRef<string | undefined>(undefined);
+  const refreshQueued = useRef(false);
+  const current = useRef({ draft, intent }); current.current = { draft, intent };
   const pending = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(false);
   useEffect(() => {
@@ -54,32 +63,60 @@ function Settings({ organizationId }: { organizationId: string }) {
     return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; };
     // The keyed route remounts when the Organization changes.
   }, []);
+  useEffect(() => {
+    if (!liveActor) return;
+    const refresh = () => {
+      refreshQueued.current = true; setReview(true);
+      setLiveNotice('Checking current Organization settings. Your draft and original save are preserved.');
+      setReload(value => value + 1);
+    };
+    return watchOrganizationMetadata({ organizationId, userId: liveActor, invalidate: refresh, reset: refresh, unavailable: refresh });
+  }, [organizationId, liveActor]);
+  useEffect(() => {
+    if (!refreshQueued.current || busy) return;
+    refreshQueued.current = false; void load(true, true);
+  }, [reload, busy]);
   function deny(status: number) {
+    actor.current = undefined; setLiveActor(undefined); refreshQueued.current = false; setLiveNotice(undefined);
     setRecord(undefined); setDraft(undefined); setLatest(undefined); setIntent(undefined); setUnavailable(true);
     setError('Organization settings are unavailable to your account.');
     if (status === 401) navigate('/login', { replace: true });
   }
-  async function load(preserve: boolean) {
-    if (pending.current || intent) return;
+  async function load(preserve: boolean, live = false) {
+    if (pending.current || intent && !live) return;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined);
+    setBackgroundReading(live);
     try {
-      const result = await command('/organizations', {}, controller);
+      const before = await command('/me', {}, controller);
+      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+      if (before.status === 401) { deny(401); return; }
+      if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
+      if (actor.current && actor.current !== before.body.id) { deny(401); return; }
+      const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {}, controller);
       if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
       if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-      if (result.status !== 200 || !Array.isArray(result.body) || !result.body.every(valid)
-        || new Set(result.body.map(item => item.organization.id)).size !== result.body.length) throw new Error('Invalid settings response');
-      const found = result.body.find(item => item.organization.id === organizationId);
-      if (!found || found.role > 1 || found.organization.status !== 0) { deny(404); return; }
+      if (result.status !== 200 || !valid(result.body)) throw new Error('Invalid settings response');
+      const found = result.body;
+      if (found.organization.id !== organizationId || found.role > 1 || found.organization.status !== 0) { deny(404); return; }
+      const after = await command('/me', {}, controller);
+      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+      if (after.status === 401) { deny(401); return; }
+      if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
+      if (after.body.id !== before.body.id) { deny(401); return; }
+      actor.current = after.body.id; setLiveActor(after.body.id);
       setUnavailable(false);
-      if (!preserve || !draft) {
+      const retained = current.current;
+      if (retained.intent) { setLatest(found); setReview(true); }
+      else if (!preserve || !retained.draft) {
         setRecord(found); setDraft(fields(found.organization)); setLatest(undefined); setReview(false);
-      } else if (matches(found.organization, draft)) {
+      } else if (matches(found.organization, retained.draft)) {
         setRecord(found); setDraft(fields(found.organization)); setLatest(undefined); setReview(false);
-        setNotice('Current Organization settings match your draft.');
+        if (!live) setNotice('Current Organization settings match your draft.');
       } else { setLatest(found); setReview(true); }
+      if (live) setLiveNotice('Current settings checked. Review any saved changes before replacing them with your draft.');
     } catch {
       if (mounted.current && pending.current === controller) setError('Unable to load current settings. Your draft is preserved. Please retry.');
-    } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
+    } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); setBackgroundReading(false); } }
   }
   async function save(event?: React.FormEvent, retry = false) {
     event?.preventDefault();
@@ -87,12 +124,23 @@ function Settings({ organizationId }: { organizationId: string }) {
     if (!draft.name.trim() || draft.name.trim().length > 160) { setError('Enter an Organization name of at most 160 characters.'); return; }
     const proposed = intent ?? { draft: { ...draft }, version: record.organization.version, key: crypto.randomUUID() };
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); setNotice(undefined);
+    setBackgroundReading(false);
     try {
+      const before = await command('/me', {}, controller);
+      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+      if (before.status === 401) { deny(401); return; }
+      if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
+      if (!actor.current || actor.current !== before.body.id) { deny(401); return; }
       const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': proposed.key }, body: JSON.stringify({ ...proposed.draft, version: proposed.version }),
       }, controller);
       if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
       if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+      const after = await command('/me', {}, controller);
+      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+      if (after.status === 401) { deny(401); return; }
+      if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
+      if (after.body.id !== before.body.id) { deny(401); return; }
       const updated = { organization: result.body, role: record.role };
       if (result.status === 200 && valid(updated) && updated.organization.id === organizationId
         && updated.organization.status === 0 && updated.organization.version === proposed.version + 1 && matches(updated.organization, proposed.draft)) {
@@ -118,6 +166,7 @@ function Settings({ organizationId }: { organizationId: string }) {
     <Typography component="h1" variant="h4">Organization settings</Typography>
     {error && <Alert severity="error">{error}</Alert>}
     {notice && <Alert severity="success" role="status">{notice}</Alert>}
+    {liveNotice && <Typography role="status">{liveNotice}</Typography>}
     {busy && <CircularProgress aria-label="Loading Organization settings" />}
     {!unavailable && <Button disabled={busy || !!intent} onClick={() => { setNotice(undefined); void load(true); }}>Load current settings</Button>}
     {intent && <><Typography role="status">The original edit is preserved until its acknowledgment is recovered. Later edits may have changed current settings.</Typography>
@@ -128,13 +177,13 @@ function Settings({ organizationId }: { organizationId: string }) {
       <Typography>Description: {latest.organization.description || 'None'}</Typography>
       <Typography>Logo URL: {latest.organization.logoUrl || 'None'}</Typography>
       <Typography>Review the saved settings before replacing them with your draft.</Typography>
-      <Button disabled={busy} onClick={() => { setRecord(latest); setDraft(fields(latest.organization)); setLatest(undefined); setReview(false); setError(undefined); }}>Discard draft and use current settings</Button>
-      <Button disabled={busy} onClick={() => { setRecord(latest); setLatest(undefined); setReview(false); setError(undefined); setNotice('Draft retained. Saving will replace the current settings you reviewed.'); }}>Keep draft after review</Button>
+      <Button disabled={busy || !!intent} onClick={() => { setRecord(latest); setDraft(fields(latest.organization)); setLatest(undefined); setReview(false); setError(undefined); }}>Discard draft and use current settings</Button>
+      <Button disabled={busy || !!intent} onClick={() => { setRecord(latest); setLatest(undefined); setReview(false); setError(undefined); setNotice('Draft retained. Saving will replace the current settings you reviewed.'); }}>Keep draft after review</Button>
     </Stack></Paper>}
     {record && draft && !unavailable && <Box component="form" onSubmit={event => void save(event)}><Stack spacing={2}>
-      <TextField label="Organization name" required value={draft.name} disabled={busy || !!intent} slotProps={{ htmlInput: { maxLength: 160 } }} onChange={event => { setDraft({ ...draft, name: event.target.value }); setNotice(undefined); }} />
-      <TextField label="Description" multiline minRows={3} value={draft.description ?? ''} disabled={busy || !!intent} onChange={event => { setDraft({ ...draft, description: event.target.value }); setNotice(undefined); }} />
-      <TextField label="Logo URL" value={draft.logoUrl ?? ''} disabled={busy || !!intent} helperText="Optional secure HTTPS URL, or leave empty." onChange={event => { setDraft({ ...draft, logoUrl: event.target.value }); setNotice(undefined); }} />
+      <TextField label="Organization name" required value={draft.name} disabled={busy && !backgroundReading || !!intent} slotProps={{ htmlInput: { maxLength: 160 } }} onChange={event => { setDraft({ ...draft, name: event.target.value }); setNotice(undefined); }} />
+      <TextField label="Description" multiline minRows={3} value={draft.description ?? ''} disabled={busy && !backgroundReading || !!intent} onChange={event => { setDraft({ ...draft, description: event.target.value }); setNotice(undefined); }} />
+      <TextField label="Logo URL" value={draft.logoUrl ?? ''} disabled={busy && !backgroundReading || !!intent} helperText="Optional secure HTTPS URL, or leave empty." onChange={event => { setDraft({ ...draft, logoUrl: event.target.value }); setNotice(undefined); }} />
       <Button type="submit" disabled={busy || review}>Save Organization settings</Button>
     </Stack></Box>}
   </Stack></Container>;

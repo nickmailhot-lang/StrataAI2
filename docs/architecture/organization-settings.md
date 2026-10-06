@@ -6,13 +6,34 @@ The screen edits name, description and optional logo URL. HTTPS absolute URLs wi
 
 Metadata PATCH carries the last reviewed Organization version. Only a valid 200 response naming the same Organization, matching the submitted metadata and advancing the version exactly once produces a saved acknowledgment. A conflict preserves the draft and disables further saves until current authorized settings load. The user can discard the draft or explicitly retain it after reviewing the current saved metadata. Permission/session loss clears draft and saved metadata; expired sessions return to sign-in.
 
-A lost, timed-out or malformed save acknowledgment preserves the original metadata, version and retry key. The screen offers **Retry original save** and prevents editing or a replacement save while recovery is unresolved. The retry submits the same command to recover its durable acknowledgment. After recovery, a current authorized read is required before editing again; an old acknowledgment cannot replace another administrator's later settings. A definite conflict or expired acknowledgment requires current-state review before a new save. Organization domain-event publication remains outstanding.
+A lost, timed-out or malformed save acknowledgment preserves the original metadata, version and retry key. The screen offers **Retry original save** and prevents editing or a replacement save while recovery is unresolved. The retry submits the same command to recover its durable acknowledgment. After recovery, a current authorized read is required before editing again; an old acknowledgment cannot replace another administrator's later settings. A definite conflict or expired acknowledgment requires current-state review before a new save. Creation/editing events now use the [canonical metadata journal, Worker readiness and protected live replay](organization-metadata-replay.md); required member/invitation event integration remains unfinished.
 
-Reads and writes have a 15-second deadline, duplicate in-flight submission is refused, unmount aborts pending work, and late responses cannot replace a different route or restore private data. The settings route remounts on Organization change. Server/edge error text is not displayed as trusted product content.
+Each HTTP read/write has a 15-second deadline, duplicate in-flight submission is refused, unmount aborts pending work, and late responses cannot replace a different route or restore private data. Reads and saves check the account before and after their operation. The settings read targets one Organization directly rather than loading the whole directory. Account replacement or confirmed loss of administration clears the draft, current metadata and original-save intent. The settings route remounts on Organization change. Server/edge error text is not displayed as trusted product content.
 
-Local execution: full web component suite and typecheck/lint, plus real desktop/mobile keyboard browser scenarios for URL validation, stale-version review, lost committed-save acknowledgment and persisted reload. The new API host tests compile in the warnings-as-errors solution build; execution proof comes from required Linux CI because the local Windows host has blocked the test runner with Application Control. The existing mandatory exact-image Organization fixture also checks rejected URLs and unauthorized callers leave all Organization/member/invitation/Portal/audit state unchanged. The new browser scenarios run in the mandatory exact-image suite.
+Verification includes web components and typecheck/lint, API-host tests, restricted PostgreSQL contracts and mandatory desktop/phone keyboard scenarios against exact release images. Local .NET test execution is available. The exact-image Organization fixture checks rejected URLs and unauthorized callers leave Organization/member/invitation/Portal/audit state unchanged. Current release execution remains required; compilation alone is not runtime evidence.
 
-Full PRD-03 remains open. Follow-up commits provide member administration, bounded member paging and invitation creation controls. Invitation delivery/history, ownership governance, remaining durable Organization retry receipts, Organization discovery pagination, realtime domain-event delivery, deletion processing/retention and remaining acceptance evidence are still outstanding.
+Full PRD-03 remains open. Use the [current acceptance map](prd-03-acceptance.md) for functional coverage and outstanding work; individual settings checks do not establish complete Organization acceptance.
+
+## Live changes and preserved drafts
+
+Production settings subscribe to canonical metadata replay. Reset, change and
+interruption callbacks queue an authorized scoped refresh. A background read
+keeps draft fields editable and compares the returned snapshot with the latest
+draft, including text typed while the read was pending. A different saved version
+appears in a review panel and blocks a replacement save until explicit review.
+The read does not move focus or discard unsaved text.
+
+Live reads may verify admission and display later saved settings while an original
+save is unresolved. They preserve its body, version and key; review/discard controls
+remain disabled until that acknowledgment is recovered. Events during an in-flight
+request queue another read after the request settles. A matching live snapshot
+does not fabricate a save acknowledgment. Demo skips this unavailable channel.
+
+All 24 focused settings tests, web type checking and lint passed locally. The
+new release-image scenario covers genuine Worker-delivered versions in two tabs,
+draft review, lost acknowledgment followed by a later edit, exact original
+key/body recovery, keyboard operation, phone width and automated accessibility.
+Browser TypeScript checks passed; runtime execution remains pending CI.
 
 ## Keyed metadata API recovery
 

@@ -66,16 +66,30 @@ done
 test "$completed" = 6
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$organization' AND ready_at IS NOT NULL;")" = 6
 before="$(admin "SELECT string_agg(ready_at::text,',' ORDER BY sequence) FROM work_events WHERE tenant_id='$organization';")"
+# Organization creation also publishes a canonical metadata job. Wait for its
+# ordinary completion, then prove Work crash recovery leaves it untouched.
+for attempt in $(seq 1 60); do
+  metadata_completed="$(admin "SELECT count(*)=1 AND bool_and(state='SUCCEEDED') FROM background_jobs WHERE tenant_id='$organization' AND job_type='ORGANIZATION_METADATA_EVENT_READY';")"
+  if test "$metadata_completed" = t; then break; fi
+  sleep 1
+done
+test "$metadata_completed" = t
+other_jobs_snapshot() {
+  admin "SELECT jsonb_build_object('jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$organization' AND job_type<>'WORK_EVENT_READY'),
+    'metadata',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$organization'))::text;"
+}
+other_before="$(other_jobs_snapshot)"
 # Simulate a crash after the ready effect but before acknowledgement. Reclaim
 # must preserve the existing effect rather than changing the readiness timestamp.
-admin "UPDATE background_jobs SET state='PENDING',attempt_count=0,lease_id=NULL,worker_id=NULL,lease_expires_at=NULL,available_at=clock_timestamp() WHERE tenant_id='$organization';" >/dev/null
+admin "UPDATE background_jobs SET state='PENDING',attempt_count=0,lease_id=NULL,worker_id=NULL,lease_expires_at=NULL,available_at=clock_timestamp() WHERE tenant_id='$organization' AND job_type='WORK_EVENT_READY';" >/dev/null
 for attempt in $(seq 1 60); do
-  completed="$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$organization' AND state='SUCCEEDED';")"
+  completed="$(admin "SELECT count(*) FROM background_jobs WHERE tenant_id='$organization' AND job_type='WORK_EVENT_READY' AND state='SUCCEEDED';")"
   if test "$completed" = 6; then break; fi
   sleep 1
 done
 test "$completed" = 6
 test "$(admin "SELECT string_agg(ready_at::text,',' ORDER BY sequence) FROM work_events WHERE tenant_id='$organization';")" = "$before"
+test "$(other_jobs_snapshot)" = "$other_before"
 # References alone cannot redirect readiness to a different board or actor.
 docker compose -f compose.release.yml stop worker >/dev/null
 request POST "/lists/$list/cards" '{"title":"Held event"}' "$(uuid)" >/dev/null
