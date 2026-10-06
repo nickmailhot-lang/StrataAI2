@@ -25,11 +25,27 @@ END $$;
 REVOKE ALL ON FUNCTION capture_organization_membership_activation() FROM PUBLIC;
 CREATE TRIGGER organization_membership_activation AFTER INSERT OR UPDATE ON organization_members
  FOR EACH ROW EXECUTE FUNCTION capture_organization_membership_activation();
+-- PostgreSQL names a CHECK that references multiple columns at table scope,
+-- even when it was written inline with entity_id. Identify the two original
+-- rules structurally and require both; do not guess their generated names.
+DO $$
+DECLARE rule record; removed integer := 0;
+BEGIN
+ FOR rule IN SELECT conname FROM pg_constraint
+  WHERE conrelid='public.organization_metadata_events'::regclass AND contype='c'
+   AND (position('entity_id = tenant_id' in pg_get_constraintdef(oid))>0
+    OR position('ORGANIZATION_CREATED' in pg_get_constraintdef(oid))>0
+      AND position('ORGANIZATION_UPDATED' in pg_get_constraintdef(oid))>0
+      AND position('entity_version' in pg_get_constraintdef(oid))>0)
+ LOOP
+  EXECUTE format('ALTER TABLE public.organization_metadata_events DROP CONSTRAINT %I',rule.conname);
+  removed := removed+1;
+ END LOOP;
+ IF removed<>2 THEN RAISE EXCEPTION 'Original Organization subject constraints are unavailable'; END IF;
+END $$;
 ALTER TABLE organization_metadata_events
  DROP CONSTRAINT organization_metadata_events_event_type_check,
  DROP CONSTRAINT organization_metadata_events_entity_type_check,
- DROP CONSTRAINT organization_metadata_events_entity_id_check,
- DROP CONSTRAINT organization_metadata_events_check,
  DROP CONSTRAINT organization_metadata_events_tenant_id_entity_version_key,
  ADD CONSTRAINT organization_metadata_event_subject CHECK(
   (event_type='ORGANIZATION_CREATED' AND entity_type='Organization' AND entity_id=tenant_id AND entity_version=1)
