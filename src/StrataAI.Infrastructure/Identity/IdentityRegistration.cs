@@ -16,6 +16,9 @@ public static class IdentityRegistration
         IConfiguration configuration,
         RuntimeDescriptor runtime)
     {
+        // Standalone module composition needs the same transaction diagnostics
+        // as the API/Worker hosts. AddLogging preserves host-configured providers.
+        services.AddLogging();
         var emailEnabled=services.AddIdentityDeliveryTokens(configuration,runtime);
         var allowSelfRegistration = GetBoolean(
             configuration["STRATAAI_AUTH_ALLOW_SELF_REGISTRATION"],

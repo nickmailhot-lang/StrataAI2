@@ -201,3 +201,13 @@ All 45 focused creation/discovery tests, web TypeScript and lint pass. Browser
 TypeScript covers the desktop/phone exact-image scenario, which requires a real
 committed creation and later metadata to survive a lost-response same-key retry.
 Native execution and the expanded full web run remain pending.
+
+CI run [37432005432](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37432005432)
+at `f776b1d` completed with PostgreSQL integration and web quality passing, but
+Domain tests failed (628 passed, 15 failed). All 15 reported the same unresolved
+`ILogger<InMemoryIdentityUnitOfWork>` during standalone Identity module
+composition. The identity registration now adds logging services, preserving
+host-configured providers and transaction diagnostics. Source compilation does
+not establish runtime repair; the Domain/API stages must run again in CI.
+Images/container/security/release stages were skipped after the failed source
+gate, so this run provides no exact-image browser or release acceptance.
