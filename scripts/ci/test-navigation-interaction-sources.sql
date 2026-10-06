@@ -16,6 +16,10 @@ INSERT INTO boards(id,tenant_id,name,visibility,background_type,background_value
 INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES
  ('07800000-0000-0000-0000-000000000021','07800000-0000-0000-0000-000000000010','07800000-0000-0000-0000-000000000020','07800000-0000-0000-0000-000000000001','MEMBER','ACTIVE',now(),now());
 
+INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at) VALUES
+ ('07800000-0000-0000-0000-000000000040','07800000-0000-0000-0000-000000000010','07800000-0000-0000-0000-000000000020','Navigation List','500000000000000000000000000000',now(),now());
+INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at) VALUES
+ ('07800000-0000-0000-0000-000000000041','07800000-0000-0000-0000-000000000010','07800000-0000-0000-0000-000000000020','07800000-0000-0000-0000-000000000040','Navigation Card','500000000000000000000000000000',now(),now());
 SET LOCAL ROLE strataai_navigation_ci;
 SELECT set_config('app.identity_subject','07800000-0000-0000-0000-000000000001',true);
 DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; org uuid:='07800000-0000-0000-0000-000000000010'; board uuid:='07800000-0000-0000-0000-000000000020'; event uuid:='07800000-0000-0000-0000-000000000030'; BEGIN
@@ -34,6 +38,19 @@ DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; org uuid:='078
  EXCEPTION WHEN SQLSTATE 'P0002' THEN NULL; END;
  IF (SELECT count(*) FROM navigation_interaction_events)<>1 THEN RAISE EXCEPTION 'Refused source survived rollback'; END IF;
 END $$;
+DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; org uuid:='07800000-0000-0000-0000-000000000010'; board uuid:='07800000-0000-0000-0000-000000000020'; card uuid:='07800000-0000-0000-0000-000000000041'; BEGIN
+ IF NOT append_navigation_interaction('07800000-0000-0000-0000-000000000032',actor,'CARD_OPENED',org,board,card,1,now()) THEN RAISE EXCEPTION 'Admitted Card refused'; END IF;
+ IF append_navigation_interaction(gen_random_uuid(),actor,'CARD_OPENED',org,board,card,2,now())
+  OR append_navigation_interaction(gen_random_uuid(),actor,'CARD_OPENED',org,board,'07800000-0000-0000-0000-000000000099',1,now())
+ THEN RAISE EXCEPTION 'Stale/missing Card accepted'; END IF;
+ IF (SELECT count(*) FROM navigation_interaction_events)<>2 THEN RAISE EXCEPTION 'Denied Card source persisted'; END IF;
+END $$;
+RESET ROLE;
+UPDATE board_lists SET lifecycle_state='ARCHIVED',archived_at=now() WHERE id='07800000-0000-0000-0000-000000000040';
+SET LOCAL ROLE strataai_navigation_ci;
+DO $$ BEGIN
+ IF append_navigation_interaction(gen_random_uuid(),'07800000-0000-0000-0000-000000000001','CARD_OPENED','07800000-0000-0000-0000-000000000010','07800000-0000-0000-0000-000000000020','07800000-0000-0000-0000-000000000041',1,now()) THEN RAISE EXCEPTION 'Archived parent Card admitted'; END IF;
+END $$;
 SELECT set_config('app.identity_subject','07800000-0000-0000-0000-000000000002',true);
 DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM navigation_interaction_events) THEN RAISE EXCEPTION 'Other actor disclosure'; END IF;
@@ -43,6 +60,8 @@ SELECT set_config('app.identity_subject','',true);
 DO $$ BEGIN IF EXISTS(SELECT 1 FROM navigation_interaction_events) THEN RAISE EXCEPTION 'Missing actor disclosure'; END IF; END $$;
 RESET ROLE;
 DO $$ BEGIN
+ IF (SELECT version FROM cards WHERE id='07800000-0000-0000-0000-000000000041')<>1
+  OR (SELECT version FROM boards WHERE id='07800000-0000-0000-0000-000000000020')<>1 THEN RAISE EXCEPTION 'Navigation changed shared revisions'; END IF;
  IF NOT (SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='navigation_interaction_events'::regclass) THEN RAISE EXCEPTION 'Forced RLS missing'; END IF;
 END $$;
 ROLLBACK;
