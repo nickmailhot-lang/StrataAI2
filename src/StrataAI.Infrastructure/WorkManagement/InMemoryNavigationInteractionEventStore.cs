@@ -1,3 +1,4 @@
+using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
@@ -9,10 +10,40 @@ namespace StrataAI.Infrastructure.WorkManagement;
 // recheck current target admission without changing Board or Card revisions.
 internal sealed class InMemoryNavigationInteractionEventStore(DemoIdentityTransactionScope scope,
     IIdentityStore identities, IOrganizationStore organizations,
-    IWorkManagementStore work, IWorkManagementUnitOfWork transactions)
-    : INavigationInteractionEventStore, IDemoIdentityTransactionParticipant
+    IWorkManagementStore work, IWorkManagementUnitOfWork transactions, IClock clock)
+    : INavigationInteractionEventStore, INavigationInteractionReplayStore, IDemoIdentityTransactionParticipant
 {
     private readonly Dictionary<Guid, NavigationInteractionEvent> _sources = [];
+    private readonly Dictionary<(Guid Actor, Guid Request), (string Fingerprint, NavigationInteractionEvent Source, DateTimeOffset Expires)> _receipts = [];
+    public async Task<NavigationInteractionEvent?> AppendOrReplayAuthorizedAsync(Guid requestId, string fingerprint,
+        NavigationInteractionEvent candidate, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+        if (!scope.Owns(candidate.ActorId)) throw new InvalidOperationException("Navigation requires owning identity transaction.");
+        if (requestId == Guid.Empty || fingerprint is null || fingerprint.Length != 64
+            || fingerprint.Any(c => c is not (>= '0' and <= '9') and not (>= 'a' and <= 'f'))) return null;
+        var rollback = CaptureRollback();
+        try {
+            var key = (candidate.ActorId, requestId);
+            if (_receipts.TryGetValue(key, out var receipt)) {
+                var original = receipt.Source;
+                if (receipt.Fingerprint != fingerprint || receipt.Expires <= clock.UtcNow
+                    || original.EventType != candidate.EventType || original.OrganizationId != candidate.OrganizationId
+                    || original.BoardId != candidate.BoardId || original.EntityType != candidate.EntityType
+                    || original.Version != candidate.Version
+                    || (original.EntityType != "ApplicationContext" && original.EntityId != candidate.EntityId)) return null;
+                return await AppendAuthorizedAsync(original, ct) ? original : null;
+            }
+            if (!await AppendAuthorizedAsync(candidate, ct)) { rollback(); return null; }
+            var now = clock.UtcNow;
+            foreach (var expired in _receipts.Where(r => r.Key.Actor == candidate.ActorId && r.Value.Expires <= now)
+                .OrderBy(r => r.Value.Expires).ThenBy(r => r.Key.Request.ToString("D"), StringComparer.Ordinal)
+                .Take(100).Select(r => r.Key).ToArray()) _receipts.Remove(expired);
+            if (_receipts.Count(r => r.Key.Actor == candidate.ActorId) >= 1000
+                || _receipts.Values.Any(r => r.Source.EventId == candidate.EventId)) { rollback(); return null; }
+            _receipts.Add(key, (fingerprint, candidate, now.AddHours(24))); return candidate;
+        } catch { rollback(); throw; }
+    }
     public async Task<bool> AppendAuthorizedAsync(NavigationInteractionEvent source, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -57,5 +88,10 @@ internal sealed class InMemoryNavigationInteractionEventStore(DemoIdentityTransa
         if (_sources.Count >= 10000) return false;
         _sources.Add(source.EventId, source); return true;
     }
-    public Action CaptureRollback() => DemoIdentityRollback.Dictionary(_sources);
+    public Action CaptureRollback()
+    {
+        var sources = DemoIdentityRollback.Dictionary(_sources);
+        var receipts = DemoIdentityRollback.Dictionary(_receipts);
+        return () => { sources(); receipts(); };
+    }
 }

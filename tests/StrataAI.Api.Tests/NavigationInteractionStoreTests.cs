@@ -30,6 +30,26 @@ public sealed partial class ApiHostTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.AppendAuthorizedAsync(source, ct));
         async Task<IdentityOperation<bool>> Append(NavigationInteractionEvent candidate) => await unit.ExecuteAsync(candidate.ActorId,
             async () => IdentityOperation<bool>.Success(await store.AppendAuthorizedAsync(candidate, ct)), ct);
+        var receipts = app.Services.GetRequiredService<INavigationInteractionReplayStore>();
+        var request = Guid.NewGuid(); var digest = new string('a', 64);
+        async Task<IdentityOperation<NavigationInteractionEvent>> Retry(Guid key, string fingerprint, NavigationInteractionEvent candidate) =>
+            await unit.ExecuteAsync(actor, async () => {
+                var value = await receipts.AppendOrReplayAuthorizedAsync(key, fingerprint, candidate, ct);
+                return value is null ? IdentityOperation<NavigationInteractionEvent>.Failure("navigation_unavailable")
+                    : IdentityOperation<NavigationInteractionEvent>.Success(value);
+            }, ct);
+        var original = NavigationInteractionEvent.BoardOpened(Guid.NewGuid(), actor, org, board.Id, board.Version, at);
+        Assert.Equal(original, (await Retry(request, digest, original)).Value);
+        var duplicate = NavigationInteractionEvent.BoardOpened(Guid.NewGuid(), actor, org, board.Id, board.Version, at.AddSeconds(1));
+        Assert.Equal(original, (await Retry(request, digest, duplicate)).Value);
+        Assert.False((await Retry(request, new string('b', 64), duplicate)).Succeeded);
+        var rollbackRequest = Guid.NewGuid();
+        Assert.False((await unit.ExecuteAsync<bool>(actor, async () => {
+            Assert.NotNull(await receipts.AppendOrReplayAuthorizedAsync(rollbackRequest, digest, duplicate, ct));
+            return IdentityOperation<bool>.Failure("navigation_receipt_rollback");
+        }, ct)).Succeeded);
+        var replacement = NavigationInteractionEvent.BoardOpened(Guid.NewGuid(), actor, org, board.Id, board.Version, at.AddSeconds(2));
+        Assert.Equal(replacement, (await Retry(rollbackRequest, digest, replacement)).Value);
         Assert.True((await Append(NavigationInteractionEvent.ApplicationContextChanged(Guid.NewGuid(), actor, org, at))).Value);
         Assert.True((await Append(source)).Value);
         Assert.True((await Append(source)).Value);
