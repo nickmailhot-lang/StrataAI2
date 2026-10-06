@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { watchOrganizationMetadata } from './organizationMetadataLive';
 
 type Member = { membershipId: string; userId: string; displayName: string; email: string; role: number;
   accountStatus: string; emailVerified: boolean; isUsableOwner: boolean; joinedAt: string; updatedAt: string; version: number };
@@ -47,16 +48,34 @@ function Members({ organizationId }: { organizationId: string }) {
   const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
   const [retryIntent, setRetryIntent] = useState<RemovalIntent>();
   const [recovered, setRecovered] = useState(false);
+  const [liveNotice, setLiveNotice] = useState<string>(); const [reloadVersion, setReloadVersion] = useState(0);
+  const refreshQueued = useRef(false); const epoch = useRef(0);
+  const actor = useRef<string | undefined>(undefined);
+  const currentIntent = useRef(retryIntent); currentIntent.current = retryIntent;
   const retry = useRef<HTMLButtonElement>(null); const acknowledgment = useRef<HTMLDivElement>(null);
   const retryFocus = useRef(false);
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const cancel = useRef<HTMLButtonElement>(null);
   const recovery = useRef<HTMLButtonElement>(null); const reload = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    mounted.current = true; void load(null, [], true);
+    mounted.current = true; void load(null, []);
     return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; };
     // Route identity is fenced by the keyed component.
   }, []);
+  useEffect(() => {
+    if (!actorId) return;
+    const refresh = () => {
+      epoch.current++; refreshQueued.current = true;
+      setPage(undefined); setSelected(undefined); setReviewId(undefined);
+      setLiveNotice('Checking current membership and access. Any original removal retry is preserved.');
+      setReloadVersion(value => value + 1);
+    };
+    return watchOrganizationMetadata({ organizationId, userId: actorId, invalidate: refresh, reset: refresh, unavailable: refresh });
+  }, [organizationId, actorId]);
+  useEffect(() => {
+    if (!refreshQueued.current || busy) return;
+    refreshQueued.current = false; void load(null, [], true);
+  }, [reloadVersion, busy]);
   useEffect(() => {
     if (!busy && recovered && retryFocus.current) {
       if (document.activeElement === document.body) acknowledgment.current?.focus();
@@ -65,6 +84,7 @@ function Members({ organizationId }: { organizationId: string }) {
   }, [busy, recovered]);
   function allowed(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
   function deny(status: number) {
+    actor.current = undefined; refreshQueued.current = false; setLiveNotice(undefined);
     setPage(undefined); setSelected(undefined); setReviewId(undefined); setActorId(undefined); setNotice(undefined); setRetryIntent(undefined); setRecovered(false);
     setHistory([]); setCursor(null); setDenied(true); setError('Organization members are unavailable to your account.');
     if (status === 401) navigate('/login', { replace: true });
@@ -76,17 +96,22 @@ function Members({ organizationId }: { organizationId: string }) {
   function finish(controller: AbortController) {
     if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); }
   }
-  async function load(after: string | null, previous: (string | null)[], initial = false) {
-    if (retryIntent) return;
+  async function account(controller: AbortController, expected = actor.current) {
+    const me = await request('/me', {}, controller); if (!allowed(controller)) return;
+    if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
+    const id = (me.body as { id?: unknown } | undefined)?.id;
+    if (me.status !== 200 || !uuid(id)) throw new Error('Invalid account');
+    if (expected && id !== expected) { deny(401); return; }
+    return id;
+  }
+  async function load(after: string | null, previous: (string | null)[], live = false) {
+    if (retryIntent && !live) return;
     const controller = begin(); if (!controller) return;
-    setPage(undefined); setSelected(undefined); setNotice(undefined); setRecovered(false);
+    const started = epoch.current;
+    setPage(undefined); setSelected(undefined);
+    if (!live) { setNotice(undefined); setRecovered(false); }
     try {
-      if (initial) {
-        const me = await request('/me', {}, controller); if (!allowed(controller)) return;
-        if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
-        const id = (me.body as { id?: unknown } | undefined)?.id;
-        if (me.status !== 200 || !uuid(id)) throw new Error('Invalid account'); setActorId(id);
-      }
+      const before = await account(controller); if (!before) return;
       const result = await request(`${root}${after ? `?after=${encodeURIComponent(after)}` : ''}`, {}, controller);
       if (!allowed(controller)) return;
       if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
@@ -98,7 +123,13 @@ function Members({ organizationId }: { organizationId: string }) {
           || after !== null && row.userId.toLowerCase() <= after.toLowerCase())
         || !(data.nextCursor === null || data.items.length === 50 && uuid(data.nextCursor) && data.nextCursor === data.items[49].userId))
         throw new Error('Invalid member page');
+      const afterActor = await account(controller, before); if (!afterActor || started !== epoch.current) return;
+      actor.current = afterActor; setActorId(afterActor);
+      if (live && currentIntent.current) {
+        setLiveNotice('Current access checked. Retry the original removal before reviewing later membership.'); return;
+      }
       setPage(data); setCursor(after); setHistory(previous); setReviewId(undefined); setDenied(false);
+      if (live) setLiveNotice('Current members checked. Review a membership again before confirming removal.');
     } catch { if (mounted.current && pending.current === controller) setError('Unable to load current members. Please retry.'); }
     finally { finish(controller); }
   }
@@ -106,13 +137,16 @@ function Members({ organizationId }: { organizationId: string }) {
     if (retryIntent) return;
     setRecovered(false);
     const controller = begin(); if (!controller) return;
+    const started = epoch.current;
     setSelected(undefined); setReviewId(userId); setNotice(undefined); setPage(undefined);
     try {
+      const before = await account(controller); if (!before) return;
       const result = await request(`${root}/${encodeURIComponent(userId)}`, {}, controller); if (!allowed(controller)) return;
       if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
       const data = result.body as Review | undefined;
       if (result.status !== 200 || !data || data.organizationId !== organizationId || ![0, 1].includes(data.actorRole)
         || !(data.member === null || member(data.member) && data.member.userId === userId)) throw new Error('Invalid member review');
+      if (!await account(controller, before) || started !== epoch.current) return;
       if (!data.member) {
         setReviewId(undefined); setNotice(uncertain
           ? 'This person is currently no longer an internal member. The earlier removal acknowledgment was unavailable.'
@@ -129,11 +163,13 @@ function Members({ organizationId }: { organizationId: string }) {
     const controller = begin(); if (!controller) return;
     setNotice(undefined);
     try {
+      if (!await account(controller, intent.actor)) return;
       const path = `${root}/${encodeURIComponent(intent.target)}?expectedVersion=${intent.version}&expectedActorId=${encodeURIComponent(intent.actor)}`;
       const result = await request(path, { method: 'DELETE', headers: { 'Idempotency-Key': intent.key } }, controller);
       if (!allowed(controller)) return;
       const code = (result.body as { code?: unknown } | undefined)?.code;
       if ([401, 403].includes(result.status) || result.status === 404 && code !== 'member_not_found') { deny(result.status); return; }
+      if (!await account(controller, intent.actor)) return;
       setSelected(undefined); setPage(undefined);
       if (result.status === 204) {
         setRetryIntent(undefined); setRecovered(recover); setReviewId(recover ? intent.target : undefined);
@@ -163,8 +199,9 @@ function Members({ organizationId }: { organizationId: string }) {
     <Typography>Internal membership controls access to Organization boards. Portal relationships are managed separately.</Typography>
     {error && <Alert severity="error">{error}</Alert>}
     {notice && <Alert ref={acknowledgment} tabIndex={-1} severity="info" role="status">{notice}</Alert>}
+    {liveNotice && <Alert severity="info">{liveNotice}</Alert>}
     {busy && <CircularProgress aria-label="Loading Organization members" />}
-    {!denied && <Button ref={reload} disabled={busy || !!retryIntent} onClick={() => void load(null, [], !actorId)}>Load current members</Button>}
+    {!denied && <Button ref={reload} disabled={busy || !!retryIntent} onClick={() => void load(null, [])}>Load current members</Button>}
     {reviewId && !selected && !denied && <Button ref={recovery} disabled={busy || !!retryIntent} onClick={() => void review(reviewId, !recovered)}>Review current membership</Button>}
     {retryIntent && !denied && <Button ref={retry} disabled={busy} onClick={() => {
       retryFocus.current = document.activeElement === retry.current; void remove(true);

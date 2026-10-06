@@ -25,6 +25,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const members = page.getByRole('link', { name: 'Organization members', exact: true });
       await members.focus(); await expect(members).toBeFocused(); await members.press('Enter');
       await expect(page).toHaveURL(new RegExp(`/app/${org}/members$`));
+      if ((await (await context.request.get('/api/runtime')).json()).mode === 'production')
+        await expect(page.getByText('Current members checked. Review a membership again before confirming removal.', { exact: true })).toBeVisible();
       const action = page.getByRole('button', { name: 'Review removal of Invited administrator' }); await expect(action).toBeVisible();
       await action.focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Cancel removal' })).toBeFocused();

@@ -42,3 +42,33 @@ and renewed keyboard review. Native execution remains pending CI.
 All 19 focused member-screen cases and 12 shared Problem-boundary cases pass.
 Web/browser TypeScript and zero-warning lint pass. Native coverage also includes
 a WCAG 2.2 AA automated check of the confirmation; actual execution is pending CI.
+
+## Live membership reconciliation
+
+The screen subscribes to the production Organization stream after validating its
+account and directory admission. Stream changes, reset and unavailability clear
+cached member names and any unconfirmed removal dialog immediately. Reads that
+began before that invalidation cannot restore stale consent. A queued first-page
+refresh waits for the current request to finish and checks the account before
+and after reading; review and removal use the same identity checks. Account
+replacement or confirmed access refusal clears private state and recovery.
+
+An original uncertain removal retains its exact account, target, version and
+idempotency key. Live reconciliation can recheck current administrative access
+while that intent is unresolved, but does not show new member rows or permit a
+new confirmation. It does not send another DELETE automatically. The explicit
+original retry continues to recover that command's acknowledgment, with later
+membership review kept separate. An in-flight removal is allowed to finish;
+live invalidation does not discard its result or substitute a new request.
+
+All 26 focused member-screen cases pass locally, including live consent
+retirement, late-review fencing, live access refusal, account replacement,
+lost acknowledgment and live reconciliation during an in-flight removal.
+Web and browser TypeScript and zero-warning lint pass. New mandatory desktop
+and phone browser scenarios use ordinary invitations, actual release Worker
+delivery and observed SignalR member additions, retire an open confirmation,
+lose a committed removal response and then replay its exact key after actual
+membership restoration. They also check attribution, accessibility and narrow
+viewport layout. Their runtime execution remains pending CI. Member removal,
+departure and invitation source integration and Demo event parity remain
+unfinished; this consumer does not complete PRD-03.
