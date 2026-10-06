@@ -42,6 +42,24 @@ it('withdraws cached names immediately on live reset and fences the previous rea
   expect(screen.queryByRole('article')).not.toBeInTheDocument();
   expect(screen.getByText('No administrable archived Boards on this page.')).toBeVisible();
 });
+it('disables retired restore consent during dialog exit even after fresh archive access is confirmed', async () => {
+  const fetch = vi.fn(async (path: string, init: RequestInit) => response(path === '/me' ? profile
+    : init.method === 'POST' ? { ...board, version: 3, lifecycleState: 'active' } : page));
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  const confirm = await screen.findByRole('button', { name: 'Confirm restore' });
+  await waitFor(() => expect(watchOrganizationBoards).toHaveBeenCalled());
+  vi.useFakeTimers();
+  await act(async () => vi.mocked(watchOrganizationBoards).mock.calls.at(-1)![0].reset());
+  expect(screen.getByText('Current archived boards checked.')).toBeInTheDocument();
+  expect(confirm).toBeDisabled(); fireEvent.click(confirm);
+  expect(fetch.mock.calls.filter(call => call[1].method === 'POST')).toHaveLength(0);
+  await act(async () => vi.advanceTimersByTimeAsync(500));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Restore Planning board' })));
+  const fresh = screen.getByRole('button', { name: 'Confirm restore' }); expect(fresh).toBeEnabled();
+  await act(async () => fireEvent.click(fresh));
+  expect(fetch.mock.calls.filter(call => call[1].method === 'POST')).toHaveLength(1);
+});
 it('keeps the original unconfirmed key while a live reset withholds its private review', async () => {
   let writes = 0;
   const fetch = vi.fn((path: string, init: RequestInit) => {

@@ -166,7 +166,7 @@ function Archive({ org }: { org: string }) {
       {intent && <Typography>The original request is unresolved. Retry that same request.</Typography>}
       <Button disabled={reading || writing} onClick={() => void load(undefined, undefined, 'retry')}>Check current archive for this change</Button>
     </DialogContent><DialogActions>{!intent && <Button disabled={writing} onClick={() => setReview(undefined)}>Cancel change</Button>}
-      <Button color={deleting ? 'error' : 'primary'} disabled={reading || writing || !ready || !intent && (changed || conflict || deleting && !confirmed)} onClick={() => void change()}>
+      <Button color={deleting ? 'error' : 'primary'} disabled={reading || writing || !ready || !review && !intent || !intent && (changed || conflict || deleting && !confirmed)} onClick={() => void change()}>
         {intent ? 'Retry this change' : deleting ? 'Confirm permanent deletion' : 'Confirm restore'}</Button>
     </DialogActions></Dialog></Container>;
 }

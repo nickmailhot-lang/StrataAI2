@@ -324,5 +324,22 @@ bare Card GET, which returned 405 rather than testing confidentiality.
 These are repairs for observed failures, not passing native evidence. Local
 navigation component tests, TypeScript/lint and shell syntax pass; all corrected
 restricted and native scenarios require the next exact-image execution. The
-Board restore consent race remains under investigation, and the full release
-gate remains incomplete. No failed case is skipped or removed.
+Board restore consent race is addressed below; the full release gate remains
+incomplete. No failed case is skipped or removed.
+
+### Board restore trace and withdrawn consent
+
+The retained `5a2433f` browser trace confirms that the initial archive read
+completed before SignalR's initial reset. The restore review opened during that
+gap: the enabled assertion passed, then the reset disabled the button before
+Playwright pressed Enter. No restore POST was sent. The resulting page correctly
+withdrew consent and completed another protected archive read.
+
+The archive confirmation now stays disabled when no reviewed Board or unresolved
+original exists, including the MUI exit interval after re-admission succeeds.
+The component regression invokes the real live callback, confirms no stale write,
+then opens a fresh review and sends exactly one command. The native scenario waits
+for the initial live reset's protected archive-read announcement before opening
+restore consent. It retains the keyboard command, lost actual acknowledgment,
+original-key retry, observer delivery and child-state assertions. Current native
+execution remains pending exact-image CI.

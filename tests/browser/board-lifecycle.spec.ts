@@ -65,6 +65,9 @@ for (const width of [1280, 390]) {
       await expect(page).toHaveURL(new RegExp(`${archivePath}$`));
       await expect(page.getByRole('heading', { name: board.name, exact: true })).toBeVisible();
       await expect(page.getByText('Active retained card', { exact: true })).toHaveCount(0);
+      // The initial live reset retires consent. Wait for its protected archive
+      // read before opening a new review, rather than keying into a closing one.
+      await expect(page.getByRole('status')).toHaveText('Current archived boards checked.');
       const restores: { key: string | undefined; body: string | null }[] = [];
       await page.route(`**/boards/${board.id}/restore`, async route => {
         restores.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
