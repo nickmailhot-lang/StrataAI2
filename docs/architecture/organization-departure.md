@@ -89,3 +89,9 @@ actual committed response, rejoins, replays the original acknowledgment and
 checks preserved current membership, identical request body/key and keyboard
 recovery. Focused browser source tests pass and the API project compiles without
 warnings; native API/database/browser execution remains pending CI.
+
+Demo final-actor-loss coverage now uses a keyed departure through the real
+Organization service. It checks that rollback removes the published receipt
+and restores membership, Card revision, assignment and Work events. Retrying
+the same key after restored session admission commits the departure and receipt.
+The API-host project builds without warnings; execution still requires CI.

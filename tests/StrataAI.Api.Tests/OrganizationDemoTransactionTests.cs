@@ -117,12 +117,15 @@ public sealed partial class ApiHostTests
         var originalCard = (await store.FindCardAsync(card.Id, ct))!;
         var originalMembership = await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct);
         var before = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
+        var key = Guid.NewGuid();
+        var receipts = app.Services.GetRequiredService<IOrganizationDepartureReplayStore>();
         events!.Armed = true;
         var refused = departing
-            ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct)
+            ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct, key)
             : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
         Assert.False(refused.Succeeded); Assert.Equal("session_unavailable", refused.ErrorCode);
         Assert.Equal(1, events.Withdrawals);
+        Assert.Null(await receipts.ReadAsync(f.Organization, f.Recipient, key, ct));
         Assert.Equal(originalCard, await store.FindCardAsync(card.Id, ct));
         Assert.Equal(originalMembership, await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct));
         var after = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
@@ -134,9 +137,10 @@ public sealed partial class ApiHostTests
         Assert.Contains(assignments.Value!.Items, row => row.UserId == f.Recipient);
         events.Armed = false;
         var removed = departing
-            ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct)
+            ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct, key)
             : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
         Assert.True(removed.Succeeded);
+        if (departing) Assert.NotNull(await receipts.ReadAsync(f.Organization, f.Recipient, key, ct));
         Assert.False((await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct))!.Active);
         Assert.Equal(originalCard.Version + 1, (await store.FindCardAsync(card.Id, ct))!.Version);
         Assert.DoesNotContain((await work.ListCardMembersAsync(card.Id, f.Owner, cancellationToken: ct)).Value!.Items,
