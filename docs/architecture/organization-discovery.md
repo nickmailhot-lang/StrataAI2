@@ -224,3 +224,14 @@ component cases passed, web source typecheck/lint and native browser TypeScript
 checks passed. The complete 1,476-test web suite passed before this migration;
 a new complete suite is required for the changed source revision. Native browser
 and exact-image acceptance results are still pending CI.
+
+The complete web suite at browser revision `262958d` passed all 1,489 cases in
+122 files. This is component/source evidence, not native release acceptance.
+A subsequent contract audit found that the directory reader rejected embedded
+control whitespace even though the server's existing Board name normalizer allows
+it. The reader now follows the same nonblank/160-character name rules and retains
+UUID, binding, revision, ordering and cursor checks. A focused regression requires
+a server-valid embedded line break to remain discoverable through its canonical
+Board link; names are still rendered as escaped React text. The Board link
+accessible name collapses whitespace so keyboard/screen-reader naming stays
+consistent while preserving the saved display text.

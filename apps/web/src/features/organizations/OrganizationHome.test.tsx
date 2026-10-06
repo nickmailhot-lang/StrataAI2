@@ -141,6 +141,16 @@ describe("PRD-01/03/04 organization discovery", () => {
     expect(screen.queryByText('Previous account Board')).not.toBeInTheDocument();
     expect(screen.queryByText('Council')).not.toBeInTheDocument(); expect(live.watch).not.toHaveBeenCalled();
   });
+  it('displays a server-valid Board name with embedded whitespace without refusing its whole page', async () => {
+    const row = { id: '44444444-4444-4444-8444-444444444444', name: 'Council\nwork Board', version: 1 };
+    stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1' ? response(organizations[0])
+      : response({ organizationId: 'org-1', items: [row], nextCursor: null })));
+    mount('/app/org-1');
+    const link = await screen.findByRole('link', { name: 'Council work Board' });
+    expect(link).toHaveAttribute('href', `/app/org-1/boards/${row.id}`);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('replaces Board pages and returns to the first page without accumulating names', async () => {
     const first = { id: '44444444-4444-4444-8444-444444444444', name: 'First page Board', version: 1 };
     const later = { id: '55555555-5555-4555-8555-555555555555', name: 'Later page Board', version: 2 };

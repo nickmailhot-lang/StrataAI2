@@ -73,7 +73,7 @@ function boardDirectory(value: unknown, organizationId: string, after?: string):
     if (!value || typeof value !== "object") throw new WorkRequestError(503, null);
     const row = value as Partial<BoardSummary>;
     if (!uuid(row.id) || typeof row.name !== "string" || !row.name.trim() || row.name.length > 160
-      || Array.from(row.name).some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127) || !Number.isSafeInteger(row.version) || row.version! < 1
+      || !Number.isSafeInteger(row.version) || row.version! < 1
       || after && row.id <= after || items.length && row.id <= items[items.length - 1].id)
       throw new WorkRequestError(503, null);
     items.push(row as BoardSummary);
@@ -312,6 +312,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
                     key={board.id}
                     component={Link}
                     to={`/app/${organizationId}/boards/${board.id}`}
+                    aria-label={board.name.replace(/\s+/g, " ").trim()}
                     sx={{ justifyContent: "flex-start" }}
                   >
                     {board.name}
