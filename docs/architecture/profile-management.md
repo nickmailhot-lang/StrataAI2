@@ -62,6 +62,27 @@ PRD-02 remains open. Verify current account lifecycle, preference consumers,
 accessibility and all remaining acceptance requirements against the current
 release images before closure.
 
+### Known timezone acceptance gap
+
+AUTH-FR-010 applies to timestamp displays as well as Card date controls.
+[Notifications](../../apps/web/src/features/notifications/NotificationCenterPage.tsx)
+use the [shared user date/time formatter](../../apps/web/src/features/auth/userDateTime.ts),
+and [activity history](../../apps/web/src/features/kanban/ActivityHistoryControl.tsx)
+retains the current account's locale/timezone alongside its admitted page.
+However, [Card comments](../../apps/web/src/features/kanban/CardCommentsControl.tsx)
+currently render `createdAt` directly for both reviewed comments and newly
+acknowledged comments. Their review retains the actor but discards the validated
+profile preferences. That display does not satisfy the profile-timezone rule.
+
+The repair must retain independently validated current-account preferences for
+both review and acknowledgment, format the immutable instant for display, and
+preserve canonical stored timestamps and replay payloads. Verify a timezone that
+changes the displayed calendar day, account replacement, late responses,
+reconnect recovery and an unchanged original acknowledgment. Use the existing
+[comment component fixtures](../../apps/web/src/features/kanban/CardCommentsControl.test.tsx)
+and native browser coverage; the current passing formatter tests alone do not
+prove this consumer's acceptance.
+
 `tests/browser/account.spec.ts` runs Chromium against the actual web/API release
 images and PostgreSQL. It checks registration, sign-in through Nginx, profile
 persistence, two-page stale-save recovery and logout/session revocation. Browser
