@@ -39,3 +39,13 @@ account and event state, and successful identical recovery after admission retur
 This injected denial verifies boundary wiring; actual elapsed expiry and durable
 release acceptance still require native CI evidence. Strict compilation is checked
 separately from native test execution.
+
+The mandatory exact-image identity command fixture also blocks the actual event
+stream read using CI-only table locks after initial account/session admission.
+For both initial sync and `after=0` replay, it observes the API runtime waiting on
+the event-stream query, holds the read beyond the original session expiry, then
+requires HTTP 401 with no profile/event/cursor disclosure or cookie. Complete
+account/session/audit/stream/event/receipt state must remain unchanged. Restoring
+the fixture session lifetime must recover the canonical profile and latest cursor.
+Bash syntax passes; native execution remains pending. These disposable locks do
+not change production grants, schema, isolation policy or runtime behavior.

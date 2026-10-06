@@ -185,6 +185,28 @@ blocked() {
   return 1
 }
 
+# Block the real event read after initial actor admission, then let the original
+# session expire before protected snapshot/replay disclosure. No fabricated events.
+for sync_route in /me/sync '/me/sync?after=0'; do
+  original_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$primary_session';")"
+  admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$primary_session';" >/dev/null
+  sync_before="$(state)"
+  hold 'LOCK TABLE identity_event_streams,identity_events IN ACCESS EXCLUSIVE MODE;'
+  request GET "$sync_route" '{}' > "$scratch/sync-expiry.status" &
+  request_pid=$!
+  blocked '%identity_event_streams%'
+  release 'SELECT pg_sleep(12);'
+  wait "$request_pid"; request_pid=''
+  test "$(cat "$scratch/sync-expiry.status")" = 401
+  jq -e '.code=="session_unavailable"' "$scratch/response.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$user|Atomic profile saved|USER_REGISTERED|cursor|latestSequence" "$scratch/response.json"
+  scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
+  test "$sync_before" = "$(state)"
+  admin "UPDATE sessions SET expires_at='$original_expiry'::timestamptz WHERE id='$primary_session';" >/dev/null
+  test "$(request GET "$sync_route" '{}')" = 200
+  jq -e --arg user "$user" '.profile.id==$user and .profile.version==2 and .latestSequence==103' "$scratch/response.json" >/dev/null
+done
+
 for operation in profile deactivate replay profile_retry; do
   before="$(profile_state)"
   hash="$(awk '$6=="strataai_session" {print $7}' "$scratch/primary.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1)"
