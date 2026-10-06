@@ -31,12 +31,16 @@ public sealed partial class ApiHostTests
         Assert.Equal(org, detail.GetProperty("organization").GetProperty("id").GetGuid());
         Assert.Equal("Private admission fixture", detail.GetProperty("organization").GetProperty("name").GetString());
         Assert.Equal(1, detail.GetProperty("organization").GetProperty("version").GetInt64());
+        Assert.Equal((int)OrganizationRole.Owner, detail.GetProperty("role").GetInt32());
         using var ownerPortal = await owner.GetAsync(route + "?surface=PORTAL", ct);
         Assert.Equal(HttpStatusCode.NotFound, ownerPortal.StatusCode);
         using var outsiderInternal = await outsider.GetAsync(route + "?surface=INTERNAL", ct);
         Assert.Equal(HttpStatusCode.NotFound, outsiderInternal.StatusCode);
         using var outsiderMetadata = await outsider.GetAsync($"/organizations/{org}", ct);
         Assert.Equal(HttpStatusCode.NotFound, outsiderMetadata.StatusCode);
+        Assert.True(outsiderMetadata.Headers.CacheControl!.Private); Assert.True(outsiderMetadata.Headers.CacheControl.NoStore);
+        Assert.Equal("organization_not_found", (await outsiderMetadata.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("code").GetString());
+        Assert.DoesNotContain("Private admission fixture", await outsiderMetadata.Content.ReadAsStringAsync(ct));
         using var emptyMetadata = await owner.GetAsync($"/organizations/{Guid.Empty}", ct);
         Assert.Equal(HttpStatusCode.NotFound, emptyMetadata.StatusCode);
         using var outsiderPortal = await outsider.GetAsync(route + "?surface=PORTAL", ct);
@@ -78,6 +82,10 @@ public sealed partial class ApiHostTests
         await members.AddOrRestoreMemberAsync(org, user, OrganizationRole.Member, now, ct);
         using var both = await portal.GetAsync(route + "?surface=INTERNAL", ct); Assert.Equal(HttpStatusCode.OK, both.StatusCode);
         using var memberMetadata = await portal.GetAsync($"/organizations/{org}", ct); Assert.Equal(HttpStatusCode.OK, memberMetadata.StatusCode);
+        var memberDetail = await memberMetadata.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal((int)OrganizationRole.Member, memberDetail.GetProperty("role").GetInt32());
+        Assert.Equal(1, memberDetail.GetProperty("organization").GetProperty("version").GetInt64());
+        Assert.Equal("Private admission fixture", memberDetail.GetProperty("organization").GetProperty("name").GetString());
         Assert.Equal(OrganizationRemoveMemberResult.Removed, await members.RemoveMemberAsync(org, user, now.AddSeconds(1), ct));
         using var revoked = await portal.GetAsync(route + "?surface=INTERNAL", ct); Assert.Equal(HttpStatusCode.NotFound, revoked.StatusCode);
         using var revokedMetadata = await portal.GetAsync($"/organizations/{org}", ct); Assert.Equal(HttpStatusCode.NotFound, revokedMetadata.StatusCode);
