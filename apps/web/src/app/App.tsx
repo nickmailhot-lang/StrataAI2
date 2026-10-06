@@ -22,6 +22,7 @@ import { ArchivedBoardsPage } from "../features/kanban/ArchivedBoardsPage";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
 import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
+import { OrganizationDeletePage } from "../features/organizations/OrganizationDeletePage";
 import { OrganizationLeavePage } from "../features/organizations/OrganizationLeavePage";
 import { OrganizationInvitationPage, BoardInvitationPage } from "../features/organizations/OrganizationInvitationPage";
 import { OrganizationInvitationHistoryPage, BoardInvitationHistoryPage } from "../features/organizations/OrganizationInvitationHistoryPage";
@@ -37,6 +38,9 @@ const routes = [
   { path: "/app", element: <OrganizationHome /> },
   { path: "/app/profile", element: <ProfilePage /> },
   { path: "/app/invitations", element: <InvitationsPage /> },
+  // Deletion withdraws normal surface access. The operation independently
+  // authorizes its review/receipt and must retain an unresolved original intent.
+  { path: "/app/:organizationId/delete", element: <OrganizationDeletePage /> },
   { path: "/invitation", element: <InvitationLinkPage /> },
   { path: "/verify-email", element: <VerifyEmailPage /> },
   { path: "/forgot-password", element: <PasswordRecoveryPage /> },

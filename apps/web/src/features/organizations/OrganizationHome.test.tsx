@@ -337,3 +337,11 @@ it('returns keyboard focus to creation only after cancellation refreshes the cur
   const currentOpener = await screen.findByRole('button', { name: 'Create organization' });
   await waitFor(() => expect(currentOpener).toHaveFocus()); expect(fetcher).toHaveBeenCalledTimes(2);
 });
+
+it.each([0, 1, 2])('offers the deletion operation link only to a current Owner, role %s', async role => {
+  stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1'
+    ? response({ ...organizations[0], role }) : response({ organizationId: 'org-1', items: [], nextCursor: null })));
+  mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+  const link = screen.queryByRole('link', { name: 'Request Organization deletion' });
+  if (role === 0) expect(link).toHaveAttribute('href', '/app/org-1/delete'); else expect(link).not.toBeInTheDocument();
+});

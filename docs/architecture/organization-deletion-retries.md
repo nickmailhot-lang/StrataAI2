@@ -67,10 +67,49 @@ fresh key, Owner demotion, cross-tenant read denial, immutable grants and
 reserved expiry checks must not change the snapshot. Bash syntax passes;
 these native scenarios await CI execution.
 
-Explicit browser owner confirmation and same-key recovery still need
-implementation. Completed Organization graph/file deletion, audit retention,
-terminal ORGANIZATION_DELETED publication and two-client lifecycle recovery
-are also outstanding. A 202 receipt cannot satisfy those requirements.
+## Browser confirmation and recovery
+
+Current Owners can open **Request Organization deletion** from Organization
+home. `/app/{id}/delete` is an independent operation route: it performs its own
+canonical ACTIVE Organization and Owner review with `/me` before and after,
+rather than inheriting normal surface polling. Normal access is withdrawn by
+the deletion request; polling must not unmount an unresolved original intent.
+This route exposes no internal app navigation/data without its own admission.
+The separate Owner Portal and ordinary surface checks retain their boundaries.
+
+The MUI confirmation names the currently reviewed Organization and explains
+that normal Organization/Board access will stop and reminders will suspend.
+Cancel receives keyboard focus and produces no write. Confirm captures an
+immutable original account, reviewed version and UUID key. Unknown outcomes
+clear private review metadata, disable new reviews and offer only explicit
+**Retry original deletion request** with the same path/account/version/key.
+Every request has a 15-second deadline and late route responses are fenced.
+The pending intent lives in the mounted operation, not across a browser reload.
+
+The account is checked before each write and also bound by the API query.
+Current permission/version refusals require a new canonical review and renewed
+explicit confirmation before a fresh key. Denied recovery clears the original
+intent and metadata; switched accounts navigate to sign-in. A 202 displays
+**Deletion request acknowledged. Deletion has not been confirmed complete.**
+No ordinary read absence is presented as proof of terminal deletion.
+
+Confirmation exit focuses the recovery control or acknowledgment status;
+cancellation returns focus to the review action. Routing tests require recovery
+to remain mounted past the normal access polling interval without bypassing
+other surfaces. Browser checks cover cancellation, Owner-only controls,
+review/account fences, repeated immutable recovery, fresh reviewed version/key
+after conflict, denied recovery, deadlines and route/late response fencing.
+Focused source checks pass; current full/native verification remains pending.
+
+Desktop/phone native scenarios use actual Owner/Admin accounts and invitation
+acceptance, require Admin API/UI denial, keyboard cancel with unchanged state,
+WCAG 2.2 AA, actual committed DELETE followed by a lost response, withdrawn
+Organization/Board access for both accounts, same-key 202 recovery and honest
+request-only status/focus. These scenarios are implemented but await CI.
+
+Completed Organization graph/file deletion, audit retention, terminal
+ORGANIZATION_DELETED publication and two-client lifecycle recovery remain
+outstanding. A 202 receipt cannot satisfy those requirements.
 See the [acceptance map](prd-03-acceptance.md),
 [Organization transactions](organization-command-transactions.md),
 [creation recovery](organization-creation-retries.md), and

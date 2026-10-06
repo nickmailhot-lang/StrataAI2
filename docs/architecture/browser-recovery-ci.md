@@ -236,3 +236,30 @@ factory over a singleton rollback participant. Its wrapper now invokes the
 original factory, preserving that underlying participant and precision assertions.
 Compilation cannot establish fixture repair; API-host CI re-execution is pending.
 Image/container/security/release stages were skipped by the failed source gate.
+
+Organization deletion now has explicit Owner confirmation and immutable
+account/version/key recovery. Its independent operation route checks canonical
+Owner admission directly, so normal surface polling cannot destroy recovery
+after DELETING withdraws access. It distinguishes a 202 request acknowledgment
+from completed deletion, fences deadlines/late responses and keeps keyboard
+cancel/recovery/status focus. Focused source and routing checks pass; native
+Owner/Admin, lost-response, accessibility and desktop/phone scenarios await CI.
+Expanded full web verification remains pending.
+
+The combined deletion, Organization discovery and application routing check
+passed all 53 tests across three files. An earlier combined run reported one
+existing Board paging focus assertion failure; that case passed in isolation
+and in this combined recheck without changing the assertion or timeout.
+CI run [37434723078](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37434723078)
+at `96394b9` passed web, PostgreSQL and .NET quality and the source gate,
+confirming the invitation fixture repair. Image verification is still pending;
+these source results do not establish native browser or release acceptance.
+
+The same run subsequently built the immutable images and passed security,
+but container integration finished with 153 browser passes, 14 failures and
+one skip. Failures cover Board copy/lifecycle/star, Card labels, checklist
+reads, deadline/label live filters and navigation observations. Both native
+Organization creation recovery viewport cases passed. Required CI failed and
+the release bundle was skipped; Owner deletion browser scenarios are new
+and were not included in this revision. Current web type checking, lint and
+browser test TypeScript checks pass for the Owner deletion implementation.
