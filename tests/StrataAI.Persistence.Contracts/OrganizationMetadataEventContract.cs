@@ -69,6 +69,12 @@ internal static class OrganizationMetadataEventContract
             "Failed event publication retained a sequence gap.");
         Require(await Read("SELECT count(*) FROM organization_metadata_events WHERE tenant_id=@tenant", tenant) == 1,
             "Failed event publication retained an event.");
+        await using (var sources = new NpgsqlCommand("SELECT count(*) FROM audit_events WHERE tenant_id=@tenant", admin))
+        {
+            sources.Parameters.AddWithValue("tenant", tenant);
+            Require((long)(await sources.ExecuteScalarAsync(ct))! == 1,
+                "Failed event publication retained its source audit.");
+        }
         await Execute("UPDATE organizations SET name='Authoritative edit',version=2,updated_at=clock_timestamp() WHERE id=@tenant;" + audit,
             tenant, updated);
         Require(await Read("""
@@ -84,8 +90,10 @@ internal static class OrganizationMetadataEventContract
         Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 2,
             "Repeated unchanged source fabricated an event or advanced the counter.");
         foreach (var sql in new[] {
+            "INSERT INTO organization_metadata_events SELECT * FROM organization_metadata_events WHERE tenant_id=@tenant",
             "UPDATE organization_metadata_events SET metadata='{}' WHERE tenant_id=@tenant",
             "DELETE FROM organization_metadata_events WHERE tenant_id=@tenant",
+            "INSERT INTO organization_metadata_event_streams VALUES(@tenant,99)",
             "UPDATE organization_metadata_event_streams SET last_sequence=99 WHERE tenant_id=@tenant",
             "SELECT journal_organization_metadata_event()" })
         {
