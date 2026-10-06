@@ -134,6 +134,22 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(freshObserver.getByText('Terminal deletion council', { exact: true })).toHaveCount(0);
       await expect(freshObserver.getByRole('button', { name: 'Create board', exact: true })).toHaveCount(0);
       expect((await new AxeBuilder({ page: freshObserver }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      // Replace a real cookie with another valid account while the captured
+      // Member socket's original session remains valid. That old admission
+      // must never be transferred to the newly signed-in Owner.
+      const replacement = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+      try {
+        expect((await replacement.request.post('/auth/login', { headers, data: memberCredentials })).status()).toBe(200);
+        const replacementPage = await replacement.newPage(); await replacementPage.setViewportSize(viewport);
+        await replacementPage.goto(`/app/${org}`);
+        await expect(replacementPage.getByRole('status')).toHaveText('Organization deletion confirmed complete.');
+        expect((await replacement.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+        expect((await (await replacement.request.get('/me')).json()).id).toBe(actor);
+        // The server's content-free heartbeat rechecks the browser account;
+        // wait for its documented 20-second interval, without reloading.
+        await expect(replacementPage).toHaveURL(/\/login(?:\?|$)/, { timeout: 30_000 });
+        await expect(replacementPage.getByText('Organization deletion confirmed complete.', { exact: true })).toHaveCount(0);
+      } finally { await replacement.close(); }
       // This reload precedes acknowledgment replay. Terminal parent admission
       // must recover the original uncertain intent without normal graph reads.
       await page.reload(); await expect(retry).toBeFocused(); expect(writes).toHaveLength(1); expect(ordinaryReads).toBe(0);

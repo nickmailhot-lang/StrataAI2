@@ -68,6 +68,25 @@ it('refuses changed original source attribution after reconnect', async () => {
   f.next({ ...completed, page: { state: 'COMPLETED', events: [{ ...event, actorId: user }] } });
   await vi.waitFor(() => expect(f.unavailable).toHaveBeenCalledTimes(1)); expect(f.update).toHaveBeenCalledTimes(1); f.cleanup();
 });
+it('withholds a valid source when the account changes between the frame admission checks', async () => {
+  let reads = 0;
+  vi.stubGlobal('fetch', vi.fn(async () => reply(++reads < 3 ? profile : { ...profile, id: owner })));
+  const f = fixture(); await vi.waitFor(() => expect(f.connection.stream).toHaveBeenCalled());
+  f.next(completed);
+  await vi.waitFor(() => expect(f.accountUnavailable).toHaveBeenCalledTimes(1));
+  expect(reads).toBe(3); expect(f.update).not.toHaveBeenCalled(); f.cleanup();
+});
+it('fences a frame whose profile read finishes after reconnect has replaced its subscription', async () => {
+  let reads = 0; let finish!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn(async () => ++reads === 2 ? new Promise<Response>(resolve => { finish = resolve; }) : reply(profile)));
+  const f = fixture(); await vi.waitFor(() => expect(f.connection.stream).toHaveBeenCalled());
+  f.next(completed); await vi.waitFor(() => expect(finish).toBeDefined());
+  f.reconnecting(); f.reconnect();
+  finish(reply({ ...profile, id: owner }));
+  f.next(completed); await vi.waitFor(() => expect(f.update).toHaveBeenCalledTimes(1));
+  expect(f.update).toHaveBeenCalledWith('COMPLETED', event);
+  expect(f.accountUnavailable).not.toHaveBeenCalled(); f.cleanup();
+});
 it('skips Demo without a socket or simulated terminal result', async () => {
   vi.stubGlobal('fetch', vi.fn(async () => reply({ service: 'strataai-api', mode: 'demo' }))); const f = fixture(false);
   await new Promise(resolve => setTimeout(resolve, 0)); expect(f.connection.start).not.toHaveBeenCalled();

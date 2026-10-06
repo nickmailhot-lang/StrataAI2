@@ -590,6 +590,9 @@ Local component/transport tests cover pending versus completion, lost admission,
 parent denial, reconnect, duplicate immutable sources, changed attribution and
 account replacement, fresh terminal deep links and late Board acknowledgments.
 Their mocked profile checks do not prove real cookie behavior.
+Focused transport checks also withhold an otherwise valid source when the account
+changes between its two profile checks, and fence a delayed old profile result
+after reconnect without retiring the newly admitted subscription.
 The native two-client fixture now disconnects the Member while the actual Worker
 finishes, reconnects without a document reload, compares the streamed original
 event with the Owner's status snapshot, checks accessible neutral UI at both widths,
@@ -597,3 +600,11 @@ recovers completion in a new document with no prior graph admission, and withdra
 completion in both Member pages after actual logout. Execution against exact release images
 is still required. Demo terminal parity remains unfinished; local tests alone do not
 satisfy the complete two-client acceptance criterion.
+
+The native fixture additionally signs in the Member in another real browser
+context, recovers terminal completion, then replaces that cookie by signing in
+the Owner. The old Member socket session is still valid: the browser's captured
+identity must refuse transferring its admission to the new account and withdraw
+the completion notice on the next content-free heartbeat (20 seconds). It waits
+for that heartbeat without reloading. This real cookie-replacement assertion
+requires exact-image execution; the local profile race tests do not certify it.
