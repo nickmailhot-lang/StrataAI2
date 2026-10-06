@@ -38,6 +38,14 @@ and event state, and require no sign-in retry receipt. Strict compilation passes
 native API-host and PostgreSQL release execution remains pending. This repair
 does not introduce a password algorithm or change valid-hash verification policy.
 
+The mandatory exact-image sign-in fixture also substitutes malformed/truncated
+hashes only on its disposable account, requiring 401 `invalid_credentials`, no
+cookie/protected hash/storage details, and exact unchanged user/session/audit/
+receipt state for every refusal. It restores the original encoded hash before
+the existing audit/receipt rollback, same-key concurrency and session checks.
+Cleanup restores the hash if interrupted. Bash syntax passes; native execution
+remains pending. Production schema and runtime privileges are unchanged.
+
 The sign-in final-admission API-host theory now also seeds a real framework
 Identity V2 password hash and requires the configured hash provider to request
 rehashing. After observing the actual upgraded hash/version and stored sign-in

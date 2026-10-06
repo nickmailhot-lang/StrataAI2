@@ -8,10 +8,15 @@ original_version="${STRATAAI_AUTH_RETRY_CURRENT_KEY:?Runtime key version require
 original_ring="${STRATAAI_AUTH_RETRY_KEYS:?Runtime key ring required}"
 rotated=false
 small_pool=false
+hash_fixture_user=''
+hash_fixture_original=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
   admin 'DROP TRIGGER IF EXISTS ci_login_receipt_expiry ON identity_login_replays; DROP FUNCTION IF EXISTS public.ci_login_receipt_expiry(); GRANT INSERT ON audit_events,identity_login_replays TO strataai_api_runtime;' >/dev/null
+  if test -n "$hash_fixture_user"; then
+    admin "UPDATE users SET password_hash='$hash_fixture_original' WHERE id='$hash_fixture_user';" >/dev/null
+  fi
   if test "$rotated" = true || test "$small_pool" = true; then
     STRATAAI_AUTH_RETRY_CURRENT_KEY="$original_version" STRATAAI_AUTH_RETRY_KEYS="$original_ring" \
       docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api >/dev/null
@@ -37,6 +42,23 @@ state() {
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM identity_login_replays r WHERE user_id='$user'))::text;"
 }
 before="$(state)"
+# Corrupt only this disposable account's persisted hash; no credential refusal
+# may create sessions/audits/receipts or disclose storage encoding failures.
+hash_fixture_original="$(admin "SELECT password_hash FROM users WHERE id='$user';")"
+[[ "$hash_fixture_original" =~ ^[A-Za-z0-9+/=]+$ ]]
+hash_fixture_user="$user"
+for malformed in 'not-base64!' '' 'AQ==' 'Ag=='; do
+  admin "UPDATE users SET password_hash='$malformed' WHERE id='$user';" >/dev/null
+  corrupt_before="$(state)"
+  test "$(request)" = 401
+  jq -e '.code=="invalid_credentials"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
+  scripts/ci/assert-file-excludes.sh "$user|Sign-in retry|FormatException|Base64|password_hash" "$scratch/response"
+  test "$corrupt_before" = "$(state)"
+done
+admin "UPDATE users SET password_hash='$hash_fixture_original' WHERE id='$user';" >/dev/null
+hash_fixture_user=''
+test "$before" = "$(state)"
 for table in audit_events identity_login_replays; do
   admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
   test "$(request)" = 503
