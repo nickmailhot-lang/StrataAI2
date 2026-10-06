@@ -4,6 +4,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../api/workManag
 import { notificationUuid as uuid } from '../features/notifications/notificationInbox';
 import { ChangedNavigationActor, NavigationAcknowledgments, type NavigationTarget } from './navigationInteraction';
 import { createNavigationIntent, submitNavigationIntent, validateNavigationTarget, type NavigationIntent } from './navigationObservation';
+import { completeNavigationIntent, restoreNavigationIntent, retainNavigationIntent } from './navigationRecovery';
 
 // Mount once for an admitted navigation visit. Later entity edits do not create
 // another open event or replace an unresolved original revision.
@@ -25,9 +26,13 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
         if (!intent.current) {
           const profile = await boundedWorkRead(signal => workRequest<{ id: unknown }>('/me', { signal }), controller.signal);
           if (!uuid(profile?.id)) throw new ChangedNavigationActor();
-          intent.current = createNavigationIntent(profile.id, originalTarget);
+          const original = restoreNavigationIntent(sessionStorage, profile.id, originalTarget)
+            ?? createNavigationIntent(profile.id, originalTarget);
+          retainNavigationIntent(sessionStorage, original);
+          intent.current = original;
         }
         await submitNavigationIntent(intent.current, controller.signal, consumer);
+        completeNavigationIntent(sessionStorage, intent.current);
         if (!controller.signal.aborted) setStatus('done');
       } catch (reason) {
         if (controller.signal.aborted) return;

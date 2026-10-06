@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { NavigationConfirmation } from './NavigationConfirmation';
 const actor = '11111111-1111-4111-8111-111111111111';
 const organization = '22222222-2222-4222-8222-222222222222';
@@ -10,6 +10,7 @@ const response = (value: unknown) => new Response(JSON.stringify(value), { statu
 const source = { eventId: event, actorId: actor, organizationId: organization, boardId: board,
   eventType: 'BOARD_OPENED', entityType: 'Board', entityId: board, version: 3, metadata: {}, createdAt: '2026-10-05T12:00:00Z' };
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+beforeEach(() => sessionStorage.clear());
 
 it('PRD-01 invalid navigation identities cannot dispatch account or observation reads', () => {
   const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
@@ -61,4 +62,20 @@ it('PRD-01 anonymous visitors create no personal navigation event', async () => 
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
   expect(fetch.mock.calls).toEqual([['/me', expect.anything()]]);
   expect(screen.queryByRole('button', { name: 'Retry navigation confirmation' })).toBeNull();
+});
+it('PRD-01 recovers a lost confirmation after returning to the same Board with a newer snapshot', async () => {
+  let writes = 0;
+  const fetch = vi.fn(async (path: string) => {
+    if (path === '/me') return response({ id: actor });
+    if (++writes === 1) throw new TypeError('Lost response');
+    return response(source);
+  }); vi.stubGlobal('fetch', fetch);
+  const first = render(<NavigationConfirmation target={target} />);
+  await screen.findByRole('button', { name: 'Retry navigation confirmation' });
+  expect(sessionStorage.length).toBe(1); first.unmount();
+  render(<NavigationConfirmation target={{ ...target, version: 4 }} />);
+  await waitFor(() => expect(sessionStorage.length).toBe(0));
+  const requests = fetch.mock.calls.filter(([path]) => path !== '/me') as unknown as [string, RequestInit][];
+  expect(requests).toHaveLength(2); expect(requests[0][0]).toBe(requests[1][0]);
+  expect(new Headers(requests[0][1].headers).get('Idempotency-Key')).toBe(new Headers(requests[1][1].headers).get('Idempotency-Key'));
 });

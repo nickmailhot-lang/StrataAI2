@@ -30,11 +30,15 @@ export function createNavigationIntent(actor: string, target: NavigationTarget, 
       : { kind: target.kind, organization: target.organization.toLowerCase(), board: target.board.toLowerCase(), card: target.card.toLowerCase(), version: target.version };
   return Object.freeze({ actor: actor.toLowerCase(), key: crypto.randomUUID(), target: Object.freeze(normalized), createdAt: now });
 }
-export async function submitNavigationIntent(intent: NavigationIntent, signal: AbortSignal,
-  acknowledgments: NavigationAcknowledgments, now = Date.now()) {
+export function validateNavigationIntent(intent: NavigationIntent, now = Date.now()): void {
   if (!intent || Object.keys(intent).sort().join(',') !== 'actor,createdAt,key,target' || !uuid(intent.actor) || !uuid(intent.key)
     || !Number.isSafeInteger(now) || !Number.isSafeInteger(intent.createdAt) || intent.createdAt < 0
     || now < intent.createdAt || now - intent.createdAt >= lifetime) throw new Error('Invalid or expired navigation intent');
+  targetQuery(intent.target);
+}
+export async function submitNavigationIntent(intent: NavigationIntent, signal: AbortSignal,
+  acknowledgments: NavigationAcknowledgments, now = Date.now()) {
+  validateNavigationIntent(intent, now);
   const query = targetQuery(intent.target);
   async function verifyActor(currentSignal: AbortSignal) {
     const profile = await workRequest<{ id: unknown }>('/me', { signal: currentSignal });
