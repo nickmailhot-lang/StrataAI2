@@ -25,6 +25,8 @@ it.each([
     { eventType: 'ORGANIZATION_CREATED', version: 2 }, { eventType: 'ORGANIZATION_UPDATED', version: 1 },
     { eventType: 'ORGANIZATION_MEMBER_REMOVED', entityType: 'OrganizationMembership', entityId: user, version: 1 },
     { eventType: 'ORGANIZATION_MEMBER_INVITED', entityType: 'Invitation', entityId: user, version: 2 },
+    { eventType: 'INVITATION_REVOKED', entityType: 'Invitation', entityId: user, version: 1 },
+    { eventType: 'INVITATION_REVOKED', entityType: 'OrganizationMembership', entityId: user, version: 2 },
     { eventType: 'ORGANIZATION_DELETED' }, { createdAt: '2026-02-30T12:00:00Z' },
   ].map(change => ({ ...frame, page: { ...frame.page, events: [{ ...event, ...change }] } })),
 ])('rejects content leakage, wrong authority, corrupt envelopes and invalid replay semantics', input => {
@@ -40,8 +42,8 @@ it('accepts reset without history and empty heartbeats without numeric cursor in
   expect(validateOrganizationMetadataSync({ ...frame, page }, org, user, new Map())!.resetRequired).toBe(true);
   expect(validateOrganizationMetadataSync({ ...frame, page: { ...page, resetRequired: false, cursor: 'protected-metadata_B' } }, org, user, new Map())!.eventIds).toEqual([]);
 });
-it.each([['ORGANIZATION_MEMBER_ADDED', 1], ['ORGANIZATION_MEMBER_ADDED', 4], ['ORGANIZATION_MEMBER_REMOVED', 2], ['ORGANIZATION_MEMBER_REMOVED', 4], ['ORGANIZATION_MEMBER_INVITED', 1]])('accepts member event %s with its own persisted subject revision %s', (eventType, version) => {
-  const member = { ...event, eventType, entityType: eventType === 'ORGANIZATION_MEMBER_INVITED' ? 'Invitation' : 'OrganizationMembership', entityId: user, version };
+it.each([['ORGANIZATION_MEMBER_ADDED', 1], ['ORGANIZATION_MEMBER_ADDED', 4], ['ORGANIZATION_MEMBER_REMOVED', 2], ['ORGANIZATION_MEMBER_REMOVED', 4], ['ORGANIZATION_MEMBER_INVITED', 1], ['INVITATION_REVOKED', 2], ['INVITATION_REVOKED', 4]])('accepts member event %s with its own persisted subject revision %s', (eventType, version) => {
+  const member = { ...event, eventType, entityType: eventType === 'ORGANIZATION_MEMBER_INVITED' || eventType === 'INVITATION_REVOKED' ? 'Invitation' : 'OrganizationMembership', entityId: user, version };
   const input = { ...frame, page: { ...frame.page, events: [member] } };
   const seen = new Map(validateOrganizationMetadataSync(input, org, user, new Map())!.eventIds);
   expect(validateOrganizationMetadataSync(input, org, user, seen)!.eventIds).toEqual([]);

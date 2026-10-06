@@ -89,13 +89,13 @@ public sealed class OrganizationMetadataSynchronizationService(IOrganizationMeta
         if (current != scope || page.Position < 0 || page.Events.Count > limit || page.Events.Any(e => !e.Ready
             || e.Event.EventId == Guid.Empty || e.Event.ActorId == Guid.Empty || e.Event.OrganizationId != organizationId
             || e.Event.Version < 1 || e.Event.EntityId == Guid.Empty
-            || e.Event.EventType is not ("ORGANIZATION_CREATED" or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_ADDED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_INVITED")
-            || (e.Event.EventType == "ORGANIZATION_MEMBER_INVITED" ? e.Event.EntityType != "Invitation"
+            || e.Event.EventType is not ("ORGANIZATION_CREATED" or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_ADDED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_INVITED" or "INVITATION_REVOKED")
+            || (e.Event.EventType is "ORGANIZATION_MEMBER_INVITED" or "INVITATION_REVOKED" ? e.Event.EntityType != "Invitation"
               : e.Event.EventType is "ORGANIZATION_MEMBER_ADDED" or "ORGANIZATION_MEMBER_REMOVED"
                 ? e.Event.EntityType != "OrganizationMembership"
                 : e.Event.EntityType != "Organization" || e.Event.EntityId != organizationId)
             || e.Event.EventType is "ORGANIZATION_CREATED" or "ORGANIZATION_MEMBER_INVITED" && e.Event.Version != 1
-            || e.Event.EventType is "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" && e.Event.Version <= 1))
+            || e.Event.EventType is "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "INVITATION_REVOKED" && e.Event.Version <= 1))
             return WorkOperation<OrganizationMetadataSyncPage>.Failure("organization_sync_unavailable");
         return WorkOperation<OrganizationMetadataSyncPage>.Success(new(cursors.Encode(current, page.Position), page.HasMore, page.Pending,
             page.ResetRequired, page.Events.Select(e => e.Event).ToArray()));

@@ -103,6 +103,11 @@ internal static class OrganizationMetadataEventContract
             "SELECT journal_organization_member_invitation()",
             "SELECT capture_organization_invitation_creation()",
             "SELECT advance_invitation_revision()",
+            "SELECT journal_organization_invitation_revocation()",
+            "SELECT capture_organization_invitation_revocation()",
+            "SELECT * FROM organization_invitation_revocations",
+            "UPDATE organization_invitation_revocations SET entity_version=99",
+            "DELETE FROM organization_invitation_revocations",
             "SELECT * FROM organization_invitation_creations",
             "UPDATE organization_invitation_creations SET entity_version=99",
             "DELETE FROM organization_invitation_creations",
@@ -184,7 +189,77 @@ internal static class OrganizationMetadataEventContract
             await using var cleanup = new NpgsqlCommand("DROP TRIGGER ci_metadata_outbox_failure ON background_jobs; DROP FUNCTION public.ci_metadata_outbox_failure();", admin);
             await cleanup.ExecuteNonQueryAsync(CancellationToken.None);
         }
+        // PRD-03-TC-04/07/08: a revocation source requires a future actual
+        // transition, and any downstream failure must roll back its private proof.
+        await Execute("""
+            INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+             created_by_user_id,created_at,expires_at)
+            VALUES(@actor,@tenant,'revocation@example.test','REVOCATION@EXAMPLE.TEST',
+             replace(@actor::text,'-','')||replace(@actor::text,'-',''),'INTERNAL','MEMBER',@actor,clock_timestamp(),clock_timestamp()+interval '1 day');
+            """, tenant, Guid.NewGuid());
+        const string revokeAudit = """
+            INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,safe_metadata)
+            VALUES(@event,@tenant,@actor,'INVITATION_REVOKED','Invitation',@actor,@correlation,'{}');
+            """;
+        refused = false;
+        try { await Execute(revokeAudit, tenant, Guid.NewGuid()); }
+        catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
+        Require(refused, "An unrevoked invitation fabricated a revocation source.");
+        const string revoke = "UPDATE invitations SET revoked_at=clock_timestamp() WHERE tenant_id=@tenant AND id=@actor;";
+        refused = false;
+        try { await Execute(revoke + revokeAudit, tenant, Guid.NewGuid(), new string('x', 65)); }
+        catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
+        Require(refused, "Invalid revocation event correlation committed.");
+        await using (var unchanged = new NpgsqlCommand("""
+            SELECT (SELECT version=1 AND revoked_at IS NULL FROM invitations WHERE tenant_id=@tenant AND id=@actor)
+             AND NOT EXISTS(SELECT 1 FROM organization_invitation_revocations WHERE tenant_id=@tenant)
+             AND (SELECT last_sequence=2 FROM organization_metadata_event_streams WHERE tenant_id=@tenant)
+             AND NOT EXISTS(SELECT 1 FROM audit_events WHERE tenant_id=@tenant AND event_type='INVITATION_REVOKED');
+            """, admin))
+        {
+            unchanged.Parameters.AddWithValue("tenant", tenant); unchanged.Parameters.AddWithValue("actor", actor);
+            Require(await unchanged.ExecuteScalarAsync(ct) is true, "Failed revocation retained state, proof, audit or sequence gap.");
+        }
+        var revocationEvent = Guid.NewGuid();
+        await Execute(revoke + revokeAudit, tenant, revocationEvent);
+        await using (var proof = new NpgsqlCommand("""
+            SELECT count(*) FROM organization_metadata_events e
+            JOIN invitations i ON i.tenant_id=e.tenant_id AND i.id=e.entity_id
+            JOIN organization_invitation_revocations p ON p.tenant_id=e.tenant_id AND p.invitation_id=e.entity_id AND p.entity_version=e.entity_version
+            JOIN audit_events a ON a.id=e.event_id
+            JOIN background_jobs j ON j.tenant_id=e.tenant_id AND j.idempotency_key='organization-metadata-event/'||replace(e.event_id::text,'-','')
+            WHERE e.tenant_id=@tenant AND e.event_id=@event AND e.event_type='INVITATION_REVOKED'
+             AND e.entity_type='Invitation' AND e.entity_version=2 AND e.sequence=3
+             AND e.actor_id=@actor AND a.actor_id=e.actor_id AND e.created_at=i.updated_at AND p.updated_at=e.created_at
+             AND p.revoked_at=i.revoked_at AND e.metadata='{}' AND e.ready_at IS NULL
+             AND j.job_type='ORGANIZATION_METADATA_EVENT_READY' AND j.safe_metadata=jsonb_build_object('eventId',e.event_id);
+            """, admin))
+        {
+            proof.Parameters.AddWithValue("tenant", tenant); proof.Parameters.AddWithValue("actor", actor); proof.Parameters.AddWithValue("event", revocationEvent);
+            Require((long)(await proof.ExecuteScalarAsync(ct))! == 1, "Revocation lost original audit identity, persisted transition or atomic outbox.");
+        }
+        refused = false;
+        try { await Execute(revokeAudit, tenant, Guid.NewGuid()); }
+        catch (PostgresException error) when (error.SqlState == "23505") { refused = true; }
+        Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 3,
+            "Repeated revocation audit duplicated a source or advanced the journal.");
+        Require(await Read("SELECT count(*) FROM organization_metadata_events WHERE tenant_id=@tenant", foreign) == 0,
+            "Revocation source crossed the forced-RLS tenant boundary.");
         await OrganizationMetadataDeliveryContract.RunAsync(admin, apiConnection, workerConnection, tenant, actor, ct);
+        // That delivery contract withdraws the actor's membership. Historical
+        // revocation remains deliverable under the separate Worker's real lease.
+        await using (var worker = new PostgresConnectionFactory(workerConnection))
+        {
+            var jobs = new StrataAI.Infrastructure.BackgroundJobs.PostgresBackgroundJobStore(worker);
+            var claim = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct)
+                ?? throw new InvalidOperationException("Revocation delivery job missing.");
+            var eventId = StrataAI.Application.Organizations.OrganizationLifecycleDeliveryHandler.ParseEventId(claim.SafeMetadataJson);
+            Require(eventId == revocationEvent, "Worker claimed a different revocation source.");
+            var delivery = new StrataAI.Infrastructure.Organizations.PostgresOrganizationMetadataDeliveryStore(worker);
+            Require(await delivery.MarkReadyAsync(claim, eventId, ct)
+                && await jobs.CompleteAsync(tenant, claim.Id, claim.LeaseId, claim.WorkerId, ct),
+                "Actor departure stranded the committed revocation source.");
+        }
         Console.WriteLine("Organization metadata events: canonical source/version/time, atomic rollback and gap-free retry, forced RLS, private capabilities and immutable history passed.");
     }
 }

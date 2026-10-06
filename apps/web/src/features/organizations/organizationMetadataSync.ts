@@ -20,13 +20,13 @@ export function validateOrganizationMetadataSync(input: unknown, organizationId:
       if (!e || Object.keys(e).sort().join(',') !== 'actorId,boardId,createdAt,entityId,entityType,eventId,eventType,metadata,organizationId,version'
         || !notificationUuid(e.eventId) || !notificationUuid(e.actorId) || e.organizationId !== organizationId
         || !notificationUuid(e.entityId) || e.boardId !== null
-        || (e.eventType === 'ORGANIZATION_MEMBER_INVITED' ? e.entityType !== 'Invitation'
+        || (e.eventType === 'ORGANIZATION_MEMBER_INVITED' || e.eventType === 'INVITATION_REVOKED' ? e.entityType !== 'Invitation'
           : e.eventType === 'ORGANIZATION_MEMBER_ADDED' || e.eventType === 'ORGANIZATION_MEMBER_REMOVED' ? e.entityType !== 'OrganizationMembership'
           : e.entityType !== 'Organization' || e.entityId !== organizationId)
         || !Number.isSafeInteger(e.version) || (e.version as number) < 1
-        || !['ORGANIZATION_CREATED', 'ORGANIZATION_UPDATED', 'ORGANIZATION_MEMBER_ADDED', 'ORGANIZATION_MEMBER_REMOVED', 'ORGANIZATION_MEMBER_INVITED'].includes(e.eventType as string)
+        || !['ORGANIZATION_CREATED', 'ORGANIZATION_UPDATED', 'ORGANIZATION_MEMBER_ADDED', 'ORGANIZATION_MEMBER_REMOVED', 'ORGANIZATION_MEMBER_INVITED', 'INVITATION_REVOKED'].includes(e.eventType as string)
         || (e.eventType === 'ORGANIZATION_CREATED' || e.eventType === 'ORGANIZATION_MEMBER_INVITED') && e.version !== 1
-        || (e.eventType === 'ORGANIZATION_UPDATED' || e.eventType === 'ORGANIZATION_MEMBER_REMOVED') && (e.version as number) <= 1
+        || (e.eventType === 'ORGANIZATION_UPDATED' || e.eventType === 'ORGANIZATION_MEMBER_REMOVED' || e.eventType === 'INVITATION_REVOKED') && (e.version as number) <= 1
         || !e.metadata || typeof e.metadata !== 'object' || Array.isArray(e.metadata) || Object.keys(e.metadata).length
         || local.has(e.eventId)) return null;
       const fingerprint = `${e.actorId}/${organizationId}/${e.entityType}/${e.entityId}/${e.eventType}/${e.version}/${notificationInstant(e.createdAt).ticks}`;

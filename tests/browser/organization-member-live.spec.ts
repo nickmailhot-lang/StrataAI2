@@ -24,6 +24,7 @@ for (const width of [1280, 390]) {
       const observer = await context.newPage(); await observer.setViewportSize({ width, height: 844 });
       const removals: Array<Record<string, unknown>> = [];
       const invitations: Array<Record<string, unknown>> = [];
+      const revocations: Array<Record<string, unknown>> = [];
       observer.on('websocket', socket => {
         if (new URL(socket.url()).pathname !== '/organizations/live/metadata') return;
         socket.on('framereceived', frame => {
@@ -32,6 +33,7 @@ for (const width of [1280, 390]) {
             if (message.type === 2 && message.item?.organizationId === org) {
               removals.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_REMOVED'));
               invitations.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_INVITED'));
+              revocations.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'INVITATION_REVOKED'));
             }
           }
         });
@@ -62,6 +64,38 @@ for (const width of [1280, 390]) {
       });
       await creationObserver.goto(`/app/${org}/invite`);
       await expect(creationObserver.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
+      await creationObserver.getByLabel(/^Invitation email/).fill('unsubmitted-live-draft@example.test');
+      const secondHistory = await context.newPage(); await secondHistory.setViewportSize({ width, height: 844 });
+      let historyDocuments = 0; let historyWrites = 0;
+      for (const history of [invitationObserver, secondHistory]) history.on('request', request => {
+        if (request.isNavigationRequest()) historyDocuments++;
+        if (request.method() === 'DELETE') historyWrites++;
+      });
+      await secondHistory.goto(`/app/${org}/invitations`);
+      await expect(secondHistory.getByText('Current invitations checked. Review an invitation again before confirming revocation.', { exact: true })).toBeVisible();
+      const revokedEmail = `live-revocation-${width}-${Date.now()}@example.test`;
+      const issuedForRevocation = await context.request.post(`/organizations/${org}/invitations`, { headers,
+        data: { email: revokedEmail, surface: 'INTERNAL', targetRole: 'MEMBER' } });
+      expect(issuedForRevocation.status()).toBe(201); const revokedId = (await issuedForRevocation.json()).id;
+      await expect.poll(() => invitations.filter(row => row.entityId === revokedId).length, { timeout: 30_000 }).toBe(1);
+      for (const history of [invitationObserver, secondHistory]) {
+        const review = history.getByRole('button', { name: `Revoke invitation for ${revokedEmail}`, exact: true });
+        await expect(review).toBeVisible(); await review.focus(); await review.press('Enter');
+        await expect(history.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+      }
+      expect((await context.request.delete(`/organizations/${org}/invitations/${revokedId}`, { headers })).status()).toBe(204);
+      await expect.poll(() => revocations.filter(row => row.entityId === revokedId).length, { timeout: 30_000 }).toBe(1);
+      const revokedSource = revocations.find(row => row.entityId === revokedId)!;
+      expect(revokedSource.entityType).toBe('Invitation'); expect(revokedSource.version).toBe(2);
+      expect(revokedSource.actorId).toBe(accounts[0].id); expect(revokedSource.boardId).toBeNull(); expect(revokedSource.metadata).toEqual({});
+      for (const history of [invitationObserver, secondHistory]) {
+        await expect(history.getByRole('dialog')).toHaveCount(0);
+        const article = history.getByRole('article').filter({ has: history.getByRole('heading', { name: revokedEmail, exact: true }) });
+        await expect(article.getByText('Revoked', { exact: true })).toBeVisible();
+        await expect(article.getByRole('button', { name: `Revoke invitation for ${revokedEmail}`, exact: true })).toHaveCount(0);
+        expect((await new AxeBuilder({ page: history }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      }
+      expect(historyDocuments).toBe(1); expect(historyWrites).toBe(0);
       await creationObserver.getByLabel(/^Invitation email/).fill('unsubmitted-live-draft@example.test');
       const issuedCounts = new Map<number, number>();
       async function join(index: number, client: typeof recipient) {

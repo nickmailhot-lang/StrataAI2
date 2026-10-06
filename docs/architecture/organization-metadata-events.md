@@ -220,3 +220,21 @@ replay contracts also passed. Normal invitation command publication and actual
 browser consumption still require their exact-image acceptance results.
 See [invitation-history reconciliation](../invitation-history.md#live-organization-history-and-reviewed-account)
 for the next client integration and its remaining scope.
+
+### Invitation revocation sources
+
+Migration 100 captures future actual INTERNAL Organization invitation revocations
+in a private forced-RLS transition table. Legacy revoked rows receive no proof
+or reconstructed event. The existing `INVITATION_REVOKED` audit projects a
+content-free `Invitation` source using that audit ID, the revoking actor, and
+the persisted invitation revision and update timestamp. Publication requires an
+active Organization, active account and current Owner/Admin membership, and
+an exact transition proof. Board and Portal invitations retain their own surfaces.
+
+The mutation, private proof, audit, gap-free journal sequence and delivery job
+commit together. A repeated unchanged audit cannot create another source.
+The separate leased Worker marks the source ready; current Organization admission
+still controls replay. Browser validation accepts only a typed Invitation with a
+revision greater than one and empty metadata, then the existing live history
+binding rereads the protected history and withdraws reviewed revocation consent.
+Required PostgreSQL and exact-image browser checks remain pending CI execution.
