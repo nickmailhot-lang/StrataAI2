@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -172,7 +172,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       reset: () => recover("Checking current Board access."),
       unavailable: () => recover("Live updates interrupted. Checking current access.") });
   }, [organizationId, liveActor]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!data || !pageFocus.current) return;
     pageFocus.current = false;
     (cursor ? firstPage.current : nextPage.current ?? heading.current)?.focus();

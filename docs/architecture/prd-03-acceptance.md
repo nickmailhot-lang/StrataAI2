@@ -68,8 +68,10 @@ consumption remains unfinished.
 The [metadata replay endpoint](organization-metadata-replay.md) adds an owning
 read transaction, protected actor/membership cursor, contiguous ready-prefix
 window and final session/scope proof. Nine ordering/coordinator checks and the
-cursor security test passed locally; database and exact-image replay remain
-pending CI. SignalR and browser consumption remain required.
+cursor security test passed locally; restricted PostgreSQL replay passed at
+`fe3376f`, including pending-prefix ordering, bounded continuation, final
+synthetic session refusal and membership withdrawal/restoration. Exact-image
+replay remains pending CI. SignalR and browser consumption remain required.
 Worker readiness does not establish browser event consumption.
 
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and

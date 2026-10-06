@@ -52,12 +52,13 @@ passed for account/Organization/membership/revision binding, wrong purpose,
 malformed/oversized tokens, maximum internal position and expiry. The restricted
 PostgreSQL fixture exercises the real owning read transaction, out-of-order
 Worker readiness, bounded pages, retained source IDs, final synthetic session
-refusal and removed/restored membership. Its actor admission is synthetic and
+refusal and removed/restored membership. These checks passed restricted
+PostgreSQL CI at `fe3376f` ([job evidence](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37520463190/job/112464244715)). Its actor admission is synthetic and
 does not establish HTTP session expiry behavior.
 
 The exact-image fixture now bootstraps through the normal endpoint, observes
 pending events before Worker delivery, resumes its original cursor after a
 metadata edit, checks content-free source envelopes and wrong-actor/deleting
-refusals. Database and exact-image execution for replay are pending CI.
+refusals. Exact-image execution for replay remains pending CI.
 SignalR transport, browser reconnect/consumption, real mid-read session
 withdrawal, remaining event types and Demo parity are still unfinished.
