@@ -11,7 +11,7 @@ const response = (value: unknown) => new Response(JSON.stringify(value), { statu
 beforeEach(() => sessionStorage.clear()); afterEach(() => vi.unstubAllGlobals());
 it('stores one immutable original under its admitted account and Board, and restores it after navigation', () => {
   const input = criteria(), intent = createBoardFilterChange(scope, 'apply', input, now);
-  retainBoardFilterChange(sessionStorage, intent); input.keyword = 'Changed';
+  retainBoardFilterChange(sessionStorage, intent, now); input.keyword = 'Changed';
   const restored = restoreBoardFilterChange(sessionStorage, scope, now + 1);
   expect(restored).toEqual(intent); expect(new URLSearchParams(restored!.query).get('keyword')).toBe('Roof');
   expect(restoreBoardFilterChange(sessionStorage, { ...scope, actor: event }, now + 1)).toBeUndefined();
@@ -21,7 +21,7 @@ it('stores one immutable original under its admitted account and Board, and rest
   expect(restoreBoardFilterChange(sessionStorage, scope, now + 2)).toEqual(intent);
 });
 it('discards expired or tampered originals without generating replacement keys', () => {
-  const intent = createBoardFilterChange(scope, 'apply', criteria(), now); retainBoardFilterChange(sessionStorage, intent);
+  const intent = createBoardFilterChange(scope, 'apply', criteria(), now); retainBoardFilterChange(sessionStorage, intent, now);
   expect(restoreBoardFilterChange(sessionStorage, scope, now + 86400000)).toBeUndefined(); expect(sessionStorage.length).toBe(0);
   sessionStorage.setItem(`strataai:board-filter-change:v1:${actor}:${organization}:${board}`, JSON.stringify({ ...intent, query: intent.query + '&actorId=' + event }));
   expect(restoreBoardFilterChange(sessionStorage, scope, now + 1)).toBeUndefined(); expect(sessionStorage.length).toBe(0);
@@ -30,7 +30,7 @@ it('discards expired or tampered originals without generating replacement keys',
   expect(() => createBoardFilterChange(scope, 'clear', { ...criteria(), keyword: 'all' }, now)).toThrow();
 });
 it('retries the exact request after a lost response and consumes only the admitted canonical original', async () => {
-  const intent = createBoardFilterChange(scope, 'apply', criteria(), now); retainBoardFilterChange(sessionStorage, intent);
+  const intent = createBoardFilterChange(scope, 'apply', criteria(), now); retainBoardFilterChange(sessionStorage, intent, now);
   let writes = 0;
   const fetch = vi.fn(async (path: string) => {
     if (path === '/me') return response({ id: actor });

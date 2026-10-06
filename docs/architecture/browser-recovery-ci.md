@@ -263,3 +263,29 @@ Organization creation recovery viewport cases passed. Required CI failed and
 the release bundle was skipped; Owner deletion browser scenarios are new
 and were not included in this revision. Current web type checking, lint and
 browser test TypeScript checks pass for the Owner deletion implementation.
+
+CI run [37488625810](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37488625810)
+at `7b376c9` completed web execution with 1,547 passes and three failures
+(125 files). All failures are in `boardFilterChange.test.ts`: fixtures create
+originals at a fixed October 5 clock but three retention calls default to the
+actual clock. Once 24 hours elapse, valid expiry enforcement refuses those
+fixtures before their intended assertions. Repair must pass the fixture clock
+explicitly; production expiry and expired-dispatch/storage assertions remain.
+PostgreSQL source integration passed; .NET execution is still pending.
+
+The full local run at `7b376c9` completed with 1,530 passes and 20 failures
+(125 files, 438.04 seconds): the three clock fixtures plus failures in existing
+UI cases, predominantly 5-second timeouts. This is failed full-suite evidence,
+not a passing revalidation. The fixture repair supplies the same explicit clock
+to creation and retention. Navigation native scenarios now configure and restore
+the real Worker scope before requiring delivery; Board copy checks its disabled
+background control with an explicit hidden-element query while MUI owns modal
+accessibility. Original retry, event delivery and disabled-state assertions remain.
+
+Archived Board acknowledgment recovery now explicitly requests focus return
+when live invalidation has already closed its review, and preserves a focused
+refresh target through a background read. The existing lost-response/live-reset
+regression now focuses Retry and asserts the refresh target after acknowledgment.
+All 15 archive-directory component tests and all 10 filter-intent tests pass.
+Browser TypeScript passes for the native fixture repairs. Native execution and
+expanded full verification of these changes remain pending.

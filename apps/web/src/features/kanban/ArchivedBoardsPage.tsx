@@ -52,6 +52,7 @@ function Archive({ org }: { org: string }) {
     if (read.current) { queued.current = true;
       if (kind === 'reconnect' || kind === 'retry' && queuedKind.current !== 'reconnect') queuedKind.current = kind;
       return; }
+    if (document.activeElement === refresh.current) focusRequested.current = true;
     const started = performance.now(); activityEvent('archive_board_read', kind);
     const c = new AbortController(); read.current = c; position.current = { cursor, trail }; setHistory(trail); setReading(true); setReady(false);
     try {
@@ -125,6 +126,9 @@ function Archive({ org }: { org: string }) {
       if (!mounted.current || write.current !== c) return;
       if (value?.id !== command.board.id || value.organizationId !== org || value.name !== command.board.name || value.version !== command.board.version + 1 ||
         value.lifecycleState !== (command.deleting ? 'deleted' : 'active') || command.deleting && value.deletedBy !== command.actor) throw new Error('Invalid acknowledgment');
+      // A live invalidation can already have closed the review. Successful
+      // recovery must return focus even when there is no dialog exit left.
+      focusRequested.current = true;
       setIntent(undefined); setReview(undefined); setNotice(command.deleting ? 'Board deletion acknowledged.' : 'Board restore acknowledged.');
       activityResult(action, true, started);
     } catch (error) { if (mounted.current && write.current === c) {

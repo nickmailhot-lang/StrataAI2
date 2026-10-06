@@ -58,7 +58,8 @@ it('keeps the original unconfirmed key while a live reset withholds its private 
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   expect(screen.queryByText('Planning')).not.toBeInTheDocument();
   const retry = await screen.findByRole('button', { name: 'Retry this change' }); await waitFor(() => expect(retry).toBeEnabled());
-  fireEvent.click(retry); await screen.findByText('Board restore acknowledged.');
+  retry.focus(); fireEvent.click(retry); await screen.findByText('Board restore acknowledged.');
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Check current archived boards' })).toHaveFocus());
   const commands = fetch.mock.calls.filter(call => call[1].method === 'POST');
   expect(commands).toHaveLength(2);
   expect(new Headers(commands[0][1].headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1].headers).get('Idempotency-Key'));

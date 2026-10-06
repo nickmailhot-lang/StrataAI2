@@ -51,7 +51,7 @@ for (const width of [1280,390]) {
       const retry = page.getByRole('button',{name:'Retry same Board copy',exact:true}); await expect(retry).toBeEnabled();
       await expect(input).toHaveValue(name); await expect(input).toBeDisabled();
       await expect(page.getByRole('button',{name:'Cancel Board copy',exact:true})).toHaveCount(0);
-      await expect(page.getByRole('button',{name:'Edit Board details',exact:true})).toBeDisabled();
+      await expect(page.getByRole('button',{name:'Edit Board details',exact:true,includeHidden:true})).toBeDisabled();
       await expect(other.getByRole('heading',{name:'Later source',exact:true})).toBeVisible();
       await retry.focus(); await page.keyboard.press('Enter');
       const open = page.getByRole('link',{name:'Open copied Board',exact:true}); await expect(open).toBeVisible(); await expect(open).toBeFocused();

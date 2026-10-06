@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
-import { waitForBoardDelivery } from './scopedBoardWorker';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const width of [1280, 768, 390]) {
   test(`PRD-01 navigation originals, return recovery and keyboard Back at ${width}px`, async ({ page, context }) => {
@@ -18,6 +18,8 @@ for (const width of [1280, 768, 390]) {
     expect(listReply.status()).toBe(201); const list = await listReply.json();
     const cardReply = await context.request.post(`/lists/${list.id}/cards`, { headers, data: { title: 'Navigation browser Card' } });
     expect(cardReply.status()).toBe(201); const card = await cardReply.json();
+    const restoreWorker = scopedBoardWorker(org);
+    try {
     await waitForBoardDelivery(context.request, board.id);
     const attempts: { key: string; event: unknown; query: string }[] = [];
     const observed = new Set<string>();
@@ -67,5 +69,6 @@ for (const width of [1280, 768, 390]) {
     await expect.poll(() => page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('strataai:navigation:v1:')).length)).toBe(0);
     await page.goBack(); await expect(page).toHaveURL(new RegExp(`${boardPath}$`));
     await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toBeVisible();
+    } finally { restoreWorker(); }
   });
 }
