@@ -29,6 +29,15 @@ Current changes must pass the complete pipeline against their exact revision.
 
 ## Evidence boundaries
 
+The framework password-hash adapter treats malformed persisted Base64 encoding
+as failed verification, preserving the ordinary `invalid_credentials` response.
+It catches encoding `FormatException` only; unrelated infrastructure errors keep
+their existing handling. Four API-host cases cover malformed and truncated hash
+values, require no cookie or protected account/storage details, preserve account
+and event state, and require no sign-in retry receipt. Strict compilation passes;
+native API-host and PostgreSQL release execution remains pending. This repair
+does not introduce a password algorithm or change valid-hash verification policy.
+
 The sign-in final-admission API-host theory now also seeds a real framework
 Identity V2 password hash and requires the configured hash provider to request
 rehashing. After observing the actual upgraded hash/version and stored sign-in

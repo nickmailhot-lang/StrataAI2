@@ -17,10 +17,17 @@ internal sealed class AspNetPasswordHashService : IPasswordHashService
         string passwordHash,
         string providedPassword)
     {
-        var result = _hasher.VerifyHashedPassword(
-            new PasswordHashSubject(userId),
-            passwordHash,
-            providedPassword);
+        PasswordVerificationResult result;
+        try
+        {
+            result = _hasher.VerifyHashedPassword(new PasswordHashSubject(userId), passwordHash, providedPassword);
+        }
+        catch (FormatException)
+        {
+            // Corrupt persisted hash encoding must follow ordinary credential
+            // refusal, without exposing storage details or issuing a session.
+            return new PasswordVerification(false, false);
+        }
 
         return new PasswordVerification(
             result is PasswordVerificationResult.Success
