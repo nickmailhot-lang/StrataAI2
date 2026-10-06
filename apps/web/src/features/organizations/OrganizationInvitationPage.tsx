@@ -5,6 +5,7 @@ import { apiFetch } from '../../api/apiFetch';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { invitationIntentKey, invitationRoles, readInvitationIntent, saveInvitationIntent, validInvitationKey } from './invitationIntent';
 import type { InvitationInput, InvitationIntent } from './invitationIntent';
+import { watchOrganizationMetadata } from './organizationMetadataLive';
 
 type Ack = { id: string; organizationId: string; email: string; surface: string; targetRole: string; expiresAt: string; invitationToken: null; boardTarget?: { boardId: string; role: string } | null };
 const empty: InvitationInput = { email: '', surface: 'INTERNAL', targetRole: 'MEMBER' };
@@ -39,11 +40,26 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   const pending = useRef<AbortController | undefined>(undefined); const currentIntent = useRef<InvitationIntent | undefined>(undefined);
   const mounted = useRef(false);
   const reviewedActor = useRef<string | undefined>(undefined);
+  const [liveActor, setLiveActor] = useState<string>(); const [liveNotice, setLiveNotice] = useState<string>();
+  const epoch = useRef(0); const refreshQueued = useRef(false); const [reload, setReload] = useState(0);
   useEffect(() => {
     mounted.current = true; void load();
     return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; };
     // Organization changes remount the keyed route and fence late results.
   }, []);
+  useEffect(() => {
+    if (boardId !== undefined || !liveActor) return;
+    const recover = () => {
+      epoch.current++; refreshQueued.current = true; withdrawAccount();
+      setLiveNotice('Checking current invitation permissions. The original request is preserved.');
+      setReload(value => value + 1);
+    };
+    return watchOrganizationMetadata({ organizationId, userId: liveActor, invalidate: recover, reset: recover, unavailable: recover });
+  }, [organizationId, boardId, liveActor]);
+  useEffect(() => {
+    if (!refreshQueued.current || busy) return;
+    refreshQueued.current = false; void load();
+  }, [reload, busy]);
   function valid(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
   function withdrawAccount() {
     reviewedActor.current = undefined;
@@ -51,6 +67,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     currentIntent.current = undefined; setAck(undefined); setPreferences(undefined); setDenied(false);
   }
   function deny(status: number) {
+    setLiveActor(undefined); refreshQueued.current = false; setLiveNotice(undefined);
     withdrawAccount(); setDenied(true);
     setError(`${boardId !== undefined ? 'Board' : 'Organization'} invitations are unavailable to your account.`);
     if (status === 401) navigate('/login', { replace: true });
@@ -68,12 +85,13 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     } catch (reason) {
       // Temporary uncertainty withdraws display authority, while the saved
       // original request remains reserved for a fresh permission check.
-      if (mounted.current && pending.current === controller) withdrawAccount();
+      if (mounted.current && pending.current === controller) { withdrawAccount(); setLiveActor(undefined); }
       throw reason;
     }
   }
   async function load() {
     const controller = begin(); if (!controller) return;
+    const started = epoch.current;
     setBoardName(undefined); setActorRole(undefined); setAck(undefined); setInput(empty); setIntent(undefined); currentIntent.current = undefined;
     try {
       const me = await request('/me', {}, controller); if (!valid(controller)) return;
@@ -81,6 +99,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       const actor = (me.body as { id?: unknown } | undefined)?.id;
       const profile = me.body as { locale?: unknown; timezone?: unknown } | undefined;
       if (me.status !== 200 || !validInvitationKey(actor) || typeof profile?.locale !== 'string' || typeof profile.timezone !== 'string') throw new Error('Invalid actor');
+      if (liveActor && actor !== liveActor) { deny(401); return; }
       const display = { locale: profile.locale, timezone: profile.timezone };
       if (!formatUserDateTime('2026-01-01T00:00:00Z', display)) throw new Error('Invalid preferences');
       let admittedRole: number; let admittedBoardName: string | undefined;
@@ -102,8 +121,10 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         admittedRole = data.actorRole;
       }
       if (!await verifyAccount(controller, actor)) return;
+      if (started !== epoch.current) return;
       const key = invitationIntentKey(actor, organizationId) + (boardId !== undefined ? `:board:${boardId}` : '');
       reviewedActor.current = actor;
+      setLiveActor(actor); setLiveNotice(value => value ? 'Current invitation permissions checked. Review the request before submitting.' : undefined);
       setBoardName(admittedBoardName);
       setStorageKey(key); setActorRole(admittedRole); setDenied(false); setBlocked(false);
       setPreferences(display);
@@ -112,7 +133,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         if (saved && boardId !== undefined && (saved.input.surface !== 'INTERNAL' || !['ADMIN', 'MEMBER'].includes(saved.input.targetRole))) throw new Error('Invalid Board intent');
         if (saved) { setIntent(saved); currentIntent.current = saved; setInput(saved.input); setError('A prior invitation request is awaiting acknowledgment. Retry that same request before starting another.'); }
       } catch { setBlocked(true); setError('The saved invitation request cannot be read. Review existing invitations before creating another request.'); }
-    } catch { if (mounted.current && pending.current === controller) setError('Unable to verify current invitation permissions. Please retry.'); }
+    } catch { if (mounted.current && pending.current === controller && started === epoch.current) setError('Unable to verify current invitation permissions. Please retry.'); }
     finally { finish(controller); }
   }
   async function create(event: React.FormEvent) {
@@ -126,15 +147,19 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       currentIntent.current = command; setIntent(command); setInput(command.input);
     }
     const controller = begin(); if (!controller) return;
+    const started = epoch.current;
     try {
       const expected = reviewedActor.current;
       if (!await verifyAccount(controller, expected)) return;
+      if (started !== epoch.current) return;
       const root = boardId !== undefined ? `/boards/${encodeURIComponent(boardId)}/invitations` : `/organizations/${encodeURIComponent(organizationId)}/invitations`;
       const result = await request(`${root}?expectedActorId=${encodeURIComponent(expected)}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(boardId !== undefined ? { email: command.input.email, role: command.input.targetRole } : command.input),
       }, controller); if (!valid(controller)) return;
+      if (started !== epoch.current) return;
       if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
       if (!await verifyAccount(controller, expected)) return;
+      if (started !== epoch.current) return;
       const data = result.body as Ack | undefined;
       if (result.status === 201 && data && validInvitationKey(data.id) && data.organizationId === organizationId
         && typeof data.email === 'string' && data.email.trim().toUpperCase() === command.input.email.toUpperCase()
@@ -156,7 +181,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         setBlocked(true); setError('This request cannot be retried. Review existing invitations before creating another.'); return;
       }
       setError(result.status === 429 ? 'Too many requests. Please wait before retrying this same invitation.' : 'The invitation could not be confirmed. Retry the same request to recover its acknowledgment.');
-    } catch { if (mounted.current && pending.current === controller) setError('The invitation could not be confirmed. Retry the same request to recover its acknowledgment.'); }
+    } catch { if (mounted.current && pending.current === controller && started === epoch.current) setError('The invitation could not be confirmed. Retry the same request to recover its acknowledgment.'); }
     finally { finish(controller); }
   }
   function next() {
@@ -167,6 +192,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   }
   const locked = busy || !!intent || blocked || !!ack;
   return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
+    {liveNotice && <Typography role="status" aria-live="polite">{liveNotice}</Typography>}
     <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}` : `/app/${organizationId}/members`}>{boardId !== undefined ? 'Back to Board' : 'Organization members'}</Button>
     <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}/invitations` : `/app/${organizationId}/invitations`}>Review issued invitations</Button>
     <Typography component="h1" variant="h4">Create {boardId !== undefined ? 'Board' : 'Organization'} invitation</Typography>

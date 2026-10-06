@@ -2,6 +2,9 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationInvitationPage, BoardInvitationPage } from './OrganizationInvitationPage';
 import { forgetInvitationIntents, invitationIntentKey } from './invitationIntent';
+const live = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string;
+  invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
+vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.watch }));
 const org = '10000000-0000-0000-0000-000000000000'; const actor = '20000000-0000-0000-0000-000000000000';
 const profile = { id: actor, locale: 'en-CA', timezone: 'America/Vancouver' };
 const admission = { organizationId: org, actorRole: 0, member: { userId: actor, role: 0 } };
@@ -34,7 +37,39 @@ function fetcher(...responses: (Response | Error)[]) {
 }
 async function submit() { fireEvent.change(await screen.findByLabelText(/^Invitation email/), { target: { value: input.email } }); fireEvent.click(screen.getByRole('button', { name: 'Create invitation' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); sessionStorage.clear(); });
+beforeEach(() => { live.watch.mockClear(); });
 describe('Administrator invitation intent and creation acknowledgment', () => {
+  it('retires an unsubmitted grant draft after a canonical change and rechecks current authority', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => reply(path === '/me' ? profile : admission)));
+    mount(); await screen.findByLabelText(/^Invitation email/);
+    await waitFor(() => expect(live.watch).toHaveBeenCalledTimes(1));
+    fireEvent.change(screen.getByLabelText(/^Invitation email/), { target: { value: input.email } });
+    act(() => live.watch.mock.calls[0][0].invalidate());
+    expect(screen.queryByDisplayValue(input.email)).not.toBeInTheDocument();
+    await screen.findByText('Current invitation permissions checked. Review the request before submitting.');
+    expect(screen.getByLabelText(/^Invitation email/)).toHaveValue('');
+    expect(live.watch).toHaveBeenCalledTimes(1);
+  });
+  it('preserves a committed request but fences its old acknowledgment across live invalidation', async () => {
+    let finish!: (response: Response) => void; let writes = 0;
+    const mock = vi.fn(async (path: string, options?: RequestInit) => {
+      if (options?.method === 'POST') return ++writes === 1 ? new Promise<Response>(resolve => { finish = resolve; }) : reply(ack, 201);
+      return reply(path === '/me' ? profile : admission);
+    });
+    vi.stubGlobal('fetch', mock); mount(); await submit();
+    await waitFor(() => expect(finish).toBeDefined()); const saved = sessionStorage.getItem(storedKey);
+    act(() => live.watch.mock.calls[0][0].invalidate());
+    expect(screen.queryByDisplayValue(input.email)).not.toBeInTheDocument();
+    await act(async () => finish(reply(ack, 201)));
+    await screen.findByText(/prior invitation request is awaiting acknowledgment/);
+    expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+    expect(writes).toBe(1); expect(sessionStorage.getItem(storedKey)).toBe(saved);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry same invitation' }));
+    await screen.findByText('Invitation creation acknowledged.');
+    const posts = mock.mock.calls.filter(call => call[1]?.method === 'POST');
+    expect(posts).toHaveLength(2); expect(posts[1][1]?.body).toBe(posts[0][1]?.body);
+    expect(new Headers(posts[1][1]?.headers).get('Idempotency-Key')).toBe(new Headers(posts[0][1]?.headers).get('Idempotency-Key'));
+  });
   it.each([[false, false], [true, false], [false, true], [true, true]])('bounds an abort-ignoring account check without exposing late authority (Board=%s, committed=%s)', async (boardSurface, committed) => {
     let profiles = 0; let finish!: (value: Response) => void;
     let heldSignal: AbortSignal | null | undefined;

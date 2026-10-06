@@ -58,6 +58,28 @@ can recover the reserved request and still cannot automatically mutate. These
 tests exercise the client boundary with fake time and abort-ignoring transport;
 they are not PostgreSQL, actual cookie-expiry or release runtime evidence.
 
+## Organization creation view live reconciliation
+
+After account-bound administrative admission, the Organization creation page
+subscribes to the existing canonical metadata stream. A source, reset or interrupted
+stream clears unsubmitted grant fields and acknowledgment immediately, then checks
+current permission. It keeps the original subscription through recovery so the
+initial reset cannot cause an endless subscribe/reset loop. Confirmed denial or
+account uncertainty retires the binding.
+
+If a request is already pending, recovery waits for that bounded operation. A
+generation fence prevents its old acknowledgment or read from restoring consent;
+it also prevents a POST when invalidation happened during account preflight. The
+stored original key/input remains reserved. Fresh admission restores that request
+for explicit same-key retry and never starts another invitation automatically.
+Component checks cover unsubmitted draft retirement and live change during a
+pending acknowledgment. The release two-client member scenario now observes an
+unsubmitted creation draft, issues a real invitation through another client,
+requires field withdrawal without a page reload or automatic POST, and checks
+accessibility at both widths. Exact-image execution remains required. This covers
+the Organization creation surface; Board-specific invitation lifecycle and broader
+recipient/history updates still require their own coverage.
+
 `POST /organizations/{organizationId}/invitations` accepts an optional nonempty UUID `Idempotency-Key`. A keyed request acknowledges the original invitation ID, email, surface, role and expiry; its `invitationToken` is null in every runtime mode. Unkeyed Demo requests retain the existing bearer-token fixture behavior. Production never returns the bearer token.
 
 The existing Organization unit of work locks the active parent and actor membership before invitation creation or replay. Current session/account eligibility and administrative role are authoritative; only a current Owner can acknowledge an internal Owner grant. Normalized email, surface and role bind the key to the original command. Different intent receives `409 idempotency_key_reused`; a receipt older than 24 hours receives `409 idempotency_key_expired`. Expired keys remain reserved, so an old request cannot create a replacement invitation. Malformed, multiple and empty keys fail with `400 invalid_idempotency_key`.

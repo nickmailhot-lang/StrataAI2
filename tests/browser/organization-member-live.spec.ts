@@ -54,6 +54,15 @@ for (const width of [1280, 390]) {
       const invitationObserver = await context.newPage(); await invitationObserver.setViewportSize({ width, height: 844 });
       await invitationObserver.goto(`/app/${org}/invitations`);
       await expect(invitationObserver.getByText('Current invitations checked. Review an invitation again before confirming revocation.', { exact: true })).toBeVisible();
+      const creationObserver = await context.newPage(); await creationObserver.setViewportSize({ width, height: 844 });
+      let observerCreates = 0; let observerDocuments = 0;
+      creationObserver.on('request', request => {
+        if (request.isNavigationRequest()) observerDocuments++;
+        if (request.method() === 'POST' && new URL(request.url()).pathname === `/organizations/${org}/invitations`) observerCreates++;
+      });
+      await creationObserver.goto(`/app/${org}/invite`);
+      await expect(creationObserver.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
+      await creationObserver.getByLabel(/^Invitation email/).fill('unsubmitted-live-draft@example.test');
       const issuedCounts = new Map<number, number>();
       async function join(index: number, client: typeof recipient) {
         const issued = await context.request.post(`/organizations/${org}/invitations`, { headers,
@@ -69,6 +78,10 @@ for (const width of [1280, 390]) {
         expect((await client.request.post(`/me/invitations/${invitationId}/accept`, { headers })).status()).toBe(200);
       }
       await join(1, recipient);
+      await expect(creationObserver.getByLabel(/^Invitation email/)).toHaveValue('');
+      expect(observerCreates).toBe(0);
+      expect(observerDocuments).toBe(1);
+      expect((await new AxeBuilder({ page: creationObserver }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await expect(observer.getByRole('heading', { name: 'Live joined member', exact: true })).toBeVisible();
       await expect.poll(() => delivered.filter(row => row.actorId === accounts[1].id && row.version === 1).length, { timeout: 30_000 }).toBe(1);
       const action = page.getByRole('button', { name: 'Review removal of Live joined member', exact: true });
