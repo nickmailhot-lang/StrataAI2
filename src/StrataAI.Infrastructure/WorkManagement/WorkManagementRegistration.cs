@@ -63,6 +63,8 @@ public static class WorkManagementRegistration
         else
         {
             services.AddSingleton<IWorkManagementStore, PostgresWorkManagementStore>();
+            services.AddSingleton<NavigationInteractionEventProducer>();
+            services.AddSingleton<INavigationInteractionEventStore, PostgresNavigationInteractionEventStore>();
             services.AddSingleton<ICardMentionMemberStore, PostgresCardMentionMemberStore>();
             services.AddSingleton<ICardMassMentionMemberStore, PostgresCardMassMentionMemberStore>();
             services.AddSingleton<ICardMassMentionQuota, PostgresCardMassMentionQuota>();
