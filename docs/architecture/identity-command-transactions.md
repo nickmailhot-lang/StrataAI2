@@ -60,5 +60,28 @@ must retain their original result without repeating the token-consumption event.
 These cases compile with warnings as errors; native API-host execution is pending
 CI. They exercise the process-local snapshot boundary and do not prove durable
 audit or email publication, PostgreSQL waits, or complete PRD-02 acceptance.
-Recovery-request commands still have a separate neutral-response boundary and
-require their own rollback audit. The Demo audit store remains a no-op.
+Recovery requests use the same Identity snapshots through their generic result
+boundary; their focused rollback cases are described below. The Demo audit store remains a no-op.
+
+## Demo recovery-request rollback
+
+Password-forgotten and verification-resend commands now capture registered
+Identity participants under the shared account/Organization gate. A normal
+result, including a neutral null result for an unknown or ineligible account,
+commits only after the final cancellation check. Exceptions and cancellation
+restore new recovery tokens and retry receipts before releasing the gate.
+Existing exception propagation is unchanged; the production PostgreSQL adapter
+retains its masked storage-failure/neutral-acknowledgment policy. A request
+acknowledgment still does not prove email delivery.
+
+Four API-host cases run actual password-reset requests or verification resends,
+observe real token and recovery-receipt writes, then introduce an exception or
+cancellation. They require the failed token and receipt to disappear while the
+account, Identity event stream and pre-existing registration verification proof
+remain unchanged. Fresh same-key requests must create usable proof; matching
+replay must retain the token and receipt. An unknown-email request must retain
+its neutral null result without altering the known account.
+
+Native execution of these cases remains required in CI. Demo audit remains a
+no-op and Demo delivery does not prove durable Worker publication. This repair
+does not close PRD-02 or establish full public-request failure indistinguishability.

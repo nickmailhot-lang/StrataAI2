@@ -39,10 +39,9 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
     public async Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,
         CancellationToken cancellationToken = default)
     {
-        if (scope.Active) throw new InvalidOperationException("Nested identity transactions are unavailable.");
-        await _gate.WaitAsync(cancellationToken);
-        try { return await operation(); }
-        finally { _gate.Release(); }
+        var result = await ExecuteOwnedAsync(null, async () =>
+            IdentityOperation<T>.Success(await operation()), cancellationToken);
+        return result.Value!;
     }
 
     public Task<IdentityOperation<UserProfile>> ExecuteTokenProofAsync(
@@ -62,10 +61,10 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
         => ExecuteOwnedAsync(actorId, async () => await actors.VerifyAsync(actorId, cancellationToken)
             ? await operation() : IdentityOperation<T>.Failure("session_unavailable"), cancellationToken);
 
-    // This boundary covers account/profile/handle commands, registration, sign-in and token consumption,
+    // This boundary covers account/profile/handle commands, registration, recovery requests, sign-in and token consumption,
     // with registered global identity state. Deactivation additionally holds the Work
     // gate and snapshots assignment/event state until its receipt and cancellation fence.
-    // Other specialized boundaries retain their separate verification requirements.
+    // Producers retain their operation-specific credential and neutral-response policies.
     private async Task<IdentityOperation<T>> ExecuteOwnedAsync<T>(Guid? actor,
         Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken, bool includeWork = false)
     {
