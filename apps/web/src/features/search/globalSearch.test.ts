@@ -5,7 +5,7 @@ const interaction = () => ({ eventId: id, entityId: id, actorId: id, eventType: 
   version: 1, organizationId: null, boardId: null, metadata: {}, createdAt: '2026-10-05T12:00:00Z' });
 const parseSearchPage = (value: Record<string, unknown>, after?: string) => parseActualPage({ ...value, interaction: interaction() }, id, after);
 const document = () => ({ sourceKind: 'CARD', card: { id, organizationId: id, boardId: id, listId: id,
-  title: 'Card', version: 1, lifecycleState: 'active', dueAt: null, dueComplete: false },
+  title: 'Card', version: 1, lifecycleState: 'active', dueAt: null, dueHasTime: false, dueComplete: false },
   boardDateTimezone: null, boardName: 'Board', listName: 'List', labels: [], members: [], hasMoreLabels: false, hasMoreMembers: false });
 describe('global search response admission', () => {
   it('requires a valid nullable Board date policy before admitting results', () => {
@@ -37,7 +37,8 @@ describe('global search response admission', () => {
     expect(() => parseSearchPage({ items: [item], nextCursor: null })).toThrow();
   });
   it('rejects malformed dates, routing, revision and protected context', () => {
-    for (const change of [{ dueAt: 'invalid' }, { id: 'invalid' }, { version: 0 }]) {
+    for (const change of [{ dueAt: 'invalid' }, { dueAt: '2026-10-05' }, { dueAt: '2026-02-30T00:00:00Z' },
+      { dueHasTime: undefined }, { dueHasTime: 'false' }, { id: 'invalid' }, { version: 0 }]) {
       const item = document();
       expect(() => parseSearchPage({ items: [{ ...item, card: { ...item.card, ...change } }], nextCursor: null })).toThrow();
     }

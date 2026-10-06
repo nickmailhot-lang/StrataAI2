@@ -14,7 +14,7 @@ const interaction = (actorId = id) => ({ eventId: id, entityId: id, actorId, eve
   version: 1, organizationId: null, boardId: null, metadata: {}, createdAt: '2026-10-05T12:00:00Z' });
 const profile = (actor = id) => ({ id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en', timezone: 'UTC' });
 const result = () => ({ items: [{ sourceKind: 'CARD', card: { id, organizationId: id, boardId: id, listId: id,
-  title: 'Admitted Card', version: 1, lifecycleState: 'active', dueAt: null, dueComplete: false },
+  title: 'Admitted Card', version: 1, lifecycleState: 'active', dueAt: null, dueHasTime: false, dueComplete: false },
   boardDateTimezone: null, boardName: 'Board', listName: 'List', labels: [], members: [], hasMoreLabels: false, hasMoreMembers: false }], nextCursor: 'opaque', interaction: interaction() });
 beforeEach(() => { vi.mocked(workRequest).mockReset(); configureActivityTelemetry(false); });
 afterEach(() => { cleanup(); configureActivityTelemetry(false); vi.unstubAllGlobals(); });
@@ -118,7 +118,7 @@ it.each([401, 403, 404])('purges retained query state after terminal denial %s',
 it('displays deadlines in the final admitted account timezone and refreshes changed preferences without changing the UTC result', async () => {
   const request = vi.mocked(workRequest);
   const base = result();
-  const response = { ...base, items: [{ ...base.items[0], card: { ...base.items[0].card, dueAt: '2026-10-05T00:30:00Z' } }] };
+  const response = { ...base, items: [{ ...base.items[0], card: { ...base.items[0].card, dueAt: '2026-10-05T00:30:00Z', dueHasTime: true } }] };
   request.mockResolvedValueOnce(profile()).mockResolvedValueOnce(response)
     .mockResolvedValueOnce({ ...profile(), locale: 'en-US', timezone: 'Pacific/Honolulu' });
   render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
@@ -137,7 +137,7 @@ it('uses current Board policy before account timezone and returns to account pre
   const base = result();
   const account = { ...profile(), locale: 'en-US', timezone: 'Asia/Tokyo' };
   const response = (boardDateTimezone: string | null) => ({ ...base, items: [{ ...base.items[0], boardDateTimezone,
-    card: { ...base.items[0].card, dueAt: '2026-10-05T00:30:00Z' } }] });
+    card: { ...base.items[0].card, dueAt: '2026-10-05T00:30:00Z', dueHasTime: true } }] });
   request.mockResolvedValueOnce(account).mockResolvedValueOnce(response('Pacific/Honolulu')).mockResolvedValueOnce(account);
   render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
   fireEvent.click(screen.getByRole('button', { name: 'Search' }));
@@ -150,4 +150,15 @@ it('uses current Board policy before account timezone and returns to account pre
   fireEvent.click(screen.getByRole('button', { name: 'Refresh results' }));
   await screen.findByText(/Due Oct 5, 2026, 09:30/);
   expect(screen.queryByText(/Due Oct 5, 2026, 00:30/)).not.toBeInTheDocument();
+});
+
+it('shows date-only deadlines without inventing a time in the current Board timezone', async () => {
+  const base = result();
+  const response = { ...base, items: [{ ...base.items[0], boardDateTimezone: 'Pacific/Honolulu',
+    card: { ...base.items[0].card, dueAt: '2040-01-03T09:59:59.999999Z', dueHasTime: false } }] };
+  vi.mocked(workRequest).mockResolvedValueOnce(profile()).mockResolvedValueOnce(response).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+  await screen.findByText('Due Jan 2, 2040');
+  expect(screen.queryByText(/23:59|09:59/)).not.toBeInTheDocument();
 });

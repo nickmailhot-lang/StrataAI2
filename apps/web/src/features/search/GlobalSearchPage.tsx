@@ -5,6 +5,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { parseSearchPage, type SearchPage } from './globalSearch';
 import { formatUserDateTime } from '../auth/userDateTime';
+import { formatCardDate } from '../kanban/cardDates';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { ChangedSearchInteractionActor, SearchInteractionAcknowledgments } from './searchInteraction';
 
@@ -90,7 +91,9 @@ export function GlobalSearchPage() {
       <Typography>{item.boardName} / {item.listName}</Typography>
       <Typography>Labels: {item.labels.join(', ') || 'None'}{item.moreLabels ? ' (more on Card)' : ''}</Typography>
       <Typography>Members: {item.members.join(', ') || 'None'}{item.moreMembers ? ' (more on Card)' : ''}</Typography>
-      <Typography>{item.dueAt ? `Due ${formatUserDateTime(item.dueAt, { locale: page.locale, timezone: item.boardDateTimezone ?? page.timezone }) ?? 'Date unavailable'}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
+      <Typography>{item.dueAt ? `Due ${item.dueHasTime
+        ? formatUserDateTime(item.dueAt, { locale: page.locale, timezone: item.boardDateTimezone ?? page.timezone }) ?? 'Date unavailable'
+        : formatCardDate(item.dueAt, false, page.locale, item.boardDateTimezone ?? page.timezone)}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
     </Paper>)}
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
     {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}

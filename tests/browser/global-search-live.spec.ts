@@ -165,6 +165,15 @@ for (const width of [1280, 390]) {
       expect(persistedCard).toBeDefined();
       expect(new Date(persistedCard.dueAt).toISOString()).toBe('2040-01-02T00:30:00.000Z');
     }
+    const dateOnlyPolicy = await context.request.patch(`/boards/${board}/date-policy`, {
+      headers, data: { timezone: 'Pacific/Honolulu', version: boardVersion },
+    });
+    expect(dateOnlyPolicy.status()).toBe(200);
+    expect((await context.request.patch(`/cards/${card}/dates`, { headers, data: {
+      startAt: null, dueAt: '2040-01-02', dueTimezone: 'Pacific/Honolulu', dueHasTime: false, dueComplete: false, version: 2,
+    } })).status()).toBe(200);
+    await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
+    await expect(page.getByText('Due Jan 2, 2040', { exact: true })).toBeVisible();
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
   });
 }

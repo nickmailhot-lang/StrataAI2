@@ -184,3 +184,13 @@ or errors; execution remains pending. The desktop/phone search timezone fixtures
 also require keyboard Search focus and no automated WCAG 2.2 AA-tagged violations
 after Board-policy changes/clearing. Browser TypeScript passes; automated checks
 do not replace the remaining accessibility and native release acceptance work.
+
+Search now retains the canonical `dueHasTime` flag. Date-only deadlines display
+only the calendar date in the admitted Board/account timezone, using the shared
+Card formatter; timed deadlines retain their explicit local time. UTC instants
+must pass the shared precision/calendar validator before result admission, so
+offset-free and invalid calendar values cannot reach rendering. A component case
+uses the final microsecond of a Honolulu due day and requires a date without an
+invented 23:59 time. Desktop/phone native fixtures set a real date-only deadline
+and require that same calendar-only presentation. Native execution remains
+pending; this does not establish full timezone or PRD acceptance.
