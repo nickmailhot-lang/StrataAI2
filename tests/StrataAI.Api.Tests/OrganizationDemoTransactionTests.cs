@@ -123,14 +123,16 @@ public sealed partial class ApiHostTests
         var before = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
         var key = Guid.NewGuid();
         var receipts = app.Services.GetRequiredService<IOrganizationDepartureReplayStore>();
+        var removalReceipts = app.Services.GetRequiredService<IOrganizationRemovalReplayStore>();
         events!.Armed = !departing; receiptFence!.Armed = departing;
         var refused = departing
             ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct, key)
-            : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
+            : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct, null, key);
         Assert.False(refused.Succeeded); Assert.Equal("session_unavailable", refused.ErrorCode);
         Assert.Equal(departing ? 0 : 1, events.Withdrawals);
         Assert.Equal(departing ? 1 : 0, receiptFence.Publications);
         Assert.Null(await receipts.ReadAsync(f.Organization, f.Recipient, key, ct));
+        Assert.Null(await removalReceipts.ReadAsync(f.Organization, f.Owner, key, ct));
         Assert.Equal(originalCard, await store.FindCardAsync(card.Id, ct));
         Assert.Equal(originalMembership, await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct));
         var after = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
@@ -143,9 +145,10 @@ public sealed partial class ApiHostTests
         events.Armed = false; receiptFence.Armed = false;
         var removed = departing
             ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct, key)
-            : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
+            : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct, null, key);
         Assert.True(removed.Succeeded);
         if (departing) Assert.NotNull(await receipts.ReadAsync(f.Organization, f.Recipient, key, ct));
+        else Assert.NotNull(await removalReceipts.ReadAsync(f.Organization, f.Owner, key, ct));
         Assert.False((await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct))!.Active);
         Assert.Equal(originalCard.Version + 1, (await store.FindCardAsync(card.Id, ct))!.Version);
         Assert.DoesNotContain((await work.ListCardMembersAsync(card.Id, f.Owner, cancellationToken: ct)).Value!.Items,

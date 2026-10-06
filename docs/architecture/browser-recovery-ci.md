@@ -149,3 +149,9 @@ query to the accessible Create link attachment region. Original body/key,
 newer snapshot, competing-mutation fences and post-recovery enabled controls
 remain asserted, with the original 5-second timeout. Full/native acceptance
 is still pending; these source observations do not establish release readiness.
+
+The next stable full web run at `52e8287` passed: 1,509 tests in 123 files,
+224.25 seconds, exit 0. It includes the assignee paging and URL attachment
+query changes and all current departure source cases. Browser files remained
+unchanged during the run. Backend-only removal receipt work does not extend
+this source result to API, PostgreSQL or exact-image browser acceptance.

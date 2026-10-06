@@ -201,6 +201,7 @@ public static class OrganizationEndpoints
                 Guid organizationId,
                 Guid targetUserId,
                 long? expectedVersion,
+                Guid? expectedActorId,
                 HttpContext context,
                 IOrganizationService service,
                 CancellationToken cancellationToken) =>
@@ -211,13 +212,22 @@ public static class OrganizationEndpoints
                     return Results.Unauthorized();
                 }
 
+                if (expectedActorId is Guid expected && expected != userId.Value)
+                    return ErrorFor("session_unavailable");
+                Guid? key = null;
+                if (context.Request.Headers.TryGetValue("Idempotency-Key", out var keys))
+                {
+                    if (keys.Count != 1 || !Guid.TryParse(keys[0], out var parsed) || parsed == Guid.Empty)
+                        return ErrorFor("invalid_idempotency_key");
+                    key = parsed;
+                }
                 var result = await service.RemoveMemberAsync(
                     organizationId,
                     userId.Value,
                     targetUserId,
                     context.TraceIdentifier,
                     cancellationToken,
-                    expectedVersion);
+                    expectedVersion, key);
 
                 return result.Succeeded
                     ? Results.NoContent()

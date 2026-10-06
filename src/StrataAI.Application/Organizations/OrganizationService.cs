@@ -11,7 +11,7 @@ public sealed class OrganizationService(
     StrataAI.Application.Identity.ICommandActorAuthorization actors,
     StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
     CardReminderContainerScheduling reminders, IOrganizationMetadataReplayStore metadataReplays,
-    IOrganizationDepartureReplayStore departureReplays) : IOrganizationService
+    IOrganizationDepartureReplayStore departureReplays, IOrganizationRemovalReplayStore removalReplays) : IOrganizationService
 {
     public async Task<OrganizationOperation<OrganizationDirectoryPage>> ListPageAsync(Guid actorUserId,
         Guid? after, CancellationToken cancellationToken = default)
@@ -144,9 +144,30 @@ public sealed class OrganizationService(
 
     public Task<OrganizationOperation<bool>> RemoveMemberAsync(
         Guid organizationId, Guid actorUserId, Guid targetUserId, string correlationId,
-        CancellationToken cancellationToken = default, long? expectedVersion = null) =>
-        unitOfWork.ExecuteAsync(organizationId, actorUserId, targetUserId, false,
-            () => RemoveMemberCoreAsync(organizationId, actorUserId, targetUserId, correlationId, cancellationToken, expectedVersion), cancellationToken);
+        CancellationToken cancellationToken = default, long? expectedVersion = null, Guid? idempotencyKey = null) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, targetUserId, false, async () =>
+        {
+            if (idempotencyKey is null)
+                return await RemoveMemberCoreAsync(organizationId, actorUserId, targetUserId, correlationId, cancellationToken, expectedVersion);
+            // Current administrators can recover a token-free acknowledgment; self-removal
+            // deliberately retires the actor's membership and uses the current session instead.
+            if (actorUserId != targetUserId && !CanAdminister(await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken)))
+                return OrganizationOperation<bool>.Failure("organization_not_found");
+            if (idempotencyKey == Guid.Empty) return OrganizationOperation<bool>.Failure("invalid_idempotency_key");
+            var fingerprint = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { organizationId, targetUserId, expectedVersion })));
+            var receipt = await removalReplays.ReadAsync(organizationId, actorUserId, idempotencyKey.Value, cancellationToken);
+            if (receipt is not null)
+            {
+                if (receipt.Fingerprint != fingerprint) return OrganizationOperation<bool>.Failure("idempotency_conflict");
+                return receipt.ExpiresAt > clock.UtcNow ? OrganizationOperation<bool>.Success(true)
+                    : OrganizationOperation<bool>.Failure("idempotency_expired");
+            }
+            var result = await RemoveMemberCoreAsync(organizationId, actorUserId, targetUserId, correlationId, cancellationToken, expectedVersion);
+            if (result.Succeeded) await removalReplays.SaveAsync(organizationId, actorUserId, idempotencyKey.Value,
+                new(fingerprint, clock.UtcNow.AddHours(24)), cancellationToken);
+            return result;
+        }, cancellationToken);
 
     public Task<OrganizationOperation<bool>> LeaveAsync(
         Guid organizationId, Guid actorUserId, string correlationId,

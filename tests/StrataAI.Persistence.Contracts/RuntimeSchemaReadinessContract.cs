@@ -12,7 +12,7 @@ internal static class RuntimeSchemaReadinessContract
         var factories = new[] { api, worker };
         foreach (var factory in factories)
         { await using var complete = await factory.OpenConnectionAsync(ct); }
-        foreach (var version in new[] { "001_foundation", "078_navigation_interaction_sources", "081_navigation_original_recovery", "082_organization_metadata_replays", "083_organization_departure_replays" })
+        foreach (var version in new[] { "001_foundation", "078_navigation_interaction_sources", "081_navigation_original_recovery", "082_organization_metadata_replays", "083_organization_departure_replays", "084_organization_removal_replays" })
         {
             var hidden = $"contract_missing_{Guid.NewGuid():N}";
             await using var hide = new NpgsqlCommand("UPDATE public.schema_migrations SET version=@hidden WHERE version=@version", admin);

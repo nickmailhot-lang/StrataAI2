@@ -16,6 +16,7 @@ cleanup() {
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON organization_removal_replays TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_departure_replays TO strataai_api_runtime;' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_metadata_wait ON organization_metadata_replays; DROP FUNCTION IF EXISTS public.ci_organization_metadata_wait();' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_departure_wait ON organization_departure_replays; DROP FUNCTION IF EXISTS public.ci_organization_departure_wait();' >/dev/null
@@ -439,3 +440,53 @@ test "$(departure_request departure-expired)" = 409
 jq -e '.code=="idempotency_expired"' "$scratch/departure-expired.json" >/dev/null
 test "$departure_expired" = "$(departure_state)"
 echo 'Departure receipts roll back atomically, serialize identical retries, preserve rejoined membership and keep expired keys reserved.'
+
+# Member removal receipts bind actor, target and reviewed version.
+removal_key="$(cat /proc/sys/kernel/random/uuid)"
+removal_version="$(admin "SELECT version FROM organization_members WHERE tenant_id='$retry_org' AND user_id='$other';")"
+removal_request() {
+  curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+    -H "Idempotency-Key: $removal_key" -X DELETE -o "$scratch/$1.json" -w '%{http_code}' \
+    "$BASE_URL/organizations/$retry_org/members/${3:-$other}?expectedVersion=${2:-$removal_version}&expectedActorId=${4:-$owner}"
+}
+removal_state() {
+  admin "SELECT jsonb_build_object('members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$retry_org'),
+    'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
+    'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_removal_replays r WHERE tenant_id='$retry_org'))::text;"
+}
+removal_before="$(removal_state)"
+test "$(removal_request removal-account-switch "$removal_version" "$other" "$other")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/removal-account-switch.json" >/dev/null
+test "$removal_before" = "$(removal_state)"
+admin 'REVOKE INSERT ON organization_removal_replays FROM strataai_api_runtime;' >/dev/null
+test "$(removal_request removal-denied)" = 503
+jq -e '.code=="organization_storage_unavailable"' "$scratch/removal-denied.json" >/dev/null
+test "$removal_before" = "$(removal_state)"
+admin 'GRANT INSERT ON organization_removal_replays TO strataai_api_runtime;' >/dev/null
+hold "SELECT id FROM organizations WHERE id='$retry_org' FOR UPDATE;"
+removal_request removal-first > "$scratch/removal-first.status" & removal_first_pid=$!
+removal_request removal-second > "$scratch/removal-second.status" & removal_second_pid=$!
+blocked '%SELECT id FROM organizations%FOR UPDATE%' 2
+release ''
+wait "$removal_first_pid"; wait "$removal_second_pid"
+test "$(cat "$scratch/removal-first.status")" = 204
+test "$(cat "$scratch/removal-second.status")" = 204
+test "$(admin "SELECT count(*)=1 FROM organization_removal_replays WHERE tenant_id='$retry_org' AND actor_id='$owner';")" = t
+test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_MEMBER_REMOVED' AND actor_id='$owner';")" = t
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$retry_org' AND user_id='$other';" >/dev/null
+removal_rejoined="$(removal_state)"
+test "$(removal_request removal-replay)" = 204
+test "$removal_rejoined" = "$(removal_state)"
+test "$(removal_request removal-conflict "$((removal_version+1))")" = 409
+jq -e '.code=="idempotency_conflict"' "$scratch/removal-conflict.json" >/dev/null
+test "$(removal_request removal-target-conflict 1 "$owner")" = 409
+jq -e '.code=="idempotency_conflict"' "$scratch/removal-target-conflict.json" >/dev/null
+test "$removal_rejoined" = "$(removal_state)"
+test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_removal_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
+test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_removal_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_removal_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_removal_replays','DELETE');")" = f
+admin "UPDATE organization_removal_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$retry_org' AND key_id='$removal_key';" >/dev/null
+removal_expired="$(removal_state)"
+test "$(removal_request removal-expired)" = 409
+jq -e '.code=="idempotency_expired"' "$scratch/removal-expired.json" >/dev/null
+test "$removal_expired" = "$(removal_state)"
+echo 'Removal receipt failure rolls back membership/audit; identical retries serialize, preserve rejoined membership and reserve expired keys.'
