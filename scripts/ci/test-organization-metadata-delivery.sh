@@ -78,8 +78,8 @@ worker_changed=true
 STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=false STRATAAI_WORKER_ORGANIZATION_IDS='' \
  docker compose -f compose.release.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 finished() {
-  admin "SELECT (SELECT count(*)=6 AND bool_and(ready_at IS NOT NULL) FROM organization_metadata_events WHERE tenant_id='$organization')
-   AND (SELECT count(*)=6 AND bool_and(j.state='SUCCEEDED') FROM background_jobs j JOIN organization_metadata_events e
+  admin "SELECT (SELECT count(*)=8 AND bool_and(ready_at IS NOT NULL) FROM organization_metadata_events WHERE tenant_id='$organization')
+   AND (SELECT count(*)=8 AND bool_and(j.state='SUCCEEDED') FROM background_jobs j JOIN organization_metadata_events e
     ON e.tenant_id=j.tenant_id AND j.safe_metadata=jsonb_build_object('eventId',e.event_id)
     WHERE j.tenant_id='$organization' AND j.job_type='ORGANIZATION_METADATA_EVENT_READY'
     AND j.actor_id=e.actor_id AND j.correlation_id=e.correlation_id AND j.service_identity='organization-metadata-delivery');"
@@ -92,26 +92,35 @@ test "$(finished)" = t
 test "$work_before" = "$(work_snapshot)"
 curl --fail --silent --show-error -b "$scratch/cookies" --get --data-urlencode "cursor=$cursor" --data-urlencode "expectedActorId=$actor" \
  "$BASE_URL/organizations/$organization/metadata-events" > "$scratch/replay.json"
-jq -e --arg tenant "$organization" --arg actor "$actor" '.resetRequired==false and .pending==false and (.events|length)==5
+jq -e --arg tenant "$organization" --arg actor "$actor" '.resetRequired==false and .pending==false and (.events|length)==7
  and .events[0].eventType=="ORGANIZATION_UPDATED" and .events[0].version==2 and .events[0].actorId==$actor
  and .events[0].organizationId==$tenant and .events[0].entityId==$tenant and .events[0].entityType=="Organization"
  and .events[0].boardId==null and .events[0].metadata=={}' "$scratch/replay.json" >/dev/null
 jq -e --arg tenant "$organization" --arg actor "$recipient" --arg subject "$subject" \
- '.events[1].eventType=="ORGANIZATION_MEMBER_ADDED" and .events[1].actorId==$actor and .events[1].organizationId==$tenant
- and .events[1].entityType=="OrganizationMembership" and .events[1].entityId==$subject and .events[1].version==1
- and .events[1].boardId==null and .events[1].metadata=={}' "$scratch/replay.json" >/dev/null
-test "$(jq -r '.events[1].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=1;")"
-jq -e --arg actor "$recipient" --arg subject "$subject" '.events[3].eventType=="ORGANIZATION_MEMBER_ADDED"
- and .events[3].entityType=="OrganizationMembership" and .events[3].entityId==$subject and .events[3].actorId==$actor
- and .events[3].version==3 and .events[3].metadata=={} and .events[3].boardId==null' "$scratch/replay.json" >/dev/null
-test "$(jq -r '.events[3].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=3;")"
-for index in 2 4; do
-  removal_actor="$actor"; if test "$index" = 4; then removal_actor="$recipient"; fi
-  jq -e --arg actor "$removal_actor" --arg subject "$subject" --argjson index "$index" \
+ '.events[2].eventType=="ORGANIZATION_MEMBER_ADDED" and .events[2].actorId==$actor and .events[2].organizationId==$tenant
+ and .events[2].entityType=="OrganizationMembership" and .events[2].entityId==$subject and .events[2].version==1
+ and .events[2].boardId==null and .events[2].metadata=={}' "$scratch/replay.json" >/dev/null
+test "$(jq -r '.events[2].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=1;")"
+jq -e --arg actor "$recipient" --arg subject "$subject" '.events[5].eventType=="ORGANIZATION_MEMBER_ADDED"
+ and .events[5].entityType=="OrganizationMembership" and .events[5].entityId==$subject and .events[5].actorId==$actor
+ and .events[5].version==3 and .events[5].metadata=={} and .events[5].boardId==null' "$scratch/replay.json" >/dev/null
+test "$(jq -r '.events[5].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=3;")"
+for pair in 3:2 6:4; do
+  index="${pair%:*}"; revision="${pair#*:}"
+  removal_actor="$actor"; if test "$revision" = 4; then removal_actor="$recipient"; fi
+  jq -e --arg actor "$removal_actor" --arg subject "$subject" --argjson index "$index" --argjson revision "$revision" \
    '.events[$index].eventType=="ORGANIZATION_MEMBER_REMOVED" and .events[$index].entityType=="OrganizationMembership"
-    and .events[$index].entityId==$subject and .events[$index].actorId==$actor and .events[$index].version==$index
+    and .events[$index].entityId==$subject and .events[$index].actorId==$actor and .events[$index].version==$revision
     and .events[$index].metadata=={} and .events[$index].boardId==null' "$scratch/replay.json" >/dev/null
-  test "$(jq -r --argjson index "$index" '.events[$index].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_REMOVED' AND entity_version=$index;")"
+  test "$(jq -r --argjson index "$index" '.events[$index].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_REMOVED' AND entity_version=$revision;")"
+done
+for pair in "1:$invitation" "4:$restoration"; do
+  index="${pair%%:*}"; invited="${pair#*:}"
+  jq -e --argjson index "$index" --arg invited "$invited" --arg actor "$actor" \
+   '.events[$index].eventType=="ORGANIZATION_MEMBER_INVITED" and .events[$index].entityType=="Invitation"
+    and .events[$index].entityId==$invited and .events[$index].actorId==$actor and .events[$index].version==1
+    and .events[$index].boardId==null and .events[$index].metadata=={}' "$scratch/replay.json" >/dev/null
+  test "$(jq -r --argjson index "$index" '.events[$index].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND entity_type='Invitation' AND entity_id='$invited';")"
 done
 test "$(curl --silent --show-error -b "$scratch/recipient.cookies" -o "$scratch/removed-replay" -w '%{http_code}' \
  "$BASE_URL/organizations/$organization/metadata-events")" = 404

@@ -27,13 +27,22 @@ key="$(cat /proc/sys/kernel/random/uuid)"
 printf '%s' '{"email":"retry-invited@example.test","surface":"INTERNAL","targetRole":"ADMIN"}' > "$scratch/input.json"
 create() { curl --max-time 60 --silent --show-error -b "$scratch/${4:-owner}.cookies" -H 'X-StrataAI-Request: 1' -H "Idempotency-Key: $1" -H 'Content-Type: application/json' -d "$(cat "$scratch/${3:-input}.json")" -o "$scratch/$2.json" -w '%{http_code}' "$base/organizations/$org/invitations"; }
 state() { admin "SELECT json_build_array((SELECT count(*) FROM invitations WHERE tenant_id='$org'),(SELECT count(*) FROM invitation_routes WHERE tenant_id='$org'),(SELECT count(*) FROM invitation_creation_replays WHERE tenant_id='$org'),(SELECT count(*) FROM audit_events WHERE tenant_id='$org'));"; }
+publication_state() {
+  admin "SELECT jsonb_build_object(
+   'proofs',(SELECT jsonb_agg(to_jsonb(p) ORDER BY invitation_id) FROM organization_invitation_creations p WHERE tenant_id='$org'),
+   'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$org'),
+   'stream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$org'),
+   'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$org'))::text;"
+}
 # Any receipt or audit failure rolls back the invitation and routing projection.
 for table in audit_events invitation_creation_replays; do
   before="$(state)"; failed_key="$(cat /proc/sys/kernel/random/uuid)"
+  publication_before="$(publication_state)"
   admin "REVOKE INSERT ON $table FROM strataai_api_runtime;" >/dev/null
   test "$(create "$failed_key" denied)" = 503
   admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
   test "$(state)" = "$before"
+  test "$(publication_state)" = "$publication_before"
   test "$(create "$failed_key" repaired)" = 201
 done
 before="$(state)"
@@ -51,20 +60,31 @@ id="$(jq -r '.id' "$scratch/first.json")"; [[ "$id" =~ ^[0-9a-f-]{36}$ ]]
 jq -e --arg org "$org" '.organizationId==$org and .invitationToken==null and .targetRole=="ADMIN"' "$scratch/first.json" >/dev/null
 test "$(admin "SELECT count(*) FROM invitation_creation_replays WHERE tenant_id='$org' AND actor_id='$owner' AND key_id='$key' AND invitation_id='$id';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$org' AND entity_id='$id' AND event_type='ORGANIZATION_MEMBER_INVITED';")" = 1
+test "$(admin "SELECT count(*)=1 AND bool_and(e.actor_id='$owner' AND e.entity_type='Invitation' AND e.entity_version=i.version
+ AND i.version=1 AND i.updated_at=i.created_at AND e.created_at=i.created_at AND e.metadata='{}'::jsonb)
+ FROM organization_metadata_events e JOIN invitations i ON i.tenant_id=e.tenant_id AND i.id=e.entity_id
+ JOIN audit_events a ON a.id=e.event_id AND a.entity_id=i.id AND a.event_type='ORGANIZATION_MEMBER_INVITED'
+ WHERE e.tenant_id='$org' AND e.entity_id='$id';")" = t
+publication_after="$(publication_state)"
 test "$(create "$key" replay)" = 201; cmp "$scratch/first.json" "$scratch/replay.json"
+test "$(publication_state)" = "$publication_after"
 after="$(state)"; test "$(jq -c 'map(.+1)' <<< "$before")" = "$(jq -c '.' <<< "$after")"
 printf '%s' '{"email":"other-intent@example.test","surface":"INTERNAL","targetRole":"ADMIN"}' > "$scratch/changed.json"
 test "$(create "$key" conflict changed)" = 409; jq -e '.code=="idempotency_key_reused"' "$scratch/conflict.json" >/dev/null
 test "$(create "$key" outsider input other)" = 404
 test "$(state)" = "$after"
+test "$(publication_state)" = "$publication_after"
 # Completed acknowledgments do not restore revoked grants.
 admin "UPDATE invitations SET revoked_at=clock_timestamp() WHERE tenant_id='$org' AND id='$id';" >/dev/null
 test "$(create "$key" revoked)" = 201; cmp "$scratch/first.json" "$scratch/revoked.json"
 test "$(admin "SELECT revoked_at IS NOT NULL FROM invitations WHERE tenant_id='$org' AND id='$id';")" = t
+test "$(admin "SELECT version=2 AND updated_at>=created_at FROM invitations WHERE tenant_id='$org' AND id='$id';")" = t
+test "$(publication_state)" = "$publication_after"
 # Expiry keeps the original key reserved, never creating a replacement.
 admin "UPDATE invitation_creation_replays SET created_at=clock_timestamp()-interval '25 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE tenant_id='$org' AND actor_id='$owner' AND key_id='$key';" >/dev/null
 test "$(create "$key" expired)" = 409; jq -e '.code=="idempotency_key_expired"' "$scratch/expired.json" >/dev/null
 test "$(state)" = "$after"
+test "$(publication_state)" = "$publication_after"
 hold() {
   rm -f "$scratch/gate.in" "$scratch/gate.log"
   mkfifo "$scratch/gate.in"

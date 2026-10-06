@@ -172,8 +172,43 @@ The required exact-image checks now compare removal proofs, source events,
 counters and queue rows during receipt failure, session expiry and original-key
 retries. The automatic Worker fixture exercises acceptance, Owner removal,
 reactivation and voluntary departure through ordinary HTTP commands, checks all
-six source events and their jobs, and denies the departed member replay access.
+all source events and their jobs, and denies the departed member replay access.
 The browser fixture adds an independent authorized observer at desktop and mobile
 widths, requiring removal and departure to reconcile without a manual reload.
-These new PostgreSQL and browser checks await CI execution; local replay tests,
-browser type checking and shell syntax checks do not establish their runtime results.
+Restricted PostgreSQL CI passed migration 098 at `ea769e2` in
+[run 37533970311](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37533970311).
+Logs confirm migration repeat/upgrade and rollback, private source capabilities,
+delivery fencing, routing and protected replay contracts. The new exact-image
+command and browser scenarios still await execution; the database gate does not
+prove those runtime results.
+
+## Organization invitation creation
+
+Migration 099 adds persisted invitation revisions and update timestamps. New
+invitations start at revision one; actual row changes advance the revision and
+timestamp, while no-op updates preserve both. Existing invitations receive a
+storage baseline without creation proofs or reconstructed events.
+
+Only future INTERNAL invitations with no Board target receive a private,
+forced-RLS creation proof. Their existing `ORGANIZATION_MEMBER_INVITED` audit
+projects an `Invitation` source at the actual persisted creation revision and
+time, using the original audit ID and issuer. Publication requires the active
+parent, active issuer account and current Owner/Admin membership, with Owner
+authority for an Owner invitation. Portal and Board invitation audits retain
+their separate surfaces.
+
+The event carries no recipient email, bearer token, delivery content or role
+payload. Its metadata is empty and Board ID is null. Source/counter/reference
+job publication commits with invitation creation, routing, mail intent, audit
+and receipt in the owning transaction. Delivery can publish the historical
+creation after acceptance or revocation; it never restores access or changes
+the original event. Current Organization admission still gates every read.
+
+Required fixtures compare private proofs, complete source/counter/job state
+during creation failures and original-key retries. They check the exact source
+audit and persisted revision/time, unchanged history after revocation, and the
+eight-event ordinary HTTP/automatic Worker chain including two invitations.
+The native browser observer also requires actual content-free invitation frames.
+These new PostgreSQL and exact-image checks remain unverified until their CI
+results are available. Invitation history and recipient views still need their
+applicable live reconciliation; transport support alone does not complete them.

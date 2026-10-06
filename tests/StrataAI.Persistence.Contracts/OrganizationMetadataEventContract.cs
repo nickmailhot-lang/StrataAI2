@@ -100,6 +100,12 @@ internal static class OrganizationMetadataEventContract
             "SELECT capture_organization_membership_activation()",
             "SELECT journal_organization_member_removal()",
             "SELECT capture_organization_membership_removal()",
+            "SELECT journal_organization_member_invitation()",
+            "SELECT capture_organization_invitation_creation()",
+            "SELECT advance_invitation_revision()",
+            "SELECT * FROM organization_invitation_creations",
+            "UPDATE organization_invitation_creations SET entity_version=99",
+            "DELETE FROM organization_invitation_creations",
             "SELECT * FROM organization_membership_removals",
             "UPDATE organization_membership_removals SET entity_version=99",
             "DELETE FROM organization_membership_removals",
@@ -132,6 +138,14 @@ internal static class OrganizationMetadataEventContract
             Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 2,
                 "Unproven membership withdrawal was published or advanced the journal.");
         }
+        refused = false;
+        try { await Execute("""
+            INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,safe_metadata)
+            VALUES(@event,@tenant,@actor,'ORGANIZATION_MEMBER_INVITED','Invitation',@actor,@correlation,'{}');
+            """, tenant, Guid.NewGuid()); }
+        catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
+        Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 2,
+            "Unproven invitation source was published or advanced the journal.");
         refused = false;
         await using (var edit = new NpgsqlCommand("UPDATE organization_metadata_events SET correlation_id='rewrite' WHERE tenant_id=@tenant", admin))
         {

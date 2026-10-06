@@ -23,13 +23,16 @@ for (const width of [1280, 390]) {
       restoreWorker = scopedBoardWorker(org);
       const observer = await context.newPage(); await observer.setViewportSize({ width, height: 844 });
       const removals: Array<Record<string, unknown>> = [];
+      const invitations: Array<Record<string, unknown>> = [];
       observer.on('websocket', socket => {
         if (new URL(socket.url()).pathname !== '/organizations/live/metadata') return;
         socket.on('framereceived', frame => {
           for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
             const message = JSON.parse(raw);
-            if (message.type === 2 && message.item?.organizationId === org)
+            if (message.type === 2 && message.item?.organizationId === org) {
               removals.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_REMOVED'));
+              invitations.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_INVITED'));
+            }
           }
         });
       });
@@ -52,7 +55,12 @@ for (const width of [1280, 390]) {
         const issued = await context.request.post(`/organizations/${org}/invitations`, { headers,
           data: { email: accounts[index].email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
         expect(issued.status()).toBe(201);
-        expect((await client.request.post(`/me/invitations/${(await issued.json()).id}/accept`, { headers })).status()).toBe(200);
+        const invitationId = (await issued.json()).id;
+        await expect.poll(() => invitations.filter(row => row.entityId === invitationId).length, { timeout: 30_000 }).toBe(1);
+        const source = invitations.find(row => row.entityId === invitationId)!;
+        expect(source.entityType).toBe('Invitation'); expect(source.version).toBe(1);
+        expect(source.actorId).toBe(accounts[0].id); expect(source.boardId).toBeNull(); expect(source.metadata).toEqual({});
+        expect((await client.request.post(`/me/invitations/${invitationId}/accept`, { headers })).status()).toBe(200);
       }
       await join(1, recipient);
       await expect(observer.getByRole('heading', { name: 'Live joined member', exact: true })).toBeVisible();

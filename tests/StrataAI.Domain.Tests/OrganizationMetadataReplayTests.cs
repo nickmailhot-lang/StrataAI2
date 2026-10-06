@@ -100,19 +100,20 @@ public sealed class OrganizationMetadataReplayTests
     [InlineData("ORGANIZATION_MEMBER_ADDED", 4)]
     [InlineData("ORGANIZATION_MEMBER_REMOVED", 2)]
     [InlineData("ORGANIZATION_MEMBER_REMOVED", 4)]
+    [InlineData("ORGANIZATION_MEMBER_INVITED", 1)]
     public async Task PRD_03_Member_change_replay_preserves_subject_identity_and_revision(string eventType, long version)
     {
         var member = Guid.NewGuid(); var eventId = Guid.NewGuid();
         var reader = new Reader { Candidate = new(1, new(eventId, eventType, Actor,
-            Organization, version, DateTimeOffset.UtcNow, "OrganizationMembership", member), true) };
+            Organization, version, DateTimeOffset.UtcNow, eventType == "ORGANIZATION_MEMBER_INVITED" ? "Invitation" : "OrganizationMembership", member), true) };
         var codec = new Codec(); var service = new OrganizationMetadataSynchronizationService(reader, codec);
         var cursor = codec.Encode(reader.Binding!, 0); var ct = TestContext.Current.CancellationToken;
         var result = await service.ReadAsync(Organization, Actor, cursor, cancellationToken: ct);
         Assert.True(result.Succeeded);
         var row = Assert.Single(result.Value!.Events);
         Assert.Equal(eventId, row.EventId); Assert.Equal(member, row.EntityId); Assert.Equal(version, row.Version);
-        Assert.Equal("OrganizationMembership", row.EntityType); Assert.Empty(row.Metadata); Assert.Null(row.BoardId);
-        foreach (var invalid in new[] { row with { EntityType = "Organization" }, row with { EntityId = Guid.Empty }, row with { EventType = "ORGANIZATION_MEMBER_INVITED" } })
+        Assert.Equal(eventType == "ORGANIZATION_MEMBER_INVITED" ? "Invitation" : "OrganizationMembership", row.EntityType); Assert.Empty(row.Metadata); Assert.Null(row.BoardId);
+        foreach (var invalid in new[] { row with { EntityType = "Organization" }, row with { EntityId = Guid.Empty }, row with { EventType = "UNKNOWN" } })
         {
             reader.Candidate = new(1, invalid, true);
             Assert.Equal("organization_sync_unavailable", (await service.ReadAsync(Organization, Actor, cursor, cancellationToken: ct)).ErrorCode);
