@@ -18,7 +18,7 @@ for (const viewport of [
       if (viewport.name === "mobile") {
         await button.focus();
         await expect(button).toBeFocused();
-        await page.keyboard.press("Enter");
+        await button.press("Enter");
       } else await button.click();
     }
     const email = `board-browser-${Date.now()}@example.test`;
@@ -50,6 +50,8 @@ for (const viewport of [
       page.getByRole("heading", { name: "Browser organization", exact: true }),
     ).toBeVisible();
     const organizationId = new URL(page.url()).pathname.split("/")[2];
+    // Live admission initially replaces the home controls while rechecking access.
+    await expect(page.getByRole("status")).toHaveText("Current Board access checked.");
     await activate("Create board");
     await page.getByLabel("Name", { exact: false }).fill("Browser board");
     await page
