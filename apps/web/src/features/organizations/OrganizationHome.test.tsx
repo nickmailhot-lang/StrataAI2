@@ -6,7 +6,15 @@ const live = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string
 vi.mock('../kanban/organizationBoardLive', () => ({ watchOrganizationBoards: live.watch }));
 const profile = { id: '22222222-2222-4222-8222-222222222222', version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
 function stubFetch(delegate: (path: string, options?: RequestInit) => unknown) {
-  vi.stubGlobal('fetch', (path: string, options?: RequestInit) => path === '/me' ? Promise.resolve(response(profile)) : delegate(path, options));
+  vi.stubGlobal('fetch', (path: string, options?: RequestInit) => {
+    if (path === '/me') return Promise.resolve(response(profile));
+    if (path === '/navigation/observations?kind=context') return Promise.resolve(response({
+      eventId: '33333333-3333-4333-8333-333333333333', entityId: '33333333-3333-4333-8333-333333333333',
+      actorId: profile.id, eventType: 'APPLICATION_CONTEXT_CHANGED', entityType: 'ApplicationContext',
+      organizationId: null, boardId: null, version: 1, metadata: {}, createdAt: '2026-10-05T12:00:00Z',
+    }));
+    return delegate(path, options);
+  });
 }
 
 const organizations = [
@@ -39,6 +47,7 @@ function mount(path = "/app") {
   render(<RouterProvider router={router} />);
   return router;
 }
+beforeEach(() => sessionStorage.clear());
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 describe("PRD-01/03/04 organization discovery", () => {
   it('withdraws cached names and creation consent when live admission is withdrawn', async () => {

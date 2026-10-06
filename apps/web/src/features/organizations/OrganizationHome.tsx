@@ -23,6 +23,7 @@ import {
 } from "../../api/workManagement";
 import { isNotificationProfile } from "../notifications/notificationInbox";
 import { watchOrganizationBoards } from "../kanban/organizationBoardLive";
+import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 
 type OrganizationSummary = {
   organization: {
@@ -188,6 +189,8 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Stack spacing={2}>
+        {!organizationId && data && liveActor && !loadError &&
+          <NavigationConfirmation key={`navigation-global-${liveActor}`} target={{ kind: 'context', organization: null }} />}
         {liveNotice && <Typography role="status" aria-live="polite" aria-atomic="true">{liveNotice}</Typography>}
         <Stack direction="row" spacing={2}>
           <Button component={Link} to="/app">

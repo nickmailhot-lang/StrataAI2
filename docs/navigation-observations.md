@@ -4,7 +4,7 @@ PRD-01 requires `APPLICATION_CONTEXT_CHANGED`, `BOARD_OPENED`, and `CARD_OPENED`
 
 ## Implemented behavior
 
-The admitted internal Organization shell confirms Organization context. Active Board and Card screens confirm opens after their current reads finish. Anonymous visitors submit no personal observation. Archived Boards, archived Lists, and unavailable targets cannot authorize an active-target observation.
+The admitted internal Organization shell confirms Organization context. The authorized Organizations directory confirms global context after its account-bound read completes. Active Board and Card screens confirm opens after their current reads finish. Anonymous visitors submit no personal observation. Archived Boards, archived Lists, and unavailable targets cannot authorize an active-target observation.
 
 `POST /navigation/observations` accepts an empty body and exactly one value per supported query field:
 
@@ -32,4 +32,4 @@ Production sources and receipts use PostgreSQL forced RLS with actor-private acc
 
 Focused model, producer, HTTP, browser consumer, transport, component, and recovery fixtures exist. Local browser tests cover canonical validation, account replacement, cancellation, lost responses, return visits, and bounded recovery storage. Local .NET compilation does not prove runtime acceptance; native SQL and HTTP execution must pass CI for the relevant revision.
 
-Global application-context screen wiring, broader native replay expiry/capacity/concurrency evidence, and full PRD-01 acceptance remain incomplete. The full Board regression suite has reported timeout failures despite narrower scenarios passing; investigate these rather than treating focused success as a full-suite result. Exact-image browser, performance, accessibility, lifecycle, and realtime acceptance must also be verified before closing the ticket. Navigation observations do not by themselves prove the PRD's telemetry or performance requirements.
+Broader native replay expiry/capacity/concurrency evidence and full PRD-01 acceptance remain incomplete. The full Board regression suite has reported timeout failures despite narrower scenarios passing; investigate these rather than treating focused success as a full-suite result. Exact-image browser, performance, accessibility, lifecycle, and realtime acceptance must also be verified before closing the ticket. Navigation observations do not by themselves prove the PRD's telemetry or performance requirements.
