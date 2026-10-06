@@ -125,4 +125,38 @@ public sealed partial class ApiHostTests
         using var denied = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{id}/accept", new { }); Assert.Equal(HttpStatusCode.BadRequest, denied.StatusCode);
         Assert.Equal(1, (await memberships.FindMembershipAsync(org, user.GetProperty("id").GetGuid(), ct))!.Version);
     }
+    [Fact]
+    public async Task Active_Admin_can_accept_its_self_issued_Member_invitation_without_losing_owner_continuity()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(recipient);
+        var actor = await recipient.GetFromJsonAsync<JsonElement>("/me", ct);
+        var id = actor.GetProperty("id").GetGuid(); var email = actor.GetProperty("email").GetString();
+        using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Self role acceptance" });
+        var org = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        var root = $"/organizations/{org}/invitations";
+        using var issued = await Mutate(owner, HttpMethod.Post, root, new { email, surface = "INTERNAL", targetRole = "ADMIN" });
+        Assert.Equal(HttpStatusCode.Created, issued.StatusCode);
+        var invitation = (await issued.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var enrolled = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{invitation}/accept?expectedActorId={id}", new { });
+        Assert.Equal(HttpStatusCode.OK, enrolled.StatusCode);
+        var members = app.Services.GetRequiredService<IOrganizationStore>();
+        var original = await members.FindMembershipAsync(org, id, ct);
+        Assert.NotNull(original); Assert.Equal(OrganizationRole.Admin, original.Role);
+        using var own = await Mutate(recipient, HttpMethod.Post, $"{root}?expectedActorId={id}", new { email, surface = "INTERNAL", targetRole = "MEMBER" });
+        Assert.Equal(HttpStatusCode.Created, own.StatusCode);
+        var selfInvitation = (await own.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        using var accepted = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{selfInvitation}/accept?expectedActorId={id}", new { });
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+        var current = await members.FindMembershipAsync(org, id, ct);
+        Assert.NotNull(current); Assert.Equal(original.Id, current.Id); Assert.Equal(original.Version + 1, current.Version);
+        Assert.Equal(OrganizationRole.Member, current.Role); Assert.True(current.Active);
+        using var retry = await Mutate(recipient, HttpMethod.Post, $"/me/invitations/{selfInvitation}/accept?expectedActorId={id}", new { });
+        Assert.Equal(HttpStatusCode.BadRequest, retry.StatusCode);
+        Assert.Equal(current, await members.FindMembershipAsync(org, id, ct));
+        var ownerId = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        Assert.Equal(OrganizationRole.Owner, (await members.FindMembershipAsync(org, ownerId, ct))!.Role);
+    }
+
 }

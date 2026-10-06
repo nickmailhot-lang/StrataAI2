@@ -242,3 +242,29 @@ source/transition/outbox contracts, and leased delivery after actor departure
 passed at `6cbfe65` in [run 37542655174](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37542655174).
 The two-history ordinary HTTP/browser scenario still requires its exact-image
 acceptance result; these PostgreSQL contracts do not establish browser success.
+
+### Invitation acceptance sources and active-member role reconciliation
+
+Migration 101 projects the existing canonical `INVITATION_ACCEPTED` audit for
+future INTERNAL Organization invitations, using a private forced-RLS proof of the
+actual unaccepted-to-accepted transition. It requires unchanged grant/issuer/email,
+the exact accepting account, persisted invitation revision/update time, active
+parent/issuer accounts, and the actual active recipient membership at the accepted
+role. The owning command checks issuer grant authority before membership changes;
+projection does not recheck the resulting issuer role, since an Admin may validly
+accept their own Member invitation. Legacy accepted rows receive no proof/backfill.
+Portal and Board invitations retain their own separate surfaces.
+
+The source is a typed content-free Invitation, with the original acceptance audit
+ID/actor, revision greater than one, null Board ID and empty metadata. It commits
+with acceptance, membership, audit, sequence and the separate Worker delivery job.
+Duplicates cannot republish an unchanged revision. Historical leased delivery
+continues after actor departure; current admission governs every eventual read.
+
+An invitation can change an already active member's role without adding a member.
+This acceptance source lets existing Organization member/history consumers reread
+that actual state and withdraw stale consent, while preserving the separate
+member-added event only for real activation. Required source/rollback/private
+capability and forward-upgrade contracts, a ten-source automatic Worker HTTP chain,
+and desktop/mobile ordinary role-grant browser scenarios have been added. Their
+PostgreSQL and exact-image browser execution remains pending CI.

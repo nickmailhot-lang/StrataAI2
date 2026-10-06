@@ -187,6 +187,19 @@ test "$(post recipient "/me/invitations/$restored_invite/accept" '{}')" = 200
 test "$(admin "SELECT count(*) FROM organization_members WHERE tenant_id='$body_org' AND id='$member_id' AND user_id='$user' AND status='ACTIVE' AND role='MEMBER' AND version=4;")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$body_org' AND event_type='ORGANIZATION_MEMBER_ADDED'
   AND entity_type='OrganizationMembership' AND entity_id='$member_id' AND actor_id='$user' AND safe_metadata='{}'::jsonb;")" = 2
+acceptance_state() { admin "SELECT jsonb_agg(to_jsonb(e)-'ready_at' ORDER BY e.sequence)::text FROM organization_metadata_events e
+ WHERE e.tenant_id='$body_org' AND e.event_type='INVITATION_ACCEPTED';"; }
+acceptances_before_retry="$(acceptance_state)"
+test "$(admin "SELECT count(*)=3 AND bool_and(e.actor_id='$user' AND e.entity_type='Invitation' AND e.entity_version=i.version
+ AND e.created_at=i.updated_at AND e.metadata='{}' AND e.event_id=a.id AND a.actor_id=e.actor_id
+ AND p.actor_id=e.actor_id AND p.accepted_at=i.accepted_at AND p.updated_at=i.updated_at
+ AND j.actor_id=e.actor_id AND j.correlation_id=e.correlation_id)
+ FROM organization_metadata_events e JOIN invitations i ON i.tenant_id=e.tenant_id AND i.id=e.entity_id
+ JOIN audit_events a ON a.id=e.event_id
+ JOIN organization_invitation_acceptances p ON p.tenant_id=e.tenant_id AND p.invitation_id=e.entity_id AND p.entity_version=e.entity_version
+ JOIN background_jobs j ON j.tenant_id=e.tenant_id AND j.job_type='ORGANIZATION_METADATA_EVENT_READY'
+ AND j.safe_metadata=jsonb_build_object('eventId',e.event_id)
+ WHERE e.tenant_id='$body_org' AND e.event_type='INVITATION_ACCEPTED';")" = t
 restored_added="$(added_state)"
 test "$(jq 'length' <<< "$restored_added")" = 2
 jq -e --argjson original "$original_added" 'contains($original)' <<< "$restored_added" >/dev/null
@@ -200,6 +213,7 @@ test "$(admin "SELECT count(*)=2 AND bool_and(e.actor_id='$user' AND e.entity_ty
   WHERE e.tenant_id='$body_org' AND e.event_type='ORGANIZATION_MEMBER_ADDED';")" = t
 test "$(post recipient "/me/invitations/$restored_invite/accept" '{}')" = 200
 test "$restored_added" = "$(added_state)"
+test "$acceptances_before_retry" = "$(acceptance_state)"
 echo 'Actual member activation audits: active-role update adds none, removed-access retry stays removed, new invitation restores the same subject once.'
 # Keep ephemeral browser proofs outside retained diagnostics and release bundles.
 test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"

@@ -105,6 +105,11 @@ internal static class OrganizationMetadataEventContract
             "SELECT advance_invitation_revision()",
             "SELECT journal_organization_invitation_revocation()",
             "SELECT capture_organization_invitation_revocation()",
+            "SELECT journal_organization_invitation_acceptance()",
+            "SELECT capture_organization_invitation_acceptance()",
+            "SELECT * FROM organization_invitation_acceptances",
+            "UPDATE organization_invitation_acceptances SET entity_version=99",
+            "DELETE FROM organization_invitation_acceptances",
             "SELECT * FROM organization_invitation_revocations",
             "UPDATE organization_invitation_revocations SET entity_version=99",
             "DELETE FROM organization_invitation_revocations",
@@ -245,20 +250,79 @@ internal static class OrganizationMetadataEventContract
             "Repeated revocation audit duplicated a source or advanced the journal.");
         Require(await Read("SELECT count(*) FROM organization_metadata_events WHERE tenant_id=@tenant", foreign) == 0,
             "Revocation source crossed the forced-RLS tenant boundary.");
+        // Acceptance uses its actual accepting actor and persisted transition,
+        // including grants to an already active member, without inventing an addition.
+        var acceptanceInvitation = Guid.NewGuid(); var acceptanceEvent = Guid.NewGuid();
+        await Execute("""
+            INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+             created_by_user_id,created_at,expires_at)
+            SELECT @event,@tenant,email,email_normalized,
+             replace(@event::text,'-','')||replace(@event::text,'-',''),'INTERNAL','OWNER',@actor,clock_timestamp(),clock_timestamp()+interval '1 day'
+            FROM users WHERE id=@actor;
+            """, tenant, acceptanceInvitation);
+        const string acceptAudit = """
+            INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,safe_metadata)
+            SELECT @event,@tenant,@actor,'INVITATION_ACCEPTED','Invitation',id,@correlation,'{}'
+            FROM invitations WHERE tenant_id=@tenant AND target_role='OWNER';
+            """;
+        const string accept = "UPDATE invitations SET accepted_at=clock_timestamp(),accepted_by_user_id=@actor WHERE tenant_id=@tenant AND target_role='OWNER';";
+        refused = false;
+        try { await Execute(acceptAudit, tenant, Guid.NewGuid()); }
+        catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
+        Require(refused, "Unaccepted invitation fabricated an acceptance source.");
+        refused = false;
+        try { await Execute(accept + acceptAudit, tenant, Guid.NewGuid(), new string('x', 65)); }
+        catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
+        Require(refused, "Invalid acceptance publication correlation committed.");
+        await using (var unchanged = new NpgsqlCommand("""
+            SELECT (SELECT version=1 AND accepted_at IS NULL AND accepted_by_user_id IS NULL FROM invitations WHERE id=@invitation)
+             AND NOT EXISTS(SELECT 1 FROM organization_invitation_acceptances WHERE invitation_id=@invitation)
+             AND (SELECT last_sequence=3 FROM organization_metadata_event_streams WHERE tenant_id=@tenant)
+             AND NOT EXISTS(SELECT 1 FROM audit_events WHERE entity_id=@invitation);
+            """, admin))
+        {
+            unchanged.Parameters.AddWithValue("tenant", tenant); unchanged.Parameters.AddWithValue("invitation", acceptanceInvitation);
+            Require(await unchanged.ExecuteScalarAsync(ct) is true, "Failed acceptance retained transition, proof, audit or sequence gap.");
+        }
+        await Execute(accept + acceptAudit, tenant, acceptanceEvent);
+        await using (var proof = new NpgsqlCommand("""
+            SELECT count(*) FROM organization_metadata_events e
+            JOIN invitations i ON i.tenant_id=e.tenant_id AND i.id=e.entity_id
+            JOIN organization_invitation_acceptances p ON p.tenant_id=e.tenant_id AND p.invitation_id=e.entity_id AND p.entity_version=e.entity_version
+            JOIN audit_events a ON a.id=e.event_id
+            JOIN background_jobs j ON j.tenant_id=e.tenant_id AND j.idempotency_key='organization-metadata-event/'||replace(e.event_id::text,'-','')
+            WHERE e.event_id=@event AND e.tenant_id=@tenant AND e.event_type='INVITATION_ACCEPTED'
+             AND e.entity_type='Invitation' AND e.entity_version=2 AND e.sequence=4
+             AND e.actor_id=@actor AND a.actor_id=e.actor_id AND p.actor_id=e.actor_id AND i.accepted_by_user_id=e.actor_id
+             AND e.created_at=i.updated_at AND p.updated_at=e.created_at AND p.accepted_at=i.accepted_at AND e.metadata='{}' AND e.ready_at IS NULL
+             AND j.job_type='ORGANIZATION_METADATA_EVENT_READY' AND j.safe_metadata=jsonb_build_object('eventId',e.event_id);
+            """, admin))
+        {
+            proof.Parameters.AddWithValue("tenant", tenant); proof.Parameters.AddWithValue("actor", actor); proof.Parameters.AddWithValue("event", acceptanceEvent);
+            Require((long)(await proof.ExecuteScalarAsync(ct))! == 1, "Acceptance lost actual actor, original source, revision/time or atomic job.");
+        }
+        refused = false;
+        try { await Execute(acceptAudit, tenant, Guid.NewGuid()); }
+        catch (PostgresException error) when (error.SqlState == "23505") { refused = true; }
+        Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 4,
+            "Repeated acceptance audit fabricated a source or advanced the journal.");
         await OrganizationMetadataDeliveryContract.RunAsync(admin, apiConnection, workerConnection, tenant, actor, ct);
         // That delivery contract withdraws the actor's membership. Historical
-        // revocation remains deliverable under the separate Worker's real lease.
+        // invitation sources remain deliverable under the separate Worker's real lease.
         await using (var worker = new PostgresConnectionFactory(workerConnection))
         {
             var jobs = new StrataAI.Infrastructure.BackgroundJobs.PostgresBackgroundJobStore(worker);
-            var claim = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct)
-                ?? throw new InvalidOperationException("Revocation delivery job missing.");
-            var eventId = StrataAI.Application.Organizations.OrganizationLifecycleDeliveryHandler.ParseEventId(claim.SafeMetadataJson);
-            Require(eventId == revocationEvent, "Worker claimed a different revocation source.");
-            var delivery = new StrataAI.Infrastructure.Organizations.PostgresOrganizationMetadataDeliveryStore(worker);
-            Require(await delivery.MarkReadyAsync(claim, eventId, ct)
-                && await jobs.CompleteAsync(tenant, claim.Id, claim.LeaseId, claim.WorkerId, ct),
-                "Actor departure stranded the committed revocation source.");
+            foreach (var expectedEvent in new[] { revocationEvent, acceptanceEvent })
+            {
+                var claim = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct)
+                    ?? throw new InvalidOperationException("Invitation delivery job missing.");
+                var eventId = StrataAI.Application.Organizations.OrganizationLifecycleDeliveryHandler.ParseEventId(claim.SafeMetadataJson);
+                Require(eventId == expectedEvent, "Worker claimed a different invitation source.");
+                var delivery = new StrataAI.Infrastructure.Organizations.PostgresOrganizationMetadataDeliveryStore(worker);
+                Require(await delivery.MarkReadyAsync(claim, eventId, ct)
+                    && await jobs.CompleteAsync(tenant, claim.Id, claim.LeaseId, claim.WorkerId, ct),
+                    "Actor departure stranded the committed invitation source.");
+            }
         }
         Console.WriteLine("Organization metadata events: canonical source/version/time, atomic rollback and gap-free retry, forced RLS, private capabilities and immutable history passed.");
     }
