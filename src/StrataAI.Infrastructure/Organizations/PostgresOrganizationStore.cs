@@ -143,6 +143,21 @@ internal sealed class PostgresOrganizationStore(
         return result;
     }
 
+    public async Task<OrganizationOperation<IReadOnlyList<Guid>>> ReadDirectoryRoutesAsync(Guid userId,
+        Guid? after, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return OrganizationOperation<IReadOnlyList<Guid>>.Success(
+                await ListMembershipOrganizationIdsPageAsync(userId, after, cancellationToken));
+        }
+        catch (NpgsqlException)
+        {
+            // Provider details are not an application error envelope or directory result.
+            return OrganizationOperation<IReadOnlyList<Guid>>.Failure("organization_storage_unavailable");
+        }
+    }
+
     public async Task<IReadOnlyList<Guid>> ListMembershipOrganizationIdsPageAsync(Guid userId, Guid? after, CancellationToken cancellationToken = default)
     {
         await using var routing = await connectionFactory.OpenRoutingSessionAsync(cancellationToken);

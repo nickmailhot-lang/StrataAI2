@@ -3,9 +3,10 @@ set -euo pipefail
 # PRD-03-TC-04/05/08: exact-image restricted-role member discovery.
 test "${CI:-}" = true || { echo 'Disposable member fixtures may run only in CI.' >&2; exit 1; }
 base="${1:-http://localhost:8080}"
-scratch="$(mktemp -d)"; gate_pid=''; request_pid=''
+scratch="$(mktemp -d)"; gate_pid=''; request_pid=''; directory_read_denied=false
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
+  if test "$directory_read_denied" = true; then admin 'GRANT SELECT ON user_organization_access TO strataai_api_runtime;' >/dev/null || true; fi
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api >/dev/null
@@ -85,6 +86,16 @@ for cursor in invalid 00000000-0000-0000-0000-000000000000; do
   test "$(get member "/organizations/directory?after=$cursor" directory-invalid)" = 400
   jq -e '.code=="invalid_organization_cursor"' "$scratch/directory-invalid.json" >/dev/null
 done
+# Directory routing failure is masked and cannot disclose a partial page.
+directory_read_denied=true
+admin 'REVOKE SELECT ON user_organization_access FROM strataai_api_runtime;' >/dev/null
+test "$(get owner '/organizations/directory' directory-unavailable)" = 503
+jq -e '.code=="organization_storage_unavailable"' "$scratch/directory-unavailable.json" >/dev/null
+scripts/ci/assert-file-excludes.sh 'Bounded member directory|items|nextCursor|Npgsql|permission denied|user_organization_access' "$scratch/directory-unavailable.json"
+admin 'GRANT SELECT ON user_organization_access TO strataai_api_runtime;' >/dev/null
+directory_read_denied=false
+test "$(get owner '/organizations/directory' directory-recovered)" = 200
+jq -e --arg org "$org" '(.items|length)==1 and .items[0].organization.id==$org' "$scratch/directory-recovered.json" >/dev/null
 # A wholly omitted first page must continue to the later current grant.
 empty_actor="$(jq -r '.user.id' "$scratch/empty.user")"
 [[ "$empty_actor" =~ ^[0-9a-fA-F-]{36}$ ]]

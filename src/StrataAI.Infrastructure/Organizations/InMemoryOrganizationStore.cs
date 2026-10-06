@@ -95,6 +95,11 @@ internal sealed class InMemoryOrganizationStore(IIdentityStore identities, Ident
             .Select(m => m.OrganizationId).Distinct().Order().ToArray());
     }
 
+    public async Task<OrganizationOperation<IReadOnlyList<Guid>>> ReadDirectoryRoutesAsync(Guid userId,
+        Guid? after, CancellationToken cancellationToken = default) =>
+        OrganizationOperation<IReadOnlyList<Guid>>.Success(
+            await ListMembershipOrganizationIdsPageAsync(userId, after, cancellationToken));
+
     public Task<IReadOnlyList<Guid>> ListMembershipOrganizationIdsPageAsync(Guid userId, Guid? after, CancellationToken cancellationToken = default)
     {
         lock (_sync) return Task.FromResult<IReadOnlyList<Guid>>(_members.Values.Where(m => m.UserId == userId)

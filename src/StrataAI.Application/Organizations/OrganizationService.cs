@@ -19,7 +19,10 @@ public sealed class OrganizationService(
             return OrganizationOperation<OrganizationDirectoryPage>.Failure("session_unavailable");
         if (after == Guid.Empty)
             return OrganizationOperation<OrganizationDirectoryPage>.Failure("invalid_organization_cursor");
-        var routes = await store.ListMembershipOrganizationIdsPageAsync(actorUserId, after, cancellationToken);
+        var routing = await store.ReadDirectoryRoutesAsync(actorUserId, after, cancellationToken);
+        if (!routing.Succeeded)
+            return OrganizationOperation<OrganizationDirectoryPage>.Failure(routing.ErrorCode!);
+        var routes = routing.Value!;
         var candidates = routes.Take(50).ToArray();
         var items = new List<OrganizationSummary>(candidates.Length);
         foreach (var organizationId in candidates)

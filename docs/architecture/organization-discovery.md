@@ -115,3 +115,12 @@ hashes complete Organization and membership rows plus scoped audit counts for
 the owner/member/Portal directory reads. It requires identical state afterward,
 covering read-only version, metadata and audit behavior in the production provider.
 This assertion awaits native CI along with the other directory scenarios.
+
+Directory routing database failures use `organization_storage_unavailable` (503)
+without a partial page or provider details. The specialized Infrastructure read
+boundary preserves cancellation and the separate runtime schema/role refusal
+contracts. Existing internal search traversal retains its own contract. The
+exact-image fixture temporarily denies the restricted API route-table read,
+requires the stable masked error, restores the grant, and requires a successful
+fresh directory read. Cleanup also restores the fixture grant on failure.
+Native runtime execution remains pending CI.
