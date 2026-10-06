@@ -17,6 +17,7 @@ cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON organization_creation_replays TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_removal_replays TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_departure_replays TO strataai_api_runtime;' >/dev/null
@@ -564,3 +565,68 @@ test "$(removal_request removal-expired)" = 409
 jq -e '.code=="idempotency_expired"' "$scratch/removal-expired.json" >/dev/null
 test "$removal_expired" = "$(removal_state)"
 echo 'Removal receipt failure rolls back membership/audit; identical retries serialize, preserve rejoined membership and reserve expired keys.'
+
+# PRD-03-TC-06/07/08: absent-parent retries share one owning creation scope.
+creation_key="$(cat /proc/sys/kernel/random/uuid)"
+creation_org="$(python3 - "$owner" "$creation_key" <<'PY'
+import hashlib,sys,uuid
+print(uuid.UUID(bytes_le=hashlib.sha256(f"strataai:organization:create:v1:{sys.argv[1]}:{sys.argv[2]}".encode()).digest()[:16]))
+PY
+)"
+[[ "$creation_org" =~ ^[0-9a-fA-F-]{36}$ ]]
+creation_body='{"name":"Original receipt creation","description":"Reviewed creation"}'
+creation_request() {
+  curl --max-time 60 --silent --show-error -b "$scratch/${3:-owner}.cookies" -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -H "Idempotency-Key: $creation_key" -X POST \
+    -D "$scratch/$1.headers" -o "$scratch/$1.json" -w '%{http_code}' -d "${2:-$creation_body}" \
+    "$BASE_URL/organizations?expectedActorId=$owner"
+}
+creation_state() {
+  admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$creation_org'),
+    'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$creation_org'),
+    'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$creation_org'),
+    'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_creation_replays r WHERE tenant_id='$creation_org'))::text;"
+}
+creation_before="$(creation_state)"
+test "$(creation_request creation-account "$creation_body" other)" = 401
+test "$creation_before" = "$(creation_state)"
+admin 'REVOKE INSERT ON organization_creation_replays FROM strataai_api_runtime;' >/dev/null
+test "$(creation_request creation-denied)" = 503
+jq -e '.code=="organization_storage_unavailable"' "$scratch/creation-denied.json" >/dev/null
+test "$creation_before" = "$(creation_state)"
+admin 'GRANT INSERT ON organization_creation_replays TO strataai_api_runtime;' >/dev/null
+hold "SELECT pg_advisory_xact_lock(hashtextextended('strataai:organization:create:$creation_org',0));"
+creation_request creation-first > "$scratch/creation-first.status" & creation_first_pid=$!
+creation_request creation-second > "$scratch/creation-second.status" & creation_second_pid=$!
+blocked '%strataai:organization:create:%' 2
+release ''
+wait "$creation_first_pid"; wait "$creation_second_pid"
+test "$(cat "$scratch/creation-first.status")" = 201
+test "$(cat "$scratch/creation-second.status")" = 201
+cmp "$scratch/creation-first.json" "$scratch/creation-second.json"
+jq -e --arg org "$creation_org" --arg actor "$owner" '.organization.id==$org and .organization.ownerUserId==$actor and .organization.version==1 and .role==0' "$scratch/creation-first.json" >/dev/null
+test "$(admin "SELECT count(*)=1 FROM organization_creation_replays WHERE tenant_id='$creation_org' AND actor_id='$owner';")" = t
+test "$(admin "SELECT count(*)=1 FROM organization_members WHERE tenant_id='$creation_org' AND user_id='$owner' AND role='OWNER' AND status='ACTIVE';")" = t
+test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$creation_org' AND event_type='ORGANIZATION_CREATED' AND actor_id='$owner';")" = t
+test "$(request PATCH "/organizations/$creation_org" '{"name":"Later creation metadata","version":1}')" = 200
+creation_later="$(creation_state)"
+test "$(creation_request creation-replay)" = 201
+cmp "$scratch/creation-first.json" "$scratch/creation-replay.json"
+test "$creation_later" = "$(creation_state)"
+test "$(creation_request creation-conflict '{"name":"Different creation","description":"Reviewed creation"}')" = 409
+jq -e '.code=="idempotency_conflict"' "$scratch/creation-conflict.json" >/dev/null
+test "$creation_later" = "$(creation_state)"
+admin "UPDATE organization_members SET status='REMOVED',version=version+1 WHERE tenant_id='$creation_org' AND user_id='$owner';" >/dev/null
+creation_withdrawn="$(creation_state)"
+test "$(creation_request creation-withdrawn)" = 404
+scripts/ci/assert-file-excludes.sh "$creation_org|$owner|Original receipt creation|Later creation metadata" "$scratch/creation-withdrawn.json"
+test "$creation_withdrawn" = "$(creation_state)"
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1 WHERE tenant_id='$creation_org' AND user_id='$owner';" >/dev/null
+test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_creation_replays WHERE tenant_id='$creation_org'; ROLLBACK;" | tail -n1)" = 0
+test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_creation_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_creation_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_creation_replays','DELETE');")" = f
+admin "UPDATE organization_creation_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$creation_org' AND key_id='$creation_key';" >/dev/null
+creation_expired="$(creation_state)"
+test "$(creation_request creation-expired)" = 409
+jq -e '.code=="idempotency_expired"' "$scratch/creation-expired.json" >/dev/null
+test "$creation_expired" = "$(creation_state)"
+echo 'Creation receipts roll back the new parent/owner/audit, serialize absent-parent retries, preserve later edits and reserve expired keys.'

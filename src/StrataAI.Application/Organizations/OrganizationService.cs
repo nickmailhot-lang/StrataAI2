@@ -11,7 +11,8 @@ public sealed class OrganizationService(
     StrataAI.Application.Identity.ICommandActorAuthorization actors,
     StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
     CardReminderContainerScheduling reminders, IOrganizationMetadataReplayStore metadataReplays,
-    IOrganizationDepartureReplayStore departureReplays, IOrganizationRemovalReplayStore removalReplays) : IOrganizationService
+    IOrganizationDepartureReplayStore departureReplays, IOrganizationRemovalReplayStore removalReplays,
+    IOrganizationCreationReplayStore creationReplays) : IOrganizationService
 {
     public async Task<OrganizationOperation<OrganizationDirectoryPage>> ListPageAsync(Guid actorUserId,
         Guid? after, CancellationToken cancellationToken = default)
@@ -105,11 +106,42 @@ public sealed class OrganizationService(
 
     public Task<OrganizationOperation<OrganizationSummary>> CreateAsync(
         Guid actorUserId, string name, string? description, string correlationId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Guid? idempotencyKey = null)
     {
-        var organizationId = Guid.NewGuid();
-        return unitOfWork.ExecuteAsync(organizationId, actorUserId, null, true,
-            () => CreateCoreAsync(organizationId, actorUserId, name, description, correlationId, cancellationToken), cancellationToken);
+        if (idempotencyKey == Guid.Empty)
+            return Task.FromResult(OrganizationOperation<OrganizationSummary>.Failure("invalid_idempotency_key"));
+        // A creation has no existing tenant. Derive its private transaction scope
+        // from the account and random intent key; the body never selects a tenant.
+        var organizationId = idempotencyKey is Guid key
+            ? new Guid(System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes($"strataai:organization:create:v1:{actorUserId:D}:{key:D}"))[..16])
+            : Guid.NewGuid();
+        return unitOfWork.ExecuteAsync(organizationId, actorUserId, null, true, async () =>
+        {
+            if (idempotencyKey is not Guid requestKey)
+                return await CreateCoreAsync(organizationId, actorUserId, name, description, correlationId, cancellationToken);
+            var fingerprint = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { name, description })));
+            var replay = await creationReplays.ReadAsync(organizationId, actorUserId, requestKey, cancellationToken);
+            if (replay is not null)
+            {
+                // Historical acknowledgment never restores later withdrawn access.
+                var current = await store.FindOrganizationAsync(organizationId, cancellationToken);
+                var member = await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken);
+                if (current?.Status != OrganizationStatus.Active || member?.Active != true)
+                    return OrganizationOperation<OrganizationSummary>.Failure("organization_not_found");
+                if (replay.Fingerprint != fingerprint)
+                    return OrganizationOperation<OrganizationSummary>.Failure("idempotency_conflict");
+                if (replay.ExpiresAt <= clock.UtcNow)
+                    return OrganizationOperation<OrganizationSummary>.Failure("idempotency_expired");
+                return OrganizationOperation<OrganizationSummary>.Success(replay.Result);
+            }
+            var result = await CreateCoreAsync(organizationId, actorUserId, name, description, correlationId, cancellationToken);
+            if (result.Succeeded && result.Value is not null)
+                await creationReplays.SaveAsync(organizationId, actorUserId, requestKey,
+                    new(fingerprint, result.Value, clock.UtcNow.AddHours(24)), cancellationToken);
+            return result;
+        }, cancellationToken);
     }
 
     public Task<OrganizationOperation<OrganizationRecord>> UpdateAsync(

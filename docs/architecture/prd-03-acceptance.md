@@ -6,7 +6,7 @@ and remaining work. It does not certify current release acceptance.
 
 | Requirement | Current implementation and verification path | Remaining work or evidence |
 | --- | --- | --- |
-| WS-FR-001 authenticated creation | Organization service and owning transaction; [Organization discovery](organization-discovery.md), native Organization command fixture and browser directory scenarios | Current production-policy, persisted creator/owner, retry and browser evidence |
+| WS-FR-001 authenticated creation | Organization service, owning transaction and [creation acknowledgments](organization-creation-retries.md); [Organization discovery](organization-discovery.md), native Organization command fixture and browser directory scenarios | Current production-policy, persisted creator/owner, retry and browser evidence |
 | WS-FR-002 complete metadata | Organization record includes name, description, logo URL, owner, status and timestamps; [settings](organization-settings.md) | Current persisted-field and lifecycle verification; logo URL metadata is distinct from binary object storage |
 | WS-FR-003 admin metadata editing | Server membership/version checks, settings draft reconciliation and [transactions](organization-command-transactions.md); desktop/phone settings scenarios | Organization-level change delivery and current durable metadata receipt evidence; current refusal, concurrency and browser evidence |
 | WS-FR-004 email invitations | [Invitation administration](invitation-administration-ui.md), [creation retries](invitation-creation-retries.md), [recipient discovery](invitation-discovery.md), [delivery](../invitation-email-handler.md) | Current delivery/history/acceptance checks and full invitation lifecycle acceptance |
@@ -54,9 +54,10 @@ still apply to implemented permissions and lifecycle behavior.
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and
 MarkDeletingAsync enter the Organization unit of work. MarkDeletingCoreAsync
 marks status, reschedules reminders and audits a deletion request; it does not
-perform terminal graph deletion. Current settings/member guides explicitly
-describe reconciliation rather than durable mutation receipts.
+perform terminal graph deletion. Current metadata, member-removal, departure and creation API contracts include
+durable receipts. Browser creation recovery and deletion acknowledgments
+remain incomplete; see their workflow guides for source and CI boundaries.
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**28%**, a planning estimate rather than a count of unchecked rows.
+**27%**, a planning estimate rather than a count of unchecked rows.

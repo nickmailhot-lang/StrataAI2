@@ -19,7 +19,7 @@ public interface IOrganizationService
         string name,
         string? description,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? idempotencyKey = null);
 
     Task<IReadOnlyList<OrganizationSummary>> ListAsync(
         Guid actorUserId,

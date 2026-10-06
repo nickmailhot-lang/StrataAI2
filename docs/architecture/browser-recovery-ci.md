@@ -189,3 +189,7 @@ controls are now queried once and checked for attachment after rerenders.
 The original refresh/version invalidation, disabled/enabled controls, exact
 read count and 5-second timeout remain asserted. All 17 List copy tests, web
 type checking and lint pass after this change. Full revalidation is pending.
+
+The stable full web recheck at `526812b` passed all 1,515 tests across 123
+files (200.74 seconds). This proves the web source suite at that revision;
+it does not substitute for pending exact-image PostgreSQL/browser acceptance.

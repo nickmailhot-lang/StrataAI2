@@ -90,6 +90,7 @@ public static class OrganizationEndpoints
             "/",
             async (
                 CreateOrganizationRequest request,
+                Guid? expectedActorId,
                 HttpContext context,
                 IOrganizationService service,
                 CancellationToken cancellationToken) =>
@@ -100,12 +101,23 @@ public static class OrganizationEndpoints
                     return Results.Unauthorized();
                 }
 
+                context.Response.Headers.CacheControl = "private, no-store";
+                if (expectedActorId is Guid expected && expected != userId.Value)
+                    return ErrorFor("session_unavailable");
+                Guid? idempotencyKey = null;
+                if (context.Request.Headers.TryGetValue("Idempotency-Key", out var keys))
+                {
+                    if (keys.Count != 1 || keys[0]?.Length != 36 ||
+                        !Guid.TryParseExact(keys[0], "D", out var key) || key == Guid.Empty)
+                        return ErrorFor("invalid_idempotency_key");
+                    idempotencyKey = key;
+                }
                 var result = await service.CreateAsync(
                     userId.Value,
                     request.Name,
                     request.Description,
                     context.TraceIdentifier,
-                    cancellationToken);
+                    cancellationToken, idempotencyKey);
 
                 if (!result.Succeeded || result.Value is null)
                 {

@@ -20,6 +20,18 @@ internal sealed class PostgresOrganizationUnitOfWork(
         {
             return await connections.ExecuteTenantCommandAsync(organizationId, async () =>
             {
+                if (creating)
+                {
+                    await using var creationSession = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);
+                    // Serialize absent-parent creation and matching receipt recovery.
+                    // Existing-parent locks still precede actor/session admission.
+                    await using var creationLock = new NpgsqlCommand("""
+                        SELECT pg_advisory_xact_lock(hashtextextended('strataai:organization:create:' || @tenant::text,0));
+                        SELECT id FROM organizations WHERE id=@tenant FOR UPDATE;
+                        """, creationSession.Connection, creationSession.Transaction);
+                    creationLock.Parameters.AddWithValue("tenant", organizationId);
+                    await creationLock.ExecuteNonQueryAsync(cancellationToken);
+                }
                 if (!creating)
                 {
                     await using var session = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);

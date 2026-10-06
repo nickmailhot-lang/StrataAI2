@@ -25,6 +25,9 @@ public static class OrganizationRegistration
             services.AddSingleton<InMemoryOrganizationDepartureReplayStore>();
             services.AddSingleton<IOrganizationDepartureReplayStore>(provider => provider.GetRequiredService<InMemoryOrganizationDepartureReplayStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationDepartureReplayStore>());
+            services.AddSingleton<InMemoryOrganizationCreationReplayStore>();
+            services.AddSingleton<IOrganizationCreationReplayStore>(provider => provider.GetRequiredService<InMemoryOrganizationCreationReplayStore>());
+            services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationCreationReplayStore>());
             services.AddSingleton<InMemoryOrganizationMetadataReplayStore>();
             services.AddSingleton<IOrganizationMetadataReplayStore>(provider => provider.GetRequiredService<InMemoryOrganizationMetadataReplayStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationMetadataReplayStore>());
@@ -36,6 +39,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationRemovalReplayStore, PostgresOrganizationRemovalReplayStore>();
             services.AddSingleton<IOrganizationDepartureReplayStore, PostgresOrganizationDepartureReplayStore>();
             services.AddSingleton<IOrganizationMetadataReplayStore, PostgresOrganizationMetadataReplayStore>();
+            services.AddSingleton<IOrganizationCreationReplayStore, PostgresOrganizationCreationReplayStore>();
         }
 
         services.AddSingleton<IOrganizationService, OrganizationService>();
