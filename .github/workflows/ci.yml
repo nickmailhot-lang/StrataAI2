@@ -376,6 +376,9 @@ jobs:
       STRATAAI_API_IMAGE: strataai-api:${{ github.sha }}
       STRATAAI_WORKER_IMAGE: strataai-worker:${{ github.sha }}
       STRATAAI_METRICS_OTLP_ENDPOINT: http://metrics-collector:4318/v1/metrics
+      # Command fixtures deliberately retain PENDING requests until their
+      # explicit real-Worker completion phase enables automatic discovery.
+      STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v7
 

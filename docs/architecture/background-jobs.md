@@ -33,7 +33,13 @@ with `STRATAAI_WORKER_ORGANIZATION_IDS` (comma-separated, nonempty UUIDs, maximu
 invalid IDs, Demo execution or enabled scope without handlers fail startup.
 Database grants must restrict this service identity; configuration is not a
 replacement for database authorization. No Organization discovery or bypass of
-RLS occurs. Production runtime registers the PostgreSQL job store.
+RLS occurs in this explicit general-job loop. Production runtime registers the
+PostgreSQL job store. Accepted Organization deletion has a separate
+[automatic routing capability](organization-deletion-lifecycle.md#automatic-production-deletion-discovery):
+bounded UUID hints from canonical deletion roots, followed by the same explicit
+tenant RLS, invoker queue leases and graph proof. That capability grants no
+global job/graph reads or claim/mutation authority. It is enabled by default in
+Production and can be suspended independently of the general job scope.
 
 Handlers declare their job type and service identity. Dispatch verifies the
 claimed Organization, worker and actor, then matches the handler's service

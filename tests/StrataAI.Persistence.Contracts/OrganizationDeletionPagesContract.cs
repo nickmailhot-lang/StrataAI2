@@ -216,13 +216,25 @@ internal static class OrganizationDeletionPagesContract
         var processor=new BackgroundJobProcessor(jobs,new SystemClock(),[
             new OrganizationDeletionPageHandler(store),new WorkEventDeliveryHandler(new PostgresWorkEventDeliveryStore(worker)),
             new OrganizationLifecycleDeliveryHandler(new PostgresOrganizationLifecycleDeliveryStore(worker))]);
-        var completed=0;
+        var completed=0;var terminalDiscovered=false;
         while(completed<1500)
         {
             var result=await processor.ProcessOneAsync(tenant,Guid.NewGuid(),ct); if(result==JobProcessingResult.Empty)break;
             Require(result==JobProcessingResult.Completed,"Deletion stage or event delivery did not complete."); completed++;
+            if(!terminalDiscovered)
+            {
+                await using var pendingDelivery=new NpgsqlCommand("SELECT EXISTS(SELECT 1 FROM background_jobs WHERE tenant_id=@tenant AND job_type='ORGANIZATION_LIFECYCLE_EVENT_READY' AND state='PENDING');",admin);
+                pendingDelivery.Parameters.AddWithValue("tenant",tenant);
+                if(await pendingDelivery.ExecuteScalarAsync(ct) is true)
+                {
+                    Require((await new PostgresOrganizationDeletionScopeReader(worker).ReadAsync(null,100,ct)).Contains(tenant),
+                        "Terminal parent disappeared from discovery before leased completion delivery.");
+                    terminalDiscovered=true;
+                }
+            }
         }
         Require(completed>0&&completed<1500,"Deletion graph did not drain bounded continuations.");
+        Require(terminalDiscovered,"Deletion discovery did not cover terminal-event routing.");
         await using(var verify=new NpgsqlCommand("""
             SELECT o.status,p.phase,
              (SELECT count(*) FROM organization_deletion_steps WHERE tenant_id=@tenant AND candidate_count>128),

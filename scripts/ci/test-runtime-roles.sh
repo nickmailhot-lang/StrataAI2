@@ -293,3 +293,6 @@ for function in 'public.append_notification_journal_transition(public.card_assig
  test "$(api "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
  test "$(worker "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
 done
+
+test "$(worker "SELECT has_function_privilege(current_user,'discover_organization_deletion_scopes(uuid,integer)','EXECUTE')")" = t
+test "$(api "SELECT has_function_privilege(current_user,'discover_organization_deletion_scopes(uuid,integer)','EXECUTE')")" = f

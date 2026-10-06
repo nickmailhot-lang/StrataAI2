@@ -21,4 +21,18 @@ expect_failure production '00000000-0000-0000-0000-000000000000' 'Worker Organiz
 expect_failure production '11111111-1111-1111-1111-111111111111,' 'Worker Organization scope contains an invalid ID.'
 large_scope="$(printf '%08d-0000-0000-0000-000000000001,' $(seq 1 101))"
 expect_failure production "${large_scope%,}" 'Worker Organization scope exceeds 100 IDs.'
-echo 'Exact Worker image rejects invalid, unbounded, Demo job execution. The built-in Work event handler is exercised with real PostgreSQL by the event delivery fixture.'
+
+expect_discovery_failure() {
+  local mode="$1" enabled="$2" message="$3" status
+  set +e
+  timeout 30 docker run --rm -e "STRATAAI_RUNTIME_MODE=$mode" \
+    -e 'ConnectionStrings__Postgres=Host=unused;Database=unused;Username=unused;Password=unused' \
+    -e "STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=$enabled" "$image" >"$scratch/result" 2>&1
+  status=$?
+  set -e
+  test "$status" != 0 && test "$status" != 124
+  grep -Fq "$message" "$scratch/result"
+}
+expect_discovery_failure demo true 'Organization deletion discovery requires Production mode.'
+expect_discovery_failure production invalid 'Organization deletion discovery setting must be true or false.'
+echo 'Exact Worker image rejects invalid, unbounded, Demo job execution and invalid/Demo deletion discovery. Actual automatic discovery and leased deletion run against PostgreSQL in the Organization command fixture.'

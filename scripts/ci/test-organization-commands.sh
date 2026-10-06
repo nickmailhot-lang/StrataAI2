@@ -801,11 +801,11 @@ admin "UPDATE organization_members SET role='OWNER',version=version+1 WHERE tena
 test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_deletion_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
 test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_deletion_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','DELETE');")" = f
 # PRD-03-TC-01/06/07/10: let the actual release Worker consume only the
-# product-published Organization scope. No fixture edits advance checkpoints,
+# product-published Organization discovered automatically. No fixture edits advance checkpoints,
 # mutate descendants, create completion events, or mark jobs successful.
-export STRATAAI_TEST_EVENT_ORGANIZATION_ID="$retry_org"
 deletion_worker_scoped=true
-docker compose -f compose.release.yml -f scripts/ci/compose.work-event-test.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
+STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=true STRATAAI_WORKER_ORGANIZATION_IDS='' \
+ docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
 deletion_finished() {
   admin "SELECT EXISTS(SELECT 1 FROM organizations o JOIN organization_deletion_progress p ON p.tenant_id=o.id
     JOIN organization_lifecycle_events e ON e.tenant_id=o.id
@@ -823,10 +823,10 @@ done
 test "$(deletion_finished)" = t
 docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
 deletion_worker_scoped=false
-test "$(admin "SELECT NOT EXISTS(SELECT 1 FROM boards WHERE tenant_id='$retry_org' AND status<>'DELETED')
- AND NOT EXISTS(SELECT 1 FROM lists WHERE tenant_id='$retry_org' AND status<>'DELETED')
- AND NOT EXISTS(SELECT 1 FROM cards WHERE tenant_id='$retry_org' AND (status<>'DELETED' OR cover_attachment_id IS NOT NULL))
- AND NOT EXISTS(SELECT 1 FROM attachments WHERE tenant_id='$retry_org' AND status<>'DELETED');")" = t
+test "$(admin "SELECT NOT EXISTS(SELECT 1 FROM boards WHERE tenant_id='$retry_org' AND lifecycle_state<>'DELETED')
+ AND NOT EXISTS(SELECT 1 FROM board_lists WHERE tenant_id='$retry_org' AND lifecycle_state<>'DELETED')
+ AND NOT EXISTS(SELECT 1 FROM cards WHERE tenant_id='$retry_org' AND (lifecycle_state<>'DELETED' OR cover_attachment_id IS NOT NULL))
+ AND NOT EXISTS(SELECT 1 FROM attachments WHERE tenant_id='$retry_org' AND lifecycle_state<>'DELETED');")" = t
 test "$(curl --max-time 30 --silent --show-error -b "$scratch/owner.cookies" -D "$scratch/deletion-complete.headers" -o "$scratch/deletion-complete.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/deletion-requests/$deletion_key?expectedActorId=$owner")" = 200
 jq -e --arg key "$deletion_key" --argjson version "$((deletion_version+2))" 'keys==["completedAt","eventId","requestId","state","version"] and .requestId==$key and .state=="COMPLETED" and .version==$version and (.eventId|type)=="string" and (.completedAt|type)=="string"' "$scratch/deletion-complete.json" >/dev/null
 grep -Eiq '^Cache-Control:.*no-store' "$scratch/deletion-complete.headers"

@@ -385,9 +385,9 @@ before a lost 202 can be retried. Old DELETING records without canonical roots
 still require deliberate legacy recovery; replaying their old receipt does not
 invent a new actor/request or silently requeue deletion.
 
-Configured production Workers process only their explicit Organization scopes
-(`STRATAAI_WORKER_ORGANIZATION_IDS`); adding an Organization requires updating
-that scope. Automatic Organization discovery remains unimplemented. Demo now
+The explicit general Worker loop retains its configured Organization scopes
+(`STRATAAI_WORKER_ORGANIZATION_IDS`). Deletion now has the automatic production
+routing loop described below, so new accepted deletions require no scope update. Demo now
 journals the actual product request but still lacks terminal page/event execution.
 Browser observation is implemented; native completion proof and other-client
 lifecycle recovery remain required.
@@ -458,3 +458,34 @@ tests across 126 files before the final account-verification retry refinement;
 all 36 focused routing, parser and recovery checks passed after that refinement.
 Type checks, lint, browser-fixture type checks and production build passed.
 Current native CI remains required; PRD-03 remains open.
+
+## Automatic production deletion discovery
+
+Migration `093_organization_deletion_discovery` exposes one Worker-only,
+read-only routing capability with a fixed search path. It returns at most 100
+Organization UUIDs, ordered by a seek cursor, from canonical accepted roots with
+matching current checkpoint or terminal completion delivery. It exposes no names,
+memberships, sessions, job metadata or graph content. API and PUBLIC receive no
+execution grant; direct table access remains governed by forced RLS. Discovery
+does not claim jobs or change state. Every dispatched job still establishes its
+own explicit tenant session and leased, source/version-fenced graph authority.
+
+The separate production Worker enables the loop by default; operators can suspend
+it with `STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=false`. Invalid values
+and enabled Demo discovery fail startup. UUID pagination wraps after the last
+eligible page, so lower newly queued UUIDs and delayed or crashed jobs are visited
+again. Future backoff and live leases are excluded; expired leases are routing
+candidates for the existing queue recovery policy. DELETED parents with matching
+pending terminal-event jobs remain discoverable until delivery completes. Logs
+use stable outcomes without exception bodies or source metadata.
+
+Restricted contracts cover more than 100 roots, seek/wrap, delayed/service/live
+lease exclusion, expired crash eligibility, API denial, unchanged root/checkpoint/
+queue snapshots, and no widening of direct Worker reads. The actual graph contract
+checks discovery after terminal parent publication and before leased event
+readiness. The exact-image HTTP fixture enables this loop with no explicit
+Organization IDs and requires actual graph/event completion and original-key
+terminal acknowledgment recovery. CI suspends automatic processing during its
+intentional pending/rollback scenarios, then enables it for this runtime proof.
+Compilation and shell checks are recorded separately from real PostgreSQL and
+exact-image execution; current CI proof remains required.

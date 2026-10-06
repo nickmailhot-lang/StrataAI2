@@ -38,7 +38,13 @@ for the explicit grants required by this release.
 
 To enable the Work event delivery Worker, set
 `STRATAAI_WORKER_ORGANIZATION_IDS` to a comma-separated list of Organization UUIDs
-(maximum 100) and recreate the Worker. Empty scope disables Organization jobs.
+(maximum 100) and recreate the Worker. Empty scope disables this general job loop.
+Accepted Organization deletions have a separate automatic discovery loop,
+enabled by default with `STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=true`.
+It needs no manual Organization list and continues routing pending completion
+delivery after the parent becomes DELETED. Set that flag to `false` to suspend
+automatic deletion processing. Read the
+[deletion lifecycle and discovery contract](../architecture/organization-deletion-lifecycle.md#automatic-production-deletion-discovery).
 The Worker marks persisted events ready for authorized replay and SignalR streams;
 The Board UI consumes these streams with reconnect and snapshot fallback. Configure `STRATAAI_REALTIME_PUBLIC_ORIGIN`
 with the exact public browser origin (scheme, hostname and port). If it is empty,

@@ -21,6 +21,15 @@ set by runtime environment variables. The web's `/build-metadata.json`, API's
 `/api/runtime` and Worker's `/runtime` report the identifiers of their actual
 image assemblies/assets. See [build identity](build-identity.md).
 
+Production Workers default `STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED`
+to `true`. They discover bounded Organization UUID pages for canonical accepted
+deletions and pending terminal-event delivery; new Organizations need no manual
+scope update for deletion. Set it explicitly to `false` to suspend automatic
+discovery. Invalid values and enabled Demo discovery fail startup. The separate
+`STRATAAI_WORKER_ORGANIZATION_IDS` scope still controls general Work-event and
+provider processing for active Organizations. See
+[deletion discovery](organization-deletion-lifecycle.md#automatic-production-deletion-discovery).
+
 Additional provider credentials are introduced only with the corresponding PRD and must be
 provided by deployment secret management/environment variables. Real secrets are never
 committed to `.env.example`, image layers, or CI artifacts.

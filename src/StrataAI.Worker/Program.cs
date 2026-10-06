@@ -76,6 +76,12 @@ if (runtime.Mode == RuntimeMode.Production)
 }
 
 var jobScope = builder.Configuration["STRATAAI_WORKER_ORGANIZATION_IDS"];
+var deletionDiscoverySetting = builder.Configuration["STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED"];
+var deletionDiscovery = deletionDiscoverySetting is null ? runtime.Mode == RuntimeMode.Production
+    : bool.TryParse(deletionDiscoverySetting, out var discoveryEnabled) ? discoveryEnabled
+    : throw new InvalidOperationException("Organization deletion discovery setting must be true or false.");
+if (deletionDiscovery && runtime.Mode != RuntimeMode.Production)
+    throw new InvalidOperationException("Organization deletion discovery requires Production mode.");
 if (InvitationMailRegistration.IsEnabled(builder.Configuration, runtime))
 {
     if (string.IsNullOrWhiteSpace(jobScope))
@@ -103,10 +109,22 @@ if (!string.IsNullOrWhiteSpace(jobScope))
     if (attachmentsEnabled) builder.Services.AddHostedService<AttachmentScanRecoveryWorker>();
 }
 
+if (deletionDiscovery)
+{
+    builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationDeletionScopeReader,
+        StrataAI.Infrastructure.Organizations.PostgresOrganizationDeletionScopeReader>();
+    if (string.IsNullOrWhiteSpace(jobScope))
+    {
+        builder.Services.AddSingleton<BackgroundJobProcessor>();
+        builder.Services.AddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
+    }
+    builder.Services.AddHostedService<OrganizationDeletionDiscoveryWorker>();
+}
+
 var app = builder.Build();
 app.Services.InitializeAttachmentRuntime(attachmentsEnabled);
 
-if (!string.IsNullOrWhiteSpace(jobScope) && !app.Services.GetServices<IBackgroundJobHandler>().Any())
+if ((deletionDiscovery || !string.IsNullOrWhiteSpace(jobScope)) && !app.Services.GetServices<IBackgroundJobHandler>().Any())
     throw new InvalidOperationException("Scoped job execution requires registered handlers.");
 
 app.MapGet("/healthz", (IClock clock) => Results.Ok(new
