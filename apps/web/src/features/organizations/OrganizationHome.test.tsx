@@ -4,6 +4,9 @@ import { OrganizationHome } from "./OrganizationHome";
 const live = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string; audience: string;
   invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
 vi.mock('../kanban/organizationBoardLive', () => ({ watchOrganizationBoards: live.watch }));
+const metadata = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string;
+  invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
+vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: metadata.watch }));
 const profile = { id: '22222222-2222-4222-8222-222222222222', version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
 function stubFetch(delegate: (path: string, options?: RequestInit) => unknown) {
   vi.stubGlobal('fetch', (path: string, options?: RequestInit) => {
@@ -50,6 +53,27 @@ function mount(path = "/app") {
 beforeEach(() => sessionStorage.clear());
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 describe("PRD-01/03/04 organization discovery", () => {
+  it('refreshes Organization metadata after a canonical source without requiring navigation or reload', async () => {
+    let renamed = false;
+    stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1'
+      ? response({ ...organizations[0], organization: { ...organizations[0].organization, name: renamed ? 'Updated Council' : 'Council' } })
+      : response({ organizationId: 'org-1', items: [], nextCursor: null })));
+    mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+    await waitFor(() => expect(metadata.watch).toHaveBeenCalledWith(expect.objectContaining({ organizationId: 'org-1', userId: profile.id })));
+    renamed = true; act(() => metadata.watch.mock.calls[0][0].invalidate());
+    expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+    await screen.findByRole('heading', { name: 'Updated Council' });
+  });
+  it('withdraws Organization names and creation consent when metadata recovery loses admission', async () => {
+    let withdrawn = false;
+    stubFetch(vi.fn(async (path: string) => withdrawn ? response({}, 404) : path === '/organizations/org-1'
+      ? response(organizations[0]) : response({ organizationId: 'org-1', items: [], nextCursor: null })));
+    mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+    fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
+    withdrawn = true; act(() => metadata.watch.mock.calls[0][0].unavailable());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await screen.findByRole('alert'); expect(screen.queryByText('Council')).not.toBeInTheDocument();
+  });
   it('continues an empty nonterminal page and replaces rather than accumulates directory names', async () => {
     const cursor = '11111111-1111-4111-8111-111111111111';
     const fetcher = vi.fn(async (path: string) => response(path.includes('?after=')

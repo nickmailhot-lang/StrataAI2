@@ -71,5 +71,19 @@ and connection loss stop the loop. Idle connections receive periodic heartbeat
 pages; pending sources do not cause a busy loop. Stream execution against release
 images is still unverified. Two API-host origin-denial checks passed locally.
 
-Browser reconnect/consumption, real mid-read session
+The Organization discovery page now subscribes separately to metadata and Board
+streams. A canonical metadata event or reset triggers fresh authorized metadata
+and Board-directory reads with the existing before/after account checks. Cached
+names and creation consent are withdrawn during recovery. The client checks
+the runtime descriptor first and skips this channel in Demo mode. It validates
+the complete content-free envelope, deduplicates immutable source IDs, rejects
+changed source attribution, fences obsolete callbacks and resumes the exact
+opaque cursor across reconnect. Empty heartbeat re-encryption is not a change.
+All 67 focused client/discovery/runtime-mode checks passed locally. The prior full web
+baseline passed 1,567 checks with two workers and unchanged assertions/timeouts;
+that baseline predates the new browser consumer. Current full CI remains required.
+
+The release-image scenario also requires the actual discovery heading to reflect
+the canonical rename; its execution remains pending. Settings draft-preserving
+integration, other applicable views, real mid-read session
 withdrawal, remaining event types and Demo parity are still unfinished.

@@ -7,7 +7,7 @@ type Probe = { socket: WebSocket; pages: Array<{ organizationId: string; userId:
 declare global { interface Window { metadataProbe?: Probe } }
 
 async function subscribe(page: Page, organizationId: string, cursor: string | null) {
-  await page.evaluate(async ({ organizationId, cursor }) => {
+  return page.evaluate(async ({ organizationId, cursor }) => {
     window.metadataProbe?.socket.close();
     const response = await fetch('/organizations/live/metadata/negotiate?negotiateVersion=1', {
       method: 'POST', credentials: 'same-origin', headers: { 'X-StrataAI-Request': '1' },
@@ -32,11 +32,20 @@ async function subscribe(page: Page, organizationId: string, cursor: string | nu
       }
     };
     socket.onopen = () => socket.send('{"protocol":"json","version":1}\x1e');
+    return url.toString();
   }, { organizationId, cursor });
 }
 
-test('PRD-03: genuine metadata streaming resumes original source identity and stops after logout', async ({ page, context }) => {
+for (const width of [1280, 390]) {
+test(`PRD-03: genuine metadata streaming resumes original source identity and stops after logout at ${width}px`, async ({ page, context }) => {
   test.setTimeout(240_000);
+  await page.setViewportSize({ width, height: 844 });
+  const probe = await context.newPage();
+  const closedStreams = new Set<string>();
+  probe.on('websocket', socket => {
+    if (new URL(socket.url()).pathname === '/organizations/live/metadata')
+      socket.on('close', () => closedStreams.add(socket.url()));
+  });
   const headers = { 'X-StrataAI-Request': '1' };
   const account = { email: `metadata-stream-${Date.now()}@example.test`, password: 'metadata-stream-correct-horse', displayName: 'Metadata stream Owner' };
   expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
@@ -48,9 +57,12 @@ test('PRD-03: genuine metadata streaming resumes original source identity and st
   try {
     restoreWorker = scopedBoardWorker(organizationId);
     await page.goto(`/app/${organizationId}`);
-    await subscribe(page, organizationId, null);
-    await expect.poll(() => page.evaluate(() => window.metadataProbe?.pages.length ?? 0), { timeout: 30_000 }).toBeGreaterThan(0);
-    const initial = await page.evaluate(() => window.metadataProbe!.pages[0]);
+    // Keep the transport probe outside the app's logout navigation. Its close
+    // must come from the server, rather than page teardown or route cleanup.
+    await probe.goto('/api/runtime');
+    await subscribe(probe, organizationId, null);
+    await expect.poll(() => probe.evaluate(() => window.metadataProbe?.pages.length ?? 0), { timeout: 30_000 }).toBeGreaterThan(0);
+    const initial = await probe.evaluate(() => window.metadataProbe!.pages[0]);
     expect(initial.organizationId).toBe(organizationId); expect(initial.userId).toBe(actor);
     expect(initial.page.resetRequired).toBe(true); expect(initial.page.events).toEqual([]);
     // Read current metadata after reset, then change it through the ordinary API.
@@ -58,9 +70,10 @@ test('PRD-03: genuine metadata streaming resumes original source identity and st
     const update = await context.request.patch(`/organizations/${organizationId}`, { headers,
       data: { name: 'New canonical Organization name', version: 1 } });
     expect(update.status()).toBe(200);
-    await expect.poll(() => page.evaluate(() => window.metadataProbe!.pages.flatMap(p => p.page.events)
+    await expect(page.getByRole('heading', { name: 'New canonical Organization name', exact: true })).toBeVisible({ timeout: 30_000 });
+    await expect.poll(() => probe.evaluate(() => window.metadataProbe!.pages.flatMap(p => p.page.events)
       .filter(e => e.eventType === 'ORGANIZATION_UPDATED').length), { timeout: 30_000 }).toBe(1);
-    const event = await page.evaluate(() => window.metadataProbe!.pages.flatMap(p => p.page.events)
+    const event = await probe.evaluate(() => window.metadataProbe!.pages.flatMap(p => p.page.events)
       .find(e => e.eventType === 'ORGANIZATION_UPDATED')!);
     expect(Object.keys(event).sort()).toEqual(['actorId', 'boardId', 'createdAt', 'entityId', 'entityType', 'eventId', 'eventType', 'metadata', 'organizationId', 'version']);
     expect(event.actorId).toBe(actor); expect(event.organizationId).toBe(organizationId);
@@ -68,15 +81,17 @@ test('PRD-03: genuine metadata streaming resumes original source identity and st
     expect(event.boardId).toBeNull(); expect(event.metadata).toEqual({}); expect(event.version).toBe(2);
     const replay = await context.request.get(`/organizations/${organizationId}/metadata-events`, { params: { cursor: initial.page.cursor, expectedActorId: actor } });
     expect(replay.status()).toBe(200); expect((await replay.json()).events).toEqual([event]);
-    await subscribe(page, organizationId, initial.page.cursor);
-    await expect.poll(() => page.evaluate(() => window.metadataProbe!.pages.flatMap(p => p.page.events)
+    const resumedUrl = await subscribe(probe, organizationId, initial.page.cursor);
+    await expect.poll(() => probe.evaluate(() => window.metadataProbe!.pages.flatMap(p => p.page.events)
       .map(e => e.eventId)), { timeout: 30_000 }).toEqual([event.eventId]);
     expect((await context.request.post('/auth/logout', { headers })).status()).toBe(204);
-    await expect.poll(() => page.evaluate(() => window.metadataProbe!.closed), { timeout: 15_000 }).toBe(true);
+    await expect.poll(() => closedStreams.has(resumedUrl), { timeout: 15_000 }).toBe(true);
     const refused = await context.request.get(`/organizations/${organizationId}/metadata-events`);
     expect(refused.status()).toBe(401);
   } finally {
-    await page.evaluate(() => window.metadataProbe?.socket.close()).catch(() => {});
+    await probe.evaluate(() => window.metadataProbe?.socket.close()).catch(() => {});
+    await probe.close().catch(() => {});
     restoreWorker();
   }
 });
+}

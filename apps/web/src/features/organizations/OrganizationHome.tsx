@@ -24,6 +24,7 @@ import {
 } from "../../api/workManagement";
 import { isNotificationProfile } from "../notifications/notificationInbox";
 import { watchOrganizationBoards } from "../kanban/organizationBoardLive";
+import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { OrganizationCreationDialog } from './OrganizationCreationDialog';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 
@@ -167,10 +168,15 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       read.current?.abort(); setData(undefined); setLoadError(undefined);
       setCreating(false); setLiveNotice(message); setReload(value => value + 1);
     };
-    return watchOrganizationBoards({ organizationId, userId: liveActor, audience: 'discovery',
+    const stopBoards = watchOrganizationBoards({ organizationId, userId: liveActor, audience: 'discovery',
       invalidate: () => recover("Boards changed. Checking current access."),
       reset: () => recover("Checking current Board access."),
       unavailable: () => recover("Live updates interrupted. Checking current access.") });
+    const stopMetadata = watchOrganizationMetadata({ organizationId, userId: liveActor,
+      invalidate: () => recover('Organization changed. Checking current access.'),
+      reset: () => recover('Checking current Organization metadata.'),
+      unavailable: () => recover('Live Organization updates interrupted. Checking current access.') });
+    return () => { stopBoards(); stopMetadata(); };
   }, [organizationId, liveActor]);
   useLayoutEffect(() => {
     if (!data || !pageFocus.current) return;

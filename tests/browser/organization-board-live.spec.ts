@@ -35,7 +35,7 @@ for (const width of [1280, 390]) {
       const frames: { resets: number; ids: string[] }[] = [{ resets: 0, ids: [] }, { resets: 0, ids: [] }];
       for (const [index, page] of pages.entries()) {
         page.on('websocket', socket => {
-          if (!socket.url().includes('/organizations/live')) return;
+          if (new URL(socket.url()).pathname !== '/organizations/live') return;
           socket.on('framereceived', frame => {
             for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
               const message = JSON.parse(raw); if (message.type !== 2) continue;
@@ -138,7 +138,7 @@ for (const width of [1280, 390]) {
             versions: item.page.events.map((event: { version: number }) => event.version) });
         }
     }
-    await mirror.routeWebSocket('**/organizations/live*', route => {
+    await mirror.routeWebSocket(/\/organizations\/live(?:\?|$)/, route => {
       if (offline) { route.close({ code: 1013 }); return; }
       socket = route;
       const server = route.connectToServer();
@@ -147,7 +147,7 @@ for (const width of [1280, 390]) {
       server.onMessage(payload => { observe(1, payload.toString()); route.send(payload); });
     });
     page.on('websocket', connection => {
-      if (!connection.url().includes('/organizations/live')) return;
+      if (new URL(connection.url()).pathname !== '/organizations/live') return;
       connection.on('framereceived', frame => observe(0, frame.payload.toString()));
     });
     const restoreWorker = scopedBoardWorker(org);
@@ -225,7 +225,7 @@ test('PRD-04/05: phone archive scope excludes other Boards and withdraws review 
     const page = await phone.newPage();
     let resets = 0, canonicalArchive = false;
     page.on('websocket', connection => {
-      if (!connection.url().includes('/organizations/live')) return;
+      if (new URL(connection.url()).pathname !== '/organizations/live') return;
       connection.on('framereceived', frame => {
         for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
           const message = JSON.parse(raw); if (message.type !== 2) continue;
