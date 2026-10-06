@@ -37,3 +37,28 @@ Password-forgotten and verification-resend requests lock a matching account befo
 Public requests retain the same generic acknowledgment for unknown, ineligible and failed-storage accounts, preventing an account-existence distinction caused by a conditional database failure. This acknowledgment confirms receipt of a request, never delivery. A failed transaction logs a masked database code without an email or token; operators must treat that warning as a failed publication. Transport-disabled mode still returns its uniform configuration error before lookup. Eligible clients can retry the request; durable deduplication of such retries remains outstanding.
 
 The one-connection release fixture denies audit insertion for both requests, tests known and unknown emails receive the same generic 202 with no tokens, and checks account/token/delivery/audit counts remain unchanged. Existing success checks then exercise Worker delivery.
+
+## Demo sign-in and token consumption rollback
+
+Demo sign-in and password-reset/email-verification consumption now use the owning
+Identity snapshot boundary rather than only the account/Organization semaphore.
+The operation supplies its credential or security-token proof; it does not require
+an already authenticated session. Success commits only after a cancellation check;
+failure results, exceptions and cancellation restore registered Identity stores
+and retry receipts before releasing the shared gate. No Work gate is acquired by
+these credential commands, and production PostgreSQL behavior is unchanged.
+
+Nine new API-host cases use actual sign-in, reset and verification operations
+inside the owning boundary, then introduce a failure result, exception or
+cancellation after real state/receipt writes. Sign-in cases require its newly
+created session and login receipt to disappear. Token cases require exact account,
+password/status, original unused token proof, Identity event and consumption
+receipt restoration; password-reset cases also require the original session to
+remain active. Fresh same-key commands must succeed and matching acknowledgments
+must retain their original result without repeating the token-consumption event.
+
+These cases compile with warnings as errors; native API-host execution is pending
+CI. They exercise the process-local snapshot boundary and do not prove durable
+audit or email publication, PostgreSQL waits, or complete PRD-02 acceptance.
+Recovery-request commands still have a separate neutral-response boundary and
+require their own rollback audit. The Demo audit store remains a no-op.

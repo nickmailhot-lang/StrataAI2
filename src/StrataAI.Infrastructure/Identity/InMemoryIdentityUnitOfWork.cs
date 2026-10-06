@@ -45,34 +45,24 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
         finally { _gate.Release(); }
     }
 
-    public async Task<IdentityOperation<UserProfile>> ExecuteTokenProofAsync(
+    public Task<IdentityOperation<UserProfile>> ExecuteTokenProofAsync(
         Func<Task<IdentityOperation<UserProfile>>> operation, CancellationToken cancellationToken = default)
-    {
-        if (scope.Active) throw new InvalidOperationException("Nested identity transactions are unavailable.");
-        await _gate.WaitAsync(cancellationToken);
-        try { return await operation(); }
-        finally { _gate.Release(); }
-    }
+        => ExecuteOwnedAsync(null, operation, cancellationToken);
 
     public Task<IdentityOperation<RegistrationOutcome>> ExecuteRegistrationAsync(
         Func<Task<IdentityOperation<RegistrationOutcome>>> operation, CancellationToken cancellationToken = default)
         => ExecuteOwnedAsync(null, operation, cancellationToken);
 
-    public async Task<IdentityOperation<LoginOutcome>> ExecuteSignInAsync(
+    public Task<IdentityOperation<LoginOutcome>> ExecuteSignInAsync(
         Func<Task<IdentityOperation<LoginOutcome>>> operation, CancellationToken cancellationToken = default)
-    {
-        if (scope.Active) throw new InvalidOperationException("Nested identity transactions are unavailable.");
-        await _gate.WaitAsync(cancellationToken);
-        try { return await operation(); }
-        finally { _gate.Release(); }
-    }
+        => ExecuteOwnedAsync(null, operation, cancellationToken);
 
     public Task<IdentityOperation<T>> ExecuteAsync<T>(Guid actorId,
         Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default)
         => ExecuteOwnedAsync(actorId, async () => await actors.VerifyAsync(actorId, cancellationToken)
             ? await operation() : IdentityOperation<T>.Failure("session_unavailable"), cancellationToken);
 
-    // This boundary covers account/profile/handle commands and registration,
+    // This boundary covers account/profile/handle commands, registration, sign-in and token consumption,
     // with registered global identity state. Deactivation additionally holds the Work
     // gate and snapshots assignment/event state until its receipt and cancellation fence.
     // Other specialized boundaries retain their separate verification requirements.
