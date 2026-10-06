@@ -49,7 +49,7 @@ public sealed partial class ApiHostTests
             return failedToken;
         }, null, cancellation.Token);
         if (cancel) await Assert.ThrowsAnyAsync<OperationCanceledException>(() => changing);
-        else await Assert.ThrowsAsync<InvalidOperationException>(() => changing);
+        else Assert.Null(await changing);
         Assert.NotNull(failedToken);
         Assert.Null(await store.FindSecurityTokenRetryProofAsync(tokens.Hash(failedToken), purpose, DateTimeOffset.UtcNow, ct));
         Assert.Null(await receipts.ReadAsync(userId, context.IdempotencyKey.Value, purpose, ct));

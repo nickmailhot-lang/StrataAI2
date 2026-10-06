@@ -1,13 +1,15 @@
 using StrataAI.Application.Identity;
 using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.WorkManagement;
+using Microsoft.Extensions.Logging;
 
 namespace StrataAI.Infrastructure.Identity;
 
 internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization actors, IdentityRevocationReplayExecutor revocations,
     IAccountDeactivationOwnership ownership, InMemoryAccountOrganizationGate gate,
     DemoIdentityTransactionScope scope, IEnumerable<IDemoIdentityTransactionParticipant> participants,
-    IEnumerable<IDemoWorkTransactionParticipant> workParticipants) : IIdentityUnitOfWork
+    IEnumerable<IDemoWorkTransactionParticipant> workParticipants,
+    ILogger<InMemoryIdentityUnitOfWork> logger) : IIdentityUnitOfWork
 {
     private readonly SemaphoreSlim _gate = gate.Commands;
     public Task<IdentityOperation<bool>> ExecuteDeactivationAsync(Guid actorId,
@@ -39,9 +41,19 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
     public async Task<T> ExecuteRecoveryRequestAsync<T>(Func<Task<T>> operation, T neutralResult,
         CancellationToken cancellationToken = default)
     {
-        var result = await ExecuteOwnedAsync(null, async () =>
-            IdentityOperation<T>.Success(await operation()), cancellationToken);
-        return result.Value!;
+        try
+        {
+            var result = await ExecuteOwnedAsync(null, async () =>
+                IdentityOperation<T>.Success(await operation()), cancellationToken);
+            return result.Value!;
+        }
+        catch (InvalidOperationException)
+        {
+            // Owning rollback completes before returning the public neutral
+            // acknowledgment. Do not log email, token or receipt details.
+            logger.LogWarning("Demo recovery request rolled back. No delivery acknowledgment is claimed.");
+            return neutralResult;
+        }
     }
 
     public Task<IdentityOperation<UserProfile>> ExecuteTokenProofAsync(
