@@ -210,3 +210,11 @@ outsider query requires no date/context/Board/List disclosure. These checks run
 after the original 50+2 continuation checks and before archived-parent checks;
 the original collection coverage remains required. Bash syntax passes; native
 exact-image execution remains pending.
+
+The complete web suite against unchanged browser source at `28f9355` completed
+with exit 0: all 122 test files and 1,494 tests passed in 491.71 seconds. This
+includes canonical timed/date-only flag admission, invalid UTC calendar rejection,
+Honolulu calendar-only display, and Board/account timezone precedence. Subsequent
+backend and native-fixture increments did not change `apps/web` during that run.
+Native API-host and exact-release-image verification remains pending; this source
+result does not establish full PRD-02 or PRD-16 acceptance.
