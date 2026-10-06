@@ -8,6 +8,8 @@ gate_pid=''
 request_pid=''
 metadata_session=''
 metadata_session_expiry=''
+departure_session=''
+departure_session_expiry=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
@@ -16,6 +18,10 @@ cleanup() {
   admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_departure_replays TO strataai_api_runtime;' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_metadata_wait ON organization_metadata_replays; DROP FUNCTION IF EXISTS public.ci_organization_metadata_wait();' >/dev/null
+  admin 'DROP TRIGGER IF EXISTS ci_organization_departure_wait ON organization_departure_replays; DROP FUNCTION IF EXISTS public.ci_organization_departure_wait();' >/dev/null
+  if test -n "$departure_session" && test -n "$departure_session_expiry"; then
+    admin "UPDATE sessions SET expires_at='$departure_session_expiry'::timestamptz WHERE id='$departure_session';" >/dev/null
+  fi
   if test -n "$metadata_session" && test -n "$metadata_session_expiry"; then
     admin "UPDATE sessions SET expires_at='$metadata_session_expiry'::timestamptz WHERE id='$metadata_session';" >/dev/null
   fi
@@ -349,7 +355,7 @@ departure_key="$(cat /proc/sys/kernel/random/uuid)"
 departure_request() {
   curl --max-time 60 --silent --show-error -b "$scratch/${2:-other}.cookies" -H 'X-StrataAI-Request: 1' \
     -H 'Content-Type: application/json' -H "Idempotency-Key: $departure_key" -X POST -d '{}' \
-    -o "$scratch/$1.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/leave"
+    -D "$scratch/$1.headers" -o "$scratch/$1.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/leave"
 }
 departure_state() {
   admin "SELECT jsonb_build_object('members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$retry_org'),
@@ -362,6 +368,43 @@ test "$(departure_request departure-denied)" = 503
 jq -e '.code=="organization_storage_unavailable"' "$scratch/departure-denied.json" >/dev/null
 test "$departure_before" = "$(departure_state)"
 admin 'GRANT INSERT ON organization_departure_replays TO strataai_api_runtime;' >/dev/null
+# Observe actual receipt publication while the original cookie session expires.
+departure_hash="$(awk '$6=="strataai_session" {print $7}' "$scratch/other.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1)"
+[[ "$departure_hash" =~ ^[0-9a-f]{64}$ ]]
+departure_session="$(admin "SELECT id FROM sessions WHERE token_hash='$departure_hash' AND user_id='$other' AND revoked_at IS NULL;")"
+[[ "$departure_session" =~ ^[0-9a-fA-F-]{36}$ ]]
+departure_session_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$departure_session';")"
+test -n "$departure_session_expiry"
+admin "CREATE FUNCTION public.ci_organization_departure_wait() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+BEGIN
+  IF NEW.tenant_id='$retry_org'::uuid THEN PERFORM pg_sleep(12); END IF;
+  RETURN NEW;
+END;
+\$\$;
+CREATE TRIGGER ci_organization_departure_wait AFTER INSERT ON organization_departure_replays
+  FOR EACH ROW EXECUTE FUNCTION public.ci_organization_departure_wait();" >/dev/null
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$departure_session';" >/dev/null
+departure_publication_before="$(departure_state)"
+departure_identity_before="$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$other'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$other'))::text;")"
+departure_request departure-expiry > "$scratch/departure-expiry.status" & request_pid=$!
+for ((attempt=0; attempt<100; attempt++)); do
+  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_departure_replays%';")" = 1; then break; fi
+  sleep 0.1
+done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_departure_replays%';")" = 1
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/departure-expiry.status")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/departure-expiry.json" >/dev/null
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/departure-expiry.headers"
+scripts/ci/assert-file-excludes.sh "$retry_org|$other" "$scratch/departure-expiry.json"
+test "$departure_publication_before" = "$(departure_state)"
+test "$departure_identity_before" = "$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$other'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$other'))::text;")"
+admin 'DROP TRIGGER ci_organization_departure_wait ON organization_departure_replays; DROP FUNCTION public.ci_organization_departure_wait();' >/dev/null
+admin "UPDATE sessions SET expires_at='$departure_session_expiry'::timestamptz WHERE id='$departure_session';" >/dev/null
+departure_session=''; departure_session_expiry=''
+test "$departure_before" = "$(departure_state)"
 hold "SELECT id FROM organizations WHERE id='$retry_org' FOR UPDATE;"
 departure_request departure-first > "$scratch/departure-first.status" & departure_first_pid=$!
 departure_request departure-second > "$scratch/departure-second.status" & departure_second_pid=$!

@@ -97,3 +97,12 @@ transaction check; this observes the precise post-publication rollback boundary.
 and restores membership, Card revision, assignment and Work events. Retrying
 the same key after restored session admission commits the departure and receipt.
 The API-host project builds without warnings; execution still requires CI.
+
+The mandatory PostgreSQL fixture now observes the API runtime waiting in an
+AFTER INSERT departure-receipt trigger while the actual cookie session expires.
+It requires session_unavailable/401, no cookie or private identity disclosure,
+unchanged membership/audit/receipt state and unchanged user/session rows. It
+restores the original expiry and retries the same key through the existing
+concurrent acknowledgment checks. Cleanup removes the trigger and restores
+the session on failure. Bash syntax validation passes; actual container
+execution is pending, and native assignment rollback coverage remains needed.
