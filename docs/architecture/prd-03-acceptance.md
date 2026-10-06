@@ -55,8 +55,10 @@ The [Organization metadata event source](organization-metadata-events.md)
 projects creation and editing audits into a private, forced-RLS, immutable
 journal in the owning command transaction. Restricted PostgreSQL CI passed the
 metadata source contract at `010324c`; strengthened assertions at `bf20c67` and
-exact-image rollback/retry fixtures still await runtime results. Worker
-readiness and authorized realtime/reconnect consumption remain
+exact-image rollback/retry fixtures still await runtime results. Migration 095
+adds atomic reference jobs and leased Worker readiness with 17 local handler
+tests passed; its real database/upgrade/late-fence checks remain pending CI.
+Automatic metadata routing and authorized realtime/reconnect consumption remain
 unfinished; this source foundation does not establish delivered events.
 
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and

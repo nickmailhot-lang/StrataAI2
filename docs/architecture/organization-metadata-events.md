@@ -30,6 +30,27 @@ the current authorized account and Organization.
 
 ## Verification and remaining work
 
+Migration `095_organization_metadata_delivery` publishes one reference-only
+`ORGANIZATION_METADATA_EVENT_READY` job per source event in the same transaction.
+Existing real source rows from migration 094 receive reference jobs during the
+upgrade. No earlier audit history is reconstructed. The separate production
+Worker registers `organization-metadata-delivery` and uses its existing queue
+claims, retry limits, service checks and completion acknowledgments.
+
+The Worker-only delivery capability requires the actual tenant, job, actor,
+worker, lease, source event, correlation, reference key and exact one-field
+metadata. It checks the lease before and after readiness publication. An expired
+late fence rolls readiness back. Delivery retries and reclaimed jobs retain the
+first readiness timestamp; runtime roles cannot directly update source history
+or readiness. Historical committed events can be delivered after later edits or
+the actor's departure, without authorizing that former actor to read them.
+
+This handler currently runs through existing explicit general-job scopes, or
+when automatic deletion processing drains that Organization's queued jobs.
+Automatic routing for metadata events in other Organizations is still required.
+Readers must withhold later events behind any earlier unready sequence and
+freshly authorize current account, membership and surface before returning data.
+
 `OrganizationMetadataEventContract` checks canonical version/time, late
 projection failure rollback, gap-free retry, duplicate-version refusal, tenant
 isolation, restricted capabilities and immutable history. The exact-image
@@ -43,8 +64,15 @@ and direct-insert privilege assertions; its runtime checks remain pending.
 Exact-image command and browser integration are also pending; the database
 contract does not establish those results.
 
-This is a durable source foundation. Worker readiness, bounded authorized
-replay, SignalR invalidation/reconnect and browser consumption are still
-required. Invitation/member events and the existing terminal deletion event
+The metadata delivery handler passed 17 focused local tests, and the full
+solution built with warnings treated as errors. New restricted PostgreSQL
+fixtures cover publication rollback, valid/stale/expired/superseded claims,
+late readiness rollback, unchanged duplicate readiness and actor departure;
+the upgrade fixture checks reference-job backfill exactly once. Database and
+exact-image execution for migration 095 are pending CI.
+
+Automatic metadata routing, bounded authorized replay, SignalR
+invalidation/reconnect and browser consumption are still required.
+Invitation/member events and the existing terminal deletion event
 also need integration into the Organization delivery contract. Journal
 insertion alone is not realtime delivery and does not satisfy PRD-03 closure.

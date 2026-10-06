@@ -5,7 +5,7 @@ using StrataAI.Infrastructure.Persistence;
 // and parent mutation share one transaction under a restricted API login.
 internal static class OrganizationMetadataEventContract
 {
-    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
+    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, CancellationToken ct)
     {
         var tenant = Guid.NewGuid(); var foreign = Guid.NewGuid(); var actor = Guid.NewGuid();
         var created = Guid.NewGuid(); var updated = Guid.NewGuid();
@@ -110,6 +110,37 @@ internal static class OrganizationMetadataEventContract
             catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
         }
         Require(refused, "Metadata history was mutable through administrative SQL.");
+        await using (var install = new NpgsqlCommand($"""
+            CREATE FUNCTION public.ci_metadata_outbox_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+             IF NEW.tenant_id='{tenant:D}'::uuid AND NEW.job_type='ORGANIZATION_METADATA_EVENT_READY' THEN
+              RAISE EXCEPTION 'Injected metadata outbox failure' USING ERRCODE='23514';
+             END IF; RETURN NEW; END $$;
+            CREATE TRIGGER ci_metadata_outbox_failure AFTER INSERT ON background_jobs
+             FOR EACH ROW EXECUTE FUNCTION public.ci_metadata_outbox_failure();
+            """, admin)) { await install.ExecuteNonQueryAsync(ct); }
+        try
+        {
+            refused = false;
+            try { await Execute("UPDATE organizations SET name='Outbox must roll back',version=3,updated_at=clock_timestamp() WHERE id=@tenant;" + audit,
+                tenant, Guid.NewGuid()); }
+            catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
+            Require(refused && await Read("SELECT version FROM organizations WHERE id=@tenant", tenant) == 2
+                && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 2,
+                "Outbox publication failure retained the parent edit or sequence.");
+            await using var state = new NpgsqlCommand("""
+                SELECT (SELECT count(*) FROM audit_events WHERE tenant_id=@tenant)=2
+                 AND (SELECT count(*) FROM organization_metadata_events WHERE tenant_id=@tenant)=2
+                 AND (SELECT count(*) FROM background_jobs WHERE tenant_id=@tenant AND job_type='ORGANIZATION_METADATA_EVENT_READY')=2;
+                """, admin);
+            state.Parameters.AddWithValue("tenant", tenant);
+            Require(await state.ExecuteScalarAsync(ct) is true, "Outbox failure retained audit, source event or extra job.");
+        }
+        finally
+        {
+            await using var cleanup = new NpgsqlCommand("DROP TRIGGER ci_metadata_outbox_failure ON background_jobs; DROP FUNCTION public.ci_metadata_outbox_failure();", admin);
+            await cleanup.ExecuteNonQueryAsync(CancellationToken.None);
+        }
+        await OrganizationMetadataDeliveryContract.RunAsync(admin, apiConnection, workerConnection, tenant, actor, ct);
         Console.WriteLine("Organization metadata events: canonical source/version/time, atomic rollback and gap-free retry, forced RLS, private capabilities and immutable history passed.");
     }
 }

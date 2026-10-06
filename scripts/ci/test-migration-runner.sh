@@ -603,37 +603,53 @@ test "$(query 'SELECT count(*) FROM schema_migrations')" = 94
 test "$(query "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='organization_metadata_events'::regclass")" = t
 test "$(query "SELECT prosecdef AND proconfig=ARRAY['search_path=pg_catalog, public'] FROM pg_proc WHERE oid='journal_organization_metadata_event()'::regprocedure")" = t
 
-cat > "$scratch/migrations/095_serialization_fixture.sql" <<'SQL'
+cp db/migrations/095_organization_metadata_delivery.sql "$scratch/migrations/"
+query "INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at)
+ VALUES('09400000-0000-4000-8000-000000000010','metadata-upgrade@example.test','METADATA-UPGRADE@EXAMPLE.TEST','Metadata upgrade','ACTIVE','unused-fixture-hash',now(),now());
+ INSERT INTO organizations(id,name,owner_user_id,status,version,created_at,updated_at)
+ VALUES('09400000-0000-4000-8000-000000000011','Metadata upgrade','09400000-0000-4000-8000-000000000010','ACTIVE',1,now(),now());
+ INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+ VALUES('09400000-0000-4000-8000-000000000012','09400000-0000-4000-8000-000000000011','09400000-0000-4000-8000-000000000010','OWNER','ACTIVE');
+ INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,safe_metadata)
+ VALUES('09400000-0000-4000-8000-000000000013','09400000-0000-4000-8000-000000000011','09400000-0000-4000-8000-000000000010',
+ 'ORGANIZATION_CREATED','Organization','09400000-0000-4000-8000-000000000011','metadata-upgrade','{}');" >/dev/null
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 95
+test "$(query "SELECT count(*)=1 FROM background_jobs WHERE tenant_id='09400000-0000-4000-8000-000000000011' AND job_type='ORGANIZATION_METADATA_EVENT_READY' AND state='PENDING' AND safe_metadata=jsonb_build_object('eventId','09400000-0000-4000-8000-000000000013'::uuid)")" = t
+test "$(query "SELECT prosecdef AND proconfig=ARRAY['search_path=pg_catalog, public'] FROM pg_proc WHERE oid='deliver_organization_metadata_event(uuid,uuid,uuid,uuid,uuid,uuid)'::regprocedure")" = t
+
+cat > "$scratch/migrations/096_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('095_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('096_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='095_serialization_fixture'")" = 1
-cat > "$scratch/migrations/096_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='096_serialization_fixture'")" = 1
+cat > "$scratch/migrations/097_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('096_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('097_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='096_failure_fixture'")" = 0
-rm "$scratch/migrations/096_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='097_failure_fixture'")" = 0
+rm "$scratch/migrations/097_failure_fixture.sql"
 run
-cat > "$scratch/migrations/097_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/098_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='097_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/097_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='098_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/098_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

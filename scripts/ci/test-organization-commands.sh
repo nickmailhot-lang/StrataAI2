@@ -297,6 +297,7 @@ retry_metadata() {
 metadata_state() {
   admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$retry_org'),
     'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$retry_org'),
+    'eventJobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$retry_org' AND job_type='ORGANIZATION_METADATA_EVENT_READY'),
     'stream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$retry_org'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_metadata_replays r WHERE tenant_id='$retry_org'))::text;"
@@ -604,6 +605,7 @@ creation_request() {
 creation_state() {
   admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$creation_org'),
     'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$creation_org'),
+    'eventJobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$creation_org' AND job_type='ORGANIZATION_METADATA_EVENT_READY'),
     'stream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$creation_org'),
     'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$creation_org'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$creation_org'),
@@ -820,7 +822,9 @@ deletion_finished() {
      AND e.entity_version=o.version AND e.actor_id='$owner' AND e.created_at=o.deleted_at AND e.ready_at IS NOT NULL)
     AND EXISTS(SELECT 1 FROM background_jobs WHERE tenant_id='$retry_org' AND job_type='ORGANIZATION_DELETE_PAGE')
     AND NOT EXISTS(SELECT 1 FROM background_jobs WHERE tenant_id='$retry_org'
-     AND job_type IN ('ORGANIZATION_DELETE_PAGE','ORGANIZATION_LIFECYCLE_EVENT_READY') AND state<>'SUCCEEDED');"
+     AND job_type IN ('ORGANIZATION_DELETE_PAGE','ORGANIZATION_LIFECYCLE_EVENT_READY','ORGANIZATION_METADATA_EVENT_READY') AND state<>'SUCCEEDED')
+    AND EXISTS(SELECT 1 FROM organization_metadata_events WHERE tenant_id='$retry_org')
+    AND NOT EXISTS(SELECT 1 FROM organization_metadata_events WHERE tenant_id='$retry_org' AND ready_at IS NULL);"
 }
 for ((attempt=0; attempt<90; attempt++)); do
   if test "$(deletion_finished)" = t; then break; fi
