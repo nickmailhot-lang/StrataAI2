@@ -30,9 +30,9 @@ usable-owner floor. Unkeyed callers retain their existing behavior.
 
 Migration 084 forces tenant RLS; the API receives SELECT/INSERT only and the
 Worker has no receipt access. Both hosts require its ledger entry. The Demo
-store participates in the owning Organization rollback. Retention/cleanup policy
-and browser same-key recovery remain outstanding; the current screen reconciles
-current membership rather than using these receipts.
+store participates in the owning Organization rollback. Retention/cleanup policy remains outstanding. The member screen now uses
+explicit same-key recovery and reviews current membership separately after
+acknowledgment. Current native release execution remains pending.
 
 API-host cases cover concurrent replay, later rejoin, changed target/version,
 account mismatch, demotion and self-removal/revoked-session recovery. Mandatory
@@ -45,4 +45,4 @@ The Demo cross-store rollback case now also uses a keyed removal. Final actor
 loss must leave no removal receipt while restoring membership, Card revision,
 assignment and Work events; the same key subsequently commits after restored
 admission. Native post-publication session expiry and assignment rollback
-evidence remain pending, alongside browser same-key recovery.
+evidence remain pending, alongside current browser recovery execution.

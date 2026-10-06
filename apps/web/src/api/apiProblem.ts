@@ -11,7 +11,7 @@ const codes = new Set([
   'invalid_comment_mentions', 'mention_targets_changed',
   'invalid_idempotency_key',
   'invalid_password', 'rate_limit_exceeded', 'invalid_organization_logo_url',
-  'sole_owner', 'member_version_conflict', 'board_not_found', 'sole_board_admin',
+  'sole_owner', 'member_not_found', 'member_version_conflict', 'board_not_found', 'sole_board_admin',
   'version_conflict', 'organization_owner_required', 'ownership_changed',
   'organization_not_found', 'session_unavailable', 'organization_storage_unavailable',
   'invalid_access_surface',

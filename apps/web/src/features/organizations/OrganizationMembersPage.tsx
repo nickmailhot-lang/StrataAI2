@@ -6,6 +6,7 @@ import { apiFetch } from '../../api/apiFetch';
 type Member = { membershipId: string; userId: string; displayName: string; email: string; role: number;
   accountStatus: string; emailVerified: boolean; isUsableOwner: boolean; joinedAt: string; updatedAt: string; version: number };
 type Page = { organizationId: string; items: Member[]; nextCursor: string | null; actorRole: number };
+type RemovalIntent = { key: string; target: string; version: number; actor: string };
 type Review = { organizationId: string; member: Member | null; actorRole: number };
 const uuid = (value: unknown): value is string => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 function member(value: unknown): value is Member {
@@ -44,6 +45,10 @@ function Members({ organizationId }: { organizationId: string }) {
   const [selected, setSelected] = useState<Member>(); const [reviewId, setReviewId] = useState<string>();
   const [busy, setBusy] = useState(false); const [denied, setDenied] = useState(false);
   const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
+  const [retryIntent, setRetryIntent] = useState<RemovalIntent>();
+  const [recovered, setRecovered] = useState(false);
+  const retry = useRef<HTMLButtonElement>(null); const acknowledgment = useRef<HTMLDivElement>(null);
+  const retryFocus = useRef(false);
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const cancel = useRef<HTMLButtonElement>(null);
   const recovery = useRef<HTMLButtonElement>(null); const reload = useRef<HTMLButtonElement>(null);
@@ -52,9 +57,15 @@ function Members({ organizationId }: { organizationId: string }) {
     return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; };
     // Route identity is fenced by the keyed component.
   }, []);
+  useEffect(() => {
+    if (!busy && recovered && retryFocus.current) {
+      if (document.activeElement === document.body) acknowledgment.current?.focus();
+      retryFocus.current = false;
+    }
+  }, [busy, recovered]);
   function allowed(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
   function deny(status: number) {
-    setPage(undefined); setSelected(undefined); setReviewId(undefined); setActorId(undefined); setNotice(undefined);
+    setPage(undefined); setSelected(undefined); setReviewId(undefined); setActorId(undefined); setNotice(undefined); setRetryIntent(undefined); setRecovered(false);
     setHistory([]); setCursor(null); setDenied(true); setError('Organization members are unavailable to your account.');
     if (status === 401) navigate('/login', { replace: true });
   }
@@ -66,8 +77,9 @@ function Members({ organizationId }: { organizationId: string }) {
     if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); }
   }
   async function load(after: string | null, previous: (string | null)[], initial = false) {
+    if (retryIntent) return;
     const controller = begin(); if (!controller) return;
-    setPage(undefined); setSelected(undefined); setNotice(undefined);
+    setPage(undefined); setSelected(undefined); setNotice(undefined); setRecovered(false);
     try {
       if (initial) {
         const me = await request('/me', {}, controller); if (!allowed(controller)) return;
@@ -91,6 +103,8 @@ function Members({ organizationId }: { organizationId: string }) {
     finally { finish(controller); }
   }
   async function review(userId: string, uncertain: boolean) {
+    if (retryIntent) return;
+    setRecovered(false);
     const controller = begin(); if (!controller) return;
     setSelected(undefined); setReviewId(userId); setNotice(undefined); setPage(undefined);
     try {
@@ -109,30 +123,37 @@ function Members({ organizationId }: { organizationId: string }) {
     } catch { if (mounted.current && pending.current === controller) setError('Unable to review this membership. No further removal will be sent until the current membership is reviewed.'); }
     finally { finish(controller); }
   }
-  async function remove() {
-    if (!selected) return; const target = selected; const controller = begin(); if (!controller) return;
+  async function remove(recover = false) {
+    if (recover ? !retryIntent : !selected || !actorId || !!retryIntent) return;
+    const intent = recover ? retryIntent! : { key: crypto.randomUUID(), target: selected!.userId, version: selected!.version, actor: actorId! };
+    const controller = begin(); if (!controller) return;
     setNotice(undefined);
     try {
-      const result = await request(`${root}/${encodeURIComponent(target.userId)}?expectedVersion=${target.version}`, { method: 'DELETE' }, controller);
+      const path = `${root}/${encodeURIComponent(intent.target)}?expectedVersion=${intent.version}&expectedActorId=${encodeURIComponent(intent.actor)}`;
+      const result = await request(path, { method: 'DELETE', headers: { 'Idempotency-Key': intent.key } }, controller);
       if (!allowed(controller)) return;
-      if (result.status === 401 || result.status === 403) { deny(result.status); return; }
+      const code = (result.body as { code?: unknown } | undefined)?.code;
+      if ([401, 403].includes(result.status) || result.status === 404 && code !== 'member_not_found') { deny(result.status); return; }
       setSelected(undefined); setPage(undefined);
       if (result.status === 204) {
-        setReviewId(undefined); setNotice('Member removed.');
-        if (target.userId === actorId) navigate('/app', { replace: true });
+        setRetryIntent(undefined); setRecovered(recover); setReviewId(recover ? intent.target : undefined);
+        setNotice(recover ? 'Original removal acknowledged. Review current membership to check later access.' : 'Member removed.');
+        if (!recover && intent.target === intent.actor) navigate('/app', { replace: true });
         return;
       }
-      setReviewId(target.userId);
-      const code = (result.body as { code?: unknown } | undefined)?.code;
+      setReviewId(intent.target);
+      const definitive = [400, 404, 409, 429].includes(result.status);
+      setRetryIntent(definitive ? undefined : intent);
       setError(result.status === 409 && code === 'sole_owner'
         ? 'The Organization needs another usable Owner before this person can be removed.'
         : result.status === 409 && code === 'member_version_conflict'
           ? 'The membership changed elsewhere. Review it before confirming removal again.'
-          : 'The removal could not be confirmed. Review the current membership before continuing.');
+          : definitive ? 'The removal was refused. Review current membership before considering another removal.'
+            : 'The removal could not be confirmed. Retry the original removal to recover its acknowledgment.');
     } catch {
       if (mounted.current && pending.current === controller) {
-        setSelected(undefined); setPage(undefined); setReviewId(target.userId);
-        setError('The removal could not be confirmed. Review the current membership before continuing.');
+        setSelected(undefined); setPage(undefined); setReviewId(intent.target); setRetryIntent(intent);
+        setError('The removal could not be confirmed. Retry the original removal to recover its acknowledgment.');
       }
     } finally { finish(controller); }
   }
@@ -141,10 +162,13 @@ function Members({ organizationId }: { organizationId: string }) {
     <Typography component="h1" variant="h4">Organization members</Typography>
     <Typography>Internal membership controls access to Organization boards. Portal relationships are managed separately.</Typography>
     {error && <Alert severity="error">{error}</Alert>}
-    {notice && <Alert severity="info" role="status">{notice}</Alert>}
+    {notice && <Alert ref={acknowledgment} tabIndex={-1} severity="info" role="status">{notice}</Alert>}
     {busy && <CircularProgress aria-label="Loading Organization members" />}
-    {!denied && <Button ref={reload} disabled={busy} onClick={() => void load(null, [], !actorId)}>Load current members</Button>}
-    {reviewId && !selected && !denied && <Button ref={recovery} disabled={busy} onClick={() => void review(reviewId, true)}>Review current membership</Button>}
+    {!denied && <Button ref={reload} disabled={busy || !!retryIntent} onClick={() => void load(null, [], !actorId)}>Load current members</Button>}
+    {reviewId && !selected && !denied && <Button ref={recovery} disabled={busy || !!retryIntent} onClick={() => void review(reviewId, !recovered)}>Review current membership</Button>}
+    {retryIntent && !denied && <Button ref={retry} disabled={busy} onClick={() => {
+      retryFocus.current = document.activeElement === retry.current; void remove(true);
+    }}>Retry original removal</Button>}
     {page && <>
       <Button component={Link} to={`/app/${organizationId}/invite`}>Create Organization invitation</Button>
       <Button component={Link} to={`/app/${organizationId}/invitations`}>Review issued invitations</Button>
@@ -165,7 +189,7 @@ function Members({ organizationId }: { organizationId: string }) {
       </Stack>
     </>}
     <Dialog open={!!selected} onClose={() => { if (!busy) { setSelected(undefined); setReviewId(undefined); } }} aria-labelledby="member-removal-title"
-      slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: () => (recovery.current ?? reload.current)?.focus() } }}>
+      slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: () => (retry.current ?? recovery.current ?? reload.current)?.focus() } }}>
       <DialogTitle id="member-removal-title">Remove internal member?</DialogTitle>
       <DialogContent>{selected && <Stack spacing={1}>
         <Typography>{selected.displayName}</Typography><Typography>{selected.email}</Typography>

@@ -34,7 +34,7 @@ describe('Organization member administration and renewed removal consent', () =>
     expect(screen.getByText('Current role: Admin')).toBeInTheDocument();
     fireEvent.click(confirm()); fireEvent.click(confirm()); await screen.findByText('Member removed.');
     const writes = mock.mock.calls.filter(call => call[1]?.method === 'DELETE'); expect(writes).toHaveLength(1);
-    expect(writes[0][0]).toBe(`/organizations/${org}/members/${target}?expectedVersion=7`);
+    expect(writes[0][0]).toBe(`/organizations/${org}/members/${target}?expectedVersion=7&expectedActorId=${actor}`);
     expect(writes[0][1].headers.get('X-StrataAI-Request')).toBe('1'); expect(screen.queryByText(row.email)).not.toBeInTheDocument();
   });
   it('requires a fresh review after role/version conflict before confirming again', async () => {
@@ -45,13 +45,66 @@ describe('Organization member administration and renewed removal consent', () =>
     expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
     fireEvent.click(confirm()); await screen.findByText('Member removed.'); expect(mock.mock.calls.at(-1)?.[0]).toContain('expectedVersion=2');
   });
-  it('reconciles a missing acknowledgment through exact target absence without another write or invented success', async () => {
-    const mock = fetcher(reply(review), new Error('response lost'), reply({ ...review, member: null })); mount(); await open(); fireEvent.click(confirm());
+  it('replays the original removal after a lost acknowledgment without removing a later rejoin', async () => {
+    const mock = fetcher(reply(review), new Error('response lost'), reply(undefined, 204),
+      reply({ ...review, member: { ...row, version: 3 } })); mount(); await open(); fireEvent.click(confirm());
     await screen.findByText(/The removal could not be confirmed/); expect(screen.queryByText(row.email)).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Load current members' })).toBeDisabled());
+    expect(screen.getByRole('button', { name: 'Review current membership' })).toBeDisabled();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    const retry = await screen.findByRole('button', { name: 'Retry original removal' }); retry.focus(); fireEvent.click(retry);
+    await screen.findByText('Original removal acknowledged. Review current membership to check later access.');
+    expect(screen.queryByText('Member removed.')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('status')).toHaveFocus());
+    const writes = mock.mock.calls.filter(call => call[1]?.method === 'DELETE');
+    expect(writes).toHaveLength(2); expect(writes[1][0]).toBe(writes[0][0]);
+    expect(writes[1][1].headers.get('Idempotency-Key')).toBe(writes[0][1].headers.get('Idempotency-Key'));
+    expect(writes[0][1].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
     fireEvent.click(await screen.findByRole('button', { name: 'Review current membership' }));
-    await screen.findByText(/currently no longer an internal member.*earlier removal acknowledgment was unavailable/);
-    expect(mock.mock.calls.at(-1)?.[0]).toBe(`/organizations/${org}/members/${target}`);
-    expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1); expect(screen.queryByText('Member removed.')).not.toBeInTheDocument();
+    await screen.findByRole('dialog'); expect(mock.mock.calls.at(-1)?.[0]).toBe(`/organizations/${org}/members/${target}`);
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(2);
+  });
+  it('reports current absence separately after the original removal is acknowledged', async () => {
+    fetcher(reply(review), new Error('lost'), reply(undefined, 204), reply({ ...review, member: null }));
+    mount(); await open(); fireEvent.click(confirm());
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry original removal' }));
+    await screen.findByText('Original removal acknowledged. Review current membership to check later access.');
+    fireEvent.click(await screen.findByRole('button', { name: 'Review current membership' }));
+    await screen.findByText('This person is currently no longer an internal member.');
+    expect(screen.queryByText(/earlier removal acknowledgment was unavailable/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Member removed.')).not.toBeInTheDocument();
+  });
+  it('retains original removal intent through repeated uncertainty and clears it on expiry refusal', async () => {
+    const mock = fetcher(reply(review), new Error('lost'), reply({}, 503), reply({ code: 'idempotency_expired' }, 409));
+    mount(); await open(); fireEvent.click(confirm());
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry original removal' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Retry original removal' })).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Review current membership' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry original removal' }));
+    await screen.findByText('The removal was refused. Review current membership before considering another removal.');
+    expect(screen.queryByRole('button', { name: 'Retry original removal' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Review current membership' })).toBeEnabled();
+    const writes = mock.mock.calls.filter(call => call[1]?.method === 'DELETE');
+    expect(writes).toHaveLength(3); expect(new Set(writes.map(call => call[0])).size).toBe(1);
+    expect(new Set(writes.map(call => call[1].headers.get('Idempotency-Key'))).size).toBe(1);
+  });
+  it.each([401, 403, 404])('clears original removal recovery and private state after access refusal (%s)', async status => {
+    fetcher(reply(review), new Error('lost'), reply({}, status)); mount(); await open(); fireEvent.click(confirm());
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry original removal' }));
+    await screen.findByText(status === 401 ? 'Sign in destination' : 'Organization members are unavailable to your account.');
+    expect(screen.queryByRole('button', { name: 'Retry original removal' })).not.toBeInTheDocument();
+    expect(screen.queryByText(row.email)).not.toBeInTheDocument();
+  });
+  it('reconciles a definitive missing-member refusal without claiming removal or blocking administrator review', async () => {
+    const mock = fetcher(reply(review), reply({ code: 'member_not_found' }, 404), reply({ ...review, member: null }));
+    mount(); await open(); fireEvent.click(confirm());
+    await screen.findByText('The removal was refused. Review current membership before considering another removal.');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Retry original removal' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Review current membership' }));
+    await screen.findByText(/currently no longer an internal member/);
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+    expect(screen.queryByText('Member removed.')).not.toBeInTheDocument();
   });
   it('keeps sole-owner denial actionable and requires review before another request', async () => {
     fetcher(reply({ ...review, member: { ...row, role: 0, isUsableOwner: true } }), reply({ code: 'sole_owner' }, 409));
