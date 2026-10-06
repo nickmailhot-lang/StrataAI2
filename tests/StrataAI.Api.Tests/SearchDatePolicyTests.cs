@@ -21,6 +21,9 @@ public sealed partial class ApiHostTests
         var listId = (await listReply.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
         using var cardReply = await Mutate(owner, HttpMethod.Post, $"/lists/{listId}/cards", new { title = "Private date policy needle" });
         Assert.Equal(HttpStatusCode.Created, cardReply.StatusCode);
+        var cardId = (await cardReply.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        bool expectedTimed = false;
+        DateTimeOffset? expectedDue = null;
         var store = app.Services.GetRequiredService<IWorkManagementStore>();
         var policies = app.Services.GetRequiredService<BoardDatePolicyService>();
         var actor = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
@@ -32,7 +35,18 @@ public sealed partial class ApiHostTests
             var page = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
             var row = Assert.Single(page.GetProperty("items").EnumerateArray());
             Assert.Equal(timezone, row.GetProperty("boardDateTimezone").GetString());
+            var card = row.GetProperty("card");
+            Assert.Equal(expectedTimed, card.GetProperty("dueHasTime").GetBoolean());
+            Assert.Equal(expectedDue, card.GetProperty("dueAt").ValueKind == JsonValueKind.Null
+                ? null : card.GetProperty("dueAt").GetDateTimeOffset());
         }
+        await AssertPolicy(null);
+        using var timed = await Mutate(owner, HttpMethod.Patch, $"/cards/{cardId}/dates", new {
+            startAt = (string?)null, dueAt = "2040-01-02T00:30:00Z", dueTimezone = "UTC",
+            dueHasTime = true, dueComplete = false, version = 1,
+        });
+        Assert.Equal(HttpStatusCode.OK, timed.StatusCode);
+        expectedTimed = true; expectedDue = DateTimeOffset.Parse("2040-01-02T00:30:00Z");
         await AssertPolicy(null);
         foreach (var timezone in new string?[] { "Pacific/Honolulu", "Asia/Tokyo", null })
         {
@@ -47,5 +61,15 @@ public sealed partial class ApiHostTests
             Assert.DoesNotContain("Private date policy needle", body);
             Assert.DoesNotContain("Pacific/Honolulu", body); Assert.DoesNotContain("Asia/Tokyo", body);
         }
+        using var dateOnly = await Mutate(owner, HttpMethod.Patch, $"/cards/{cardId}/dates", new {
+            startAt = (string?)null, dueAt = "2040-01-02", dueTimezone = "Pacific/Honolulu",
+            dueHasTime = false, dueComplete = false, version = 2,
+        });
+        Assert.Equal(HttpStatusCode.OK, dateOnly.StatusCode);
+        expectedTimed = false; expectedDue = DateTimeOffset.Parse("2040-01-03T09:59:59.999999Z");
+        await AssertPolicy(null);
+        var current = (await store.FindBoardAsync(boardId, ct))!;
+        Assert.True((await policies.SetAsync(boardId, actor, new("Pacific/Honolulu", current.Version), "fixture", ct)).Succeeded);
+        await AssertPolicy("Pacific/Honolulu");
     }
 }

@@ -194,3 +194,11 @@ uses the final microsecond of a Honolulu due day and requires a date without an
 invented 23:59 time. Desktop/phone native fixtures set a real date-only deadline
 and require that same calendar-only presentation. Native execution remains
 pending; this does not establish full timezone or PRD acceptance.
+
+The API search date-policy case also writes real timed and date-only deadlines
+through the HTTP date endpoint. Every admitted search checks the canonical
+`dueHasTime` flag and exact stored UTC instant while Board policy changes or is
+cleared. The Honolulu date-only case requires the final PostgreSQL microsecond
+of that local day; setting Board display policy must preserve it. Initial no-date
+projection and outsider policy privacy checks remain covered. Strict compilation
+is verified separately; API-host execution remains pending CI.
