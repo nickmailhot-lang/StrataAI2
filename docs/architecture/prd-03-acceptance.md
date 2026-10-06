@@ -112,6 +112,23 @@ projection with private activation proof, independent membership revision and
 canonical audit attribution. The existing typed Worker and protected replay
 support it, and strict discovery/settings consumers accept its content-free
 envelope. Local build, 12 replay tests and 33 consumer tests passed. Required
-database/upgrade/exact-image execution remains pending. Member removal/departure
-and invitation source integration, applicable administration live clients and
-Demo audit/event parity remain unfinished. It does not close this ticket.
+exact-image execution remains pending. Later restricted PostgreSQL runs verified
+member addition at `de3331b`, removal/departure at `ea769e2` and invitation birth
+sources at `8a09f28`, including ordered migration/upgrade checks and canonical
+delivery/replay contracts. These are narrower than normal native commands and
+do not certify all browser or real cookie/session races.
+
+`1f03cc2` adds current Internal Member terminal replay and passed its restricted
+PostgreSQL unready/ready source contracts. `7744663` adds the separate lifecycle
+SignalR stream and Organization home consumption; local build, 59 client cases
+and four common origin-guard cases passed. Subsequent recovery work starts the
+separately authorized stream after account confirmation, so a new deep link can
+recover completion even when ordinary graph admission is already 404. It also
+checks late Board acknowledgments cannot navigate after deletion starts. The
+native release fixture covers Member disconnect while the actual Worker finishes,
+original source comparison, fresh-document recovery, both viewport widths and
+actual logout. Those native additions still require execution against exact release
+images. Full invitation/view lifecycle coverage, actual session races, Demo
+audit/event/terminal parity and applicable mutation scale remain required.
+Estimated remaining work stays **16%** pending runtime evidence. This ticket
+remains open.

@@ -126,6 +126,14 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await member.request.get(`/organizations/${org}`)).status()).toBe(404);
       expect((await member.request.get(`/organizations/${org}/deletion-requests/${key}`)).status()).toBe(404);
       expect((await member.request.get(`/organizations/${org}/lifecycle-events?expectedActorId=${actor}`)).status()).toBe(401);
+      // A new document has no captured graph admission or prior completion.
+      // The current Member's independent lifecycle authority must recover it.
+      const freshObserver = await member.newPage(); await freshObserver.setViewportSize(viewport);
+      await freshObserver.goto(`/app/${org}`);
+      await expect(freshObserver.getByRole('status')).toHaveText('Organization deletion confirmed complete.');
+      await expect(freshObserver.getByText('Terminal deletion council', { exact: true })).toHaveCount(0);
+      await expect(freshObserver.getByRole('button', { name: 'Create board', exact: true })).toHaveCount(0);
+      expect((await new AxeBuilder({ page: freshObserver }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       // This reload precedes acknowledgment replay. Terminal parent admission
       // must recover the original uncertain intent without normal graph reads.
       await page.reload(); await expect(retry).toBeFocused(); expect(writes).toHaveLength(1); expect(ordinaryReads).toBe(0);
@@ -155,6 +163,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(observer.getByText('Organization deletion confirmed complete.', { exact: true })).toHaveCount(0);
       await expect(observer).toHaveURL(/\/login(?:\?|$)/);
       expect(observerNavigations).toBe(1);
+      await expect(freshObserver.getByText('Organization deletion confirmed complete.', { exact: true })).toHaveCount(0);
+      await expect(freshObserver).toHaveURL(/\/login(?:\?|$)/);
     } finally { if (workerStarted) deletionWorker(false); }
     } finally { await member.close(); }
   });

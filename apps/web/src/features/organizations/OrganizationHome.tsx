@@ -128,6 +128,11 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       const before = await workRequest<unknown>("/me", { signal });
       if (!isNotificationProfile(before) || actor.current && actor.current !== before.id)
         throw new WorkRequestError(401, null);
+      if (!signal.aborted && organizationId) {
+        // Lifecycle admission is independent of ordinary graph admission. A
+        // fresh deep link must still recover a ready terminal source after 404.
+        actor.current = before.id; setLifecycleActor(before.id);
+      }
       let organizations: OrganizationSummary[]; let nextCursor: string | null = null;
       if (organizationId) {
         const current = await workRequest<unknown>(`/organizations/${encodeURIComponent(organizationId)}`, { signal });

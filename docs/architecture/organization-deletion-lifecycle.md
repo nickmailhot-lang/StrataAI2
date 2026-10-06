@@ -574,7 +574,10 @@ connection emits only the bounded lifecycle page and periodically rechecks acces
 including after terminal delivery. The existing same-origin live-channel guard and
 proxy route apply. This does not grant access to the deleted Organization graph.
 
-The Organization home subscribes after an account-bound authorized read. Pending
+The Organization home captures the confirmed account and starts independently
+authorized lifecycle admission before the ordinary graph read. A fresh deep link
+can therefore recover a terminal event even when graph admission returns 404;
+membership and source authority still come from the lifecycle reader. Pending
 deletion immediately withdraws names, Board controls and creation consent. The
 completion notice requires the original ready event; disconnect removes the cached
 fact until fresh admission restores it. Ordinary parent denial does not discard
@@ -585,10 +588,12 @@ revision and timestamp, fences old subscriptions and rechecks the captured accou
 
 Local component/transport tests cover pending versus completion, lost admission,
 parent denial, reconnect, duplicate immutable sources, changed attribution and
-account replacement. Their mocked profile checks do not prove real cookie behavior.
+account replacement, fresh terminal deep links and late Board acknowledgments.
+Their mocked profile checks do not prove real cookie behavior.
 The native two-client fixture now disconnects the Member while the actual Worker
 finishes, reconnects without a document reload, compares the streamed original
 event with the Owner's status snapshot, checks accessible neutral UI at both widths,
-and withdraws completion after actual logout. Execution against exact release images
+recovers completion in a new document with no prior graph admission, and withdraws
+completion in both Member pages after actual logout. Execution against exact release images
 is still required. Demo terminal parity remains unfinished; local tests alone do not
 satisfy the complete two-client acceptance criterion.

@@ -57,6 +57,31 @@ function mount(path = "/app") {
 beforeEach(() => sessionStorage.clear());
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 describe("PRD-01/03/04 organization discovery", () => {
+  it('recovers a terminal source on a fresh deep link whose ordinary graph is already unavailable', async () => {
+    const fetcher = vi.fn(async () => response({}, 404)); stubFetch(fetcher);
+    mount('/app/org-1'); await screen.findByRole('alert');
+    await waitFor(() => expect(lifecycle.watch).toHaveBeenCalledWith(expect.objectContaining({ organizationId: 'org-1', userId: profile.id })));
+    act(() => lifecycle.watch.mock.calls[0][0].update('COMPLETED'));
+    expect(screen.getByRole('status')).toHaveTextContent('Organization deletion confirmed complete.');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create board' })).not.toBeInTheDocument();
+    expect(fetcher.mock.calls).toHaveLength(1);
+  });
+  it('does not navigate to a Board whose acknowledgment arrives after deletion starts', async () => {
+    let finish!: (value: Response) => void;
+    stubFetch(async (path: string) => path === '/boards' ? new Promise<Response>(resolve => { finish = resolve; })
+      : response(path === '/organizations/org-1' ? organizations[0] : { organizationId: 'org-1', items: [], nextCursor: null }));
+    const router = mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+    fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: 'Planning' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Create$/ }));
+    await waitFor(() => expect(finish).toBeDefined());
+    act(() => lifecycle.watch.mock.calls[0][0].update('PENDING'));
+    await act(async () => finish(response({ id: 'new-board' }, 201)));
+    expect(router.state.location.pathname).toBe('/app/org-1');
+    expect(screen.queryByText('Created board destination')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Organization deletion is being confirmed.');
+  });
   it('withdraws private content and creation consent while deletion is pending, then announces completion', async () => {
     stubFetch(async (path: string) => response(path === '/organizations/org-1' ? organizations[0]
       : { organizationId: 'org-1', items: [], nextCursor: null }));
