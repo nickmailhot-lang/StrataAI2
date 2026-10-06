@@ -1,6 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { trackBoardReads } from './boardReadTracker';
+import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 
 for (const width of [1280, 390]) {
   test(`PRD-10: Card labels have keyboard-readable names and reflect persisted deletion at ${width}px`, async ({ page, context }) => {
@@ -61,6 +61,7 @@ for (const width of [1280, 390]) {
       }
       const path = `/app/${org}/boards/${board}/cards/${card}`;
       await waitForBoardDelivery(context.request, board);
+      const admittedCardVersion = trackCardVersion(page, board, card, path);
       await navigate(path);
       const assignmentAttempts: { url: string; key: string | undefined }[] = [];
       await page.route(`**/cards/${card}/labels/${labels[0]}?*`, async route => {
@@ -77,6 +78,11 @@ for (const width of [1280, 390]) {
       await retryAssignment.focus(); await expect(retryAssignment).toBeFocused(); await expect(retryAssignment).toBeEnabled();
       await retryAssignment.press('Enter'); await expect(edit).toBeFocused();
       expect(assignmentAttempts).toHaveLength(2); expect(assignmentAttempts[0]).toEqual(assignmentAttempts[1]);
+      // Drain the recovered assignment before starting a different command.
+      // A returned trigger alone does not prove the refreshed Card is admitted.
+      await waitForBoardDelivery(context.request, board);
+      await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(2);
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
       await expect(edit).toBeEnabled();
       await edit.press('Enter');
       const addBlue = page.getByRole('button', { name: 'Add label blue', exact: true });
