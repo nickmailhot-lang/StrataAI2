@@ -1,21 +1,20 @@
 # Canonical ticket dependency audit
 
-Snapshot: 2026-10-02. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
+Snapshot: 2026-10-06. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
 
-Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
+The refreshed complete issue snapshot was processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
 
 ## Dependency groups
 
 A dependency-first traversal of strongly connected components produces the groups below. Within a cycle there is no whole-ticket topological order: implement shared contracts and producer/consumer slices sequentially, then verify each ticket's complete acceptance criteria. The grouping does not waive a dependency, acceptance criterion, or adopted architecture requirement.
 
-1. PRD-01, PRD-02, PRD-03, PRD-04, PRD-05, PRD-06, PRD-07, PRD-08, PRD-09, PRD-10, PRD-11, PRD-12, PRD-13, PRD-14, PRD-15, PRD-16, PRD-17, PRD-18, PRD-20, PRD-21, PRD-22, PRD-23, PRD-24, PRD-25 (cycle)
-2. PRD-19
-3. PRD-27
-4. PRD-28, PRD-29, PRD-30, PRD-31, PRD-32, PRD-33, PRD-34, PRD-35, PRD-36, PRD-37, PRD-38, PRD-39, PRD-40, PRD-41, PRD-42, PRD-43, PRD-44, PRD-45, PRD-46, PRD-47, PRD-48, PRD-49, PRD-50, PRD-51, PRD-52, PRD-53, PRD-54, PRD-55, PRD-56, PRD-57, PRD-58, PRD-59, PRD-60, PRD-61, PRD-62, PRD-63, PRD-64, PRD-65, PRD-66, PRD-67, PRD-68, PRD-69, PRD-70, PRD-71, PRD-72, PRD-73, PRD-74, PRD-75, PRD-76, PRD-77, PRD-78, PRD-79, PRD-80 (cycle)
-5. PRD-26
-6. ARCH-01
-7. ARCH-03, ARCH-04, ARCH-05, ARCH-06, ARCH-07, ARCH-08, ARCH-09, ARCH-10, ARCH-11, ARCH-12 (cycle)
-8. ARCH-02
+1. PRD-01, PRD-02, PRD-03, PRD-04, PRD-05, PRD-06, PRD-07, PRD-08, PRD-09, PRD-10, PRD-11, PRD-12, PRD-13, PRD-14, PRD-15, PRD-16, PRD-17, PRD-18, PRD-19, PRD-20, PRD-21, PRD-22, PRD-23, PRD-24, PRD-25 (cycle)
+2. PRD-27
+3. PRD-28, PRD-29, PRD-30, PRD-31, PRD-32, PRD-33, PRD-34, PRD-35, PRD-36, PRD-37, PRD-38, PRD-39, PRD-40, PRD-41, PRD-42, PRD-43, PRD-44, PRD-45, PRD-46, PRD-47, PRD-48, PRD-49, PRD-50, PRD-51, PRD-52, PRD-53, PRD-54, PRD-55, PRD-56, PRD-57, PRD-58, PRD-59, PRD-60, PRD-61, PRD-62, PRD-63, PRD-64, PRD-65, PRD-66, PRD-67, PRD-68, PRD-69, PRD-70, PRD-71, PRD-72, PRD-73, PRD-74, PRD-75, PRD-76, PRD-77, PRD-78, PRD-79, PRD-80 (cycle)
+4. PRD-26
+5. ARCH-01
+6. ARCH-03, ARCH-04, ARCH-05, ARCH-06, ARCH-07, ARCH-08, ARCH-09, ARCH-10, ARCH-11, ARCH-12 (cycle)
+7. ARCH-02
 
 The architecture foundation is already adopted and is being implemented alongside its dependent product contracts. Group order describes the issue graph, not an instruction to discard or rebuild that foundation.
 
