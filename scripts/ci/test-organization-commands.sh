@@ -406,6 +406,10 @@ departure_request() {
 }
 departure_state() {
   admin "SELECT jsonb_build_object('members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$retry_org'),
+    'removals',(SELECT jsonb_agg(to_jsonb(r) ORDER BY membership_id,entity_version) FROM organization_membership_removals r WHERE tenant_id='$retry_org'),
+    'metadataEvents',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$retry_org'),
+    'metadataStream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$retry_org'),
+    'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$retry_org'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
     'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$retry_org' AND id='$receipt_card'),
     'assignments',(SELECT jsonb_agg(to_jsonb(a) ORDER BY user_id) FROM card_members a WHERE tenant_id='$retry_org' AND card_id='$receipt_card'),
@@ -503,6 +507,10 @@ removal_request() {
 }
 removal_state() {
   admin "SELECT jsonb_build_object('members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$retry_org'),
+    'removals',(SELECT jsonb_agg(to_jsonb(r) ORDER BY membership_id,entity_version) FROM organization_membership_removals r WHERE tenant_id='$retry_org'),
+    'metadataEvents',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$retry_org'),
+    'metadataStream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$retry_org'),
+    'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$retry_org'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
     'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$retry_org' AND id='$receipt_card'),
     'assignments',(SELECT jsonb_agg(to_jsonb(a) ORDER BY user_id) FROM card_members a WHERE tenant_id='$retry_org' AND card_id='$receipt_card'),

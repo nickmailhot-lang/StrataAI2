@@ -149,3 +149,31 @@ SignalR invalidation/reconnect and browser consumption are still required.
 Invitation/member events and the existing terminal deletion event
 also need integration into the Organization delivery contract. Journal
 insertion alone is not realtime delivery and does not satisfy PRD-03 closure.
+
+## Membership removal and departure
+
+Migration 098 projects future administrative removals and voluntary departures
+into `ORGANIZATION_MEMBER_REMOVED`. The source event uses the original removal
+or departure audit ID and its actual actor. Its `OrganizationMembership` subject,
+revision and timestamp come from the persisted membership transition; a departure
+retains its separate `ORGANIZATION_MEMBER_LEFT` audit. No second audit or historical
+membership transition is invented.
+
+A private, forced-RLS removal proof captures only ACTIVE-to-REMOVED transitions
+that advance the membership revision. The journal requires that exact proof,
+the active parent and account, applicable administrative authority and a remaining
+active Owner. Source, sequence, typed reference job, audit and owning command
+commit together. Runtime roles cannot directly write or read removal proofs.
+Replay validates the membership subject and requires removal revisions above one.
+Historical delivery remains possible after a member rejoins or leaves; protected
+read access still requires current membership.
+
+The required exact-image checks now compare removal proofs, source events,
+counters and queue rows during receipt failure, session expiry and original-key
+retries. The automatic Worker fixture exercises acceptance, Owner removal,
+reactivation and voluntary departure through ordinary HTTP commands, checks all
+six source events and their jobs, and denies the departed member replay access.
+The browser fixture adds an independent authorized observer at desktop and mobile
+widths, requiring removal and departure to reconcile without a manual reload.
+These new PostgreSQL and browser checks await CI execution; local replay tests,
+browser type checking and shell syntax checks do not establish their runtime results.

@@ -98,6 +98,11 @@ internal static class OrganizationMetadataEventContract
             "SELECT journal_organization_metadata_event()",
             "SELECT journal_organization_member_addition()",
             "SELECT capture_organization_membership_activation()",
+            "SELECT journal_organization_member_removal()",
+            "SELECT capture_organization_membership_removal()",
+            "SELECT * FROM organization_membership_removals",
+            "UPDATE organization_membership_removals SET entity_version=99",
+            "DELETE FROM organization_membership_removals",
             "SELECT * FROM organization_membership_activations",
             "UPDATE organization_membership_activations SET entity_version=99",
             "DELETE FROM organization_membership_activations" })
@@ -116,6 +121,17 @@ internal static class OrganizationMetadataEventContract
         catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
         Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 2,
             "Unproven member addition was published or advanced the journal.");
+        foreach (var eventType in new[] { "ORGANIZATION_MEMBER_REMOVED", "ORGANIZATION_MEMBER_LEFT" })
+        {
+            refused = false;
+            try { await Execute($$"""
+                INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,safe_metadata)
+                VALUES(@event,@tenant,@actor,'{{eventType}}','User',@actor,@correlation,'{}');
+                """, tenant, Guid.NewGuid()); }
+            catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
+            Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 2,
+                "Unproven membership withdrawal was published or advanced the journal.");
+        }
         refused = false;
         await using (var edit = new NpgsqlCommand("UPDATE organization_metadata_events SET correlation_id='rewrite' WHERE tenant_id=@tenant", admin))
         {

@@ -3,7 +3,7 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) {
-  test(`PRD-03-TC-06/08/09/11/12: live member addition retires consent and preserves removal recovery at ${width}px`, async ({ page, context, browser }) => {
+  test(`PRD-03-TC-06/08/09/11/12: live member changes reconcile another client and preserve removal recovery at ${width}px`, async ({ page, context, browser }) => {
     test.setTimeout(240_000); await page.setViewportSize({ width, height: 844 });
     const recipient = await browser.newContext({ baseURL: test.info().project.use.baseURL });
     const newcomer = await browser.newContext({ baseURL: test.info().project.use.baseURL });
@@ -21,6 +21,18 @@ for (const width of [1280, 390]) {
       const created = await context.request.post('/organizations', { headers, data: { name: 'Live member Organization' } });
       expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
       restoreWorker = scopedBoardWorker(org);
+      const observer = await context.newPage(); await observer.setViewportSize({ width, height: 844 });
+      const removals: Array<Record<string, unknown>> = [];
+      observer.on('websocket', socket => {
+        if (new URL(socket.url()).pathname !== '/organizations/live/metadata') return;
+        socket.on('framereceived', frame => {
+          for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
+            const message = JSON.parse(raw);
+            if (message.type === 2 && message.item?.organizationId === org)
+              removals.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_REMOVED'));
+          }
+        });
+      });
       const delivered: Array<Record<string, unknown>> = [];
       page.on('websocket', socket => {
         if (new URL(socket.url()).pathname !== '/organizations/live/metadata') return;
@@ -34,6 +46,8 @@ for (const width of [1280, 390]) {
       });
       await page.goto(`/app/${org}/members`);
       await expect(page.getByText('Current members checked. Review a membership again before confirming removal.', { exact: true })).toBeVisible();
+      await observer.goto(`/app/${org}/members`);
+      await expect(observer.getByText('Current members checked. Review a membership again before confirming removal.', { exact: true })).toBeVisible();
       async function join(index: number, client: typeof recipient) {
         const issued = await context.request.post(`/organizations/${org}/invitations`, { headers,
           data: { email: accounts[index].email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
@@ -41,6 +55,7 @@ for (const width of [1280, 390]) {
         expect((await client.request.post(`/me/invitations/${(await issued.json()).id}/accept`, { headers })).status()).toBe(200);
       }
       await join(1, recipient);
+      await expect(observer.getByRole('heading', { name: 'Live joined member', exact: true })).toBeVisible();
       await expect.poll(() => delivered.filter(row => row.actorId === accounts[1].id && row.version === 1).length, { timeout: 30_000 }).toBe(1);
       const action = page.getByRole('button', { name: 'Review removal of Live joined member', exact: true });
       await expect(action).toBeVisible(); await action.focus(); await action.press('Enter');
@@ -59,7 +74,10 @@ for (const width of [1280, 390]) {
       });
       await page.getByRole('button', { name: 'Confirm member removal' }).press('Enter');
       await expect(page.getByRole('button', { name: 'Retry original removal' })).toBeEnabled();
+      await expect.poll(() => removals.filter(row => row.actorId === accounts[0].id && row.version === 2).length, { timeout: 30_000 }).toBe(1);
+      await expect(observer.getByRole('heading', { name: 'Live joined member', exact: true })).toHaveCount(0);
       await join(1, recipient);
+      await expect(observer.getByRole('heading', { name: 'Live joined member', exact: true })).toBeVisible();
       await expect.poll(() => delivered.filter(row => row.actorId === accounts[1].id && row.version === 3).length, { timeout: 30_000 }).toBe(1);
       await expect(page.getByText('Current access checked. Retry the original removal before reviewing later membership.', { exact: true })).toBeVisible();
       await expect(page.getByText(accounts[1].email, { exact: true })).toHaveCount(0); expect(writes).toHaveLength(1);
@@ -72,6 +90,15 @@ for (const width of [1280, 390]) {
       await expect(page.getByText('Original removal acknowledged. Review current membership to check later access.', { exact: true })).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]); expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
       expect((await (await context.request.get(`/organizations/${org}/members/${accounts[1].id}`)).json()).member).toEqual(restored);
+      expect((await recipient.request.post(`/organizations/${org}/leave`, { headers, data: {} })).status()).toBe(204);
+      await expect.poll(() => removals.filter(row => row.actorId === accounts[1].id && row.version === 4).length, { timeout: 30_000 }).toBe(1);
+      await expect(observer.getByRole('heading', { name: 'Live joined member', exact: true })).toHaveCount(0);
+      for (const removal of removals) {
+        expect(removal.entityType).toBe('OrganizationMembership'); expect(removal.entityId).toBe(restored.membershipId);
+        expect(removal.boardId).toBeNull(); expect(removal.metadata).toEqual({});
+      }
+      expect((await recipient.request.get(`/organizations/${org}/metadata-events`)).status()).toBe(404);
+      expect((await new AxeBuilder({ page: observer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     } finally { await recipient.close(); await newcomer.close(); restoreWorker(); }

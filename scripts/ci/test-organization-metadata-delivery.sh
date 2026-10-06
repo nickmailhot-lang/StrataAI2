@@ -66,14 +66,20 @@ curl --fail --silent --show-error -b "$scratch/recipient.cookies" -H 'X-StrataAI
 test "$(admin "SELECT count(*)=1 FROM organization_metadata_events e JOIN organization_members m ON m.tenant_id=e.tenant_id AND m.id=e.entity_id
  WHERE e.tenant_id='$organization' AND e.event_type='ORGANIZATION_MEMBER_ADDED' AND e.entity_id='$subject'
  AND e.entity_version=3 AND m.version=3 AND e.created_at=m.updated_at AND e.ready_at IS NULL;")" = t
-test "$(curl --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -X DELETE -o "$scratch/removal" -w '%{http_code}' \
- "$BASE_URL/organizations/$organization/members/$recipient?expectedVersion=3")" = 204
+test "$(curl --silent --show-error -b "$scratch/recipient.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+ -X POST -d '{}' -o "$scratch/departure" -w '%{http_code}' "$BASE_URL/organizations/$organization/leave")" = 204
+test "$(admin "SELECT count(*)=2 AND bool_and(e.entity_id='$subject' AND e.created_at=r.removed_at AND e.metadata='{}'::jsonb
+ AND ((e.entity_version=2 AND e.actor_id='$actor' AND a.event_type='ORGANIZATION_MEMBER_REMOVED')
+ OR (e.entity_version=4 AND e.actor_id='$recipient' AND a.event_type='ORGANIZATION_MEMBER_LEFT')))
+ FROM organization_metadata_events e JOIN audit_events a ON a.id=e.event_id
+ JOIN organization_membership_removals r ON r.tenant_id=e.tenant_id AND r.membership_id=e.entity_id AND r.entity_version=e.entity_version
+ WHERE e.tenant_id='$organization' AND e.event_type='ORGANIZATION_MEMBER_REMOVED';")" = t
 worker_changed=true
 STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=false STRATAAI_WORKER_ORGANIZATION_IDS='' \
  docker compose -f compose.release.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 finished() {
-  admin "SELECT (SELECT count(*)=4 AND bool_and(ready_at IS NOT NULL) FROM organization_metadata_events WHERE tenant_id='$organization')
-   AND (SELECT count(*)=4 AND bool_and(j.state='SUCCEEDED') FROM background_jobs j JOIN organization_metadata_events e
+  admin "SELECT (SELECT count(*)=6 AND bool_and(ready_at IS NOT NULL) FROM organization_metadata_events WHERE tenant_id='$organization')
+   AND (SELECT count(*)=6 AND bool_and(j.state='SUCCEEDED') FROM background_jobs j JOIN organization_metadata_events e
     ON e.tenant_id=j.tenant_id AND j.safe_metadata=jsonb_build_object('eventId',e.event_id)
     WHERE j.tenant_id='$organization' AND j.job_type='ORGANIZATION_METADATA_EVENT_READY'
     AND j.actor_id=e.actor_id AND j.correlation_id=e.correlation_id AND j.service_identity='organization-metadata-delivery');"
@@ -86,7 +92,7 @@ test "$(finished)" = t
 test "$work_before" = "$(work_snapshot)"
 curl --fail --silent --show-error -b "$scratch/cookies" --get --data-urlencode "cursor=$cursor" --data-urlencode "expectedActorId=$actor" \
  "$BASE_URL/organizations/$organization/metadata-events" > "$scratch/replay.json"
-jq -e --arg tenant "$organization" --arg actor "$actor" '.resetRequired==false and .pending==false and (.events|length)==3
+jq -e --arg tenant "$organization" --arg actor "$actor" '.resetRequired==false and .pending==false and (.events|length)==5
  and .events[0].eventType=="ORGANIZATION_UPDATED" and .events[0].version==2 and .events[0].actorId==$actor
  and .events[0].organizationId==$tenant and .events[0].entityId==$tenant and .events[0].entityType=="Organization"
  and .events[0].boardId==null and .events[0].metadata=={}' "$scratch/replay.json" >/dev/null
@@ -95,10 +101,18 @@ jq -e --arg tenant "$organization" --arg actor "$recipient" --arg subject "$subj
  and .events[1].entityType=="OrganizationMembership" and .events[1].entityId==$subject and .events[1].version==1
  and .events[1].boardId==null and .events[1].metadata=={}' "$scratch/replay.json" >/dev/null
 test "$(jq -r '.events[1].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=1;")"
-jq -e --arg actor "$recipient" --arg subject "$subject" '.events[2].eventType=="ORGANIZATION_MEMBER_ADDED"
- and .events[2].entityType=="OrganizationMembership" and .events[2].entityId==$subject and .events[2].actorId==$actor
- and .events[2].version==3 and .events[2].metadata=={} and .events[2].boardId==null' "$scratch/replay.json" >/dev/null
-test "$(jq -r '.events[2].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=3;")"
+jq -e --arg actor "$recipient" --arg subject "$subject" '.events[3].eventType=="ORGANIZATION_MEMBER_ADDED"
+ and .events[3].entityType=="OrganizationMembership" and .events[3].entityId==$subject and .events[3].actorId==$actor
+ and .events[3].version==3 and .events[3].metadata=={} and .events[3].boardId==null' "$scratch/replay.json" >/dev/null
+test "$(jq -r '.events[3].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=3;")"
+for index in 2 4; do
+  removal_actor="$actor"; if test "$index" = 4; then removal_actor="$recipient"; fi
+  jq -e --arg actor "$removal_actor" --arg subject "$subject" --argjson index "$index" \
+   '.events[$index].eventType=="ORGANIZATION_MEMBER_REMOVED" and .events[$index].entityType=="OrganizationMembership"
+    and .events[$index].entityId==$subject and .events[$index].actorId==$actor and .events[$index].version==$index
+    and .events[$index].metadata=={} and .events[$index].boardId==null' "$scratch/replay.json" >/dev/null
+  test "$(jq -r --argjson index "$index" '.events[$index].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_REMOVED' AND entity_version=$index;")"
+done
 test "$(curl --silent --show-error -b "$scratch/recipient.cookies" -o "$scratch/removed-replay" -w '%{http_code}' \
  "$BASE_URL/organizations/$organization/metadata-events")" = 404
 scripts/ci/assert-file-excludes.sh 'Automatic metadata Organization|Updated automatic metadata Organization|Typed routing isolation Board' "$scratch/replay.json"
