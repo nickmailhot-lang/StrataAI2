@@ -10,7 +10,18 @@ The envelope supports bounded ordered recovery with event-ID deduplication and a
 
 `GET /me/sync` derives the subject from authentication and enters the same fresh-session, user-lock boundary as an identity command. Without `after`, it returns the current profile and latest cursor with no historic events. With a nonnegative cursor, it returns at most 100 consecutive events, a next cursor, latest sequence and continuation flag. A future cursor is rejected. The profile and cursor are read while the subject lock is held, so committed profile changes cannot fall into a snapshot/cursor gap. A revoked session cannot retrieve its revocation event; current-session denial remains authoritative. Event-before-response reconciliation must respect profile versions.
 
-Registration, profile update, deactivation, session revocation and verification append events after audit within the owning global command. PostgreSQL publication refuses an absent global identity root, borrows its transaction and allocates the sequence before inserting the current user version. Envelopes include correlation IDs; demo event creation uses the current clock. Demo publication is process-local and does not prove durable rollback.
+Registration, profile update, deactivation, session revocation and verification append events after audit within the owning global command. PostgreSQL publication refuses an absent global identity root, borrows its transaction and allocates the sequence before inserting the current user version. Envelopes include correlation IDs; demo event creation uses the current clock.
+
+Demo identity commands now snapshot the identity event list together with users,
+sessions, recovery tokens and registered replay stores under the owning account
+gate. A refused result, exception or cancellation restores those snapshots before
+releasing the gate. Deactivation additionally holds the Work gate and restores
+assignment and Work-event participants in the same failure boundary. Focused
+rollback cases cover registration, sign-in, token consumption, recovery requests
+and deactivation; newer API-host execution must be checked in CI. These snapshots
+establish process-local rollback behavior, while durable PostgreSQL transaction
+and event-publication acceptance requires the restricted database and exact-image
+checks described below. The Demo audit sink does not supply durable audit proof.
 
 Successful password reset also publishes one content-free SESSION_REVOKED event at the updated account version after revoking all existing sessions. The reset token proof, password change, token consumption, session revocations, PASSWORD_RESET_COMPLETED audit and event publication share the global transaction. Event insertion failure must roll everything back, including the stream sequence. Existing sessions receive authorization denial; only a fresh permitted session can replay the event. Reusing the single-use token does not publish another event or change the account. This publication does not provide durable command retry keys.
 
