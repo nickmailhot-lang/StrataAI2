@@ -127,8 +127,11 @@ The mandatory restricted PostgreSQL executable includes
 `OrganizationDeletionPublicationContract`: command refusal, final synthetic actor
 refusal, a queue collision after tentative request/checkpoint writes, concurrent
 replay, changed request/version refusal, and replay after progress advances.
-The contract compiles with zero warnings; its runtime result must be checked in
-CI for the implementing revision. Actor admission is synthetic in this contract,
+The contract compiled with zero warnings and passed against real restricted
+PostgreSQL in [CI run 37494481167](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37494481167/job/112375365028)
+at revision `1669b1e`. This proves the listed publication/storage boundaries;
+terminal graph processing and exact-image acceptance remain pending.
+Actor admission is synthetic in this contract,
 so it does not prove HTTP/session authorization.
 
 Publication is not registered or invoked by the production API yet. The

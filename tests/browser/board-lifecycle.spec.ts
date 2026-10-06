@@ -49,6 +49,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByText(/Its Lists and Cards remain associated with it/)).toBeVisible();
       const confirmArchive = page.getByRole('button', { name: 'Confirm archive', exact: true });
       await expect(confirmArchive).toBeEnabled(); await confirmArchive.press('Enter');
+      await expect.poll(() => archives.length).toBe(1);
       await expect(page.getByRole('button', { name: 'Retry this archive', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel archive', exact: true })).toHaveCount(0);
       await expect(other.getByText('This board is archived. Editing is unavailable.', { exact: true })).toBeVisible();
@@ -72,7 +73,9 @@ for (const width of [1280, 390]) {
       });
       await page.getByRole('button', { name: `Restore ${board.name} board`, exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Restoration makes the Board active again. Its Lists and Cards retain their own lifecycle states.', { exact: true })).toBeVisible();
-      await page.getByRole('button', { name: 'Confirm restore', exact: true }).focus(); await page.keyboard.press('Enter');
+      const confirmRestore = page.getByRole('button', { name: 'Confirm restore', exact: true });
+      await expect(confirmRestore).toBeEnabled(); await confirmRestore.press('Enter');
+      await expect.poll(() => restores.length).toBe(1);
       await expect(page.getByRole('button', { name: 'Retry this change', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel change', exact: true })).toHaveCount(0);
       await expect(other.getByRole('button', { name: 'Add list', exact: true })).toBeEnabled();
@@ -104,7 +107,9 @@ for (const width of [1280, 390]) {
       await expect(page.getByText('This cannot be undone. This Board cannot be restored, and its Lists and Cards become unavailable through it.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Confirm permanent deletion', exact: true })).toBeDisabled(); expect(deletes).toHaveLength(0);
       await page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true }).focus(); await page.keyboard.press('Space');
-      await page.getByRole('button', { name: 'Confirm permanent deletion', exact: true }).focus(); await page.keyboard.press('Enter');
+      const confirmDelete = page.getByRole('button', { name: 'Confirm permanent deletion', exact: true });
+      await expect(confirmDelete).toBeEnabled(); await confirmDelete.press('Enter');
+      await expect.poll(() => deletes.length).toBe(1);
       await expect(page.getByRole('button', { name: 'Retry this change', exact: true })).toBeEnabled();
       // The canonical deletion withdraws private review content even while the
       // original command acknowledgment remains unresolved. Its key survives

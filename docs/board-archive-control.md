@@ -13,3 +13,13 @@ Eight control cases pass for reviewed acknowledgment, same-key read-only recover
 The serial release browser suite includes board-lifecycle.spec.ts at 1280px and 390px. It uses the existing real Worker scope, two live Board clients, keyboard activation and deliberately lost successful archive/restore/delete responses. It checks identical request recovery, active-directory removal, current read-only reconciliation, explicit irreversible consent, focus return, untouched active/archived child states, deleted parent denial and empty-directory persistence after reload. It runs against the immutable images through the existing full-suite CI step. Browser TypeScript checking and discovery pass; those results do not prove native execution.
 
 Native desktop/mobile/keyboard lifecycle execution, complete concurrent/cross-surface/performance coverage and fresh API/PostgreSQL runtime execution remain pending rigorous CI. This increment does not complete Board management or lifecycle acceptance.
+
+The native lifecycle scenario now waits for each destructive confirmation to be
+enabled, dispatches Enter to that control, and verifies that exactly one first
+request reached the intercepted route before testing lost-response recovery.
+This separates a keyboard submission failure from a missing recovery control;
+the same-key retry, two-client propagation, retained child state, and focus
+assertions remain required. Browser TypeScript checking passed. The earlier
+`96394b9` exact-image run failed the mobile restore retry check and desktop
+archive-directory focus check; this adjustment alone does not prove either
+runtime defect resolved. A subsequent exact-image run remains necessary.
