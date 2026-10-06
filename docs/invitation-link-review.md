@@ -33,3 +33,27 @@ fresh review, plus cookie replacement or account-read failure after a real recei
 They require the original acknowledgment across manual retries, withheld private
 labels, correct Board/Portal destinations, and accessibility checks. These new
 native scenarios remain pending exact-image CI execution.
+
+## Expiry of an open proof review
+
+The proof-review screen schedules a bounded timer for the reviewed invitation's
+persisted expiry. It withdraws Organization/Board labels and ordinary acceptance
+consent, discards the scrubbed in-memory proof, and points to current invitations.
+There is no automatic proof submission or acceptance. A new fragment fences the
+old expiry callback. Long timer delays are chunked within browser limits.
+Ordinary acceptance also checks expiry after account admission, before POST, so
+a delayed callback or profile read cannot submit stale consent.
+
+An actually submitted command keeps its original process-local target for generic
+manual recovery. A fully verified actual acknowledgment can still resolve that
+command; local expiry is never acknowledgment. The API retains its current
+account, issuer, parent and expiry policies and may refuse a recovery request.
+
+Component cases cover all surfaces, delayed admission, lost-response recovery
+and a submitted acknowledgment arriving after browser expiry. The four required
+desktop/mobile proof-link scenarios now inspect the real pending expiry, advance
+only browser time, require label/consent withdrawal and zero acceptance writes,
+compare unchanged pending history, then reopen the original proof for a fresh
+server review before continuing their cookie/receipt checks. They use the existing
+isolated proof fixtures and do not alter server clocks, proofs or grants. Native
+execution remains pending exact-image CI.

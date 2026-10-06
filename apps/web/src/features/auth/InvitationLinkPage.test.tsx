@@ -17,6 +17,68 @@ function mount(entry = `/invitation#token=${token}`) {
   return { ...render(<RouterProvider router={router} />), router };
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it.each(['INTERNAL', 'PORTAL', 'BOARD'])('withdraws a reviewed %s invitation at expiry without another proof or acceptance POST', async surface => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date(Date.parse(item.expiresAt) - 1000));
+  const target = surface === 'BOARD' ? boardItem : { ...item, surface, targetRole: surface === 'PORTAL' ? 'OWNER' : 'MEMBER' };
+  const fetch = vi.fn().mockResolvedValueOnce(reply(target)); stableFetch(fetch);
+  await act(async () => { mount(); });
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Review invitation' })));
+  expect(screen.getByRole('button', { name: 'Accept reviewed invitation' })).toBeEnabled();
+  await act(async () => vi.advanceTimersByTimeAsync(1000));
+  expect(screen.queryByRole('heading', { name: item.organizationName })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Accept reviewed invitation' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Review invitation' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry invitation acceptance' })).not.toBeInTheDocument();
+  expect(screen.getByText('The reviewed invitation reached its expiry time. Check your current invitations.')).toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(sessionStorage.length + localStorage.length).toBe(0);
+});
+it('checks expiry after account admission even when the scheduled expiry callback has not run', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date(Date.parse(item.expiresAt) - 1000));
+  let profiles = 0, resolve: ((response: Response) => void) | undefined; const posts: string[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => {
+    if (path === '/me') {
+      if (++profiles === 3) return new Promise<Response>(done => { resolve = done; });
+      return reply({ id: actor });
+    }
+    posts.push(path); return reply(item);
+  }));
+  await act(async () => { mount(); });
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Review invitation' })));
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Accept reviewed invitation' })));
+  expect(resolve).toBeDefined(); vi.setSystemTime(new Date(item.expiresAt));
+  await act(async () => { resolve!(reply({ id: actor })); });
+  expect(posts).toHaveLength(1); expect(posts[0]).toContain('/invitations/review');
+  expect(screen.queryByRole('button', { name: 'Retry invitation acceptance' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: item.organizationName })).not.toBeInTheDocument();
+});
+it('retains only original-ID recovery for a lost acceptance after browser expiry', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date(Date.parse(item.expiresAt) - 1000));
+  const fetch = vi.fn().mockResolvedValueOnce(reply(item)).mockRejectedValueOnce(new Error('Lost receipt')).mockResolvedValueOnce(reply(ack));
+  stableFetch(fetch); await act(async () => { mount(); });
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Review invitation' })));
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Accept reviewed invitation' })));
+  await act(async () => vi.advanceTimersByTimeAsync(1000));
+  expect(screen.queryByRole('heading', { name: item.organizationName })).not.toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledTimes(2);
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Retry invitation acceptance' })));
+  expect(screen.getByRole('link', { name: 'Open Owner Portal' })).toBeInTheDocument();
+  expect(fetch.mock.calls[2][0]).toBe(fetch.mock.calls[1][0]); expect(fetch.mock.calls[2][1].body).toBe('{}');
+});
+it('withdraws review during a submitted command then publishes only its fully verified actual acknowledgment', async () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date(Date.parse(item.expiresAt) - 1000));
+  let resolve: ((response: Response) => void) | undefined;
+  const fetch = vi.fn().mockResolvedValueOnce(reply(item)).mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }));
+  stableFetch(fetch); await act(async () => { mount(); });
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Review invitation' })));
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Accept reviewed invitation' })));
+  await act(async () => vi.advanceTimersByTimeAsync(1000));
+  expect(screen.queryByRole('heading', { name: item.organizationName })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Retry invitation acceptance' })).toBeDisabled();
+  expect(screen.queryByRole('link', { name: 'Open Owner Portal' })).not.toBeInTheDocument();
+  await act(async () => { resolve!(reply(ack)); });
+  expect(screen.getByRole('link', { name: 'Open Owner Portal' })).toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(2);
+});
 describe('Invitation link review and acknowledgment', () => {
   it('scrubs the URL before requests, retains proof only in memory and requires separate review and acceptance', async () => {
     const fetch = vi.fn().mockResolvedValueOnce(reply(item)).mockResolvedValueOnce(reply(ack)); stableFetch(fetch);

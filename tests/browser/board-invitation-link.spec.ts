@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { expect, test } from './releaseTest';
+import { exerciseInvitationReviewExpiry } from './invitationReviewExpiry';
 
 type Fixture = { width: number; email: string; password: string; token: string; id: string;
   organizationId: string; organizationName: string; boardId: string; boardName: string; boardRole: string };
@@ -26,6 +27,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await expect(page.getByRole('heading', { name: fixture.organizationName })).toBeVisible();
     await expect(page.getByRole('heading', { name: fixture.boardName })).toBeVisible();
     await expect(page.getByText(`Board access \u00b7 ${fixture.boardRole.toLowerCase()}`)).toBeVisible();
+    await exerciseInvitationReviewExpiry(page, fixture);
     const before = await context.request.get(`/boards/${fixture.boardId}`); expect(before.status()).toBe(404);
     const accountHeaders = { 'X-StrataAI-Request': '1' };
     const actor = (await (await context.request.get('/me')).json()).id;

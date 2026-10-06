@@ -21,6 +21,7 @@ function preview(value: unknown): value is Preview {
 }
 
 class AccountUnavailable extends Error { constructor(readonly status: number) { super('Reviewed invitation account unavailable'); } }
+class ReviewExpired extends Error {}
 
 export function InvitationLinkPage() {
   const location = useLocation(); const navigate = useNavigate();
@@ -31,8 +32,10 @@ export function InvitationLinkPage() {
   const pending = useRef<AbortController | undefined>(undefined);
   const unconfirmed = useRef<Preview | undefined>(undefined);
   const reviewedActor = useRef<string | undefined>(undefined);
+  const linkEpoch = useRef(0);
   useLayoutEffect(() => {
     if (!location.hash && !location.search) return;
+    linkEpoch.current++;
     pending.current?.abort(); pending.current = undefined;
     unconfirmed.current = undefined; reviewedActor.current = undefined;
     const values = new URLSearchParams(location.hash.slice(1)).getAll('token');
@@ -41,6 +44,23 @@ export function InvitationLinkPage() {
     navigate(location.pathname, { replace: true });
   }, [location.hash, location.search, location.pathname, navigate]);
   useEffect(() => () => { pending.current?.abort(); pending.current = undefined; }, []);
+  function expireReview() {
+    setReview(undefined); setToken(''); setUncertain(!!unconfirmed.current);
+    setError('The reviewed invitation reached its expiry time. Check your current invitations.');
+  }
+  useEffect(() => {
+    if (!review) return;
+    const started = linkEpoch.current;
+    const expires = Date.parse(review.expiresAt);
+    let timer: ReturnType<typeof setTimeout>;
+    function check() {
+      if (started !== linkEpoch.current) return;
+      const remaining = expires - Date.now();
+      if (remaining > 0) { timer = setTimeout(check, Math.min(remaining, 2_147_483_647)); return; }
+      expireReview();
+    }
+    check(); return () => clearTimeout(timer);
+  }, [review]);
   function valid(controller: AbortController) { return pending.current === controller && !controller.signal.aborted; }
   async function verifyAccount(controller: AbortController, expected?: string) {
     try {
@@ -57,6 +77,7 @@ export function InvitationLinkPage() {
   async function submit(accept: boolean) {
     if (pending.current || (accept ? !(review ?? unconfirmed.current) : !token)) return;
     const chosen = review ?? unconfirmed.current;
+    const recovering = accept && !!unconfirmed.current;
     let submitted = false;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined);
     let timer: ReturnType<typeof setTimeout> | undefined; let aborted: (() => void) | undefined;
@@ -65,6 +86,7 @@ export function InvitationLinkPage() {
         (async () => {
           const actor = await verifyAccount(controller, reviewedActor.current);
           if (!valid(controller) || accept && !reviewedActor.current) throw new AccountUnavailable(503);
+          if (accept && !recovering && Date.parse(chosen!.expiresAt) <= Date.now()) throw new ReviewExpired();
           if (accept) { submitted = true; unconfirmed.current = chosen; }
           const response = await apiFetch(accept ? `/me/invitations/${chosen!.id}/accept?expectedActorId=${encodeURIComponent(actor)}`
             : `/invitations/review?expectedActorId=${encodeURIComponent(actor)}`, {
@@ -108,7 +130,8 @@ export function InvitationLinkPage() {
       if (pending.current === controller) {
         setReview(undefined); setAccepted(undefined);
         setUncertain(accept && (submitted || !!unconfirmed.current));
-        if (reason instanceof AccountUnavailable) {
+        if (reason instanceof ReviewExpired) expireReview();
+        else if (reason instanceof AccountUnavailable) {
           if (reason.status === 401) setSignIn(true);
           setError(reason.status === 401 ? 'Sign in with the invited account, then review the invitation again.'
             : 'The reviewed account could not be confirmed. Retry after account access is available.');

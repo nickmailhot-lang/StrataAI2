@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { expect, test } from './releaseTest';
+import { exerciseInvitationReviewExpiry } from './invitationReviewExpiry';
 
 type Fixture = { width: number; email: string; password: string; token: string; id: string; organizationId: string; surface: string; organizationName: string };
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -39,6 +40,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await expect(page.getByRole('heading', { name: 'StrataAI2' })).not.toBeVisible();
     await page.getByRole('button', { name: 'Review invitation', exact: true }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: fixture.organizationName })).toBeVisible();
+    await exerciseInvitationReviewExpiry(page, fixture);
     const accountHeaders = { 'X-StrataAI-Request': '1' };
     const actor = (await (await context.request.get('/me')).json()).id;
     const replacement = { email: `link-replacement-${viewport.width}-${Date.now()}@example.test`, password: 'link-account-correct-horse', displayName: 'Replacement link account' };
