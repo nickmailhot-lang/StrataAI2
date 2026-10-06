@@ -75,6 +75,19 @@ internal static class OrganizationDeletionPagesContract
              SELECT 'Attachment',id,deleted_at,deleted_by FROM attachments WHERE tenant_id=@tenant AND lifecycle_state='DELETED';
             """);
         await using var api=new PostgresConnectionFactory(apiConnection); await using var worker=new PostgresConnectionFactory(workerConnection);
+        // Only the public page capability is granted. Its trigger/event helpers
+        // must remain private even when runtime roles are provisioned again.
+        foreach(var runtime in new[]{api,worker})
+        {
+            await using var scope=await runtime.OpenTenantSessionAsync(tenant,ct);
+            await using var permissions=new NpgsqlCommand("""
+                SELECT NOT has_function_privilege(current_user,
+                  'public.organization_deletion_page_is_live(uuid,uuid)','EXECUTE')
+                 AND NOT has_function_privilege(current_user,
+                  'public.append_organization_deletion_work_event(uuid,uuid,uuid,text,text,uuid,bigint,text,timestamptz)','EXECUTE');
+                """,scope.Connection,scope.Transaction);
+            Require(await permissions.ExecuteScalarAsync(ct) is true,"Private deletion helpers granted to a runtime caller.");
+        }
         var job=OrganizationDeletionJobs.Create(tenant,actor,new(request,request,2),"page-original");
         await using(var publish=await api.OpenTenantSessionAsync(tenant,ct))
         {
