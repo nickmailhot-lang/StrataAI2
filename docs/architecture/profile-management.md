@@ -51,9 +51,16 @@ Verification/resend screens and a mobile keyboard test consume real queued fixtu
 links, including successful reset and old-session revocation. Deployment still
 requires runtime keys, restricted database credentials and provider configuration.
 
-This increment does not complete PRD-02. Realtime update/reconnect recovery,
-date/time consumers and broader accessibility evidence remain
-to be implemented and verified before closure.
+Profile update delivery and reconnect recovery are implemented through the
+account-bound SignalR and HTTP recovery contracts in [identity realtime
+recovery](identity-realtime.md) and [profile recovery](profile-recovery.md).
+The account browser fixture checks actual identity frames and two-client
+recovery; the realtime guide records the tested historical revision. Those
+results must not be treated as release evidence for a later commit.
+
+PRD-02 remains open. Verify current account lifecycle, preference consumers,
+accessibility and all remaining acceptance requirements against the current
+release images before closure.
 
 `tests/browser/account.spec.ts` runs Chromium against the actual web/API release
 images and PostgreSQL. It checks registration, sign-in through Nginx, profile

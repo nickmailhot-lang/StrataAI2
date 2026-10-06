@@ -10,6 +10,31 @@ using Xunit;
 namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
+    [Fact]
+    public async Task PRD_01_Navigation_measurements_require_authentication_and_reject_private_batches_without_recording()
+    {
+        await using var app = new ApiFactory(); using var actor = app.CreateClient(); using var anonymous = app.CreateClient();
+        await RegisterAndLogin(actor);
+        var meter = app.Services.GetRequiredService<ActivityClientTelemetry>().Meter;
+        var recorded = new ConcurrentQueue<Dictionary<string, object?>>(); using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, current) => { if (ReferenceEquals(instrument.Meter, meter)) current.EnableMeasurementEvents(instrument); };
+        listener.SetMeasurementEventCallback<long>((_, _, tags, _) => recorded.Enqueue(tags.ToArray().ToDictionary(tag => tag.Key, tag => tag.Value)));
+        listener.Start();
+        var payload = new { events = new object[] {
+            new { action = "navigation_context", kind = "open", count = 1 },
+            new { action = "navigation_board", kind = "retry", count = 1 },
+            new { action = "navigation_card", kind = "success", count = 1, durationMs = 125d } } };
+        using var denied = await Mutate(anonymous, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode); Assert.Empty(recorded);
+        using var accepted = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode); Assert.Equal(3, recorded.Count);
+        Assert.All(recorded, tags => Assert.Equal(new[] { "action", "kind" }, tags.Keys.Order().ToArray()));
+        using var rejected = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", new { events = new object[] {
+            new { action = "navigation_board", kind = "use", count = 1 },
+            new { action = "navigation_card", kind = "retry", count = 1, eventId = Guid.NewGuid(), route = "/private/card" } } });
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(3, recorded.Count);
+    }
+
     [Theory]
     [InlineData("navigation_context")]
     [InlineData("navigation_board")]
