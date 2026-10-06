@@ -90,3 +90,20 @@ persistence, two-page stale-save recovery and logout/session revocation. Browser
 traces and screenshots are retained on failure. Nginx and the Vite development
 proxy forward the API's top-level routes as well as `/api`; `/app`, `/login` and
 `/portal` remain SPA routes.
+
+### Global search deadline display
+
+Global search now stores the final validated account locale/timezone alongside
+its admitted result page and formats deadline instants with the shared account
+date/time formatter. Refresh replaces results and preferences together; refusal
+or a new read removes both. Stored UTC deadlines and search criteria/cursors are
+unchanged. Formatting failure displays an explicit unavailable date.
+
+A component case requires Honolulu's previous day and Tokyo's later time after
+a profile preference refresh, with the same UTC search result. Native desktop
+and phone fixtures create an actual timed Card deadline and change the account
+preference before refreshing search. Ten focused component cases, source
+TypeScript and lint pass; native fixture execution remains pending CI. Search
+currently carries no Board timezone policy in its result contract; applying that
+optional policy consistently is remaining work. This account-preference repair
+does not establish full AUTH-FR-010/PRD-02 or PRD-16 acceptance.

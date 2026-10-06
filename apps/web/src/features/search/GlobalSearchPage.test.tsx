@@ -114,3 +114,20 @@ it.each([401, 403, 404])('purges retained query state after terminal denial %s',
   expect(screen.queryByRole('link', { name: 'Admitted Card' })).not.toBeInTheDocument();
   expect(screen.getByRole('textbox', { name: 'Card text' })).toHaveValue('');
 });
+
+it('displays deadlines in the final admitted account timezone and refreshes changed preferences without changing the UTC result', async () => {
+  const request = vi.mocked(workRequest);
+  const base = result();
+  const response = { ...base, items: [{ ...base.items[0], card: { ...base.items[0].card, dueAt: '2026-10-05T00:30:00Z' } }] };
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce(response)
+    .mockResolvedValueOnce({ ...profile(), locale: 'en-US', timezone: 'Pacific/Honolulu' });
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+  await screen.findByText(/Due Oct 4, 2026, 14:30/);
+  request.mockResolvedValueOnce({ ...profile(), locale: 'en-US', timezone: 'Pacific/Honolulu' })
+    .mockResolvedValueOnce(response).mockResolvedValueOnce({ ...profile(), locale: 'en-US', timezone: 'Asia/Tokyo' });
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh results' }));
+  await screen.findByText(/Due Oct 5, 2026, 09:30/);
+  expect(screen.queryByText(/Due Oct 4/)).not.toBeInTheDocument();
+  expect(response.items[0].card.dueAt).toBe('2026-10-05T00:30:00Z');
+});

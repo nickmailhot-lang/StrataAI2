@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { parseSearchPage, type SearchPage } from './globalSearch';
+import { formatUserDateTime } from '../auth/userDateTime';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { ChangedSearchInteractionActor, SearchInteractionAcknowledgments } from './searchInteraction';
 
@@ -11,7 +12,7 @@ type Criteria = { q: string; label: string; member: string; match: 'all' | 'any'
 const empty = (): Criteria => ({ q: '', label: '', member: '', match: 'all', scope: 'active' });
 class ChangedSearchAccount extends Error {}
 export function GlobalSearchPage() {
-  const [draft, setDraft] = useState<Criteria>(empty); const [page, setPage] = useState<SearchPage>();
+  const [draft, setDraft] = useState<Criteria>(empty); const [page, setPage] = useState<SearchPage & { locale: string; timezone: string }>();
   const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<string>();
   const [acknowledged, setAcknowledged] = useState(false);
   const acknowledgments = useRef(new SearchInteractionAcknowledgments());
@@ -32,7 +33,7 @@ export function GlobalSearchPage() {
         const afterProfile = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(afterProfile) || before.id.toLowerCase() !== afterProfile.id.toLowerCase())
           throw new ChangedSearchAccount();
-        return { actor: afterProfile.id.toLowerCase(), page: parseSearchPage(response, afterProfile.id, after) };
+        return { actor: afterProfile.id.toLowerCase(), page: { ...parseSearchPage(response, afterProfile.id, after), locale: afterProfile.locale, timezone: afterProfile.timezone } };
       }, controller.signal);
       if (!alive.current || ticket !== epoch.current || controller.signal.aborted) return;
       const freshAcknowledgment = acknowledgments.current.consume(result.page.interaction);
@@ -89,7 +90,7 @@ export function GlobalSearchPage() {
       <Typography>{item.boardName} / {item.listName}</Typography>
       <Typography>Labels: {item.labels.join(', ') || 'None'}{item.moreLabels ? ' (more on Card)' : ''}</Typography>
       <Typography>Members: {item.members.join(', ') || 'None'}{item.moreMembers ? ' (more on Card)' : ''}</Typography>
-      <Typography>{item.dueAt ? `Due ${new Date(item.dueAt).toLocaleString()}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
+      <Typography>{item.dueAt ? `Due ${formatUserDateTime(item.dueAt, page) ?? 'Date unavailable'}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
     </Paper>)}
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
     {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}

@@ -115,3 +115,34 @@ for (const width of [1280, 390]) {
     } finally { try { await context.setOffline(false); } finally { try { restoreWorker(); } finally { await closePeer(); } } }
   });
 }
+
+for (const width of [1280, 390]) {
+  test(`PRD-02 search deadlines follow current account preferences at ${width}px`, async ({ page, context }) => {
+    await page.setViewportSize({ width, height: 844 });
+    const headers = { 'X-StrataAI-Request': '1' };
+    const account = { email: `search-timezone-${width}-${Date.now()}@example.test`, password: 'search-timezone-correct-horse',
+      displayName: 'Search timezone reader', locale: 'en-US', timezone: 'Pacific/Honolulu' };
+    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
+    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    const orgReply = await context.request.post('/organizations', { headers, data: { name: 'Search deadline council' } });
+    expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
+    const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Deadline Board', visibility: 'PRIVATE' } });
+    expect(boardReply.status()).toBe(201); const board = (await boardReply.json()).id;
+    const listReply = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Deadlines' } });
+    expect(listReply.status()).toBe(201); const list = (await listReply.json()).id;
+    const cardReply = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Timezone deadline fixture' } });
+    expect(cardReply.status()).toBe(201); const card = (await cardReply.json()).id;
+    expect((await context.request.patch(`/cards/${card}/dates`, { headers, data: {
+      startAt: null, dueAt: '2040-01-02T00:30:00Z', dueTimezone: 'UTC', dueHasTime: true, dueComplete: false, version: 1,
+    } })).status()).toBe(200);
+    await page.goto(`/app/${org}/search`);
+    await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('Timezone deadline fixture');
+    await page.getByRole('button', { name: 'Search', exact: true }).press('Enter');
+    await expect(page.getByText(/Due Jan 1, 2040, 14:30/)).toBeVisible();
+    const profile = await (await context.request.get('/me')).json();
+    expect((await context.request.patch('/me', { headers, data: { timezone: 'Asia/Tokyo', version: profile.version } })).status()).toBe(200);
+    await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
+    await expect(page.getByText(/Due Jan 2, 2040, 09:30/)).toBeVisible();
+    await expect(page.getByText(/Due Jan 1/)).toHaveCount(0);
+  });
+}
