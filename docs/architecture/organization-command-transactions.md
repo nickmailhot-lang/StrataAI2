@@ -35,8 +35,17 @@ then verifies that Organization rollback restores its name and preserves the
 subsequent Work commit. Runtime execution of these new cases is required in CI;
 compilation alone does not establish their acceptance.
 
-Additional native coverage is still needed for member-departure assignment/event
-rollback, deletion reminder rescheduling and job rollback, and navigation while
+A further member-removal regression decorates the real Demo event store and
+withdraws actor admission only after its removal event has been appended. It
+requires the final refusal to restore membership, assignment, Card revision and
+event stream state, then verifies that a fresh authorized removal commits. This
+case also awaits native CI execution. A deletion regression similarly withdraws
+admission after the real reminder cancellation event; it requires Organization,
+reminder generation/version/trigger and event state to be restored, then checks
+that an authorized retry suspends the reminder without changing the Card.
+
+Additional native coverage is still needed for departure, reminder job rollback,
+and navigation while
 Organization commands contend for both gates. Specialized account lifecycle
 cleanup, invitation writes and direct store mutations retain their own boundaries;
 this change does not establish universal Demo transaction integrity. Production

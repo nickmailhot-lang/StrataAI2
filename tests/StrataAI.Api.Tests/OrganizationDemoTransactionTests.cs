@@ -92,6 +92,109 @@ public sealed partial class ApiHostTests
         Assert.NotNull(await work.FindBoardAsync(board, ct));
     }
 
+    [Fact]
+    public async Task PRD_03_Demo_member_removal_restores_membership_assignment_Card_revision_and_events_after_final_actor_loss()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var fence = new OrganizationTransactionActorFixture();
+        OrganizationEventActorLossFixture? events = null;
+        await using var app = new ApiFactory(configureServices: services => {
+            services.AddSingleton<ICommandActorAuthorization>(fence);
+            services.AddSingleton<IWorkEventStore>(provider => events = new OrganizationEventActorLossFixture(
+                (IWorkEventStore)provider.GetRequiredService<IWorkEventReader>(), fence));
+        });
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementService>();
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var organizations = app.Services.GetRequiredService<IOrganizationStore>();
+        var orgService = app.Services.GetRequiredService<IOrganizationService>();
+        var reader = app.Services.GetRequiredService<IWorkEventReader>();
+        var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Assigned rollback Card", null, null, DateTimeOffset.UtcNow, ct);
+        Assert.True((await work.SetCardMemberAsync(card.Id, f.Recipient, f.Owner, true, card.Version, "fixture", ct)).Succeeded);
+        var originalCard = (await store.FindCardAsync(card.Id, ct))!;
+        var originalMembership = await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct);
+        var before = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
+        events!.Armed = true;
+        var refused = await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
+        Assert.False(refused.Succeeded); Assert.Equal("session_unavailable", refused.ErrorCode);
+        Assert.Equal(1, events.Withdrawals);
+        Assert.Equal(originalCard, await store.FindCardAsync(card.Id, ct));
+        Assert.Equal(originalMembership, await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct));
+        var after = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
+        Assert.Equal(before.Cursor, after.Cursor);
+        Assert.Equal(before.Events.Select(row => row.Event).ToArray(), after.Events.Select(row => row.Event).ToArray());
+        fence.Allowed = true;
+        var assignments = await work.ListCardMembersAsync(card.Id, f.Owner, cancellationToken: ct);
+        Assert.True(assignments.Succeeded);
+        Assert.Contains(assignments.Value!.Items, row => row.UserId == f.Recipient);
+        events.Armed = false;
+        Assert.True((await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct)).Succeeded);
+        Assert.False((await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct))!.Active);
+        Assert.Equal(originalCard.Version + 1, (await store.FindCardAsync(card.Id, ct))!.Version);
+        Assert.DoesNotContain((await work.ListCardMembersAsync(card.Id, f.Owner, cancellationToken: ct)).Value!.Items,
+            row => row.UserId == f.Recipient);
+    }
+
+    [Fact]
+    public async Task PRD_03_Demo_deletion_restores_Organization_reminder_and_event_after_final_actor_loss()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var fence = new OrganizationTransactionActorFixture();
+        OrganizationEventActorLossFixture? events = null;
+        await using var app = new ApiFactory(configureServices: services => {
+            services.AddSingleton<ICommandActorAuthorization>(fence);
+            services.AddSingleton<IWorkEventStore>(provider => events = new OrganizationEventActorLossFixture(
+                (IWorkEventStore)provider.GetRequiredService<IWorkEventReader>(), fence));
+        });
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        var organizations = app.Services.GetRequiredService<IOrganizationStore>();
+        var orgService = app.Services.GetRequiredService<IOrganizationService>();
+        var reminders = app.Services.GetRequiredService<ICardReminderStore>();
+        var dates = app.Services.GetRequiredService<ICardDateStore>();
+        var reader = app.Services.GetRequiredService<IWorkEventReader>();
+        var now = DateTimeOffset.UtcNow;
+        var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Reminder rollback Card", null, null, now, ct);
+        card = (await dates.SetDatesAsync(f.Organization, f.Board, card.Id, new(null, now.AddDays(2), "UTC", true, false), 1, now, ct))!;
+        var originalReminder = (await reminders.SetAsync(card, f.Owner, "AT_DUE", true, 0, now, ct))!;
+        var originalOrganization = (await organizations.FindOrganizationAsync(f.Organization, ct))!;
+        var before = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
+        events!.EventType = "REMINDER_CANCELLED"; events.Armed = true;
+        var refused = await orgService.MarkDeletingAsync(f.Organization, f.Owner, originalOrganization.Version, "fixture", ct);
+        Assert.False(refused.Succeeded); Assert.Equal("session_unavailable", refused.ErrorCode);
+        Assert.Equal(1, events.Withdrawals);
+        Assert.Equal(originalOrganization, await organizations.FindOrganizationAsync(f.Organization, ct));
+        Assert.Equal(originalReminder, await reminders.FindAsync(f.Organization, f.Owner, card.Id, ct));
+        Assert.Equal(card, await store.FindCardAsync(card.Id, ct));
+        var after = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
+        Assert.Equal(before.Cursor, after.Cursor);
+        Assert.Equal(before.Events.Select(row => row.Event).ToArray(), after.Events.Select(row => row.Event).ToArray());
+        fence.Allowed = true; events.Armed = false;
+        Assert.True((await orgService.MarkDeletingAsync(f.Organization, f.Owner, originalOrganization.Version, "fixture", ct)).Succeeded);
+        Assert.Equal(OrganizationStatus.Deleting, (await organizations.FindOrganizationAsync(f.Organization, ct))!.Status);
+        var suspended = (await reminders.FindAsync(f.Organization, f.Owner, card.Id, ct))!;
+        Assert.Equal("SUSPENDED", suspended.Status); Assert.Null(suspended.TriggerAt);
+        Assert.Equal(originalReminder.Generation + 1, suspended.Generation);
+        Assert.Equal(originalReminder.Version + 1, suspended.Version);
+        Assert.Equal(card, await store.FindCardAsync(card.Id, ct));
+    }
+
+    private sealed class OrganizationEventActorLossFixture(IWorkEventStore inner,
+        OrganizationTransactionActorFixture fence) : IWorkEventStore
+    {
+        public bool Armed { get; set; }
+        public string EventType { get; set; } = "CARD_MEMBER_REMOVED";
+        public int Withdrawals { get; private set; }
+        public async Task AppendAsync(WorkEvent change, CancellationToken cancellationToken = default)
+        {
+            await inner.AppendAsync(change, cancellationToken);
+            if (Armed && change.EventType == EventType)
+            { Withdrawals++; fence.Allowed = false; }
+        }
+    }
+
     private sealed class OrganizationTransactionActorFixture : ICommandActorAuthorization
     {
         public bool Allowed { get; set; } = true;

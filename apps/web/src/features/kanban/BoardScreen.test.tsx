@@ -190,7 +190,9 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(attempts).toHaveLength(2); expect(attempts[1].body).toBe(attempts[0].body);
     expect(JSON.parse(attempts[0].body as string)).toEqual({ cardVersion: 3, version: 1 });
     expect(new Headers(attempts[1].headers).get('Idempotency-Key')).toBe(new Headers(attempts[0].headers).get('Idempotency-Key'));
-  });
+    // Covers admission, archive refusal, snapshot refresh and exact retry;
+    // allow the same multi-step fixture budget as upload recovery below.
+  }, 10_000);
   it('locks competing Card mutations during unconfirmed file upload and recovers the same original request after a newer snapshot', async () => {
     const org = '11111111-1111-4111-8111-111111111111'; const board = '22222222-2222-4222-8222-222222222222';
     const card = '33333333-3333-4333-8333-333333333333'; const actor = '44444444-4444-4444-8444-444444444444';
