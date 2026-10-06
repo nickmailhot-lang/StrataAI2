@@ -60,6 +60,14 @@ function mount(path = "/app/org-1/boards/board-1") {
 function response(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status });
 }
+function navigationResponse(path: string, actor: string) {
+  const query = new URL(path, 'https://fixture.test').searchParams;
+  const card = query.get('cardId'), board = query.get('boardId');
+  return response({ eventId: '55555555-5555-4555-8555-555555555555', actorId: actor,
+    eventType: card ? 'CARD_OPENED' : 'BOARD_OPENED', entityType: card ? 'Card' : 'Board',
+    organizationId: query.get('organizationId'), boardId: board, entityId: card ?? board,
+    version: Number(query.get('version')), metadata: {}, createdAt: '2026-10-05T12:00:00Z' });
+}
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
@@ -961,6 +969,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const scope = { organizationId: org, boardId: board, cardId: card }; const writes: RequestInit[] = [];
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       const path = String(input);
+      if (path.startsWith('/navigation/observations?')) return navigationResponse(path, actor);
       if (path.endsWith('/me')) return response(profile);
       if (options?.method === 'PUT' && path.endsWith('/cover')) {
         writes.push(options); current = structuredClone(current); current.lists[0].cards[0].version = 4;
@@ -999,6 +1008,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       createdAt: '2026-10-03T08:00:00.123456Z', updatedAt: '2026-10-03T08:00:00.123456Z', version: 1, editedAt: null, deletedAt: null, deletedBy: null };
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       const path = String(input); if (path.endsWith('/me')) return response(profile);
+      if (path.startsWith('/navigation/observations?')) return navigationResponse(path, actor);
       if (options?.method === 'POST' && path.endsWith('/comments')) {
         writes.push(options); current = structuredClone(current); current.lists[0].cards[0].version = 4;
         return writes.length === 1 ? response({ code: 'work_storage_unavailable' }, 503) : response({ ...scope, cardVersion: 4, comment, changed: true });

@@ -17,6 +17,16 @@ it('PRD-01 invalid navigation identities cannot dispatch account or observation 
   expect(fetch).not.toHaveBeenCalled();
   expect(screen.queryByRole('button', { name: 'Retry navigation confirmation' })).toBeNull();
 });
+it('PRD-01 confirms Organization context without Board or Card scope', async () => {
+  const fetch = vi.fn(async (path: string) => response(path === '/me' ? { id: actor } : {
+    ...source, eventType: 'APPLICATION_CONTEXT_CHANGED', entityType: 'Organization', entityId: organization, boardId: null, version: 1,
+  })); vi.stubGlobal('fetch', fetch);
+  render(<NavigationConfirmation target={{ kind: 'context', organization }} />);
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(4));
+  expect(fetch.mock.calls.filter(([path]) => path !== '/me')[0][0])
+    .toBe(`/navigation/observations?kind=context&organizationId=${organization}`);
+  expect(screen.queryByRole('button', { name: 'Retry navigation confirmation' })).toBeNull();
+});
 
 it('PRD-01 waits for admission and does not create another open for an entity edit', async () => {
   const fetch = vi.fn(async (path: string) => response(path === '/me' ? { id: actor } : source));

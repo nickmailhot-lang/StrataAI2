@@ -25,6 +25,7 @@ import {
 import type { ReactNode } from "react";
 import { Link, Outlet, useLocation, useParams } from "react-router-dom";
 import { SurfaceAdmission } from './SurfaceAdmission';
+import { NavigationConfirmation } from './NavigationConfirmation';
 
 const drawerWidth = 248;
 
@@ -167,6 +168,8 @@ function InternalLayout() {
         }}
       >
         <Toolbar />
+        {organizationId && <NavigationConfirmation key={`navigation-context-${organizationId}`}
+          target={{ kind: 'context', organization: organizationId }} />}
         <Outlet />
       </Box>
     </Box>
