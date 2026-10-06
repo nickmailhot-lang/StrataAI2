@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { NavigationConfirmation } from './NavigationConfirmation';
+import { configureActivityTelemetry, flushActivityTelemetry } from '../features/kanban/activityTelemetry';
 const actor = '11111111-1111-4111-8111-111111111111';
 const organization = '22222222-2222-4222-8222-222222222222';
 const board = '33333333-3333-4333-8333-333333333333';
@@ -9,8 +10,36 @@ const target = { kind: 'board' as const, organization, board, version: 3 };
 const response = (value: unknown) => new Response(JSON.stringify(value), { status: 200 });
 const source = { eventId: event, actorId: actor, organizationId: organization, boardId: board,
   eventType: 'BOARD_OPENED', entityType: 'Board', entityId: board, version: 3, metadata: {}, createdAt: '2026-10-05T12:00:00Z' };
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 beforeEach(() => sessionStorage.clear());
+
+it('PRD-01 records content-free confirmation results and explicit retries independently of the original event', async () => {
+  configureActivityTelemetry(true);
+  let writes = 0; let report: { events: { action: string; kind: string; count: number; durationMs?: number }[] } | undefined;
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response({ id: actor });
+    if (path === '/me/activity-client-events') { report = JSON.parse(options!.body as string); throw new Error('Telemetry unavailable'); }
+    if (++writes === 1) throw new TypeError('Private network detail');
+    return response(source);
+  }); vi.stubGlobal('fetch', fetch);
+  render(<NavigationConfirmation target={target} />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Retry navigation confirmation' }));
+  await waitFor(() => expect(sessionStorage.length).toBe(0));
+  await flushActivityTelemetry();
+  expect(writes).toBe(2);
+  expect(report!.events).toEqual(expect.arrayContaining([
+    { action: 'navigation_board', kind: 'open', count: 1 },
+    { action: 'navigation_board', kind: 'use', count: 2 },
+    { action: 'navigation_board', kind: 'retry', count: 1 },
+    { action: 'navigation_board', kind: 'exception', count: 1 },
+    { action: 'navigation_board', kind: 'failure', count: 1, durationMs: expect.any(Number) },
+    { action: 'navigation_board', kind: 'success', count: 1, durationMs: expect.any(Number) },
+  ]));
+  for (const entry of report!.events) expect(Object.keys(entry).every(key => ['action', 'kind', 'count', 'durationMs'].includes(key))).toBe(true);
+  for (const privateValue of [actor, organization, board, event, 'Private network detail', '/navigation/observations'])
+    expect(JSON.stringify(report)).not.toContain(privateValue);
+  expect(screen.queryByRole('button', { name: 'Retry navigation confirmation' })).toBeNull();
+});
 
 it('PRD-01 invalid navigation identities cannot dispatch account or observation reads', () => {
   const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);

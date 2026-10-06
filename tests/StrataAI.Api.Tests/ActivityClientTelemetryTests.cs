@@ -11,6 +11,23 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Theory]
+    [InlineData("navigation_context")]
+    [InlineData("navigation_board")]
+    [InlineData("navigation_card")]
+    public void PRD_01_Navigation_telemetry_accepts_fixed_categories_and_rejects_original_or_private_fields(string action)
+    {
+        using var valid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
+            new { action, kind = "retry", count = 1 }, new { action, kind = "failure", count = 1, durationMs = 125 } } }));
+        Assert.Equal(2, ActivityClientTelemetry.Parse(valid.RootElement)!.Count);
+        foreach (var field in new[] { "eventId", "actorId", "organizationId", "boardId", "cardId", "version", "key", "route", "diagnostic" })
+        {
+            using var invalid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
+                new Dictionary<string, object> { ["action"] = action, ["kind"] = "use", ["count"] = 1, [field] = "private-material" } } }));
+            Assert.Null(ActivityClientTelemetry.Parse(invalid.RootElement));
+        }
+    }
+
+    [Theory]
     [InlineData("board_copy_disclosure")]
     [InlineData("board_copy_read")]
     [InlineData("board_copy_change")]

@@ -30,6 +30,10 @@ Production sources and receipts use PostgreSQL forced RLS with actor-private acc
 
 ## Verification and remaining work
 
+Navigation confirmation reports optional client observations through the existing authenticated `/me/activity-client-events` endpoint. Fixed actions are `navigation_context`, `navigation_board`, and `navigation_card`; fixed kinds record visit opens, attempts, explicit user retries, exceptions, and success/failure timing. A visit open is counted once, while each admitted attempt is counted separately. Cancellation does not report a failure or exception. Timing covers account checks, admission, transport and recovery completion, and is not the Board rendering or server mutation performance measurement.
+
+The bounded best-effort queue contains only action, kind, count and optional duration. It retains no actor, entity, Organization, route, request key, original event, content or exception detail. Reports are never retried; report failure cannot change the authoritative acknowledgment. These untrusted measurements are separate from immutable navigation sources and shared audit history. Server parsing rejects extra fields. Stable permission-denial and realtime measurements still require their separate acceptance evidence.
+
 Focused model, producer, HTTP, browser consumer, transport, component, and recovery fixtures exist. Local browser tests cover canonical validation, account replacement, cancellation, lost responses, return visits, and bounded recovery storage. Local .NET compilation does not prove runtime acceptance; native SQL and HTTP execution must pass CI for the relevant revision.
 
 Broader native replay expiry/capacity/concurrency evidence and full PRD-01 acceptance remain incomplete. The full Board regression suite has reported timeout failures despite narrower scenarios passing; investigate these rather than treating focused success as a full-suite result. Exact-image browser, performance, accessibility, lifecycle, and realtime acceptance must also be verified before closing the ticket. Navigation observations do not by themselves prove the PRD's telemetry or performance requirements.
