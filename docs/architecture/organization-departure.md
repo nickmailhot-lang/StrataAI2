@@ -106,3 +106,9 @@ restores the original expiry and retries the same key through the existing
 concurrent acknowledgment checks. Cleanup removes the trigger and restores
 the session on failure. Bash syntax validation passes; actual container
 execution is pending, and native assignment rollback coverage remains needed.
+
+The same native fixture also submits a departure reviewed for the owner with
+the other member's cookie. It requires session_unavailable/401, no actor or
+Organization identifier disclosure and unchanged membership/audit/receipt state
+before any subsequent valid command. This complements the API-host account
+switch case; actual CI execution remains pending.

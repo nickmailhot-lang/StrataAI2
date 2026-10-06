@@ -353,8 +353,10 @@ echo 'Metadata receipt failure rolls back edit/audit; durable replay preserves l
 admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),'$retry_org','$other','MEMBER','ACTIVE');" >/dev/null
 departure_key="$(cat /proc/sys/kernel/random/uuid)"
 departure_request() {
+  local body="${3:-}"
+  if test -z "$body"; then body='{}'; fi
   curl --max-time 60 --silent --show-error -b "$scratch/${2:-other}.cookies" -H 'X-StrataAI-Request: 1' \
-    -H 'Content-Type: application/json' -H "Idempotency-Key: $departure_key" -X POST -d '{}' \
+    -H 'Content-Type: application/json' -H "Idempotency-Key: $departure_key" -X POST -d "$body" \
     -D "$scratch/$1.headers" -o "$scratch/$1.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/leave"
 }
 departure_state() {
@@ -363,6 +365,12 @@ departure_state() {
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_departure_replays r WHERE tenant_id='$retry_org'))::text;"
 }
 departure_before="$(departure_state)"
+# A cookie account switch cannot turn the reviewed actor's command into a new departure.
+departure_actor_body="$(jq -nc --arg actor "$owner" '{expectedActorId:$actor}')"
+test "$(departure_request departure-account-switch other "$departure_actor_body")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/departure-account-switch.json" >/dev/null
+scripts/ci/assert-file-excludes.sh "$retry_org|$owner|$other" "$scratch/departure-account-switch.json"
+test "$departure_before" = "$(departure_state)"
 admin 'REVOKE INSERT ON organization_departure_replays FROM strataai_api_runtime;' >/dev/null
 test "$(departure_request departure-denied)" = 503
 jq -e '.code=="organization_storage_unavailable"' "$scratch/departure-denied.json" >/dev/null
