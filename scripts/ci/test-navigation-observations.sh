@@ -44,6 +44,21 @@ for query in 'kind=context' "kind=context&organizationId=$org" "kind=board&organ
   cmp "$scratch/original.json" "$scratch/response.json"
 done
 card_key=$(uuid); card_query="kind=card&organizationId=$org&boardId=$board&cardId=$card&version=$card_version"
+concurrent_key=$(uuid)
+pids=()
+for index in 1 2 3; do
+  (
+    code=$(curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -X POST -H 'X-StrataAI-Request: 1' \
+      -H "X-StrataAI-Expected-Actor: $actor" -H "Idempotency-Key: $concurrent_key" \
+      -o "$scratch/concurrent-$index.json" -w '%{http_code}' "$base/navigation/observations?kind=context")
+    test "$code" = 200
+  ) &
+  pids+=("$!")
+done
+for pid in "${pids[@]}"; do wait "$pid"; done
+cmp "$scratch/concurrent-1.json" "$scratch/concurrent-2.json"
+cmp "$scratch/concurrent-1.json" "$scratch/concurrent-3.json"
+jq -e --arg actor "$actor" '.actorId==$actor and .eventType=="APPLICATION_CONTEXT_CHANGED" and .organizationId==null and .boardId==null and .entityId==.eventId and .metadata=={}' "$scratch/concurrent-1.json" >/dev/null
 test "$(observe owner "$actor" "$card_key" "$card_query")" = 200
 jq -e --arg card "$card" '.eventType=="CARD_OPENED" and .entityType=="Card" and .entityId==$card and .metadata=={}' "$scratch/response.json" >/dev/null
 cp "$scratch/response.json" "$scratch/card-original.json"
@@ -54,4 +69,4 @@ test "$(observe owner "$actor" "$(uuid)" "kind=card&organizationId=$org&boardId=
 test "$(request owner POST "/lists/$list/archive" '{"version":1}')" = 200
 test "$(observe owner "$actor" "$card_key" "$card_query")" = 404
 jq -e '.code=="navigation_unavailable" and (has("eventId")|not)' "$scratch/response.json" >/dev/null
-echo 'Exact-image navigation: proxy routing, account binding, canonical originals, replay, private scope, stale revision and archived-parent refusal passed.'
+echo 'Exact-image navigation: proxy routing, account binding, canonical originals, concurrent replay, private scope, stale revision and archived-parent refusal passed.'
