@@ -22,7 +22,8 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
       || !snapshot.access.canMove || snapshot.board.lifecycleState !== 'active' || list.lifecycleState !== 'active'
       || !action.current || action.current.disabled) return;
     action.current.focus();
-    if (document.activeElement === action.current) focusRequested.current = undefined;
+    // Keep ownership through later admission refreshes that disable the button.
+    // An explicit focus move to another control releases it in onBlur.
   }, [disabled, busy, review, list.version, list.lifecycleState, snapshot.access.canMove, snapshot.board.lifecycleState]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false;
     if (pending.current) { pending.current.abort(); onBusyChange(false); onPreview?.(); }
@@ -79,7 +80,10 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
   }
   return <Stack spacing={1} sx={{ mt: 1 }}>
     {notice && <Alert severity="info">{notice}</Alert>}
-    {!review ? <Button ref={action} disabled={disabled || !admitted} onClick={() => { setNotice(undefined); setReview({ name: list.name, version: list.version!, before: '' }); }}>Move {list.name} list</Button>
+    {!review ? <Button ref={action} disabled={disabled || !admitted}
+      onFocus={() => { focusRequested.current = Number(list.version); }}
+      onBlur={event => { if (event.relatedTarget !== null) focusRequested.current = undefined; }}
+      onClick={() => { focusRequested.current = undefined; setNotice(undefined); setReview({ name: list.name, version: list.version!, before: '' }); }}>Move {list.name} list</Button>
       : <><Typography>Choose this list’s position on the Board.</Typography>
         <TextField select label={`Position for ${review.name}`} value={review.before} disabled={disabled || busy || !!intent || blocked || changed}
           onChange={event => setReview({ ...review, before: event.target.value })}>

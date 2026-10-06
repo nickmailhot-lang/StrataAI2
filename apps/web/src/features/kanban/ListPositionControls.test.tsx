@@ -52,6 +52,24 @@ it('retains drop focus recovery until the acknowledged canonical revision is adm
   view.rerender(<ListPositionControls {...props} dropRequest={dropRequest} list={ack} />);
   await waitFor(() => expect(action).toHaveFocus());
 });
+it('preserves returned focus through another admission refresh and respects a new focus target', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply(ack)));
+  const view = render(<><ListPositionControls {...props} /><button>Other action</button></>);
+  await choose(); fireEvent.click(screen.getByRole('button', { name: 'Confirm list move' }));
+  await screen.findByText('List move acknowledged. Current ordering is being checked.');
+  const draw = (disabled: boolean) => <><ListPositionControls {...props} list={ack} disabled={disabled} /><button>Other action</button></>;
+  view.rerender(draw(false));
+  const action = screen.getByRole('button', { name: 'Move Planning list' });
+  await waitFor(() => expect(action).toHaveFocus());
+  view.rerender(draw(true));
+  act(() => { action.blur(); });
+  view.rerender(draw(false));
+  await waitFor(() => expect(action).toHaveFocus());
+  const other = screen.getByRole('button', { name: 'Other action' });
+  act(() => { other.focus(); });
+  view.rerender(draw(true)); view.rerender(draw(false));
+  expect(other).toHaveFocus();
+});
 it('preserves original name/position/version/key after uncertainty and a newer canonical rename', async () => {
   const fetcher = vi.fn().mockRejectedValueOnce(new Error('Lost')).mockResolvedValueOnce(reply(ack)); vi.stubGlobal('fetch', fetcher);
   const preview = vi.fn();

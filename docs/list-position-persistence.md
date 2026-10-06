@@ -100,3 +100,14 @@ interaction and executed browser evidence remain pending.
 
 API usage follows the installed types and the official
 [dnd-kit draggable guidance](https://dndkit.com/legacy/api-documentation/draggable/).
+
+### Focus recovery after repeated admission refreshes
+
+Release CI run [37414158125](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37414158125)
+at `407e5f9` passed the concurrent PostgreSQL rank checks but failed the desktop
+large-Board browser assertion for returned List-move focus; the phone case passed.
+The return button now retains focus ownership through subsequent refreshes that
+temporarily disable it. Moving focus to another control releases that ownership.
+All nine focused List-position source tests pass, including a second admission
+refresh and an explicit focus move elsewhere. The existing native browser focus
+assertion remains unchanged; exact-image verification of this repair is pending.
