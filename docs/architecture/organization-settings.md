@@ -43,3 +43,18 @@ The desktop/phone keyboard fixture drops a committed response, applies a later
 edit, recovers the original receipt and verifies the later persisted revision
 survives reload. It includes WCAG 2.2 AA automated checks. Native browser execution,
 concurrency and post-receipt final-admission coverage remain to verify.
+
+The metadata API-host cases now include concurrent same-key requests and actual
+receipt-triggered session expiry. The expiry case observes the stored original
+acknowledgment before the final actor check, advances the injected clock to the
+actual session expiry, and requires 401 without metadata disclosure. The original
+Organization/session must remain unchanged and the failed receipt must disappear;
+same-key retry/replay then advances the Organization once. These cases compile
+with zero warnings/errors; runtime execution remains pending CI.
+
+The mandatory PostgreSQL fixture now holds the Organization parent lock until
+two same-key requests are observed waiting. On release, both must return identical
+acknowledgments with exactly one metadata audit, one receipt and one version
+advance. This checks real concurrent contention rather than sequential replay.
+Fixture syntax passes; exact-image execution remains pending. Native elapsed
+session expiry after receipt publication remains a separate verification gap.

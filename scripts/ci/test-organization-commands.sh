@@ -254,7 +254,7 @@ retry_key="$(cat /proc/sys/kernel/random/uuid)"
 retry_metadata() {
   curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
     -H 'Content-Type: application/json' -H "Idempotency-Key: $retry_key" -X PATCH -d "$1" \
-    -o "$scratch/metadata-reply.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org"
+    -o "$scratch/${2:-metadata-reply}.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org"
 }
 metadata_state() {
   admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$retry_org'),
@@ -268,8 +268,18 @@ test "$(retry_metadata "$retry_body")" = 503
 jq -e '.code=="organization_storage_unavailable"' "$scratch/metadata-reply.json" >/dev/null
 test "$metadata_before" = "$(metadata_state)"
 admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
-test "$(retry_metadata "$retry_body")" = 200
-cp "$scratch/metadata-reply.json" "$scratch/original-metadata.json"
+hold "SELECT id FROM organizations WHERE id='$retry_org' FOR UPDATE;"
+retry_metadata "$retry_body" metadata-first > "$scratch/metadata-first.status" & metadata_first_pid=$!
+retry_metadata "$retry_body" metadata-second > "$scratch/metadata-second.status" & metadata_second_pid=$!
+blocked '%SELECT id FROM organizations%FOR UPDATE%' 2
+release ''
+wait "$metadata_first_pid"; wait "$metadata_second_pid"
+test "$(cat "$scratch/metadata-first.status")" = 200
+test "$(cat "$scratch/metadata-second.status")" = 200
+test "$(jq -Sc . "$scratch/metadata-first.json")" = "$(jq -Sc . "$scratch/metadata-second.json")"
+test "$(admin "SELECT count(*)=1 FROM organization_metadata_replays WHERE tenant_id='$retry_org';")" = t
+test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_UPDATED';")" = t
+cp "$scratch/metadata-first.json" "$scratch/original-metadata.json"
 jq -e '.name=="First metadata edit" and .version==2' "$scratch/original-metadata.json" >/dev/null
 test "$(request PATCH "/organizations/$retry_org" '{"name":"Later metadata edit","version":2}')" = 200
 metadata_after="$(metadata_state)"
