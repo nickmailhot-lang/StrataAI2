@@ -33,7 +33,7 @@ public interface IOrganizationService
         string? logoUrl,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? idempotencyKey = null);
 
     Task<OrganizationOperation<IReadOnlyList<OrganizationBoardSummary>>> ListBoardsAsync(
         Guid organizationId,

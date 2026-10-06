@@ -149,6 +149,13 @@ public static class OrganizationEndpoints
                     return Results.Unauthorized();
                 }
 
+                Guid? key = null;
+                if (context.Request.Headers.TryGetValue("Idempotency-Key", out var keys))
+                {
+                    if (keys.Count != 1 || !Guid.TryParse(keys[0], out var parsed) || parsed == Guid.Empty)
+                        return ErrorFor("invalid_idempotency_key");
+                    key = parsed;
+                }
                 var result = await service.UpdateAsync(
                     organizationId,
                     userId.Value,
@@ -157,7 +164,7 @@ public static class OrganizationEndpoints
                     request.LogoUrl,
                     request.Version,
                     context.TraceIdentifier,
-                    cancellationToken);
+                    cancellationToken, key);
 
                 return result.Succeeded && result.Value is not null
                     ? Results.Ok(result.Value)
@@ -279,6 +286,9 @@ public static class OrganizationEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_idempotency_key" => Problem(StatusCodes.Status400BadRequest, errorCode, "A nonempty UUID retry key is required."),
+            "idempotency_conflict" => Problem(StatusCodes.Status409Conflict, errorCode, "The retry key belongs to a different Organization change."),
+            "idempotency_expired" => Problem(StatusCodes.Status409Conflict, errorCode, "The original acknowledgment has expired. Review current settings."),
             "invalid_member_version" => Problem(StatusCodes.Status400BadRequest, errorCode,
                 "A positive membership version is required."),
             "member_version_conflict" => Problem(StatusCodes.Status409Conflict, errorCode,

@@ -10,7 +10,7 @@ public sealed class OrganizationService(
     IOrganizationUnitOfWork unitOfWork,
     StrataAI.Application.Identity.ICommandActorAuthorization actors,
     StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
-    CardReminderContainerScheduling reminders) : IOrganizationService
+    CardReminderContainerScheduling reminders, IOrganizationMetadataReplayStore metadataReplays) : IOrganizationService
 {
     public async Task<OrganizationOperation<OrganizationDirectoryPage>> ListPageAsync(Guid actorUserId,
         Guid? after, CancellationToken cancellationToken = default)
@@ -113,9 +113,33 @@ public sealed class OrganizationService(
 
     public Task<OrganizationOperation<OrganizationRecord>> UpdateAsync(
         Guid organizationId, Guid actorUserId, string name, string? description, string? logoUrl,
-        long expectedVersion, string correlationId, CancellationToken cancellationToken = default) =>
+        long expectedVersion, string correlationId, CancellationToken cancellationToken = default, Guid? idempotencyKey = null) =>
         unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false,
-            () => UpdateCoreAsync(organizationId, actorUserId, name, description, logoUrl, expectedVersion, correlationId, cancellationToken), cancellationToken);
+            async () =>
+            {
+                if (idempotencyKey is null)
+                    return await UpdateCoreAsync(organizationId, actorUserId, name, description, logoUrl, expectedVersion, correlationId, cancellationToken);
+                if (!CanAdminister(await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken)))
+                    return OrganizationOperation<OrganizationRecord>.Failure("organization_not_found");
+                if (idempotencyKey == Guid.Empty)
+                    return OrganizationOperation<OrganizationRecord>.Failure("invalid_idempotency_key");
+                var fingerprint = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                    System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { organizationId, name, description, logoUrl, expectedVersion })));
+                var replay = await metadataReplays.ReadAsync(organizationId, actorUserId, idempotencyKey.Value, cancellationToken);
+                if (replay is not null)
+                {
+                    if (replay.Fingerprint != fingerprint)
+                        return OrganizationOperation<OrganizationRecord>.Failure("idempotency_conflict");
+                    if (replay.ExpiresAt <= clock.UtcNow)
+                        return OrganizationOperation<OrganizationRecord>.Failure("idempotency_expired");
+                    return OrganizationOperation<OrganizationRecord>.Success(replay.Result);
+                }
+                var result = await UpdateCoreAsync(organizationId, actorUserId, name, description, logoUrl, expectedVersion, correlationId, cancellationToken);
+                if (result.Succeeded && result.Value is not null)
+                    await metadataReplays.SaveAsync(organizationId, actorUserId, idempotencyKey.Value,
+                        new(fingerprint, result.Value, clock.UtcNow.AddHours(24)), cancellationToken);
+                return result;
+            }, cancellationToken);
 
     public Task<OrganizationOperation<bool>> RemoveMemberAsync(
         Guid organizationId, Guid actorUserId, Guid targetUserId, string correlationId,

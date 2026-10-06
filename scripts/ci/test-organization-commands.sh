@@ -11,6 +11,7 @@ cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -244,3 +245,46 @@ fi
 test "$(admin "SELECT count(*) FROM organization_members WHERE tenant_id='$organization' AND role='OWNER' AND status='ACTIVE';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")" = "$((audit_before + 1))"
 echo 'Organization mutations/audits roll back together, revoked actors fail after waits, and concurrent departures preserve one owner.'
+
+# PRD-03-TC-06/07: durable metadata acknowledgment is independent of later edits.
+test "$(request POST /organizations '{"name":"Metadata retry fixture"}')" = 201
+retry_org="$(jq -r '.organization.id' "$scratch/response.json")"
+[[ "$retry_org" =~ ^[0-9a-fA-F-]{36}$ ]]
+retry_key="$(cat /proc/sys/kernel/random/uuid)"
+retry_metadata() {
+  curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -H "Idempotency-Key: $retry_key" -X PATCH -d "$1" \
+    -o "$scratch/metadata-reply.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org"
+}
+metadata_state() {
+  admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$retry_org'),
+    'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
+    'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_metadata_replays r WHERE tenant_id='$retry_org'))::text;"
+}
+retry_body='{"name":"First metadata edit","description":"Original acknowledgment","version":1}'
+metadata_before="$(metadata_state)"
+admin 'REVOKE INSERT ON organization_metadata_replays FROM strataai_api_runtime;' >/dev/null
+test "$(retry_metadata "$retry_body")" = 503
+jq -e '.code=="organization_storage_unavailable"' "$scratch/metadata-reply.json" >/dev/null
+test "$metadata_before" = "$(metadata_state)"
+admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
+test "$(retry_metadata "$retry_body")" = 200
+cp "$scratch/metadata-reply.json" "$scratch/original-metadata.json"
+jq -e '.name=="First metadata edit" and .version==2' "$scratch/original-metadata.json" >/dev/null
+test "$(request PATCH "/organizations/$retry_org" '{"name":"Later metadata edit","version":2}')" = 200
+metadata_after="$(metadata_state)"
+test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_metadata_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
+test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_metadata_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_metadata_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_metadata_replays','DELETE');")" = f
+test "$(retry_metadata "$retry_body")" = 200
+test "$(jq -Sc . "$scratch/metadata-reply.json")" = "$(jq -Sc . "$scratch/original-metadata.json")"
+test "$metadata_after" = "$(metadata_state)"
+test "$(retry_metadata '{"name":"Different metadata edit","version":1}')" = 409
+jq -e '.code=="idempotency_conflict"' "$scratch/metadata-reply.json" >/dev/null
+test "$metadata_after" = "$(metadata_state)"
+# Force expiry relative to wall clock without deleting/reusing the reserved key.
+admin "UPDATE organization_metadata_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$retry_org' AND key_id='$retry_key';" >/dev/null
+metadata_expired="$(metadata_state)"
+test "$(retry_metadata "$retry_body")" = 409
+jq -e '.code=="idempotency_expired"' "$scratch/metadata-reply.json" >/dev/null
+test "$metadata_expired" = "$(metadata_state)"
+echo 'Metadata receipt failure rolls back edit/audit; durable replay preserves later edits and expired keys stay reserved.'

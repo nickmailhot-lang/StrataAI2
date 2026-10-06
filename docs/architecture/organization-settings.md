@@ -13,3 +13,27 @@ Reads and writes have a 15-second deadline, duplicate in-flight submission is re
 Local execution: full web component suite and typecheck/lint, plus real desktop/mobile keyboard browser scenarios for URL validation, stale-version review, lost committed-save acknowledgment and persisted reload. The new API host tests compile in the warnings-as-errors solution build; execution proof comes from required Linux CI because the local Windows host has blocked the test runner with Application Control. The existing mandatory exact-image Organization fixture also checks rejected URLs and unauthorized callers leave all Organization/member/invitation/Portal/audit state unchanged. The new browser scenarios run in the mandatory exact-image suite.
 
 Full PRD-03 remains open. Follow-up commits provide member administration, bounded member paging and invitation creation controls. Invitation delivery/history, ownership governance, remaining durable Organization retry receipts, Organization discovery pagination, realtime domain-event delivery, deletion processing/retention and remaining acceptance evidence are still outstanding.
+
+## Keyed metadata API recovery
+
+Metadata PATCH now accepts an optional nonempty UUID `Idempotency-Key`. The
+existing unkeyed browser reconciliation remains supported. A keyed edit binds
+the Organization, actor, submitted metadata and expected version to an immutable
+acknowledgment. Its receipt, edit and audit commit together under the owning
+Organization transaction. Receipt failure rolls back the edit and audit.
+
+Matching replay returns the original record without applying it over later
+edits. Current active Organization/admin membership and current session admission
+are required before disclosure; a removed administrator cannot recover private
+metadata. Different input returns 409 `idempotency_conflict`. After 24 hours,
+matching replay returns 409 `idempotency_expired`; the key remains reserved and
+cannot create another mutation. Receipt retention/cleanup remains future work.
+
+Migration 082 forces tenant RLS and gives the API only SELECT/INSERT on receipts;
+the Worker receives no receipt access. Both runtime hosts require its ledger
+entry. Demo receipts participate in owning snapshot rollback. The mandatory
+native Organization fixture covers denied receipt INSERT, unchanged edit/audit
+state, original replay after a later edit, mismatched input and expiry. The
+API-host scenario also checks withdrawal of admin membership. Strict compilation
+and fixture syntax pass; runtime execution remains pending CI. Browser same-key
+recovery, concurrency and post-receipt final-admission coverage remain to verify.
