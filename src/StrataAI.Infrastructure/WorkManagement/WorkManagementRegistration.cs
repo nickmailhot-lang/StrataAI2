@@ -20,6 +20,10 @@ public static class WorkManagementRegistration
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<DemoWorkTransactionScope>();
+            services.AddSingleton<NavigationInteractionEventProducer>();
+            services.AddSingleton<InMemoryNavigationInteractionEventStore>();
+            services.AddSingleton<INavigationInteractionEventStore>(provider => provider.GetRequiredService<InMemoryNavigationInteractionEventStore>());
+            services.AddSingleton<StrataAI.Infrastructure.Identity.IDemoIdentityTransactionParticipant>(provider => provider.GetRequiredService<InMemoryNavigationInteractionEventStore>());
             services.AddSingleton<InMemorySearchInteractionEventStore>();
             services.AddSingleton<ISearchInteractionEventStore>(provider => provider.GetRequiredService<InMemorySearchInteractionEventStore>());
             services.AddSingleton<IBoardFilterInteractionReplayStore>(provider => provider.GetRequiredService<InMemorySearchInteractionEventStore>());
