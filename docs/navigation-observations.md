@@ -36,7 +36,7 @@ The bounded best-effort queue contains only action, kind, count and optional dur
 
 Focused model, producer, HTTP, browser consumer, transport, component, and recovery fixtures exist. Local browser tests cover canonical validation, account replacement, cancellation, lost responses, return visits, and bounded recovery storage. Local .NET compilation does not prove runtime acceptance; native SQL and HTTP execution must pass CI for the relevant revision.
 
-Broader native replay expiry/capacity/concurrency evidence and full PRD-01 acceptance remain incomplete. The full Board regression suite has reported timeout failures despite narrower scenarios passing; investigate these rather than treating focused success as a full-suite result. Exact-image browser, performance, accessibility, lifecycle, and realtime acceptance must also be verified before closing the ticket. Navigation observations do not by themselves prove the PRD's telemetry or performance requirements.
+Broader native replay expiry/capacity/concurrency evidence and full PRD-01 acceptance remain incomplete. Full-suite verification must follow fixture repairs; focused recovery success alone does not establish a full-suite result. Exact-image browser, performance, accessibility, lifecycle, and realtime acceptance must also be verified before closing the ticket. Navigation observations do not by themselves prove the PRD's telemetry or performance requirements.
 
 ### Acceptance evidence map
 
@@ -52,3 +52,27 @@ The following fixtures cover navigation-specific requirements from [PRD-01](http
 | Desktop, tablet, phone, keyboard Back, lost response followed by an entity edit, accessibility | [Native browser checks](../tests/browser/navigation-observations.spec.ts) | Runs at 1280, 768 and 390 pixels against release images; execution remains pending for the current implementation. |
 
 Full foundation acceptance also requires hierarchy integrity, all mutable-record audit fields, lifecycle-aware deep links, preserved Board viewport context, authorized two-client updates and reconnect recovery, and the stated capacity and performance targets. Those requirements span other feature suites and their acceptance records; this navigation evidence map does not establish their completion.
+
+### Revision-specific verification ledger
+
+- CI run [37407613926](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37407613926)
+  at `e3bcb1d` passed web quality: 122 files and 1,468 tests, followed by the web
+  build. Its API-host job failed the two navigation HTTP scenarios with
+  `BadRequest`; the navigation route was absent from the idempotency middleware
+  at that revision. `5caf8be` subsequently added matched-route handling and
+  invalid-key/trailing-slash fixtures; `74ce75d` added private/no-store headers
+  before middleware key rejection. Current runtime verification is pending.
+- The same run's PostgreSQL job rejected a complete migration ledger before
+  restricted search traversal. `e158969` removed the stale numeric readiness
+  count, and `e0c78cd` added restricted API/Worker complete, missing and restored
+  ledger checks. See [schema readiness](architecture/schema-upgrades.md#runtime-migration-readiness).
+- Local full web execution at `ca81d3f` finished with 121 files passing and one
+  failing: 1,468 tests passed and one URL-attachment recovery fixture failed.
+  `c6541ed` supplied its canonical navigation acknowledgment and waited for
+  enabled command admission and actual original dispatch. The focused repaired
+  scenario and typecheck passed. A fresh full run is pending; no current-main
+  full-suite or release success is asserted by these results.
+
+These results identify separate source, HTTP and persistence failures and their
+later repairs. They do not prove exact-image browser, performance, accessibility
+or whole-ticket acceptance.
