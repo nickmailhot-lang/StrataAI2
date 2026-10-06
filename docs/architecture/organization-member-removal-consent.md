@@ -46,3 +46,15 @@ loss must leave no removal receipt while restoring membership, Card revision,
 assignment and Work events; the same key subsequently commits after restored
 admission. Native post-publication session expiry and assignment rollback
 evidence remain pending, alongside current browser recovery execution.
+
+The mandatory container fixture now creates and assigns a real Card before
+departure/removal receipt tests. Receipt INSERT denial and observed session
+expiry after receipt insertion must preserve membership, assignment, full Card
+record, immutable Work event fields, stream counters, audit and receipt state.
+Worker delivery markers are excluded from the event comparison because delivery
+can advance independently. Removal checks also compare account/session rows and
+refuse cookie/private disclosure. Successful concurrent commands remove the
+assignment and advance the Card version once. After rejoin, an actual API
+assignment is restored; original receipt replay must preserve it unchanged.
+Cleanup drops the temporary trigger and restores session expiry on failure.
+Bash syntax passes; actual container execution remains pending CI.

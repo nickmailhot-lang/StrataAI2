@@ -10,6 +10,8 @@ metadata_session=''
 metadata_session_expiry=''
 departure_session=''
 departure_session_expiry=''
+removal_session=''
+removal_session_expiry=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
@@ -20,6 +22,10 @@ cleanup() {
   admin 'GRANT INSERT ON organization_departure_replays TO strataai_api_runtime;' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_metadata_wait ON organization_metadata_replays; DROP FUNCTION IF EXISTS public.ci_organization_metadata_wait();' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_departure_wait ON organization_departure_replays; DROP FUNCTION IF EXISTS public.ci_organization_departure_wait();' >/dev/null
+  admin 'DROP TRIGGER IF EXISTS ci_organization_removal_wait ON organization_removal_replays; DROP FUNCTION IF EXISTS public.ci_organization_removal_wait();' >/dev/null
+  if test -n "$removal_session" && test -n "$removal_session_expiry"; then
+    admin "UPDATE sessions SET expires_at='$removal_session_expiry'::timestamptz WHERE id='$removal_session';" >/dev/null
+  fi
   if test -n "$departure_session" && test -n "$departure_session_expiry"; then
     admin "UPDATE sessions SET expires_at='$departure_session_expiry'::timestamptz WHERE id='$departure_session';" >/dev/null
   fi
@@ -352,6 +358,22 @@ echo 'Metadata receipt failure rolls back edit/audit; durable replay preserves l
 
 # Same-account departure replay must remain safe after membership is restored.
 admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),'$retry_org','$other','MEMBER','ACTIVE');" >/dev/null
+# An actual assigned Card makes cross-store rollback observable.
+test "$(request POST /boards "$(jq -nc --arg org "$retry_org" '{organizationId:$org,name:"Assignment receipt rollback",visibility:"PRIVATE"}')")" = 201
+receipt_board="$(jq -r '.id' "$scratch/response.json")"
+test "$(request POST "/boards/$receipt_board/lists" '{"name":"Receipt rollback List"}')" = 201
+receipt_list="$(jq -r '.id' "$scratch/response.json")"
+test "$(request POST "/lists/$receipt_list/cards" '{"title":"Assigned receipt rollback Card"}')" = 201
+receipt_card="$(jq -r '.id' "$scratch/response.json")"
+for id in "$receipt_board" "$receipt_list" "$receipt_card"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
+admin "INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at) VALUES(gen_random_uuid(),'$retry_org','$receipt_board','$other','MEMBER','ACTIVE',clock_timestamp(),clock_timestamp());" >/dev/null
+assign_receipt_card() {
+  local version
+  version="$(admin "SELECT version FROM cards WHERE tenant_id='$retry_org' AND id='$receipt_card';")"
+  test "$(request PUT "/cards/$receipt_card/members/$other?version=$version" '{}')" = 200
+}
+assign_receipt_card
+receipt_card_version="$(admin "SELECT version FROM cards WHERE tenant_id='$retry_org' AND id='$receipt_card';")"
 departure_key="$(cat /proc/sys/kernel/random/uuid)"
 departure_request() {
   local body="${3:-}"
@@ -363,6 +385,10 @@ departure_request() {
 departure_state() {
   admin "SELECT jsonb_build_object('members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$retry_org'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
+    'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$retry_org' AND id='$receipt_card'),
+    'assignments',(SELECT jsonb_agg(to_jsonb(a) ORDER BY user_id) FROM card_members a WHERE tenant_id='$retry_org' AND card_id='$receipt_card'),
+    'events',(SELECT jsonb_agg(jsonb_build_object('id',e.event_id,'sequence',e.sequence,'type',e.event_type,'actor',e.actor_id,'entityType',e.entity_type,'entity',e.entity_id,'version',e.entity_version,'correlation',e.correlation_id,'metadata',e.metadata,'created',e.created_at) ORDER BY e.sequence) FROM work_events e WHERE tenant_id='$retry_org' AND board_id='$receipt_board'),
+    'stream',(SELECT to_jsonb(w) FROM work_event_streams w WHERE tenant_id='$retry_org' AND board_id='$receipt_board'),
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_departure_replays r WHERE tenant_id='$retry_org'))::text;"
 }
 departure_before="$(departure_state)"
@@ -425,7 +451,10 @@ test "$(cat "$scratch/departure-second.status")" = 204
 test "$(admin "SELECT count(*)=1 FROM organization_departure_replays WHERE tenant_id='$retry_org' AND actor_id='$other';")" = t
 test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_MEMBER_LEFT' AND actor_id='$other';")" = t
 test "$(admin "SELECT status='REMOVED' AND version=2 FROM organization_members WHERE tenant_id='$retry_org' AND user_id='$other';")" = t
+test "$(admin "SELECT count(*)=0 FROM card_members WHERE tenant_id='$retry_org' AND card_id='$receipt_card' AND user_id='$other';")" = t
+test "$(admin "SELECT version FROM cards WHERE tenant_id='$retry_org' AND id='$receipt_card';")" = "$((receipt_card_version+1))"
 admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$retry_org' AND user_id='$other';" >/dev/null
+assign_receipt_card
 departure_rejoined="$(departure_state)"
 test "$(departure_request departure-replay)" = 204
 test "$departure_rejoined" = "$(departure_state)"
@@ -443,15 +472,20 @@ echo 'Departure receipts roll back atomically, serialize identical retries, pres
 
 # Member removal receipts bind actor, target and reviewed version.
 removal_key="$(cat /proc/sys/kernel/random/uuid)"
+removal_card_version="$(admin "SELECT version FROM cards WHERE tenant_id='$retry_org' AND id='$receipt_card';")"
 removal_version="$(admin "SELECT version FROM organization_members WHERE tenant_id='$retry_org' AND user_id='$other';")"
 removal_request() {
   curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
-    -H "Idempotency-Key: $removal_key" -X DELETE -o "$scratch/$1.json" -w '%{http_code}' \
+    -H "Idempotency-Key: $removal_key" -X DELETE -D "$scratch/$1.headers" -o "$scratch/$1.json" -w '%{http_code}' \
     "$BASE_URL/organizations/$retry_org/members/${3:-$other}?expectedVersion=${2:-$removal_version}&expectedActorId=${4:-$owner}"
 }
 removal_state() {
   admin "SELECT jsonb_build_object('members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$retry_org'),
     'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
+    'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$retry_org' AND id='$receipt_card'),
+    'assignments',(SELECT jsonb_agg(to_jsonb(a) ORDER BY user_id) FROM card_members a WHERE tenant_id='$retry_org' AND card_id='$receipt_card'),
+    'events',(SELECT jsonb_agg(jsonb_build_object('id',e.event_id,'sequence',e.sequence,'type',e.event_type,'actor',e.actor_id,'entityType',e.entity_type,'entity',e.entity_id,'version',e.entity_version,'correlation',e.correlation_id,'metadata',e.metadata,'created',e.created_at) ORDER BY e.sequence) FROM work_events e WHERE tenant_id='$retry_org' AND board_id='$receipt_board'),
+    'stream',(SELECT to_jsonb(w) FROM work_event_streams w WHERE tenant_id='$retry_org' AND board_id='$receipt_board'),
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_removal_replays r WHERE tenant_id='$retry_org'))::text;"
 }
 removal_before="$(removal_state)"
@@ -463,6 +497,43 @@ test "$(removal_request removal-denied)" = 503
 jq -e '.code=="organization_storage_unavailable"' "$scratch/removal-denied.json" >/dev/null
 test "$removal_before" = "$(removal_state)"
 admin 'GRANT INSERT ON organization_removal_replays TO strataai_api_runtime;' >/dev/null
+# Observe actual receipt publication while the original cookie session expires.
+removal_hash="$(owner_hash)"
+[[ "$removal_hash" =~ ^[0-9a-f]{64}$ ]]
+removal_session="$(admin "SELECT id FROM sessions WHERE token_hash='$removal_hash' AND user_id='$owner' AND revoked_at IS NULL;")"
+[[ "$removal_session" =~ ^[0-9a-fA-F-]{36}$ ]]
+removal_session_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$removal_session';")"
+test -n "$removal_session_expiry"
+admin "CREATE FUNCTION public.ci_organization_removal_wait() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+BEGIN
+  IF NEW.tenant_id='$retry_org'::uuid THEN PERFORM pg_sleep(12); END IF;
+  RETURN NEW;
+END;
+\$\$;
+CREATE TRIGGER ci_organization_removal_wait AFTER INSERT ON organization_removal_replays
+  FOR EACH ROW EXECUTE FUNCTION public.ci_organization_removal_wait();" >/dev/null
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$removal_session';" >/dev/null
+removal_publication_before="$(removal_state)"
+removal_identity_before="$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$owner'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$owner'))::text;")"
+removal_request removal-expiry > "$scratch/removal-expiry.status" & request_pid=$!
+for ((attempt=0; attempt<100; attempt++)); do
+  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_removal_replays%';")" = 1; then break; fi
+  sleep 0.1
+done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_removal_replays%';")" = 1
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/removal-expiry.status")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/removal-expiry.json" >/dev/null
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/removal-expiry.headers"
+scripts/ci/assert-file-excludes.sh "$retry_org|$owner|$other|Assigned receipt rollback Card" "$scratch/removal-expiry.json"
+test "$removal_publication_before" = "$(removal_state)"
+test "$removal_identity_before" = "$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$owner'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$owner'))::text;")"
+admin 'DROP TRIGGER ci_organization_removal_wait ON organization_removal_replays; DROP FUNCTION public.ci_organization_removal_wait();' >/dev/null
+admin "UPDATE sessions SET expires_at='$removal_session_expiry'::timestamptz WHERE id='$removal_session';" >/dev/null
+removal_session=''; removal_session_expiry=''
+test "$removal_before" = "$(removal_state)"
 hold "SELECT id FROM organizations WHERE id='$retry_org' FOR UPDATE;"
 removal_request removal-first > "$scratch/removal-first.status" & removal_first_pid=$!
 removal_request removal-second > "$scratch/removal-second.status" & removal_second_pid=$!
@@ -473,7 +544,10 @@ test "$(cat "$scratch/removal-first.status")" = 204
 test "$(cat "$scratch/removal-second.status")" = 204
 test "$(admin "SELECT count(*)=1 FROM organization_removal_replays WHERE tenant_id='$retry_org' AND actor_id='$owner';")" = t
 test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_MEMBER_REMOVED' AND actor_id='$owner';")" = t
+test "$(admin "SELECT count(*)=0 FROM card_members WHERE tenant_id='$retry_org' AND card_id='$receipt_card' AND user_id='$other';")" = t
+test "$(admin "SELECT version FROM cards WHERE tenant_id='$retry_org' AND id='$receipt_card';")" = "$((removal_card_version+1))"
 admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$retry_org' AND user_id='$other';" >/dev/null
+assign_receipt_card
 removal_rejoined="$(removal_state)"
 test "$(removal_request removal-replay)" = 204
 test "$removal_rejoined" = "$(removal_state)"

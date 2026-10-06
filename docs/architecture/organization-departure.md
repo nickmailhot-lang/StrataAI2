@@ -112,3 +112,15 @@ the other member's cookie. It requires session_unavailable/401, no actor or
 Organization identifier disclosure and unchanged membership/audit/receipt state
 before any subsequent valid command. This complements the API-host account
 switch case; actual CI execution remains pending.
+
+The mandatory container fixture now creates and assigns a real Card before
+departure/removal receipt tests. Receipt INSERT denial and observed session
+expiry after receipt insertion must preserve membership, assignment, full Card
+record, immutable Work event fields, stream counters, audit and receipt state.
+Worker delivery markers are excluded from the event comparison because delivery
+can advance independently. Removal checks also compare account/session rows and
+refuse cookie/private disclosure. Successful concurrent commands remove the
+assignment and advance the Card version once. After rejoin, an actual API
+assignment is restored; original receipt replay must preserve it unchanged.
+Cleanup drops the temporary trigger and restores session expiry on failure.
+Bash syntax passes; actual container execution remains pending CI.
