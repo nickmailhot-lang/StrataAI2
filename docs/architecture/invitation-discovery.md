@@ -10,6 +10,29 @@ New acceptances store `accepted_by_user_id` in the invitation and routing projec
 
 Database wall time is checked after invitation row waits and again when consuming the invitation. A failed audit, stale session or expired invitation rolls the owning transaction back. The MUI page at `/app/invitations` provides loading, empty, paging, refresh and keyboard acceptance states. A 15-second deadline bounds transport and body parsing; uncertain acceptance preserves the same invitation ID for a safe explicit retry. The client validates acknowledgment ID, Organization, surface and role before displaying success or an access link. Unmount fences late completion. Revoked sessions clear the view and return to sign-in.
 
+An internal Organization invitation that activates a new or inactive membership
+also writes `ORGANIZATION_MEMBER_ADDED` in that same transaction. Its subject is
+the persisted `OrganizationMembership` ID, its actor is the accepting user, and
+its safe metadata is `{}`. It is separate from `INVITATION_ACCEPTED`. An already
+active membership, Board invitation, Portal invitation or completed natural-ID
+retry does not publish another member-added audit. Failure to find the actual
+active membership or to append this audit refuses and rolls back acceptance.
+The audit is a prerequisite for canonical member event delivery; it does not yet
+enter the Organization metadata journal or establish live browser delivery.
+
+The required exact-image fixture now fails this second audit insertion after
+acceptance and its first audit have been written, compares complete invitation,
+routing, membership, Portal and audit state, then checks concurrent acceptance,
+restart retry and body-proof acceptance against the actual membership ID. These
+new persistence assertions await CI execution. Demo's audit adapter remains a
+no-op, so Demo API tests cannot prove persisted audit publication.
+
+For this audit increment, the Release solution build passed with zero warnings
+and errors, all 42 selected invitation API regressions passed locally, and the
+exact-image script passed Bash syntax validation. These source checks cover
+recipient acceptance, Board/Portal separation and retry behavior; they do not
+replace the pending real PostgreSQL second-publication rollback check.
+
 An unconfirmed acceptance is held separately from the live pending page. If a committed invitation disappears on refresh, a generic explicit retry remains available with the original ID and expected acknowledgment fields. The retry panel displays no cached Organization label or grant details. Other acceptance controls wait until that attempt is resolved. A current authorization denial clears the attempt; a revoked/refused discovery session clears its details. The added component regressions and keyboard browser scenario confirm lost acknowledgment → empty refresh → same-ID retry, plus permission/session denial. The 143-test web suite, typecheck/lint and targeted browser check passed locally; release validation of this follow-up is pending.
 
 Required exact-image CI covers one-connection reads/acceptance, audit failure rollback, concurrent duplicates, durable restart, bounded 101-row paging and revocation during an observed account-lock wait. API tests cover newly verified discovery, wrong account rejection, issuer revocation and Portal separation. Browser coverage loses a committed acceptance acknowledgment, retries the same ID using keyboard controls and verifies one authorized Organization entry. [Commit 8bd9586 CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36821144324) passed all nine jobs with three retained exact-SHA artifacts, including these release fixtures and the ten-test browser suite.

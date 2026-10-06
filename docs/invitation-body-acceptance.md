@@ -6,4 +6,14 @@ The endpoint delegates to the existing invitation command: exact verified email,
 
 API-host cases cover both surfaces, wrong accounts, anonymous requests, malformed proof, consumed tokens and removed membership. The mandatory exact-image invitation fixture supplies an isolated, administratively hashed proof without revealing a production token through HTTP, then checks both surfaces, recipient binding, one-use behavior and a single acceptance audit.
 
-Validation: warnings-as-errors solution build and fixture shell syntax pass locally. Windows Application Control prevents local API test execution; required Linux CI executes those cases. Release-image verification remains pending for this change. This is an endpoint prerequisite: email publication/Worker delivery, recipient link UI, closed-registration signup, administrative invitation history and the remaining onboarding acceptance criteria are unfinished. No ticket is complete based on this endpoint alone.
+Current validation: the Release solution build passed with zero warnings and
+errors, and 42 selected invitation API regressions passed locally, including
+body-proof acceptance and Board/Portal separation. The fixture passed Bash
+syntax validation. Body-proof activation of internal Organization membership
+now also writes the actual membership's `ORGANIZATION_MEMBER_ADDED` audit;
+Portal and Board invitations retain their separate behavior. See
+[the acceptance audit contract](architecture/invitation-discovery.md) for its
+transaction and remaining event-delivery boundary. Current exact-image
+persistence checks remain pending. No ticket is complete based on this endpoint
+or these source checks alone; consult current acceptance records for the
+remaining onboarding requirements.

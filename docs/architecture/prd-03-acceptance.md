@@ -95,7 +95,18 @@ implemented with native evidence pending; terminal deletion remains incomplete; 
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**18%**, a planning estimate rather than a count of unchecked rows. Automatic
+**16%**, a planning estimate rather than a count of unchecked rows. Automatic
 deletion discovery passed restricted PostgreSQL CI at `bfa46b4`; current native
 terminal/two-client recovery, Demo terminal processing and applicable mutation
 performance evidence remain required.
+
+Internal Organization invitation acceptance now appends a distinct
+`ORGANIZATION_MEMBER_ADDED` audit using the actual persisted membership ID and
+accepting actor when it activates a new or inactive membership. Completed
+invitation retries, existing active membership and Board/Portal acceptance do
+not duplicate that addition. Acceptance and both audits share the existing
+owning transaction. The required exact-image invitation fixture includes a
+second-publication failure rollback check and canonical attribution assertions;
+execution remains pending. This is an audit prerequisite only: member and
+invitation source projection, Worker readiness, protected replay, live clients
+and Demo audit/event parity remain unfinished. It does not close this ticket.

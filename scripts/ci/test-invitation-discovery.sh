@@ -6,7 +6,7 @@ scratch="$(mktemp -d)"; pids=()
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
-  admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON audit_events TO strataai_api_runtime; DROP TRIGGER IF EXISTS ci_member_added_publication_failure ON audit_events; DROP FUNCTION IF EXISTS public.ci_member_added_publication_failure();' >/dev/null
   docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api >/dev/null
   rm -rf "$scratch"
 }
@@ -26,7 +26,7 @@ state() { admin "SELECT jsonb_build_object('invite',(SELECT to_jsonb(i) FROM inv
   'route',(SELECT to_jsonb(r) FROM invitation_routes r WHERE invitation_id='$id'),
   'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY id) FROM organization_members m WHERE tenant_id='$org' AND user_id='$user'),
   'portal',(SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM portal_access p WHERE tenant_id='$org' AND user_id='$user'),
-  'audits',(SELECT count(*) FROM audit_events WHERE event_type='INVITATION_ACCEPTED' AND entity_id='$id'))::text;"; }
+  'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org' AND event_type IN ('INVITATION_ACCEPTED','ORGANIZATION_MEMBER_ADDED')))::text;"; }
 for surface in INTERNAL PORTAL; do
   role=MEMBER; if test "$surface" = PORTAL; then role=OWNER; fi
   test "$(post owner "/organizations/$org/invitations" "$(jq -nc --arg email "$email" --arg surface "$surface" --arg role "$role" '{email:$email,surface:$surface,targetRole:$role}')")" = 201
@@ -40,6 +40,16 @@ for surface in INTERNAL PORTAL; do
   test "$(post recipient "/me/invitations/$id/accept" '{}')" = 503
   test "$before" = "$(state)"
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+  if test "$surface" = INTERNAL; then
+    # Fail the second publication after acceptance was written in the owning
+    # transaction. Both acceptance and the actual membership must roll back.
+    admin "CREATE FUNCTION public.ci_member_added_publication_failure() RETURNS trigger LANGUAGE plpgsql AS \$\$ BEGIN RAISE EXCEPTION 'Injected member-added publication failure'; END; \$\$;
+      REVOKE ALL ON FUNCTION public.ci_member_added_publication_failure() FROM PUBLIC;
+      CREATE TRIGGER ci_member_added_publication_failure BEFORE INSERT ON audit_events FOR EACH ROW WHEN (NEW.event_type='ORGANIZATION_MEMBER_ADDED') EXECUTE FUNCTION public.ci_member_added_publication_failure();" >/dev/null
+    test "$(post recipient "/me/invitations/$id/accept" '{}')" = 503
+    test "$before" = "$(state)"
+    admin 'DROP TRIGGER ci_member_added_publication_failure ON audit_events; DROP FUNCTION public.ci_member_added_publication_failure();' >/dev/null
+  fi
   for n in 1 2 3; do
     curl --max-time 60 --silent --show-error -b "$scratch/recipient.cookies" -H 'X-StrataAI-Request: 1' -X POST -o "$scratch/ack-$n" -w '%{http_code}' "$BASE_URL/me/invitations/$id/accept" > "$scratch/status-$n" &
     pids+=($!)
@@ -48,6 +58,9 @@ for surface in INTERNAL PORTAL; do
   for n in 1 2 3; do test "$(cat "$scratch/status-$n")" = 200; cmp "$scratch/ack-1" "$scratch/ack-$n"; done
   test "$(admin "SELECT count(*) FROM audit_events WHERE event_type='INVITATION_ACCEPTED' AND entity_id='$id';")" = 1
   test "$(admin "SELECT accepted_by_user_id FROM invitations WHERE id='$id';")" = "$user"
+  test "$(admin "SELECT count(*) FROM audit_events a JOIN organization_members m ON m.tenant_id=a.tenant_id AND m.id=a.entity_id
+    WHERE a.tenant_id='$org' AND a.event_type='ORGANIZATION_MEMBER_ADDED' AND a.entity_type='OrganizationMembership' AND a.actor_id='$user'
+    AND m.user_id='$user' AND a.safe_metadata='{}'::jsonb;")" = 1
   wrong_user="$(jq -r '.user.id' "$scratch/wrong.user")"
   if admin "UPDATE invitations SET accepted_by_user_id='$wrong_user' WHERE id='$id';"; then echo 'Completed acceptance attribution was rewritten'; exit 1; fi
   if test "$surface" = INTERNAL; then
@@ -123,6 +136,9 @@ for surface in INTERNAL PORTAL; do
   test "$(post recipient /invitations/accept "$body_json")" = 400
   test "$(post recipient /invitations/review "$body_json")" = 400
   test "$(admin "SELECT count(*) FROM audit_events WHERE event_type='INVITATION_ACCEPTED' AND entity_id='$body_id';")" = 1
+  test "$(admin "SELECT count(*) FROM audit_events a JOIN organization_members m ON m.tenant_id=a.tenant_id AND m.id=a.entity_id
+    WHERE a.tenant_id='$body_org' AND a.event_type='ORGANIZATION_MEMBER_ADDED' AND a.entity_type='OrganizationMembership'
+    AND a.actor_id='$user' AND m.user_id='$user' AND a.safe_metadata='{}'::jsonb;")" = 1
 done
 unset body_token body_hash body_json
 echo 'Exact-image body invitation proof: recipient binding, both surfaces, token-free acknowledgment and one-use acceptance passed.'

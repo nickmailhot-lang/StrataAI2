@@ -368,6 +368,8 @@ public sealed class InvitationService(
 
         var priorBoardMembership = invitation.BoardTarget is { } beforeTarget
             ? await work.FindBoardMemberAsync(beforeTarget.BoardId, actorUserId, cancellationToken) : null;
+        var priorOrganizationMembership = invitation.BoardTarget is null && invitation.Surface == InvitationSurface.Internal
+            ? await organizationStore.FindMembershipAsync(invitation.OrganizationId, actorUserId, cancellationToken) : null;
         var result = await invitationStore.AcceptAsync(
             invitation.TokenHash,
             actorUserId,
@@ -392,6 +394,16 @@ public sealed class InvitationService(
             result.Invitation.Id,
             correlationId,
             cancellationToken);
+
+        if (invitation.BoardTarget is null && invitation.Surface == InvitationSurface.Internal
+            && priorOrganizationMembership is not { Active: true })
+        {
+            var membership = await organizationStore.FindMembershipAsync(invitation.OrganizationId, actorUserId, cancellationToken);
+            if (membership is not { Active: true } || membership.Id == Guid.Empty || membership.Version < 1)
+                return InvitationOperation<AcceptedInvitation>.Failure("invitation_storage_unavailable");
+            await organizationStore.AppendAuditAsync(invitation.OrganizationId, actorUserId,
+                "ORGANIZATION_MEMBER_ADDED", "OrganizationMembership", membership.Id, correlationId, cancellationToken);
+        }
 
         if (targetBoard is not null)
         {
