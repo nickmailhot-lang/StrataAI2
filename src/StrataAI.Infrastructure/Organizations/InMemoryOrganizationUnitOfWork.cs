@@ -7,7 +7,8 @@ namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, ICommandActorAuthorization actors,
     InMemoryAccountOrganizationGate gate, DemoWorkTransactionScope scope,
-    IEnumerable<IDemoWorkTransactionParticipant> participants) : IOrganizationUnitOfWork
+    IEnumerable<IDemoWorkTransactionParticipant> participants,
+    IEnumerable<IDemoOrganizationTransactionParticipant> organizationParticipants) : IOrganizationUnitOfWork
 {
     public async Task<OrganizationOperation<T>> ExecuteAsync<T>(
         Guid organizationId, Guid actorUserId, Guid? targetUserId, bool creating,
@@ -26,8 +27,8 @@ internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, I
                 {
                     // Both gates exclude account cleanup and Work mutations while
                     // capturing/restoring the cross-store Organization command.
-                    rollback = participants.Prepend((IDemoWorkTransactionParticipant)store)
-                        .Select(participant => participant.CaptureRollback()).ToArray();
+                    rollback = organizationParticipants.Select(participant => participant.CaptureRollback())
+                        .Concat(participants.Select(participant => participant.CaptureRollback())).ToArray();
                     if (!creating && (await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
                         return OrganizationOperation<T>.Failure("organization_not_found");
                     if (!await actors.VerifyAsync(actorUserId, cancellationToken))

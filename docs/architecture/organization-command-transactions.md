@@ -17,8 +17,8 @@ separate: reacquiring the account gate inside navigation would deadlock. Both
 remain process-local and provide no cross-host or durable database evidence.
 
 Within those gates, the Organization command enters the owning Work scope and
-captures Organization records/memberships plus registered Work rollback
-participants. These include Work records, assignment state, events, notifications,
+captures Organization records/memberships, invitation rows, creation retry
+receipts and Portal grants plus registered Work rollback participants. These include Work records, assignment state, events, notifications,
 mention quotas, reminder rows and Demo reminder jobs. Failure results, exceptions,
 cancellation and a refused final actor check restore the snapshots in reverse
 order before releasing the gates. Successful departures intentionally retire the
@@ -51,8 +51,16 @@ without changing Organization or Board state. Ten-second observation bounds
 make a deadlock a test failure rather than an unbounded wait. Native execution
 remains required for this case as well.
 
-Additional native coverage is still needed for reminder job rollback. Specialized account lifecycle
-cleanup, invitation writes and direct store mutations retain their own boundaries;
+Invitation stores are Organization-only participants: they are captured while
+both gates are held, rather than by Work-only commands that do not exclude
+identity operations. Nine new invitation cases require creation/receipt rollback
+on final actor refusal, exceptions and cancellation, same-key retry/replay, and
+Internal/Portal/Board token-and-grant restoration after post-consumption refusal.
+They compile but await native runtime execution.
+
+Additional native coverage is still needed for reminder job rollback. Specialized
+account lifecycle cleanup, identity-owned registration with invitations and
+trusted direct store mutations retain their own boundaries;
 this change does not establish universal Demo transaction integrity. Production
 PostgreSQL retains its owning transaction, final actor check and rollback behavior.
 Full PRD-03 command integrity and acceptance remain incomplete.

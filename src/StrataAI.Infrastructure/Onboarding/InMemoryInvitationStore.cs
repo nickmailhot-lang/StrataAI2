@@ -6,12 +6,23 @@ using StrataAI.Application.WorkManagement;
 namespace StrataAI.Infrastructure.Onboarding;
 
 internal sealed class InMemoryInvitationStore(
-    IOrganizationStore organizationStore, IClock clock, IWorkManagementStore work) : IInvitationStore, IInvitationHistoryStore
+    IOrganizationStore organizationStore, IClock clock, IWorkManagementStore work) : IInvitationStore, IInvitationHistoryStore,
+    StrataAI.Infrastructure.Organizations.IDemoOrganizationTransactionParticipant
 {
     private readonly object _sync = new();
     private readonly Dictionary<string, InvitationRecord> _byToken =
         new(StringComparer.Ordinal);
     private readonly HashSet<(Guid OrganizationId, Guid UserId, string Relationship)> _portalAccess = [];
+    public Action CaptureRollback()
+    {
+        lock (_sync)
+        {
+            var invitations = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_byToken);
+            var receipts = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_creationReplays);
+            var portal = StrataAI.Infrastructure.WorkManagement.DemoRollback.Set(_portalAccess);
+            return () => { lock (_sync) { invitations(); receipts(); portal(); } };
+        }
+    }
     public Task<bool> HasActivePortalAccessAsync(Guid organizationId, Guid userId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

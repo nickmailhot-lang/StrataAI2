@@ -14,7 +14,9 @@ public static class OnboardingRegistration
     {
         if (runtime.Mode == RuntimeMode.Demo)
         {
-            services.AddSingleton<IInvitationStore, InMemoryInvitationStore>();
+            services.AddSingleton<InMemoryInvitationStore>();
+            services.AddSingleton<IInvitationStore>(provider => provider.GetRequiredService<InMemoryInvitationStore>());
+            services.AddSingleton<StrataAI.Infrastructure.Organizations.IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryInvitationStore>());
         }
         else
         {

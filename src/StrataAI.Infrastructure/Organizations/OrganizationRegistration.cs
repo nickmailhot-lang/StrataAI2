@@ -15,7 +15,9 @@ public static class OrganizationRegistration
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();
-            services.AddSingleton<IOrganizationStore, InMemoryOrganizationStore>();
+            services.AddSingleton<InMemoryOrganizationStore>();
+            services.AddSingleton<IOrganizationStore>(provider => provider.GetRequiredService<InMemoryOrganizationStore>());
+            services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationStore>());
             services.AddSingleton<IOrganizationUnitOfWork, InMemoryOrganizationUnitOfWork>();
         }
         else

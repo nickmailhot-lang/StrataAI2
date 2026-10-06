@@ -283,7 +283,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
         Task.CompletedTask;
 }
 
-internal sealed partial class InMemoryOrganizationStore : StrataAI.Infrastructure.WorkManagement.IDemoWorkTransactionParticipant
+internal sealed partial class InMemoryOrganizationStore : IDemoOrganizationTransactionParticipant
 {
     public Action CaptureRollback()
     {
