@@ -212,6 +212,12 @@ for (const width of [1280, 390]) {
     // Bind the native input after those reads, with freshly admitted geometry.
     await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
     await expect(handle).toBeEnabled();
+    await handle.hover();
+    await expect.poll(() => handle.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+      return !!hit && node.contains(hit);
+    })).toBe(true);
     const [sourceBox, canvasBox] = await Promise.all([handle.boundingBox(), canvas.boundingBox()]);
     expect(sourceBox).not.toBeNull(); expect(canvasBox).not.toBeNull();
     const left = Math.max(0, canvasBox!.x), right = Math.min(width, canvasBox!.x + canvasBox!.width);
@@ -220,6 +226,7 @@ for (const width of [1280, 390]) {
     await expect(handle).toBeEnabled();
     await page.mouse.down();
     await page.mouse.move(sourceBox!.x + sourceBox!.width / 2 + 12, dragY);
+    await expect(handle).toHaveAttribute('aria-pressed', 'true');
     await page.mouse.move(goRight ? right - 12 : left + 12, dragY, { steps: 12 });
     await expect(handle).toHaveAttribute('aria-pressed', 'true');
     const laterEmptyColumn = async () => {
