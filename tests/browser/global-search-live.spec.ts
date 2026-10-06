@@ -144,7 +144,9 @@ for (const width of [1280, 390]) {
     await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
     await expect(page.getByText(/Due Jan 2, 2040, 09:30/)).toBeVisible();
     await expect(page.getByText(/Due Jan 1/)).toHaveCount(0);
-    let boardVersion = (await (await context.request.get(`/boards/${board}`)).json()).version;
+    const boardRead = await context.request.get(`/boards/${board}`);
+    expect(boardRead.status()).toBe(200);
+    let boardVersion = (await boardRead.json()).board.version;
     for (const [timezone, deadline] of [
       ['Pacific/Honolulu', /Due Jan 1, 2040, 14:30/],
       ['UTC', /Due Jan 2, 2040, 00:30/],
@@ -154,8 +156,13 @@ for (const width of [1280, 390]) {
       expect(policy.status()).toBe(200); boardVersion = (await policy.json()).board.version;
       await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
       await expect(page.getByText(deadline)).toBeVisible();
-      const persisted = await context.request.get(`/cards/${card}`);
-      expect(persisted.status()).toBe(200); expect(new Date((await persisted.json()).dueAt).toISOString()).toBe('2040-01-02T00:30:00.000Z');
+      const persisted = await context.request.get(`/boards/${board}`);
+      expect(persisted.status()).toBe(200);
+      const snapshot = await persisted.json();
+      const persistedCard = snapshot.lists.flatMap((entry: { cards: { id: string; dueAt: string }[] }) => entry.cards)
+        .find((entry: { id: string }) => entry.id === card);
+      expect(persistedCard).toBeDefined();
+      expect(new Date(persistedCard.dueAt).toISOString()).toBe('2040-01-02T00:30:00.000Z');
     }
   });
 }
