@@ -18,7 +18,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const invitation = await context.request.post(`/organizations/${org}/invitations`, { headers, data: { email, surface: 'INTERNAL', targetRole: 'ADMIN' } }); expect(invitation.status()).toBe(201);
       expect((await recipient.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
       await page.goto(`/app/${org}`);
-      await page.getByRole('link', { name: 'Organization members', exact: true }).focus(); await page.keyboard.press('Enter');
+      // Initial live reconciliation can replace the home controls; activate only
+      // after current access is checked, through the keyboard locator itself.
+      await expect(page.getByRole('status')).toHaveText('Current Board access checked.');
+      const members = page.getByRole('link', { name: 'Organization members', exact: true });
+      await members.focus(); await expect(members).toBeFocused(); await members.press('Enter');
+      await expect(page).toHaveURL(new RegExp(`/app/${org}/members$`));
       const action = page.getByRole('button', { name: 'Review removal of Invited administrator' }); await expect(action).toBeVisible();
       await action.focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Cancel removal' })).toBeFocused();
