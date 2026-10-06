@@ -10,6 +10,7 @@ public static partial class WorkManagementEndpoints
         MapLabelEndpoints(app);
         MapBoardCardFilterEndpoints(app);
         MapGlobalSearchEndpoints(app);
+        MapNavigationInteractionEndpoints(app);
         MapAssignableBoardMembersEndpoints(app);
         MapBoardStarPreferenceEndpoints(app);
         MapBoardCopyEndpoints(app);
@@ -779,6 +780,8 @@ public static partial class WorkManagementEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_navigation" => Problem(400, errorCode, "Use the current navigation target and revision."),
+            "navigation_unavailable" => Problem(404, errorCode, "This navigation observation is unavailable."),
             "activity_not_found" => Problem(404, errorCode, "This activity is unavailable."),
             "invalid_activity_cursor" => Problem(400, errorCode, "Reload activity or use this view's current continuation."),
             "activity_unavailable" => Problem(503, errorCode, "Activity could not be confirmed. Try again."),
