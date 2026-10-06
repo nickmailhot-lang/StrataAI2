@@ -412,7 +412,10 @@ the adapters and application boundary. This maps to
 `503 organization_storage_unavailable` and makes the owning command roll back
 every effect. Scope misuse, unexpected faults and cancellation are not caught by
 that mapping. All seven focused API-host publication/rollback checks passed
-locally. The exact-image command fixture now lets the release Worker consume
+locally.
+The repaired full .NET CI job passed all 514 API-host and 677 domain checks at
+`2b261f9`: [job 112423617351](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37508622106/job/112423617351).
+The exact-image command fixture now lets the release Worker consume
 the product-published root, requires actual graph completion and leased terminal
 event readiness, and checks unchanged original-key HTTP replay after completion.
 It never stages terminal state or marks jobs successful itself. Runtime execution
@@ -489,3 +492,17 @@ terminal acknowledgment recovery. CI suspends automatic processing during its
 intentional pending/rollback scenarios, then enables it for this runtime proof.
 Compilation and shell checks are recorded separately from real PostgreSQL and
 exact-image execution; current CI proof remains required.
+
+At `39b5942`, the restricted graph/observation/terminal-discovery checks passed
+in [PostgreSQL job 112431137680](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37510807056/job/112431137680).
+The overall job then failed while seeding the new 105-root fixture because its
+User insert omitted required timestamps. The fixture now supplies timestamps for
+both User and Organization; the full discovery contract still requires a passing
+rerun. No product schema constraint was relaxed.
+
+The desktop/phone deletion fixture also keeps a second authorized administrator
+on the normal Organization page while the Owner requests deletion. It requires
+automatic surface denial, removal of Organization/Board content and zero document
+reloads. This proves a distinct acceptance path from the initiating Owner's
+independent status route when executed. Current native runtime evidence is pending;
+it does not establish durable terminal-event consumption or disconnected recovery.

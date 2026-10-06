@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
-  test(`PRD-03-WS-FR-009/TC-04/05/06/07/11/12: Owner confirms original deletion request at ${viewport.width}px`, async ({ page, context, browser }) => {
+  test(`PRD-03-WS-FR-009/010/TC-04/05/06/07/08/10/11/12: Owner request recovery and other-client withdrawal at ${viewport.width}px`, async ({ page, context, browser }) => {
     await page.setViewportSize(viewport);
     const admin = await browser.newContext({ baseURL: test.info().project.use.baseURL });
     const headers = { 'X-StrataAI-Request': '1' };
@@ -29,6 +29,13 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(adminPage.getByText('Only a current Organization Owner can request deletion.')).toBeVisible();
       await expect(adminPage.getByRole('button', { name: 'Review deletion request', exact: true })).toHaveCount(0);
       await expect(adminPage.getByText('Owner deletion council', { exact: true })).toHaveCount(0);
+      // Keep a second authorized client on normal Organization content while
+      // the Owner uses the independent operation route. It must withdraw that
+      // content without a manual navigation/reload after deletion acceptance.
+      await adminPage.goto(`/app/${org}`);
+      await expect(adminPage.getByText('Deletion access Board', { exact: true })).toBeVisible();
+      let administratorReloads = 0;
+      adminPage.on('request', request => { if (request.isNavigationRequest() && request.frame() === adminPage.mainFrame()) administratorReloads++; });
       await page.goto(`/app/${org}`);
       await expect(page.getByRole('status').filter({ hasText: /^Current Board access checked\.$/ })).toBeVisible();
       const link = page.getByRole('link', { name: 'Request Organization deletion', exact: true });
@@ -58,6 +65,10 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await admin.request.get(`/organizations/${org}`)).status()).toBe(404);
       expect((await context.request.get(`/boards/${boardId}`)).status()).toBe(404);
       expect((await admin.request.get(`/boards/${boardId}`)).status()).toBe(404);
+      await expect(adminPage.getByText('Access to this Organization surface is unavailable.', { exact: true })).toBeVisible({ timeout: 15_000 });
+      await expect(adminPage.getByText('Owner deletion council', { exact: true })).toHaveCount(0);
+      await expect(adminPage.getByText('Deletion access Board', { exact: true })).toHaveCount(0);
+      expect(administratorReloads).toBe(0);
       // Refresh must recover the same reference without reopening ordinary
       // Organization admission or inventing another destructive request.
       await page.reload(); await expect(retry).toBeFocused();

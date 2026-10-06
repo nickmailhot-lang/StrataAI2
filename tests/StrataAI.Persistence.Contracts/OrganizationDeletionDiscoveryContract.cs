@@ -12,8 +12,8 @@ internal static class OrganizationDeletionDiscoveryContract
         static Guid Id(int value) => Guid.Parse($"d0930000-0000-4000-8000-{value:000000000000}");
         var actor = Guid.NewGuid();
         await using (var seed = new NpgsqlCommand("""
-            INSERT INTO users(id,email,email_normalized,display_name,status,password_hash)
-             VALUES(@actor,@email,upper(@email),'Discovery fixture','ACTIVE','unused-contract-hash');
+            INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at)
+             VALUES(@actor,@email,upper(@email),'Discovery fixture','ACTIVE','unused-contract-hash',now(),now());
             """, admin))
         {
             seed.Parameters.AddWithValue("actor", actor); seed.Parameters.AddWithValue("email", $"deletion-discovery-{actor:N}@example.test");
@@ -22,7 +22,8 @@ internal static class OrganizationDeletionDiscoveryContract
         for (var i = 1; i <= 105; i++)
         {
             await using var seed = new NpgsqlCommand("""
-                INSERT INTO organizations(id,name,owner_user_id,status,version) VALUES(@tenant,'Discovery fixture',@actor,'DELETING',2);
+                INSERT INTO organizations(id,name,owner_user_id,status,version,created_at,updated_at)
+                 VALUES(@tenant,'Discovery fixture',@actor,'DELETING',2,now(),now());
                 INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),@tenant,@actor,'OWNER','ACTIVE');
                 INSERT INTO organization_deletion_requests(tenant_id,request_id,actor_id,accepted_version,correlation_id)
                  VALUES(@tenant,@request,@actor,2,'discovery-fixture');
