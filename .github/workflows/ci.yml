@@ -527,6 +527,9 @@ jobs:
       - name: Authorized global search, literal matching, cursor binding and archived scope through exact release images
         run: bash scripts/ci/test-global-search.sh
 
+      - name: Account-bound navigation observations through exact release proxy and API
+        run: bash scripts/ci/test-navigation-observations.sh
+
       - name: Durable work retry keys against exact release API
         run: scripts/ci/test-work-idempotency.sh
 
