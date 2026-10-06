@@ -98,6 +98,16 @@ DO $$ DECLARE affected integer; mutation text; BEGIN
 END $$;
 UPDATE attachments SET scan_status='CLEAN',scanned_at=now(),updated_at=now(),version=version+1
  WHERE id='04100000-0000-0000-0000-000000000052';
+-- Ordinary callers must retain archive-first deletion, without invoking the
+-- private Organization Worker capability (permission errors are not accepted).
+DO $$ BEGIN
+ BEGIN
+  UPDATE attachments SET lifecycle_state='DELETED',deleted_by=uploader_id,
+   deleted_at=now(),updated_at=now(),version=version+1
+   WHERE id='04100000-0000-0000-0000-000000000052';
+  RAISE EXCEPTION 'Ordinary caller bypassed attachment archive-first deletion';
+ EXCEPTION WHEN check_violation THEN NULL; END;
+END $$;
 UPDATE attachments SET lifecycle_state='ARCHIVED',archived_at=now(),updated_at=now(),version=version+1
  WHERE id='04100000-0000-0000-0000-000000000052';
 UPDATE attachments SET lifecycle_state='DELETED',deleted_by=uploader_id,deleted_at=now(),updated_at=now(),version=version+1

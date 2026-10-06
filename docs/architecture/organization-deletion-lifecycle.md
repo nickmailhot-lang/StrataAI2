@@ -274,7 +274,14 @@ prior tombstones. It injects expiry after continuation insertion, verifies full
 rollback, duplicate/reclaim recovery, drains real page/event handlers through
 terminal readiness after actor deactivation, and checks preserved prior history
 and provider metadata. Compilation passed with zero warnings/errors; this
-revision's runtime execution is pending CI. Selected preview-backed cover/image
+revision's runtime execution is pending CI. The initial PostgreSQL run exposed
+an ordinary attachment archive regression: a combined SQL predicate attempted
+the private Worker capability check under an ordinary caller. The trigger now
+uses a separate procedural Worker/transition branch, preserving the private
+capability grants. The existing archive/delete storage contract also checks that
+ordinary direct deletion fails with the lifecycle constraint, rather than a
+capability permission error. Runtime confirmation of the correction is pending.
+Selected preview-backed cover/image
 fixtures, large mutation throughput, HTTP/product integration and live browser
 completion require further evidence before PRD acceptance.
 

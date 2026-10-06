@@ -58,9 +58,14 @@ BEGIN
  END IF;
  -- Organization completion can directly tombstone an active source while
  -- preserving its prior archive history, using ONLY the leased Worker scope.
- IF OLD.lifecycle_state='ACTIVE' AND NEW.lifecycle_state='DELETED' AND session_user='strataai_worker_runtime'
-  AND NEW.archived_at IS NOT DISTINCT FROM OLD.archived_at AND NEW.deleted_at=NEW.updated_at
-  AND NEW.deleted_by IS NOT NULL AND public.organization_deletion_page_is_live(NEW.tenant_id,NEW.deleted_by) THEN RETURN NEW; END IF;
+ -- Keep the private capability call in a separate procedural branch: SQL
+ -- boolean expressions may evaluate it before unrelated transition predicates.
+ IF OLD.lifecycle_state='ACTIVE' AND NEW.lifecycle_state='DELETED' AND session_user='strataai_worker_runtime' THEN
+  IF NEW.archived_at IS NOT DISTINCT FROM OLD.archived_at AND NEW.deleted_at=NEW.updated_at
+   AND NEW.deleted_by IS NOT NULL THEN
+   IF public.organization_deletion_page_is_live(NEW.tenant_id,NEW.deleted_by) THEN RETURN NEW; END IF;
+  END IF;
+ END IF;
  IF OLD.lifecycle_state='ACTIVE' AND NEW.lifecycle_state='ARCHIVED' AND NEW.archived_at=NEW.updated_at
   AND NEW.deleted_at IS NULL AND NEW.deleted_by IS NULL THEN RETURN NEW; END IF;
  IF OLD.lifecycle_state='ARCHIVED' AND NEW.lifecycle_state='ACTIVE' AND NEW.archived_at=OLD.archived_at
