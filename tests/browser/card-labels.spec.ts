@@ -135,7 +135,14 @@ for (const width of [1280, 390]) {
       await expect(filters.getByText('Filter change acknowledged.', { exact: true })).toBeVisible();
       expect(filterChanges).toHaveLength(2); expect(filterChanges[1]).toEqual(filterChanges[0]); await expect(apply).toBeFocused();
       await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
-      await filters.getByRole('combobox', { name: 'Match filters' }).press('Enter');
+      const matchMode = filters.getByRole('combobox', { name: 'Match filters', exact: true });
+      // Reconciliation can disable a field between locating it and keydown.
+      // Verify menu admission before selecting; applied commands remain single.
+      await expect(async () => {
+        await expect(matchMode).toBeEnabled({ timeout: 500 });
+        if (await matchMode.getAttribute('aria-expanded') !== 'true') await matchMode.press('Enter', { timeout: 500 });
+        await expect(matchMode).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
+      }).toPass({ timeout: 5_000 });
       await page.getByRole('option', { name: 'Match ANY', exact: true }).press('Enter');
       await expect(apply).toBeEnabled(); await apply.press('Enter');
       await expect(filters.getByRole('link', { name: 'Labeled work — Planning', exact: true })).toBeVisible();
