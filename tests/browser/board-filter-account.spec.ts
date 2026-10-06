@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
 
 for (const width of [1280, 390]) {
   test(`PRD-16 idle Board filter account withdrawal on a still-viewable PUBLIC Board at ${width}px`, async ({ page, context, browser }) => {
@@ -29,7 +30,11 @@ for (const width of [1280, 390]) {
       const beforeReply = await observer.request.get(`/boards/${board}`); expect(beforeReply.status()).toBe(200); const before = await beforeReply.json();
       let changes = 0;
       page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === `/boards/${board}/cards/filter-change`) changes++; });
-      await page.goto(`/app/${org}/boards/${board}`);
+      const boardPath = `/app/${org}/boards/${board}`;
+      const reads = trackBoardReads(page, board, boardPath);
+      await page.goto(boardPath);
+      await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
       const trigger = page.getByRole('button', { name: 'Filter Board Cards', exact: true }); await expect(trigger).toBeEnabled(); await trigger.press('Enter');
       const dialog = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
       const keyword = dialog.getByRole('textbox', { name: 'Card keyword', exact: true }); await expect(keyword).toBeEnabled(); await keyword.fill('Personal roof');
