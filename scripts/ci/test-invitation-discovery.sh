@@ -142,6 +142,37 @@ for surface in INTERNAL PORTAL; do
 done
 unset body_token body_hash body_json
 echo 'Exact-image body invitation proof: recipient binding, both surfaces, token-free acknowledgment and one-use acceptance passed.'
+# PRD-03-TC-07/10: real invitation commands distinguish an existing active
+# membership from a subsequent reactivation, without inventing a new subject.
+member_id="$(admin "SELECT id FROM organization_members WHERE tenant_id='$body_org' AND user_id='$user';")"
+added_state() { admin "SELECT jsonb_agg(to_jsonb(a) ORDER BY id)::text FROM audit_events a
+  WHERE tenant_id='$body_org' AND event_type='ORGANIZATION_MEMBER_ADDED';"; }
+original_added="$(added_state)"
+test "$(post owner "/organizations/$body_org/invitations" "$(jq -nc --arg email "$email" '{email:$email,surface:"INTERNAL",targetRole:"ADMIN"}')")" = 201
+active_invite="$(jq -r '.id' "$scratch/response")"
+test "$(post recipient "/me/invitations/$active_invite/accept" '{}')" = 200
+test "$original_added" = "$(added_state)"
+test "$(admin "SELECT count(*) FROM organization_members WHERE tenant_id='$body_org' AND id='$member_id' AND user_id='$user' AND status='ACTIVE' AND role='ADMIN' AND version=2;")" = 1
+removal_key="$(cat /proc/sys/kernel/random/uuid)"
+test "$(curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+  -H "Idempotency-Key: $removal_key" -X DELETE -o "$scratch/removal" -w '%{http_code}' \
+  "$BASE_URL/organizations/$body_org/members/$user?expectedVersion=2")" = 204
+test "$(admin "SELECT count(*) FROM organization_members WHERE tenant_id='$body_org' AND id='$member_id' AND status='REMOVED' AND version=3;")" = 1
+test "$(post recipient "/me/invitations/$active_invite/accept" '{}')" = 200
+test "$original_added" = "$(added_state)"
+test "$(admin "SELECT count(*) FROM organization_members WHERE tenant_id='$body_org' AND id='$member_id' AND status='REMOVED' AND version=3;")" = 1
+test "$(post owner "/organizations/$body_org/invitations" "$(jq -nc --arg email "$email" '{email:$email,surface:"INTERNAL",targetRole:"MEMBER"}')")" = 201
+restored_invite="$(jq -r '.id' "$scratch/response")"
+test "$(post recipient "/me/invitations/$restored_invite/accept" '{}')" = 200
+test "$(admin "SELECT count(*) FROM organization_members WHERE tenant_id='$body_org' AND id='$member_id' AND user_id='$user' AND status='ACTIVE' AND role='MEMBER' AND version=4;")" = 1
+test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$body_org' AND event_type='ORGANIZATION_MEMBER_ADDED'
+  AND entity_type='OrganizationMembership' AND entity_id='$member_id' AND actor_id='$user' AND safe_metadata='{}'::jsonb;")" = 2
+restored_added="$(added_state)"
+test "$(jq 'length' <<< "$restored_added")" = 2
+jq -e --argjson original "$original_added" 'contains($original)' <<< "$restored_added" >/dev/null
+test "$(post recipient "/me/invitations/$restored_invite/accept" '{}')" = 200
+test "$restored_added" = "$(added_state)"
+echo 'Actual member activation audits: active-role update adds none, removed-access retry stays removed, new invitation restores the same subject once.'
 # Keep ephemeral browser proofs outside retained diagnostics and release bundles.
 test -n "${RUNNER_TEMP:-}"; test -n "${GITHUB_ENV:-}"
 link_fixtures="$RUNNER_TEMP/invitation-link-fixtures.json"

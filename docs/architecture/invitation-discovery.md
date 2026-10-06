@@ -27,6 +27,15 @@ restart retry and body-proof acceptance against the actual membership ID. These
 new persistence assertions await CI execution. Demo's audit adapter remains a
 no-op, so Demo API tests cannot prove persisted audit publication.
 
+The fixture also accepts a new Admin invitation while the recipient is already
+active and requires the complete member-added audit history to remain unchanged.
+It then removes that membership through the version-bound HTTP command, retries
+the completed invitation and requires access to stay removed. A new Member
+invitation must reactivate the same persisted membership ID, append exactly one
+new addition audit, and leave that history unchanged on another acceptance retry.
+These are normal API commands against PostgreSQL, with SQL used for inspection;
+the fixture does not manufacture membership transitions or event readiness.
+
 For this audit increment, the Release solution build passed with zero warnings
 and errors, all 42 selected invitation API regressions passed locally, and the
 exact-image script passed Bash syntax validation. These source checks cover
