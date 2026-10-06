@@ -49,7 +49,7 @@ of this new catalog guard is still required before treating it as release eviden
 ## Runtime migration readiness
 
 Production connections require every named migration through
-`082_organization_metadata_replays`. The readiness query checks for missing
+`083_organization_departure_replays`. The readiness query checks for missing
 required ledger entries directly, avoiding a separately maintained numeric total.
 Extra later migrations do not substitute for a missing required entry.
 

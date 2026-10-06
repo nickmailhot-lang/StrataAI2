@@ -52,7 +52,7 @@ public interface IOrganizationService
         Guid organizationId,
         Guid actorUserId,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? idempotencyKey = null);
 
     Task<OrganizationOperation<bool>> MarkDeletingAsync(
         Guid organizationId,

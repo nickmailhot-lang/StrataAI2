@@ -10,7 +10,8 @@ public sealed class OrganizationService(
     IOrganizationUnitOfWork unitOfWork,
     StrataAI.Application.Identity.ICommandActorAuthorization actors,
     StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
-    CardReminderContainerScheduling reminders, IOrganizationMetadataReplayStore metadataReplays) : IOrganizationService
+    CardReminderContainerScheduling reminders, IOrganizationMetadataReplayStore metadataReplays,
+    IOrganizationDepartureReplayStore departureReplays) : IOrganizationService
 {
     public async Task<OrganizationOperation<OrganizationDirectoryPage>> ListPageAsync(Guid actorUserId,
         Guid? after, CancellationToken cancellationToken = default)
@@ -149,9 +150,22 @@ public sealed class OrganizationService(
 
     public Task<OrganizationOperation<bool>> LeaveAsync(
         Guid organizationId, Guid actorUserId, string correlationId,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default, Guid? idempotencyKey = null) =>
         unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false,
-            () => LeaveCoreAsync(organizationId, actorUserId, correlationId, cancellationToken), cancellationToken);
+            async () =>
+            {
+                if (idempotencyKey is null) return await LeaveCoreAsync(organizationId, actorUserId, correlationId, cancellationToken);
+                if (idempotencyKey == Guid.Empty) return OrganizationOperation<bool>.Failure("invalid_idempotency_key");
+                // A committed departure deliberately retires membership. Only
+                // the same current account/session can read its token-free receipt.
+                var receipt = await departureReplays.ReadAsync(organizationId, actorUserId, idempotencyKey.Value, cancellationToken);
+                if (receipt is not null) return receipt.ExpiresAt > clock.UtcNow
+                    ? OrganizationOperation<bool>.Success(true) : OrganizationOperation<bool>.Failure("idempotency_expired");
+                var result = await LeaveCoreAsync(organizationId, actorUserId, correlationId, cancellationToken);
+                if (result.Succeeded) await departureReplays.SaveAsync(organizationId, actorUserId, idempotencyKey.Value,
+                    new(clock.UtcNow.AddHours(24)), cancellationToken);
+                return result;
+            }, cancellationToken);
 
     public Task<OrganizationOperation<bool>> MarkDeletingAsync(
         Guid organizationId, Guid actorUserId, long expectedVersion, string correlationId,

@@ -37,3 +37,39 @@ The preceding full web recheck passed with exit 0: 1,499 tests in 122 files,
 214.14 seconds. It predates this departure increment and does not verify the new
 screen. The earlier two Board recovery timeouts passed in that recheck after
 polling query overhead was reduced without relaxing assertions or timeout limits.
+
+## Durable departure API acknowledgments
+
+POST departure now accepts an optional nonempty UUID `Idempotency-Key`. Its
+token-free receipt commits with membership retirement, assignment cleanup and
+audit in the owning Organization transaction. Failure to publish the receipt
+rolls back the command. The Organization parent/membership locks serialize
+same-key requests; matching replay acknowledges the original command without
+retiring a later rejoined membership or removing its assignments.
+
+Replay requires the same current account/session and an active Organization.
+It does not require the old membership to remain active, because departure
+intentionally retires it. The reply contains no Organization/member details and
+does not grant access. Another account cannot use that receipt. After 24 hours,
+the key returns `idempotency_expired` and remains reserved. Receipt retention
+and cleanup still need a defined operational policy.
+
+Migration 083 forces tenant RLS. The API receives SELECT/INSERT only; the Worker
+has no receipt access. Both runtime hosts require its ledger entry. Demo receipts
+participate in owning Organization rollback. The existing browser screen still
+uses unkeyed reconciliation; browser same-key acknowledgment recovery remains
+the next implementation step.
+
+API-host coverage checks concurrent same-key departure, replay after rejoining,
+unchanged rejoined membership/receipt and revoked-session refusal. The mandatory
+native fixture denies receipt INSERT and compares membership/audit/receipt state,
+observes two requests waiting on the parent lock, requires one audit and receipt,
+and checks later rejoin, actor isolation, expiry, tenant reads and restricted
+privileges. Strict compilation and Bash syntax pass; native execution and
+post-publication expiry/assignment rollback evidence remain pending.
+
+The full web run for departure browser revision `078df3b` completed with 1,504
+passing cases and one 10-second timeout in the existing Card comment-recovery
+case. That case passed in isolation; its repeated whole-page polling queries
+are being reduced while keeping the same attached/enabled checks and timeout.
+This failed full run does not prove current release acceptance.

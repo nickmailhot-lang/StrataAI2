@@ -14,6 +14,7 @@ cleanup() {
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON organization_departure_replays TO strataai_api_runtime;' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_metadata_wait ON organization_metadata_replays; DROP FUNCTION IF EXISTS public.ci_organization_metadata_wait();' >/dev/null
   if test -n "$metadata_session" && test -n "$metadata_session_expiry"; then
     admin "UPDATE sessions SET expires_at='$metadata_session_expiry'::timestamptz WHERE id='$metadata_session';" >/dev/null
@@ -341,3 +342,49 @@ test "$(retry_metadata "$retry_body")" = 409
 jq -e '.code=="idempotency_expired"' "$scratch/metadata-reply.json" >/dev/null
 test "$metadata_expired" = "$(metadata_state)"
 echo 'Metadata receipt failure rolls back edit/audit; durable replay preserves later edits and expired keys stay reserved.'
+
+# Same-account departure replay must remain safe after membership is restored.
+admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),'$retry_org','$other','MEMBER','ACTIVE');" >/dev/null
+departure_key="$(cat /proc/sys/kernel/random/uuid)"
+departure_request() {
+  curl --max-time 60 --silent --show-error -b "$scratch/${2:-other}.cookies" -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -H "Idempotency-Key: $departure_key" -X POST -d '{}' \
+    -o "$scratch/$1.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org/leave"
+}
+departure_state() {
+  admin "SELECT jsonb_build_object('members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$retry_org'),
+    'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
+    'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_departure_replays r WHERE tenant_id='$retry_org'))::text;"
+}
+departure_before="$(departure_state)"
+admin 'REVOKE INSERT ON organization_departure_replays FROM strataai_api_runtime;' >/dev/null
+test "$(departure_request departure-denied)" = 503
+jq -e '.code=="organization_storage_unavailable"' "$scratch/departure-denied.json" >/dev/null
+test "$departure_before" = "$(departure_state)"
+admin 'GRANT INSERT ON organization_departure_replays TO strataai_api_runtime;' >/dev/null
+hold "SELECT id FROM organizations WHERE id='$retry_org' FOR UPDATE;"
+departure_request departure-first > "$scratch/departure-first.status" & departure_first_pid=$!
+departure_request departure-second > "$scratch/departure-second.status" & departure_second_pid=$!
+blocked '%SELECT id FROM organizations%FOR UPDATE%' 2
+release ''
+wait "$departure_first_pid"; wait "$departure_second_pid"
+test "$(cat "$scratch/departure-first.status")" = 204
+test "$(cat "$scratch/departure-second.status")" = 204
+test "$(admin "SELECT count(*)=1 FROM organization_departure_replays WHERE tenant_id='$retry_org' AND actor_id='$other';")" = t
+test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_MEMBER_LEFT' AND actor_id='$other';")" = t
+test "$(admin "SELECT status='REMOVED' AND version=2 FROM organization_members WHERE tenant_id='$retry_org' AND user_id='$other';")" = t
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$retry_org' AND user_id='$other';" >/dev/null
+departure_rejoined="$(departure_state)"
+test "$(departure_request departure-replay)" = 204
+test "$departure_rejoined" = "$(departure_state)"
+test "$(departure_request departure-other-actor owner)" = 409
+jq -e '.code=="sole_owner"' "$scratch/departure-other-actor.json" >/dev/null
+test "$departure_rejoined" = "$(departure_state)"
+test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_departure_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
+test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_departure_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_departure_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_departure_replays','DELETE');")" = f
+admin "UPDATE organization_departure_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$retry_org' AND key_id='$departure_key';" >/dev/null
+departure_expired="$(departure_state)"
+test "$(departure_request departure-expired)" = 409
+jq -e '.code=="idempotency_expired"' "$scratch/departure-expired.json" >/dev/null
+test "$departure_expired" = "$(departure_state)"
+echo 'Departure receipts roll back atomically, serialize identical retries, preserve rejoined membership and keep expired keys reserved.'

@@ -47,6 +47,7 @@ GRANT UPDATE(interval_code,enabled,due_at,trigger_at,status,generation,updated_a
 GRANT UPDATE(watching,updated_at,version) ON watch_subscriptions TO strataai_api_runtime;
 GRANT SELECT,INSERT ON invitation_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_metadata_replays TO strataai_api_runtime;
+GRANT SELECT,INSERT ON organization_departure_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_event_streams TO strataai_api_runtime;
 GRANT SELECT,INSERT ON work_events TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON identity_event_streams TO strataai_api_runtime;

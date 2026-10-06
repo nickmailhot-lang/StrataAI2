@@ -238,11 +238,18 @@ public static class OrganizationEndpoints
                     return Results.Unauthorized();
                 }
 
+                Guid? key = null;
+                if (context.Request.Headers.TryGetValue("Idempotency-Key", out var keys))
+                {
+                    if (keys.Count != 1 || !Guid.TryParse(keys[0], out var parsed) || parsed == Guid.Empty)
+                        return ErrorFor("invalid_idempotency_key");
+                    key = parsed;
+                }
                 var result = await service.LeaveAsync(
                     organizationId,
                     userId.Value,
                     context.TraceIdentifier,
-                    cancellationToken);
+                    cancellationToken, key);
 
                 return result.Succeeded
                     ? Results.NoContent()
