@@ -28,3 +28,14 @@ Successful password reset also publishes one content-free SESSION_REVOKED event 
 [Commit d1db46f CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36815213447) passed all nine jobs, including PostgreSQL verification/reset event-denial rollback, reset publication and repeated-token state invariance against the exact release images. The run retained the tested images, security evidence and release bundle for that revision.
 
 Required CI fixtures cover actual runtime-role subject RLS, restricted Worker grants, event-publication denial rolling back profile/audit/sequence, replay after profile change, 100-event pagination, replay session revocation during a lock wait, and deactivation publication. Browser scenarios exercise automatic desktop/mobile profile recovery and logout denial through this endpoint. [Commit d51679c CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36811726894) passed these real PostgreSQL and exact-release-image checks. [Identity realtime delivery](identity-realtime.md) builds on this stream. The global stream does not complete invitation/suspension domain events, lifecycle ownership continuity or every PRD requirement. Durable identity command replay keys remain separate; storing raw credential/session/token responses in the existing Work replay table is prohibited.
+
+The transactional identity service now revalidates the actor after assembling a
+successful sync snapshot and before returning protected profile, events or cursor.
+Initial admission and final admission share the owning identity transaction.
+Two API-host cases use the real account/event stores and simulate actor withdrawal
+at the final authorization check for both initial snapshot and event replay reads.
+They require HTTP 401 with no protected profile/event/cursor disclosure, unchanged
+account and event state, and successful identical recovery after admission returns.
+This injected denial verifies boundary wiring; actual elapsed expiry and durable
+release acceptance still require native CI evidence. Strict compilation is checked
+separately from native test execution.

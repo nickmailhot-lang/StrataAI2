@@ -9,7 +9,12 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
 {
     public Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default) =>
-        commands.ExecuteAsync(userId, () => inner.ReadEventsAsync(userId, after, cancellationToken), cancellationToken);
+        commands.ExecuteAsync(userId, async () =>
+        {
+            var result = await inner.ReadEventsAsync(userId, after, cancellationToken);
+            return result.Succeeded && !await actors.VerifyAsync(userId, cancellationToken)
+                ? IdentityOperation<IdentitySyncSnapshot>.Failure("session_unavailable") : result;
+        }, cancellationToken);
     public Task<IdentityOperation<RegistrationOutcome>> RegisterAsync(
         string email,
         string password,
