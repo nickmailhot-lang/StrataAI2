@@ -79,6 +79,7 @@ try
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationMetadataReplayContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionPublicationContract.RunAsync(admin,apiConnection,ct);
     await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);

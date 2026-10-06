@@ -103,8 +103,9 @@ including the 109-source routing/claim/provider-isolation contract, source and
 delivery contracts, migration checks and runtime schema readiness. Exact-image
 execution of the automatic background loop remains pending.
 
-Bounded authorized replay, SignalR
-invalidation/reconnect and browser consumption are still required.
+[Authorized bounded replay](organization-metadata-replay.md) is implemented
+with local ordering/cursor checks passed and real database/HTTP execution pending.
+SignalR invalidation/reconnect and browser consumption are still required.
 Invitation/member events and the existing terminal deletion event
 also need integration into the Organization delivery contract. Journal
 insertion alone is not realtime delivery and does not satisfy PRD-03 closure.

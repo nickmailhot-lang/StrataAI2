@@ -62,7 +62,14 @@ Migration 096 adds bounded automatic metadata routing and a typed invoker queue
 claim with source/job fences and provider isolation. The full solution builds
 cleanly; restricted database automatic routing checks passed at `6c43658`,
 including 109 real source Organizations and provider isolation. Exact-image
-automatic delivery checks remain pending CI. Authorized realtime/reconnect consumption remains unfinished;
+automatic delivery checks remain pending CI. Authorized realtime/reconnect
+consumption remains unfinished.
+
+The [metadata replay endpoint](organization-metadata-replay.md) adds an owning
+read transaction, protected actor/membership cursor, contiguous ready-prefix
+window and final session/scope proof. Nine ordering/coordinator checks and the
+cursor security test passed locally; database and exact-image replay remain
+pending CI. SignalR and browser consumption remain required.
 Worker readiness does not establish browser event consumption.
 
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and

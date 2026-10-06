@@ -12,6 +12,7 @@ public static class OrganizationRegistration
         this IServiceCollection services,
         RuntimeDescriptor runtime)
     {
+        services.AddSingleton<IOrganizationMetadataCursorCodec, DataProtectedOrganizationMetadataCursorCodec>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();
@@ -41,6 +42,9 @@ public static class OrganizationRegistration
         }
         else
         {
+            services.AddSingleton<IOrganizationMetadataEventReader, PostgresOrganizationMetadataEventReader>();
+            services.AddSingleton<OrganizationMetadataSynchronizationService>();
+            services.AddSingleton<TransactionalOrganizationMetadataSynchronization>();
             services.AddSingleton<IOrganizationStore, PostgresOrganizationStore>();
             services.AddSingleton<IOrganizationUnitOfWork, PostgresOrganizationUnitOfWork>();
             services.AddSingleton<IOrganizationRemovalReplayStore, PostgresOrganizationRemovalReplayStore>();
