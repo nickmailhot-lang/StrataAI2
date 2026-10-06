@@ -69,7 +69,14 @@ public static class IdentityRegistration
             services.AddSingleton<IInvitationRegistrationProofStore, InMemoryInvitationRegistrationProofStore>();
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();
             services.AddSingleton<IAccountDeactivationOwnership, InMemoryAccountDeactivationOwnership>();
-            services.AddSingleton<IIdentityStore, InMemoryIdentityStore>();
+            services.AddSingleton<IIdentityStore>(provider =>
+            {
+                var store = new InMemoryIdentityStore(
+                    provider.GetRequiredService<StrataAI.Application.Common.IClock>(),
+                    provider.GetRequiredService<DemoMentionHandleRegistry>());
+                store.SeedTestAccount(provider.GetRequiredService<IPasswordHashService>());
+                return store;
+            });
             services.AddSingleton<IIdentityUnitOfWork, InMemoryIdentityUnitOfWork>();
             services.AddSingleton<IIdentityProfileReplayStore, InMemoryIdentityProfileReplayStore>();
             services.AddSingleton<IIdentityRevocationReplayStore, InMemoryIdentityRevocationReplayStore>();

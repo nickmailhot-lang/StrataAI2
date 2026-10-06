@@ -5,6 +5,21 @@ namespace StrataAI.Infrastructure.Identity;
 
 internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHandleRegistry handles) : IIdentityStore
 {
+    // Called only by Demo composition before the singleton is exposed. This is
+    // an ordinary verified account: all sign-in and session checks still apply.
+    internal void SeedTestAccount(IPasswordHashService passwords)
+    {
+        var id = Guid.Parse("dddddddd-dddd-4ddd-8ddd-dddddddddddd");
+        const string email = "demo@strataai.test";
+        var now = clock.UtcNow;
+        var user = new UserIdentity(id, email, email.ToUpperInvariant(), "Demo User",
+            null, "en-CA", "America/Vancouver", AccountStatus.Active, true,
+            passwords.Hash(id, "StrataAI-Demo-2026!"), now, now, 1);
+        _users.Add(id, user);
+        _usersByEmail.Add(user.EmailNormalized, id);
+        handles.Seed(user);
+    }
+
     private sealed record TokenState(
         SecurityTokenRecord Token, DateTimeOffset? UsedAt = null);
 

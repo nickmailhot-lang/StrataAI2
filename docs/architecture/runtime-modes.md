@@ -15,6 +15,32 @@ StrataAI2 has two explicit runtime modes controlled by `STRATAAI_RUNTIME_MODE`.
 
 These endpoints are not mapped in Production.
 
+### Demo sign-in
+
+Set `STRATAAI_RUNTIME_MODE=demo`, start the API and web application, and open
+the web application's `/login` page. Each fresh Demo API process seeds this
+verified, active account; no registration or email verification is required:
+
+| Field | Value |
+| --- | --- |
+| Email | `demo@strataai.test` |
+| Password | `StrataAI-Demo-2026!` |
+| Display name | Demo User |
+
+The account signs in through the normal password and session flow. It starts
+without Organization memberships; create an Organization after signing in to
+explore the collaboration workflows. The `/api/demo/state` sample catalog is
+separate from authenticated Organization membership and work data.
+
+These are public test credentials, seeded only in Demo's in-memory identity
+store. Production uses its PostgreSQL identity store and does not seed this
+account. Account changes and sessions last for the current API process. Restart
+the Demo API to restore the original credentials; `/api/demo/reset` and
+`DELETE /api/demo/state` affect only the sample catalog, not accounts or sessions.
+
+Return to the [project README](../../README.md#demo-sign-in) or the
+[documentation index](../README.md).
+
 ## Production
 
 `production` fails startup unless `ConnectionStrings__Postgres` is configured.

@@ -54,7 +54,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Dependency locking (ARCH-01 / ARCH-11)](architecture/dependency-locking.md)
 - [API operator metrics export (ARCH-08, partial)](architecture/operator-metrics.md)
 - [Runtime database roles](architecture/runtime-database-roles.md)
-- [Runtime modes](architecture/runtime-modes.md)
+- [Runtime modes and seeded Demo sign-in credentials](architecture/runtime-modes.md)
 - [Schema upgrades and compatibility](architecture/schema-upgrades.md)
 
 ## Identity, profiles, and invitations

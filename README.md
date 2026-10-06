@@ -11,6 +11,7 @@ Jump to [documentation navigation](#navigating-the-documentation), [reading path
 | What you need | Where to start |
 | --- | --- |
 | Find any document | [Complete documentation index](docs/README.md) |
+| Try the app in Demo mode | [Demo sign-in credentials](#demo-sign-in), [Demo runtime and reset behavior](docs/architecture/runtime-modes.md#demo-sign-in) |
 | Explore implemented workflows | [Boards and collaboration](docs/README.md#boards-and-collaboration), [Lists and Cards](docs/README.md#lists-and-cards), [accounts and invitations](docs/README.md#identity-profiles-and-invitations) |
 | Understand the system | [Architecture overview](docs/architecture/README.md), [runtime modes](docs/architecture/runtime-modes.md), [web routing and state](docs/architecture/web-spa-boundary.md) |
 | Configure a local or production runtime | [Configuration reference](docs/architecture/configuration.md), [database roles](docs/architecture/runtime-database-roles.md), [schema upgrades](docs/architecture/schema-upgrades.md) |
@@ -161,6 +162,21 @@ The canonical work hierarchy is `Organization → Board → List → Card`. User
 | [`docs/`](docs/) | [Documentation index and subject guides](docs/README.md) |
 | [`scripts/`](scripts/) | Release, operational, and CI verification scripts |
 | [`.github/workflows/`](.github/workflows/) | [Build-once CI](.github/workflows/ci.yml) and repository automation |
+
+## Demo sign-in
+
+Run the API with `STRATAAI_RUNTIME_MODE=demo` and open the web application's
+`/login` page. Demo mode seeds a verified test account automatically:
+
+| Email | Password |
+| --- | --- |
+| `demo@strataai.test` | `StrataAI-Demo-2026!` |
+
+Sign in, then create an Organization to explore the workflows. The account
+starts without memberships. Restarting the Demo API restores the credentials;
+the sample-data reset endpoint does not reset accounts. See
+[Demo runtime and account behavior](docs/architecture/runtime-modes.md#demo-sign-in)
+for details. Production does not seed this account.
 
 ## Local source checks
 
