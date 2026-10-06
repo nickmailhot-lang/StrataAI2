@@ -235,3 +235,10 @@ a server-valid embedded line break to remain discoverable through its canonical
 Board link; names are still rendered as escaped React text. The Board link
 accessible name collapses whitespace so keyboard/screen-reader naming stays
 consistent while preserving the saved display text.
+
+The complete web suite at `3b875aa` also passed: 1,490 tests in 122 files,
+515.02 seconds, terminal exit code 0. This includes the saved multiline Board
+name regression and the updated accessible link name. Web source, configuration
+and tests were unchanged while this run executed; later README and Identity
+transaction changes do not broaden this result into native browser, PostgreSQL
+or exact-image evidence. Those acceptance checks remain pending.
