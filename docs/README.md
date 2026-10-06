@@ -79,6 +79,7 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Organizations and access
 
+- [Organization requirements and acceptance map (PRD-03)](architecture/prd-03-acceptance.md)
 - [Organization routing integrity](architecture/organization-access-integrity.md)
 - [Organization command transactions](architecture/organization-command-transactions.md)
 - [Organization and board discovery](architecture/organization-discovery.md)
