@@ -16,7 +16,7 @@ Jump to [documentation navigation](#navigating-the-documentation), [workflow gui
 | Configure a local or production runtime | [Configuration reference](docs/architecture/configuration.md), [database roles](docs/architecture/runtime-database-roles.md), [schema upgrades](docs/architecture/schema-upgrades.md) |
 | Run a tested Docker release | [Release bundle guide](docs/release/README.md) |
 | Choose the next implementation dependency | [Canonical ticket dependency audit](docs/ticket-dependencies.md), [linked ticket dependency map](docs/ticket-dependency-map.md) |
-| Review outstanding acceptance and evidence | [Authentication acceptance](docs/architecture/prd-02-acceptance.md), [Board acceptance](docs/architecture/prd-04-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
+| Review outstanding acceptance and evidence | [Authentication acceptance](docs/architecture/prd-02-acceptance.md), [Organization acceptance](docs/architecture/prd-03-acceptance.md), [Board acceptance](docs/architecture/prd-04-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
 | Check current requirements and builds | [Open PRD/architecture issues](https://github.com/nickmailhot-lang/StrataAI2/issues), [CI workflow runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) |
 
 If you are new to the project, follow the architecture and runtime guides before the local checks below. For a feature question, choose a subject in the documentation index and start with its behavior guide. For deployment, start with the release guide and use the configuration and migration references alongside it.
@@ -34,6 +34,8 @@ docs/
 │   └── README.md      Configure and run the Docker release verified by CI
 └── *.md              Feature guides, dependency maps, and verification records
 ```
+
+For a complete inventory, use [Browse by subject](docs/README.md#browse-by-subject); the tables below highlight common entry points. The index includes feature guides, shared contracts, acceptance audits, and historical evidence, including documents not linked individually here.
 
 Open [docs/README.md](docs/README.md), choose **Browse by subject**, and select a descriptive document title. Each guide's relative links lead to related contracts; the index's **project README** link returns here. For the full file inventory on GitHub, open the [docs folder](https://github.com/nickmailhot-lang/StrataAI2/tree/main/docs).
 
@@ -70,6 +72,7 @@ The index provides descriptive document titles rather than requiring you to infe
 
 Useful routes through the docs include:
 
+- **Organization administration:** [current access](docs/architecture/organization-access-integrity.md) → [settings and metadata recovery](docs/architecture/organization-settings.md) → [member administration](docs/architecture/organization-member-administration.md) → [departure and owner continuity](docs/architecture/organization-departure.md) → [Organization acceptance](docs/architecture/prd-03-acceptance.md).
 - **Board collaboration:** [Board interface](docs/architecture/board-interface.md) → [windowing](docs/board-windowing.md) → [work synchronization](docs/architecture/work-synchronization.md) → [Organization Board realtime](docs/organization-board-realtime.md) → [Board acceptance](docs/architecture/prd-04-acceptance.md).
 - **Safe writes and recovery:** [command transactions](docs/architecture/work-command-transactions.md) → [command scopes](docs/architecture/work-command-scopes.md) → [command retries](docs/architecture/work-command-retries.md) → [current actor sessions](docs/architecture/command-actor-sessions.md).
 - **Files and backgrounds:** [object storage](docs/architecture/attachment-object-storage.md) → [attachment acceptance](docs/architecture/attachment-acceptance.md) → [Board background images](docs/board-background-images.md) → [cover lifecycle](docs/architecture/attachment-covers-lifecycle.md).
@@ -87,6 +90,7 @@ These links open the behavior or contract guide directly. Use the subject sectio
 | Verify an email, reset a password, sign out, or deactivate an account | [Single-use verification and reset tokens](docs/identity-token-consumption-retries.md), [logout and deactivation retries](docs/architecture/identity-command-retries.md), [account ownership continuity](docs/architecture/account-owner-continuity.md) |
 | Browse Organizations, follow deep links, and manage settings | [Paged Organization directory and browser navigation](docs/architecture/organization-discovery.md), [current membership and canonical Organization reads](docs/architecture/organization-access-integrity.md), [Organization settings](docs/architecture/organization-settings.md) |
 | Register from an invitation and accept access | [Invitation-backed registration](docs/invitation-registration.md), [registration retries](docs/identity-registration-retries.md), [verified-email discovery and acceptance](docs/architecture/invitation-discovery.md) |
+| Review Organization requirements and membership changes | [Organization acceptance map](docs/architecture/prd-03-acceptance.md), [member administration](docs/architecture/organization-member-administration.md), [membership removal consent](docs/architecture/organization-member-removal-consent.md), [confirmed departure and durable API acknowledgments](docs/architecture/organization-departure.md) |
 | Invite people and manage access | [Invitation administration](docs/architecture/invitation-administration-ui.md), [recipient invitation review](docs/invitation-link-review.md), [Organization members](docs/architecture/organization-member-administration.md), [Board members](docs/board-members-ui.md) |
 | Browse active and archived Boards | [Paged active Board directory](docs/architecture/organization-discovery.md#browser-active-board-paging), [archived Board discovery](docs/board-archive-discovery.md) |
 | Find, filter, share, or copy a Board | [Search and filtering](docs/board-filtering.md), [public sharing](docs/public-board-sharing.md), [Board copies](docs/board-copy.md) |
