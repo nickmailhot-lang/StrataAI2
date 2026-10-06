@@ -21,6 +21,7 @@ function targetQuery(target: NavigationTarget): string {
   }
   return query.toString();
 }
+export function validateNavigationTarget(target: NavigationTarget): void { targetQuery(target); }
 export function createNavigationIntent(actor: string, target: NavigationTarget, now = Date.now()): NavigationIntent {
   if (!uuid(actor) || !Number.isSafeInteger(now) || now < 0) throw new Error('Invalid navigation account or clock');
   targetQuery(target);

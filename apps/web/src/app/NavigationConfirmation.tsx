@@ -3,7 +3,7 @@ import { Alert, Button } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../api/workManagement';
 import { notificationUuid as uuid } from '../features/notifications/notificationInbox';
 import { ChangedNavigationActor, NavigationAcknowledgments, type NavigationTarget } from './navigationInteraction';
-import { createNavigationIntent, submitNavigationIntent, type NavigationIntent } from './navigationObservation';
+import { createNavigationIntent, submitNavigationIntent, validateNavigationTarget, type NavigationIntent } from './navigationObservation';
 
 // Mount once for an admitted navigation visit. Later entity edits do not create
 // another open event or replace an unresolved original revision.
@@ -17,6 +17,10 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
     if (!admitted) return;
     const controller = new AbortController();
     async function observe() {
+      // Invalid route/snapshot identities cannot authorize an account read or
+      // a personal observation, including malformed cached client records.
+      try { validateNavigationTarget(originalTarget); }
+      catch { setStatus('unavailable'); return; }
       try {
         if (!intent.current) {
           const profile = await boundedWorkRead(signal => workRequest<{ id: unknown }>('/me', { signal }), controller.signal);

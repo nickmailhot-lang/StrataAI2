@@ -11,6 +11,13 @@ const source = { eventId: event, actorId: actor, organizationId: organization, b
   eventType: 'BOARD_OPENED', entityType: 'Board', entityId: board, version: 3, metadata: {}, createdAt: '2026-10-05T12:00:00Z' };
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
+it('PRD-01 invalid navigation identities cannot dispatch account or observation reads', () => {
+  const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
+  render(<NavigationConfirmation target={{ ...target, board: 'board-placeholder' }} />);
+  expect(fetch).not.toHaveBeenCalled();
+  expect(screen.queryByRole('button', { name: 'Retry navigation confirmation' })).toBeNull();
+});
+
 it('PRD-01 waits for admission and does not create another open for an entity edit', async () => {
   const fetch = vi.fn(async (path: string) => response(path === '/me' ? { id: actor } : source));
   vi.stubGlobal('fetch', fetch);
