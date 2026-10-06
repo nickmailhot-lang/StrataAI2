@@ -5,7 +5,7 @@ public sealed record InvitationRegistrationProof(Guid OrganizationId, Guid Invit
 
 public interface IInvitationRegistrationProofStore
 {
-    // Persistent transactions can roll back account/audit/receipt writes if expiry occurs during a wait.
+    // Owning transactions roll back account/audit/receipt writes when final proof is refused.
     bool RequiresFinalCheck { get; }
     Task<InvitationRegistrationProof?> PrepareAsync(string tokenHash, string emailNormalized, CancellationToken cancellationToken);
     Task<bool> CheckAsync(InvitationRegistrationProof proof, string emailNormalized, CancellationToken cancellationToken);

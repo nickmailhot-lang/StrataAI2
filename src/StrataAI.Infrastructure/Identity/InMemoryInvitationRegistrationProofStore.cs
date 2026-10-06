@@ -9,9 +9,9 @@ namespace StrataAI.Infrastructure.Identity;
 internal sealed class InMemoryInvitationRegistrationProofStore(IInvitationStore invitations, IOrganizationStore organizations,
     IIdentityStore identities, IClock clock, IdentityPolicy policy, IWorkManagementStore work) : IInvitationRegistrationProofStore
 {
-    // Demo commands share the account/Organization gate but do not support write rollback.
-    // Admission is checked before mutation; real post-write waits/expiry are verified in PostgreSQL CI.
-    public bool RequiresFinalCheck => false;
+    // Registration owns Identity rollback participants under the account/Organization gate.
+    // Time can still advance after admission, so expiry must be checked before commit.
+    public bool RequiresFinalCheck => true;
     public async Task<InvitationRegistrationProof?> PrepareAsync(string tokenHash, string emailNormalized, CancellationToken ct)
     {
         var invitation = await invitations.FindActiveByTokenHashAsync(tokenHash, clock.UtcNow, ct);
