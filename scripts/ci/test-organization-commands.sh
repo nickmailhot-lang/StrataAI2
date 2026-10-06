@@ -183,7 +183,7 @@ jq -e '.code=="invalid_or_expired_invitation"' "$scratch/response.json" >/dev/nu
 test "$(admin "SELECT accepted_at IS NULL FROM invitations WHERE token_hash='$waiting_hash';")" = t
 test "$(admin "SELECT version FROM organization_members WHERE tenant_id='$organization' AND user_id='$guest';")" = "$guest_version"
 test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$organization';")" = "$waiting_audits"
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$organization' AND user_id='$owner';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$organization' AND user_id='$owner';" >/dev/null
 # The verified recipient's current account state is locked and checked too.
 hold "SELECT id FROM users WHERE id='$guest' FOR UPDATE;"
 request POST "/invitations/$waiting_token/accept" '{}' guest > "$scratch/status" &
@@ -227,7 +227,7 @@ test "$(admin "SELECT name||':'||version FROM organizations WHERE id='$organizat
 # The old creator's invitation cannot grant access after that creator loses permission.
 test "$(request POST "/invitations/$owner_downgrade/accept" '{}')" = 400
 jq -e '.code=="invalid_or_expired_invitation"' "$scratch/response.json" >/dev/null
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$organization' AND user_id='$owner';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$organization' AND user_id='$owner';" >/dev/null
 owner_hash() {
   awk '$6=="strataai_session" {print $7}' "$scratch/owner.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1
 }

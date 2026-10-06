@@ -174,7 +174,7 @@ test "$deleted_state" = "$(state)"
 admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 test "$(delete_list '&confirmed=true&containedCardCount=2')" = 404
 scripts/ci/assert-file-excludes.sh 'Archived fixture|Contained fixture|lifecycleState|version' "$scratch/deleted.json"
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 test "$deleted_state" = "$(state)"
 test "$(get owner "/boards/$board/archived-lists")" = 200
 jq -e --arg target "$target" 'all(.items[];.list.id!=$target)' "$scratch/response.json" >/dev/null
@@ -218,7 +218,7 @@ test "$card_after" = "$(state)"
 admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 test "$(delete_card '&confirmed=true')" = 404
 scripts/ci/assert-file-excludes.sh 'Contained fixture|lifecycleState|version' "$scratch/card-deleted.json"
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 admin "UPDATE boards SET lifecycle_state='ARCHIVED' WHERE id='$board';" >/dev/null
 test "$(delete_card '&confirmed=true')" = 404
 admin "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='$board';" >/dev/null
@@ -300,7 +300,7 @@ test "$copy_after" = "$(state)"
 copy_key=$committed_copy_key
 admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 test "$(copy_list)" = 404
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 admin "UPDATE board_lists SET lifecycle_state='ARCHIVED' WHERE id='$copy_source';" >/dev/null
 test "$(copy_list)" = 404
 admin "UPDATE board_lists SET lifecycle_state='ACTIVE' WHERE id='$copy_source';" >/dev/null
@@ -344,7 +344,7 @@ board_delete_key=$original_board_delete_key
 admin "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 test "$(board_delete '&confirmed=true')" = 404
 scripts/ci/assert-file-excludes.sh 'Board receipt recovery|deletedBy|lifecycleState' "$scratch/board-deleted.json"
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$org' AND user_id='$owner';" >/dev/null
 test "$(board_delete '&confirmed=true')" = 200
 cmp "$scratch/board-delete-receipt.json" "$scratch/board-deleted.json"
 test "$(admin "SELECT version FROM boards WHERE id='$receipt_board' AND lifecycle_state='DELETED' AND deleted_by='$owner';")" = 3

@@ -49,9 +49,9 @@ DO $$ DECLARE before_row jsonb; unchanged_b jsonb; next_revision bigint; BEGIN
  EXCEPTION WHEN check_violation THEN NULL; END;
  IF (SELECT (to_jsonb(e)-'reader_revision'-'reader_updated_at') FROM organization_board_directory_epochs e WHERE user_id='07400000-0000-0000-0000-000000000041') IS DISTINCT FROM before_row THEN
   RAISE EXCEPTION 'Owning rollback retained epoch revision or clock'; END IF;
- UPDATE organization_members SET role='ADMIN',status='REMOVED'
+ UPDATE organization_members SET role='ADMIN',status='REMOVED',version=version+1,updated_at=clock_timestamp()
  WHERE tenant_id='07400000-0000-0000-0000-000000000001' AND user_id='07400000-0000-0000-0000-000000000041';
- UPDATE organization_members SET status='ACTIVE'
+ UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp()
  WHERE tenant_id='07400000-0000-0000-0000-000000000001' AND user_id='07400000-0000-0000-0000-000000000041';
  SELECT permission_revision INTO next_revision FROM organization_board_directory_epochs WHERE user_id='07400000-0000-0000-0000-000000000041';
  IF next_revision<>5 THEN RAISE EXCEPTION 'Organization withdrawal/restoration reused permission revision'; END IF;

@@ -45,8 +45,8 @@ test "$(scoped "SELECT is_usable FROM $load")" = t
 board_reset() {
  psql -X -v ON_ERROR_STOP=1 -c "UPDATE boards SET lifecycle_state='ACTIVE' WHERE id='02500000-0000-0000-0000-000000000010';
  UPDATE board_members SET status='ACTIVE',role='ADMIN' WHERE id='02600000-0000-0000-0000-000000000013';
- UPDATE organization_members SET role='MEMBER',status='ACTIVE' WHERE tenant_id='$tenant' AND user_id='$actor';
- UPDATE organization_members SET status='ACTIVE' WHERE id='02600000-0000-0000-0000-000000000012';
+ UPDATE organization_members SET role='MEMBER',status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$tenant' AND user_id='$actor';
+ UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE id='02600000-0000-0000-0000-000000000012';
  UPDATE users SET status='ACTIVE',email_verified=true WHERE id='02600000-0000-0000-0000-000000000011';
  UPDATE invitation_mail_intents SET target_board_role='MEMBER' WHERE job_id='$job';" >/dev/null
 }
@@ -140,7 +140,7 @@ for mutation in \
   test "$(scoped "SELECT is_usable FROM $load")" = f
   psql -X -v ON_ERROR_STOP=1 -c "UPDATE users SET status='ACTIVE',email_verified=true WHERE id='$actor';
     UPDATE organizations SET status='ACTIVE' WHERE id='$tenant';
-    UPDATE organization_members SET status='ACTIVE',role='OWNER' WHERE user_id='$actor';
+    UPDATE organization_members SET status='ACTIVE',role='OWNER',version=version+1,updated_at=clock_timestamp() WHERE user_id='$actor';
     UPDATE invitations i SET revoked_at=NULL,accepted_at=NULL,invited_email=m.recipient_email,
       email_normalized=upper(m.recipient_email),expires_at=m.expires_at,target_surface=m.target_surface,target_role=m.target_role
       FROM invitation_mail_intents m WHERE i.id=m.invitation_id AND m.job_id='$job';" >/dev/null

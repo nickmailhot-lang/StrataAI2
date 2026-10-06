@@ -113,7 +113,7 @@ admin "UPDATE board_lists SET lifecycle_state='ACTIVE' WHERE id='$list';" >/dev/
 case_denied "$board_lock" '' "$board_query" DELETE "/cards/$card?version=2" '{}' card_not_found member keyed
 admin "UPDATE cards SET lifecycle_state='ACTIVE',version=1 WHERE id='$card';" >/dev/null
 case_denied "SELECT id FROM organization_members WHERE tenant_id='$organization' AND user_id='$member' FOR UPDATE;" "UPDATE organization_members SET status='SUSPENDED',version=version+1 WHERE tenant_id='$organization' AND user_id='$member';" '%SELECT id FROM organization_members%FOR SHARE%' POST "/boards/$board/lists" '{"name":"Denied"}' board_not_found member keyed
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$organization' AND user_id='$member';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$organization' AND user_id='$member';" >/dev/null
 case_denied "$board_lock" "UPDATE board_members SET status='REMOVED',version=version+1 WHERE board_id='$board' AND user_id='$member';" "$board_query" PATCH "/cards/$card" '{"title":"Denied","version":1}' card_not_found member unkeyed
 admin "UPDATE board_members SET status='ACTIVE' WHERE board_id='$board' AND user_id='$member';" >/dev/null
 org_lock="SELECT id FROM organizations WHERE id='$organization' FOR UPDATE;"

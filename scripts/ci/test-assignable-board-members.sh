@@ -341,7 +341,7 @@ hold organization_member; get member "$mention_path?prefix=u_" > "$scratch/statu
 blocked organization_member; release "UPDATE organization_members SET status='REMOVED' WHERE tenant_id='$org' AND user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 404
 scripts/ci/assert-file-excludes.sh '"items"|Assignment fixture|displayName|handleVersion|cardVersion' "$scratch/response.json"
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
 hold; get member "$mention_path?prefix=u_" > "$scratch/status" & request_pid=$!
 blocked; release "DELETE FROM sessions WHERE user_id='$member';"
 wait "$request_pid"; request_pid=''; test "$(cat "$scratch/status")" = 401
@@ -418,7 +418,7 @@ test "$(admin "SELECT version FROM cards WHERE id='$foreign_card';")" = 2
 test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$foreign_org' AND card_id='$foreign_card' AND user_id='$member';")" = 1
 test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND card_id='$card' AND user_id='$owner';")" = 1
 test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$org' AND event_type='CARD_MEMBER_REMOVED' AND entity_id IN ('$card','$archived_card');")" = 4
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
 test "$(request owner DELETE "$member_path?version=8" 11111111-1111-1111-1111-111111111150 '{}')" = 200
 jq -e '.changed==false and .card.version==8' "$scratch/response.json" >/dev/null
 test "$(request owner PUT "$member_path?version=8" 11111111-1111-1111-1111-111111111151 '{}')" = 200
@@ -433,7 +433,7 @@ test "$(admin "SELECT count(*) FROM card_members WHERE tenant_id='$org' AND user
 test "$(admin "SELECT version FROM cards WHERE id='$card';")" = 10
 test "$(admin "SELECT version FROM cards WHERE id='$foreign_card';")" = 2
 test "$(admin "SELECT count(*) FROM users WHERE id='$member' AND status='ACTIVE';")" = 1
-admin "UPDATE organization_members SET status='ACTIVE' WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
+admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$org' AND user_id='$member';" >/dev/null
 test "$(request owner PUT "$member_path?version=10" 11111111-1111-1111-1111-111111111153 '{}')" = 200
 admin "INSERT INTO card_members(tenant_id,board_id,card_id,user_id,assigned_by) VALUES('$org','$second_board','$archived_card','$member','$owner');
  UPDATE cards SET version=5 WHERE id='$archived_card';

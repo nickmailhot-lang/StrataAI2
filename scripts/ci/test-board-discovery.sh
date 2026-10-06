@@ -111,7 +111,7 @@ echo 'Exact release API filters private/archived/deleted board discovery, restor
 
 # The bounded active home directory is verified through the actual Nginx/API
 # image pair. Restore the member fixture after the legacy revocation checks.
-admin "UPDATE organization_members SET status='ACTIVE',role='MEMBER' WHERE tenant_id='$organization_id' AND user_id='$member_id';
+admin "UPDATE organization_members SET status='ACTIVE',role='MEMBER',version=version+1,updated_at=clock_timestamp() WHERE tenant_id='$organization_id' AND user_id='$member_id';
 INSERT INTO boards(id,tenant_id,name,visibility,lifecycle_state,created_at,updated_at)
  SELECT ('e1000000-1111-4111-8000-' || lpad(n::text,12,'0'))::uuid,'$organization_id','Paged visible Board ' || n,'ORGANIZATION','ACTIVE',now(),now() FROM generate_series(1,52) n;
 INSERT INTO boards(id,tenant_id,name,visibility,lifecycle_state,created_at,updated_at)
