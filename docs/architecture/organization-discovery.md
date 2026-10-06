@@ -58,3 +58,31 @@ UI, organization settings/lifecycle, board settings/lifecycle/copy, pagination a
 the remaining PRD acceptance criteria are still outstanding. Live permission
 updates require the planned realtime connection; every API request remains
 independently authorized now.
+
+## Bounded Organization directory API
+
+`GET /organizations/directory?after={uuid}` returns `{items, nextCursor}`.
+Omit `after` for the first page. Cursors require a nonempty UUID in canonical
+hyphenated form; invalid input returns `invalid_organization_cursor`. Responses
+are private/no-store and require a current authenticated account.
+
+Each page visits at most 50 membership routing hints, with one lookahead hint.
+Every visited Organization is independently admitted through the canonical
+Organization read transaction before metadata or role is returned. Removed
+memberships and inactive Organizations are omitted. A page may therefore be
+short or empty while still providing a continuation cursor. Advance using
+`nextCursor`, even for an empty page, until it is null; do not infer completion
+from item count. The cursor tracks the last visited hint, so omitted entries do
+not cause repeats or prevent forward traversal. Current account checks run
+before traversal and before returning the assembled response. Admission/storage
+failures other than protected not-found discard the page rather than exposing
+partial results.
+
+The API-host fixture seeds 52 routing candidates and checks bounded traversal,
+removed/deleting omission, complete nonduplicated continuation, foreign-account
+isolation, private caching and invalid cursors. Compilation is source evidence;
+native API-host and PostgreSQL execution remain required. The existing
+`GET /organizations` response and browser discovery still use the legacy array
+contract. Migrating those consumers, production large-directory evidence and
+full PRD-03 acceptance remain unfinished; this API increment does not complete
+Organization discovery pagination across the product.

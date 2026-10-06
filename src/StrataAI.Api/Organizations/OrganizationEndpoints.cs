@@ -9,6 +9,22 @@ public static class OrganizationEndpoints
     {
         var group = app.MapGroup("/organizations").RequireAuthorization();
 
+        group.MapGet("/directory", async (string? after, HttpContext context,
+            IOrganizationService service, CancellationToken cancellationToken) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            Guid? cursor = null;
+            if (after is not null)
+            {
+                if (after.Length != 36 || !Guid.TryParseExact(after, "D", out var parsed) || parsed == Guid.Empty)
+                    return ErrorFor("invalid_organization_cursor");
+                cursor = parsed;
+            }
+            var result = await service.ListPageAsync(actor.Value, cursor, cancellationToken);
+            return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
+        });
+
         group.MapGet("/{organizationId:guid}", async (Guid organizationId, HttpContext context,
             IOrganizationService service, CancellationToken cancellationToken) =>
         {
@@ -251,6 +267,8 @@ public static class OrganizationEndpoints
                 "A positive membership version is required."),
             "member_version_conflict" => Problem(StatusCodes.Status409Conflict, errorCode,
                 "The membership changed elsewhere. Review the current membership before removing it."),
+            "invalid_organization_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode,
+                "The Organization page cursor is invalid."),
             "invalid_member_cursor" => Problem(StatusCodes.Status400BadRequest, errorCode,
                 "The member page cursor is invalid."),
             "session_unavailable" => Problem(

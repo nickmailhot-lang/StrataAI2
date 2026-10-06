@@ -12,6 +12,30 @@ public sealed class OrganizationService(
     StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
     CardReminderContainerScheduling reminders) : IOrganizationService
 {
+    public async Task<OrganizationOperation<OrganizationDirectoryPage>> ListPageAsync(Guid actorUserId,
+        Guid? after, CancellationToken cancellationToken = default)
+    {
+        if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+            return OrganizationOperation<OrganizationDirectoryPage>.Failure("session_unavailable");
+        if (after == Guid.Empty)
+            return OrganizationOperation<OrganizationDirectoryPage>.Failure("invalid_organization_cursor");
+        var routes = await store.ListMembershipOrganizationIdsPageAsync(actorUserId, after, cancellationToken);
+        var candidates = routes.Take(50).ToArray();
+        var items = new List<OrganizationSummary>(candidates.Length);
+        foreach (var organizationId in candidates)
+        {
+            // Routing hints never authorize disclosure, including removed memberships.
+            var result = await ReadAsync(organizationId, actorUserId, cancellationToken);
+            if (result.Succeeded) items.Add(result.Value!);
+            else if (result.ErrorCode != "organization_not_found")
+                return OrganizationOperation<OrganizationDirectoryPage>.Failure(result.ErrorCode!);
+        }
+        if (!await actors.VerifyAsync(actorUserId, cancellationToken))
+            return OrganizationOperation<OrganizationDirectoryPage>.Failure("session_unavailable");
+        return OrganizationOperation<OrganizationDirectoryPage>.Success(new(items,
+            routes.Count > 50 ? candidates[^1] : null));
+    }
+
     public Task<OrganizationOperation<OrganizationSummary>> ReadAsync(Guid organizationId,
         Guid actorUserId, CancellationToken cancellationToken = default) =>
         organizationId == Guid.Empty
