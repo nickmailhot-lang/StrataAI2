@@ -20,8 +20,10 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await page.getByRole('combobox', { name: 'Invitation role' }).focus(); await page.keyboard.press('ArrowDown');
       await page.getByRole('option', { name: 'Admin', exact: true }).focus(); await page.keyboard.press('Enter');
       const writes: { key: string | undefined; input: unknown }[] = [];
-      await page.route(`**/organizations/${org}/invitations`, async route => {
+      const reviewedActor = (await (await context.request.get('/me')).json()).id;
+      await page.route(url => url.pathname === `/organizations/${org}/invitations`, async route => {
         if (route.request().method() !== 'POST') { await route.continue(); return; }
+        expect(new URL(route.request().url()).searchParams.get('expectedActorId')).toBe(reviewedActor);
         writes.push({ key: route.request().headers()['idempotency-key'], input: route.request().postDataJSON() });
         if (writes.length === 1) { expect((await route.fetch()).status()).toBe(201); await route.abort('timedout'); }
         else await route.continue();

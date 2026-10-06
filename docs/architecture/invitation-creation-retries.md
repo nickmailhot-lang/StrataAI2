@@ -1,5 +1,27 @@
 # Retry-safe invitation creation
 
+## Reviewed account binding
+
+Organization and Board invitation creation accept optional `expectedActorId`.
+The creation page captures the account used for its administrative admission and
+sends that ID on both first submission and same-key recovery. A different or empty
+reviewed actor receives neutral `401 session_unavailable` before role parsing,
+receipt lookup, invitation publication or mutation. The draft and retry key remain
+reserved for the original account; a replacement account cannot submit them under
+its own authority. Existing API clients may omit the optional binding and still
+use normal current-account authorization.
+
+Local API checks cover both surfaces: mismatched/empty review leaves history empty,
+then the original account successfully uses the same key and receives one stable
+invitation on retry. Component checks verify the reviewed account query is retained.
+The exact-image fixture additionally compares invitations/routes/receipts/audits
+and private creation proofs, canonical sources, sequence and jobs across refusal.
+These added runtime checks await CI. Release browser interceptors match URL paths
+so account query parameters do not bypass committed-response loss injection.
+Account replacement during initial admission or after a committed response still
+requires the additional browser profile-race checks; this boundary alone does not
+certify all mid-session behavior.
+
 `POST /organizations/{organizationId}/invitations` accepts an optional nonempty UUID `Idempotency-Key`. A keyed request acknowledges the original invitation ID, email, surface, role and expiry; its `invitationToken` is null in every runtime mode. Unkeyed Demo requests retain the existing bearer-token fixture behavior. Production never returns the bearer token.
 
 The existing Organization unit of work locks the active parent and actor membership before invitation creation or replay. Current session/account eligibility and administrative role are authoritative; only a current Owner can acknowledge an internal Owner grant. Normalized email, surface and role bind the key to the original command. Different intent receives `409 idempotency_key_reused`; a receipt older than 24 hours receives `409 idempotency_key_expired`. Expired keys remain reserved, so an old request cannot create a replacement invitation. Malformed, multiple and empty keys fail with `400 invalid_idempotency_key`.

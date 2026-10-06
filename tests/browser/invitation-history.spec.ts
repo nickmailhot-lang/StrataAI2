@@ -22,7 +22,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await page.keyboard.press('Enter'); await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Refresh invitations' })).toBeFocused();
     let writes = 0;
-    await page.route(`**/organizations/${org}/invitations/${id}`, async route => {
+    await page.route(url => url.pathname === `/organizations/${org}/invitations/${id}`, async route => {
       if (route.request().method() !== 'DELETE') { await route.continue(); return; }
       writes++; expect((await route.fetch()).status()).toBe(204); await route.abort('timedout');
     });

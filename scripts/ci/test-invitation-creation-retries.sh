@@ -35,6 +35,17 @@ publication_state() {
    'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$org'))::text;"
 }
 # Any receipt or audit failure rolls back the invitation and routing projection.
+reviewed_state="$(state)"; reviewed_publication="$(publication_state)"
+for reviewed in 00000000-0000-4000-8000-000000000001 00000000-0000-0000-0000-000000000000; do
+  test "$(curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+    -H "Idempotency-Key: $key" -H 'Content-Type: application/json' -d "$(cat "$scratch/input.json")" \
+    -o "$scratch/reviewed-create.json" -w '%{http_code}' "$base/organizations/$org/invitations?expectedActorId=$reviewed")" = 401
+  jq -e '.code=="session_unavailable"' "$scratch/reviewed-create.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$org|retry-invited@example.test" "$scratch/reviewed-create.json"
+  test "$(state)" = "$reviewed_state"
+  test "$(publication_state)" = "$reviewed_publication"
+done
+# The same unconsumed key is used by the positive concurrent/retry case below.
 for table in audit_events invitation_creation_replays; do
   before="$(state)"; failed_key="$(cat /proc/sys/kernel/random/uuid)"
   publication_before="$(publication_state)"

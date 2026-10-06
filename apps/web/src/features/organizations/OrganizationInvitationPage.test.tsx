@@ -27,6 +27,7 @@ describe('Administrator invitation intent and creation acknowledgment', () => {
     const mock = fetcher(reply(ack, 201)); mount(); await submit(); await screen.findByText('Invitation creation acknowledged.');
     const saved = JSON.parse(sessionStorage.getItem(storedKey)!); expect(saved.input).toEqual(input);
     const sent = mock.mock.calls[2]; expect(sent[1].headers.get('Idempotency-Key')).toBe(saved.key); expect(sent[1].headers.get('X-StrataAI-Request')).toBe('1');
+    expect(sent[0]).toBe(`/organizations/${org}/invitations?expectedActorId=${actor}`);
     expect(JSON.parse(sent[1].body)).toEqual(input); expect(screen.getByText(/Email delivery is not confirmed here/)).toBeInTheDocument();
     expect(screen.getByText(/Expires:.*11:00/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Create another invitation' })); expect(sessionStorage.getItem(storedKey)).toBeNull();
@@ -129,7 +130,7 @@ it('binds a Board creation draft and lost acknowledgment retry to the exact Boar
   fireEvent.click(screen.getByRole('button', { name: 'Retry same invitation' }));
   await screen.findByText('Invitation creation acknowledged.');
   const calls = mock.mock.calls.filter(call => call[1]?.method === 'POST');
-  expect(calls).toHaveLength(2); expect(calls[0][0]).toBe(`/boards/${board}/invitations`);
+  expect(calls).toHaveLength(2); expect(calls[0][0]).toBe(`/boards/${board}/invitations?expectedActorId=${actor}`);
   expect(calls[0][1].body).toBe(calls[1][1].body);
   expect(JSON.parse(calls[0][1].body)).toEqual({ email: input.email, role: 'MEMBER' });
   expect(calls[0][1].headers.get('Idempotency-Key')).toBe(calls[1][1].headers.get('Idempotency-Key'));

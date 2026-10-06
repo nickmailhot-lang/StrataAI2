@@ -38,6 +38,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   const [preferences, setPreferences] = useState<{ locale: string; timezone: string }>();
   const pending = useRef<AbortController | undefined>(undefined); const currentIntent = useRef<InvitationIntent | undefined>(undefined);
   const mounted = useRef(false);
+  const reviewedActor = useRef<string | undefined>(undefined);
   useEffect(() => {
     mounted.current = true; void load();
     return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; };
@@ -45,6 +46,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   }, []);
   function valid(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
   function deny(status: number) {
+    reviewedActor.current = undefined;
     setBoardName(undefined); setActorRole(undefined); setInput(empty); setIntent(undefined); currentIntent.current = undefined; setAck(undefined); setPreferences(undefined); setDenied(true);
     setError(`${boardId !== undefined ? 'Board' : 'Organization'} invitations are unavailable to your account.`);
     if (status === 401) navigate('/login', { replace: true });
@@ -81,6 +83,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         admittedRole = data.actorRole;
       }
       const key = invitationIntentKey(actor, organizationId) + (boardId !== undefined ? `:board:${boardId}` : '');
+      reviewedActor.current = actor;
       setStorageKey(key); setActorRole(admittedRole); setDenied(false); setBlocked(false);
       setPreferences(display);
       try {
@@ -92,7 +95,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     finally { finish(controller); }
   }
   async function create(event: React.FormEvent) {
-    event.preventDefault(); if (pending.current || actorRole === undefined || blocked || ack || !storageKey) return;
+    event.preventDefault(); if (pending.current || actorRole === undefined || blocked || ack || !storageKey || !reviewedActor.current) return;
     if (!currentIntent.current && (!input.email.trim() || input.email.trim().length > 320)) { setError('Enter a valid invitation email of at most 320 characters.'); return; }
     let command = currentIntent.current;
     if (!command) {
@@ -103,7 +106,8 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     }
     const controller = begin(); if (!controller) return;
     try {
-      const result = await request(boardId !== undefined ? `/boards/${encodeURIComponent(boardId)}/invitations` : `/organizations/${encodeURIComponent(organizationId)}/invitations`, {
+      const root = boardId !== undefined ? `/boards/${encodeURIComponent(boardId)}/invitations` : `/organizations/${encodeURIComponent(organizationId)}/invitations`;
+      const result = await request(`${root}?expectedActorId=${encodeURIComponent(reviewedActor.current)}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(boardId !== undefined ? { email: command.input.email, role: command.input.targetRole } : command.input),
       }, controller); if (!valid(controller)) return;
       if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }

@@ -39,11 +39,13 @@ public static class InvitationEndpoints
         }).RequireAuthorization().RequireRateLimiting("invitation").AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapPost("/boards/{boardId:guid}/invitations", async (Guid boardId,
-            CreateBoardInvitationRequest request, HttpContext context, BoardInvitationService service,
+            CreateBoardInvitationRequest request, Guid? expectedActorId, HttpContext context, BoardInvitationService service,
             CancellationToken cancellationToken) =>
         {
             var actor = GetUserId(context);
             if (actor is null) return Results.Unauthorized();
+            if (expectedActorId is { } reviewedActor && (reviewedActor == Guid.Empty || reviewedActor != actor.Value))
+                return ErrorFor("session_unavailable");
             Guid? retryKey = null;
             if (context.Request.Headers.TryGetValue("Idempotency-Key", out var values))
             {
@@ -91,6 +93,7 @@ public static class InvitationEndpoints
                 async (
                     Guid organizationId,
                     CreateInvitationRequest request,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IInvitationService service,
                     CancellationToken cancellationToken) =>
@@ -100,6 +103,8 @@ public static class InvitationEndpoints
                     {
                         return Results.Unauthorized();
                     }
+                    if (expectedActorId is { } reviewedActor && (reviewedActor == Guid.Empty || reviewedActor != userId.Value))
+                        return ErrorFor("session_unavailable");
 
                     Guid? retryKey = null;
                     if (context.Request.Headers.TryGetValue("Idempotency-Key", out var values))

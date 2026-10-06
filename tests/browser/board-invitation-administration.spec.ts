@@ -25,7 +25,10 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     }
     const writes: { key: string | undefined; input: unknown }[] = [];
     let id = '';
-    await page.route(`**/boards/${board}/invitations`, async route => {
+    const reviewedActor = (await (await context.request.get('/me')).json()).id;
+    await page.route(url => url.pathname === `/boards/${board}/invitations`, async route => {
+      if (route.request().method() === 'POST')
+        expect(new URL(route.request().url()).searchParams.get('expectedActorId')).toBe(reviewedActor);
       if (route.request().method() !== 'POST') { await route.continue(); return; }
       writes.push({ key: route.request().headers()['idempotency-key'], input: route.request().postDataJSON() });
       const response = await route.fetch(); expect(response.status()).toBe(201);
@@ -51,7 +54,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Refresh invitations' })).toBeFocused();
     let revocations = 0;
-    await page.route(`**/boards/${board}/invitations/${id}`, async route => {
+    await page.route(url => url.pathname === `/boards/${board}/invitations/${id}`, async route => {
       if (route.request().method() !== 'DELETE') { await route.continue(); return; }
       revocations++; expect((await route.fetch()).status()).toBe(204); await route.abort('timedout');
     });
