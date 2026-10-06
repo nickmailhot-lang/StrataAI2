@@ -22,11 +22,13 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
  ('07800000-0000-0000-0000-000000000041','07800000-0000-0000-0000-000000000010','07800000-0000-0000-0000-000000000020','07800000-0000-0000-0000-000000000040','Navigation Card','500000000000000000000000000000',now(),now());
 SET LOCAL ROLE strataai_navigation_ci;
 SELECT set_config('app.identity_subject','07800000-0000-0000-0000-000000000001',true);
+SELECT set_config('app.tenant_id','07800000-0000-0000-0000-000000000099',true);
 DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; org uuid:='07800000-0000-0000-0000-000000000010'; board uuid:='07800000-0000-0000-0000-000000000020'; event uuid:='07800000-0000-0000-0000-000000000030'; BEGIN
  IF NOT append_navigation_interaction(event,actor,'BOARD_OPENED',org,board,board,1,'2026-10-05T12:00:00Z')
   OR NOT append_navigation_interaction(event,actor,'BOARD_OPENED',org,board,board,1,'2026-10-05T12:00:00Z') THEN RAISE EXCEPTION 'Authorized original/retry denied'; END IF;
  IF append_navigation_interaction(event,actor,'BOARD_OPENED',org,board,board,1,'2026-10-05T12:00:01Z')
   OR append_navigation_interaction(gen_random_uuid(),actor,'BOARD_OPENED',org,board,board,2,now()) THEN RAISE EXCEPTION 'Changed original or stale target accepted'; END IF;
+ IF current_setting('app.tenant_id')<>'07800000-0000-0000-0000-000000000099' THEN RAISE EXCEPTION 'Navigation leaked tenant context'; END IF;
  IF (SELECT count(*) FROM navigation_interaction_events)<>1 THEN RAISE EXCEPTION 'Duplicate source'; END IF;
  BEGIN
   UPDATE navigation_interaction_events SET entity_version=2;
