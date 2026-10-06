@@ -6,12 +6,18 @@ BASE_URL="${1:-http://localhost:8080}"
 scratch="$(mktemp -d)"
 gate_pid=''
 request_pid=''
+metadata_session=''
+metadata_session_expiry=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
+  admin 'DROP TRIGGER IF EXISTS ci_organization_metadata_wait ON organization_metadata_replays; DROP FUNCTION IF EXISTS public.ci_organization_metadata_wait();' >/dev/null
+  if test -n "$metadata_session" && test -n "$metadata_session_expiry"; then
+    admin "UPDATE sessions SET expires_at='$metadata_session_expiry'::timestamptz WHERE id='$metadata_session';" >/dev/null
+  fi
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -254,7 +260,7 @@ retry_key="$(cat /proc/sys/kernel/random/uuid)"
 retry_metadata() {
   curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
     -H 'Content-Type: application/json' -H "Idempotency-Key: $retry_key" -X PATCH -d "$1" \
-    -o "$scratch/${2:-metadata-reply}.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org"
+    -D "$scratch/${2:-metadata-reply}.headers" -o "$scratch/${2:-metadata-reply}.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org"
 }
 metadata_state() {
   admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$retry_org'),
@@ -268,6 +274,43 @@ test "$(retry_metadata "$retry_body")" = 503
 jq -e '.code=="organization_storage_unavailable"' "$scratch/metadata-reply.json" >/dev/null
 test "$metadata_before" = "$(metadata_state)"
 admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
+# Observe actual receipt publication while the original cookie session expires.
+metadata_hash="$(owner_hash)"
+[[ "$metadata_hash" =~ ^[0-9a-f]{64}$ ]]
+metadata_session="$(admin "SELECT id FROM sessions WHERE token_hash='$metadata_hash' AND user_id='$owner' AND revoked_at IS NULL;")"
+[[ "$metadata_session" =~ ^[0-9a-fA-F-]{36}$ ]]
+metadata_session_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$metadata_session';")"
+test -n "$metadata_session_expiry"
+admin "CREATE FUNCTION public.ci_organization_metadata_wait() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+BEGIN
+  IF NEW.tenant_id='$retry_org'::uuid THEN PERFORM pg_sleep(12); END IF;
+  RETURN NEW;
+END;
+\$\$;
+CREATE TRIGGER ci_organization_metadata_wait AFTER INSERT ON organization_metadata_replays
+  FOR EACH ROW EXECUTE FUNCTION public.ci_organization_metadata_wait();" >/dev/null
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$metadata_session';" >/dev/null
+metadata_publication_before="$(metadata_state)"
+metadata_identity_before="$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$owner'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$owner'))::text;")"
+retry_metadata "$retry_body" metadata-expiry > "$scratch/metadata-expiry.status" & request_pid=$!
+for ((attempt=0; attempt<100; attempt++)); do
+  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_metadata_replays%';")" = 1; then break; fi
+  sleep 0.1
+done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_metadata_replays%';")" = 1
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/metadata-expiry.status")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/metadata-expiry.json" >/dev/null
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/metadata-expiry.headers"
+scripts/ci/assert-file-excludes.sh "$retry_org|$owner|First metadata edit|Original acknowledgment" "$scratch/metadata-expiry.json"
+test "$metadata_publication_before" = "$(metadata_state)"
+test "$metadata_identity_before" = "$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$owner'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$owner'))::text;")"
+admin 'DROP TRIGGER ci_organization_metadata_wait ON organization_metadata_replays; DROP FUNCTION public.ci_organization_metadata_wait();' >/dev/null
+admin "UPDATE sessions SET expires_at='$metadata_session_expiry'::timestamptz WHERE id='$metadata_session';" >/dev/null
+metadata_session=''; metadata_session_expiry=''
+test "$metadata_before" = "$(metadata_state)"
 hold "SELECT id FROM organizations WHERE id='$retry_org' FOR UPDATE;"
 retry_metadata "$retry_body" metadata-first > "$scratch/metadata-first.status" & metadata_first_pid=$!
 retry_metadata "$retry_body" metadata-second > "$scratch/metadata-second.status" & metadata_second_pid=$!

@@ -56,5 +56,20 @@ The mandatory PostgreSQL fixture now holds the Organization parent lock until
 two same-key requests are observed waiting. On release, both must return identical
 acknowledgments with exactly one metadata audit, one receipt and one version
 advance. This checks real concurrent contention rather than sequential replay.
-Fixture syntax passes; exact-image execution remains pending. Native elapsed
-session expiry after receipt publication remains a separate verification gap.
+Fixture syntax passes; exact-image execution remains pending.
+
+The native fixture also delays the actual metadata receipt INSERT using a
+disposable invoker trigger and observes the restricted API in PostgreSQL PgSleep.
+The original cookie session expires during that wait. Final refusal must return
+401 without a cookie or private acknowledgment, preserve the complete
+Organization/audit/receipt and account/session snapshots, and leave the same key
+available for the concurrent successful retry after the fixture restores the
+original expiry. Cleanup removes the trigger and restores session expiry if the
+check fails. Bash syntax passes; this coverage awaits exact-image execution.
+
+The full web run at browser revision `107180d` completed with 1,497 passing tests
+and two 5-second timeouts in unrelated Board metadata/URL-attachment recovery
+cases. Both passed together in a focused run. Their polling assertions now reuse
+the already identified controls, require them to remain attached, and preserve
+the original enabled/focus checks and timeout limits. A full recheck is running;
+the failed run is not release acceptance evidence.

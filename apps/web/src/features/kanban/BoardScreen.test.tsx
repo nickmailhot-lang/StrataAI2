@@ -118,12 +118,13 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save Board details' }));
     const retry = await screen.findByRole('button', { name: 'Retry this Board save' }); await waitFor(() => expect(retry).toBeEnabled());
     expect(screen.getByRole('button', { name: 'Archive Board', hidden: true })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Add list', hidden: true })).toBeDisabled();
+    const addList = screen.getByRole('button', { name: 'Add list', hidden: true });
+    expect(addList).toBeDisabled();
     fireEvent.click(retry); await screen.findByText('Board changes acknowledged. Current Board state is being checked.');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Add list' })).toBeEnabled());
+    await waitFor(() => { expect(addList).toBeInTheDocument(); expect(addList).toBeEnabled(); });
     expect(attempts).toHaveLength(2); expect(attempts[0].body).toBe(attempts[1].body);
     expect(new Headers(attempts[0].headers).get('Idempotency-Key')).toBe(new Headers(attempts[1].headers).get('Idempotency-Key'));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit Board details' })).toHaveFocus());
+    await waitFor(() => expect(edit).toHaveFocus());
   });
 
   it('recovers a Board archive after canonical read-only state without releasing competing commands', async () => {
@@ -970,9 +971,10 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     await waitFor(() => expect(create).toBeEnabled()); fireEvent.click(create);
     await waitFor(() => expect(writes).toHaveLength(1));
     const retry = await screen.findByRole('button', { name: 'Retry link attachment creation' }); await waitFor(() => expect(retry).toBeEnabled());
-    expect(screen.getByRole('button', { name: 'Add checklist' })).toBeDisabled(); expect(screen.getByRole('button', { name: 'Save card' })).toBeDisabled();
+    const addChecklist = screen.getByRole('button', { name: 'Add checklist' });
+    expect(addChecklist).toBeDisabled(); expect(screen.getByRole('button', { name: 'Save card' })).toBeDisabled();
     expect(writes).toHaveLength(1); fireEvent.click(retry); await screen.findByText('Link attachment created.');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Add checklist' })).toBeEnabled());
+    await waitFor(() => { expect(addChecklist).toBeInTheDocument(); expect(addChecklist).toBeEnabled(); });
     expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
     expect(JSON.parse(writes[0].body as string)).toEqual({ title: 'Reference', url: 'https://example.test/reference', cardVersion: 3 });
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
