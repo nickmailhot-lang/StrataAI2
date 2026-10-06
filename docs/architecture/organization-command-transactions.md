@@ -64,3 +64,14 @@ trusted direct store mutations retain their own boundaries;
 this change does not establish universal Demo transaction integrity. Production
 PostgreSQL retains its owning transaction, final actor check and rollback behavior.
 Full PRD-03 command integrity and acceptance remain incomplete.
+
+## Native source evidence for the initial repair
+
+CI run [37414158125](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37414158125)
+on `407e5f9` completed Domain and API-host tests successfully: 643 Domain cases
+and 433 API-host cases, zero failures. This revision includes the initial six
+Organization rollback/queued-Work cases. Its PostgreSQL and web quality jobs also
+passed. It predates the later member-departure, reminder/navigation, invitation
+participation and active Board directory/browser increments; those require their
+own current-revision evidence. No complete immutable-image release acceptance is
+claimed from these source jobs.
