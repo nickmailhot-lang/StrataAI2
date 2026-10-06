@@ -185,6 +185,28 @@ blocked() {
   return 1
 }
 
+# Stored profile acknowledgment must also be withheld if the original session
+# expires during the receipt read after initial admission.
+original_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$primary_session';")"
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$primary_session';" >/dev/null
+ack_before="$(state)"
+hold 'LOCK TABLE identity_profile_replays IN ACCESS EXCLUSIVE MODE;'
+request PATCH /me "$saved_body" "$retry_key" > "$scratch/ack-expiry.status" &
+request_pid=$!
+blocked '%SELECT fingerprint,result_json%identity_profile_replays%'
+release 'SELECT pg_sleep(12);'
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/ack-expiry.status")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/response.json" >/dev/null
+scripts/ci/assert-file-excludes.sh "$user|Atomic profile saved" "$scratch/response.json"
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
+test "$ack_before" = "$(state)"
+admin "UPDATE sessions SET expires_at='$original_expiry'::timestamptz WHERE id='$primary_session';" >/dev/null
+ack_restored="$(state)"
+test "$(request PATCH /me "$saved_body" "$retry_key")" = 200
+jq -e --arg user "$user" '.id==$user and .version==2 and .displayName=="Atomic profile saved"' "$scratch/response.json" >/dev/null
+test "$ack_restored" = "$(state)"
+
 # Block the real event read after initial actor admission, then let the original
 # session expire before protected snapshot/replay disclosure. No fabricated events.
 for sync_route in /me/sync '/me/sync?after=0'; do

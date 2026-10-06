@@ -166,3 +166,12 @@ state must match the pre-request snapshot. The trigger is removed, the original
 expiry restored, and the existing concurrent same-key success/replay checks run
 afterward. Bash syntax passes; exact-image execution remains pending CI. Runtime
 grants and production schema remain unchanged.
+
+The same native fixture additionally locks the profile replay table after a
+successful save and observes the original same-key request waiting on its actual
+receipt SELECT. It holds that read beyond session expiry, requires denial without
+the saved profile or cookie, and compares complete state before/after. Restoring
+the original fixture session must return the committed acknowledgment without
+another state/event/receipt change. This covers final admission of existing
+receipts separately from rollback of fresh saves. Syntax passes; execution is
+pending the exact-image CI run.
