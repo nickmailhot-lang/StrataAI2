@@ -61,6 +61,8 @@ if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))
 
 if (runtime.Mode == RuntimeMode.Production)
 {
+    builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationDeletionPageStore, StrataAI.Infrastructure.Organizations.PostgresOrganizationDeletionPageStore>();
+    builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationDeletionPageHandler>();
     builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationLifecycleDeliveryStore, StrataAI.Infrastructure.Organizations.PostgresOrganizationLifecycleDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationLifecycleDeliveryHandler>();
     builder.Services.AddSingleton<IIdentityRetryCleanupStore, PostgresIdentityRetryCleanupStore>();

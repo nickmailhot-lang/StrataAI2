@@ -4,9 +4,8 @@
 [PRD-18](https://github.com/nickmailhot-lang/StrataAI2/issues/19) and
 [ARCH-07](https://github.com/nickmailhot-lang/StrataAI2/issues/88) require
 completion beyond the [deletion request acknowledgment](organization-deletion-retries.md).
-This defines the completion implementation. Publication and the terminal storage
-gate have implementation foundations; graph page processing and product
-completion are not enabled.
+This defines the completion implementation. Publication, graph stages and the terminal storage gate have infrastructure/Worker
+implementations. Product API completion is not enabled.
 A 202 remains an acknowledgment of the accepted request.
 
 ## State and graph treatment
@@ -137,8 +136,8 @@ Actor admission is synthetic in this contract,
 so it does not prove HTTP/session authorization.
 
 Publication is not registered or invoked by the production API yet. The
-restricted leased page implementation and its full graph processing must exist
-before accepted product requests enqueue these jobs. Terminal deletion and
+restricted leased page implementation below must pass its runtime checks, and
+product recovery/observation must be implemented before enabling the full flow. Terminal deletion and
 completion observation remain pending.
 
 ## Terminal storage gate
@@ -171,10 +170,11 @@ physical object removal, realtime delivery or browser completion. Compilation pa
 terminal contract passed at `d715ce5` in [CI run 37496328863](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37496328863/job/112381688920).
 This verifies the terminal gate; preceding graph stages were staged by the fixture.
 
-The finalizer is not registered in the Worker or invoked by production requests.
-Bounded graph stages, live lifecycle event consumption, independent Owner completion
-observation and full exact-image acceptance remain required before enabling the
-complete flow. Existing deletion acknowledgments remain request acknowledgments.
+The standalone finalizer adapter is not separately registered. The Worker page
+processor below invokes its SQL terminal capability inside the page transaction.
+Production API publication, live lifecycle event consumption, independent Owner
+completion observation and full exact-image acceptance remain required before
+enabling the complete product flow. Existing deletion acknowledgments remain request acknowledgments.
 
 ## Durable completion readiness
 
@@ -203,9 +203,8 @@ direct mutation. Handler runtime tests and overall release results must be
 reviewed separately from this database result.
 
 Readiness is a durable delivery milestone. It does not establish SignalR/browser
-consumption or Owner completion observation. The deletion producer/finalizer
-remain disconnected from production until bounded graph processing and the
-remaining product flow are implemented and verified.
+consumption or Owner completion observation. Product API publication remains disconnected until graph-stage runtime evidence
+and the remaining recovery/observation flow are implemented and verified.
 
 ## Bounded graph candidate traversal
 
@@ -229,11 +228,56 @@ attachments. It walks bounded pages, checks ordering/continuations and complete
 counts, and tests current scope/request/step/version/lease and page-limit fences.
 Checkpoints are admin-staged and the scale fixture extends its disposable claim;
 this tests traversal, not mutation, normal lease throughput or product deletion.
-Compilation passed with zero warnings/errors; this revision's migration/runtime
-scale result remains pending CI.
+Compilation passed with zero warnings/errors. The actual restricted traversal
+contract passed at `e01fa5a` in [CI run 37498205706](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37498205706/job/112388090296):
+100,002 Cards, including 100,000 archived Cards, were read in bounded UUID-seek
+pages in 7,067 ms including administrator checkpoint staging. The 200-List and
+archived parent/attachment checks also passed. This timing is the fixture's
+traversal result, not a product mutation or browser performance claim.
 
-Candidate reads alone grant no mutation authority. The pending page processor
-must couple current row/version/lease validation, tombstones, reference cleanup,
+Candidate reads alone grant no mutation authority. The page processor described below
+couples current row/version/lease validation, tombstones, reference cleanup,
 audit/events, checkpoint advancement and next-job publication in one transaction.
-It must preserve prior deletion/archive attribution and provider evidence. The
-reader is not registered as a production deletion processor.
+It must preserve prior deletion/archive attribution and provider evidence. The reader alone is not a production deletion processor.
+
+## Atomic Worker deletion stages
+
+Migration `092_organization_deletion_pages` and the registered production
+`PostgresOrganizationDeletionPageStore` implement attachments → Cards → Lists →
+Boards → FINALIZE, using the existing 128-candidate handler and durable jobs.
+Each page locks its parent, validates the accepted request/current lease, and
+re-reads each source under Board/child locks before effects. It couples
+tombstones, selected cover/image cleanup, retained attribution, audit/events,
+immutable step receipt, checkpoint and reference-only continuation publication.
+Deferred cover constraints are checked before the final lease fence. Late expiry
+raises an error and rolls back every effect and publication.
+
+The original archive timestamp remains unchanged. Already deleted records keep
+their deleting actor/time and do not emit another deletion event; only remaining
+selected references require cleanup. FILE source/digest/storage and immutable
+provider evidence remain retained. Active attachments can be directly tombstoned
+only by the admitted, leased Worker scope, avoiding an invented intermediate
+archive history. Normal attachment lifecycle commands retain their existing
+archive-first rules.
+
+Committed step receipts allow duplicate/reclaimed jobs to acknowledge their
+original work after the checkpoint advances or terminal deletion completes.
+Recovery verifies the matching continuation identity and still requires the
+current live claim. Processing derives authority from the accepted request,
+independently of a subsequently deactivated initiating account. FINALIZE invokes
+the existing graph-proving terminal capability; completion event readiness uses
+the registered restricted delivery handler.
+
+`OrganizationDeletionPagesContract` exercises actual restricted stages on 260
+Cards, 130 attachments (including FILE metadata), active/archived parents and
+prior tombstones. It injects expiry after continuation insertion, verifies full
+rollback, duplicate/reclaim recovery, drains real page/event handlers through
+terminal readiness after actor deactivation, and checks preserved prior history
+and provider metadata. Compilation passed with zero warnings/errors; this
+revision's runtime execution is pending CI. Selected preview-backed cover/image
+fixtures, large mutation throughput, HTTP/product integration and live browser
+completion require further evidence before PRD acceptance.
+
+The product API does not publish deletion work yet. Existing 202 acknowledgments
+still confirm the request. Demo parity, independent Owner completion observation,
+two-client invalidation/reconnect and exact-image acceptance remain unfinished.
