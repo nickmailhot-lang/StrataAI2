@@ -268,22 +268,32 @@ independently of a subsequently deactivated initiating account. FINALIZE invokes
 the existing graph-proving terminal capability; completion event readiness uses
 the registered restricted delivery handler.
 
-`OrganizationDeletionPagesContract` exercises actual restricted stages on 260
-Cards, 130 attachments (including FILE metadata), active/archived parents and
-prior tombstones. It injects expiry after continuation insertion, verifies full
+`OrganizationDeletionPagesContract` exercises actual restricted stages on 261
+Cards, 131 attachments (including FILE metadata), active/archived parents and
+prior tombstones. The extended fixture has a normally constrained preview
+manifest/publication, selected Card cover, and three Board image owners, including
+copied ownership and a selected image on a previously deleted Board. It asserts
+reference cleanup, one cover-change event, historical Board cleanup, and unchanged
+preview/publication/ownership evidence. This is administrator-seeded historical
+metadata; it does not prove provider writes or deletion through the product API. It injects expiry after continuation insertion, verifies full
 rollback, duplicate/reclaim recovery, drains real page/event handlers through
 terminal readiness after actor deactivation, and checks preserved prior history
-and provider metadata. Compilation passed with zero warnings/errors; this
-revision's runtime execution is pending CI. The initial PostgreSQL run exposed
-an ordinary attachment archive regression: a combined SQL predicate attempted
-the private Worker capability check under an ordinary caller. The trigger now
-uses a separate procedural Worker/transition branch, preserving the private
-capability grants. The existing archive/delete storage contract also checks that
-ordinary direct deletion fails with the lifecycle constraint, rather than a
-capability permission error. Runtime confirmation of the correction is pending.
-Selected preview-backed cover/image
-fixtures, large mutation throughput, HTTP/product integration and live browser
-completion require further evidence before PRD acceptance.
+and provider metadata. Compilation passed with zero warnings/errors. The initial
+PostgreSQL run exposed an ordinary attachment archive regression: a combined SQL
+predicate attempted the private Worker capability check under an ordinary caller.
+The trigger now uses a separate procedural Worker/transition branch, preserving
+the private capability grants. The archive/delete storage contract also checks
+that ordinary direct deletion fails with the lifecycle constraint, rather than a
+capability permission error.
+
+The correction at `8664556` passed the actual restricted graph stages and
+attachment storage contract in [PostgreSQL CI job 112398997723](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37501388855/job/112398997723).
+That run covers the original 260-Card/130-attachment fixture, bounded pages,
+late-expiry rollback, replay/reclaim recovery, retained history/provider metadata,
+and terminal readiness after actor deactivation. Runtime results for the added
+selected preview-backed cover/image fixture and explicit private-helper privilege
+assertions remain pending CI. Large mutation throughput, HTTP/product integration
+and live browser completion require further evidence before PRD acceptance.
 
 The product API does not publish deletion work yet. Existing 202 acknowledgments
 still confirm the request. Demo parity, independent Owner completion observation,

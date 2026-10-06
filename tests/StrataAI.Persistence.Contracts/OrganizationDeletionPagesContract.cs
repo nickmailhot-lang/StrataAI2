@@ -63,6 +63,51 @@ internal static class OrganizationDeletionPagesContract
               (SELECT md5(@tenant::text||':attachment:'||n)::uuid FROM generate_series(2,130) n WHERE n%2=0));
             UPDATE attachments SET lifecycle_state='DELETED',deleted_at=now(),deleted_by=@historic,updated_at=now(),version=3
              WHERE tenant_id=@tenant AND id=md5(@tenant::text||':attachment:1')::uuid;
+            -- Admin-seeded historical publication with all normal constraints and
+            -- triggers enabled. This is metadata evidence, not a provider write.
+            CREATE TEMP TABLE deletion_page_image_fixture AS SELECT @tenant AS tenant,@actor AS actor,
+             md5(@tenant::text||':image-card')::uuid AS card,md5(@tenant::text||':image-file')::uuid AS file,
+             md5(@tenant::text||':image-preview')::uuid AS preview,md5(@tenant::text||':board:1')::uuid AS board,
+             now() AS published;
+            INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+             SELECT card,tenant,board,md5(tenant::text||':list:1')::uuid,'Cover fixture','600000000000000000000000000000',published,published
+             FROM deletion_page_image_fixture;
+            INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,mime_type,size_bytes,storage_key,sha256,
+             scan_status,scanned_at,version,created_at,updated_at)
+             SELECT file,tenant,card,actor,'FILE','Retained image','image/png',128,'private-fixture/'||tenant::text||'/image.png',
+              repeat('a',64),'CLEAN',published,3,published,published FROM deletion_page_image_fixture;
+            INSERT INTO background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,safe_metadata,state)
+             SELECT preview,tenant,'ATTACHMENT_PREVIEW','attachment-preview/'||replace(file::text,'-','')||'/2',actor,
+              'attachment-private-preview','page-preview',jsonb_build_object('attachmentId',file,'cardId',card,'version',2),'SUCCEEDED'
+             FROM deletion_page_image_fixture;
+            INSERT INTO attachment_previews(id,tenant_id,attachment_id,card_id,source_version,source_size_bytes,source_sha256,
+             source_mime_type,output_size_bytes,output_sha256,width,height,created_at)
+             SELECT preview,tenant,file,card,2,128,repeat('a',64),'image/png',64,repeat('b',64),1,1,published
+             FROM deletion_page_image_fixture;
+            INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,created_at)
+             SELECT preview,tenant,actor,'ATTACHMENT_PREVIEW_PUBLISHED','Attachment',file,'page-preview',published FROM deletion_page_image_fixture;
+            INSERT INTO work_event_streams(tenant_id,board_id,last_sequence,updated_at)
+             SELECT tenant,board,1,published FROM deletion_page_image_fixture;
+            INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,
+             correlation_id,created_at,ready_at)
+             SELECT tenant,preview,board,1,actor,'ATTACHMENT_PREVIEW_PUBLISHED','Card',card,1,'page-preview',published,published
+             FROM deletion_page_image_fixture;
+            INSERT INTO attachment_preview_publications(id,tenant_id,attachment_version,card_version,board_id,published_at)
+             SELECT preview,tenant,3,1,board,published FROM deletion_page_image_fixture;
+            INSERT INTO board_background_images(id,tenant_id,board_id,preview_id,created_by,created_at)
+             SELECT md5(tenant::text||':image-owner:1')::uuid,tenant,board,preview,actor,published FROM deletion_page_image_fixture;
+            INSERT INTO board_background_images(id,tenant_id,board_id,preview_id,created_by,created_at,source_image_id)
+             SELECT md5(tenant::text||':image-owner:'||n)::uuid,tenant,md5(tenant::text||':board:'||n)::uuid,preview,actor,published,
+              md5(tenant::text||':image-owner:1')::uuid FROM deletion_page_image_fixture CROSS JOIN generate_series(2,3) n;
+            UPDATE boards SET background_type='IMAGE',background_value=md5(tenant_id::text||':image-owner:'||n)::uuid::text,
+             version=version+1,updated_at=GREATEST(updated_at,now())
+             FROM generate_series(1,3) n WHERE tenant_id=@tenant AND id=md5(@tenant::text||':board:'||n)::uuid;
+            UPDATE cards SET cover_attachment_id=f.file,version=version+1,updated_at=GREATEST(updated_at,f.published)
+             FROM deletion_page_image_fixture f WHERE id=f.card AND tenant_id=f.tenant;
+            CREATE TEMP TABLE deletion_page_provider_history AS
+             SELECT 'Manifest'::text kind,id,to_jsonb(m) evidence FROM attachment_previews m WHERE tenant_id=@tenant UNION ALL
+             SELECT 'Publication',id,to_jsonb(p) FROM attachment_preview_publications p WHERE tenant_id=@tenant UNION ALL
+             SELECT 'ImageOwner',id,to_jsonb(i) FROM board_background_images i WHERE tenant_id=@tenant;
             CREATE TEMP TABLE deletion_page_archive_history AS
              SELECT 'Board'::text kind,id,archived_at FROM boards WHERE tenant_id=@tenant UNION ALL
              SELECT 'List',id,archived_at FROM board_lists WHERE tenant_id=@tenant UNION ALL
@@ -107,6 +152,7 @@ internal static class OrganizationDeletionPagesContract
             SELECT md5(jsonb_build_object(
              'attachments',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM attachments a WHERE tenant_id=@tenant),
              'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id=@tenant),
+             'boards',(SELECT jsonb_agg(to_jsonb(b) ORDER BY id) FROM boards b WHERE tenant_id=@tenant),
              'progress',(SELECT to_jsonb(p) FROM organization_deletion_progress p WHERE tenant_id=@tenant),
              'steps',(SELECT jsonb_agg(to_jsonb(s) ORDER BY step_id) FROM organization_deletion_steps s WHERE tenant_id=@tenant),
              'audit',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id=@tenant),
@@ -163,8 +209,8 @@ internal static class OrganizationDeletionPagesContract
              (SELECT count(*) FROM organization_lifecycle_events WHERE tenant_id=@tenant AND ready_at IS NOT NULL),
              (SELECT count(*) FROM background_jobs WHERE tenant_id=@tenant AND state<>'SUCCEEDED'),
              (SELECT count(*) FROM work_events WHERE tenant_id=@tenant AND actor_id<>@actor),
-             (SELECT storage_key FROM attachments WHERE tenant_id=@tenant AND kind='FILE'),
-             (SELECT sha256 FROM attachments WHERE tenant_id=@tenant AND kind='FILE')
+             (SELECT storage_key FROM attachments WHERE tenant_id=@tenant AND id=md5(@tenant::text||':attachment:130')::uuid),
+             (SELECT sha256 FROM attachments WHERE tenant_id=@tenant AND id=md5(@tenant::text||':attachment:130')::uuid)
             FROM organizations o JOIN organization_deletion_progress p ON p.tenant_id=o.id WHERE o.id=@tenant;
             """,admin))
         {
@@ -190,7 +236,22 @@ internal static class OrganizationDeletionPagesContract
              WHERE h.deleted_at IS DISTINCT FROM c.deleted_at OR h.deleted_by IS DISTINCT FROM c.deleted_by))::text;
             """);
         Require(preserved=="true","Deletion stages rewrote prior archive/deletion attribution.");
-        await Admin("DROP TABLE deletion_page_archive_history,deletion_page_deleted_history;");
-        Console.WriteLine("Organization deletion pages: all graph stages, 128-candidate bounds, late rollback, duplicate/reclaim recovery, retained prior history/provider metadata and independent actor completion passed.");
+        Require(await Fingerprint("""
+            SELECT (NOT EXISTS(SELECT 1 FROM cards WHERE tenant_id=@tenant AND cover_attachment_id IS NOT NULL)
+             AND NOT EXISTS(SELECT 1 FROM boards WHERE tenant_id=@tenant AND
+              (background_image_id IS NOT NULL OR background_type<>'COLOR' OR background_value IS NOT NULL))
+             AND (SELECT count(*) FROM work_events WHERE tenant_id=@tenant AND event_type='CARD_COVER_CHANGED')=1
+             AND (SELECT count(*) FROM work_events WHERE tenant_id=@tenant AND event_type='BOARD_UPDATED')=1
+             AND NOT EXISTS(SELECT 1 FROM deletion_page_provider_history h FULL JOIN (
+              SELECT 'Manifest' kind,id,to_jsonb(m) evidence FROM attachment_previews m WHERE tenant_id=@tenant UNION ALL
+              SELECT 'Publication',id,to_jsonb(p) FROM attachment_preview_publications p WHERE tenant_id=@tenant UNION ALL
+              SELECT 'ImageOwner',id,to_jsonb(i) FROM board_background_images i WHERE tenant_id=@tenant) c USING(kind,id)
+              WHERE h.evidence IS DISTINCT FROM c.evidence)
+             AND EXISTS(SELECT 1 FROM attachments a JOIN deletion_page_image_fixture f ON a.id=f.file
+              WHERE a.lifecycle_state='DELETED' AND a.archived_at IS NULL AND a.scan_status='CLEAN'
+               AND a.storage_key='private-fixture/'||@tenant::text||'/image.png' AND a.sha256=repeat('a',64)))::text;
+            """)=="true","Selected cover/background cleanup or immutable preview ownership retention failed.");
+        await Admin("DROP TABLE deletion_page_archive_history,deletion_page_deleted_history,deletion_page_provider_history,deletion_page_image_fixture;");
+        Console.WriteLine("Organization deletion pages: all graph stages, 128-candidate bounds, late rollback, duplicate/reclaim recovery, selected cover/background cleanup, retained prior history/provider metadata and independent actor completion passed.");
     }
 }
