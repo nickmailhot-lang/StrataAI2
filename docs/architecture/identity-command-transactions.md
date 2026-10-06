@@ -78,10 +78,9 @@ policy. A request acknowledgment still does not prove email delivery.
 
 Four API-host cases run actual password-reset requests or verification resends,
 observe real token and recovery-receipt writes, then introduce an exception or
-cancellation. They require the failed token and receipt to disappear while the
-non-cancellation failure returns a neutral result. Cancellation still propagates;
-the
-account, Identity event stream and pre-existing registration verification proof
+cancellation. They require the failed token and receipt to disappear. The
+non-cancellation failure returns a neutral result; cancellation still propagates.
+The account, Identity event stream and pre-existing registration verification proof
 remain unchanged. Fresh same-key requests must create usable proof; matching
 replay must retain the token and receipt. An unknown-email request must retain
 its neutral null result without altering the known account.
