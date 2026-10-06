@@ -32,16 +32,20 @@ for (const width of [1280, 390]) {
       const boardPath = `/app/${org}/boards/${board.id}`; const archivePath = `/app/${org}/archived-boards`;
       const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
       const otherReads = trackBoardReads(other, board.id, boardPath);
+      const initiatingReads = trackBoardReads(page, board.id, boardPath);
       await other.goto(boardPath); await page.goto(boardPath);
       for (const client of [page, other]) await expect(client.getByText('Live updates connected.', { exact: true })).toBeVisible();
       await expect.poll(otherReads).toBeGreaterThanOrEqual(2);
+      await expect.poll(initiatingReads).toBeGreaterThanOrEqual(2);
       const archives: { key: string | undefined; body: string | null }[] = [];
       await page.route(`**/boards/${board.id}/archive`, async route => {
         archives.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
         const result = await route.fetch(); expect(result.status()).toBe(200);
         if (archives.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
       });
-      await page.getByRole('button', { name: 'Archive Board', exact: true }).focus(); await page.keyboard.press('Enter');
+      const archiveEntry = page.getByRole('button', { name: 'Archive Board', exact: true });
+      await expect(archiveEntry).toBeEnabled();
+      await archiveEntry.focus(); await expect(archiveEntry).toBeFocused(); await archiveEntry.press('Enter');
       await expect(page.getByText(/Its Lists and Cards remain associated with it/)).toBeVisible();
       const confirmArchive = page.getByRole('button', { name: 'Confirm archive', exact: true });
       await expect(confirmArchive).toBeEnabled(); await confirmArchive.press('Enter');
