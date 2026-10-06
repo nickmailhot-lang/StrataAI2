@@ -289,3 +289,9 @@ regression now focuses Retry and asserts the refresh target after acknowledgment
 All 15 archive-directory component tests and all 10 filter-intent tests pass.
 Browser TypeScript passes for the native fixture repairs. Native execution and
 expanded full verification of these changes remain pending.
+
+All 239 tests across the 12 previously failing local UI files passed with
+`--maxWorkers=2` (168.90 seconds), without changing their assertions or
+5-second timeouts. This supports a local concurrency/timing explanation for
+those failures, but is not full-suite evidence. A complete recheck with the same
+worker bound remains required. CI continues to run the normal source gate.
