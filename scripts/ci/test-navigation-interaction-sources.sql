@@ -2,7 +2,8 @@
 BEGIN;
 CREATE ROLE strataai_navigation_ci NOSUPERUSER NOBYPASSRLS NOLOGIN;
 GRANT USAGE ON SCHEMA public TO strataai_navigation_ci;
-GRANT SELECT ON navigation_interaction_events TO strataai_navigation_ci;
+GRANT SELECT ON navigation_interaction_events,navigation_interaction_replays TO strataai_navigation_ci;
+GRANT EXECUTE ON FUNCTION append_or_replay_navigation_interaction(uuid,text,uuid,uuid,text,uuid,uuid,uuid,bigint,timestamptz) TO strataai_navigation_ci;
 GRANT EXECUTE ON FUNCTION append_navigation_interaction(uuid,uuid,text,uuid,uuid,uuid,bigint,timestamptz) TO strataai_navigation_ci;
 INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at) VALUES
  ('07800000-0000-0000-0000-000000000001','search-a@example.test','SEARCH-A@EXAMPLE.TEST','Search A','ACTIVE','fixture',now(),now()),
@@ -60,6 +61,23 @@ DO $$ BEGIN
 END $$;
 SELECT set_config('app.identity_subject','',true);
 DO $$ BEGIN IF EXISTS(SELECT 1 FROM navigation_interaction_events) THEN RAISE EXCEPTION 'Missing actor disclosure'; END IF; END $$;
+SELECT set_config('app.identity_subject','07800000-0000-0000-0000-000000000001',true);
+DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; org uuid:='07800000-0000-0000-0000-000000000010'; board uuid:='07800000-0000-0000-0000-000000000020'; key uuid:='08000000-0000-0000-0000-000000000001'; event uuid:='08000000-0000-0000-0000-000000000002'; reply record; BEGIN
+ SELECT * INTO reply FROM append_or_replay_navigation_interaction(key,repeat('a',64),event,actor,'BOARD_OPENED',org,board,board,1,'2026-10-05T12:00:00Z');
+ IF NOT FOUND OR reply.original_event<>event THEN RAISE EXCEPTION 'Fresh navigation receipt unavailable'; END IF;
+ SELECT * INTO reply FROM append_or_replay_navigation_interaction(key,repeat('a',64),gen_random_uuid(),actor,'BOARD_OPENED',org,board,board,1,now());
+ IF NOT FOUND OR reply.original_event<>event OR reply.original_created<>'2026-10-05T12:00:00Z'::timestamptz THEN RAISE EXCEPTION 'Original navigation identity lost'; END IF;
+ PERFORM * FROM append_or_replay_navigation_interaction(key,repeat('b',64),gen_random_uuid(),actor,'BOARD_OPENED',org,board,board,1,now());
+ IF FOUND THEN RAISE EXCEPTION 'Changed navigation intent accepted'; END IF;
+ IF (SELECT count(*) FROM navigation_interaction_replays)<>1 THEN RAISE EXCEPTION 'Duplicate navigation receipt'; END IF;
+END $$;
+RESET ROLE;
+UPDATE board_members SET status='REMOVED' WHERE id='07800000-0000-0000-0000-000000000021';
+SET LOCAL ROLE strataai_navigation_ci;
+DO $$ BEGIN
+ PERFORM * FROM append_or_replay_navigation_interaction('08000000-0000-0000-0000-000000000001',repeat('a',64),gen_random_uuid(),'07800000-0000-0000-0000-000000000001','BOARD_OPENED','07800000-0000-0000-0000-000000000010','07800000-0000-0000-0000-000000000020','07800000-0000-0000-0000-000000000020',1,now());
+ IF FOUND THEN RAISE EXCEPTION 'Revoked receipt disclosed'; END IF;
+END $$;
 RESET ROLE;
 DO $$ BEGIN
  IF (SELECT version FROM cards WHERE id='07800000-0000-0000-0000-000000000041')<>1
