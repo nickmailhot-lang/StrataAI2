@@ -51,6 +51,10 @@ for (const width of [1280, 390]) {
       await expect(page.getByText('Current members checked. Review a membership again before confirming removal.', { exact: true })).toBeVisible();
       await observer.goto(`/app/${org}/members`);
       await expect(observer.getByText('Current members checked. Review a membership again before confirming removal.', { exact: true })).toBeVisible();
+      const invitationObserver = await context.newPage(); await invitationObserver.setViewportSize({ width, height: 844 });
+      await invitationObserver.goto(`/app/${org}/invitations`);
+      await expect(invitationObserver.getByText('Current invitations checked. Review an invitation again before confirming revocation.', { exact: true })).toBeVisible();
+      const issuedCounts = new Map<number, number>();
       async function join(index: number, client: typeof recipient) {
         const issued = await context.request.post(`/organizations/${org}/invitations`, { headers,
           data: { email: accounts[index].email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
@@ -60,6 +64,8 @@ for (const width of [1280, 390]) {
         const source = invitations.find(row => row.entityId === invitationId)!;
         expect(source.entityType).toBe('Invitation'); expect(source.version).toBe(1);
         expect(source.actorId).toBe(accounts[0].id); expect(source.boardId).toBeNull(); expect(source.metadata).toEqual({});
+        issuedCounts.set(index, (issuedCounts.get(index) ?? 0) + 1);
+        await expect(invitationObserver.getByRole('heading', { name: accounts[index].email, exact: true })).toHaveCount(issuedCounts.get(index)!);
         expect((await client.request.post(`/me/invitations/${invitationId}/accept`, { headers })).status()).toBe(200);
       }
       await join(1, recipient);
@@ -107,6 +113,7 @@ for (const width of [1280, 390]) {
       }
       expect((await recipient.request.get(`/organizations/${org}/metadata-events`)).status()).toBe(404);
       expect((await new AxeBuilder({ page: observer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      expect((await new AxeBuilder({ page: invitationObserver }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     } finally { await recipient.close(); await newcomer.close(); restoreWorker(); }

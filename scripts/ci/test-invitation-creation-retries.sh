@@ -75,6 +75,18 @@ test "$(create "$key" outsider input other)" = 404
 test "$(state)" = "$after"
 test "$(publication_state)" = "$publication_after"
 # Completed acknowledgments do not restore revoked grants.
+reviewed_before="$(admin "SELECT jsonb_build_object('invitation',(SELECT to_jsonb(i) FROM invitations i WHERE tenant_id='$org' AND id='$id'),
+ 'route',(SELECT to_jsonb(r) FROM invitation_routes r WHERE tenant_id='$org' AND invitation_id='$id'))::text;")"
+for reviewed in 00000000-0000-4000-8000-000000000001 00000000-0000-0000-0000-000000000000; do
+  test "$(curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -X DELETE \
+   -o "$scratch/reviewed-actor.json" -w '%{http_code}' "$base/organizations/$org/invitations/$id?expectedActorId=$reviewed")" = 401
+  jq -e '.code=="session_unavailable"' "$scratch/reviewed-actor.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$org|$id|retry-invited@example.test" "$scratch/reviewed-actor.json"
+  test "$reviewed_before" = "$(admin "SELECT jsonb_build_object('invitation',(SELECT to_jsonb(i) FROM invitations i WHERE tenant_id='$org' AND id='$id'),
+   'route',(SELECT to_jsonb(r) FROM invitation_routes r WHERE tenant_id='$org' AND invitation_id='$id'))::text;")"
+  test "$(state)" = "$after"
+  test "$(publication_state)" = "$publication_after"
+done
 admin "UPDATE invitations SET revoked_at=clock_timestamp() WHERE tenant_id='$org' AND id='$id';" >/dev/null
 test "$(create "$key" revoked)" = 201; cmp "$scratch/first.json" "$scratch/revoked.json"
 test "$(admin "SELECT revoked_at IS NOT NULL FROM invitations WHERE tenant_id='$org' AND id='$id';")" = t

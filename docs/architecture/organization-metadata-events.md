@@ -212,3 +212,11 @@ The native browser observer also requires actual content-free invitation frames.
 These new PostgreSQL and exact-image checks remain unverified until their CI
 results are available. Invitation history and recipient views still need their
 applicable live reconciliation; transport support alone does not complete them.
+
+Migration 099 clean/repeat/forward-upgrade and rollback checks passed at `8a09f28`
+in [run 37534928204](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37534928204).
+The restricted PostgreSQL source-capability, delivery, routing and protected
+replay contracts also passed. Normal invitation command publication and actual
+browser consumption still require their exact-image acceptance results.
+See [invitation-history reconciliation](../invitation-history.md#live-organization-history-and-reviewed-account)
+for the next client integration and its remaining scope.

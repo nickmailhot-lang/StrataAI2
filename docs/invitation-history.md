@@ -76,3 +76,33 @@ releasing the lock, requires the stable `board_not_found` denial with no recipie
 email, and compares invitation/audit/event/stream/job state before and after each
 request. This supplements rollback and natural-ID retry assertions. Shell syntax
 and diff checks pass locally; restricted PostgreSQL execution remains pending CI.
+
+## Live Organization history and reviewed account
+
+Organization history subscribes to the production metadata stream after its
+account-bound history read succeeds. An event, reset or unavailable stream clears
+private rows and retires revocation consent, then queues a fresh first-page read.
+An epoch fences obsolete reads. A currently running revocation keeps its exact
+target; live invalidation never sends another DELETE or erases an unresolved
+natural-ID recovery reference. A missing recovery row leaves revocation unconfirmed
+and blocks new consent until canonical review resolves it.
+
+History reads check `/me` before and after disclosure. Revocation checks the
+reviewed account before sending and after acknowledgment. Both Organization and
+Board DELETE endpoints accept `expectedActorId`; a mismatch or empty UUID returns
+the neutral `session_unavailable` refusal before the command can change state.
+Confirmed account replacement withdraws private rows and recovery context.
+
+The required desktop/mobile member-live browser scenario now includes a separate
+Organization invitation-history observer. It must show newly issued invitations
+from canonical live sources without manual reload and pass accessibility checks.
+This native execution remains pending. Board history retains its separate Board
+surface; applicable Board and recipient stream integration and additional
+invitation lifecycle event coverage remain outstanding.
+
+Local validation passed the Release solution build with zero warnings/errors,
+20 history-component cases and two API-host cases covering reviewed-account
+refusal and successful same-account revocation on both surfaces. Native container
+fixtures also require neutral reviewed-account refusal with unchanged invitation,
+routing, audit, source/counter/proof and queue state. Their runtime execution and
+the new two-client browser observer still await current-image CI.

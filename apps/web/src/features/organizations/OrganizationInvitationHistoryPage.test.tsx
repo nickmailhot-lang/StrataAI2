@@ -1,12 +1,18 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationInvitationHistoryPage, BoardInvitationHistoryPage } from './OrganizationInvitationHistoryPage';
+const live = vi.hoisted(() => ({ watch: vi.fn() }));
+vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.watch }));
 
 const org = '10000000-0000-0000-0000-000000000001';
-const profile = { locale: 'en-CA', timezone: 'Pacific/Honolulu' };
+const profile = { id: '40000000-0000-4000-8000-000000000004', locale: 'en-CA', timezone: 'Pacific/Honolulu' };
+let currentProfile = profile;
 const row = { id: '20000000-0000-0000-0000-000000000001', email: 'issued@example.test', surface: 'INTERNAL', targetRole: 'MEMBER',
   createdAt: '2034-01-01T00:00:00Z', expiresAt: '2035-01-08T18:00:00Z', acceptedAt: null as string | null, revokedAt: null as string | null, deliveryState: 'SENT' };
-const reply = (body: unknown, status = 200) => new Response(status === 204 ? null : JSON.stringify(body), { status });
+const bodies = new WeakMap<Response, unknown>();
+const reply = (body: unknown, status = 200) => {
+  const response = new Response(status === 204 ? null : JSON.stringify(body), { status }); bodies.set(response, body); return response;
+};
 const page = (items = [row]) => ({ items, nextCursor: null });
 function mount() {
   const router = createMemoryRouter([{ path: '/app/:organizationId/invitations', element: <OrganizationInvitationHistoryPage /> }],
@@ -14,12 +20,69 @@ function mount() {
   return render(<RouterProvider router={router} />);
 }
 function fetcher(...responses: (Response | Error)[]) {
-  const mock = vi.fn(); for (const response of responses) {
-    if (response instanceof Error) mock.mockRejectedValueOnce(response); else mock.mockResolvedValueOnce(response);
-  } vi.stubGlobal('fetch', mock); return mock;
+  const queue = responses.filter(response => response instanceof Error || bodies.get(response) !== profile);
+  const mock = vi.fn(async (path: string, _options?: RequestInit) => {
+    if (path === '/me') return reply(currentProfile);
+    const response = queue.shift(); if (response instanceof Error) throw response;
+    if (!response) throw new Error(`Unexpected request: ${path}`); return response;
+  }); vi.stubGlobal('fetch', mock); return mock;
 }
 async function review() { fireEvent.click(await screen.findByRole('button', { name: `Revoke invitation for ${row.email}` })); await screen.findByRole('dialog'); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+beforeEach(() => { currentProfile = profile; live.watch.mockReset(); live.watch.mockReturnValue(() => {}); });
+async function invalidate() { await act(async () => { live.watch.mock.calls.at(-1)![0].invalidate(); }); }
+
+it('retires reviewed revocation consent and reloads newly issued invitations after a live source', async () => {
+  const later = { ...row, id: '20000000-0000-0000-0000-000000000002', email: 'later@example.test' };
+  const mock = fetcher(reply(profile), reply(page()), reply(page([row, later])));
+  mount(); await review(); await invalidate();
+  await screen.findByRole('heading', { name: later.email });
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(live.watch.mock.calls[0][0]).toMatchObject({ organizationId: org, userId: profile.id });
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
+it('preserves an unresolved original revocation when live recovery cannot find its current row', async () => {
+  const mock = fetcher(reply(profile), reply(page()), new Error('lost acknowledgment'), reply(page([])));
+  mount(); await review(); fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+  await screen.findByText(/Revocation could not be confirmed/); await invalidate();
+  await screen.findByText('Revocation is still unconfirmed. Review the remaining invitation pages to locate its current state.');
+  expect(await screen.findByRole('button', { name: 'Check revocation' })).toBeEnabled();
+  expect(screen.queryByRole('button', { name: 'Create invitation' })).not.toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+});
+it('withdraws private rows and sends no revocation when the reviewed account is replaced', async () => {
+  const mock = fetcher(reply(profile), reply(page())); mount(); await review();
+  currentProfile = { ...profile, id: '50000000-0000-4000-8000-000000000005' };
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' })); await screen.findByText(/Sign in again/);
+  expect(screen.queryByText(row.email)).not.toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
+
+it('discards history when the account changes during the protected read', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => {
+    if (path === '/me') return reply(currentProfile);
+    currentProfile = { ...profile, id: '50000000-0000-4000-8000-000000000005' }; return reply(page());
+  }));
+  mount(); await screen.findByText(/Sign in again/);
+  expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+});
+it('fences an obsolete in-flight history read after a newer live change', async () => {
+  let resolve: ((response: Response) => void) | undefined; let reads = 0;
+  const later = { ...row, id: '20000000-0000-0000-0000-000000000002', email: 'current@example.test' };
+  const obsolete = { ...row, email: 'obsolete@example.test' };
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => {
+    if (path === '/me') return reply(profile);
+    reads++; if (reads === 1) return reply(page());
+    if (reads === 2) return new Promise<Response>(done => { resolve = done; });
+    return reply(page([later]));
+  }));
+  mount(); await screen.findByRole('heading', { name: row.email });
+  await invalidate(); await waitFor(() => expect(resolve).toBeDefined()); await invalidate();
+  await act(async () => { resolve!(reply(page([obsolete]))); });
+  await screen.findByRole('heading', { name: later.email });
+  expect(screen.queryByRole('heading', { name: obsolete.email })).not.toBeInTheDocument();
+  expect(reads).toBe(3);
+});
 
 describe('PRD-60 administrator invitation history and revocation', () => {
   it('displays lifecycle separately from sending status using account time preferences', async () => {
@@ -41,7 +104,7 @@ describe('PRD-60 administrator invitation history and revocation', () => {
     await screen.findByText('Revoked'); expect(screen.getByText('Invitation revocation confirmed.')).toBeInTheDocument();
     const calls = mock.mock.calls.filter(call => call[1]?.method === 'DELETE'); expect(calls).toHaveLength(1);
     expect(calls[0][0]).toContain(`/organizations/${org}/invitations/${row.id}`);
-    expect(calls[0][1].headers.get('X-StrataAI-Request')).toBe('1');
+    expect(new Headers(calls[0][1]?.headers).get('X-StrataAI-Request')).toBe('1');
   });
   it('recovers a lost acknowledgment through read-only canonical review without another delete', async () => {
     const mock = fetcher(reply(profile), reply(page()), new Error('lost'), reply(profile), reply(page([{ ...row, revokedAt: '2034-01-02T00:00:00Z' }])));
@@ -73,9 +136,9 @@ describe('PRD-60 administrator invitation history and revocation', () => {
     const last = rows.at(-1)!.id;
     const mock = fetcher(reply(profile), reply({ items: rows, nextCursor: last }), reply(profile), reply(page([{ ...row, id: '30000000-0000-0000-0000-000000000001' }])), reply(profile), reply({ items: rows, nextCursor: last }));
     mount(); fireEvent.click(await screen.findByRole('button', { name: 'Next invitations' })); await screen.findByText(row.email);
-    expect(mock.mock.calls[3][0]).toContain(`?after=${last}`);
+    expect(mock.mock.calls[4][0]).toContain(`?after=${last}`);
     fireEvent.click(screen.getByRole('button', { name: 'Previous invitations' })); await screen.findByText('issued-0@example.test');
-    expect(mock.mock.calls[5][0]).not.toContain('?after=');
+    expect(mock.mock.calls[7][0]).not.toContain('?after=');
   });
 });
 
@@ -97,7 +160,7 @@ it('shows the exact Board role and recovers a lost revocation from canonical his
   fireEvent.click(await screen.findByRole('button', { name: 'Check revocation' }));
   await screen.findByText('Invitation revocation confirmed.');
   const writes = mock.mock.calls.filter(call => call[1]?.method === 'DELETE'); expect(writes).toHaveLength(1);
-  expect(writes[0][0]).toBe(`/boards/${board}/invitations/${row.id}`);
+  expect(writes[0][0]).toBe(`/boards/${board}/invitations/${row.id}?expectedActorId=${profile.id}`);
   expect(screen.getByText('Revoked')).toBeVisible();
 });
 it.each([

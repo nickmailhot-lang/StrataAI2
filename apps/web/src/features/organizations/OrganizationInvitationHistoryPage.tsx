@@ -4,11 +4,12 @@ import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { invitationRoles, validInvitationKey } from './invitationIntent';
+import { watchOrganizationMetadata } from './organizationMetadataLive';
 
 type Row = { id: string; email: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; createdAt: string;
   expiresAt: string; acceptedAt: string | null; revokedAt: string | null; deliveryState: string | null; boardTarget?: { boardId: string; role: string } | null };
 type Page = { items: Row[]; nextCursor: string | null };
-type Preferences = { locale: string; timezone: string };
+type Preferences = { id: string; locale: string; timezone: string };
 const date = (value: unknown): value is string => typeof value === 'string'
   && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value));
 function page(value: unknown, boardId?: string): value is Page {
@@ -60,27 +61,50 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const recoveryId = useRef<string | undefined>(undefined); const cancel = useRef<HTMLButtonElement>(null);
   const refresh = useRef<HTMLButtonElement>(null);
+  const actor = useRef<string | undefined>(undefined); const [actorId, setActorId] = useState<string>();
+  const epoch = useRef(0); const refreshQueued = useRef(false); const [reloadVersion, setReloadVersion] = useState(0);
+  const [liveNotice, setLiveNotice] = useState<string>();
   useEffect(() => { mounted.current = true; void load(null, []); return () => {
     mounted.current = false; pending.current?.abort(); pending.current = undefined; recoveryId.current = undefined;
   }; }, []); // The keyed component isolates every Organization navigation.
+  useEffect(() => {
+    if (!actorId || boardId !== undefined) return;
+    const invalidate = () => {
+      epoch.current++; refreshQueued.current = true; setRows(undefined); setSelected(undefined);
+      setLiveNotice('Checking current invitations and access. Any revocation recovery is preserved.');
+      setReloadVersion(value => value + 1);
+    };
+    return watchOrganizationMetadata({ organizationId, userId: actorId, invalidate, reset: invalidate, unavailable: invalidate });
+  }, [organizationId, boardId, actorId]);
+  useEffect(() => {
+    if (!refreshQueued.current || busy) return;
+    refreshQueued.current = false; void load(null, [], true);
+  }, [reloadVersion, busy]);
   function begin() { if (pending.current) return; const controller = new AbortController(); pending.current = controller; setBusy(true); return controller; }
   const valid = (controller: AbortController) => mounted.current && pending.current === controller && !controller.signal.aborted;
   function finish(controller: AbortController) { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
   function deny(status: number) {
+    actor.current = undefined; setActorId(undefined); refreshQueued.current = false; setLiveNotice(undefined);
     setBoardName(undefined); setRows(undefined); setSelected(undefined); setPreferences(undefined); setNotice(undefined); setDenied(true);
     recoveryId.current = undefined; setUnconfirmed(undefined);
     setError(status === 401 ? `Sign in again to review ${boardId !== undefined ? 'Board' : 'Organization'} invitations.` : `${boardId !== undefined ? 'Board' : 'Organization'} invitation administration is unavailable.`);
   }
-  async function load(next: string | null, history: (string | null)[]) {
+  async function account(controller: AbortController, expected = actor.current) {
+    const me = await request('/me', {}, controller); if (!valid(controller)) return;
+    if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
+    const prefs = me.body as Preferences | undefined;
+    if (me.status !== 200 || !prefs || !validInvitationKey(prefs.id) || typeof prefs.locale !== 'string' || typeof prefs.timezone !== 'string'
+      || !formatUserDateTime('2030-01-01T00:00:00Z', prefs)) throw new Error('Invalid account');
+    if (expected && prefs.id !== expected) { deny(401); return; }
+    return prefs;
+  }
+  async function load(next: string | null, history: (string | null)[], live = false) {
     const controller = begin(); if (!controller) return;
+    const started = epoch.current;
     setBoardName(undefined); setError(undefined); setRows(undefined); setSelected(undefined);
     try {
       if (!validInvitationKey(organizationId)) { deny(404); return; }
-      const me = await request('/me', {}, controller); if (!valid(controller)) return;
-      if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
-      const prefs = me.body as Preferences | undefined;
-      if (me.status !== 200 || !prefs || typeof prefs.locale !== 'string' || typeof prefs.timezone !== 'string'
-        || !formatUserDateTime('2030-01-01T00:00:00Z', prefs)) throw new Error('Invalid preferences');
+      const prefs = await account(controller); if (!prefs) return;
       let currentBoardName: string | undefined;
       if (boardId !== undefined) {
         if (!validInvitationKey(boardId)) { deny(404); return; }
@@ -97,7 +121,10 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
       if (result.status !== 200 || !page(result.body, boardId) || result.body.items.some((row, index, items) =>
         row.id.toLowerCase() <= (index ? items[index - 1].id.toLowerCase() : next?.toLowerCase() ?? '')))
         throw new Error('Invalid history');
-      setBoardName(currentBoardName); setRows(result.body); setPreferences(prefs); setCursor(next); setPrevious(history); setDenied(false);
+      const current = await account(controller, prefs.id); if (!current || started !== epoch.current) return;
+      actor.current = current.id; setActorId(current.id);
+      setBoardName(currentBoardName); setRows(result.body); setPreferences(current); setCursor(next); setPrevious(history); setDenied(false);
+      if (live) setLiveNotice('Current invitations checked. Review an invitation again before confirming revocation.');
       if (recoveryId.current) {
         const recovered = result.body.items.find(row => row.id === recoveryId.current);
         if (recovered) {
@@ -112,10 +139,14 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
   async function revoke() {
     if (!selected || unconfirmed) return;
     const target = selected; const controller = begin(); if (!controller) return;
+    const started = epoch.current;
     setError(undefined); setNotice(undefined); let reload = false;
     try {
-      const result = await request(`${root}/${target.id}`, { method: 'DELETE' }, controller); if (!valid(controller)) return;
+      const current = await account(controller); if (!current) return;
+      if (started !== epoch.current) return;
+      const result = await request(`${root}/${target.id}?expectedActorId=${encodeURIComponent(current.id)}`, { method: 'DELETE' }, controller); if (!valid(controller)) return;
       if ([401, 403].includes(result.status) || boardId !== undefined && (result.body as { code?: string } | undefined)?.code === 'board_not_found') { deny(result.status); return; }
+      if (!await account(controller, current.id)) return;
       if (result.status === 204) { setNotice('Invitation revocation confirmed.'); reload = true; }
       else {
         recoveryId.current = target.id; setUnconfirmed(target.id); setBoardName(undefined); setRows(undefined);
@@ -132,6 +163,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     <Typography component="h1" variant="h4">{boardId !== undefined ? 'Issued Board invitations' : 'Issued invitations'}</Typography>
     {boardName && <Typography component="h2" variant="h6">{boardName}</Typography>}
     {error && <Alert severity="error">{error}</Alert>}{notice && <Alert severity={notice === 'Invitation revocation confirmed.' ? 'success' : 'info'}>{notice}</Alert>}
+    {liveNotice && <Alert severity="info">{liveNotice}</Alert>}
     {busy && <CircularProgress aria-label="Loading issued invitations" />}
     {denied ? <Button component={Link} to="/login">Sign in</Button> : <>
       <Stack direction="row" spacing={1}><Button ref={refresh} disabled={busy} onClick={() => void load(cursor, previous)}>{unconfirmed ? 'Check revocation' : 'Refresh invitations'}</Button>

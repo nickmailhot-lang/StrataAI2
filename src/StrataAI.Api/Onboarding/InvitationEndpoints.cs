@@ -12,10 +12,12 @@ public static class InvitationEndpoints
         RuntimeDescriptor runtime)
     {
         app.MapDelete("/boards/{boardId:guid}/invitations/{invitationId:guid}", async (Guid boardId,
-            Guid invitationId, HttpContext context, BoardInvitationService service, CancellationToken cancellationToken) =>
+            Guid invitationId, Guid? expectedActorId, HttpContext context, BoardInvitationService service, CancellationToken cancellationToken) =>
         {
             var actor = GetUserId(context);
             if (actor is null) return Results.Unauthorized();
+            if (expectedActorId is { } reviewedActor && (reviewedActor == Guid.Empty || reviewedActor != actor.Value))
+                return ErrorFor("session_unavailable");
             var result = await service.RevokeAsync(boardId, actor.Value, invitationId, context.TraceIdentifier, cancellationToken);
             return result.Succeeded ? Results.NoContent() : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().RequireRateLimiting("invitation").AddEndpointFilter<BoardSharingResultFilter>();
@@ -244,6 +246,7 @@ public static class InvitationEndpoints
                 async (
                     Guid organizationId,
                     Guid invitationId,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IInvitationService service,
                     CancellationToken cancellationToken) =>
@@ -254,6 +257,8 @@ public static class InvitationEndpoints
                         return Results.Unauthorized();
                     }
 
+                    if (expectedActorId is { } reviewedActor && (reviewedActor == Guid.Empty || reviewedActor != userId.Value))
+                        return ErrorFor("session_unavailable");
                     var result = await service.RevokeAsync(
                         organizationId,
                         userId.Value,
