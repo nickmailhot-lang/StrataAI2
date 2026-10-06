@@ -92,8 +92,10 @@ public sealed partial class ApiHostTests
         Assert.NotNull(await work.FindBoardAsync(board, ct));
     }
 
-    [Fact]
-    public async Task PRD_03_Demo_member_removal_restores_membership_assignment_Card_revision_and_events_after_final_actor_loss()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PRD_03_Demo_member_removal_or_departure_restores_membership_assignment_Card_revision_and_events_after_final_actor_loss(bool departing)
     {
         var ct = TestContext.Current.CancellationToken;
         var fence = new OrganizationTransactionActorFixture();
@@ -116,7 +118,9 @@ public sealed partial class ApiHostTests
         var originalMembership = await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct);
         var before = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
         events!.Armed = true;
-        var refused = await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
+        var refused = departing
+            ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct)
+            : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
         Assert.False(refused.Succeeded); Assert.Equal("session_unavailable", refused.ErrorCode);
         Assert.Equal(1, events.Withdrawals);
         Assert.Equal(originalCard, await store.FindCardAsync(card.Id, ct));
@@ -129,7 +133,10 @@ public sealed partial class ApiHostTests
         Assert.True(assignments.Succeeded);
         Assert.Contains(assignments.Value!.Items, row => row.UserId == f.Recipient);
         events.Armed = false;
-        Assert.True((await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct)).Succeeded);
+        var removed = departing
+            ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct)
+            : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
+        Assert.True(removed.Succeeded);
         Assert.False((await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct))!.Active);
         Assert.Equal(originalCard.Version + 1, (await store.FindCardAsync(card.Id, ct))!.Version);
         Assert.DoesNotContain((await work.ListCardMembersAsync(card.Id, f.Owner, cancellationToken: ct)).Value!.Items,
@@ -179,6 +186,48 @@ public sealed partial class ApiHostTests
         Assert.Equal(originalReminder.Generation + 1, suspended.Generation);
         Assert.Equal(originalReminder.Version + 1, suspended.Version);
         Assert.Equal(card, await store.FindCardAsync(card.Id, ct));
+    }
+
+    [Fact]
+    public async Task PRD_03_Demo_navigation_waits_for_Organization_rollback_then_acquires_its_Work_scope()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(configureServices: services =>
+            services.AddSingleton<ICommandActorAuthorization>(new OrganizationTransactionActorFixture()));
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var organizations = app.Services.GetRequiredService<IOrganizationStore>();
+        var orgUnit = app.Services.GetRequiredService<IOrganizationUnitOfWork>();
+        var identityUnit = app.Services.GetRequiredService<IIdentityUnitOfWork>();
+        var navigation = app.Services.GetRequiredService<INavigationInteractionEventStore>();
+        var board = (await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardAsync(f.Board, ct))!;
+        var originalOrganization = (await organizations.FindOrganizationAsync(f.Organization, ct))!;
+        var source = NavigationInteractionEvent.BoardOpened(Guid.NewGuid(), f.Owner, f.Organization, f.Board, board.Version, DateTimeOffset.UtcNow);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var navigationEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var changing = orgUnit.ExecuteAsync(f.Organization, f.Owner, null, false, async () => {
+            await organizations.UpdateOrganizationAsync(f.Organization, "Uncommitted navigation scope", null, null,
+                originalOrganization.Version, DateTimeOffset.UtcNow, ct);
+            entered.SetResult(); await release.Task.WaitAsync(TimeSpan.FromSeconds(10), ct);
+            return OrganizationOperation<bool>.Failure("fixture_refused");
+        }, ct);
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(10), ct);
+        var opening = identityUnit.ExecuteAsync(f.Owner, async () => {
+            navigationEntered.SetResult();
+            return IdentityOperation<bool>.Success(await navigation.AppendAuthorizedAsync(source, ct));
+        }, ct);
+        Assert.False(navigationEntered.Task.IsCompleted);
+        release.SetResult();
+        Assert.False((await changing.WaitAsync(TimeSpan.FromSeconds(10), ct)).Succeeded);
+        var opened = await opening.WaitAsync(TimeSpan.FromSeconds(10), ct);
+        Assert.True(opened.Succeeded); Assert.True(opened.Value);
+        Assert.Equal(originalOrganization, await organizations.FindOrganizationAsync(f.Organization, ct));
+        Assert.Equal(board, await app.Services.GetRequiredService<IWorkManagementStore>().FindBoardAsync(f.Board, ct));
+        // The immutable original can still be replayed through the same two gates.
+        var replay = await identityUnit.ExecuteAsync(f.Owner, async () =>
+            IdentityOperation<bool>.Success(await navigation.AppendAuthorizedAsync(source, ct)), ct);
+        Assert.True(replay.Succeeded); Assert.True(replay.Value);
     }
 
     private sealed class OrganizationEventActorLossFixture(IWorkEventStore inner,

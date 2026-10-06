@@ -35,18 +35,23 @@ then verifies that Organization rollback restores its name and preserves the
 subsequent Work commit. Runtime execution of these new cases is required in CI;
 compilation alone does not establish their acceptance.
 
-A further member-removal regression decorates the real Demo event store and
+A further member-removal/departure regression decorates the real Demo event store and
 withdraws actor admission only after its removal event has been appended. It
 requires the final refusal to restore membership, assignment, Card revision and
-event stream state, then verifies that a fresh authorized removal commits. This
+event stream state, then verifies that a fresh authorized removal or departure commits. This
 case also awaits native CI execution. A deletion regression similarly withdraws
 admission after the real reminder cancellation event; it requires Organization,
 reminder generation/version/trigger and event state to be restored, then checks
 that an authorized retry suspends the reminder without changing the Card.
 
-Additional native coverage is still needed for departure, reminder job rollback,
-and navigation while
-Organization commands contend for both gates. Specialized account lifecycle
+A navigation contention case queues the owning identity operation behind an
+uncommitted Organization command. After rollback it requires the canonical
+Board observation and immutable replay to complete through the Work gate,
+without changing Organization or Board state. Ten-second observation bounds
+make a deadlock a test failure rather than an unbounded wait. Native execution
+remains required for this case as well.
+
+Additional native coverage is still needed for reminder job rollback. Specialized account lifecycle
 cleanup, invitation writes and direct store mutations retain their own boundaries;
 this change does not establish universal Demo transaction integrity. Production
 PostgreSQL retains its owning transaction, final actor check and rollback behavior.
