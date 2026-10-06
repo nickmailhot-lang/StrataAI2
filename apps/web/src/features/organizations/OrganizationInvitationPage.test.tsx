@@ -35,6 +35,41 @@ function fetcher(...responses: (Response | Error)[]) {
 async function submit() { fireEvent.change(await screen.findByLabelText(/^Invitation email/), { target: { value: input.email } }); fireEvent.click(screen.getByRole('button', { name: 'Create invitation' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); sessionStorage.clear(); });
 describe('Administrator invitation intent and creation acknowledgment', () => {
+  it.each([[false, false], [true, false], [false, true], [true, true]])('bounds an abort-ignoring account check without exposing late authority (Board=%s, committed=%s)', async (boardSurface, committed) => {
+    let profiles = 0; let finish!: (value: Response) => void;
+    let heldSignal: AbortSignal | null | undefined;
+    const mock = vi.fn(async (path: string, options?: RequestInit) => {
+      if (path === '/me') {
+        if (++profiles === (committed ? 4 : 3)) {
+          heldSignal = options?.signal;
+          return new Promise<Response>(resolve => { finish = resolve; });
+        }
+        return reply(profile);
+      }
+      if (options?.method === 'POST') return reply(boardSurface ? boardAck : ack, 201);
+      return reply(boardSurface ? boardAdmission : admission);
+    });
+    vi.stubGlobal('fetch', mock); if (boardSurface) boardMount(); else mount();
+    await screen.findByLabelText(/^Invitation email/); vi.useFakeTimers();
+    fireEvent.change(screen.getByLabelText(/^Invitation email/), { target: { value: input.email } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create invitation' }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(16_000); });
+    expect(finish).toBeDefined(); expect(heldSignal?.aborted).toBe(true);
+    expect(screen.getByRole('button', { name: 'Retry permission check' })).toBeEnabled();
+    expect(screen.queryByDisplayValue(input.email)).not.toBeInTheDocument();
+    expect(screen.queryByText('Private maintenance')).not.toBeInTheDocument();
+    const saved = sessionStorage.getItem(storedKey + (boardSurface ? `:board:${board}` : ''));
+    expect(saved).not.toBeNull();
+    await act(async () => finish(reply(profile)));
+    expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Invitation email/)).not.toBeInTheDocument();
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(committed ? 1 : 0);
+    vi.useRealTimers();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry permission check' }));
+    await screen.findByText(/prior invitation request is awaiting acknowledgment/);
+    expect(sessionStorage.getItem(storedKey + (boardSurface ? `:board:${board}` : ''))).toBe(saved);
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(committed ? 1 : 0);
+  });
   it.each([
     [false, false, 'unavailable'], [true, false, 'unavailable'],
     [false, true, 'unavailable'], [true, true, 'unavailable'],

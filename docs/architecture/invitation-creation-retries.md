@@ -49,6 +49,15 @@ row, then recovers via fresh permission check and identical key/body. Only the
 account-read response is fault-injected; command, invitation and receipt remain
 actual runtime state. Exact-image execution is still required.
 
+Four focused timeout cases hold `/me` unresolved despite cancellation, before POST
+or after its response on each surface. Advancing beyond the 15-second request
+bound must abort the account read, withdraw private display and preserve the
+original stored intent. A later successful profile result must not restore input,
+publish acknowledgment or send another POST. Fresh explicit permission checking
+can recover the reserved request and still cannot automatically mutate. These
+tests exercise the client boundary with fake time and abort-ignoring transport;
+they are not PostgreSQL, actual cookie-expiry or release runtime evidence.
+
 `POST /organizations/{organizationId}/invitations` accepts an optional nonempty UUID `Idempotency-Key`. A keyed request acknowledges the original invitation ID, email, surface, role and expiry; its `invitationToken` is null in every runtime mode. Unkeyed Demo requests retain the existing bearer-token fixture behavior. Production never returns the bearer token.
 
 The existing Organization unit of work locks the active parent and actor membership before invitation creation or replay. Current session/account eligibility and administrative role are authoritative; only a current Owner can acknowledge an internal Owner grant. Normalized email, surface and role bind the key to the original command. Different intent receives `409 idempotency_key_reused`; a receipt older than 24 hours receives `409 idempotency_key_expired`. Expired keys remain reserved, so an old request cannot create a replacement invitation. Malformed, multiple and empty keys fail with `400 invalid_idempotency_key`.
