@@ -95,15 +95,37 @@ public sealed class OrganizationMetadataReplayTests
         Assert.Equal("organization_not_found", (await service.IsCursorCurrentAsync(Organization, Actor, cursor, ct)).ErrorCode);
         Assert.Equal(0, reader.EventReads);
     }
+    [Theory]
+    [InlineData(1)]
+    [InlineData(4)]
+    public async Task PRD_03_Member_addition_replay_preserves_subject_identity_and_revision(long version)
+    {
+        var member = Guid.NewGuid(); var eventId = Guid.NewGuid();
+        var reader = new Reader { Candidate = new(1, new(eventId, "ORGANIZATION_MEMBER_ADDED", Actor,
+            Organization, version, DateTimeOffset.UtcNow, "OrganizationMembership", member), true) };
+        var codec = new Codec(); var service = new OrganizationMetadataSynchronizationService(reader, codec);
+        var cursor = codec.Encode(reader.Binding!, 0); var ct = TestContext.Current.CancellationToken;
+        var result = await service.ReadAsync(Organization, Actor, cursor, cancellationToken: ct);
+        Assert.True(result.Succeeded);
+        var row = Assert.Single(result.Value!.Events);
+        Assert.Equal(eventId, row.EventId); Assert.Equal(member, row.EntityId); Assert.Equal(version, row.Version);
+        Assert.Equal("OrganizationMembership", row.EntityType); Assert.Empty(row.Metadata); Assert.Null(row.BoardId);
+        foreach (var invalid in new[] { row with { EntityType = "Organization" }, row with { EntityId = Guid.Empty }, row with { EventType = "ORGANIZATION_MEMBER_REMOVED" } })
+        {
+            reader.Candidate = new(1, invalid, true);
+            Assert.Equal("organization_sync_unavailable", (await service.ReadAsync(Organization, Actor, cursor, cancellationToken: ct)).ErrorCode);
+        }
+    }
     private sealed class Reader : IOrganizationMetadataEventReader
     {
+        public OrganizationMetadataEventCandidate? Candidate { get; set; }
         public OrganizationMetadataCursorBinding? Binding { get; set; } = new(Organization, Actor, Guid.NewGuid(), 1);
         public Action? OnRead { get; set; }
         public int EventReads { get; private set; }
         public Task<OrganizationMetadataCursorBinding?> GetScopeAsync(Guid org, Guid actor, CancellationToken ct) => Task.FromResult(Binding);
         public Task<long> GetHeadAsync(Guid org, CancellationToken ct) => Task.FromResult(2L);
         public Task<OrganizationMetadataEventWindow> ReadAsync(Guid org, long since, int limit, CancellationToken ct)
-        { EventReads++; OnRead?.Invoke(); return Task.FromResult(new OrganizationMetadataEventWindow(1, true, false, false, [Row(1)])); }
+        { EventReads++; OnRead?.Invoke(); return Task.FromResult(new OrganizationMetadataEventWindow(1, true, false, false, [Candidate ?? Row(1)])); }
     }
     private sealed class Codec : IOrganizationMetadataCursorCodec
     {

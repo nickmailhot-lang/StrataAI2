@@ -40,7 +40,7 @@ public sealed class PostgresOrganizationMetadataEventReader(PostgresConnectionFa
         var head = await GetHeadAsync(organizationId, cancellationToken);
         await using var session = await connections.OpenTenantSessionAsync(organizationId, cancellationToken);
         await using var query = new NpgsqlCommand("""
-            SELECT sequence,event_id,event_type,actor_id,entity_version,created_at,ready_at IS NOT NULL
+            SELECT sequence,event_id,event_type,actor_id,entity_version,created_at,ready_at IS NOT NULL,entity_type,entity_id
              FROM organization_metadata_events WHERE tenant_id=@tenant AND sequence>@since AND sequence<=@head
              ORDER BY sequence LIMIT @limit;
             """, session.Connection, session.Transaction);
@@ -49,7 +49,7 @@ public sealed class PostgresOrganizationMetadataEventReader(PostgresConnectionFa
         List<OrganizationMetadataEventCandidate> rows = [];
         await using (var row = await query.ExecuteReaderAsync(cancellationToken))
             while (await row.ReadAsync(cancellationToken)) rows.Add(new(row.GetInt64(0), new(row.GetGuid(1), row.GetString(2), row.GetGuid(3),
-                organizationId, row.GetInt64(4), row.GetFieldValue<DateTimeOffset>(5)), row.GetBoolean(6)));
+                organizationId, row.GetInt64(4), row.GetFieldValue<DateTimeOffset>(5), row.GetString(7), row.GetGuid(8)), row.GetBoolean(6)));
         await session.CommitAsync(cancellationToken); return OrganizationMetadataEventWindow.Build(since, head, limit, rows);
     }
 }

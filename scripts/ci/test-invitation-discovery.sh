@@ -25,8 +25,13 @@ org="$(jq -r '.organization.id' "$scratch/response")"
 state() { admin "SELECT jsonb_build_object('invite',(SELECT to_jsonb(i) FROM invitations i WHERE id='$id'),
   'route',(SELECT to_jsonb(r) FROM invitation_routes r WHERE invitation_id='$id'),
   'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY id) FROM organization_members m WHERE tenant_id='$org' AND user_id='$user'),
+  'activations',(SELECT jsonb_agg(to_jsonb(a) ORDER BY entity_version) FROM organization_membership_activations a
+    JOIN organization_members m ON m.id=a.membership_id AND m.tenant_id=a.tenant_id WHERE m.tenant_id='$org' AND m.user_id='$user'),
   'portal',(SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM portal_access p WHERE tenant_id='$org' AND user_id='$user'),
-  'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org' AND event_type IN ('INVITATION_ACCEPTED','ORGANIZATION_MEMBER_ADDED')))::text;"; }
+  'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org' AND event_type IN ('INVITATION_ACCEPTED','ORGANIZATION_MEMBER_ADDED')),
+  'stream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$org'),
+  'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$org'),
+  'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$org' AND job_type='ORGANIZATION_METADATA_EVENT_READY'))::text;"; }
 for surface in INTERNAL PORTAL; do
   role=MEMBER; if test "$surface" = PORTAL; then role=OWNER; fi
   test "$(post owner "/organizations/$org/invitations" "$(jq -nc --arg email "$email" --arg surface "$surface" --arg role "$role" '{email:$email,surface:$surface,targetRole:$role}')")" = 201
@@ -170,6 +175,14 @@ test "$(admin "SELECT count(*) FROM audit_events WHERE tenant_id='$body_org' AND
 restored_added="$(added_state)"
 test "$(jq 'length' <<< "$restored_added")" = 2
 jq -e --argjson original "$original_added" 'contains($original)' <<< "$restored_added" >/dev/null
+test "$(admin "SELECT count(*)=2 AND bool_and(e.actor_id='$user' AND e.entity_type='OrganizationMembership'
+  AND e.entity_id='$member_id' AND e.entity_version IN (1,4) AND e.metadata='{}'::jsonb AND e.ready_at IS NULL
+  AND e.event_id=a.id AND e.correlation_id=a.correlation_id AND j.actor_id=e.actor_id AND j.correlation_id=e.correlation_id
+  AND j.service_identity='organization-metadata-delivery' AND j.idempotency_key='organization-metadata-event/'||replace(e.event_id::text,'-',''))
+  FROM organization_metadata_events e JOIN audit_events a ON a.id=e.event_id
+  JOIN background_jobs j ON j.tenant_id=e.tenant_id AND j.job_type='ORGANIZATION_METADATA_EVENT_READY'
+  AND j.safe_metadata=jsonb_build_object('eventId',e.event_id)
+  WHERE e.tenant_id='$body_org' AND e.event_type='ORGANIZATION_MEMBER_ADDED';")" = t
 test "$(post recipient "/me/invitations/$restored_invite/accept" '{}')" = 200
 test "$restored_added" = "$(added_state)"
 echo 'Actual member activation audits: active-role update adds none, removed-access retry stays removed, new invitation restores the same subject once.'

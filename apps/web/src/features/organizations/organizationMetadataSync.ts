@@ -19,14 +19,16 @@ export function validateOrganizationMetadataSync(input: unknown, organizationId:
       const e = row as Record<string, unknown> | null;
       if (!e || Object.keys(e).sort().join(',') !== 'actorId,boardId,createdAt,entityId,entityType,eventId,eventType,metadata,organizationId,version'
         || !notificationUuid(e.eventId) || !notificationUuid(e.actorId) || e.organizationId !== organizationId
-        || e.entityType !== 'Organization' || e.entityId !== organizationId || e.boardId !== null
+        || !notificationUuid(e.entityId) || e.boardId !== null
+        || (e.eventType === 'ORGANIZATION_MEMBER_ADDED' ? e.entityType !== 'OrganizationMembership'
+          : e.entityType !== 'Organization' || e.entityId !== organizationId)
         || !Number.isSafeInteger(e.version) || (e.version as number) < 1
-        || (e.eventType !== 'ORGANIZATION_CREATED' && e.eventType !== 'ORGANIZATION_UPDATED')
+        || (e.eventType !== 'ORGANIZATION_CREATED' && e.eventType !== 'ORGANIZATION_UPDATED' && e.eventType !== 'ORGANIZATION_MEMBER_ADDED')
         || e.eventType === 'ORGANIZATION_CREATED' && e.version !== 1
         || e.eventType === 'ORGANIZATION_UPDATED' && (e.version as number) <= 1
         || !e.metadata || typeof e.metadata !== 'object' || Array.isArray(e.metadata) || Object.keys(e.metadata).length
         || local.has(e.eventId)) return null;
-      const fingerprint = `${e.actorId}/${organizationId}/${e.eventType}/${e.version}/${notificationInstant(e.createdAt).ticks}`;
+      const fingerprint = `${e.actorId}/${organizationId}/${e.entityType}/${e.entityId}/${e.eventType}/${e.version}/${notificationInstant(e.createdAt).ticks}`;
       local.add(e.eventId);
       const previous = seen.get(e.eventId);
       if (previous !== undefined && previous !== fingerprint) return null;

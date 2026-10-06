@@ -10,11 +10,12 @@ public interface IOrganizationMetadataCursorCodec
     bool TryDecode(OrganizationMetadataCursorBinding binding, string token, out long position);
 }
 public sealed record OrganizationMetadataEvent(Guid EventId, string EventType, Guid ActorId, Guid OrganizationId,
-    long Version, DateTimeOffset CreatedAt)
+    long Version, DateTimeOffset CreatedAt, string EntityType, Guid EntityId)
 {
+    public OrganizationMetadataEvent(Guid eventId, string eventType, Guid actorId, Guid organizationId,
+        long version, DateTimeOffset createdAt) : this(eventId, eventType, actorId, organizationId,
+            version, createdAt, "Organization", organizationId) { }
     public Guid? BoardId => null;
-    public string EntityType => "Organization";
-    public Guid EntityId => OrganizationId;
     public IReadOnlyDictionary<string, string> Metadata => EmptyMetadata;
     private static readonly IReadOnlyDictionary<string, string> EmptyMetadata = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
 }
@@ -87,7 +88,11 @@ public sealed class OrganizationMetadataSynchronizationService(IOrganizationMeta
         if (current is null) return WorkOperation<OrganizationMetadataSyncPage>.Failure("organization_not_found");
         if (current != scope || page.Position < 0 || page.Events.Count > limit || page.Events.Any(e => !e.Ready
             || e.Event.EventId == Guid.Empty || e.Event.ActorId == Guid.Empty || e.Event.OrganizationId != organizationId
-            || e.Event.Version < 1 || e.Event.EventType is not ("ORGANIZATION_CREATED" or "ORGANIZATION_UPDATED")
+            || e.Event.Version < 1 || e.Event.EntityId == Guid.Empty
+            || e.Event.EventType is not ("ORGANIZATION_CREATED" or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_ADDED")
+            || (e.Event.EventType == "ORGANIZATION_MEMBER_ADDED"
+                ? e.Event.EntityType != "OrganizationMembership"
+                : e.Event.EntityType != "Organization" || e.Event.EntityId != organizationId)
             || e.Event.EventType == "ORGANIZATION_CREATED" && e.Event.Version != 1
             || e.Event.EventType == "ORGANIZATION_UPDATED" && e.Event.Version <= 1))
             return WorkOperation<OrganizationMetadataSyncPage>.Failure("organization_sync_unavailable");

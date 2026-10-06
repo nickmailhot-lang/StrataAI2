@@ -107,6 +107,11 @@ invitation retries, existing active membership and Board/Portal acceptance do
 not duplicate that addition. Acceptance and both audits share the existing
 owning transaction. The required exact-image invitation fixture includes a
 second-publication failure rollback check and canonical attribution assertions;
-execution remains pending. This is an audit prerequisite only: member and
-invitation source projection, Worker readiness, protected replay, live clients
-and Demo audit/event parity remain unfinished. It does not close this ticket.
+execution remains pending. Migration 097 now adds actual member-addition source
+projection with private activation proof, independent membership revision and
+canonical audit attribution. The existing typed Worker and protected replay
+support it, and strict discovery/settings consumers accept its content-free
+envelope. Local build, 12 replay tests and 33 consumer tests passed. Required
+database/upgrade/exact-image execution remains pending. Member removal/departure
+and invitation source integration, applicable administration live clients and
+Demo audit/event parity remain unfinished. It does not close this ticket.

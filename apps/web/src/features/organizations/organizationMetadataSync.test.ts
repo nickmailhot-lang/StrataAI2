@@ -38,3 +38,12 @@ it('accepts reset without history and empty heartbeats without numeric cursor in
   expect(validateOrganizationMetadataSync({ ...frame, page }, org, user, new Map())!.resetRequired).toBe(true);
   expect(validateOrganizationMetadataSync({ ...frame, page: { ...page, resetRequired: false, cursor: 'protected-metadata_B' } }, org, user, new Map())!.eventIds).toEqual([]);
 });
+it.each([1, 4])('accepts a member addition with its own persisted subject revision %s', version => {
+  const member = { ...event, eventType: 'ORGANIZATION_MEMBER_ADDED', entityType: 'OrganizationMembership', entityId: user, version };
+  const input = { ...frame, page: { ...frame.page, events: [member] } };
+  const seen = new Map(validateOrganizationMetadataSync(input, org, user, new Map())!.eventIds);
+  expect(validateOrganizationMetadataSync(input, org, user, seen)!.eventIds).toEqual([]);
+  for (const change of [{ entityId: actor }, { entityType: 'Organization' }, { entityId: 'invalid' }, { metadata: { email: 'private' } }]) {
+    expect(validateOrganizationMetadataSync({ ...input, page: { ...input.page, events: [{ ...member, ...change }] } }, org, user, seen)).toBeNull();
+  }
+});

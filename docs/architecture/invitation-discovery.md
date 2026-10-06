@@ -17,8 +17,12 @@ its safe metadata is `{}`. It is separate from `INVITATION_ACCEPTED`. An already
 active membership, Board invitation, Portal invitation or completed natural-ID
 retry does not publish another member-added audit. Failure to find the actual
 active membership or to append this audit refuses and rolls back acceptance.
-The audit is a prerequisite for canonical member event delivery; it does not yet
-enter the Organization metadata journal or establish live browser delivery.
+Migration 097 now projects that audit into the existing Organization stream
+using the actual membership revision, timestamp and private activation proof;
+see [the member addition source](organization-metadata-events.md#member-addition-source).
+The existing Worker, protected replay and strict browser consumer support this
+subject. Current database/release execution and member administration live
+integration remain pending; the audit alone does not establish those results.
 
 The required exact-image fixture now fails this second audit insertion after
 acceptance and its first audit have been written, compares complete invitation,

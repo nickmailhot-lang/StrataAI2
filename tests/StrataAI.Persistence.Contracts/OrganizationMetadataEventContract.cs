@@ -90,18 +90,32 @@ internal static class OrganizationMetadataEventContract
         Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 2,
             "Repeated unchanged source fabricated an event or advanced the counter.");
         foreach (var sql in new[] {
-            "INSERT INTO organization_metadata_events SELECT * FROM organization_metadata_events WHERE tenant_id=@tenant",
+            "INSERT INTO organization_metadata_events(tenant_id,sequence,event_id,event_type,actor_id,entity_type,entity_id,entity_version,correlation_id,metadata,created_at,ready_at) SELECT tenant_id,sequence,event_id,event_type,actor_id,entity_type,entity_id,entity_version,correlation_id,metadata,created_at,ready_at FROM organization_metadata_events WHERE tenant_id=@tenant",
             "UPDATE organization_metadata_events SET metadata='{}' WHERE tenant_id=@tenant",
             "DELETE FROM organization_metadata_events WHERE tenant_id=@tenant",
             "INSERT INTO organization_metadata_event_streams VALUES(@tenant,99)",
             "UPDATE organization_metadata_event_streams SET last_sequence=99 WHERE tenant_id=@tenant",
-            "SELECT journal_organization_metadata_event()" })
+            "SELECT journal_organization_metadata_event()",
+            "SELECT journal_organization_member_addition()",
+            "SELECT capture_organization_membership_activation()",
+            "SELECT * FROM organization_membership_activations",
+            "UPDATE organization_membership_activations SET entity_version=99",
+            "DELETE FROM organization_membership_activations" })
         {
             refused = false;
             try { await Execute(sql, tenant, Guid.NewGuid()); }
             catch (PostgresException error) when (error.SqlState == "42501") { refused = true; }
             Require(refused, "Restricted API received a private metadata history capability.");
         }
+        refused = false;
+        try { await Execute("""
+            INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,safe_metadata)
+            SELECT @event,@tenant,@actor,'ORGANIZATION_MEMBER_ADDED','OrganizationMembership',id,@correlation,'{}'
+             FROM organization_members WHERE tenant_id=@tenant AND user_id=@actor;
+            """, tenant, Guid.NewGuid()); }
+        catch (PostgresException error) when (error.SqlState == "23514") { refused = true; }
+        Require(refused && await Read("SELECT last_sequence FROM organization_metadata_event_streams WHERE tenant_id=@tenant", tenant) == 2,
+            "Unproven member addition was published or advanced the journal.");
         refused = false;
         await using (var edit = new NpgsqlCommand("UPDATE organization_metadata_events SET correlation_id='rewrite' WHERE tenant_id=@tenant", admin))
         {

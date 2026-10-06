@@ -43,12 +43,37 @@ work_snapshot() {
 }
 work_before="$(work_snapshot)"
 test "$(admin "SELECT count(*)=1 FROM background_jobs WHERE tenant_id='$organization' AND job_type='WORK_EVENT_READY' AND state='PENDING';")" = t
+recipient_credentials="$(jq -nc --arg email "metadata-member-$(date +%s%N)@example.test" '{email:$email,password:"metadata-member-correct-horse",displayName:"Metadata recipient"}')"
+curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$recipient_credentials" "$BASE_URL/auth/register" > "$scratch/recipient.json"
+curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -c "$scratch/recipient.cookies" -d "$recipient_credentials" "$BASE_URL/auth/login" >/dev/null
+recipient="$(jq -r '.user.id' "$scratch/recipient.json")"
+invitation="$(curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+ -d "$(jq -nc --arg email "$(jq -r '.user.email' "$scratch/recipient.json")" '{email:$email,surface:"INTERNAL",targetRole:"MEMBER"}')" "$BASE_URL/organizations/$organization/invitations" | jq -r '.id')"
+curl --fail --silent --show-error -b "$scratch/recipient.cookies" -H 'X-StrataAI-Request: 1' -X POST "$BASE_URL/me/invitations/$invitation/accept" >/dev/null
+subject="$(admin "SELECT id FROM organization_members WHERE tenant_id='$organization' AND user_id='$recipient';")"
+test "$(admin "SELECT count(*)=1 FROM organization_metadata_events e JOIN organization_members m ON m.tenant_id=e.tenant_id AND m.id=e.entity_id
+ WHERE e.tenant_id='$organization' AND e.event_type='ORGANIZATION_MEMBER_ADDED' AND e.entity_type='OrganizationMembership'
+ AND e.actor_id='$recipient' AND e.entity_version=m.version AND e.created_at=m.updated_at AND e.ready_at IS NULL;")" = t
+# Historical acceptance must still deliver after removal. Membership version is
+# independent of the parent version, and current read authorization is separate.
+test "$(curl --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -X DELETE -o "$scratch/removal" -w '%{http_code}' \
+ "$BASE_URL/organizations/$organization/members/$recipient?expectedVersion=1")" = 204
+test "$(curl --silent --show-error -b "$scratch/recipient.cookies" -o "$scratch/removed-replay" -w '%{http_code}' \
+ "$BASE_URL/organizations/$organization/metadata-events")" = 404
+restoration="$(curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+ -d "$(jq -nc --arg email "$(jq -r '.user.email' "$scratch/recipient.json")" '{email:$email,surface:"INTERNAL",targetRole:"MEMBER"}')" "$BASE_URL/organizations/$organization/invitations" | jq -r '.id')"
+curl --fail --silent --show-error -b "$scratch/recipient.cookies" -H 'X-StrataAI-Request: 1' -X POST "$BASE_URL/me/invitations/$restoration/accept" >/dev/null
+test "$(admin "SELECT count(*)=1 FROM organization_metadata_events e JOIN organization_members m ON m.tenant_id=e.tenant_id AND m.id=e.entity_id
+ WHERE e.tenant_id='$organization' AND e.event_type='ORGANIZATION_MEMBER_ADDED' AND e.entity_id='$subject'
+ AND e.entity_version=3 AND m.version=3 AND e.created_at=m.updated_at AND e.ready_at IS NULL;")" = t
+test "$(curl --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -X DELETE -o "$scratch/removal" -w '%{http_code}' \
+ "$BASE_URL/organizations/$organization/members/$recipient?expectedVersion=3")" = 204
 worker_changed=true
 STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=false STRATAAI_WORKER_ORGANIZATION_IDS='' \
  docker compose -f compose.release.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 finished() {
-  admin "SELECT (SELECT count(*)=2 AND bool_and(ready_at IS NOT NULL) FROM organization_metadata_events WHERE tenant_id='$organization')
-   AND (SELECT count(*)=2 AND bool_and(j.state='SUCCEEDED') FROM background_jobs j JOIN organization_metadata_events e
+  admin "SELECT (SELECT count(*)=4 AND bool_and(ready_at IS NOT NULL) FROM organization_metadata_events WHERE tenant_id='$organization')
+   AND (SELECT count(*)=4 AND bool_and(j.state='SUCCEEDED') FROM background_jobs j JOIN organization_metadata_events e
     ON e.tenant_id=j.tenant_id AND j.safe_metadata=jsonb_build_object('eventId',e.event_id)
     WHERE j.tenant_id='$organization' AND j.job_type='ORGANIZATION_METADATA_EVENT_READY'
     AND j.actor_id=e.actor_id AND j.correlation_id=e.correlation_id AND j.service_identity='organization-metadata-delivery');"
@@ -61,10 +86,21 @@ test "$(finished)" = t
 test "$work_before" = "$(work_snapshot)"
 curl --fail --silent --show-error -b "$scratch/cookies" --get --data-urlencode "cursor=$cursor" --data-urlencode "expectedActorId=$actor" \
  "$BASE_URL/organizations/$organization/metadata-events" > "$scratch/replay.json"
-jq -e --arg tenant "$organization" --arg actor "$actor" '.resetRequired==false and .pending==false and (.events|length)==1
+jq -e --arg tenant "$organization" --arg actor "$actor" '.resetRequired==false and .pending==false and (.events|length)==3
  and .events[0].eventType=="ORGANIZATION_UPDATED" and .events[0].version==2 and .events[0].actorId==$actor
  and .events[0].organizationId==$tenant and .events[0].entityId==$tenant and .events[0].entityType=="Organization"
  and .events[0].boardId==null and .events[0].metadata=={}' "$scratch/replay.json" >/dev/null
+jq -e --arg tenant "$organization" --arg actor "$recipient" --arg subject "$subject" \
+ '.events[1].eventType=="ORGANIZATION_MEMBER_ADDED" and .events[1].actorId==$actor and .events[1].organizationId==$tenant
+ and .events[1].entityType=="OrganizationMembership" and .events[1].entityId==$subject and .events[1].version==1
+ and .events[1].boardId==null and .events[1].metadata=={}' "$scratch/replay.json" >/dev/null
+test "$(jq -r '.events[1].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=1;")"
+jq -e --arg actor "$recipient" --arg subject "$subject" '.events[2].eventType=="ORGANIZATION_MEMBER_ADDED"
+ and .events[2].entityType=="OrganizationMembership" and .events[2].entityId==$subject and .events[2].actorId==$actor
+ and .events[2].version==3 and .events[2].metadata=={} and .events[2].boardId==null' "$scratch/replay.json" >/dev/null
+test "$(jq -r '.events[2].eventId' "$scratch/replay.json")" = "$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_MEMBER_ADDED' AND entity_version=3;")"
+test "$(curl --silent --show-error -b "$scratch/recipient.cookies" -o "$scratch/removed-replay" -w '%{http_code}' \
+ "$BASE_URL/organizations/$organization/metadata-events")" = 404
 scripts/ci/assert-file-excludes.sh 'Automatic metadata Organization|Updated automatic metadata Organization|Typed routing isolation Board' "$scratch/replay.json"
 test "$(curl --silent --show-error -b "$scratch/cookies" -o "$scratch/actor-refusal.json" -w '%{http_code}' \
  "$BASE_URL/organizations/$organization/metadata-events?expectedActorId=00000000-0000-4000-8000-000000000001")" = 401

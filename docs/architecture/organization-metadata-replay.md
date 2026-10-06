@@ -11,10 +11,13 @@ its canonical metadata event source is not implemented yet.
 
 The response contains an opaque cursor, `hasMore`, `pending`, `resetRequired`
 and event envelopes. Each envelope carries the original source event ID, type,
-actor ID, Organization ID, null Board ID, Organization entity ID/type, canonical
-version, timestamp and exactly empty metadata. Names, descriptions, email and
-logo URLs are absent. This channel currently contains only creation and metadata
-editing events; it does not claim invitation/member or terminal-event replay.
+actor ID, Organization ID, null Board ID, subject entity ID/type, canonical
+subject version, timestamp and exactly empty metadata. Names, descriptions,
+email and logo URLs are absent. Creation and editing use the Organization
+subject. Migration 097 adds member additions with the actual
+`OrganizationMembership` subject, whose version is independent of its parent.
+Removal/departure, invitation and terminal events remain unfinished; current
+member-addition database and release execution are pending CI.
 
 ## Authority and recovery
 

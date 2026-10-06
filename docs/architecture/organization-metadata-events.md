@@ -30,6 +30,46 @@ the current authorized account and Organization.
 
 ## Verification and remaining work
 
+### Member addition source
+
+Migration 097 extends the same stream and reference-only Worker jobs with
+`ORGANIZATION_MEMBER_ADDED`. The subject is the actual `OrganizationMembership`
+ID, version and update timestamp; the source event ID remains the audit ID and
+the actor remains the accepting user. Metadata stays `{}`. Parent and membership
+versions are independent: leased delivery checks the corresponding subject's
+revision, including historical acceptance after later removal or restoration.
+It does not authorize a former member to read the stream.
+
+A private forced-RLS activation table captures only real insertion of active
+membership or a transition from inactive to active. Active role changes do not
+capture activation. The source projection requires that exact activation,
+active verified recipient, active parent, accepted internal Organization
+invitation, its matching acceptance audit/correlation and the issuer's current
+administrative authority. Board and Portal invitations are excluded. A
+tenant-safe composite foreign key binds source membership revision to the
+captured activation; runtime roles have no raw activation-table capability.
+Neither prior membership audits nor prior membership state are backfilled.
+
+Source, sequence increment, acceptance audits, activation and reference job
+remain in the existing owning transaction. The restricted persistence contract
+adds private-capability refusals and unproven member-source rejection. The
+required invitation fixture compares those rows during rollback/restart and
+checks versions 1 and 4 through normal API reactivation. The automatic delivery
+fixture accepts, removes, restores and removes a real member before starting
+the exact release Worker; it requires actual ready events and succeeded jobs,
+then checks protected HTTP replay with the original source IDs and versions 1
+and 3. Version 3 exceeds that fixture's Organization version 2. SQL only inspects
+results; it does not manufacture readiness or membership transitions.
+
+Local validation: Release solution build with zero warnings/errors, 12 replay
+tests, 29 selected metadata API regressions and 33 browser consumer tests passed; web typecheck/lint and script syntax
+checks passed. Migration, restricted PostgreSQL and new exact-image execution
+remain pending CI. Member removal/departure, invitation and deletion integration,
+member administration live consumption and Demo audit/event parity remain
+unfinished. Existing discovery/settings consumers recognize member addition
+and preserve the normal current-authority refetch contract; this does not prove
+all applicable views receive it.
+
 Migration `095_organization_metadata_delivery` publishes one reference-only
 `ORGANIZATION_METADATA_EVENT_READY` job per source event in the same transaction.
 Existing real source rows from migration 094 receive reference jobs during the
