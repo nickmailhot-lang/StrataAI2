@@ -50,6 +50,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Identity, profiles, and invitations
 
+- [Authentication requirements and acceptance map (PRD-02)](architecture/prd-02-acceptance.md)
+
 - [Account deactivation and active Organization owners](architecture/account-owner-continuity.md)
 - [Identity command retries](architecture/identity-command-retries.md)
 - [Identity profile and deactivation transactions](architecture/identity-command-transactions.md)
