@@ -389,7 +389,8 @@ Configured production Workers process only their explicit Organization scopes
 (`STRATAAI_WORKER_ORGANIZATION_IDS`); adding an Organization requires updating
 that scope. Automatic Organization discovery remains unimplemented. Demo now
 journals the actual product request but still lacks terminal page/event execution.
-Browser observation and other-client lifecycle recovery remain required.
+Browser observation is implemented; native completion proof and other-client
+lifecycle recovery remain required.
 
 API-host checks cover actual DELETE response/reference and journal-backed status,
 concurrent same-key acceptance, and root-publication exception/final actor loss
@@ -400,4 +401,60 @@ publication plus independent pending observation. The restricted graph fixture
 additionally checks terminal receipt recovery scope, normal-command withdrawal,
 final actor refusal and unchanged completion evidence. API/persistence contracts
 compiled with zero warnings/errors and the container script passed syntax checks;
-runtime execution of this product wiring is pending CI.
+the restricted terminal acknowledgment/observation/graph cases passed at
+`429c624` in [PostgreSQL CI job 112410192340](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37504683537/job/112410192340).
+Actual product API-host and exact-image HTTP/Worker results remain pending; this
+restricted receipt-read fixture does not replace full HTTP terminal retry proof.
+
+CI at `429c624` found an unhandled injected publication failure in the API-host
+test. `2b261f9` introduces an expected publication-refusal exception shared by
+the adapters and application boundary. This maps to
+`503 organization_storage_unavailable` and makes the owning command roll back
+every effect. Scope misuse, unexpected faults and cancellation are not caught by
+that mapping. All seven focused API-host publication/rollback checks passed
+locally. The exact-image command fixture now lets the release Worker consume
+the product-published root, requires actual graph completion and leased terminal
+event readiness, and checks unchanged original-key HTTP replay after completion.
+It never stages terminal state or marks jobs successful itself. Runtime execution
+of that expanded fixture remains pending CI.
+
+## Browser observation and tab-local recovery
+
+After a 202, the Owner page retains the original request/account/reviewed-version
+references and offers **Check deletion status**. It checks the current profile
+before and after the independent status request, matches the original UUID and
+exact pending/terminal revision, and requires valid terminal event/time evidence.
+Only that verified terminal snapshot displays completed deletion. A refusal,
+missing normal GET, empty directory, malformed response, changed account or
+transport deadline never establishes completion. Uncertain status reads retry
+the same reference without another DELETE. Explicit completion checking moves
+focus from the removed button to the polite status notice.
+
+The current tab stores only request UUID, account UUID, reviewed version and
+whether the request was acknowledged, scoped by Organization. It stores no name,
+graph content, provider data, tokens or completion snapshot. Refresh verifies the
+current account before restoring that reference and does not reopen ordinary
+Organization reads. An uncertain acknowledgment keeps the original retry UUID;
+a known acknowledgment restores status checking. Cached data never reports
+terminal completion. Account switches clear the reference; same-account session
+expiry can retain it for later sign-in. Browser storage refusal leaves current-page
+recovery available but cannot provide refresh recovery. Closing the tab removes
+this session-local cache; production authority remains in PostgreSQL.
+
+A temporary account-verification failure after refresh retains the reference
+and offers **Retry account verification**. Retry does not fall back to a normal
+Organization read, issue a new DELETE or infer completion. Only successful
+original-account verification restores request retry or status checking.
+
+Component checks cover pending/terminal evidence, focus, acknowledged/uncertain
+refresh recovery, account switching after response, and 404/503 behavior. Parser
+checks reject mismatched request/revision, invalid event/time/state, extra fields
+and unbounded/malformed cache data. Native desktop/phone fixtures now refresh an
+uncertain request, recover its original key, check actual pending status, refresh
+a known acknowledgment, verify non-Owner status denial and run accessibility
+checks. These native cases do not establish completed production Worker/browser
+or other-client lifecycle delivery. The full local browser suite passed 1,565
+tests across 126 files before the final account-verification retry refinement;
+all 36 focused routing, parser and recovery checks passed after that refinement.
+Type checks, lint, browser-fixture type checks and production build passed.
+Current native CI remains required; PRD-03 remains open.

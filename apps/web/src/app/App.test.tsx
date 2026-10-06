@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 
 import { App } from "./App";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear(); });
 
 describe("StrataAI2 application shell", () => {
   it("renders the internal application shell", async () => {

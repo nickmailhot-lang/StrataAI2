@@ -56,11 +56,14 @@ MarkDeletingAsync enter the Organization unit of work. MarkDeletingCoreAsync
 marks status, reschedules reminders, audits and publishes the accepted request
 with the first Worker job in the owning transaction. The separate Worker performs
 terminal graph deletion. The Owner status reader checks independent completion
-evidence; browser consumption and end-to-end acceptance remain unfinished. Current metadata, member-removal, departure and creation API contracts include
+evidence; browser status consumption and tab-local account-bound recovery are
+implemented with 1,565 full-suite checks and 36 final focused checks passed
+locally. Native Worker/browser completion and end-to-end acceptance remain
+unfinished. Current metadata, member-removal, departure and creation API contracts include
 durable receipts. Browser creation recovery is implemented with current native evidence pending.
 Deletion request acknowledgments and explicit browser Owner confirmation are
 implemented with native evidence pending; terminal deletion remains incomplete; see their workflow guides for source and CI boundaries.
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**22%**, a planning estimate rather than a count of unchecked rows.
+**21%**, a planning estimate rather than a count of unchecked rows.

@@ -40,9 +40,9 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await page.keyboard.press('Enter'); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(launcher).toBeFocused();
       const unchanged = await context.request.get(`/organizations/${org}`); expect(unchanged.status()).toBe(200); expect(await unchanged.json()).toEqual(original);
-      const writes: { url: string; key: string | undefined }[] = [];
+      const writes: { url: string; key: string | undefined }[] = []; let privateReadsAfterIntent = 0;
       await page.route(url => url.pathname === `/organizations/${org}`, async route => {
-        if (route.request().method() !== 'DELETE') { await route.continue(); return; }
+        if (route.request().method() !== 'DELETE') { if (route.request().method() === 'GET') privateReadsAfterIntent++; await route.continue(); return; }
         writes.push({ url: route.request().url(), key: route.request().headers()['idempotency-key'] });
         const url = new URL(route.request().url()); expect(url.searchParams.get('expectedActorId')).toBe(users[0]);
         expect(url.searchParams.get('version')).toBe(String(original.organization.version)); expect(writes.at(-1)!.key).toMatch(/^[0-9a-f-]{36}$/);
@@ -58,10 +58,23 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await admin.request.get(`/organizations/${org}`)).status()).toBe(404);
       expect((await context.request.get(`/boards/${boardId}`)).status()).toBe(404);
       expect((await admin.request.get(`/boards/${boardId}`)).status()).toBe(404);
+      // Refresh must recover the same reference without reopening ordinary
+      // Organization admission or inventing another destructive request.
+      await page.reload(); await expect(retry).toBeFocused();
+      await expect(page.getByText('Owner deletion council', { exact: true })).toHaveCount(0);
+      expect(writes).toHaveLength(1); expect(privateReadsAfterIntent).toBe(0);
       await retry.press('Enter'); const notice = page.getByRole('status');
       await expect(notice).toHaveText('Deletion request acknowledged. Deletion has not been confirmed complete.'); await expect(notice).toBeFocused();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
       await expect(retry).toHaveCount(0); await expect(launcher).toHaveCount(0);
+      const check = page.getByRole('button', { name: 'Check deletion status', exact: true });
+      await check.focus(); await check.press('Enter');
+      await expect(notice).toHaveText('Deletion is still in progress. Completion has not been confirmed.');
+      await expect(check).toBeEnabled(); expect(privateReadsAfterIntent).toBe(0);
+      expect((await admin.request.get(`/organizations/${org}/deletion-requests/${writes[0].key}`)).status()).toBe(404);
+      await page.reload(); await expect(check).toBeEnabled(); expect(writes).toHaveLength(2); expect(privateReadsAfterIntent).toBe(0);
+      await expect(page.getByText('Owner deletion council', { exact: true })).toHaveCount(0);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const directory = await context.request.get('/organizations/directory'); expect(directory.status()).toBe(200); expect((await directory.json()).items).toEqual([]);
       expect((await context.request.get(`/organizations/${org}`)).status()).toBe(404);
     } finally { await admin.close(); }

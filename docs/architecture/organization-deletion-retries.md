@@ -57,8 +57,11 @@ access withdrawal, changed versions, fresh keys on DELETING, switched accounts,
 Owner demotion, normal-write refusal and observed receipt publication followed
 by session expiry. The existing Demo reminder/event rollback scenario now uses
 a deletion key and requires receipt rollback and a successful same-key retry.
-API and persistence projects compile with zero warnings/errors; local Windows
-policy prevents test execution. Compilation is not runtime proof.
+API and persistence projects compile with zero warnings/errors. Earlier Windows
+runtime checks were blocked by local policy; the seven focused API-host
+publication/rollback checks now execute locally and pass at `2b261f9`.
+Expected publication refusal returns a stable 503 and rolls back its partial
+publication; final actor loss returns 401. Full/native CI remains required.
 
 The exact-image restricted fixture creates an actual dated Card/reminder through
 the API. Receipt insertion denial and observed cookie expiry during AFTER INSERT
@@ -113,7 +116,9 @@ Organization/Board access for both accounts, same-key 202 recovery and honest
 request-only status/focus. These scenarios are implemented but await CI.
 
 Completed Organization graph/file deletion, audit retention, terminal
-ORGANIZATION_DELETED publication and two-client lifecycle recovery remain
+Production ORGANIZATION_DELETED publication and leased delivery are implemented
+and verified by restricted PostgreSQL contracts. Current end-to-end Worker/browser
+proof, Demo terminal execution and two-client lifecycle recovery remain
 outstanding. A 202 receipt cannot satisfy those requirements.
 See the [acceptance map](prd-03-acceptance.md),
 [Organization transactions](organization-command-transactions.md),
@@ -130,3 +135,16 @@ from interpreting a repeated storage call as a fresh deletion request. The API
 host regression checks wrong-version refusal, one transition and unchanged
 state on a current-version repeat. Runtime execution of this regression remains
 pending CI; this guard does not implement terminal graph deletion.
+
+## Browser status and refresh recovery
+
+After acceptance the browser checks the original request through the independent
+[Owner observation contract](organization-deletion-lifecycle.md#independent-original-owner-observation).
+A 202 remains request acceptance; only a matched terminal snapshot confirms
+completion. A status refusal or transport failure never substitutes for it.
+Tab-local recovery stores UUID/account/version references without private names,
+tokens or completed snapshots, verifies the current account on refresh, and
+preserves the original request key after a lost acknowledgment. Temporary
+account-verification refusal retains the reference and retries verification
+without ordinary Organization reads or a new DELETE. Native
+keyboard/phone and exact-image completion acceptance remain required.

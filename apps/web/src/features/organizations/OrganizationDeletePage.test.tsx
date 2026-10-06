@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationDeletePage } from './OrganizationDeletePage';
 const actor = '22222222-2222-4222-8222-222222222222';
@@ -15,7 +15,7 @@ async function confirm() {
   fireEvent.click(await screen.findByRole('button', { name: 'Review deletion request' }));
   fireEvent.click(screen.getByRole('button', { name: 'Confirm deletion request' }));
 }
-afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); sessionStorage.clear(); });
 
 it('requires explicit keyboard-safe confirmation and cancels without a deletion request', async () => {
   const fetcher = vi.fn(async (path: string) => response(path === '/me' ? profile : review)); vi.stubGlobal('fetch', fetcher); mount();
@@ -139,4 +139,90 @@ it('uses a newly reviewed version and new key only after renewed explicit confir
   await screen.findByRole('status'); const calls = fetcher.mock.calls.filter(([, options]) => options?.method === 'DELETE');
   expect(calls).toHaveLength(2); expect(calls[0][0]).toContain('?version=3&'); expect(calls[1][0]).toContain('?version=4&');
   expect((calls[1][1]!.headers as Headers).get('Idempotency-Key')).not.toBe((calls[0][1]!.headers as Headers).get('Idempotency-Key'));
+});
+
+
+it('confirms only the original terminal snapshot and moves focus after explicit status checking', async () => {
+  let key = ''; let complete = false;
+  const fetcher = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    if (options?.method === 'DELETE') { key = (options.headers as Headers).get('Idempotency-Key')!; return response(null, 202); }
+    if (path.includes('/deletion-requests/')) return response({ requestId: key, state: complete ? 'COMPLETED' : 'PENDING',
+      version: complete ? 5 : 4, eventId: complete ? '77777777-7777-4777-8777-777777777777' : null, completedAt: complete ? '2026-10-06T18:00:00Z' : null });
+    return response(review);
+  });
+  vi.stubGlobal('fetch', fetcher); mount(); await confirm();
+  const check = await screen.findByRole('button', { name: 'Check deletion status' }); await waitFor(() => expect(check).toBeEnabled());
+  check.focus(); fireEvent.click(check); await screen.findByText('Deletion is still in progress. Completion has not been confirmed.');
+  await waitFor(() => expect(check).toBeEnabled()); complete = true; check.focus(); fireEvent.click(check);
+  await screen.findByText('Organization deletion confirmed complete.'); const notice = screen.getByRole('status'); await waitFor(() => expect(notice).toHaveFocus());
+  expect(screen.queryByRole('button', { name: 'Check deletion status' })).not.toBeInTheDocument(); expect(screen.queryByText('Private Council')).not.toBeInTheDocument();
+  const reads = fetcher.mock.calls.filter(([path]) => path.includes('/deletion-requests/'));
+  expect(reads).toHaveLength(2); expect(reads[0][0]).toBe(`/organizations/${org}/deletion-requests/${key}?expectedActorId=${actor}`);
+  expect(reads[1][0]).toBe(reads[0][0]); expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(1);
+});
+
+it('restores an acknowledged reference in the same tab without ordinary Organization reads or another DELETE', async () => {
+  const fetcher = vi.fn(async (path: string, options?: RequestInit) => response(path === '/me' ? profile : review, options?.method === 'DELETE' ? 202 : 200));
+  vi.stubGlobal('fetch', fetcher); mount(); await confirm(); await screen.findByRole('button', { name: 'Check deletion status' });
+  const stored = sessionStorage.getItem(`strataai.organization-deletion.v1:${org}`)!;
+  expect(stored).not.toContain('Private Council'); expect(Object.keys(JSON.parse(stored)).sort()).toEqual(['acknowledged', 'actor', 'key', 'version']);
+  cleanup(); fetcher.mockClear(); mount();
+  await screen.findByRole('button', { name: 'Check deletion status' }); expect(fetcher.mock.calls).toHaveLength(1); expect(fetcher.mock.calls[0][0]).toBe('/me');
+  expect(screen.queryByText('Private Council')).not.toBeInTheDocument(); expect(screen.queryByText('Organization deletion confirmed complete.')).not.toBeInTheDocument();
+});
+
+it('restores an uncertain original request after refresh and keeps the same key', async () => {
+  let writes = 0; let original = '';
+  const fetcher = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    if (options?.method === 'DELETE') { const key = (options.headers as Headers).get('Idempotency-Key')!;
+      if (++writes === 1) { original = key; throw new TypeError('Lost response'); } expect(key).toBe(original); return response(null, 202); }
+    return response(review);
+  });
+  vi.stubGlobal('fetch', fetcher); mount(); await confirm(); await screen.findByRole('button', { name: 'Retry original deletion request' });
+  cleanup(); fetcher.mockClear(); mount(); const retry = await screen.findByRole('button', { name: 'Retry original deletion request' });
+  await waitFor(() => expect(retry).toHaveFocus()); expect(fetcher.mock.calls).toHaveLength(1); fireEvent.click(retry);
+  await screen.findByRole('button', { name: 'Check deletion status' }); expect(writes).toBe(2);
+  expect(fetcher.mock.calls.filter(([path]) => path === `/organizations/${org}`)).toHaveLength(0);
+});
+
+it.each([false, true])('retries account verification after refresh refusal without ordinary reads or writes (acknowledged=%s)', async acknowledged => {
+  const key = '88888888-8888-4888-8888-888888888888';
+  const saved = JSON.stringify({ key, actor, version: 3, acknowledged });
+  sessionStorage.setItem(`strataai.organization-deletion.v1:${org}`, saved);
+  let unavailable = true;
+  const fetcher = vi.fn(async (path: string) => response(path === '/me' && !unavailable ? profile : {}, unavailable ? 503 : path === '/me' ? 200 : 404));
+  vi.stubGlobal('fetch', fetcher); mount(); await screen.findByText(/Unable to verify the account/);
+  const verify = await screen.findByRole('button', { name: 'Retry account verification' });
+  await waitFor(() => expect(verify).toBeEnabled()); unavailable = false; fireEvent.click(verify);
+  await screen.findByRole('button', { name: acknowledged ? 'Check deletion status' : 'Retry original deletion request' });
+  expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/me', '/me']);
+  expect(sessionStorage.getItem(`strataai.organization-deletion.v1:${org}`)).toBe(saved);
+  expect(screen.queryByText('Private Council')).not.toBeInTheDocument();
+});
+
+it('does not display a terminal snapshot when the account changes after the status response', async () => {
+  let key = ''; let checking = false; let profileReads = 0;
+  vi.stubGlobal('fetch', vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(checking && ++profileReads === 2 ? { ...profile, id: '33333333-3333-4333-8333-333333333333' } : profile);
+    if (options?.method === 'DELETE') { key = (options.headers as Headers).get('Idempotency-Key')!; return response(null, 202); }
+    if (path.includes('/deletion-requests/')) return response({ requestId: key, state: 'COMPLETED', version: 5,
+      eventId: '77777777-7777-4777-8777-777777777777', completedAt: '2026-10-06T18:00:00Z' });
+    return response(review);
+  }));
+  mount(); await confirm(); const check = await screen.findByRole('button', { name: 'Check deletion status' });
+  await waitFor(() => expect(check).toBeEnabled()); checking = true; fireEvent.click(check); await screen.findByText('Sign in destination');
+  expect(screen.queryByText('Organization deletion confirmed complete.')).not.toBeInTheDocument(); expect(sessionStorage.getItem(`strataai.organization-deletion.v1:${org}`)).toBeNull();
+});
+
+it.each([404, 503])('never treats status refusal %s as completed deletion', async status => {
+  let checks = 0;
+  vi.stubGlobal('fetch', vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile); if (options?.method === 'DELETE') return response(null, 202);
+    if (path.includes('/deletion-requests/')) { checks++; return response({}, status); } return response(review);
+  }));
+  mount(); await confirm(); const check = await screen.findByRole('button', { name: 'Check deletion status' }); await waitFor(() => expect(check).toBeEnabled());
+  fireEvent.click(check); await screen.findByRole('alert'); expect(checks).toBe(1); expect(screen.queryByText('Organization deletion confirmed complete.')).not.toBeInTheDocument();
+  if (status === 503) await waitFor(() => expect(check).toBeEnabled());
 });
