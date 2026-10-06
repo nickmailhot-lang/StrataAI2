@@ -244,33 +244,26 @@ describe("PRD-01/03/04 organization discovery", () => {
     ).toBeVisible();
     expect(screen.queryByText("demo")).not.toBeInTheDocument();
   });
-  it("creates an organization and opens its authorized board list", async () => {
-    const fetcher = vi
-      .fn()
-      .mockResolvedValueOnce(response({ items: [], nextCursor: null }))
-      .mockResolvedValueOnce(response(organizations[0], 201))
-      .mockResolvedValueOnce(response(organizations[0]))
-      .mockResolvedValueOnce(response({ organizationId: "org-1", items: [], nextCursor: null }));
-    stubFetch(fetcher);
-    const router = mount();
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Create organization" }),
-    );
-    fireEvent.change(screen.getByLabelText(/Name/), {
-      target: { value: "Council" },
+  it("creates an organization and opens its current authorized board list", async () => {
+    const id = '55555555-5555-4555-8555-555555555555';
+    const created = { ...organizations[0], organization: { ...organizations[0].organization, id, version: 1, ownerUserId: profile.id } };
+    const fetcher = vi.fn(async (path: string, options?: RequestInit) => {
+      if (options?.method === 'POST') return response(created, 201);
+      if (path === '/organizations/directory') return response({ items: [], nextCursor: null });
+      if (path.endsWith('/boards/directory')) return response({ organizationId: id, items: [], nextCursor: null });
+      return response(created);
     });
-    fireEvent.click(screen.getByRole("button", { name: /^Create$/ }));
-    expect(
-      await screen.findByRole("heading", { name: "Council" }),
-    ).toBeVisible();
-    expect(router.state.location.pathname).toBe("/app/org-1");
-    expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({
-      name: "Council",
-      description: "",
-    });
-    expect(fetcher.mock.calls[1][1].headers.get("X-StrataAI-Request")).toBe(
-      "1",
-    );
+    stubFetch(fetcher); const router = mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Create organization' }));
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: 'Council' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Create$/ }));
+    await screen.findByRole('heading', { name: 'Council' });
+    expect(router.state.location.pathname).toBe(`/app/${id}`);
+    const call = fetcher.mock.calls.find(([, options]) => options?.method === 'POST')!;
+    expect(call[0]).toBe(`/organizations?expectedActorId=${profile.id}`);
+    expect(JSON.parse(call[1]!.body as string)).toEqual({ name: 'Council', description: '' });
+    const headers = call[1]!.headers as Headers;
+    expect(headers.get('X-StrataAI-Request')).toBe('1'); expect(headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
   });
   it("defaults new boards to private and opens the persisted board ID", async () => {
     const fetcher = vi
@@ -334,4 +327,13 @@ describe("PRD-01/03/04 organization discovery", () => {
     );
     expect(screen.queryByText("Council")).not.toBeInTheDocument();
   });
+});
+
+it('returns keyboard focus to creation only after cancellation refreshes the current directory', async () => {
+  const fetcher = vi.fn(async () => response({ items: [], nextCursor: null })); stubFetch(fetcher); mount();
+  const opener = await screen.findByRole('button', { name: 'Create organization' }); fireEvent.click(opener);
+  fireEvent.click(screen.getByRole('button', { name: /^Cancel$/ }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  const currentOpener = await screen.findByRole('button', { name: 'Create organization' });
+  await waitFor(() => expect(currentOpener).toHaveFocus()); expect(fetcher).toHaveBeenCalledTimes(2);
 });

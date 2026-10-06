@@ -55,9 +55,9 @@ Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and
 MarkDeletingAsync enter the Organization unit of work. MarkDeletingCoreAsync
 marks status, reschedules reminders and audits a deletion request; it does not
 perform terminal graph deletion. Current metadata, member-removal, departure and creation API contracts include
-durable receipts. Browser creation recovery and deletion acknowledgments
-remain incomplete; see their workflow guides for source and CI boundaries.
+durable receipts. Current browser creation recovery evidence is pending and deletion
+acknowledgments remain incomplete; see their workflow guides for source and CI boundaries.
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**27%**, a planning estimate rather than a count of unchecked rows.
+**26%**, a planning estimate rather than a count of unchecked rows.

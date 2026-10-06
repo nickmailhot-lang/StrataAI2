@@ -24,6 +24,7 @@ import {
 } from "../../api/workManagement";
 import { isNotificationProfile } from "../notifications/notificationInbox";
 import { watchOrganizationBoards } from "../kanban/organizationBoardLive";
+import { OrganizationCreationDialog } from './OrganizationCreationDialog';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 
 type OrganizationSummary = {
@@ -103,6 +104,8 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
   const pageFocus = useRef(false);
+  const creationFocus = useRef(false);
+  const createButton = useRef<HTMLButtonElement>(null);
   const firstPage = useRef<HTMLButtonElement>(null);
   const nextPage = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -174,6 +177,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
     pageFocus.current = false;
     (cursor ? firstPage.current : nextPage.current ?? heading.current)?.focus();
   }, [data, cursor]);
+  useEffect(() => {
+    if (data && creationFocus.current) { creationFocus.current = false; createButton.current?.focus(); }
+  }, [data]);
   const organization = data?.organizations.find(
     (item) => item.organization.id === organizationId,
   )?.organization;
@@ -205,18 +211,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         );
         navigate(`/app/${organizationId}/boards/${board.id}`);
       } else {
-        const created = await workRequest<OrganizationSummary>(
-          "/organizations",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name,
-              description: String(form.get("description") ?? ""),
-            }),
-          },
-        );
-        navigate(`/app/${created.organization.id}`);
+        return;
       }
       setCreating(false);
     } catch (reason) {
@@ -285,7 +280,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               {data.organizations.some(item => item.organization.id === organizationId && item.organization.status === 0 && item.role <= 1) && (
                 <Button component={Link} to={`/app/${organizationId}/members`}>Organization members</Button>
               )}
-              <Button
+              <Button disabled={creating && !organizationId}
                 onClick={() => {
                   setData(undefined);
                   setReload((value) => value + 1);
@@ -295,6 +290,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               </Button>
               {(!organizationId || organization?.status === 0) && (
                 <Button
+                  ref={createButton} disabled={creating}
                   onClick={() => {
                     setError(undefined);
                     setCreating(true);
@@ -339,10 +335,13 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
           </>
         )}
         {(data || cursor) && <Stack direction="row" spacing={2}>
-          {cursor && <Button ref={firstPage} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setLoadError(undefined); setCreating(false); setCursor(undefined); }}>First {organizationId ? "Board" : "Organization"} page</Button>}
-          {data?.nextCursor && <Button ref={nextPage} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setCreating(false); setCursor(data.nextCursor!); }}>Next {organizationId ? "Board" : "Organization"} page</Button>}
+          {cursor && <Button ref={firstPage} disabled={creating && !organizationId} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setLoadError(undefined); setCreating(false); setCursor(undefined); }}>First {organizationId ? "Board" : "Organization"} page</Button>}
+          {data?.nextCursor && <Button ref={nextPage} disabled={creating && !organizationId} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setCreating(false); setCursor(data.nextCursor!); }}>Next {organizationId ? "Board" : "Organization"} page</Button>}
         </Stack>}
-        {creating && <Dialog
+        {creating && !organizationId && liveActor && <OrganizationCreationDialog actorId={liveActor}
+          onCancel={() => { creationFocus.current = true; setCreating(false); setData(undefined); setReload(value => value + 1); }}
+          onCreated={id => { setCreating(false); navigate(`/app/${id}`); }} />}
+        {creating && organizationId && <Dialog
           open={creating}
           onClose={() => {
             if (!busy) setCreating(false);

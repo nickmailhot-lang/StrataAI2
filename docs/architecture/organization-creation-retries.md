@@ -2,8 +2,8 @@
 
 [PRD-03](https://github.com/nickmailhot-lang/StrataAI2/issues/3) WS-FR-001,
 AC-WS-03-01 and TC-05/06/07/08 require creation recovery without duplicate
-Organizations. This document records the server contract; browser recovery
-and current native execution remain incomplete.
+Organizations. This document records the server and browser recovery contracts; current
+native execution and complete PRD acceptance remain pending.
 
 ## Request and original acknowledgment
 
@@ -65,10 +65,44 @@ withdrawn membership, cross-tenant visibility, immutable grants and reserved
 expired keys. The ordered migration runner repeats application and checks
 forced RLS. These scenarios await CI execution.
 
-The browser creation form still sends an unkeyed request. Remaining work is
-account-bound immutable browser intent, bounded timeout, explicit same-key
-recovery, current-state admission after an original acknowledgment, keyboard
-and phone acceptance, and native session-expiry proof at receipt publication.
+## Browser recovery
+
+The MUI creation dialog captures the account, UUID intent key and exact body
+on the first submission. It checks `/me` before POST and sends the expected
+account query. Unknown responses or transport failure retain that same intent;
+name and description stay read-only and only explicit **Retry original
+creation** resubmits it. Return/cancel, Escape and directory paging/refresh
+cannot replace an unresolved creation with a fresh intent. Each request has a
+15-second deadline; route departure aborts pending reads and fences late results.
+The pending intent lives in the mounted dialog and is not persisted across
+navigation or a browser reload.
+
+A valid original 201 is checked for creator, Owner role, version one and a
+canonical Organization UUID. The dialog then separately reads current active
+Organization membership/state and checks `/me` again before navigation. It
+never displays historical receipt metadata as current access or overwrites
+later metadata. A failed current read retains the same creation key for recovery.
+Current refusal clears private form values and stops submission; a changed
+account sends the browser to sign-in. Definitive input/conflict/expiry/rate-limit
+refusals require return to a freshly checked directory before another creation.
+
+The uncertain result moves keyboard focus to the recovery control. Cancellation
+before submission refreshes the directory and restores focus to its current
+creation control. Unit scenarios cover immutable repeated retries, switched
+accounts before/during recovery, current access withdrawal, malformed foreign
+receipts, definitive refusals, current-read failure, deadline and route/late
+response fences. All 45 creation/discovery cases pass; web type checking, lint
+and browser TypeScript checks pass.
+
+Desktop/phone native scenarios commit a real creation, edit its metadata through
+the actual API, lose the original response, then recover with exactly the same
+account/path/body/key. They require the later canonical heading, one directory
+Organization, one Owner membership and unchanged later Organization state.
+Cancellation must produce no Organization and restore keyboard focus; dialog
+WCAG 2.2 AA checks are included. These native checks await CI execution.
+
+Remaining work includes current native keyboard/phone proof and actual-session
+expiry at receipt publication against PostgreSQL.
 Full PRD-03 acceptance also requires completed deletion and Organization
 metadata/lifecycle realtime delivery; see the [acceptance map](prd-03-acceptance.md).
 

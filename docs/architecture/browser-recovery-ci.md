@@ -193,3 +193,11 @@ type checking and lint pass after this change. Full revalidation is pending.
 The stable full web recheck at `526812b` passed all 1,515 tests across 123
 files (200.74 seconds). This proves the web source suite at that revision;
 it does not substitute for pending exact-image PostgreSQL/browser acceptance.
+
+Organization creation now retains an immutable account/body/key intent after
+unknown outcomes, checks canonical current membership before opening the
+Organization and fences account switches, deadlines and late route responses.
+All 45 focused creation/discovery tests, web TypeScript and lint pass. Browser
+TypeScript covers the desktop/phone exact-image scenario, which requires a real
+committed creation and later metadata to survive a lost-response same-key retry.
+Native execution and the expanded full web run remain pending.
