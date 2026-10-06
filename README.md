@@ -16,7 +16,7 @@ Jump to [documentation navigation](#navigating-the-documentation), [workflow gui
 | Configure a local or production runtime | [Configuration reference](docs/architecture/configuration.md), [database roles](docs/architecture/runtime-database-roles.md), [schema upgrades](docs/architecture/schema-upgrades.md) |
 | Run a tested Docker release | [Release bundle guide](docs/release/README.md) |
 | Choose the next implementation dependency | [Canonical ticket dependency audit](docs/ticket-dependencies.md), [linked ticket dependency map](docs/ticket-dependency-map.md) |
-| Review outstanding acceptance and evidence | [Board acceptance](docs/architecture/prd-04-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
+| Review outstanding acceptance and evidence | [Authentication acceptance](docs/architecture/prd-02-acceptance.md), [Board acceptance](docs/architecture/prd-04-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
 | Check current requirements and builds | [Open PRD/architecture issues](https://github.com/nickmailhot-lang/StrataAI2/issues), [CI workflow runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) |
 
 If you are new to the project, follow the architecture and runtime guides before the local checks below. For a feature question, choose a subject in the documentation index and start with its behavior guide. For deployment, start with the release guide and use the configuration and migration references alongside it.
@@ -29,7 +29,7 @@ The [docs index](docs/README.md) links to every document, grouped by subject. Us
 docs/
 ├── README.md          Complete index: browse every guide by subject
 ├── architecture/     Architecture overview, runtime and feature contracts
-│   └── README.md      Start here to understand the system's boundaries
+│   └── README.md      Architecture overview and module dependency direction
 ├── release/
 │   └── README.md      Configure and run the Docker release verified by CI
 └── *.md              Feature guides, dependency maps, and verification records
@@ -83,7 +83,7 @@ These links open the behavior or contract guide directly. Use the subject sectio
 
 | Workflow | Primary guides |
 | --- | --- |
-| Sign in, recover an account, or manage a profile | [Sign-in recovery and retries](docs/identity-login-retries.md), [recovery requests](docs/identity-recovery-request-retries.md), [profile management and local-time display](docs/architecture/profile-management.md) |
+| Sign in, recover an account, or manage a profile | [Authentication requirements and acceptance map](docs/architecture/prd-02-acceptance.md), [sign-in recovery and retries](docs/identity-login-retries.md), [recovery requests](docs/identity-recovery-request-retries.md), [profile management and local-time display](docs/architecture/profile-management.md) |
 | Verify an email, reset a password, sign out, or deactivate an account | [Single-use verification and reset tokens](docs/identity-token-consumption-retries.md), [logout and deactivation retries](docs/architecture/identity-command-retries.md), [account ownership continuity](docs/architecture/account-owner-continuity.md) |
 | Browse Organizations, follow deep links, and manage settings | [Paged Organization directory and browser navigation](docs/architecture/organization-discovery.md), [current membership and canonical Organization reads](docs/architecture/organization-access-integrity.md), [Organization settings](docs/architecture/organization-settings.md) |
 | Register from an invitation and accept access | [Invitation-backed registration](docs/invitation-registration.md), [registration retries](docs/identity-registration-retries.md), [verified-email discovery and acceptance](docs/architecture/invitation-discovery.md) |
@@ -116,7 +116,9 @@ Use [the complete index](docs/README.md#browse-by-subject) for **every document*
 
 Demo checks, restricted PostgreSQL checks, and checks against the final Docker images establish different parts of acceptance. A passing source check or an implemented workflow alone does not establish release readiness.
 
-To follow the newest directory and access work, read [Organization browser paging and deep links](docs/architecture/organization-discovery.md#browser-paging-and-direct-organization-admission), [active Board paging](docs/architecture/organization-discovery.md#browser-active-board-paging), [current Organization access](docs/architecture/organization-access-integrity.md), and [Organization transaction rollback](docs/architecture/organization-command-transactions.md#demo-rollback-and-final-actor-admission).
+For account and search changes, read [profile management and local-time display](docs/architecture/profile-management.md), [identity transactions and final session admission](docs/architecture/identity-command-transactions.md), [identity realtime recovery](docs/architecture/identity-realtime.md), and [search and filtering](docs/board-filtering.md). These guides explain how current account preferences, Board date policies, and access checks affect the returned data and browser display.
+
+For directory and access changes, read [Organization browser paging and deep links](docs/architecture/organization-discovery.md#browser-paging-and-direct-organization-admission), [active Board paging](docs/architecture/organization-discovery.md#browser-active-board-paging), [current Organization access](docs/architecture/organization-access-integrity.md), and [Organization transaction rollback](docs/architecture/organization-command-transactions.md#demo-rollback-and-final-actor-admission).
 
 When adding or moving documentation, follow [index maintenance](docs/README.md#keeping-this-index-current): keep the subject index exhaustive and update links in related guides. GitHub issues remain the source for current ticket status; read historical evidence with its recorded date and revision.
 
