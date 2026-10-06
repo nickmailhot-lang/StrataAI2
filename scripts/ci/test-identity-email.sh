@@ -15,7 +15,7 @@ cleanup() {
   query 'GRANT INSERT ON identity_events TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON email_verification_tokens,identity_delivery_jobs,identity_registration_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON password_reset_tokens,identity_recovery_request_replays TO strataai_api_runtime;' >/dev/null
-  query 'GRANT INSERT ON identity_token_consumption_replays TO strataai_api_runtime;' >/dev/null
+  query 'DROP TRIGGER IF EXISTS ci_consumption_receipt_wait ON identity_token_consumption_replays; DROP FUNCTION IF EXISTS public.ci_consumption_receipt_wait(); GRANT INSERT ON identity_token_consumption_replays TO strataai_api_runtime;' >/dev/null
   query 'GRANT INSERT ON invitations,work_events,invitation_mail_intents,background_jobs,invitation_creation_replays TO strataai_api_runtime;' >/dev/null
   if test "${signup_closed:-false}" = true; then "${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null || true; fi
   rm -rf "$scratch"
@@ -324,7 +324,7 @@ recovery_state() {
     'receipts',(SELECT count(*) FROM identity_recovery_request_replays WHERE user_id='$recovery_user'))::text;"
 }
 consume_request() {
-  curl --max-time 60 --silent --show-error -o "$scratch/response" -w '%{http_code}' -H 'X-StrataAI-Request: 1' \
+  curl --max-time 60 --silent --show-error -D "$scratch/consumption.headers" -o "$scratch/response" -w '%{http_code}' -H 'X-StrataAI-Request: 1' \
     -H 'Content-Type: application/json' -H "Idempotency-Key: ${1:-$consumption_key}" -d "$consumption_body" "$base$consumption_route"
 }
 expire_consumption_during_wait() {
@@ -423,6 +423,36 @@ for purpose in RESET_PASSWORD VERIFY_EMAIL; do
     test "$before_consumption" = "$(token_state)"
     query "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
   done
+  # Real elapsed expiry during receipt publication, after consumption/event writes.
+  # Observe the restricted runtime inside the trigger's sleep before accepting
+  # a refusal as evidence; an early expired-token rejection cannot pass this case.
+  test "${CI:-}" = true
+  query "CREATE FUNCTION public.ci_consumption_receipt_wait() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+  BEGIN
+    IF NEW.user_id='$recovery_user'::uuid THEN PERFORM pg_sleep(12); END IF;
+    RETURN NEW;
+  END;
+  \$\$;
+  CREATE TRIGGER ci_consumption_receipt_wait AFTER INSERT ON identity_token_consumption_replays
+    FOR EACH ROW EXECUTE FUNCTION public.ci_consumption_receipt_wait();" >/dev/null
+  query "UPDATE $recovery_table SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$recovery_job';" >/dev/null
+  publication_before="$(token_state)"
+  consume_request > "$scratch/publication-status" &
+  request_pid=$!
+  for attempt in $(seq 1 100); do
+    if test "$(query "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_token_consumption_replays%';")" = 1; then break; fi
+    sleep 0.1
+  done
+  test "$(query "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_token_consumption_replays%';")" = 1
+  wait "$request_pid"; request_pid=''
+  test "$(cat "$scratch/publication-status")" = 400
+  jq -e '.code=="invalid_or_expired_token"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$recovery_user" "$scratch/response"
+  scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/consumption.headers"
+  test "$publication_before" = "$(token_state)"
+  query 'DROP TRIGGER ci_consumption_receipt_wait ON identity_token_consumption_replays; DROP FUNCTION public.ci_consumption_receipt_wait();' >/dev/null
+  query "UPDATE $recovery_table SET expires_at=clock_timestamp()+interval '30 minutes' WHERE id='$recovery_job';" >/dev/null
+  # Existing concurrent success now retries the same token and intent key.
   for n in 1 2 3; do
     curl --max-time 60 --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
       -H "Idempotency-Key: $consumption_key" -d "$consumption_body" -o "$scratch/consume-$n.body" -w '%{http_code}' "$base$consumption_route" > "$scratch/consume-$n.status" &

@@ -32,5 +32,18 @@ token restoration, no failed receipt or extra event, then successful same-key
 consumption and matching replay with only one new event. Restoring the test clock
 before rollback assertions prevents natural expiry from hiding a residual record.
 These cases require native API-host CI execution; compilation alone is not
-acceptance evidence. Exact-image post-publication expiry coverage and full PRD-02
-acceptance remain outstanding.
+acceptance evidence. Required exact-image post-publication expiry coverage is described below; its
+execution and full PRD-02 acceptance remain outstanding.
+
+The required Identity mail fixture now covers both token purposes during an actual
+receipt-publication wait. An ephemeral invoker trigger pauses receipt insertion
+for twelve seconds after consumption and event writes. The fixture gives the
+canonical token a ten-second remaining lifetime and observes the restricted API
+connection in `PgSleep` on the consumption receipt insert. An early rejection
+before publication cannot satisfy that observation. After the wait, the request
+must return 400/`invalid_or_expired_token`, no cookie/account disclosure, and
+unchanged complete account/token/session/audit/event/receipt state. It removes
+the trigger, restores token lifetime, and runs the existing concurrent same-key
+success/replay checks. Exit cleanup also removes the trigger/function. The fault
+injection requires CI; it changes no migration or production runtime setting.
+Bash syntax passes; exact-image execution remains pending CI.
