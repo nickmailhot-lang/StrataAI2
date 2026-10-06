@@ -24,6 +24,7 @@ import {
   type WorkCard,
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
+import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 import { ArchivedCardDetail } from './ArchivedCardDetail';
 import { CardChecklists } from './CardChecklists';
 import { CardAttachments } from './CardAttachments';
@@ -460,6 +461,9 @@ function BoardContent() {
   return (
     <Stack role="region" aria-label="Board workspace" aria-busy={snapshotReading} spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1, position: 'relative', isolation: 'isolate' }}>
       <BoardBackgroundImage snapshot={snapshot} unavailable={snapshotReading || !!loadError} />
+      {snapshot.board.lifecycleState === 'active' && snapshot.board.version !== undefined &&
+        <NavigationConfirmation target={{ kind: 'board', organization: snapshot.board.organizationId, board: snapshot.board.id, version: snapshot.board.version }}
+          admitted={!snapshotReading && !loadError} />}
       {loadError && message(loadError)}
       <Typography role="status" aria-live="polite" variant="body2">
         {liveStatus === "live"
@@ -740,7 +744,10 @@ function BoardContent() {
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
               : <Alert severity="info">This card is unavailable in this board.</Alert>
           ) : (
-            <><CardCoverImage organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} card={card} detail
+            <>{snapshot.board.lifecycleState === 'active' && snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === card.id)) &&
+              <NavigationConfirmation key={`navigation-card-${card.id}`} admitted={!snapshotReading && !loadError}
+                target={{ kind: 'card', organization: snapshot.board.organizationId, board: snapshot.board.id, card: card.id, version: card.version }} />}
+            <CardCoverImage organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} card={card} detail
               unavailable={snapshotReading || !!loadError || snapshot.board.lifecycleState !== 'active' || !snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === card.id))} />
             <CardDetailEditor
               key={card.id}
