@@ -18,9 +18,22 @@ The exact-image fixture additionally compares invitations/routes/receipts/audits
 and private creation proofs, canonical sources, sequence and jobs across refusal.
 These added runtime checks await CI. Release browser interceptors match URL paths
 so account query parameters do not bypass committed-response loss injection.
-Account replacement during initial admission or after a committed response still
-requires the additional browser profile-race checks; this boundary alone does not
-certify all mid-session behavior.
+The page now rechecks `/me` after administrative admission, before submission and
+after its response. Board names and retained drafts are withheld until the final
+admission check. Changed accounts clear private controls/acknowledgment and return
+to sign-in; stored original-account requests remain reserved for later freshly
+authorized recovery. A post-commit account change does not erase the request or
+pretend the committed invitation was rolled back.
+
+Component race cases exercise both Organization and Board surfaces at each of
+these checks, including no POST after preflight account replacement and suppressed
+acknowledgment after a committed response. The native release scenario creates the
+invitation through the actual endpoint, signs in another account before returning
+the response to the page, requires no visible acknowledgment or private email,
+then signs in the original account and recovers the same key/body and canonical ID
+with exactly one history row. Both viewport widths and surfaces are covered.
+Execution of those real cookie/recovery cases against exact images remains pending;
+mocked profile checks alone do not certify all mid-session behavior.
 
 `POST /organizations/{organizationId}/invitations` accepts an optional nonempty UUID `Idempotency-Key`. A keyed request acknowledges the original invitation ID, email, surface, role and expiry; its `invitationToken` is null in every runtime mode. Unkeyed Demo requests retain the existing bearer-token fixture behavior. Production never returns the bearer token.
 

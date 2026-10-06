@@ -53,6 +53,14 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   }
   function begin() { if (pending.current) return; const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); return controller; }
   function finish(controller: AbortController) { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
+  async function verifyAccount(controller: AbortController, expected: string) {
+    const me = await request('/me', {}, controller); if (!valid(controller)) return false;
+    if ([401, 403, 404].includes(me.status)) { deny(me.status); return false; }
+    const id = (me.body as { id?: unknown } | undefined)?.id;
+    if (me.status !== 200 || !validInvitationKey(id)) throw new Error('Invalid actor');
+    if (id !== expected) { deny(401); return false; }
+    return true;
+  }
   async function load() {
     const controller = begin(); if (!controller) return;
     setBoardName(undefined); setActorRole(undefined); setAck(undefined); setInput(empty); setIntent(undefined); currentIntent.current = undefined;
@@ -64,7 +72,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       if (me.status !== 200 || !validInvitationKey(actor) || typeof profile?.locale !== 'string' || typeof profile.timezone !== 'string') throw new Error('Invalid actor');
       const display = { locale: profile.locale, timezone: profile.timezone };
       if (!formatUserDateTime('2026-01-01T00:00:00Z', display)) throw new Error('Invalid preferences');
-      let admittedRole: number;
+      let admittedRole: number; let admittedBoardName: string | undefined;
       if (boardId !== undefined) {
         if (!validInvitationKey(boardId)) throw new Error('Invalid Board route');
         const result = await request(`/boards/${encodeURIComponent(boardId)}`, {}, controller); if (!valid(controller)) return;
@@ -73,7 +81,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         if (result.status !== 200 || data?.board?.id !== boardId || data.board.organizationId !== organizationId
           || data.board.lifecycleState !== 'active' || typeof data.board.name !== 'string' || !data.board.name.trim()
           || data.access?.canAdminister !== true) { deny(404); return; }
-        setBoardName(data.board.name); admittedRole = 1;
+        admittedBoardName = data.board.name; admittedRole = 1;
       } else {
         const result = await request(`/organizations/${encodeURIComponent(organizationId)}/members/${actor}`, {}, controller); if (!valid(controller)) return;
         if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
@@ -82,8 +90,10 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
           || !data.member || data.member.userId !== actor || data.member.role !== data.actorRole) throw new Error('Invalid actor admission');
         admittedRole = data.actorRole;
       }
+      if (!await verifyAccount(controller, actor)) return;
       const key = invitationIntentKey(actor, organizationId) + (boardId !== undefined ? `:board:${boardId}` : '');
       reviewedActor.current = actor;
+      setBoardName(admittedBoardName);
       setStorageKey(key); setActorRole(admittedRole); setDenied(false); setBlocked(false);
       setPreferences(display);
       try {
@@ -106,11 +116,14 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     }
     const controller = begin(); if (!controller) return;
     try {
+      const expected = reviewedActor.current;
+      if (!await verifyAccount(controller, expected)) return;
       const root = boardId !== undefined ? `/boards/${encodeURIComponent(boardId)}/invitations` : `/organizations/${encodeURIComponent(organizationId)}/invitations`;
-      const result = await request(`${root}?expectedActorId=${encodeURIComponent(reviewedActor.current)}`, {
+      const result = await request(`${root}?expectedActorId=${encodeURIComponent(expected)}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(boardId !== undefined ? { email: command.input.email, role: command.input.targetRole } : command.input),
       }, controller); if (!valid(controller)) return;
       if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+      if (!await verifyAccount(controller, expected)) return;
       const data = result.body as Ack | undefined;
       if (result.status === 201 && data && validInvitationKey(data.id) && data.organizationId === organizationId
         && typeof data.email === 'string' && data.email.trim().toUpperCase() === command.input.email.toUpperCase()

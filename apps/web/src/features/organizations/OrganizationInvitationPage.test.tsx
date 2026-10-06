@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationInvitationPage, BoardInvitationPage } from './OrganizationInvitationPage';
 import { forgetInvitationIntents, invitationIntentKey } from './invitationIntent';
@@ -8,6 +8,18 @@ const admission = { organizationId: org, actorRole: 0, member: { userId: actor, 
 const input = { email: 'invite@example.test', surface: 'INTERNAL', targetRole: 'MEMBER' };
 const ack = { id: '30000000-0000-0000-0000-000000000000', organizationId: org, ...input, expiresAt: '2026-10-08T18:00:00Z', invitationToken: null };
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+// Stable-account fixtures keep command response queues separate from the
+// additional profile checks. Race cases below exercise those reads explicitly.
+function stubFetch(mock: (path: string, options?: RequestInit) => Promise<Response>) {
+  let initialProfile = true;
+  vi.stubGlobal('fetch', (path: string, options?: RequestInit) => {
+    if (path === '/me') {
+      if (!initialProfile) return Promise.resolve(reply(profile));
+      initialProfile = false;
+    }
+    return mock(path, options);
+  });
+}
 const key = '40000000-0000-0000-0000-000000000000'; const storedKey = invitationIntentKey(actor, org);
 function mount() {
   const router = createMemoryRouter([
@@ -18,11 +30,49 @@ function mount() {
 function fetcher(...responses: (Response | Error)[]) {
   const mock = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(admission));
   for (const response of responses) { if (response instanceof Error) mock.mockRejectedValueOnce(response); else mock.mockResolvedValueOnce(response); }
-  vi.stubGlobal('fetch', mock); return mock;
+  stubFetch(mock); return mock;
 }
 async function submit() { fireEvent.change(await screen.findByLabelText(/^Invitation email/), { target: { value: input.email } }); fireEvent.click(screen.getByRole('button', { name: 'Create invitation' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); sessionStorage.clear(); });
 describe('Administrator invitation intent and creation acknowledgment', () => {
+  it.each([false, true])('withholds saved input and Board names after account replacement during admission (Board=%s)', async boardSurface => {
+    let current = profile;
+    const scopeKey = storedKey + (boardSurface ? `:board:${board}` : '');
+    sessionStorage.setItem(scopeKey, JSON.stringify({ key, input }));
+    const mock = vi.fn(async (path: string) => {
+      if (path === '/me') return reply(current);
+      current = { ...profile, id: ack.id }; return reply(boardSurface ? boardAdmission : admission);
+    });
+    vi.stubGlobal('fetch', mock); if (boardSurface) boardMount(); else mount();
+    await screen.findByText('Sign in destination');
+    expect(screen.queryByDisplayValue(input.email)).not.toBeInTheDocument();
+    expect(screen.queryByText('Private maintenance')).not.toBeInTheDocument();
+    expect(sessionStorage.getItem(scopeKey)).not.toBeNull();
+  });
+  it.each([false, true])('sends no invitation when the reviewing account changes before submission (Board=%s)', async boardSurface => {
+    let current = profile;
+    const mock = vi.fn(async (path: string) => reply(path === '/me' ? current : boardSurface ? boardAdmission : admission));
+    vi.stubGlobal('fetch', mock); if (boardSurface) boardMount(); else mount();
+    await screen.findByLabelText(/^Invitation email/); current = { ...profile, id: ack.id };
+    await submit(); await screen.findByText('Sign in destination');
+    expect(mock.mock.calls.filter(call => call[0].includes('/invitations'))).toHaveLength(0);
+    expect(JSON.parse(sessionStorage.getItem(storedKey + (boardSurface ? `:board:${board}` : ''))!).input).toEqual(input);
+  });
+  it.each([false, true])('withholds committed acknowledgment after account replacement and preserves original recovery (Board=%s)', async boardSurface => {
+    let current = profile;
+    const mock = vi.fn(async (path: string, options?: RequestInit) => {
+      if (path === '/me') return reply(current);
+      if (options?.method === 'POST') { current = { ...profile, id: ack.id }; return reply(boardSurface ? boardAck : ack, 201); }
+      return reply(boardSurface ? boardAdmission : admission);
+    });
+    vi.stubGlobal('fetch', mock); if (boardSurface) boardMount(); else mount();
+    await submit(); await screen.findByText('Sign in destination');
+    expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+    expect(screen.queryByText(input.email)).not.toBeInTheDocument();
+    const posts = mock.mock.calls.filter(call => call[1]?.method === 'POST'); expect(posts).toHaveLength(1);
+    expect(posts[0][0]).toContain(`expectedActorId=${actor}`);
+    expect(JSON.parse(sessionStorage.getItem(storedKey + (boardSurface ? `:board:${board}` : ''))!).input).toEqual(input);
+  });
   it('retains a token-free command and validates creation without claiming delivery or recipient access', async () => {
     const mock = fetcher(reply(ack, 201)); mount(); await submit(); await screen.findByText('Invitation creation acknowledged.');
     const saved = JSON.parse(sessionStorage.getItem(storedKey)!); expect(saved.input).toEqual(input);
@@ -50,6 +100,7 @@ describe('Administrator invitation intent and creation acknowledgment', () => {
   it('fences completion after navigation while retaining the pending intent for later authorized recovery', async () => {
     let resolve!: (response: Response) => void; const mock = fetcher(); mock.mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }));
     const router = mount(); await submit(); const saved = sessionStorage.getItem(storedKey);
+    await waitFor(() => expect(resolve).toBeDefined());
     await act(async () => { await router.navigate('/elsewhere'); }); await act(async () => resolve(reply(ack, 201)));
     expect(screen.getByText('Other destination')).toBeInTheDocument(); expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
     expect(sessionStorage.getItem(storedKey)).toBe(saved);
@@ -67,7 +118,7 @@ describe('Administrator invitation intent and creation acknowledgment', () => {
   });
   it('does not disclose a retained intent to an unauthorized direct route', async () => {
     sessionStorage.setItem(storedKey, JSON.stringify({ key, input }));
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply({}, 404))); mount();
+    stubFetch(vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply({}, 404))); mount();
     await screen.findByText('Organization invitations are unavailable to your account.'); expect(screen.queryByDisplayValue(input.email)).not.toBeInTheDocument();
   });
   it('does not load another actor or Organization pending input', async () => {
@@ -103,7 +154,7 @@ describe('Administrator invitation intent and creation acknowledgment', () => {
     const mock = fetcher(); const set = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('storage unavailable'); });
     const router = mount(); await submit(); await screen.findByText(/browser could not retain the invitation request/); expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(0);
     set.mockRestore(); sessionStorage.setItem(storedKey, 'unreadable');
-    mock.mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(admission));
+    mock.mockResolvedValueOnce(reply(admission));
     await act(async () => { await router.navigate('/elsewhere'); }); await act(async () => { await router.navigate(`/app/${org}/invite`); });
     await screen.findByText(/saved invitation request cannot be read/); expect(screen.getByRole('button', { name: 'Create invitation' })).toBeDisabled();
     expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(0);
@@ -123,7 +174,7 @@ function boardMount() {
 it('binds a Board creation draft and lost acknowledgment retry to the exact Board payload', async () => {
   const mock = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission))
     .mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply(boardAck, 201));
-  vi.stubGlobal('fetch', mock); boardMount(); await submit();
+  stubFetch(mock); boardMount(); await submit();
   await screen.findByText(/invitation could not be confirmed/);
   expect(screen.queryByLabelText('Access surface')).not.toBeInTheDocument();
   expect(screen.getByLabelText(/^Invitation email/)).toBeDisabled();
@@ -143,19 +194,19 @@ it.each([
   { ...boardAck, boardTarget: { boardId: org, role: 'MEMBER' } },
   { ...boardAck, boardTarget: { boardId: board, role: 'ADMIN' } },
 ])('refuses creation confirmation for a mismatched Board target: %j', async value => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission)).mockResolvedValueOnce(reply(value, 201)));
+  stubFetch(vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission)).mockResolvedValueOnce(reply(value, 201)));
   boardMount(); await submit(); await screen.findByText(/invitation could not be confirmed/);
   expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Retry same invitation' })).toBeEnabled();
 });
 it('hides Board name and controls after current access denies creation', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission)).mockResolvedValueOnce(reply({}, 404)));
+  stubFetch(vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission)).mockResolvedValueOnce(reply({}, 404)));
   boardMount(); await submit(); await screen.findByText('Board invitations are unavailable to your account.');
   expect(screen.queryByRole('heading', { name: 'Private maintenance' })).not.toBeInTheDocument();
   expect(screen.queryByLabelText(/^Invitation email/)).not.toBeInTheDocument();
 });
 it('requires current Board administration even if the Board itself can be viewed', async () => {
   const mock = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply({ ...boardAdmission, access: { canAdminister: false } }));
-  vi.stubGlobal('fetch', mock); boardMount(); await screen.findByText('Board invitations are unavailable to your account.');
+  stubFetch(mock); boardMount(); await screen.findByText('Board invitations are unavailable to your account.');
   expect(screen.queryByLabelText(/^Invitation email/)).not.toBeInTheDocument(); expect(mock).toHaveBeenCalledTimes(2);
 });
