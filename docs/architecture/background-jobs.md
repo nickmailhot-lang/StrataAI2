@@ -53,17 +53,18 @@ Worker outcome logs include job/Organization/actor/service/worker IDs, type,
 attempt and correlation ID, without metadata, token, message or exception bodies.
 
 The production Worker registers `WORK_EVENT_READY` under `work-event-delivery`.
-It also registers [Organization metadata delivery](organization-metadata-events.md)
-as `ORGANIZATION_METADATA_EVENT_READY` under `organization-metadata-delivery`.
-The reference-only job is published atomically with its source audit/event and
-marks readiness under an initial and final lease fence. Historical actor
-departure does not strand committed events; fresh reader authorization remains
-required. Automatic metadata routing and live consumption are still pending.
 Its handler locks and checks the current unexpired queue lease before marking a
 content-free Work event ready. Replay preserves the original readiness timestamp.
 Migration 011 gives API append access and Worker access only to event references
 and readiness; the Worker cannot read event type, version or domain content.
 Mailbox/AI/object-storage adapters remain pending, so ARCH-07 is incomplete.
+
+The Worker also registers [Organization metadata delivery](organization-metadata-events.md)
+as `ORGANIZATION_METADATA_EVENT_READY` under `organization-metadata-delivery`.
+The reference-only job is published atomically with its source audit/event and
+marks readiness under an initial and final lease fence. Historical actor
+departure does not strand committed events; fresh reader authorization remains
+required. Automatic metadata routing and live consumption are still pending.
 
 Work mutations publish their audit, event, board sequence and queue job inside the
 owning command transaction. The publisher refuses standalone transactions.

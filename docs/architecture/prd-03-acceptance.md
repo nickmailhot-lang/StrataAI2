@@ -54,10 +54,10 @@ still apply to implemented permissions and lifecycle behavior.
 The [Organization metadata event source](organization-metadata-events.md)
 projects creation and editing audits into a private, forced-RLS, immutable
 journal in the owning command transaction. Restricted PostgreSQL CI passed the
-metadata source contract at `010324c`; strengthened assertions at `bf20c67` and
-exact-image rollback/retry fixtures still await runtime results. Migration 095
+metadata source contract at `010324c` and strengthened assertions at `bf20c67`.
+Exact-image rollback/retry fixtures still await runtime results. Migration 095
 adds atomic reference jobs and leased Worker readiness with 17 local handler
-tests passed; its real database/upgrade/late-fence checks remain pending CI.
+tests passed; real database/upgrade/late-fence checks passed at `ab9a389`.
 Automatic metadata routing and authorized realtime/reconnect consumption remain
 unfinished; this source foundation does not establish delivered events.
 
@@ -76,7 +76,7 @@ implemented with native evidence pending; terminal deletion remains incomplete; 
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**20%**, a planning estimate rather than a count of unchecked rows. Automatic
+**19%**, a planning estimate rather than a count of unchecked rows. Automatic
 deletion discovery passed restricted PostgreSQL CI at `bfa46b4`; current native
 terminal/two-client recovery, Demo terminal processing and applicable mutation
 performance evidence remain required.

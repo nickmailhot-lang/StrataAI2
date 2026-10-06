@@ -60,7 +60,8 @@ event for concurrent same-key creation and editing. Restricted PostgreSQL CI
 passed for `010324c` in [run 37514298212](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37514298212):
 the migration clean/repeat/upgrade checks, schema readiness and metadata source
 contract all passed. Follow-up `bf20c67` adds explicit source-audit rollback
-and direct-insert privilege assertions; its runtime checks remain pending.
+and direct-insert privilege assertions; its restricted PostgreSQL runtime
+checks passed in run 37514533790.
 Exact-image command and browser integration are also pending; the database
 contract does not establish those results.
 
@@ -68,8 +69,12 @@ The metadata delivery handler passed 17 focused local tests, and the full
 solution built with warnings treated as errors. New restricted PostgreSQL
 fixtures cover publication rollback, valid/stale/expired/superseded claims,
 late readiness rollback, unchanged duplicate readiness and actor departure;
-the upgrade fixture checks reference-job backfill exactly once. Database and
-exact-image execution for migration 095 are pending CI.
+the upgrade fixture checks reference-job backfill exactly once. Restricted
+PostgreSQL CI for migration 095 passed at `ab9a389` in
+[run 37515672088](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37515672088).
+Logs confirm source and delivery contracts, migration upgrade/repeat,
+failure rollback and runtime schema readiness. Exact-image command and browser
+integration still await their runtime results.
 
 Automatic metadata routing, bounded authorized replay, SignalR
 invalidation/reconnect and browser consumption are still required.
