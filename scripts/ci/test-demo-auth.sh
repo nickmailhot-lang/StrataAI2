@@ -3,7 +3,32 @@ set -euo pipefail
 
 BASE_URL="${1:-http://127.0.0.1:18080}"
 COOKIE_JAR="$(mktemp)"
-trap 'rm -f "$COOKIE_JAR"' EXIT
+DEMO_DIRECTORY="$(mktemp -d)"
+trap 'rm -f "$COOKIE_JAR"; rm -rf "$DEMO_DIRECTORY"' EXIT
+
+# Verify the published Demo credentials against the exact release image before
+# registering any fixture account. A failed login must not issue a session.
+demo_status="$(curl --silent --show-error --output "$DEMO_DIRECTORY/denied.json" \
+  --dump-header "$DEMO_DIRECTORY/denied.headers" --write-out '%{http_code}' \
+  -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -d '{"email":"demo@strataai.test","password":"incorrect-password"}' "$BASE_URL/auth/login")"
+test "$demo_status" = 401
+if grep -qi '^set-cookie:' "$DEMO_DIRECTORY/denied.headers"; then
+  echo "Wrong Demo password unexpectedly issued a session." >&2
+  exit 1
+fi
+curl --fail --silent --show-error -c "$DEMO_DIRECTORY/cookies" \
+  -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -d '{"email":"demo@strataai.test","password":"StrataAI-Demo-2026!"}' "$BASE_URL/auth/login" >/dev/null
+curl --fail --silent --show-error -b "$DEMO_DIRECTORY/cookies" "$BASE_URL/me" \
+  | jq -e '.email == "demo@strataai.test" and .displayName == "Demo User" and .emailVerified == true' >/dev/null
+curl --fail --silent --show-error -b "$DEMO_DIRECTORY/cookies" "$BASE_URL/organizations" \
+  | jq -e '. == []' >/dev/null
+# Sample catalog reset preserves authenticated identity and session state.
+curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -X POST "$BASE_URL/api/demo/reset" >/dev/null
+curl --fail --silent --show-error -b "$DEMO_DIRECTORY/cookies" "$BASE_URL/me" \
+  | jq -e '.email == "demo@strataai.test" and .emailVerified == true' >/dev/null
+echo "Documented Demo account and sample-reset session checks passed."
 
 register_status="$(
   curl -H 'X-StrataAI-Request: 1' --silent --output /tmp/register.json --write-out '%{http_code}'     -H 'Content-Type: application/json'     -d '{"email":"council@example.test","password":"correct-horse-battery-staple","displayName":"Council Test","locale":"en-CA","timezone":"America/Vancouver"}'     "$BASE_URL/auth/register"
@@ -90,7 +115,7 @@ curl -H 'X-StrataAI-Request: 1' --fail --silent   -c "$COOKIE_JAR"   -H 'Content
 test "$(curl -H 'X-StrataAI-Request: 1' --silent -o /tmp/demo-owner-denied.json -w '%{http_code}' -b "$COOKIE_JAR" -X POST "$BASE_URL/me/deactivate")" = 409
 jq -e '.code=="organization_owner_required"' /tmp/demo-owner-denied.json >/dev/null
 CONTINUITY_COOKIE="$(mktemp)"
-trap 'rm -f "$COOKIE_JAR" "$CONTINUITY_COOKIE"' EXIT
+trap 'rm -f "$COOKIE_JAR" "$CONTINUITY_COOKIE"; rm -rf "$DEMO_DIRECTORY"' EXIT
 replacement='{"email":"continuity-owner@example.test","password":"continuity-correct-horse-battery","displayName":"Continuity Owner"}'
 curl -H 'X-StrataAI-Request: 1' --fail --silent -H 'Content-Type: application/json' -d "$replacement" "$BASE_URL/auth/register" >/dev/null
 curl -H 'X-StrataAI-Request: 1' --fail --silent -c "$CONTINUITY_COOKIE" -H 'Content-Type: application/json' -d "$replacement" "$BASE_URL/auth/login" >/dev/null
