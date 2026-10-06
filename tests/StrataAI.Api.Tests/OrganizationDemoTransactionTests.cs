@@ -100,8 +100,12 @@ public sealed partial class ApiHostTests
         var ct = TestContext.Current.CancellationToken;
         var fence = new OrganizationTransactionActorFixture();
         OrganizationEventActorLossFixture? events = null;
+        DepartureReceiptActorLossFixture? receiptFence = null;
         await using var app = new ApiFactory(configureServices: services => {
             services.AddSingleton<ICommandActorAuthorization>(fence);
+            var originalReceipts = services.Last(descriptor => descriptor.ServiceType == typeof(IOrganizationDepartureReplayStore));
+            services.AddSingleton<IOrganizationDepartureReplayStore>(provider => receiptFence = new DepartureReceiptActorLossFixture(
+                (IOrganizationDepartureReplayStore)originalReceipts.ImplementationFactory!(provider), fence));
             services.AddSingleton<IWorkEventStore>(provider => events = new OrganizationEventActorLossFixture(
                 (IWorkEventStore)provider.GetRequiredService<IWorkEventReader>(), fence));
         });
@@ -119,12 +123,13 @@ public sealed partial class ApiHostTests
         var before = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
         var key = Guid.NewGuid();
         var receipts = app.Services.GetRequiredService<IOrganizationDepartureReplayStore>();
-        events!.Armed = true;
+        events!.Armed = !departing; receiptFence!.Armed = departing;
         var refused = departing
             ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct, key)
             : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
         Assert.False(refused.Succeeded); Assert.Equal("session_unavailable", refused.ErrorCode);
-        Assert.Equal(1, events.Withdrawals);
+        Assert.Equal(departing ? 0 : 1, events.Withdrawals);
+        Assert.Equal(departing ? 1 : 0, receiptFence.Publications);
         Assert.Null(await receipts.ReadAsync(f.Organization, f.Recipient, key, ct));
         Assert.Equal(originalCard, await store.FindCardAsync(card.Id, ct));
         Assert.Equal(originalMembership, await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct));
@@ -135,7 +140,7 @@ public sealed partial class ApiHostTests
         var assignments = await work.ListCardMembersAsync(card.Id, f.Owner, cancellationToken: ct);
         Assert.True(assignments.Succeeded);
         Assert.Contains(assignments.Value!.Items, row => row.UserId == f.Recipient);
-        events.Armed = false;
+        events.Armed = false; receiptFence.Armed = false;
         var removed = departing
             ? await orgService.LeaveAsync(f.Organization, f.Recipient, "fixture", ct, key)
             : await orgService.RemoveMemberAsync(f.Organization, f.Owner, f.Recipient, "fixture", ct);
@@ -232,6 +237,20 @@ public sealed partial class ApiHostTests
         var replay = await identityUnit.ExecuteAsync(f.Owner, async () =>
             IdentityOperation<bool>.Success(await navigation.AppendAuthorizedAsync(source, ct)), ct);
         Assert.True(replay.Succeeded); Assert.True(replay.Value);
+    }
+
+    private sealed class DepartureReceiptActorLossFixture(IOrganizationDepartureReplayStore inner,
+        OrganizationTransactionActorFixture fence) : IOrganizationDepartureReplayStore
+    {
+        public bool Armed { get; set; }
+        public int Publications { get; private set; }
+        public Task<OrganizationDepartureReplay?> ReadAsync(Guid organizationId, Guid actorId, Guid key, CancellationToken cancellationToken)
+            => inner.ReadAsync(organizationId, actorId, key, cancellationToken);
+        public async Task SaveAsync(Guid organizationId, Guid actorId, Guid key, OrganizationDepartureReplay replay, CancellationToken cancellationToken)
+        {
+            await inner.SaveAsync(organizationId, actorId, key, replay, cancellationToken);
+            if (Armed) { Publications++; fence.Allowed = false; }
+        }
     }
 
     private sealed class OrganizationEventActorLossFixture(IWorkEventStore inner,
