@@ -60,8 +60,9 @@ adds atomic reference jobs and leased Worker readiness with 17 local handler
 tests passed; real database/upgrade/late-fence checks passed at `ab9a389`.
 Migration 096 adds bounded automatic metadata routing and a typed invoker queue
 claim with source/job fences and provider isolation. The full solution builds
-cleanly; restricted database and exact-image automatic delivery checks are
-pending CI. Authorized realtime/reconnect consumption remains unfinished;
+cleanly; restricted database automatic routing checks passed at `6c43658`,
+including 109 real source Organizations and provider isolation. Exact-image
+automatic delivery checks remain pending CI. Authorized realtime/reconnect consumption remains unfinished;
 Worker readiness does not establish browser event consumption.
 
 Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and
@@ -79,7 +80,7 @@ implemented with native evidence pending; terminal deletion remains incomplete; 
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**19%**, a planning estimate rather than a count of unchecked rows. Automatic
+**18%**, a planning estimate rather than a count of unchecked rows. Automatic
 deletion discovery passed restricted PostgreSQL CI at `bfa46b4`; current native
 terminal/two-client recovery, Demo terminal processing and applicable mutation
 performance evidence remain required.

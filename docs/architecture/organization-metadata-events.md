@@ -96,8 +96,12 @@ read-only routing, typed claims, final expiry and unrelated provider isolation.
 The exact-image fixture uses normal API creation/editing, enables automatic
 metadata delivery with an empty explicit scope, requires ready events and
 successful jobs, and verifies that the unrelated Board Work event stays queued.
-The full solution build and shell syntax checks passed; real database and
-exact-image execution for automatic metadata routing remain pending CI.
+The full solution build and shell syntax checks passed. Restricted PostgreSQL
+CI passed automatic metadata routing at `6c43658` in
+[run 37517408343](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37517408343),
+including the 109-source routing/claim/provider-isolation contract, source and
+delivery contracts, migration checks and runtime schema readiness. Exact-image
+execution of the automatic background loop remains pending.
 
 Bounded authorized replay, SignalR
 invalidation/reconnect and browser consumption are still required.
