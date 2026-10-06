@@ -66,4 +66,7 @@ implemented with native evidence pending; terminal deletion remains incomplete; 
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**21%**, a planning estimate rather than a count of unchecked rows.
+**20%**, a planning estimate rather than a count of unchecked rows. Automatic
+deletion discovery passed restricted PostgreSQL CI at `bfa46b4`; current native
+terminal/two-client recovery, Demo terminal processing and applicable mutation
+performance evidence remain required.

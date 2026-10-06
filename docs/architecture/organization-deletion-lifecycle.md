@@ -500,9 +500,34 @@ User insert omitted required timestamps. The fixture now supplies timestamps for
 both User and Organization; the full discovery contract still requires a passing
 rerun. No product schema constraint was relaxed.
 
+The repaired contract passed at `bfa46b4` in
+[PostgreSQL job 112433222525](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37511414518/job/112433222525):
+bounded seek/wrap beyond 100 scopes, delay/service/live-lease exclusion, crash
+eligibility, API denial, forced-RLS isolation and unchanged routing state. The
+same job passed all graph stages, selected cover/background cleanup, retained
+history/provider metadata, terminal observation/acknowledgment recovery, migration
+repeat/upgrade/serialization/failure rollback and runtime schema readiness.
+This is restricted persistence proof; current native and exact-image HTTP/Worker
+results remain required for product release acceptance.
+
 The desktop/phone deletion fixture also keeps a second authorized administrator
 on the normal Organization page while the Owner requests deletion. It requires
 automatic surface denial, removal of Organization/Board content and zero document
 reloads. This proves a distinct acceptance path from the initiating Owner's
 independent status route when executed. Current native runtime evidence is pending;
 it does not establish durable terminal-event consumption or disconnected recovery.
+
+`organization-deletion-completion.spec.ts` adds desktop/phone product acceptance
+through the exact release proxy/API/Worker. It creates a Board/List/Card through
+ordinary authenticated commands, loses the first committed 202 response, enables
+automatic Worker discovery with no explicit Organization IDs and waits for the
+Owner's independent terminal observation. The browser then refreshes its
+uncertain intent, replays the same original key after the parent is DELETED,
+checks completion by keyboard, and requires focus on the polite completion
+notice. Repeated status reads must preserve the original event/time/version;
+normal Organization/Board/Card reads remain withdrawn. Another refresh restores
+only the accepted reference, not cached completion, and checks it again without
+private Organization reads or another DELETE. WCAG checks run on the completed
+page. No privileged SQL fabricates completion. The fixture restores the shared
+CI Worker configuration afterward. Type checking and test discovery are source
+checks; current native execution must pass before this establishes acceptance.
