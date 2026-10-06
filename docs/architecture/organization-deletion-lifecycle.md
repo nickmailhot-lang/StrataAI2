@@ -167,11 +167,39 @@ and SQL capability, including remaining descendants, API refusal, tenant/lease
 fences, late queue-write expiry rollback, one completion across replay, retained
 terminal identity and cross-tenant event isolation. Earlier page processing is
 staged by the administrator fixture: these checks do not establish traversal,
-physical object removal, realtime delivery or browser completion. Compilation
-passed with zero warnings/errors; migration and runtime contract execution are
-pending CI for the implementing revision.
+physical object removal, realtime delivery or browser completion. Compilation passed with zero warnings/errors. Migration and this restricted
+terminal contract passed at `d715ce5` in [CI run 37496328863](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37496328863/job/112381688920).
+This verifies the terminal gate; preceding graph stages were staged by the fixture.
 
 The finalizer is not registered in the Worker or invoked by production requests.
-Bounded graph stages, lifecycle event delivery, independent Owner completion
+Bounded graph stages, live lifecycle event consumption, independent Owner completion
 observation and full exact-image acceptance remain required before enabling the
 complete flow. Existing deletion acknowledgments remain request acknowledgments.
+
+## Durable completion readiness
+
+Migration `090_organization_lifecycle_delivery` adds a narrow Worker-only
+`deliver_organization_lifecycle_event` capability. The registered production
+`OrganizationLifecycleDeliveryHandler` accepts one canonical nonzero event
+reference, rejects malformed/private/duplicate metadata and invalid claim scope,
+and invokes the restricted adapter. Neither runtime role receives direct event
+mutation rights.
+
+The delivery transaction locks the terminal parent before the job and source,
+validates the exact unexpired lease, tenant, actor, event reference, stable job
+key, original correlation and completed checkpoint, then sets readiness once.
+It checks the lease again after the readiness write. A failed late check rolls
+that write back. An already ready event still needs a valid current claim;
+reclaimed delivery preserves the original readiness timestamp.
+
+Seventeen handler cases and the actual restricted PostgreSQL delivery contract
+cover bad references/scope, cancellation, unavailable delivery, API refusal,
+late readiness rollback, duplicate delivery, expired and superseded claims,
+reclaimed acknowledgment and disabled direct event mutation. Domain test,
+persistence contract and Worker projects compiled with zero warnings/errors;
+runtime execution of this delivery revision is pending CI.
+
+Readiness is a durable delivery milestone. It does not establish SignalR/browser
+consumption or Owner completion observation. The deletion producer/finalizer
+remain disconnected from production until bounded graph processing and the
+remaining product flow are implemented and verified.

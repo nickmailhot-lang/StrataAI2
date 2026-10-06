@@ -54,6 +54,7 @@ GRANT SELECT(tenant_id,request_id,actor_id,accepted_version) ON organization_del
 GRANT SELECT ON organization_deletion_progress TO strataai_worker_runtime;
 -- Only the graph-proving terminal capability is enabled; no direct graph writes.
 GRANT EXECUTE ON FUNCTION public.finish_organization_deletion(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint) TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.deliver_organization_lifecycle_event(uuid,uuid,uuid,uuid,uuid,uuid) TO strataai_worker_runtime;
 GRANT SELECT ON organization_lifecycle_events TO strataai_api_runtime;
 GRANT SELECT(tenant_id,event_id,actor_id,entity_version,created_at,ready_at) ON organization_lifecycle_events TO strataai_worker_runtime;
 GRANT SELECT,INSERT ON organization_departure_replays TO strataai_api_runtime;

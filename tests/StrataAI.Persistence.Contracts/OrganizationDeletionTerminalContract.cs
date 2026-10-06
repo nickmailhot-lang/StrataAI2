@@ -151,6 +151,7 @@ internal static class OrganizationDeletionTerminalContract
             query.Parameters.AddWithValue("tenant", tenant);
             Require((long)(await query.ExecuteScalarAsync(ct))! == 0, "Terminal event crossed tenant scope.");
         }
+        await OrganizationLifecycleDeliveryContract.RunAsync(admin,apiConnection,workerConnection,tenant,actor,ct);
         Console.WriteLine("Organization terminal gate: descendant proof, restricted authority, late lease rollback, immutable completion/event and duplicate recovery passed.");
     }
 }
