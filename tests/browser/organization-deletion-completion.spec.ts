@@ -48,6 +48,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     expect(list.status()).toBe(201); const listId = (await list.json()).id;
     const card = await context.request.post(`/lists/${listId}/cards`, { headers, data: { title: 'Terminal deletion Card' } });
     expect(card.status()).toBe(201); const cardId = (await card.json()).id;
+    expect((await context.request.get(`/cards/${cardId}/labels`)).status()).toBe(200);
     const observer = await member.newPage(); await observer.setViewportSize(viewport);
     let observerNavigations = 0;
     const terminalFrames: unknown[] = [];
@@ -164,7 +165,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const repeated = await context.request.get(statusPath); expect(repeated.status()).toBe(200); expect(await repeated.json()).toEqual(snapshot);
       expect((await context.request.get(`/organizations/${org}`)).status()).toBe(404);
       expect((await context.request.get(`/boards/${boardId}`)).status()).toBe(404);
-      expect((await context.request.get(`/cards/${cardId}`)).status()).toBe(404);
+      expect((await context.request.get(`/cards/${cardId}/labels`)).status()).toBe(404);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       // Completed snapshots are not cached: another refresh restores only the
       // original accepted reference, then checks current authority again.

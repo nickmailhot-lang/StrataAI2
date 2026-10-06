@@ -135,7 +135,7 @@ for (const width of [1280, 390]) {
       await expect(filters.getByText('Filter change acknowledged.', { exact: true })).toBeVisible();
       expect(filterChanges).toHaveLength(2); expect(filterChanges[1]).toEqual(filterChanges[0]); await expect(apply).toBeFocused();
       await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
-      const matchMode = filters.getByRole('combobox', { name: 'Match filters', exact: true });
+      const matchMode = page.getByLabel('Match filters', { exact: true });
       // Reconciliation can disable a field between locating it and keydown.
       // Verify menu admission before selecting; applied commands remain single.
       await expect(async () => {

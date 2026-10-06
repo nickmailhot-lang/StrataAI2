@@ -33,7 +33,7 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: 'Filter Board Cards', exact: true }).press('Enter');
       const dialog = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
       async function select(label: string, option: string) {
-        const field = dialog.getByRole('combobox', { name: label, exact: true });
+        const field = page.getByLabel(label, { exact: true });
         // Live recovery can disable the field between admission and keydown.
         // Retry only opening the menu, never selection or an applied write.
         await expect(async () => {

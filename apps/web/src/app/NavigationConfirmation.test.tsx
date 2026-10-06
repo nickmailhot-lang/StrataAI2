@@ -95,6 +95,22 @@ it('PRD-01 waits for admission and does not create another open for an entity ed
   view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted />);
   expect(fetch.mock.calls.filter(([path]) => path !== '/me')).toHaveLength(1);
 });
+it('PRD-01 keeps a confirmed visit complete through live read admission changes and creates a fresh original on a new visit', async () => {
+  const keys: string[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/me') return response({ id: actor });
+    keys.push(new Headers(init?.headers).get('Idempotency-Key')!); return response(source);
+  }));
+  const view = render(<NavigationConfirmation target={target} />);
+  await waitFor(() => expect(keys).toHaveLength(1));
+  await waitFor(() => expect(sessionStorage.length).toBe(0));
+  await act(async () => view.rerender(<NavigationConfirmation target={target} admitted={false} />));
+  await act(async () => view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted />));
+  expect(keys).toHaveLength(1); expect(sessionStorage.length).toBe(0);
+  view.unmount(); render(<NavigationConfirmation target={target} />);
+  await waitFor(() => expect(keys).toHaveLength(2)); expect(keys[1]).not.toBe(keys[0]);
+  await waitFor(() => expect(sessionStorage.length).toBe(0));
+});
 it('PRD-01 offers explicit recovery using the original key and revision after a lost reply', async () => {
   let writes = 0;
   const fetch = vi.fn(async (path: string) => {

@@ -96,3 +96,10 @@ session checks before/after storage, current target access, private subject RLS
 and atomic source/receipt publication. Demo retains its account-before-Work gates.
 The [CI investigation](architecture/browser-recovery-ci.md) records the failed
 revision and the mandatory native lock-order regression; execution is pending.
+
+A verified navigation visit is now retained as complete across temporary live
+read admission changes. Re-admission cannot resubmit its completed original;
+unresolved attempts keep their existing recovery. A new mounted visit creates a
+fresh original key. The component regression covers both paths. Native execution
+remains required to resolve the duplicate-key failure reported by the old
+`5a2433f` browser suite.

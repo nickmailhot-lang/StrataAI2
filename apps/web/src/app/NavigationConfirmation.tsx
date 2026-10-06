@@ -13,13 +13,14 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
   const [originalTarget] = useState(() => ({ ...target }));
   const intent = useRef<NavigationIntent | undefined>(undefined);
   const opened = useRef(false);
+  const confirmed = useRef(false);
   const [consumer] = useState(() => new NavigationAcknowledgments());
   const [status, setStatus] = useState<'pending' | 'done' | 'retry' | 'unavailable'>('pending');
   const [retry, setRetry] = useState(0);
   const action: ActivityAction = originalTarget.kind === 'context' ? 'navigation_context'
     : originalTarget.kind === 'board' ? 'navigation_board' : 'navigation_card';
   useEffect(() => {
-    if (!admitted) return;
+    if (!admitted || confirmed.current) return;
     const controller = new AbortController();
     async function observe() {
       // Invalid route/snapshot identities cannot authorize an account read or
@@ -39,6 +40,7 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
         }
         await submitNavigationIntent(intent.current, controller.signal, consumer);
         completeNavigationIntent(sessionStorage, intent.current);
+        confirmed.current = true;
         if (!controller.signal.aborted) { activityResult(action, true, started); setStatus('done'); }
       } catch (reason) {
         if (controller.signal.aborted) return;

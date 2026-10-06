@@ -88,12 +88,12 @@ for boundary in board organization account; do
   gate "SELECT 1 FROM $row FOR UPDATE;"
   request owner POST "$path" "$key" "$body" > "$scratch/status" & request_pid=$!
   blocked '%FOR SHARE OF m,o,u,h%'
-  release "UPDATE ${row%% WHERE*} SET $column='$refused' WHERE ${row#* WHERE };"
+  release "UPDATE ${row%% WHERE*} SET $column='$refused',version=version+1,updated_at=clock_timestamp() WHERE ${row#* WHERE };"
   wait "$request_pid"; request_pid=''
   test "$(cat "$scratch/status")" = 409
   jq -e '.code=="mention_targets_changed"' "$scratch/response.json" >/dev/null
   test "$before" = "$(state)"
-  admin "UPDATE ${row%% WHERE*} SET $column='ACTIVE' WHERE ${row#* WHERE };" >/dev/null
+  admin "UPDATE ${row%% WHERE*} SET $column='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE ${row#* WHERE };" >/dev/null
 done
 # Hold the account before command verification locks its issuing session.
 # Deleting an already SHARE-locked session from a Card gate would invert the
@@ -199,7 +199,7 @@ for scope in card board; do
     # Match the full-group query rather than requiring a trailing statement
     # delimiter in the text actually sent by the database driver.
     blocked '%ORDER BY m.user_id FOR SHARE OF m,o,u%'
-    release "UPDATE ${row%% WHERE*} SET status='$refused' WHERE ${row#* WHERE };"
+    release "UPDATE ${row%% WHERE*} SET status='$refused',version=version+1,updated_at=clock_timestamp() WHERE ${row#* WHERE };"
     wait "$request_pid"; request_pid=''
     test "$(cat "$scratch/status")" = 200
     jq -e '.changed==true and .cardVersion==2 and .comment.version==1' "$scratch/response.json" >/dev/null
@@ -212,7 +212,7 @@ for scope in card board; do
     test "$(admin "SELECT count(*) FROM mass_mention_reservations WHERE tenant_id='$org' AND board_id='$race_board';")" = 0
     # Restoring eligibility cannot revise history or send a fresh group on an
     # exact original receipt; all current rights of the issuing actor still hold.
-    admin "UPDATE ${row%% WHERE*} SET status='ACTIVE' WHERE ${row#* WHERE };" >/dev/null
+    admin "UPDATE ${row%% WHERE*} SET status='ACTIVE',version=version+1,updated_at=clock_timestamp() WHERE ${row#* WHERE };" >/dev/null
     race_after=$(state)
     test "$(request owner POST "/cards/$race_card/comments" "$race_key" "$race_body")" = 200
     cmp "$scratch/response.json" "$scratch/race-receipt.json"

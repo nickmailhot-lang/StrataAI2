@@ -302,3 +302,27 @@ throughout execution; subsequent commits changed documentation and .NET only.
 The default-concurrency CI web gate at `350f042` also passed, followed by
 PostgreSQL, .NET and the source gate. Immutable image build/verification remain
 separate gates; these source results do not close native or release acceptance.
+
+## Later terminal failures and repairs
+
+The `412f31e` exact-image container job failed in comment-mention commands after
+earlier credential-retry checks passed. Its disposable eligibility fixture
+restored Organization membership at the same revision, colliding with the private
+immutable activation proof introduced by migration 097. Withdrawal and restoration
+now advance revisions and update timestamps for each actual fixture transition.
+The proof guard and canonical publication requirements remain intact.
+
+The old `5a2433f` browser job finished with ten failures: Board restore, two Card
+label-filter cases, two deadline-filter cases, three navigation cases and two
+Organization deletion cases. Filter opening now locates the labeled control
+independently of the dialog's temporary accessibility hiding while the MUI menu
+is open. A confirmed navigation visit no longer resubmits during live read
+re-admission; new visits still create fresh originals. Deletion's Card denial
+check uses the existing protected labels endpoint instead of the unsupported
+bare Card GET, which returned 405 rather than testing confidentiality.
+
+These are repairs for observed failures, not passing native evidence. Local
+navigation component tests, TypeScript/lint and shell syntax pass; all corrected
+restricted and native scenarios require the next exact-image execution. The
+Board restore consent race remains under investigation, and the full release
+gate remains incomplete. No failed case is skipped or removed.
