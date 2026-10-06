@@ -31,7 +31,10 @@ and Organization, Portal and Board grants remain absent.
 
 A fresh request with the same registration key must create one pending account;
 a matching replay must return the same acknowledgment without another event or
-premature access grant. The cases require native API-host CI execution;
+premature access grant. A further expiry at the final credential-checked replay
+check must withhold the account and verification bearer while preserving the
+previously committed account, receipt, event and unchanged invitation. The cases
+require native API-host CI execution;
 warnings-as-errors compilation alone does not prove their runtime acceptance.
 Production final-check and transaction behavior remain unchanged. Demo audit
 storage is a no-op, so these cases do not prove durable audit or mail rollback.

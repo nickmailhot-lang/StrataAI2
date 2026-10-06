@@ -100,6 +100,26 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.Created, replay.StatusCode);
         Assert.Equal(acknowledgment.GetRawText(), (await replay.Content.ReadFromJsonAsync<JsonElement>(ct)).GetRawText());
         Assert.Single((await identities.ReadEventsAsync(committedUser, 0, ct)).Value!.Events);
+        // Final admission also applies to credential-checked acknowledgments.
+        // Refusing one must retain the previously committed account and receipt.
+        var committedIdentity = await identities.FindUserByIdAsync(committedUser, ct);
+        var committedReceipt = await receipts.ReadAsync(committedUser, key, ct);
+        proof.BeforeFinalCheck = () => {
+            clock.UtcNow = invitation.Invitation.ExpiresAt;
+            return Task.CompletedTask;
+        };
+        using var expiredReplay = await Mutate(client, HttpMethod.Post, "/auth/register", body, key.ToString());
+        Assert.Equal(HttpStatusCode.BadRequest, expiredReplay.StatusCode);
+        var expiredProblem = await expiredReplay.Content.ReadAsStringAsync(ct);
+        Assert.Contains("invalid_or_expired_invitation", expiredProblem);
+        Assert.DoesNotContain(committedUser.ToString(), expiredProblem);
+        Assert.DoesNotContain(acknowledgment.GetProperty("verificationToken").GetString()!, expiredProblem);
+        clock.UtcNow = started;
+        proof.BeforeFinalCheck = null;
+        Assert.Equal(committedIdentity, await identities.FindUserByIdAsync(committedUser, ct));
+        Assert.Equal(committedReceipt, await receipts.ReadAsync(committedUser, key, ct));
+        Assert.Single((await identities.ReadEventsAsync(committedUser, 0, ct)).Value!.Events);
+        Assert.Equal(invitation.Invitation, await invitations.FindByIdAsync(f.Board.OrganizationId, invitation.Invitation.Id, ct));
     }
 
     private sealed class SignupExpiryProofFixture(IInvitationRegistrationProofStore inner) : IInvitationRegistrationProofStore
