@@ -2,7 +2,7 @@
 
 StrataAI2 is a strata/condominium governance and operations platform organized around collaborative Boards, Lists, and Cards. Organizations provide the membership and access boundary; Boards organize work into Lists and Cards. The repository contains the React/MUI web application, ASP.NET Core modular monolith API, separate background Worker, PostgreSQL migrations with forced row-level security, private object storage integrations, automated acceptance checks, and implementation documentation.
 
-Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues). Implemented workflows include account and profile management, bounded Organization discovery with direct deep links, membership administration, Board collaboration and lifecycle controls, Lists and Cards, attachments, comments, notifications, and live updates. The browser supports bounded Organization and active Board directories, direct Organization/Board/Card links, and account-bound navigation recovery. Organization creation and Owner deletion requests have account-bound retry contracts; a deletion acknowledgment records the request, while terminal deletion remains incomplete. Invitation creation, recipient review, registration proof, and explicit acceptance have separate documented contracts. Implementation is ongoing: a feature document or passing source check does not mean its full PRD acceptance is complete. Consult the acceptance records and CI for the relevant revision.
+Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues). Implemented workflows include account and profile management, bounded Organization discovery with direct deep links, membership administration, Board collaboration and lifecycle controls, Lists and Cards, attachments, comments, notifications, and live updates. The browser supports bounded Organization and active Board directories, direct Organization/Board/Card links, and account-bound navigation recovery. Organization creation and Owner deletion requests have account-bound retry contracts. The [deletion request guide](docs/architecture/organization-deletion-retries.md) explains accepted requests and recovery; the [deletion completion contract](docs/architecture/organization-deletion-lifecycle.md) describes retained history, bounded Worker processing, and remaining implementation. Terminal Organization deletion remains incomplete. Invitation creation, recipient review, registration proof, and explicit acceptance have separate documented contracts. Implementation is ongoing: a feature document or passing source check does not mean its full PRD acceptance is complete. Consult the acceptance records and CI for the relevant revision.
 
 ## Start here
 
@@ -14,6 +14,7 @@ Jump to [documentation navigation](#navigating-the-documentation), [workflow gui
 | Explore implemented workflows | [Boards and collaboration](docs/README.md#boards-and-collaboration), [Lists and Cards](docs/README.md#lists-and-cards), [accounts and invitations](docs/README.md#identity-profiles-and-invitations) |
 | Understand the system | [Architecture overview](docs/architecture/README.md), [runtime modes](docs/architecture/runtime-modes.md), [web routing and state](docs/architecture/web-spa-boundary.md) |
 | Configure a local or production runtime | [Configuration reference](docs/architecture/configuration.md), [database roles](docs/architecture/runtime-database-roles.md), [schema upgrades](docs/architecture/schema-upgrades.md) |
+| Understand background work and live updates | [Durable jobs](docs/architecture/background-jobs.md), [work synchronization](docs/architecture/work-synchronization.md), [Organization Board realtime](docs/organization-board-realtime.md) |
 | Run a tested Docker release | [Release bundle guide](docs/release/README.md) |
 | Choose the next implementation dependency | [Canonical ticket dependency audit](docs/ticket-dependencies.md), [linked ticket dependency map](docs/ticket-dependency-map.md) |
 | Review outstanding acceptance and evidence | [Authentication acceptance](docs/architecture/prd-02-acceptance.md), [Organization acceptance](docs/architecture/prd-03-acceptance.md), [Board acceptance](docs/architecture/prd-04-acceptance.md), [activity acceptance](docs/architecture/prd-15-acceptance.md), [Kanban release evidence](docs/kanban-release-evidence.md), [attachment acceptance](docs/architecture/attachment-acceptance.md) |
@@ -72,7 +73,7 @@ The index provides descriptive document titles rather than requiring you to infe
 
 Useful routes through the docs include:
 
-- **Organization administration:** [current access](docs/architecture/organization-access-integrity.md) → [settings and metadata recovery](docs/architecture/organization-settings.md) → [member administration](docs/architecture/organization-member-administration.md) → [departure and owner continuity](docs/architecture/organization-departure.md) → [deletion request recovery](docs/architecture/organization-deletion-retries.md) → [Organization acceptance](docs/architecture/prd-03-acceptance.md).
+- **Organization administration:** [current access](docs/architecture/organization-access-integrity.md) → [settings and metadata recovery](docs/architecture/organization-settings.md) → [member administration](docs/architecture/organization-member-administration.md) → [departure and owner continuity](docs/architecture/organization-departure.md) → [deletion request recovery](docs/architecture/organization-deletion-retries.md) → [deletion completion contract](docs/architecture/organization-deletion-lifecycle.md) → [Organization acceptance](docs/architecture/prd-03-acceptance.md).
 - **Board collaboration:** [Board interface](docs/architecture/board-interface.md) → [windowing](docs/board-windowing.md) → [work synchronization](docs/architecture/work-synchronization.md) → [Organization Board realtime](docs/organization-board-realtime.md) → [Board acceptance](docs/architecture/prd-04-acceptance.md).
 - **Safe writes and recovery:** [command transactions](docs/architecture/work-command-transactions.md) → [command scopes](docs/architecture/work-command-scopes.md) → [command retries](docs/architecture/work-command-retries.md) → [current actor sessions](docs/architecture/command-actor-sessions.md).
 - **Files and backgrounds:** [object storage](docs/architecture/attachment-object-storage.md) → [attachment acceptance](docs/architecture/attachment-acceptance.md) → [Board background images](docs/board-background-images.md) → [cover lifecycle](docs/architecture/attachment-covers-lifecycle.md).
@@ -90,7 +91,7 @@ These links open the behavior or contract guide directly. Use the subject sectio
 | Verify an email, reset a password, sign out, or deactivate an account | [Single-use verification and reset tokens](docs/identity-token-consumption-retries.md), [logout and deactivation retries](docs/architecture/identity-command-retries.md), [account ownership continuity](docs/architecture/account-owner-continuity.md) |
 | Browse Organizations, follow deep links, and manage settings | [Paged Organization directory and browser navigation](docs/architecture/organization-discovery.md), [current membership and canonical Organization reads](docs/architecture/organization-access-integrity.md), [Organization settings](docs/architecture/organization-settings.md) |
 | Create an Organization or recover a lost creation response | [Organization creation and original acknowledgments](docs/architecture/organization-creation-retries.md), [current Organization discovery](docs/architecture/organization-discovery.md), [Organization acceptance](docs/architecture/prd-03-acceptance.md) |
-| Request Organization deletion and recover its acknowledgment | [Owner deletion request and retry contract](docs/architecture/organization-deletion-retries.md), [lifecycle acceptance](docs/architecture/lifecycle-acceptance.md), [Organization acceptance](docs/architecture/prd-03-acceptance.md). A successful request acknowledgment does not confirm completed deletion. |
+| Request Organization deletion and recover its acknowledgment | [Owner deletion request and retry contract](docs/architecture/organization-deletion-retries.md), [pending deletion completion and retention contract](docs/architecture/organization-deletion-lifecycle.md), [lifecycle acceptance](docs/architecture/lifecycle-acceptance.md), [Organization acceptance](docs/architecture/prd-03-acceptance.md). A successful request acknowledgment does not confirm completed deletion. |
 | Register from an invitation and accept access | [Invitation-backed registration](docs/invitation-registration.md), [registration retries](docs/identity-registration-retries.md), [verified-email discovery and acceptance](docs/architecture/invitation-discovery.md) |
 | Review Organization requirements and membership changes | [Organization acceptance map](docs/architecture/prd-03-acceptance.md), [member administration](docs/architecture/organization-member-administration.md), [membership removal consent](docs/architecture/organization-member-removal-consent.md), [confirmed departure and durable API acknowledgments](docs/architecture/organization-departure.md) |
 | Invite people and manage access | [Invitation administration](docs/architecture/invitation-administration-ui.md), [recipient invitation review](docs/invitation-link-review.md), [Organization members](docs/architecture/organization-member-administration.md), [Board members](docs/board-members-ui.md) |
@@ -145,16 +146,16 @@ The canonical work hierarchy is `Organization → Board → List → Card`. User
 | Path | Contents |
 | --- | --- |
 | [`apps/web/`](apps/web/) | React/MUI application and component tests |
-| `src/StrataAI.Domain/` | Domain entities and rules |
-| `src/StrataAI.Application/` | Use cases and application contracts |
-| `src/StrataAI.Infrastructure/` | Persistence and provider adapters |
-| `src/StrataAI.Api/` | HTTP, authentication, and realtime host |
-| `src/StrataAI.Worker/` | Background processing host |
+| [`src/StrataAI.Domain/`](src/StrataAI.Domain/) | Domain entities and rules |
+| [`src/StrataAI.Application/`](src/StrataAI.Application/) | Use cases and application contracts |
+| [`src/StrataAI.Infrastructure/`](src/StrataAI.Infrastructure/) | Persistence and provider adapters |
+| [`src/StrataAI.Api/`](src/StrataAI.Api/) | HTTP, authentication, and realtime host |
+| [`src/StrataAI.Worker/`](src/StrataAI.Worker/) | Background processing host |
 | [`db/`](db/) | Ordered migrations and restricted runtime role provisioning |
 | [`tests/`](tests/) | Domain, API-host, restricted persistence, and browser acceptance checks |
-| `docs/` | [Documentation index and subject guides](docs/README.md) |
+| [`docs/`](docs/) | [Documentation index and subject guides](docs/README.md) |
 | [`scripts/`](scripts/) | Release, operational, and CI verification scripts |
-| `.github/workflows/` | [Build-once CI](.github/workflows/ci.yml) and repository automation |
+| [`.github/workflows/`](.github/workflows/) | [Build-once CI](.github/workflows/ci.yml) and repository automation |
 
 ## Local source checks
 
