@@ -26,6 +26,14 @@ export const appTheme = createTheme({
     },
   },
   components: {
+    MuiAvatar: {
+      styleOverrides: {
+        colorDefault: ({ theme }) => ({
+          backgroundColor: theme.palette.primary.main,
+          color: theme.palette.primary.contrastText,
+        }),
+      },
+    },
     MuiButtonBase: {
       styleOverrides: {
         root: {
