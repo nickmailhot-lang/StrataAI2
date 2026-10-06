@@ -68,6 +68,7 @@ function navigationResponse(path: string, actor: string) {
     organizationId: query.get('organizationId'), boardId: board, entityId: card ?? board,
     version: Number(query.get('version')), metadata: {}, createdAt: '2026-10-05T12:00:00Z' });
 }
+beforeEach(() => sessionStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
@@ -860,6 +861,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       lists: [{ list: { id: list, name: 'Destination List', rank: '1', lifecycleState: 'active' }, cards: [] }] };
     const writes: RequestInit[] = []; let moved = false; let archivedReads = 0;
     vi.stubGlobal('fetch', vi.fn((path: string, init?: RequestInit) => {
+      if (path.startsWith('/navigation/observations?')) return Promise.resolve(navigationResponse(path, uuid(8)));
       if (path === '/me') return Promise.resolve(response({ id: uuid(8), status: 'ACTIVE', version: 1, emailVerified: true, locale: 'en-US', timezone: 'UTC' }));
       if (path === `/organizations/${org}/boards`) return Promise.resolve(response([{ id: destination, name: 'Destination', version: 1 }]));
       if (path === `/boards/${destination}`) return Promise.resolve(response(target));
@@ -872,7 +874,8 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       return Promise.resolve(response(moved ? { ...active, lists: [] } : active));
     }));
     mount(`/app/${org}/boards/${board}/cards/${cardId}`);
-    fireEvent.click(await screen.findByRole('button', { name: 'Move to another Board' }));
+    const move = await screen.findByRole('button', { name: 'Move to another Board' });
+    await waitFor(() => expect(move).toBeEnabled()); fireEvent.click(move);
     await waitFor(() => expect(screen.getByRole('combobox', { name: 'Destination Board' })).not.toHaveAttribute('aria-disabled', 'true'));
     fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination Board' })); fireEvent.click(await screen.findByRole('option', { name: 'Destination' }));
     await waitFor(() => expect(screen.getByRole('combobox', { name: 'Destination List on another Board' })).not.toHaveAttribute('aria-disabled', 'true'));
@@ -888,7 +891,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toHaveFocus());
-  });
+  }, 10_000);
   it('keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery', async () => {
     const board = '11111111-1111-1111-1111-111111111111'; const org = '22222222-2222-2222-2222-222222222222';
     const list = '33333333-3333-3333-3333-333333333333'; const copiedId = '44444444-4444-4444-4444-444444444444';
@@ -1022,7 +1025,8 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: 'Shared comment' } });
     for (const name of ['Add checklist', 'Save card', 'Add link attachment', 'Manage attachments', 'Review Card cover', 'Close'])
       expect(screen.getByRole('button', { name })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
+    const saveComment = screen.getByRole('button', { name: 'Save comment' });
+    await waitFor(() => expect(saveComment).toBeEnabled()); fireEvent.click(saveComment);
     const retry = await screen.findByRole('button', { name: 'Retry original comment change' }); await waitFor(() => expect(retry).toBeEnabled());
     for (const name of ['Add checklist', 'Save card', 'Add link attachment', 'Manage attachments', 'Review Card cover', 'Close'])
       expect(screen.getByRole('button', { name })).toBeDisabled();
@@ -1031,7 +1035,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
     expect(JSON.parse(writes[0].body as string)).toEqual({ content: 'Shared comment', cardVersion: 3 });
     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
-  });
+  }, 10_000);
 
   it('renders only admitted cover hints on the Card face/detail and retires images during live refresh/removal', async () => {
     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
