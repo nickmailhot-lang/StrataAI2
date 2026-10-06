@@ -77,6 +77,7 @@ AttachmentUploadIntent Intent(Guid? retry = null) => AttachmentUploadIntent.Prep
 try
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await Seed(organization,user,board,list,card); await Seed(foreignOrganization,foreignUser,foreignBoard,foreignList,foreignCard);
     await SearchTraversalStoreContract.RunAsync(admin,apiConnection,organization,user,ct);
     await SearchContentStoreContract.RunAsync(admin,provider,organization,board,user,ct);

@@ -101,3 +101,14 @@ source evidence only; runtime execution remains pending CI. Restricted PostgreSQ
 progress storage, transactional request publication, production Worker registration,
 graph processing, terminal events and completion observation remain to implement.
 No deletion jobs are enabled or published by this Application foundation.
+
+Migration 088 adds immutable accepted-request references and a forced-RLS
+progress checkpoint. Initial storage admission requires the current DELETING
+version and active Owner, with parent-before-membership gates. The initial
+checkpoint must be ATTACHMENTS with the first step equal to the request, no
+cursor or completion and version one. API grants allow only initial insert/read;
+Worker grants allow reference/progress reads, without correlation content or
+progress mutation. Lease-fenced mutation capabilities remain to implement.
+Both runtime hosts require the migration ledger; CI fixtures cover repeat/upgrade,
+rollback, restricted-role isolation and disabled Worker writes. Compilation and
+script syntax checks cannot prove execution; PostgreSQL CI remains required.

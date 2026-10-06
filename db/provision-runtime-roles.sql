@@ -49,6 +49,10 @@ GRANT SELECT,INSERT ON invitation_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_metadata_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_deletion_replays TO strataai_api_runtime;
+GRANT SELECT,INSERT ON organization_deletion_requests,organization_deletion_progress TO strataai_api_runtime;
+GRANT SELECT(tenant_id,request_id,actor_id,accepted_version) ON organization_deletion_requests TO strataai_worker_runtime;
+GRANT SELECT ON organization_deletion_progress TO strataai_worker_runtime;
+-- Page mutation capabilities remain disabled until lease-fenced graph processing is implemented.
 GRANT SELECT,INSERT ON organization_departure_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_removal_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON work_event_streams TO strataai_api_runtime;
