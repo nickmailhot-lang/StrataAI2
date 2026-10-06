@@ -33,7 +33,13 @@ for (const width of [1280, 768, 390]) {
       if (query.get('kind') === 'card') {
         expect(event.entityId).toBe(card.id); expect(event.boardId).toBe(board.id); expect(event.organizationId).toBe(org);
         attempts.push({ key: request.headers()['idempotency-key'], event, query: query.toString() });
-        if (attempts.length === 1) { await route.abort('failed'); return; }
+        if (attempts.length === 1) {
+          const edited = await context.request.patch(`/cards/${card.id}`, { headers,
+            data: { title: card.title, description: 'Later navigation detail', version: card.version } });
+          expect(edited.status()).toBe(200);
+          expect((await edited.json()).version).toBe(card.version + 1);
+          await route.abort('failed'); return;
+        }
       }
       await route.fulfill({ response });
     });

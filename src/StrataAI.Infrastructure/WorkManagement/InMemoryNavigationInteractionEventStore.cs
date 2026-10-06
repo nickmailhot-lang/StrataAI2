@@ -50,6 +50,8 @@ internal sealed class InMemoryNavigationInteractionEventStore(DemoIdentityTransa
         if (!scope.Owns(source.ActorId)) throw new InvalidOperationException("Navigation requires owning identity transaction.");
         ct.ThrowIfCancellationRequested();
         if (await identities.FindUserByIdAsync(source.ActorId, ct) is not { Status: AccountStatus.Active }) return false;
+        var hasOriginal = _sources.TryGetValue(source.EventId, out var original);
+        if (hasOriginal && original != source) return false;
         var rollback = CaptureRollback();
         try {
             if (source.OrganizationId is not { } org) return Append(source);
@@ -69,9 +71,9 @@ internal sealed class InMemoryNavigationInteractionEventStore(DemoIdentityTransa
                 if (current.Visibility != BoardVisibility.Public && (member is not { Active: true }
                     || (current.Visibility == BoardVisibility.Private && member.Role is not (OrganizationRole.Owner or OrganizationRole.Admin)
                         && await work.FindBoardMemberAsync(board, source.ActorId, ct) is not { Active: true }))) return false;
-                if (source.EntityType == "Board") return current.Id == source.EntityId && current.Version == source.Version;
+                if (source.EntityType == "Board") return current.Id == source.EntityId && (hasOriginal || current.Version == source.Version);
                 var card = await work.FindCardAsync(source.EntityId, ct);
-                if (card is null || card.BoardId != board || card.OrganizationId != org || card.Version != source.Version
+                if (card is null || card.BoardId != board || card.OrganizationId != org || !hasOriginal && card.Version != source.Version
                     || card.LifecycleState != WorkItemLifecycleState.Active) return false;
                 return await work.FindListAsync(card.ListId, ct) is { LifecycleState: WorkItemLifecycleState.Active } list
                     && list.BoardId == board && list.OrganizationId == org;

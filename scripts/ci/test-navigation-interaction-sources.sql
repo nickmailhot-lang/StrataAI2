@@ -73,7 +73,13 @@ DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; org uuid:='078
 END $$;
 RESET ROLE;
 -- PRD-01-TC-05/06/07: receipts and sources roll back together.
+UPDATE boards SET version=2,updated_at=now() WHERE id='07800000-0000-0000-0000-000000000020';
 SET LOCAL ROLE strataai_navigation_ci;
+DO $$ BEGIN
+ PERFORM * FROM append_or_replay_navigation_interaction('08000000-0000-0000-0000-000000000001',repeat('a',64),gen_random_uuid(),'07800000-0000-0000-0000-000000000001','BOARD_OPENED','07800000-0000-0000-0000-000000000010','07800000-0000-0000-0000-000000000020','07800000-0000-0000-0000-000000000020',1,now());
+ IF NOT FOUND THEN RAISE EXCEPTION 'Later Board revision prevented original recovery'; END IF;
+ IF append_navigation_interaction(gen_random_uuid(),'07800000-0000-0000-0000-000000000001','BOARD_OPENED','07800000-0000-0000-0000-000000000010','07800000-0000-0000-0000-000000000020','07800000-0000-0000-0000-000000000020',1,now()) THEN RAISE EXCEPTION 'Fresh stale Board observation accepted'; END IF;
+END $$;
 DO $$ DECLARE actor uuid:='07800000-0000-0000-0000-000000000001'; candidate uuid:=gen_random_uuid(); request uuid:=gen_random_uuid(); sources bigint; receipts bigint; BEGIN
  SELECT count(*) INTO sources FROM navigation_interaction_events;
  SELECT count(*) INTO receipts FROM navigation_interaction_replays;
@@ -137,7 +143,7 @@ END $$;
 RESET ROLE;
 DO $$ BEGIN
  IF (SELECT version FROM cards WHERE id='07800000-0000-0000-0000-000000000041')<>1
-  OR (SELECT version FROM boards WHERE id='07800000-0000-0000-0000-000000000020')<>1 THEN RAISE EXCEPTION 'Navigation changed shared revisions'; END IF;
+  OR (SELECT version FROM boards WHERE id='07800000-0000-0000-0000-000000000020')<>2 THEN RAISE EXCEPTION 'Navigation changed shared revisions'; END IF;
  IF NOT (SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='navigation_interaction_events'::regclass) THEN RAISE EXCEPTION 'Forced RLS missing'; END IF;
  IF NOT (SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='navigation_interaction_replays'::regclass) THEN RAISE EXCEPTION 'Receipt forced RLS missing'; END IF;
 END $$;

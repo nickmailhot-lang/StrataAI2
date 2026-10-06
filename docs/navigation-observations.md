@@ -14,7 +14,7 @@ The admitted internal Organization shell confirms Organization context. The auth
 | `board` | `kind=board`, `organizationId`, `boardId`, positive `version` |
 | `card` | `kind=card`, `organizationId`, `boardId`, `cardId`, positive `version` |
 
-The request requires authentication, the normal application request marker, an `Idempotency-Key`, and `X-StrataAI-Expected-Actor`. The server validates the current session, target access, parent lifecycle, and observed revision inside the owning transaction. Replays require current authorization; a receipt is not an access grant. Responses are private and must not be cached.
+The request requires authentication, the normal application request marker, an `Idempotency-Key`, and `X-StrataAI-Expected-Actor`. The server validates the current session, target access, parent lifecycle, and observed revision inside the owning transaction. Replays require current authorization; a receipt is not an access grant. An exact persisted original remains recoverable after later entity revisions; fresh observations still require the current revision. Current target scope and active parent lifecycle are rechecked in both cases. Responses are private and must not be cached.
 
 The canonical acknowledgment has exactly ten fields: `eventId`, `eventType`, `actorId`, `organizationId`, `boardId`, `entityType`, `entityId`, `version`, `metadata`, and `createdAt`. Metadata is empty. Global context uses `ApplicationContext` with its event ID as entity ID; Organization context uses the Organization ID. Board and Card observations use their actual entity IDs and revisions. Timestamps preserve PostgreSQL microsecond precision.
 

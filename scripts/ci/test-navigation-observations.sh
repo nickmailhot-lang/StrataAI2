@@ -62,10 +62,11 @@ jq -e --arg actor "$actor" '.actorId==$actor and .eventType=="APPLICATION_CONTEX
 test "$(observe owner "$actor" "$card_key" "$card_query")" = 200
 jq -e --arg card "$card" '.eventType=="CARD_OPENED" and .entityType=="Card" and .entityId==$card and .metadata=={}' "$scratch/response.json" >/dev/null
 cp "$scratch/response.json" "$scratch/card-original.json"
+test "$(request owner PATCH "/cards/$card" "$(jq -nc --argjson version "$card_version" '{title:"Later navigation Card",version:$version}')")" = 200
 test "$(observe owner "$actor" "$card_key" "$card_query")" = 200
 cmp "$scratch/card-original.json" "$scratch/response.json"
 test "$(observe outsider "$outsider" "$(uuid)" "$card_query")" = 404
-test "$(observe owner "$actor" "$(uuid)" "kind=card&organizationId=$org&boardId=$board&cardId=$card&version=$((card_version+1))")" = 404
+test "$(observe owner "$actor" "$(uuid)" "kind=card&organizationId=$org&boardId=$board&cardId=$card&version=$((card_version+2))")" = 404
 test "$(request owner POST "/lists/$list/archive" '{"version":1}')" = 200
 test "$(observe owner "$actor" "$card_key" "$card_query")" = 404
 jq -e '.code=="navigation_unavailable" and (has("eventId")|not)' "$scratch/response.json" >/dev/null
