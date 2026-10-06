@@ -34,6 +34,21 @@ done
 test "$(curl --max-time 60 --silent --show-error -o /dev/null -w '%{http_code}' "$base/search?q=100%25_")" = 401
 test "$(search outsider active)" = 200
 jq -e '.items==[] and .nextCursor==null' "$scratch/page.json" >/dev/null
+# Search must project policy from the authorized canonical Board read.
+test "$(search owner active)" = 200
+jq -e '(.items|length)==50 and all(.items[]; has("boardDateTimezone") and .boardDateTimezone==null)' "$scratch/page.json" >/dev/null
+board_version=1
+for zone in Pacific/Honolulu Asia/Tokyo CLEAR; do
+  policy="$(jq -nc --arg zone "$zone" --argjson version "$board_version" '{timezone:(if $zone=="CLEAR" then null else $zone end),version:$version}')"
+  test "$(request owner PATCH "/boards/$board/date-policy" "$policy")" = 200
+  board_version="$(jq -r '.board.version' "$scratch/response.json")"
+  test "$(search owner active)" = 200
+  grep -iq '^cache-control: private, no-store' "$scratch/headers"
+  jq -e --arg zone "$zone" '(.items|length)==50 and all(.items[]; has("boardDateTimezone") and .boardDateTimezone==(if $zone=="CLEAR" then null else $zone end))' "$scratch/page.json" >/dev/null
+  test "$(search outsider active)" = 200
+  jq -e '.items==[] and .nextCursor==null' "$scratch/page.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh 'Pacific/Honolulu|Asia/Tokyo|Search Board|Search List' "$scratch/page.json"
+done
 test "$(search owner active)" = 200
 grep -iq '^cache-control: private, no-store' "$scratch/headers"
 jq -e --arg org "$org" --arg board "$board" --arg list "$list" '(.items|length)==50 and (.nextCursor|type)=="string" and all(.items[]; .sourceKind=="CARD" and .card.organizationId==$org and .card.boardId==$board and .card.listId==$list and .boardName=="Search Board" and .listName=="Search List")' "$scratch/page.json" >/dev/null

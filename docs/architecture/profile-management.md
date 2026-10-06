@@ -115,3 +115,12 @@ reflect the admitted current policy while an outsider receives no private Card o
 policy metadata. Compilation succeeds; native execution remains pending CI.
 Browser policy precedence is still incomplete, so this contract increment does
 not close the timezone acceptance gap.
+
+The mandatory exact-image global-search fixture now requires the
+`boardDateTimezone` field on every admitted result, checks initial null policy,
+Honolulu, Tokyo and clearing through actual Board date-policy commands, and
+requires private/no-store search responses. Its outsider checks require no private
+Board/List names or policy strings. Existing 50+2 paging, cursor binding and
+archived-parent checks remain required afterward. Bash syntax passes; native
+execution is pending. The live complete web run still uses the unchanged browser
+source at `b9f257e`; this backend/fixture coverage does not prove browser precedence.
