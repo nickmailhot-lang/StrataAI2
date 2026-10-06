@@ -122,5 +122,8 @@ Honolulu, Tokyo and clearing through actual Board date-policy commands, and
 requires private/no-store search responses. Its outsider checks require no private
 Board/List names or policy strings. Existing 50+2 paging, cursor binding and
 archived-parent checks remain required afterward. Bash syntax passes; native
-execution is pending. The live complete web run still uses the unchanged browser
-source at `b9f257e`; this backend/fixture coverage does not prove browser precedence.
+execution is pending. The complete web run against unchanged browser source at
+`b9f257e` completed successfully: 122 test files and 1,491 tests passed, with
+process exit 0 (508.60 seconds). This verifies the account-preference display
+increment across the web suite; backend/fixture coverage does not prove browser
+Board-policy precedence or native release acceptance.
