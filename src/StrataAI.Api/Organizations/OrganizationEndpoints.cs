@@ -286,6 +286,7 @@ public static class OrganizationEndpoints
             async (
                 Guid organizationId,
                 long version,
+                Guid? expectedActorId,
                 HttpContext context,
                 IOrganizationService service,
                 CancellationToken cancellationToken) =>
@@ -296,12 +297,22 @@ public static class OrganizationEndpoints
                     return Results.Unauthorized();
                 }
 
+                context.Response.Headers.CacheControl = "private, no-store";
+                if (expectedActorId is Guid expected && expected != userId.Value)
+                    return ErrorFor("session_unavailable");
+                Guid? key = null;
+                if (context.Request.Headers.TryGetValue("Idempotency-Key", out var keys))
+                {
+                    if (keys.Count != 1 || keys[0]?.Length != 36 || !Guid.TryParseExact(keys[0], "D", out var parsed) || parsed == Guid.Empty)
+                        return ErrorFor("invalid_idempotency_key");
+                    key = parsed;
+                }
                 var result = await service.MarkDeletingAsync(
                     organizationId,
                     userId.Value,
                     version,
                     context.TraceIdentifier,
-                    cancellationToken);
+                    cancellationToken, key);
 
                 return result.Succeeded
                     ? Results.Accepted()

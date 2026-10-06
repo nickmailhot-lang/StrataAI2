@@ -12,7 +12,7 @@ public sealed class OrganizationService(
     StrataAI.Application.Onboarding.IInvitationStore invitations, IWorkEventStore workEvents,
     CardReminderContainerScheduling reminders, IOrganizationMetadataReplayStore metadataReplays,
     IOrganizationDepartureReplayStore departureReplays, IOrganizationRemovalReplayStore removalReplays,
-    IOrganizationCreationReplayStore creationReplays) : IOrganizationService
+    IOrganizationCreationReplayStore creationReplays, IOrganizationDeletionReplayStore deletionReplays) : IOrganizationService
 {
     public async Task<OrganizationOperation<OrganizationDirectoryPage>> ListPageAsync(Guid actorUserId,
         Guid? after, CancellationToken cancellationToken = default)
@@ -222,9 +222,31 @@ public sealed class OrganizationService(
 
     public Task<OrganizationOperation<bool>> MarkDeletingAsync(
         Guid organizationId, Guid actorUserId, long expectedVersion, string correlationId,
-        CancellationToken cancellationToken = default) =>
-        unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false,
-            () => MarkDeletingCoreAsync(organizationId, actorUserId, expectedVersion, correlationId, cancellationToken), cancellationToken);
+        CancellationToken cancellationToken = default, Guid? idempotencyKey = null) =>
+        unitOfWork.ExecuteAsync(organizationId, actorUserId, null, false, async () =>
+        {
+            if (idempotencyKey is null)
+                return await MarkDeletingCoreAsync(organizationId, actorUserId, expectedVersion, correlationId, cancellationToken);
+            var member = await store.FindMembershipAsync(organizationId, actorUserId, cancellationToken);
+            if (member is not { Active: true, Role: OrganizationRole.Owner })
+                return OrganizationOperation<bool>.Failure("organization_not_found");
+            if (idempotencyKey == Guid.Empty)
+                return OrganizationOperation<bool>.Failure("invalid_idempotency_key");
+            var fingerprint = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { organizationId, expectedVersion })));
+            var replay = await deletionReplays.ReadAsync(organizationId, actorUserId, idempotencyKey.Value, cancellationToken);
+            if (replay is not null)
+            {
+                if (replay.Fingerprint != fingerprint) return OrganizationOperation<bool>.Failure("idempotency_conflict");
+                if (replay.ExpiresAt <= clock.UtcNow) return OrganizationOperation<bool>.Failure("idempotency_expired");
+                return OrganizationOperation<bool>.Success(true);
+            }
+            var result = await MarkDeletingCoreAsync(organizationId, actorUserId, expectedVersion, correlationId, cancellationToken);
+            if (result.Succeeded)
+                await deletionReplays.SaveAsync(organizationId, actorUserId, idempotencyKey.Value,
+                    new(fingerprint, clock.UtcNow.AddHours(24)), cancellationToken);
+            return result;
+        }, cancellationToken, allowDeletionRecovery: idempotencyKey is not null);
 
     private async Task<OrganizationOperation<OrganizationSummary>> CreateCoreAsync(
         Guid organizationId,
@@ -526,6 +548,9 @@ public sealed class OrganizationService(
         {
             return OrganizationOperation<bool>.Failure("organization_not_found");
         }
+
+        if ((await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
+            return OrganizationOperation<bool>.Failure("organization_not_found");
 
         // The Organization command owns the parent gate. Lock every chosen
         // Board in stable order before making the parent unavailable; never use

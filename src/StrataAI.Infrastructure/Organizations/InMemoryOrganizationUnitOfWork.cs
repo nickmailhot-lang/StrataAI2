@@ -13,7 +13,7 @@ internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, I
     public async Task<OrganizationOperation<T>> ExecuteAsync<T>(
         Guid organizationId, Guid actorUserId, Guid? targetUserId, bool creating,
         Func<Task<OrganizationOperation<T>>> operation,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool allowDeletionRecovery = false)
     {
         await gate.Commands.WaitAsync(cancellationToken);
         try
@@ -29,8 +29,13 @@ internal sealed class InMemoryOrganizationUnitOfWork(IOrganizationStore store, I
                     // capturing/restoring the cross-store Organization command.
                     rollback = organizationParticipants.Select(participant => participant.CaptureRollback())
                         .Concat(participants.Select(participant => participant.CaptureRollback())).ToArray();
-                    if (!creating && (await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
-                        return OrganizationOperation<T>.Failure("organization_not_found");
+                    if (!creating)
+                    {
+                        var parent = await store.FindOrganizationAsync(organizationId, cancellationToken);
+                        if (parent is null || parent.Status != OrganizationStatus.Active
+                            && !(allowDeletionRecovery && parent.Status == OrganizationStatus.Deleting))
+                            return OrganizationOperation<T>.Failure("organization_not_found");
+                    }
                     if (!await actors.VerifyAsync(actorUserId, cancellationToken))
                         return OrganizationOperation<T>.Failure("session_unavailable");
                     var result = await operation();

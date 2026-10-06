@@ -171,6 +171,7 @@ public sealed partial class ApiHostTests
         var store = app.Services.GetRequiredService<IWorkManagementStore>();
         var organizations = app.Services.GetRequiredService<IOrganizationStore>();
         var orgService = app.Services.GetRequiredService<IOrganizationService>();
+        var receipts = app.Services.GetRequiredService<IOrganizationDeletionReplayStore>(); var key = Guid.NewGuid();
         var reminders = app.Services.GetRequiredService<ICardReminderStore>();
         var dates = app.Services.GetRequiredService<ICardDateStore>();
         var reader = app.Services.GetRequiredService<IWorkEventReader>();
@@ -181,9 +182,9 @@ public sealed partial class ApiHostTests
         var originalOrganization = (await organizations.FindOrganizationAsync(f.Organization, ct))!;
         var before = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
         events!.EventType = "REMINDER_CANCELLED"; events.Armed = true;
-        var refused = await orgService.MarkDeletingAsync(f.Organization, f.Owner, originalOrganization.Version, "fixture", ct);
+        var refused = await orgService.MarkDeletingAsync(f.Organization, f.Owner, originalOrganization.Version, "fixture", ct, key);
         Assert.False(refused.Succeeded); Assert.Equal("session_unavailable", refused.ErrorCode);
-        Assert.Equal(1, events.Withdrawals);
+        Assert.Equal(1, events.Withdrawals); Assert.Null(await receipts.ReadAsync(f.Organization, f.Owner, key, ct));
         Assert.Equal(originalOrganization, await organizations.FindOrganizationAsync(f.Organization, ct));
         Assert.Equal(originalReminder, await reminders.FindAsync(f.Organization, f.Owner, card.Id, ct));
         Assert.Equal(card, await store.FindCardAsync(card.Id, ct));
@@ -191,7 +192,8 @@ public sealed partial class ApiHostTests
         Assert.Equal(before.Cursor, after.Cursor);
         Assert.Equal(before.Events.Select(row => row.Event).ToArray(), after.Events.Select(row => row.Event).ToArray());
         fence.Allowed = true; events.Armed = false;
-        Assert.True((await orgService.MarkDeletingAsync(f.Organization, f.Owner, originalOrganization.Version, "fixture", ct)).Succeeded);
+        Assert.True((await orgService.MarkDeletingAsync(f.Organization, f.Owner, originalOrganization.Version, "fixture", ct, key)).Succeeded);
+        Assert.NotNull(await receipts.ReadAsync(f.Organization, f.Owner, key, ct));
         Assert.Equal(OrganizationStatus.Deleting, (await organizations.FindOrganizationAsync(f.Organization, ct))!.Status);
         var suspended = (await reminders.FindAsync(f.Organization, f.Owner, card.Id, ct))!;
         Assert.Equal("SUSPENDED", suspended.Status); Assert.Null(suspended.TriggerAt);
@@ -199,6 +201,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(originalReminder.Version + 1, suspended.Version);
         Assert.Equal(card, await store.FindCardAsync(card.Id, ct));
     }
+
 
     [Fact]
     public async Task PRD_03_Demo_navigation_waits_for_Organization_rollback_then_acquires_its_Work_scope()

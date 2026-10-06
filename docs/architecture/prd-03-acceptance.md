@@ -14,7 +14,7 @@ and remaining work. It does not certify current release acceptance.
 | WS-FR-006 departure with continuity | Organization service departure under parent/membership locks; [confirmed browser departure and durable API receipt](organization-departure.md), owner-floor and concurrent-departure fixtures | Current final-session, account-switch, same-key recovery after rejoin, continuity and keyboard/mobile release evidence |
 | WS-FR-007 authorized Board directory | Bounded active Board paging and direct reads in [discovery](organization-discovery.md), [access integrity](organization-access-integrity.md), [Board realtime](../organization-board-realtime.md) | Current restricted visibility, paging, access withdrawal and reconnect evidence; verify archived discovery alongside the active directory |
 | WS-FR-008 OWNER/ADMIN/MEMBER roles | Canonical role enum, permission checks, directory and owner-floor rules | Current role-by-operation denial and usable-owner evidence across invitation/removal/departure |
-| WS-FR-009 owner-only confirmed deletion | Server owner/version check transitions Organization to deleting and suspends reminders atomically | Explicit browser deletion confirmation, retry recovery and completion behavior; a deletion request is not completed deletion |
+| WS-FR-009 owner-only confirmed deletion | Server owner/version check transitions Organization to deleting and suspends reminders atomically; [durable request acknowledgments](organization-deletion-retries.md) | Explicit browser deletion confirmation, retry recovery and completion behavior; a deletion request is not completed deletion |
 | WS-FR-010 graph/audit treatment on deletion | Deleting status withdraws normal access; command suspends reminders across the full candidate Board set and appends ORGANIZATION_DELETION_REQUESTED | Define and implement end-to-end Board/List/Card/attachment retention or cleanup, retained attribution/audit treatment, terminal deletion and required ORGANIZATION_DELETED publication |
 
 ## Acceptance criteria and required scenarios
@@ -55,9 +55,10 @@ Source review confirms that UpdateAsync, RemoveMemberAsync, LeaveAsync and
 MarkDeletingAsync enter the Organization unit of work. MarkDeletingCoreAsync
 marks status, reschedules reminders and audits a deletion request; it does not
 perform terminal graph deletion. Current metadata, member-removal, departure and creation API contracts include
-durable receipts. Current browser creation recovery evidence is pending and deletion
-acknowledgments remain incomplete; see their workflow guides for source and CI boundaries.
+durable receipts. Browser creation recovery is implemented with current native evidence pending.
+Deletion request acknowledgments are implemented, but browser confirmation
+and terminal deletion remain incomplete; see their workflow guides for source and CI boundaries.
 
 Historical native results apply to their recorded revision only. Queued CI and
 successful compilation cannot close these gaps. Estimated work remaining is
-**26%**, a planning estimate rather than a count of unchecked rows.
+**25%**, a planning estimate rather than a count of unchecked rows.

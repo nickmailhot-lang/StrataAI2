@@ -59,5 +59,5 @@ public interface IOrganizationService
         Guid actorUserId,
         long expectedVersion,
         string correlationId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, Guid? idempotencyKey = null);
 }

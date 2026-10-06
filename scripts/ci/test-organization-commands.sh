@@ -14,11 +14,14 @@ removal_session=''
 removal_session_expiry=''
 creation_session=''
 creation_session_expiry=''
+deletion_session=''
+deletion_session_expiry=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime;' >/dev/null
+  admin 'GRANT INSERT ON organization_deletion_replays TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_creation_replays TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_metadata_replays TO strataai_api_runtime;' >/dev/null
   admin 'GRANT INSERT ON organization_removal_replays TO strataai_api_runtime;' >/dev/null
@@ -27,6 +30,10 @@ cleanup() {
   admin 'DROP TRIGGER IF EXISTS ci_organization_departure_wait ON organization_departure_replays; DROP FUNCTION IF EXISTS public.ci_organization_departure_wait();' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_removal_wait ON organization_removal_replays; DROP FUNCTION IF EXISTS public.ci_organization_removal_wait();' >/dev/null
   admin 'DROP TRIGGER IF EXISTS ci_organization_creation_wait ON organization_creation_replays; DROP FUNCTION IF EXISTS public.ci_organization_creation_wait();' >/dev/null
+  admin 'DROP TRIGGER IF EXISTS ci_organization_deletion_wait ON organization_deletion_replays; DROP FUNCTION IF EXISTS public.ci_organization_deletion_wait();' >/dev/null
+  if test -n "$deletion_session" && test -n "$deletion_session_expiry"; then
+    admin "UPDATE sessions SET expires_at='$deletion_session_expiry'::timestamptz WHERE id='$deletion_session';" >/dev/null
+  fi
   if test -n "$creation_session" && test -n "$creation_session_expiry"; then
     admin "UPDATE sessions SET expires_at='$creation_session_expiry'::timestamptz WHERE id='$creation_session';" >/dev/null
   fi
@@ -673,3 +680,114 @@ test "$(creation_request creation-expired)" = 409
 jq -e '.code=="idempotency_expired"' "$scratch/creation-expired.json" >/dev/null
 test "$creation_expired" = "$(creation_state)"
 echo 'Creation receipts roll back the new parent/owner/audit, serialize absent-parent retries, preserve later edits and reserve expired keys.'
+
+# PRD-03-TC-05/06/07/08: original deletion request acknowledgment survives DELETING.
+delete_card_version="$(admin "SELECT version FROM cards WHERE tenant_id='$retry_org' AND id='$receipt_card';")"
+test "$(request PATCH "/cards/$receipt_card/dates" "$(jq -nc --argjson version "$delete_card_version" '{dueAt:"2099-01-01T12:00:00Z",dueTimezone:"UTC",dueHasTime:true,dueComplete:false,version:$version}')")" = 200
+delete_card_version="$(admin "SELECT version FROM cards WHERE tenant_id='$retry_org' AND id='$receipt_card';")"
+test "$(request POST "/cards/$receipt_card/reminders" "$(jq -nc --argjson version "$delete_card_version" '{intervalCode:"AT_DUE",enabled:true,cardVersion:$version,version:0}')")" = 200
+delete_reminder_version="$(admin "SELECT version FROM card_reminders WHERE tenant_id='$retry_org' AND card_id='$receipt_card' AND user_id='$owner';")"
+delete_reminder_generation="$(admin "SELECT generation FROM card_reminders WHERE tenant_id='$retry_org' AND card_id='$receipt_card' AND user_id='$owner';")"
+delete_cancel_events="$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$retry_org' AND board_id='$receipt_board' AND event_type='REMINDER_CANCELLED';")"
+deletion_key="$(cat /proc/sys/kernel/random/uuid)"
+deletion_version="$(admin "SELECT version FROM organizations WHERE id='$retry_org';")"
+deletion_request() {
+  curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+    -H "Idempotency-Key: $deletion_key" -X DELETE -D "$scratch/$1.headers" -o "$scratch/$1.json" -w '%{http_code}' \
+    "$BASE_URL/organizations/$retry_org?version=${2:-$deletion_version}&expectedActorId=${3:-$owner}"
+}
+deletion_state() {
+  admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$retry_org'),
+    'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY user_id) FROM organization_members m WHERE tenant_id='$retry_org'),
+    'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
+    'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$retry_org' AND id='$receipt_card'),
+    'assignments',(SELECT jsonb_agg(to_jsonb(a) ORDER BY user_id) FROM card_members a WHERE tenant_id='$retry_org' AND card_id='$receipt_card'),
+    'reminders',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM card_reminders r WHERE tenant_id='$retry_org'),
+    'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$retry_org' AND job_type='CARD_REMINDER'),
+    'events',(SELECT jsonb_agg(jsonb_build_object('id',e.event_id,'sequence',e.sequence,'type',e.event_type,'actor',e.actor_id,'entityType',e.entity_type,'entity',e.entity_id,'version',e.entity_version,'correlation',e.correlation_id,'metadata',e.metadata,'created',e.created_at) ORDER BY e.sequence) FROM work_events e WHERE tenant_id='$retry_org' AND board_id='$receipt_board'),
+    'stream',(SELECT to_jsonb(w) FROM work_event_streams w WHERE tenant_id='$retry_org' AND board_id='$receipt_board'),
+    'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_deletion_replays r WHERE tenant_id='$retry_org'))::text;"
+}
+deletion_before="$(deletion_state)"
+test "$(deletion_request deletion-account "$deletion_version" "$other")" = 401
+test "$deletion_before" = "$(deletion_state)"
+admin 'REVOKE INSERT ON organization_deletion_replays FROM strataai_api_runtime;' >/dev/null
+test "$(deletion_request deletion-denied)" = 503
+jq -e '.code=="organization_storage_unavailable"' "$scratch/deletion-denied.json" >/dev/null
+test "$deletion_before" = "$(deletion_state)"
+admin 'GRANT INSERT ON organization_deletion_replays TO strataai_api_runtime;' >/dev/null
+# Observe actual receipt publication while the original cookie session expires.
+deletion_hash="$(owner_hash)"
+[[ "$deletion_hash" =~ ^[0-9a-f]{64}$ ]]
+deletion_session="$(admin "SELECT id FROM sessions WHERE token_hash='$deletion_hash' AND user_id='$owner' AND revoked_at IS NULL;")"
+[[ "$deletion_session" =~ ^[0-9a-fA-F-]{36}$ ]]
+deletion_session_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$deletion_session';")"
+test -n "$deletion_session_expiry"
+admin "CREATE FUNCTION public.ci_organization_deletion_wait() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+BEGIN
+  IF NEW.tenant_id='$retry_org'::uuid THEN PERFORM pg_sleep(12); END IF;
+  RETURN NEW;
+END;
+\$\$;
+CREATE TRIGGER ci_organization_deletion_wait AFTER INSERT ON organization_deletion_replays
+  FOR EACH ROW EXECUTE FUNCTION public.ci_organization_deletion_wait();" >/dev/null
+admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$deletion_session';" >/dev/null
+deletion_publication_before="$(deletion_state)"
+deletion_identity_before="$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$owner'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$owner'))::text;")"
+deletion_request deletion-expiry > "$scratch/deletion-expiry.status" & request_pid=$!
+for ((attempt=0; attempt<100; attempt++)); do
+  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_deletion_replays%';")" = 1; then break; fi
+  sleep 0.1
+done
+test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO organization_deletion_replays%';")" = 1
+wait "$request_pid"; request_pid=''
+test "$(cat "$scratch/deletion-expiry.status")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/deletion-expiry.json" >/dev/null
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/deletion-expiry.headers"
+scripts/ci/assert-file-excludes.sh "$retry_org|$owner|$other|Assigned receipt rollback Card" "$scratch/deletion-expiry.json"
+test "$deletion_publication_before" = "$(deletion_state)"
+test "$deletion_identity_before" = "$(admin "SELECT jsonb_build_object('user',(SELECT to_jsonb(u) FROM users u WHERE id='$owner'),
+  'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id='$owner'))::text;")"
+admin 'DROP TRIGGER ci_organization_deletion_wait ON organization_deletion_replays; DROP FUNCTION public.ci_organization_deletion_wait();' >/dev/null
+admin "UPDATE sessions SET expires_at='$deletion_session_expiry'::timestamptz WHERE id='$deletion_session';" >/dev/null
+deletion_session=''; deletion_session_expiry=''
+test "$deletion_before" = "$(deletion_state)"
+hold "SELECT id FROM organizations WHERE id='$retry_org' FOR UPDATE;"
+deletion_request deletion-first > "$scratch/deletion-first.status" & deletion_first_pid=$!
+deletion_request deletion-second > "$scratch/deletion-second.status" & deletion_second_pid=$!
+blocked '%SELECT id FROM organizations%FOR UPDATE%' 2
+release ''
+wait "$deletion_first_pid"; wait "$deletion_second_pid"
+test "$(cat "$scratch/deletion-first.status")" = 202
+test "$(cat "$scratch/deletion-second.status")" = 202
+test "$(admin "SELECT status='DELETING' AND version=$((deletion_version+1)) FROM organizations WHERE id='$retry_org';")" = t
+test "$(admin "SELECT count(*)=1 FROM organization_deletion_replays WHERE tenant_id='$retry_org' AND actor_id='$owner';")" = t
+test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_DELETION_REQUESTED' AND actor_id='$owner';")" = t
+test "$(admin "SELECT status='SUSPENDED' AND trigger_at IS NULL AND version=$((delete_reminder_version+1)) AND generation=$((delete_reminder_generation+1)) FROM card_reminders WHERE tenant_id='$retry_org' AND card_id='$receipt_card' AND user_id='$owner';")" = t
+test "$(admin "SELECT count(*) FROM work_events WHERE tenant_id='$retry_org' AND board_id='$receipt_board' AND event_type='REMINDER_CANCELLED';")" = "$((delete_cancel_events+1))"
+test "$(admin "SELECT version FROM cards WHERE tenant_id='$retry_org' AND id='$receipt_card';")" = "$delete_card_version"
+test "$(request GET "/organizations/$retry_org" '')" = 404
+deletion_committed="$(deletion_state)"
+test "$(deletion_request deletion-replay)" = 202
+test "$deletion_committed" = "$(deletion_state)"
+deletion_original_key="$deletion_key"; deletion_key="$(cat /proc/sys/kernel/random/uuid)"
+test "$(deletion_request deletion-fresh)" = 404
+test "$deletion_committed" = "$(deletion_state)"
+deletion_key="$deletion_original_key"
+test "$(deletion_request deletion-conflict "$((deletion_version+1))")" = 409
+jq -e '.code=="idempotency_conflict"' "$scratch/deletion-conflict.json" >/dev/null
+test "$deletion_committed" = "$(deletion_state)"
+admin "UPDATE organization_members SET role='ADMIN',version=version+1 WHERE tenant_id='$retry_org' AND user_id='$owner';" >/dev/null
+deletion_demoted="$(deletion_state)"
+test "$(deletion_request deletion-demoted)" = 404
+test "$deletion_demoted" = "$(deletion_state)"
+admin "UPDATE organization_members SET role='OWNER',version=version+1 WHERE tenant_id='$retry_org' AND user_id='$owner';" >/dev/null
+test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_deletion_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
+test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_deletion_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','DELETE');")" = f
+admin "UPDATE organization_deletion_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$retry_org' AND key_id='$deletion_key';" >/dev/null
+deletion_expired="$(deletion_state)"
+test "$(deletion_request deletion-expired)" = 409
+jq -e '.code=="idempotency_expired"' "$scratch/deletion-expired.json" >/dev/null
+test "$deletion_expired" = "$(deletion_state)"
+echo 'Deletion request receipts roll back parent/reminders/events, serialize retries, acknowledge after access withdrawal and retain current Owner/session checks.'

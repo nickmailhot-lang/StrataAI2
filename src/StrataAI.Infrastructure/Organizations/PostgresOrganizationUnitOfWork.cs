@@ -14,7 +14,7 @@ internal sealed class PostgresOrganizationUnitOfWork(
     public async Task<OrganizationOperation<T>> ExecuteAsync<T>(
         Guid organizationId, Guid actorUserId, Guid? targetUserId, bool creating,
         Func<Task<OrganizationOperation<T>>> operation,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool allowDeletionRecovery = false)
     {
         try
         {
@@ -38,9 +38,11 @@ internal sealed class PostgresOrganizationUnitOfWork(
                     // Serialize ownership decisions before reading the owner count or actor role.
                     // Work commands acquire this parent before their membership/board locks too.
                     await using var parent = new NpgsqlCommand("""
-                        SELECT id FROM organizations WHERE id=@tenant AND status='ACTIVE' FOR UPDATE;
+                        SELECT id FROM organizations WHERE id=@tenant
+                          AND (status='ACTIVE' OR (@recovery AND status='DELETING')) FOR UPDATE;
                         """, session.Connection, session.Transaction);
                     parent.Parameters.AddWithValue("tenant", organizationId);
+                    parent.Parameters.AddWithValue("recovery", allowDeletionRecovery);
                     if (await parent.ExecuteScalarAsync(cancellationToken) is null)
                         return OrganizationOperation<T>.Failure("organization_not_found");
                     // Lock existing actor and target rows in a stable order. Re-read their roles

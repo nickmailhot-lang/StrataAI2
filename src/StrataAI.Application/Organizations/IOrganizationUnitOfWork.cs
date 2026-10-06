@@ -5,5 +5,5 @@ public interface IOrganizationUnitOfWork
     Task<OrganizationOperation<T>> ExecuteAsync<T>(
         Guid organizationId, Guid actorUserId, Guid? targetUserId, bool creating,
         Func<Task<OrganizationOperation<T>>> operation,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default, bool allowDeletionRecovery = false);
 }
