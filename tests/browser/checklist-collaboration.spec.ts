@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackCardVersion } from './boardReadTracker';
 
 for (const width of [1280, 390]) {
   test(`PRD-13-TC-05/08/09: concurrent item drafts, socket recovery and revoked scope at ${width}px`, async ({ page, context, browser }) => {
@@ -30,7 +31,9 @@ for (const width of [1280, 390]) {
       const created = await context.request.post(`/cards/${card}/checklists`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { title: 'Preparations', cardVersion: 1 } }); expect(created.status()).toBe(200); const checklist = (await created.json()).checklist;
       const added = await context.request.post(`/cards/${card}/checklists/${checklist.id}/items`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { text: 'Initial preparation', cardVersion: 2, checklistVersion: 1 } }); expect(added.status()).toBe(200); const item = (await added.json()).item;
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
-      const route = `/app/${org}/boards/${board}/cards/${card}`; const peer = await recipient.newPage(); await page.goto(route); await peer.goto(route);
+      const route = `/app/${org}/boards/${board}/cards/${card}`; const peer = await recipient.newPage();
+      const admittedPeerVersion = trackCardVersion(peer, board, card, route);
+      await page.goto(route); await peer.goto(route);
       for (const target of [page, peer]) await expect(target.getByText('Live updates connected.', { exact: true })).toBeVisible();
       async function edit(target: Page, text = 'Initial preparation') {
         const manage = target.getByRole('button', { name: 'Manage checklists', exact: true }); await expect(manage).toBeEnabled(); await manage.press('Enter');
@@ -78,6 +81,9 @@ for (const width of [1280, 390]) {
       // Exercise revocation with an actual committed command whose reply was
       // lost, as well as the dirty-draft conflict already checked above.
       await peer.getByRole('button', { name: 'Discard item review and load latest', exact: true }).press('Enter');
+      // The independent editor must use the pushed revision after discard refresh.
+      await expect.poll(admittedPeerVersion).toBeGreaterThanOrEqual(6);
+      await expect(peer.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
       await edit(peer, 'After socket reconnect'); await dirty.fill('Committed before revocation');
       let original: { key: string; body: string } | undefined;
       await peer.route(`**${path}/${item.id}`, async intercepted => {
