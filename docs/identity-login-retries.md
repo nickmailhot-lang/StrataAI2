@@ -17,3 +17,27 @@ Validation includes API concurrency/logout replay and signing-key rotation tests
 The first release run exposed a first-response/replay timestamp precision mismatch. Session creation now uses PostgreSQL microsecond precision before returning the first acknowledgment. The fixture retains exact response comparison and adds retained/retired key rotation, a one-connection API pool, actual Worker cleanup and expiry during an observed session-row wait. A non-microsecond test clock protects the timestamp regression. These follow-up release checks passed in the run linked below.
 
 [Commit 6464e69 CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36824621457) passed all nine jobs with three non-expired exact-SHA artifacts. The release fixture passed the original-session, rotation, one-connection, restart, rollback, Worker cleanup and post-wait expiry checks. Eleven release browser tests and the separate mobile verification/recovery test passed. This verifies the sign-in increment; the broader authentication and onboarding acceptance criteria remain outstanding.
+
+## Final session admission after publication
+
+Fresh sign-in now reads its actual active session after session/audit/receipt
+writes and before disclosing a cookie. It requires the same session and account,
+current account/verification eligibility and unexpired session. A refusal returns
+`session_unavailable`; the owning transaction rolls back its writes. The existing
+credential-checked replay path retains its current-session admission.
+
+An API-host regression uses the real Demo session and receipt stores. Its clock
+advances to the session expiry only after it observes the actual saved receipt;
+refusal must leave no session or receipt, preserve the account, and permit a
+fresh same-key request followed by stable replay. It compiles but needs native CI
+execution.
+
+The required exact-image sign-in fixture adds an ephemeral invoker trigger that
+expires only its fixture session after actual receipt insertion. The restricted
+runtime must return 401 with no cookie or account disclosure and unchanged full
+user/session/audit/receipt state. The trigger is removed, and the same key then
+runs the existing concurrent success/replay checks. This fault injection tests
+post-publication admission, not elapsed real-time expiry during a database wait.
+It is guarded by CI-only execution and cleaned up on exit; no migration or
+production runtime policy is changed. Bash syntax passes; execution against the
+exact release API remains pending CI. Full PRD-02 acceptance remains open.

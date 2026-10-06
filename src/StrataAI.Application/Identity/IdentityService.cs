@@ -335,9 +335,16 @@ public sealed class IdentityService(
                 new IdentityLoginReplay(session.Id, loginSecrets!.CurrentKeyVersion, intentFingerprint!, now.AddHours(24)), cancellationToken);
         }
 
+        // Session/receipt writes can wait. Re-admit the actual session after them
+        // before disclosing its cookie; refusal rolls back the owning transaction.
+        var admitted = await store.FindActiveSessionAsync(tokens.Hash(rawSessionToken), clock.UtcNow, cancellationToken);
+        if (admitted is null || admitted.SessionId != sessionId || admitted.User.Id != user.Id
+            || admitted.ExpiresAt <= clock.UtcNow || admitted.User.Status != AccountStatus.Active
+            || (policy.RequireVerifiedEmail && !admitted.User.EmailVerified))
+            return IdentityOperation<LoginOutcome>.Failure("session_unavailable");
         return IdentityOperation<LoginOutcome>.Success(
             new LoginOutcome(
-                ToProfile(user),
+                ToProfile(admitted.User),
                 rawSessionToken,
                 session.ExpiresAt));
     }

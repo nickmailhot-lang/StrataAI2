@@ -11,7 +11,7 @@ small_pool=false
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
-  admin 'GRANT INSERT ON audit_events,identity_login_replays TO strataai_api_runtime;' >/dev/null
+  admin 'DROP TRIGGER IF EXISTS ci_login_receipt_expiry ON identity_login_replays; DROP FUNCTION IF EXISTS public.ci_login_receipt_expiry(); GRANT INSERT ON audit_events,identity_login_replays TO strataai_api_runtime;' >/dev/null
   if test "$rotated" = true || test "$small_pool" = true; then
     STRATAAI_AUTH_RETRY_CURRENT_KEY="$original_version" STRATAAI_AUTH_RETRY_KEYS="$original_ring" \
       docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api >/dev/null
@@ -45,6 +45,28 @@ for table in audit_events identity_login_replays; do
   test "$before" = "$(state)"
   admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
 done
+# Expire only this fixture's actual session after the receipt has been inserted.
+# The invoker trigger runs under the restricted API role, within the same command;
+# it is ephemeral CI fault injection and is removed before ordinary success tests.
+admin "CREATE FUNCTION public.ci_login_receipt_expiry() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+BEGIN
+  IF NEW.user_id='$user'::uuid THEN
+    UPDATE public.sessions SET expires_at=clock_timestamp()-interval '1 second'
+      WHERE id=NEW.session_id AND user_id=NEW.user_id;
+    IF NOT FOUND THEN RAISE EXCEPTION 'CI session expiry did not reach its row'; END IF;
+  END IF;
+  RETURN NEW;
+END;
+\$\$;
+CREATE TRIGGER ci_login_receipt_expiry AFTER INSERT ON identity_login_replays
+  FOR EACH ROW EXECUTE FUNCTION public.ci_login_receipt_expiry();" >/dev/null
+test "$(request)" = 401
+jq -e '.code=="session_unavailable"' "$scratch/response" >/dev/null
+scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
+scripts/ci/assert-file-excludes.sh "$user" "$scratch/response"
+test "$before" = "$(state)"
+admin 'DROP TRIGGER ci_login_receipt_expiry ON identity_login_replays; DROP FUNCTION public.ci_login_receipt_expiry();' >/dev/null
+# The exact same intent key must now create one session and immutable receipt.
 for n in 1 2 3; do
   curl --max-time 60 --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
     -H "Idempotency-Key: $key" -d "$body" -D "$scratch/retry-$n.headers" -c "$scratch/retry-$n.cookies" \
