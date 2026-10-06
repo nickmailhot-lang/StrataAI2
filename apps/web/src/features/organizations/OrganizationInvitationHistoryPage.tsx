@@ -5,6 +5,7 @@ import { apiFetch } from '../../api/apiFetch';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { invitationRoles, validInvitationKey } from './invitationIntent';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
+import { watchBoard } from '../../api/boardLive';
 
 type Row = { id: string; email: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; createdAt: string;
   expiresAt: string; acceptedAt: string | null; revokedAt: string | null; deliveryState: string | null; boardTarget?: { boardId: string; role: string } | null };
@@ -68,12 +69,14 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     mounted.current = false; pending.current?.abort(); pending.current = undefined; recoveryId.current = undefined;
   }; }, []); // The keyed component isolates every Organization navigation.
   useEffect(() => {
-    if (!actorId || boardId !== undefined) return;
+    if (!actorId) return;
     const invalidate = () => {
       epoch.current++; refreshQueued.current = true; setRows(undefined); setSelected(undefined);
       setLiveNotice('Checking current invitations and access. Any revocation recovery is preserved.');
       setReloadVersion(value => value + 1);
     };
+    if (boardId !== undefined) return watchBoard({ organizationId, boardId, invalidate,
+      status: status => { if (status !== 'connecting') invalidate(); } });
     return watchOrganizationMetadata({ organizationId, userId: actorId, invalidate, reset: invalidate, unavailable: invalidate });
   }, [organizationId, boardId, actorId]);
   useEffect(() => {

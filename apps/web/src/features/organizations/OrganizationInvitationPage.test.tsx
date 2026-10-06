@@ -5,6 +5,9 @@ import { forgetInvitationIntents, invitationIntentKey } from './invitationIntent
 const live = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string;
   invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
 vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.watch }));
+const boardLive = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; boardId: string;
+  invalidate(): void; status(value: 'connecting' | 'live' | 'recovering' | 'polling'): void }) => () => void>(() => vi.fn()) }));
+vi.mock('../../api/boardLive', () => ({ watchBoard: boardLive.watch }));
 const org = '10000000-0000-0000-0000-000000000000'; const actor = '20000000-0000-0000-0000-000000000000';
 const profile = { id: actor, locale: 'en-CA', timezone: 'America/Vancouver' };
 const admission = { organizationId: org, actorRole: 0, member: { userId: actor, role: 0 } };
@@ -37,8 +40,31 @@ function fetcher(...responses: (Response | Error)[]) {
 }
 async function submit() { fireEvent.change(await screen.findByLabelText(/^Invitation email/), { target: { value: input.email } }); fireEvent.click(screen.getByRole('button', { name: 'Create invitation' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); sessionStorage.clear(); });
-beforeEach(() => { live.watch.mockClear(); });
+beforeEach(() => { live.watch.mockClear(); boardLive.watch.mockClear(); });
 describe('Administrator invitation intent and creation acknowledgment', () => {
+  it('withdraws Board invitation drafting when a live heartbeat finds lost administration', async () => {
+    let withdrawn = false;
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => reply(path === '/me' ? profile
+      : { ...boardAdmission, access: { canAdminister: !withdrawn } })));
+    boardMount(); await screen.findByLabelText(/^Invitation email/);
+    await waitFor(() => expect(boardLive.watch).toHaveBeenCalledTimes(1));
+    fireEvent.change(screen.getByLabelText(/^Invitation email/), { target: { value: input.email } });
+    withdrawn = true; act(() => boardLive.watch.mock.calls[0][0].status('live'));
+    await screen.findByText('Board invitations are unavailable to your account.');
+    expect(screen.queryByText('Private maintenance')).not.toBeInTheDocument();
+    expect(live.watch).not.toHaveBeenCalled();
+  });
+  it('preserves an untouched Board grant draft through an unchanged-authority heartbeat', async () => {
+    const mock = vi.fn(async (path: string) => reply(path === '/me' ? profile : boardAdmission));
+    vi.stubGlobal('fetch', mock);
+    boardMount(); await screen.findByLabelText(/^Invitation email/);
+    fireEvent.change(screen.getByLabelText(/^Invitation email/), { target: { value: input.email } });
+    act(() => boardLive.watch.mock.calls[0][0].status('live'));
+    await waitFor(() => expect(mock.mock.calls.filter(call => call[0] === `/boards/${board}`)).toHaveLength(2));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Create invitation' })).toBeEnabled());
+    expect(screen.getByLabelText(/^Invitation email/)).toHaveValue(input.email);
+    expect(boardLive.watch).toHaveBeenCalledTimes(1);
+  });
   it('restores an already confirmed creation after live re-admission without replaying its mutation', async () => {
     let finish!: (response: Response) => void; let scopes = 0;
     const mock = vi.fn(async (path: string, options?: RequestInit) => {

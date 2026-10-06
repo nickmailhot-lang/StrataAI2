@@ -3,6 +3,8 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationInvitationHistoryPage, BoardInvitationHistoryPage } from './OrganizationInvitationHistoryPage';
 const live = vi.hoisted(() => ({ watch: vi.fn() }));
 vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.watch }));
+const boardLive = vi.hoisted(() => ({ watch: vi.fn() }));
+vi.mock('../../api/boardLive', () => ({ watchBoard: boardLive.watch }));
 
 const org = '10000000-0000-0000-0000-000000000001';
 const profile = { id: '40000000-0000-4000-8000-000000000004', locale: 'en-CA', timezone: 'Pacific/Honolulu' };
@@ -29,7 +31,8 @@ function fetcher(...responses: (Response | Error)[]) {
 }
 async function review() { fireEvent.click(await screen.findByRole('button', { name: `Revoke invitation for ${row.email}` })); await screen.findByRole('dialog'); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
-beforeEach(() => { currentProfile = profile; live.watch.mockReset(); live.watch.mockReturnValue(() => {}); });
+beforeEach(() => { currentProfile = profile; live.watch.mockReset(); live.watch.mockReturnValue(() => {});
+  boardLive.watch.mockReset(); boardLive.watch.mockReturnValue(() => {}); });
 async function invalidate() { await act(async () => { live.watch.mock.calls.at(-1)![0].invalidate(); }); }
 
 it('retires reviewed revocation consent and reloads newly issued invitations after a live source', async () => {
@@ -149,6 +152,18 @@ function boardMount() {
   return render(<RouterProvider router={createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId/invitations', element: <BoardInvitationHistoryPage /> }],
     { initialEntries: [`/app/${org}/boards/${board}/invitations`] })} />);
 }
+it('withdraws Board invitation history and revocation consent when heartbeat admission loses administration', async () => {
+  let withdrawn = false;
+  const mock = vi.fn(async (path: string) => reply(path === '/me' ? profile : path === `/boards/${board}`
+    ? { ...boardScope, access: { canAdminister: !withdrawn } } : { items: [boardRow], nextCursor: null }));
+  vi.stubGlobal('fetch', mock); boardMount(); await review();
+  withdrawn = true; await act(async () => boardLive.watch.mock.calls[0][0].status('live'));
+  await screen.findByText('Board invitation administration is unavailable.');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.queryByText(row.email)).not.toBeInTheDocument();
+  expect(screen.queryByText('Private maintenance')).not.toBeInTheDocument();
+  expect(live.watch).not.toHaveBeenCalled();
+});
 it('shows the exact Board role and recovers a lost revocation from canonical history', async () => {
   const mock = fetcher(reply(profile), reply(boardScope), reply({ items: [boardRow], nextCursor: null }), new Error('Lost committed acknowledgment'),
     reply(profile), reply(boardScope), reply({ items: [{ ...boardRow, revokedAt: '2034-01-02T00:00:00Z' }], nextCursor: null }));

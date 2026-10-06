@@ -99,6 +99,32 @@ allows either direct transport uncertainty or live re-admission of that same sav
 unknown request while still requiring exactly one committed first write. Bootstrap
 reset is awaited before entering a new draft. Native execution remains pending.
 
+## Board administration rechecks
+
+Board invitation creation and history now observe the existing Board-scoped Work
+stream, then re-read their own protected Board administration endpoints. Work read
+access alone never grants invitation authority. Content changes, reset/recovery and
+interrupted delivery retire creation consent or reviewed revocation and queue
+current admission. The existing generation fences preserve unresolved creation or
+revocation recovery while blocking old results from restoring controls.
+
+An unchanged-content live heartbeat also queues an administrative check. Creation
+keeps an untouched unsubmitted draft through that check and disables submission
+while it runs; unchanged authority restores its usability. Refused/unconfirmed
+authority clears private content. History rechecks its exact Board scope and rows
+and requires a fresh revocation review. The protected reads retain their current
+account checks; another account cannot inherit a prior Board review.
+
+Component checks cover losing administration despite remaining Board read access,
+private history/consent withdrawal and unchanged creation-draft preservation.
+The native fixture enrolls an actual Organization Member, grants Board Admin,
+opens both invitation views, then demotes to Board Member. It requires ordinary
+Board reads to remain successful with `canAdminister=false`, both administration
+views to withdraw without reload/mutation, and accessible neutral UI at both widths.
+Exact-image execution remains pending. These scoped Work/heartbeat checks do not
+claim canonical Board invitation creation/revocation event publication or complete
+recipient/history lifecycle coverage; those are separate remaining requirements.
+
 `POST /organizations/{organizationId}/invitations` accepts an optional nonempty UUID `Idempotency-Key`. A keyed request acknowledges the original invitation ID, email, surface, role and expiry; its `invitationToken` is null in every runtime mode. Unkeyed Demo requests retain the existing bearer-token fixture behavior. Production never returns the bearer token.
 
 The existing Organization unit of work locks the active parent and actor membership before invitation creation or replay. Current session/account eligibility and administrative role are authoritative; only a current Owner can acknowledge an internal Owner grant. Normalized email, surface and role bind the key to the original command. Different intent receives `409 idempotency_key_reused`; a receipt older than 24 hours receives `409 idempotency_key_expired`. Expired keys remain reserved, so an old request cannot create a replacement invitation. Malformed, multiple and empty keys fail with `400 invalid_idempotency_key`.

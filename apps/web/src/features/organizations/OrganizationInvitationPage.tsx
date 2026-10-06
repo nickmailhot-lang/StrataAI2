@@ -6,6 +6,7 @@ import { formatUserDateTime } from '../auth/userDateTime';
 import { invitationIntentKey, invitationRoles, readInvitationIntent, saveInvitationIntent, validInvitationKey } from './invitationIntent';
 import type { InvitationInput, InvitationIntent } from './invitationIntent';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
+import { watchBoard } from '../../api/boardLive';
 
 type Ack = { id: string; organizationId: string; email: string; surface: string; targetRole: string; expiresAt: string; invitationToken: null; boardTarget?: { boardId: string; role: string } | null };
 const empty: InvitationInput = { email: '', surface: 'INTERNAL', targetRole: 'MEMBER' };
@@ -43,23 +44,32 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   const confirmed = useRef<{ actor: string; command: InvitationIntent; acknowledgment: Ack } | undefined>(undefined);
   const [liveActor, setLiveActor] = useState<string>(); const [liveNotice, setLiveNotice] = useState<string>();
   const epoch = useRef(0); const refreshQueued = useRef(false); const [reload, setReload] = useState(0);
+  const quietCheck = useRef(false);
   useEffect(() => {
     mounted.current = true; void load();
     return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; };
     // Organization changes remount the keyed route and fence late results.
   }, []);
   useEffect(() => {
-    if (boardId !== undefined || !liveActor) return;
+    if (!liveActor) return;
     const recover = () => {
-      epoch.current++; refreshQueued.current = true; withdrawAccount(true);
+      epoch.current++; refreshQueued.current = true; quietCheck.current = false; withdrawAccount(true);
       setLiveNotice('Checking current invitation permissions. The original request is preserved.');
       setReload(value => value + 1);
     };
+    if (boardId !== undefined) return watchBoard({ organizationId, boardId, invalidate: recover,
+      // Even unchanged content heartbeats must recheck administrative authority.
+      // Read access to a Board alone does not authorize invitation issuance.
+      status: status => {
+        if (status === 'live') {
+          if (!refreshQueued.current) { refreshQueued.current = true; quietCheck.current = true; setReload(value => value + 1); }
+        } else if (status !== 'connecting') recover();
+      } });
     return watchOrganizationMetadata({ organizationId, userId: liveActor, invalidate: recover, reset: recover, unavailable: recover });
   }, [organizationId, boardId, liveActor]);
   useEffect(() => {
     if (!refreshQueued.current || busy) return;
-    refreshQueued.current = false; void load();
+    refreshQueued.current = false; const preserveDisplay = quietCheck.current; quietCheck.current = false; void load(preserveDisplay);
   }, [reload, busy]);
   function valid(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
   function withdrawAccount(preserveConfirmed = false) {
@@ -91,10 +101,13 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       throw reason;
     }
   }
-  async function load() {
+  async function load(preserveDisplay = false) {
     const controller = begin(); if (!controller) return;
     const started = epoch.current;
-    setBoardName(undefined); setActorRole(undefined); setAck(undefined); setInput(empty); setIntent(undefined); currentIntent.current = undefined;
+    const hadIntent = !!currentIntent.current;
+    if (!preserveDisplay) {
+      setBoardName(undefined); setActorRole(undefined); setAck(undefined); setInput(empty); setIntent(undefined); currentIntent.current = undefined;
+    }
     try {
       const me = await request('/me', {}, controller); if (!valid(controller)) return;
       if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
@@ -142,11 +155,18 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
             setAck(known.acknowledgment); setError(undefined);
           } else {
             confirmed.current = undefined;
+            setAck(undefined);
             setError('A prior invitation request is awaiting acknowledgment. Retry that same request before starting another.');
           }
-        } else confirmed.current = undefined;
+        } else {
+          confirmed.current = undefined; setAck(undefined); setIntent(undefined); currentIntent.current = undefined;
+          if (hadIntent) setInput(empty);
+        }
       } catch { setBlocked(true); setError('The saved invitation request cannot be read. Review existing invitations before creating another request.'); }
-    } catch { if (mounted.current && pending.current === controller && started === epoch.current) setError('Unable to verify current invitation permissions. Please retry.'); }
+    } catch { if (mounted.current && pending.current === controller && started === epoch.current) {
+      if (preserveDisplay) { withdrawAccount(); setLiveActor(undefined); }
+      setError('Unable to verify current invitation permissions. Please retry.');
+    } }
     finally { finish(controller); }
   }
   async function create(event: React.FormEvent) {
