@@ -46,7 +46,9 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) for (
       } else expect(acknowledgment).toEqual(original);
       await route.fulfill({ response });
     });
-    await page.goto(path); await page.getByLabel(/^Invitation email/).fill(email);
+    await page.goto(path);
+    if (!boardSurface) await expect(page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
+    await page.getByLabel(/^Invitation email/).fill(email);
     await page.getByRole('button', { name: 'Create invitation', exact: true }).focus(); await page.keyboard.press('Enter');
     if (fault === 'replacement') await expect(page).toHaveURL(/\/login(?:\?|$)/);
     else {

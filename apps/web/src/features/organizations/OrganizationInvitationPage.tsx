@@ -40,6 +40,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   const pending = useRef<AbortController | undefined>(undefined); const currentIntent = useRef<InvitationIntent | undefined>(undefined);
   const mounted = useRef(false);
   const reviewedActor = useRef<string | undefined>(undefined);
+  const confirmed = useRef<{ actor: string; command: InvitationIntent; acknowledgment: Ack } | undefined>(undefined);
   const [liveActor, setLiveActor] = useState<string>(); const [liveNotice, setLiveNotice] = useState<string>();
   const epoch = useRef(0); const refreshQueued = useRef(false); const [reload, setReload] = useState(0);
   useEffect(() => {
@@ -50,7 +51,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   useEffect(() => {
     if (boardId !== undefined || !liveActor) return;
     const recover = () => {
-      epoch.current++; refreshQueued.current = true; withdrawAccount();
+      epoch.current++; refreshQueued.current = true; withdrawAccount(true);
       setLiveNotice('Checking current invitation permissions. The original request is preserved.');
       setReload(value => value + 1);
     };
@@ -61,7 +62,8 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     refreshQueued.current = false; void load();
   }, [reload, busy]);
   function valid(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
-  function withdrawAccount() {
+  function withdrawAccount(preserveConfirmed = false) {
+    if (!preserveConfirmed) confirmed.current = undefined;
     reviewedActor.current = undefined;
     setStorageKey(undefined); setBoardName(undefined); setActorRole(undefined); setInput(empty); setIntent(undefined);
     currentIntent.current = undefined; setAck(undefined); setPreferences(undefined); setDenied(false);
@@ -131,7 +133,18 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       try {
         const saved = readInvitationIntent(key);
         if (saved && boardId !== undefined && (saved.input.surface !== 'INTERNAL' || !['ADMIN', 'MEMBER'].includes(saved.input.targetRole))) throw new Error('Invalid Board intent');
-        if (saved) { setIntent(saved); currentIntent.current = saved; setInput(saved.input); setError('A prior invitation request is awaiting acknowledgment. Retry that same request before starting another.'); }
+        if (saved) {
+          setIntent(saved); currentIntent.current = saved; setInput(saved.input);
+          const known = confirmed.current;
+          if (known?.actor === actor && known.command.key === saved.key
+            && known.command.input.email === saved.input.email && known.command.input.surface === saved.input.surface
+            && known.command.input.targetRole === saved.input.targetRole) {
+            setAck(known.acknowledgment); setError(undefined);
+          } else {
+            confirmed.current = undefined;
+            setError('A prior invitation request is awaiting acknowledgment. Retry that same request before starting another.');
+          }
+        } else confirmed.current = undefined;
       } catch { setBlocked(true); setError('The saved invitation request cannot be read. Review existing invitations before creating another request.'); }
     } catch { if (mounted.current && pending.current === controller && started === epoch.current) setError('Unable to verify current invitation permissions. Please retry.'); }
     finally { finish(controller); }
@@ -168,6 +181,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
           : data.targetRole === command.input.targetRole && data.boardTarget == null)
         && typeof data.expiresAt === 'string' && preferences && !!formatUserDateTime(data.expiresAt, preferences)) {
         setAck(data); setError(undefined);
+        confirmed.current = { actor: expected, command, acknowledgment: data };
         // Keep the confirmed intent reserved until the person explicitly starts
         // another invitation. Reload can safely recover this acknowledgment.
         return;
@@ -188,6 +202,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     if (busy || !ack || !storageKey) return;
     try { sessionStorage.removeItem(storageKey); }
     catch { setError('Unable to clear the confirmed request. Please reload before creating another.'); return; }
+    confirmed.current = undefined;
     setAck(undefined); setIntent(undefined); currentIntent.current = undefined; setInput(empty); setError(undefined);
   }
   const locked = busy || !!intent || blocked || !!ack;

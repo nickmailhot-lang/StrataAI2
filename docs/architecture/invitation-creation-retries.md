@@ -80,6 +80,25 @@ accessibility at both widths. Exact-image execution remains required. This cover
 the Organization creation surface; Board-specific invitation lifecycle and broader
 recipient/history updates still require their own coverage.
 
+A creation already acknowledged by a validated HTTP 201 is retained privately
+within that mounted page during live reconciliation. It is displayed again only
+after fresh account/administrative admission and an exact match to the original
+stored key and email/surface/role. This preserves a known historical result rather
+than falsely calling it unresolved or automatically replaying POST. Pending or
+changed requests still require explicit same-key recovery. Account denial or
+unconfirmed profile clears the retained acknowledgment; choosing another invitation
+also clears it. It is never persisted as response JSON or treated as proof of
+delivery, current grant validity or current membership.
+
+Component cases verify restoration after an intervening permission read with only
+one POST, changed stored input refusal, replacement-account withdrawal and explicit
+new-request cleanup. The native keyboard case waits for an actual ready membership
+source after recipient acceptance and a subsequent permission read, then requires
+the existing acknowledgment with no additional POST. Its uncertain-response branch
+allows either direct transport uncertainty or live re-admission of that same saved
+unknown request while still requiring exactly one committed first write. Bootstrap
+reset is awaited before entering a new draft. Native execution remains pending.
+
 `POST /organizations/{organizationId}/invitations` accepts an optional nonempty UUID `Idempotency-Key`. A keyed request acknowledges the original invitation ID, email, surface, role and expiry; its `invitationToken` is null in every runtime mode. Unkeyed Demo requests retain the existing bearer-token fixture behavior. Production never returns the bearer token.
 
 The existing Organization unit of work locks the active parent and actor membership before invitation creation or replay. Current session/account eligibility and administrative role are authoritative; only a current Owner can acknowledge an internal Owner grant. Normalized email, surface and role bind the key to the original command. Different intent receives `409 idempotency_key_reused`; a receipt older than 24 hours receives `409 idempotency_key_expired`. Expired keys remain reserved, so an old request cannot create a replacement invitation. Malformed, multiple and empty keys fail with `400 invalid_idempotency_key`.

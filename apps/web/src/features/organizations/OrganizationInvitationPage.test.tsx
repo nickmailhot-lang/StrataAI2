@@ -39,6 +39,42 @@ async function submit() { fireEvent.change(await screen.findByLabelText(/^Invita
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); sessionStorage.clear(); });
 beforeEach(() => { live.watch.mockClear(); });
 describe('Administrator invitation intent and creation acknowledgment', () => {
+  it('restores an already confirmed creation after live re-admission without replaying its mutation', async () => {
+    let finish!: (response: Response) => void; let scopes = 0;
+    const mock = vi.fn(async (path: string, options?: RequestInit) => {
+      if (path === '/me') return reply(profile);
+      if (options?.method === 'POST') return reply(ack, 201);
+      if (++scopes === 2) return new Promise<Response>(resolve => { finish = resolve; });
+      return reply(admission);
+    });
+    vi.stubGlobal('fetch', mock); mount(); await submit(); await screen.findByText('Invitation creation acknowledged.');
+    act(() => live.watch.mock.calls[0][0].invalidate());
+    expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+    expect(screen.queryByText(input.email)).not.toBeInTheDocument();
+    await waitFor(() => expect(finish).toBeDefined()); await act(async () => finish(reply(admission)));
+    await screen.findByText('Invitation creation acknowledged.');
+    expect(screen.queryByText(/prior invitation request is awaiting acknowledgment/)).not.toBeInTheDocument();
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Create another invitation' }));
+    act(() => live.watch.mock.calls[0][0].invalidate());
+    await screen.findByText('Current invitation permissions checked. Review the request before submitting.');
+    expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+  });
+  it('does not restore known creation for changed stored intent or a replacement account', async () => {
+    let current = profile;
+    const mock = vi.fn(async (path: string, options?: RequestInit) => reply(path === '/me' ? current
+      : options?.method === 'POST' ? ack : admission, options?.method === 'POST' ? 201 : 200));
+    vi.stubGlobal('fetch', mock); mount(); await submit(); await screen.findByText('Invitation creation acknowledged.');
+    const saved = JSON.parse(sessionStorage.getItem(storedKey)!);
+    sessionStorage.setItem(storedKey, JSON.stringify({ ...saved, input: { ...saved.input, email: 'changed@example.test' } }));
+    act(() => live.watch.mock.calls[0][0].invalidate());
+    await screen.findByText(/prior invitation request is awaiting acknowledgment/);
+    expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+    current = { ...profile, id: ack.id }; act(() => live.watch.mock.calls[0][0].invalidate());
+    await screen.findByText('Sign in destination');
+    expect(screen.queryByDisplayValue('changed@example.test')).not.toBeInTheDocument();
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
+  });
   it('retires an unsubmitted grant draft after a canonical change and rechecks current authority', async () => {
     vi.stubGlobal('fetch', vi.fn(async (path: string) => reply(path === '/me' ? profile : admission)));
     mount(); await screen.findByLabelText(/^Invitation email/);
