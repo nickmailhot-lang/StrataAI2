@@ -58,7 +58,7 @@ CI run `37407613926` exposed the prior mismatch: the required list contained
 was rejected before restricted search traversal. The corrected check preserves
 fail-closed handling for unavailable ledgers and missing privileges.
 `RuntimeSchemaReadinessContract` runs in the mandatory PostgreSQL contract job
-using the restricted API login. It checks complete-ledger admission, refusal when
+using both restricted API and Worker logins. It checks complete-ledger admission, refusal when
 foundation or navigation entries are temporarily hidden by the fixture admin,
 and recovery after each entry is restored. Fixture mutations are confined to the
 disposable CI database and restored in `finally`. Compilation passed with zero

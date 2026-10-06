@@ -2,13 +2,16 @@ using Npgsql;
 using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Persistence;
 
-// ARCH-04/11: prove readiness against the real migration ledger using the restricted API login.
+// ARCH-04/11: prove readiness against the real migration ledger using restricted API and Worker logins.
 internal static class RuntimeSchemaReadinessContract
 {
-    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
+    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, CancellationToken ct)
     {
-        var factory = new PostgresConnectionFactory(apiConnection);
-        await using (var complete = await factory.OpenConnectionAsync(ct)) { }
+        await using var api = new PostgresConnectionFactory(apiConnection);
+        await using var worker = new PostgresConnectionFactory(workerConnection);
+        var factories = new[] { api, worker };
+        foreach (var factory in factories)
+        { await using var complete = await factory.OpenConnectionAsync(ct); }
         foreach (var version in new[] { "001_foundation", "078_navigation_interaction_sources", "081_navigation_original_recovery" })
         {
             var hidden = $"contract_missing_{Guid.NewGuid():N}";
@@ -17,10 +20,13 @@ internal static class RuntimeSchemaReadinessContract
             if (await hide.ExecuteNonQueryAsync(ct) != 1) throw new InvalidOperationException("Required migration fixture was absent.");
             try
             {
-                var rejected = false;
-                try { await using var connection = await factory.OpenConnectionAsync(ct); }
-                catch (RuntimeDatabaseSchemaException) { rejected = true; }
-                if (!rejected) throw new InvalidOperationException("Restricted runtime admitted an incomplete migration ledger.");
+                foreach (var factory in factories)
+                {
+                    var rejected = false;
+                    try { await using var connection = await factory.OpenConnectionAsync(ct); }
+                    catch (RuntimeDatabaseSchemaException) { rejected = true; }
+                    if (!rejected) throw new InvalidOperationException("Restricted runtime admitted an incomplete migration ledger.");
+                }
             }
             finally
             {
@@ -29,8 +35,9 @@ internal static class RuntimeSchemaReadinessContract
                 if (await restore.ExecuteNonQueryAsync(CancellationToken.None) != 1)
                     throw new InvalidOperationException("Migration readiness fixture could not restore the ledger.");
             }
-            await using var recovered = await factory.OpenConnectionAsync(ct);
+            foreach (var factory in factories)
+            { await using var recovered = await factory.OpenConnectionAsync(ct); }
         }
-        Console.WriteLine("Restricted runtime schema readiness: complete ledger accepted, missing foundation/navigation migrations refused, restored ledger recovered.");
+        Console.WriteLine("Restricted API/Worker schema readiness: complete ledger accepted, missing foundation/navigation migrations refused, restored ledger recovered.");
     }
 }
