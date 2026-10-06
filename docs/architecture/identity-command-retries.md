@@ -48,5 +48,20 @@ restored Card assignment/version. Fresh same-key revocation must then succeed,
 and a matching acknowledgment must not repeat its Identity event. The test clock
 uses a guarded synchronous observation because the Demo receipt reader checks
 expiry through that same clock. Production clock/provider behavior is unchanged.
-Native API-host execution and exact-image post-publication revocation coverage
-remain pending; compilation is not runtime acceptance. Full PRD-02 remains open.
+Native API-host execution and the required exact-image publication-wait checks
+described below remain pending; compilation is not runtime acceptance. Full PRD-02 remains open.
+
+The required revocation release fixture now covers both logout and deactivation
+expiry during an actual receipt-publication wait. It shortens the primary
+session's remaining lifetime to ten seconds and installs an ephemeral invoker
+trigger that pauses receipt insertion for twelve seconds. It requires an observed
+restricted API connection in `PgSleep` on the receipt INSERT, then 401 with
+`session_unavailable`, no cookie/account disclosure and unchanged complete
+user/session/audit/Identity-event/receipt state. It removes the trigger, restores
+the exact original session expiry, checks the original snapshot again, and runs
+existing concurrent same-key success/replay checks with the original cookie jar.
+These accounts have no Organization assignment state; cross-module assignment
+rollback is covered separately by the source regressions and awaits native proof.
+Exit cleanup removes the trigger/function. This CI-only fault injection changes no
+production migration or runtime policy. Bash syntax passes; execution remains
+pending against the exact release images.

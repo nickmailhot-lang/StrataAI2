@@ -7,7 +7,7 @@ pids=()
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 cleanup() {
   for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
-  admin 'GRANT INSERT ON audit_events,identity_events,identity_revocation_replays TO strataai_api_runtime;' >/dev/null
+  admin 'DROP TRIGGER IF EXISTS ci_revocation_receipt_wait ON identity_revocation_replays; DROP FUNCTION IF EXISTS public.ci_revocation_receipt_wait(); GRANT INSERT ON audit_events,identity_events,identity_revocation_replays TO strataai_api_runtime;' >/dev/null
   rm -rf "$scratch"
 }
 trap cleanup EXIT
@@ -44,6 +44,36 @@ for operation in LOGOUT DEACTIVATE; do
     test "$before" = "$(state)"
     admin "GRANT INSERT ON $table TO strataai_api_runtime;" >/dev/null
   done
+  # The primary login precedes the other login. Expire that original proof
+  # during a real, observed wait after acknowledgment receipt insertion.
+  primary_session="$(admin "SELECT id FROM sessions WHERE user_id='$user' ORDER BY created_at,id LIMIT 1;")"
+  original_expiry="$(admin "SELECT expires_at FROM sessions WHERE id='$primary_session';")"
+  admin "CREATE FUNCTION public.ci_revocation_receipt_wait() RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER AS \$\$
+  BEGIN
+    IF NEW.user_id='$user'::uuid THEN PERFORM pg_sleep(12); END IF;
+    RETURN NEW;
+  END;
+  \$\$;
+  CREATE TRIGGER ci_revocation_receipt_wait AFTER INSERT ON identity_revocation_replays
+    FOR EACH ROW EXECUTE FUNCTION public.ci_revocation_receipt_wait();" >/dev/null
+  admin "UPDATE sessions SET expires_at=clock_timestamp()+interval '10 seconds' WHERE id='$primary_session';" >/dev/null
+  publication_before="$(state)"
+  request "$path" "$key" > "$scratch/publication-status" &
+  pending=$!; pids+=("$pending")
+  for attempt in $(seq 1 100); do
+    if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_revocation_replays%';")" = 1; then break; fi
+    sleep 0.1
+  done
+  test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_revocation_replays%';")" = 1
+  wait "$pending"; pids=()
+  test "$(cat "$scratch/publication-status")" = 401
+  jq -e '.code=="session_unavailable"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
+  scripts/ci/assert-file-excludes.sh "$user" "$scratch/response"
+  test "$publication_before" = "$(state)"
+  admin 'DROP TRIGGER ci_revocation_receipt_wait ON identity_revocation_replays; DROP FUNCTION public.ci_revocation_receipt_wait();' >/dev/null
+  admin "UPDATE sessions SET expires_at='$original_expiry'::timestamptz WHERE id='$primary_session';" >/dev/null
+  test "$before" = "$(state)"
   # Retain the original cookie jar: these simulate lost acknowledgments, not fresh logins.
   for n in 1 2 3; do
     curl --max-time 60 --silent --show-error -b "$scratch/primary.cookies" -H 'X-StrataAI-Request: 1' \
