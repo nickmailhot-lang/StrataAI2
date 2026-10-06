@@ -30,6 +30,7 @@ public sealed partial class ApiHostTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => store.AppendAuthorizedAsync(source, ct));
         async Task<IdentityOperation<bool>> Append(NavigationInteractionEvent candidate) => await unit.ExecuteAsync(candidate.ActorId,
             async () => IdentityOperation<bool>.Success(await store.AppendAuthorizedAsync(candidate, ct)), ct);
+        Assert.True((await Append(NavigationInteractionEvent.ApplicationContextChanged(Guid.NewGuid(), actor, org, at))).Value);
         Assert.True((await Append(source)).Value);
         Assert.True((await Append(source)).Value);
         Assert.False((await Append(NavigationInteractionEvent.BoardOpened(source.EventId, actor, org, board.Id, board.Version, at.AddSeconds(1)))).Value);

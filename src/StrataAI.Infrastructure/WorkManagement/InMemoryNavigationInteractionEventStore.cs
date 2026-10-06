@@ -8,7 +8,7 @@ namespace StrataAI.Infrastructure.WorkManagement;
 // Demo only. Identity rollback owns private originals; tenant read boundaries
 // recheck current target admission without changing Board or Card revisions.
 internal sealed class InMemoryNavigationInteractionEventStore(DemoIdentityTransactionScope scope,
-    IIdentityStore identities, IOrganizationStore organizations, IOrganizationUnitOfWork organizationTransactions,
+    IIdentityStore identities, IOrganizationStore organizations,
     IWorkManagementStore work, IWorkManagementUnitOfWork transactions)
     : INavigationInteractionEventStore, IDemoIdentityTransactionParticipant
 {
@@ -23,14 +23,11 @@ internal sealed class InMemoryNavigationInteractionEventStore(DemoIdentityTransa
         try {
             if (source.OrganizationId is not { } org) return Append(source);
             if (source.BoardId is not { } board) {
-                var result = await organizationTransactions.ExecuteAsync(org, source.ActorId, null, false, async () => {
-                    if (await organizations.FindOrganizationAsync(org, ct) is not { Status: OrganizationStatus.Active }
-                        || await organizations.FindMembershipAsync(org, source.ActorId, ct) is not { Active: true })
-                        return OrganizationOperation<bool>.Failure("organization_unavailable");
-                    return OrganizationOperation<bool>.Success(Append(source));
-                }, ct);
-                if (!result.Succeeded) { rollback(); return false; }
-                return result.Value;
+                // The owning identity transaction already holds the shared
+                // account/Organization gate; reacquiring it would deadlock.
+                if (await organizations.FindOrganizationAsync(org, ct) is not { Status: OrganizationStatus.Active }
+                    || await organizations.FindMembershipAsync(org, source.ActorId, ct) is not { Active: true }) return false;
+                return Append(source);
             }
             async Task<bool> Admitted() {
                 if (!await work.AcquireBoardReadScopeAsync(org, source.ActorId, board, ct)
