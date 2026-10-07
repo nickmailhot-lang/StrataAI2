@@ -168,6 +168,27 @@ compiled/cached-runtime execution does not prove current retained images, separa
 Worker/browser delivery or full endpoint/concurrent parent-withdrawal acceptance.
 Estimated remaining work stays 15%; performance and accessibility remain required.
 
+## Deleted-parent sibling receipt coverage
+
+The complete restricted PostgreSQL permission-recovery script now also passes
+comment, checklist and URL-attachment creation/recovery for PRIVATE, ORGANIZATION
+and PUBLIC Boards. Each child command commits under current member admission and
+its exact original acknowledgment replays byte-for-byte without further effects.
+After permanent List deletion, both the original intent/key and a fresh intent
+using the current Card version return HTTP 404 with the endpoint's stable neutral
+code. Responses exclude the private child content. Exact Board/List/Card/member,
+child rows and stream snapshots, plus audit/event/job/receipt counts, remain
+unchanged after every refusal. The retained Card reaches version 7 with one child
+of each tested type; this extends the earlier version-4 edit/restore fixture.
+
+The first fixture execution incorrectly expected HTTP 201 for the child endpoints;
+their established contract is HTTP 200. After correcting that assertion, the full
+three-visibility invocation passes with exit code 0. No production policy or API
+code changed. This proves local compiled Production API/restricted PostgreSQL
+behavior, not current retained-image, separate Worker/browser or concurrent
+withdrawal acceptance. The mandatory build-once CI script includes these checks.
+PRD-05 remains open at **15% estimated work remaining**, a planning estimate.
+
 ## Current local shared performance gaps
 
 The [2026-10-07 desktop/phone diagnostic](../kanban-performance.md#local-desktop-and-phone-diagnostic-2026-10-07)

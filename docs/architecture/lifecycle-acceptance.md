@@ -23,6 +23,19 @@ estimated work remaining, a planning estimate.
 
 ## Existing lifecycle evidence
 
+### Deleted-parent comment, checklist and URL receipts
+
+The [sibling receipt coverage](prd-05-acceptance.md#deleted-parent-sibling-receipt-coverage)
+passes the complete real PostgreSQL permission-recovery invocation across all three
+Board visibilities. Original child creation receipts recover unchanged before List
+deletion; original receipts and fresh current-version commands are withheld after
+deletion, without private content or persistence effects. The script compares
+retained child rows as well as parent, stream, audit/event/job and receipt state.
+The disposable API is removed after execution; existing services and volumes are
+preserved. This extends TC-07/10 coverage without changing lifecycle policy or
+claiming full current-image/concurrency/browser acceptance. PRD-18 stays open at
+**22% estimated work remaining**, a planning estimate.
+
 Current source audit after deletion attribution and archive observation integration. PRD-18 remains open. Compilation, component tests, source fixtures and queued CI do not prove the complete runtime gate.
 
 Both complete desktop/phone Board lifecycle native cases now pass locally after

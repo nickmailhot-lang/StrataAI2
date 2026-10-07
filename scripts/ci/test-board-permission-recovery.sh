@@ -27,6 +27,9 @@ effects() {
    'board',(SELECT to_jsonb(b) FROM boards b WHERE id='$board'),
    'list',(SELECT to_jsonb(l) FROM board_lists l WHERE id='$list'),
    'card',(SELECT to_jsonb(c) FROM cards c WHERE id='$card'),
+   'checklists',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM checklists c WHERE card_id='$card'),
+   'attachments',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM attachments a WHERE card_id='$card'),
+   'comments',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM card_comments c WHERE card_id='$card'),
    'member',(SELECT to_jsonb(m) FROM board_members m WHERE board_id='$board' AND user_id='$member'),
    'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
    'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
@@ -139,10 +142,39 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
   test "$(request owner POST "/cards/$card/archive" '{"version":2}')" = 200
   restore_key=$(key)
   test "$(request member POST "/cards/$card/restore" '{"version":3}' "$restore_key")" = 200
+  # Each sibling receipt first commits and replays under current admission.
+  # Retain its exact original intent for replay after parent deletion.
+  declare -A child_paths child_bodies child_keys child_codes
+  for child in comment checklist attachment; do
+    version=$(admin "SELECT version FROM cards WHERE id='$card';")
+    case "$child" in
+      comment) path="/cards/$card/comments"; child_body=$(jq -nc --argjson v "$version" '{content:"Private deleted-parent sibling",cardVersion:$v}'); code=comment_not_found;;
+      checklist) path="/cards/$card/checklists"; child_body=$(jq -nc --argjson v "$version" '{title:"Private deleted-parent sibling",cardVersion:$v}'); code=card_not_found;;
+      attachment) path="/cards/$card/attachments/url"; child_body=$(jq -nc --argjson v "$version" '{title:"Private deleted-parent sibling",url:"https://example.test/deleted-parent",cardVersion:$v}'); code=card_not_found;;
+    esac
+    child_paths[$child]=$path; child_bodies[$child]=$child_body; child_keys[$child]=$(key); child_codes[$child]=$code
+    test "$(request member POST "$path" "$child_body" "${child_keys[$child]}")" = 200
+    cp "$scratch/response" "$scratch/$child.receipt"
+    committed=$(effects)
+    test "$(request member POST "$path" "$child_body" "${child_keys[$child]}")" = 200
+    cmp "$scratch/$child.receipt" "$scratch/response"; test "$committed" = "$(effects)"
+  done
+  current=$(admin "SELECT version FROM cards WHERE id='$card';")
   test "$(request owner POST "/lists/$list/archive" '{"version":1}')" = 200
   test "$(request owner DELETE "/lists/$list?version=2&confirmed=true&containedCardCount=1" '{}')" = 200
   deleted=$(effects)
-  jq -e '.list.lifecycle_state=="DELETED" and .list.version==3 and .card.lifecycle_state=="ACTIVE" and .card.version==4' <<< "$deleted" >/dev/null
+  jq -e --argjson v "$current" '.list.lifecycle_state=="DELETED" and .list.version==3 and .card.lifecycle_state=="ACTIVE" and .card.version==$v and (.comments|length)==1 and (.checklists|length)==1 and (.attachments|length)==1' <<< "$deleted" >/dev/null
+  for child in comment checklist attachment; do
+    fresh_body=$(jq -c --argjson v "$current" '.cardVersion=$v' <<< "${child_bodies[$child]}")
+    for retry in "${child_keys[$child]}" "$(key)"; do
+      denied_body=${child_bodies[$child]}
+      if test "$retry" != "${child_keys[$child]}"; then denied_body=$fresh_body; fi
+      test "$(request member POST "${child_paths[$child]}" "$denied_body" "$retry")" = 404
+      jq -e --arg code "${child_codes[$child]}" '.code==$code' "$scratch/response" >/dev/null
+      scripts/ci/assert-file-excludes.sh 'Private deleted-parent sibling' "$scratch/response"
+      test "$deleted" = "$(effects)"
+    done
+  done
   for command in edit restore; do
     method=PATCH; path="/cards/$card"; denied_body=$body; retry=$original
     if test "$command" = restore; then method=POST; path="/cards/$card/restore"; denied_body='{"version":3}'; retry=$restore_key; fi
@@ -151,9 +183,9 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
     scripts/ci/assert-file-excludes.sh 'Private deleted parent receipt' "$scratch/response"
     test "$deleted" = "$(effects)"
   done
-  test "$(request member PATCH "/cards/$card" '{"title":"Forbidden deleted-parent edit","version":4}')" = 404
+  test "$(request member PATCH "/cards/$card" "{\"title\":\"Forbidden deleted-parent edit\",\"version\":$current}")" = 404
   test "$deleted" = "$(effects)"
-  test "$(request member POST "/cards/$card/restore" '{"version":4}')" = 404
+  test "$(request member POST "/cards/$card/restore" "{\"version\":$current}")" = 404
   test "$deleted" = "$(effects)"
 done
 echo 'Board permission recovery: all three visibilities preserve refused-key recovery, original receipts, later state, revoked admission, archived-parent freezes, elevated restoration and deleted Card/parent receipt withholding.'
