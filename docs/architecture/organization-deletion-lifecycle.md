@@ -1,4 +1,4 @@
-# Organization deletion completion — implementation contract
+# Organization deletion completion â€” implementation contract
 
 [PRD-03](https://github.com/nickmailhot-lang/StrataAI2/issues/3) WS-FR-010,
 [PRD-18](https://github.com/nickmailhot-lang/StrataAI2/issues/19) and
@@ -244,8 +244,8 @@ It must preserve prior deletion/archive attribution and provider evidence. The r
 ## Atomic Worker deletion stages
 
 Migration `092_organization_deletion_pages` and the registered production
-`PostgresOrganizationDeletionPageStore` implement attachments → Cards → Lists →
-Boards → FINALIZE, using the existing 128-candidate handler and durable jobs.
+`PostgresOrganizationDeletionPageStore` implement attachments â†’ Cards â†’ Lists â†’
+Boards â†’ FINALIZE, using the existing 128-candidate handler and durable jobs.
 Each page locks its parent, validates the accepted request/current lease, and
 re-reads each source under Board/child locks before effects. It couples
 tombstones, selected cover/image cleanup, retained attribution, audit/events,
@@ -647,7 +647,25 @@ ready work events, one terminal, elapsed 2,425,361 ms and maximum leased page
 then failed at the explicit Linux-only private attachment download preparer;
 its exit code is 1 and its database is preserved. This confirms the deletion
 workload, not a complete local persistence pass. The local runner now executes
-Windows-launched contracts inside Linux; that fresh full run remains to verify.
+Windows-launched contracts inside Linux. The original fresh Linux run has now
+completed with exit code 0, including the Linux-only private attachment staging
+and the entire restricted persistence executable. The runner removed only its
+verified unique disposable database (`strataai-contract-9da760b57e314117a73170717ecf974c`);
+the earlier Windows-failure database remains preserved.
+
+The Linux run executed the unchanged `4f427d0` actual mutation contract: 826
+bounded mutation jobs, 105,201 ready work events and one ready terminal source,
+elapsed 1,746,827 ms and maximum leased page 1,279 ms. Restricted current
+Member/Owner lifecycle recovery passed against the original terminal source.
+The remaining executable checks also passed, including private preview/download
+staging, attachment lifecycle/upload/scan, cover/Board-image admission, directory,
+search, activity, comments/mentions, invitation-related source admission and
+identity/handle persistence. The host and copied Linux Release builds had zero
+warnings/errors. This is a full local restricted Linux persistence pass, distinct
+from the earlier Windows platform failure. It uses fixture accounts and handler
+execution against a disposable database; it still does not prove deployed Worker
+HTTP/browser consumption, external provider/backup purge or a green current-main
+release.
 The earlier
 100,000-archived-Card reference traversal remains valid as traversal evidence
 only. Neither fixture nor compilation closes PRD-03/18 on its own.
