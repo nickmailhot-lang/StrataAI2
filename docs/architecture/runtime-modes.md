@@ -169,3 +169,27 @@ Production never falls back to sample persistence.
 
 Both API and Worker expose safe runtime/build diagnostics and readiness. Environment-specific
 configuration remains outside container images.
+
+### Production API composition verification
+
+[Runtime composition tests](../../tests/StrataAI.Api.Tests/RuntimeCompositionTests.cs)
+boot the actual Production API with Development service validation and resolve
+23 implemented persistence/replay/job boundaries. Identity, Organization,
+invitation, Work, notification, watch, Reminder and background-job contracts must
+resolve the expected PostgreSQL implementations. No Demo catalog, Demo deletion
+simulation or Demo hosted service is registered. The normal Production identity
+policy remains invitation-based and requires verified email.
+
+A separately enabled Production mail case resolves the durable invitation
+publisher and shared identity/invitation token signer. The API does not resolve
+an email transport: actual provider sending remains in the separate Worker.
+Disabled optional mail also remains absent rather than selecting a Demo sender.
+
+Actual Production GET/DELETE catalog and POST reset requests return 404; safe
+runtime diagnostics still report Production. Missing, empty and unknown modes
+refuse actual API startup. All six cases pass with a zero-warning API/test build.
+The fixture uses an explicit unreachable database endpoint and does not replace
+stores, execute database commands or send email. These checks are registration,
+route and startup evidence; restricted PostgreSQL behavior, Worker/provider
+delivery, other future provider modules and current retained-image/full-release
+acceptance require their own evidence before ARCH-05 can close.
