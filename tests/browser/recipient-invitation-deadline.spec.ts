@@ -37,6 +37,9 @@ for (const width of [1280, 390]) {
         await route.fulfill({ response }).catch(() => {});
       });
       page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
+      // Isolate the aggregate HTTP deadline from actual invitation source
+      // invalidation, which independently withdraws an interrupted attempt.
+      await page.routeWebSocket('**/invitations/live*', socket => socket.close());
       await page.goto('/app/invitations');
       const accept = page.getByRole('button', { name: 'Accept invitation to Deadline Portal scope' }); await expect(accept).toBeEnabled();
       await page.clock.install(); holdProfile = true; await accept.focus(); await accept.press('Enter');

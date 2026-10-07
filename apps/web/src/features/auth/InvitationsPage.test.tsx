@@ -1,6 +1,12 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { InvitationsPage } from './InvitationsPage';
+import { watchInvitationRecipient } from './invitationRecipientLive';
+
+vi.mock('./invitationRecipientLive', () => ({ watchInvitationRecipient: vi.fn() }));
+beforeEach(() => {
+  vi.mocked(watchInvitationRecipient).mockImplementation(options => { options.invalidate('reset'); return () => {}; });
+});
 
 const invitation = { id: '11111111-1111-1111-1111-111111111111', organizationId: '22222222-2222-2222-2222-222222222222', organizationName: 'Council', surface: 'PORTAL', targetRole: 'OWNER', expiresAt: '2035-01-08T18:00:00Z' };
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });

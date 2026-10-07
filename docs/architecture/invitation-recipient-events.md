@@ -9,7 +9,8 @@ explicit cross-Organization routing relationship, like existing verified-email
 invitation discovery. It does not grant Organization, Board or Portal access and
 does not widen the Internal Organization or Board streams. Both runtime modes
 implement account-bound recipient replay and protected SignalR transport. The
-browser consumer remains unfinished.
+invitations page consumes it for actual invitation transitions; broader authority
+invalidation and native acceptance evidence remain incomplete.
 
 ## Source and atomicity
 
@@ -121,13 +122,13 @@ after 20 otherwise empty polls. Reconnection with the original protected cursor
 replays committed missed transitions; invalid or expired bindings require an
 empty reset and current protected discovery.
 
-This transport does not implement the browser's discovery, acceptance recovery,
-accessible announcement or parent/issuer authority invalidation workflow.
+The browser consumer below owns protected discovery and acceptance recovery.
+Parent/issuer authority invalidation remains a separate unfinished dependency.
 
 ## Browser transport boundary
 
-`invitationRecipientLive.ts` provides the cookie-authenticated WebSocket adapter;
-the invitations page does not consume it yet. It resumes the exact last admitted
+`invitationRecipientLive.ts` provides the cookie-authenticated WebSocket adapter
+consumed by the invitations page. It resumes the exact last admitted
 opaque cursor, fences late callbacks from a prior connection generation and
 backs off failed connection attempts. Initial/expired-cursor reset and actual
 transitions synchronously invalidate the consumer's consent. Reconnecting or
@@ -142,7 +143,7 @@ noncontiguous pages. It uses `bigint` for sequence checks. An opaque bootstrap
 head has no client-readable sequence; continuity starts at the first actual
 event after reset. Full pages remain bounded to 50 events, and resets must be
 empty. This validation cannot independently decode the account binding; the hub
-owns that binding and the future page consumer must freshly verify its reviewed
+owns that binding and the page consumer freshly verifies its reviewed
 account around protected discovery and acceptance.
 
 Thirty-five browser unit cases passed for this contract and adapter, including
@@ -153,6 +154,48 @@ cases additionally verify the actual server JSON at those large positions; all
 nine actual Demo socket cases pass with decimal-string sequences. These checks
 do not establish native browser consumption, accessible announcements or current
 exact-image end-to-end acceptance.
+
+## Protected page recovery
+
+The page waits for the captured stream head before initial protected discovery.
+A missing bootstrap is bounded to 15 seconds and enables ordinary protected
+HTTP recovery. Repeated transport failure callbacks coalesce so they cannot
+continually interrupt that recovery. Resets, actual transitions and reconnects
+withdraw old invitation labels, consent and acknowledgment links, abort obsolete
+reads and queue a current first-page discovery. The original reviewed account
+is checked around each read and each explicit command. A replacement account
+withdraws all display/recovery and returns to sign-in. No stream event directly
+grants Organization, Board or Portal admission.
+
+An event before a command is submitted withdraws that unsent consent. An event
+interrupting a submitted command keeps its original ID/acknowledgment fields in
+the generic recovery panel. Late responses cannot confirm it. Fresh protected
+discovery must finish before explicit same-ID retry; an empty pending page does
+not acknowledge acceptance and automatic recovery never POSTs. A live event can
+therefore arrive before a successful mutation response and require explicit
+confirmation of that original attempt.
+
+Changes use a polite, atomic live status without cached private labels. Focus is
+preserved on existing controls; if a withdrawn private invitation or acceptance
+link owned focus, it moves to the stable Refresh control. Refresh remains
+focusable with `aria-disabled` while a request is active; the existing in-flight
+guard refuses another request.
+
+All 88 affected component/adapter/contract cases pass, including seven page-live
+cases for bootstrap order, stale-read fencing, unsent/submitted acceptance,
+replacement accounts, bounded bootstrap/coalescing, cleanup and focus. Typecheck,
+lint and browser fixture typecheck pass. Two new desktop/mobile native cases use
+actual issuer/recipient API sessions, future Portal creation/revocation,
+disconnect-created source recovery, neutral socket fields, nonmember isolation,
+focus, accessibility and logout. They are collected but await exact-image
+execution. The aggregate HTTP deadline fixture explicitly closes this transport
+to isolate its deadline from earlier live invalidation.
+
+These changes cover future actual invitation transitions. Parent deletion,
+issuer role/access withdrawal, current names and other authority changes are not
+represented by this recipient source yet; protected discovery remains authoritative,
+but automatic invalidation for those dependencies and native concurrency/latency
+evidence must still be implemented or proven before ticket closure.
 
 ## Demo source parity
 
@@ -201,9 +244,8 @@ acceptance fixtures now compare recipient proof/journal/counter state during
 refusal and rollback, require canonical publication and no duplicate on receipt
 replay. Those exact-image assertions still require runtime execution.
 
-Remaining implementation includes browser bootstrap and missed-event recovery,
-client invalidation/accessible announcements and
-explicit original acceptance recovery. Parent/issuer authority changes and
+Remaining implementation includes complete parent/issuer authority invalidation
+and current native acceptance/concurrency/latency evidence. Parent/issuer authority changes and
 account/email changes require current protected discovery rather than assuming a
 creation event confers continuing access. Native two-client, disconnect, cookie
 withdrawal, Portal separation, keyboard/mobile and latency evidence remain

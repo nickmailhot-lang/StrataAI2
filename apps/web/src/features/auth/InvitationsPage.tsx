@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, CircularProgress, Container, Paper, Stack, Typography } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { watchInvitationRecipient, type InvitationRecipientInvalidation } from './invitationRecipientLive';
 
 type Invitation = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string; boardTarget?: { boardId: string; role: 'ADMIN' | 'MEMBER' } | null; boardName?: string | null };
 type Page = { items: Invitation[]; nextCursor: string | null };
@@ -57,6 +58,9 @@ export function InvitationsPage() {
   const [accountReady, setAccountReady] = useState(false);
   const epoch = useRef(0); const refreshQueued = useRef(false);
   const [reloadVersion, setReloadVersion] = useState(0);
+  const [connecting, setConnecting] = useState(true);
+  const [announcement, setAnnouncement] = useState('Connecting invitation updates.');
+  const refreshButton = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
   function valid(controller: AbortController) { return mounted.current && current.current === controller && !controller.signal.aborted; }
   async function verifyAccount(controller: AbortController, expected?: string) {
@@ -97,7 +101,7 @@ export function InvitationsPage() {
       if (response.status !== 200 || !validPage(response.body) || (after && response.body.nextCursor !== null && response.body.nextCursor.toLowerCase() <= after.toLowerCase())) throw new Error('Invalid invitation page');
       setPage(response.body);
     } catch (reason) {
-      if (mounted.current && current.current === controller) {
+      if (mounted.current && current.current === controller && started === epoch.current) {
         if (reason instanceof AccountUnavailable) withdrawAccount(reason.status);
         else setError('Unable to load invitations. Please refresh and try again.');
       }
@@ -108,11 +112,29 @@ export function InvitationsPage() {
   }
   useEffect(() => {
     mounted.current = true;
-    void load();
-    return () => { mounted.current = false; current.current?.abort(); current.current = undefined; };
-    // This owns the initial read; explicit refresh/paging owns subsequent reads.
+    let transport: InvitationRecipientInvalidation | undefined;
+    function invalidate(reason: InvitationRecipientInvalidation) {
+      if (!mounted.current) return;
+      clearTimeout(bootstrap); setConnecting(false);
+      // Repeated connection failures must not continually interrupt the same
+      // protected HTTP recovery. Actual resets/transitions always fence it.
+      if (reason === 'unavailable' && transport === reason) return;
+      transport = reason;
+      setAnnouncement(reason === 'change' ? 'Invitations changed. Checking current invitations.'
+        : reason === 'reset' ? 'Checking current invitations.'
+          : 'Live invitation updates interrupted. Checking current invitations.');
+      expire(); current.current?.abort();
+    }
+    const bootstrap = setTimeout(() => invalidate('unavailable'), 15_000);
+    const stop = watchInvitationRecipient({ invalidate });
+    return () => {
+      mounted.current = false; clearTimeout(bootstrap); stop(); current.current?.abort(); current.current = undefined;
+    };
+    // A captured stream head precedes protected discovery. Connection failure
+    // keeps explicit, bounded HTTP recovery available.
   }, []);
   function expire() {
+    if (document.activeElement?.closest('[data-invitation-disclosure]')) refreshButton.current?.focus();
     epoch.current++; refreshQueued.current = true;
     setPage(undefined); setAccepted(undefined); setAccountReady(false);
     setReloadVersion(value => value + 1);
@@ -137,6 +159,7 @@ export function InvitationsPage() {
   async function accept(invitation: Invitation) {
     if (current.current || !accountReady || !reviewedActor.current || (uncertain && uncertain.id !== invitation.id)) return;
     const actor = reviewedActor.current; let submitted = false;
+    const started = epoch.current;
     const controller = new AbortController(); current.current = controller;
     const deadline = setTimeout(() => controller.abort(), 15_000);
     setBusy(true); setError(undefined); setAccepted(undefined);
@@ -166,8 +189,10 @@ export function InvitationsPage() {
     } catch (reason) {
       if (mounted.current && current.current === controller) {
         if (submitted) { setUncertain(invitation); setPage(undefined); }
-        if (reason instanceof AccountUnavailable) withdrawAccount(reason.status);
-        else setError('Unable to confirm acceptance. You can retry this invitation safely.');
+        if (started === epoch.current) {
+          if (reason instanceof AccountUnavailable) withdrawAccount(reason.status);
+          else setError('Unable to confirm acceptance. You can retry this invitation safely.');
+        }
       }
     } finally {
       clearTimeout(deadline);
@@ -179,21 +204,22 @@ export function InvitationsPage() {
     <Button component={Link} to="/app">Organizations</Button>
     <Typography variant="h4" component="h1">Your invitations</Typography>
     <Typography>Invitations matching your verified email appear here.</Typography>
+    <Typography role="status" aria-live="polite" aria-atomic="true">{announcement}</Typography>
     {error && <Alert severity="error">{error}</Alert>}
-    {accepted && <Alert severity="success">Invitation to {accepted.organizationName} accepted. <Link to={accepted.surface === 'PORTAL' ? `/portal/${accepted.organizationId}` : `/app/${accepted.organizationId}${accepted.boardTarget ? `/boards/${accepted.boardTarget.boardId}` : ''}`}>Open {accepted.surface === 'PORTAL' ? 'Owner Portal' : accepted.boardTarget ? 'Board' : 'organization'}</Link></Alert>}
-    {busy && <CircularProgress aria-label="Loading invitation request" />}
+    {accepted && <Alert severity="success" data-invitation-disclosure>Invitation to {accepted.organizationName} accepted. <Link to={accepted.surface === 'PORTAL' ? `/portal/${accepted.organizationId}` : `/app/${accepted.organizationId}${accepted.boardTarget ? `/boards/${accepted.boardTarget.boardId}` : ''}`}>Open {accepted.surface === 'PORTAL' ? 'Owner Portal' : accepted.boardTarget ? 'Board' : 'organization'}</Link></Alert>}
+    {(busy || connecting) && <CircularProgress aria-label="Loading invitation request" />}
     {uncertain && <Paper variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>
       <Typography>An invitation acceptance still needs confirmation. Refreshing the list will preserve this attempt.</Typography>
       <Button disabled={busy || !accountReady} variant="contained" onClick={() => void accept(uncertain)}>Retry invitation acceptance</Button>
     </Stack></Paper>}
     {available?.length === 0 && !uncertain && <Typography>No pending invitations on this page.</Typography>}
-    {available?.map(invitation => <Paper key={invitation.id} variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>
+    {available?.map(invitation => <Paper key={invitation.id} variant="outlined" data-invitation-disclosure sx={{ p: 2 }}><Stack spacing={1}>
       <Typography variant="h6" component="h2">{invitation.organizationName}</Typography>
       {invitation.boardTarget && <Typography variant="h6" component="h3">{invitation.boardName}</Typography>}
       <Typography>{invitation.boardTarget ? `Board access \u00b7 ${invitation.boardTarget.role.toLowerCase()}` : <>{invitation.surface === 'PORTAL' ? 'Owner Portal' : 'Internal organization'} access · {invitation.targetRole.toLowerCase().replaceAll('_', ' ')}</>}</Typography>
       <Button disabled={busy || Boolean(uncertain)} variant="contained" onClick={() => void accept(invitation)} aria-label={`Accept invitation to ${invitation.organizationName}${invitation.boardTarget ? `, Board ${invitation.boardName}, ${invitation.boardTarget.role.toLowerCase()}` : ''}`}>Accept invitation</Button>
     </Stack></Paper>)}
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(page.nextCursor!)}>More invitations</Button>}
-    <Button disabled={busy} onClick={() => void load()}>Refresh invitations</Button>
+    <Button ref={refreshButton} aria-disabled={busy} onClick={() => void load()}>Refresh invitations</Button>
   </Stack></Container>;
 }
