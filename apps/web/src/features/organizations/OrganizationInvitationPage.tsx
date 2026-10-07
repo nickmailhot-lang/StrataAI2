@@ -88,7 +88,11 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       const id = (me.body as { id?: unknown } | undefined)?.id;
       if (me.status !== 200 || !validInvitationKey(id)) throw new Error('Invalid actor');
       if (id !== expected) { deny(401); return false; }
-      return true;
+      const profile = me.body as { locale?: unknown; timezone?: unknown };
+      if (typeof profile.locale !== 'string' || typeof profile.timezone !== 'string') throw new Error('Invalid preferences');
+      const display = { locale: profile.locale, timezone: profile.timezone };
+      if (!formatUserDateTime('2026-01-01T00:00:00Z', display)) throw new Error('Invalid preferences');
+      return display;
     } catch (reason) {
       // Temporary uncertainty withdraws display authority, while the saved
       // original request remains reserved for a fresh permission check.
@@ -131,14 +135,14 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
             || !data.member || data.member.userId !== actor || data.member.role !== data.actorRole) throw new Error('Invalid actor admission');
           admittedRole = data.actorRole;
         }
-        if (!await verifyAccount(controller, actor, signal)) return;
+        const currentDisplay = await verifyAccount(controller, actor, signal); if (!currentDisplay) return;
         if (started !== epoch.current) return;
         const key = invitationIntentKey(actor, organizationId) + (boardId !== undefined ? `:board:${boardId}` : '');
         reviewedActor.current = actor;
         setLiveActor(actor); setLiveNotice(value => value ? 'Current invitation permissions checked. Review the request before submitting.' : undefined);
         setBoardName(admittedBoardName);
         setStorageKey(key); setActorRole(admittedRole); setDenied(false); setBlocked(false);
-        setPreferences(display);
+        setPreferences(currentDisplay);
         try {
           const saved = readInvitationIntent(key);
           if (saved && boardId !== undefined && (saved.input.surface !== 'INTERNAL' || !['ADMIN', 'MEMBER'].includes(saved.input.targetRole))) throw new Error('Invalid Board intent');
@@ -192,7 +196,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         }, signal); if (!valid(controller)) return;
         if (started !== epoch.current) return;
         if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-        if (!await verifyAccount(controller, expected, signal)) return;
+        const currentDisplay = await verifyAccount(controller, expected, signal); if (!currentDisplay) return;
         if (started !== epoch.current) return;
         const data = result.body as Ack | undefined;
         if (result.status === 201 && data && validInvitationKey(data.id) && data.organizationId === organizationId
@@ -200,8 +204,8 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
           && data.surface === original.input.surface && data.invitationToken === null
           && (boardId !== undefined ? data.targetRole === 'MEMBER' && data.boardTarget?.boardId === boardId && data.boardTarget.role === original.input.targetRole
             : data.targetRole === original.input.targetRole && data.boardTarget == null)
-          && typeof data.expiresAt === 'string' && preferences && !!formatUserDateTime(data.expiresAt, preferences)) {
-          setAck(data); setError(undefined);
+          && typeof data.expiresAt === 'string' && !!formatUserDateTime(data.expiresAt, currentDisplay)) {
+          setPreferences(currentDisplay); setAck(data); setError(undefined);
           confirmed.current = { actor: expected, command: original, acknowledgment: data };
           // Keep the confirmed intent reserved until the person explicitly starts
           // another invitation. Reload can safely recover this acknowledgment.

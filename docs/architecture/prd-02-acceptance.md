@@ -342,6 +342,25 @@ its original display and unchanged-history assertions remain. The complete affec
 suite passes locally. Full current release CI and remaining consumers still need
 verification. The estimate stays **22% work remaining**; no closure is justified.
 
+### Invitation creation final preferences
+
+Organization and Board creation now use validated locale/timezone from the final
+account check after POST publication, and permission admission uses its final
+confirmed preferences. Two publication-race regressions fail before the fix;
+all 52 creation component cases pass afterward, including unchanged-key/body
+lost-response recovery and final Tokyo display. Web typechecking/lint and browser
+typechecking pass. The mandatory desktop/phone administrator fixture changes the
+author's timezone from a separate session after actual creation commits and before
+its first reply is lost, then requires the actual stored expiry in Tokyo after
+reload and original retry. Its complete Worker-backed native execution remains
+pending. See [administrator invitation creation](invitation-administration-ui.md#final-confirmed-expiry-preferences).
+
+Predecessor `05bf10e7` CI run `37614051459` completed the web-quality job
+successfully, including all 134 test files and the production web build. This
+confirms the prior comment/invitation listener-registration fixture fixes at that
+revision; it does not prove the newly changed creation source or pending container
+and full release gates. Estimated PRD-02 work remaining stays **22%**.
+
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.

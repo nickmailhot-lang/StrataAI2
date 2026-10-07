@@ -5,14 +5,17 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     test.setTimeout(120_000);
     await page.setViewportSize(viewport);
     const recipient = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+    const preferences = await browser.newContext({ baseURL: test.info().project.use.baseURL });
     const headers = { 'X-StrataAI-Request': '1' };
     try {
       const email = `invitation-ui-recipient-${viewport.width}-${Date.now()}@example.test`;
+      const ownerEmail = `invitation-ui-owner-${viewport.width}-${Date.now()}@example.test`;
       for (const [index, client] of [context, recipient].entries()) {
-        const data = { email: index ? email : `invitation-ui-owner-${viewport.width}-${Date.now()}@example.test`, password: 'browser-invitation-ui-correct-horse', displayName: 'Invitation administrator' };
+        const data = { email: index ? email : ownerEmail, password: 'browser-invitation-ui-correct-horse', displayName: 'Invitation administrator', locale: 'en-US', timezone: 'Pacific/Honolulu' };
         expect((await client.request.post('/auth/register', { headers, data })).status()).toBe(201);
         expect((await client.request.post('/auth/login', { headers, data })).status()).toBe(200);
       }
+      expect((await preferences.request.post('/auth/login', { headers, data: { email: ownerEmail, password: 'browser-invitation-ui-correct-horse' } })).status()).toBe(200);
       const created = await context.request.post('/organizations', { headers, data: { name: 'Keyboard invitation administration' } }); expect(created.status()).toBe(201);
       const org = (await created.json()).organization.id;
       const addedActors: string[] = []; let admissions = 0;
@@ -42,7 +45,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         if (route.request().method() !== 'POST') { await route.continue(); return; }
         expect(new URL(route.request().url()).searchParams.get('expectedActorId')).toBe(reviewedActor);
         writes.push({ key: route.request().headers()['idempotency-key'], input: route.request().postDataJSON() });
-        if (writes.length === 1) { expect((await route.fetch()).status()).toBe(201); await route.abort('timedout'); }
+        if (writes.length === 1) {
+          expect((await route.fetch()).status()).toBe(201);
+          const profile = await (await preferences.request.get('/me')).json();
+          expect((await preferences.request.patch('/me', { headers, data: { timezone: 'Asia/Tokyo', version: profile.version } })).status()).toBe(200);
+          await route.abort('timedout');
+        }
         else await route.continue();
       });
       await page.getByRole('button', { name: 'Create invitation', exact: true }).focus(); await page.keyboard.press('Enter');
@@ -54,6 +62,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByText('Invitation creation acknowledged.')).toBeVisible(); await expect(page.getByText(/Email delivery is not confirmed here/)).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[0]).toEqual(writes[1]); expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
       expect(writes[0].input).toEqual({ email, surface: 'INTERNAL', targetRole: 'ADMIN' });
+      const createdHistory = (await (await context.request.get(`/organizations/${org}/invitations`)).json()).items;
+      expect(createdHistory).toHaveLength(1);
+      const expiryCaption = await page.evaluate(instant => `Expires: ${new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Tokyo', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+      }).format(new Date(instant))}`, createdHistory[0].expiresAt);
+      await expect(page.getByText(expiryCaption, { exact: true })).toBeVisible();
       const pending = await recipient.request.get('/me/invitations'); expect(pending.status()).toBe(200);
       const invitations = (await pending.json()).items.filter((item: { organizationId: string }) => item.organizationId === org); expect(invitations).toHaveLength(1);
       const beforeAdmission = admissions;
@@ -79,6 +93,6 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await recipient.request.post(`/me/invitations/${portalInvite.id}/accept`, { headers })).status()).toBe(200);
       const after = await recipient.request.get(`/organizations/${org}/members/${recipientId}`); expect(after.status()).toBe(200);
       expect((await after.json()).member).toEqual(before);
-    } finally { await recipient.close(); }
+    } finally { await preferences.close(); await recipient.close(); }
   });
 }

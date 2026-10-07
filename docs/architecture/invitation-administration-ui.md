@@ -16,6 +16,29 @@ This implements the creation controls; Worker invitation email delivery, invitat
 
 ## Complete-operation deadlines and original-request recovery
 
+### Final confirmed expiry preferences
+
+Both Organization and Board creation now validate and use locale/timezone from
+the final account check after publication. Protected permission admission also
+uses its final confirmed preferences. A timezone changed while the POST is in
+flight cannot leave an acknowledged expiry formatted with pre-command settings.
+The stored expiry and retained command remain unchanged; no preference update is
+added to the invitation payload. Invalid final preferences withdraw display
+authority through the existing account-uncertainty path and preserve the stored
+original intent rather than falsely confirming creation.
+
+Both new scope regressions fail before the fix. All 52 creation component cases
+pass after it, including two original lost-response retries requiring identical
+key/body and the newly confirmed Tokyo expiry display. Web typechecking/lint and
+browser typechecking pass. The mandatory desktop/phone administrator native
+fixture now changes the author's timezone from a separate authenticated session
+after the actual first creation commits and before its reply is dropped. After
+reload and original retry it requires the Tokyo caption for the actual stored
+expiry and one pending invitation. Its original acceptance, metadata delivery and
+Portal isolation assertions remain. Strengthened native execution remains pending
+the Worker-backed release fixture; this source result does not prove full
+two-client recovery of every preference consumer or current release acceptance.
+
 Organization and Board invitation admission now share one 15-second deadline
 across the initial account read, protected scope read, final account read and JSON
 parsing. Creation/retry has its own single 15-second deadline across pre-command

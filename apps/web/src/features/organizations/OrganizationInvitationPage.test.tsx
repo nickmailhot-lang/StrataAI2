@@ -389,6 +389,40 @@ function boardMount() {
     { path: '/login', element: <h1>Sign in destination</h1> }], { initialEntries: [`/app/${org}/boards/${board}/invite`] });
   render(<RouterProvider router={router} />); return router;
 }
+it.each([false, true])('formats acknowledged expiry using preferences confirmed after publication (Board=%s)', async boardSurface => {
+  let published = false;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return reply({ ...profile, timezone: published ? 'Asia/Tokyo' : 'Pacific/Honolulu' });
+    if (options?.method === 'POST') { published = true; return reply(boardSurface ? boardAck : ack, 201); }
+    return reply(boardSurface ? boardAdmission : admission);
+  });
+  vi.stubGlobal('fetch', mock); if (boardSurface) boardMount(); else mount(); await submit();
+  await screen.findByText('Invitation creation acknowledged.');
+  expect(screen.getByText(/Expires:.*03:00/)).toBeInTheDocument();
+  expect(screen.queryByText(/Expires:.*08:00/)).not.toBeInTheDocument();
+  const posts = mock.mock.calls.filter(call => call[1]?.method === 'POST'); expect(posts).toHaveLength(1);
+  expect(JSON.parse(posts[0][1]!.body as string)).toEqual(boardSurface ? { email: input.email, role: 'MEMBER' } : input);
+  expect(ack.expiresAt).toBe('2026-10-08T18:00:00Z');
+});
+it.each([false, true])('uses fresh final preferences when recovering the original lost invitation reply (Board=%s)', async boardSurface => {
+  let attempts = 0;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return reply({ ...profile, timezone: attempts ? 'Asia/Tokyo' : 'Pacific/Honolulu' });
+    if (options?.method === 'POST') {
+      if (++attempts === 1) throw new Error('Lost acknowledgment');
+      return reply(boardSurface ? boardAck : ack, 201);
+    }
+    return reply(boardSurface ? boardAdmission : admission);
+  });
+  vi.stubGlobal('fetch', mock); if (boardSurface) boardMount(); else mount(); await submit();
+  await screen.findByText(/invitation could not be confirmed/);
+  fireEvent.click(screen.getByRole('button', { name: 'Retry same invitation' }));
+  await screen.findByText('Invitation creation acknowledged.');
+  expect(screen.getByText(/Expires:.*03:00/)).toBeInTheDocument();
+  const posts = mock.mock.calls.filter(call => call[1]?.method === 'POST'); expect(posts).toHaveLength(2);
+  expect(posts[1][1]!.body).toBe(posts[0][1]!.body);
+  expect(new Headers(posts[1][1]!.headers).get('Idempotency-Key')).toBe(new Headers(posts[0][1]!.headers).get('Idempotency-Key'));
+});
 it('binds a Board creation draft and lost acknowledgment retry to the exact Board payload', async () => {
   const mock = vi.fn().mockResolvedValueOnce(reply(profile)).mockResolvedValueOnce(reply(boardAdmission))
     .mockRejectedValueOnce(new Error('Lost acknowledgment')).mockResolvedValueOnce(reply(boardAck, 201));
