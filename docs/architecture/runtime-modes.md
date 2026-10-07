@@ -19,7 +19,9 @@ Authenticated invitation commands also maintain a private, process-local
 [recipient source journal and replay reader](invitation-recipient-events.md).
 Its source history and counters commit or roll back with the existing invitation
 transaction. API restart resets this Demo history; sample-catalog reset endpoints
-do not reset it. Recipient SignalR/browser delivery remains unfinished.
+do not reset it. Both modes expose protected recipient SignalR replay; its browser
+consumer remains unfinished. See the linked journal guide for transport checks
+and remaining acceptance evidence.
 
 ### Demo sign-in
 

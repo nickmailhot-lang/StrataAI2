@@ -8,8 +8,8 @@ for the remaining PRD-03 / PRD-60 live invitation workflow. This source is an
 explicit cross-Organization routing relationship, like existing verified-email
 invitation discovery. It does not grant Organization, Board or Portal access and
 does not widen the Internal Organization or Board streams. Both runtime modes
-implement account-bound recipient replay. Recipient transport and browser
-consumer are not yet implemented.
+implement account-bound recipient replay and protected SignalR transport. The
+browser consumer remains unfinished.
 
 ## Source and atomicity
 
@@ -97,11 +97,30 @@ of 1–100 events, without stepping beyond the captured committed head.
 The outbound event has only `eventId`, normalized `eventType`, `sequence` and
 `createdAt`. Organization/Invitation IDs, issuer, recipient email, roles and
 correlation remain private source data. Final account/email/revision or session
-withdrawal discards the whole page. A separate current-cursor check lets future
+withdrawal discards the whole page. A separate current-cursor check lets the
 transport reauthorize after session I/O. Recipient events invalidate discovery;
 they do not confer continuing Organization, Board or Portal admission.
 
-No endpoint or hub currently exposes this reader.
+## Protected recipient transport
+
+Both modes expose the authenticated `/invitations/live` SignalR hub. `Watch`
+accepts only the opaque cursor or `null`; callers cannot select another account,
+recipient email, Organization or Board. The existing strict trusted-origin
+middleware also protects this route. One subscription per connection, existing
+4-KiB incoming-message limits and one buffered stream item bound resource use.
+
+The hub captures the original session cookie, requires an active verified account
+and uses the owning transactional reader. Each page is followed by fresh session
+authentication and a current protected-cursor check before delivery. Withdrawn
+session/account admission aborts the connection without delivering that page.
+Cancellation releases the subscription slot. Reads use the durable source every
+second, drain additional bounded pages immediately and emit a neutral heartbeat
+after 20 otherwise empty polls. Reconnection with the original protected cursor
+replays committed missed transitions; invalid or expired bindings require an
+empty reset and current protected discovery.
+
+This transport does not implement the browser's discovery, acceptance recovery,
+accessible announcement or parent/issuer authority invalidation workflow.
 
 ## Demo source parity
 
@@ -150,8 +169,7 @@ acceptance fixtures now compare recipient proof/journal/counter state during
 refusal and rollback, require canonical publication and no duplicate on receipt
 replay. Those exact-image assertions still require runtime execution.
 
-Remaining implementation includes protected SignalR recipient transport,
-browser bootstrap and missed-event recovery,
+Remaining implementation includes browser bootstrap and missed-event recovery,
 client invalidation/accessible announcements and
 explicit original acceptance recovery. Parent/issuer authority changes and
 account/email changes require current protected discovery rather than assuming a
@@ -202,3 +220,15 @@ unowned/substituted recipient refusal. Existing creation and acceptance rollback
 fixtures additionally compare committed recipient history after actor refusal,
 exception/cancellation and exact retry. These in-process checks do not prove
 cookie-bound recipient streaming, browser reconnect or accessible announcements.
+
+Nine additional Demo API-host cases use actual authenticated WebSocket/SignalR
+frames and session cookies. They cover Internal/Portal/Board canonical creation
+and HTTP acceptance, content-free event fields, no Portal Internal grant, logout
+withdrawal, original missed revocation identity/time on reconnect, no replay of
+acknowledged events, duplicate subscription refusal, cancellation/replacement,
+untrusted origins, anonymous negotiation and malformed cursor recovery. A
+synthetic reader boundary changes the real account revision at the final
+post-session binding check and verifies that the pending source page is withheld.
+These in-process transport checks passed alongside a zero-warning Release build;
+they do not prove concurrent native account changes, Production WebSocket
+acceptance, browser consumption or current exact-image CI acceptance.

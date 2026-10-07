@@ -1,0 +1,104 @@
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.SignalR;
+using StrataAI.Api.Auth;
+using StrataAI.Application.Identity;
+using StrataAI.Application.Onboarding;
+
+namespace StrataAI.Api.Onboarding;
+
+public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipientSynchronization replay,
+    IIdentityService identities, ILogger<InvitationRecipientRealtimeHub> logger) : Hub
+{
+    private const string SubscriptionKey = "StrataAI.InvitationRecipientRealtime.Subscription";
+
+    public async IAsyncEnumerable<InvitationRecipientSyncPage> Watch(string? cursor,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (cursor is not null && cursor.Length is < 1 or > 4096) throw new HubException("invalid_invitation_cursor");
+        var subscription = Guid.NewGuid();
+        lock (Context.Items)
+        {
+            if (Context.Items.ContainsKey(SubscriptionKey)) throw new HubException("subscription_limit");
+            Context.Items[SubscriptionKey] = subscription;
+        }
+        using var stopped = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, Context.ConnectionAborted);
+        var token = stopped.Token;
+        var http = Context.GetHttpContext();
+        var cookie = http?.Request.Cookies[SessionAuthenticationDefaults.CookieName];
+        try
+        {
+            var actor = await CurrentActorAsync();
+            var initial = true; var heartbeat = 0;
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                if (await CurrentActorAsync() != actor) Denied("session_unavailable");
+                var result = await ReadAsync(actor);
+                if (!result.Succeeded || result.Value is null)
+                    Denied(result.ErrorCode is "session_unavailable" or "account_unavailable" ? "session_unavailable" : "invitation_sync_unavailable");
+                var page = result.Value!;
+                // Session I/O can outlive the account/email revision used by
+                // replay. Rebind its protected cursor before any delivery.
+                if (await CurrentActorAsync() != actor) Denied("session_unavailable");
+                await RequireCurrentCursorAsync(actor, page.Cursor);
+                if (initial || page.ResetRequired || page.Events.Count > 0 || ++heartbeat >= 20)
+                {
+                    yield return page;
+                    heartbeat = 0;
+                }
+                initial = false; cursor = page.Cursor;
+                if (!page.HasMore) await Task.Delay(TimeSpan.FromSeconds(1), token);
+            }
+        }
+        finally
+        {
+            lock (Context.Items)
+                if (Context.Items.TryGetValue(SubscriptionKey, out var active) && Equals(active, subscription))
+                    Context.Items.Remove(SubscriptionKey);
+        }
+        async Task<Guid> CurrentActorAsync()
+        {
+            try
+            {
+                var session = cookie is null ? null : await identities.AuthenticateSessionAsync(cookie, token);
+                if (session is null || session.User.Status != AccountStatus.Active || !session.User.EmailVerified)
+                    Denied("session_unavailable");
+                return session!.User.Id;
+            }
+            catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
+            {
+                logger.LogWarning("Invitation recipient live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                Denied("invitation_sync_unavailable"); throw;
+            }
+        }
+        async Task<IdentityOperation<InvitationRecipientSyncPage>> ReadAsync(Guid actor)
+        {
+            try { return await replay.ReadAsync(actor, cursor, cancellationToken: token); }
+            catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
+            {
+                logger.LogWarning("Invitation recipient live read unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                Denied("invitation_sync_unavailable"); throw;
+            }
+        }
+        async Task RequireCurrentCursorAsync(Guid actor, string current)
+        {
+            try
+            {
+                var admission = await replay.IsCursorCurrentAsync(actor, current, token);
+                if (!admission.Succeeded)
+                    Denied(admission.ErrorCode is "session_unavailable" or "account_unavailable" ? "session_unavailable" : "invitation_sync_unavailable");
+                if (!admission.Value) Denied("session_unavailable");
+            }
+            catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
+            {
+                logger.LogWarning("Invitation recipient live account binding unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                Denied("invitation_sync_unavailable"); throw;
+            }
+        }
+    }
+    private void Denied(string code)
+    {
+        Context.Abort();
+        throw new HubException(code);
+    }
+}
