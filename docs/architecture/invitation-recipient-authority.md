@@ -313,8 +313,8 @@ revision. Their current delivery capability already validates the revision
 against the correct Organization, membership or invitation subject; these
 different revision sequences must not be compared with one another.
 
-Actual adapter/Worker restart and concurrent-page execution evidence must be
-added alongside the existing SQL capability tests.
+Local adapter concurrency is verified below. Separate-process concurrent Worker
+execution and retained-image confirmation remain required alongside these tests.
 
 Production Board source publication and bounded delivery are implemented above.
 Remaining dependencies include native Production Board-target
@@ -374,3 +374,29 @@ These are actual local Demo HTTP/browser results, not retained-image Production
 acceptance. The mandatory exact-image gates, concurrent authority delivery,
 Organization lifecycle sources and issuer account withdrawal remain required.
 PRD-04 and PRD-60 remain open.
+
+## Concurrent restricted Board authority delivery
+
+`InvitationBoardAuthorityConcurrencyContract` is part of the mandatory full
+C# persistence executable. It executes two real Board updates through the
+production Work store and owning unit of work, publishing each canonical source
+through the production Work-event adapter. Actual account and initial invitation
+records are disposable fixtures; the trusted transaction admission does not
+claim HTTP cookie/session verification.
+
+Two restricted Worker identities independently lease and deliver the source roots
+concurrently, replay each committed root, and acknowledge through the normal
+job store. Four identities then compete for the bounded continuation pages.
+Under schema 107 and actual restricted API/Worker logins, the contract passes:
+exactly six first-attempt successful jobs, 100/100/5 candidates per original
+source, four source/email effects, exactly two increments for each of the two
+recipients, no future-recipient revision, original actor/correlation/source
+references, and unchanged unrelated queue/Work readiness. The optional
+`--invitation-board-authority-concurrency-only` diagnostic runs this same
+contract without reusing the fixed-ID discovery fixtures; mandatory CI retains
+all existing source, graph, scale and provider contracts.
+
+Release build passes with zero warnings/errors. This proves real concurrent
+adapter/capability delivery against PostgreSQL, distinct from separate deployed
+Worker processes, retained-image replay/restart and a latency benchmark. Those
+release-level results and remaining canonical producers are still required.
