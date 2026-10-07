@@ -82,7 +82,12 @@ internal sealed partial class InMemoryWorkEventStore(IWorkManagementStore work, 
             }
         }
         // Raw legacy fixtures outside commands acquire no authority history.
-        if (scope.Owns(change.OrganizationId) && DemoBoardAuthorityProof.Supports(change) && authority is not null)
+        // Invitation acceptance owns its Organization command and publishes its
+        // recipient source separately; its member event is not an admin command.
+        var invitationMemberEvent = scope.OwnsOrganizationCommand(change.OrganizationId)
+            && change.EventType is "BOARD_MEMBER_ADDED" or "BOARD_MEMBER_ROLE_CHANGED";
+        if (scope.Owns(change.OrganizationId) && !invitationMemberEvent
+            && DemoBoardAuthorityProof.Supports(change) && authority is not null)
             await authority().AppendAsync(change, cancellationToken);
     }
 

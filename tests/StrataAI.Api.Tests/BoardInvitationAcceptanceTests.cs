@@ -71,7 +71,8 @@ public sealed partial class ApiHostTests
         Assert.False((await workStore.FindBoardMemberAsync(fixture.Board.Id, fixture.Recipient.Id, ct))!.Active);
         var page = await app.Services.GetRequiredService<IWorkEventReader>().ReadAsync(fixture.Board.OrganizationId,
             fixture.Board.Id, 0, 100, ct);
-        Assert.Single(page.Events, row => row.Event.EventType == "BOARD_MEMBER_ADDED");
+        Assert.Single(page.Events, row => row.Event.EventType == "BOARD_MEMBER_ADDED"
+            && row.Event.ActorId == fixture.Recipient.Id);
         Assert.Single(page.Events, row => row.Event.EventType == "INVITATION_ACCEPTED");
     }
 

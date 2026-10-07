@@ -17,6 +17,8 @@ public sealed partial class ApiHostTests
     [InlineData("BOARD_RESTORED")]
     [InlineData("BOARD_DELETED")]
     [InlineData("BOARD_MEMBER_UPDATED")]
+    [InlineData("BOARD_MEMBER_ADDED")]
+    [InlineData("BOARD_MEMBER_SELF_ROLE_CHANGED")]
     [InlineData("BOARD_MEMBER_REMOVED")]
     [InlineData("BOARD_MEMBER_SELF_REMOVED")]
     public async Task PRD_04_60_Demo_Board_authority_delivers_actual_HTTP_sources_without_invitation_transitions(string kind)
@@ -29,10 +31,15 @@ public sealed partial class ApiHostTests
             using var archived = await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/archive", new { version = 1 });
             Assert.Equal(HttpStatusCode.OK, archived.StatusCode);
         }
-        if (kind == "BOARD_MEMBER_SELF_REMOVED")
+        if (kind is "BOARD_MEMBER_SELF_REMOVED" or "BOARD_MEMBER_SELF_ROLE_CHANGED")
         {
             using var grant = await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "ADMIN" });
             Assert.Equal(HttpStatusCode.OK, grant.StatusCode);
+        }
+        if (kind == "BOARD_MEMBER_ADDED")
+        {
+            using var removed = await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { });
+            Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
         }
         var invitations = app.Services.GetRequiredService<IInvitationStore>();
         var identities = app.Services.GetRequiredService<IIdentityStore>();
@@ -63,6 +70,8 @@ public sealed partial class ApiHostTests
             "BOARD_RESTORED" => await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/restore", new { version = 2 }),
             "BOARD_DELETED" => await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}?version=2&confirmed=true", new { }),
             "BOARD_MEMBER_UPDATED" => await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "ADMIN" }),
+            "BOARD_MEMBER_ADDED" => await Mutate(owner, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "MEMBER" }),
+            "BOARD_MEMBER_SELF_ROLE_CHANGED" => await Mutate(member, HttpMethod.Patch, $"/boards/{f.Board}/members/{f.Recipient}", new { role = "MEMBER" }),
             "BOARD_MEMBER_SELF_REMOVED" => await Mutate(member, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { }),
             _ => await Mutate(owner, HttpMethod.Delete, $"/boards/{f.Board}/members/{f.Recipient}", new { }),
         };

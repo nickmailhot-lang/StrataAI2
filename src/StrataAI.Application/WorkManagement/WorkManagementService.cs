@@ -401,10 +401,10 @@ public sealed partial class WorkManagementService(
                 "member_not_eligible");
         }
 
+        var priorMember = await store.FindBoardMemberAsync(boardId, targetUserId, cancellationToken);
         if (expectedMemberVersion is not null)
         {
-            var currentMember = await store.FindBoardMemberAsync(boardId, targetUserId, cancellationToken);
-            if (expectedMemberVersion <= 0 || currentMember is not { Active: true } || currentMember.Version != expectedMemberVersion)
+            if (expectedMemberVersion <= 0 || priorMember is not { Active: true } || priorMember.Version != expectedMemberVersion)
                 return WorkOperation<BoardMemberRecord>.Failure("version_conflict");
         }
         // PERM-FR-005/006: changing the role must retain the same safeguard as
@@ -427,7 +427,9 @@ public sealed partial class WorkManagementService(
         await AuditAsync(
             resolved.Value.Board,
             actorUserId,
-            "BOARD_MEMBER_UPDATED",
+            priorMember is not { Active: true }
+                ? "BOARD_MEMBER_ADDED"
+                : priorMember.Role != role ? "BOARD_MEMBER_ROLE_CHANGED" : "BOARD_MEMBER_UPDATED",
             correlationId,
             cancellationToken);
 

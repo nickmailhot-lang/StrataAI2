@@ -15,8 +15,9 @@ Organization membership. Overflow checks pass at 1280px and 390px.
 Frozen read-only API/Worker assemblies in cached runtime images and the
 ordinary unverified-account browser policy do not prove retained-current-image
 release acceptance, full accessibility, concurrency/continuity matrices or
-capacity. Public administrative role-change event naming also needs correction;
-see the complete [PRD-05 acceptance audit](architecture/prd-05-acceptance.md).
+capacity. Direct administrative grants and role changes now emit the public
+event names described in the [PRD-05 acceptance audit](architecture/prd-05-acceptance.md);
+restricted audit/journal and retained-image consumer acceptance remain required.
 
 ## Member administration contract
 

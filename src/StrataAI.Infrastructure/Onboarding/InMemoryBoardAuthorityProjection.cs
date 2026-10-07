@@ -27,7 +27,7 @@ internal sealed class InMemoryBoardAuthorityProjection(InMemoryInvitationRecipie
             includeDeleted: source.EventType == "BOARD_DELETED");
         var editorChange = source.EventType == "BOARD_UPDATED" && boardMember is { Active: true, Role: BoardRole.Member };
         var selfChange = proof.SubjectId == source.ActorId && proof.PreviousRole == BoardRole.Admin
-            && source.EventType is "BOARD_MEMBER_UPDATED" or "BOARD_MEMBER_REMOVED";
+            && proof.EventType is "BOARD_MEMBER_UPDATED" or "BOARD_MEMBER_REMOVED";
         if (!scope.OwnsAcceptedDeletion(source.OrganizationId, source.ActorId)
             && (member is not { Active: true } || member.Role is not (OrganizationRole.Owner or OrganizationRole.Admin)
                 && boardMember is not { Active: true, Role: BoardRole.Admin } && !selfChange && !editorChange))

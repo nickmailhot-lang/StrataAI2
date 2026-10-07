@@ -7,7 +7,11 @@ internal sealed record DemoBoardAuthorityProof(Guid OrganizationId, Guid BoardId
 {
     internal static bool Supports(WorkEvent source) => source.EntityType == "Board" && source.EntityId == source.BoardId
         && source.EventType is "BOARD_UPDATED" or "BOARD_VISIBILITY_CHANGED" or "BOARD_ARCHIVED" or "BOARD_RESTORED"
-            or "BOARD_DELETED" or "BOARD_MEMBER_UPDATED" or "BOARD_MEMBER_REMOVED";
+            or "BOARD_DELETED" or "BOARD_MEMBER_UPDATED" or "BOARD_MEMBER_ADDED" or "BOARD_MEMBER_ROLE_CHANGED" or "BOARD_MEMBER_REMOVED";
+
+    // Public member events consume the existing private upsert proof.
+    internal static string ProofType(WorkEvent source) => source.EventType is "BOARD_MEMBER_ADDED" or "BOARD_MEMBER_ROLE_CHANGED"
+        ? "BOARD_MEMBER_UPDATED" : source.EventType;
 }
 
 internal sealed partial class InMemoryWorkManagementStore
@@ -26,7 +30,7 @@ internal sealed partial class InMemoryWorkManagementStore
             throw new InvalidOperationException("Board authority source requires its owning command.");
         lock (_sync)
         {
-            if (!_boardAuthorityProofs.TryGetValue((source.BoardId, source.EventType), out var proof)
+            if (!_boardAuthorityProofs.TryGetValue((source.BoardId, DemoBoardAuthorityProof.ProofType(source)), out var proof)
                 || proof.CommandId != transactionScope.CommandId || proof.OrganizationId != source.OrganizationId
                 || proof.BoardVersion != source.Version || proof.SubjectVersion < 1 || proof.ChangedAt == default
                 || source.CreatedAt < proof.ChangedAt
@@ -36,7 +40,7 @@ internal sealed partial class InMemoryWorkManagementStore
                 throw new InvalidOperationException("Board deletion authority actor is unproven.");
             if (proof.SubjectId != proof.BoardId && (!_members.TryGetValue((proof.BoardId, proof.SubjectId), out var member)
                 || member.Version != proof.SubjectVersion || member.UpdatedAt != proof.ChangedAt
-                || member.Active != (source.EventType == "BOARD_MEMBER_UPDATED")))
+                || member.Active != (proof.EventType == "BOARD_MEMBER_UPDATED")))
                 throw new InvalidOperationException("Board membership authority transition is unproven.");
             return proof;
         }
