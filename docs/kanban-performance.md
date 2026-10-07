@@ -75,6 +75,34 @@ stable registration. Both disposable containers were removed; saved volumes and
 the existing three services remain available. Feedback, cached detail and full
 release/capacity acceptance remain outstanding.
 
+## Canvas column reuse follow-up, 2026-10-07
+
+BoardScreen now memoizes its derived canvas columns by authoritative snapshot,
+qualified filter and Card/List move previews. Opening/closing a dialog or changing
+status no longer recreates every column and invalidates virtual-window layout.
+The new screen regression fails on column identity before this correction; the
+final fixture verifies reuse across dialog state and immediate replacement when
+a refreshed server snapshot changes the Card title. Existing provisional placement
+and uncertain-result rollback checks still pass. All 73 selected screen, filter,
+move-preview and virtual-window tests pass, as do TypeScript, targeted lint and
+the fresh production build.
+
+The unchanged full desktop/phone benchmark through the frozen compiled Production
+API, restricted PostgreSQL and Nginx still fails both scenarios:
+
+| Viewport | Usable Board (<1500 ms) | Drop feedback (<100 ms) | Cached detail (<200 ms) | Mutation p95 (<500 ms) | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| 1280x844, mouse | 1125.2 | **120.4** | **275.3** | 210.0 | Failed feedback and detail budgets |
+| 390x844, Chromium touch | 962.0 | 92.7 | **336.6** | 175.4 | Failed detail budget |
+
+All twenty mutation samples per viewport are retained. Desktop assertions stop
+at feedback; its reported detail measurement also fails the unchanged budget.
+This scoped Windows-hosted cached-runtime report has revision null and topology
+`unverified runtime`. One timing run does not establish a causal performance
+improvement or retained-image acceptance. Both disposable containers are removed,
+and existing services and volumes are preserved. Feedback, cached detail and
+full release/capacity acceptance remain outstanding.
+
 ## Current large-Board runtime correction
 
 Exact-image run [37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119)

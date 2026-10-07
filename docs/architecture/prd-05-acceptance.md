@@ -117,11 +117,15 @@ The latest [registration/observation follow-up](../kanban-performance.md#drag-re
 keeps drag/drop nodes registered across renders and observes the qualified second
 Board response without polling delay. All 43 selected component tests and four
 read-tracker tests pass, with unchanged admission checks and timing budgets.
-The final native invocation remains failed: desktop/phone feedback is 115.5/126.4 ms
-against 100 ms, and cached detail is 261.9/339.8 ms against 200 ms. Readiness is
-1189.3/927.0 ms and twenty-sample mutation p95 is 181.3/180.3 ms. Assertions stop
-at feedback; the report also retains the failing detail measurements. This is
-local cached-runtime evidence, not current retained-image release acceptance.
+The subsequent [canvas column reuse follow-up](../kanban-performance.md#canvas-column-reuse-follow-up-2026-10-07)
+avoids recreating columns on dialog/status changes while retaining immediate
+authoritative refresh and move-preview updates. All 73 selected screen, filter,
+move-preview and virtual-window tests pass. The final native invocation remains
+failed: desktop feedback is 120.4 ms against 100 ms; desktop/phone cached detail is
+275.3/336.6 ms against 200 ms. Phone feedback is 92.7 ms, readiness is 1125.2/962.0 ms
+and twenty-sample mutation p95 is 210.0/175.4 ms. Desktop assertions stop at feedback;
+the report also retains its failing detail measurement. This is local cached-runtime
+evidence, not current retained-image release acceptance.
 The reporter explicitly distinguishes unverified runtime provenance. The planning
 estimate stays 15%; full performance acceptance remains outstanding.
 

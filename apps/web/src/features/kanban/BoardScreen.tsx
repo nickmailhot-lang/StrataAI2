@@ -1,6 +1,6 @@
 import { KanbanPointerScrollFrame } from './kanbanPointerScrollFrame';
 import { KanbanAutoScroll } from './kanbanAutoScroll';
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -272,6 +272,12 @@ function BoardContent() {
     return () => controller.abort();
   }, [organizationId, boardId, key, reload]);
   const snapshot = loaded?.key === key ? loaded.snapshot : undefined;
+  // Dialog/status state does not change canvas geometry. Rebuild only when its
+  // authoritative data, qualified filter or provisional placement changes.
+  const canvasColumns = useMemo(() => snapshot
+    ? (canvasFilter ? filteredBoardCanvas(snapshot, canvasFilter)
+      : previewListMove(previewCardMove(snapshot, movePreview), listPreview)).lists.map(column => ({ ...column, id: column.list.id }))
+    : [], [snapshot, canvasFilter, movePreview, listPreview]);
   const loadError = loaded?.key === key ? loaded.error : undefined;
   const subscribed = Boolean(snapshot);
   const invalidate = useEffectEvent(() => {
@@ -618,7 +624,7 @@ function BoardContent() {
         setListDrop({ ...source, before: event.over.id === 'list-end' ? '' : String(event.over.id), nonce: crypto.randomUUID() });
       }}>
       <BoardWindow axis="lists" memory={windowMemory.current} memoryKey="lists"
-        items={(canvasFilter ? filteredBoardCanvas(snapshot, canvasFilter) : previewListMove(previewCardMove(snapshot, movePreview), listPreview)).lists.map(column => ({ ...column, id: column.list.id }))}
+        items={canvasColumns}
         pinned={[...listRecovery, ...renameRecovery, ...(listDrop ? [listDrop.listId] : []), ...(creation?.listId ? [creation.listId] : []),
           ...snapshot.lists.filter(column => column.cards.some(item => [cardId, closeFocusCard.current, canvasFocus.current?.cardId].includes(item.id))).map(column => column.list.id)]}
         ownsDrag={(column, id) => column.cards.some(item => item.id === id)}

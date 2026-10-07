@@ -6,6 +6,14 @@ import { BoardScreen } from './BoardScreen';
 import type { BoardSnapshot } from '../../api/workManagement';
 
 const drag = vi.hoisted(() => ({ current: undefined as ComponentProps<typeof DndContext> | undefined }));
+const canvas = vi.hoisted(() => ({ items: undefined as unknown[] | undefined }));
+vi.mock('./BoardWindow', async importOriginal => {
+  const actual = await importOriginal<typeof import('./BoardWindow')>();
+  return { ...actual, BoardWindow: (props: ComponentProps<typeof actual.BoardWindow>) => {
+    if (props.axis === 'lists') canvas.items = props.items;
+    return <actual.BoardWindow {...props} />;
+  } };
+});
 vi.mock('@dnd-kit/core', async importOriginal => {
   const actual = await importOriginal<typeof import('@dnd-kit/core')>();
   return { ...actual, DndContext: (props: ComponentProps<typeof DndContext>) => {
@@ -26,7 +34,29 @@ const snapshot: BoardSnapshot = {
   ],
 };
 const reply = (body: unknown) => new Response(JSON.stringify(body), { status: 200 });
-afterEach(() => { vi.unstubAllGlobals(); drag.current = undefined; });
+afterEach(() => { vi.unstubAllGlobals(); drag.current = undefined; canvas.items = undefined; });
+
+it('preserves canvas columns during dialog state changes and replaces them after an authoritative refresh', async () => {
+  let current = snapshot;
+  vi.stubGlobal('fetch', vi.fn(async () => reply(current)));
+  const router = createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> }],
+    { initialEntries: ['/app/org/boards/board'] });
+  render(<RouterProvider router={router} />);
+  await waitFor(() => expect(screen.getByRole('button', { name: `Drag ${card.title} card` })).toBeEnabled());
+  const original = canvas.items;
+  act(() => screen.getByRole('button', { name: 'Add list' }).click());
+  expect(screen.getByRole('dialog')).toBeVisible();
+  expect(canvas.items).toBe(original);
+  act(() => within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }).click());
+  expect(canvas.items).toBe(original);
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  current = { ...snapshot, lists: snapshot.lists.map(column => ({ ...column,
+    cards: column.cards.map(item => ({ ...item, title: 'Authoritative new title', version: item.version + 1 })) })) };
+  act(() => screen.getByRole('button', { name: 'Refresh board' }).click());
+  await screen.findByRole('link', { name: 'Authoritative new title' });
+  expect(canvas.items).not.toBe(original);
+  expect(snapshot.lists[0].cards[0].title).toBe(card.title);
+});
 
 it('renders provisional drop placement before starting persistence and rolls it back on an uncertain result', async () => {
   let reject!: (reason: Error) => void;
