@@ -153,3 +153,32 @@ real-cookie replacement cases and extends the two existing departure scenarios
 with zero-command/unchanged-membership refusal and actual 204 withheld during
 profile uncertainty, followed by rejoin and same-key recovery. These browser
 cases require exact-image execution; source collection is not runtime proof.
+
+## Executed desktop and phone departure recovery
+
+All six existing native scenarios pass in one 3.2-minute invocation at 1280px
+and 390px through current Nginx/CSP, with the current compiled Production API,
+production web bundle and real restricted PostgreSQL schema-110 roles. The API
+uses the same explicitly unverified-email test policy as CI's browser phase;
+these cases do not establish the default verified-email ownership matrix. The
+source tests and their assertions were unchanged. Production rate limiters remain
+enabled and the existing release pacing fixture runs between scenarios.
+
+Four cases replace the actual browser session cookie before or after departure.
+Before submission, no command is sent and the original membership is unchanged.
+After committed submission, the membership is removed, but the changed account
+receives no stale success or private retry state. Both paths withdraw the review
+and navigate to sign-in without a full document reload; WCAG checks pass.
+
+Two complete continuity scenarios verify sole-owner refusal, Cancel focus/no
+mutation, member departure with authoritative directory/access withdrawal and
+success focus. A successful response is deliberately lost, the member rejoins,
+and retry acknowledges the original key/body without removing the restored
+membership. Pre-submission profile uncertainty sends no command and preserves
+membership. Post-commit uncertainty withholds success, then original-key recovery
+after a later rejoin preserves that later membership and returns accessible focus.
+
+This closes a local execution gap, not retained-current-image or complete PRD
+acceptance. Current release CI, strict-policy ownership, server transaction and
+remaining lifecycle requirements still need their own evidence. Estimated PRD-03
+work remaining is **9%**, a planning estimate; the ticket stays open.

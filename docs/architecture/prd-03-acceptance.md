@@ -4,6 +4,22 @@
 This source review maps the ten functional requirements to implemented behavior
 and remaining work. It does not certify current release acceptance.
 
+## Current departure execution
+
+All six existing desktop/phone departure scenarios pass in one 3.2-minute
+invocation against the current compiled Production API and web bundle through
+current Nginx/CSP with real restricted schema-110 PostgreSQL roles. Actual cookie
+replacement before/after submission, sole-owner continuity, Cancel/success focus,
+lost acknowledgment, rejoin plus original-key recovery and pre/post-submission
+profile uncertainty pass with unchanged assertions. The explicitly unverified
+test policy matches the CI browser phase; strict verified-email ownership and
+current retained-release acceptance are separate requirements. See
+[executed departure evidence](organization-departure.md#executed-desktop-and-phone-departure-recovery).
+Estimated PRD-03 work remaining is now **9%**; previous estimates below are
+historical. The ticket stays open.
+
+## Functional requirements
+
 | Requirement | Current implementation and verification path | Remaining work or evidence |
 | --- | --- | --- |
 | WS-FR-001 authenticated creation | Organization service, owning transaction and [creation acknowledgments](organization-creation-retries.md); [Organization discovery](organization-discovery.md), native Organization command fixture and browser directory scenarios | Current production-policy, persisted creator/owner, retry and browser evidence |
@@ -42,16 +58,19 @@ provider/backup treatment and remaining full acceptance are still required.
   reviewed migrations, required domain events, executed unit/integration/browser
   checks, accessibility, loading/error states, telemetry and defect severity.
 
-## Next implementation order
+## Remaining acceptance order
 
-1. Complete retry-prone Organization mutations with durable receipts while
-   preserving parent-before-membership locks and final actor admission.
-2. Add browser departure and owner deletion confirmation with explicit recovery
-   and unchanged-state refusal checks.
-3. Implement and document deletion graph/audit treatment and required terminal
-   events with the separate Worker and private object-storage contracts.
-4. Verify Organization metadata/lifecycle delivery and reconnect behavior in two
-   clients, then inspect the full exact-image release checks before closure.
+1. Verify the implemented durable receipts, parent-before-membership locks and
+   final actor admission in the current restricted persistence and image gates.
+2. Inspect current retained-image browser departure, Owner deletion and
+   metadata/lifecycle recovery outcomes alongside the scoped local executions;
+   preserve refusal, account-switch, rejoin and original-key assertions.
+3. Audit implemented bounded Worker graph/audit/event treatment against all
+   lifecycle requirements, including outstanding private object/retention and
+   scale evidence; request acceptance alone never proves completed deletion.
+4. Review every functional row and required scenario against the full exact-commit
+   pipeline and retained artifacts before closure. These implemented producer
+   contracts do not need to be reinvented because older evidence remains pending.
 
 Ownership transfer is not an explicit WS-FR requirement. Do not invent it as a
 closure prerequisite; the required safeguards concern usable ownership during
