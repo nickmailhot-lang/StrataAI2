@@ -14,7 +14,7 @@ for (const width of [1280, 390]) {
       expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
       expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
       const runtime = await context.request.get('/api/runtime'); expect(runtime.status()).toBe(200);
-      expect((await runtime.json()).mode).toBe('production');
+      expect((await runtime.json()).mode).toBe(process.env.STRATAAI_E2E_RUNTIME_MODE ?? 'production');
       const created = await context.request.post('/organizations', { headers, data: { name: 'Live settings Organization' } });
       expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
       restoreWorker = scopedBoardWorker(org);

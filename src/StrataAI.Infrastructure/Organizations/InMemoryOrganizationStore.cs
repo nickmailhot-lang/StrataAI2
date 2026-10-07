@@ -7,6 +7,7 @@ namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed partial class InMemoryOrganizationStore(IIdentityStore identities, IdentityPolicy policy, IClock clock,
     IEnumerable<Func<IDemoInvitationAuditProjection>> invitationProjections,
+    Func<InMemoryOrganizationMetadataJournal> metadataJournal,
     StrataAI.Infrastructure.WorkManagement.DemoWorkTransactionScope workScope) : IOrganizationStore
 {
     private readonly object _sync = new();
@@ -88,6 +89,8 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
                     createdAt,
                     createdAt,
                     1);
+
+            CaptureAuthorityProof(organizationId, "Organization", organizationId, "ORGANIZATION_CREATED", 1, createdAt);
 
             return Task.FromResult(organization);
         }
@@ -204,6 +207,8 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
                     updatedAt,
                     1);
             }
+            var member = _members[(organizationId, userId)];
+            CaptureAuthorityProof(organizationId, "OrganizationMembership", member.Id, "ORGANIZATION_MEMBER_ADDED", member.Version, updatedAt);
         }
 
         return Task.CompletedTask;
@@ -289,10 +294,17 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (eventType is not ("ORGANIZATION_MEMBER_INVITED" or "BOARD_MEMBER_INVITED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED"
+        if (eventType is not ("ORGANIZATION_CREATED" or "ORGANIZATION_MEMBER_ADDED" or "ORGANIZATION_MEMBER_INVITED" or "BOARD_MEMBER_INVITED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED"
             or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT" or "ORGANIZATION_DELETION_REQUESTED")) return;
         var audit = new DemoInvitationAudit(Guid.NewGuid(), organizationId, actorUserId, eventType, entityType, entityId, correlationId, clock.UtcNow);
-        foreach (var projection in invitationProjections) await projection().AppendAsync(audit, cancellationToken);
+        if (eventType is not ("ORGANIZATION_CREATED" or "ORGANIZATION_MEMBER_ADDED"))
+            foreach (var projection in invitationProjections) await projection().AppendAsync(audit, cancellationToken);
+        await metadataJournal().AppendAsync(audit, cancellationToken);
+    }
+
+    internal OrganizationMembership? FindMetadataMembership(Guid organizationId, Guid membershipId)
+    {
+        lock (_sync) return _members.Values.SingleOrDefault(member => member.OrganizationId == organizationId && member.Id == membershipId);
     }
 }
 

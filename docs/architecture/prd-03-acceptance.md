@@ -250,3 +250,45 @@ complete native invitation acceptance scenarios against current release images.
 Current exact-image execution is pending. This correction establishes fixture
 isolation, not full release acceptance or complete PRD-03 delivery. Estimated
 remaining work stays **12%** pending that execution and the other requirements.
+
+## Demo metadata source and browser recovery
+
+Demo now publishes all seven nonterminal canonical Organization metadata source
+types through the owning command: creation/editing, member addition/removal or
+departure, and Internal invitation creation/acceptance/revocation. The journal
+retains original audit identities and actual subject revisions/timestamps,
+requires same-command transition proofs, excludes Board and Portal invitation
+surfaces, and rolls back sources and sequence counters on late refusal. Protected
+HTTP and SignalR replay share the existing session/membership fences, cursor
+binding, bounded pagination and authoritative reset contract. Browser consumers
+now open this admitted channel in both runtime modes.
+
+Seven new API cases and all 91 selected Demo API cases passed on 2026-10-07.
+The new tests first failed on the unmapped endpoint; a later wire-test helper
+needed explicit DTOs for the existing multi-constructor event contract. No
+application serialization or acceptance assertion was weakened. Coverage includes
+original-key recovery, canonical source attribution, pagination, wrong actor and
+Organization refusal, membership withdrawal/restoration, Portal/Board exclusion,
+and rollback after failure, actor refusal, exception or cancellation. A waiting
+read also observes only restored committed history after rollback.
+
+All 250 related web cases and the complete 134-file, 1,896-case web suite passed
+with two workers. Web and browser TypeScript checks, zero-warning lint, production
+web build, workflow YAML, Bash syntax and retained-image Compose configuration
+validation passed. Four actual desktop/phone Demo browser cases passed without
+changing assertions: source-ID replay and reconnect, server logout withdrawal,
+peer saved versions, preserved drafts, lost-acknowledgment original-key/body
+recovery, keyboard operation and automated accessibility. They ran against a
+fresh readonly compiled Demo API and Vite, with explicit Demo mode and CI enabled.
+
+CI now requires the same four scenarios on a disposable Demo stack using the
+retained API/web release images. It adds no rebuild or provider and retains
+failure logs. Production still uses its separate durable Worker and existing
+PostgreSQL/RLS source; Demo publication is synchronous in-memory simulation.
+API restart resets the Demo journal, while sample-catalog reset leaves it intact.
+Exact-image results for this revision are still pending; these local checks
+do not establish complete release acceptance or terminal deletion parity.
+
+Estimated PRD-03 work remaining is **11%**, a planning estimate. Demo terminal/
+lifecycle processing, remaining lifecycle/performance requirements and complete
+current release acceptance keep the ticket open.

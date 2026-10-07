@@ -683,6 +683,20 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
+      - name: Demo metadata streaming and draft recovery against exact API and web images
+        env:
+          STRATAAI_E2E_BASE_URL: http://localhost:18088
+          STRATAAI_E2E_RUNTIME_MODE: demo
+          STRATAAI_E2E_RELEASE_HEADERS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          compose=(docker compose -p strataai-demo-metadata-ci -f scripts/ci/compose.demo-metadata-test.yml)
+            cleanup() { "${compose[@]}" logs --no-color > demo-metadata-compose.log 2>&1 || true; "${compose[@]}" down --volumes --remove-orphans; }
+          trap cleanup EXIT
+          "${compose[@]}" up -d --wait --wait-timeout 180
+          npx playwright test tests/browser/organization-metadata-live.spec.ts tests/browser/organization-settings-live.spec.ts
+
       - name: Attachment upload and isolated Worker image publication through explicit private test providers
         run: bash scripts/ci/test-attachment-image-pipeline.sh
 
@@ -810,6 +824,7 @@ jobs:
           path: |
             compose-ps.txt
             compose.log
+              demo-metadata-compose.log
             ${{ runner.temp }}/identity-mail-failure.json
           if-no-files-found: ignore
           retention-days: 14

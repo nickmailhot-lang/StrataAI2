@@ -1,0 +1,16 @@
+# Disposable Demo acceptance stack; use only the retained release images.
+# No datastore/provider or application image rebuild is required.
+services:
+  api:
+    image: ${STRATAAI_API_IMAGE:?Set the retained API image}
+    environment:
+      STRATAAI_RUNTIME_MODE: demo
+      ASPNETCORE_ENVIRONMENT: Development
+      STRATAAI_REALTIME_PUBLIC_ORIGIN: http://localhost:18088
+  web:
+    image: ${STRATAAI_WEB_IMAGE:?Set the retained web image}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '18088:80'

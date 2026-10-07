@@ -41,12 +41,12 @@ function runtimeFixture() {
     invalidate: vi.fn(), reset: vi.fn(), unavailable });
   return { connection, unavailable, cleanup };
 }
-it('skips the unavailable canonical channel in Demo without claiming an interruption or opening a socket', async () => {
+it('opens the authenticated canonical stream after the Demo descriptor is confirmed', async () => {
   const response = new Response(JSON.stringify({ service: 'strataai-api', mode: 'demo' }));
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response)); const f = runtimeFixture();
-  await vi.waitFor(() => expect(response.bodyUsed).toBe(true));
-  await new Promise(resolve => setTimeout(resolve, 0));
-  expect(f.connection.start).not.toHaveBeenCalled(); expect(f.unavailable).not.toHaveBeenCalled(); f.cleanup();
+  await vi.waitFor(() => expect(f.connection.stream).toHaveBeenCalledWith('Watch', org, null));
+  expect(response.bodyUsed).toBe(true);
+  expect(f.connection.start).toHaveBeenCalledTimes(1); expect(f.unavailable).not.toHaveBeenCalled(); f.cleanup();
 });
 it('opens the authenticated stream only after the Production descriptor is confirmed', async () => {
   const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ service: 'strataai-api', mode: 'production' })));

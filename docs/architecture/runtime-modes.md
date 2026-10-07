@@ -24,6 +24,13 @@ by the invitations page for future actual invitation transitions. See the linked
 journal guide for protected recovery, unfinished authority invalidation and
 remaining native acceptance evidence.
 
+Demo also journals canonical Organization creation/editing, membership changes
+and Internal Organization invitation transitions in the original transaction.
+Both modes expose [protected metadata HTTP and SignalR replay](organization-metadata-replay.md#demo-metadata-replay),
+including browser draft preservation and reconnect recovery. Demo publication is
+synchronous in-memory simulation; Production retains its separate durable Worker.
+API restart resets the journal, while sample-catalog reset leaves it intact.
+
 ### Demo sign-in
 
 Set `STRATAAI_RUNTIME_MODE=demo`, start the API and web application, and open

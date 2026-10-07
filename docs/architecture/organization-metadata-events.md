@@ -3,6 +3,15 @@
 Return to the [documentation index](../README.md) or the
 [PRD-03 acceptance map](prd-03-acceptance.md).
 
+Production uses the persisted source and separate Worker described below. Demo
+now projects the same seven nonterminal source types from actual owning commands
+into a process-local journal, preserving audit IDs, actors, subject revisions and
+transition timestamps. Private same-command proofs, rollback participation and
+the shared read gate prevent fabricated or tentative history. Board and Portal
+invitations retain their own surfaces. Demo marks sources ready synchronously as
+simulation; it does not claim durable background delivery. See
+[Demo protected metadata replay and evidence](organization-metadata-replay.md#demo-metadata-replay).
+
 Migration `094_organization_metadata_events` journals future
 `ORGANIZATION_CREATED` and `ORGANIZATION_UPDATED` commands from their actual
 canonical audit inserts. The Organization mutation, audit, event and stream
@@ -65,7 +74,7 @@ Local validation: Release solution build with zero warnings/errors, 12 replay
 tests, 29 selected metadata API regressions and 33 browser consumer tests passed; web typecheck/lint and script syntax
 checks passed. Migration, restricted PostgreSQL and new exact-image execution
 remain pending CI. Member removal/departure, invitation and deletion integration,
-member administration live consumption and Demo audit/event parity remain
+member administration live consumption and Demo terminal/lifecycle parity remain
 unfinished. Existing discovery/settings consumers recognize member addition
 and preserve the normal current-authority refetch contract; this does not prove
 all applicable views receive it.

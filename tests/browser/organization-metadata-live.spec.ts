@@ -50,6 +50,8 @@ test(`PRD-03: genuine metadata streaming resumes original source identity and st
   const account = { email: `metadata-stream-${Date.now()}@example.test`, password: 'metadata-stream-correct-horse', displayName: 'Metadata stream Owner' };
   expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
   expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+  const runtime = await context.request.get('/api/runtime'); expect(runtime.status()).toBe(200);
+  expect((await runtime.json()).mode).toBe(process.env.STRATAAI_E2E_RUNTIME_MODE ?? 'production');
   const created = await context.request.post('/organizations', { headers, data: { name: 'Canonical stream Organization' } });
   expect(created.status()).toBe(201); const organizationId = (await created.json()).organization.id;
   const me = await context.request.get('/me'); expect(me.status()).toBe(200); const actor = (await me.json()).id;

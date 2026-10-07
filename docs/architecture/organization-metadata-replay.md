@@ -3,11 +3,11 @@
 Return to the [documentation index](../README.md) or the
 [metadata source and Worker delivery](organization-metadata-events.md).
 
-Production exposes `GET /organizations/{organizationId}/metadata-events` with
+Both runtime modes expose `GET /organizations/{organizationId}/metadata-events` with
 optional `cursor`, `limit` (1–100, default 50) and `expectedActorId`. Responses
 use `private, no-store`. Internal active Organization membership is required;
-Portal access alone grants no admission. Demo does not map this endpoint because
-its canonical metadata event source is not implemented yet.
+Portal access alone grants no admission. Production uses its persisted source
+and separate Worker; Demo uses the process-local journal described below.
 
 The response contains an opaque cursor, `hasMore`, `pending`, `resetRequired`
 and event envelopes. Each envelope carries the original source event ID, type,
@@ -16,8 +16,10 @@ subject version, timestamp and exactly empty metadata. Names, descriptions,
 email and logo URLs are absent. Creation and editing use the Organization
 subject. Migration 097 adds member additions with the actual
 `OrganizationMembership` subject, whose version is independent of its parent.
-Removal/departure, invitation and terminal events remain unfinished; current
-member-addition database and release execution are pending CI.
+The stream also includes canonical removal/departure and Internal Organization
+invitation creation, acceptance and revocation sources. Terminal deletion remains
+a separate lifecycle contract. Historical evidence below records earlier slices;
+current exact-image acceptance remains required.
 
 ## Authority and recovery
 
@@ -69,7 +71,7 @@ reset/count included the new metadata job. The fixture now limits recovery to
 Work jobs and checks that unrelated jobs and metadata readiness stay unchanged;
 its repaired execution is pending. The metadata step alone does not establish
 complete release acceptance.
-Production also maps the authenticated SignalR endpoint
+Both runtime modes map the authenticated SignalR endpoint
 `/organizations/live/metadata`, with stream method `Watch(organizationId, cursor)`.
 It shares the existing same-origin guard and transport buffer limits. One
 subscription is allowed per connection; cancellation releases that slot.
@@ -84,7 +86,7 @@ The Organization discovery page now subscribes separately to metadata and Board
 streams. A canonical metadata event or reset triggers fresh authorized metadata
 and Board-directory reads with the existing before/after account checks. Cached
 names and creation consent are withdrawn during recovery. The client checks
-the runtime descriptor first and skips this channel in Demo mode. It validates
+the runtime descriptor first and opens this channel in either mode. It validates
 the complete content-free envelope, deduplicates immutable source IDs, rejects
 changed source attribution, fences obsolete callbacks and resumes the exact
 opaque cursor across reconnect. Empty heartbeat re-encryption is not a change.
@@ -98,5 +100,33 @@ channel with scoped account-bound reads, preserved typing and explicit saved-sta
 review, including original-save recovery after a later revision. All 24 focused
 settings checks passed; release-image two-tab execution remains pending. See
 [settings behavior and evidence](organization-settings.md#live-changes-and-preserved-drafts).
-Other applicable views, real mid-read session
-withdrawal, remaining event types and Demo parity are still unfinished.
+Other applicable views, real mid-read session withdrawal, Demo terminal/lifecycle
+parity and complete current release acceptance remain unfinished.
+
+## Demo metadata replay
+
+The Demo journal projects future ordinary Organization commands into all seven
+supported source types: creation, editing, member addition, removal/departure,
+and Internal invitation creation, acceptance and revocation. Each source retains
+its original audit ID and actor, plus the actual subject ID, revision and transition
+timestamp. Same-command private proofs prevent guessed history. Board and Portal
+invitation sources stay on their own surfaces. Metadata is empty and Board ID is null.
+
+Publication simulates delivery synchronously inside the original command. The
+owning shared Work gate prevents a reader from observing tentative writes. Source
+history, publication identities and stream counters roll back together after a
+late refusal, exception or cancellation; a waiting reader sees only restored
+committed state. Original-key retries do not republish old acknowledgments.
+
+Protected HTTP and SignalR replay use the same bounded pages, snapshot reset,
+current session/membership checks and membership-bound cursors as Production.
+The browser preserves drafts and original-save recovery in both modes. Demo
+does not replace the separate durable Production Worker or connect to production
+providers. API restart resets this in-memory journal; sample-catalog reset does
+not reset it, accounts or authenticated Organizations.
+
+On 2026-10-07, seven new API cases, all 91 selected Demo API cases, and four real
+desktop/phone Demo browser scenarios passed. Browser cases retained their source
+identity, reconnect, logout withdrawal, saved-version review, original-key/body,
+keyboard and accessibility assertions. The local runtime used compiled API and
+Vite output; the mandatory retained-image Demo CI phase still requires its result.

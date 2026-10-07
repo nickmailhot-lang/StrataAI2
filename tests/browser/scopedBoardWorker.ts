@@ -13,7 +13,9 @@ export async function waitForBoardDelivery(client: APIRequestContext, boardId: s
 // Release scenarios run serially and reuse the immutable Worker image. Each
 // scenario owns only its disposable Organization's delivery scope.
 export function scopedBoardWorker(organizationId: string): () => void {
-  if (process.env.CI !== 'true') return () => {};
+  // Demo journals simulate delivery in the API's original transaction. A
+  // separate Production Worker cannot share that process-local provider.
+  if (process.env.CI !== 'true' || process.env.STRATAAI_E2E_RUNTIME_MODE === 'demo') return () => {};
   const files = ['-f', 'compose.release.yml', '-f', 'scripts/ci/compose.identity-test.yml'];
   const start = (scoped: boolean) => execFileSync('docker', ['compose', ...files,
     ...(scoped ? ['-f', 'scripts/ci/compose.work-event-test.yml'] : []),

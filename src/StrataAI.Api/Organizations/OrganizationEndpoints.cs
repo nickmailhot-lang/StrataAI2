@@ -19,23 +19,23 @@ public static class OrganizationEndpoints
                 var result = await reader.ReadAsync(organizationId, actor.Value, cancellationToken);
                 return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
             });
-            group.MapGet("/{organizationId:guid}/metadata-events", async (Guid organizationId, Guid? expectedActorId,
-                string? cursor, int? limit, HttpContext context, TransactionalOrganizationMetadataSynchronization replay,
-                CancellationToken cancellationToken) =>
-            {
-                context.Response.Headers.CacheControl = "private, no-store";
-                var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
-                if (expectedActorId is Guid expected && expected != actor.Value) return ErrorFor("session_unavailable");
-                var result = await replay.ReadAsync(organizationId, actor.Value, cursor, limit ?? 50, cancellationToken);
-                if (result.Succeeded) return Results.Ok(result.Value);
-                return result.ErrorCode switch
-                {
-                    "invalid_sync_limit" => Problem(400, "invalid_sync_limit", "A replay page limit from 1 to 100 is required."),
-                    "organization_sync_unavailable" or "work_storage_unavailable" => Problem(503, "organization_sync_unavailable", "Organization events are temporarily unavailable."),
-                    _ => ErrorFor(result.ErrorCode),
-                };
-            });
         }
+        group.MapGet("/{organizationId:guid}/metadata-events", async (Guid organizationId, Guid? expectedActorId,
+            string? cursor, int? limit, HttpContext context, TransactionalOrganizationMetadataSynchronization replay,
+            CancellationToken cancellationToken) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            if (expectedActorId is Guid expected && expected != actor.Value) return ErrorFor("session_unavailable");
+            var result = await replay.ReadAsync(organizationId, actor.Value, cursor, limit ?? 50, cancellationToken);
+            if (result.Succeeded) return Results.Ok(result.Value);
+            return result.ErrorCode switch
+            {
+                "invalid_sync_limit" => Problem(400, "invalid_sync_limit", "A replay page limit from 1 to 100 is required."),
+                "organization_sync_unavailable" or "work_storage_unavailable" => Problem(503, "organization_sync_unavailable", "Organization events are temporarily unavailable."),
+                _ => ErrorFor(result.ErrorCode),
+            };
+        });
 
         group.MapGet("/{organizationId:guid}/deletion-requests/{requestId:guid}", async (Guid organizationId,
             Guid requestId, Guid? expectedActorId, HttpContext context,

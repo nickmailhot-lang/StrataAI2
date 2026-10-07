@@ -28,7 +28,7 @@ Full PRD-03 remains open. Use the [current acceptance map](prd-03-acceptance.md)
 
 ## Live changes and preserved drafts
 
-Production settings subscribe to canonical metadata replay. Reset, change and
+Settings in both runtime modes subscribe to canonical metadata replay. Reset, change and
 interruption callbacks queue an authorized scoped refresh. A background read
 keeps draft fields editable and compares the returned snapshot with the latest
 draft, including text typed while the read was pending. A different saved version
@@ -39,7 +39,8 @@ Live reads may verify admission and display later saved settings while an origin
 save is unresolved. They preserve its body, version and key; review/discard controls
 remain disabled until that acknowledgment is recovered. Events during an in-flight
 request queue another read after the request settles. A matching live snapshot
-does not fabricate a save acknowledgment. Demo skips this unavailable channel.
+does not fabricate a save acknowledgment. Demo simulates source delivery in its
+owning API transaction; Production retains its separate durable Worker.
 
 All 24 focused settings tests, web type checking and lint passed locally. The
 new release-image scenario covers genuine Worker-delivered versions in two tabs,

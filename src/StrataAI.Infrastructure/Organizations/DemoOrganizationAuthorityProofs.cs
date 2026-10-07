@@ -19,13 +19,20 @@ internal sealed partial class InMemoryOrganizationStore
 
     internal DemoOrganizationAuthorityProof RequireAuthorityProof(Guid organization, string entityType, Guid entity, string eventType)
     {
+        var proof = RequireTransitionProof(organization, entityType, entity, eventType);
+        if (proof.Version < 2) throw new InvalidOperationException("Organization authority transition is unproven.");
+        return proof;
+    }
+
+    internal DemoOrganizationAuthorityProof RequireTransitionProof(Guid organization, string entityType, Guid entity, string eventType)
+    {
         if (!workScope.OwnsOrganizationCommand(organization))
             throw new InvalidOperationException("Authority source requires its owning Organization command.");
         lock (_sync)
         {
             var expected = eventType == "ORGANIZATION_MEMBER_LEFT" ? "ORGANIZATION_MEMBER_REMOVED" : eventType;
             if (!_authorityProofs.TryGetValue((organization, entityType, entity), out var proof)
-                || proof.CommandId != workScope.CommandId || proof.EventType != expected || proof.Version < 2 || proof.CreatedAt == default)
+                || proof.CommandId != workScope.CommandId || proof.EventType != expected || proof.Version < 1 || proof.CreatedAt == default)
                 throw new InvalidOperationException("Organization authority transition is unproven.");
             return proof;
         }

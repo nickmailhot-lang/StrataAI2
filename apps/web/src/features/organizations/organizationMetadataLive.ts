@@ -70,9 +70,6 @@ export function watchOrganizationMetadata(options: {
         if (disposed) return;
         if (!mode || typeof mode !== 'object' || !('service' in mode) || mode.service !== 'strataai-api'
           || !('mode' in mode) || mode.mode !== 'production' && mode.mode !== 'demo') throw new Error('Runtime unavailable');
-        // Demo has no canonical metadata source yet. Do not start a stream or
-        // report simulated delivery for its in-memory catalog.
-        if (mode.mode === 'demo') return;
         runtimeConfirmed = true;
       }
       await connection.start();

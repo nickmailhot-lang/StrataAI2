@@ -203,12 +203,12 @@ if (runtime.Mode == RuntimeMode.Production)
         options.ApplicationMaxBufferSize = 131072;
         options.TransportMaxBufferSize = 4096;
     }).RequireAuthorization();
-    app.MapHub<OrganizationMetadataRealtimeHub>("/organizations/live/metadata", options =>
-    {
-        options.ApplicationMaxBufferSize = 131072;
-        options.TransportMaxBufferSize = 4096;
-    }).RequireAuthorization();
 }
+app.MapHub<OrganizationMetadataRealtimeHub>("/organizations/live/metadata", options =>
+{
+    options.ApplicationMaxBufferSize = 131072;
+    options.TransportMaxBufferSize = 4096;
+}).RequireAuthorization();
 
 app.Run();
 
