@@ -193,3 +193,60 @@ syntax with Linux line endings passes; current exact-image execution is required
 Estimated PRD-03 work remaining is now **12%**, a planning estimate. Current
 release acceptance, the replay snapshot failure, Demo terminal parity and remaining
 lifecycle/performance requirements keep the ticket open.
+
+## Replay snapshots and independent Worker progress
+
+A disposable real-HTTP probe on 2026-10-07 created fresh accounts, invited and
+accepted Organization and Board membership, assigned a Card, removed the member,
+restored membership through a new invitation, and reassigned the Card. Fixture
+email verification was seeded only for those accounts; this is not mail-delivery
+evidence. The original removal key returned 204 and preserved the complete
+post-rejoin snapshot with no dispatcher running.
+
+The actual recipient authority dispatcher components then executed through the
+restricted Worker PostgreSQL login, scoped only to this new Organization. They
+changed only `background_jobs` fields `attempt_count`, `state`, `updated_at` and
+`version`. Every membership, removal history, metadata event/stream, audit, Card,
+assignment, immutable Work event/stream, removal receipt and immutable job field
+stayed identical. Replaying the original removal key after dispatch again
+preserved the complete snapshot. The isolated Release probe build passed with
+zero warnings/errors; the probe exited successfully. This reproduces a race in
+the whole-job snapshot, without proving the unidentified differing fields in
+the older failed CI run.
+
+The container job now starts all four discovery loops disabled. The Organization
+command fixture verifies these flags and an empty scope in the running Worker
+before creating any fixture or changing grants. All exact snapshot comparisons
+remain intact. Its explicit deletion completion phase, automatic metadata phase,
+and recipient/issuer authority delivery and restart phases still enable the
+required real Worker loops. Production Compose defaults remain enabled; images
+are still built once and shared by the unchanged mandatory release gates.
+
+Before the complete authenticated browser suite, CI explicitly enables and
+checks both automatic invitation authority loops in the running Worker. These
+flags persist into the browser process so scoped Worker helpers restore the
+same live routing. Nonmember and Portal issuer invalidation scenarios therefore
+retain automatic delivery coverage.
+
+The complete Organization command fixture then passed locally against the
+current readonly compiled API/Worker and a separate PostgreSQL 17/pgvector
+schema-110 database. This includes audit/receipt rollback, post-wait admission,
+session-expiry rollback, concurrent owner departures, metadata/departure/removal/
+creation/deletion retries, rejoin preservation, actual Worker graph completion,
+completion-event delivery, original Owner status and exact terminal replay.
+Five negative running-Worker cases also passed: each enabled discovery flag
+and an explicit Organization scope were rejected before account creation or
+grant cleanup, with account/receipt counts and protected grants unchanged.
+No source assertion changed during these runs. The temporary runner first
+lacked Python and then incorrectly hard-coded its deletion flag; those local
+fixture errors were identified and corrected before the complete passing run.
+The compiled Worker build, shell syntax and workflow YAML checks passed. These
+are scoped local results, not evidence for the exact release-image gate.
+Both automatic authority flags were also enabled and checked in the actual
+compiled Worker, then restored to the isolated base; the browser-routing shell
+block passed syntax validation. This verifies phase configuration, not the
+complete native invitation acceptance scenarios against current release images.
+
+Current exact-image execution is pending. This correction establishes fixture
+isolation, not full release acceptance or complete PRD-03 delivery. Estimated
+remaining work stays **12%** pending that execution and the other requirements.

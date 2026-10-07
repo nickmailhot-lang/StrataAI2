@@ -105,3 +105,18 @@ initial two new removal tests queried accessibility during MUI's ordinary
 closing transition; the corrected cases advance that transition separately
 after asserting deadline abortion. No production deadline or assertion scope
 was relaxed. Native execution against current release images remains pending.
+
+## Receipt snapshot isolation
+
+Complete removal replay snapshots include job lease/status fields as well as
+membership, audit and Card state. An independent recipient authority dispatcher
+can legitimately update those job fields after the original removal commits.
+The CI command phase therefore requires every discovery loop disabled and no
+explicit Organization scope in the running Worker. It retains exact whole-row
+comparisons; later explicit Worker delivery phases test actual job processing.
+Automatic recipient/issuer discovery is explicitly restored before the complete
+browser suite, including after scoped browser Workers restore their base
+configuration. Production discovery defaults are unchanged. The [Organization acceptance
+record](prd-03-acceptance.md#replay-snapshots-and-independent-worker-progress)
+records the restricted PostgreSQL/real-HTTP reproduction and its verification
+limits.

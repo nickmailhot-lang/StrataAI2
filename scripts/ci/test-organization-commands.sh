@@ -2,6 +2,22 @@
 set -euo pipefail
 # PRD-03-TC-05/08, AC-WS-03-02: rollback, post-wait authorization and owner continuity.
 test "${CI:-}" = true || { echo 'Disposable organization fixtures may run only in CI.' >&2; exit 1; }
+# PRD-03-TC-07/08: complete unchanged-state snapshots require a quiescent
+# dispatcher. Assert the running Worker, not just this shell's configuration.
+# Later phases explicitly enable and verify real delivery before restoring it.
+for setting in STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED \
+  STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED \
+  STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED \
+  STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED; do
+  if test "$(docker compose -f compose.release.yml exec -T worker printenv "$setting")" != false; then
+    echo "Organization command snapshots require $setting=false in the running Worker." >&2
+    exit 1
+  fi
+done
+if test -n "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_WORKER_ORGANIZATION_IDS)"; then
+  echo 'Organization command snapshots require an empty running Worker Organization scope.' >&2
+  exit 1
+fi
 BASE_URL="${1:-http://localhost:8080}"
 scratch="$(mktemp -d)"
 gate_pid=''

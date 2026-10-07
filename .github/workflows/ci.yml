@@ -388,10 +388,13 @@ jobs:
       STRATAAI_API_IMAGE: strataai-api:${{ github.sha }}
       STRATAAI_WORKER_IMAGE: strataai-worker:${{ github.sha }}
       STRATAAI_METRICS_OTLP_ENDPOINT: http://metrics-collector:4318/v1/metrics
-      # Command fixtures deliberately retain PENDING requests until their
-      # explicit real-Worker completion phase enables automatic discovery.
+      # Transaction snapshots include complete job rows. Keep all discovery
+      # loops quiescent until their explicit real-Worker delivery phases;
+      # recipient authority delivery otherwise races removal receipt replay.
       STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED: 'false'
       STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED: 'false'
+      STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED: 'false'
+      STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v7
 
@@ -746,6 +749,20 @@ jobs:
         # Start fresh processes from the same loaded release images; keep all
         # production abuse limits enabled and preserve the PostgreSQL data.
         run: STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL=false docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 api web
+
+      - name: Enable automatic invitation authority routing for native browser acceptance
+        env:
+          STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED: 'true'
+          STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED: 'true'
+        run: |
+          set -euo pipefail
+          # Native nonmember/Portal scenarios require the actual automatic
+          # recipient/issuer loops. Persist this phase's flags so scoped browser
+          # Workers restore the same routing after each isolated scenario.
+          printf '%s\n' 'STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=true' 'STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED=true' >> "$GITHUB_ENV"
+          docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED)" = true
 
       - name: Authenticated browser E2E against exact release images
         env:
