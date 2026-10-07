@@ -303,6 +303,28 @@ metadata_state() {
     'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_metadata_replays r WHERE tenant_id='$retry_org'))::text;"
 }
 retry_body='{"name":"First metadata edit","description":"Original acknowledgment","version":1}'
+# Reviewed browser identity is independent of the current valid cookie. Reject
+# a replaced/malformed actor before private read, mutation or receipt admission.
+metadata_actor_state() {
+  admin "SELECT jsonb_build_object('organization',(SELECT to_jsonb(o) FROM organizations o WHERE id='$retry_org'),
+    'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$retry_org'),
+    'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM organization_metadata_replays r WHERE tenant_id='$retry_org'),
+    'eventCount',(SELECT count(*) FROM organization_metadata_events WHERE tenant_id='$retry_org'))::text;"
+}
+metadata_actor_before="$(metadata_actor_state)"
+for expected_actor in "$other" invalid 00000000-0000-0000-0000-000000000000; do
+  test "$(curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" \
+    -H "X-StrataAI-Expected-Actor: $expected_actor" -o "$scratch/metadata-actor.json" -w '%{http_code}' \
+    "$BASE_URL/organizations/$retry_org")" = 401
+  jq -e '.code=="session_unavailable"' "$scratch/metadata-actor.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$retry_org|Metadata retry fixture|First metadata edit" "$scratch/metadata-actor.json"
+  test "$(curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -H "X-StrataAI-Expected-Actor: $expected_actor" -H "Idempotency-Key: $retry_key" \
+    -X PATCH -d "$retry_body" -o "$scratch/metadata-actor.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org")" = 401
+  jq -e '.code=="session_unavailable"' "$scratch/metadata-actor.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$retry_org|Metadata retry fixture|First metadata edit" "$scratch/metadata-actor.json"
+  test "$metadata_actor_before" = "$(metadata_actor_state)"
+done
 metadata_before="$(metadata_state)"
 admin 'REVOKE INSERT ON organization_metadata_replays FROM strataai_api_runtime;' >/dev/null
 test "$(retry_metadata "$retry_body")" = 503
@@ -360,6 +382,13 @@ test "$(admin "SELECT count(*)=1 FROM audit_events WHERE tenant_id='$retry_org' 
 test "$(admin "SELECT count(*)=1 FROM organization_metadata_events WHERE tenant_id='$retry_org' AND event_type='ORGANIZATION_UPDATED' AND entity_version=2 AND sequence=2 AND metadata='{}';")" = t
 cp "$scratch/metadata-first.json" "$scratch/original-metadata.json"
 jq -e '.name=="First metadata edit" and .version==2' "$scratch/original-metadata.json" >/dev/null
+metadata_actor_committed="$(metadata_actor_state)"
+test "$(curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' \
+  -H 'Content-Type: application/json' -H "X-StrataAI-Expected-Actor: $other" -H "Idempotency-Key: $retry_key" \
+  -X PATCH -d "$retry_body" -o "$scratch/metadata-actor-replay.json" -w '%{http_code}' "$BASE_URL/organizations/$retry_org")" = 401
+jq -e '.code=="session_unavailable"' "$scratch/metadata-actor-replay.json" >/dev/null
+scripts/ci/assert-file-excludes.sh "$retry_org|First metadata edit|Original acknowledgment" "$scratch/metadata-actor-replay.json"
+test "$metadata_actor_committed" = "$(metadata_actor_state)"
 test "$(request PATCH "/organizations/$retry_org" '{"name":"Later metadata edit","version":2}')" = 200
 metadata_after="$(metadata_state)"
 test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_metadata_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0

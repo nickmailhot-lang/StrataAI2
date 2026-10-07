@@ -10,7 +10,7 @@ A lost, timed-out or malformed save acknowledgment preserves the original metada
 
 Each complete read/save operation has one 15-second deadline covering both account checks, the Organization request and response-body decoding. Duplicate in-flight submission is refused, unmount aborts pending work, and late responses cannot replace a different route or restore private data. Reads and saves check the account before and after their operation. The settings read targets one Organization directly rather than loading the whole directory. Account replacement or confirmed loss of administration clears the draft, current metadata and original-save intent. The settings route remounts on Organization change. Server/edge error text is not displayed as trusted product content.
 
-If a temporary account-check failure happens before a fresh PATCH, no original-save intent is created: the screen says no save was sent, preserves the draft and requires a current read and explicit review before another save. A failure after actual submission preserves the exact body/version/key until the original acknowledgment is recovered. Failed refreshes withdraw stale saved-review controls and block saving until fresh admission. Definite profile refusals clear private state. These client checks do not yet bind the metadata API request to the reviewed actor: replacement of the cookie between the profile check and PATCH still requires a server actor-binding guard and corresponding API/native evidence.
+If a temporary account-check failure happens before a fresh PATCH, no original-save intent is created: the screen says no save was sent, preserves the draft and requires a current read and explicit review before another save. A failure after actual submission preserves the exact body/version/key until the original acknowledgment is recovered. Failed refreshes withdraw stale saved-review controls and block saving until fresh admission. Definite profile refusals clear private state. Settings reads and PATCH now send `X-StrataAI-Expected-Actor`; the API rejects a mismatched, malformed, empty or repeated value with neutral 401 `session_unavailable` before service or receipt admission. Existing API clients may omit it. Each original save retains its reviewed actor alongside body/version/key; a replacement account cannot receive its acknowledgment or apply its edit using that intent. Current server session, membership, lifecycle and final transaction admission still apply.
 
 `organization-settings-account.spec.ts` adds four mandatory native cases at
 desktop and phone widths. A normal registered administrator reviews actual
@@ -106,3 +106,30 @@ cases. Both passed together in a focused run. Their polling assertions now reuse
 the already identified controls, require them to remain attached, and preserve
 the original enabled/focus checks and timeout limits. A full recheck is running;
 the failed run is not release acceptance evidence.
+
+## Reviewed account binding verification
+
+The API-host guard case uses two authenticated accounts with legitimate Owner
+and Admin access. Wrong, malformed, empty and repeated identities must refuse
+both private reads and new edits without changing the Organization or creating
+a receipt. Correct identity can then use the same key once; changed identity
+cannot disclose that committed acknowledgment, and correct replay advances no
+additional revision. This case and all three metadata receipt/replay API cases
+passed locally. API and API-test builds completed with zero warnings/errors
+using the already-built shared libraries; the independent original persistence
+run and its inputs remained unchanged. All 30 focused settings component cases,
+web/browser TypeScript checks and lint passed.
+
+Six mandatory `organization-settings-actor.spec.ts` cases replace actual browser
+cookies before submission, after the before-profile check but before API admission,
+or after actual commit, at desktop and phone widths. The replacement account is
+an accepted Organization Admin. The middle case forwards the actual replacement
+cookie with the original reviewed actor and requires API 401 plus unchanged
+settings. Before/after cases respectively require zero commands or one legitimate
+commit, and all retire private draft/acknowledgment/retry state without a document
+reload. Keyboard and WCAG 2.2 AA checks remain required. All six collect and
+type-check; exact-image runtime execution is pending. The mandatory restricted
+Organization command fixture also checks neutral actor refusals before private
+read/new edit/committed receipt and compares actual metadata, audit, receipt and
+event-count state. Its shell syntax and snapshot SQL passed; full exact-image
+execution remains pending.

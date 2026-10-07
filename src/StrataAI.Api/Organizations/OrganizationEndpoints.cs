@@ -86,6 +86,7 @@ public static class OrganizationEndpoints
         {
             context.Response.Headers.CacheControl = "private, no-store";
             var actor = GetUserId(context); if (actor is null) return Results.Unauthorized();
+            if (!ReviewedActorMatches(context, actor.Value)) return ErrorFor("session_unavailable");
             var result = await service.ReadAsync(organizationId, actor.Value, cancellationToken);
             return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
         });
@@ -201,6 +202,8 @@ public static class OrganizationEndpoints
                     return Results.Unauthorized();
                 }
 
+                context.Response.Headers.CacheControl = "private, no-store";
+                if (!ReviewedActorMatches(context, userId.Value)) return ErrorFor("session_unavailable");
                 Guid? key = null;
                 if (context.Request.Headers.TryGetValue("Idempotency-Key", out var keys))
                 {
@@ -362,6 +365,12 @@ public static class OrganizationEndpoints
                     : ErrorFor(result.ErrorCode);
             });
     }
+
+    // Existing API clients may omit this header. Settings reviews and commands
+    // bind their immutable intent to the account whose private data was reviewed.
+    private static bool ReviewedActorMatches(HttpContext context, Guid actor) =>
+        !context.Request.Headers.TryGetValue("X-StrataAI-Expected-Actor", out var expected) ||
+        expected.Count == 1 && Guid.TryParse(expected[0], out var id) && id != Guid.Empty && id == actor;
 
     private static Guid? GetUserId(HttpContext context)
     {

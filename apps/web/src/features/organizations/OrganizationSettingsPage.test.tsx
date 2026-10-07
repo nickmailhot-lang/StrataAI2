@@ -158,6 +158,8 @@ describe('PRD-03-TC-01/05/06/08 Organization metadata administration', () => {
     fireEvent.click(save()); await screen.findByText('Organization settings saved.');
     expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({ name: 'Updated', description: org.description, logoUrl: null, version: 1 });
     expect(fetcher.mock.calls[1][1].headers.get('X-StrataAI-Request')).toBe('1');
+    expect(fetcher.mock.calls[0][1].headers.get('X-StrataAI-Expected-Actor')).toBe(profile.id);
+    expect(fetcher.mock.calls[1][1].headers.get('X-StrataAI-Expected-Actor')).toBe(profile.id);
     expect(screen.getByLabelText(/^Organization name/)).toHaveValue('Updated');
   });
   it('preserves a conflicting draft until current metadata is reviewed explicitly', async () => {
@@ -185,6 +187,7 @@ describe('PRD-03-TC-01/05/06/08 Organization metadata administration', () => {
     await screen.findByText(/Original save acknowledgment recovered/);
     expect(fetcher.mock.calls[2][1].body).toBe(fetcher.mock.calls[1][1].body);
     expect(fetcher.mock.calls[2][1].headers.get('Idempotency-Key')).toBe(fetcher.mock.calls[1][1].headers.get('Idempotency-Key'));
+    expect(fetcher.mock.calls[2][1].headers.get('X-StrataAI-Expected-Actor')).toBe(profile.id);
     expect(fetcher.mock.calls[1][1].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
     expect(save()).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Load current settings' })); await screen.findByText('Name: Later edit');

@@ -8,7 +8,7 @@ import { watchOrganizationMetadata } from './organizationMetadataLive';
 
 type Organization = { id: string; name: string; description: string | null; logoUrl: string | null; status: number; version: number };
 type Draft = Pick<Organization, 'name' | 'description' | 'logoUrl'>;
-type Intent = { draft: Draft; version: number; key: string };
+type Intent = { draft: Draft; version: number; key: string; actorId: string };
 type Summary = { organization: Organization; role: number };
 function valid(value: unknown): value is Summary {
   if (!value || typeof value !== 'object') return false;
@@ -86,7 +86,9 @@ function Settings({ organizationId }: { organizationId: string }) {
         if ([401, 403, 404].includes(before.status)) { deny(before.status); return; }
         if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
         if (actor.current && actor.current !== before.body.id) { deny(401); return; }
-        const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {}, signal);
+        const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {
+          headers: { 'X-StrataAI-Expected-Actor': before.body.id },
+        }, signal);
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
         if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
         if (result.status !== 200 || !valid(result.body)) throw new Error('Invalid settings response');
@@ -120,7 +122,7 @@ function Settings({ organizationId }: { organizationId: string }) {
     event?.preventDefault();
     if (pending.current || (!retry && (review || intent)) || !record || !draft) return;
     if (!draft.name.trim() || draft.name.trim().length > 160) { setError('Enter an Organization name of at most 160 characters.'); return; }
-    const proposed = intent ?? { draft: { ...draft }, version: record.organization.version, key: crypto.randomUUID() };
+    const proposed = intent ?? { draft: { ...draft }, version: record.organization.version, key: crypto.randomUUID(), actorId: actor.current ?? '' };
     let submitted = false;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); setNotice(undefined);
     setBackgroundReading(false);
@@ -130,10 +132,10 @@ function Settings({ organizationId }: { organizationId: string }) {
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
         if ([401, 403, 404].includes(before.status)) { deny(before.status); return; }
         if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
-        if (!actor.current || actor.current !== before.body.id) { deny(401); return; }
+        if (!proposed.actorId || proposed.actorId !== before.body.id) { deny(401); return; }
         submitted = true;
         const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': proposed.key }, body: JSON.stringify({ ...proposed.draft, version: proposed.version }),
+          method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': proposed.key, 'X-StrataAI-Expected-Actor': proposed.actorId }, body: JSON.stringify({ ...proposed.draft, version: proposed.version }),
         }, signal);
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
         if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
@@ -141,7 +143,7 @@ function Settings({ organizationId }: { organizationId: string }) {
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
         if ([401, 403, 404].includes(after.status)) { deny(after.status); return; }
         if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
-        if (after.body.id !== before.body.id) { deny(401); return; }
+        if (after.body.id !== proposed.actorId) { deny(401); return; }
         const updated = { organization: result.body, role: record.role };
         if (result.status === 200 && valid(updated) && updated.organization.id === organizationId
           && updated.organization.status === 0 && updated.organization.version === proposed.version + 1 && matches(updated.organization, proposed.draft)) {
