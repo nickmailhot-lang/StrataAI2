@@ -112,6 +112,16 @@ recipient revisions each incremented once. This was a local build snapshot,
 not retained release-image or browser acceptance evidence. Startup refusal was
 also verified for enabled Demo discovery and an invalid boolean setting.
 
+The release Compose definition forwards the authority discovery flag, and its
+example environment documents the default. The mandatory exact-image integration
+gate `scripts/ci/test-invitation-recipient-authority-delivery.sh` submits a real
+HTTP Organization update after populating 205 disposable invitation candidates.
+It requires 100/100/5 acknowledged pages, two deduplicated recipient revisions,
+restart stability and unchanged unrelated metadata/Work queues. It toggles only
+the independent Worker discovery settings and restores the release Worker on
+exit. Shell syntax is verified; execution of this new gate against retained
+release images is pending CI and is not yet passing evidence.
+
 ## Production protected cursor binding
 
 The recipient reader requires its existing owning account observation, derives

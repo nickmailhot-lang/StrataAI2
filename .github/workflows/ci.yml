@@ -532,6 +532,8 @@ jobs:
         run: scripts/ci/test-organization-commands.sh
       - name: Automatic Organization metadata delivery with typed queue isolation
         run: bash scripts/ci/test-organization-metadata-delivery.sh
+      - name: Automatic recipient authority pages and restart against exact Worker image
+        run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh
 
       - name: Account deactivation and Organization active-owner continuity
         run: scripts/ci/test-account-owner-continuity.sh
