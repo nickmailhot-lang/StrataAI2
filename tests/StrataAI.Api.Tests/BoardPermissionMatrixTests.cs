@@ -23,7 +23,10 @@ public sealed partial class ApiHostTests
     public async Task PRD_05_HTTP_permission_matrix_preserves_visibility_and_explicit_edit_boundaries(string visibility, string role)
     {
         var ct = TestContext.Current.CancellationToken;
-        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        // Binary transport is explicitly enabled with the existing synthetic
+        // private provider; normal Demo remains disabled for file uploads.
+        var objects = new UploadObjects();
+        await using var app = UploadFactory(objects); using var owner = app.CreateClient(); using var recipient = app.CreateClient();
         using var anonymous = app.CreateClient(); var f = await NotificationFixture(app, owner, recipient, ct);
         var organizations = app.Services.GetRequiredService<IOrganizationStore>();
         var store = app.Services.GetRequiredService<IWorkManagementStore>();
@@ -115,6 +118,38 @@ public sealed partial class ApiHostTests
                 Assert.DoesNotContain("Protected matrix Card", await result.Content.ReadAsStringAsync(ct));
                 Assert.Equal(baseline, await Snapshot());
             }
+        }
+        var fileVersion = (await store.FindCardAsync(card, ct))!.Version;
+        var fileKey = Guid.NewGuid(); var fileBytes = new byte[512]; "%PDF-1.7\n"u8.CopyTo(fileBytes);
+        var beforeFile = await Snapshot();
+        using var uploadRequest = FileRequest($"/cards/{card}/attachments", fileBytes, fileKey, "Matrix private.pdf", fileVersion);
+        using var uploaded = await actor.SendAsync(uploadRequest, ct);
+        if (canEdit)
+        {
+            Assert.Equal(HttpStatusCode.OK, uploaded.StatusCode);
+            var receipt = await uploaded.Content.ReadAsStringAsync(ct);
+            Assert.DoesNotContain("storageKey", receipt, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(1, objects.Writes); Assert.Equal(0, objects.Reads);
+            Assert.Equal(fileVersion + 1, (await store.FindCardAsync(card, ct))!.Version);
+            var committedFile = await Snapshot(); Assert.NotEqual(beforeFile, committedFile);
+            using var replayRequest = FileRequest($"/cards/{card}/attachments", fileBytes, fileKey, "Matrix private.pdf", fileVersion);
+            using var replayedUpload = await actor.SendAsync(replayRequest, ct);
+            Assert.Equal(HttpStatusCode.OK, replayedUpload.StatusCode);
+            Assert.Equal(receipt, await replayedUpload.Content.ReadAsStringAsync(ct));
+            Assert.Equal(committedFile, await Snapshot());
+            Assert.Equal(1, objects.Writes); Assert.Equal(0, objects.Reads);
+        }
+        else
+        {
+            Assert.Equal(deniedStatus, uploaded.StatusCode);
+            Assert.Equal(beforeFile, await Snapshot());
+            Assert.Equal(0, objects.Writes); Assert.Equal(0, objects.Reads);
+            using var malformed = FileRequest($"/cards/{card}/attachments", fileBytes, Guid.NewGuid());
+            malformed.Headers.Remove("X-Attachment-SHA256"); malformed.Headers.Add("X-Attachment-SHA256", "invalid");
+            using var deniedBeforeParsing = await actor.SendAsync(malformed, ct);
+            Assert.Equal(deniedStatus, deniedBeforeParsing.StatusCode);
+            Assert.Equal(beforeFile, await Snapshot());
+            Assert.Equal(0, objects.Writes); Assert.Equal(0, objects.Reads);
         }
         var beforeMove = await Snapshot(); var moveVersion = (await store.FindCardAsync(card, ct))!.Version;
         using var moved = await Mutate(actor, HttpMethod.Post, $"/cards/{card}/move", new { destinationListId, expectedVersion = moveVersion, sourceBoardId = f.Board });

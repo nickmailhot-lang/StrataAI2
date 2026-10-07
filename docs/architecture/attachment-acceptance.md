@@ -10,6 +10,14 @@ implementations and scoped executed contracts; they are not full-ticket proof.
 The opening matrix describes current scope; dated evidence below is historical
 and must not be treated as proof that the current head has passed required-ci.
 
+The [PRD-05 HTTP permission matrix](prd-05-acceptance.md#executed-http-permission-matrix)
+also executes raw upload admission across all three Board visibilities and six
+access states. Its 18 passing API-host cases verify authorized Pending publication,
+original-key receipt replay without another provider write, and neutral unauthorized
+refusal before claimed-header validation with zero provider reads/writes. The
+private provider is explicitly synthetic and metadata uses Demo adapters; this
+does not establish deployed storage/scanner or retained-image binary acceptance.
+
 `Attachment` is a framework/provider-free Organization-scoped Domain entity.
 It retains stable Card/uploader identity, display name, kind, timestamps/version,
 server-owned binary MIME/byte count/key or URL metadata, scan status/time and
