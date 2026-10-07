@@ -414,3 +414,22 @@ All 101 focused date/Board source cases passed. The native policy run also expos
 and verified repair of an initial StrictMode admission retirement defect. See
 [date recovery evidence](card-dates.md#open-date-preference-recovery) for scope.
 Current retained release images and complete PRD acceptance remain outstanding.
+
+### Current account keyboard and accessibility evidence
+
+On 2026-10-07, the full current web suite passed all 1,896 cases across 134 files
+locally and in exact-commit `8c6d2b9a` CI. The strengthened two-browser profile
+scenario passed real persisted preferences, canonical event/timestamp assertions,
+conflict preservation/merge and logout recovery, plus tagged WCAG 2.2 AA axe checks
+on desktop, phone and the phone conflict state. Both complete mention-handle
+native cases also passed their original intent, concurrent account and revocation
+checks. Browser typechecking passed after fixture changes.
+
+The broader account invocation initially passed 11 of 14 cases. Targeted reruns
+passed the original-ID invitation acceptance scenario after correcting a split
+focus/Enter fixture race, and both unknown-account password recovery cases using
+a disposable email-enabled Production API. All 14 distinct cases have scoped local
+passes across those invocations; this does not establish a single complete green
+release run or actual email transport. The disposable API/web fixture and its
+private ephemeral key configuration were removed. See [account acceptance evidence](prd-02-acceptance.md#executed-account-browser-and-current-source-checks)
+for exact scope and remaining acceptance.

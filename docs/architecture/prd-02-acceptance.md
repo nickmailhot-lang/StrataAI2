@@ -455,3 +455,46 @@ admission cleanup repair. See [date recovery evidence](card-dates.md#open-date-p
 This is local Production-runtime evidence, not retained-image acceptance. Full
 current CI and PRD-wide acceptance remain required. Estimated PRD-02 work
 remaining is now **18%**; the ticket remains open.
+
+### Executed account browser and current-source checks
+
+The complete web suite at `8c6d2b9a` passed locally: **134 files, 1,896 cases**,
+exit 0 in 643.07 seconds with two workers. Exact-commit CI run 37625889421 also
+passed all 1,896 web cases, .NET quality, restricted PostgreSQL integration and
+the source gate. Its release-image/container gates were still live when recorded.
+No application/backend source changed during or after these checks in this increment.
+
+The account and mention-handle native invocation completed with 11 passes and
+three failures. Two recovery cases needed email-enabled Production configuration;
+the local API correctly refused with its configured 503. A separate disposable
+API with an ephemeral token key then passed both full cases, including malformed
+acknowledgment retry, generic confirmation and invalid reset-link recovery.
+These cases use unknown accounts/invalid tokens; they do not prove real email
+transport or Worker delivery. The disposable API/web process and private key
+configuration were removed afterward.
+
+The third failure was a keyboard fixture race: live recovery disabled the retry
+control between separate focus and page-level Enter actions, so Enter refreshed
+instead of submitting the original acceptance. The fixture now presses Enter on
+the intended control. The complete invitation scenario passed after this change,
+retaining the exact two original-ID commands, lost acknowledgment, empty discovery,
+protected-label withdrawal and canonical membership assertions. No application
+admission, denial or command guard was weakened.
+
+The profile scenario also passed with added WCAG 2.2 AA tagged axe checks on
+both desktop/phone views and the phone conflict state. Canonical event/timestamp
+assertions, dirty-edit preservation, latest-version merge, live preference recovery
+and logout in both views remain enforced. All 14 distinct account/handle scenarios
+therefore have scoped local passes across the initial invocation and targeted
+reruns; this is not a single green complete invocation or retained-image proof.
+Browser typechecking passed after the fixture changes.
+
+Seven focused API-host cases passed from the isolated Release test output:
+four malformed persisted hashes refuse without identity/event/receipt/session
+mutation; unknown-account requests perform adaptive verification without dummy
+identity persistence; two post-publication sign-in expiry cases roll back and
+recover with the original key, including legacy hash upgrade. These use Demo
+persistence and do not replace restricted PostgreSQL or release-image evidence.
+
+Estimated PRD-02 work remaining stays **18%**. Current full release acceptance,
+mail delivery and PRD-wide audit remain outstanding; the ticket stays open.

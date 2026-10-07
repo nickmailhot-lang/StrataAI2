@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -136,15 +137,15 @@ test('PRD-60-TC-07/11/15: verified email discovers an invitation and retries los
     await page.goto('/app');
     await page.getByRole('link', { name: 'Invitations', exact: true }).click();
     const accept = page.getByRole('button', { name: 'Accept invitation to Browser invitation council' });
-    await expect(accept).toBeVisible(); await accept.focus(); await page.keyboard.press('Enter');
+    await expect(accept).toBeVisible(); await accept.press('Enter');
     await expect(page.getByText('Unable to confirm acceptance. You can retry this invitation safely.')).toBeVisible();
     const refresh = page.waitForResponse(response => new URL(response.url()).pathname === '/me/invitations' && response.request().method() === 'GET');
-    await page.getByRole('button', { name: 'Refresh invitations' }).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Refresh invitations' }).press('Enter');
     expect((await (await refresh).json()).items).toHaveLength(0);
     await expect(page.getByRole('heading', { name: 'Browser invitation council', exact: true })).toHaveCount(0);
     await expect(accept).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Retry invitation acceptance' })).toBeEnabled();
-    await page.getByRole('button', { name: 'Retry invitation acceptance' }).focus(); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Retry invitation acceptance' }).press('Enter');
     await expect(page.getByRole('link', { name: 'Open organization', exact: true })).toBeVisible();
     expect(paths).toHaveLength(2); expect(paths[1]).toBe(paths[0]);
     await page.getByRole('link', { name: 'Open organization', exact: true }).click();
@@ -315,6 +316,8 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await second.setViewportSize({ width: 390, height: 844 });
   await second.goto('/app/profile');
   await expect(second.getByLabel(/^Display name/)).toHaveValue('Browser Council');
+  for (const profilePage of [page, second])
+    expect((await new AxeBuilder({ page: profilePage }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
   await second.getByLabel(/^Display name/).fill('Stale browser save');
   await page.getByLabel(/^Display name/).fill('First browser save');
   await page.getByLabel(/^Timezone/).fill('UTC');
@@ -333,6 +336,7 @@ test('ARCH-11-TC-17 / PRD-02-TC-01/08: authenticated profile persistence and two
   await expect(second.getByRole('alert')).toContainText('changed elsewhere', { timeout: 15_000 });
   await expect(second.getByLabel(/^Display name/)).toHaveValue('Stale browser save');
   await expect(second.getByRole('button', { name: 'Save profile', exact: true })).toBeDisabled();
+  expect((await new AxeBuilder({ page: second }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
   await second.getByRole('button', { name: 'Discard edits and load latest profile' }).click();
   await expect(second.getByLabel(/^Display name/)).toHaveValue('First browser save');
   await expect(second.getByLabel(/^Timezone/)).toHaveValue('UTC');
