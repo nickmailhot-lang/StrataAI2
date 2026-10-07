@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$Dotnet,
+    [string]$LinuxSdkImage = 'mcr.microsoft.com/dotnet/sdk:10.0',
     [switch]$KeepDatabase
 )
 
@@ -57,7 +58,29 @@ try {
     $env:STRATAAI_CONTRACT_API_CONNECTION = "Host=127.0.0.1;Port=$port;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password"
     $env:STRATAAI_CONTRACT_WORKER_CONNECTION = "Host=127.0.0.1;Port=$port;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password"
     Write-Host "Running the full restricted persistence suite in $containerName (loopback port $port)."
-    & $Dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj -c Release --no-build
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
+        # The production preview/download privacy boundary is explicitly Linux.
+        # Preserve it: compile and execute the complete suite inside Linux,
+        # sharing only this disposable database's network namespace. Copy source
+        # into ephemeral container storage; never overwrite host bin/obj files.
+        $linuxRun = @'
+set -eu
+mkdir /tmp/strata-contract
+tar -C /workspace --exclude=bin --exclude=obj -cf - global.json Directory.Build.props Directory.Build.targets Directory.Packages.props src tests/StrataAI.Persistence.Contracts | tar -C /tmp/strata-contract -xf -
+cd /tmp/strata-contract
+dotnet restore tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --locked-mode
+dotnet build tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj -c Release --no-restore -warnaserror
+dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj -c Release --no-build
+'@
+        Invoke-CheckedDocker -Arguments @('run', '--rm', '--network', "container:$containerId",
+            '--label', "codex.strataai.contract=$identity", '--mount', "type=bind,source=$repository,target=/workspace,readonly",
+            '-e', 'STRATAAI_CONTRACT_ADMIN_CONNECTION=Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=postgres;Password=postgres',
+            '-e', 'STRATAAI_CONTRACT_API_CONNECTION=Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password',
+            '-e', 'STRATAAI_CONTRACT_WORKER_CONNECTION=Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password',
+            $LinuxSdkImage, 'bash', '-c', $linuxRun)
+    } else {
+        & $Dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj -c Release --no-build
+    }
     if ($LASTEXITCODE -ne 0) { throw "Persistence suite failed (exit $LASTEXITCODE)." }
     $passed = $true
 }

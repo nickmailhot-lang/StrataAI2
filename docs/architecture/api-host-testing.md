@@ -39,7 +39,7 @@ repository root:
 
 ```powershell
 ./scripts/run-local-persistence-contracts.ps1
-# Optional: select a particular SDK or retain the completed fixture database.
+# Optional: select the host SDK or retain the completed fixture database.
 ./scripts/run-local-persistence-contracts.ps1 -Dotnet /path/to/dotnet -KeepDatabase
 ```
 
@@ -51,6 +51,17 @@ and uses known disposable test passwords. It executes the full
 `StrataAI.Persistence.Contracts` program, including the actual 5,000-active plus
 100,000-archived-Card deletion contract. Progress reports are counts and elapsed
 times; allow the original process to reach its terminal result.
+
+On Windows the complete contract executable runs inside the Linux .NET SDK
+image (`-LinuxSdkImage`, default `mcr.microsoft.com/dotnet/sdk:10.0`). The
+production private download preparer intentionally requires Linux; the runner
+does not bypass that check or skip attachment coverage. The container copies
+source from a read-only mount into ephemeral storage, restores locked packages
+and builds the persistence project there, excluding host bin/obj outputs. It
+shares only its own PostgreSQL container's network namespace, connecting to
+restricted roles at localhost without another exposed port. Host source and
+build outputs are not modified by the Linux execution. On Linux the runner
+uses the host SDK directly. `-Dotnet` selects the host restore/build SDK.
 
 Existing containers/databases are not reused or reset. A successful run removes
 only its own container and anonymous database volume after checking its immutable
@@ -65,5 +76,11 @@ are still synthetic. They complement API-host tests and cannot establish real
 HTTP cookie behavior, deployed provider authority, browser accessibility or the
 exact-image build-once release gate. The runner's PowerShell syntax has been
 checked; its complete automated lifecycle remains pending execution. The initial
-equivalent manual database setup is currently running the suite against commit
-`4f427d0`; results must be recorded after its original process completes.
+manual Windows run at `4f427d0` completed with exit code 1. Its complete
+105,000-Card deletion mutation/delivery and source recovery contracts passed
+(826 bounded mutation jobs, 105,201 ready work events, one terminal, 2,425,361 ms
+elapsed, maximum leased mutation page 1,296 ms). Later attachment preview
+publication failed at the explicit Linux-only private download boundary.
+The original database is preserved as `codex-strataai-contract-20261006`; this
+is not a whole-suite pass. The Windows Linux-container route repairs that
+observed platform incompatibility; its full lifecycle remains to execute.

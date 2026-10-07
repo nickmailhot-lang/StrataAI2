@@ -641,6 +641,13 @@ purge are outside this seeded graph. The mandatory PostgreSQL job in
 passed at `4f427d0`. Its executed contract reports 826 bounded mutation jobs,
 105,201 ready work events and one ready terminal source for the full graph,
 elapsed 739,039 ms and maximum leased mutation page 113 ms. The separate local
-Windows run is still live and has no final result. The earlier
+Windows run completed the same deletion contract: 826 mutation jobs, 105,201
+ready work events, one terminal, elapsed 2,425,361 ms and maximum leased page
+1,296 ms, including restricted Member/Owner source recovery. The full executable
+then failed at the explicit Linux-only private attachment download preparer;
+its exit code is 1 and its database is preserved. This confirms the deletion
+workload, not a complete local persistence pass. The local runner now executes
+Windows-launched contracts inside Linux; that fresh full run remains to verify.
+The earlier
 100,000-archived-Card reference traversal remains valid as traversal evidence
 only. Neither fixture nor compilation closes PRD-03/18 on its own.
