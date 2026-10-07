@@ -105,7 +105,9 @@ jobs:
         run: bash scripts/ci/test-attachment-runtime-fixture-arguments.sh
 
       - name: Verify Demo network isolation refuses unconfirmed prerequisites
-        run: bash scripts/ci/test-demo-network-isolation-fixture.sh
+        run: |
+          bash scripts/ci/test-demo-network-isolation-fixture.sh
+          bash scripts/ci/test-demo-worker-network-isolation-fixture.sh
 
       - name: Verify declared attachment scanner protocol fixture
         run: python3 tests/attachment-scanner-fixture.py
@@ -463,6 +465,7 @@ jobs:
         run: |
           set -euo pipefail
           bash scripts/ci/test-demo-network-isolation.sh "strataai-api:${GITHUB_SHA}"
+          bash scripts/ci/test-demo-worker-network-isolation.sh "strataai-worker:${GITHUB_SHA}"
 
       - name: Production fails closed without database configuration
         shell: bash

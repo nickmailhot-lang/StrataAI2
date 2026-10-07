@@ -88,6 +88,27 @@ access; these checks do not establish complete authentication PRD acceptance.
 
 ### Demo isolation verification
 
+Both API and separate Worker isolation are mandatory retained-image CI gates.
+The [Worker isolation runner](../../scripts/ci/test-demo-worker-network-isolation.sh)
+starts the already-built Worker with `--network none`, no published ports and
+only Demo/Development/log-level settings. It verifies Demo readiness, Worker
+health and safe runtime diagnostics through loopback using the image's existing
+curl, and confirms the process remains running. It installs no packages and
+rebuilds no images. Its trap retires the uniquely named test container.
+
+Eight [Worker refusal fixtures](../../scripts/ci/test-demo-worker-network-isolation-fixture.sh)
+cover success, an external network, published ports, a stopped process, non-Demo
+readiness, a different service, non-Demo runtime diagnostics and HTTP diagnostic
+failure; every started fixture is retired. These execute in the source gate.
+
+The unmodified Worker runner passed locally against the current compiled Worker
+mounted read-only in a cached framework/runtime image, with networking disabled
+and zero published ports. All eight refusal cases passed. This is current-source
+runtime evidence, not proof of the current retained release image; that requires
+the exact-commit CI gate. Demo Worker health does not establish Production job,
+mail, provider or retention acceptance. Production still uses the separate Worker
+with its restricted durable PostgreSQL stores and explicit providers.
+
 [ARCH-05](https://github.com/nickmailhot-lang/StrataAI2/issues/86) requires the
 documented workflows to operate without an external network. Merely omitting a
 PostgreSQL connection string does not establish that boundary. The retained-image
