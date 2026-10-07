@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { boundedWorkRead } from '../../api/workManagement';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { invitationRoles, validInvitationKey } from './invitationIntent';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
@@ -30,18 +31,12 @@ function page(value: unknown, boardId?: string): value is Page {
 }
 const delivery = (state: string | null) => ({ PENDING: 'Email pending', SENT: 'Email sent',
   CANCELLED: 'Email cancelled', FAILED: 'Email delivery failed', RETRY_EXHAUSTED: 'Email retries exhausted' }[state ?? ''] ?? 'No email delivery recorded');
-async function request(path: string, options: RequestInit, controller: AbortController) {
-  let timer: ReturnType<typeof setTimeout> | undefined; let abort: (() => void) | undefined;
-  try {
-    return await Promise.race([
-      apiFetch(path, { ...options, signal: controller.signal }).then(async response => ({ status: response.status,
-        body: [204, 401].includes(response.status) ? undefined : await response.json().catch(() => undefined) as unknown })),
-      new Promise<never>((_, reject) => {
-        abort = () => reject(new Error('Invitation history interrupted'));
-        controller.signal.addEventListener('abort', abort, { once: true }); timer = setTimeout(() => controller.abort(), 15_000);
-      }),
-    ]);
-  } finally { clearTimeout(timer); if (abort) controller.signal.removeEventListener('abort', abort); }
+async function request(path: string, options: RequestInit, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const response = await apiFetch(path, { ...options, signal });
+  const body = [204, 401].includes(response.status) ? undefined : await response.json().catch(() => undefined) as unknown;
+  signal.throwIfAborted();
+  return { status: response.status, body };
 }
 export function OrganizationInvitationHistoryPage() {
   const { organizationId } = useParams();
@@ -112,8 +107,8 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     recoveryId.current = undefined; setUnconfirmed(undefined);
     setError(status === 401 ? `Sign in again to review ${boardId !== undefined ? 'Board' : 'Organization'} invitations.` : `${boardId !== undefined ? 'Board' : 'Organization'} invitation administration is unavailable.`);
   }
-  async function account(controller: AbortController, expected = actor.current) {
-    const me = await request('/me', {}, controller); if (!valid(controller)) return;
+  async function account(controller: AbortController, signal: AbortSignal, expected = actor.current) {
+    const me = await request('/me', {}, signal); if (!valid(controller)) return;
     if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
     const prefs = me.body as Preferences | undefined;
     if (me.status !== 200 || !prefs || !validInvitationKey(prefs.id) || typeof prefs.locale !== 'string' || typeof prefs.timezone !== 'string'
@@ -126,36 +121,38 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     const started = epoch.current;
     setBoardName(undefined); setError(undefined); setRows(undefined); setSelected(undefined);
     try {
-      if (!validInvitationKey(organizationId)) { deny(404); return; }
-      const prefs = await account(controller); if (!prefs) return;
-      let currentBoardName: string | undefined;
-      if (boardId !== undefined) {
-        if (!validInvitationKey(boardId)) { deny(404); return; }
-        const boardResult = await request(`/boards/${encodeURIComponent(boardId)}`, {}, controller); if (!valid(controller)) return;
-        if ([401, 403, 404].includes(boardResult.status)) { deny(boardResult.status); return; }
-        const scope = boardResult.body as { board?: { id: string; organizationId: string; lifecycleState: string; name: string }; access?: { canAdminister: boolean } } | undefined;
-        if (boardResult.status !== 200 || scope?.board?.id !== boardId || scope.board.organizationId !== organizationId
-          || scope.board.lifecycleState !== 'active' || typeof scope.board.name !== 'string' || !scope.board.name.trim()
-          || scope.access?.canAdminister !== true) { deny(404); return; }
-        currentBoardName = scope.board.name;
-      }
-      const result = await request(root + (next ? `?after=${encodeURIComponent(next)}` : ''), {}, controller); if (!valid(controller)) return;
-      if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-      if (result.status !== 200 || !page(result.body, boardId) || result.body.items.some((row, index, items) =>
-        row.id.toLowerCase() <= (index ? items[index - 1].id.toLowerCase() : next?.toLowerCase() ?? '')))
-        throw new Error('Invalid history');
-      const current = await account(controller, prefs.id); if (!current || started !== epoch.current) return;
-      actor.current = current.id; setActorId(current.id);
-      setBoardName(currentBoardName); setRows(result.body); setPreferences(current); setCursor(next); setPrevious(history); setDenied(false);
-      if (live) setLiveNotice('Current invitations checked. Review an invitation again before confirming revocation.');
-      if (recoveryId.current) {
-        const recovered = result.body.items.find(row => row.id === recoveryId.current);
-        if (recovered) {
-          recoveryId.current = undefined; setUnconfirmed(undefined);
-          setNotice(recovered.revokedAt ? 'Invitation revocation confirmed.' : recovered.acceptedAt
-            ? 'This invitation was accepted. Existing access is managed separately.' : 'Revocation was not confirmed. Review the current invitation before trying again.');
-        } else setError('Revocation is still unconfirmed. Review the remaining invitation pages to locate its current state.');
-      }
+      await boundedWorkRead(async signal => {
+        if (!validInvitationKey(organizationId)) { deny(404); return; }
+        const prefs = await account(controller, signal); if (!prefs) return;
+        let currentBoardName: string | undefined;
+        if (boardId !== undefined) {
+          if (!validInvitationKey(boardId)) { deny(404); return; }
+          const boardResult = await request(`/boards/${encodeURIComponent(boardId)}`, {}, signal); if (!valid(controller)) return;
+          if ([401, 403, 404].includes(boardResult.status)) { deny(boardResult.status); return; }
+          const scope = boardResult.body as { board?: { id: string; organizationId: string; lifecycleState: string; name: string }; access?: { canAdminister: boolean } } | undefined;
+          if (boardResult.status !== 200 || scope?.board?.id !== boardId || scope.board.organizationId !== organizationId
+            || scope.board.lifecycleState !== 'active' || typeof scope.board.name !== 'string' || !scope.board.name.trim()
+            || scope.access?.canAdminister !== true) { deny(404); return; }
+          currentBoardName = scope.board.name;
+        }
+        const result = await request(root + (next ? `?after=${encodeURIComponent(next)}` : ''), {}, signal); if (!valid(controller)) return;
+        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+        if (result.status !== 200 || !page(result.body, boardId) || result.body.items.some((row, index, items) =>
+          row.id.toLowerCase() <= (index ? items[index - 1].id.toLowerCase() : next?.toLowerCase() ?? '')))
+          throw new Error('Invalid history');
+        const current = await account(controller, signal, prefs.id); if (!current || started !== epoch.current) return;
+        actor.current = current.id; setActorId(current.id);
+        setBoardName(currentBoardName); setRows(result.body); setPreferences(current); setCursor(next); setPrevious(history); setDenied(false);
+        if (live) setLiveNotice('Current invitations checked. Review an invitation again before confirming revocation.');
+        if (recoveryId.current) {
+          const recovered = result.body.items.find(row => row.id === recoveryId.current);
+          if (recovered) {
+            recoveryId.current = undefined; setUnconfirmed(undefined);
+            setNotice(recovered.revokedAt ? 'Invitation revocation confirmed.' : recovered.acceptedAt
+              ? 'This invitation was accepted. Existing access is managed separately.' : 'Revocation was not confirmed. Review the current invitation before trying again.');
+          } else setError('Revocation is still unconfirmed. Review the remaining invitation pages to locate its current state.');
+        }
+      }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) {
       setBoardName(undefined); setRows(undefined); setSelected(undefined); setPreferences(undefined); setNotice(undefined);
       setError('Unable to confirm invitation history. Please retry.');
@@ -168,20 +165,22 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     const started = epoch.current;
     setError(undefined); setNotice(undefined); let reload = false, submitted = false;
     try {
-      const current = await account(controller); if (!current) return;
-      if (started !== epoch.current) return;
-      if (Date.parse(target.expiresAt) <= Date.now()) {
-        setNotice('This invitation reached its expiry time. Review its current state.'); reload = true; return;
-      }
-      submitted = true;
-      const result = await request(`${root}/${target.id}?expectedActorId=${encodeURIComponent(current.id)}`, { method: 'DELETE' }, controller); if (!valid(controller)) return;
-      if ([401, 403].includes(result.status) || boardId !== undefined && (result.body as { code?: string } | undefined)?.code === 'board_not_found') { deny(result.status); return; }
-      if (!await account(controller, current.id)) return;
-      if (result.status === 204) { setNotice('Invitation revocation confirmed.'); reload = true; }
-      else {
-        recoveryId.current = target.id; setUnconfirmed(target.id); setBoardName(undefined); setRows(undefined);
-        setError('Revocation could not be confirmed. Check the current invitation state before another action.');
-      }
+      await boundedWorkRead(async signal => {
+        const current = await account(controller, signal); if (!current) return;
+        if (started !== epoch.current) return;
+        if (Date.parse(target.expiresAt) <= Date.now()) {
+          setNotice('This invitation reached its expiry time. Review its current state.'); reload = true; return;
+        }
+        submitted = true;
+        const result = await request(`${root}/${target.id}?expectedActorId=${encodeURIComponent(current.id)}`, { method: 'DELETE' }, signal); if (!valid(controller)) return;
+        if ([401, 403].includes(result.status) || boardId !== undefined && (result.body as { code?: string } | undefined)?.code === 'board_not_found') { deny(result.status); return; }
+        if (!await account(controller, signal, current.id)) return;
+        if (result.status === 204) { setNotice('Invitation revocation confirmed.'); reload = true; }
+        else {
+          recoveryId.current = target.id; setUnconfirmed(target.id); setBoardName(undefined); setRows(undefined);
+          setError('Revocation could not be confirmed. Check the current invitation state before another action.');
+        }
+      }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) {
       setBoardName(undefined); setRows(undefined); setPreferences(undefined); setNotice(undefined);
       if (submitted) {

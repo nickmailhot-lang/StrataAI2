@@ -147,3 +147,30 @@ refusal and successful same-account revocation on both surfaces. Native containe
 fixtures also require neutral reviewed-account refusal with unchanged invitation,
 routing, audit, source/counter/proof and queue state. Their runtime execution and
 the new two-client browser observer still await current-image CI.
+
+## Complete review and revocation deadlines
+
+Each history review now has one 15-second deadline covering its initial account
+check, any Board administration read, the history response/body and final account
+check. Each revocation has one separate deadline covering both account checks and
+the actual DELETE. The subsequent canonical history refresh is an independently
+admitted read. Abort checks before transport and after body decoding fence late
+responses, including adapters that ignore cancellation.
+
+A pre-command failure says no revocation was sent and requires fresh review.
+Post-submission uncertainty preserves the exact invitation ID and withholds the
+acknowledgment until canonical history confirms its state. It does not repeat
+DELETE. Existing live epochs, membership/account checks, expiry withdrawal and
+private-state cleanup remain in force.
+
+All 36 focused component cases pass, including Organization and Board reads and
+revocations where an eight-second first account check is followed by stalled JSON
+and the whole operation aborts at 15 seconds. Late bodies cannot restore rows or
+publish an acknowledgment. Web/browser type checks and lint pass. Four mandatory
+desktop/phone native scenarios use real registration, invitations and committed
+revocation while controlled profile transport and browser-clock advancement
+verify the aggregate client deadline. Current-history recovery compares the
+actual stored revoked row and requires exactly one DELETE without a document
+reload; keyboard and WCAG 2.2 AA checks remain. These clock-driven client deadline
+checks do not prove server latency or actual cookie expiry. Native runtime
+execution against the exact release images remains pending.

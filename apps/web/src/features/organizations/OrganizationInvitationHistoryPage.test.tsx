@@ -276,6 +276,51 @@ it.each(['before', 'after'])('fences a noncooperating account response that time
   if (phase === 'after') expect(screen.getByText('Invitation revocation confirmed.')).toBeInTheDocument();
   expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(phase === 'before' ? 0 : 1);
 });
+it.each([false, true])('bounds the complete history read and fences late private JSON (Board=%s)', async boardTarget => {
+  let checks = 0; let signal!: AbortSignal; let finishBody!: (value: unknown) => void;
+  vi.stubGlobal('fetch', vi.fn((path: string, init: RequestInit = {}) => {
+    if (path === '/me') {
+      checks++; return checks === 1 ? new Promise<Response>(resolve => setTimeout(() => resolve(reply(profile)), 8_000)) : Promise.resolve(reply(profile));
+    }
+    if (path === `/boards/${board}`) return Promise.resolve(reply(boardScope));
+    signal = init.signal!; const response = reply(page());
+    response.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(response);
+  }));
+  vi.useFakeTimers(); if (boardTarget) boardMount(); else mount();
+  await act(async () => vi.advanceTimersByTimeAsync(8_000)); expect(finishBody).toBeDefined();
+  await act(async () => vi.advanceTimersByTimeAsync(7_001)); expect(signal.aborted).toBe(true);
+  expect(screen.getByText('Unable to confirm invitation history. Please retry.')).toBeVisible();
+  await act(async () => finishBody(page(boardTarget ? [boardRow] : [row])));
+  expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Private maintenance' })).not.toBeInTheDocument();
+});
+it.each([false, true])('bounds the entire revocation and preserves recovery after late final account JSON (Board=%s)', async boardTarget => {
+  let checks = 0, writes = 0; let signal!: AbortSignal; let finishBody!: (value: unknown) => void;
+  vi.stubGlobal('fetch', vi.fn((path: string, init: RequestInit = {}) => {
+    if (path === '/me') {
+      checks++;
+      if (checks === 3) return new Promise<Response>(resolve => setTimeout(() => resolve(reply(profile)), 8_000));
+      if (checks === 4) {
+        signal = init.signal!; const response = reply(profile);
+        response.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(response);
+      }
+      return Promise.resolve(reply(profile));
+    }
+    if (init.method === 'DELETE') { writes++; return Promise.resolve(reply(null, 204)); }
+    if (path === `/boards/${board}`) return Promise.resolve(reply(boardScope));
+    return Promise.resolve(reply(page(boardTarget ? [boardRow] : [row])));
+  }));
+  if (boardTarget) boardMount(); else mount(); await review(); vi.useFakeTimers();
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' })));
+  await act(async () => vi.advanceTimersByTimeAsync(8_000)); expect(writes).toBe(1); expect(finishBody).toBeDefined();
+  await act(async () => vi.advanceTimersByTimeAsync(7_001)); expect(signal.aborted).toBe(true);
+  await act(async () => vi.advanceTimersByTimeAsync(500));
+  expect(screen.getByRole('button', { name: 'Check revocation' })).toBeEnabled();
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+  await act(async () => finishBody(profile));
+  expect(screen.queryByText('Invitation revocation confirmed.')).not.toBeInTheDocument(); expect(writes).toBe(1);
+});
 it('shows the exact Board role and recovers a lost revocation from canonical history', async () => {
   const mock = fetcher(reply(profile), reply(boardScope), reply({ items: [boardRow], nextCursor: null }), new Error('Lost committed acknowledgment'),
     reply(profile), reply(boardScope), reply({ items: [{ ...boardRow, revokedAt: '2034-01-02T00:00:00Z' }], nextCursor: null }));
