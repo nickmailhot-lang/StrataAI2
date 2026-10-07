@@ -6,7 +6,7 @@ function fixture(start = vi.fn().mockResolvedValue(undefined)) {
   const stream = vi.fn(() => ({ subscribe: (value: Observer) => { observers.push(value); return { dispose }; } }));
   const connection = { start, stop, stream, onreconnecting: (v: () => void) => { reconnecting = v; },
     onreconnected: (v: () => void) => { reconnected = v; }, onclose: (v: () => void) => { close = v; } };
-  const invalidate = vi.fn(); const cleanup = watchInvitationRecipient({ invalidate,
+  const invalidate = vi.fn(); const cleanup = watchInvitationRecipient({ subject: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', invalidate,
     connection: connection as unknown as ReturnType<typeof createInvitationRecipientConnection> });
   return { observers, stream, stop, dispose, invalidate, cleanup,
     next: (v: unknown) => observers.at(-1)!.next(v), reconnecting: () => reconnecting(), reconnected: () => reconnected(), close: () => close() };

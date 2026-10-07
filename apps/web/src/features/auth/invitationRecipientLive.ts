@@ -1,8 +1,8 @@
 import { HubConnectionBuilder, HttpTransportType, LogLevel } from '@microsoft/signalr';
 import { validateInvitationRecipientSync } from './invitationRecipientSync';
 
-export function createInvitationRecipientConnection() {
-  return new HubConnectionBuilder().withUrl('/invitations/live', {
+export function createInvitationRecipientConnection(subject: string) {
+  return new HubConnectionBuilder().withUrl(`/invitations/live?expectedActorId=${encodeURIComponent(subject)}`, {
     transport: HttpTransportType.WebSockets, withCredentials: true,
     headers: { 'X-StrataAI-Request': '1' }, timeout: 15_000,
   }).withAutomaticReconnect([0, 2000, 10_000, 30_000]).configureLogging(LogLevel.None).build();
@@ -10,11 +10,12 @@ export function createInvitationRecipientConnection() {
 
 export type InvitationRecipientInvalidation = 'reset' | 'change' | 'reconnecting' | 'unavailable';
 export function watchInvitationRecipient(options: {
+  subject: string;
   invalidate: (reason: InvitationRecipientInvalidation) => void;
   connection?: ReturnType<typeof createInvitationRecipientConnection>;
 }) {
   let connection: ReturnType<typeof createInvitationRecipientConnection>;
-  try { connection = options.connection ?? createInvitationRecipientConnection(); }
+  try { connection = options.connection ?? createInvitationRecipientConnection(options.subject); }
   catch { options.invalidate('unavailable'); return () => {}; }
   let disposed = false, generation = 0, attempt = 0;
   let cursor: string | undefined; let lastSequence: bigint | undefined;

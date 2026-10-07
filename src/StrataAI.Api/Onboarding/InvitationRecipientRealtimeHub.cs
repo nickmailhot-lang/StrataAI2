@@ -28,6 +28,10 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
         try
         {
             var actor = await CurrentActorAsync();
+            var reviewed = http?.Request.Query["expectedActorId"];
+            if (reviewed is { Count: > 0 } && (reviewed.Value.Count != 1
+                || !Guid.TryParse(reviewed.Value[0], out var expected) || expected == Guid.Empty || expected != actor))
+                Denied("session_unavailable");
             var initial = true; var heartbeat = 0;
             while (true)
             {

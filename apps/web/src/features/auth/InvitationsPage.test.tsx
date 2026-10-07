@@ -35,12 +35,17 @@ it('bounds discovery across both account checks, the page and late profile JSON 
     return delay(reply({ items: [invitation], nextCursor: null }));
   }));
   await act(async () => { mount(); });
-  await act(async () => vi.advanceTimersByTimeAsync(14_999));
+  await act(async () => vi.advanceTimersByTimeAsync(6000));
+  await act(async () => vi.advanceTimersByTimeAsync(6000));
+  await act(async () => vi.advanceTimersByTimeAsync(2999));
   expect(screen.getByRole('progressbar', { name: 'Loading invitation request' })).toBeVisible();
   await act(async () => vi.advanceTimersByTimeAsync(1));
   expect(screen.getByText('Unable to confirm the reviewed account. Refresh invitations before continuing.')).toBeVisible();
   expect(screen.getByRole('button', { name: 'Refresh invitations' })).toBeEnabled();
-  expect(signals).toHaveLength(3); expect(signals.every(signal => signal.aborted)).toBe(true);
+  expect(signals).toHaveLength(3);
+  // Initial account capture has completed before the socket opens. The page
+  // and final account JSON share the remaining original deadline/controller.
+  expect(signals[0].aborted).toBe(false); expect(signals[1]).toBe(signals[2]); expect(signals[2].aborted).toBe(true);
   expect(screen.queryByText('Council')).not.toBeInTheDocument();
   await act(async () => vi.advanceTimersByTimeAsync(10_000));
   expect(reads).toHaveLength(3); expect(screen.queryByRole('button', { name: /^Accept invitation to/ })).not.toBeInTheDocument();
@@ -247,7 +252,7 @@ describe('PRD-60 verified email invitation discovery', () => {
   it('bounds a stalled read and fences completion after unmount', async () => {
     vi.useFakeTimers(); let complete: ((response: Response) => void) | undefined;
     stableFetch( vi.fn().mockImplementation(() => new Promise<Response>(resolve => { complete = resolve; })));
-    const view = mount();
+    let view!: ReturnType<typeof mount>; await act(async () => { view = mount(); });
     await act(() => vi.advanceTimersByTimeAsync(15_000));
     expect(screen.getByText('Unable to load invitations. Please refresh and try again.')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Refresh invitations' })).toBeEnabled();

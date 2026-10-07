@@ -10,6 +10,7 @@ const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body)
 let invalidate: (reason: InvitationRecipientInvalidation) => void; let stop: ReturnType<typeof vi.fn<() => void>>;
 beforeEach(() => {
   stop = vi.fn();
+  vi.mocked(watchInvitationRecipient).mockReset();
   vi.mocked(watchInvitationRecipient).mockImplementation(options => { invalidate = options.invalidate; return stop; });
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
@@ -22,11 +23,16 @@ function stable(fetcher: typeof fetch) {
   vi.stubGlobal('fetch', (...args: Parameters<typeof fetch>) => String(args[0]) === '/me'
     ? Promise.resolve(reply({ id: actor })) : fetcher(...args));
 }
+async function bootstrap() {
+  await waitFor(() => expect(watchInvitationRecipient).toHaveBeenCalledWith(expect.objectContaining({ subject: actor })));
+  await act(async () => invalidate('reset'));
+}
 it('captures the protected stream head before discovery and announces without moving focus', async () => {
   const fetcher = vi.fn().mockResolvedValue(reply({ items: [item], nextCursor: null })); stable(fetcher);
   const view = mount(); expect(fetcher).not.toHaveBeenCalled();
   const refresh = screen.getByRole('button', { name: 'Refresh invitations' }); refresh.focus();
-  await act(async () => invalidate('reset')); await screen.findByRole('heading', { name: item.organizationName });
+  fireEvent.click(refresh); expect(fetcher).not.toHaveBeenCalled();
+  await bootstrap(); await screen.findByRole('heading', { name: item.organizationName });
   expect(fetcher).toHaveBeenCalledTimes(1); expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
   expect(refresh).toHaveFocus(); view.unmount(); expect(stop).toHaveBeenCalledTimes(1);
 });
@@ -35,7 +41,7 @@ it('withdraws old labels on live change, fences an obsolete read and never submi
     .mockResolvedValueOnce(reply({ items: [item], nextCursor: null }))
     .mockImplementationOnce(() => new Promise<Response>(resolve => { late = resolve; }))
     .mockResolvedValue(reply({ items: [], nextCursor: null })); stable(fetcher); mount();
-  await act(async () => invalidate('reset')); await screen.findByRole('heading', { name: item.organizationName });
+  await bootstrap(); await screen.findByRole('heading', { name: item.organizationName });
   await act(async () => invalidate('change'));
   expect(screen.queryByText(item.organizationName)).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /^Accept invitation/ })).not.toBeInTheDocument();
@@ -47,7 +53,7 @@ it('withdraws old labels on live change, fences an obsolete read and never submi
 it('moves focus to the stable refresh control only when a withdrawn invitation owned focus', async () => {
   stable(vi.fn().mockResolvedValueOnce(reply({ items: [item], nextCursor: null }))
     .mockResolvedValue(reply({ items: [], nextCursor: null })));
-  mount(); await act(async () => invalidate('reset'));
+  mount(); await bootstrap();
   const accept = await screen.findByRole('button', { name: /^Accept invitation to/ }); accept.focus();
   await act(async () => invalidate('change')); await screen.findByText('No pending invitations on this page.');
   expect(screen.getByRole('button', { name: 'Refresh invitations' })).toHaveFocus();
@@ -62,7 +68,7 @@ it('withdraws unsent consent on live change during account admission without inv
     if (init.method === 'POST') commands.push(input);
     return reply({ items: profiles >= 4 ? [] : [item], nextCursor: null });
   }));
-  mount(); await act(async () => invalidate('reset'));
+  mount(); await bootstrap();
   fireEvent.click(await screen.findByRole('button', { name: /^Accept invitation to/ }));
   await waitFor(() => expect(profiles).toBe(3)); await act(async () => invalidate('change'));
   await screen.findByText('No pending invitations on this page.');
@@ -80,7 +86,7 @@ it('preserves only explicit original-ID recovery when a live event precedes a co
     }
     return reply({ items: writes.length ? [] : [item], nextCursor: null });
   }) as typeof fetch);
-  mount(); await act(async () => invalidate('reset'));
+  mount(); await bootstrap();
   fireEvent.click(await screen.findByRole('button', { name: /^Accept invitation to/ }));
   await waitFor(() => expect(writes).toHaveLength(1)); await act(async () => invalidate('change'));
   const retry = await screen.findByRole('button', { name: 'Retry invitation acceptance' }); await waitFor(() => expect(retry).toBeEnabled());
@@ -93,18 +99,41 @@ it('withdraws and returns to sign-in if replay recovery finds a replacement acco
   let changed = false;
   vi.stubGlobal('fetch', vi.fn(async (input: string) => input === '/me'
     ? reply({ id: changed ? item.id : actor }) : reply({ items: [item], nextCursor: null })));
-  mount(); await act(async () => invalidate('reset')); await screen.findByRole('heading', { name: item.organizationName });
+  mount(); await bootstrap(); await screen.findByRole('heading', { name: item.organizationName });
   changed = true; await act(async () => invalidate('reconnecting')); await screen.findByRole('heading', { name: 'Sign in destination' });
   expect(screen.queryByText(item.organizationName)).not.toBeInTheDocument(); expect(stop).toHaveBeenCalledTimes(1);
 });
 it('bounds missing bootstrap and coalesces repeated transport failures without interrupting protected recovery', async () => {
   vi.useFakeTimers(); let late!: (response: Response) => void;
   const fetcher = vi.fn(() => new Promise<Response>(resolve => { late = resolve; })); stable(fetcher);
-  const view = mount(); await act(async () => vi.advanceTimersByTimeAsync(15_000));
+  let view!: ReturnType<typeof mount>; await act(async () => { view = mount(); });
+  await act(async () => vi.advanceTimersByTimeAsync(15_000));
   expect(fetcher).toHaveBeenCalledTimes(1); await act(async () => { invalidate('unavailable'); invalidate('unavailable'); });
   expect(fetcher).toHaveBeenCalledTimes(1);
   await act(async () => late(reply({ items: [], nextCursor: null })));
   expect(screen.getByText('No pending invitations on this page.')).toBeVisible();
   view.unmount(); await act(async () => { invalidate('change'); await vi.advanceTimersByTimeAsync(30_000); });
   expect(fetcher).toHaveBeenCalledTimes(1); expect(stop).toHaveBeenCalledTimes(1);
+});
+it('binds the socket and first protected discovery to the account captured before bootstrap', async () => {
+  let profiles = 0; const requests: string[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (input: string) => {
+    requests.push(input);
+    if (input === '/me') return reply({ id: ++profiles === 1 ? actor : item.id });
+    expect(new URL(input, 'https://test').searchParams.get('expectedActorId')).toBe(actor);
+    return reply({}, 401);
+  }));
+  mount(); await bootstrap(); await screen.findByRole('heading', { name: 'Sign in destination' });
+  expect(requests).toHaveLength(3); expect(screen.queryByText(item.organizationName)).not.toBeInTheDocument();
+});
+it('bounds initial account JSON and never opens a socket or invitation read after late admission', async () => {
+  vi.useFakeTimers(); let complete!: (value: unknown) => void;
+  const fetcher = vi.fn().mockResolvedValue({ ok: true, status: 200,
+    json: () => new Promise<unknown>(resolve => { complete = resolve; }) } as Response);
+  vi.stubGlobal('fetch', fetcher); await act(async () => { mount(); });
+  await act(async () => vi.advanceTimersByTimeAsync(15_000));
+  expect(screen.getByText('Unable to confirm the reviewed account. Refresh invitations before continuing.')).toBeVisible();
+  expect(watchInvitationRecipient).not.toHaveBeenCalled(); expect(fetcher).toHaveBeenCalledTimes(1);
+  await act(async () => complete({ id: actor }));
+  expect(watchInvitationRecipient).not.toHaveBeenCalled(); expect(screen.queryByText(item.organizationName)).not.toBeInTheDocument();
 });

@@ -13,6 +13,42 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData("expectedActorId=bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")]
+    [InlineData("expectedActorId=00000000-0000-0000-0000-000000000000")]
+    [InlineData("expectedActorId=invalid")]
+    [InlineData("expectedActorId=")]
+    [InlineData("expectedActorId=bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb&expectedActorId=bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")]
+    public async Task Invitation_recipient_live_refuses_substituted_or_invalid_reviewed_actor_before_bootstrap(string query)
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var client = app.CreateClient(); var cookie = await RegisterAndLogin(client);
+        using var socket = await LiveSocket(app, cookie, "/invitations/live?" + query);
+        await SendFrame(socket, new { type = 4, invocationId = "watch", target = "Watch", arguments = new string?[] { null } });
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct); deadline.CancelAfter(TimeSpan.FromSeconds(8));
+        try
+        {
+            while (true)
+            {
+                var frame = await Frame(socket, deadline.Token);
+                if (frame is null || frame.Value.TryGetProperty("type", out var type) && type.GetInt32() is 3 or 7) break;
+                Assert.NotEqual(2, frame.Value.GetProperty("type").GetInt32());
+            }
+        }
+        catch (WebSocketException) { }
+    }
+
+    [Fact]
+    public async Task Invitation_recipient_live_admits_matching_reviewed_actor_without_disclosing_binding()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var client = app.CreateClient(); var cookie = await RegisterAndLogin(client);
+        var profile = await client.GetFromJsonAsync<JsonElement>("/me", ct); var actor = profile.GetProperty("id").GetGuid();
+        using var socket = await LiveSocket(app, cookie, $"/invitations/live?expectedActorId={actor}");
+        await SendFrame(socket, new { type = 4, invocationId = "watch", target = "Watch", arguments = new string?[] { null } });
+        var initial = await StreamItem(socket); Assert.True(initial.GetProperty("resetRequired").GetBoolean());
+        Assert.DoesNotContain(actor.ToString(), initial.GetRawText()); Assert.Empty(initial.GetProperty("events").EnumerateArray());
+    }
     [Fact]
     public async Task Invitation_recipient_live_withholds_page_when_account_revision_changes_after_session_read()
     {

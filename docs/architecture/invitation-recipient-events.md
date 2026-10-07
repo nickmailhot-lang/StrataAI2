@@ -122,6 +122,14 @@ after 20 otherwise empty polls. Reconnection with the original protected cursor
 replays committed missed transitions; invalid or expired bindings require an
 empty reset and current protected discovery.
 
+The browser supplies its preconnection reviewed account as `expectedActorId` in
+the connection URL. The hub treats it only as an admission precondition: a
+mismatched, empty, malformed or duplicate value aborts before any source read or
+bootstrap delivery. The actual original session still chooses the actor and
+recipient scope; the query cannot substitute that scope. Each reconnect retains
+the original reviewed account. Callers omitting this optional precondition keep
+the session-only behavior for existing API clients.
+
 The browser consumer below owns protected discovery and acceptance recovery.
 Parent/issuer authority invalidation remains a separate unfinished dependency.
 
@@ -157,7 +165,13 @@ exact-image end-to-end acceptance.
 
 ## Protected page recovery
 
-The page waits for the captured stream head before initial protected discovery.
+The page captures `/me` before opening the stream, binds the connection to that
+original account, then waits for the captured stream head before initial
+protected discovery. Its first listing retains that account's `expectedActorId`
+and requires final account confirmation. Account capture, stream bootstrap and
+the first protected page share the original 15-second deadline; elapsed account
+capture is not added back as a fresh page allowance. Manual Refresh cannot
+bypass an unfinished bootstrap.
 A missing bootstrap is bounded to 15 seconds and enables ordinary protected
 HTTP recovery. Repeated transport failure callbacks coalesce so they cannot
 continually interrupt that recovery. Resets, actual transitions and reconnects
@@ -196,6 +210,22 @@ issuer role/access withdrawal, current names and other authority changes are not
 represented by this recipient source yet; protected discovery remains authoritative,
 but automatic invalidation for those dependencies and native concurrency/latency
 evidence must still be implemented or proven before ticket closure.
+
+The account-startup follow-up passes 90 affected browser cases and all 15 actual
+Demo WebSocket/session cases. Six new socket cases reject substituted, zero,
+malformed, empty or duplicate reviewed actors and admit the matching account
+without exposing its private binding. Two page cases verify the original actor
+on first discovery and bounded initial profile JSON without a late stream/read.
+The final focusable Refresh bootstrap guard also passes all nine page-live
+cases. Release build, TypeScript, lint and browser typecheck pass. Two additional
+desktop/mobile native cases replace the actual cookie after capturing the real
+original profile response and require no source delivery or invitation read.
+They are collected, with exact-image runtime still pending.
+
+If initial account admission itself fails, explicit protected HTTP Refresh is
+available; restarting live subscription after that early admission failure
+remains to be completed. This differs from an established stream's automatic
+connection retry and current discovery recovery.
 
 ## Demo source parity
 

@@ -55,6 +55,7 @@ export function InvitationsPage() {
   const current = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(true);
   const reviewedActor = useRef<string | undefined>(undefined);
+  const firstAdmission = useRef<{ actor: string; until: number } | undefined>(undefined);
   const [accountReady, setAccountReady] = useState(false);
   const epoch = useRef(0); const refreshQueued = useRef(false);
   const [reloadVersion, setReloadVersion] = useState(0);
@@ -85,11 +86,15 @@ export function InvitationsPage() {
   async function load(after?: string) {
     if (current.current) return;
     const controller = new AbortController(); current.current = controller;
-    const deadline = setTimeout(() => controller.abort(), 15_000);
+    const captured = firstAdmission.current; firstAdmission.current = undefined;
+    const remaining = captured ? captured.until - performance.now() : 15_000;
+    const deadline = setTimeout(() => controller.abort(), Math.max(0, remaining));
+    if (remaining <= 0) controller.abort();
     const started = epoch.current;
     setBusy(true); setError(undefined); setPage(undefined); setAccepted(undefined); setAccountReady(false);
     try {
-      const actor = await verifyAccount(controller, reviewedActor.current);
+      controller.signal.throwIfAborted();
+      const actor = captured?.actor ?? await verifyAccount(controller, reviewedActor.current);
       if (!valid(controller)) return;
       const query = new URLSearchParams({ expectedActorId: actor }); if (after) query.set('after', after);
       const response = await request(`/me/invitations?${query}`, controller);
@@ -112,9 +117,13 @@ export function InvitationsPage() {
   }
   useEffect(() => {
     mounted.current = true;
+    const admission = new AbortController(); current.current = admission;
+    const until = performance.now() + 15_000;
+    let stop: (() => void) | undefined;
     let transport: InvitationRecipientInvalidation | undefined;
     function invalidate(reason: InvitationRecipientInvalidation) {
       if (!mounted.current) return;
+      if (reason === 'unavailable') firstAdmission.current = undefined;
       clearTimeout(bootstrap); setConnecting(false);
       // Repeated connection failures must not continually interrupt the same
       // protected HTTP recovery. Actual resets/transitions always fence it.
@@ -125,10 +134,30 @@ export function InvitationsPage() {
           : 'Live invitation updates interrupted. Checking current invitations.');
       expire(); current.current?.abort();
     }
-    const bootstrap = setTimeout(() => invalidate('unavailable'), 15_000);
-    const stop = watchInvitationRecipient({ invalidate });
+    const bootstrap = setTimeout(() => {
+      if (current.current === admission) { admission.abort(); setConnecting(false); }
+      else invalidate('unavailable');
+    }, 15_000);
+    async function begin() {
+      try {
+        const actor = await verifyAccount(admission);
+        if (!valid(admission)) return;
+        reviewedActor.current = actor; firstAdmission.current = { actor, until };
+        current.current = undefined;
+        stop = watchInvitationRecipient({ subject: actor, invalidate });
+      } catch (reason) {
+        if (mounted.current && current.current === admission) {
+          clearTimeout(bootstrap); setConnecting(false);
+          setAnnouncement('Invitation updates unavailable. Refresh invitations before continuing.');
+          withdrawAccount(reason instanceof AccountUnavailable ? reason.status : 503);
+        }
+      } finally {
+        if (current.current === admission) current.current = undefined;
+      }
+    }
+    void begin();
     return () => {
-      mounted.current = false; clearTimeout(bootstrap); stop(); current.current?.abort(); current.current = undefined;
+      mounted.current = false; clearTimeout(bootstrap); stop?.(); current.current?.abort(); current.current = undefined;
     };
     // A captured stream head precedes protected discovery. Connection failure
     // keeps explicit, bounded HTTP recovery available.
@@ -220,6 +249,6 @@ export function InvitationsPage() {
       <Button disabled={busy || Boolean(uncertain)} variant="contained" onClick={() => void accept(invitation)} aria-label={`Accept invitation to ${invitation.organizationName}${invitation.boardTarget ? `, Board ${invitation.boardName}, ${invitation.boardTarget.role.toLowerCase()}` : ''}`}>Accept invitation</Button>
     </Stack></Paper>)}
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(page.nextCursor!)}>More invitations</Button>}
-    <Button ref={refreshButton} aria-disabled={busy} onClick={() => void load()}>Refresh invitations</Button>
+    <Button ref={refreshButton} aria-disabled={busy || connecting} onClick={() => { if (!connecting) void load(); }}>Refresh invitations</Button>
   </Stack></Container>;
 }
