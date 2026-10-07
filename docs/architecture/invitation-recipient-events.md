@@ -132,6 +132,8 @@ the session-only behavior for existing API clients.
 
 The browser consumer below owns protected discovery and acceptance recovery.
 Parent/issuer authority invalidation remains a separate unfinished dependency.
+Its [bounded Worker dispatch contract and remaining storage work](invitation-recipient-authority.md)
+are tracked separately from actual invitation transitions.
 
 ## Browser transport boundary
 
