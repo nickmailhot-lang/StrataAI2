@@ -243,6 +243,18 @@ an Admin target and an inactive Admin grant, rolling back the acceptance proof
 and recipient counter in both cases. These checks supplement the replay contract;
 they do not replace cookie/browser acceptance.
 
+Exact-image CI for `a619c1e` reached the invitation creation retry fixture and
+failed its unchanged-publication assertion after a direct administrative
+revocation update. That update correctly captured a new unpublished recipient
+transition proof, so the pre-revocation snapshot no longer represented current
+source state. The fixture now invokes the actual reviewed-owner HTTP revocation,
+requires its canonical audit/proof/event identity, revision, timestamp and next
+recipient sequence, and then compares the complete post-revocation publication
+snapshot across original creation-receipt replay and expiry/refusal. It also
+requires exactly one additional audit and no replacement invitation, route or
+receipt. Bash syntax and diff checks pass; current exact-image execution must
+prove the repaired fixture.
+
 Demo API-host checks cover cross-Organization Internal/Portal/Board publication
 and paged replay, exact original event identities on repeated reads, no Portal
 Internal grant, retained Board Admin acceptance, duplicate-source refusal,

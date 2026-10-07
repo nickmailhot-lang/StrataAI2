@@ -107,11 +107,29 @@ for reviewed in 00000000-0000-4000-8000-000000000001 00000000-0000-0000-0000-000
   test "$(state)" = "$after"
   test "$(publication_state)" = "$publication_after"
 done
-admin "UPDATE invitations SET revoked_at=clock_timestamp() WHERE tenant_id='$org' AND id='$id';" >/dev/null
+# Use the actual revocation command. A raw row update also captures a new
+# unpublished transition proof; it cannot stand in for a committed source.
+test "$(curl --max-time 60 --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -X DELETE \
+ -o "$scratch/revoke.json" -w '%{http_code}' "$base/organizations/$org/invitations/$id?expectedActorId=$owner")" = 204
+test "$(admin "SELECT count(*)=1 AND bool_and(e.event_type='INVITATION_REVOKED' AND e.source_event_type='INVITATION_REVOKED'
+ AND e.actor_id='$owner' AND e.entity_version=2 AND e.metadata='{}'::jsonb AND e.created_at=i.updated_at
+ AND e.email_normalized=i.email_normalized AND e.sequence=created.sequence+1
+ AND p.created_at=e.created_at AND p.event_type=e.event_type AND a.actor_id=e.actor_id)
+ FROM invitation_recipient_events e JOIN invitations i ON i.id=e.entity_id AND i.tenant_id=e.tenant_id
+ JOIN invitation_recipient_proofs p ON p.invitation_id=e.entity_id AND p.tenant_id=e.tenant_id AND p.entity_version=e.entity_version
+ JOIN audit_events a ON a.id=e.event_id AND a.entity_id=i.id AND a.event_type=e.source_event_type
+ JOIN invitation_recipient_events created ON created.entity_id=e.entity_id AND created.tenant_id=e.tenant_id AND created.entity_version=1
+ WHERE e.tenant_id='$org' AND e.entity_id='$id' AND e.entity_version=2;")" = t
+revoked_state="$(state)"; publication_revoked="$(publication_state)"
+# Revocation changes exactly the audit count here; receipt replay must change
+# neither the canonical invitation nor either published journal/counter.
+test "$(jq -c '.[3]+=1' <<< "$after")" = "$(jq -c '.' <<< "$revoked_state")"
 test "$(create "$key" revoked)" = 201; cmp "$scratch/first.json" "$scratch/revoked.json"
 test "$(admin "SELECT revoked_at IS NOT NULL FROM invitations WHERE tenant_id='$org' AND id='$id';")" = t
 test "$(admin "SELECT version=2 AND updated_at>=created_at FROM invitations WHERE tenant_id='$org' AND id='$id';")" = t
-test "$(publication_state)" = "$publication_after"
+test "$(publication_state)" = "$publication_revoked"
+test "$(state)" = "$revoked_state"
+after="$revoked_state"; publication_after="$publication_revoked"
 # Expiry keeps the original key reserved, never creating a replacement.
 admin "UPDATE invitation_creation_replays SET created_at=clock_timestamp()-interval '25 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE tenant_id='$org' AND actor_id='$owner' AND key_id='$key';" >/dev/null
 test "$(create "$key" expired)" = 409; jq -e '.code=="idempotency_key_expired"' "$scratch/expired.json" >/dev/null
