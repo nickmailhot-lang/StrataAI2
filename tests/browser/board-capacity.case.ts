@@ -229,35 +229,38 @@ for (const width of [1280, 390]) {
     await expect(handle).toHaveAttribute('aria-pressed', 'true');
     await page.mouse.move(goRight ? right - 12 : left + 12, dragY, { steps: 12 });
     await expect(handle).toHaveAttribute('aria-pressed', 'true');
-    const laterEmptyColumn = async () => {
-      const visible = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => {
-        const canvas = nodes[0]?.closest('[aria-label="Kanban board"]'); if (!canvas) return [];
+    const laterEmptyIds = pointerSnapshot.lists.flatMap((value, ordinal) =>
+      emptyColumns.has(value.list.id) && (goRight ? ordinal > initialColumnLast : ordinal < initialColumnFirst) ? [value.list.id] : []);
+    const laterEmptyColumn = () => canvas.evaluate((canvas, ids) => new Promise<string | null>(resolve => {
+      const allowed = new Set(ids); let frame = 0;
+      const finish = (id: string | null) => { clearTimeout(timeout); cancelAnimationFrame(frame); resolve(id); };
+      const timeout = setTimeout(() => finish(null), 5_000);
+      const observe = () => {
         const viewport = canvas.getBoundingClientRect();
-        return nodes.flatMap(node => {
-          const id = (node as HTMLElement).dataset.boardWindowId;
-          const target = node.querySelector<HTMLElement>('[data-card-list-end]'); if (!target || target.dataset.cardListEnd !== id) return [];
+        const left = Math.max(0, viewport.left), right = Math.min(window.innerWidth, viewport.right), quarter = (right - left) / 4;
+        for (const node of Array.from(canvas.querySelectorAll<HTMLElement>('[data-board-window-axis="lists"]'))) {
+          const id = node.dataset.boardWindowId;
+          if (!id || !allowed.has(id)) continue;
+          const target = node.querySelector<HTMLElement>('[data-card-list-end]');
+          if (!target || target.dataset.cardListEnd !== id) continue;
           const rect = target.getBoundingClientRect(), center = rect.left + rect.width / 2;
-          const left = Math.max(0, viewport.left), right = Math.min(window.innerWidth, viewport.right), quarter = (right - left) / 4;
-          // Observe a real drop center in the middle half of the viewport,
-          // leaving room for the final edge-scroll frames before stopping.
-          // Requiring the whole column misses valid phone targets between
-          // sampled frames even while many new columns are traversed.
-          return id && rect.width > 0 && rect.height > 0 && center > left + quarter && center < right - quarter
-            && Math.min(844, viewport.bottom, rect.bottom) > Math.max(0, viewport.top, rect.top) ? [id] : [];
-        });
-      });
-      return visible.find(id => {
-        const ordinal = pointerSnapshot.lists.findIndex(value => value.list.id === id);
-        return emptyColumns.has(id) && (goRight ? ordinal > initialColumnLast : ordinal < initialColumnFirst);
-      }) ?? null;
-    };
+          // Keep the same middle-half/drop-surface requirement, observing every
+          // animation frame instead of missing moving phone targets between
+          // Playwright's progressively spaced predicate samples.
+          if (rect.width > 0 && rect.height > 0 && center > left + quarter && center < right - quarter
+            && Math.min(844, viewport.bottom, rect.bottom) > Math.max(0, viewport.top, rect.top)) { finish(id); return; }
+        }
+        frame = requestAnimationFrame(observe);
+      };
+      observe();
+    }), laterEmptyIds);
     if (goRight) await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeGreaterThan(horizontalOffset);
     else await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeLessThan(horizontalOffset);
     // Retain the observed later drop target while edge scrolling is active. Moving
     // back to the middle stops scrolling, but the final animation frame can
     // leave that column partially visible on a one-column phone viewport.
-    let destinationId: string | null = null;
-    await expect.poll(async () => { destinationId = await laterEmptyColumn(); return destinationId; }).not.toBeNull();
+    const destinationId = await laterEmptyColumn();
+    expect(destinationId).not.toBeNull();
     await expect(middle).toBeAttached();
     expect(await canvas.locator('[data-board-window-axis="lists"]').count()).toBeLessThan(15);
     await page.mouse.move((left + right) / 2, dragY); await settleDrag();

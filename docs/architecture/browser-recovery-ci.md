@@ -363,8 +363,15 @@ Board capacity scenario passed and the 390 px scenario failed at
 drop center in the middle half of the viewport stayed null for five seconds.
 The retained screenshot shows later empty columns visible while the source
 Card remains pressed in the page snapshot. This establishes an actual native
-failure; it does not establish whether sampling missed the drop center or the
-product failed to maintain reachable drag targets. The retained trace is being
-inspected before changing either fixture or product behavior. No assertion is
-removed or timeout increased. Later native acceptance stages did not execute,
-and the required gate failed.
+failure. The retained trace then shows observations at 85,921, 86,043, 86,359,
+86,890, 87,928 ms and progressively one-second intervals, while screencast
+frames show a real empty-column drop center crossing the middle half of the
+phone viewport between samples (including the frame at 86,245 ms). The fixture
+now observes each animation frame for at most the same five seconds and retains
+the first eligible empty column beyond the original mounted buffer. It does not
+change scrolling or invoke a synthetic drop. The original identity, visible drop
+surface, middle-half geometry, source retention, mounted-count limit, real mouse
+release, HTTP acknowledgment and exact persisted placement assertions remain.
+Browser TypeScript checks pass; actual repaired exact-image execution is still
+required. Later native acceptance stages did not execute in the failed run,
+and its required gate failed.
