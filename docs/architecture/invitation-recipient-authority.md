@@ -91,6 +91,16 @@ passes locally under schema 109 and rolls back at its original boundary. No
 production history protection is disabled or weakened. Fresh full CI, including
 the retained-image issuer gate, is still required before closure.
 
+The next CI run (37592940065) exposed an eager Demo composition dependency:
+identity-only test hosts resolved the onboarding projection while constructing
+the account store. Projection lookup now occurs only when the actual owning
+deactivation event is appended, following the other lazy cross-module Demo
+producers. All 739 Domain tests pass in the Linux framework container, including
+the affected identity-only fixtures. The Windows full-suite attempt passes 723
+and fails 16 platform-specific timezone, filesystem, Unix socket and fixed Linux
+Worker-path cases; it is not full acceptance evidence. Retained-image CI must
+still confirm the complete source/API/release sequence.
+
 An invitation creation source proves a committed invitation, but it does not
 prove continuing issuer rights, active parent state or current names. Those
 dependencies can change without an invitation acceptance/revocation event.

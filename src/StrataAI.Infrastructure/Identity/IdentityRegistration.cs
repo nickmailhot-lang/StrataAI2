@@ -75,7 +75,7 @@ public static class IdentityRegistration
                     provider.GetRequiredService<StrataAI.Application.Common.IClock>(),
                     provider.GetRequiredService<DemoMentionHandleRegistry>(),
                     provider.GetRequiredService<DemoIdentityTransactionScope>(),
-                    provider.GetRequiredService<Func<StrataAI.Infrastructure.Onboarding.IDemoIssuerAuthorityProjection>>());
+                    () => provider.GetRequiredService<Func<StrataAI.Infrastructure.Onboarding.IDemoIssuerAuthorityProjection>>()());
                 store.SeedTestAccount(provider.GetRequiredService<IPasswordHashService>());
                 return store;
             });
