@@ -26,6 +26,17 @@ optional verification; exact-image CI and broader PRD acceptance remain pending.
 See the [fixture execution and limits](../identity-login-retries.md#incorrect-password-lifecycle-privacy).
 Estimated remaining work stays **17%**, a planning estimate.
 
+## Shared authentication route abuse evidence
+
+The [shared authentication route abuse checks](browser-rate-budget.md#shared-authentication-route-checks)
+also pass in both complete local Production API/edge invocations. Exhausted
+sign-in capacity applies to registration, recovery, verification and logout,
+with spoof resistance, safe refusals/retry metadata, edge security headers and
+health isolation. The final fixture respects continuous edge replenishment and
+fixed API windows without changing production limits. Current exact-image CI
+and remaining PRD acceptance are still required. Estimated work remaining stays
+**17%**, a planning estimate.
+
 ## Strict supplied authentication policy
 
 API startup now rejects supplied malformed/empty Boolean policies and malformed,
