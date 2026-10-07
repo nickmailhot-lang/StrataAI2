@@ -45,6 +45,26 @@ complete PRD acceptance, and scenario durations are not performance measurements
 Temporary API/web containers are retired after execution. The mandatory API suite
 and full build-once browser suite include the new regressions.
 
+### Executed four-command cookie-switch matrix
+
+The native expected-account scenario now covers all four fenced commands at both
+1280px and 390px: profile save, sign-out, confirmed deactivation and handle claim.
+The complete eight-case invocation passes with exit code 0 in 3.6 minutes against
+the same frozen compiled Production API, restricted PostgreSQL and production
+bundle. Each actual request carries the original account ID, receives neutral
+401 without cookie deletion and removes the stale view without claiming account
+deactivation. Both accounts remain authenticated and their exact profile/event
+snapshots are unchanged. Handle cases additionally preserve both exact settings.
+
+The handle case switches the shared cookie after the server has completed a real
+original-account preflight, before its reply allows the mutation to be sent. This
+verifies that a successful client preflight cannot replace the server intent fence.
+Authentication and mutation responses remain actual server responses. Profile
+recovery-network loss alone is simulated. All sixteen fixture accounts remain at
+version 1 in PostgreSQL. Browser typechecking and diff checks pass; no production
+policy or code changes are needed for this coverage extension. It does not certify
+current retained-image, full concurrency, mail/Worker or complete PRD acceptance.
+
 ## Executed local Production recovery
 
 The existing native account fixtures pass against the separate schema-110

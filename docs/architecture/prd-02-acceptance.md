@@ -99,6 +99,16 @@ preserve both profiles/events and all four accounts remain at version 1. This
 does not establish full current retained-image or PRD acceptance. Estimated work
 remaining stays **17%**, a planning estimate; the issue remains open.
 
+The [expanded native cookie-switch matrix](profile-recovery.md#executed-four-command-cookie-switch-matrix)
+also passes all four commands at desktop and phone sizes in one eight-case
+invocation against the compiled Production API and restricted PostgreSQL. Handle
+claims test a cookie change after an actual successful preflight read. Both account
+profile/event snapshots and both handle settings remain exact after refusal, with
+no cookie deletion or false deactivation confirmation; all sixteen accounts remain
+at version 1. This extends executed TC-05/08 coverage without asserting complete
+current-release acceptance. PRD-02 remains open at **17% estimated work remaining**,
+a planning estimate.
+
 | Requirement | Implementation and verification path | Outstanding acceptance evidence |
 | --- | --- | --- |
 | AUTH-FR-001 registration | [Invitation registration](../invitation-registration.md), [registration retries](../identity-registration-retries.md), API registration replay/rollback cases, native registration fixtures | Current production-policy, invitation-backed and browser release checks |
