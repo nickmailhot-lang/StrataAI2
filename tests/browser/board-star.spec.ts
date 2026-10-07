@@ -92,6 +92,21 @@ for (const width of [1280, 390]) {
             hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
           }).format(new Date(instant)), { instant: item.createdAt as string, zone: timezone }));
         }
+        if (client === mirror) {
+          const profileReply = await context.request.get('/me'); expect(profileReply.status()).toBe(200);
+          const preferences = await context.request.patch('/me', { headers,
+            data: { version: (await profileReply.json()).version, timezone: 'Asia/Tokyo' } });
+          expect(preferences.status()).toBe(200);
+          for (const [index, item] of source.items.entries()) {
+            const timestamp = history.locator('time').nth(index);
+            await expect(timestamp).toHaveText(await client.evaluate(instant => new Intl.DateTimeFormat('en-US', {
+              timeZone: 'Asia/Tokyo', year: 'numeric', month: 'short', day: 'numeric',
+              hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+            }).format(new Date(instant)), item.createdAt as string), { timeout: 20_000 });
+            await expect(timestamp).toHaveAttribute('datetime', item.createdAt);
+          }
+          await expect(history.getByRole('listitem')).toHaveCount(revisions);
+        }
         const close = client.getByRole('button', { name: 'Close star history', exact: true });
         await close.focus(); await client.keyboard.press('Enter'); await expect(review).toBeFocused();
       }

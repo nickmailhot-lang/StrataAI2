@@ -54,6 +54,15 @@ peer-preference update assertion is registered but not yet executed against
 release images. This proves the scoped component recovery, not every consumer's
 complete two-client acceptance. Estimated PRD-02 work remaining stays 23%.
 
+Personal star history now also uses identity delivery and periodic/focus/online/
+visibility recovery while preserving the selected revision cursor. Complete
+combined activity/star/identity checks pass: 33 cases, including single queued
+follow-up, denial retirement until fresh parent admission, periodic fallback,
+close cleanup and MUI Dialog focus ownership. Web/browser TypeScript and lint
+pass. Its new desktop/phone other-client preference-change assertions remain
+pending native release execution; the other date consumers still require their
+own recovery audit. This scoped increment leaves the estimate at 23% remaining.
+
 ### Executed security and final-admission checks
 
 On 2026-10-07, an isolated Release build of source revision `be7b1616` passed

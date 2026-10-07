@@ -106,9 +106,22 @@ an unrelated control. Web TypeScript/lint and browser TypeScript pass. The
 desktop/phone activity fixture now changes the peer account's timezone through
 the normal versioned profile endpoint and requires its already-open history to
 recover the new caption without document reload or source changes. That new
-native assertion remains pending exact-image execution. Personal star history
-and the remaining consumers still require their own automatic preference
-recovery audit; this does not close AUTH-FR-010 or AC-AUTH-02-03.
+native assertion remains pending exact-image execution. This does not close
+AUTH-FR-010 or AC-AUTH-02-03.
+
+Personal star history now uses the same identity-delivery and visible-page
+periodic/focus/online/visibility recovery policy. It retains its selected revision
+cursor and stable preference identity, queues one follow-up during a protected
+read, and stops background reads after 401/403/404 until fresh parent admission.
+The completed combined activity/star/identity suite passes all 33 cases, including
+continuation-page timezone recovery, periodic fallback, queued signals, denial
+and close retirement, background focus in a real MUI Dialog and deliberate focus
+on another control during a delayed read. Web/browser TypeScript and lint pass.
+The desktop/phone star fixture changes the account's timezone from its other
+client and requires the already-open mirror history to recover with original
+timestamps and revision count. Native execution remains pending. Search,
+comments, invitations and other consumers still need their own full automatic
+preference-recovery and release audit.
 
 ### Comment timezone display and remaining acceptance
 

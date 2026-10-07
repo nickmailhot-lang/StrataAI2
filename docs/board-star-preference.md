@@ -37,3 +37,19 @@ Native/concurrent/performance acceptance remains unfinished. This work does not 
 The release browser suite includes 1280px and 390px scenarios using two independently authenticated accounts viewing an active PUBLIC Board. It intercepts a successful star acknowledgment, commits a later unstar and then drops the original response. Same-key receipt recovery must preserve that later state while the other account stars independently. The scenario checks authoritative preferences, unchanged shared records, unstar, keyboard operations, dialog focus return, reload persistence and viewport overflow. It reuses the immutable scoped Worker and stays within production sensitive-request budgets (six setup requests and five preference mutations). Browser type checking and collection pass; these scenarios have not yet executed against release images.
 
 The source API mutation requests include the required X-StrataAI-Request intent header. Recent Board background/archive source fixtures were corrected to include it as well; runtime CSRF protection is unchanged. Full solution compilation passes without warnings/errors. This does not substitute for executed API/PostgreSQL acceptance.
+
+Open history now recovers account preferences through the admitted identity
+stream and visible-page ten-second, focus, online and visibility checks. The
+same protected profile/page/profile read retains the current revision cursor;
+signals during a bounded read queue one follow-up. Denial clears history and
+retires recovery until fresh parent admission. Close/unmount removes listeners,
+timers, stream subscription and the owned request. Dialog recovery preserves the
+focused action and respects deliberate movement to another control.
+
+All 33 combined activity/star/identity source cases pass, with web/browser
+TypeScript and lint. The desktop/phone release fixture additionally changes the
+account timezone through a normal versioned profile command from the other
+client and requires the open mirror history to recover without reloading or
+altering source timestamps/revisions. This adds one profile mutation to the
+scenario budget. Its new native assertions remain pending exact-image CI;
+PRD-02 and PRD-04 stay open.
