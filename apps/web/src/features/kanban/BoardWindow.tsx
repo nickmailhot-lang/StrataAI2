@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { memo, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useDndContext } from '@dnd-kit/core';
 
@@ -10,6 +10,13 @@ type Props<T extends Item> = {
   pinned?: string[]; end?: ReactNode; renderItem: (item: T) => ReactNode;
   ownsDrag?: (item: T, activeId: string) => boolean;
 };
+// Scroll and sensor frames change row positions, not their canonical content.
+// Preserve content elements so unchanged nested controls need not rerender.
+const WindowContent = memo(function WindowContent<T extends Item>({ item, renderItem }: {
+  item: T; renderItem: (item: T) => ReactNode;
+}) { return <>{renderItem(item)}</>; }) as <T extends Item>(props: {
+  item: T; renderItem: (item: T) => ReactNode;
+}) => ReactNode;
 const focusable = (row: HTMLElement) => Array.from(row.querySelectorAll<HTMLElement>(
   'a[href],button,input,select,textarea,[tabindex]',
 )).filter(node => node.tabIndex >= 0 && !node.matches(':disabled') && !node.closest('[hidden],[inert],[aria-hidden="true"]'));
@@ -195,7 +202,7 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
           target.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
         }}
         sx={{ position: 'absolute', ...(horizontal ? { left: start, top: 0, width: columnSize } : { top: start, left: 0, right: 0 }) }}>
-        {renderItem(row.item)}
+        <WindowContent item={row.item} renderItem={renderItem} />
       </Box>; })}
       {end && <Box sx={{ position: 'absolute', top: 0, left: layout.total + gap }}>{end}</Box>}
     </Box>

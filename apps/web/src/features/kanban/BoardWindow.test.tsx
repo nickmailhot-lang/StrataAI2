@@ -200,3 +200,18 @@ it('uses resolved CSS-variable theme spacing to mount the actual distant List', 
   expect(screen.getAllByRole('link').length).toBeLessThan(15);
   expect(screen.queryByRole('link', { name: 'Open list-0' })).not.toBeInTheDocument();
 });
+
+// PRD-06: scroll/context frames must not reconstruct unchanged List controls.
+it('reuses mounted content across scroll frames and still renders authoritative item changes', () => {
+  const memory = new Map<string, number>();
+  const items = lists.map(item => ({ ...item, name: item.id }));
+  const builder = vi.fn((item: { id: string; name: string }) => <button>{item.name}</button>);
+  const view = render(<BoardWindow items={items} axis="lists" memory={memory} memoryKey="lists" renderItem={builder} />);
+  const initialCalls = builder.mock.calls.length;
+  fireEvent.scroll(screen.getByLabelText('Kanban board'), { target: { scrollLeft: 1 } });
+  expect(builder).toHaveBeenCalledTimes(initialCalls);
+  view.rerender(<BoardWindow items={items.map((item, index) => index === 0 ? { ...item, name: 'Updated authoritative List' } : item)}
+    axis="lists" memory={memory} memoryKey="lists" renderItem={builder} />);
+  expect(screen.getByRole('button', { name: 'Updated authoritative List' })).toBeVisible();
+  expect(builder).toHaveBeenCalledTimes(initialCalls + 1);
+});

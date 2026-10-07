@@ -173,6 +173,7 @@ function BoardContent() {
   const [dragMeasurement] = useState(() => new KanbanDragMeasurement());
   const [dragScroll] = useState(() => new KanbanAutoScroll());
   const [pointerScrollFrame] = useState(() => new KanbanPointerScrollFrame());
+  useEffect(() => () => dragScroll.finish(), [dragScroll]);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: (event, args) => String(args.active).startsWith('card:') ? cardKeyboardCoordinates(event, args) : listKeyboardCoordinates(event, args) }));
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
@@ -584,7 +585,7 @@ function BoardContent() {
         accessibility={{ announcements: listDragAnnouncements(snapshot), screenReaderInstructions: listDragInstructions }} onDragStart={event => {
         pointerScrollFrame.start(event.activatorEvent);
         dragMeasurement.start(String(event.active.id));
-        dragScroll.start(String(event.active.id).startsWith('card:'));
+        dragScroll.start(String(event.active.id).startsWith('card:'), event.activatorEvent);
         dragCard.current = undefined; dragList.current = undefined;
         if (String(event.active.id).startsWith('card:')) {
           const item = snapshot.lists.flatMap(value => value.cards).find(value => `card:${value.id}` === event.active.id);

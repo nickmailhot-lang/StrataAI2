@@ -78,6 +78,43 @@ before scroll compensation still failed and was removed. Horizontal traversal,
 complete capacity checks and current retained-image acceptance remain unfinished.
 PRD-06 remains open with 34% estimated work remaining.
 
+## Native capacity after stable window content
+
+The unchanged desktop and phone capacity cases now both pass locally. They use
+the actual Production API, restricted PostgreSQL role, schema 110, scoped separate
+Worker and current Vite development source with the 200-List/5,000-active-Card/
+100,000-archived-Card fixture. Desktop completes in 43.9 seconds and phone in
+36.9 seconds. Between cases, the transferred fixture Card is restored through
+the real version-checked move API; no Board response or live event is mocked.
+
+Windowed rows now preserve unchanged content elements across scroll and sensor
+frames. Previously those frames rebuilt every mounted List's nested controls.
+The regression fails before the change, then proves content reuse and immediate
+rendering of authoritative item changes. Native pointer direction is also tracked
+from the initiating pointer's client coordinates, independently of dnd-kit's
+scroll-adjusted public delta; keyboard direction remains on the existing path.
+A separate regression proves large source/destination offsets cannot reverse
+the chosen pointer axis. Pointer listeners retire on cancellation, completion,
+replacement and Board screen unmount. Temporary diagnostic DOM attributes were
+removed before the passing native runs.
+
+All 44 focused windowing, auto-scroll, pointer-frame, Board-drop and move-control
+tests pass, as do web/browser TypeScript and lint. Both native cases cover real
+keyboard moves, vertical pointer cancellation without writes, persisted vertical
+movement, horizontal movement to a newly mounted empty List, unchanged siblings,
+Card detail focus/scroll recovery, keyboard List movement beyond the initial
+buffer, bounded mounted rows and Axe WCAG checks. The archived count and original
+complete-row fingerprint remain intact. These are compiled-source/local browser
+checks, not a current immutable-image release or general performance claim.
+
+The preceding `bb79aa21` web CI job `112733309819` in
+[run 37603502855](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37603502855)
+passes all 134 test files / 1,832 tests and production build. Its separate local
+full-suite run had one application-shell failure; that shell's four tests pass
+when rerun with the focused auto-scroll tests. The new window-content repair still
+requires its own complete CI and retained-image acceptance. PRD-06 remains open
+with 32% estimated work remaining.
+
 [Run 36941858197](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36941858197)
 at b87353a completed container job 110635994365 with failure. Decoded job logs
 show 45 authenticated browser cases passed, one failed and one general-mail case
