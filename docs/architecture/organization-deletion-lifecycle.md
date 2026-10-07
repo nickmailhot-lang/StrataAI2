@@ -325,6 +325,44 @@ completion observation and browser integration remain required; an in-memory
 journal is not durable across process restarts and does not replace production
 PostgreSQL jobs or the separate Worker.
 
+## Demo bounded graph simulation
+
+Demo composition now provides `IOrganizationDeletionGraphSimulation`, a private
+service dependency for completing the accepted deletion graph. It is not an HTTP
+endpoint or a replacement for the Production Worker. Each call borrows an owning
+Organization command, requires the exact accepted request/version and its
+original current Owner/active account, and processes at most 128 candidates.
+Work-only or unowned calls, foreign requests, mismatched versions, demoted actors
+and limits outside 1–128 are rejected before effects.
+
+Pages operate on the raw tenant graph, including archived descendants, in this
+order: attachments, Cards, Lists, then Boards. Attachment deletion retains URL or
+file-integrity evidence and archive attribution, removes a selected cover and
+emits the content-free Card invalidation with a separate immutable Attachment
+audit. Card/Board reference cleanup includes existing tombstones and preserves
+their original deletion actor/time. Image backgrounds become unselected; retained
+image metadata, provider proofs, comments, assignments and checklist history are
+not erased. New Board transitions capture the same owning authority proof as
+normal commands. Canonical Work events and attachment audit identities commit or
+roll back with the graph page and the existing Organization unit of work.
+
+Six API-host checks pass locally, covering 130 archived Cards across the 128-row
+boundary, archived URL attachments, quarantined file-integrity retention,
+existing deletion attribution/reference cleanup, another unaffected tenant,
+current-root/Owner/limit admission, and actual append followed by rollback on
+refusal, final actor loss, cancellation or event-publication failure. This is
+bounded-page correctness evidence, not the full 100,000-archived-Card acceptance
+case or native release-image execution.
+
+Automatic Demo dispatch, canonical terminal source/readiness, original-Owner
+completion observation and protected lifecycle/browser recovery still need
+integration. No product command invokes this simulation yet. A zero-candidate
+page establishes graph exhaustion only: the parent remains DELETING and its
+request observation remains PENDING. API restart loses this process-local graph
+and history; sample-catalog reset does not operate on them. Production's durable
+request, restricted PostgreSQL graph pages, lease checks and separate Worker are
+unchanged.
+
 ## Independent original-Owner observation
 
 `GET /organizations/{organizationId}/deletion-requests/{requestId}` now exposes a

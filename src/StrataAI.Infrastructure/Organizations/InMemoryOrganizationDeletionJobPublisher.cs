@@ -51,5 +51,10 @@ internal sealed class InMemoryOrganizationDeletionJobPublisher(IOrganizationStor
         var snapshot = _publications.ToArray();
         return () => { _publications.Clear(); foreach (var row in snapshot) _publications.Add(row.Key, row.Value); };
     }
+    internal string ReadCorrelation(Guid organizationId, Guid actorId, Guid requestId)
+    {
+        if (ReadAccepted(organizationId, actorId, requestId) is null) throw Unavailable();
+        return _publications[organizationId].FirstJob.CorrelationId;
+    }
     private static OrganizationDeletionPublicationUnavailableException Unavailable() => new();
 }

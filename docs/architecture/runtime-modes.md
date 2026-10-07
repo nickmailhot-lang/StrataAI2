@@ -31,6 +31,12 @@ including browser draft preservation and reconnect recovery. Demo publication is
 synchronous in-memory simulation; Production retains its separate durable Worker.
 API restart resets the journal, while sample-catalog reset leaves it intact.
 
+Demo also has a [bounded deletion graph simulation dependency](organization-deletion-lifecycle.md#demo-bounded-graph-simulation)
+for the accepted request. Its protected page processing has source tests, but
+automatic dispatch and terminal lifecycle publication are not yet connected.
+Demo deletion still reports an accepted, pending request; it does not report
+completed deletion from an empty graph or unavailable ordinary read.
+
 ### Demo sign-in
 
 Set `STRATAAI_RUNTIME_MODE=demo`, start the API and web application, and open

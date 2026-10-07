@@ -292,3 +292,31 @@ do not establish complete release acceptance or terminal deletion parity.
 Estimated PRD-03 work remaining is **11%**, a planning estimate. Demo terminal/
 lifecycle processing, remaining lifecycle/performance requirements and complete
 current release acceptance keep the ticket open.
+
+## Demo graph page implementation
+
+The [Demo bounded graph simulation](organization-deletion-lifecycle.md#demo-bounded-graph-simulation)
+now handles attachments, archived/active Cards and Lists, Board tombstones and
+retained cover/image references under the owning accepted request. Six local
+API-host checks pass, including actual event/audit rollback, a 130-archived-Card
+page boundary, file-integrity retention, unchanged other-tenant records and
+current original-Owner/request/version/limit admission. The API host builds with
+zero warnings/errors.
+
+This supplies a prerequisite for WS-FR-010. Automatic Demo dispatch, terminal
+Organization state/event readiness and protected HTTP/SignalR/browser lifecycle
+recovery remain unfinished. The existing parent/request stays DELETING/PENDING;
+the simulation has no product command or HTTP entry point yet. The bounded
+fixture does not prove supported-scale performance or full release acceptance.
+Estimated PRD-03 work remaining remains **11%** until that integration and the
+remaining acceptance checks have current evidence.
+
+The fresh full solution builds with zero warnings/errors. All 739 domain checks
+pass against the same compiled output in a disposable Linux SDK container with
+readonly source/output mounts and no external network. The native Windows domain
+run has 16 failures (723 passes), including socket binding, symlink privileges
+and timezone behavior; it is not reported as a passing run. The architecture
+dependency check initially failed to find source from the external artifact
+directory. Its lookup now considers the actual compile-time source and working
+directory as well as output ancestors, and the unchanged project-reference rules
+pass in the fresh external build. Missing source still fails the check.

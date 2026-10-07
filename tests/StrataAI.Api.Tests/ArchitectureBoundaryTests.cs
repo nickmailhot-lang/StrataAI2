@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace StrataAI.Api.Tests;
@@ -10,8 +11,7 @@ public sealed class ArchitectureBoundaryTests
     [Fact]
     public void Production_projects_preserve_the_adopted_dependency_direction()
     {
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (root is not null && !File.Exists(Path.Combine(root.FullName, "Directory.Build.props"))) root = root.Parent;
+        var root = FindRepositoryRoot();
         Assert.NotNull(root);
         var allowed = new Dictionary<string, string[]>
         {
@@ -36,5 +36,23 @@ public sealed class ArchitectureBoundaryTests
             }
             if (project == "StrataAI.Domain") Assert.Empty(source.Descendants("PackageReference"));
         }
+    }
+
+    // Independent compiled-runtime evidence lives outside the checkout. Keep
+    // checking the actual source projects rather than requiring in-place output.
+    // Missing source still fails the architecture assertion above.
+    private static DirectoryInfo? FindRepositoryRoot([CallerFilePath] string sourceFile = "")
+    {
+        foreach (var start in new[] { AppContext.BaseDirectory, Path.GetDirectoryName(sourceFile), Environment.CurrentDirectory })
+        {
+            if (string.IsNullOrEmpty(start)) continue;
+            var directory = new DirectoryInfo(start);
+            while (directory is not null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "Directory.Build.props"))) return directory;
+                directory = directory.Parent;
+            }
+        }
+        return null;
     }
 }

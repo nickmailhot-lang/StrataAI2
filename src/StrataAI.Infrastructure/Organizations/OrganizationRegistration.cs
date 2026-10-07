@@ -25,6 +25,9 @@ public static class OrganizationRegistration
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationMetadataJournal>());
             services.AddSingleton<IOrganizationUnitOfWork, InMemoryOrganizationUnitOfWork>();
             services.AddSingleton<InMemoryOrganizationDeletionJobPublisher>();
+            services.AddSingleton<InMemoryOrganizationDeletionGraphSimulation>();
+            services.AddSingleton<IOrganizationDeletionGraphSimulation>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionGraphSimulation>());
+            services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionGraphSimulation>());
             services.AddSingleton<IOrganizationDeletionObservationReader, InMemoryOrganizationDeletionObservationReader>();
             services.AddSingleton<IOrganizationDeletionJobPublisher>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionJobPublisher>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionJobPublisher>());
