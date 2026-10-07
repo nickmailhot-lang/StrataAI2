@@ -8,6 +8,9 @@ import { invitationIntentKey, invitationRoles, readInvitationIntent, saveInvitat
 import type { InvitationInput, InvitationIntent } from './invitationIntent';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchBoard } from '../../api/boardLive';
+import { watchIdentity } from '../auth/identityLive';
+import { isNotificationProfile } from '../notifications/notificationInbox';
+import { ownsRecoveryFocus } from '../kanban/focusRecovery';
 
 type Ack = { id: string; organizationId: string; email: string; surface: string; targetRole: string; expiresAt: string; invitationToken: null; boardTarget?: { boardId: string; role: string } | null };
 const empty: InvitationInput = { email: '', surface: 'INTERNAL', targetRole: 'MEMBER' };
@@ -40,6 +43,8 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   const [liveActor, setLiveActor] = useState<string>(); const [liveNotice, setLiveNotice] = useState<string>();
   const epoch = useRef(0); const refreshQueued = useRef(false); const [reload, setReload] = useState(0);
   const quietCheck = useRef(false);
+  const preferenceQueued = useRef(false); const [preferenceSignal, setPreferenceSignal] = useState(0);
+  const container = useRef<HTMLDivElement>(null); const focusOwner = useRef<HTMLElement | null>(null);
   useEffect(() => {
     mounted.current = true; void load();
     return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; };
@@ -63,11 +68,37 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     return watchOrganizationMetadata({ organizationId, userId: liveActor, invalidate: recover, reset: recover, unavailable: recover });
   }, [organizationId, boardId, liveActor]);
   useEffect(() => {
+    if (!liveActor || denied) return;
+    const check = () => {
+      if (document.visibilityState === 'hidden') return;
+      preferenceQueued.current = true; setPreferenceSignal(value => value + 1);
+    };
+    const stop = watchIdentity({ subject: liveActor, isProfile: isNotificationProfile, invalidate: check });
+    const timer = setInterval(check, 10_000);
+    window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
+    return () => {
+      stop(); clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('online', check);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [liveActor, denied]);
+  useEffect(() => {
+    // Expiry is displayed only for a confirmed acknowledgment. Preference
+    // recovery cannot reset an unsent draft or replace an uncertain request.
+    if (!preferenceQueued.current || !ack || busy || pending.current || refreshQueued.current || denied || blocked) return;
+    void load(true);
+  }, [preferenceSignal, ack, busy, denied, blocked]);
+  useEffect(() => {
+    if (busy) return;
+    const owner = focusOwner.current; focusOwner.current = null;
+    if (owner?.isConnected && !owner.matches(':disabled') && ownsRecoveryFocus(document.activeElement, owner)) owner.focus({ preventScroll: true });
+  }, [busy, ack, preferences]);
+  useEffect(() => {
     if (!refreshQueued.current || busy) return;
     refreshQueued.current = false; const preserveDisplay = quietCheck.current; quietCheck.current = false; void load(preserveDisplay);
   }, [reload, busy]);
   function valid(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
   function withdrawAccount(preserveConfirmed = false) {
+    preferenceQueued.current = false; focusOwner.current = null;
     if (!preserveConfirmed) confirmed.current = undefined;
     reviewedActor.current = undefined;
     setStorageKey(undefined); setBoardName(undefined); setActorRole(undefined); setInput(empty); setIntent(undefined);
@@ -102,6 +133,8 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   }
   async function load(preserveDisplay = false) {
     const controller = begin(); if (!controller) return;
+    preferenceQueued.current = false;
+    if (preserveDisplay && document.activeElement instanceof HTMLElement && container.current?.contains(document.activeElement)) focusOwner.current = document.activeElement;
     const started = epoch.current;
     const hadIntent = !!currentIntent.current;
     if (!preserveDisplay) {
@@ -232,10 +265,13 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     try { sessionStorage.removeItem(storageKey); }
     catch { setError('Unable to clear the confirmed request. Please reload before creating another.'); return; }
     confirmed.current = undefined;
+    preferenceQueued.current = false;
     setAck(undefined); setIntent(undefined); currentIntent.current = undefined; setInput(empty); setError(undefined);
   }
   const locked = busy || !!intent || blocked || !!ack;
-  return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
+  return <Container ref={container} onBlurCapture={event => {
+    if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current)) focusOwner.current = null;
+  }} maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
     {liveNotice && <Typography role="status" aria-live="polite">{liveNotice}</Typography>}
     <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}` : `/app/${organizationId}/members`}>{boardId !== undefined ? 'Back to Board' : 'Organization members'}</Button>
     <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}/invitations` : `/app/${organizationId}/invitations`}>Review issued invitations</Button>

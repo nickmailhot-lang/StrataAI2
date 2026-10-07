@@ -57,6 +57,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByText(/invitation could not be confirmed|prior invitation request is awaiting acknowledgment/)).toBeVisible();
       expect(writes).toHaveLength(1); await expect(page.getByLabel(/^Invitation email/)).toBeDisabled();
       await page.reload(); await expect(page.getByText(/prior invitation request is awaiting acknowledgment/)).toBeVisible();
+      await expect(page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
       await expect(page.getByLabel(/^Invitation email/)).toHaveValue(email);
       await page.getByRole('button', { name: 'Retry same invitation' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Invitation creation acknowledged.')).toBeVisible(); await expect(page.getByText(/Email delivery is not confirmed here/)).toBeVisible();
@@ -68,6 +69,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         timeZone: 'Asia/Tokyo', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
       }).format(new Date(instant))}`, createdHistory[0].expiresAt);
       await expect(page.getByText(expiryCaption, { exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Create another invitation', exact: true }).focus();
+      const afterRetryProfile = await (await preferences.request.get('/me')).json();
+      expect((await preferences.request.patch('/me', { headers, data: { timezone: 'UTC', version: afterRetryProfile.version } })).status()).toBe(200);
+      const recoveredCaption = await page.evaluate(instant => `Expires: ${new Intl.DateTimeFormat('en-US', {
+        timeZone: 'UTC', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+      }).format(new Date(instant))}`, createdHistory[0].expiresAt);
+      await expect(page.getByText(recoveredCaption, { exact: true })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole('button', { name: 'Create another invitation', exact: true })).toBeFocused();
+      expect((await (await context.request.get(`/organizations/${org}/invitations`)).json()).items).toEqual(createdHistory);
+      expect(writes).toHaveLength(2);
       const pending = await recipient.request.get('/me/invitations'); expect(pending.status()).toBe(200);
       const invitations = (await pending.json()).items.filter((item: { organizationId: string }) => item.organizationId === org); expect(invitations).toHaveLength(1);
       const beforeAdmission = admissions;

@@ -8,6 +8,8 @@ vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.w
 const boardLive = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; boardId: string;
   invalidate(): void; status(value: 'connecting' | 'live' | 'recovering' | 'polling'): void }) => () => void>(() => vi.fn()) }));
 vi.mock('../../api/boardLive', () => ({ watchBoard: boardLive.watch }));
+const identity = vi.hoisted(() => ({ watch: vi.fn<(options: { subject: string; invalidate(): void }) => () => void>(() => vi.fn()) }));
+vi.mock('../auth/identityLive', () => ({ watchIdentity: identity.watch }));
 const org = '10000000-0000-0000-0000-000000000000'; const actor = '20000000-0000-0000-0000-000000000000';
 const profile = { id: actor, locale: 'en-CA', timezone: 'America/Vancouver' };
 const admission = { organizationId: org, actorRole: 0, member: { userId: actor, role: 0 } };
@@ -40,7 +42,7 @@ function fetcher(...responses: (Response | Error)[]) {
 }
 async function submit() { fireEvent.change(await screen.findByLabelText(/^Invitation email/), { target: { value: input.email } }); fireEvent.click(screen.getByRole('button', { name: 'Create invitation' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); sessionStorage.clear(); });
-beforeEach(() => { live.watch.mockClear(); boardLive.watch.mockClear(); });
+beforeEach(() => { live.watch.mockClear(); boardLive.watch.mockClear(); identity.watch.mockClear(); });
 describe('Administrator invitation intent and creation acknowledgment', () => {
   it.each([false, true])('bounds complete permission admission and rejects late private scope JSON (Board=%s)', async boardSurface => {
     let profiles = 0; let signal!: AbortSignal; let finishBody!: (value: unknown) => void;
@@ -403,6 +405,90 @@ it.each([false, true])('formats acknowledged expiry using preferences confirmed 
   const posts = mock.mock.calls.filter(call => call[1]?.method === 'POST'); expect(posts).toHaveLength(1);
   expect(JSON.parse(posts[0][1]!.body as string)).toEqual(boardSurface ? { email: input.email, role: 'MEMBER' } : input);
   expect(ack.expiresAt).toBe('2026-10-08T18:00:00Z');
+});
+it.each([false, true])('recovers an open creation acknowledgment after another session changes preferences (Board=%s)', async boardSurface => {
+  let timezone = 'Pacific/Honolulu';
+  const mock = vi.fn(async (path: string, options?: RequestInit) => reply(path === '/me' ? { ...profile, timezone }
+    : options?.method === 'POST' ? boardSurface ? boardAck : ack : boardSurface ? boardAdmission : admission, options?.method === 'POST' ? 201 : 200));
+  vi.stubGlobal('fetch', mock); if (boardSurface) boardMount(); else mount(); await submit();
+  await screen.findByText('Invitation creation acknowledged.'); expect(screen.getByText(/Expires:.*08:00/)).toBeInTheDocument();
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  screen.getByRole('button', { name: 'Create another invitation' }).focus();
+  timezone = 'Asia/Tokyo'; await act(async () => identity.watch.mock.calls[0][0].invalidate());
+  await screen.findByText(/Expires:.*03:00/);
+  expect(screen.getByRole('button', { name: 'Create another invitation' })).toHaveFocus();
+  expect(screen.getByText('Invitation creation acknowledged.')).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
+  expect(identity.watch).toHaveBeenCalledTimes(1);
+});
+it('defers preference recovery through an unsent draft and an uncertain original command', async () => {
+  let timezone = 'Pacific/Honolulu', attempts = 0;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return reply({ ...profile, timezone });
+    if (options?.method === 'POST') { if (++attempts === 1) throw new Error('Lost reply'); return reply(ack, 201); }
+    return reply(admission);
+  });
+  vi.stubGlobal('fetch', mock); mount(); await screen.findByLabelText(/^Invitation email/);
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  fireEvent.change(screen.getByLabelText(/^Invitation email/), { target: { value: input.email } });
+  const beforeDraftSignal = mock.mock.calls.length;
+  await act(async () => identity.watch.mock.calls[0][0].invalidate());
+  expect(mock).toHaveBeenCalledTimes(beforeDraftSignal); expect(screen.getByLabelText(/^Invitation email/)).toHaveValue(input.email);
+  fireEvent.click(screen.getByRole('button', { name: 'Create invitation' })); await screen.findByText(/invitation could not be confirmed/);
+  timezone = 'Asia/Tokyo'; const beforeRetrySignal = mock.mock.calls.length;
+  await act(async () => identity.watch.mock.calls[0][0].invalidate());
+  expect(mock).toHaveBeenCalledTimes(beforeRetrySignal);
+  expect(screen.getByLabelText(/^Invitation email/)).toHaveValue(input.email);
+  fireEvent.click(screen.getByRole('button', { name: 'Retry same invitation' })); await screen.findByText(/Expires:.*03:00/);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Create another invitation' })).toBeEnabled());
+  const posts = mock.mock.calls.filter(call => call[1]?.method === 'POST'); expect(posts).toHaveLength(2);
+  expect(posts[1][1]!.body).toBe(posts[0][1]!.body);
+  expect(new Headers(posts[1][1]!.headers).get('Idempotency-Key')).toBe(new Headers(posts[0][1]!.headers).get('Idempotency-Key'));
+});
+it('coalesces signals behind a pending preference check and respects external focus', async () => {
+  let timezone = 'Pacific/Honolulu', scopes = 0, finishScope!: (response: Response) => void;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return reply({ ...profile, timezone });
+    if (options?.method === 'POST') return reply(ack, 201);
+    if (++scopes === 2) return new Promise<Response>(resolve => { finishScope = resolve; });
+    return reply(admission);
+  });
+  vi.stubGlobal('fetch', mock); mount(); await submit(); await screen.findByText('Invitation creation acknowledged.');
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  screen.getByRole('button', { name: 'Create another invitation' }).focus();
+  await act(async () => identity.watch.mock.calls[0][0].invalidate()); await waitFor(() => expect(finishScope).toBeDefined());
+  screen.getByRole('link', { name: 'Review issued invitations' }).focus();
+  timezone = 'Asia/Tokyo'; await act(async () => { identity.watch.mock.calls[0][0].invalidate(); identity.watch.mock.calls[0][0].invalidate(); });
+  expect(scopes).toBe(2); await act(async () => finishScope(reply(admission))); await screen.findByText(/Expires:.*03:00/);
+  await waitFor(() => expect(scopes).toBe(3));
+  expect(screen.getByRole('link', { name: 'Review issued invitations' })).toHaveFocus();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
+});
+it('retires preference recovery after scope denial without removing the original stored request', async () => {
+  let denied = false;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => reply(path === '/me' ? profile
+    : options?.method === 'POST' ? ack : denied ? {} : admission, options?.method === 'POST' ? 201 : denied && path !== '/me' ? 403 : 200));
+  vi.stubGlobal('fetch', mock); mount(); await submit(); await screen.findByText('Invitation creation acknowledged.');
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  const stored = sessionStorage.getItem(storedKey); denied = true;
+  await act(async () => identity.watch.mock.calls[0][0].invalidate()); await screen.findByText('Organization invitations are unavailable to your account.');
+  expect(screen.queryByText(input.email)).not.toBeInTheDocument(); expect(sessionStorage.getItem(storedKey)).toBe(stored);
+  await waitFor(() => expect(identity.watch.mock.results[0].value).toHaveBeenCalledTimes(1));
+  const count = mock.mock.calls.length; await act(async () => { window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('online')); });
+  expect(mock).toHaveBeenCalledTimes(count);
+});
+it('recovers acknowledged preferences periodically and disposes the stream and fallback on unmount', async () => {
+  vi.useFakeTimers(); let timezone = 'Pacific/Honolulu';
+  const mock = vi.fn(async (path: string, options?: RequestInit) => reply(path === '/me' ? { ...profile, timezone } : options?.method === 'POST' ? ack : admission, options?.method === 'POST' ? 201 : 200));
+  vi.stubGlobal('fetch', mock); const router = mount();
+  await act(async () => {});
+  await act(async () => { fireEvent.change(screen.getByLabelText(/^Invitation email/), { target: { value: input.email } }); fireEvent.click(screen.getByRole('button', { name: 'Create invitation' })); });
+  timezone = 'Asia/Tokyo'; await act(async () => vi.advanceTimersByTimeAsync(10_000));
+  expect(screen.getByText(/Expires:.*03:00/)).toBeInTheDocument();
+  await act(async () => router.navigate('/elsewhere'));
+  expect(identity.watch.mock.results[0].value).toHaveBeenCalledTimes(1);
+  const count = mock.mock.calls.length; await act(async () => { window.dispatchEvent(new Event('online')); await vi.advanceTimersByTimeAsync(60_000); });
+  expect(mock).toHaveBeenCalledTimes(count);
 });
 it.each([false, true])('uses fresh final preferences when recovering the original lost invitation reply (Board=%s)', async boardSurface => {
   let attempts = 0;

@@ -16,6 +16,39 @@ This implements the creation controls; Worker invitation email delivery, invitat
 
 ## Complete-operation deadlines and original-request recovery
 
+### Open acknowledgment preference recovery
+
+Confirmed Organization and Board acknowledgments now follow identity preference
+delivery plus visible ten-second, focus, online and visibility recovery. Each
+refresh uses normal bounded account/scope/account admission and final preferences.
+Signals defer while an unsent draft or uncertain command is unresolved; no
+background preference check submits a mutation or replaces the captured key/body.
+Signals during a read coalesce into one subsequent check. Denial and unmount stop
+the listener and fallback. Owned action focus survives a quiet read; focus moved
+to another control stays there.
+
+All 61 focused creation/identity cases pass, including both scope regressions,
+draft/original-command deferral, queued recovery, periodic fallback, focus ownership
+and denial cleanup. Web/browser typechecking and lint pass. Both complete native
+desktop/phone administrator workflows pass against the local Production API,
+restricted schema-110 PostgreSQL and current Vite source. The first real creation
+commits before a separate author session changes Honolulu to Tokyo and its reply
+is dropped. Reload and original retry require identical key/body, one invitation
+and the final Tokyo caption. A further change to UTC updates the already confirmed
+acknowledgment automatically without reload or another POST, retains Create another
+invitation focus and leaves actual invitation history unchanged. Existing recipient
+acceptance, canonical metadata delivery and independent Portal grants also pass.
+The invocation exits 0 with two cases in 30.5 seconds; timing is not a benchmark.
+
+The first native run retried before the reload's initial metadata refresh finished:
+HTTP 201 was correctly fenced by the newer admission epoch. The fixture now waits
+for the actual checked-permissions notice before retrying, retaining the original
+assertions. Two disposable Workers process only the two newly created test
+Organizations with global discovery disabled, then retire. API/Worker outputs are
+immutable local builds, not the current retained release images; backend source
+is unchanged from the local API's `6044227e` build. Complete current release and
+remaining preference-consumer acceptance are still required before closure.
+
 ### Final confirmed expiry preferences
 
 Both Organization and Board creation now validate and use locale/timezone from

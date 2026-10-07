@@ -361,9 +361,33 @@ confirms the prior comment/invitation listener-registration fixture fixes at tha
 revision; it does not prove the newly changed creation source or pending container
 and full release gates. Estimated PRD-02 work remaining stays **22%**.
 
+### Executed creation acknowledgment recovery
+
+Clean Organization and Board acknowledgments now recover account preferences via
+identity delivery and visible periodic/focus/online checks using normal protected
+scope/account admission. Drafts and uncertain commands defer recovery without
+replacing key/body; queued signals coalesce, denial/unmount retire fallback and
+owned action focus survives quiet reads. All 61 focused creation/identity cases
+pass; web/browser typechecking and lint pass.
+
+Both complete desktop/phone administrator native workflows pass against the local
+Production API, restricted schema-110 PostgreSQL and current Vite source with
+disposable Workers restricted to each new fixture Organization. They exercise a
+timezone changed by another session after actual publication but before a lost
+reply, identical original recovery after reload, automatic preference recovery in
+the confirmed acknowledgment, unchanged actual history and keyboard focus. Existing
+recipient acceptance, canonical metadata delivery and separate Portal grants pass.
+The full invocation exits 0 with two cases in 30.5 seconds. The initial retry now
+waits for actual metadata readmission; an earlier HTTP 201 was correctly fenced
+when that epoch changed. See [creation recovery evidence](invitation-administration-ui.md#open-acknowledgment-preference-recovery).
+
+These local immutable API/Worker builds and Vite source are not current retained
+release-image evidence. Full release CI and the remaining date consumers still
+require acceptance. Estimated PRD-02 work remaining is now **21%**.
+
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **22% work
+immutable images before closure. The current PRD estimate is **21% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.
