@@ -1,6 +1,6 @@
 # PRD-05 acceptance and closure audit
 
-This audit covers the complete [PRD-05 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/6), including all ten functional requirements, three acceptance criteria, thirteen test scenarios and the definition of done. PRD-05 remains open. Estimated work remaining is **18%**, a planning estimate rather than a measured completion fraction.
+This audit covers the complete [PRD-05 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/6), including all ten functional requirements, three acceptance criteria, thirteen test scenarios and the definition of done. PRD-05 remains open. Estimated work remaining is **17%**, a planning estimate rather than a measured completion fraction.
 
 ## Functional traceability
 
@@ -65,6 +65,14 @@ This local API execution uses the Demo in-memory journal. Its audit append is a 
 A fixture-scoped PostgreSQL trigger rejects journal insertion after the member mutation and audit append. The command reports storage unavailability and the complete protected snapshot matches its pre-command state, including stream allocation and retry receipt. After removing the trigger, the original key commits once and its replay changes nothing. The final locked Release build has zero warnings/errors and the expanded Linux/PostgreSQL invocation exits 0. Its disposable container is removed automatically; the active web/API/database and stored volumes remain preserved.
 
 CI now requires this contract in the PostgreSQL source gate through `--board-member-events-only`. These are compiled source contracts in a cached Linux runtime, not retained-current-release API/Worker image or native browser delivery evidence. The whole ticket remains open.
+
+## Executed HTTP and Worker member recovery
+
+`scripts/ci/test-board-member-events.sh` passes locally against the compiled Production API and newly compiled separate Worker in cached Linux runtimes, with real restricted PostgreSQL. It registers and signs in normal owner/member accounts, creates a private Board, and checks first grant, promotion, demotion and same-role event names against the matching audit/source identities. Each identical retry returns the same receipt bytes and preserves membership revision, journal/stream, audit, job and receipt counts. Stale-version and unauthorized self-promotion refusals retain the protected snapshot.
+
+The scoped Worker marks all five canonical Board events ready. A separate ordinary member recovers those original event IDs through `/sync`, receives their ordered public event types with actor IDs redacted, and then gets an empty page at the recovered cursor. An administrator recovers the same event IDs/types/cursor with the admitted actor IDs. The initial fixture incorrectly expected actor IDs in the ordinary member response; all five events had already been delivered. The corrected fixture preserves the product redaction boundary. After actual HTTP removal, that member's recovery is refused without an event envelope while their Organization membership remains unchanged. The final unchanged script exits 0; both disposable API/Worker containers are removed, leaving the original three active services and all volumes preserved.
+
+The script is now mandatory in container integration against the immutable API/Worker images built by CI. Local compiled-runtime execution proves the HTTP/Worker/read path, not retained-current-image or native browser acceptance; the exact-commit CI result remains required.
 
 ## Remaining implementation order
 
