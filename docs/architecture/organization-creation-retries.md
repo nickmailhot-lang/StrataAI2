@@ -141,3 +141,27 @@ original request, one directory Organization/revision, keyboard focus, no docume
 reload and WCAG 2.2 AA. Browser clock advancement is client deadline evidence,
 not server latency or cookie-expiry proof. Native exact-image execution remains
 pending; broader telemetry and PRD-03 acceptance remain unfinished.
+
+## Canonical persisted creation acknowledgment
+
+Organization creation now returns the actual PostgreSQL INSERT row, including
+its stored timestamps, before committing the original Organization/Owner
+membership transaction. It no longer returns the higher-precision input clock
+value when PostgreSQL stored a different microsecond value. No schema, RLS,
+authorization or receipt policy changes are required.
+
+The native settings actor fixture exposed this mismatch in four denied-edit
+cases: business fields stayed unchanged, but the creation acknowledgment's
+createdAt/updatedAt differed from the subsequent protected read. A new mandatory
+restricted persistence contract fails before the fix and passes all three
+sub-microsecond cases afterward. It compares the entire acknowledged/stored
+Organization and initial Owner membership. Run the same diagnostic with
+`--organization-creation-timestamps-only`; the full CI executable includes it.
+
+The repaired contract and API Release builds pass with zero warnings/errors.
+All six complete desktop/phone reviewed-actor settings scenarios pass against
+an isolated immutable repaired API build and restricted PostgreSQL, retaining
+exact whole-record unchanged-state assertions, real administrator substitution,
+zero/one command counts, disclosure retirement, keyboard and accessibility checks.
+The disposable API/web fixture and private configuration were removed afterward.
+This is actual local adapter/HTTP/browser evidence, not retained-image acceptance.

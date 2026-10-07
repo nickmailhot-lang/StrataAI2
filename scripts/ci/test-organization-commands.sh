@@ -54,6 +54,14 @@ cleanup() {
 }
 trap cleanup EXIT
 trap 'echo "Organization command check failed at line $LINENO" >&2' ERR
+assert_unchanged_snapshot() {
+  local before="$1" after="$2" label="$3"
+  if test "$before" = "$after"; then return; fi
+  echo "$label snapshot changed; differing sections follow (values withheld)." >&2
+  jq -cn --argjson before "$before" --argjson after "$after" \
+    '[ (($before|keys)+($after|keys)|unique)[] as $key | select($before[$key] != $after[$key]) | $key ]' >&2
+  return 1
+}
 account() {
   local label="$1" body
   body="$(jq -nc --arg email "org-commands-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"organization-correct-horse-battery",displayName:"Organization fixture"}')"
@@ -609,7 +617,7 @@ admin "UPDATE organization_members SET status='ACTIVE',version=version+1,updated
 assign_receipt_card
 removal_rejoined="$(removal_state)"
 test "$(removal_request removal-replay)" = 204
-test "$removal_rejoined" = "$(removal_state)"
+assert_unchanged_snapshot "$removal_rejoined" "$(removal_state)" 'Removal receipt replay after rejoin'
 test "$(removal_request removal-conflict "$((removal_version+1))")" = 409
 jq -e '.code=="idempotency_conflict"' "$scratch/removal-conflict.json" >/dev/null
 test "$(removal_request removal-target-conflict 1 "$owner")" = 409

@@ -73,6 +73,7 @@ internal sealed class PostgresOrganizationStore(
                 organizationId,
                 cancellationToken);
 
+        OrganizationRecord persisted;
         await using (var organizationCommand = new NpgsqlCommand(
             """
             INSERT INTO organizations(
@@ -80,7 +81,9 @@ internal sealed class PostgresOrganizationStore(
                 created_at, updated_at, version)
             VALUES (
                 @id, @name, @description, @owner_user_id, 'ACTIVE',
-                @created_at, @updated_at, 1);
+                @created_at, @updated_at, 1)
+            RETURNING id, name, description, logo_url, owner_user_id,
+                status, created_at, updated_at, version;
             """,
             session.Connection,
             session.Transaction))
@@ -95,7 +98,10 @@ internal sealed class PostgresOrganizationStore(
                 actorUserId);
             organizationCommand.Parameters.AddWithValue("created_at", createdAt);
             organizationCommand.Parameters.AddWithValue("updated_at", createdAt);
-            await organizationCommand.ExecuteNonQueryAsync(cancellationToken);
+            await using var reader = await organizationCommand.ExecuteReaderAsync(cancellationToken);
+            if (!await reader.ReadAsync(cancellationToken))
+                throw new InvalidOperationException("Organization creation did not return its stored record.");
+            persisted = ReadOrganization(reader);
         }
 
         await using (var membershipCommand = new NpgsqlCommand(
@@ -120,16 +126,7 @@ internal sealed class PostgresOrganizationStore(
 
         await session.CommitAsync(cancellationToken);
 
-        return new OrganizationRecord(
-            organizationId,
-            name,
-            description,
-            null,
-            actorUserId,
-            OrganizationStatus.Active,
-            createdAt,
-            createdAt,
-            1);
+        return persisted;
     }
 
     public async Task<IReadOnlyList<Guid>> ListMembershipOrganizationIdsAsync(Guid userId, CancellationToken cancellationToken = default)

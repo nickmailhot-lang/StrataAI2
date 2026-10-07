@@ -133,3 +133,26 @@ Organization command fixture also checks neutral actor refusals before private
 read/new edit/committed receipt and compares actual metadata, audit, receipt and
 event-count state. Its shell syntax and snapshot SQL passed; full exact-image
 execution remains pending.
+
+## Executed local metadata and reviewed-account evidence
+
+On 2026-10-07, both complete desktop/phone live settings scenarios passed against
+the local Production API, restricted PostgreSQL and newly scoped Workers. They
+preserved unsaved drafts through other-client edits and recovered the original
+same-key/body save after a later administrator version. Both complete metadata
+stream scenarios also passed: reconnect recovered the exact canonical event ID,
+actor, version, timestamp and empty metadata; logout closed the stream and
+refused replay. All four disposable Workers were retired.
+
+The subsequent six reviewed-account scenarios exposed an Organization creation
+acknowledgment precision defect in the four denied-edit cases. Creation now
+returns the stored PostgreSQL row. The new mandatory persistence regression
+fails before repair and passes three precision cases afterward. All six complete
+native scenarios pass against a separate immutable repaired API, without changing
+any fixture assertion. The first repaired-run attempt used 127.0.0.1 and failed
+secure-cookie profile admission; the successful complete run uses localhost,
+matching the existing Production sign-in fixtures. The temporary API/web process
+and private configuration were removed. See [creation acknowledgment evidence](organization-creation-retries.md#canonical-persisted-creation-acknowledgment).
+
+These are scoped local results. They do not establish current retained images,
+all Organization lifecycle/Demo parity/performance or complete ticket acceptance.

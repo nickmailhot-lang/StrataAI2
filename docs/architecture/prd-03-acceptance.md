@@ -161,3 +161,35 @@ repairs address fresh terminal recovery, navigation landmarks, invitation expiry
 scan deadlocks and Board history bootstrap; current exact-image verification
 remains pending. Estimated remaining work stays **16%** pending the
 remaining functional and full release/native acceptance evidence.
+
+## Current creation and metadata verification
+
+The local live settings and canonical metadata stream fixtures passed all four
+complete desktop/phone cases on 2026-10-07, including unsaved-draft preservation,
+original receipt recovery after a later edit, unchanged original event identity
+through reconnect, logout revocation and accessibility. Separate Workers owned
+only the newly created fixture Organizations and were retired afterward.
+
+Six real reviewed-account settings cases then exposed a creation timestamp
+precision mismatch. PostgreSQL creation now returns its actual stored row within
+the original Organization/Owner transaction. A mandatory restricted persistence
+contract fails before repair and passes three precision cases after it; full
+record equality and initial Owner membership are asserted. Both isolated Release
+builds pass with zero warnings/errors. All six desktop/phone actor cases pass
+against the repaired API, keeping the original whole-record unchanged-state,
+actual administrator replacement, command-count, disclosure, keyboard and axe
+assertions. No native assertion or server admission was relaxed. See
+[creation evidence](organization-creation-retries.md#canonical-persisted-creation-acknowledgment)
+and [settings evidence](organization-settings.md#executed-local-metadata-and-reviewed-account-evidence).
+
+Full release run 37622958815 at ed9bdc41 passed source, PostgreSQL, images and
+security, then failed the Organization command fixture's exact snapshot equality
+after member rejoin and receipt replay (line 612). That is a separate unresolved
+failure. The fixture now reports only the names of differing snapshot sections
+on refusal; the same strict equality and failure remain enforced. This diagnostic
+withholds values and does not certify or repair the replay difference. Bash
+syntax with Linux line endings passes; current exact-image execution is required.
+
+Estimated PRD-03 work remaining is now **12%**, a planning estimate. Current
+release acceptance, the replay snapshot failure, Demo terminal parity and remaining
+lifecycle/performance requirements keep the ticket open.
