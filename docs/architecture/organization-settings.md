@@ -12,6 +12,16 @@ Each complete read/save operation has one 15-second deadline covering both accou
 
 If a temporary account-check failure happens before a fresh PATCH, no original-save intent is created: the screen says no save was sent, preserves the draft and requires a current read and explicit review before another save. A failure after actual submission preserves the exact body/version/key until the original acknowledgment is recovered. Failed refreshes withdraw stale saved-review controls and block saving until fresh admission. Definite profile refusals clear private state. These client checks do not yet bind the metadata API request to the reviewed actor: replacement of the cookie between the profile check and PATCH still requires a server actor-binding guard and corresponding API/native evidence.
 
+`organization-settings-account.spec.ts` adds four mandatory native cases at
+desktop and phone widths. A normal registered administrator reviews actual
+Organization data; a controlled 503 before PATCH requires zero writes and an
+unchanged stored record, while a 503 after a real committed PATCH withholds its
+acknowledgment and recovers the identical body/key without a second version
+advance. Both paths preserve the draft, require current review, use keyboard
+controls and check WCAG 2.2 AA without a document reload. Browser TypeScript
+checking and collection of all four cases pass. Runtime execution against exact
+release images remains required; test collection is not a native pass.
+
 Verification includes web components and typecheck/lint, API-host tests, restricted PostgreSQL contracts and mandatory desktop/phone keyboard scenarios against exact release images. Local .NET test execution is available. The exact-image Organization fixture checks rejected URLs and unauthorized callers leave Organization/member/invitation/Portal/audit state unchanged. Current release execution remains required; compilation alone is not runtime evidence.
 
 Full PRD-03 remains open. Use the [current acceptance map](prd-03-acceptance.md) for functional coverage and outstanding work; individual settings checks do not establish complete Organization acceptance.
