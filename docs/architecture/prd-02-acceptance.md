@@ -29,6 +29,26 @@ Current changes must pass the complete pipeline against their exact revision.
 
 ## Evidence boundaries
 
+### Executed native search preference recovery
+
+Both current desktop/phone search deadline fixtures pass against the local
+Production API and restricted schema-110 PostgreSQL role, with current Vite
+source. An independent second session changes the saved timezone; the already
+open results recover automatically while retaining an unsent filter draft and
+the applied query. Existing Board-policy precedence/change/clearing, unchanged
+UTC deadlines, date-only display, keyboard focus and automated WCAG-tagged
+checks also pass. The completed invocation exits 0 with two cases in 37.1 seconds;
+scenario duration is not a performance benchmark. Browser TypeScript and the
+isolated production web build pass.
+
+The first run failed before date rendering because the Vite API-root expression
+missed `/search?...` and returned SPA HTML. The corrected query boundary passes
+the actual browser flow; Nginx's existing path-based routing is unchanged. The
+API remains the immutable local build at `6044227e`; backend `src` files are
+unchanged from that revision through `f5fc2efb`. Current retained images, all
+other preference consumers and the remaining PRD acceptance still need their
+own evidence. See the [profile guide](profile-management.md#activity-and-personal-star-history-date-display).
+
 ### Current preference and profile retry checks
 
 The current-source isolated Release API-test build passes with zero warnings or
@@ -291,5 +311,5 @@ Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **23% work
+immutable images before closure. The current PRD estimate is **22% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.

@@ -78,6 +78,23 @@ lint. Desktop/phone activity and star release fixtures now compare each relevant
 caption and datetime attribute with the actual stored source and known account
 preferences; their new assertions still require exact-image CI execution.
 
+The search deadline fixture now verifies actual automatic recovery after an
+independently signed-in second session updates the account timezone. It preserves
+an unsent filter draft and the original applied query, without clicking Refresh
+results or reloading the document. Both 1280px and 390px local Production cases
+passed on 2026-10-07 (18.8 and 17.0 seconds; these are whole-scenario durations,
+not latency benchmarks). The existing Board-policy precedence/change/clearing,
+unchanged UTC instant, date-only presentation, keyboard Search focus and automated
+WCAG-tagged checks also passed. Browser TypeScript and the isolated production
+web build passed.
+
+The first invocation failed because Vite returned HTML for `/search?...`; its
+API-root proxy boundary now includes the query marker. The successful invocation
+used the schema-110 restricted PostgreSQL API compiled at `6044227e` and current
+Vite source with this repair. Backend `src` files are unchanged between that
+compiled revision and `f5fc2efb`. The scoped actual HTTP/DB/browser result is not
+an exact retained-release-image or full PRD acceptance claim.
+
 On 2026-10-07, a current-source isolated Release API-test build completed with
 zero warnings/errors. The search date-policy HTTP case passed, retaining timed
 and date-only UTC deadlines across Board policy changes/clearing and excluding

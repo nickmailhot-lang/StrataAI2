@@ -8,6 +8,15 @@ Nginx serves compiled assets with SPA fallback and proxies `/api/` to the privat
 through the edge. No additional local development service is required by this
 decision.
 
+Vite's local proxy also forwards top-level API routes when the request URL has
+a query directly after the route name, such as `/search?q=deadline`. Its route
+boundary matches slash, query marker or end of URL; SPA paths remain outside the
+listed API roots. The previous slash/end-only expression returned the SPA HTML
+with HTTP 200 for queried root endpoints. Actual desktop and phone search
+fixtures reproduced that failure, then passed after the query-boundary repair.
+Nginx already matches the request path separately from its query and needs no
+change. This local proxy result does not certify all current release routing.
+
 ## Query and cache decision
 
 Current features use typed API services, the shared `apiFetch` transport and

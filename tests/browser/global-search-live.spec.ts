@@ -117,7 +117,7 @@ for (const width of [1280, 390]) {
 }
 
 for (const width of [1280, 390]) {
-  test(`PRD-02 search deadlines follow current account preferences at ${width}px`, async ({ page, context }) => {
+  test(`PRD-02 search deadlines follow current account preferences at ${width}px`, async ({ page, context, browser }) => {
     await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `search-timezone-${width}-${Date.now()}@example.test`, password: 'search-timezone-correct-horse',
@@ -140,40 +140,47 @@ for (const width of [1280, 390]) {
     const search = page.getByRole('button', { name: 'Search', exact: true });
     await search.focus(); await expect(search).toBeFocused(); await search.press('Enter');
     await expect(page.getByText(/Due Jan 1, 2040, 14:30/)).toBeVisible();
-    const profile = await (await context.request.get('/me')).json();
-    expect((await context.request.patch('/me', { headers, data: { timezone: 'Asia/Tokyo', version: profile.version } })).status()).toBe(200);
-    await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
-    await expect(page.getByText(/Due Jan 2, 2040, 09:30/)).toBeVisible();
-    await expect(page.getByText(/Due Jan 1/)).toHaveCount(0);
-    const boardRead = await context.request.get(`/boards/${board}`);
-    expect(boardRead.status()).toBe(200);
-    let boardVersion = (await boardRead.json()).board.version;
-    for (const [timezone, deadline] of [
-      ['Pacific/Honolulu', /Due Jan 1, 2040, 14:30/],
-      ['UTC', /Due Jan 2, 2040, 00:30/],
-      [null, /Due Jan 2, 2040, 09:30/],
-    ] as const) {
-      const policy = await context.request.patch(`/boards/${board}/date-policy`, { headers, data: { timezone, version: boardVersion } });
-      expect(policy.status()).toBe(200); boardVersion = (await policy.json()).board.version;
+    const peer = await browser.newContext({ baseURL: new URL(page.url()).origin });
+    try {
+      expect((await peer.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+      const profile = await (await peer.request.get('/me')).json();
+      expect((await peer.request.patch('/me', { headers, data: { timezone: 'Asia/Tokyo', version: profile.version } })).status()).toBe(200);
+      // Recovery must retain the applied search without a user refresh or reload.
+      await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('Unsubmitted search draft');
+      await expect(page.getByText(/Due Jan 2, 2040, 09:30/)).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole('textbox', { name: 'Card text', exact: true })).toHaveValue('Unsubmitted search draft');
+      await expect(page.getByRole('link', { name: 'Timezone deadline fixture', exact: true })).toBeVisible();
+      await expect(page.getByText(/Due Jan 1/)).toHaveCount(0);
+      const boardRead = await context.request.get(`/boards/${board}`);
+      expect(boardRead.status()).toBe(200);
+      let boardVersion = (await boardRead.json()).board.version;
+      for (const [timezone, deadline] of [
+        ['Pacific/Honolulu', /Due Jan 1, 2040, 14:30/],
+        ['UTC', /Due Jan 2, 2040, 00:30/],
+        [null, /Due Jan 2, 2040, 09:30/],
+      ] as const) {
+        const policy = await context.request.patch(`/boards/${board}/date-policy`, { headers, data: { timezone, version: boardVersion } });
+        expect(policy.status()).toBe(200); boardVersion = (await policy.json()).board.version;
+        await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
+        await expect(page.getByText(deadline)).toBeVisible();
+        const persisted = await context.request.get(`/boards/${board}`);
+        expect(persisted.status()).toBe(200);
+        const snapshot = await persisted.json();
+        const persistedCard = snapshot.lists.flatMap((entry: { cards: { id: string; dueAt: string }[] }) => entry.cards)
+          .find((entry: { id: string }) => entry.id === card);
+        expect(persistedCard).toBeDefined();
+        expect(new Date(persistedCard.dueAt).toISOString()).toBe('2040-01-02T00:30:00.000Z');
+      }
+      const dateOnlyPolicy = await context.request.patch(`/boards/${board}/date-policy`, {
+        headers, data: { timezone: 'Pacific/Honolulu', version: boardVersion },
+      });
+      expect(dateOnlyPolicy.status()).toBe(200);
+      expect((await context.request.patch(`/cards/${card}/dates`, { headers, data: {
+        startAt: null, dueAt: '2040-01-02', dueTimezone: 'Pacific/Honolulu', dueHasTime: false, dueComplete: false, version: 2,
+      } })).status()).toBe(200);
       await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
-      await expect(page.getByText(deadline)).toBeVisible();
-      const persisted = await context.request.get(`/boards/${board}`);
-      expect(persisted.status()).toBe(200);
-      const snapshot = await persisted.json();
-      const persistedCard = snapshot.lists.flatMap((entry: { cards: { id: string; dueAt: string }[] }) => entry.cards)
-        .find((entry: { id: string }) => entry.id === card);
-      expect(persistedCard).toBeDefined();
-      expect(new Date(persistedCard.dueAt).toISOString()).toBe('2040-01-02T00:30:00.000Z');
-    }
-    const dateOnlyPolicy = await context.request.patch(`/boards/${board}/date-policy`, {
-      headers, data: { timezone: 'Pacific/Honolulu', version: boardVersion },
-    });
-    expect(dateOnlyPolicy.status()).toBe(200);
-    expect((await context.request.patch(`/cards/${card}/dates`, { headers, data: {
-      startAt: null, dueAt: '2040-01-02', dueTimezone: 'Pacific/Honolulu', dueHasTime: false, dueComplete: false, version: 2,
-    } })).status()).toBe(200);
-    await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
-    await expect(page.getByText('Due Jan 2, 2040', { exact: true })).toBeVisible();
-    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      await expect(page.getByText('Due Jan 2, 2040', { exact: true })).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    } finally { await peer.close(); }
   });
 }
