@@ -25,9 +25,25 @@ for i in $(seq 1 30); do
 done
 sudo nsenter --target "$pid" --net -- curl --noproxy '*' --fail --silent "$base/readyz" \
   | jq -e '.status=="ready" and .mode=="demo"' >/dev/null
-sudo nsenter --target "$pid" --net -- curl --noproxy '*' --fail --silent "$base/api/demo/state" >/dev/null
+# Verify the versioned packaged catalog, actual clear/read and deterministic
+# reset before authentication changes any independent Demo identity state.
+sample="$(sudo nsenter --target "$pid" --net -- curl --noproxy '*' --fail --silent "$base/api/demo/state")"
+printf '%s' "$sample" | jq -e '.sampleVersion==1 and (.organizations | length)==1
+  and .organizations[0].id=="11111111-1111-1111-1111-111111111111"
+  and .organizations[0].name=="Quail Ridge Demo"
+  and (.organizations[0].boards | length)==1
+  and .organizations[0].boards[0].id=="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+  and .organizations[0].boards[0].name=="Council Operations"' >/dev/null
 sudo nsenter --target "$pid" --net -- curl --noproxy '*' --fail --silent \
-  -H 'X-StrataAI-Request: 1' -X POST "$base/api/demo/reset" >/dev/null
+  -H 'X-StrataAI-Request: 1' -X DELETE "$base/api/demo/state" \
+  | jq -e '.sampleVersion==1 and .organizations==[]' >/dev/null
+sudo nsenter --target "$pid" --net -- curl --noproxy '*' --fail --silent "$base/api/demo/state" \
+  | jq -e '.sampleVersion==1 and .organizations==[]' >/dev/null
+restored="$(sudo nsenter --target "$pid" --net -- curl --noproxy '*' --fail --silent \
+  -H 'X-StrataAI-Request: 1' -X POST "$base/api/demo/reset")"
+test "$(printf '%s' "$restored" | jq -Sc .)" = "$(printf '%s' "$sample" | jq -Sc .)"
+read_back="$(sudo nsenter --target "$pid" --net -- curl --noproxy '*' --fail --silent "$base/api/demo/state")"
+test "$(printf '%s' "$read_back" | jq -Sc .)" = "$(printf '%s' "$sample" | jq -Sc .)"
 sudo nsenter --target "$pid" --net -- bash "$(dirname "$0")/test-demo-auth.sh" "$base"
 test "$(docker inspect --format '{{.State.Running}}' "$name")" = true
 echo 'Demo documented workflows passed with network=none and no PostgreSQL or provider credentials.'

@@ -29,7 +29,17 @@ set -euo pipefail
 [[ " $* " == *' nsenter --target 123 --net -- '* ]] || exit 74
 case "$*" in
   *readyz*) printf '{"status":"ready","mode":"%s"}\n' "$FIXTURE_READY_MODE" ;;
-  *api/demo/state*|*api/demo/reset*) echo '{}' ;;
+  *api/demo/state*|*api/demo/reset*)
+    if [[ " $* " == *' -X DELETE '* ]]; then
+      if [ "$FIXTURE_CLEAR_FAIL" = false ]; then
+        echo '{"sampleVersion":1,"organizations":[]}' > "$FIXTURE_CATALOG"
+      fi
+    elif [[ " $* " == *' -X POST '* ]]; then
+      if [ "$FIXTURE_RESET_FAIL" = false ]; then
+        printf '%s\n' "$FIXTURE_SAMPLE" > "$FIXTURE_CATALOG"
+      fi
+    fi
+    cat "$FIXTURE_CATALOG" ;;
   *test-demo-auth.sh*) echo workflows >> "$FIXTURE_LOG" ;;
   *) exit 75 ;;
 esac
@@ -38,14 +48,23 @@ printf '#!/usr/bin/env bash\nexit 0\n' > "$sandbox/bin/nsenter"
 chmod +x "$sandbox/bin/"*
 export PATH="$sandbox/bin:$PATH"
 export FIXTURE_LOG="$sandbox/result" FIXTURE_NETWORK=none FIXTURE_PID=123 FIXTURE_READY_MODE=demo
-for scenario in success external-network invalid-process non-demo-ready; do
+export FIXTURE_CATALOG="$sandbox/catalog"
+export FIXTURE_SAMPLE='{"sampleVersion":1,"organizations":[{"id":"11111111-1111-1111-1111-111111111111","name":"Quail Ridge Demo","boards":[{"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","name":"Council Operations"}]}]}'
+for scenario in success external-network invalid-process non-demo-ready wrong-sample failed-clear failed-reset; do
   export FIXTURE_NETWORK=none FIXTURE_PID=123 FIXTURE_READY_MODE=demo
+  export FIXTURE_CLEAR_FAIL=false FIXTURE_RESET_FAIL=false
   case "$scenario" in
     external-network) export FIXTURE_NETWORK=bridge ;;
     invalid-process) export FIXTURE_PID=0 ;;
     non-demo-ready) export FIXTURE_READY_MODE=production ;;
+    failed-clear) export FIXTURE_CLEAR_FAIL=true ;;
+    failed-reset) export FIXTURE_RESET_FAIL=true ;;
   esac
   : > "$FIXTURE_LOG"
+  printf '%s\n' "$FIXTURE_SAMPLE" > "$FIXTURE_CATALOG"
+  if [ "$scenario" = wrong-sample ]; then
+    echo '{"sampleVersion":2,"organizations":[]}' > "$FIXTURE_CATALOG"
+  fi
   status=0
   bash "$script" 'retained-api:fixture' > "$sandbox/output" 2>&1 || status=$?
   test "$(grep -c '^stopped$' "$FIXTURE_LOG")" = 1
@@ -59,4 +78,4 @@ for scenario in success external-network invalid-process non-demo-ready; do
     fi
   fi
 done
-echo 'Demo namespace, process, readiness and failure-cleanup refusal fixtures passed (4 scenarios).'
+echo 'Demo namespace, process, readiness, catalog and failure-cleanup refusal fixtures passed (7 scenarios).'

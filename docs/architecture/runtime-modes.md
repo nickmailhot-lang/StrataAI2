@@ -117,6 +117,12 @@ port, no PostgreSQL and no production provider credentials. A namespace-local
 client reaches only the API's loopback interface. Readiness must identify Demo
 before sample-state/reset and the existing authentication/workflow checks run.
 
+The API runner also verifies the packaged version-1 catalog's canonical IDs and
+names, clears it and reads back the empty catalog, then resets and reads back
+the exact original sample. These checks passed against an actual current-source
+API with networking disabled. They prove process-local catalog reset rather than
+resetting accounts, sessions or independently created collaboration data.
+
 The [isolation runner](../../scripts/ci/test-demo-network-isolation.sh) reuses
 [the complete Demo smoke suite](../../scripts/ci/test-demo-auth.sh): documented
 seeded login, wrong-password refusal, sample-reset session preservation, CSRF,
@@ -130,9 +136,10 @@ same host; it enters only the target API network namespace. This is test-client
 tooling, not a runtime requirement. Docker Desktop users can run a client inside
 the API namespace instead. Ordinary Demo startup still requires neither nsenter
 nor production providers. The runner stops its unique disposable API on success
-or failure. Four [refusal fixtures](../../scripts/ci/test-demo-network-isolation-fixture.sh)
+or failure. Seven [refusal fixtures](../../scripts/ci/test-demo-network-isolation-fixture.sh)
 pass for success, an external-network namespace, an invalid process reference and
-non-Demo readiness; unconfirmed prerequisites never reach the smoke suite.
+non-Demo readiness, wrong sample version/content, failed clear and failed reset;
+unconfirmed prerequisites never reach the smoke suite.
 
 This check complements the fourteen desktop/phone metadata, terminal and Portal
 recipient lifecycle scenarios on retained Demo API/web images. It does not certify all
