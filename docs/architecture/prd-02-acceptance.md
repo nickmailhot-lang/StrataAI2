@@ -29,6 +29,40 @@ Current changes must pass the complete pipeline against their exact revision.
 
 ## Evidence boundaries
 
+### Executed security and final-admission checks
+
+On 2026-10-07, an isolated Release build of source revision `be7b1616` passed
+with zero warnings/errors. Seven focused API-host invocations then passed with
+19 cases and no skips or failures:
+
+| Executed fixture | Cases | Scope |
+| --- | --- | --- |
+| Unknown-account adaptive verification | 1 | Real framework hash verification, reusable dummy hash, no dummy identity or account/event mutation |
+| Malformed password hash | 4 | Actual HTTP credential refusal, no cookie/disclosure, unchanged account/events and absent receipt |
+| Sign-in final expiry | 2 | Real session/receipt publication, ordinary and legacy hashes, complete rollback and same-key retry |
+| Recovery rollback | 6 | Reset/verification token and receipt writes, failure/cancellation races, preservation of original proofs, retry/replay |
+| Token consumption final expiry | 2 | Reset/verification consumption rollback after receipt publication and same-key retry |
+| Revocation final expiry | 2 | Logout/deactivation rollback after receipt publication, preserving sessions/accounts/assignments/events |
+| Profile final expiry | 2 | Keyed/unkeyed profile publication rollback and authoritative retry |
+
+These use the actual composed framework host with Demo persistence. The
+final-admission fixtures advance an injected clock at observed publication;
+they do not measure wall-clock expiry or establish PostgreSQL cancellation-race
+behavior, external mail delivery, limiter capacity or full release acceptance.
+
+Separately, retained-image CI run
+[37593384106](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37593384106)
+at `f62785a6` reports successful container steps for production profile
+concurrency, identity audit/logout rollback, session-bound logout/deactivation
+receipts, credential-checked sign-in retries and active-owner continuity.
+The successful sign-in script includes malformed stored-hash refusal and
+known/unknown public-response/state privacy assertions. That script and the
+seven focused fixture sources are unchanged between `f62785a6` and `be7b1616`.
+The full container job remains live: passed steps establish their scoped
+revision evidence, not complete current-main release readiness.
+
+### Native browser recovery
+
 Four existing native account scenarios now pass locally against an actual
 schema-110 Production API and restricted database role: desktop/phone keyboard
 deactivation with lost acknowledgment, original-session logout retry and
@@ -47,7 +81,7 @@ The result never authorizes an account/session and the credential is never store
 or returned. A probe using the actual framework hasher checks unknown/known/unknown
 wrong-password attempts all invoke verification, reuse the dummy hash, return the
 same credential error, preserve the real account/events and create no dummy user.
-Strict compilation passes; execution remains pending CI. This removes the missing
+The focused API-host case passes as recorded above. This removes the missing
 verification-work distinction, not every possible timing difference (database
 work and legacy hash costs may differ); production abuse limits remain required.
 
@@ -56,8 +90,8 @@ unknown-address refusals through the actual API. Public status/title/type/code/
 detail must match; request correlation identifiers are not compared. Neither
 attempt may issue a cookie, disclose the account/email or change the complete
 user/session/audit/event-stream/events/receipt snapshot. The unknown and dummy
-subjects must remain absent from canonical users. Bash syntax passes; native
-execution is pending. These assertions verify public response/state privacy, not
+subjects must remain absent from canonical users. The retained-image sign-in
+step passes at `f62785a6`, as recorded above. These assertions verify public response/state privacy, not
 exact request timing or complete abuse resistance.
 
 The framework password-hash adapter treats malformed persisted Base64 encoding
@@ -65,8 +99,8 @@ as failed verification, preserving the ordinary `invalid_credentials` response.
 It catches encoding `FormatException` only; unrelated infrastructure errors keep
 their existing handling. Four API-host cases cover malformed and truncated hash
 values, require no cookie or protected account/storage details, preserve account
-and event state, and require no sign-in retry receipt. Strict compilation passes;
-native API-host and PostgreSQL release execution remains pending. This repair
+and event state, and require no sign-in retry receipt. All four API-host cases
+pass; retained-image PostgreSQL sign-in assertions pass at `f62785a6`. This repair
 does not introduce a password algorithm or change valid-hash verification policy.
 
 The mandatory exact-image sign-in fixture also substitutes malformed/truncated
@@ -74,8 +108,8 @@ hashes only on its disposable account, requiring 401 `invalid_credentials`, no
 cookie/protected hash/storage details, and exact unchanged user/session/audit/
 receipt state for every refusal. It restores the original encoded hash before
 the existing audit/receipt rollback, same-key concurrency and session checks.
-Cleanup restores the hash if interrupted. Bash syntax passes; native execution
-remains pending. Production schema and runtime privileges are unchanged.
+Cleanup restores the hash if interrupted. The retained-image sign-in step passes
+at `f62785a6`; complete current-main CI remains required. Production schema and runtime privileges are unchanged.
 
 The sign-in final-admission API-host theory now also seeds a real framework
 Identity V2 password hash and requires the configured hash provider to request
@@ -84,7 +118,7 @@ receipt, the injected clock reaches the new session's expiry. Refusal must resto
 the original legacy hash/account version and remove the failed session/receipt.
 A fresh same-key retry must upgrade exactly once to a hash that verifies without
 requesting another upgrade; acknowledgment replay must preserve that version.
-Strict compilation passes; native execution remains pending. This is scoped
+Both focused API-host cases pass as recorded above. This is scoped
 rollback/upgrade coverage, not complete password-policy or release acceptance.
 
 The complete web suite at unchanged browser revision `28f9355` passed with exit
@@ -100,5 +134,5 @@ Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate remains **29% work
+immutable images before closure. The current PRD estimate is **28% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.
