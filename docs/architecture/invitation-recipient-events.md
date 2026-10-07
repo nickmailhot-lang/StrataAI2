@@ -87,8 +87,14 @@ and after replay. The PostgreSQL reader refuses calls outside the owning account
 scope, requires an active verified account and derives the normalized recipient
 email from that account. Callers cannot supply a recipient email.
 
-Protected cursors bind the actor, normalized email, account revision and sequence
-with a distinct Data Protection purpose and a 15-minute expiry. The private
+Protected cursors bind the actor, normalized email, account revision, private
+authority revision and sequence with a distinct version-2 Data Protection
+purpose and a 15-minute expiry. Production reads the authority revision inside
+the owning account transaction; an absent counter is zero. Version-1 cursors
+reset after deployment. Demo currently retains revision zero; equivalent Demo
+authority source/rollback behavior remains unfinished. See
+[authority delivery and binding](invitation-recipient-authority.md#production-protected-cursor-binding).
+The private
 binding is not an event payload. Bootstrap, invalid/expired bindings, a cursor
 ahead of the committed head, or missing/noncontiguous source history return an
 empty reset page at the current head. Consumers must reload protected invitation

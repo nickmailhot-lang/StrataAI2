@@ -30,7 +30,7 @@ var organization = Guid.NewGuid(); var foreignOrganization = Guid.NewGuid(); var
 var board = Guid.NewGuid(); var foreignBoard = Guid.NewGuid(); var list = Guid.NewGuid(); var foreignList = Guid.NewGuid();
 var card = Guid.NewGuid(); var foreignCard = Guid.NewGuid();
 await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenAsync(ct);
-await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, ct);
+await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
 if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
 if (args.Contains("--invitation-authority-only", StringComparer.Ordinal))
 {

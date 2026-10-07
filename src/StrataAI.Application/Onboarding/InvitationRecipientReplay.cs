@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 namespace StrataAI.Application.Onboarding;
 
 // Private routing bindings belong inside protected cursors, never event payloads.
-public sealed record InvitationRecipientCursorBinding(Guid ActorId, string EmailNormalized, long AccountVersion);
+public sealed record InvitationRecipientCursorBinding(Guid ActorId, string EmailNormalized, long AccountVersion,
+    long AuthorityRevision = 0);
 public interface IInvitationRecipientCursorCodec
 {
     string Encode(InvitationRecipientCursorBinding binding, long position);
@@ -64,7 +65,7 @@ public sealed class InvitationRecipientSynchronizationService(IInvitationRecipie
         if (actorId == Guid.Empty) return IdentityOperation<InvitationRecipientSyncPage>.Failure("account_unavailable");
         if (limit is < 1 or > 100) return IdentityOperation<InvitationRecipientSyncPage>.Failure("invalid_sync_limit");
         var scope = await reader.GetScopeAsync(actorId, cancellationToken);
-        if (scope is null || scope.ActorId != actorId || scope.AccountVersion < 1 || string.IsNullOrWhiteSpace(scope.EmailNormalized))
+        if (scope is null || scope.ActorId != actorId || scope.AccountVersion < 1 || scope.AuthorityRevision < 0 || string.IsNullOrWhiteSpace(scope.EmailNormalized))
             return IdentityOperation<InvitationRecipientSyncPage>.Failure("account_unavailable");
         InvitationRecipientEventWindow page;
         if (cursor is null || !cursors.TryDecode(scope, cursor, out var position))

@@ -35,7 +35,7 @@ internal static class InvitationRecipientReplayContract
     }
     private static void Require(bool value, string invariant)
     { if (!value) throw new InvalidOperationException(invariant); }
-    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
+    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, CancellationToken ct)
     {
         var actor = Guid.NewGuid(); var owner = Guid.NewGuid(); var tenant = Guid.NewGuid(); var portalTenant = Guid.NewGuid();
         var email = $"replay-{actor:N}@example.test"; var hash = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
@@ -120,6 +120,37 @@ internal static class InvitationRecipientReplayContract
         await using (var noGrant = new NpgsqlCommand("SELECT count(*) FROM organization_members WHERE user_id=@actor;", admin))
         { noGrant.Parameters.AddWithValue("actor", actor); Require((long)(await noGrant.ExecuteScalarAsync(ct))! == 0, "Recipient replay manufactured Internal membership."); }
         await PreservedBoardAdminAsync(admin, provider, tenant, owner, actor, email, ct);
+        // Actual canonical parent update, restricted Worker delivery, then the
+        // owning recipient reader must invalidate its cursor without fake events.
+        await using (var changeAuthority = new NpgsqlCommand("""
+            UPDATE organizations SET name='Changed recipient parent',version=version+1,updated_at=clock_timestamp() WHERE id=@tenant;
+            INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id,safe_metadata)
+             VALUES(gen_random_uuid(),@tenant,@owner,'ORGANIZATION_UPDATED','Organization',@tenant,'recipient-authority-cursor','{}');
+            """, admin))
+        {
+            changeAuthority.Parameters.AddWithValue("tenant", tenant); changeAuthority.Parameters.AddWithValue("owner", owner);
+            await changeAuthority.ExecuteNonQueryAsync(ct);
+        }
+        await using (var worker = new PostgresConnectionFactory(workerConnection))
+        {
+            var jobs = new PostgresBackgroundJobStore(worker, authorityJobsOnly: true);
+            var job = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct)
+                ?? throw new InvalidOperationException("Actual parent authority source was not claimed.");
+            await new InvitationRecipientAuthorityDeliveryHandler(new PostgresInvitationRecipientAuthorityDeliveryStore(worker)).ExecuteAsync(job, ct);
+            Require(await jobs.CompleteAsync(tenant, job.Id, job.LeaseId, job.WorkerId, ct), "Authority cursor source acknowledgment failed.");
+        }
+        Require(!(await replay.IsCursorCurrentAsync(actor, missed.Value.Cursor, ct)).Value, "Delivered authority change left recipient cursor current.");
+        var authorityReset = await replay.ReadAsync(actor, missed.Value.Cursor, cancellationToken: ct);
+        Require(authorityReset.Succeeded && authorityReset.Value is { ResetRequired: true, Events.Count: 0, HasMore: false },
+            "Delivered parent authority change did not cause an empty protected reset.");
+        Require(codec.TryDecode(binding with { AuthorityRevision = 1 }, authorityReset.Value!.Cursor, out _),
+            "Owning API reader did not bind the delivered private revision.");
+        Require((await replay.IsCursorCurrentAsync(actor, authorityReset.Value.Cursor, ct)).Value,
+            "Fresh authority-bound recipient cursor was refused.");
+        var afterAuthority = await replay.ReadAsync(actor, authorityReset.Value.Cursor, cancellationToken: ct);
+        Require(afterAuthority.Succeeded && afterAuthority.Value is { ResetRequired: false, Events.Count: 0 },
+            "Authority delivery fabricated a canonical invitation transition.");
+        final = authorityReset;
         context.AuthenticatedUserId = owner;
         var wrongSession = await replay.ReadAsync(actor, final.Value!.Cursor, cancellationToken: ct);
         Require(!wrongSession.Succeeded && wrongSession.Value is null, "Switched request actor disclosed replay.");
@@ -137,7 +168,7 @@ internal static class InvitationRecipientReplayContract
         { revoke.Parameters.AddWithValue("actor", actor); revoke.Parameters.AddWithValue("hash", hash); await revoke.ExecuteNonQueryAsync(ct); }
         denied = await replay.ReadAsync(actor, null, cancellationToken: ct);
         Require(!denied.Succeeded && denied.Value is null, "Revoked persisted session disclosed replay.");
-        Console.WriteLine("Recipient replay: restricted API login, owning account scope, bounded cross-Organization order, canonical identities, later mutation recovery, email/revision reset, actor withdrawal before/after source I/O, unverified account and persisted-session revocation passed.");
+        Console.WriteLine("Recipient replay: restricted API login, owning account scope, bounded cross-Organization order, canonical identities, later mutation recovery, actual Worker authority delivery/private cursor reset without fabricated transitions, email/revision reset, actor withdrawal before/after source I/O, unverified account and persisted-session revocation passed.");
     }
     private static async Task PreservedBoardAdminAsync(NpgsqlConnection admin, ServiceProvider provider, Guid tenant,
         Guid owner, Guid actor, string email, CancellationToken ct)

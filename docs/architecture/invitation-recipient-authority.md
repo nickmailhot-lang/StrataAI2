@@ -37,8 +37,8 @@ they do not prove database provenance, atomicity, deduplication or persistence.
 
 The production separate Worker registers the handler and storage adapter. Its
 existing explicitly configured Organization scope can deliver these jobs.
-Automatic authority scope discovery is implemented below. Protected reader
-integration is still required. The API does not run this handler.
+Automatic authority scope discovery and production protected reader integration
+are implemented below. The API does not run this handler.
 
 ## PostgreSQL source and bounded delivery implemented
 
@@ -66,8 +66,8 @@ revision rows directly. All three tables use forced RLS; runtime roles receive
 no direct writes. A PostgreSQL adapter wraps delivery in one tenant transaction.
 The production Worker registers the adapter and handler for its existing
 explicit Organization job scope and the independent automatic discovery loop.
-Private revisions do not yet affect
-protected cursors. This increment does not claim live authority invalidation.
+Private revisions bind production protected cursors as described below. Full
+live authority invalidation acceptance remains incomplete.
 
 The mandatory SQL fixture exercises 205 candidates in pages of 100/100/5,
 per-source recipient deduplication, committed-page replacement-lease replay,
@@ -112,6 +112,32 @@ recipient revisions each incremented once. This was a local build snapshot,
 not retained release-image or browser acceptance evidence. Startup refusal was
 also verified for enabled Demo discovery and an invalid boolean setting.
 
+## Production protected cursor binding
+
+The recipient reader requires its existing owning account observation, derives
+the active verified account's normalized email, and reads only that email's
+private authority revision in the same transaction. An absent counter is zero.
+The protected cursor binds actor, email, account version, authority revision and
+position. Revision values remain private; the outbound event shape is unchanged.
+The cursor uses Data Protection purpose/payload version 2, so version-1 cursors
+reset after deployment rather than omit the new authority binding.
+
+An old authority binding produces an empty reset at the current invitation
+transition head. Consumers reload protected invitation discovery; no synthetic
+invitation transition or list hash is introduced. The final scope comparison
+discards a page if its revision changes during observation, and the existing
+SignalR final cursor check rebinds after session I/O before yielding a page.
+
+The actual restricted persistence contract creates a canonical Organization
+update, delivers it through the restricted Worker adapter/typed claim, and
+proves the old cursor is no longer current. The owning API reader returns an
+empty reset bound to revision one; the fresh cursor is current and subsequent
+replay contains no fabricated transition. Existing email-change, unverified
+account and revoked persisted-session refusal checks still pass. All 739 Linux
+Domain tests pass, including authority binding mismatch and revision withdrawal
+during source I/O. This proves production storage/reader integration; Demo
+authority parity and retained exact-image two-client native acceptance remain.
+
 ## Runtime work required next
 
 The implemented first producer attaches to future actual Organization metadata
@@ -121,10 +147,6 @@ revision. Their current delivery capability already validates the revision
 against the correct Organization, membership or invitation subject; these
 different revision sequences must not be compared with one another.
 
-API observation must read the private revision inside its
-existing owning identity boundary and include it in protected cursor binding.
-A revision change should cause an empty reset followed by fresh protected
-discovery, without inventing invitation transitions or pending-list hashes.
 Demo needs equivalent transaction rollback and current-recipient behavior.
 Actual adapter/Worker restart and concurrent-page execution evidence must be
 added alongside the existing SQL capability tests.
@@ -137,7 +159,7 @@ later actor departure; current recipient discovery still owns present grant
 admission. Legacy changes without a proven source must not acquire fabricated
 actors or history.
 
-Cursor/reader integration, Demo behavior and actual
+Demo behavior and actual
 concurrent delivery/restart/large-population evidence remain unfinished. Native nonmember/Portal two-client authority withdrawal,
 disconnect recovery, disclosure clearing, keyboard/mobile and latency results
 must also be verified against the retained exact release images before closure.

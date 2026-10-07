@@ -47,8 +47,9 @@ public sealed class InvitationRecipientReplayTests
         var wrongActor = codec.Encode(Binding with { ActorId = Guid.NewGuid() }, 0);
         var wrongEmail = codec.Encode(Binding with { EmailNormalized = "OTHER@EXAMPLE.TEST" }, 0);
         var oldRevision = codec.Encode(Binding with { AccountVersion = 2 }, 0);
+        var oldAuthority = codec.Encode(Binding with { AuthorityRevision = 1 }, 0);
         var expired = codec.Encode(Binding, 0); clock.UtcNow = clock.UtcNow.AddMinutes(15);
-        foreach (var cursor in new string?[] { null, "corrupt", wrongActor, wrongEmail, oldRevision, expired })
+        foreach (var cursor in new string?[] { null, "corrupt", wrongActor, wrongEmail, oldRevision, oldAuthority, expired })
         {
             var result = await service.ReadAsync(Binding.ActorId, cursor, cancellationToken: TestContext.Current.CancellationToken);
             Assert.True(result.Succeeded); Assert.True(result.Value!.ResetRequired); Assert.Empty(result.Value.Events);
@@ -60,12 +61,14 @@ public sealed class InvitationRecipientReplayTests
     [InlineData("withdraw")]
     [InlineData("email")]
     [InlineData("revision")]
+    [InlineData("authority")]
     public async Task PRD_60_Recipient_final_account_or_email_change_discards_read_payload(string change)
     {
         using var provider = CodecProvider(new Clock()); var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
         var reader = new Reader(); var cursor = codec.Encode(Binding, 0);
         reader.OnRead = () => reader.Scope = change switch { "withdraw" => null,
-            "email" => Binding with { EmailNormalized = "OTHER@EXAMPLE.TEST" }, _ => Binding with { AccountVersion = 2 } };
+            "email" => Binding with { EmailNormalized = "OTHER@EXAMPLE.TEST" },
+            "authority" => Binding with { AuthorityRevision = 1 }, _ => Binding with { AccountVersion = 2 } };
         var result = await new InvitationRecipientSynchronizationService(reader, codec).ReadAsync(Binding.ActorId, cursor,
             cancellationToken: TestContext.Current.CancellationToken);
         Assert.False(result.Succeeded); Assert.Null(result.Value); Assert.Equal("account_unavailable", result.ErrorCode);
@@ -80,6 +83,8 @@ public sealed class InvitationRecipientReplayTests
         Assert.False(codec.TryDecode(Binding with { ActorId = Guid.NewGuid() }, token, out _));
         Assert.False(codec.TryDecode(Binding with { EmailNormalized = "NEW@EXAMPLE.TEST" }, token, out _));
         Assert.False(codec.TryDecode(Binding with { AccountVersion = 2 }, token, out _));
+        Assert.False(codec.TryDecode(Binding with { AuthorityRevision = 1 }, token, out _));
+        Assert.Throws<ArgumentException>(() => codec.Encode(Binding with { AuthorityRevision = -1 }, 0));
         Assert.False(codec.TryDecode(Binding, token + "tampered", out _));
         Assert.False(codec.TryDecode(Binding, new string('x', 4097), out _));
         clock.UtcNow = clock.UtcNow.AddMinutes(15);
@@ -103,6 +108,8 @@ public sealed class InvitationRecipientReplayTests
         var cursor = codec.Encode(Binding, 2); var ct = TestContext.Current.CancellationToken;
         Assert.True((await service.IsCursorCurrentAsync(Binding.ActorId, cursor, ct)).Value);
         reader.Scope = Binding with { AccountVersion = 2 };
+        Assert.False((await service.IsCursorCurrentAsync(Binding.ActorId, cursor, ct)).Value);
+        reader.Scope = Binding with { AuthorityRevision = 1 };
         Assert.False((await service.IsCursorCurrentAsync(Binding.ActorId, cursor, ct)).Value);
         reader.Scope = null;
         Assert.Equal("account_unavailable", (await service.IsCursorCurrentAsync(Binding.ActorId, cursor, ct)).ErrorCode);

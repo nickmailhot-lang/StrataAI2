@@ -13,8 +13,17 @@ public sealed class PostgresInvitationRecipientEventReader(PostgresConnectionFac
         if (!connections.OwnsIdentitySubject(actorId))
             throw new InvalidOperationException("Recipient replay requires its owning account transaction.");
         var user = await identities.FindUserByIdAsync(actorId, cancellationToken);
-        return user is { Status: AccountStatus.Active, EmailVerified: true } && user.Id == actorId
-            ? new(actorId, user.EmailNormalized, user.Version) : null;
+        if (user is not { Status: AccountStatus.Active, EmailVerified: true } || user.Id != actorId) return null;
+        // Shares the owning account observation transaction. Only its current
+        // verified email may route this private counter; absence means revision zero.
+        await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
+        await session.SetLookupAsync(RoutingLookup.InvitationRecipient, user.EmailNormalized, cancellationToken);
+        await using var query = new NpgsqlCommand(
+            "SELECT revision FROM invitation_recipient_authority_revisions WHERE email_normalized=@email;",
+            session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("email", user.EmailNormalized);
+        var revision = await query.ExecuteScalarAsync(cancellationToken) is long value ? value : 0;
+        return new(actorId, user.EmailNormalized, user.Version, revision);
     }
     private async Task RequireAsync(InvitationRecipientCursorBinding binding, CancellationToken cancellationToken)
     {
