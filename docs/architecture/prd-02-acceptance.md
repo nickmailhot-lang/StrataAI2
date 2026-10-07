@@ -31,6 +31,23 @@ account cases pass with the repaired application. These local checks do not
 establish current retained-release image, browser, mail or complete PRD acceptance.
 Estimated PRD-02 work remaining stays **18%**; the ticket stays open.
 
+## Current desktop/phone Worker mail evidence
+
+Both complete native mail scenarios pass in one 2.5-minute invocation using a
+fresh isolated restricted PostgreSQL schema, current compiled API/separate Worker
+and production web bundle behind current Nginx/CSP. Real Worker-delivered
+verification/reset links, lost-success keyboard retry with identical body/key,
+fragment removal, new-password sign-in and ten WCAG 2.2 AA/overflow checks per
+viewport pass. Four durable jobs are SENT and the provider retains exactly four
+effects with at least two attempts each. Actual mail-role logins are denied
+password-hash and Organization reads. See [full execution and scope](identity-email.md#executed-desktop-and-phone-mail-recovery).
+
+Browser types, Python syntax, workflow YAML and 142 embedded Bash checks pass.
+CI now requires both desktop and phone scenarios against retained images. This
+local result does not establish external inbox delivery or current immutable
+release/full PRD acceptance. Estimated PRD-02 work remaining is now **17%**; the
+issue remains open. Earlier estimates/evidence below are historical records.
+
 ## Functional requirements
 
 | Requirement | Implementation and verification path | Outstanding acceptance evidence |

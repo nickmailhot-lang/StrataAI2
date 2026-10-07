@@ -741,7 +741,7 @@ jobs:
       - name: Identity mail against exact API/Worker images and restricted database role
         run: scripts/ci/test-identity-email.sh
 
-      - name: Mobile keyboard verification/recovery through Worker delivery
+      - name: Desktop and mobile accessible keyboard verification/recovery through Worker delivery
         env:
           STRATAAI_E2E_IDENTITY_MAIL: '1'
         run: npx playwright test tests/browser/identity-mail.spec.ts

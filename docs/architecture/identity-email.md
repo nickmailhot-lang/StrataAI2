@@ -107,7 +107,7 @@ password hashes or Organization data. The isolated test provider accepts an effe
 then returns 503, proving the Worker retries without a duplicate effect. Tests
 cover atomic rollback, queued recovery under rotated keys, token-purpose/replay
 denial, verification/reset, old-session revocation, permanent rejection,
-deactivation cancellation and verification resend. A mobile keyboard browser test
+deactivation cancellation and verification resend. A desktop/phone keyboard browser test
 consumes actual Worker-delivered links under release CSP. Unit tests check signing,
 rotation, safe transport failures, payload snapshots and dispatch decisions.
 
@@ -119,3 +119,36 @@ uses the fixed HTTPS Resend endpoint.
 PRD-02/ARCH-07 remain broader than this increment: realtime/reconnect behavior,
 date/time consumers, mailbox/AI/correspondence/storage integrations, broader
 accessibility and the other acceptance criteria still require implementation.
+
+### Executed desktop and phone mail recovery
+
+Both native scenarios pass at 1280px and 390px with a fresh isolated PostgreSQL
+schema-110 database, the real restricted API and separate mail Worker, and the
+local transport fixture. Current compiled hosts and the production web bundle run
+in cached runtime images behind the current Nginx configuration/CSP. No external
+email is sent. The mail role's real login cannot read password hashes or
+Organization data.
+
+Each scenario registers an account under verified-email policy, consumes the
+actual Worker-delivered verification link, signs in, requests recovery, consumes
+the actual delivered reset link and signs in with the new password. Both first
+successful verification/reset acknowledgments are deliberately lost; keyboard
+retry must preserve the exact original body/key and unsent password fields.
+Fragment proofs are removed from browser URLs. The provider records exactly four
+delivery effects across the two scenarios, each with at least two attempts after
+its simulated lost acknowledgment, and all four durable jobs reach SENT.
+
+Ten WCAG 2.2 AA tagged axe/overflow checks per viewport cover login, registration
+confirmation, verification initial/failure/success, recovery initial/confirmation,
+and reset initial/failure/success. Both full scenarios pass in one invocation
+(2.5 minutes), alongside browser TypeScript, Python syntax, workflow YAML and all
+142 embedded Bash syntax checks. Retained-image CI now runs both scenarios.
+
+The fixture's default provider port remains 19090. An optional
+`STRATAAI_TEST_IDENTITY_PROVIDER_PORT` and browser-only
+`STRATAAI_E2E_IDENTITY_PROVIDER_URL` permit isolated local invocations without
+reusing another task's provider. These test controls remain outside the release
+bundle and never select a Production provider. This local source-runtime result
+does not establish current retained image identity, actual external inbox
+deliverability or complete PRD/architecture acceptance. Estimated PRD-02 work
+remaining is **17%**, a planning estimate; the issue stays open.

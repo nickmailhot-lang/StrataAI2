@@ -1,5 +1,6 @@
 """Isolated CI transport fixture. No external emails, persisted payloads or request logs."""
 import json
+import os
 import threading
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -91,4 +92,4 @@ class Handler(BaseHTTPRequestHandler):
             return self.respond(503, {"message": "simulated lost acknowledgement"})
 
 
-ThreadingHTTPServer(("0.0.0.0", 19090), Handler).serve_forever()
+ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("STRATAAI_TEST_IDENTITY_PROVIDER_PORT", "19090"))), Handler).serve_forever()
