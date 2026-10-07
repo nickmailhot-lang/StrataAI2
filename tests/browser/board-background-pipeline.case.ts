@@ -8,6 +8,39 @@ import { trackBoardReads } from './boardReadTracker';
 // Explicit alternate config: never discovered by the ordinary .spec.ts suite.
 // The CI shell fixture supplies a real uploaded/published image and owns the
 // exact API/Worker lifecycle. Only the first committed response is dropped.
+test.afterEach(async ({ context }) => {
+  // A failed assertion must not make the next viewport inherit PUBLIC state.
+  // Restore only this shell-owned fixture using current revisions and ordinary
+  // authenticated commands; the failed case remains failed.
+  const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE;
+  expect(path).toBeTruthy();
+  const fixture = JSON.parse(readFileSync(path!, 'utf8')) as { email: string; password: string; organizationId: string; boardId: string };
+  expect(fixture.boardId).toMatch(/^[0-9a-f-]{36}$/);
+  expect((await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' },
+    data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
+  const read = async () => {
+    const response = await context.request.get(`/boards/${fixture.boardId}`); expect(response.status()).toBe(200);
+    const board = (await response.json()).board;
+    expect(board).toMatchObject({ id: fixture.boardId, organizationId: fixture.organizationId, lifecycleState: 'active' });
+    expect(Number.isSafeInteger(board.version) && board.version > 0).toBe(true); return board;
+  };
+  let board = await read();
+  if (board.backgroundType !== 'COLOR' || board.backgroundValue !== null) {
+    expect((await context.request.patch(`/boards/${fixture.boardId}`, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { name: board.name, version: board.version, backgroundType: 'COLOR', backgroundValue: null },
+    })).status()).toBe(200);
+    board = await read();
+  }
+  if (board.visibility !== 'PRIVATE') {
+    expect((await context.request.patch(`/boards/${fixture.boardId}/visibility`, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { visibility: 'PRIVATE', version: board.version },
+    })).status()).toBe(200);
+  }
+  expect(await read()).toMatchObject({ visibility: 'PRIVATE', backgroundType: 'COLOR', backgroundValue: null });
+});
+
 for (const width of [1280, 390]) {
   test(`PRD-04 real public consent, publication recovery and image-backed copy at ${width}px`, async ({ page, context }) => {
     test.setTimeout(150_000);

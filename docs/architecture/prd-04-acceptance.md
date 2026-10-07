@@ -1,6 +1,6 @@
 # PRD-04 acceptance and closure audit
 
-This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 20%.
+This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 18%.
 
 ## Functional traceability
 
@@ -26,7 +26,7 @@ Paths ending in `.cs` above are under `tests/StrataAI.Api.Tests`, except `BoardB
 - **AC-BOARD-04-03:** authorized clients must receive or recover current Board activity without a full manual reload. Inspect executed two-client/reconnect results, not just the presence of event producers.
 - Every relevant mutation must retain atomic authorization, audit/event envelopes, durable outbox delivery and idempotency semantics; source tests and immutable-image runtime checks cover different boundaries.
 - All thirteen linked test scenarios remain required. In particular, current desktop/phone keyboard, focus, WCAG, late responses, lifecycle withdrawal, concurrency and disconnect/reconnect results must pass. Collection/type checking does not execute them.
-- BoardScreen now uses bounded List/Card viewport windowing with measured Card heights, retained work/drag/focus and canonical keyboard navigation; see `../board-windowing.md`. The mandatory real PostgreSQL capacity fixture includes desktop/phone native checks, but executed 200-List/5,000-active-Card browser capacity and full large-Board interaction/performance proof remain pending. Existing PostgreSQL coverage with 100,000 archived Cards is database correctness evidence only.
+- BoardScreen now uses bounded List/Card viewport windowing with measured Card heights, retained work/drag/focus and canonical keyboard navigation; see `../board-windowing.md`. Both local desktop/phone native capacity cases now pass with actual restricted PostgreSQL, separate Worker, 200 Lists, 5,000 active Cards and 100,000 archived Cards; see [Kanban release evidence](../kanban-release-evidence.md#native-capacity-after-stable-window-content). Current retained-image capacity and full interaction/performance acceptance remain pending. These local cases and the preserved archived fingerprint do not establish general performance or release readiness.
 - Retain the documented normal-condition budgets: Board usable rendering <1.5s, movement feedback <100ms, mutation p95 <500ms and cached detail <200ms. Existing normal desktop measurements do not establish the large-data case.
 - Archive directory SignalR invalidation is now implemented, with acceptance still incomplete. Migrations 073/074 supply ordered canonical sources and actor-specific permission epochs; the audience reader, opaque cursor binding, transactional demo/PostgreSQL adapters, authenticated live endpoint and MUI archive consumer are implemented. At `691763c`, run 37264284540 passed all source-quality checks, including complete Domain/API host tests, web quality and restricted PostgreSQL integration. The desktop/phone native two-client, genuine upstream identity, disconnect recovery and membership-withdrawal fixtures compile and collect but await exact-image execution. Polling/foreground recovery remains an outage fallback. See `../organization-board-realtime.md` for the exact authorization and outstanding proof scope. This administrator archive feed does not prove realtime discovery for every active-Board reader or anonymous visitor.
 - Archived directory reads now lock the qualifying Board membership row as well as the Board. The exact-image discovery fixture observes a restricted API lock wait, withdraws only the qualifying membership role, requires no archived name disclosure, and verifies a fresh grant restores discovery. The local warning-free build and shell checks pass; execution of this new race fixture remains pending CI.
@@ -197,3 +197,31 @@ Board-directory request returns 404 and the current login remains valid. Browser
 fixture typecheck and five-case collection pass. Actual release execution remains
 pending; this is additional acceptance coverage, not proof of completion.
 PRD-04 stays open at 20% estimated remaining.
+
+## Background recovery focus and failed-case fixture isolation
+
+[Run 37598829037](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37598829037)
+at `52eb4b64` completed container job `112725599671` with failure in the
+explicit attachment/image pipeline. Desktop recovered the background save but
+failed return focus to its Review button. Phone then found the shared source
+Board PUBLIC because desktop had failed before its ordinary cleanup. Required
+CI failed and the release bundle was skipped. Browser artifact `11473659605`
+was downloaded and its SHA-256 verified as
+`50214ec9844e8317eec05b42c5b0c06f1f6cbc7ccf109f2c56ba6c7ce2a66168`.
+
+The control now retains owned return-focus recovery after acknowledgment, so a
+subsequent access refresh can disable/re-enable the Review button without losing
+its original return target. An intentional focus move to another control still
+cancels recovery. The regression reproduces the failure before the repair and
+passes after it, including no focus theft and original request/key replay.
+All 18 background-control/image tests pass, with web/browser TypeScript and lint.
+
+Each native image case now has an unconditional afterEach fixture cleanup. It
+signs in normally, reads/validates the actual scoped Board and latest revision,
+clears the source image when necessary, restores PRIVATE visibility and verifies
+the canonical baseline through ordinary version-checked commands. Existing public
+consent/refusal, private copied ownership, image bytes, keyboard focus, session
+withdrawal and WCAG assertions remain unchanged. This prevents a failed desktop
+case from fabricating a mobile precondition failure; it does not make the failed
+case pass. The corrected complete exact-image pipeline remains pending. PRD-04
+stays open at 18% estimated remaining.

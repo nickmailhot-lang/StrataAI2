@@ -46,7 +46,10 @@ function Control(props: Props) {
     if (disabled || !restore.current || !(ownsRecoveryFocus(document.activeElement, owner.current) || document.activeElement === dialog.current)) return;
     const target = intent ? retry.current : draft && changed ? discard.current
       : draft && draft.board.visibility === 'PUBLIC' && !draft.confirmed ? consent.current : draft ? confirm.current : primary.current;
-    if (target && !target.disabled) { target.focus({ preventScroll: true }); restore.current = !!intent; }
+    // Acknowledgment can precede another access refresh that disables the
+    // restored control. Keep owned focus recoverable until an intentional
+    // move to another control cancels it through onBlur.
+    if (target && !target.disabled) { target.focus({ preventScroll: true }); restore.current = true; }
   }, [disabled, intent, draft, review, changed]);
   function focus(element: HTMLElement) { owner.current = element; dialog.current = element.closest('[role="dialog"][data-mui-focusable]'); restore.current = true; parkRecoveryFocus(element); }
   function blur(event: React.FocusEvent<HTMLElement>) { if (!ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restore.current = false; }

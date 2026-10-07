@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Dialog } from '@mui/material';
 import { BoardBackgroundImageControl } from './BoardBackgroundImageControl';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
@@ -109,4 +109,22 @@ it('moves keyboard focus to explicit PUBLIC consent inside Card details', async 
   mock(() => ({ ...ack, visibility: 'PUBLIC' }), 'PUBLIC');
   render(<Dialog open><BoardBackgroundImageControl {...props()} /></Dialog>); await choose();
   await waitFor(() => expect(screen.getByRole('checkbox', { name: 'I understand this Board background image will be publicly visible' })).toHaveFocus());
+});
+
+it('retains return-focus ownership through a post-acknowledgment access refresh without stealing another control', async () => {
+  let attempts = 0; mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
+  const p = props();
+  const content = (unavailable: boolean) => <Dialog open><BoardBackgroundImageControl {...p} unavailable={unavailable} /><button>Other Card action</button></Dialog>;
+  const view = render(content(false)); await choose();
+  const confirm = screen.getByRole('button', { name: 'Confirm Board background image' }); confirm.focus(); fireEvent.click(confirm);
+  const retry = await screen.findByRole('button', { name: 'Retry original Board background change' });
+  await waitFor(() => expect(retry).toHaveFocus()); fireEvent.click(retry);
+  await screen.findByText('Board background updated.');
+  const primary = screen.getByRole('button', { name: 'Review Board background images' });
+  await waitFor(() => expect(primary).toHaveFocus());
+  view.rerender(content(true)); act(() => screen.getByRole('dialog').focus());
+  view.rerender(content(false)); await waitFor(() => expect(primary).toHaveFocus());
+  const other = screen.getByRole('button', { name: 'Other Card action' }); act(() => other.focus());
+  view.rerender(content(true)); view.rerender(content(false)); expect(other).toHaveFocus();
+  expect(writes()).toHaveLength(2); expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
 });
