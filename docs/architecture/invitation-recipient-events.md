@@ -41,7 +41,7 @@ including the sequence increment. One Invitation revision cannot publish twice.
 
 | Table | Keys and ownership | Lifecycle and capability |
 | --- | --- | --- |
-| `invitation_recipient_proofs` | Invitation/Organization/revision primary key; tenant-safe Invitation and optional Board FKs; issuer/accepting User FKs | Future transition proof; immutable and retained; forced tenant RLS; neither runtime role can read or write directly |
+| `invitation_recipient_proofs` | Invitation/Organization/revision primary key; tenant-safe Invitation and optional Board FKs; issuer/accepting User FKs | Future transition proof; published proofs remain immutable and retained; unpublished proofs can retire only with their parent Invitation; forced tenant RLS; neither runtime role can read or write directly |
 | `invitation_recipient_streams` | Normalized recipient email primary key; monotonically increasing committed sequence across Organizations | Private global recipient routing counter; forced recipient RLS; API can read its routing counter only; no runtime writes |
 | `invitation_recipient_events` | Audit ID primary key; unique recipient/sequence and Invitation/Organization/revision; FKs to immutable proof, audit, Organization, users and recipient stream | Immutable committed journal; forced recipient RLS; API can read only recipient key, event ID/type, sequence and timestamp; Worker has no raw access |
 
@@ -56,7 +56,12 @@ database routing capability alone is not proof of an authenticated session.
 
 Metadata is exactly `{}`. The journal stores no names, descriptions, bodies,
 raw tokens, token hashes or links. References and timestamps preserve historical
-meaning; ordinary deletion cannot erase proofs or history. Approved retention
+meaning; ordinary deletion cannot erase published proofs or history. Migration
+`103_invitation_recipient_unpublished_cleanup` permits the parent Invitation's
+referential cascade to remove a proof only when that revision has no journal
+event. Standalone proof deletion and all proof updates remain forbidden. This
+allows unaudited fixture cleanup without relaxing published source retention.
+Approved retention
 and physical provider/backup purge remain separate policy requirements.
 
 This synchronous source projection creates no external work or new deployable
@@ -69,7 +74,9 @@ identities rather than expose the tenant journals to nonmembers.
 The mandatory SQL fixture covers Internal/Portal/Board creation, all three
 acceptance surfaces, revocation, eight contiguous events across two Organizations,
 exact source attribution and revision, duplicate publication refusal, immutable
-history, missing Portal-grant refusal, complete late-failure rollback, recipient RLS, private column/proof
+history, published-parent deletion refusal, standalone unpublished-proof deletion
+refusal, unpublished-parent cleanup without a sequence change, missing
+Portal-grant refusal, complete late-failure rollback, recipient RLS, private column/proof
 refusals and Worker isolation. It uses restricted `SET ROLE` permission checks;
 this is not real-cookie/session authorization or browser delivery evidence.
 
@@ -89,8 +96,11 @@ withdrawal, Portal separation, keyboard/mobile and latency evidence remain
 required. This source does not complete PRD-03 or PRD-60.
 
 Local validation passed the complete source SQL fixture against a fresh
-102-migration PostgreSQL/pgvector database, restricted role provisioning and the
-schema isolation catalog check. The Linux migration runner passed clean/repeat,
+103-migration PostgreSQL/pgvector database, restricted role provisioning and the
+schema isolation catalog check. The original restricted routing-isolation
+fixture also passed, including its unaudited Invitation cleanup. This repairs
+the cleanup failure reported by CI for commit `5f3e0f8`; current CI still needs
+to verify the forward migration. The Linux migration runner passed clean/repeat,
 forward upgrade with no invented history, concurrent runner serialization and
 failed/unrecorded migration rollback. The full .NET Release solution build passed
 with zero warnings/errors; affected release scripts pass Bash syntax checks.

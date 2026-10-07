@@ -114,6 +114,30 @@ BEGIN
  BEGIN DELETE FROM invitation_recipient_proofs WHERE email_normalized=email;
  EXCEPTION WHEN check_violation THEN refused:=true; END;
  IF NOT refused THEN RAISE EXCEPTION 'Recipient transition proof can be erased'; END IF;
+ refused:=false;
+ BEGIN DELETE FROM invitations WHERE id=portal_id;
+ EXCEPTION WHEN check_violation OR foreign_key_violation THEN refused:=true; END;
+ IF NOT refused OR NOT EXISTS(SELECT 1 FROM invitations WHERE id=portal_id)
+  OR (SELECT count(*) FROM invitation_recipient_events WHERE email_normalized=email)<>8 THEN
+  RAISE EXCEPTION 'Published invitation/history can be erased through parent deletion';
+ END IF;
+ invitation:=gen_random_uuid();
+ INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,created_by_user_id,created_at,expires_at)
+ VALUES(invitation,other_tenant,lower(email),email,encode(sha256(invitation::text::bytea),'hex'),'PORTAL','OWNER',owner_id,clock_timestamp(),clock_timestamp()+interval '1 day');
+ IF NOT EXISTS(SELECT 1 FROM invitation_recipient_proofs WHERE invitation_id=invitation)
+  OR EXISTS(SELECT 1 FROM invitation_recipient_events WHERE entity_id=invitation) THEN
+  RAISE EXCEPTION 'Unpublished parent cleanup fixture has no actual capture';
+ END IF;
+ refused:=false;
+ BEGIN DELETE FROM invitation_recipient_proofs WHERE invitation_id=invitation;
+ EXCEPTION WHEN check_violation THEN refused:=true; END;
+ IF NOT refused THEN RAISE EXCEPTION 'Unpublished proof can be erased independently of its parent'; END IF;
+ DELETE FROM invitations WHERE id=invitation;
+ IF EXISTS(SELECT 1 FROM invitation_recipient_proofs WHERE invitation_id=invitation)
+  OR EXISTS(SELECT 1 FROM invitation_routes WHERE invitation_id=invitation)
+  OR (SELECT last_sequence FROM invitation_recipient_streams WHERE email_normalized=email)<>before_sequence THEN
+  RAISE EXCEPTION 'Unpublished parent cleanup failed or altered committed history';
+ END IF;
  PERFORM set_config('test.recipient_email',email,true);
 END $$;
 SET LOCAL ROLE strataai_api_runtime;
