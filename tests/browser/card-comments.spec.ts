@@ -72,6 +72,20 @@ for (const width of [1280, 390]) {
       await expect(page.getByText('Literal <script>🙂', { exact: true })).toBeVisible();
       await expect(page.locator('section[aria-label="Card comments"]').getByText(`You · ${displayed}`, { exact: true })).toBeVisible();
       expect(await page.locator('section[aria-label="Card comments"] script').count()).toBe(0);
+      const beforePreference = await (await peer.request.get('/me')).json();
+      expect((await peer.request.patch('/me', { headers, data: { timezone: 'Asia/Tokyo', version: beforePreference.version } })).status()).toBe(200);
+      const updatedDisplay = await page.evaluate(({ instant, locale }) => new Intl.DateTimeFormat(locale, {
+        timeZone: 'Asia/Tokyo', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+      }).format(new Date(instant)), { instant: stored[0].createdAt, locale: credentials.locale });
+      // Both clean dialogs recover a preference changed by another session,
+      // without a Review click or reload. Display changes cannot mutate history.
+      for (const client of [page, peerPage]) {
+        const comments = client.locator('section[aria-label="Card comments"]');
+        await expect(comments.getByText(`You · ${updatedDisplay}`, { exact: true })).toBeVisible({ timeout: 20_000 });
+        await expect(comments.getByText(`You · ${displayed}`, { exact: true })).toHaveCount(0);
+      }
+      expect((await (await context.request.get(path)).json()).items).toEqual(stored);
+      expect(writes).toHaveLength(2);
       await page.getByRole('button', { name: 'Edit comment', exact: true }).press('Enter');
       const edit = page.getByRole('textbox', { name: 'Edit your comment', exact: true }); await expect(edit).toBeFocused();
       await edit.press('ControlOrMeta+A'); await page.keyboard.insertText('Edited plaintext');

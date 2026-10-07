@@ -3,7 +3,10 @@ import { Button, Dialog } from '@mui/material';
 import { CardCommentsControl } from './CardCommentsControl';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
 import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
+import { watchIdentity } from '../auth/identityLive';
+import { dateInstantTicks } from './cardDates';
 vi.mock('../../api/workManagement', async importOriginal => ({ ...await importOriginal<typeof import('../../api/workManagement')>(), workRequest: vi.fn() }));
+vi.mock('../auth/identityLive', () => ({ watchIdentity: vi.fn(() => vi.fn()) }));
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const scope = { organizationId: id(1), boardId: id(2), cardId: id(3) };
 const profile = { id: id(8), version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
@@ -20,24 +23,97 @@ function mock(write: () => unknown = () => ack, value: unknown = page) {
 }
 async function review() { fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' })); await screen.findByRole('button', { name: 'Add comment' }); }
 async function create() { await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' })); fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } }); }
-beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+beforeEach(() => { vi.mocked(workRequest).mockReset(); vi.mocked(watchIdentity).mockClear(); });
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 function telemetry() { configureActivityTelemetry(true); const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetch); return fetch; }
+it('recovers viewing preferences in a clean comment review without changing the stored comment', async () => {
+  let timezone = 'Pacific/Honolulu';
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? { ...profile, timezone } : page);
+  render(<CardCommentsControl {...props()} />); await review();
+  expect(screen.getByText(/You · Oct 2, 2026, 22:00/)).toBeInTheDocument();
+  expect(watchIdentity).toHaveBeenCalledTimes(1);
+  timezone = 'Asia/Tokyo'; act(() => { vi.mocked(watchIdentity).mock.calls[0][0].invalidate(); });
+  await screen.findByText(/You · Oct 3, 2026, 17:00/);
+  expect(screen.getByText(row.content)).toBeVisible(); expect(writes()).toHaveLength(0);
+  expect(row.createdAt).toBe('2026-10-03T08:00:00.123456Z');
+});
+it('preserves the selected comment cursor during account preference recovery', async () => {
+  let timezone = 'Pacific/Honolulu';
+  const cursor = `${scope.cardId}/4/${dateInstantTicks(row.createdAt) + 621355968000000000n}/${id(51)}`;
+  const first = { ...page, items: Array.from({ length: 50 }, (_, index) => ({ ...row, id: id(100 - index), content: `Comment ${index}` })), nextCursor: cursor };
+  const last = { ...page, items: [{ ...row, id: id(50) }] };
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? { ...profile, timezone } : path.includes('?after=') ? last : first);
+  render(<CardCommentsControl {...props()} />); await review();
+  fireEvent.click(screen.getByRole('button', { name: 'Next comment page' })); await screen.findByText(row.content);
+  timezone = 'Asia/Tokyo'; act(() => { vi.mocked(watchIdentity).mock.calls[0][0].invalidate(); });
+  await screen.findByText(/You · Oct 3, 2026, 17:00/);
+  const reads = vi.mocked(workRequest).mock.calls.filter(([path]) => path.includes('/comments'));
+  expect(reads).toHaveLength(3); expect(reads[2][0]).toBe(reads[1][0]);
+  expect(screen.getByRole('button', { name: 'First comment page' })).toBeEnabled(); expect(writes()).toHaveLength(0);
+});
+
+it('retains a focused comment action across background recovery and respects another dialog control', async () => {
+  mock(); render(<Dialog open><CardCommentsControl {...props()} /><Button>Another control</Button></Dialog>); await review();
+  screen.getByRole('button', { name: 'Edit comment' }).focus();
+  act(() => { window.dispatchEvent(new Event('online')); });
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Edit comment' })).toHaveFocus());
+  expect(vi.mocked(workRequest).mock.calls.filter(([path]) => path.includes('/comments'))).toHaveLength(2);
+  const other = screen.getByRole('button', { name: 'Another control' }); other.focus();
+  act(() => { window.dispatchEvent(new Event('online')); }); await screen.findByText(row.content);
+  expect(other).toHaveFocus(); expect(writes()).toHaveLength(0);
+});
+
+it('uses periodic fallback and retires account recovery on unmount', async () => {
+  vi.useFakeTimers();
+  try {
+    let timezone = 'Pacific/Honolulu';
+    vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? { ...profile, timezone } : page);
+    const view = render(<CardCommentsControl {...props()} />);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' })); });
+    timezone = 'Asia/Tokyo'; await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+    expect(screen.getByText(/You · Oct 3, 2026, 17:00/)).toBeInTheDocument();
+    const reads = () => vi.mocked(workRequest).mock.calls.filter(([path]) => path.includes('/comments')).length;
+    expect(reads()).toBe(2); const dispose = vi.mocked(watchIdentity).mock.results[0].value; view.unmount();
+    expect(dispose).toHaveBeenCalledTimes(1);
+    await act(async () => { window.dispatchEvent(new Event('online')); await vi.advanceTimersByTimeAsync(20_000); });
+    expect(reads()).toBe(2); expect(writes()).toHaveLength(0);
+  } finally { vi.useRealTimers(); }
+});
+
+it.each([401, 403, 404])('clears a clean review and retires background recovery after %s refusal', async status => {
+  let fail = false;
+  vi.mocked(workRequest).mockImplementation(async path => {
+    if (fail) throw new WorkRequestError(status, null); return path === '/me' ? profile : page;
+  });
+  render(<CardCommentsControl {...props()} />); await review(); fail = true;
+  act(() => { window.dispatchEvent(new Event('online')); });
+  await screen.findByText('Unable to read current comments. Refresh the Card and try again.');
+  expect(screen.queryByText(row.content)).toBeNull(); expect(screen.getByRole('button', { name: 'Review Card comments' })).toBeDisabled();
+  expect(vi.mocked(watchIdentity).mock.results[0].value).toHaveBeenCalledTimes(1);
+  const count = vi.mocked(workRequest).mock.calls.length;
+  act(() => { window.dispatchEvent(new Event('online')); window.dispatchEvent(new Event('focus')); });
+  expect(workRequest).toHaveBeenCalledTimes(count); expect(writes()).toHaveLength(0);
+});
 it('PRD-02 AUTH-FR-010 uses admitted timezone for review and fresh preferences for original acknowledgment recovery', async () => {
   let timezone = 'Pacific/Honolulu'; let attempts = 0;
   vi.mocked(workRequest).mockImplementation(async (path, init) => {
     if (path === '/me') return { ...profile, timezone };
     if (init?.method) { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; }
-    return page;
+    return attempts >= 2 ? { ...page, cardVersion: 5 } : page;
   });
   const p = props(); const view = render(<CardCommentsControl {...p} />); await review();
   expect(screen.getByText(/You · Oct 2, 2026, 22:00/)).toBeInTheDocument();
   expect(screen.queryByText(new RegExp(row.createdAt))).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Add comment' }));
   fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } });
+  act(() => { vi.mocked(watchIdentity).mock.calls[0][0].invalidate(); });
+  expect(screen.getByRole('textbox', { name: 'New comment' })).toHaveValue(row.content);
+  expect(vi.mocked(workRequest).mock.calls.filter(([path]) => path.includes('/comments'))).toHaveLength(1);
   fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
   await screen.findByRole('button', { name: 'Retry original comment change' });
   timezone = 'Asia/Tokyo'; view.rerender(<CardCommentsControl {...p} version={5} />);
+  act(() => { vi.mocked(watchIdentity).mock.calls[0][0].invalidate(); });
+  expect(vi.mocked(workRequest).mock.calls.filter(([path, init]) => path.includes('/comments') && !init?.method)).toHaveLength(1);
   const retry = screen.getByRole('button', { name: 'Retry original comment change' });
   await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry);
   await screen.findByText('Comment added.');

@@ -9,6 +9,7 @@ import { CommentMentionPicker } from './CommentMentionPicker';
 import { commentMassMentionScopes, selectedCommentMentions, type CommentMentionSelection } from './commentMentionSelection';
 import { activityEvent, activityResult } from './activityTelemetry';
 import { formatUserDateTime } from '../auth/userDateTime';
+import { watchIdentity } from '../auth/identityLive';
 
 type Preferences = { locale: string; timezone: string };
 type Review = { actor: string; page: CardCommentPage; cursor?: string; preferences: Preferences };
@@ -24,6 +25,10 @@ function CommentsControl(props: CardCommentsProps) {
   const [notice, setNotice] = useState<string>(); const pending = useRef<AbortController | undefined>(undefined);
   const [acknowledged, setAcknowledged] = useState<CardCommentChange & { preferences: Preferences }>();
   const [mentionBusy, setMentionBusy] = useState(false);
+  const [subject, setSubject] = useState<string>();
+  const refreshQueued = useRef(false), recover = useRef<() => void>(() => {});
+  const container = useRef<HTMLElement>(null);
+  const retainedAction = useRef<{ action: string; comment?: string } | undefined>(undefined);
   const observedReconnect = useRef(props.reconnectSequence);
   const mounted = useRef(false); const callbacks = useRef(props); callbacks.current = props;
   const primary = useRef<HTMLButtonElement>(null); const editor = useRef<HTMLInputElement>(null); const consent = useRef<HTMLInputElement>(null);
@@ -34,6 +39,7 @@ function CommentsControl(props: CardCommentsProps) {
   let declaredGroups = { card: false, board: false };
   try { if (draft && !draft.deleting) declaredGroups = commentMassMentionScopes(draft.text); } catch { /* Invalid text is reviewed on save. */ }
   function focus(owner: HTMLElement) {
+    retainedAction.current = undefined;
     focusOwner.current = owner; focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner);
   }
   function blur(event: React.FocusEvent<HTMLElement>) { if (!ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restoreFocus.current = false; }
@@ -41,9 +47,32 @@ function CommentsControl(props: CardCommentsProps) {
   useEffect(() => { props.onRecoveryChange(!!draft || !!intent || blocked); }, [draft, intent, blocked, props.onRecoveryChange]);
   useEffect(() => {
     if (disabled || !restoreFocus.current || !(ownsRecoveryFocus(document.activeElement, focusOwner.current) || document.activeElement === focusDialog.current)) return;
-    const target = intent ? retry.current : blocked ? discard.current : draft ? draft.deleting ? consent.current : editor.current : primary.current;
+    const retained = retainedAction.current;
+    const previous = retained && Array.from(container.current?.querySelectorAll<HTMLButtonElement>('button[data-comment-action]') ?? [])
+      .find(button => button.dataset.commentAction === retained.action && button.dataset.commentId === retained.comment && !button.disabled);
+    const target = intent ? retry.current : blocked ? discard.current : draft ? draft.deleting ? consent.current : editor.current : previous ?? primary.current;
     if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = !!intent || blocked; }
   }, [disabled, draft, intent, blocked, review]);
+  recover.current = () => {
+    refreshQueued.current = true;
+    const version = review?.page.cardVersion ?? acknowledged?.cardVersion;
+    if (pending.current || disabled || draft || intent || blocked || !subject || version === undefined || version !== props.version) return;
+    void load(undefined, review?.cursor, true);
+  };
+  useEffect(() => {
+    if (refreshQueued.current) recover.current();
+  }, [disabled, draft, intent, blocked, props.version, review, acknowledged]);
+  useEffect(() => {
+    if (!subject || props.unavailable || props.disabled || blocked) return;
+    const check = () => { if (document.visibilityState !== 'hidden') recover.current(); };
+    const stop = watchIdentity({ subject, isProfile: isNotificationProfile, invalidate: check });
+    const timer = setInterval(check, 10_000);
+    window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
+    return () => {
+      stop(); clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('online', check);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [subject, props.unavailable, props.disabled, blocked]);
   useEffect(() => {
     // A clean opened view follows aggregate invalidations and reconnects.
     // Retire the old cursor and reread the bounded first page. Dirty drafts and
@@ -55,16 +84,24 @@ function CommentsControl(props: CardCommentsProps) {
       void load();
     }
   }, [props.version, props.reconnectSequence, disabled, draft, intent, blocked, review, acknowledged]);
-  async function load(owner?: HTMLElement, cursor?: string) {
+  async function load(owner?: HTMLElement, cursor?: string, recovering = false) {
     if (pending.current || disabled || draft || intent || blocked) return;
     if (owner) focus(owner);
+    if (recovering && !restoreFocus.current) {
+      const active = document.activeElement;
+      if (active instanceof HTMLButtonElement && container.current?.contains(active) && active.dataset.commentAction) {
+        focus(active); retainedAction.current = { action: active.dataset.commentAction, comment: active.dataset.commentId };
+      }
+    }
+    refreshQueued.current = false;
     observedReconnect.current = props.reconnectSequence;
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setReview(undefined); setAcknowledged(undefined);
+    const controller = new AbortController(); pending.current = controller; setBusy(true); if (!recovering) setNotice(undefined); setReview(undefined); setAcknowledged(undefined);
     const version = props.version;
     const started = performance.now(); activityEvent('comment_read', 'use');
     try {
       const result = await boundedWorkRead(async signal => {
         const profile = await workRequest<unknown>('/me', { signal }); if (!isNotificationProfile(profile)) throw new WorkRequestError(401, null);
+        if (subject && profile.id.toLowerCase() !== subject.toLowerCase()) throw new WorkRequestError(401, null);
         const page = parseCardCommentPage(await workRequest<unknown>(path + (cursor ? '?after=' + encodeURIComponent(cursor) : ''), { signal }), props, version, cursor);
         const current = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(current) || current.id.toLowerCase() !== profile.id.toLowerCase()) throw new WorkRequestError(401, null);
@@ -72,9 +109,12 @@ function CommentsControl(props: CardCommentsProps) {
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (callbacks.current.unavailable || callbacks.current.version !== version) throw new Error();
-      activityResult('comment_read', true, started); setReview(result);
+      activityResult('comment_read', true, started); setSubject(result.actor); setReview(result);
     } catch (error) { if (mounted.current && pending.current === controller) {
       activityResult('comment_read', false, started); if (!(error instanceof WorkRequestError)) activityEvent('comment_read', 'exception');
+      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
+        refreshQueued.current = false; setSubject(undefined); setBlocked(true);
+      }
       setNotice('Unable to read current comments. Refresh the Card and try again.'); props.onRefresh();
     } }
     finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
@@ -127,6 +167,7 @@ function CommentsControl(props: CardCommentsProps) {
       if (!mounted.current || pending.current !== controller) return;
       activityResult(action, true, started);
       setIntent(undefined); setDraft(undefined); setReview(undefined); setBlocked(false);
+      setSubject(captured.actor);
       setAcknowledged(acknowledged);
       setNotice(captured.check.deleting ? 'Comment body removed.' : captured.check.original ? 'Comment saved.' : 'Comment added.'); props.onRefresh();
     } catch (error) {
@@ -142,10 +183,10 @@ function CommentsControl(props: CardCommentsProps) {
       props.onRefresh();
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
   }
-  function reset(owner: HTMLElement) { focus(owner); setDraft(undefined); setIntent(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(false); setNotice(undefined); props.onRefresh(); }
+  function reset(owner: HTMLElement) { focus(owner); refreshQueued.current = false; setSubject(undefined); setDraft(undefined); setIntent(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(false); setNotice(undefined); props.onRefresh(); }
   const current = review?.page.cardVersion === props.version;
-  return <Stack component="section" aria-label="Card comments" spacing={1} sx={{ my: 2 }}>
-    <Button ref={primary} disabled={disabled || !!draft || !!intent || blocked} onBlur={blur} onClick={event => { activityEvent('comment_disclosure', 'open'); void load(event.currentTarget); }}>Review Card comments</Button>
+  return <Stack ref={container} component="section" aria-label="Card comments" spacing={1} sx={{ my: 2 }}>
+    <Button ref={primary} data-comment-action="review" disabled={disabled || !!draft || !!intent || blocked} onBlur={blur} onClick={event => { activityEvent('comment_disclosure', 'open'); void load(event.currentTarget); }}>Review Card comments</Button>
     {busy && <Typography role="status">{draft ? 'Saving comment change…' : 'Checking current comments…'}</Typography>}
     {notice && <Typography role="status">{notice}</Typography>}
     {props.unavailable ? <Typography role="status">Checking current Card access…</Typography> : <>
@@ -160,13 +201,13 @@ function CommentsControl(props: CardCommentsProps) {
           <Typography variant="caption" sx={{ overflowWrap: 'anywhere' }}>{item.authorId.toLowerCase() === review.actor.toLowerCase() ? 'You' : `Account ${item.authorId}`} · {formatUserDateTime(item.createdAt, review.preferences) ?? 'Date unavailable'}{item.editedAt ? ' · Edited' : ''}</Typography>
           <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{item.deletedAt ? 'Comment body removed.' : item.content}</Typography>
           {item.deletedAt === null && item.authorId.toLowerCase() === review.actor.toLowerCase() && <Stack direction={{ xs: 'column', sm: 'row' }}>
-            <Button disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(item, false, event.currentTarget)}>Edit comment</Button>
-            <Button disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(item, true, event.currentTarget)}>Remove comment body</Button>
+            <Button data-comment-action="edit" data-comment-id={item.id} disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(item, false, event.currentTarget)}>Edit comment</Button>
+            <Button data-comment-action="remove" data-comment-id={item.id} disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(item, true, event.currentTarget)}>Remove comment body</Button>
           </Stack>}
         </Stack>)}
-        <Button disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(null, false, event.currentTarget)}>Add comment</Button>
-        <Button disabled={disabled || !review.cursor} onBlur={blur} onClick={event => void load(event.currentTarget)}>First comment page</Button>
-        <Button disabled={disabled || !review.page.nextCursor} onBlur={blur} onClick={event => void load(event.currentTarget, review.page.nextCursor!)}>Next comment page</Button>
+        <Button data-comment-action="add" disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(null, false, event.currentTarget)}>Add comment</Button>
+        <Button data-comment-action="first" disabled={disabled || !review.cursor} onBlur={blur} onClick={event => void load(event.currentTarget)}>First comment page</Button>
+        <Button data-comment-action="next" disabled={disabled || !review.page.nextCursor} onBlur={blur} onClick={event => void load(event.currentTarget, review.page.nextCursor!)}>Next comment page</Button>
       </>}
       {draft && <>
         {conflict && !intent && <Alert severity="warning">The Card changed. Discard this review and load the latest comments.</Alert>}

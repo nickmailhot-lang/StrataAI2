@@ -33,7 +33,12 @@ async function review() { fireEvent.click(await screen.findByRole('button', { na
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 beforeEach(() => { currentProfile = profile; live.watch.mockReset(); live.watch.mockReturnValue(() => {});
   boardLive.watch.mockReset(); boardLive.watch.mockImplementation(options => { options.status('live'); return () => {}; }); });
-async function invalidate() { await act(async () => { live.watch.mock.calls.at(-1)![0].invalidate(); }); }
+async function invalidate() {
+  // Rendering an admitted row can precede the passive live subscription.
+  // Deliver the source only after the listener actually exists.
+  await waitFor(() => expect(live.watch).toHaveBeenCalled());
+  await act(async () => { live.watch.mock.calls.at(-1)![0].invalidate(); });
+}
 
 it('retires reviewed revocation consent and reloads newly issued invitations after a live source', async () => {
   const later = { ...row, id: '20000000-0000-0000-0000-000000000002', email: 'later@example.test' };

@@ -289,6 +289,25 @@ after the original 50+2 continuation checks and before archived-parent checks;
 the original collection coverage remains required. Bash syntax passes; native
 exact-image execution remains pending.
 
+### Open comment preference recovery
+
+Clean Card comment views now recover account preferences through identity delivery
+and visible periodic, focus, online and visibility checks. Recovery performs the
+normal bounded account/page/account admission, retains the selected continuation
+and renders the same stored UTC instant in the final admitted account timezone.
+Signals wait while a draft, mention selection, original uncertain command or Card
+admission is unresolved. They cannot replace the original retry key or body.
+Access denial retires background reads until explicit renewed admission. Owned
+comment action focus survives row replacement; focus moved elsewhere stays there.
+
+The focused comment and identity suites pass all 30 cases, including continuation,
+periodic fallback, cleanup, denied access and unchanged uncertain-command recovery.
+Web typechecking/lint and browser typechecking pass. The mandatory desktop/phone
+comment fixture now changes the account timezone from an independent session and
+requires both clean dialogs to recover automatically without changing stored
+comment history or issuing another comment write. Its strengthened native run
+remains pending exact-image CI; this does not establish full AUTH-FR-010 acceptance.
+
 The complete web suite against unchanged browser source at `28f9355` completed
 with exit 0: all 122 test files and 1,494 tests passed in 491.71 seconds. This
 includes canonical timed/date-only flag admission, invalid UTC calendar rejection,

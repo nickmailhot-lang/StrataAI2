@@ -307,6 +307,19 @@ The isolated Release build passes with zero warnings/errors and both cases exit
 successfully. This strengthens AUTH-FR-003/006/008 storage acceptance; current
 exact-image, HTTP, two-client and full release acceptance remain required.
 
+### Open comment preference recovery
+
+Clean comment dialogs now follow identity preference delivery with visible
+periodic/focus/online recovery, protected account/page/account reads and retained
+continuation. Dirty drafts and uncertain commands defer the signal while retaining
+the exact original intent. Owned action focus is recovered after row replacement;
+401/403/404 retires background disclosure and reads. All 30 focused comment and
+identity checks pass, as do web typechecking/lint and browser typechecking. The
+mandatory desktop/phone native fixture requires both dialogs to adopt a timezone
+changed by another session without manual Review, reload, history mutation or a
+new comment write. Strengthened native execution and current release CI remain
+pending. Estimated PRD-02 work remaining stays **22%**.
+
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
