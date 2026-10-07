@@ -6,6 +6,14 @@ Its Worker-only capabilities lease one bounded routing page, then publish the
 ordinary tenant authority roots. It grants no direct global table access and
 does not widen the general Organization job claim path. Completed private page
 history is immutable; each continuation retains its own five-claim limit.
+Forward migration 110 retires an expired fifth issuer-routing lease as FAILED
+with the stable `LEASE_EXHAUSTED` reason and finite failure timestamp. One claim
+call examines/changes at most one row, returning no delivery capability when it
+retires that row. Subsequent calls can claim the next source. A live final lease
+is still protected; completed and failed history cannot be reset, deleted or
+rewritten. Runtime roles have no direct reads/writes of this private queue.
+This dead-letter state requires operator investigation; automatic unlimited
+retry or privileged attempt resets are not a supported recovery procedure.
 
 Migration 007 and `PostgresBackgroundJobStore` provide a PostgreSQL queue without
 an additional broker. Infrastructure producers publish using their existing

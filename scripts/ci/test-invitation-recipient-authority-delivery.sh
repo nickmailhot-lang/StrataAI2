@@ -9,8 +9,12 @@ last_count=5
 issuer_enabled=false
 scratch="$(mktemp -d)"
 worker_changed=false
+exhaustion_fault=false
 cleanup() {
   local status=$?
+  if test "$exhaustion_fault" = true; then
+    admin 'DROP TRIGGER IF EXISTS issuer_exhaustion_ci ON invitation_issuer_authority_jobs; DROP FUNCTION IF EXISTS issuer_exhaustion_ci();' >/dev/null || status=1
+  fi
   if test "$worker_changed" = true; then
     docker compose -f compose.release.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null || status=1
   fi
@@ -136,6 +140,63 @@ if test "$source_kind" = issuer; then
   test "$(admin "SELECT count(*)=1 AND bool_and(state='SUCCEEDED' AND attempt_count=1 AND scanned_count=1) FROM invitation_issuer_authority_jobs WHERE event_id='$source';")" = t
 fi
 echo "Exact Worker authority delivery: canonical HTTP $source_kind command, automatic scope, 100/100/$last_count pages, two deduplicated recipients, restart and unrelated queue isolation passed."
+
+if test "$source_kind" = issuer; then
+  authority_worker true false
+  exhaustion_credentials="$(jq -nc --arg email "issuer-exhaustion-$(date +%s%N)@example.test" '{email:$email,password:"issuer-exhaustion-correct-horse",displayName:"Issuer exhaustion fixture"}')"
+  curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -d "$exhaustion_credentials" "$BASE_URL/auth/register" > "$scratch/exhaustion-user.json"
+  exhaustion_actor="$(jq -r '.user.id' "$scratch/exhaustion-user.json")"
+  [[ "$exhaustion_actor" =~ ^[0-9a-f-]{36}$ ]]
+  curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -c "$scratch/exhaustion-cookies" -d "$exhaustion_credentials" "$BASE_URL/auth/login" >/dev/null
+  status="$(curl --silent --show-error -b "$scratch/exhaustion-cookies" -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -H "Idempotency-Key: $(cat /proc/sys/kernel/random/uuid)" \
+    -X POST -d '{}' -o "$scratch/exhaustion-response.json" -w '%{http_code}' \
+    "$BASE_URL/me/deactivate?expectedActorId=$exhaustion_actor")"
+  test "$status" = 204
+  # Privileged fault fixture refuses this source's completion. Attempts still
+  # come from actual retained Worker claims; only lease expiry is simulated.
+  admin "CREATE FUNCTION issuer_exhaustion_ci() RETURNS trigger LANGUAGE plpgsql AS \$\$ BEGIN
+    RAISE EXCEPTION 'Injected issuer completion failure' USING ERRCODE='23514'; END \$\$;
+    CREATE TRIGGER issuer_exhaustion_ci BEFORE UPDATE ON invitation_issuer_authority_jobs
+      FOR EACH ROW WHEN (NEW.actor_id='$exhaustion_actor' AND NEW.state='SUCCEEDED') EXECUTE FUNCTION issuer_exhaustion_ci();" >/dev/null
+  exhaustion_fault=true
+  authority_worker true true
+  for ((lease=1; lease<=5; lease++)); do
+    for ((attempt=0; attempt<60; attempt++)); do
+      if test "$(admin "SELECT count(*)=1 AND bool_and(state='RUNNING' AND attempt_count=$lease AND lease_expires_at>clock_timestamp()) FROM invitation_issuer_authority_jobs WHERE actor_id='$exhaustion_actor';")" = t; then break; fi
+      sleep 1
+    done
+    test "$(admin "SELECT count(*)=1 AND bool_and(state='RUNNING' AND attempt_count=$lease AND lease_expires_at>clock_timestamp()) FROM invitation_issuer_authority_jobs WHERE actor_id='$exhaustion_actor';")" = t
+    admin "UPDATE invitation_issuer_authority_jobs SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE actor_id='$exhaustion_actor' AND state='RUNNING' AND attempt_count=$lease;" >/dev/null
+  done
+  exhaustion_finished() {
+    admin "SELECT (SELECT count(*)=1 AND bool_and(j.state='FAILED' AND j.attempt_count=5 AND j.failure_code='LEASE_EXHAUSTED'
+        AND isfinite(j.failed_at) AND j.worker_id IS NULL AND j.lease_id IS NULL AND j.lease_expires_at IS NULL
+        AND j.completed_at IS NULL AND j.scanned_count IS NULL AND j.event_id=s.event_id AND j.actor_id=s.actor_id
+        AND e.actor_id=s.actor_id AND e.correlation_id=s.correlation_id AND e.event_type='USER_DEACTIVATED')
+      FROM invitation_issuer_authority_jobs j JOIN invitation_issuer_authority_sources s ON s.event_id=j.event_id
+      JOIN identity_events e ON e.event_id=s.event_id WHERE j.actor_id='$exhaustion_actor')
+      AND NOT EXISTS(SELECT 1 FROM invitation_recipient_authority_sources WHERE issuer_source_event_id IN
+        (SELECT event_id FROM invitation_issuer_authority_sources WHERE actor_id='$exhaustion_actor'))
+      AND (SELECT count(*)=1 FROM audit_events WHERE actor_id='$exhaustion_actor' AND event_type='USER_DEACTIVATED');"
+  }
+  for ((attempt=0; attempt<60; attempt++)); do
+    if test "$(exhaustion_finished)" = t; then break; fi
+    sleep 1
+  done
+  test "$(exhaustion_finished)" = t
+  failed_at="$(admin "SELECT failed_at FROM invitation_issuer_authority_jobs WHERE actor_id='$exhaustion_actor';")"
+  admin 'DROP TRIGGER issuer_exhaustion_ci ON invitation_issuer_authority_jobs; DROP FUNCTION issuer_exhaustion_ci();' >/dev/null
+  exhaustion_fault=false
+  authority_worker true true
+  test "$(exhaustion_finished)" = t
+  test "$failed_at" = "$(admin "SELECT failed_at FROM invitation_issuer_authority_jobs WHERE actor_id='$exhaustion_actor';")"
+  test "$(finished)" = t
+  test "$before" = "$(unrelated)"
+  echo 'Exact Worker issuer exhaustion: actual canonical HTTP source, five original-source claims, simulated lease expiry, immutable FAILED history and restart stability passed.'
+fi
 
 if test "$source_kind" = lifecycle; then
   # Resume automatic deletion discovery without a configured Organization ID.

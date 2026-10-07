@@ -101,6 +101,47 @@ and fails 16 platform-specific timezone, filesystem, Unix socket and fixed Linux
 Worker-path cases; it is not full acceptance evidence. Retained-image CI must
 still confirm the complete source/API/release sequence.
 
+### Bounded final-attempt retirement
+
+[Migration 110](../../db/migrations/110_invitation_issuer_authority_exhaustion.sql)
+fixes the exhausted-crash case: an expired fifth routing lease previously
+remained RUNNING while claim selection excluded it. The Worker claim capability
+now retires one such row as FAILED with `LEASE_EXHAUSTED` and a finite failure
+timestamp. Retirement returns no lease and does not also claim a second row.
+The next call can continue unrelated pending work. A live fifth lease is not
+reclaimed. Original source/job identity, attribution and attempt count survive;
+failed and completed history are immutable. No source/backfill, recipient scan,
+automatic attempt reset or global direct runtime table grant is introduced.
+
+The expanded mandatory restricted persistence contract passes all existing
+source/page/deduplication checks plus five real claims, distinct replacement
+leases, stale-lease refusal, live final-lease protection, bounded retirement,
+unchanged following pending work, refusal of failed reset/no-op/delete and
+stable failure history after later routing. Migration clean/repeat/forward,
+serialized/failure rollback, schema isolation and readiness through 110 pass;
+isolated persistence and Worker Release builds have zero warnings/errors.
+
+The mandatory exact-image issuer gate now adds a real HTTP account source and
+five actual Worker claims. A privileged disposable trigger refuses completion;
+only lease expiry is simulated. It requires canonical audit/event attribution,
+FAILED retirement with no owning references, unchanged earlier recipient
+results/unrelated queues and stable failure timestamp after actual Worker
+restart. Shell syntax passes; retained release-image execution remains pending
+CI and is required before acceptance. These fault fixtures do not claim five
+physical process crashes or operator redrive support.
+
+The same five-claim/retirement scenario passes locally with an ordinary real
+Production HTTP registration/login/deactivation and a separate restricted
+Worker on schema 110, no configured Organization IDs and other discovery loops
+disabled. The privileged trigger refuses only the disposable source's completion
+and is removed at the fixture boundary. The issued Secure/HttpOnly session is
+forwarded explicitly for the direct localhost HTTP request; the first harness
+attempt used a cookie container that did not send Secure cookies over HTTP and
+correctly received 401. No session admission rule was changed. Restarting the
+actual Worker retains the original failure timestamp, source and five-attempt
+terminal history. These are compiled-source framework containers, distinct from
+the pending retained release-image gate.
+
 An invitation creation source proves a committed invitation, but it does not
 prove continuing issuer rights, active parent state or current names. Those
 dependencies can change without an invitation acceptance/revocation event.

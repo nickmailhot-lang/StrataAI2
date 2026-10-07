@@ -23,6 +23,7 @@ internal static class InvitationIssuerAccountAuthorityContract
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, CancellationToken ct)
     {
         var actor = Guid.NewGuid(); var owner = Guid.NewGuid(); var earlier = Guid.NewGuid();
+        var exhausted = Guid.NewGuid(); var following = Guid.NewGuid();
         var email = $"ISSUER-{actor:N}@EXAMPLE.TEST".ToUpperInvariant();
         var other = $"ISSUER-OTHER-{actor:N}@EXAMPLE.TEST".ToUpperInvariant();
         var future = $"ISSUER-FUTURE-{actor:N}@EXAMPLE.TEST".ToUpperInvariant();
@@ -30,7 +31,7 @@ internal static class InvitationIssuerAccountAuthorityContract
         await using (var seed = new NpgsqlCommand("""
             INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
              SELECT id,id::text||'@example.test',upper(id::text||'@example.test'),'Issuer authority fixture','ACTIVE',true,'unused',now(),now()
-             FROM unnest(ARRAY[@actor,@owner,@earlier]::uuid[]) id;
+             FROM unnest(ARRAY[@actor,@owner,@earlier,@exhausted,@following]::uuid[]) id;
             WITH tenants AS (
              INSERT INTO organizations(id,name,owner_user_id,created_at,updated_at)
              SELECT gen_random_uuid(),'Issuer authority fixture',@owner,now(),now() FROM generate_series(1,205) RETURNING id
@@ -52,11 +53,12 @@ internal static class InvitationIssuerAccountAuthorityContract
             """, admin))
         {
             seed.Parameters.AddWithValue("actor", actor); seed.Parameters.AddWithValue("owner", owner); seed.Parameters.AddWithValue("earlier", earlier);
+            seed.Parameters.AddWithValue("exhausted", exhausted); seed.Parameters.AddWithValue("following", following);
             seed.Parameters.AddWithValue("email", email); seed.Parameters.AddWithValue("other", other); seed.Parameters.AddWithValue("future", future);
             await seed.ExecuteNonQueryAsync(ct);
         }
         var services = new ServiceCollection(); services.AddLogging(); services.AddSingleton<IClock, SystemClock>();
-        services.AddSingleton<ICommandActorAuthorization>(new AdapterAdmissionFixture(actor,earlier));
+        services.AddSingleton<ICommandActorAuthorization>(new AdapterAdmissionFixture(actor,earlier,exhausted,following));
         services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
         services.AddSingleton(new PostgresConnectionFactory(apiConnection)); services.AddSingleton<PostgresBackgroundJobStore>();
         var runtime = new RuntimeDescriptor(RuntimeMode.Production, "contract", "contract");
@@ -223,11 +225,63 @@ internal static class InvitationIssuerAccountAuthorityContract
             try {await mutation.ExecuteNonQueryAsync(ct);throw new InvalidOperationException("Issuer source or completed history mutated.");}
             catch(PostgresException e) when(e.SqlState==PostgresErrorCodes.CheckViolation) { }
         }
-        Console.WriteLine("Issuer account authority: actual restricted deactivation/source/queue atomicity, unproven/earlier/late refusal, 120-character attribution, exact lease fences, late route/recipient rollback and reclaimed root, 205-Organization routing 100/100/5, leased recipient pages and global cross-tenant deduplication, future cutoff, immutable history and private capability denial passed.");
+        Require((await unit.ExecuteDeactivationAsync(exhausted,()=>identity.DeactivateAsync(exhausted,"exhaustion-original",ct),ct)).Succeeded,
+            "Exhaustion fixture canonical command failed.");
+        InvitationIssuerAuthorityClaim? final = null;
+        for(var attempt=1;attempt<=5;attempt++)
+        {
+            var next=await global.ClaimAsync(Guid.NewGuid(),ct)??throw new InvalidOperationException("Allowed issuer attempt was lost.");
+            Require(next.ActorId==exhausted&&(final is null||next.JobId==final.JobId&&next.EventId==final.EventId&&next.LeaseId!=final.LeaseId),
+                "Issuer retry changed original source/job or reused a lease.");
+            if(final is not null)Require(!await global.DeliverAsync(final,100,ct),"Prior attempt regained delivery authority.");
+            final=next;
+            if(attempt<5)
+            {
+                await using var expire=new NpgsqlCommand("UPDATE invitation_issuer_authority_jobs SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE id=@job",admin);
+                expire.Parameters.AddWithValue("job",final.JobId);await expire.ExecuteNonQueryAsync(ct);
+            }
+        }
+        Require(await global.ClaimAsync(Guid.NewGuid(),ct) is null,"Live final lease was reclaimed.");
+        Require((await unit.ExecuteDeactivationAsync(following,()=>identity.DeactivateAsync(following,"following-original",ct),ct)).Succeeded,
+            "Following fixture canonical command failed.");
+        await using(var expire=new NpgsqlCommand("UPDATE invitation_issuer_authority_jobs SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE id=@job",admin))
+        {expire.Parameters.AddWithValue("job",final!.JobId);await expire.ExecuteNonQueryAsync(ct);}
+        Require(await global.ClaimAsync(Guid.NewGuid(),ct) is null,"Exhausted retirement granted a sixth lease or processed the following row.");
+        DateTimeOffset failedAt;
+        await using(var verify=new NpgsqlCommand("""
+            SELECT j.failed_at,j.attempt_count=5 AND j.state='FAILED' AND j.failure_code='LEASE_EXHAUSTED'
+             AND j.worker_id IS NULL AND j.lease_id IS NULL AND j.lease_expires_at IS NULL
+             AND j.completed_at IS NULL AND j.scanned_count IS NULL AND isfinite(j.failed_at)
+             AND j.event_id=@source AND j.actor_id=@actor
+             AND NOT EXISTS(SELECT 1 FROM invitation_recipient_authority_sources WHERE issuer_source_event_id=@source)
+             AND EXISTS(SELECT 1 FROM invitation_issuer_authority_jobs WHERE actor_id=@following AND state='PENDING' AND attempt_count=0)
+            FROM invitation_issuer_authority_jobs j WHERE j.id=@job;
+            """,admin))
+        {
+            verify.Parameters.AddWithValue("source",final!.EventId);verify.Parameters.AddWithValue("actor",exhausted);
+            verify.Parameters.AddWithValue("following",following);verify.Parameters.AddWithValue("job",final.JobId);
+            await using var row=await verify.ExecuteReaderAsync(ct);
+            Require(await row.ReadAsync(ct)&&row.GetBoolean(1),"Final crash retirement lost source/history or exceeded its one-row bound.");
+            failedAt=row.GetFieldValue<DateTimeOffset>(0);
+        }
+        Require(!await global.DeliverAsync(final!,100,ct),"Failed page retained expired delivery authority.");
+        foreach(var sql in new[]{"UPDATE invitation_issuer_authority_jobs SET state='PENDING',failed_at=NULL,failure_code=NULL WHERE id=@job",
+            "UPDATE invitation_issuer_authority_jobs SET failure_code=failure_code WHERE id=@job","DELETE FROM invitation_issuer_authority_jobs WHERE id=@job"})
+        {
+            await using var mutation=new NpgsqlCommand(sql,admin);mutation.Parameters.AddWithValue("job",final!.JobId);
+            try{await mutation.ExecuteNonQueryAsync(ct);throw new InvalidOperationException("Failed issuer history was changed.");}
+            catch(PostgresException e)when(e.SqlState==PostgresErrorCodes.CheckViolation){}
+        }
+        var remaining=await global.ClaimAsync(Guid.NewGuid(),ct)??throw new InvalidOperationException("Exhaustion stranded unrelated pending work.");
+        Require(remaining.ActorId==following&&await global.DeliverAsync(remaining,100,ct),"Following issuer page did not complete.");
+        Require(await global.ClaimAsync(Guid.NewGuid(),ct) is null,"Terminal issuer pages were claimed again.");
+        await using(var stable=new NpgsqlCommand("SELECT failed_at=@at AND attempt_count=5 AND failure_code='LEASE_EXHAUSTED' FROM invitation_issuer_authority_jobs WHERE id=@job",admin))
+        {stable.Parameters.AddWithValue("at",failedAt);stable.Parameters.AddWithValue("job",final!.JobId);Require(await stable.ExecuteScalarAsync(ct) is true,"Failed issuer history changed on subsequent routing.");}
+        Console.WriteLine("Issuer account authority: actual restricted deactivation/source/queue atomicity, unproven/earlier/late refusal, 120-character attribution, exact lease fences, late route/recipient rollback and reclaimed root, 205-Organization routing 100/100/5, leased recipient pages and global cross-tenant deduplication, future cutoff, immutable history, private capability denial, five-attempt live-lease/final crash exhaustion and bounded immutable dead-letter retirement without stranding following work passed.");
     }
-    private sealed class AdapterAdmissionFixture(Guid actor,Guid earlier) : ICommandActorAuthorization
+    private sealed class AdapterAdmissionFixture(Guid actor,Guid earlier,Guid exhausted,Guid following) : ICommandActorAuthorization
     {
         public Task<bool> VerifyAsync(Guid id,CancellationToken cancellationToken)
-        { cancellationToken.ThrowIfCancellationRequested(); return Task.FromResult(id==actor||id==earlier); }
+        { cancellationToken.ThrowIfCancellationRequested(); return Task.FromResult(id==actor||id==earlier||id==exhausted||id==following); }
     }
 }
