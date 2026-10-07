@@ -1,6 +1,36 @@
 # PRD-04 acceptance and closure audit
 
-This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 17%.
+This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 16%.
+
+## Executed metadata, copy and lifecycle acceptance
+
+Six native desktop/phone cases passed in one 4.2-minute invocation against the
+Production API, restricted schema-110 PostgreSQL, separate Workers scoped only
+to new test Organizations, and the fresh production web bundle behind current
+Nginx/CSP. Metadata tests prove original-request recovery, genuine two-client
+delivery, preserved concurrent drafts, renewed revision review and persisted
+background/description rendering. Copy tests prove independent IDs, reset
+checklist completion, excluded assignments/stars, fresh history and original
+receipt recovery after a concurrent source edit. Lifecycle tests prove lost
+archive/restore/delete receipt recovery, child-state preservation, read-only
+reconciliation, consent/focus and deleted-parent denial.
+
+The initial phone lifecycle run exposed delayed dialog-exit focus theft from
+the retry button. The deterministic regression fails before repair; shared
+owned-focus admission now preserves the user's chosen control. All 24 archive
+component cases and 16 related focus/archive/observation cases pass, as do web/
+browser type checks, lint and production build. Ten lifecycle and four copy
+WCAG-tagged Axe scans pass in the executed native scenarios. See
+[lifecycle repair](../board-archive-control.md#executed-lifecycle-recovery-and-focus-repair),
+[metadata evidence](../board-metadata-control.md#executed-desktop-and-phone-metadata-recovery)
+and [copy evidence](../board-copy.md#executed-desktop-and-phone-copy-recovery).
+
+The local fixture mounts frozen API/Worker assemblies in cached runtime images
+and permits unverified registered accounts, matching the ordinary CI browser
+phase. It does not prove retained-current-image release acceptance, complete
+permission/lifecycle matrices, stored-image native copies or performance.
+Earlier estimates and pending local-native notes below retain their historical
+revision context; the current estimate is 16% and the ticket remains open.
 
 Both complete desktop/phone personal-star native scenarios now pass against the
 local Production API, restricted schema-110 PostgreSQL and current Vite source,
@@ -28,7 +58,8 @@ and recover the identical original command after a committed change whose
 post-command account confirmation fails. Keyboard, focus, Axe, consent and
 no-reload checks passed. See [executed archive recovery](../board-archive-discovery.md#executed-account-uncertainty-recovery).
 This closes that local execution gap, while retained-image lifecycle, complete
-Board acceptance and performance remain required. The estimate remains 17%.
+Board acceptance and performance remain required. This increment retained the
+then-current 17% estimate before the later metadata/copy/lifecycle execution.
 
 All five existing Organization Board directory live scenarios now pass locally
 in one 4.0-minute invocation. Two ordinary-directory and two archive-directory
@@ -47,7 +78,7 @@ scoped local passes do not establish current retained-image or full acceptance.
 | BOARD-FR-003: rename and description | BoardMetadataControl owns reviewed revisions, retained drafts, conflict review and bound same-key recovery. `tests/browser/board-metadata.spec.ts` exercises two clients and lost committed replies. | Current-image native execution, permission withdrawal and unchanged protected state on rejected writes. |
 | BOARD-FR-004: approved backgrounds | Fixed named colors plus Board-owned sanitized PNG references; selection uses checked Card attachments, separate Worker publication and explicit public exposure consent. See `board-background-images.md` and `BoardBackgroundImageContract.cs`. | Genuine image pipeline passed at `1655ef8`; staged Organization/membership and anonymous parent withdrawal passed in restricted PostgreSQL at `6fcc174`. Full current-image native/acceptance execution remains required. Synthetic native cases alone do not prove publication. |
 | BOARD-FR-005: independent stars | Retained actor-scoped preferences, optimistic version checks, keyed receipts and separate current preference reads. `test-board-star-preferences.sh` and `tests/browser/board-star.spec.ts` cover persistence and clients. | Current release-image native recovery, independent actors and current grant withdrawal. |
-| BOARD-FR-006: authorized copy | BoardCopyService atomically creates the independent graph, admission, fresh history and receipt. BoardCopyControl validates the original acknowledgment and current destination disclosure separately. | Execute corrected JSON requests in `tests/browser/board-copy.spec.ts` and real image-backed native cases; retain late rollback and admission tests. |
+| BOARD-FR-006: authorized copy | BoardCopyService atomically creates the independent graph, admission, fresh history and receipt. BoardCopyControl validates the original acknowledgment and current destination disclosure separately. Local desktop/phone native recovery now passes. | Execute current retained-image and real image-backed native copy cases; retain late rollback and admission tests. |
 | BOARD-FR-007: defined copy policy | See `board-copy.md`: non-deleted Lists/Cards, labels and checklists copy with new IDs; completion resets; membership, personal preferences, attachment metadata and source history are excluded. Board-owned image ownership copies independently. | Current restricted PostgreSQL full-graph fixture, source invariance, same-key recovery and native semantic assertions. Capacity correctness does not prove rendering latency. |
 | BOARD-FR-008: archive and reopen | Reviewed Board archive and bounded authorized archive directory restore; `test-board-discovery.sh` and `tests/browser/board-lifecycle.spec.ts` cover both transitions. | Current-image desktop/phone keyboard execution, concurrent lifecycle changes and current admission withdrawal. |
 | BOARD-FR-009: confirmed permanent deletion | Archived-only deletion requires elevated admission, reviewed version and explicit irreversible consent. `BoardDeletionConsentTests.cs` and native lifecycle coverage exercise refusal and recovery. | Current-image runtime proof, unchanged child state on refusal, inaccessible deleted-parent routes and retained original receipt semantics. |

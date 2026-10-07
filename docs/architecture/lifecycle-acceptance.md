@@ -2,6 +2,19 @@
 
 Current source audit after deletion attribution and archive observation integration. PRD-18 remains open. Compilation, component tests, source fixtures and queued CI do not prove the complete runtime gate.
 
+Both complete desktop/phone Board lifecycle native cases now pass locally after
+repairing delayed archive-directory focus recovery that prevented the phone's
+deletion retry. The regression fails before repair; all 24 archive component
+cases and 16 related focus/archive/observation cases pass. The executed cases
+retain original-key archive/restore/delete recovery, real two-client Worker
+updates, read-only reconciliation, unchanged child states, explicit consent,
+keyboard/focus and deleted-parent denial, with ten WCAG-tagged Axe scans. See
+[executed lifecycle evidence](../board-archive-control.md#executed-lifecycle-recovery-and-focus-repair).
+Local Production execution with frozen assemblies and unverified-account
+browser policy does not establish current retained-image acceptance or the
+complete lifecycle/retention/performance matrix. Estimated work remaining
+stays 22%; the ticket remains open.
+
 | Requirement | Current evidence | Required completion evidence |
 | --- | --- | --- |
 | LIFE-FR-001–003 explicit lifecycle, reversible archive, hidden canvas | Canonical enums; archive/deletion timestamps persisted and projected; reviewed Board/Card/List archive controls and discovery pages; active Board discovery excludes archives | Fresh complete server, PostgreSQL and native lifecycle execution |

@@ -1,5 +1,27 @@
 # Independent Board copies
 
+## Executed desktop and phone copy recovery
+
+Both existing `board-copy.spec.ts` cases pass locally against Production API,
+restricted schema-110 PostgreSQL, separate scoped Workers and the repaired
+production web bundle behind current Nginx/CSP. Each case deliberately loses a
+committed copy response, changes the actual source through another request,
+and recovers the same copy with the identical original request/key. The copied
+Board remains private with its original description, fresh Card IDs/revision,
+incomplete copied checklist items, no copied Card assignments or star preference,
+and only fresh `BOARD_CREATED`/`BOARD_COPIED` history. The original client's
+concurrent source view updates through genuine Worker delivery. Keyboard focus,
+copy navigation, 160-character name overflow and four WCAG-tagged Axe scans pass.
+
+Frozen API/Worker assemblies are mounted read-only in cached runtime images;
+the fresh web bundle is served as production output. Workers have only their
+new fixture Organization scopes, with discovery and mail disabled. The browser
+policy permits unverified registered accounts. These local cases do not prove
+retained-current-image release acceptance, stored-image copies, full permission
+withdrawal/concurrency variants, scale or performance budgets.
+
+## Copy contract
+
 PRD-04 BOARD-FR-006/007 has an authenticated `POST /boards/{boardId}/copy` producer accepting `name` and the reviewed Board `version`. It creates a private active Board in the source Organization, with a normalized new name, source description and approved built-in color background. Copying requires current source edit access and active Organization membership/create admission. Archived/deleted/inaccessible sources use Board-not-found before protected validation. A stale first submission conflicts. Board-owned stored-image backgrounds now receive an independent immutable PNG ownership reference in the same creation transaction; see board-background-images.md. Historical/unowned image values remain rejected. The MUI image-copy integration is implemented; complete native acceptance on the current release images remains pending. See architecture/prd-04-acceptance.md for the full closure audit.
 
 The default content policy copies every non-deleted List and Card, including archived children, in the same relative rank order. It creates all-new identities, creation/update clocks and revision 1; copied archived children receive their own archive clock. All active label definitions are independent, including unused and duplicate-looking labels, and shared associations stay shared across the copied Cards. Card titles, descriptions and UTC dates are retained. Non-deleted checklists/items are copied without UI pagination caps; due completion and checklist completion are reset for new work. Deleted children are omitted. Source state is unchanged.

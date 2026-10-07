@@ -5,6 +5,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile, notificationInstant, notificationUuid } from '../notifications/notificationInbox';
 import { activityEvent, activityResult } from './activityTelemetry';
 import { watchOrganizationBoards } from './organizationBoardLive';
+import { ownsRecoveryFocus } from './focusRecovery';
 
 type Board = { id: string; organizationId: string; name: string; version: number; archivedAt: string | null };
 type Page = { organizationId: string; items: Board[]; nextCursor: string | null };
@@ -43,6 +44,9 @@ function Archive({ org }: { org: string }) {
     focusFrame.current = requestAnimationFrame(() => { focusFrame.current = requestAnimationFrame(() => {
       focusFrame.current = undefined;
       if (mounted.current && focusRequested.current && refresh.current && !refresh.current.disabled) {
+        // A closing dialog can finish after the user has already focused the
+        // unresolved command's retry. Respect that explicit keyboard choice.
+        if (!ownsRecoveryFocus(document.activeElement, refresh.current)) { focusRequested.current = false; return; }
         refresh.current.focus({ preventScroll: true }); focusRequested.current = false;
       }
     }); });

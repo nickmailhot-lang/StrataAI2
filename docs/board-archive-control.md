@@ -23,3 +23,30 @@ assertions remain required. Browser TypeScript checking passed. The earlier
 `96394b9` exact-image run failed the mobile restore retry check and desktop
 archive-directory focus check; this adjustment alone does not prove either
 runtime defect resolved. A subsequent exact-image run remains necessary.
+
+## Executed lifecycle recovery and focus repair
+
+Local execution of `board-lifecycle.spec.ts` first passed desktop but failed the
+phone deletion retry: delayed dialog-exit focus recovery moved focus from the
+explicitly focused retry to the archive refresh button, so Enter sent no second
+deletion. The canonical deletion had committed and the original intent remained
+available. A deterministic component regression reproduces the focus theft
+before repair. Recovery now uses the shared owned-focus rule and respects focus
+the user has deliberately moved to another control. All 24 archive-directory
+component cases and 16 related focus/archive/observation cases pass; web/browser
+type checks, lint and production build pass.
+
+Both desktop and phone lifecycle cases then passed against the repaired
+production web bundle behind current Nginx/CSP, a Production API and restricted
+schema-110 PostgreSQL. Separate Workers were scoped only to their new fixture
+Organizations, with global discovery and identity mail disabled. The tests retain
+all original request/receipt, concurrent-client, keyboard, focus, consent,
+unchanged active/archived child state and deleted-parent denial assertions.
+Ten explicit WCAG 2.2 AA tagged Axe scans pass across the active canvas, archived
+mirror, restore review, irreversible deletion review and final empty directory.
+
+This is local Production evidence using frozen read-only API/Worker assemblies
+from `identity-policy-after-20261007` in cached runtime images and the newly
+built web bundle. The browser phase allows unverified registered accounts.
+It does not prove current retained-image release acceptance, full lifecycle
+concurrency/permission matrices, strict verification policy or capacity.

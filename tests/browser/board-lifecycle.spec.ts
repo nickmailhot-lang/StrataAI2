@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -37,6 +38,7 @@ for (const width of [1280, 390]) {
       for (const client of [page, other]) await expect(client.getByText('Live updates connected.', { exact: true })).toBeVisible();
       await expect.poll(otherReads).toBeGreaterThanOrEqual(2);
       await expect.poll(initiatingReads).toBeGreaterThanOrEqual(2);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const archives: { key: string | undefined; body: string | null }[] = [];
       await page.route(`**/boards/${board.id}/archive`, async route => {
         archives.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
@@ -54,6 +56,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Cancel archive', exact: true })).toHaveCount(0);
       await expect(other.getByText('This board is archived. Editing is unavailable.', { exact: true })).toBeVisible();
       await expect(other.getByRole('button', { name: 'Add list', exact: true })).toHaveCount(0);
+      expect((await new AxeBuilder({ page: other }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const activeDirectory = await context.request.get(`/organizations/${org}/boards`); expect(activeDirectory.status()).toBe(200);
       expect(await activeDirectory.json()).toEqual([]);
       await page.getByRole('button', { name: 'Retry this archive', exact: true }).focus(); await page.keyboard.press('Enter');
@@ -76,6 +79,7 @@ for (const width of [1280, 390]) {
       });
       await page.getByRole('button', { name: `Restore ${board.name} board`, exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Restoration makes the Board active again. Its Lists and Cards retain their own lifecycle states.', { exact: true })).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const confirmRestore = page.getByRole('button', { name: 'Confirm restore', exact: true });
       await expect(confirmRestore).toBeEnabled(); await confirmRestore.press('Enter');
       await expect.poll(() => restores.length).toBe(1);
@@ -109,6 +113,7 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: `Permanently delete ${board.name} board`, exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('This cannot be undone. This Board cannot be restored, and its Lists and Cards become unavailable through it.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Confirm permanent deletion', exact: true })).toBeDisabled(); expect(deletes).toHaveLength(0);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true }).focus(); await page.keyboard.press('Space');
       const confirmDelete = page.getByRole('button', { name: 'Confirm permanent deletion', exact: true });
       await expect(confirmDelete).toBeEnabled(); await confirmDelete.press('Enter');
@@ -133,6 +138,7 @@ for (const width of [1280, 390]) {
       expect((await context.request.get(`/boards/${board.id}/archived-cards`)).status()).toBe(404);
       expect((await context.request.post(`/boards/${board.id}/restore`, { headers, data: { version: archived.version + 1 } })).status()).toBe(404);
       await page.reload(); await expect(page.getByText('No administrable archived Boards on this page.', { exact: true })).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       await other.close();
     } finally { restoreWorker(); }

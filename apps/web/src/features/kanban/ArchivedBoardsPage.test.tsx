@@ -82,6 +82,29 @@ it('keeps the original unconfirmed key while a live reset withholds its private 
   expect(commands).toHaveLength(2);
   expect(new Headers(commands[0][1].headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1].headers).get('Idempotency-Key'));
 });
+it('does not steal an explicit retry focus when delayed dialog-exit recovery runs', async () => {
+  let writes = 0;
+  const frames: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => { frames.push(callback); return frames.length; }));
+  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  const fetch = vi.fn((path: string, init: RequestInit) => Promise.resolve(response(path === '/me' ? profile
+    : init.method === 'POST' ? (++writes === 1 ? { detail: 'unconfirmed' } : { ...board, version: 3, lifecycleState: 'active' })
+      : writes ? { ...page, items: [] } : page, init.method === 'POST' && writes === 1 ? 503 : 200)));
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' }));
+  await screen.findByRole('button', { name: 'Retry this change' });
+  await waitFor(() => expect(watchOrganizationBoards).toHaveBeenCalled());
+  act(() => vi.mocked(watchOrganizationBoards).mock.calls.at(-1)![0].reset());
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  const retry = screen.getByRole('button', { name: 'Retry this change' });
+  await waitFor(() => expect(retry).toBeEnabled());
+  await waitFor(() => expect(frames.length).toBeGreaterThan(0));
+  retry.focus();
+  act(() => { for (let i = 0; frames.length && i < 20; i++) frames.shift()!(performance.now()); });
+  expect(retry).toHaveFocus();
+  fireEvent.click(retry); await screen.findByText('Board restore acknowledged.');
+  expect(writes).toBe(2);
+});
 it.each([
   { ...page, organizationId: user },
   { ...page, items: [{ ...board, organizationId: user }] },
