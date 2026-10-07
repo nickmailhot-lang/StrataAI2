@@ -68,6 +68,22 @@ not external mail transport, process-crash or HTTP response evidence. The focuse
 diagnostic is `--identity-recovery-rollback-only`; mandatory CI executes the same
 contract as part of the full persistence suite.
 
+That contract also passes two real elapsed-expiry cases for password reset and
+email verification. An admin fixture shortens only the selected disposable
+token's lifetime to eight seconds and installs an actor-scoped twelve-second
+wait after actual consumption-receipt insertion. Observation requires this
+contract's unique restricted API connection application name and PostgreSQL's
+`PgSleep` state during that insertion; an early expired-token refusal cannot
+pass. Final admission refuses with `invalid_or_expired_token` and no profile.
+The complete original persisted snapshot, including consumption receipts, is
+restored. After removing the temporary trigger and restoring only the selected
+token's lifetime, same-key consumption succeeds, acknowledgment replay preserves
+exact state and a new intent cannot consume the token again. Both the six
+recovery rollback cases and these two elapsed cases pass in the final local
+Production diagnostic, with zero build warnings/errors. The wait and shortened
+lifetime are injected fixtures; actual wall-clock passage, server constraints,
+Application final admission and PostgreSQL transaction rollback are real.
+
 Separately, retained-image CI run
 [37593384106](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37593384106)
 at `f62785a6` reports successful container steps for production profile
@@ -152,5 +168,5 @@ Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **27% work
+immutable images before closure. The current PRD estimate is **26% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.

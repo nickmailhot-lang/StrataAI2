@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +37,9 @@ internal static class IdentityRecoveryRollbackContract
         }).Build();
         var runtime = new RuntimeDescriptor(RuntimeMode.Production, "contract", "contract");
         var services = new ServiceCollection(); services.AddLogging();
-        services.AddSingleton(new PostgresConnectionFactory(apiConnection));
+        var applicationName = $"recovery-contract-{Guid.NewGuid():N}";
+        var connection = new NpgsqlConnectionStringBuilder(apiConnection) { ApplicationName = applicationName };
+        services.AddSingleton(new PostgresConnectionFactory(connection.ConnectionString));
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IIdentityCommandContext>(context);
         services.AddSingleton<ICommandActorAuthorization, NoActorFixture>();
@@ -76,6 +79,7 @@ internal static class IdentityRecoveryRollbackContract
                       'reset',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM password_reset_tokens t WHERE user_id=@actor),
                       'verification',(SELECT jsonb_agg(to_jsonb(t) ORDER BY id) FROM email_verification_tokens t WHERE user_id=@actor),
                       'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id,operation) FROM identity_recovery_request_replays r WHERE user_id=@actor),
+                      'consumption',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id,operation) FROM identity_token_consumption_replays r WHERE user_id=@actor),
                       'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM identity_delivery_jobs j WHERE user_id=@actor),
                       'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE actor_id=@actor),
                       'sessions',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM sessions s WHERE user_id=@actor),
@@ -136,8 +140,77 @@ internal static class IdentityRecoveryRollbackContract
                     "Recovered proof is unavailable.");
                 return true;
             }, false, ct);
+            if (failure == "database")
+                await VerifyElapsedConsumptionAsync(admin, unit, identity, context, actor, purpose, retry!, applicationName, Snapshot, ct);
         }
-        Console.WriteLine("Restricted PostgreSQL recovery rollback: six failure/cancellation cases passed.");
+        Console.WriteLine("Restricted PostgreSQL recovery rollback: six failure/cancellation and two elapsed consumption-expiry cases passed.");
+    }
+
+    private static async Task VerifyElapsedConsumptionAsync(NpgsqlConnection admin, IIdentityUnitOfWork unit,
+        IdentityService identity, RecoveryContext context, Guid actor, IdentityTokenPurpose purpose,
+        string token, string applicationName, Func<Task<string>> snapshot, CancellationToken ct)
+    {
+        static void Require(bool value, string message)
+        { if (!value) throw new InvalidOperationException(message); }
+        var table = purpose == IdentityTokenPurpose.VerifyEmail ? "email_verification_tokens" : "password_reset_tokens";
+        var tokenHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+        var faultName = $"ci_recovery_expiry_{actor:N}";
+        async Task Sql(string sql) {
+            await using var command = new NpgsqlCommand(sql, admin);
+            await command.ExecuteNonQueryAsync(ct);
+        }
+        context.IdempotencyKey = Guid.NewGuid();
+        Task<IdentityOperation<UserProfile>> Consume() => unit.ExecuteTokenProofAsync(() =>
+            purpose == IdentityTokenPurpose.VerifyEmail
+                ? identity.VerifyEmailAsync(token, "recovery-contract", ct)
+                : identity.ResetPasswordAsync(token, "replacement-contract-correct-horse", "recovery-contract", ct), ct);
+        // Identifiers and actor literals derive exclusively from this fixture's
+        // generated UUID; no application input is interpolated into admin SQL.
+        await Sql($$"""
+            CREATE FUNCTION public.{{faultName}}() RETURNS trigger LANGUAGE plpgsql AS $body$
+            BEGIN PERFORM pg_sleep(12); RETURN NEW; END $body$;
+            CREATE TRIGGER {{faultName}} AFTER INSERT ON identity_token_consumption_replays
+              FOR EACH ROW WHEN (NEW.user_id='{{actor:D}}'::uuid) EXECUTE FUNCTION public.{{faultName}}();
+            UPDATE {{table}} SET expires_at=clock_timestamp()+interval '8 seconds'
+              WHERE user_id='{{actor:D}}'::uuid AND token_hash='{{tokenHash}}' AND used_at IS NULL;
+            """);
+        try {
+            var before = await snapshot();
+            var consuming = Consume();
+            var observedPublication = false;
+            var deadline = DateTimeOffset.UtcNow.AddSeconds(20);
+            while (!consuming.IsCompleted && DateTimeOffset.UtcNow < deadline) {
+                await using var probe = new NpgsqlCommand("""
+                    SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE usename='strataai_api_runtime'
+                      AND application_name=@application
+                      AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_token_consumption_replays%');
+                    """, admin);
+                probe.Parameters.AddWithValue("application", applicationName);
+                if (await probe.ExecuteScalarAsync(ct) is true) { observedPublication = true; break; }
+                await Task.Delay(100, ct);
+            }
+            var refused = await consuming.WaitAsync(TimeSpan.FromSeconds(25), ct);
+            Require(observedPublication, "Elapsed-expiry case never reached actual consumption receipt publication.");
+            Require(!refused.Succeeded && refused.ErrorCode == "invalid_or_expired_token" && refused.Value is null,
+                "Elapsed token expiry disclosed a profile or acknowledged consumption.");
+            Require(before == await snapshot(), "Elapsed token expiry failed to restore complete persisted state.");
+        }
+        finally {
+            await Sql($"DROP TRIGGER IF EXISTS {faultName} ON identity_token_consumption_replays; DROP FUNCTION IF EXISTS public.{faultName}();");
+        }
+        // Restore only this disposable token's expiry to exercise the existing
+        // same-key success/replay and single-use semantics after rollback.
+        await Sql($"UPDATE {table} SET expires_at=clock_timestamp()+interval '30 minutes' WHERE user_id='{actor:D}'::uuid AND token_hash='{tokenHash}' AND used_at IS NULL;");
+        var recovered = await Consume();
+        Require(recovered.Succeeded && recovered.Value is not null, "Same-key token consumption did not recover after rollback.");
+        var saved = await snapshot();
+        var replay = await Consume();
+        Require(replay.Succeeded && replay.Value == recovered.Value && saved == await snapshot(),
+            "Consumption acknowledgment replay changed canonical state.");
+        context.IdempotencyKey = Guid.NewGuid();
+        var duplicate = await Consume();
+        Require(!duplicate.Succeeded && duplicate.ErrorCode == "invalid_or_expired_token" && duplicate.Value is null && saved == await snapshot(),
+            "A new intent consumed the same token twice.");
     }
     private sealed class RecoveryContext : IIdentityCommandContext
     {
