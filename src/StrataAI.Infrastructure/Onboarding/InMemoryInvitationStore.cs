@@ -6,13 +6,16 @@ using StrataAI.Application.WorkManagement;
 namespace StrataAI.Infrastructure.Onboarding;
 
 internal sealed class InMemoryInvitationStore(
-    IOrganizationStore organizationStore, IClock clock, IWorkManagementStore work) : IInvitationStore, IInvitationHistoryStore,
+    IOrganizationStore organizationStore, IClock clock, IWorkManagementStore work, InMemoryInvitationRecipientJournal journal) : IInvitationStore, IInvitationHistoryStore,
     StrataAI.Infrastructure.Organizations.IDemoOrganizationTransactionParticipant
 {
     private readonly object _sync = new();
     private readonly Dictionary<string, InvitationRecord> _byToken =
         new(StringComparer.Ordinal);
     private readonly HashSet<(Guid OrganizationId, Guid UserId, string Relationship)> _portalAccess = [];
+    private readonly Dictionary<(Guid Organization, Guid Invitation), long> _versions = [];
+    internal bool HasPortalRelationship(Guid organization, Guid user, string role)
+    { lock (_sync) return _portalAccess.Contains((organization, user, role)); }
     public Action CaptureRollback()
     {
         lock (_sync)
@@ -20,7 +23,8 @@ internal sealed class InMemoryInvitationStore(
             var invitations = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_byToken);
             var receipts = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_creationReplays);
             var portal = StrataAI.Infrastructure.WorkManagement.DemoRollback.Set(_portalAccess);
-            return () => { lock (_sync) { invitations(); receipts(); portal(); } };
+            var versions = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_versions);
+            return () => { lock (_sync) { invitations(); receipts(); portal(); versions(); } };
         }
     }
     public Task<bool> HasActivePortalAccessAsync(Guid organizationId, Guid userId, CancellationToken cancellationToken = default)
@@ -64,6 +68,8 @@ internal sealed class InMemoryInvitationStore(
         lock (_sync)
         {
             _byToken[invitation.TokenHash] = invitation;
+            _versions.Add((invitation.OrganizationId, invitation.Id), 1);
+            journal.Capture(invitation, 1, "INVITATION_CREATED", cancellationToken);
         }
 
         return Task.FromResult(invitation);
@@ -162,6 +168,7 @@ internal sealed class InMemoryInvitationStore(
 
             invitation = invitation with { AcceptedAt = acceptedAt, AcceptedByUserId = userId };
             _byToken[tokenHash] = invitation;
+            _versions[(invitation.OrganizationId, invitation.Id)]++;
         }
 
         var existingMembership = invitation.BoardTarget is not null
@@ -195,6 +202,7 @@ internal sealed class InMemoryInvitationStore(
                 ? BoardRole.Admin : boardTarget.Role;
             await work.UpsertBoardMemberAsync(boardTarget.BoardId, userId, role, acceptedAt, cancellationToken);
         }
+        lock (_sync) journal.Capture(invitation, _versions[(invitation.OrganizationId, invitation.Id)], "INVITATION_ACCEPTED", cancellationToken);
         return new InvitationAcceptStoreResult(true, null, invitation);
     }
 
@@ -224,6 +232,8 @@ internal sealed class InMemoryInvitationStore(
             }
 
             _byToken[pair.Key] = pair.Value with { RevokedAt = revokedAt };
+            var version = ++_versions[(organizationId, invitationId)];
+            journal.Capture(_byToken[pair.Key], version, "INVITATION_REVOKED", cancellationToken);
             return Task.FromResult(true);
         }
     }

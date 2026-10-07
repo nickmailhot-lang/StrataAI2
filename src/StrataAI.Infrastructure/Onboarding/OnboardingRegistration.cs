@@ -15,6 +15,13 @@ public static class OnboardingRegistration
         services.AddSingleton<IInvitationRecipientCursorCodec, DataProtectedInvitationRecipientCursorCodec>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
+            services.AddSingleton<InMemoryInvitationRecipientJournal>();
+            services.AddSingleton<IInvitationRecipientEventReader>(p => p.GetRequiredService<InMemoryInvitationRecipientJournal>());
+            services.AddSingleton<StrataAI.Infrastructure.Organizations.IDemoOrganizationTransactionParticipant>(p => p.GetRequiredService<InMemoryInvitationRecipientJournal>());
+            services.AddSingleton<InMemoryInvitationAuditProjection>();
+            // Resolve the projection at audit append, after the Organization
+            // store is constructed; invitation/work stores depend on that store.
+            services.AddSingleton<Func<IDemoInvitationAuditProjection>>(p => () => p.GetRequiredService<InMemoryInvitationAuditProjection>());
             services.AddSingleton<InMemoryInvitationStore>();
             services.AddSingleton<IInvitationStore>(provider => provider.GetRequiredService<InMemoryInvitationStore>());
             services.AddSingleton<StrataAI.Infrastructure.Organizations.IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryInvitationStore>());
@@ -23,10 +30,10 @@ public static class OnboardingRegistration
         {
             services.AddSingleton<IInvitationStore, PostgresInvitationStore>();
             services.AddSingleton<IInvitationRecipientEventReader, PostgresInvitationRecipientEventReader>();
-            services.AddSingleton<InvitationRecipientSynchronizationService>();
-            services.AddSingleton<TransactionalInvitationRecipientSynchronization>();
         }
 
+        services.AddSingleton<InvitationRecipientSynchronizationService>();
+        services.AddSingleton<TransactionalInvitationRecipientSynchronization>();
         services.AddSingleton<IInvitationService, InvitationService>();
         services.AddSingleton<BoardInvitationService>();
         services.AddSingleton<IInvitationHistoryStore>(provider => (IInvitationHistoryStore)provider.GetRequiredService<IInvitationStore>());

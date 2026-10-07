@@ -1,9 +1,12 @@
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Identity;
+using StrataAI.Application.Common;
+using StrataAI.Infrastructure.Onboarding;
 
 namespace StrataAI.Infrastructure.Organizations;
 
-internal sealed partial class InMemoryOrganizationStore(IIdentityStore identities, IdentityPolicy policy) : IOrganizationStore
+internal sealed partial class InMemoryOrganizationStore(IIdentityStore identities, IdentityPolicy policy, IClock clock,
+    IEnumerable<Func<IDemoInvitationAuditProjection>> invitationProjections) : IOrganizationStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<Guid, OrganizationRecord> _organizations = [];
@@ -272,15 +275,20 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
         }
     }
 
-    public Task AppendAuditAsync(
+    public async Task AppendAuditAsync(
         Guid organizationId,
         Guid actorUserId,
         string eventType,
         string entityType,
         Guid entityId,
         string correlationId,
-        CancellationToken cancellationToken = default) =>
-        Task.CompletedTask;
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (eventType is not ("ORGANIZATION_MEMBER_INVITED" or "BOARD_MEMBER_INVITED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED")) return;
+        var audit = new DemoInvitationAudit(Guid.NewGuid(), organizationId, actorUserId, eventType, entityType, entityId, correlationId, clock.UtcNow);
+        foreach (var projection in invitationProjections) await projection().AppendAsync(audit, cancellationToken);
+    }
 }
 
 internal sealed partial class InMemoryOrganizationStore : IDemoOrganizationTransactionParticipant

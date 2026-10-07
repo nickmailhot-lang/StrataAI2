@@ -7,9 +7,9 @@ Migration `102_invitation_recipient_events` creates a durable recipient source
 for the remaining PRD-03 / PRD-60 live invitation workflow. This source is an
 explicit cross-Organization routing relationship, like existing verified-email
 invitation discovery. It does not grant Organization, Board or Portal access and
-does not widen the Internal Organization or Board streams. The Production
-recipient replay reader is implemented; recipient transport, Demo source
-parity and browser consumer are not yet implemented.
+does not widen the Internal Organization or Board streams. Both runtime modes
+implement account-bound recipient replay. Recipient transport and browser
+consumer are not yet implemented.
 
 ## Source and atomicity
 
@@ -101,8 +101,37 @@ withdrawal discards the whole page. A separate current-cursor check lets future
 transport reauthorize after session I/O. Recipient events invalidate discovery;
 they do not confer continuing Organization, Board or Portal admission.
 
-No endpoint or hub currently exposes this reader. Demo registration waits for
-transactional source parity rather than returning a fabricated empty journal.
+No endpoint or hub currently exposes this reader.
+
+## Demo source parity
+
+Demo captures future canonical invitation transitions and projects their actual
+invitation audit append into an in-process journal. The private proof retains
+Invitation/Organization/revision, recipient route, separate target surface/role,
+issuer, optional accepting actor and canonical transition time. The original
+audit identity, actor, entity, correlation and audit time remain attached to the
+published proof. These private records contain no names, raw tokens or token
+hashes; outbound events use the same neutral contract as Production.
+
+The projection checks the active parent/account, actual matching proof and
+current administrative authority or persisted Internal/Board/Portal grant.
+It also supports retained Board Admin acceptance of a Member target. Session
+authorization remains at the owning command's existing before/after fence,
+matching Production's division between command policy and source projection.
+
+Journal proofs, source audits, publication identities, event arrays and counters
+participate in the existing account/Organization → Work transaction snapshot.
+The final command fence commits or restores them with invitations, receipts and
+grants. Replay holds the same account gate, so it cannot observe tentative
+publication. Published proofs remain attached to their immutable audit sources
+after later transitions. Duplicate publication of a revision is refused.
+
+Raw fixture/legacy rows do not manufacture creation history. A future actual
+acceptance can capture and publish its own proven transition. Demo replay uses
+the same protected account/email/revision cursor and bounded window logic;
+unowned or substituted recipient reads are refused. This remains process-local
+Demo state and resets on API restart. It introduces no shared file store,
+broker or Worker inside the API. Sample-catalog reset endpoints remain separate.
 
 ## Verification and remaining delivery
 
@@ -121,8 +150,8 @@ acceptance fixtures now compare recipient proof/journal/counter state during
 refusal and rollback, require canonical publication and no duplicate on receipt
 replay. Those exact-image assertions still require runtime execution.
 
-Remaining implementation includes protected SignalR recipient transport, Demo
-transactional source parity, browser bootstrap and missed-event recovery,
+Remaining implementation includes protected SignalR recipient transport,
+browser bootstrap and missed-event recovery,
 client invalidation/accessible announcements and
 explicit original acceptance recovery. Parent/issuer authority changes and
 account/email changes require current protected discovery rather than assuming a
@@ -139,7 +168,7 @@ to verify the forward migration. The Linux migration runner passed clean/repeat,
 forward upgrade with no invented history, concurrent runner serialization and
 failed/unrecorded migration rollback. The full .NET Release solution build passed
 with zero warnings/errors; affected release scripts pass Bash syntax checks.
-These source/persistence results do not certify real sessions, Demo source
+These PostgreSQL source/persistence results alone do not certify real sessions, Demo source
 parity, recipient SignalR/browser delivery or current exact-image CI acceptance.
 
 Reader validation adds domain checks for contiguous bounded replay, missing or
@@ -162,4 +191,14 @@ accepted source and acknowledged the original retry without duplicate history.
 The expanded source SQL fixture also rejects an insufficient Member grant for
 an Admin target and an inactive Admin grant, rolling back the acceptance proof
 and recipient counter in both cases. These checks supplement the replay contract;
-they do not replace cookie/browser acceptance or prove Demo source parity.
+they do not replace cookie/browser acceptance.
+
+Demo API-host checks cover cross-Organization Internal/Portal/Board publication
+and paged replay, exact original event identities on repeated reads, no Portal
+Internal grant, retained Board Admin acceptance, duplicate-source refusal,
+late invalid-correlation rollback, insufficient/inactive grant rollback,
+revocation withdrawal after publication, no legacy creation backfill and
+unowned/substituted recipient refusal. Existing creation and acceptance rollback
+fixtures additionally compare committed recipient history after actor refusal,
+exception/cancellation and exact retry. These in-process checks do not prove
+cookie-bound recipient streaming, browser reconnect or accessible announcements.

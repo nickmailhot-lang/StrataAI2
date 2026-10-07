@@ -36,7 +36,11 @@ public sealed partial class ApiHostTests
         var boardService = app.Services.GetRequiredService<BoardInvitationService>();
         var events = app.Services.GetRequiredService<IWorkEventReader>();
         var key = Guid.NewGuid();
-        var email = $"rollback-invitation-{Guid.NewGuid():N}@example.test";
+        var recipient = Guid.Parse("dddddddd-dddd-4ddd-8ddd-dddddddddddd");
+        const string email = "demo@strataai.test";
+        var replayReader = app.Services.GetRequiredService<TransactionalInvitationRecipientSynchronization>();
+        var replayStart = await replayReader.ReadAsync(recipient, null, cancellationToken: ct);
+        Assert.True(replayStart.Succeeded); Assert.Empty(replayStart.Value!.Events);
         var before = await events.ReadAsync(f.Organization, f.Board, 0, 100, ct);
         publisher.Outcome = outcome;
         Task<InvitationOperation<CreatedInvitation>> Create(CancellationToken token) => boardInvitation
@@ -57,9 +61,16 @@ public sealed partial class ApiHostTests
         Assert.Equal(before.Cursor, after.Cursor);
         Assert.Equal(before.Events.Select(row => row.Event).ToArray(), after.Events.Select(row => row.Event).ToArray());
         fence.Allowed = true; publisher.Outcome = "success";
+        var rolledBack = await replayReader.ReadAsync(recipient, replayStart.Value.Cursor, cancellationToken: ct);
+        Assert.True(rolledBack.Succeeded); Assert.False(rolledBack.Value!.ResetRequired); Assert.Empty(rolledBack.Value.Events);
         var created = await Create(ct);
         Assert.True(created.Succeeded);
         Assert.Equal(2, publisher.Attempts);
+        var committed = await replayReader.ReadAsync(recipient, replayStart.Value.Cursor, cancellationToken: ct);
+        Assert.True(committed.Succeeded);
+        var source = Assert.Single(committed.Value!.Events);
+        Assert.Equal("INVITATION_CREATED", source.EventType); Assert.Equal(1, source.Sequence);
+        Assert.Equal(created.Value!.Invitation.CreatedAt, source.CreatedAt);
         var retained = Assert.Single(await history.ListAsync(f.Organization, null, ct, boardInvitation ? f.Board : null));
         Assert.Equal(created.Value!.Invitation.Id, retained.Id);
         var receipt = (await invitations.FindCreationReplayAsync(f.Organization, f.Owner, key, ct))!;
@@ -70,6 +81,8 @@ public sealed partial class ApiHostTests
         Assert.True(replay.Succeeded); Assert.Equal(created.Value.Invitation.Id, replay.Value!.Invitation.Id);
         Assert.Equal(2, publisher.Attempts);
         Assert.Single(await history.ListAsync(f.Organization, null, ct, boardInvitation ? f.Board : null));
+        var repeated = await replayReader.ReadAsync(recipient, replayStart.Value.Cursor, cancellationToken: ct);
+        Assert.True(repeated.Succeeded); Assert.Equal(committed.Value.Events, repeated.Value!.Events);
     }
 
     [Theory]
@@ -88,6 +101,9 @@ public sealed partial class ApiHostTests
         var recipient = profile.GetProperty("id").GetGuid(); var email = profile.GetProperty("email").GetString()!;
         var invitations = app.Services.GetRequiredService<IInvitationStore>();
         var service = app.Services.GetRequiredService<IInvitationService>();
+        var replayReader = app.Services.GetRequiredService<TransactionalInvitationRecipientSynchronization>();
+        var start = await replayReader.ReadAsync(recipient, null, cancellationToken: ct);
+        Assert.True(start.Succeeded); Assert.Empty(start.Value!.Events);
         var organizations = app.Services.GetRequiredService<IOrganizationStore>();
         var work = app.Services.GetRequiredService<IWorkManagementStore>();
         var events = app.Services.GetRequiredService<IWorkEventReader>();
@@ -110,12 +126,20 @@ public sealed partial class ApiHostTests
         Assert.Equal(before.Cursor, after.Cursor);
         Assert.Equal(before.Events.Select(row => row.Event).ToArray(), after.Events.Select(row => row.Event).ToArray());
         fence.Admission = null;
+        var rolledBack = await replayReader.ReadAsync(recipient, start.Value.Cursor, cancellationToken: ct);
+        Assert.True(rolledBack.Succeeded); Assert.False(rolledBack.Value!.ResetRequired);
+        Assert.Equal("INVITATION_CREATED", Assert.Single(rolledBack.Value.Events).EventType);
         Assert.True((await service.AcceptAsync(recipient, created.Value.RawToken, "fixture", ct)).Succeeded);
         Assert.Equal(recipient, (await invitations.FindByIdAsync(f.Organization, original.Id, ct))!.AcceptedByUserId);
         Assert.Equal(surface != "PORTAL", (await organizations.FindMembershipAsync(f.Organization, recipient, ct))?.Active == true);
         Assert.Equal(surface == "PORTAL", await invitations.HasActivePortalAccessAsync(f.Organization, recipient, ct));
         Assert.Equal(surface == "BOARD", (await work.FindBoardMemberAsync(f.Board, recipient, ct))?.Active == true);
         Assert.False((await service.AcceptAsync(recipient, created.Value.RawToken, "fixture", ct)).Succeeded);
+        var committed = await replayReader.ReadAsync(recipient, start.Value.Cursor, cancellationToken: ct);
+        Assert.True(committed.Succeeded); Assert.False(committed.Value!.ResetRequired);
+        Assert.Equal(new[] { "INVITATION_CREATED", "INVITATION_ACCEPTED" }, committed.Value.Events.Select(e => e.EventType));
+        Assert.Equal(new long[] { 1, 2 }, committed.Value.Events.Select(e => e.Sequence));
+        Assert.Equal(2, committed.Value.Events.Select(e => e.EventId).Distinct().Count());
     }
 
     private sealed class InvitationAcceptanceActorFixture : ICommandActorAuthorization

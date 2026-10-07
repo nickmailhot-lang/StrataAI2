@@ -15,6 +15,12 @@ StrataAI2 has two explicit runtime modes controlled by `STRATAAI_RUNTIME_MODE`.
 
 These endpoints are not mapped in Production.
 
+Authenticated invitation commands also maintain a private, process-local
+[recipient source journal and replay reader](invitation-recipient-events.md).
+Its source history and counters commit or roll back with the existing invitation
+transaction. API restart resets this Demo history; sample-catalog reset endpoints
+do not reset it. Recipient SignalR/browser delivery remains unfinished.
+
 ### Demo sign-in
 
 Set `STRATAAI_RUNTIME_MODE=demo`, start the API and web application, and open
