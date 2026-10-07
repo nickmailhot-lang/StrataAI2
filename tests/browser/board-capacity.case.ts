@@ -242,19 +242,24 @@ for (const width of [1280, 390]) {
     await expect(handle).toHaveAttribute('aria-pressed', 'true');
     const laterEmptyIds = pointerSnapshot.lists.flatMap((value, ordinal) =>
       emptyColumns.has(value.list.id) && (goRight ? ordinal > initialColumnLast : ordinal < initialColumnFirst) ? [value.list.id] : []);
-    const laterEmptyColumn = () => canvas.evaluate((canvas, ids) => new Promise<string | null>(resolve => {
+    const laterEmptyColumn = () => canvas.evaluate((canvas, ids) => new Promise<{ id: string | null; scrollLeft: number; samples: { allowed: boolean; center: number; top: number; bottom: number }[]; viewport: { left: number; right: number; top: number; bottom: number } | null }>(resolve => {
       const allowed = new Set(ids); let frame = 0;
-      const finish = (id: string | null) => { clearTimeout(timeout); cancelAnimationFrame(frame); resolve(id); };
+      let samples: { allowed: boolean; center: number; top: number; bottom: number }[] = [];
+      let observedViewport: { left: number; right: number; top: number; bottom: number } | null = null;
+      const finish = (id: string | null) => { clearTimeout(timeout); cancelAnimationFrame(frame); resolve({ id, scrollLeft: canvas.scrollLeft, samples, viewport: observedViewport }); };
       const timeout = setTimeout(() => finish(null), 5_000);
       const observe = () => {
         const viewport = canvas.getBoundingClientRect();
         const left = Math.max(0, viewport.left), right = Math.min(window.innerWidth, viewport.right), quarter = (right - left) / 4;
+        observedViewport = { left, right, top: viewport.top, bottom: viewport.bottom }; samples = [];
         for (const node of Array.from(canvas.querySelectorAll<HTMLElement>('[data-board-window-axis="lists"]'))) {
           const id = node.dataset.boardWindowId;
-          if (!id || !allowed.has(id)) continue;
+          if (!id) continue;
           const target = node.querySelector<HTMLElement>('[data-card-list-end]');
           if (!target || target.dataset.cardListEnd !== id) continue;
           const rect = target.getBoundingClientRect(), center = rect.left + rect.width / 2;
+          samples.push({ allowed: allowed.has(id), center, top: rect.top, bottom: rect.bottom });
+          if (!allowed.has(id)) continue;
           // Keep the same middle-half/drop-surface requirement, observing every
           // animation frame instead of missing moving phone targets between
           // Playwright's progressively spaced predicate samples.
@@ -270,8 +275,9 @@ for (const width of [1280, 390]) {
     // Retain the observed later drop target while edge scrolling is active. Moving
     // back to the middle stops scrolling, but the final animation frame can
     // leave that column partially visible on a one-column phone viewport.
-    const destinationId = await laterEmptyColumn();
-    expect(destinationId).not.toBeNull();
+    const observedDestination = await laterEmptyColumn();
+    const destinationId = observedDestination.id;
+    expect(destinationId, JSON.stringify(observedDestination)).not.toBeNull();
     await expect(middle).toBeAttached();
     expect(await canvas.locator('[data-board-window-axis="lists"]').count()).toBeLessThan(15);
     await page.mouse.move((left + right) / 2, dragY); await settleDrag();

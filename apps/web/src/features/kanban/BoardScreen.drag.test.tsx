@@ -53,7 +53,9 @@ it('renders provisional drop placement before starting persistence and rolls it 
     rect: { current: { initial: null, translated: null } } };
   act(() => drag.current!.onDragStart!({ active, activatorEvent }));
   act(() => drag.current!.onDragEnd!({ active: { id: 'card:card' }, over: { id: 'card-end:dest' } } as DragEndEvent));
-  expect(fetcher.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1);
+  // The command publishes after mount replay retires. The fetch callback above
+  // still proves provisional placement is visible before persistence starts.
+  await waitFor(() => expect(fetcher.mock.calls.filter(call => call[1]?.method === 'POST')).toHaveLength(1));
   expect(JSON.parse(fetcher.mock.calls.find(call => call[1]?.method === 'POST')![1]!.body as string))
     .toEqual({ destinationListId: 'dest', expectedVersion: 3 });
   await act(async () => reject(new Error('Unknown result')));

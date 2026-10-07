@@ -52,6 +52,32 @@ still contains all 100,000 archived records with their original complete-row
 fingerprint. No full capacity or performance acceptance is claimed. PRD-06
 remains open with 34% estimated work remaining.
 
+## Deferred-publication CI repair and horizontal diagnostics
+
+[Run 37602053258](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37602053258)
+at `ba3fb59a` failed web job `112728528028`: 133 test files passed and the
+Board screen provisional-drop test failed because it asserted a synchronous
+POST immediately after the drop. The command now intentionally publishes in a
+microtask after mount replay retires. The test awaits that publication while
+retaining its assertions inside the actual fetch callback that provisional
+destination placement precedes persistence. Exact payload, single publication,
+uncertain-result rollback and unchanged input snapshot remain required. The
+Board screen test and all 21 move-control tests pass together locally.
+
+The capacity fixture now retains bounded, content-free geometry in its failure
+message: canvas scroll offset, visible viewport bounds, and mounted end-target
+centers/bounds with their eligibility flags. The original five-second observer,
+middle-half destination requirement and beyond-initial-buffer requirement remain
+unchanged. A local desktop diagnostic reproduces the failure with `scrollLeft`
+759: the first eligible destination center is 1361, outside the canvas's visible
+280–1248 interval. Earlier mounted empty destinations are visible but correctly
+ineligible because they belong to the initial buffer. This establishes that the
+required later destination has not reached the observation area; it does not
+establish the cause of stalled scrolling. An attempted change to choose direction
+before scroll compensation still failed and was removed. Horizontal traversal,
+complete capacity checks and current retained-image acceptance remain unfinished.
+PRD-06 remains open with 34% estimated work remaining.
+
 [Run 36941858197](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36941858197)
 at b87353a completed container job 110635994365 with failure. Decoded job logs
 show 45 authenticated browser cases passed, one failed and one general-mail case
