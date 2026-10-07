@@ -122,6 +122,15 @@ the independent Worker discovery settings and restores the release Worker on
 exit. Shell syntax is verified; execution of this new gate against retained
 release images is pending CI and is not yet passing evidence.
 
+The first exact-image run (`cba365ad`, Actions run `37575126042`) stopped
+before delivery: its disposable recipient email embedded a lowercase UUID and
+violated the recipient-proof normalization constraint. The fixture now
+uppercases the complete address. Its corrected 205-row insertion and all 205
+recipient proofs pass against PostgreSQL schema 106 in a rolled-back verification
+transaction. Error tracing also propagates into shell functions. Full exact-image
+delivery/restart evidence remains pending a fresh CI run; this repair does not
+weaken the database constraint or the delivery assertions.
+
 ## Production protected cursor binding
 
 The recipient reader requires its existing owning account observation, derives
@@ -190,7 +199,8 @@ fixture proves recipient deduplication across pages, delivery to the recipient
 after the first two pages, exclusion of a later-created candidate, rollback of
 completed simulation effects and retry, and empty authority-bound resets without
 new invitation events. The second recipient receives no Internal membership.
-This remains in-process Demo evidence; native two-client acceptance is pending.
+This delivery regression is in-process Demo evidence; it does not itself prove
+native two-client acceptance. The native results are recorded below.
 The existing self-removal receipt regression also passes after retaining the
 pre-removal administrative role in its proof: 20 targeted API cases pass in all.
 The web subscription fixture now waits for its actual live registration before
@@ -198,6 +208,35 @@ triggering account replacement; all 1,830 web tests pass locally. The prior
 `94b79707` CI run failed that fixture and self-removal guard, while PostgreSQL
 passed. These repairs require fresh exact-commit CI and do not create a green
 release claim.
+
+### Native Organization authority recovery
+
+`tests/browser/recipient-invitation-authority.spec.ts` passes against the local
+Demo API at 1280px and 390px. Two real signed-in clients issue a Portal invitation,
+rename its Organization, and observe the recipient's stale name and acceptance
+control disappear while the actual protected recovery read is held. Releasing
+that read restores the current name. A later rename during transport interruption
+is recovered without a document reload; keyboard acceptance creates Portal
+access while Internal Organization reads remain 404. Both viewports pass Axe
+WCAG 2.2 AA checks. Actual server envelopes contain no fabricated invitation
+transitions and expose no email, parent/invitation IDs, or names.
+
+Chromium's offline emulation preserves established WebSockets. The scenario
+therefore closes its forwarded real transport explicitly, rejects reconnects
+while offline, and reconnects to the actual server afterward; it does not create
+source rows or substitute frames. The test defaults to asserting Production
+runtime in release CI. Local Demo verification explicitly sets
+`STRATAAI_E2E_RUNTIME_MODE=demo` and is not retained-image Production evidence.
+
+This native check exposed stale Demo creation names in non-Board discovery.
+All bounded discovery candidates now use the existing canonical review after
+the account routing scope closes, including current Organization name/status
+and issuer account/membership authority. Board targets retain their additional
+Board review. Two API regressions pass for Internal and Portal names and for
+withdrawal after actual issuer membership removal. All 61 API cases selected
+by `*invitation*` pass, including those two new regressions. The Release build
+and browser typecheck pass with no errors. Candidate pagination and final
+account/session reauthorization remain in place.
 
 ## Runtime work required next
 

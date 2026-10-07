@@ -259,12 +259,12 @@ public sealed class InvitationService(
         if (!result.Succeeded)
             return InvitationOperation<PendingInvitationPage>.Failure(result.ErrorCode == "identity_storage_unavailable"
                 ? "invitation_storage_unavailable" : result.ErrorCode!);
-        // Account scope is now closed. Each Board disclosure obtains Organization -> account -> Board locks.
+        // Account scope is now closed. Every disclosure obtains current parent/issuer authority;
+        // Board targets additionally obtain Board locks. Stored creation names are not current authority.
         // Scan at most 50 candidates; denied candidates still advance the opaque seek cursor.
         var visible = new List<PendingInvitation>();
         foreach (var candidate in result.Value!.Items)
         {
-            if (candidate.BoardTarget is null) { visible.Add(candidate); continue; }
             var route = await invitationStore.FindActiveByIdForEmailAsync(candidate.Id, actorUserId,
                 discoveredEmail!, clock.UtcNow, cancellationToken);
             if (route is null || route.OrganizationId != candidate.OrganizationId || route.BoardTarget != candidate.BoardTarget) continue;

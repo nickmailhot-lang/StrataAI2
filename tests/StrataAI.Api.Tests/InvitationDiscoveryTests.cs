@@ -11,6 +11,36 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Theory]
+    [InlineData("INTERNAL", "MEMBER")]
+    [InlineData("PORTAL", "OWNER")]
+    public async Task Pending_invitation_discovery_rechecks_current_parent_name_and_issuer_authority(string surface, string role)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var admin = app.CreateClient(); using var recipient = app.CreateClient();
+        await RegisterAndLogin(owner); await RegisterAndLogin(admin); await RegisterAndLogin(recipient);
+        var ownerId = (await owner.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var adminId = (await admin.GetFromJsonAsync<JsonElement>("/me", ct)).GetProperty("id").GetGuid();
+        var user = await recipient.GetFromJsonAsync<JsonElement>("/me", ct);
+        using var created = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Original invitation parent" });
+        var org = (await created.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        await app.Services.GetRequiredService<IOrganizationStore>().AddOrRestoreMemberAsync(org, adminId, OrganizationRole.Admin, DateTimeOffset.UtcNow, ct);
+        using var issued = await Mutate(admin, HttpMethod.Post, $"/organizations/{org}/invitations",
+            new { email = user.GetProperty("email").GetString(), surface, targetRole = role });
+        Assert.Equal(HttpStatusCode.Created, issued.StatusCode);
+        using var renamed = await Mutate(owner, HttpMethod.Patch, $"/organizations/{org}", new { name = "Current invitation parent", version = 1 });
+        Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
+        var page = await recipient.GetFromJsonAsync<JsonElement>("/me/invitations", ct);
+        Assert.Equal("Current invitation parent", Assert.Single(page.GetProperty("items").EnumerateArray()).GetProperty("organizationName").GetString());
+        using var hidden = await recipient.GetAsync($"/organizations/{org}", ct);
+        Assert.Equal(HttpStatusCode.NotFound, hidden.StatusCode);
+        Assert.True((await app.Services.GetRequiredService<IOrganizationService>().RemoveMemberAsync(org, ownerId, adminId, "discovery-authority", ct)).Succeeded);
+        var withdrawn = await recipient.GetFromJsonAsync<JsonElement>("/me/invitations", ct);
+        Assert.Empty(withdrawn.GetProperty("items").EnumerateArray());
+        Assert.DoesNotContain("Current invitation parent", withdrawn.GetRawText());
+    }
+
     // ONBOARD-FR-004/005/009, PRD-60-TC-04/07/15: verified account discovery and natural-ID retry.
     [Theory]
     [InlineData("INTERNAL", "MEMBER")]

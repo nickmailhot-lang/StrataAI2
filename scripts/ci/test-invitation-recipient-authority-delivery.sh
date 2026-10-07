@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 # PRD-03 / PRD-60 / ARCH-11: a real HTTP parent command publishes the source;
 # the retained exact Worker delivers it. Candidate rows are disposable fixtures.
 BASE_URL="${1:-http://127.0.0.1:8080}"
@@ -32,8 +32,9 @@ organization="$(curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-St
 [[ "$actor" =~ ^[0-9a-f-]{36}$ && "$organization" =~ ^[0-9a-f-]{36}$ ]]
 # Populate 205 candidates for two private recipients, including duplicate emails
 # across page boundaries. This does not manufacture audits, pages or readiness.
-email="AUTHORITY-$organization@EXAMPLE.TEST"
-other_email="AUTHORITY-OTHER-$organization@EXAMPLE.TEST"
+# UUID text is lowercase; normalize the complete address, including its UUID.
+email="AUTHORITY-${organization^^}@EXAMPLE.TEST"
+other_email="AUTHORITY-OTHER-${organization^^}@EXAMPLE.TEST"
 admin "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,created_by_user_id,created_at,expires_at)
  SELECT gen_random_uuid(),'$organization',lower(CASE WHEN i=205 THEN '$other_email' ELSE '$email' END),
  CASE WHEN i=205 THEN '$other_email' ELSE '$email' END,encode(sha256(('$organization/'||i)::bytea),'hex'),
