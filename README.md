@@ -199,4 +199,6 @@ dotnet test tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj --configuration R
 
 API-host tests select an isolated Demo runtime without production database or provider credentials. Read [API host testing](docs/architecture/api-host-testing.md) and [dependency locking](docs/architecture/dependency-locking.md) for the test boundaries and locked dependency workflow.
 
+To run the full restricted PostgreSQL persistence suite locally with Docker and PowerShell, use `./scripts/run-local-persistence-contracts.ps1`. It creates a disposable PostgreSQL 17/pgvector database, applies the migrations, provisions the restricted API/Worker roles, and executes the same persistence program required by CI. See [local PostgreSQL contracts](docs/architecture/api-host-testing.md#local-postgresql-contracts) for isolation, failure inspection, and cleanup. The suite includes actual deletion of 105,000 Cards and can take considerable time; follow its running process through completion.
+
 These source checks are only part of release validation. [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) also verify real PostgreSQL/RLS behavior, restricted runtime capabilities, exact-image integration, native browser workflows, and security evidence. Deploy the tested artifacts using the [release bundle guide](docs/release/README.md).
