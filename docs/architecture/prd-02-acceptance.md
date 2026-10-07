@@ -50,6 +50,24 @@ final-admission fixtures advance an injected clock at observed publication;
 they do not measure wall-clock expiry or establish PostgreSQL cancellation-race
 behavior, external mail delivery, limiter capacity or full release acceptance.
 
+The mandatory real-PostgreSQL persistence executable now includes
+`IdentityRecoveryRollbackContract`. All six local Production combinations pass
+under the restricted API login: reset/verification crossed with a real server
+constraint failure, cancellation at final commit, and cancellation already
+pending when the server constraint fails. Each case observes an actual token
+proof and retry receipt before failure. The recovery adapters also publish the
+production mail outbox and audit in that same transaction. After failure, a
+complete database snapshot of the user, both token tables, receipts, mail jobs,
+audits, sessions, event stream and events equals its original state. Earlier
+proofs remain usable, failed proofs are absent, and same-key retry/replay leaves
+exactly two token/mail/audit/receipt publications: the original and recovered
+intent. Database failures return the neutral result; cancellation propagates.
+This strengthens the PostgreSQL cancellation-race evidence. Failure timing is
+injected after real publication through a duplicate receipt primary key; it is
+not external mail transport, process-crash or HTTP response evidence. The focused
+diagnostic is `--identity-recovery-rollback-only`; mandatory CI executes the same
+contract as part of the full persistence suite.
+
 Separately, retained-image CI run
 [37593384106](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37593384106)
 at `f62785a6` reports successful container steps for production profile
@@ -134,5 +152,5 @@ Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **28% work
+immutable images before closure. The current PRD estimate is **27% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.

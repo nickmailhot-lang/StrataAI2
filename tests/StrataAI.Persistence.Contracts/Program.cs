@@ -76,6 +76,12 @@ if (args.Contains("--invitation-organization-lifecycle-only", StringComparer.Ord
     await InvitationOrganizationLifecycleAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+if (args.Contains("--identity-recovery-rollback-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
+    return;
+}
 await InvitationIssuerAccountAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
 if (args.Contains("--invitation-issuer-authority-only", StringComparer.Ordinal)) return;
 await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
@@ -133,6 +139,7 @@ AttachmentUploadIntent Intent(Guid? retry = null) => AttachmentUploadIntent.Prep
 try
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
     await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataReplayContract.RunAsync(admin,apiConnection,workerConnection,ct);
