@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { CardMoveControls } from './CardMoveControls';
 import type { BoardSnapshot } from '../../api/workManagement';
 const card = { id: 'card', title: 'Inspect roof', description: null, rank: '500000000000000000000000000000', version: 3 };
@@ -17,6 +18,31 @@ async function choose() {
   fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it('starts one admitted drop after Strict Mode mount replay without aborting its acknowledgment', async () => {
+  let complete: ((response: Response) => void) | undefined;
+  const fetcher = vi.fn((_path: string, options: RequestInit) => new Promise<Response>((resolve, reject) => {
+    complete = resolve;
+    options.signal?.addEventListener('abort', () => reject(new Error('Aborted')), { once: true });
+  }));
+  vi.stubGlobal('fetch', fetcher); const acknowledged = vi.fn();
+  render(<StrictMode><CardMoveControls card={card} snapshot={snapshot} disabled={false}
+    onAcknowledged={acknowledged} onRefresh={vi.fn()}
+    dropRequest={{ cardId: card.id, version: 3, destination: 'dest', before: '', nonce: 'strict-drop' }} /></StrictMode>);
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  expect(fetcher.mock.calls[0][1].signal?.aborted).toBe(false);
+  await act(async () => complete?.(reply(ack)));
+  await waitFor(() => expect(acknowledged).toHaveBeenCalledTimes(1));
+  expect(screen.queryByRole('button', { name: 'Retry this move' })).not.toBeInTheDocument();
+});
+it('does not publish a provisional drop after its control unmounts', async () => {
+  const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
+  const view = render(<CardMoveControls card={card} snapshot={snapshot} disabled={false}
+    onAcknowledged={vi.fn()} onRefresh={vi.fn()}
+    dropRequest={{ cardId: card.id, version: 3, destination: 'dest', before: '', nonce: 'retired-drop' }} />);
+  view.unmount();
+  await act(async () => { await Promise.resolve(); });
+  expect(fetcher).not.toHaveBeenCalled();
+});
 it('restores review-action focus after a current-Board refresh releases the disabled control', async () => {
   const props = { card, snapshot, disabled: false, onAcknowledged: vi.fn(), onRefresh: () => {} };
   const view = render(<CardMoveControls {...props} />);

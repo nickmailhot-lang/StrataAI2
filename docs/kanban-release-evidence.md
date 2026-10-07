@@ -28,6 +28,30 @@ confirm the pointer repair or establish full release/capacity acceptance. The
 original CI run is terminal failure, not a live or green release. PRD-06 remains
 open with its existing 35% estimated work remaining.
 
+## Strict Mode drop submission and local follow-up
+
+The local move trace records an abort about 184 ms after submission, before the
+15-second request deadline. A new component regression reproduces the cause:
+development Strict Mode replays mount effects and aborts the request that the
+first effect started. Drop submission now runs in a microtask only if that
+effect is still current. The replayed effect is retired before it can publish a
+request, and unmount before publication prevents submission. Actual in-flight
+unmount cancellation and uncertain-response same-key recovery remain intact.
+The regression fails before the repair; all 21 move-control tests pass after
+it, including the new no-publication-after-unmount case. Web type checking and
+lint also pass.
+
+Both local native capacity cases now complete the keyboard acknowledgment,
+persisted order/sibling checks, vertical pointer Escape cancellation without
+writes, and the subsequent real pointer drop with canonical placement/version
+checks. This also supplies local native evidence for the preceding offscreen
+source fixture correction. Both cases then fail at the later horizontal
+destination observation (`destinationId` is null); that unresolved case and
+complete current retained-image verification remain required. The database
+still contains all 100,000 archived records with their original complete-row
+fingerprint. No full capacity or performance acceptance is claimed. PRD-06
+remains open with 34% estimated work remaining.
+
 [Run 36941858197](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36941858197)
 at b87353a completed container job 110635994365 with failure. Decoded job logs
 show 45 authenticated browser cases passed, one failed and one general-mail case

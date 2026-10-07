@@ -47,7 +47,14 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
     }
     void move(selected);
   });
-  useEffect(() => { if (dropRequest) consumeDrop(dropRequest); }, [dropRequest]);
+  useEffect(() => {
+    if (!dropRequest) return;
+    // Strict Mode replays mount effects before any user command should start.
+    // Retire that provisional effect before it can publish an abortable request.
+    let retired = false;
+    queueMicrotask(() => { if (!retired) consumeDrop(dropRequest); });
+    return () => { retired = true; };
+  }, [dropRequest]);
   async function move(selected?: NonNullable<typeof review>) {
     const proposed = selected ?? review;
     const destination = lists.find(column => column.list.id === proposed?.destination);
