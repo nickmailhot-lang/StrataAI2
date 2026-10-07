@@ -9,7 +9,7 @@ Current changes must pass the complete pipeline against their exact revision.
 | Requirement | Implementation and verification path | Outstanding acceptance evidence |
 | --- | --- | --- |
 | AUTH-FR-001 registration | [Invitation registration](../invitation-registration.md), [registration retries](../identity-registration-retries.md), API registration replay/rollback cases, native registration fixtures | Current production-policy, invitation-backed and browser release checks |
-| AUTH-FR-002 case-insensitive email uniqueness | Canonical identity storage and [identity schema](../../db/migrations/003_identity.sql); registration fixtures | Current real PostgreSQL uniqueness/concurrency evidence |
+| AUTH-FR-002 case-insensitive email uniqueness | Canonical identity storage and [identity schema](../../db/migrations/003_identity.sql); executed restricted PostgreSQL registration races below | Complete current-release registration policy/browser evidence |
 | AUTH-FR-003 secure sign-in/out | [Sign-in retries](../identity-login-retries.md), [revocation retries](identity-command-retries.md), API login/revocation cases | Current release-image credential/session and browser checks |
 | AUTH-FR-004 expiring single-use reset tokens | [Token consumption](../identity-token-consumption-retries.md), [email delivery](identity-email.md), token replay/final-admission cases | Current Worker delivery, elapsed-expiry, single-use and rollback evidence |
 | AUTH-FR-005 adaptive password hashes | Identity password-hash provider and sign-in/reset verification | Current hash policy and persisted-secret protection checks; passing compilation is insufficient |
@@ -95,6 +95,31 @@ seven focused fixture sources are unchanged between `f62785a6` and `be7b1616`.
 The full container job remains live: passed steps establish their scoped
 revision evidence, not complete current-main release readiness.
 
+### Executed durable registration concurrency
+
+`IdentityRegistrationConcurrencyContract` is now part of mandatory persistence
+CI. Its focused local Production diagnostic passes two eight-client races under
+the restricted API login. Eight independent service compositions/connections
+start together against case and whitespace variants of one normalized email.
+Distinct keys produce exactly one successful registration and seven
+`email_unavailable` refusals without a profile. A shared key produces eight
+identical authoritative account/token acknowledgments. Each race persists one
+account, verification token, mail job, registration audit, canonical event and
+receipt. The event retains the original actor/entity, version 1 and empty
+metadata; the receipt belongs to the winning intent. The account remains pending
+verification with its requested locale/timezone. Its configured adaptive hash
+verifies without rehash, and raw passwords/verification tokens are absent from
+the persisted snapshot. Case-normalized winner replay preserves exact state;
+wrong-password and changed-display-name retries refuse without changing it.
+
+The isolated Release build passes with zero warnings/errors. Public signup is
+explicitly enabled only in this fixture, while verified-email and production
+mail-outbox policy remain enabled. This is actual adapter/transaction concurrency
+with a start barrier, not eight deployed API processes, an HTTP/browser flow,
+external mail transport or a performance benchmark. Production's closed-signup
+and invitation policies and complete current release CI remain required. The
+focused diagnostic is `--identity-registration-concurrency-only`.
+
 ### Native browser recovery
 
 Four existing native account scenarios now pass locally against an actual
@@ -168,5 +193,5 @@ Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **26% work
+immutable images before closure. The current PRD estimate is **25% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.
