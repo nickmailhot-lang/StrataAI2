@@ -145,3 +145,41 @@ all eight operator configuration/export/failure cases and three Collector
 verifier tests passed. The operator transport case now also requires both
 Organization metric families in actual serialized OTLP. Bash and diff checks
 pass. Deployed Collector ingestion for the current images remains pending.
+
+## Organization settings browser observations
+
+The existing bounded Activity client queue now admits three fixed categories:
+`organization_settings_disclosure`, `organization_settings_read` and
+`organization_settings_update`. Settings counts one open only after both account
+checks and current administrative admission; normal reads/saves, explicit
+refresh/original retries, conflicts, exceptions and current results are observed.
+Live reset/unavailability records a recovery retry request, not a claim that a
+socket successfully reconnected. Results include bounded client duration. Reports
+retain only action/kind/count/duration and cannot include draft fields, names,
+logo URL, account/Organization IDs, revisions, keys, routes or error text.
+
+These are untrusted best-effort operator observations. Reporting failure does
+not retry a business command or change the saved draft, original request,
+account binding, full-operation deadline or current-authority checks. The server
+requires authentication and rejects a batch containing any unrecognized/private
+field before recording any member. The existing optional OTLP export covers
+them; its exact-image fixture now requires these fixed settings categories and
+an update duration. That fixture submits synthetic client observations to prove
+transport/ingestion, rather than claiming a real browser produced them.
+
+Four component cases cover admitted open/read/live recovery, exact original save
+recovery, conflict/failure, and no open before admission, with private wire-field
+assertions. The native desktop/phone settings telemetry cases use a real committed
+PATCH whose response is lost, explicit identical-key/body recovery, actual
+production browser reports accepted by the authenticated endpoint, one stored
+revision, keyboard operation and WCAG 2.2 AA. Native execution remains pending.
+Broader Organization creation/member/departure/deletion/invitation telemetry,
+per-tenant adoption policy, successful transport reconnect measures and dashboards
+remain separate unfinished requirements.
+
+Local settings validation passed 38 focused component/queue cases, four API
+category/authentication/atomic-private-batch cases, API/API-test Release builds
+with zero warnings/errors, three Collector verifier tests, web/browser
+typechecks and zero-warning lint. Both native cases collect successfully.
+The two native scenarios are implemented; current-image runtime evidence remains
+pending and this does not close PRD-03 or ARCH-08.

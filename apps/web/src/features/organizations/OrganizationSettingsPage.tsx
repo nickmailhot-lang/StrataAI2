@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { boundedWorkRead } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
 
 type Organization = { id: string; name: string; description: string | null; logoUrl: string | null; status: number; version: number };
@@ -50,7 +51,7 @@ function Settings({ organizationId }: { organizationId: string }) {
   const refreshQueued = useRef(false);
   const current = useRef({ draft, intent }); current.current = { draft, intent };
   const pending = useRef<AbortController | undefined>(undefined);
-  const mounted = useRef(false);
+  const mounted = useRef(false); const opened = useRef(false);
   useEffect(() => {
     mounted.current = true; void load(false);
     return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; };
@@ -63,7 +64,8 @@ function Settings({ organizationId }: { organizationId: string }) {
       setLiveNotice('Checking current Organization settings. Your draft and original save are preserved.');
       setReload(value => value + 1);
     };
-    return watchOrganizationMetadata({ organizationId, userId: liveActor, invalidate: refresh, reset: refresh, unavailable: refresh });
+    return watchOrganizationMetadata({ organizationId, userId: liveActor, invalidate: refresh, reset: () => { activityEvent('organization_settings_read', 'retry'); refresh(); },
+      unavailable: () => { activityEvent('organization_settings_read', 'retry'); refresh(); } });
   }, [organizationId, liveActor]);
   useEffect(() => {
     if (!refreshQueued.current || busy) return;
@@ -79,6 +81,8 @@ function Settings({ organizationId }: { organizationId: string }) {
     if (pending.current || intent && !live) return;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined);
     setBackgroundReading(live);
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_settings_read', preserve && !live ? 'retry' : 'use');
     try {
       await boundedWorkRead(async signal => {
         const before = await command('/me', {}, signal);
@@ -100,7 +104,8 @@ function Settings({ organizationId }: { organizationId: string }) {
         if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
         if (after.body.id !== before.body.id) { deny(401); return; }
         actor.current = after.body.id; setLiveActor(after.body.id);
-        setUnavailable(false);
+        setUnavailable(false); succeeded = true;
+        if (!opened.current) { opened.current = true; activityEvent('organization_settings_disclosure', 'open'); }
         const retained = current.current;
         if (retained.intent) { setLatest(found); setReview(true); }
         else if (!preserve || !retained.draft) {
@@ -113,10 +118,12 @@ function Settings({ organizationId }: { organizationId: string }) {
       }, controller.signal);
     } catch {
       if (mounted.current && pending.current === controller) {
+        activityEvent('organization_settings_read', 'exception');
         setReview(true); setLatest(undefined); setNotice(undefined);
         setError('Unable to load current settings. Your draft is preserved. Please retry.');
       }
-    } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); setBackgroundReading(false); } }
+    } finally { if (mounted.current && pending.current === controller) { activityResult('organization_settings_read', succeeded, telemetryStarted);
+      pending.current = undefined; setBusy(false); setBackgroundReading(false); } }
   }
   async function save(event?: React.FormEvent, retry = false) {
     event?.preventDefault();
@@ -126,6 +133,8 @@ function Settings({ organizationId }: { organizationId: string }) {
     let submitted = false;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); setNotice(undefined);
     setBackgroundReading(false);
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_settings_update', retry ? 'retry' : 'use');
     try {
       await boundedWorkRead(async signal => {
         const before = await command('/me', {}, signal);
@@ -147,7 +156,7 @@ function Settings({ organizationId }: { organizationId: string }) {
         const updated = { organization: result.body, role: record.role };
         if (result.status === 200 && valid(updated) && updated.organization.id === organizationId
           && updated.organization.status === 0 && updated.organization.version === proposed.version + 1 && matches(updated.organization, proposed.draft)) {
-          setIntent(undefined);
+          succeeded = true; setIntent(undefined);
           if (retry) { setReview(true); setNotice('Original save acknowledgment recovered. Load current settings before editing again.'); return; }
           setRecord(updated); setDraft(fields(updated.organization)); setNotice('Organization settings saved.'); return;
         }
@@ -157,18 +166,21 @@ function Settings({ organizationId }: { organizationId: string }) {
           setError(code === 'invalid_organization_logo_url' ? 'Use a secure HTTPS logo URL without embedded credentials, or leave it empty.' : 'Check the Organization fields and try again.'); return;
         }
         setReview(true);
+        if (result.status === 409) activityEvent('organization_settings_update', 'conflict');
         if ([409, 429].includes(result.status)) setIntent(undefined);
         else setIntent(proposed);
         setError([409, 429].includes(result.status) ? 'The Organization changed elsewhere or the save was refused. Load current settings to review your draft.' : 'Your save could not be confirmed. Retry the original save to recover its acknowledgment.');
       }, controller.signal);
     } catch {
       if (mounted.current && pending.current === controller) {
+        activityEvent('organization_settings_update', 'exception');
         setReview(true); setLatest(undefined);
         if (submitted || intent) {
           setIntent(proposed); setError('Your save could not be confirmed. Retry the original save to recover its acknowledgment.');
         } else setError('No save was sent. Your draft is preserved. Load current settings before saving again.');
       }
-    } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
+    } finally { if (mounted.current && pending.current === controller) { activityResult('organization_settings_update', succeeded, telemetryStarted);
+      pending.current = undefined; setBusy(false); } }
   }
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={`/app/${organizationId}`}>Organization boards</Button>

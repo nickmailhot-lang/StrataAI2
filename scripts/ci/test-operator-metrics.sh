@@ -29,6 +29,7 @@ test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"card_read","kind":"use","count":1,"cursor":"private-metric-fixture"}]}' "$base/me/activity-client-events")" = 400
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"create","kind":"use","count":1}]}' "$base/me/checklist-client-events")" = 401
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"create","kind":"use","count":1,"private":"private-metric-fixture"}]}' "$base/me/checklist-client-events")" = 400
+post /me/activity-client-events '{"events":[{"action":"organization_settings_disclosure","kind":"open","count":1},{"action":"organization_settings_read","kind":"retry","count":1},{"action":"organization_settings_update","kind":"use","count":1},{"action":"organization_settings_update","kind":"success","count":1,"durationMs":125}]}' >/dev/null
 # Poll bounded export/batch intervals; raw scrapes never become retained artifacts.
 passed=false
 for attempt in $(seq 1 30); do

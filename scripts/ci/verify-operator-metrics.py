@@ -37,6 +37,11 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
+        observed("strataai_activity_client_events", {"action": "organization_settings_disclosure", "kind": "open"}),
+        observed("strataai_activity_client_events", {"action": "organization_settings_read", "kind": "retry"}),
+        observed("strataai_activity_client_events", {"action": "organization_settings_update", "kind": "use"}),
+        observed("strataai_activity_client_events", {"action": "organization_settings_update", "kind": "success"}),
+        observed("strataai_activity_client_duration_count", {"action": "organization_settings_update", "kind": "success"}),
         observed("strataai_organization_requests", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_duration_count", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_requests", {"operation": "read", "outcome": "denied"}),
@@ -73,4 +78,4 @@ if __name__ == "__main__":
         "verified": {"clientEvents": True, "clientDuration": True, "serverRequests": True,
                      "serverDuration": True, "activityClientEvents": True, "activityClientDuration": True,
                      "activityServerReads": True, "commentClientEvents": True, "commentClientDuration": True,
-                     "commentServerOperations": True, "organizationServerOperations": True, "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")
+                     "commentServerOperations": True, "organizationServerOperations": True, "organizationClientEvents": True, "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")
