@@ -21,7 +21,11 @@ const writes = () => vi.mocked(workRequest).mock.calls.filter(([, init]) => !!in
 function mock(write: () => unknown = () => ack, value: unknown = page) {
   vi.mocked(workRequest).mockImplementation(async (path, init) => path === '/me' ? profile : init?.method ? write() : value);
 }
-async function review() { fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' })); await screen.findByRole('button', { name: 'Add comment' }); }
+async function review() {
+  fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' }));
+  await screen.findByRole('button', { name: 'Add comment' });
+  await waitFor(() => expect(watchIdentity).toHaveBeenCalled());
+}
 async function create() { await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' })); fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } }); }
 beforeEach(() => { vi.mocked(workRequest).mockReset(); vi.mocked(watchIdentity).mockClear(); });
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });

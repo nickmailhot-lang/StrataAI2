@@ -320,6 +320,28 @@ changed by another session without manual Review, reload, history mutation or a
 new comment write. Strengthened native execution and current release CI remain
 pending. Estimated PRD-02 work remaining stays **22%**.
 
+### Invitation history preference recovery
+
+Open issued Organization/Portal and Board invitation history now follows identity
+delivery and visible periodic/focus/online checks using its normal protected reads.
+Continuation and unchanged consent/focus survive quiet checks; authority sources
+take precedence, changed history retires consent, queued signals coalesce and
+denial/unmount retire recovery. All 75 combined invitation-history/comment/identity
+cases pass, including 45 invitation-history cases. Web typechecking/lint and browser
+typechecking pass. Both desktop/phone Organization history scenarios pass against
+the local Production API and restricted PostgreSQL, covering independent-session
+timezone changes, preserved keyboard consent, immutable history and the original
+single-write lost-response recovery. Board native assertions are registered but
+remain pending execution. See [invitation history](../invitation-history.md#account-preference-recovery)
+for the initial-read readiness correction and exact local evidence boundary.
+
+Predecessor CI `37613124227` failed one comment test because admitted rows appeared
+before the passive identity listener was registered; 1,855 other web cases passed.
+The fixture now waits for the actual listener before delivering a simulated event;
+its original display and unchanged-history assertions remain. The complete affected
+suite passes locally. Full current release CI and remaining consumers still need
+verification. The estimate stays **22% work remaining**; no closure is justified.
+
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.

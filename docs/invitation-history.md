@@ -1,5 +1,38 @@
 # Administrator invitation history
 
+## Account preference recovery
+
+Open Organization/Portal and Board invitation history follows account preference
+delivery and visible ten-second, focus, online and visibility recovery. Each check
+uses the existing bounded account/history/account admission; Board history also
+rechecks current administration and scope. It retains the selected continuation.
+A queued authority invalidation takes precedence over a quiet preference check.
+Signals received during a protected read coalesce into one subsequent check.
+
+Quiet recovery preserves an open revocation dialog only while its exact invitation
+and Board name remain unchanged. It does not submit revocation. Changed recipient
+state, authority withdrawal and expiry still retire consent; denied history stops
+the account listener, timer and recovery listeners. Unmount retires them as well.
+
+All 75 focused invitation-history/comment/identity cases pass, including 45 history
+cases. Web typechecking/lint and browser typechecking pass. Both desktop/phone
+Organization invitation-history scenarios pass against the local Production API,
+restricted schema-110 PostgreSQL runtime and current Vite source. A second session
+changes Honolulu to Tokyo while consent is open; expiry display recovers without
+manual refresh or reload, Cancel retains keyboard focus and stored history stays
+identical. The existing lost-response scenario then proves exactly one DELETE and
+canonical recovery. The complete invocation exits 0 with two cases in 15.3 seconds;
+this timing is not a performance benchmark.
+
+The first native attempt opened consent before the initial authority refresh
+finished. The fixture now awaits the actual checked-history notice before review;
+all original keyboard, privacy and lost-response assertions remain. The local API
+is the immutable `6044227e` build, with backend source unchanged at this increment.
+The strengthened Board native fixture requires the same other-session display,
+consent and immutable-history behavior; its execution remains pending. Current
+exact retained-image CI, broader accessibility and full PRD acceptance are still
+required. Source and local browser results do not justify ticket closure.
+
 ## Expiry while reviewing
 
 Organization, Portal and Board invitation history schedules a bounded timer for

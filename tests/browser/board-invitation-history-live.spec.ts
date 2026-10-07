@@ -11,7 +11,7 @@ for (const width of [1280, 390]) {
       const accounts: { id: string; email: string }[] = [];
       for (const [index, client] of [context, recipient].entries()) {
         const data = { email: `board-history-live-${width}-${index}-${Date.now()}@example.test`,
-          password: 'board-history-live-correct-horse', displayName: 'Board history live account' };
+          password: 'board-history-live-correct-horse', displayName: 'Board history live account', locale: 'en-US', timezone: 'Pacific/Honolulu' };
         const result = await client.request.post('/auth/register', { headers, data }); expect(result.status()).toBe(201);
         accounts.push((await result.json()).user);
         expect((await client.request.post('/auth/login', { headers, data })).status()).toBe(200);
@@ -46,6 +46,21 @@ for (const width of [1280, 390]) {
       const revokedId = await issue('ADMIN');
       await expect(pendingAction).toBeEnabled({ timeout: 30_000 });
       await pendingAction.focus(); await page.keyboard.press('Enter'); await expect(page.getByRole('dialog')).toBeVisible();
+      const originalHistory = (await (await context.request.get(`/boards/${board}/invitations`)).json()).items;
+      const expiresAt = originalHistory.find((row: { id: string }) => row.id === revokedId).expiresAt;
+      const preferences = await browser.newContext({ baseURL: new URL(page.url()).origin });
+      try {
+        expect((await preferences.request.post('/auth/login', { headers, data: { email: accounts[0].email, password: 'board-history-live-correct-horse' } })).status()).toBe(200);
+        const profile = await (await preferences.request.get('/me')).json();
+        expect((await preferences.request.patch('/me', { headers, data: { timezone: 'Asia/Tokyo', version: profile.version } })).status()).toBe(200);
+        const caption = await page.evaluate(instant => `Expires: ${new Intl.DateTimeFormat('en-US', {
+          timeZone: 'Asia/Tokyo', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+        }).format(new Date(instant))}`, expiresAt);
+        await expect(page.locator('article').filter({ hasText: 'Awaiting acceptance' }).getByText(caption, { exact: true })).toBeVisible({ timeout: 20_000 });
+        await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+        await expect(page.getByRole('button', { name: 'Confirm revocation', exact: true })).toBeEnabled();
+        expect((await (await context.request.get(`/boards/${board}/invitations`)).json()).items).toEqual(originalHistory);
+      } finally { await preferences.close(); }
       // Disconnect the observing client while another client revokes the
       // pending upgrade. Reconnect must retire old consent and read real history.
       await context.setOffline(true);

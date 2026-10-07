@@ -5,6 +5,8 @@ const live = vi.hoisted(() => ({ watch: vi.fn() }));
 vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.watch }));
 const boardLive = vi.hoisted(() => ({ watch: vi.fn() }));
 vi.mock('../../api/boardLive', () => ({ watchBoard: boardLive.watch }));
+const identity = vi.hoisted(() => ({ watch: vi.fn() }));
+vi.mock('../auth/identityLive', () => ({ watchIdentity: identity.watch }));
 
 const org = '10000000-0000-0000-0000-000000000001';
 const profile = { id: '40000000-0000-4000-8000-000000000004', locale: 'en-CA', timezone: 'Pacific/Honolulu' };
@@ -32,6 +34,7 @@ function fetcher(...responses: (Response | Error)[]) {
 async function review() { fireEvent.click(await screen.findByRole('button', { name: `Revoke invitation for ${row.email}` })); await screen.findByRole('dialog'); }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 beforeEach(() => { currentProfile = profile; live.watch.mockReset(); live.watch.mockReturnValue(() => {});
+  identity.watch.mockReset(); identity.watch.mockReturnValue(() => {});
   boardLive.watch.mockReset(); boardLive.watch.mockImplementation(options => { options.status('live'); return () => {}; }); });
 async function invalidate() {
   // Rendering an admitted row can precede the passive live subscription.
@@ -157,6 +160,86 @@ function boardMount() {
   return render(<RouterProvider router={createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId/invitations', element: <BoardInvitationHistoryPage /> }],
     { initialEntries: [`/app/${org}/boards/${board}/invitations`] })} />);
 }
+it.each(['Organization', 'Board'])('recovers %s invitation expiry display after another session changes preferences without retiring unchanged consent', async surface => {
+  const mock = vi.fn(async (path: string, _options?: RequestInit) => reply(path === '/me' ? currentProfile
+    : path === `/boards/${board}` ? boardScope : { items: [surface === 'Board' ? boardRow : row], nextCursor: null }));
+  vi.stubGlobal('fetch', mock); if (surface === 'Board') boardMount(); else mount(); await review();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+  expect(screen.getByText(/Expires:.*08:00/)).toBeInTheDocument();
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  currentProfile = { ...profile, timezone: 'Asia/Tokyo' };
+  await act(async () => identity.watch.mock.calls[0][0].invalidate());
+  await screen.findByText(/Expires:.*03:00/);
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+  expect(screen.getByRole('button', { name: 'Confirm revocation' })).toBeEnabled();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+  expect(identity.watch).toHaveBeenCalledTimes(1);
+});
+it('queues one preference recovery behind an in-flight quiet history read', async () => {
+  let reads = 0, finishRead!: (response: Response) => void;
+  const mock = vi.fn(async (path: string, _options?: RequestInit) => {
+    if (path === '/me') return reply(currentProfile);
+    if (++reads === 2) return new Promise<Response>(resolve => { finishRead = resolve; });
+    return reply(page());
+  });
+  vi.stubGlobal('fetch', mock); mount(); await review();
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  await act(async () => identity.watch.mock.calls[0][0].invalidate());
+  await waitFor(() => expect(finishRead).toBeDefined());
+  currentProfile = { ...profile, timezone: 'Asia/Tokyo' };
+  await act(async () => { identity.watch.mock.calls[0][0].invalidate(); identity.watch.mock.calls[0][0].invalidate(); });
+  expect(reads).toBe(2);
+  await act(async () => finishRead(reply(page())));
+  await screen.findByText(/Expires:.*03:00/);
+  await waitFor(() => expect(reads).toBe(3));
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
+it('retains the selected invitation continuation during preference recovery', async () => {
+  const rows = Array.from({ length: 50 }, (_, index) => ({ ...row, id: `20000000-0000-0000-0000-${String(index + 1).padStart(12, '0')}`, email: `first-${index}@example.test` }));
+  const last = rows.at(-1)!.id; const next = { ...row, id: '30000000-0000-0000-0000-000000000001' };
+  const mock = vi.fn(async (path: string) => reply(path === '/me' ? currentProfile : path.includes('?after=') ? page([next]) : { items: rows, nextCursor: last }));
+  vi.stubGlobal('fetch', mock); mount();
+  fireEvent.click(await screen.findByRole('button', { name: 'Next invitations' })); await screen.findByText(row.email);
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  currentProfile = { ...profile, timezone: 'Asia/Tokyo' };
+  await act(async () => identity.watch.mock.calls[0][0].invalidate()); await screen.findByText(/Expires:.*03:00/);
+  expect(mock.mock.calls.filter(call => call[0].includes('/invitations')).map(call => call[0])).toEqual([
+    `/organizations/${org}/invitations`, `/organizations/${org}/invitations?after=${last}`, `/organizations/${org}/invitations?after=${last}`,
+  ]);
+  expect(screen.getByRole('button', { name: 'Previous invitations' })).toBeEnabled();
+});
+it.each(['Organization', 'Board'])('retires %s preference recovery after history access is denied', async surface => {
+  let denied = false; const stop = vi.fn(); identity.watch.mockReturnValue(stop);
+  const mock = vi.fn(async (path: string, _options?: RequestInit) => reply(path === '/me' ? currentProfile
+    : path === `/boards/${board}` ? boardScope : denied ? {} : { items: [surface === 'Board' ? boardRow : row], nextCursor: null },
+  denied && path.endsWith('/invitations') ? 403 : 200));
+  vi.stubGlobal('fetch', mock); if (surface === 'Board') boardMount(); else mount(); await review();
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  denied = true; await act(async () => identity.watch.mock.calls[0][0].invalidate());
+  await screen.findByText(`${surface} invitation administration is unavailable.`);
+  await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+  expect(screen.queryByText(row.email)).not.toBeInTheDocument();
+  const readCount = mock.mock.calls.length;
+  await act(async () => { window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('online')); });
+  expect(mock).toHaveBeenCalledTimes(readCount);
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
+it('recovers preferences periodically and retires timers and listeners on unmount', async () => {
+  vi.useFakeTimers(); const stop = vi.fn(); identity.watch.mockReturnValue(stop);
+  const mock = vi.fn(async (path: string) => reply(path === '/me' ? currentProfile : page()));
+  vi.stubGlobal('fetch', mock); let view!: ReturnType<typeof mount>;
+  await act(async () => { view = mount(); });
+  currentProfile = { ...profile, timezone: 'Asia/Tokyo' };
+  await act(async () => vi.advanceTimersByTimeAsync(10_000));
+  expect(screen.getByText(/Expires:.*03:00/)).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[0].endsWith('/invitations'))).toHaveLength(2);
+  view.unmount(); expect(stop).toHaveBeenCalledTimes(1);
+  const readCount = mock.mock.calls.length;
+  await act(async () => { await vi.advanceTimersByTimeAsync(60_000); window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('online')); });
+  expect(mock).toHaveBeenCalledTimes(readCount);
+});
 it.each(['Organization', 'Portal', 'Board'])('retires consent at %s invitation expiry and refreshes canonical history without a write', async surface => {
   vi.useFakeTimers(); vi.setSystemTime(new Date('2035-01-08T17:59:59Z'));
   const invitation = surface === 'Board' ? boardRow : surface === 'Portal'
@@ -174,8 +257,10 @@ it.each(['Organization', 'Portal', 'Board'])('retires consent at %s invitation e
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   const historyReads = () => mock.mock.calls.filter(call => call[0].endsWith('/invitations')).length;
   expect(historyReads()).toBe(2);
-  await act(async () => vi.advanceTimersByTimeAsync(60_000));
-  expect(historyReads()).toBe(2);
+  // An expired row must not create an expiry loop. The independent visible
+  // preference fallback still performs exactly one protected read per tick.
+  for (let tick = 0; tick < 6; tick++) await act(async () => vi.advanceTimersByTimeAsync(10_000));
+  expect(historyReads()).toBe(8);
   expect(mock.mock.calls.some(call => (call as unknown as [string, RequestInit?])[1]?.method === 'DELETE')).toBe(false);
 });
 it('rechecks expiry after account admission even when the scheduled expiry callback has not run', async () => {

@@ -7,6 +7,8 @@ import { formatUserDateTime } from '../auth/userDateTime';
 import { invitationRoles, validInvitationKey } from './invitationIntent';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchBoard } from '../../api/boardLive';
+import { watchIdentity } from '../auth/identityLive';
+import { isNotificationProfile } from '../notifications/notificationInbox';
 
 type Row = { id: string; email: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; createdAt: string;
   expiresAt: string; acceptedAt: string | null; revokedAt: string | null; deliveryState: string | null; boardTarget?: { boardId: string; role: string } | null };
@@ -103,7 +105,24 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     return watchOrganizationMetadata({ organizationId, userId: actorId, invalidate, reset: invalidate, unavailable: invalidate });
   }, [organizationId, boardId, actorId]);
   useEffect(() => {
-    if (!refreshQueued.current || busy) return;
+    if (!actorId || denied) return;
+    const check = () => {
+      if (document.visibilityState === 'hidden') return;
+      // A queued authority invalidation takes precedence over quiet display
+      // recovery. The normal protected read also checks recipient state.
+      if (!refreshQueued.current) quietQueued.current = true;
+      refreshQueued.current = true; setReloadVersion(value => value + 1);
+    };
+    const stop = watchIdentity({ subject: actorId, isProfile: isNotificationProfile, invalidate: check });
+    const timer = setInterval(check, 10_000);
+    window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
+    return () => {
+      stop(); clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('online', check);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [actorId, denied]);
+  useEffect(() => {
+    if (!refreshQueued.current || busy || pending.current) return;
     const quiet = quietQueued.current; quietQueued.current = false;
     refreshQueued.current = false; void load(quiet ? cursor : null, quiet ? previous : [], true, quiet);
   }, [reloadVersion, busy]);
@@ -138,7 +157,10 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     quietPending.current = quiet; if (!quiet) setBusy(true); return controller;
   }
   const valid = (controller: AbortController) => mounted.current && pending.current === controller && !controller.signal.aborted;
-  function finish(controller: AbortController) { if (mounted.current && pending.current === controller) { pending.current = undefined; quietPending.current = false; setBusy(false); } }
+  function finish(controller: AbortController) { if (mounted.current && pending.current === controller) {
+    pending.current = undefined; quietPending.current = false; setBusy(false);
+    if (refreshQueued.current) setReloadVersion(value => value + 1);
+  } }
   function deny(status: number) {
     actor.current = undefined; setActorId(undefined); refreshQueued.current = false; setLiveNotice(undefined);
     setBoardName(undefined); setRows(undefined); setSelected(undefined); setPreferences(undefined); setNotice(undefined); setDenied(true);
@@ -191,7 +213,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
         if (quiet) setSelected(review => review && currentBoardName === boardName
           && JSON.stringify(currentPage.items.find(row => row.id === review.id)) === JSON.stringify(review) ? review : undefined);
         setBoardName(currentBoardName); setRows(result.body); setPreferences(current); setCursor(next); setPrevious(history); setDenied(false);
-        if (live) setLiveNotice('Current invitations checked. Review an invitation again before confirming revocation.');
+        if (live && !quiet) setLiveNotice('Current invitations checked. Review an invitation again before confirming revocation.');
         if (recoveryId.current) {
           const recovered = result.body.items.find(row => row.id === recoveryId.current);
           if (recovered) {
