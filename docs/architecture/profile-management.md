@@ -289,6 +289,45 @@ after the original 50+2 continuation checks and before archived-parent checks;
 the original collection coverage remains required. Bash syntax passes; native
 exact-image execution remains pending.
 
+### Executed local comment, activity and star recovery
+
+On 2026-10-07, all six complete desktop/phone comment, activity and personal-star
+native scenarios passed against the local Production API, restricted schema-110
+PostgreSQL and current Vite source. Disposable Workers process only each newly
+created fixture Organization, with global discovery disabled, and retire after
+each invocation. These are scoped local runtime results, not current retained
+release-image evidence.
+
+Comments pass actual lost-response original key/body recovery, automatic timezone
+changes in both open dialogs, unchanged stored history, offline edit recovery,
+confirmed redaction, former-body receipt refusal, exactly three comment events and
+the automated WCAG-tagged scan (two cases, 59.1 seconds). The first complete run
+exposed a real offline-read defect: cleared rows left no displayed Card version,
+so the recovery guard never read again. Recovery now performs fresh protected
+admission even when the view was cleared, retaining a prior continuation only at
+the same current Card version. A changed version starts the first page. Denial
+still retires recovery, and successful reads clear the stale read-error notice.
+
+Activity passes Board/Card paging, automatic account timezone recovery with
+unchanged source datetime, body-free two-client updates/reconnect, access loss,
+archived/deleted history, historical labels after rename/deactivation, keyboard
+and automated WCAG-tagged checks (two cases, 2.6 minutes).
+
+Personal stars pass privacy between accounts, original retry after a later change,
+real private WebSocket delivery, immutable UTC history, automatic preference
+recovery in an open mirror, unchanged Board/List data, closing focus and reload
+recovery (two cases, 58.1 seconds). The first run exposed a real MUI closing-focus
+defect: removing the activated Close button detached the ancestor used to identify
+its own Dialog fallback. Retaining that exact Dialog reference restores the opener
+while preserving the existing external-focus guard. The installed-Dialog regression
+fails before the fix and passes afterward.
+
+All 63 combined comment/activity/star/identity component cases pass, including
+transient recovery with retained continuation and installed-Dialog close focus;
+web typechecking/lint pass. Scenario timings are not performance benchmarks.
+Current full release CI and the remaining preference consumers still require
+acceptance; no issue closure follows from these six local scenarios.
+
 ### Open comment preference recovery
 
 Clean Card comment views now recover account preferences through identity delivery

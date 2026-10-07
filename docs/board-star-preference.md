@@ -53,3 +53,20 @@ client and requires the open mirror history to recover without reloading or
 altering source timestamps/revisions. This adds one profile mutation to the
 scenario budget. Its new native assertions remain pending exact-image CI;
 PRD-02 and PRD-04 stay open.
+
+Both complete desktop/phone star scenarios now pass against the local Production
+API, restricted schema-110 PostgreSQL and current Vite source, with disposable
+Workers scoped only to their new fixture Organizations and global discovery
+disabled. Actual private WebSocket delivery, independent accounts, same-key retry
+after a later unstar, immutable history timestamps, automatic timezone recovery
+in the open mirror, unchanged Board/List state, closing focus, unstar and reload
+all pass. Terminal exit 0, two cases in 58.1 seconds; timing is not a performance
+benchmark. Workers retire afterward. These local builds are not the retained
+release images; current full release and broader Board acceptance remain required.
+
+The initial full run exposed a real closing-focus defect inside the MUI Dialog.
+The activated Close button was removed before its ancestor could identify the
+owned fallback. History now retains that exact Dialog reference before removal,
+restores the opener and still respects deliberate external focus. An installed
+Dialog regression fails before the fix and passes afterward. All 63 combined
+star/activity/comment/identity component cases, web typechecking and lint pass.

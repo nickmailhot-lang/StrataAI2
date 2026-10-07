@@ -5,7 +5,36 @@ issue or replace its dependencies (PRD-08, PRD-17 and PRD-24). Source tests,
 restricted database contracts, exact-image HTTP/Worker checks and native UI
 checks establish different claims; none substitutes for all the others.
 
-## Current native recovery investigation
+## Executed local native comments and activity
+
+Both complete desktop/phone comment scenarios pass against the local Production
+API, restricted schema-110 PostgreSQL and current Vite source with disposable
+Workers scoped only to the new fixture Organizations. Actual lost-response recovery
+requires identical original key/body, both clean dialogs recover a changed account
+timezone automatically, stored history stays unchanged, offline edit recovery and
+confirmed redaction succeed, the old body receipt is refused, exactly three comment
+events remain and the automated WCAG-tagged scan passes. The invocation exits 0
+with two cases in 59.1 seconds.
+
+The first full run exposed a transient-read recovery defect: clearing rows removed
+the displayed Card version required by the recovery guard, preventing further
+reads after reconnect. Recovery now uses fresh protected admission when rows are
+cleared, retains a continuation only at the same current Card version and starts
+the first page after a changed version. Actual denial still retires background
+reads. Both regression cases and all 63 combined comment/activity/star/identity
+component cases pass; web typechecking/lint pass.
+
+Both complete desktop/phone activity scenarios also pass: real Board/Card paging,
+automatic account-timezone recovery with unchanged UTC source timestamps,
+body-free two-client updates/reconnect, revoked access, archived/deleted history,
+historical labels after legal teammate rename/deactivation, keyboard and automated
+WCAG-tagged checks. Terminal exit 0, two cases in 2.6 minutes. Workers retire after
+each invocation. Timings are not performance benchmarks. These local immutable
+API/Worker builds and Vite source are not current retained-image evidence; full
+release, mass-mention, remaining producers and cross-feature acceptance are still
+required. The current planning estimate is **38% work remaining**.
+
+## Earlier retained-release recovery investigation
 
 At `e77195d`, run [37241937689](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37241937689) completed with 129 native passes, 15 failures and one skipped case. The desktop comment scenario passed; the phone scenario did not acknowledge its original retry. The retained diagnostic archive has SHA-256 `889994bbda2f0bc36868ce2740949547f49fb9e857d46a7ec164ddb79a05be48`. Its phone trace contains the initial substituted 503 and underlying committed 200, followed by a retry identity preflight and overlapping/aborted Board reads without a second comment POST. The original unconfirmed intent remains visible rather than being discarded.
 
@@ -96,7 +125,7 @@ also passed locally. Full exact-image desktop/mobile execution remains required.
 stays body-free/current-admin-only; this gap does not authorize deleted body
 disclosure or an anonymous/Owner Portal activity projection.
 
-The issue remains open. Current estimated remaining work is **40%**, covering
+The issue remains open. Current estimated remaining work is **38%**, covering
 these producer/UI dependencies, full current native/runtime proof, remaining
 capacity/performance and cross-feature acceptance rather than only the recently
 implemented readers.

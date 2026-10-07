@@ -85,6 +85,15 @@ it('retains the focused action through background recovery inside its dialog', a
   review.focus(); act(() => { window.dispatchEvent(new Event('online')); });
   await waitFor(() => expect(reads).toBe(2)); await waitFor(() => expect(review).toHaveFocus());
 });
+it('returns focus to the history opener when closing removes its activated button inside a dialog', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : page)));
+  render(<Dialog open transitionDuration={0}><Button>Check current star</Button><BoardStarHistory {...props} /></Dialog>);
+  const review = screen.getByRole('button', { name: 'Review your star history' }); act(() => review.focus()); fireEvent.click(review);
+  const close = await screen.findByRole('button', { name: 'Close star history' });
+  await waitFor(() => expect(close).toHaveFocus()); fireEvent.click(close);
+  expect(screen.queryByRole('region', { name: 'Your star history' })).not.toBeInTheDocument();
+  await waitFor(() => expect(review).toHaveFocus());
+});
 
 it('keeps another dialog control focused when a delayed history read completes', async () => {
   let finish!: (value: Response) => void;

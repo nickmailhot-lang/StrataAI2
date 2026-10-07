@@ -1,6 +1,22 @@
 # PRD-04 acceptance and closure audit
 
-This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 18%.
+This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 17%.
+
+Both complete desktop/phone personal-star native scenarios now pass against the
+local Production API, restricted schema-110 PostgreSQL and current Vite source,
+with disposable Workers scoped only to their new fixture Organizations. They
+verify independent private preferences, real private WebSocket delivery, original
+receipt recovery after a later unstar, immutable history, automatic account
+timezone recovery in an open mirror, unchanged Board/List data, keyboard closing
+focus and reload. The full invocation exits 0 with two cases in 58.1 seconds;
+this is not a performance benchmark. Workers retire afterward.
+
+The first full run exposed an installed-Dialog closing-focus defect. Capturing the
+owning Dialog before the Close button is removed now restores the history opener
+without overriding external focus. The new regression fails before the repair;
+all 63 combined star/activity/comment/identity component cases and web typechecking/
+lint pass. See [star evidence](../board-star-preference.md). Local immutable builds
+and Vite source do not establish current retained-image or complete Board acceptance.
 
 ## Functional traceability
 

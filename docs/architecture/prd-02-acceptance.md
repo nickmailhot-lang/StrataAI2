@@ -385,9 +385,31 @@ These local immutable API/Worker builds and Vite source are not current retained
 release-image evidence. Full release CI and the remaining date consumers still
 require acceptance. Estimated PRD-02 work remaining is now **21%**.
 
+### Executed local comments, activity and personal stars
+
+All six complete desktop/phone native scenarios now pass against the local
+Production API, restricted schema-110 PostgreSQL and current Vite source, using
+disposable Workers scoped only to the new fixture Organizations. Comments prove
+both-client automatic timezone recovery, immutable history, same-key lost-response
+recovery, offline edit delivery, redaction, former-body refusal, exact source events
+and automated accessibility checks. Activity proves actual paging, unchanged UTC
+source display, automatic preference recovery, reconnect, access loss and historical
+attribution through rename/deactivation. Personal stars prove account privacy,
+private WebSocket delivery, original retry after a later change, automatic mirror
+preference recovery, unchanged Board/List data, closing focus and reload.
+
+The complete runs exposed and now verify two repairs: comment recovery must perform
+fresh protected admission after a transient read cleared the displayed version,
+retaining a cursor only at its original current version; star-history closing focus
+must retain its Dialog reference after the activated Close button is removed.
+The new regressions fail before their fixes. All 63 combined component cases and
+web typechecking/lint pass. See [executed local evidence](profile-management.md#executed-local-comment-activity-and-star-recovery)
+for scope and timings. Current retained release images, full CI and remaining
+consumer acceptance are still required. Estimated PRD-02 work remaining: **20%**.
+
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **21% work
+immutable images before closure. The current PRD estimate is **20% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.

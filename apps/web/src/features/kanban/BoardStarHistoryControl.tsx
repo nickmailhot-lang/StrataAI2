@@ -26,7 +26,11 @@ function History(props: Props) {
   const previous = useRef<HTMLButtonElement>(null);
   const restore = useRef(false);
   const focusOwner = useRef<HTMLElement | null>(null), retained = useRef<HTMLButtonElement | undefined>(undefined);
-  function ownFocus(owner: HTMLElement) { focusOwner.current = owner; retained.current = undefined; restore.current = true; parkRecoveryFocus(owner); }
+  const focusDialog = useRef<HTMLElement | null>(null);
+  function ownFocus(owner: HTMLElement) {
+    focusOwner.current = owner; focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]');
+    retained.current = undefined; restore.current = true; parkRecoveryFocus(owner);
+  }
   const invalidate = useCallback(() => {
     if (pending.current) { refreshQueued.current = true; return; }
     setAttempt(value => value + 1);
@@ -82,14 +86,16 @@ function History(props: Props) {
     };
   }, [open, props.unavailable, admission.denied, props.userId, invalidate]);
   useLayoutEffect(() => {
-    if (!restore.current || busy || props.unavailable || !ownsRecoveryFocus(document.activeElement, focusOwner.current)) return;
+    if (!restore.current || busy || props.unavailable || !(ownsRecoveryFocus(document.activeElement, focusOwner.current) || document.activeElement === focusDialog.current)) return;
     if (open && !notice && !view) return;
     const target = admission.denied ? close.current : !open ? entry.current : retained.current?.isConnected && !retained.current.disabled
       ? retained.current : notice ? retry.current : view?.page.nextAfter ? next.current : close.current;
     if (target && !target.disabled) { target.focus({ preventScroll: true }); restore.current = false; }
   }, [open, busy, props.unavailable, admission.denied, notice, view]);
   const visible = props.unavailable || admission.denied ? undefined : view;
-  return <Stack spacing={1} onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current)) restore.current = false; }}>
+  return <Stack spacing={1} onBlur={event => {
+    if (!ownsRecoveryFocus(event.relatedTarget, focusOwner.current) && event.relatedTarget !== focusDialog.current) restore.current = false;
+  }}>
     <Button ref={entry} disabled={busy || props.unavailable || admission.denied} onClick={event => { activityEvent('board_star_disclosure', 'open'); ownFocus(event.currentTarget); setOpen(true); setPositions([{ after: 0 }]); }}>Review your star history</Button>
     {open && <Box component="section" aria-label="Your star history" aria-busy={busy}>
       <Typography role="status" aria-live="polite">{props.unavailable ? 'Checking history access…' : busy ? 'Loading your star history…' : visible ? `${visible.page.items.length} personal changes on this page.` : ''}</Typography>

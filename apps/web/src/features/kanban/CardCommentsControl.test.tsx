@@ -83,6 +83,40 @@ it('uses periodic fallback and retires account recovery on unmount', async () =>
     expect(reads()).toBe(2); expect(writes()).toHaveLength(0);
   } finally { vi.useRealTimers(); }
 });
+it('recovers a cleared comment view after a transient offline read and a newer Card version', async () => {
+  let offline = false, updated = false;
+  vi.mocked(workRequest).mockImplementation(async path => {
+    if (offline) throw new Error('Offline');
+    return path === '/me' ? profile : updated ? { ...page, cardVersion: 5, items: [{ ...row, content: 'Recovered edit', version: 2, editedAt: row.createdAt }] } : page;
+  });
+  const p = props(); const view = render(<CardCommentsControl {...p} />); await review();
+  offline = true; act(() => window.dispatchEvent(new Event('online')));
+  await screen.findByText('Unable to read current comments. Refresh the Card and try again.');
+  expect(screen.queryByText(row.content)).not.toBeInTheDocument();
+  offline = false; updated = true; view.rerender(<CardCommentsControl {...p} version={5} />);
+  act(() => window.dispatchEvent(new Event('online')));
+  await screen.findByText('Recovered edit'); expect(writes()).toHaveLength(0);
+  expect(screen.queryByText('Unable to read current comments. Refresh the Card and try again.')).not.toBeInTheDocument();
+});
+it('retains an admitted continuation through a transient preference read failure at the same Card version', async () => {
+  let offline = false, timezone = 'Pacific/Honolulu';
+  const cursor = `${scope.cardId}/4/${dateInstantTicks(row.createdAt) + 621355968000000000n}/${id(51)}`;
+  const first = { ...page, items: Array.from({ length: 50 }, (_, index) => ({ ...row, id: id(100 - index), content: `Comment ${index}` })), nextCursor: cursor };
+  const last = { ...page, items: [{ ...row, id: id(50) }] };
+  vi.mocked(workRequest).mockImplementation(async path => {
+    if (path === '/me') return { ...profile, timezone };
+    if (offline) throw new Error('Offline'); return path.includes('?after=') ? last : first;
+  });
+  render(<CardCommentsControl {...props()} />); await review();
+  fireEvent.click(screen.getByRole('button', { name: 'Next comment page' })); await screen.findByText(row.content);
+  offline = true; act(() => window.dispatchEvent(new Event('online')));
+  await screen.findByText('Unable to read current comments. Refresh the Card and try again.');
+  offline = false; timezone = 'Asia/Tokyo'; act(() => window.dispatchEvent(new Event('online')));
+  await screen.findByText(/You · Oct 3, 2026, 17:00/);
+  const reads = vi.mocked(workRequest).mock.calls.filter(([path]) => path.includes('/comments'));
+  expect(reads).toHaveLength(4); expect(reads[3][0]).toBe(reads[1][0]);
+  expect(screen.getByRole('button', { name: 'First comment page' })).toBeEnabled(); expect(writes()).toHaveLength(0);
+});
 
 it.each([401, 403, 404])('clears a clean review and retires background recovery after %s refusal', async status => {
   let fail = false;

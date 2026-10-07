@@ -27,6 +27,7 @@ function CommentsControl(props: CardCommentsProps) {
   const [mentionBusy, setMentionBusy] = useState(false);
   const [subject, setSubject] = useState<string>();
   const refreshQueued = useRef(false), recover = useRef<() => void>(() => {});
+  const admittedPage = useRef<{ version: number; cursor?: string } | undefined>(undefined);
   const container = useRef<HTMLElement>(null);
   const retainedAction = useRef<{ action: string; comment?: string } | undefined>(undefined);
   const observedReconnect = useRef(props.reconnectSequence);
@@ -56,8 +57,9 @@ function CommentsControl(props: CardCommentsProps) {
   recover.current = () => {
     refreshQueued.current = true;
     const version = review?.page.cardVersion ?? acknowledged?.cardVersion;
-    if (pending.current || disabled || draft || intent || blocked || !subject || version === undefined || version !== props.version) return;
-    void load(undefined, review?.cursor, true);
+    if (pending.current || disabled || draft || intent || blocked || !subject || version !== undefined && version !== props.version) return;
+    const cursor = review?.cursor ?? (admittedPage.current?.version === props.version ? admittedPage.current.cursor : undefined);
+    void load(undefined, cursor, true);
   };
   useEffect(() => {
     if (refreshQueued.current) recover.current();
@@ -109,11 +111,12 @@ function CommentsControl(props: CardCommentsProps) {
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (callbacks.current.unavailable || callbacks.current.version !== version) throw new Error();
-      activityResult('comment_read', true, started); setSubject(result.actor); setReview(result);
+      activityResult('comment_read', true, started); admittedPage.current = { version, cursor }; setSubject(result.actor); setReview(result);
+      setNotice(value => value === 'Unable to read current comments. Refresh the Card and try again.' ? undefined : value);
     } catch (error) { if (mounted.current && pending.current === controller) {
       activityResult('comment_read', false, started); if (!(error instanceof WorkRequestError)) activityEvent('comment_read', 'exception');
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
-        refreshQueued.current = false; setSubject(undefined); setBlocked(true);
+        refreshQueued.current = false; admittedPage.current = undefined; setSubject(undefined); setBlocked(true);
       }
       setNotice('Unable to read current comments. Refresh the Card and try again.'); props.onRefresh();
     } }
@@ -168,6 +171,7 @@ function CommentsControl(props: CardCommentsProps) {
       activityResult(action, true, started);
       setIntent(undefined); setDraft(undefined); setReview(undefined); setBlocked(false);
       setSubject(captured.actor);
+      admittedPage.current = { version: acknowledged.cardVersion };
       setAcknowledged(acknowledged);
       setNotice(captured.check.deleting ? 'Comment body removed.' : captured.check.original ? 'Comment saved.' : 'Comment added.'); props.onRefresh();
     } catch (error) {
@@ -183,7 +187,7 @@ function CommentsControl(props: CardCommentsProps) {
       props.onRefresh();
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
   }
-  function reset(owner: HTMLElement) { focus(owner); refreshQueued.current = false; setSubject(undefined); setDraft(undefined); setIntent(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(false); setNotice(undefined); props.onRefresh(); }
+  function reset(owner: HTMLElement) { focus(owner); refreshQueued.current = false; admittedPage.current = undefined; setSubject(undefined); setDraft(undefined); setIntent(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(false); setNotice(undefined); props.onRefresh(); }
   const current = review?.page.cardVersion === props.version;
   return <Stack ref={container} component="section" aria-label="Card comments" spacing={1} sx={{ my: 2 }}>
     <Button ref={primary} data-comment-action="review" disabled={disabled || !!draft || !!intent || blocked} onBlur={blur} onClick={event => { activityEvent('comment_disclosure', 'open'); void load(event.currentTarget); }}>Review Card comments</Button>
