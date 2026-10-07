@@ -76,6 +76,8 @@ if (args.Contains("--invitation-organization-lifecycle-only", StringComparer.Ord
     await InvitationOrganizationLifecycleAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+await InvitationIssuerAccountAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
+if (args.Contains("--invitation-issuer-authority-only", StringComparer.Ordinal)) return;
 await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
 if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
 if (args.Contains("--invitation-authority-only", StringComparer.Ordinal))

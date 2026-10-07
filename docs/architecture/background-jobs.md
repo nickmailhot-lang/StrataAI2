@@ -1,5 +1,12 @@
 # Durable Organization job foundation (ARCH-07)
 
+Account deactivation also has a separate private, subject-RLS
+[issuer authority routing queue](invitation-recipient-authority.md#canonical-issuer-account-deactivation).
+Its Worker-only capabilities lease one bounded routing page, then publish the
+ordinary tenant authority roots. It grants no direct global table access and
+does not widen the general Organization job claim path. Completed private page
+history is immutable; each continuation retains its own five-claim limit.
+
 Migration 007 and `PostgresBackgroundJobStore` provide a PostgreSQL queue without
 an additional broker. Infrastructure producers publish using their existing
 `TenantDbSession`; domain writes and job publication commit or roll back together.

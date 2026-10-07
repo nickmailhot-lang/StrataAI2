@@ -6,7 +6,9 @@ DECLARE
     relation record;
     isolation_key record;
     actor_tables constant text[] := ARRAY['search_interaction_streams','search_interaction_events','board_filter_interaction_replays',
-      'navigation_interaction_events','navigation_interaction_replays'];
+      'navigation_interaction_events','navigation_interaction_replays',
+      'invitation_issuer_authority_proofs','invitation_issuer_authority_sources',
+      'invitation_issuer_authority_jobs','invitation_issuer_authority_effects'];
     global_tables constant text[] := ARRAY[
       'schema_migrations','users','sessions','password_reset_tokens','email_verification_tokens',
       'identity_delivery_jobs','identity_event_streams','identity_events','identity_profile_replays',

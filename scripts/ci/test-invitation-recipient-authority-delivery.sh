@@ -4,7 +4,9 @@ set -Eeuo pipefail
 # the retained exact Worker delivers it. Candidate rows are disposable fixtures.
 BASE_URL="${1:-http://127.0.0.1:8080}"
 source_kind="${2:-organization}"
-case "$source_kind" in organization|board|lifecycle) ;; *) echo 'Invalid authority source kind' >&2; exit 2 ;; esac
+case "$source_kind" in organization|board|lifecycle|issuer) ;; *) echo 'Invalid authority source kind' >&2; exit 2 ;; esac
+last_count=5
+issuer_enabled=false
 scratch="$(mktemp -d)"
 worker_changed=false
 cleanup() {
@@ -20,6 +22,7 @@ trap 'echo "Recipient authority delivery check failed at line $LINENO" >&2' ERR
 admin() { docker compose -f compose.release.yml exec -T postgres psql -X -U strataai -d strataai -At -v ON_ERROR_STOP=1 -c "$1"; }
 authority_worker() {
   STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED="$1" STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=false \
+    STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED="${2:-$issuer_enabled}" \
     STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=false STRATAAI_WORKER_ORGANIZATION_IDS='' \
     docker compose -f compose.release.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 }
@@ -37,6 +40,19 @@ organization="$(curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-St
 # UUID text is lowercase; normalize the complete address, including its UUID.
 email="AUTHORITY-${organization^^}@EXAMPLE.TEST"
 other_email="AUTHORITY-OTHER-${organization^^}@EXAMPLE.TEST"
+if test "$source_kind" = issuer; then
+  # Preserve real Owner continuity through ordinary invitation acceptance.
+  # Reuse the first recipient address so this extra accepted historical row
+  # still represents only two distinct recipient effects.
+  successor="$(jq -nc --arg email "${email,,}" '{email:$email,password:"authority-successor-correct-horse",displayName:"Authority successor"}')"
+  curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$successor" "$BASE_URL/auth/register" >/dev/null
+  curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -c "$scratch/successor-cookies" -d "$successor" "$BASE_URL/auth/login" >/dev/null
+  successor_invitation="$(curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -d "$(jq -nc --arg email "${email,,}" '{email:$email,surface:"INTERNAL",targetRole:"OWNER"}')" "$BASE_URL/organizations/$organization/invitations" | jq -r '.id')"
+  [[ "$successor_invitation" =~ ^[0-9a-f-]{36}$ ]]
+  curl --fail --silent --show-error -b "$scratch/successor-cookies" -H 'X-StrataAI-Request: 1' -X POST "$BASE_URL/me/invitations/$successor_invitation/accept" >/dev/null
+  last_count=6
+fi
 admin "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,created_by_user_id,created_at,expires_at)
  SELECT gen_random_uuid(),'$organization',lower(CASE WHEN i=205 THEN '$other_email' ELSE '$email' END),
  CASE WHEN i=205 THEN '$other_email' ELSE '$email' END,encode(sha256(('$organization/'||i)::bytea),'hex'),
@@ -44,7 +60,28 @@ admin "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token
 board="$(curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
   -d "$(jq -nc --arg id "$organization" '{organizationId:$id,name:"Authority unrelated Work queue"}')" "$BASE_URL/boards" | jq -r '.id')"
 [[ "$board" =~ ^[0-9a-f-]{36}$ ]]
-if test "$source_kind" = lifecycle; then
+if test "$source_kind" = issuer; then
+  request="$(cat /proc/sys/kernel/random/uuid)"
+  for replay in 1 2; do
+    status="$(curl --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+      -H "Idempotency-Key: $request" -X POST -d '{}' -o "$scratch/deactivation.json" -w '%{http_code}' \
+      "$BASE_URL/me/deactivate?expectedActorId=$actor")"
+    test "$status" = 204
+  done
+  source="$(admin "SELECT event_id FROM invitation_issuer_authority_sources WHERE actor_id='$actor';")"
+  [[ "$source" =~ ^[0-9a-f-]{36}$ ]]
+  test "$(admin "SELECT count(*) FROM invitation_recipient_authority_sources WHERE issuer_source_event_id='$source';")" = 0
+  test "$(admin "SELECT count(*)=1 AND bool_and(state='PENDING' AND attempt_count=0) FROM invitation_issuer_authority_jobs WHERE event_id='$source';")" = t
+  issuer_enabled=true
+  authority_worker false true
+  for ((attempt=0; attempt<60; attempt++)); do
+    if test "$(admin "SELECT count(*)=1 AND bool_and(state='SUCCEEDED' AND attempt_count=1 AND scanned_count=1) FROM invitation_issuer_authority_jobs WHERE event_id='$source';")" = t; then break; fi
+    sleep 1
+  done
+  test "$(admin "SELECT count(*)=1 AND bool_and(state='SUCCEEDED' AND attempt_count=1 AND scanned_count=1) FROM invitation_issuer_authority_jobs WHERE event_id='$source';")" = t
+  test "$(admin "SELECT status='DEACTIVATED' FROM users WHERE id='$actor';")" = t
+  test "$(admin "SELECT count(*)=1 FROM identity_events WHERE user_id='$actor' AND event_type='USER_DEACTIVATED';")" = t
+elif test "$source_kind" = lifecycle; then
   request="$(cat /proc/sys/kernel/random/uuid)"
   status="$(curl --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
     -H "Idempotency-Key: $request" -X DELETE -d '{}' -o "$scratch/request.json" -w '%{http_code}' \
@@ -71,7 +108,7 @@ unrelated() {
 before="$(unrelated)"
 authority_worker true
 finished() {
-  admin "SELECT (SELECT array_agg(scanned_count ORDER BY scanned_count)=ARRAY[5,100,100] AND bool_and(completed_at IS NOT NULL)
+  admin "SELECT (SELECT array_agg(scanned_count ORDER BY scanned_count)=ARRAY[$last_count,100,100] AND bool_and(completed_at IS NOT NULL)
     FROM invitation_recipient_authority_pages WHERE tenant_id='$organization' AND source_event_id='$source')
     AND (SELECT count(*)=3 AND bool_and(j.state='SUCCEEDED' AND j.attempt_count=1 AND j.actor_id=e.actor_id
       AND j.correlation_id=e.correlation_id AND j.safe_metadata=jsonb_build_object('eventId',e.event_id))
@@ -87,12 +124,18 @@ for ((attempt=0; attempt<60; attempt++)); do
 done
 test "$(finished)" = t
 test "$before" = "$(unrelated)"
+if test "$source_kind" = issuer; then
+  test "$(admin "SELECT count(*)=2 FROM invitation_issuer_authority_effects WHERE event_id='$source';")" = t
+fi
 # Restart the same immutable Worker after acknowledgment: completed pages,
 # counters and deduplicated effects must remain unchanged.
 authority_worker true
 test "$(finished)" = t
 test "$before" = "$(unrelated)"
-echo "Exact Worker authority delivery: canonical HTTP $source_kind command, automatic scope, 100/100/5 pages, two deduplicated recipients, restart and unrelated queue isolation passed."
+if test "$source_kind" = issuer; then
+  test "$(admin "SELECT count(*)=1 AND bool_and(state='SUCCEEDED' AND attempt_count=1 AND scanned_count=1) FROM invitation_issuer_authority_jobs WHERE event_id='$source';")" = t
+fi
+echo "Exact Worker authority delivery: canonical HTTP $source_kind command, automatic scope, 100/100/$last_count pages, two deduplicated recipients, restart and unrelated queue isolation passed."
 
 if test "$source_kind" = lifecycle; then
   # Resume automatic deletion discovery without a configured Organization ID.

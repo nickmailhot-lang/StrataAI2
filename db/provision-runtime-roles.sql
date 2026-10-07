@@ -126,4 +126,6 @@ GRANT EXECUTE ON FUNCTION public.enqueue_attachment_preview_backfill(uuid,intege
 GRANT EXECUTE ON FUNCTION public.recover_attachment_scan_page(uuid,integer) TO strataai_worker_runtime;
 GRANT SELECT,INSERT ON invitation_mail_intents TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION public.load_invitation_mail(uuid,uuid,uuid,uuid,uuid,boolean), public.finish_invitation_mail(uuid,uuid,uuid,uuid,uuid,text,text,uuid) TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.claim_invitation_issuer_authority(uuid),
+ public.deliver_invitation_issuer_authority(uuid,uuid,uuid,uuid,uuid,integer) TO strataai_worker_runtime;
 COMMIT;

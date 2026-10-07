@@ -51,6 +51,15 @@ Additional provider credentials are introduced only with the corresponding PRD a
 provided by deployment secret management/environment variables. Real secrets are never
 committed to `.env.example`, image layers, or CI artifacts.
 
+Production Workers default `STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED`
+to `true`. This independent loop leases private account-deactivation routing
+jobs and publishes at most 100 owning Organization authority roots per page.
+It requires migration 109 and the provisioned Worker capability grants. The
+recipient authority discovery loop must also be enabled to deliver those roots.
+Set the issuer flag to `false` to suspend only account-source routing. Invalid
+values and enabled Demo issuer discovery reject startup. No configured
+Organization IDs are required. See [issuer account authority](invitation-recipient-authority.md#canonical-issuer-account-deactivation).
+
 Hosted PostgreSQL connection strings should require TLS (for example, Npgsql `SSL Mode=Require`
 or stronger certificate validation supported by the deployment environment). Local Compose is
 an explicitly documented exception.

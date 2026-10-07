@@ -112,6 +112,17 @@ if (authorityDiscovery)
     builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
     builder.Services.AddHostedService<InvitationRecipientAuthorityDiscoveryWorker>();
 }
+var issuerAuthoritySetting = builder.Configuration["STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED"];
+var issuerAuthority = issuerAuthoritySetting is null ? runtime.Mode == RuntimeMode.Production
+    : bool.TryParse(issuerAuthoritySetting, out var issuerEnabled) ? issuerEnabled
+    : throw new InvalidOperationException("Invitation issuer authority discovery setting must be true or false.");
+if (issuerAuthority && runtime.Mode != RuntimeMode.Production)
+    throw new InvalidOperationException("Invitation issuer authority discovery requires Production mode.");
+if (issuerAuthority)
+{
+    builder.Services.AddSingleton<IInvitationIssuerAuthorityDeliveryStore, PostgresInvitationIssuerAuthorityDeliveryStore>();
+    builder.Services.AddHostedService<InvitationIssuerAuthorityWorker>();
+}
 if (InvitationMailRegistration.IsEnabled(builder.Configuration, runtime))
 {
     if (string.IsNullOrWhiteSpace(jobScope))

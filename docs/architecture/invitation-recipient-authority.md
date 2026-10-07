@@ -4,6 +4,61 @@ Return to the [documentation index](../README.md),
 [recipient journal and replay](invitation-recipient-events.md) or
 [protected discovery](invitation-discovery.md).
 
+## Canonical issuer account deactivation
+
+[Migration 109](../../db/migrations/109_invitation_issuer_account_authority.sql)
+captures only future actual account deactivation transitions and their original
+`USER_DEACTIVATED` identity event. An immutable proof binds account version,
+timestamp and the owning transaction. The event retains its original actor,
+event ID and correlation (including the existing 120-character identity limit).
+Unproven events and events appended in a later transaction are refused. The
+HTTP transaction publishes one private routing job and scans no invitations.
+Historical account events are not backfilled.
+
+The separate Production Worker leases one private routing page and finds at
+most 100 distinct Organizations containing invitations originally issued by
+that account before the event. Current membership is not required. Each owning
+reference starts the existing tenant-scoped 100-candidate authority delivery.
+Each routing continuation has its own immutable identity, two-minute lease and
+five-claim limit. Exact job/event/actor/worker/lease checks and final lease fences
+make late failure roll back effects, checkpoints and continuations together.
+Recipient effects are deduplicated globally per account event, including when
+the same address received invitations in several Organizations.
+
+The four private subject-RLS tables and canonical source history are protected
+against mutation. Neither runtime role can read them directly; only the Worker
+has the reference-only claim and delivery capabilities. Configuration is
+documented in [Worker configuration](configuration.md). API/Worker readiness
+requires migration 109 and the Worker grants must be provisioned after migration.
+
+The mandatory production persistence contract passes locally with restricted
+runtime logins: 205 Organization routes in 100/100/5 pages, recipient paging,
+cross-Organization deduplication, future invitation exclusion, exact capability
+substitution refusal, expired-lease recovery, late routing and recipient rollback,
+immutable history, one original audit/event and unchanged 120-character
+correlation. Its initial account/invitation data and admission are explicit
+fixtures; this is adapter evidence rather than HTTP session evidence.
+
+Four actual Production browser cases pass at 1280px and 390px, connected and
+after transport interruption. Genuine invitation onboarding establishes the
+issuer's rights. Real account deactivation and a same-key retry withdraw cached
+names and acceptance consent before a held recovery response is released.
+Stale acceptance is rejected, recipient account access remains valid, private
+Organization access remains denied, and focus, accessibility, overflow and
+content-free wire checks pass. A separate actual Worker was restarted between
+the initial and final four-case runs. These local framework containers do not
+certify an exact retained release-image revision.
+
+The mandatory exact-image `issuer` gate additionally requires a real Owner
+handover, original deactivation receipt replay, no HTTP routing fanout,
+100/100/6 recipient pages (205 invitations plus the accepted handover), two
+deduplicated revisions and restart stability. Execution remains pending CI.
+Clean/repeat/forward/serialized/failure-rollback migration checks, schema
+isolation inspection, required-schema readiness and isolated Worker Release
+build pass locally. Demo issuer account authority parity, other account-state
+producers and complete retained-image acceptance remain unfinished. PRD-03,
+PRD-04 and PRD-60 remain open.
+
 An invitation creation source proves a committed invitation, but it does not
 prove continuing issuer rights, active parent state or current names. Those
 dependencies can change without an invitation acceptance/revocation event.

@@ -544,6 +544,9 @@ jobs:
       - name: Organization request and terminal recipient authority against exact Worker image
         run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 lifecycle
 
+      - name: Canonical issuer deactivation and bounded authority routing against exact Worker image
+        run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 issuer
+
       - name: Account deactivation and Organization active-owner continuity
         run: scripts/ci/test-account-owner-continuity.sh
 
