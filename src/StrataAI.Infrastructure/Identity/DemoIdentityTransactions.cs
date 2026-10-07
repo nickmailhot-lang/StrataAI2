@@ -5,14 +5,15 @@ namespace StrataAI.Infrastructure.Identity;
 internal interface IDemoIdentityTransactionParticipant { Action CaptureRollback(); }
 internal sealed class DemoIdentityTransactionScope
 {
-    private sealed record State(Guid? Subject);
+    private sealed record State(Guid? Subject, Guid CommandId);
     private readonly AsyncLocal<State?> _current = new();
     public bool Active => _current.Value is not null;
+    public Guid CommandId => _current.Value?.CommandId ?? Guid.Empty;
     public bool Owns(Guid subject) => subject != Guid.Empty && _current.Value?.Subject == subject;
     public IDisposable Enter(Guid? subject)
     {
         if (Active) throw new InvalidOperationException("Nested identity transactions are unavailable.");
-        _current.Value = new(subject); return new Lease(() => _current.Value = null);
+        _current.Value = new(subject, Guid.NewGuid()); return new Lease(() => _current.Value = null);
     }
     private sealed class Lease(Action release) : IDisposable { public void Dispose() => release(); }
 }
@@ -33,7 +34,8 @@ internal sealed partial class InMemoryIdentityStore : IDemoIdentityTransactionPa
             var events = _events.ToArray();
             Action[] restore = [DemoIdentityRollback.Dictionary(_users), DemoIdentityRollback.Dictionary(_usersByEmail),
                 DemoIdentityRollback.Dictionary(_sessions), DemoIdentityRollback.Dictionary(_revokedSessions),
-                DemoIdentityRollback.Dictionary(_passwordResetTokens), DemoIdentityRollback.Dictionary(_emailVerificationTokens)];
+                DemoIdentityRollback.Dictionary(_passwordResetTokens), DemoIdentityRollback.Dictionary(_emailVerificationTokens),
+                DemoIdentityRollback.Dictionary(_issuerAuthorityProofs)];
             return () => { lock (_sync) { foreach (var action in restore) action(); _events.Clear(); _events.AddRange(events); } };
         }
     }

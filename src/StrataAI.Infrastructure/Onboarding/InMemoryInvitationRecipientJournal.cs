@@ -28,7 +28,7 @@ internal sealed record DemoInvitationProof(Guid InvitationId, Guid OrganizationI
 // ownership excludes replay while tentative state is awaiting its final fence.
 internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScope workScope,
     DemoIdentityTransactionScope identityScope, IIdentityStore identities)
-    : IInvitationRecipientEventReader, IDemoOrganizationTransactionParticipant, IDemoWorkTransactionParticipant
+    : IInvitationRecipientEventReader, IDemoOrganizationTransactionParticipant, IDemoWorkTransactionParticipant, IDemoIdentityTransactionParticipant
 {
     private readonly object _sync = new();
     private readonly Dictionary<(Guid Organization, Guid Invitation), DemoInvitationProof> _proofs = [];
@@ -40,7 +40,33 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
     private readonly HashSet<(Guid Organization, string EntityType, Guid Entity, long Version)> _authorityPublished = [];
     private readonly Dictionary<string, long> _authorityRevisions = new(StringComparer.Ordinal);
     private readonly HashSet<(Guid Source, string Email)> _authorityEffects = [];
-    private readonly Dictionary<(Guid Source, DateTimeOffset AfterAt, Guid AfterId), int> _authorityPages = [];
+    private readonly Dictionary<(Guid Organization, Guid Source, DateTimeOffset AfterAt, Guid AfterId), int> _authorityPages = [];
+    private readonly Dictionary<Guid, (IdentityDomainEvent Source, DemoIssuerAuthorityProof Proof)> _issuerAuthoritySources = [];
+    private readonly HashSet<(Guid Actor, long Version)> _issuerAuthorityPublished = [];
+
+    internal void PublishIssuerAuthoritySource(IdentityDomainEvent source, DemoIssuerAuthorityProof proof,
+        InMemoryInvitationStore invitations, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!identityScope.Active || proof.CommandId != identityScope.CommandId || source.EventType != "USER_DEACTIVATED"
+            || source.ActorId != proof.ActorId || source.EntityId != proof.ActorId || source.Version != proof.Version)
+            throw new InvalidOperationException("Issuer authority source requires its owning account command.");
+        lock (_sync)
+        {
+            if (_issuerAuthoritySources.ContainsKey(source.EventId) || !_issuerAuthorityPublished.Add((proof.ActorId, proof.Version)))
+                throw new InvalidOperationException("Issuer authority transition was already published.");
+            _issuerAuthoritySources.Add(source.EventId, (source, proof));
+            var after = Guid.Empty;
+            while (true)
+            {
+                var organizations = invitations.ReadIssuerAuthorityOrganizations(proof.ActorId, source.CreatedAt, after, ct);
+                foreach (var organization in organizations)
+                    SimulateAuthorityPages(organization, source.EventId, source.CreatedAt, invitations, ct);
+                if (organizations.Length < 100) return;
+                after = organizations[^1];
+            }
+        }
+    }
     private readonly Dictionary<Guid, (WorkEvent Source, DemoBoardAuthorityProof Proof)> _boardAuthoritySources = [];
     private readonly HashSet<(Guid Command, Guid Board, string Type, Guid Subject, long Version)> _boardAuthorityPublished = [];
 
@@ -81,7 +107,7 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
             while (true)
             {
                 ct.ThrowIfCancellationRequested();
-                var key = (source, after.At, after.Id);
+                var key = (organization, source, after.At, after.Id);
                 if (_authorityPages.ContainsKey(key)) return;
                 var page = invitations.ReadAuthorityPage(organization, cutoff, after, ct);
                 foreach (var row in page)
@@ -177,6 +203,7 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
                 DemoRollback.Dictionary(_heads), DemoRollback.Dictionary(_events),
                 DemoRollback.Dictionary(_authoritySources), DemoRollback.Set(_authorityPublished),
                 DemoRollback.Dictionary(_boardAuthoritySources), DemoRollback.Set(_boardAuthorityPublished),
+                DemoRollback.Dictionary(_issuerAuthoritySources), DemoRollback.Set(_issuerAuthorityPublished),
                 DemoRollback.Dictionary(_authorityRevisions), DemoRollback.Set(_authorityEffects), DemoRollback.Dictionary(_authorityPages)];
             return () => { lock (_sync) foreach (var action in restore) action(); };
         }

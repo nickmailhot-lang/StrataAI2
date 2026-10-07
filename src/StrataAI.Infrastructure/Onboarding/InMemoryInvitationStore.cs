@@ -16,6 +16,12 @@ internal sealed class InMemoryInvitationStore(
     private readonly Dictionary<(Guid Organization, Guid Invitation), long> _versions = [];
     private readonly Dictionary<Guid, SortedSet<(DateTimeOffset At, Guid Id)>> _authorityIndex = [];
     private readonly Dictionary<Guid, string> _tokensById = [];
+    internal Guid[] ReadIssuerAuthorityOrganizations(Guid issuer, DateTimeOffset cutoff, Guid after, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_sync) return _byToken.Values.Where(row => row.CreatedByUserId == issuer && row.CreatedAt <= cutoff)
+            .Select(row => row.OrganizationId).Distinct().Where(id => id.CompareTo(after) > 0).Order().Take(100).ToArray();
+    }
     internal InvitationRecord[] ReadAuthorityPage(Guid organization, DateTimeOffset cutoff,
         (DateTimeOffset At, Guid Id) after, CancellationToken ct)
     {

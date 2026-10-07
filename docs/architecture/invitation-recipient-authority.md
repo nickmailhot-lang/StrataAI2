@@ -55,9 +55,41 @@ handover, original deactivation receipt replay, no HTTP routing fanout,
 deduplicated revisions and restart stability. Execution remains pending CI.
 Clean/repeat/forward/serialized/failure-rollback migration checks, schema
 isolation inspection, required-schema readiness and isolated Worker Release
-build pass locally. Demo issuer account authority parity, other account-state
+build pass locally. Demo parity is implemented below. Other account-state
 producers and complete retained-image acceptance remain unfinished. PRD-03,
 PRD-04 and PRD-60 remain open.
+
+### Demo issuer authority and CI fixture retention
+
+Demo captures the actual deactivation/version/timestamp under a fresh owning
+identity-command ID. Only its original `USER_DEACTIVATED` event can publish the
+private source; legacy raw fixture mutations acquire no fabricated source.
+Its existing immediate simulation seeks Organization pages of 100 and invitation
+pages of 100, sharing one source/email effect across Organizations. Page keys
+include the owning Organization, preventing a shared account event's first page
+from suppressing another Organization. Identity rollback snapshots include
+transition proofs, source identities, pages, effects and recipient revisions.
+The simulation does not claim durable Worker leases or process-restart recovery.
+
+Both new API-host cases pass: returned refusal and late exception restore
+account/recipient state; commit and original same-key receipt retry retain one
+identity event and one revision per recipient across 205 explicit disposable
+routing scopes and a 205-row first scope. A future invitation is excluded,
+unproven source append is refused and the original 120-character correlation
+survives. Five existing deactivation rollback cases, four Organization authority
+cases and nine Board authority cases also pass. The same four desktop/mobile
+connected/disconnected browser cases pass against a separate current Demo API,
+with ordinary HTTP onboarding and the complete privacy/accessibility assertions.
+Browser typecheck and isolated Release build pass with zero warnings/errors.
+
+CI 37591991403 failed in the mention-handle SQL fixture's privileged cleanup:
+its synthetic account transition now has a retained proof, so the production FK
+correctly refuses account deletion. The repaired fixture requires that refusal,
+one retained proof and no invented canonical source, and still verifies deferred
+alias cascades for the other two unreferenced accounts. The complete SQL fixture
+passes locally under schema 109 and rolls back at its original boundary. No
+production history protection is disabled or weakened. Fresh full CI, including
+the retained-image issuer gate, is still required before closure.
 
 An invitation creation source proves a committed invitation, but it does not
 prove continuing issuer rights, active parent state or current names. Those

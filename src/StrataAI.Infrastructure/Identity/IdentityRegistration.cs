@@ -73,7 +73,9 @@ public static class IdentityRegistration
             {
                 var store = new InMemoryIdentityStore(
                     provider.GetRequiredService<StrataAI.Application.Common.IClock>(),
-                    provider.GetRequiredService<DemoMentionHandleRegistry>());
+                    provider.GetRequiredService<DemoMentionHandleRegistry>(),
+                    provider.GetRequiredService<DemoIdentityTransactionScope>(),
+                    provider.GetRequiredService<Func<StrataAI.Infrastructure.Onboarding.IDemoIssuerAuthorityProjection>>());
                 store.SeedTestAccount(provider.GetRequiredService<IPasswordHashService>());
                 return store;
             });

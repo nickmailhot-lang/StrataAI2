@@ -36,7 +36,7 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
         expect((await client.request.post('/auth/register', { headers, data })).status()).toBe(201);
         expect((await client.request.post('/auth/login', { headers, data })).status()).toBe(200);
       }
-      expect((await (await context.request.get('/api/runtime')).json()).mode).toBe('production');
+      expect((await (await context.request.get('/api/runtime')).json()).mode).toBe(process.env.STRATAAI_E2E_RUNTIME_MODE ?? 'production');
       const adminId = (await (await issuer.request.get('/me')).json()).id as string;
       const created = await owner.request.post('/organizations', { headers, data: { name: 'Issuer authority Portal parent' } });
       expect(created.status()).toBe(201); const org = (await created.json()).organization.id as string;

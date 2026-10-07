@@ -16,6 +16,9 @@ public static class OnboardingRegistration
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<InMemoryInvitationRecipientJournal>();
+            services.AddSingleton<StrataAI.Infrastructure.Identity.IDemoIdentityTransactionParticipant>(p => p.GetRequiredService<InMemoryInvitationRecipientJournal>());
+            services.AddSingleton<InMemoryIssuerAuthorityProjection>();
+            services.AddSingleton<Func<IDemoIssuerAuthorityProjection>>(p => () => p.GetRequiredService<InMemoryIssuerAuthorityProjection>());
             services.AddSingleton<StrataAI.Infrastructure.WorkManagement.IDemoWorkTransactionParticipant>(p => p.GetRequiredService<InMemoryInvitationRecipientJournal>());
             services.AddSingleton<InMemoryBoardAuthorityProjection>();
             services.AddSingleton<Func<IDemoBoardAuthorityProjection>>(p => () => p.GetRequiredService<InMemoryBoardAuthorityProjection>());

@@ -3,7 +3,8 @@ using StrataAI.Application.Common;
 
 namespace StrataAI.Infrastructure.Identity;
 
-internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHandleRegistry handles) : IIdentityStore
+internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHandleRegistry handles,
+    DemoIdentityTransactionScope scope, Func<StrataAI.Infrastructure.Onboarding.IDemoIssuerAuthorityProjection> issuerProjection) : IIdentityStore
 {
     // Called only by Demo composition before the singleton is exposed. This is
     // an ordinary verified account: all sign-in and session checks still apply.
@@ -343,12 +344,15 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
                 UpdatedAt = deactivatedAt,
                 Version = user.Version + 1,
             };
+            if (scope.Active && user.Status != AccountStatus.Deactivated)
+                _issuerAuthorityProofs[(userId, user.Version + 1)] = new(userId, user.Version + 1, deactivatedAt, scope.CommandId);
             RemoveSessionsForUser(userId);
             return Task.FromResult(true);
         }
     }
 
     private readonly List<IdentityDomainEvent> _events = [];
+    private readonly Dictionary<(Guid Actor, long Version), DemoIssuerAuthorityProof> _issuerAuthorityProofs = [];
 
     public Task<IdentityOperation<IdentityEventPage>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default)
@@ -372,8 +376,18 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
         {
             var user = _users[userId];
             var sequence = _events.LongCount(value => value.EntityId == userId) + 1;
-            _events.Add(new(Guid.NewGuid(), sequence, eventType, userId, null, null, "User", userId,
-                user.Version, new Dictionary<string,string>(), correlationId, clock.UtcNow));
+            var source = new IdentityDomainEvent(Guid.NewGuid(), sequence, eventType, userId, null, null, "User", userId,
+                user.Version, new Dictionary<string,string>(), correlationId, clock.UtcNow);
+            if (eventType == "USER_DEACTIVATED")
+            {
+                if (!scope.Active || user.Status != AccountStatus.Deactivated
+                    || !_issuerAuthorityProofs.TryGetValue((userId, user.Version), out var proof)
+                    || proof.CommandId != scope.CommandId || proof.ChangedAt != user.UpdatedAt
+                    || source.CreatedAt < proof.ChangedAt || string.IsNullOrWhiteSpace(correlationId) || correlationId.Trim().Length > 120)
+                    throw new InvalidOperationException("Issuer authority source requires its actual owning account transition.");
+                issuerProjection().Append(source, proof, cancellationToken);
+            }
+            _events.Add(source);
         }
         return Task.CompletedTask;
     }
