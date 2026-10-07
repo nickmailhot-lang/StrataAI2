@@ -17,7 +17,8 @@ ordinary unverified-account browser policy do not prove retained-current-image
 release acceptance, full accessibility, concurrency/continuity matrices or
 capacity. Direct administrative grants and role changes now emit the public
 event names described in the [PRD-05 acceptance audit](architecture/prd-05-acceptance.md);
-restricted audit/journal and retained-image consumer acceptance remain required.
+restricted audit/journal/outbox and replay contracts pass locally and are mandatory
+in CI; retained-image consumer acceptance remains required.
 
 ## Member administration contract
 
