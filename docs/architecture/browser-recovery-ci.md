@@ -351,5 +351,20 @@ violating `organization_membership_activations_pkey`. Its actual release identit
 and invitation command checks had passed before that step. This image predates
 the `f3daad3` fixture repair; it is not evidence against that later repair. The
 `f3daad3` run `37547634517` has passed source gates and build-once image creation;
-its security and container jobs remain live. Do not close dependent PRDs until
+its security gate passed. Its container job subsequently failed at the large
+Board native capacity check described below. Do not close dependent PRDs until
 the repaired images have actually completed the required gates.
+
+### Phone Board edge-scroll capacity failure
+
+At `f3daad3`, run `37547634517`, container job `112558720128`, the desktop
+Board capacity scenario passed and the 390 px scenario failed at
+`board-capacity.case.ts:260`: the predicate seeking a later empty column's
+drop center in the middle half of the viewport stayed null for five seconds.
+The retained screenshot shows later empty columns visible while the source
+Card remains pressed in the page snapshot. This establishes an actual native
+failure; it does not establish whether sampling missed the drop center or the
+product failed to maintain reachable drag targets. The retained trace is being
+inspected before changing either fixture or product behavior. No assertion is
+removed or timeout increased. Later native acceptance stages did not execute,
+and the required gate failed.
