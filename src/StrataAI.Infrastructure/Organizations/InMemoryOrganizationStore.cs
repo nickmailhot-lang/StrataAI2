@@ -6,7 +6,8 @@ using StrataAI.Infrastructure.Onboarding;
 namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed partial class InMemoryOrganizationStore(IIdentityStore identities, IdentityPolicy policy, IClock clock,
-    IEnumerable<Func<IDemoInvitationAuditProjection>> invitationProjections) : IOrganizationStore
+    IEnumerable<Func<IDemoInvitationAuditProjection>> invitationProjections,
+    StrataAI.Infrastructure.WorkManagement.DemoWorkTransactionScope workScope) : IOrganizationStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<Guid, OrganizationRecord> _organizations = [];
@@ -167,6 +168,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
                 Version = organization.Version + 1,
             };
             _organizations[organizationId] = updated;
+            CaptureAuthorityProof(organizationId, "Organization", organizationId, "ORGANIZATION_UPDATED", updated.Version, updatedAt);
             return Task.FromResult<OrganizationRecord?>(updated);
         }
     }
@@ -246,6 +248,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
                 UpdatedAt = updatedAt,
                 Version = membership.Version + 1,
             };
+            CaptureAuthorityProof(organizationId, "User", userId, "ORGANIZATION_MEMBER_REMOVED", membership.Version + 1, updatedAt);
 
             return OrganizationRemoveMemberResult.Removed;
         }
@@ -285,7 +288,8 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (eventType is not ("ORGANIZATION_MEMBER_INVITED" or "BOARD_MEMBER_INVITED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED")) return;
+        if (eventType is not ("ORGANIZATION_MEMBER_INVITED" or "BOARD_MEMBER_INVITED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED"
+            or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT")) return;
         var audit = new DemoInvitationAudit(Guid.NewGuid(), organizationId, actorUserId, eventType, entityType, entityId, correlationId, clock.UtcNow);
         foreach (var projection in invitationProjections) await projection().AppendAsync(audit, cancellationToken);
     }
@@ -299,7 +303,8 @@ internal sealed partial class InMemoryOrganizationStore : IDemoOrganizationTrans
         {
             var organizations = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_organizations);
             var members = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_members);
-            return () => { lock (_sync) { organizations(); members(); } };
+            var authority = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_authorityProofs);
+            return () => { lock (_sync) { organizations(); members(); authority(); } };
         }
     }
 }

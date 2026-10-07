@@ -35,6 +35,24 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
     private readonly HashSet<(Guid Organization, Guid Invitation, long Version)> _published = [];
     private readonly Dictionary<string, long> _heads = new(StringComparer.Ordinal);
     private readonly Dictionary<string, InvitationRecipientEvent[]> _events = new(StringComparer.Ordinal);
+    private readonly Dictionary<Guid, (DemoInvitationAudit Audit, DemoOrganizationAuthorityProof Proof)> _authoritySources = [];
+    private readonly HashSet<(Guid Organization, string EntityType, Guid Entity, long Version)> _authorityPublished = [];
+
+    internal void PublishAuthoritySource(DemoInvitationAudit audit, DemoOrganizationAuthorityProof proof, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!workScope.OwnsOrganizationCommand(audit.OrganizationId) || proof.OrganizationId != audit.OrganizationId)
+            throw new InvalidOperationException("Authority source requires its owning Organization command.");
+        lock (_sync)
+        {
+            if (_authoritySources.ContainsKey(audit.Id)
+                || !_authorityPublished.Add((proof.OrganizationId, proof.EntityType, proof.EntityId, proof.Version)))
+                throw new InvalidOperationException("Organization authority source was already published.");
+            // Reference/proof only: no recipient scan or synthetic invitation event.
+            // Bounded Demo delivery and revision effects are a separate dependency.
+            _authoritySources.Add(audit.Id, (audit, proof));
+        }
+    }
 
     internal void Capture(InvitationRecord row, long version, string eventType, CancellationToken ct)
     {
@@ -100,7 +118,8 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
             // Arrays and records are immutable; dictionary snapshots retain the
             // earlier committed identities and restore counters without gaps.
             Action[] restore = [DemoRollback.Dictionary(_proofs), DemoRollback.Dictionary(_sources), DemoRollback.Set(_published),
-                DemoRollback.Dictionary(_heads), DemoRollback.Dictionary(_events)];
+                DemoRollback.Dictionary(_heads), DemoRollback.Dictionary(_events),
+                DemoRollback.Dictionary(_authoritySources), DemoRollback.Set(_authorityPublished)];
             return () => { lock (_sync) foreach (var action in restore) action(); };
         }
     }

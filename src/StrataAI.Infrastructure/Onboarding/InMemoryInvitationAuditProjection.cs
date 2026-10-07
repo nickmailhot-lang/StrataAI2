@@ -3,6 +3,7 @@ using StrataAI.Application.Identity;
 using StrataAI.Application.Onboarding;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Infrastructure.Organizations;
 
 namespace StrataAI.Infrastructure.Onboarding;
 
@@ -12,6 +13,19 @@ internal sealed class InMemoryInvitationAuditProjection(InMemoryInvitationRecipi
 {
     public async Task AppendAsync(DemoInvitationAudit audit, CancellationToken cancellationToken)
     {
+        if (audit.EventType is "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT")
+        {
+            if (audit.Id == Guid.Empty || audit.ActorId == Guid.Empty || audit.CorrelationId.Length is < 1 or > 64
+                || await identities.FindUserByIdAsync(audit.ActorId, cancellationToken) is not { Status: AccountStatus.Active })
+                throw new InvalidOperationException("Organization authority source is invalid.");
+            var authorityProof = ((InMemoryOrganizationStore)organizations).RequireAuthorityProof(audit.OrganizationId, audit.EntityType, audit.EntityId, audit.EventType);
+            var actor = await organizations.FindMembershipAsync(audit.OrganizationId, audit.ActorId, cancellationToken);
+            if (audit.EventType == "ORGANIZATION_MEMBER_LEFT" ? audit.ActorId != audit.EntityId
+                : actor is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin })
+                throw new InvalidOperationException("Organization authority source actor is unavailable.");
+            journal.PublishAuthoritySource(audit, authorityProof, cancellationToken);
+            return;
+        }
         if (audit.EntityType != "Invitation" || audit.Id == Guid.Empty || audit.ActorId == Guid.Empty
             || audit.CorrelationId.Length is < 1 or > 64)
             throw new InvalidOperationException("Invitation recipient source is invalid.");

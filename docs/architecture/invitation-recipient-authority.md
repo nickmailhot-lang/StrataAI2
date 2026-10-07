@@ -148,6 +148,33 @@ Domain tests pass, including authority binding mismatch and revision withdrawal
 during source I/O. This proves production storage/reader integration; Demo
 authority parity and retained exact-image two-client native acceptance remain.
 
+## Demo canonical source proof
+
+Demo captures tentative Organization-update and membership-removal proofs only
+inside the existing owning Organization command. Proofs bind a private command
+identity; a later command cannot publish an earlier unaudited fixture mutation.
+Raw fixture writes acquire no history. The audit projection requires the actual subject proof, an active
+source actor, valid correlation and the applicable administration/self-departure
+rule. Organization and membership revisions remain separate. The private source
+retains the original audit identity/actor/correlation and immutable subject proof;
+publishing the same subject revision twice is refused.
+
+Proofs, source records and publication deduplication participate in the existing
+cross-store Demo rollback. Late audit refusal or command failure cannot retain
+tentative history or block retry of the actual revision. This producer records
+references only: it does not scan recipients, invent invitation transitions or
+change cursor revisions. Bounded Demo page delivery and recipient effects remain
+required before Demo authority invalidation works. These process-local records
+reset on API restart and are separate from sample-catalog reset endpoints.
+
+The isolated Linux Release API/test build passes with zero warnings/errors.
+Three source cases pass for actual update/removal publication, unproven and
+duplicate audit refusal, earlier-command proof refusal, late correlation failure,
+and failure after publication followed by retry of the same subject revision.
+All nine existing Demo recipient cases and six Demo Organization transaction
+cases also pass. These are source/rollback regressions, not delivery or native
+authority-withdrawal acceptance.
+
 ## Runtime work required next
 
 The implemented first producer attaches to future actual Organization metadata
@@ -157,7 +184,7 @@ revision. Their current delivery capability already validates the revision
 against the correct Organization, membership or invitation subject; these
 different revision sequences must not be compared with one another.
 
-Demo needs equivalent transaction rollback and current-recipient behavior.
+Demo needs bounded delivery/checkpoint/effect rollback and current-recipient behavior.
 Actual adapter/Worker restart and concurrent-page execution evidence must be
 added alongside the existing SQL capability tests.
 

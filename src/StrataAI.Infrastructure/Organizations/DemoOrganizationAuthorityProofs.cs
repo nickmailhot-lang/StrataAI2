@@ -1,0 +1,31 @@
+namespace StrataAI.Infrastructure.Organizations;
+
+internal sealed record DemoOrganizationAuthorityProof(Guid OrganizationId, string EntityType,
+    Guid EntityId, string EventType, long Version, DateTimeOffset CreatedAt, Guid CommandId);
+
+internal sealed partial class InMemoryOrganizationStore
+{
+    private readonly Dictionary<(Guid Organization, string EntityType, Guid Entity), DemoOrganizationAuthorityProof> _authorityProofs = [];
+
+    private void CaptureAuthorityProof(Guid organization, string entityType, Guid entity, string eventType,
+        long version, DateTimeOffset at)
+    {
+        // Legacy fixture writes outside owning commands do not acquire history.
+        if (workScope.OwnsOrganizationCommand(organization))
+            _authorityProofs[(organization, entityType, entity)] = new(organization, entityType, entity, eventType, version, at, workScope.CommandId);
+    }
+
+    internal DemoOrganizationAuthorityProof RequireAuthorityProof(Guid organization, string entityType, Guid entity, string eventType)
+    {
+        if (!workScope.OwnsOrganizationCommand(organization))
+            throw new InvalidOperationException("Authority source requires its owning Organization command.");
+        lock (_sync)
+        {
+            var expected = eventType == "ORGANIZATION_MEMBER_LEFT" ? "ORGANIZATION_MEMBER_REMOVED" : eventType;
+            if (!_authorityProofs.TryGetValue((organization, entityType, entity), out var proof)
+                || proof.CommandId != workScope.CommandId || proof.EventType != expected || proof.Version < 2 || proof.CreatedAt == default)
+                throw new InvalidOperationException("Organization authority transition is unproven.");
+            return proof;
+        }
+    }
+}
