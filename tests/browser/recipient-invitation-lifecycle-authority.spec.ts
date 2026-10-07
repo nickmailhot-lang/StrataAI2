@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
+import { automaticDeletionWorker } from './automaticDeletionWorker';
 
 for (const width of [1280, 390]) for (const offline of [false, true]) {
   test(`PRD-03-TC-05/07/09/11/12, PRD-60-TC-04/09/11/12: Portal invitation withdraws on Organization deletion ${offline ? 'after disconnect' : 'while connected'} at ${width}px`, async ({ page, context, browser }) => {
@@ -15,6 +16,7 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
     let disconnected = false;
     let liveSocket: WebSocketRoute | undefined;
     let releaseRead: (() => void) | undefined;
+    let restoreWorker = () => {};
     await page.routeWebSocket('**/invitations/live*', socket => {
       if (disconnected) { socket.close(); return; }
       socket.connectToServer(); liveSocket = socket;
@@ -64,6 +66,7 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
       const key = crypto.randomUUID();
       const path = `/organizations/${org}?version=1&expectedActorId=${actor}`;
       const requestHeaders = { ...headers, 'Idempotency-Key': key };
+      if (mode === 'production') restoreWorker = automaticDeletionWorker();
       expect((await issuer.request.delete(path, { headers: requestHeaders, data: {} })).status()).toBe(202);
       expect((await issuer.request.delete(path, { headers: requestHeaders, data: {} })).status()).toBe(202);
       if (offline) { disconnected = false; await context.setOffline(false); }
@@ -104,6 +107,6 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
         expect(wire).not.toContain(privateValue);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    } finally { releaseRead?.(); await context.setOffline(false); await issuer.close(); }
+    } finally { try { restoreWorker(); } finally { releaseRead?.(); await context.setOffline(false); await issuer.close(); } }
   });
 }

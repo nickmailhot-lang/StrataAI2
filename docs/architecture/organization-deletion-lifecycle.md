@@ -745,6 +745,15 @@ terminal event, and their actual Board, List and Card tombstones. The four initi
 pre-deletion fixture failures remain untouched ACTIVE fixtures; their absence of
 terminal processing is not counted as successful deletion evidence.
 
+Container integration deliberately defaults deletion discovery to disabled for
+pending-command fixtures. The member recovery and Portal recipient completion
+fixtures now explicitly enable the exact retained Worker's automatic deletion
+loop for their scenario, with no configured Organization IDs, then restore the
+job's original flags and identity/auth test overlays even after assertion failure.
+Local runs retain their separately supplied Worker; Demo recipient cases do not
+enable Production discovery. This corrects release setup rather than depending
+on a previous browser fixture to leave deletion processing enabled.
+
 ## Recipient invalidation on request and completion
 
 Migration 108 adds private recipient authority sources for the actual deletion

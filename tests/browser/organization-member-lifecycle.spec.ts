@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
+import { automaticDeletionWorker } from './automaticDeletionWorker';
 
 for (const width of [1280, 390]) for (const offline of [false, true]) {
   test(`PRD-03/18-TC-05/07/09/10/11/12: Internal member recovers real terminal deletion ${offline ? 'after disconnect' : 'while connected'} at ${width}px`, async ({ page, context, browser }) => {
@@ -13,6 +14,7 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
     let socket: WebSocketRoute | undefined;
     let disconnected = false;
     let documents = 0;
+    let restoreWorker = () => {};
     const frames: { state: string; events: Record<string, unknown>[] }[] = [];
     await page.routeWebSocket('**/organizations/live/lifecycle*', route => {
       if (disconnected) { route.close(); return; }
@@ -58,6 +60,7 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
         await expect(page.getByText('Member lifecycle Board', { exact: true })).toHaveCount(0);
       }
       const key = crypto.randomUUID();
+      restoreWorker = automaticDeletionWorker();
       const path = `/organizations/${org}/deletion-requests/${key}?expectedActorId=${ownerId}`;
       const remove = () => owner.request.delete(`/organizations/${org}?version=1&expectedActorId=${ownerId}`,
         { headers: { ...headers, 'Idempotency-Key': key }, data: {} });
@@ -92,6 +95,6 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
       await expect(page).toHaveURL(/\/login(?:\?|$)/, { timeout: 30_000 });
       await expect(page.getByText('Organization deletion confirmed complete.', { exact: true })).toHaveCount(0);
       expect((await context.request.get(`/organizations/${org}/lifecycle-events?expectedActorId=${memberId}`)).status()).toBe(401);
-    } finally { await context.setOffline(false); await owner.close(); }
+    } finally { try { restoreWorker(); } finally { await context.setOffline(false); await owner.close(); } }
   });
 }
