@@ -7,6 +7,8 @@ using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.Common;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Application.Onboarding;
+using StrataAI.Infrastructure.Onboarding;
 using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.Persistence;
@@ -215,6 +217,7 @@ internal static class OrganizationDeletionPagesContract
         await Admin("UPDATE users SET status='DEACTIVATED',updated_at=now(),version=version+1 WHERE id=@actor;");
         var processor=new BackgroundJobProcessor(jobs,new SystemClock(),[
             new OrganizationDeletionPageHandler(store),new WorkEventDeliveryHandler(new PostgresWorkEventDeliveryStore(worker)),
+            new InvitationRecipientAuthorityDeliveryHandler(new PostgresInvitationRecipientAuthorityDeliveryStore(worker)),
             new OrganizationLifecycleDeliveryHandler(new PostgresOrganizationLifecycleDeliveryStore(worker))]);
         var completed=0;var terminalDiscovered=false;
         while(completed<1500)

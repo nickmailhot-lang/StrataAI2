@@ -8,6 +8,8 @@ using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Runtime;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Application.Onboarding;
+using StrataAI.Infrastructure.Onboarding;
 using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.Persistence;
@@ -75,6 +77,7 @@ internal static class OrganizationDeletionScaleContract
         var processor = new BackgroundJobProcessor(new PostgresBackgroundJobStore(worker), new SystemClock(), [
             new OrganizationDeletionPageHandler(new PostgresOrganizationDeletionPageStore(worker)),
             new WorkEventDeliveryHandler(new PostgresWorkEventDeliveryStore(worker)),
+            new InvitationRecipientAuthorityDeliveryHandler(new PostgresInvitationRecipientAuthorityDeliveryStore(worker)),
             new OrganizationLifecycleDeliveryHandler(new PostgresOrganizationLifecycleDeliveryStore(worker))
         ], diagnostics);
         // Four real Worker identities compete through the normal SKIP LOCKED
@@ -142,7 +145,7 @@ internal static class OrganizationDeletionScaleContract
             "Scale completion recovery changed the original event, time or revision.");
         await OrganizationLifecycleReplayContract.RunAsync(admin, apiConnection, tenant, actor, terminal.Value!.EventId!.Value, true, ct);
         Require(diagnostics.Pages > 800 && diagnostics.Deliveries == activeCards + archivedCards + lists + 1
-            && diagnostics.Terminals == 1, "Scale Worker did not execute all bounded mutations and actual event delivery jobs.");
+            && diagnostics.Terminals == 1 && diagnostics.Authorities == 1, "Scale Worker did not execute all bounded mutations and actual event delivery jobs.");
         Console.WriteLine($"Deletion mutation scale: {activeCards} active + {archivedCards} archived Cards, {lists} Lists, {diagnostics.Pages} bounded mutation jobs, {diagnostics.Deliveries} ready work events, one ready terminal; elapsed {watch.ElapsedMilliseconds}ms, maximum leased page {diagnostics.MaximumPageMilliseconds}ms.");
         await using var cleanup = new NpgsqlCommand("DROP TABLE deletion_scale_card_history,deletion_scale_list_history", admin);
         await cleanup.ExecuteNonQueryAsync(ct);
@@ -155,8 +158,9 @@ internal static class OrganizationDeletionScaleContract
     }
     private sealed class ScaleDiagnostics : IBackgroundJobDiagnostics
     {
-        private int _pages, _deliveries, _terminals; private long _maximumPageMilliseconds;
+        private int _pages, _deliveries, _terminals, _authorities; private long _maximumPageMilliseconds;
         public int Pages => _pages; public int Deliveries => _deliveries; public int Terminals => _terminals;
+        public int Authorities => _authorities;
         public long MaximumPageMilliseconds => _maximumPageMilliseconds;
         public void Record(ClaimedBackgroundJob job, JobProcessingResult outcome)
         {
@@ -173,6 +177,7 @@ internal static class OrganizationDeletionScaleContract
             }
             else if (job.JobType == "WORK_EVENT_READY") Interlocked.Increment(ref _deliveries);
             else if (job.JobType == "ORGANIZATION_LIFECYCLE_EVENT_READY") Interlocked.Increment(ref _terminals);
+            else if (job.JobType == InvitationRecipientAuthorityDeliveryHandler.Type) Interlocked.Increment(ref _authorities);
             else throw new InvalidOperationException("Unexpected scale job type.");
         }
     }

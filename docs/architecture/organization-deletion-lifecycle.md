@@ -689,3 +689,24 @@ The same run identified desktop drawer content outside an accessibility
 landmark. Its MUI navigation paper now provides a named navigation landmark.
 The other retained browser failures remain under investigation; neither this
 repair nor component checks establish a green browser gate or issue closure.
+
+## Board authority jobs in deletion verification
+
+Migration 107 also publishes an invitation recipient authority page for each
+canonical `BOARD_DELETED` source produced by the deletion Worker. The deletion
+persistence processors now execute that job through the existing restricted
+`InvitationRecipientAuthorityDeliveryHandler` and normal lease acknowledgment,
+alongside graph, Work-event and terminal-event jobs. The scale contract requires
+one authority completion for its one Board, while retaining all prior exact
+graph, ready-event and terminal counts.
+
+Main run 37581418142 passed source .NET/web and all direct PostgreSQL checks,
+including Board authority paging, then failed because the graph fixture lacked
+this handler. The repaired bounded graph contract passes locally under actual
+restricted API/Worker logins with schema 107, including late rollback, reclaimed
+page recovery, every graph stage and stable terminal observation. The optional
+`--organization-deletion-pages-only` diagnostic executes this same contract;
+the mandatory full CI still includes it and the 105,000-Card scale contract.
+This local result uses compiled source in the framework image; scale and retained
+release-image confirmation still require a fresh CI run. No acceptance issue
+is closed by this repair.

@@ -35,6 +35,12 @@ if (args.Contains("--schema-readiness-only", StringComparer.Ordinal))
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+if (args.Contains("--organization-deletion-pages-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionPagesContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    return;
+}
 await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
 if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
 if (args.Contains("--invitation-authority-only", StringComparer.Ordinal))
