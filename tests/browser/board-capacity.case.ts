@@ -122,6 +122,10 @@ for (const width of [1280, 390]) {
       // A focused source alone can leave the viewport bottom below the window,
       // where a pointer at the browser edge cannot reach the container edge.
       await cards.evaluate(node => node.scrollIntoView({ block: 'end', inline: 'nearest', behavior: 'instant' }));
+      // Escape retains the source while auto-scroll leaves it outside the
+      // viewport. Focus on the already-focused handle does not reveal it.
+      // Bind the next real pointer gesture to the source, not an offscreen box.
+      await handle.scrollIntoViewIfNeeded();
       await settleDrag();
       // Worker-delivered reconciliation can disable the handle after it was
       // first focused. Bind pointer geometry only after current admission.
@@ -136,6 +140,13 @@ for (const width of [1280, 390]) {
       const top = Math.max(0, viewport!.y, outer!.y);
       const bottom = Math.min(844, viewport!.y + viewport!.height, outer!.y + outer!.height);
       expect(bottom - top).toBeGreaterThan(100);
+      expect(start!.y + start!.height / 2).toBeGreaterThan(top);
+      expect(start!.y + start!.height / 2).toBeLessThan(bottom);
+      await expect.poll(() => handle.evaluate(node => {
+        const box = node.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return hit !== null && node.contains(hit);
+      })).toBe(true);
       await page.mouse.move(x, start!.y + start!.height / 2);
       await expect(handle).toBeEnabled();
       await page.mouse.down();

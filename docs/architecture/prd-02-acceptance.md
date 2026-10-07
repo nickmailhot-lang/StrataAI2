@@ -92,8 +92,10 @@ receipts, credential-checked sign-in retries and active-owner continuity.
 The successful sign-in script includes malformed stored-hash refusal and
 known/unknown public-response/state privacy assertions. That script and the
 seven focused fixture sources are unchanged between `f62785a6` and `be7b1616`.
-The full container job remains live: passed steps establish their scoped
-revision evidence, not complete current-main release readiness.
+The full container job subsequently failed in the large-Board desktop pointer
+fixture; see [the retained trace and verification boundary](../kanban-release-evidence.md#retained-source-pointer-fixture-at-f62785a6).
+Passed authentication steps establish their scoped revision evidence, not
+complete current-main release readiness.
 
 ### Executed durable registration concurrency
 

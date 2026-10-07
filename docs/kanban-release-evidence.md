@@ -1,5 +1,33 @@
 # Kanban release evidence
 
+## Retained-source pointer fixture at f62785a6
+
+[Run 37593384106](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37593384106)
+completed container job `112707044278` with failure in the large-Board rank gate.
+All preceding PostgreSQL rank, active/archived capacity, relative-move and durable
+replay assertions passed. The phone capacity browser case passed; desktop failed
+at the second vertical pointer activation after Escape cancellation.
+Artifact `11471703060` retains the screenshot and trace. The first pointer lift
+starts at `y=440.25`; the second starts at `y=-28.75`. Cancellation preserves the
+focused/mounted source while auto-scroll places its handle outside the viewport.
+Focusing that already-focused handle does not reveal it.
+
+The fixture now explicitly reveals the handle before binding pointer geometry,
+asserts that its center lies inside the visible Card surface, and requires a
+native center hit test. Drag activation, traversal beyond the initial mounted
+buffer, cancellation without writes, persisted movement and unchanged siblings
+remain required. Browser TypeScript checks pass.
+
+A separate local compiled-source/Vite run with actual Production registration,
+restricted API storage and a scoped separate Worker used 200 Lists, 5,000 active
+Cards and 100,000 archived Cards. Both desktop and phone timed out at the earlier
+keyboard-move response wait, before reaching the changed pointer section. The
+desktop trace records `net::ERR_ABORTED` for the move request and retained retry
+UI. This is a separate unresolved local acknowledgment failure; it does not
+confirm the pointer repair or establish full release/capacity acceptance. The
+original CI run is terminal failure, not a live or green release. PRD-06 remains
+open with its existing 35% estimated work remaining.
+
 [Run 36941858197](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36941858197)
 at b87353a completed container job 110635994365 with failure. Decoded job logs
 show 45 authenticated browser cases passed, one failed and one general-mail case
