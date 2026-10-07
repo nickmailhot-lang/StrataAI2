@@ -184,4 +184,47 @@ BEGIN
  BEGIN PERFORM event_id FROM invitation_recipient_events; EXCEPTION WHEN insufficient_privilege THEN refused:=true; END;
  IF NOT refused THEN RAISE EXCEPTION 'Worker can inspect the global recipient source'; END IF;
 END $$;
+RESET ROLE;
+DO $$
+DECLARE owner_id uuid:=gen_random_uuid(); recipient uuid:=gen_random_uuid(); tenant uuid:=gen_random_uuid();
+ board uuid:=gen_random_uuid(); invitation uuid; email text:=upper('retained-admin-'||recipient||'@example.test');
+ scenario text; refused boolean; before_sequence bigint;
+BEGIN
+ INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+ VALUES(owner_id,'retained-owner-'||owner_id||'@example.test',upper('retained-owner-'||owner_id||'@example.test'),'Owner','ACTIVE',true,'fixture',now(),now()),
+  (recipient,lower(email),email,'Recipient','ACTIVE',true,'fixture',now(),now());
+ INSERT INTO organizations(id,name,owner_user_id,status,created_at,updated_at) VALUES(tenant,'Retained grant source',owner_id,'ACTIVE',now(),now());
+ INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+ VALUES(gen_random_uuid(),tenant,owner_id,'OWNER','ACTIVE'),(gen_random_uuid(),tenant,recipient,'MEMBER','ACTIVE');
+ INSERT INTO boards(id,tenant_id,name,lifecycle_state,created_at,updated_at) VALUES(board,tenant,'Retained Admin Board','ACTIVE',now(),now());
+ INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+ VALUES(gen_random_uuid(),tenant,board,recipient,'ADMIN','ACTIVE',now(),now());
+ FOREACH scenario IN ARRAY ARRAY['retained','insufficient','inactive'] LOOP
+  invitation:=gen_random_uuid();
+  INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+   target_board_id,target_board_role,created_by_user_id,created_at,expires_at)
+  VALUES(invitation,tenant,lower(email),email,encode(sha256(invitation::text::bytea),'hex'),'INTERNAL','MEMBER',
+   board,CASE WHEN scenario='insufficient' THEN 'ADMIN' ELSE 'MEMBER' END,owner_id,clock_timestamp(),now()+interval '1 day');
+  INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id)
+  VALUES(gen_random_uuid(),tenant,owner_id,'BOARD_MEMBER_INVITED','Invitation',invitation,'retained-grant-create');
+  before_sequence:=(SELECT last_sequence FROM invitation_recipient_streams WHERE email_normalized=email); refused:=false;
+  BEGIN
+   UPDATE board_members SET role=CASE WHEN scenario='insufficient' THEN 'MEMBER' ELSE 'ADMIN' END,
+    status=CASE WHEN scenario='inactive' THEN 'INACTIVE' ELSE 'ACTIVE' END WHERE tenant_id=tenant AND board_id=board AND user_id=recipient;
+   UPDATE invitations SET accepted_at=clock_timestamp(),accepted_by_user_id=recipient WHERE id=invitation;
+   INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id)
+   VALUES(gen_random_uuid(),tenant,recipient,'INVITATION_ACCEPTED','Invitation',invitation,'retained-grant-accept');
+  EXCEPTION WHEN check_violation THEN refused:=true; END;
+  IF scenario='retained' THEN
+   IF refused OR (SELECT last_sequence FROM invitation_recipient_streams WHERE email_normalized=email)<>before_sequence+1
+    OR (SELECT count(*) FROM invitation_recipient_events WHERE entity_id=invitation AND event_type='INVITATION_ACCEPTED')<>1 THEN
+    RAISE EXCEPTION 'Retained Board Admin cannot publish a Member invitation acceptance';
+   END IF;
+  ELSIF NOT refused OR EXISTS(SELECT 1 FROM invitations WHERE id=invitation AND accepted_at IS NOT NULL)
+   OR (SELECT count(*) FROM invitation_recipient_proofs WHERE invitation_id=invitation)<>1
+   OR (SELECT last_sequence FROM invitation_recipient_streams WHERE email_normalized=email)<>before_sequence THEN
+   RAISE EXCEPTION 'Insufficient or inactive Board grant manufactured accepted source history';
+  END IF;
+ END LOOP;
+END $$;
 ROLLBACK;

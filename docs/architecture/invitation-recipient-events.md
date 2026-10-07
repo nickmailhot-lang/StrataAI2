@@ -30,6 +30,13 @@ Portal source records retain their separate target surface in private proofs.
 Accepted sources require the appropriate persisted Internal, Board or Portal
 grant; Portal-only grants cannot manufacture Internal membership.
 
+Migration `104_invitation_recipient_retained_board_admin` aligns Board source
+publication with the existing acceptance policy: a Member-target invitation can
+acknowledge a retained active Board Admin grant. An Admin-target invitation still
+requires Admin, and every Board acceptance still requires active Board and
+Organization membership. This preserves the canonical grant without demanding
+an artificial downgrade. Internal and Portal grant checks remain unchanged.
+
 Source projection checks the active parent/account, actual transition proof and
 applicable current administrative authority for creation/revocation. These
 checks supplement the existing owning command/session policy. They are not an
@@ -124,7 +131,7 @@ withdrawal, Portal separation, keyboard/mobile and latency evidence remain
 required. This source does not complete PRD-03 or PRD-60.
 
 Local validation passed the complete source SQL fixture against a fresh
-103-migration PostgreSQL/pgvector database, restricted role provisioning and the
+104-migration PostgreSQL/pgvector database, restricted role provisioning and the
 schema isolation catalog check. The original restricted routing-isolation
 fixture also passed, including its unaudited Invitation cleanup. This repairs
 the cleanup failure reported by CI for commit `5f3e0f8`; current CI still needs
@@ -146,3 +153,13 @@ account and session revocation. Its request context is synthetic: it is not a
 cookie, SignalR or browser acceptance test. `--invitation-recipient-only` runs
 this contract in isolation for diagnosis; the normal CI persistence executable
 always runs it before the remaining contracts.
+
+The retained-Admin regression first failed against the 103-migration database
+through the actual restricted `AcceptPendingAsync` service with
+`invitation_storage_unavailable`. After the forward migration, that same service
+preserved the existing Board Admin for a Member target, committed one canonical
+accepted source and acknowledged the original retry without duplicate history.
+The expanded source SQL fixture also rejects an insufficient Member grant for
+an Admin target and an inactive Admin grant, rolling back the acceptance proof
+and recipient counter in both cases. These checks supplement the replay contract;
+they do not replace cookie/browser acceptance or prove Demo source parity.

@@ -119,6 +119,7 @@ internal static class InvitationRecipientReplayContract
         boundary.AfterRead = null; context.AuthenticatedUserId = actor;
         await using (var noGrant = new NpgsqlCommand("SELECT count(*) FROM organization_members WHERE user_id=@actor;", admin))
         { noGrant.Parameters.AddWithValue("actor", actor); Require((long)(await noGrant.ExecuteScalarAsync(ct))! == 0, "Recipient replay manufactured Internal membership."); }
+        await PreservedBoardAdminAsync(admin, provider, tenant, owner, actor, email, ct);
         context.AuthenticatedUserId = owner;
         var wrongSession = await replay.ReadAsync(actor, final.Value!.Cursor, cancellationToken: ct);
         Require(!wrongSession.Succeeded && wrongSession.Value is null, "Switched request actor disclosed replay.");
@@ -137,5 +138,50 @@ internal static class InvitationRecipientReplayContract
         denied = await replay.ReadAsync(actor, null, cancellationToken: ct);
         Require(!denied.Succeeded && denied.Value is null, "Revoked persisted session disclosed replay.");
         Console.WriteLine("Recipient replay: restricted API login, owning account scope, bounded cross-Organization order, canonical identities, later mutation recovery, email/revision reset, actor withdrawal before/after source I/O, unverified account and persisted-session revocation passed.");
+    }
+    private static async Task PreservedBoardAdminAsync(NpgsqlConnection admin, ServiceProvider provider, Guid tenant,
+        Guid owner, Guid actor, string email, CancellationToken ct)
+    {
+        var board = Guid.NewGuid(); var invitation = Guid.NewGuid();
+        await using (var seed = new NpgsqlCommand("""
+            BEGIN;
+            INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),@tenant,@actor,'MEMBER','ACTIVE');
+            INSERT INTO boards(id,tenant_id,name,lifecycle_state,created_at,updated_at) VALUES(@board,@tenant,'Existing Admin Board','ACTIVE',now(),now());
+            INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+             VALUES(gen_random_uuid(),@tenant,@board,@actor,'ADMIN','ACTIVE',now(),now());
+            INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+             target_board_id,target_board_role,created_by_user_id,created_at,expires_at)
+             VALUES(@invitation,@tenant,@email,upper(@email),encode(sha256(@invitation::text::bytea),'hex'),'INTERNAL','MEMBER',
+              @board,'MEMBER',@owner,clock_timestamp(),now()+interval '1 day');
+            INSERT INTO audit_events(id,tenant_id,actor_id,event_type,entity_type,entity_id,correlation_id)
+             VALUES(gen_random_uuid(),@tenant,@owner,'BOARD_MEMBER_INVITED','Invitation',@invitation,'preserved-admin-create');
+            COMMIT;
+            """, admin))
+        {
+            foreach (var parameter in new Dictionary<string, object> { ["tenant"] = tenant, ["actor"] = actor, ["owner"] = owner,
+                ["email"] = email, ["board"] = board, ["invitation"] = invitation }) seed.Parameters.AddWithValue(parameter.Key, parameter.Value);
+            await seed.ExecuteNonQueryAsync(ct);
+        }
+        var service = provider.GetRequiredService<IInvitationService>();
+        var accepted = await service.AcceptPendingAsync(actor, invitation, "preserved-admin-accept", ct);
+        Require(accepted.Succeeded, "Existing Board Admin could not accept a Member invitation with its retained canonical grant: " + accepted.ErrorCode);
+        await using (var check = new NpgsqlCommand("""
+            SELECT m.role='ADMIN' AND m.status='ACTIVE' AND i.target_board_role='MEMBER' AND i.accepted_by_user_id=@actor
+             AND (SELECT count(*) FROM invitation_recipient_events e JOIN audit_events a ON a.id=e.event_id
+              WHERE e.entity_id=i.id AND e.tenant_id=i.tenant_id AND e.event_type='INVITATION_ACCEPTED'
+               AND e.actor_id=@actor AND a.actor_id=@actor AND e.entity_version=i.version AND e.created_at=i.updated_at)=1
+             FROM invitations i JOIN board_members m ON m.tenant_id=i.tenant_id AND m.board_id=i.target_board_id AND m.user_id=@actor
+             WHERE i.id=@invitation AND i.tenant_id=@tenant;
+            """, admin))
+        {
+            check.Parameters.AddWithValue("actor", actor); check.Parameters.AddWithValue("invitation", invitation); check.Parameters.AddWithValue("tenant", tenant);
+            Require(await check.ExecuteScalarAsync(ct) is true, "Retained Board Admin acceptance lost canonical grant or original source proof.");
+        }
+        var retry = await service.AcceptPendingAsync(actor, invitation, "preserved-admin-retry", ct);
+        Require(retry.Succeeded, "Original accepted invitation recovery failed.");
+        await using var count = new NpgsqlCommand("SELECT count(*) FROM invitation_recipient_events WHERE tenant_id=@tenant AND entity_id=@invitation;", admin);
+        count.Parameters.AddWithValue("tenant", tenant); count.Parameters.AddWithValue("invitation", invitation);
+        Require((long)(await count.ExecuteScalarAsync(ct))! == 2, "Accepted invitation recovery published duplicate source history.");
+        Console.WriteLine("Retained Board Admin: actual restricted acceptance service preserves Admin for Member target, publishes one canonical accepted source and retries without duplicate history.");
     }
 }
