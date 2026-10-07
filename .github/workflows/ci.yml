@@ -231,6 +231,9 @@ jobs:
       - name: Verify authority discovery limits and restricted claim capabilities
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-authority-discovery.sql
 
+      - name: Verify canonical Board recipient authority paging and restricted capabilities
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-board-authority.sql
+
       - name: Verify concurrent Board journal commit order with restricted runtime role
         run: bash scripts/ci/test-organization-board-journal-order.sh
 
@@ -534,6 +537,9 @@ jobs:
         run: bash scripts/ci/test-organization-metadata-delivery.sh
       - name: Automatic recipient authority pages and restart against exact Worker image
         run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh
+
+      - name: Automatic Board recipient authority pages and restart against exact Worker image
+        run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 board
 
       - name: Account deactivation and Organization active-owner continuity
         run: scripts/ci/test-account-owner-continuity.sh

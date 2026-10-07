@@ -3,6 +3,8 @@ set -Eeuo pipefail
 # PRD-03 / PRD-60 / ARCH-11: a real HTTP parent command publishes the source;
 # the retained exact Worker delivers it. Candidate rows are disposable fixtures.
 BASE_URL="${1:-http://127.0.0.1:8080}"
+source_kind="${2:-organization}"
+case "$source_kind" in organization|board) ;; *) echo 'Invalid authority source kind' >&2; exit 2 ;; esac
 scratch="$(mktemp -d)"
 worker_changed=false
 cleanup() {
@@ -39,11 +41,18 @@ admin "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token
  SELECT gen_random_uuid(),'$organization',lower(CASE WHEN i=205 THEN '$other_email' ELSE '$email' END),
  CASE WHEN i=205 THEN '$other_email' ELSE '$email' END,encode(sha256(('$organization/'||i)::bytea),'hex'),
  'PORTAL','OWNER','$actor',clock_timestamp(),clock_timestamp()+interval '1 day' FROM generate_series(1,205) i;" >/dev/null
-curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
-  -d "$(jq -nc --arg id "$organization" '{organizationId:$id,name:"Authority unrelated Work queue"}')" "$BASE_URL/boards" >/dev/null
-curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -X PATCH \
-  -d '{"name":"Authority changed parent","version":1}' "$BASE_URL/organizations/$organization" | jq -e '.version==2' >/dev/null
-source="$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_UPDATED';")"
+board="$(curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -d "$(jq -nc --arg id "$organization" '{organizationId:$id,name:"Authority unrelated Work queue"}')" "$BASE_URL/boards" | jq -r '.id')"
+[[ "$board" =~ ^[0-9a-f-]{36}$ ]]
+if test "$source_kind" = board; then
+  curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -X PATCH \
+    -d '{"name":"Authority changed Board","version":1}' "$BASE_URL/boards/$board" | jq -e '.version==2' >/dev/null
+  source="$(admin "SELECT event_id FROM work_events WHERE tenant_id='$organization' AND board_id='$board' AND event_type='BOARD_UPDATED';")"
+else
+  curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -X PATCH \
+    -d '{"name":"Authority changed parent","version":1}' "$BASE_URL/organizations/$organization" | jq -e '.version==2' >/dev/null
+  source="$(admin "SELECT event_id FROM organization_metadata_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_UPDATED';")"
+fi
 [[ "$source" =~ ^[0-9a-f-]{36}$ ]]
 test "$(admin "SELECT count(*)=1 AND bool_and(completed_at IS NULL) FROM invitation_recipient_authority_pages WHERE tenant_id='$organization' AND source_event_id='$source';")" = t
 unrelated() {
@@ -60,7 +69,7 @@ finished() {
     AND (SELECT count(*)=3 AND bool_and(j.state='SUCCEEDED' AND j.attempt_count=1 AND j.actor_id=e.actor_id
       AND j.correlation_id=e.correlation_id AND j.safe_metadata=jsonb_build_object('eventId',e.event_id))
       FROM background_jobs j JOIN invitation_recipient_authority_pages p ON p.tenant_id=j.tenant_id AND p.job_id=j.id
-      JOIN organization_metadata_events e ON e.tenant_id=p.tenant_id AND e.event_id=p.source_event_id
+      JOIN invitation_recipient_authority_source_rows e ON e.tenant_id=p.tenant_id AND e.event_id=p.source_event_id
       WHERE p.tenant_id='$organization' AND p.source_event_id='$source')
     AND (SELECT count(*)=2 FROM invitation_recipient_authority_effects WHERE tenant_id='$organization' AND source_event_id='$source')
     AND (SELECT count(*)=2 AND bool_and(revision=1) FROM invitation_recipient_authority_revisions WHERE email_normalized IN ('$email','$other_email'));"
@@ -76,4 +85,4 @@ test "$before" = "$(unrelated)"
 authority_worker true
 test "$(finished)" = t
 test "$before" = "$(unrelated)"
-echo 'Exact Worker authority delivery: canonical HTTP parent update, automatic scope, 100/100/5 pages, two deduplicated recipients, restart and unrelated queue isolation passed.'
+echo "Exact Worker authority delivery: canonical HTTP $source_kind update, automatic scope, 100/100/5 pages, two deduplicated recipients, restart and unrelated queue isolation passed."

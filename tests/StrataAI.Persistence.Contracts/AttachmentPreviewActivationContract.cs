@@ -13,6 +13,8 @@ using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.WorkManagement;
 using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.Identity;
+using StrataAI.Application.Onboarding;
+using StrataAI.Infrastructure.Onboarding;
 
 internal static class AttachmentPreviewActivationContract
 {
@@ -246,11 +248,18 @@ internal static class AttachmentPreviewActivationContract
         // Deliver the genuine cover/lifecycle outbox before later scan-only
         // fixtures reuse this tenant. Never delete, suppress or reorder jobs.
         var eventDelivery = new WorkEventDeliveryHandler(new PostgresWorkEventDeliveryStore(worker));
+        var authorityDelivery = new InvitationRecipientAuthorityDeliveryHandler(new PostgresInvitationRecipientAuthorityDeliveryStore(worker));
         var delivered = 0;
         for (var pass = 0; pass < 16; pass++)
         {
             var next = await legacy.ClaimAsync(organization, workerId, ct);
             if (next is null) break;
+            if (next.JobType == InvitationRecipientAuthorityDeliveryHandler.Type)
+            {
+                await authorityDelivery.ExecuteAsync(next, ct);
+                Require(await capable.CompleteAsync(organization, next.Id, next.LeaseId, workerId, ct), "Cover parent authority delivery lost its queue acknowledgment.");
+                continue;
+            }
             Require(next.JobType == WorkEventDeliveryHandler.Type, "Cover fixture outbox contained an unexpected claim.");
             await eventDelivery.ExecuteAsync(next, ct);
             Require(await capable.CompleteAsync(organization, next.Id, next.LeaseId, workerId, ct), "Cover event delivery lost its queue acknowledgment.");
@@ -268,6 +277,12 @@ internal static class AttachmentPreviewActivationContract
         for (var pass = 0; pass < 16; pass++)
         {
             var next = await legacy.ClaimAsync(organization, workerId, ct); if (next is null) break;
+            if (next.JobType == InvitationRecipientAuthorityDeliveryHandler.Type)
+            {
+                await authorityDelivery.ExecuteAsync(next, ct);
+                Require(await capable.CompleteAsync(organization, next.Id, next.LeaseId, workerId, ct), "Board image authority delivery lost its queue acknowledgment.");
+                continue;
+            }
             Require(next.JobType == WorkEventDeliveryHandler.Type, "Board image fixture outbox contained an unexpected claim.");
             await eventDelivery.ExecuteAsync(next, ct);
             Require(await capable.CompleteAsync(organization, next.Id, next.LeaseId, workerId, ct), "Board image event delivery lost its queue acknowledgment.");

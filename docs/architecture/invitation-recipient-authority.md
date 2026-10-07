@@ -131,6 +131,58 @@ transaction. Error tracing also propagates into shell functions. Full exact-imag
 delivery/restart evidence remains pending a fresh CI run; this repair does not
 weaken the database constraint or the delivery assertions.
 
+## Production Board authority sources
+
+[Migration 107](../../db/migrations/107_invitation_recipient_board_authority.sql)
+adds a private immutable reference with an exclusive foreign key to either the
+owning Organization metadata event or Work event. Existing metadata checkpoints
+are repointed to their already-proven references. Historical Work events are not
+backfilled, and no event, actor, correlation or subject version is invented.
+Runtime roles cannot read or write this reference table or its private source
+view directly; both remain inside the existing leased/discovery capabilities.
+
+Future canonical Board `BOARD_UPDATED`, `BOARD_VISIBILITY_CHANGED`,
+`BOARD_ARCHIVED`, `BOARD_RESTORED`, `BOARD_DELETED`, `BOARD_MEMBER_UPDATED` and
+`BOARD_MEMBER_REMOVED` Work events publish the same bounded authority queue.
+The canonical event must have Board entity type and matching Board/entity IDs.
+Board creation, stars, Card/List/Watch/Reminder changes are excluded. Membership
+events retain their existing canonical Board subject/version; they are not
+compared with a membership revision. Publication scans no recipient candidates
+and rolls back with the owning Work command. Delivery and automatic scope
+discovery consume the private source view while retaining exact job, source,
+actor, correlation, worker/lease and fixed 100-candidate limits. Broad tenant
+invalidation also withdraws cached accepted/revoked disclosure; present grant
+admission still belongs to protected discovery.
+
+Executed local evidence against PostgreSQL schema 107:
+
+- Ordered migration clean/repeat/forward upgrade, serialized runners and failed
+  migration rollback pass. The required-migration diagnostic verifies API and
+  Worker readiness, refusal of missing required versions including 107, and
+  recovery after restoration. Worker and persistence-contract Release builds
+  pass with zero warnings/errors; tenant schema isolation inspection passes.
+- Existing Organization authority and discovery SQL cases pass unchanged.
+  The mandatory Board SQL case proves 205 candidates in 100/100/5 pages, two
+  deduplicated revisions, source-time cutoff, owning Work rollback, wrong
+  capabilities, replacement-lease replay, expired lease refusal, immutable
+  references and API/Worker private-table/view read refusal. Authority delivery
+  does not mark the Work source ready or invent invitation transitions.
+- An ordinary authenticated Production HTTP Board rename publishes the actual
+  Work source. A separate local Production Worker, with no configured
+  Organization IDs and only automatic authority discovery active, acknowledges
+  all three pages on their first attempt with original actor/correlation. After
+  Worker restart, two recipient revisions remain one; unrelated jobs stay
+  pending with zero attempts and Work readiness remains unset. The local runtime
+  uses compiled source with the framework image, not retained CI release images.
+
+CI now requires the direct Board SQL case and a second exact-image authority
+delivery/restart gate using a real HTTP Board rename. The existing image/cover
+persistence fixture drains the new genuine authority jobs through their handler
+and acknowledgment, retaining its exact Work-event counts. That full fixture
+and retained-image gates require fresh CI execution. Demo Board source parity,
+native Board-target authority withdrawal/recovery, concurrency and latency remain
+unfinished; these local results do not close PRD-03/04/60 or ARCH-11.
+
 ## Production protected cursor binding
 
 The recipient reader requires its existing owning account observation, derives
@@ -264,10 +316,11 @@ different revision sequences must not be compared with one another.
 Actual adapter/Worker restart and concurrent-page execution evidence must be
 added alongside the existing SQL capability tests.
 
-After the Organization path, the remaining dependencies include target Board
-name/archive/member authority, Organization deletion/lifecycle and issuer
-account withdrawal. Each needs its actual canonical source and appropriate
-bounded scope discovery. Historical committed sources remain deliverable after
+Production Board source publication and bounded delivery are implemented above.
+Remaining dependencies include Demo Board parity and native Board-target
+name/archive/member authority acceptance, Organization deletion/lifecycle and
+issuer account withdrawal. Each remaining producer needs its actual canonical
+source and appropriate bounded scope discovery. Historical committed sources remain deliverable after
 later actor departure; current recipient discovery still owns present grant
 admission. Legacy changes without a proven source must not acquire fabricated
 actors or history.
