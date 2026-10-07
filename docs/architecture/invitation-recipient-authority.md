@@ -470,3 +470,27 @@ cases, both deletion-receipt variants, and the actual Linux Board image workflow
 The nine existing Demo Board authority cases also pass; builds have zero warnings
 and errors. The documented Demo account's three startup/login checks pass.
 These local repairs do not establish a complete green release pipeline.
+
+## Native deletion-request recipient recovery
+
+`recipient-invitation-lifecycle-authority.spec.ts` passes all four local Demo
+browser cases: 1280px and 390px, connected and actual transport interruption.
+An ordinary nonmember receives a genuine Portal invitation. An actual Owner
+issues a deletion request and retries the same key. Holding the protected
+recovery read demonstrates withdrawal of the cached Organization name and
+acceptance controls before the response arrives. Reconnect recovers an empty
+page; stale acceptance is rejected without creating Organization access. Focus
+returns to Refresh, account access remains valid, no document reload occurs,
+wire envelopes exclude private fields and invented invitation transitions, and
+accessibility/overflow checks pass. The test defaults to Production in release
+CI. This local Demo evidence covers request acceptance, not Demo terminal work.
+
+The mandatory retained-image gate now invokes the lifecycle variant of
+`test-invitation-recipient-authority-delivery.sh`: actual HTTP request, isolated
+100/100/5 request delivery and restart, then automatic deletion discovery without
+configured Organization IDs, real graph traversal, canonical Board and terminal
+sources, nine first-attempt authority jobs, six deduplicated source/email effects,
+three recipient revisions, original attribution and ready terminal completion.
+A second restart must preserve these results. Shell syntax and browser fixture
+typechecks pass; this new complete exact-image gate remains unexecuted until CI
+reaches container integration. Existing architecture and release gates remain.

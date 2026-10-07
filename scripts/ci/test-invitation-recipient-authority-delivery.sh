@@ -4,7 +4,7 @@ set -Eeuo pipefail
 # the retained exact Worker delivers it. Candidate rows are disposable fixtures.
 BASE_URL="${1:-http://127.0.0.1:8080}"
 source_kind="${2:-organization}"
-case "$source_kind" in organization|board) ;; *) echo 'Invalid authority source kind' >&2; exit 2 ;; esac
+case "$source_kind" in organization|board|lifecycle) ;; *) echo 'Invalid authority source kind' >&2; exit 2 ;; esac
 scratch="$(mktemp -d)"
 worker_changed=false
 cleanup() {
@@ -44,7 +44,14 @@ admin "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token
 board="$(curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
   -d "$(jq -nc --arg id "$organization" '{organizationId:$id,name:"Authority unrelated Work queue"}')" "$BASE_URL/boards" | jq -r '.id')"
 [[ "$board" =~ ^[0-9a-f-]{36}$ ]]
-if test "$source_kind" = board; then
+if test "$source_kind" = lifecycle; then
+  request="$(cat /proc/sys/kernel/random/uuid)"
+  status="$(curl --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -H "Idempotency-Key: $request" -X DELETE -d '{}' -o "$scratch/request.json" -w '%{http_code}' \
+    "$BASE_URL/organizations/$organization?version=1&expectedActorId=$actor")"
+  test "$status" = 202
+  source="$(admin "SELECT event_id FROM invitation_recipient_organization_lifecycle_sources WHERE tenant_id='$organization' AND event_type='ORGANIZATION_DELETION_REQUESTED';")"
+elif test "$source_kind" = board; then
   curl --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -X PATCH \
     -d '{"name":"Authority changed Board","version":1}' "$BASE_URL/boards/$board" | jq -e '.version==2' >/dev/null
   source="$(admin "SELECT event_id FROM work_events WHERE tenant_id='$organization' AND board_id='$board' AND event_type='BOARD_UPDATED';")"
@@ -85,4 +92,42 @@ test "$before" = "$(unrelated)"
 authority_worker true
 test "$(finished)" = t
 test "$before" = "$(unrelated)"
-echo "Exact Worker authority delivery: canonical HTTP $source_kind update, automatic scope, 100/100/5 pages, two deduplicated recipients, restart and unrelated queue isolation passed."
+echo "Exact Worker authority delivery: canonical HTTP $source_kind command, automatic scope, 100/100/5 pages, two deduplicated recipients, restart and unrelated queue isolation passed."
+
+if test "$source_kind" = lifecycle; then
+  # Resume automatic deletion discovery without a configured Organization ID.
+  # The same retained Worker traverses the real graph, emits BOARD_DELETED and
+  # the canonical terminal event, then delivers each authority source normally.
+  STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=true STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=false \
+    STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=true STRATAAI_WORKER_ORGANIZATION_IDS='' \
+    docker compose -f compose.release.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
+  terminal_finished() {
+    admin "SELECT
+      (SELECT status='DELETED' AND version=3 AND deleted_by='$actor' FROM organizations WHERE id='$organization')
+      AND (SELECT count(*)=1 AND bool_and(e.actor_id='$actor' AND e.ready_at IS NOT NULL
+        AND s.actor_id=e.actor_id AND s.correlation_id=e.correlation_id AND s.terminal_event_id=e.event_id)
+        FROM organization_lifecycle_events e JOIN invitation_recipient_organization_lifecycle_sources s
+        ON s.tenant_id=e.tenant_id AND s.event_id=e.event_id WHERE e.tenant_id='$organization')
+      AND (SELECT count(*)=3 FROM invitation_recipient_authority_sources WHERE tenant_id='$organization')
+      AND (SELECT count(*)=9 AND bool_and(p.completed_at IS NOT NULL AND j.state='SUCCEEDED' AND j.attempt_count=1
+          AND j.actor_id=e.actor_id AND j.correlation_id=e.correlation_id AND j.safe_metadata=jsonb_build_object('eventId',e.event_id))
+        FROM invitation_recipient_authority_pages p JOIN background_jobs j ON j.tenant_id=p.tenant_id AND j.id=p.job_id
+        JOIN invitation_recipient_authority_source_rows e ON e.tenant_id=p.tenant_id AND e.event_id=p.source_event_id
+        WHERE p.tenant_id='$organization')
+      AND NOT EXISTS(SELECT 1 FROM invitation_recipient_authority_sources s WHERE s.tenant_id='$organization' AND
+        (SELECT array_agg(scanned_count ORDER BY scanned_count) FROM invitation_recipient_authority_pages p
+          WHERE p.tenant_id=s.tenant_id AND p.source_event_id=s.event_id) IS DISTINCT FROM ARRAY[5,100,100])
+      AND (SELECT count(*)=6 FROM invitation_recipient_authority_effects WHERE tenant_id='$organization')
+      AND (SELECT count(*)=2 AND bool_and(revision=3) FROM invitation_recipient_authority_revisions WHERE email_normalized IN ('$email','$other_email'))
+      AND (SELECT count(*)=1 FROM audit_events WHERE tenant_id='$organization' AND event_type='ORGANIZATION_DELETION_REQUESTED')
+      AND (SELECT count(*)=1 AND bool_and(ready_at IS NOT NULL) FROM work_events WHERE tenant_id='$organization' AND event_type='BOARD_DELETED');"
+  }
+  for ((attempt=0; attempt<120; attempt++)); do
+    if test "$(terminal_finished)" = t; then break; fi
+    sleep 1
+  done
+  test "$(terminal_finished)" = t
+  authority_worker true
+  test "$(terminal_finished)" = t
+  echo 'Exact Worker Organization lifecycle: real HTTP request, automatic graph completion, canonical request/Board/terminal sources, 100/100/5 per source, retained actor/correlation, ready completion and restart deduplication passed.'
+fi
