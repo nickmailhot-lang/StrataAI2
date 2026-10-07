@@ -69,7 +69,15 @@ for (const width of [1280, 390]) {
       await expect(other.getByRole('button', { name: 'Star Board', exact: true })).toBeEnabled();
       await other.getByRole('button', { name: 'Star Board', exact: true }).focus(); await other.keyboard.press('Enter');
       await expect(other.getByText('You have starred this Board.', { exact: true })).toBeVisible();
-      await page.getByRole('button', { name: 'Retry same star change', exact: true }).focus(); await page.keyboard.press('Enter');
+      // Private live delivery can trigger a bounded read while the other
+      // account changes its star. Activate only after current parent admission
+      // and the retry's actual keyboard focus have both recovered.
+      // The modal hides its background from accessibility navigation; inspect
+      // the parent's admission flag without interacting with that background.
+      await expect(page.locator('[role="region"][aria-label="Board workspace"]')).toHaveAttribute('aria-busy', 'false');
+      const retry = page.getByRole('button', { name: 'Retry same star change', exact: true });
+      await expect(retry).toBeEnabled(); await retry.focus(); await expect(retry).toBeFocused();
+      await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Star Board', exact: true })).toBeEnabled();
       await expect(page.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
       expect(keys).toHaveLength(2); expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/); expect(keys[1]).toBe(keys[0]);

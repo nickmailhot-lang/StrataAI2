@@ -34,6 +34,19 @@ API/Worker builds and Vite source are not current retained-image evidence; full
 release, mass-mention, remaining producers and cross-feature acceptance are still
 required. The current planning estimate is **38% work remaining**.
 
+## Production-bundle activity preference verification
+
+At `62d589ee`, both complete desktop/phone activity scenarios additionally pass
+with a frozen production web bundle, compiled Production API, restricted schema-110
+PostgreSQL and separate scoped Worker. Actual other-client timezone recovery,
+keyboard paging, two-client delivery/reconnect, revoked disclosure, archived/deleted
+history, immutable historical labels, automated WCAG-tagged scanning and overflow
+checks pass. The initial fixture origin mismatch was corrected before these passes;
+the combined invocation still failed its unrelated desktop star case, which was
+subsequently repaired and verified separately. See the [execution boundary](prd-02-acceptance.md#executed-history-preference-recovery-and-star-focus-repair).
+This is not current retained-image or full PRD-15 acceptance. Estimated work
+remaining stays **38%**, a planning estimate; the issue remains open.
+
 ## Earlier retained-release recovery investigation
 
 At `e77195d`, run [37241937689](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37241937689) completed with 129 native passes, 15 failures and one skipped case. The desktop comment scenario passed; the phone scenario did not acknowledge its original retry. The retained diagnostic archive has SHA-256 `889994bbda2f0bc36868ce2740949547f49fb9e857d46a7ec164ddb79a05be48`. Its phone trace contains the initial substituted 503 and underlying committed 200, followed by a retry identity preflight and overlapping/aborted Board reads without a second comment POST. The original unconfirmed intent remains visible rather than being discarded.

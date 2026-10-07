@@ -15,6 +15,21 @@ async function open() {
   fireEvent.click(screen.getByRole('button', { name: 'Board starring' }));
   await screen.findByText('You have not starred this Board.');
 }
+it.each(['Star Board', 'Done'])('restores keyboard-owned %s after a private background read interrupts it', async name => {
+  let hold = false; let complete!: (value: Response) => void;
+  const pending = new Promise<Response>(resolve => { complete = resolve; });
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? response(profile)
+    : hold ? pending : response(state)));
+  render(<BoardStarControl {...props} />); await open();
+  const action = screen.getByRole('button', { name });
+  await waitFor(() => expect(action).toBeEnabled()); action.focus(); expect(action).toHaveFocus();
+  hold = true; act(() => vi.mocked(watchBoardStars).mock.calls.at(-1)![0].invalidate());
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Star Board' })).toBeNull());
+  expect(screen.getByRole('dialog')).toHaveFocus();
+  await act(async () => { complete(response(state)); });
+  await waitFor(() => expect(screen.getByRole('button', { name })).toBeEnabled());
+  await waitFor(() => expect(screen.getByRole('button', { name })).toHaveFocus());
+});
 it('refreshes private events without restarting the actor stream and stops on access withdrawal', async () => {
   const stop = vi.fn(); vi.mocked(watchBoardStars).mockClear(); vi.mocked(watchBoardStars).mockReturnValueOnce(stop);
   let starred = false;

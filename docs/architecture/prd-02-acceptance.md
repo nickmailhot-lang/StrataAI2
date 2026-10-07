@@ -48,6 +48,43 @@ local result does not establish external inbox delivery or current immutable
 release/full PRD acceptance. Estimated PRD-02 work remaining is now **17%**; the
 issue remains open. Earlier estimates/evidence below are historical records.
 
+## Executed history preference recovery and star focus repair
+
+At source baseline `62d589ee`, both complete desktop/phone activity scenarios
+pass against the frozen compiled Production API, real restricted schema-110
+PostgreSQL, a separate Organization-scoped Worker and a production web bundle
+behind current Nginx/CSP. They verify an independent client's saved timezone
+change reaches the already open activity history without document reload,
+unchanged original UTC timestamps, keyboard paging, actual two-client/reconnect
+updates, revoked disclosure, archived/deleted history, historical attribution
+after rename/deactivation, WCAG-tagged scanning and viewport overflow.
+
+The initial local invocation used a mismatched realtime origin and failed four
+cases; correcting only that fixture setting produces three passes and a desktop
+star retry failure. Trace inspection confirms no second retry request was sent.
+The star fixture now observes current parent admission and enabled keyboard focus
+before activating the original retry. A subsequent desktop closing interruption
+exposes a real background-read focus defect: the removed star action returns
+while focus stays on the dialog container. Its controlled component regression
+fails before the repair. Star reads now park owned action/Done/check/retry focus
+before disabling/removing controls and restore it only after admission recovers
+and focus remains owned. Existing intent, key and authorization rules are preserved.
+
+All 58 focused star-control/history/live/sync cases pass, as do web/browser
+typechecking, scoped lint, production build and Nginx configuration validation.
+Both complete star browser scenarios pass against the repaired production bundle
+in a final invocation (exit 0, 1.5 minutes), including actual private WebSocket
+delivery, original-key recovery after a later unstar, open mirror timezone recovery,
+unchanged source timestamps and Board/List data, keyboard close focus and reload.
+The two activity passes and two final star passes are separate invocation evidence;
+the intermediate failing runs are not claimed green.
+
+These are compiled hosts/bundles in cached runtime images, not current retained
+release images or performance measurements. The disposable API/web/Worker are
+removed after execution. Full CI, other preference consumers and complete PRD
+acceptance remain required. PRD-02 stays open at **17% estimated work remaining**,
+a planning estimate.
+
 ## Functional requirements
 
 | Requirement | Implementation and verification path | Outstanding acceptance evidence |

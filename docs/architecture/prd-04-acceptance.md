@@ -48,6 +48,20 @@ all 63 combined star/activity/comment/identity component cases and web typecheck
 lint pass. See [star evidence](../board-star-preference.md). Local immutable builds
 and Vite source do not establish current retained-image or complete Board acceptance.
 
+## Star dialog background-read keyboard recovery
+
+The [executed history preference and focus repair](prd-02-acceptance.md#executed-history-preference-recovery-and-star-focus-repair)
+reproduces a removed star action losing keyboard ownership during a background
+read. The regression fails before the repair; all 58 selected star component,
+history, live and sync cases pass afterward. Actual desktop/phone star scenarios
+then pass in one final invocation against the production bundle, restricted
+PostgreSQL and separate scoped Worker, retaining original receipt/key, later-state,
+private delivery, timezone recovery, unchanged Board/List, closing focus and reload
+assertions. Browser fixture activation observes actual parent admission and focus;
+the modal background flag is read directly because MUI correctly hides it from
+accessibility navigation. Current retained-image/full Board acceptance is still
+required. PRD-04 remains open at **16% estimated work remaining**, a planning estimate.
+
 ## Functional traceability
 
 Both existing persisted-workflow cases in `tests/browser/board.spec.ts` now pass

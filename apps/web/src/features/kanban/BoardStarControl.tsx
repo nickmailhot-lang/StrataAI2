@@ -5,6 +5,7 @@ import { isNotificationProfile, notificationInstant } from '../notifications/not
 import { activityEvent, activityResult } from './activityTelemetry';
 import { watchBoardStars } from './boardStarLive';
 import { BoardStarHistory } from './BoardStarHistoryControl';
+import { parkRecoveryFocus } from './focusRecovery';
 
 type Props = { organizationId: string; boardId: string; admitted: boolean; disabled: boolean };
 type Preference = { organizationId: string; boardId: string; userId: string; starred: boolean;
@@ -37,6 +38,8 @@ function StarDialog(props: Props) {
   const intent = useRef<Intent | undefined>(undefined); const actor = useRef<string | undefined>(undefined);
   const retry = useRef<HTMLButtonElement>(null); const check = useRef<HTMLButtonElement>(null);
   const entry = useRef<HTMLButtonElement>(null); const done = useRef<HTMLButtonElement>(null);
+  const action = useRef<HTMLButtonElement>(null);
+  const readFocus = useRef<{ kind: 'action' | 'done' | 'check' | 'retry'; owner: HTMLElement; dialog: HTMLElement | null } | undefined>(undefined);
   const restore = useRef(false);
   const path = '/boards/' + encodeURIComponent(boardId) + '/star';
   const retire = useCallback((message: string) => {
@@ -44,6 +47,14 @@ function StarDialog(props: Props) {
   }, []);
   const load = useCallback(async (kind: 'use' | 'retry' | 'reconnect' = 'use') => {
     if (!mounted.current || pending.current || !admitted) return;
+    const focused = document.activeElement;
+    const owned = ([['action', action.current], ['done', done.current], ['check', check.current], ['retry', retry.current]] as const)
+      .find(([, button]) => button !== null && button === focused);
+    if (owned && !restore.current) {
+      const owner = owned[1]!;
+      readFocus.current = { kind: owned[0], owner, dialog: owner.closest('[role="dialog"][data-mui-focusable]') };
+      parkRecoveryFocus(owner);
+    }
     const c = new AbortController(); pending.current = c; setBusy(true); setCurrent(undefined);
     const started = performance.now(); activityEvent('board_star_read', kind);
     try {
@@ -94,6 +105,15 @@ function StarDialog(props: Props) {
     if (!target) return;
     restore.current = false; (target.disabled ? done.current : target)?.focus({ preventScroll: true });
   }, [busy, recovery, current]);
+  useEffect(() => {
+    if (busy || pending.current || !readFocus.current) return;
+    const retained = readFocus.current; readFocus.current = undefined;
+    if (!open || !admitted || restore.current) return;
+    const focused = document.activeElement;
+    if (focused !== document.body && focused !== retained.owner && focused !== retained.dialog) return;
+    const target = { action, done, check, retry }[retained.kind].current;
+    if (target && !target.disabled) target.focus({ preventScroll: true });
+  }, [busy, recovery, current, open, admitted]);
   async function change() {
     if (pending.current || !admitted || disabled || !current || current.userId !== actor.current) return;
     const started = performance.now(); activityEvent('board_star_change', intent.current ? 'retry' : 'use');
@@ -143,7 +163,7 @@ function StarDialog(props: Props) {
       </DialogContent><DialogActions>
         {!recovery && <Button ref={done} disabled={busy} onClick={close}>Done</Button>}
         {recovery ? <Button ref={retry} disabled={busy || disabled || !admitted || !current} onClick={() => void change()}>Retry same star change</Button>
-          : current && <Button disabled={busy || disabled || !admitted} onClick={() => void change()}>{current.starred ? 'Unstar Board' : 'Star Board'}</Button>}
+          : current && <Button ref={action} disabled={busy || disabled || !admitted} onClick={() => void change()}>{current.starred ? 'Unstar Board' : 'Star Board'}</Button>}
       </DialogActions>
     </Dialog>
   </>;
