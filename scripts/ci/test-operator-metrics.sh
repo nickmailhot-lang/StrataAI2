@@ -31,6 +31,7 @@ test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"create","kind":"use","count":1,"private":"private-metric-fixture"}]}' "$base/me/checklist-client-events")" = 400
 post /me/activity-client-events '{"events":[{"action":"organization_settings_disclosure","kind":"open","count":1},{"action":"organization_settings_read","kind":"retry","count":1},{"action":"organization_settings_update","kind":"use","count":1},{"action":"organization_settings_update","kind":"success","count":1,"durationMs":125}]}' >/dev/null
 # Poll bounded export/batch intervals; raw scrapes never become retained artifacts.
+post /me/activity-client-events '{"events":[{"action":"organization_creation_disclosure","kind":"open","count":1},{"action":"organization_creation","kind":"retry","count":1},{"action":"organization_creation","kind":"success","count":1,"durationMs":125}]}' >/dev/null
 passed=false
 for attempt in $(seq 1 30); do
   if curl --max-time 3 --fail --silent http://127.0.0.1:9464/metrics > "$scratch/metrics" &&

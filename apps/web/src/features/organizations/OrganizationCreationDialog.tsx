@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { boundedWorkRead } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Intent = { actor: string; key: string; body: string };
 const uuid = (value: unknown): value is string => typeof value === 'string'
@@ -31,7 +32,8 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
   const [stopped, setStopped] = useState(false);
   const active = useRef<AbortController | undefined>(undefined); const alive = useRef(true);
   const retry = useRef<HTMLButtonElement>(null); const focusRetry = useRef(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); const opened = useRef(false);
+  useEffect(() => { if (!opened.current) { opened.current = true; activityEvent('organization_creation_disclosure', 'open'); } }, []);
   useEffect(() => { alive.current = true; return () => { alive.current = false; active.current?.abort(); }; }, []);
   useEffect(() => {
     if (!busy && intent && focusRetry.current) { focusRetry.current = false; retry.current?.focus(); }
@@ -58,7 +60,8 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
       body: JSON.stringify({ name: name.trim(), description }) };
     intentRef.current = original; setIntent(original);
     const controller = new AbortController(); active.current = controller; setBusy(true); setError(undefined);
-    let submitted = false;
+    activityEvent('organization_creation', recover ? 'retry' : 'use');
+    const telemetryStarted = performance.now(); let succeeded = false; let submitted = false;
     try {
       await boundedWorkRead(async signal => {
         const before = await request('/me', {}, signal); if (!current(controller)) return;
@@ -71,6 +74,7 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
         }, signal); if (!current(controller)) return;
         if ([401, 403, 404].includes(result.status)) { denied(result.status); return; }
         if ([400, 409, 429].includes(result.status)) {
+          if (result.status === 409) activityEvent('organization_creation', 'conflict');
           intentRef.current = undefined; setIntent(undefined); setName(''); setDescription(''); setStopped(true);
           setError('The original creation could not be acknowledged. Return to the directory and check current Organizations before starting another creation.'); return;
         }
@@ -84,16 +88,18 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
         if ([401, 403, 404].includes(after.status)) { denied(after.status); return; }
         if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Final account check unavailable');
         if (after.body.id !== original.actor) { denied(401); return; }
+        succeeded = true; activityResult('organization_creation', true, telemetryStarted);
         intentRef.current = undefined; setIntent(undefined); onCreated(id);
       }, controller.signal);
     } catch {
       if (current(controller)) {
+        activityEvent('organization_creation', 'exception');
         setError(submitted ? 'The original creation is not yet acknowledged with current access. Retry the original creation; it may already have succeeded.'
           : 'No creation was sent. Retry the original request after confirming your account.');
         focusRetry.current = true;
       }
     } finally {
-      if (current(controller)) { active.current = undefined; setBusy(false); }
+      if (current(controller)) { if (!succeeded) activityResult('organization_creation', false, telemetryStarted); active.current = undefined; setBusy(false); }
     }
   }
   return <Dialog open fullWidth maxWidth="sm" aria-labelledby="organization-creation-title"

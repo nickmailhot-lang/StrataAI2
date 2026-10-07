@@ -173,7 +173,7 @@ assertions. The native desktop/phone settings telemetry cases use a real committ
 PATCH whose response is lost, explicit identical-key/body recovery, actual
 production browser reports accepted by the authenticated endpoint, one stored
 revision, keyboard operation and WCAG 2.2 AA. Native execution remains pending.
-Broader Organization creation/member/departure/deletion/invitation telemetry,
+Broader Organization member/departure/deletion/invitation telemetry,
 per-tenant adoption policy, successful transport reconnect measures and dashboards
 remain separate unfinished requirements.
 
@@ -183,3 +183,36 @@ with zero warnings/errors, three Collector verifier tests, web/browser
 typechecks and zero-warning lint. Both native cases collect successfully.
 The two native scenarios are implemented; current-image runtime evidence remains
 pending and this does not close PRD-03 or ARCH-08.
+
+## Organization creation client observations
+
+The creation dialog records one `organization_creation_disclosure/open` per
+mount. Admitted initial attempts and explicit original recovery record
+`organization_creation/use` or `retry`, respectively. Caught uncertainty records
+`exception`, a 409 records `conflict`, and completed attempts record success or
+failure with their full-operation duration. Success requires the original
+receipt, current Organization access and final account confirmation; receipt
+recovery alone is insufficient. Invalid local input is not a submitted attempt.
+
+The observations use the existing bounded best-effort queue and authenticated
+whole-batch parser. Only action, kind, count and optional duration are allowed;
+account/Organization IDs, names, descriptions, original keys, paths, revisions
+and exception text are excluded. Reporting cannot retry a creation or change
+its original account/key/body, deadline or authority checks. These observations
+remain untrusted analytics, separate from audit history and server metrics.
+
+Component cases cover exact original recovery, conflict/failure and refusal of
+current access after a valid receipt, checking private-field exclusion. API
+cases cover authentication, accepted fixed categories and atomic rejection of
+mixed private batches. The exact-image Collector fixture now requires fixed
+creation categories and a duration; its client observations are synthetic
+ingestion evidence. Separate desktop/phone browser cases lose a real committed
+creation response, recover the identical key/body, require one stored
+Organization/version, actual production reports with 204 responses, keyboard
+operation and WCAG 2.2 AA. Native runtime verification remains pending.
+
+Local validation passed 23 focused creation/queue component cases, six API
+category/authentication/privacy cases, three Collector verifier cases, web and
+browser typechecks and zero-warning lint. API and API-test Release builds passed
+with zero warnings/errors. Both native browser cases collect successfully. This
+does not establish current-image execution or complete PRD-03 acceptance.

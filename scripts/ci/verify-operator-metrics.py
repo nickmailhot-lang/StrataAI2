@@ -37,6 +37,10 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
+        observed("strataai_activity_client_events", {"action": "organization_creation_disclosure", "kind": "open"}),
+        observed("strataai_activity_client_events", {"action": "organization_creation", "kind": "retry"}),
+        observed("strataai_activity_client_events", {"action": "organization_creation", "kind": "success"}),
+        observed("strataai_activity_client_duration_count", {"action": "organization_creation", "kind": "success"}),
         observed("strataai_activity_client_events", {"action": "organization_settings_disclosure", "kind": "open"}),
         observed("strataai_activity_client_events", {"action": "organization_settings_read", "kind": "retry"}),
         observed("strataai_activity_client_events", {"action": "organization_settings_update", "kind": "use"}),

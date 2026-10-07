@@ -13,7 +13,11 @@ class OperatorEvidenceTests(unittest.TestCase):
 
     def fixture(self):
         common = f'service_name="strataai-api",service_namespace="strataai",service_version="{self.version}",strataai_build_revision="{self.revision}"'
-        observations = [("strataai_activity_client_events", 'action="organization_settings_disclosure",kind="open"'),
+        observations = [("strataai_activity_client_events", 'action="organization_creation_disclosure",kind="open"'),
+                        ("strataai_activity_client_events", 'action="organization_creation",kind="retry"'),
+                        ("strataai_activity_client_events", 'action="organization_creation",kind="success"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_creation",kind="success"'),
+                        ("strataai_activity_client_events", 'action="organization_settings_disclosure",kind="open"'),
                         ("strataai_activity_client_events", 'action="organization_settings_read",kind="retry"'),
                         ("strataai_activity_client_events", 'action="organization_settings_update",kind="use"'),
                         ("strataai_activity_client_events", 'action="organization_settings_update",kind="success"'),
