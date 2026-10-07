@@ -27,19 +27,18 @@ function validPage(value: unknown): value is Page {
   return page.nextCursor === null || page.items.every(item => item.id.toLowerCase() <= page.nextCursor!.toLowerCase());
 }
 async function request(path: string, controller: AbortController, method = 'GET') {
-  let timer: ReturnType<typeof setTimeout> | undefined;
+  controller.signal.throwIfAborted();
   let abort: (() => void) | undefined;
   try {
+    const interrupted = new Promise<never>((_, reject) => {
+      abort = () => reject(new Error('Invitation request interrupted'));
+      controller.signal.addEventListener('abort', abort, { once: true });
+    });
     return await Promise.race([
       apiFetch(path, { method, signal: controller.signal }).then(async response => ({ status: response.status, body: response.ok ? await response.json() as unknown : undefined })),
-      new Promise<never>((_, reject) => {
-        abort = () => reject(new Error('Invitation request interrupted'));
-        controller.signal.addEventListener('abort', abort, { once: true });
-        timer = setTimeout(() => controller.abort(), 15_000);
-      }),
+      interrupted,
     ]);
   } finally {
-    clearTimeout(timer);
     if (abort) controller.signal.removeEventListener('abort', abort);
   }
 }
@@ -82,6 +81,7 @@ export function InvitationsPage() {
   async function load(after?: string) {
     if (current.current) return;
     const controller = new AbortController(); current.current = controller;
+    const deadline = setTimeout(() => controller.abort(), 15_000);
     const started = epoch.current;
     setBusy(true); setError(undefined); setPage(undefined); setAccepted(undefined); setAccountReady(false);
     try {
@@ -102,6 +102,7 @@ export function InvitationsPage() {
         else setError('Unable to load invitations. Please refresh and try again.');
       }
     } finally {
+      clearTimeout(deadline);
       if (current.current === controller) { current.current = undefined; if (mounted.current) setBusy(false); }
     }
   }
@@ -137,6 +138,7 @@ export function InvitationsPage() {
     if (current.current || !accountReady || !reviewedActor.current || (uncertain && uncertain.id !== invitation.id)) return;
     const actor = reviewedActor.current; let submitted = false;
     const controller = new AbortController(); current.current = controller;
+    const deadline = setTimeout(() => controller.abort(), 15_000);
     setBusy(true); setError(undefined); setAccepted(undefined);
     try {
       await verifyAccount(controller, actor); if (!valid(controller)) return;
@@ -168,6 +170,7 @@ export function InvitationsPage() {
         else setError('Unable to confirm acceptance. You can retry this invitation safely.');
       }
     } finally {
+      clearTimeout(deadline);
       if (current.current === controller) { current.current = undefined; if (mounted.current) setBusy(false); }
     }
   }

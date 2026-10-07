@@ -114,3 +114,24 @@ history and no POST before expiry withdrawal, followed by a lost actual committe
 acceptance response and exact-ID recovery with unchanged history. Only browser
 time advances, so these cases do not prove server-clock expiry or override it.
 Native execution remains pending exact-image CI.
+
+## Complete recipient request deadline
+
+Discovery/paging and each explicit acceptance/recovery now share one 15-second
+deadline across both account checks, invitation HTTP I/O and successful JSON
+reading. Per-request time allowances cannot accumulate. An aborted workflow
+cannot start another request or publish late labels, consent or acknowledgment.
+The loading state ends and explicit recovery becomes available at the deadline.
+An acceptance already submitted retains only its original natural-ID recovery;
+an unavailable final account check requires fresh original-account confirmation
+before that retry. A discovery timeout never submits acceptance.
+
+All 46 invitation-page component cases pass, including seven aggregate-delay
+cases for discovery and Internal/Portal/Board command JSON/final profile JSON,
+late completion refusal and exact original-ID recovery. Typecheck and lint pass.
+Two additional native desktop/mobile Portal scenarios hold an account check and
+the response of an actual committed acceptance across the aggregate deadline,
+then check keyboard same-ID recovery, unchanged issuer history, separate Portal
+admission and accessibility. They are collected/typechecked; their exact-image
+runtime results remain pending. See also the separate
+[recipient journal and protected transport](invitation-recipient-events.md).

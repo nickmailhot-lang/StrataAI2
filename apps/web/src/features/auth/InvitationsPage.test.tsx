@@ -17,6 +17,72 @@ function mount() {
   return { ...view, router };
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it('bounds discovery across both account checks, the page and late profile JSON under one deadline', async () => {
+  vi.useFakeTimers(); let profiles = 0; const signals: AbortSignal[] = []; const reads: string[] = [];
+  const delay = <T,>(value: T) => new Promise<T>(resolve => setTimeout(() => resolve(value), 6000));
+  vi.stubGlobal('fetch', vi.fn(async (input: string, init: RequestInit) => {
+    reads.push(input); signals.push(init.signal as AbortSignal);
+    if (input === '/me') {
+      if (++profiles === 1) return delay(reply({ id: actor }));
+      return { ok: true, status: 200, json: () => delay({ id: actor }) } as Response;
+    }
+    return delay(reply({ items: [invitation], nextCursor: null }));
+  }));
+  await act(async () => { mount(); });
+  await act(async () => vi.advanceTimersByTimeAsync(14_999));
+  expect(screen.getByRole('progressbar', { name: 'Loading invitation request' })).toBeVisible();
+  await act(async () => vi.advanceTimersByTimeAsync(1));
+  expect(screen.getByText('Unable to confirm the reviewed account. Refresh invitations before continuing.')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Refresh invitations' })).toBeEnabled();
+  expect(signals).toHaveLength(3); expect(signals.every(signal => signal.aborted)).toBe(true);
+  expect(screen.queryByText('Council')).not.toBeInTheDocument();
+  await act(async () => vi.advanceTimersByTimeAsync(10_000));
+  expect(reads).toHaveLength(3); expect(screen.queryByRole('button', { name: /^Accept invitation to/ })).not.toBeInTheDocument();
+});
+
+it.each([invitation, { ...invitation, surface: 'INTERNAL', targetRole: 'MEMBER' },
+  { ...invitation, surface: 'INTERNAL', targetRole: 'MEMBER', boardTarget: { boardId: '33333333-3333-4333-8333-333333333333', role: 'MEMBER' }, boardName: 'Maintenance' }]
+  .flatMap(item => ['command-json', 'final-profile-json'].map(phase => ({ item, phase }))))(
+  'bounds the complete $item.surface acceptance at $phase and recovers only its exact submitted ID', async ({ item, phase }) => {
+    let profiles = 0, fault = true; const commands: string[] = []; const signals: AbortSignal[] = [];
+    const acknowledgment = { invitationId: item.id, organizationId: item.organizationId,
+      surface: item.surface, targetRole: item.targetRole, boardTarget: 'boardTarget' in item ? item.boardTarget : undefined };
+    const delay = <T,>(value: T, duration: number) => new Promise<T>(resolve => setTimeout(() => resolve(value), duration));
+    vi.stubGlobal('fetch', vi.fn(async (input: string, init: RequestInit) => {
+      if (input === '/me') {
+        const count = ++profiles;
+        if (fault && count === 3) { signals.push(init.signal as AbortSignal); return delay(reply({ id: actor }), phase === 'command-json' ? 8000 : 6000); }
+        if (fault && count === 4) {
+          signals.push(init.signal as AbortSignal);
+          return { ok: true, status: 200, json: () => delay({ id: actor }, 6000) } as Response;
+        }
+        return reply({ id: actor });
+      }
+      if (init.method === 'POST') {
+        commands.push(input); signals.push(init.signal as AbortSignal);
+        if (fault) return { ok: true, status: 200, json: () => delay(acknowledgment, phase === 'command-json' ? 8000 : 6000) } as Response;
+        return reply(acknowledgment);
+      }
+      return reply({ items: commands.length ? [] : [item], nextCursor: null });
+    }));
+    mount(); const accept = await screen.findByRole('button', { name: /^Accept invitation to/ });
+    vi.useFakeTimers(); fireEvent.click(accept);
+    await act(async () => vi.advanceTimersByTimeAsync(14_999));
+    expect(screen.getByRole('progressbar', { name: 'Loading invitation request' })).toBeVisible();
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(screen.getByRole('button', { name: 'Refresh invitations' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Retry invitation acceptance' })).toBeInTheDocument();
+    expect(signals.every(signal => signal.aborted)).toBe(true); expect(commands).toHaveLength(1);
+    expect(screen.queryByText('Council')).not.toBeInTheDocument(); expect(screen.queryByText('Maintenance')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Open / })).not.toBeInTheDocument();
+    await act(async () => vi.advanceTimersByTimeAsync(10_000));
+    expect(commands).toHaveLength(1); expect(screen.queryByRole('link', { name: /^Open / })).not.toBeInTheDocument();
+    fault = false; vi.useRealTimers(); fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Retry invitation acceptance' })).toBeEnabled());
+    expect(commands).toHaveLength(1); fireEvent.click(screen.getByRole('button', { name: 'Retry invitation acceptance' }));
+    await screen.findByRole('link', { name: /^Open / });
+    expect(commands).toHaveLength(2); expect(commands[1]).toBe(commands[0]);
+  });
 it.each(['INTERNAL', 'PORTAL', 'BOARD'])('withdraws expired %s discovery and rereads current invitations without an acceptance', async surface => {
   vi.useFakeTimers(); vi.setSystemTime(new Date(Date.parse(invitation.expiresAt) - 1000));
   const target = surface === 'BOARD' ? boardInvitation : { ...invitation, surface, targetRole: surface === 'PORTAL' ? 'OWNER' : 'MEMBER' };
