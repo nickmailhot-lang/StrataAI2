@@ -248,7 +248,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
                 UpdatedAt = updatedAt,
                 Version = membership.Version + 1,
             };
-            CaptureAuthorityProof(organizationId, "User", userId, "ORGANIZATION_MEMBER_REMOVED", membership.Version + 1, updatedAt);
+            CaptureAuthorityProof(organizationId, "User", userId, "ORGANIZATION_MEMBER_REMOVED", membership.Version + 1, updatedAt, membership.Role);
 
             return OrganizationRemoveMemberResult.Removed;
         }

@@ -91,8 +91,10 @@ Protected cursors bind the actor, normalized email, account revision, private
 authority revision and sequence with a distinct version-2 Data Protection
 purpose and a 15-minute expiry. Production reads the authority revision inside
 the owning account transaction; an absent counter is zero. Version-1 cursors
-reset after deployment. Demo currently retains revision zero; equivalent Demo
-authority source/rollback behavior remains unfinished. See
+reset after deployment. Demo simulates delivery in fixed 100-candidate indexed
+pages inside its owning Organization command, with rollback-safe private
+checkpoints, recipient deduplication and revision effects. Both readers consume
+the current private revision. See
 [authority delivery and binding](invitation-recipient-authority.md#production-protected-cursor-binding).
 The private
 binding is not an event payload. Bootstrap, invalid/expired bindings, a cursor

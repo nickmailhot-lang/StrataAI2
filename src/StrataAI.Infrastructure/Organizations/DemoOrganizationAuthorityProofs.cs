@@ -1,18 +1,20 @@
+using StrataAI.Application.Organizations;
+
 namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed record DemoOrganizationAuthorityProof(Guid OrganizationId, string EntityType,
-    Guid EntityId, string EventType, long Version, DateTimeOffset CreatedAt, Guid CommandId);
+    Guid EntityId, string EventType, long Version, DateTimeOffset CreatedAt, Guid CommandId, OrganizationRole? PreviousRole);
 
 internal sealed partial class InMemoryOrganizationStore
 {
     private readonly Dictionary<(Guid Organization, string EntityType, Guid Entity), DemoOrganizationAuthorityProof> _authorityProofs = [];
 
     private void CaptureAuthorityProof(Guid organization, string entityType, Guid entity, string eventType,
-        long version, DateTimeOffset at)
+        long version, DateTimeOffset at, OrganizationRole? previousRole = null)
     {
         // Legacy fixture writes outside owning commands do not acquire history.
         if (workScope.OwnsOrganizationCommand(organization))
-            _authorityProofs[(organization, entityType, entity)] = new(organization, entityType, entity, eventType, version, at, workScope.CommandId);
+            _authorityProofs[(organization, entityType, entity)] = new(organization, entityType, entity, eventType, version, at, workScope.CommandId, previousRole);
     }
 
     internal DemoOrganizationAuthorityProof RequireAuthorityProof(Guid organization, string entityType, Guid entity, string eventType)

@@ -37,6 +37,36 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
     private readonly Dictionary<string, InvitationRecipientEvent[]> _events = new(StringComparer.Ordinal);
     private readonly Dictionary<Guid, (DemoInvitationAudit Audit, DemoOrganizationAuthorityProof Proof)> _authoritySources = [];
     private readonly HashSet<(Guid Organization, string EntityType, Guid Entity, long Version)> _authorityPublished = [];
+    private readonly Dictionary<string, long> _authorityRevisions = new(StringComparer.Ordinal);
+    private readonly HashSet<(Guid Source, string Email)> _authorityEffects = [];
+    private readonly Dictionary<(Guid Source, DateTimeOffset AfterAt, Guid AfterId), int> _authorityPages = [];
+
+    internal void SimulateAuthorityDelivery(DemoInvitationAudit audit, InMemoryInvitationStore invitations, CancellationToken ct)
+    {
+        // Demo follows its existing immediate Work-event simulation. Production
+        // delivery remains exclusively the separately leased Worker capability.
+        if (!workScope.OwnsOrganizationCommand(audit.OrganizationId))
+            throw new InvalidOperationException("Demo authority delivery requires its owning command.");
+        lock (_sync)
+        {
+            if (!_authoritySources.TryGetValue(audit.Id, out var source) || source.Audit != audit)
+                throw new InvalidOperationException("Demo authority source is unavailable.");
+            (DateTimeOffset At, Guid Id) after = (DateTimeOffset.MinValue, Guid.Empty);
+            while (true)
+            {
+                ct.ThrowIfCancellationRequested();
+                var key = (audit.Id, after.At, after.Id);
+                if (_authorityPages.ContainsKey(key)) return;
+                var page = invitations.ReadAuthorityPage(audit.OrganizationId, source.Proof.CreatedAt, after, ct);
+                foreach (var row in page)
+                    if (_authorityEffects.Add((audit.Id, row.EmailNormalized)))
+                        _authorityRevisions[row.EmailNormalized] = checked(_authorityRevisions.GetValueOrDefault(row.EmailNormalized) + 1);
+                _authorityPages.Add(key, page.Length);
+                if (page.Length < 100) return;
+                after = (page[^1].CreatedAt, page[^1].Id);
+            }
+        }
+    }
 
     internal void PublishAuthoritySource(DemoInvitationAudit audit, DemoOrganizationAuthorityProof proof, CancellationToken ct)
     {
@@ -48,8 +78,8 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
             if (_authoritySources.ContainsKey(audit.Id)
                 || !_authorityPublished.Add((proof.OrganizationId, proof.EntityType, proof.EntityId, proof.Version)))
                 throw new InvalidOperationException("Organization authority source was already published.");
-            // Reference/proof only: no recipient scan or synthetic invitation event.
-            // Bounded Demo delivery and revision effects are a separate dependency.
+            // Source publication itself scans no recipients and emits no
+            // synthetic invitation event. Demo simulation follows separately.
             _authoritySources.Add(audit.Id, (audit, proof));
         }
     }
@@ -119,7 +149,8 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
             // earlier committed identities and restore counters without gaps.
             Action[] restore = [DemoRollback.Dictionary(_proofs), DemoRollback.Dictionary(_sources), DemoRollback.Set(_published),
                 DemoRollback.Dictionary(_heads), DemoRollback.Dictionary(_events),
-                DemoRollback.Dictionary(_authoritySources), DemoRollback.Set(_authorityPublished)];
+                DemoRollback.Dictionary(_authoritySources), DemoRollback.Set(_authorityPublished),
+                DemoRollback.Dictionary(_authorityRevisions), DemoRollback.Set(_authorityEffects), DemoRollback.Dictionary(_authorityPages)];
             return () => { lock (_sync) foreach (var action in restore) action(); };
         }
     }
@@ -127,8 +158,8 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
     {
         if (!identityScope.Owns(actorId)) throw new InvalidOperationException("Recipient replay requires its owning account transaction.");
         var user = await identities.FindUserByIdAsync(actorId, cancellationToken);
-        return user is { Status: AccountStatus.Active, EmailVerified: true } && user.Id == actorId
-            ? new(actorId, user.EmailNormalized, user.Version) : null;
+        if (user is not { Status: AccountStatus.Active, EmailVerified: true } || user.Id != actorId) return null;
+        lock (_sync) return new(actorId, user.EmailNormalized, user.Version, _authorityRevisions.GetValueOrDefault(user.EmailNormalized));
     }
     public async Task<long> GetHeadAsync(InvitationRecipientCursorBinding binding, CancellationToken cancellationToken)
     {

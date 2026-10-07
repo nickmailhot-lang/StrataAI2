@@ -20,10 +20,15 @@ internal sealed class InMemoryInvitationAuditProjection(InMemoryInvitationRecipi
                 throw new InvalidOperationException("Organization authority source is invalid.");
             var authorityProof = ((InMemoryOrganizationStore)organizations).RequireAuthorityProof(audit.OrganizationId, audit.EntityType, audit.EntityId, audit.EventType);
             var actor = await organizations.FindMembershipAsync(audit.OrganizationId, audit.ActorId, cancellationToken);
-            if (audit.EventType == "ORGANIZATION_MEMBER_LEFT" ? audit.ActorId != audit.EntityId
-                : actor is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin })
+            var selfDeparture = audit.ActorId == audit.EntityId && actor is { Active: false }
+                && actor.Version == authorityProof.Version && actor.UpdatedAt == authorityProof.CreatedAt
+                && (audit.EventType == "ORGANIZATION_MEMBER_LEFT"
+                    || audit.EventType == "ORGANIZATION_MEMBER_REMOVED" && authorityProof.PreviousRole is OrganizationRole.Owner or OrganizationRole.Admin);
+            if (audit.EventType == "ORGANIZATION_MEMBER_LEFT" ? !selfDeparture
+                : actor is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin } && !selfDeparture)
                 throw new InvalidOperationException("Organization authority source actor is unavailable.");
             journal.PublishAuthoritySource(audit, authorityProof, cancellationToken);
+            journal.SimulateAuthorityDelivery(audit, invitations, cancellationToken);
             return;
         }
         if (audit.EntityType != "Invitation" || audit.Id == Guid.Empty || audit.ActorId == Guid.Empty

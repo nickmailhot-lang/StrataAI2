@@ -101,6 +101,7 @@ describe('Organization member administration and renewed removal consent', () =>
   });
   it('discards a live response when account replacement occurs during its read', async () => {
     const mock = fetcher(); mount(); await screen.findByRole('button', { name: 'Review removal of Council member' });
+    await waitFor(() => expect(live.watch).toHaveBeenCalled());
     mock.mockImplementationOnce(() => { currentActor = target; return Promise.resolve(reply({ ...page, items: [{ ...row, displayName: 'Other account private member' }] })); });
     act(() => live.watch.mock.calls.at(-1)![0].invalidate());
     await screen.findByText('Sign in destination');

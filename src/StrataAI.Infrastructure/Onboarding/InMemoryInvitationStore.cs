@@ -14,6 +14,20 @@ internal sealed class InMemoryInvitationStore(
         new(StringComparer.Ordinal);
     private readonly HashSet<(Guid OrganizationId, Guid UserId, string Relationship)> _portalAccess = [];
     private readonly Dictionary<(Guid Organization, Guid Invitation), long> _versions = [];
+    private readonly Dictionary<Guid, SortedSet<(DateTimeOffset At, Guid Id)>> _authorityIndex = [];
+    private readonly Dictionary<Guid, string> _tokensById = [];
+    internal InvitationRecord[] ReadAuthorityPage(Guid organization, DateTimeOffset cutoff,
+        (DateTimeOffset At, Guid Id) after, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_sync)
+        {
+            if (!_authorityIndex.TryGetValue(organization, out var index) || cutoff < after.At) return [];
+            var maximum = (cutoff, Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff"));
+            return index.GetViewBetween(after, maximum).Where(key => key.CompareTo(after) > 0)
+                .Take(100).Select(key => _byToken[_tokensById[key.Id]]).ToArray();
+        }
+    }
     internal bool HasPortalRelationship(Guid organization, Guid user, string role)
     { lock (_sync) return _portalAccess.Contains((organization, user, role)); }
     public Action CaptureRollback()
@@ -24,7 +38,10 @@ internal sealed class InMemoryInvitationStore(
             var receipts = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_creationReplays);
             var portal = StrataAI.Infrastructure.WorkManagement.DemoRollback.Set(_portalAccess);
             var versions = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_versions);
-            return () => { lock (_sync) { invitations(); receipts(); portal(); versions(); } };
+            var tokens = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_tokensById);
+            var index = _authorityIndex.ToDictionary(row => row.Key, row => new SortedSet<(DateTimeOffset At, Guid Id)>(row.Value));
+            return () => { lock (_sync) { invitations(); receipts(); portal(); versions(); tokens();
+                _authorityIndex.Clear(); foreach (var row in index) _authorityIndex.Add(row.Key, row.Value); } };
         }
     }
     public Task<bool> HasActivePortalAccessAsync(Guid organizationId, Guid userId, CancellationToken cancellationToken = default)
@@ -69,6 +86,10 @@ internal sealed class InMemoryInvitationStore(
         {
             _byToken[invitation.TokenHash] = invitation;
             _versions.Add((invitation.OrganizationId, invitation.Id), 1);
+            _tokensById.Add(invitation.Id, invitation.TokenHash);
+            if (!_authorityIndex.TryGetValue(invitation.OrganizationId, out var index))
+                _authorityIndex.Add(invitation.OrganizationId, index = []);
+            index.Add((invitation.CreatedAt, invitation.Id));
             journal.Capture(invitation, 1, "INVITATION_CREATED", cancellationToken);
         }
 

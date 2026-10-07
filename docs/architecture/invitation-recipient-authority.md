@@ -146,7 +146,7 @@ replay contains no fabricated transition. Existing email-change, unverified
 account and revoked persisted-session refusal checks still pass. All 739 Linux
 Domain tests pass, including authority binding mismatch and revision withdrawal
 during source I/O. This proves production storage/reader integration; Demo
-authority parity and retained exact-image two-client native acceptance remain.
+native two-client acceptance remains.
 
 ## Demo canonical source proof
 
@@ -155,16 +155,24 @@ inside the existing owning Organization command. Proofs bind a private command
 identity; a later command cannot publish an earlier unaudited fixture mutation.
 Raw fixture writes acquire no history. The audit projection requires the actual subject proof, an active
 source actor, valid correlation and the applicable administration/self-departure
-rule. Organization and membership revisions remain separate. The private source
+rule. A self-removing administrator retains its proven pre-removal role and
+must match the resulting inactive membership revision/timestamp; current
+membership retirement cannot erase that actual source. Organization and
+membership revisions remain separate. The private source
 retains the original audit identity/actor/correlation and immutable subject proof;
 publishing the same subject revision twice is refused.
 
 Proofs, source records and publication deduplication participate in the existing
 cross-store Demo rollback. Late audit refusal or command failure cannot retain
-tentative history or block retry of the actual revision. This producer records
-references only: it does not scan recipients, invent invitation transitions or
-change cursor revisions. Bounded Demo page delivery and recipient effects remain
-required before Demo authority invalidation works. These process-local records
+tentative history or block retry of the actual revision. Source publication
+records references only. Demo then follows its existing immediate Work-event
+simulation: an indexed `(created_at, id)` seek reads at most 100 candidates per
+page, bounded by the original source timestamp. Private page checkpoints,
+per-source/email deduplication and recipient revision effects participate in
+the same command rollback. The deterministic simulation completes its pages
+before the Demo command acknowledges; Production retains separate leased
+Worker transactions. Both readers bind the current private revision and reset
+stale cursors without inventing invitation transitions. These process-local records
 reset on API restart and are separate from sample-catalog reset endpoints.
 
 The isolated Linux Release API/test build passes with zero warnings/errors.
@@ -175,6 +183,22 @@ All nine existing Demo recipient cases and six Demo Organization transaction
 cases also pass. These are source/rollback regressions, not delivery or native
 authority-withdrawal acceptance.
 
+The delivery increment passes all 19 targeted Linux API-host cases (four source
+and delivery cases, nine existing recipient cases and six Organization
+transaction cases), with zero Release build warnings/errors. Its 205-candidate
+fixture proves recipient deduplication across pages, delivery to the recipient
+after the first two pages, exclusion of a later-created candidate, rollback of
+completed simulation effects and retry, and empty authority-bound resets without
+new invitation events. The second recipient receives no Internal membership.
+This remains in-process Demo evidence; native two-client acceptance is pending.
+The existing self-removal receipt regression also passes after retaining the
+pre-removal administrative role in its proof: 20 targeted API cases pass in all.
+The web subscription fixture now waits for its actual live registration before
+triggering account replacement; all 1,830 web tests pass locally. The prior
+`94b79707` CI run failed that fixture and self-removal guard, while PostgreSQL
+passed. These repairs require fresh exact-commit CI and do not create a green
+release claim.
+
 ## Runtime work required next
 
 The implemented first producer attaches to future actual Organization metadata
@@ -184,7 +208,6 @@ revision. Their current delivery capability already validates the revision
 against the correct Organization, membership or invitation subject; these
 different revision sequences must not be compared with one another.
 
-Demo needs bounded delivery/checkpoint/effect rollback and current-recipient behavior.
 Actual adapter/Worker restart and concurrent-page execution evidence must be
 added alongside the existing SQL capability tests.
 
@@ -196,7 +219,7 @@ later actor departure; current recipient discovery still owns present grant
 admission. Legacy changes without a proven source must not acquire fabricated
 actors or history.
 
-Demo behavior and actual
-concurrent delivery/restart/large-population evidence remain unfinished. Native nonmember/Portal two-client authority withdrawal,
+Actual concurrent delivery/restart/large-population evidence remains unfinished.
+Native Demo and Production nonmember/Portal two-client authority withdrawal,
 disconnect recovery, disclosure clearing, keyboard/mobile and latency results
 must also be verified against the retained exact release images before closure.
