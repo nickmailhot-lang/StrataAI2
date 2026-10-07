@@ -123,6 +123,32 @@ or a current-image release claim. The temporary diagnostic fixture and both
 containers are removed; numeric evidence and the diagnostic source are retained
 outside the repository. Actual editor readiness and movement feedback remain work.
 
+## Cached detail CPU profile and modal lifecycle guard, 2026-10-07
+
+A desktop-only CPU diagnostic samples cached detail opening at a 100-microsecond
+requested interval. Its source-map bundle's executable text matches the frozen
+normal bundle after removing the source-map comment. The 868.3 ms captured interval
+contains 1,184 samples and includes idle/native/instrumentation time. The largest
+mapped self-time source is React DOM at 118.0 ms; MUI transition utilities account
+for 16.1 ms. These sampled source times are diagnostic estimates, not component
+inclusive render costs or the standard benchmark's timing measurements. Under
+profiling, first-enabled observation is 497.7 ms and the original assertion returns
+at 536.3 ms; feedback also fails at 109.8 ms. Profiling overhead and the different
+clock baselines preclude a timing acceptance or improvement claim.
+
+Installed MUI Fade source performs an initial layout read even when timeout is
+zero. A local attempt to skip appearance eliminates that read but fails the added
+actual close/focus regression: the modal lifecycle does not retire correctly and
+the canvas remains hidden from accessibility queries. That attempt is reverted.
+The retained regression opens the cached editor, closes it through the UI and
+requires the original canvas link to become accessible and focused again. Future
+performance changes must preserve this modal retirement and focus contract.
+
+Temporary profiling source and containers are removed. Private raw CPU/trace data,
+the source map and numeric source-timing evidence remain outside the repository.
+The standard benchmark and all production dialog/admission behavior are unchanged;
+feedback, editor readiness and current-image acceptance remain outstanding.
+
 ## Current large-Board runtime correction
 
 Exact-image run [37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119)

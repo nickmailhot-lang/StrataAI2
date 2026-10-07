@@ -142,6 +142,14 @@ cleanup/admission policy and test deadlines are unchanged. The separate cached
 editor observation diagnostic above does not establish timing acceptance. Estimated
 work remaining stays 15%.
 
+The [cached-detail CPU diagnostic](../kanban-performance.md#cached-detail-cpu-profile-and-modal-lifecycle-guard-2026-10-07)
+identifies transition layout work but does not establish timing acceptance.
+A proposed appearance bypass fails actual modal retirement and canvas focus
+restoration, so it is reverted. The retained screen regression requires an enabled
+cached editor followed by UI close, restored canvas accessibility and original-link
+focus. Performance changes must preserve this lifecycle contract. Production
+behavior and the standard timing benchmark remain unchanged; remaining work stays 15%.
+
 1. Verify mandatory restricted member-event CI and execute current release consumer delivery/reconnect; local API and restricted PostgreSQL audit/journal/outbox, replay, no-op, rollback and private authority compatibility checks are complete.
 2. Complete current-image invitation/member/visibility administration, actor and parent authority withdrawal, continuity and reconnect acceptance, including the full operation matrix.
 3. Finish WCAG 2.2 AA, documented large-data and latency execution, then audit every definition-of-done requirement against the retained build-once release before closing the ticket.

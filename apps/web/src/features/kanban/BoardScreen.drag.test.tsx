@@ -36,6 +36,21 @@ const snapshot: BoardSnapshot = {
 const reply = (body: unknown) => new Response(JSON.stringify(body), { status: 200 });
 afterEach(() => { vi.unstubAllGlobals(); drag.current = undefined; canvas.items = undefined; });
 
+it('opens cached Card detail and retires the modal with focus restored to its canvas link', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => reply(snapshot)));
+    const router = createMemoryRouter([
+      { path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> },
+      { path: '/app/:organizationId/boards/:boardId/cards/:cardId', element: <BoardScreen /> },
+    ], { initialEntries: ['/app/org/boards/board'] });
+    render(<RouterProvider router={router} />);
+    await waitFor(() => expect(screen.getByRole('button', { name: `Drag ${card.title} card` })).toBeEnabled());
+    act(() => screen.getByRole('link', { name: card.title }).click());
+    await screen.findByRole('textbox', { name: 'Card title' });
+    expect(screen.getByRole('textbox', { name: 'Card title' })).toBeEnabled();
+    act(() => screen.getByRole('button', { name: 'Close' }).click());
+    await waitFor(() => expect(screen.getByRole('link', { name: card.title })).toHaveFocus());
+});
+
 it('preserves canvas columns during dialog state changes and replaces them after an authoritative refresh', async () => {
   let current = snapshot;
   vi.stubGlobal('fetch', vi.fn(async () => reply(current)));
