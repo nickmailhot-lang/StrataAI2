@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# PERM-FR-002/010; PRD-05-TC-05/06/07: current authority gates original receipts.
+# PERM-FR-002/010; PRD-05-TC-05/06/07/10: current authority/lifecycle gates receipts.
 test "${CI:-}" = true || { echo 'Disposable permission recovery fixtures may run only in CI.' >&2; exit 1; }
 base=${1:-http://localhost:8080}
 scratch=$(mktemp -d)
@@ -24,6 +24,8 @@ for id in "$member" "$org"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
 admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),'$org','$member','MEMBER','ACTIVE');" >/dev/null
 effects() {
   admin "SELECT jsonb_build_object(
+   'board',(SELECT to_jsonb(b) FROM boards b WHERE id='$board'),
+   'list',(SELECT to_jsonb(l) FROM board_lists l WHERE id='$list'),
    'card',(SELECT to_jsonb(c) FROM cards c WHERE id='$card'),
    'member',(SELECT to_jsonb(m) FROM board_members m WHERE board_id='$board' AND user_id='$member'),
    'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
@@ -71,5 +73,60 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
   test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
   cmp "$scratch/original.receipt" "$scratch/response"; test "$regranted" = "$(effects)"
   test "$(admin "SELECT title||':'||version FROM cards WHERE id='$card';")" = 'Later authoritative title:3'
+  # An archived List/Card permits read-only recovery but freezes new edits.
+  for container in list card; do
+    path="/lists/$list"; version=1
+    if test "$container" = card; then path="/cards/$card"; version=3; fi
+    test "$(request owner POST "$path/archive" "{\"version\":$version}")" = 200
+    jq -e --argjson v "$((version + 1))" '.version==$v' "$scratch/response" >/dev/null
+    frozen=$(effects)
+    test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
+    cmp "$scratch/original.receipt" "$scratch/response"; test "$frozen" = "$(effects)"
+    current=$(admin "SELECT version FROM cards WHERE id='$card';")
+    test "$(request member PATCH "/cards/$card" "{\"title\":\"Forbidden archived edit\",\"version\":$current}")" = 404
+    jq -e '.code=="card_not_found"' "$scratch/response" >/dev/null
+    test "$frozen" = "$(effects)"
+    restore_actor=owner
+    if test "$container" = list; then
+      test "$(request member POST "$path/restore" "{\"version\":$((version + 1))}")" = 404
+    else
+      # A contributor may restore a Card on an active List/Board, but permanent
+      # deletion remains elevated even when the Card is already archived.
+      test "$(request member DELETE "$path?version=$((version + 1))&confirmed=true" '{}')" = 404
+      restore_actor=member
+    fi
+    test "$frozen" = "$(effects)"
+    test "$(request "$restore_actor" POST "$path/restore" "{\"version\":$((version + 1))}")" = 200
+    jq -e --argjson v "$((version + 2))" '.version==$v' "$scratch/response" >/dev/null
+    restored=$(effects)
+    test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
+    cmp "$scratch/original.receipt" "$scratch/response"; test "$restored" = "$(effects)"
+  done
+
+  # Archived Board authority withholds old receipts until elevated restoration.
+  test "$(request owner POST "/boards/$board/archive" '{"version":1}')" = 200
+  frozen=$(effects)
+  for retry in "$original" "$(key)"; do
+    test "$(request member PATCH "/cards/$card" "$body" "$retry")" = 404
+    jq -e '.code=="card_not_found"' "$scratch/response" >/dev/null
+    scripts/ci/assert-file-excludes.sh 'Private recovered receipt title' "$scratch/response"
+    test "$frozen" = "$(effects)"
+  done
+  test "$(request member POST "/boards/$board/restore" '{"version":2}')" = 404
+  test "$frozen" = "$(effects)"
+  test "$(request owner POST "/boards/$board/restore" '{"version":2}')" = 200
+  restored=$(effects)
+  test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
+  cmp "$scratch/original.receipt" "$scratch/response"; test "$restored" = "$(effects)"
+  test "$(admin "SELECT title||':'||version FROM cards WHERE id='$card';")" = 'Later authoritative title:5'
+
+  # A permanent Card tombstone must withhold the earlier edit receipt.
+  test "$(request owner POST "/cards/$card/archive" '{"version":5}')" = 200
+  test "$(request owner DELETE "/cards/$card?version=6&confirmed=true" '{}')" = 200
+  deleted=$(effects)
+  test "$(request member PATCH "/cards/$card" "$body" "$original")" = 404
+  jq -e '.code=="card_not_found"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh 'Private recovered receipt title' "$scratch/response"
+  test "$deleted" = "$(effects)"
 done
-echo 'Board permission recovery: all three visibilities preserve refused-key recovery, original receipts, later state, immediate revoked receipt admission and read-only recovery after re-grant.'
+echo 'Board permission recovery: all three visibilities preserve refused-key recovery, original receipts, later state, revoked admission, archived-parent freezes, elevated restoration and deleted receipt withholding.'

@@ -106,6 +106,36 @@ The owner then commits a different title at version 3. Recovery returns the orig
 
 CI now requires the same transitions against its immutable API and restricted database. Local execution uses the frozen compiled API in a cached Linux runtime, not retained-current-image, separate Worker or native browser evidence. No production authorization policy changes are needed. The disposable API is removed and existing services/volumes are preserved. Estimated remaining work stays 15%; full operation/lifecycle/concurrency, release/native, accessibility and capacity/latency acceptance still govern closure.
 
+## Executed restricted receipt lifecycle extension
+
+The permission recovery script now passes its complete PRIVATE/ORGANIZATION/PUBLIC
+invocation against the frozen compiled Production API and real restricted PostgreSQL.
+Protected snapshots include the Board and List records as well as the Card,
+membership, event streams and audit/event/job/receipt counts. Archiving a List or
+Card freezes new Card edits. An admitted original receipt can still be recovered
+byte-for-byte without changing archived state or reapplying its earlier title/version.
+List restoration is denied to the contributor; Card restoration on an active
+List/Board is permitted to that contributor, while permanent Card deletion remains
+elevated. An initial fixture incorrectly expected contributor Card restoration to
+be denied; it was corrected to the adopted policy, without changing product behavior.
+
+Board archival withdraws both fresh edit and original receipt admission with neutral
+`card_not_found`; contributor Board restoration is denied. Elevated Board restoration
+lets the original Card receipt be recovered without changing the later authoritative
+title or Card version 5. Elevated permanent Card deletion then withholds the original
+edit receipt and changes nothing on refusal. Real PostgreSQL records show three final
+Card tombstones at version 7. All three visibility cases complete with exit 0; shell
+syntax and diff checks pass. The first launch probe preceded API readiness and is
+not product evidence. The disposable API is removed; the original three services
+and all volumes are preserved.
+
+The API database login is neither superuser nor an RLS-bypass role. Organization
+membership is an explicit database fixture; Board grants and lifecycle commands use
+actual authenticated HTTP. The existing mandatory build-once CI step now names
+lifecycle freezes and requires this expanded script. Local compiled/cached-runtime
+execution does not prove current retained images, separate Worker/browser delivery
+or all lifecycle endpoints/concurrency. Estimated work remaining stays 15%.
+
 ## Current local shared performance gaps
 
 The [2026-10-07 desktop/phone diagnostic](../kanban-performance.md#local-desktop-and-phone-diagnostic-2026-10-07)

@@ -527,7 +527,7 @@ jobs:
       - name: Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL
         run: bash scripts/ci/test-board-permission-matrix.sh
 
-      - name: Board grants and revoked original receipt recovery against exact API and restricted PostgreSQL
+      - name: Board grants, lifecycle freezes and original receipt recovery against exact API and restricted PostgreSQL
         run: bash scripts/ci/test-board-permission-recovery.sh
 
       - name: Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime
