@@ -171,6 +171,32 @@ internal static class InvitationIssuerAccountAuthorityContract
             rollback.Parameters.AddWithValue("email",email);rollback.Parameters.AddWithValue("other",other);
             Require(await rollback.ExecuteScalarAsync(ct) is true,"Late recipient lease refusal retained issuer deduplication, counter or checkpoint effects.");
         }
+        // Hold the recovered first page while four independently leased owning
+        // scopes race the first global source/email effect. A barrier guarantees
+        // all four have their actual restricted claims before delivery begins.
+        var firstWave=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered=0;
+        await Task.WhenAll(Enumerable.Range(0,4).Select(async lane=>
+        {
+            var workerId=Guid.NewGuid();var initial=true;
+            foreach(var tenant in tenants.Skip(1).Where((_,index)=>index%4==lane))
+            {
+                var root=await jobs.ClaimAsync(tenant,workerId,ct)??throw new InvalidOperationException("Concurrent owning issuer root missing.");
+                if(initial)
+                {
+                    initial=false;if(Interlocked.Increment(ref entered)==4)firstWave.TrySetResult();
+                    await firstWave.Task.WaitAsync(TimeSpan.FromSeconds(20),ct);
+                }
+                await handler.ExecuteAsync(root,ct);await handler.ExecuteAsync(root,ct);
+                Require(await jobs.CompleteAsync(tenant,root.Id,root.LeaseId,workerId,ct),"Concurrent issuer root acknowledgment failed.");
+                while(await jobs.ClaimAsync(tenant,workerId,ct) is { } next)
+                {
+                    await handler.ExecuteAsync(next,ct);await handler.ExecuteAsync(next,ct);
+                    Require(await jobs.CompleteAsync(tenant,next.Id,next.LeaseId,workerId,ct),"Concurrent issuer continuation acknowledgment failed.");
+                }
+            }
+        }));
+        Require(entered==4,"Issuer first-effect concurrency did not acquire four restricted Worker claims.");
         await handler.ExecuteAsync(firstPage,ct);await handler.ExecuteAsync(firstPage,ct);
         Require(await jobs.CompleteAsync(firstPage.OrganizationId,firstPage.Id,firstPage.LeaseId,firstPage.WorkerId,ct),"First recovered issuer recipient page did not acknowledge.");
         foreach(var tenant in tenants) while(await jobs.ClaimAsync(tenant,Guid.NewGuid(),ct) is { } page)
@@ -277,7 +303,7 @@ internal static class InvitationIssuerAccountAuthorityContract
         Require(await global.ClaimAsync(Guid.NewGuid(),ct) is null,"Terminal issuer pages were claimed again.");
         await using(var stable=new NpgsqlCommand("SELECT failed_at=@at AND attempt_count=5 AND failure_code='LEASE_EXHAUSTED' FROM invitation_issuer_authority_jobs WHERE id=@job",admin))
         {stable.Parameters.AddWithValue("at",failedAt);stable.Parameters.AddWithValue("job",final!.JobId);Require(await stable.ExecuteScalarAsync(ct) is true,"Failed issuer history changed on subsequent routing.");}
-        Console.WriteLine("Issuer account authority: actual restricted deactivation/source/queue atomicity, unproven/earlier/late refusal, 120-character attribution, exact lease fences, late route/recipient rollback and reclaimed root, 205-Organization routing 100/100/5, leased recipient pages and global cross-tenant deduplication, future cutoff, immutable history, private capability denial, five-attempt live-lease/final crash exhaustion and bounded immutable dead-letter retirement without stranding following work passed.");
+        Console.WriteLine("Issuer account authority: actual restricted deactivation/source/queue atomicity, unproven/earlier/late refusal, 120-character attribution, exact lease fences, late route/recipient rollback and reclaimed root, 205-Organization routing 100/100/5, four independently claimed concurrent first-effect deliveries with committed replay and global cross-tenant deduplication, future cutoff, immutable history, private capability denial, five-attempt live-lease/final crash exhaustion and bounded immutable dead-letter retirement without stranding following work passed.");
     }
     private sealed class AdapterAdmissionFixture(Guid actor,Guid earlier,Guid exhausted,Guid following) : ICommandActorAuthorization
     {

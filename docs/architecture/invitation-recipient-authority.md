@@ -142,6 +142,28 @@ actual Worker retains the original failure timestamp, source and five-attempt
 terminal history. These are compiled-source framework containers, distinct from
 the pending retained release-image gate.
 
+### Concurrent owning-scope issuer delivery
+
+The mandatory `InvitationIssuerAccountAuthorityContract` now holds the recovered
+first recipient page while four independent restricted Worker identities claim
+different owning Organization roots. A bounded barrier requires all four actual
+leases before any first-wave delivery. This races the first global source/email
+effect while it is still absent, rather than testing only conflicts against an
+already committed effect. Each lane processes its own scopes and repeats every
+committed delivery before normal acknowledgment. The held first page and its
+continuations then recover through the same leased handler.
+
+The complete diagnostic passes locally under schema 110 and actual restricted
+API/Worker logins: 205 owning routes, 207 completed first-attempt recipient pages,
+206 per-tenant effects, two global source/email effects, and exactly one revision
+for each recipient. All original source/correlation, source-time cutoff, late
+route/recipient rollback, reclaimed lease, private capability/history and
+five-attempt exhaustion assertions remain mandatory. Release build has zero
+warnings/errors. The local database's separate deletion Worker does not claim
+issuer routing or recipient authority jobs; these are concurrent adapter and
+database capability results, distinct from four deployed Worker processes or a
+latency benchmark. The same contract remains mandatory in full PostgreSQL CI.
+
 An invitation creation source proves a committed invitation, but it does not
 prove continuing issuer rights, active parent state or current names. Those
 dependencies can change without an invitation acceptance/revocation event.
