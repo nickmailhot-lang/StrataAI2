@@ -37,11 +37,15 @@ BEGIN
         END IF;
         CONTINUE;
       END IF;
-      IF relation.relname='invitation_recipient_streams' THEN
-        IF NOT relation.relrowsecurity OR NOT relation.relforcerowsecurity OR NOT EXISTS(
+      IF relation.relname IN ('invitation_recipient_streams','invitation_recipient_authority_revisions') THEN
+        SELECT a.attnotnull,a.atttypid INTO isolation_key FROM pg_attribute a
+          WHERE a.attrelid=relation.oid AND NOT a.attisdropped AND a.attname='email_normalized';
+        IF NOT FOUND OR isolation_key.atttypid<>'text'::regtype OR isolation_key.attnotnull IS NOT TRUE
+          OR NOT relation.relrowsecurity OR NOT relation.relforcerowsecurity
+          OR (SELECT count(*) FROM pg_policy WHERE polrelid=relation.oid)<>1 OR NOT EXISTS(
           SELECT 1 FROM pg_policy p WHERE p.polrelid=relation.oid AND p.polcmd='r'
-            AND pg_get_expr(p.polqual,p.polrelid) LIKE '%email_normalized%app.route_key%') THEN
-          RAISE EXCEPTION 'Recipient routing stream requires forced recipient RLS';
+            AND pg_get_expr(p.polqual,p.polrelid) LIKE '%app.route_kind%INVITATION_RECIPIENT%email_normalized%app.route_key%') THEN
+          RAISE EXCEPTION 'Recipient schema invariant failed: % requires explicit recipient-only read policy and forced RLS',relation.relname;
         END IF;
         CONTINUE;
       END IF;

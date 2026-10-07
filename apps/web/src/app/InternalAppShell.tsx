@@ -56,7 +56,10 @@ const navigation: NavigationItem[] = [
 export function InternalAppShell() {
   const { pathname } = useLocation();
   const boardView = /^\/app\/[^/]+\/boards\/[^/]+(?:\/cards\/[^/]+)?\/?$/.test(pathname);
-  return <SurfaceAdmission surface="INTERNAL" deniedContent={boardView ? <Box component="main" sx={{ p: 2 }}><Outlet /></Box> : undefined}>
+  // The Organization home owns a separate, protected lifecycle admission.
+  // Its terminal source can remain readable after ordinary graph access ends.
+  const organizationHome = /^\/app\/[^/]+\/?$/.test(pathname);
+  return <SurfaceAdmission surface="INTERNAL" deniedContent={boardView || organizationHome ? <Box component="main" sx={{ p: 2 }}><Outlet /></Box> : undefined}>
     <InternalLayout />
   </SurfaceAdmission>;
 }
@@ -128,6 +131,7 @@ function InternalLayout() {
 
       <Drawer
         variant="permanent"
+        slotProps={{ paper: { component: "nav", "aria-label": "Internal application navigation" } }}
         sx={{
           display: { xs: "none", sm: "block" },
           width: { xs: 0, sm: drawerWidth },

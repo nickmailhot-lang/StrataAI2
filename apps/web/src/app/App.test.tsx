@@ -1,6 +1,12 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 
 import { App } from "./App";
+const lifecycle = vi.hoisted(() => ({ watch: vi.fn<(options: {
+  organizationId: string; userId: string; update(state: 'ACTIVE' | 'PENDING' | 'COMPLETED'): void;
+  unavailable(): void; accountUnavailable(): void;
+}) => () => void>(() => vi.fn()) }));
+vi.mock('../features/organizations/organizationLifecycleLive', () => ({ watchOrganizationLifecycle: lifecycle.watch }));
+beforeEach(() => lifecycle.watch.mockClear());
 
 afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear(); });
 
@@ -32,6 +38,9 @@ describe("StrataAI2 application shell", () => {
       await screen.findByRole("heading", { name: "Council Operations" }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Organization: demo/)).toBeInTheDocument();
+    const navigation = screen.getByRole('navigation', { name: 'Internal application navigation' });
+    expect(within(navigation).getByRole('link', { name: 'Organizations' })).toHaveAttribute('href', '/app');
+    expect(within(navigation).getByRole('link', { name: 'Boards' })).toHaveAttribute('href', '/app/demo');
   });
 
   it("keeps the owner portal visually and navigationally separate", async () => {
@@ -69,4 +78,21 @@ it('retains deletion recovery after normal surface access is withdrawn', async (
   const calls = fetcher.mock.calls.filter(([, options]) => options?.method === 'DELETE'); expect(calls).toHaveLength(2);
   expect(calls[0][0]).toBe(calls[1][0]);
   expect((calls[0][1]!.headers as Headers).get('Idempotency-Key')).toBe((calls[1][1]!.headers as Headers).get('Idempotency-Key'));
+});
+
+// PRD-03-TC-09/10 / PRD-18: exercise the actual router and shell boundary,
+// because a component-only lifecycle test cannot prove denied surface mounting.
+it('admits protected terminal recovery on a fresh Organization route after ordinary surface withdrawal', async () => {
+  const org = '55555555-5555-4555-8555-555555555555';
+  const actor = '22222222-2222-4222-8222-222222222222';
+  const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'UTC' };
+  const fetcher = vi.fn(async (path: string) => path === '/me'
+    ? new Response(JSON.stringify(profile)) : new Response('{}', { status: 404 }));
+  vi.stubGlobal('fetch', fetcher); window.history.pushState({}, '', `/app/${org}`); render(<App />);
+  await waitFor(() => expect(lifecycle.watch).toHaveBeenCalledWith(expect.objectContaining({ organizationId: org, userId: actor })));
+  act(() => lifecycle.watch.mock.calls[0][0].update('COMPLETED'));
+  expect(await screen.findByRole('status')).toHaveTextContent('Organization deletion confirmed complete.');
+  expect(screen.queryByRole('button', { name: 'Create board' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('navigation', { name: 'Internal application navigation' })).not.toBeInTheDocument();
+  expect(fetcher.mock.calls.some(([path]) => path.includes('/boards/directory'))).toBe(false);
 });

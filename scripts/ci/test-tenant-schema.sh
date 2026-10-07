@@ -31,4 +31,15 @@ done
 reject 'ALTER TABLE navigation_interaction_events ALTER COLUMN actor_id DROP NOT NULL' Actor
 reject 'ALTER POLICY navigation_interaction_subject ON navigation_interaction_events WITH CHECK (true)' Actor
 reject 'ALTER POLICY navigation_replay_subject ON navigation_interaction_replays USING (true)' Actor
+for table in invitation_recipient_streams invitation_recipient_authority_revisions; do
+  reject "ALTER TABLE $table DISABLE ROW LEVEL SECURITY" Recipient
+  reject "ALTER TABLE $table NO FORCE ROW LEVEL SECURITY" Recipient
+  reject "ALTER TABLE $table DROP CONSTRAINT ${table}_pkey CASCADE; ALTER TABLE $table ALTER COLUMN email_normalized DROP NOT NULL" Recipient
+  reject "CREATE POLICY schema_guard_recipient_wide ON $table FOR SELECT USING (true)" Recipient
+done
+reject 'ALTER POLICY invitation_authority_revision_lookup ON invitation_recipient_authority_revisions USING (true)' Recipient
+reject "ALTER POLICY invitation_authority_revision_lookup ON invitation_recipient_authority_revisions USING (email_normalized=current_setting('app.route_key',true))" Recipient
+reject 'ALTER TABLE invitation_recipient_authority_pages NO FORCE ROW LEVEL SECURITY'
+reject 'ALTER TABLE invitation_recipient_authority_effects NO FORCE ROW LEVEL SECURITY'
+
 echo 'Migrated tenant catalog, nullable/missing key, disabled/unforced RLS, missing policy and rollback checks passed.'

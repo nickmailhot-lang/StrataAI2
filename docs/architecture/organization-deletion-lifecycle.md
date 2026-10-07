@@ -669,3 +669,23 @@ release.
 The earlier
 100,000-archived-Card reference traversal remains valid as traversal evidence
 only. Neither fixture nor compilation closes PRD-03/18 on its own.
+
+## Exact-image browser findings and shell recovery
+
+The retained `4f427d0` exact-image browser run completed with 184 passing and
+43 failing scenarios. It is a failed release gate, despite passing source,
+PostgreSQL, security and image-build jobs. Two terminal-deletion cases showed
+the shell's ordinary surface denial before the independently protected home
+lifecycle reader could mount on a fresh deep link. The shell now mounts that
+home recovery boundary after surface withdrawal, just as it already does for
+independently authorized Board reads. This does not admit the Internal layout,
+navigation or graph operations; the home still performs owning-account checks,
+protected reads and separate lifecycle admission. A new actual-router/shell
+component case proves the terminal recovery path with ordinary graph 404 and
+no Board-directory read or creation controls. Native desktop/mobile confirmation
+remains required against the next retained exact images.
+
+The same run identified desktop drawer content outside an accessibility
+landmark. Its MUI navigation paper now provides a named navigation landmark.
+The other retained browser failures remain under investigation; neither this
+repair nor component checks establish a green browser gate or issue closure.
