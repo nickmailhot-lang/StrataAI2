@@ -524,6 +524,9 @@ jobs:
       - name: Board member canonical events, receipts, Worker delivery and revoked recovery against exact release images
         run: bash scripts/ci/test-board-member-events.sh
 
+      - name: Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL
+        run: bash scripts/ci/test-board-permission-matrix.sh
+
       - name: Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime
         run: bash scripts/ci/test-board-star-preferences.sh
       - name: Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime
