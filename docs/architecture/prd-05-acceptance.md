@@ -136,6 +136,38 @@ lifecycle freezes and requires this expanded script. Local compiled/cached-runti
 execution does not prove current retained images, separate Worker/browser delivery
 or all lifecycle endpoints/concurrency. Estimated work remaining stays 15%.
 
+## Deleted List child-receipt admission correction
+
+All three new API regressions initially return an original Card edit acknowledgment
+after its parent List has been deleted, despite ordinary child access being refused.
+The expanded restricted PostgreSQL fixture independently fails at the same receipt
+admission. List tombstones intentionally retain child records, so current Board
+authority alone cannot establish a surviving parent for their acknowledgments.
+
+The transactional Card command guard now verifies a surviving non-deleted List for
+every Card command acknowledgment, rather than only permanent Card deletion. This
+check remains inside the owning transaction/admission boundary. Archived Lists retain
+their existing read-only original-key recovery; fresh edits still require active
+parents. The correction does not change deletion retention or restore archived/deleted
+records on retry.
+
+The final locked Release build has zero warnings/errors. All three visibility API
+cases now pass, proving original edit/restore receipts and fresh commands are refused
+without content disclosure or changes to retained List/Card state. The existing
+archived-parent lifecycle and concurrent retry/revocation cases also pass: five
+selected cases in total, zero failures/skips. The complete expanded real PostgreSQL
+script passes all three visibilities against the corrected frozen Production API.
+It verifies a deleted List at version 3 with its retained active Card at version 4,
+withholds both child receipt types, refuses fresh edit/restore, and preserves complete
+target Board/List/Card/member/stream snapshots and audit/event/job/receipt counts.
+Earlier archive/grant/revocation/recovery cases continue to pass in that invocation.
+
+The existing mandatory build-once CI step executes the expanded script. The disposable
+API is removed and the original three services/volumes remain preserved. This local
+compiled/cached-runtime execution does not prove current retained images, separate
+Worker/browser delivery or full endpoint/concurrent parent-withdrawal acceptance.
+Estimated remaining work stays 15%; performance and accessibility remain required.
+
 ## Current local shared performance gaps
 
 The [2026-10-07 desktop/phone diagnostic](../kanban-performance.md#local-desktop-and-phone-diagnostic-2026-10-07)

@@ -363,8 +363,10 @@ public sealed partial class TransactionalWorkManagementService(
         return resource is null ? WorkOperation<T>.Failure("card_not_found") :
             await transactions.ExecuteAsync(resource.OrganizationId, command, async _ =>
                 await AuthorizeBoard(resource.BoardId, actorId, permission, cancellationToken) &&
-                (!includeDeleted || (await store.FindBoardAsync(resource.BoardId, cancellationToken))?.LifecycleState == BoardLifecycleState.Active &&
-                    await store.FindListAsync(resource.ListId, cancellationToken) is { LifecycleState: not WorkItemLifecycleState.Deleted }),
+                // All child acknowledgments require a surviving parent. An
+                // archived List still permits read-only original-key recovery.
+                await store.FindListAsync(resource.ListId, cancellationToken) is { LifecycleState: not WorkItemLifecycleState.Deleted } &&
+                (!includeDeleted || (await store.FindBoardAsync(resource.BoardId, cancellationToken))?.LifecycleState == BoardLifecycleState.Active),
                 operation, cancellationToken);
     }
 

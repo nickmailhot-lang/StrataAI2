@@ -10,6 +10,62 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    // PRD-05/18-TC-10: retained child records cannot disclose receipts under a
+    // deleted List even while the actor still administers its active Board.
+    [Theory]
+    [InlineData("PRIVATE")]
+    [InlineData("ORGANIZATION")]
+    [InlineData("PUBLIC")]
+    public async Task Deleted_List_withholds_original_Card_edit_and_restore_receipts(string visibility)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient();
+        await RegisterAndLogin(owner);
+        async Task<Guid> Created(string path, object body, string? property = null)
+        {
+            using var response = await Mutate(owner, HttpMethod.Post, path, body);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            var value = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct);
+            return (property is null ? value : value.GetProperty(property)).GetProperty("id").GetGuid();
+        }
+        var org = await Created("/organizations", new { name = "Deleted parent receipts" }, "organization");
+        var board = await Created("/boards", new { organizationId = org, name = "Parent receipt Board", visibility });
+        var list = await Created($"/boards/{board}/lists", new { name = "Parent receipt List" });
+        var card = await Created($"/lists/{list}/cards", new { title = "Retained child content" });
+        var editKey = Guid.NewGuid().ToString(); var restoreKey = Guid.NewGuid().ToString();
+        var edit = new { title = "Private original parent receipt", version = 1 };
+        using var edited = await Mutate(owner, HttpMethod.Patch, $"/cards/{card}", edit, editKey);
+        Assert.Equal(HttpStatusCode.OK, edited.StatusCode);
+        using var archived = await Mutate(owner, HttpMethod.Post, $"/cards/{card}/archive", new { version = 2 });
+        Assert.Equal(HttpStatusCode.OK, archived.StatusCode);
+        using var restored = await Mutate(owner, HttpMethod.Post, $"/cards/{card}/restore", new { version = 3 }, restoreKey);
+        Assert.Equal(HttpStatusCode.OK, restored.StatusCode);
+        using var listArchived = await Mutate(owner, HttpMethod.Post, $"/lists/{list}/archive", new { version = 1 });
+        Assert.Equal(HttpStatusCode.OK, listArchived.StatusCode);
+        using var deleted = await Mutate(owner, HttpMethod.Delete, $"/lists/{list}?version=2&confirmed=true&containedCardCount=1", new { });
+        Assert.Equal(HttpStatusCode.OK, deleted.StatusCode);
+        var store = app.Services.GetRequiredService<IWorkManagementStore>();
+        async Task<string> State() => JsonSerializer.Serialize(new
+        {
+            card = await store.FindCardAsync(card, ct, includeDeleted: true),
+            list = await store.FindListAsync(list, ct, includeDeleted: true)
+        });
+        var before = await State();
+        async Task Refused(HttpMethod method, string path, object body, string? key = null)
+        {
+            using var response = await Mutate(owner, method, path, body, key);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            var failure = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct);
+            Assert.Equal("card_not_found", failure.GetProperty("code").GetString());
+            Assert.DoesNotContain("Private original parent receipt", failure.ToString());
+            Assert.Equal(before, await State());
+        }
+        await Refused(HttpMethod.Patch, $"/cards/{card}", edit, editKey);
+        await Refused(HttpMethod.Post, $"/cards/{card}/restore", new { version = 3 }, restoreKey);
+        await Refused(HttpMethod.Patch, $"/cards/{card}", new { title = "Forbidden new edit", version = 4 });
+        await Refused(HttpMethod.Post, $"/cards/{card}/restore", new { version = 4 });
+    }
+
     // PRD-08/18: edits/moves/restoration respect parent state; delete is elevated.
     [Fact]
     public async Task Archived_parents_freeze_children_and_permanent_card_deletion_requires_administrator()

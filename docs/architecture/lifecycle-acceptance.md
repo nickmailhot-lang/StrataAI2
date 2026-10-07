@@ -1,5 +1,28 @@
 # PRD-18 acceptance audit
 
+## Deleted List child-receipt admission
+
+The [executed parent receipt correction](prd-05-acceptance.md#deleted-list-child-receipt-admission-correction)
+fixes ordinary Card edit/restore acknowledgments being returned beneath a deleted
+List. List deletion retains child records; the transactional command guard now
+requires a surviving List before retrieving any Card command acknowledgment.
+Archived-parent original recovery remains read-only and unchanged.
+
+All three new visibility API cases fail before the correction and pass afterward.
+The existing archived-parent lifecycle and concurrent retry/revocation cases also
+pass; the final Release build has zero warnings/errors. The expanded restricted
+PostgreSQL script reproduces the old defect and then passes its complete three-
+visibility invocation against the corrected compiled Production API. It preserves
+the deleted List and retained active Card, refuses original edit/restore receipts
+and fresh commands, and leaves protected state/audit/events/jobs/receipts unchanged.
+
+This is local compiled/cached-runtime evidence, not retained-current-image,
+separate Worker/browser or full concurrent parent-withdrawal proof. The mandatory
+build-once CI script includes the regression; PRD-18 remains open at **22%**
+estimated work remaining, a planning estimate.
+
+## Existing lifecycle evidence
+
 Current source audit after deletion attribution and archive observation integration. PRD-18 remains open. Compilation, component tests, source fixtures and queued CI do not prove the complete runtime gate.
 
 Both complete desktop/phone Board lifecycle native cases now pass locally after

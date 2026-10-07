@@ -128,5 +128,32 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
   jq -e '.code=="card_not_found"' "$scratch/response" >/dev/null
   scripts/ci/assert-file-excludes.sh 'Private recovered receipt title' "$scratch/response"
   test "$deleted" = "$(effects)"
+  # List tombstones retain their child records, but must withhold all ordinary
+  # child receipts, including a previously committed restore acknowledgment.
+  test "$(request owner POST "/boards/$board/lists" '{"name":"Deleted parent receipt List"}')" = 201
+  list=$(jq -r '.id' "$scratch/response")
+  test "$(request owner POST "/lists/$list/cards" '{"title":"Deleted parent receipt Card"}')" = 201
+  card=$(jq -r '.id' "$scratch/response")
+  original=$(key); body='{"title":"Private deleted parent receipt","version":1}'
+  test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
+  test "$(request owner POST "/cards/$card/archive" '{"version":2}')" = 200
+  restore_key=$(key)
+  test "$(request member POST "/cards/$card/restore" '{"version":3}' "$restore_key")" = 200
+  test "$(request owner POST "/lists/$list/archive" '{"version":1}')" = 200
+  test "$(request owner DELETE "/lists/$list?version=2&confirmed=true&containedCardCount=1" '{}')" = 200
+  deleted=$(effects)
+  jq -e '.list.lifecycle_state=="DELETED" and .list.version==3 and .card.lifecycle_state=="ACTIVE" and .card.version==4' <<< "$deleted" >/dev/null
+  for command in edit restore; do
+    method=PATCH; path="/cards/$card"; denied_body=$body; retry=$original
+    if test "$command" = restore; then method=POST; path="/cards/$card/restore"; denied_body='{"version":3}'; retry=$restore_key; fi
+    test "$(request member "$method" "$path" "$denied_body" "$retry")" = 404
+    jq -e '.code=="card_not_found"' "$scratch/response" >/dev/null
+    scripts/ci/assert-file-excludes.sh 'Private deleted parent receipt' "$scratch/response"
+    test "$deleted" = "$(effects)"
+  done
+  test "$(request member PATCH "/cards/$card" '{"title":"Forbidden deleted-parent edit","version":4}')" = 404
+  test "$deleted" = "$(effects)"
+  test "$(request member POST "/cards/$card/restore" '{"version":4}')" = 404
+  test "$deleted" = "$(effects)"
 done
-echo 'Board permission recovery: all three visibilities preserve refused-key recovery, original receipts, later state, revoked admission, archived-parent freezes, elevated restoration and deleted receipt withholding.'
+echo 'Board permission recovery: all three visibilities preserve refused-key recovery, original receipts, later state, revoked admission, archived-parent freezes, elevated restoration and deleted Card/parent receipt withholding.'
