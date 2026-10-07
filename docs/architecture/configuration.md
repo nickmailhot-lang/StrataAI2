@@ -16,6 +16,30 @@ Provision roles after migrations as described in [runtime database roles](runtim
 The runtime account must pass the database security guard; initialization and
 migration accounts cannot be used by the API or Worker.
 
+## Authentication policy validation
+
+Omitting an authentication policy setting retains the documented mode default.
+Supplying an empty, malformed or out-of-range value fails API startup in both
+Demo and Production; values are never silently replaced or clamped. Errors name
+the setting and its allowed form without echoing the supplied value.
+
+| Setting | Allowed supplied values | Default |
+| --- | --- | --- |
+| `STRATAAI_AUTH_ALLOW_SELF_REGISTRATION` | `true` or `false` | Demo `true`, Production `false` |
+| `STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL` | `true` or `false` | Demo `false`, Production `true` |
+| `STRATAAI_AUTH_MIN_PASSWORD_LENGTH` | Integer from 8 to 128 | 12 |
+| `STRATAAI_AUTH_SESSION_HOURS` | Integer from 1 to 720 | 12 |
+| `STRATAAI_AUTH_SECURITY_TOKEN_MINUTES` | Integer from 5 to 1440 | 30 |
+
+Boolean parsing is case-insensitive; integer parsing uses invariant culture.
+Existing valid configuration keeps exactly its requested policy. Before upgrading
+an environment that previously supplied invalid values, correct those settings
+or omit them deliberately to select the defaults. An empty environment value is
+not omission. This validation changes startup admission, not stored profiles,
+passwords, issued sessions or security-token records.
+
+## Runtime and provider configuration
+
 Build revision/version are embedded in the image at build time and cannot be
 set by runtime environment variables. The web's `/build-metadata.json`, API's
 `/api/runtime` and Worker's `/runtime` report the identifiers of their actual

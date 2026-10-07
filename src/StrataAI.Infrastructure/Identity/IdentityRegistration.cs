@@ -21,27 +21,27 @@ public static class IdentityRegistration
         services.AddLogging();
         var emailEnabled=services.AddIdentityDeliveryTokens(configuration,runtime);
         var allowSelfRegistration = GetBoolean(
-            configuration["STRATAAI_AUTH_ALLOW_SELF_REGISTRATION"],
+            configuration, "STRATAAI_AUTH_ALLOW_SELF_REGISTRATION",
             runtime.Mode == RuntimeMode.Demo);
 
         var requireVerifiedEmail = GetBoolean(
-            configuration["STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL"],
+            configuration, "STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL",
             runtime.Mode == RuntimeMode.Production);
 
         var minimumPasswordLength = GetInteger(
-            configuration["STRATAAI_AUTH_MIN_PASSWORD_LENGTH"],
+            configuration, "STRATAAI_AUTH_MIN_PASSWORD_LENGTH",
             12,
             minimum: 8,
             maximum: 128);
 
         var sessionHours = GetInteger(
-            configuration["STRATAAI_AUTH_SESSION_HOURS"],
+            configuration, "STRATAAI_AUTH_SESSION_HOURS",
             12,
             minimum: 1,
             maximum: 720);
 
         var tokenMinutes = GetInteger(
-            configuration["STRATAAI_AUTH_SECURITY_TOKEN_MINUTES"],
+            configuration, "STRATAAI_AUTH_SECURITY_TOKEN_MINUTES",
             30,
             minimum: 5,
             maximum: 1440);
@@ -144,20 +144,28 @@ public static class IdentityRegistration
         services.AddSingleton<IdentityLoginRetrySecrets>(_ => signer);
     }
 
-    private static bool GetBoolean(string? value, bool fallback) =>
-        bool.TryParse(value, out var parsed) ? parsed : fallback;
+    private static bool GetBoolean(IConfiguration configuration, string key, bool fallback)
+    {
+        var value = configuration[key];
+        if (value is null) return fallback;
+        if (!bool.TryParse(value, out var parsed))
+            throw new InvalidOperationException($"{key} must be true or false when supplied.");
+        return parsed;
+    }
 
     private static int GetInteger(
-        string? value,
+        IConfiguration configuration,
+        string key,
         int fallback,
         int minimum,
         int maximum)
     {
-        if (!int.TryParse(value, out var parsed))
-        {
-            return fallback;
-        }
-
-        return Math.Clamp(parsed, minimum, maximum);
+        var value = configuration[key];
+        if (value is null) return fallback;
+        if (!int.TryParse(value, System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            || parsed < minimum || parsed > maximum)
+            throw new InvalidOperationException($"{key} must be an integer between {minimum} and {maximum} when supplied.");
+        return parsed;
     }
 }

@@ -4,6 +4,33 @@
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Strict supplied authentication policy
+
+API startup now rejects supplied malformed/empty Boolean policies and malformed,
+empty or out-of-range password/session/security-token integer settings in Demo
+and Production. Previously, invalid values silently selected defaults or were
+clamped to the nearest boundary. Omitted settings retain their existing mode
+defaults; valid settings retain their exact values. Configuration errors name
+only the setting and supported form, without reflecting the supplied value.
+See [policy configuration and upgrade guidance](configuration.md#authentication-policy-validation).
+
+The regression first failed all thirteen invalid-setting cases against the
+original implementation; the four default/boundary cases passed. After the
+repair, all seventeen cases pass, covering both modes. Six actual compiled-API
+startup runs also refuse invalid Boolean, excessive session lifetime and weak
+password minimum settings across both modes, without echoing the supplied value.
+These isolated containers had no external network and are retired.
+
+The full solution builds with zero warnings/errors. All 756 domain cases pass
+in Linux using the current compiled test assembly in a cached runtime image.
+The Windows full-domain invocation has 740 passes and sixteen failures in
+platform-dependent socket, symbolic-link and date cases; that invocation is not
+claimed green. The seventeen policy cases pass independently on Windows.
+All 29 selected existing identity API cases and all three documented Demo
+account cases pass with the repaired application. These local checks do not
+establish current retained-release image, browser, mail or complete PRD acceptance.
+Estimated PRD-02 work remaining stays **18%**; the ticket stays open.
+
 ## Functional requirements
 
 | Requirement | Implementation and verification path | Outstanding acceptance evidence |
