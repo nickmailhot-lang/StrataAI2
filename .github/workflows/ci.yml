@@ -104,10 +104,11 @@ jobs:
       - name: Verify attachment refusal fixtures replace environment defaults
         run: bash scripts/ci/test-attachment-runtime-fixture-arguments.sh
 
-      - name: Verify Demo network isolation refuses unconfirmed prerequisites
+      - name: Verify runtime isolation and startup refusal runners
         run: |
           bash scripts/ci/test-demo-network-isolation-fixture.sh
           bash scripts/ci/test-demo-worker-network-isolation-fixture.sh
+          bash scripts/ci/test-runtime-startup-refusals-fixture.sh
 
       - name: Verify declared attachment scanner protocol fixture
         run: python3 tests/attachment-scanner-fixture.py
@@ -467,18 +468,11 @@ jobs:
           bash scripts/ci/test-demo-network-isolation.sh "strataai-api:${GITHUB_SHA}"
           bash scripts/ci/test-demo-worker-network-isolation.sh "strataai-worker:${GITHUB_SHA}"
 
-      - name: Production fails closed without database configuration
+      - name: API and Worker startup fail closed against exact retained images
         shell: bash
         run: |
           set -euo pipefail
-          set +e
-          docker run --rm             -e STRATAAI_RUNTIME_MODE=production             "strataai-api:${GITHUB_SHA}" >/tmp/production-missing-db.log 2>&1
-          status=$?
-          set -e
-          if [ "$status" -eq 0 ]; then
-            echo "Production API unexpectedly started without PostgreSQL configuration." >&2
-            exit 1
-          fi
+          bash scripts/ci/test-runtime-startup-refusals.sh "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}"
 
       - name: Verify explicit Worker job scope and handler configuration
         run: scripts/ci/test-worker-job-configuration.sh "strataai-worker:${GITHUB_SHA}"

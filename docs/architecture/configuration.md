@@ -38,6 +38,12 @@ or omit them deliberately to select the defaults. An empty environment value is
 not omission. This validation changes startup admission, not stored profiles,
 passwords, issued sessions or security-token records.
 
+The mandatory [retained-image startup gate](runtime-modes.md#retained-host-startup-refusal-verification)
+checks six real invalid-policy API startups across both modes, plus both hosts'
+runtime-mode and missing-database refusals. It requires the intended startup error
+and rejects unrelated crashes/timeouts. All twelve cases passed locally with
+current compiled hosts in cached runtime images; exact current CI remains required.
+
 ## Runtime and provider configuration
 
 Build revision/version are embedded in the image at build time and cannot be
