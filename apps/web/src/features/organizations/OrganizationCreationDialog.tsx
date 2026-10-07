@@ -37,12 +37,12 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
     if (!busy && intent && focusRetry.current) { focusRetry.current = false; retry.current?.focus(); }
   }, [busy, intent]);
   function current(controller: AbortController) { return alive.current && active.current === controller && !controller.signal.aborted; }
-  async function request(path: string, options: RequestInit, controller: AbortController) {
-    return boundedWorkRead(async signal => {
-      const response = await apiFetch(path, { ...options, signal });
-      const body: unknown = response.status === 401 ? undefined : await response.json().catch(() => undefined);
-      return { status: response.status, body };
-    }, controller.signal);
+  async function request(path: string, options: RequestInit, signal: AbortSignal) {
+    signal.throwIfAborted();
+    const response = await apiFetch(path, { ...options, signal });
+    const body: unknown = response.status === 401 ? undefined : await response.json().catch(() => undefined);
+    signal.throwIfAborted();
+    return { status: response.status, body };
   }
   function denied(status: number) {
     intentRef.current = undefined; setIntent(undefined); setName(''); setDescription(''); setStopped(true);
@@ -58,33 +58,38 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
       body: JSON.stringify({ name: name.trim(), description }) };
     intentRef.current = original; setIntent(original);
     const controller = new AbortController(); active.current = controller; setBusy(true); setError(undefined);
+    let submitted = false;
     try {
-      const before = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(before.status)) { denied(before.status); return; }
-      if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Account check unavailable');
-      if (before.body.id !== original.actor) { denied(401); return; }
-      const result = await request(`/organizations?expectedActorId=${encodeURIComponent(original.actor)}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': original.key }, body: original.body,
-      }, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(result.status)) { denied(result.status); return; }
-      if ([400, 409, 429].includes(result.status)) {
-        intentRef.current = undefined; setIntent(undefined); setName(''); setDescription(''); setStopped(true);
-        setError('The original creation could not be acknowledged. Return to the directory and check current Organizations before starting another creation.'); return;
-      }
-      const id = result.status === 201 ? summary(result.body, original.actor) : undefined;
-      if (!id) throw new Error('Creation acknowledgment unavailable');
-      // An original receipt is historical: admit present membership/state separately.
-      const canonical = await request(`/organizations/${id}`, {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(canonical.status)) { denied(canonical.status); return; }
-      if (canonical.status !== 200 || summary(canonical.body) !== id) throw new Error('Current access unavailable');
-      const after = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(after.status)) { denied(after.status); return; }
-      if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Final account check unavailable');
-      if (after.body.id !== original.actor) { denied(401); return; }
-      intentRef.current = undefined; setIntent(undefined); onCreated(id);
+      await boundedWorkRead(async signal => {
+        const before = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(before.status)) { denied(before.status); return; }
+        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Account check unavailable');
+        if (before.body.id !== original.actor) { denied(401); return; }
+        submitted = true;
+        const result = await request(`/organizations?expectedActorId=${encodeURIComponent(original.actor)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': original.key }, body: original.body,
+        }, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(result.status)) { denied(result.status); return; }
+        if ([400, 409, 429].includes(result.status)) {
+          intentRef.current = undefined; setIntent(undefined); setName(''); setDescription(''); setStopped(true);
+          setError('The original creation could not be acknowledged. Return to the directory and check current Organizations before starting another creation.'); return;
+        }
+        const id = result.status === 201 ? summary(result.body, original.actor) : undefined;
+        if (!id) throw new Error('Creation acknowledgment unavailable');
+        // An original receipt is historical: admit present membership/state separately.
+        const canonical = await request(`/organizations/${id}`, {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(canonical.status)) { denied(canonical.status); return; }
+        if (canonical.status !== 200 || summary(canonical.body) !== id) throw new Error('Current access unavailable');
+        const after = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(after.status)) { denied(after.status); return; }
+        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Final account check unavailable');
+        if (after.body.id !== original.actor) { denied(401); return; }
+        intentRef.current = undefined; setIntent(undefined); onCreated(id);
+      }, controller.signal);
     } catch {
       if (current(controller)) {
-        setError('The original creation is not yet acknowledged with current access. Retry the original creation; it may already have succeeded.');
+        setError(submitted ? 'The original creation is not yet acknowledged with current access. Retry the original creation; it may already have succeeded.'
+          : 'No creation was sent. Retry the original request after confirming your account.');
         focusRetry.current = true;
       }
     } finally {

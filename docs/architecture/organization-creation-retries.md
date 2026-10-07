@@ -116,3 +116,28 @@ metadata/lifecycle realtime delivery; see the [acceptance map](prd-03-acceptance
 Related contracts: [Organization transactions](organization-command-transactions.md),
 [discovery](organization-discovery.md), [metadata recovery](organization-settings.md),
 [departure](organization-departure.md), [schema upgrades](schema-upgrades.md).
+
+## Complete-attempt deadline
+
+Creation and explicit original recovery now each have one 15-second deadline
+covering initial account verification, POST, current Organization admission and
+final account verification, including response-body decoding. Requests check the
+child signal before transport and after decoding. Per-request timers no longer
+multiply the total wait, and abort-ignoring late bodies cannot navigate or clear
+the original intent after the deadline or a later attempt.
+
+An unsent preflight failure explicitly says no creation was sent. A submitted
+uncertain result preserves the original account/key/body, locks fields and moves
+focus to explicit original recovery. Neither path creates a replacement command;
+fresh account/current-parent admission still gates navigation.
+
+The focused creation component suite passed all 16 cases, including an
+eight-second account check followed by stalled canonical JSON, complete deadline
+expiry, late-result suppression and identical-key/body recovery, plus an unsent
+stalled preflight. Desktop/phone native cases hold an actual committed POST
+response for eight browser-clock seconds, then hold its protected current-read
+response through the complete deadline. They require recovery of the real
+original request, one directory Organization/revision, keyboard focus, no document
+reload and WCAG 2.2 AA. Browser clock advancement is client deadline evidence,
+not server latency or cookie-expiry proof. Native exact-image execution remains
+pending; broader telemetry and PRD-03 acceptance remain unfinished.

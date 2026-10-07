@@ -130,3 +130,45 @@ it('retains the same key through repeated uncertainty and refuses a switched ret
   expect(keys).toHaveLength(2); expect(keys[1]).toBe(keys[0]);
   fireEvent.click(retry); await screen.findByText('Sign in destination'); expect(writes).toBe(2); expect(view.onCreated).not.toHaveBeenCalled();
 });
+
+it('bounds the complete creation including late canonical JSON and recovers the same original request', async () => {
+  let checks = 0; let finishBody!: (value: unknown) => void; let signal!: AbortSignal;
+  const posts: RequestInit[] = [];
+  const fetcher = vi.fn((path: string, options: RequestInit = {}) => {
+    if (path === '/me') {
+      if (++checks === 1) return new Promise<Response>(resolve => setTimeout(() => resolve(response(profile)), 8000));
+      return Promise.resolve(response(profile));
+    }
+    if (options.method === 'POST') { posts.push(options); return Promise.resolve(response(original, 201)); }
+    if (posts.length === 1) {
+      signal = options.signal!; const canonical = response(current);
+      canonical.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(canonical);
+    }
+    return Promise.resolve(response(current));
+  });
+  vi.stubGlobal('fetch', fetcher); vi.useFakeTimers(); const view = mount();
+  await act(async () => create()); await act(async () => vi.advanceTimersByTimeAsync(8000));
+  expect(posts).toHaveLength(1); expect(finishBody).toBeDefined();
+  await act(async () => vi.advanceTimersByTimeAsync(7001)); expect(signal.aborted).toBe(true);
+  expect(screen.getByRole('button', { name: 'Retry original creation' })).toBeEnabled();
+  expect(screen.getByRole('textbox', { name: 'Name' })).toBeDisabled();
+  expect(view.onCreated).not.toHaveBeenCalled();
+  await act(async () => finishBody(current)); expect(view.onCreated).not.toHaveBeenCalled();
+  vi.useRealTimers(); fireEvent.click(screen.getByRole('button', { name: 'Retry original creation' }));
+  await waitFor(() => expect(view.onCreated).toHaveBeenCalledWith(org));
+  expect(posts).toHaveLength(2); expect(posts[1].body).toBe(posts[0].body);
+  expect(new Headers(posts[1].headers).get('Idempotency-Key')).toBe(new Headers(posts[0].headers).get('Idempotency-Key'));
+});
+it('bounds an unsent account check, keeps its reserved request and describes no creation as sent', async () => {
+  let finishBody!: (value: unknown) => void; let signal!: AbortSignal;
+  const fetcher = vi.fn((_path: string, options: RequestInit = {}) => {
+    signal = options.signal!; const me = response(profile);
+    me.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(me);
+  });
+  vi.stubGlobal('fetch', fetcher); vi.useFakeTimers(); const view = mount();
+  await act(async () => create()); await act(async () => vi.advanceTimersByTimeAsync(15001));
+  expect(signal.aborted).toBe(true); expect(screen.getByText(/No creation was sent/)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Retry original creation' })).toBeEnabled();
+  await act(async () => finishBody(profile)); expect(view.onCreated).not.toHaveBeenCalled();
+  expect(fetcher.mock.calls).toHaveLength(1);
+});
