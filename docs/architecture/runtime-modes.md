@@ -113,8 +113,8 @@ or failure. Four [refusal fixtures](../../scripts/ci/test-demo-network-isolation
 pass for success, an external-network namespace, an invalid process reference and
 non-Demo readiness; unconfirmed prerequisites never reach the smoke suite.
 
-This check complements the separate ten desktop/phone metadata and terminal
-lifecycle scenarios on retained Demo API/web images. It does not certify all
+This check complements the fourteen desktop/phone metadata, terminal and Portal
+recipient lifecycle scenarios on retained Demo API/web images. It does not certify all
 provider integrations, physical object erasure or complete release acceptance.
 
 The isolation check exposed a Demo discovery mismatch: the legacy

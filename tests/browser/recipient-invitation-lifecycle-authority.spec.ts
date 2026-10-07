@@ -82,21 +82,17 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
       expect((await context.request.get(`/organizations/${org}`)).status()).toBe(404);
       expect((await context.request.get('/me')).status()).toBe(200);
       const observationPath = `/organizations/${org}/deletion-requests/${key}`;
-      if (mode === 'production') {
-        await expect.poll(async () => {
-          const observed = await issuer.request.get(observationPath);
-          expect(observed.status()).toBe(200);
-          return (await observed.json()).state;
-        }, { timeout: 45_000 }).toBe('COMPLETED');
-        const completed = await issuer.request.get(observationPath);
-        expect(await completed.json()).toEqual({ requestId: key, state: 'COMPLETED', version: 3,
-          eventId: expect.stringMatching(/^[0-9a-f-]{36}$/), completedAt: expect.any(String) });
-        expect((await issuer.request.delete(path, { headers: requestHeaders, data: {} })).status()).toBe(202);
-      } else {
-        // Demo request acceptance does not claim background terminal processing.
-        const pending = await issuer.request.get(observationPath);
-        expect(pending.status()).toBe(200); expect((await pending.json()).state).toBe('PENDING');
-      }
+      // Both modes process the actual accepted request: Production through its
+      // separate Worker, Demo through its API-hosted in-memory simulation.
+      await expect.poll(async () => {
+        const observed = await issuer.request.get(observationPath);
+        expect(observed.status()).toBe(200);
+        return (await observed.json()).state;
+      }, { timeout: 45_000 }).toBe('COMPLETED');
+      const completed = await issuer.request.get(observationPath);
+      expect(await completed.json()).toEqual({ requestId: key, state: 'COMPLETED', version: 3,
+        eventId: expect.stringMatching(/^[0-9a-f-]{36}$/), completedAt: expect.any(String) });
+      expect((await issuer.request.delete(path, { headers: requestHeaders, data: {} })).status()).toBe(202);
       expect((await context.request.get(observationPath)).status()).toBe(404);
       await expect(accept).toHaveCount(0);
       expect(documents).toBe(1); expect(envelopes.flatMap(e => e.events)).toEqual([]);

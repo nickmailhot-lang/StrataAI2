@@ -142,6 +142,27 @@ audit/event/terminal parity and applicable mutation scale remain required.
 Estimated remaining work stays **16%** pending runtime evidence. This ticket
 remains open.
 
+## Demo Portal recipient completion and retired-actor authority
+
+Two additional API-host cases verify terminal recipient authority after real
+HTTP account deactivation: accepted work retains the original actor, advances
+the otherwise-current nonmember recipient cursor only at terminal publication,
+and recovers an empty reset/quiet page without granting membership. Late failure
+after actual completion readiness restores the pending parent and cursor before
+retry. Private Owner observation and ordinary graph reads remain unavailable to
+the Portal recipient; stale acceptance is refused and account access remains.
+
+Four actual Demo desktop/phone connected/disconnected recipient browser cases
+pass with the Owner's authoritative COMPLETED version/event/time and original
+request retry. All pre-existing private-wire, cached-label withdrawal, held-read,
+focus, no-reload, accessibility and overflow assertions remain. Production keeps
+its original separate-Worker completion path. CI now requires these cases along
+with the existing ten Demo metadata/member/Owner cases: fourteen retained-image
+scenarios. See [recipient terminal authority](invitation-recipient-authority.md#demo-terminal-recipient-authority-after-actor-retirement).
+
+Local compiled-runtime evidence does not establish current retained-image/full
+release acceptance. Estimated PRD-03 work remaining stays **10%**.
+
 The mandatory restricted persistence executable now also contains
 `OrganizationDeletionScaleContract`, performing actual bounded mutation and
 all durable event delivery for 5,000 active plus 100,000 archived Cards and 200

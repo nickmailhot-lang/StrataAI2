@@ -613,8 +613,9 @@ Demo captures the real deletion-request mutation in its existing owning command
 proof and journal. Both API-host cases pass: publication failure and final actor
 refusal restore parent and recipient cursors; retry and duplicate acceptance
 invalidate each eligible recipient once, exclude future invitations and recover
-an empty reset without granting membership. Demo terminal processing remains
-unfinished. Release-image lifecycle browser acceptance is still required.
+an empty reset without granting membership. Demo terminal processing is now
+connected, with additional actor-retirement/rollback verification below.
+Release-image lifecycle browser acceptance is still required.
 
 Existing terminal delivery and deletion graph diagnostics pass with schema 108;
 the tenant catalog audit and clean/repeat/forward/serialized/failure-rollback
@@ -643,7 +644,8 @@ page; stale acceptance is rejected without creating Organization access. Focus
 returns to Refresh, account access remains valid, no document reload occurs,
 wire envelopes exclude private fields and invented invitation transitions, and
 accessibility/overflow checks pass. The test defaults to Production in release
-CI. This local Demo evidence covers request acceptance, not Demo terminal work.
+CI. Those earlier Demo cases covered request acceptance; the current fixture
+also verifies actual terminal completion as recorded below.
 
 The mandatory retained-image gate now invokes the lifecycle variant of
 `test-invitation-recipient-authority-delivery.sh`: actual HTTP request, isolated
@@ -662,7 +664,8 @@ Demo scenarios. Production additionally waits for the original Owner's protected
 request observation to become COMPLETED at version 3 with the canonical event ID
 and timestamp, then recovers the same DELETE receipt again. The nonmember
 recipient is denied that observation; acceptance remains withdrawn. Demo
-explicitly verifies PENDING and does not claim terminal processing.
+at that earlier revision explicitly verified PENDING. Both modes now require
+actual terminal processing in the same fixture.
 
 Local Production uses a fresh schema-108 database, documented restricted API and
 Worker roles, a separate ASP.NET API and separate actual Workers. A real HTTP
@@ -691,3 +694,40 @@ CI 37586724672 for dda2057a now passes web, full PostgreSQL (including schema 10
 lifecycle and scale contracts), .NET/API and the source gate; image builds are
 confirmed live. Exact-image security/container/browser/release gates remain
 unverified until those jobs complete. No full PRD or architecture ticket is closed.
+
+## Demo terminal recipient authority after actor retirement
+
+Two additional actual API-host cases pass for committed deletion after real
+HTTP account deactivation. An ordinary nonmember first receives a genuine Portal
+invitation; the actual deletion request invalidates its cursor. After issuer
+retirement, Demo execution uses the immutable accepted root and publishes terminal
+authority with the original actor. The recipient's otherwise-current cursor
+becomes stale again, and protected replay returns an empty reset followed by a
+stable quiet page. No membership is granted, stale acceptance remains rejected,
+ordinary Organization and the Owner's private completion reads stay 404 for the
+recipient, and the recipient's own account remains available.
+
+The second case throws after the real completion publisher records readiness.
+The owning rollback restores the pending parent and recipient cursor together;
+retry publishes one completion, invalidates the cursor and does not repeat work.
+This directly verifies the terminal effect separately from request invalidation
+or issuer-retirement invalidation. Tests use real HTTP retirement and actual
+Demo transition/projection stores, with no fabricated terminal source.
+
+All four current Demo native cases pass: desktop/phone, connected and actual
+transport interruption. They now require the Owner's authoritative COMPLETED
+observation at version 3 with its canonical event ID/time and original-key retry,
+using the API's automatic simulation. Cached name/acceptance withdrawal before
+the held discovery response, private content-free replay, nonmember observation
+refusal, focus, no full document reload, account access, accessibility and overflow
+assertions remain enforced. Production retains its original separate Worker and
+the same completion assertions.
+
+The fresh API/test build, all 57 selected PRD-03 API cases, browser TypeScript
+check, workflow YAML parsing and all 142 embedded Bash syntax checks pass.
+Collection confirms fourteen Demo browser scenarios. CI now includes these
+four scenarios alongside the ten Demo metadata/member/Owner cases: fourteen
+mandatory scenarios on retained API/web images without rebuilding them. Local
+compiled framework API and production bundle passes do not prove exact release
+identity or complete Portal/Organization/retention acceptance. PRD-03 remains
+**10%** unfinished and PRD-60 **18%**, both planning estimates; the issues stay open.
