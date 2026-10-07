@@ -7,6 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repository = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$useLinuxContainer = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
 if (-not $Dotnet) {
     $bundledSdk = Join-Path (Split-Path $repository -Parent) 'toolchain/dotnet/dotnet.exe'
     $Dotnet = if (Test-Path -LiteralPath $bundledSdk) { $bundledSdk } else { (Get-Command dotnet -ErrorAction Stop).Source }
@@ -27,10 +28,14 @@ function Invoke-CheckedDocker {
 
 Push-Location $repository
 try {
-    & $Dotnet restore StrataAI2.slnx --locked-mode
-    if ($LASTEXITCODE -ne 0) { throw 'Locked dependency restore failed.' }
-    & $Dotnet build StrataAI2.slnx -c Release --no-restore -warnaserror
-    if ($LASTEXITCODE -ne 0) { throw 'Release compilation failed.' }
+    if (-not $useLinuxContainer) {
+        & $Dotnet restore StrataAI2.slnx --locked-mode
+        if ($LASTEXITCODE -ne 0) { throw 'Locked dependency restore failed.' }
+        & $Dotnet build StrataAI2.slnx -c Release --no-restore -warnaserror
+        if ($LASTEXITCODE -ne 0) { throw 'Release compilation failed.' }
+    }
+    # Windows validates the contract's locked restore and warning-free build
+    # inside Linux below. Do not overwrite DLLs held by a running local API.
     $databasePath = (Resolve-Path (Join-Path $repository 'db')).Path
     $created = @(Invoke-CheckedDocker -Arguments @('run', '-d', '--name', $containerName,
         '--label', "codex.strataai.contract=$identity", '-e', 'POSTGRES_DB=strataai_ci',
@@ -40,7 +45,9 @@ try {
     if ($containerId -notmatch '^[0-9a-f]{64}$') { throw 'Disposable container identity was not confirmed.' }
     $ready = $false
     for ($attempt = 0; $attempt -lt 60; $attempt++) {
-        try { & docker exec $containerName pg_isready -U postgres -d strataai_ci *> $null; $readyExit = $LASTEXITCODE }
+        # Initialization briefly serves a temporary Unix-socket server. The
+        # final TCP listener is the readiness boundary used by the contracts.
+        try { & docker exec $containerName pg_isready -h 127.0.0.1 -U postgres -d strataai_ci *> $null; $readyExit = $LASTEXITCODE }
         catch { $readyExit = 1 }
         if ($readyExit -eq 0) { $ready = $true; break }
         Start-Sleep -Seconds 1
@@ -58,7 +65,7 @@ try {
     $env:STRATAAI_CONTRACT_API_CONNECTION = "Host=127.0.0.1;Port=$port;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password"
     $env:STRATAAI_CONTRACT_WORKER_CONNECTION = "Host=127.0.0.1;Port=$port;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password"
     Write-Host "Running the full restricted persistence suite in $containerName (loopback port $port)."
-    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
+    if ($useLinuxContainer) {
         # The production preview/download privacy boundary is explicitly Linux.
         # Preserve it: compile and execute the complete suite inside Linux,
         # sharing only this disposable database's network namespace. Copy source

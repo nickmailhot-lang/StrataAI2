@@ -117,12 +117,44 @@ public sealed class AttachmentRuntimeTests
         Assert.ThrowsAny<Exception>(() => new ServiceCollection().AddAttachmentRuntime(Config(settings), Production, worker: true));
     }
 
-    [Fact]
-    public void ARCH_06_Demo_cannot_enable_managed_storage_and_disabled_runtime_adds_no_services()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("false")]
+    public async Task ARCH_06_Demo_cannot_enable_managed_storage_and_disabled_runtime_composes_without_providers(string? flag)
     {
         Assert.Throws<InvalidOperationException>(() => new ServiceCollection().AddAttachmentRuntime(Config(Settings()), Production with { Mode = RuntimeMode.Demo }, false));
-        var settings = Settings(); settings["STRATAAI_ATTACHMENT_STORAGE_ENABLED"] = "false";
-        var services = new ServiceCollection(); Assert.False(services.AddAttachmentRuntime(Config(settings), Production, true)); Assert.Empty(services);
+        foreach (var mode in new[] { RuntimeMode.Demo, RuntimeMode.Production })
+        foreach (var worker in new[] { false, true })
+        {
+            var settings = Settings(); settings["STRATAAI_ATTACHMENT_STORAGE_ENABLED"] = flag;
+            var services = new ServiceCollection();
+            Assert.False(services.AddAttachmentRuntime(Config(settings), Production with { Mode = mode }, worker));
+            Assert.DoesNotContain(services, s => s.ServiceType == typeof(IAmazonS3)
+                || s.ServiceType == typeof(S3AttachmentObjectStorage) || s.ServiceType == typeof(IAttachmentMalwareScanner)
+                || s.ServiceType == typeof(IBackgroundJobHandler) || s.ServiceType == typeof(PostgresConnectionFactory));
+            await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+            var storage = Assert.IsType<UnavailableAttachmentObjectStorage>(provider.GetRequiredService<IAttachmentObjectStorage>());
+            var reference = new AttachmentObjectReference(Guid.NewGuid(), Guid.NewGuid());
+            using var bytes = new MemoryStream([1, 2, 3]);
+            foreach (var operation in new Func<Task>[] {
+                () => storage.WritePrivateAsync(reference, bytes, 1024, CancellationToken.None),
+                () => storage.OpenPrivateReadAsync(reference, CancellationToken.None),
+                () => storage.DeletePrivateAsync(reference, CancellationToken.None) })
+            {
+                var error = await Assert.ThrowsAsync<AttachmentStorageException>(operation);
+                Assert.Equal("object_storage_unavailable", error.Code);
+            }
+            Assert.Equal(0, bytes.Position);
+            var preparer = provider.GetRequiredService<IAttachmentDownloadPreparer>();
+            var request = new AttachmentScanRequest(reference, 3, new string('a', 64));
+            Assert.Null(await preparer.PrepareAsync(request, CancellationToken.None));
+            using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => storage.OpenPrivateReadAsync(reference, cancelled.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => preparer.PrepareAsync(request, cancelled.Token));
+            Assert.NotNull(provider.GetRequiredService<AttachmentUploadPolicy>());
+            Assert.NotNull(provider.GetRequiredService<IAttachmentFileTypeInspector>());
+            provider.InitializeAttachmentRuntime(enabled: false);
+        }
     }
 
     private sealed class Database(bool ready) : IRuntimeDependencyStatus

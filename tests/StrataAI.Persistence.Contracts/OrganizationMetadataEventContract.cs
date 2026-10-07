@@ -311,7 +311,7 @@ internal static class OrganizationMetadataEventContract
         // invitation sources remain deliverable under the separate Worker's real lease.
         await using (var worker = new PostgresConnectionFactory(workerConnection))
         {
-            var jobs = new StrataAI.Infrastructure.BackgroundJobs.PostgresBackgroundJobStore(worker);
+            var jobs = new StrataAI.Infrastructure.BackgroundJobs.PostgresBackgroundJobStore(worker, metadataJobsOnly: true);
             foreach (var expectedEvent in new[] { revocationEvent, acceptanceEvent })
             {
                 var claim = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct)

@@ -12,7 +12,9 @@ internal static class OrganizationMetadataDeliveryContract
         void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
         await using var api = new PostgresConnectionFactory(apiConnection);
         await using var worker = new PostgresConnectionFactory(workerConnection);
-        var jobs = new PostgresBackgroundJobStore(worker);
+        // This fixture hosts only the metadata handler, like the dedicated
+        // discovery Worker. Other source jobs must remain for their own handlers.
+        var jobs = new PostgresBackgroundJobStore(worker, metadataJobsOnly: true);
         var claim = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct) ?? throw new InvalidOperationException("Metadata event claim missing.");
         Require(claim.JobType == OrganizationMetadataDeliveryHandler.Type, "Metadata fixture claimed the wrong job.");
         var eventId = OrganizationLifecycleDeliveryHandler.ParseEventId(claim.SafeMetadataJson);
