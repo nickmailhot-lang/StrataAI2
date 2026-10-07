@@ -11,6 +11,7 @@ credentials=$(jq -nc --arg email "metrics-$(uuid)@example.test" '{email:$email,p
 curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/register" >/dev/null
 curl --fail --silent --show-error -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/login" >/dev/null
 org=$(post /organizations '{"name":"private-metric-fixture"}' | jq -r '.organization.id')
+test "$(curl --max-time 30 --silent --show-error -o /dev/null -w '%{http_code}' "$base/organizations/$org")" = 401
 board=$(post /boards "$(jq -nc --arg org "$org" '{organizationId:$org,name:"private-metric-fixture",visibility:"PRIVATE"}')" | jq -r '.id')
 list=$(post "/boards/$board/lists" '{"name":"private-metric-fixture"}' | jq -r '.id')
 card=$(post "/lists/$list/cards" '{"title":"private-metric-fixture"}' | jq -r '.id')

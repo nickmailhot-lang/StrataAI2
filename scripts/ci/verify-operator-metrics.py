@@ -13,8 +13,8 @@ def verify(raw, revision, version):
     allowed = {"action", "kind", "operation", "outcome", "error_code", "keyed_attempt", "le", "job", "instance",
                "service_name", "service_namespace", "service_version", "strataai_build_revision"}
     samples = []
-    names = {"strataai_checklist_client_events", "strataai_activity_client_events", "strataai_board_sharing_requests"}
-    names.update(prefix + suffix for prefix in ["strataai_checklist_client_duration", "strataai_activity_client_duration", "strataai_board_sharing_duration"]
+    names = {"strataai_checklist_client_events", "strataai_activity_client_events", "strataai_board_sharing_requests", "strataai_organization_requests"}
+    names.update(prefix + suffix for prefix in ["strataai_checklist_client_duration", "strataai_activity_client_duration", "strataai_board_sharing_duration", "strataai_organization_duration"]
                  for suffix in ["_bucket", "_count", "_sum"])
     for line in raw.splitlines():
         if not line.startswith("strataai_"):
@@ -37,6 +37,10 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
+        observed("strataai_organization_requests", {"operation": "create", "outcome": "success"}),
+        observed("strataai_organization_duration_count", {"operation": "create", "outcome": "success"}),
+        observed("strataai_organization_requests", {"operation": "read", "outcome": "denied"}),
+        observed("strataai_organization_duration_count", {"operation": "read", "outcome": "denied"}),
         observed("strataai_checklist_client_events", {"action": "disclosure", "kind": "open"}),
         observed("strataai_checklist_client_events", {"action": "create", "kind": "use"}),
         observed("strataai_checklist_client_events", {"action": "create", "kind": "success"}),
@@ -69,4 +73,4 @@ if __name__ == "__main__":
         "verified": {"clientEvents": True, "clientDuration": True, "serverRequests": True,
                      "serverDuration": True, "activityClientEvents": True, "activityClientDuration": True,
                      "activityServerReads": True, "commentClientEvents": True, "commentClientDuration": True,
-                     "commentServerOperations": True, "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")
+                     "commentServerOperations": True, "organizationServerOperations": True, "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

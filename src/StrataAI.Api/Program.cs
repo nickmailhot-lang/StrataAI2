@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMetrics();
 builder.Services.AddStrataAiOperatorMetrics(builder.Configuration, typeof(Program).Assembly);
 builder.Services.AddSingleton<BoardSharingTelemetry>();
+builder.Services.AddSingleton<OrganizationTelemetry>();
 builder.Services.AddSingleton<ChecklistClientTelemetry>();
 builder.Services.AddSingleton<ActivityClientTelemetry>();
 // Transport connection tokens appear in request query strings. Retain warnings
@@ -88,6 +89,7 @@ app.Services.InitializeAttachmentRuntime(attachmentsEnabled);
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<BoardSharingTelemetryMiddleware>();
+app.UseMiddleware<OrganizationTelemetryMiddleware>();
 app.UseMiddleware<RuntimeDatabaseSecurityMiddleware>();
 app.UseRouting();
 app.UseMiddleware<WorkRealtimeOriginMiddleware>();

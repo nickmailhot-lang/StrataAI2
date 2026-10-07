@@ -1,6 +1,7 @@
 # API operator metrics export (ARCH-08, partial)
 
-The existing native `StrataAI.BoardSharing` and `StrataAI.ChecklistClient` meters
+The native `StrataAI.BoardSharing`, `StrataAI.ChecklistClient`,
+`StrataAI.ActivityClient` and `StrataAI.Organizations` meters
 can now export through OpenTelemetry .NET 1.19.1 using OTLP HTTP/protobuf.
 The API registers the exporter only when `STRATAAI_METRICS_OTLP_ENDPOINT` is
 explicitly configured. `compose.release.yml` forwards this setting and optional
@@ -109,3 +110,38 @@ matches the exact revision. Security job 111165055801 also passed. This proves
 native metric export into the actual pinned receiver; it does not prove dashboards,
 alerting, persistent history/HA, backup restore or the rest of ARCH-08. The run's
 browser stage remains live, so full required-ci/release success is not claimed.
+
+## Organization server outcomes (PRD-03)
+
+The Organization meter records `strataai.organization.requests` and
+`strataai.organization.duration` (seconds) for matched create/list/read/update,
+member review/removal, departure, directory/surface admission, deletion request
+and independently admitted deletion observation, and metadata/lifecycle replay.
+Labels contain only a fixed operation, outcome, allowlisted stable error code,
+and a Boolean indicating a well-formed retry key. They contain no names,
+description/logo content, user/Organization/object IDs, email, route values,
+correlation IDs, cursors or actual retry keys. Repeated keyed acknowledgment
+counts as a successful request, not another business mutation.
+
+Duration includes the normal authorization and handler path. Authentication and
+rate-limit refusals are counted for matched routes; unmatched paths add no new
+operation label. Listener/export failures cannot change the product result.
+Histograms permit operator latency quantiles; this instrumentation alone does
+not establish the PRD p95 target or feature adoption by tenant. No Organization
+identifier is exported to manufacture tenant-level analytics.
+
+The mandatory exact-image Collector fixture now requires real Organization
+creation success and an unauthenticated Organization read denial, plus request
+and duration observations and the existing private-field/build checks. Missing
+Organization observations fail its verifier. Local verifier tests cover missing
+samples, wrong build metadata, protected labels/values and unknown families.
+Current exact-image ingestion remains pending. Browser use/retry/error and live
+recovery rates, tenant adoption policy, dashboards/alerts and broader PRD-03
+telemetry acceptance remain unfinished.
+
+Local validation for the Organization increment: the Release solution build
+passed with zero warnings/errors; the real API outcome/privacy case passed;
+all eight operator configuration/export/failure cases and three Collector
+verifier tests passed. The operator transport case now also requires both
+Organization metric families in actual serialized OTLP. Bash and diff checks
+pass. Deployed Collector ingestion for the current images remains pending.

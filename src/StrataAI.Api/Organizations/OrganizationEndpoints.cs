@@ -7,7 +7,7 @@ public static class OrganizationEndpoints
 {
     public static void MapOrganizationEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/organizations").RequireAuthorization();
+        var group = app.MapGroup("/organizations").RequireAuthorization().AddEndpointFilter<OrganizationTelemetryResultFilter>();
         if (app.Services.GetRequiredService<StrataAI.Application.Runtime.RuntimeDescriptor>().Mode == StrataAI.Application.Runtime.RuntimeMode.Production)
         {
             group.MapGet("/{organizationId:guid}/lifecycle-events", async (Guid organizationId, Guid? expectedActorId,

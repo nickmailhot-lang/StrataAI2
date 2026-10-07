@@ -56,6 +56,11 @@ public sealed class OperatorMetricsTests
             new KeyValuePair<string, object?>("action", "card_disclosure"), new KeyValuePair<string, object?>("kind", "open"));
         activity.CreateHistogram<double>("strataai.activity.client.duration", "s").Record(.125,
             new KeyValuePair<string, object?>("action", "card_read"), new KeyValuePair<string, object?>("kind", "success"));
+        var organizations = factory.Create("StrataAI.Organizations");
+        organizations.CreateCounter<long>("strataai.organization.requests").Add(1,
+            new KeyValuePair<string, object?>("operation", "create"), new KeyValuePair<string, object?>("outcome", "success"));
+        organizations.CreateHistogram<double>("strataai.organization.duration", "s").Record(.125,
+            new KeyValuePair<string, object?>("operation", "create"), new KeyValuePair<string, object?>("outcome", "success"));
         factory.Create("Unselected.Private").CreateCounter<long>("private-card-content").Add(1,
             new KeyValuePair<string, object?>("private-tenant", "private-retry-key"));
         Assert.True(sdk.ForceFlush(5000));
@@ -66,6 +71,8 @@ public sealed class OperatorMetricsTests
         Assert.Contains("strataai.checklist.client.duration", sample.WireText);
         Assert.Contains("strataai.activity.client.events", sample.WireText);
         Assert.Contains("strataai.activity.client.duration", sample.WireText);
+        Assert.Contains("strataai.organization.requests", sample.WireText);
+        Assert.Contains("strataai.organization.duration", sample.WireText);
         Assert.Contains("disclosure", sample.WireText); Assert.Contains("item_update", sample.WireText);
         Assert.Contains("service.name", sample.WireText); Assert.Contains("strataai-api", sample.WireText);
         Assert.Contains("strataai.build.revision", sample.WireText);
