@@ -12,6 +12,33 @@ implement account-bound recipient replay and protected SignalR transport. The
 invitations page consumes it for actual invitation transitions; broader authority
 invalidation and native acceptance evidence remain incomplete.
 
+## Executed edge transport repair
+
+Release CI run `37674465017` failed all four Demo recipient lifecycle browser
+cases before their initial live reset. The unchanged desktop connected case
+reproduced locally: invitation discovery worked, but the live feed reported
+interruption. Nginx had upgrade locations for the other feeds and omitted
+`/invitations/live`, sending its WebSocket handshake through the ordinary HTTP
+proxy. The dedicated priority location now forwards the upgrade/connection,
+host and scheme headers and disables buffering, with the same timeout as the
+other authorized feeds. No hub admission or browser assertion changes.
+
+After the repair, all four unchanged desktop/phone connected/disconnected cases
+pass together in a two-minute invocation including required rate pacing. They
+prove genuine initial private reset envelopes, consent withdrawal before a
+held recovery read, focus, inaccessible Organization scope for Portal-only
+recipients, terminal deletion completion, original deletion receipt recovery,
+body-free live envelopes, WCAG checks and overflow. The local stack uses frozen
+compiled API/web artifacts in cached runtimes with current Nginx, not retained
+current-release image proof. Its two temporary containers and network were
+removed, preserving the original three active services and all volumes.
+
+`scripts/ci/verify-realtime-proxy.py` compares the declared API hubs with their
+priority edge locations and required upgrade/forwarding/unbuffered directives.
+It rejects the historical missing invitation location and passes for all eight
+current hubs. This is mandatory before source quality permits image builds;
+the unchanged browser scenarios remain mandatory against the built-once images.
+
 ## Source and atomicity
 
 Future actual invitation creation, acceptance and revocation transitions capture

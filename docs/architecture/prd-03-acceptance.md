@@ -15,8 +15,24 @@ profile uncertainty pass with unchanged assertions. The explicitly unverified
 test policy matches the CI browser phase; strict verified-email ownership and
 current retained-release acceptance are separate requirements. See
 [executed departure evidence](organization-departure.md#executed-desktop-and-phone-departure-recovery).
-Estimated PRD-03 work remaining is now **9%**; previous estimates below are
+Estimated PRD-03 work remaining is now **8%**; previous estimates below are
 historical. The ticket stays open.
+
+## Current recipient edge repair
+
+All four unchanged Demo desktop/phone recipient lifecycle cases now pass after
+repairing the missing Nginx WebSocket upgrade location for `/invitations/live`.
+They cover connected and disconnected withdrawal, protected live/reset
+envelopes, delayed recovery consent retirement, Portal-only scope, completion,
+receipt replay, focus and accessibility. The historical release failure and
+unchanged local reproduction fail before initial live admission; correcting
+the edge route restores the actual feed without changing hub authorization or
+test expectations. An early required CI check rejects that historical missing
+route and verifies all eight registered hubs. See the
+[executed edge evidence](invitation-recipient-events.md#executed-edge-transport-repair).
+The local compiled/cached runtime proof does not replace current immutable
+API/web release or Production Worker/browser acceptance. All disposable Demo
+containers and their isolated network were removed; data volumes are preserved.
 
 ## Functional requirements
 
