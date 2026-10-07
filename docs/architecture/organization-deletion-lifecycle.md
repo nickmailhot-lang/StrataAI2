@@ -711,6 +711,40 @@ This local result uses compiled source in the framework image; scale and retaine
 release-image confirmation still require a fresh CI run. No acceptance issue
 is closed by this repair.
 
+## Native Internal member terminal recovery
+
+`organization-member-lifecycle.spec.ts` passes four local Production cases:
+1280px and 390px, connected and genuine transport interruption. An ordinary
+Owner and member establish access through real registration, sign-in, invitation
+and acceptance. The member views an Organization-visible Board directory. The
+Owner requests deletion, the separate automatic Worker traverses its real
+Board/List/Card graph, and the original same-key receipt still recovers after
+completion. No SQL fabricates terminal state, source events or readiness.
+
+The member's native lifecycle stream recovers the exact original canonical
+terminal event/version/timestamp without a document reload, withdraws cached
+Organization and Board names and creation controls, and retains account access.
+Normal graph reads and the Owner's private request observation stay 404; an
+expected-actor substitution is refused. Logout removes terminal disclosure and
+the stream redirects to sign-in. Accessibility and phone overflow checks pass.
+The source fixture initially created a default private Board and correctly
+failed its pre-deletion visibility assertion; it now explicitly creates an
+Organization-visible Board. No access rule or assertion is relaxed.
+
+The local topology uses a fresh schema-110 PostgreSQL database, provisioned
+restricted API/Worker roles, separate compiled API and automatic deletion Worker,
+no configured Organization IDs and Vite. API Release build and browser typecheck
+pass. The same fixture defaults to Production and is included by the mandatory
+full browser suite in retained-image CI. Local framework containers do not prove
+exact release-image identity, complete provider/backup purge or full performance
+acceptance. PRD-03 and PRD-18 remain open.
+
+Catalog inspection confirms all four browser-created Organizations are DELETED
+at version 3, with the original Owner attribution, exactly one ready canonical
+terminal event, and their actual Board, List and Card tombstones. The four initial
+pre-deletion fixture failures remain untouched ACTIVE fixtures; their absence of
+terminal processing is not counted as successful deletion evidence.
+
 ## Recipient invalidation on request and completion
 
 Migration 108 adds private recipient authority sources for the actual deletion

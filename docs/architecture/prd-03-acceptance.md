@@ -19,6 +19,15 @@ and remaining work. It does not certify current release acceptance.
 
 ## Acceptance criteria and required scenarios
 
+Current local member recovery evidence is documented in
+[native terminal recovery](organization-deletion-lifecycle.md#native-internal-member-terminal-recovery).
+Four real Production desktop/mobile connected/disconnected cases pass actual
+separate Worker completion, exact canonical event recovery, cached-content
+withdrawal, same-key Owner retry, private request refusal and logout withdrawal.
+All four graphs retain their actual Board/List/Card tombstones and one ready
+terminal event. This strengthens AC-WS-03-03 evidence; retained-image CI,
+provider/backup treatment and remaining full acceptance are still required.
+
 - **AC-WS-03-01:** actual registration/session policy, authorized Organization
   creation, persisted owner membership, browser acknowledgment and retry recovery.
 - **AC-WS-03-02:** unauthorized metadata attempts return the stable protected
