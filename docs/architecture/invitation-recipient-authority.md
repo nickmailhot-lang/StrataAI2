@@ -400,3 +400,24 @@ Release build passes with zero warnings/errors. This proves real concurrent
 adapter/capability delivery against PostgreSQL, distinct from separate deployed
 Worker processes, retained-image replay/restart and a latency benchmark. Those
 release-level results and remaining canonical producers are still required.
+
+## Retained activity fixture references
+
+Repair-only CI run 37582973909 passed deletion graph and full scale processing,
+then failed when the old activity fixture attempted to delete synthetic Work
+history now referenced by authority sources. The forward FK correctly refused
+that deletion. The fixture now owns a dedicated disposable Organization and
+retains its sources, referenced graph, authority pages and jobs until database
+teardown. Its shared actor profile is restored without deleting history or
+disabling any production history trigger. Existing source, paging, audience,
+privacy and rollback assertions remain unchanged.
+
+The complete activity adapter/feed/Organization reader contract passes locally
+under the restricted API login on schema 107. It additionally requires all 67
+synthetic Board authority/source/page references and pending zero-attempt jobs
+to remain, with all four history protection triggers enabled. These are explicitly
+synthetic source fixtures for storage/query boundaries, not actual Board mutation
+or recipient-delivery evidence. `--activity-source-only` is an optional diagnostic;
+the mandatory full persistence executable still runs this contract and later
+shared-scope contracts. Release build has zero warnings/errors; full current CI
+must confirm the combined sequence before any release acceptance claim.

@@ -47,6 +47,23 @@ if (args.Contains("--invitation-board-authority-concurrency-only", StringCompare
     await InvitationBoardAuthorityConcurrencyContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+if (args.Contains("--activity-source-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    var activityActor = Guid.NewGuid();
+    await using (var seed = new NpgsqlCommand("INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at) VALUES(@actor,@email,upper(@email),'Activity diagnostic fixture','ACTIVE','unused-fixture-hash',now(),now())", admin))
+    {
+        seed.Parameters.AddWithValue("actor",activityActor); seed.Parameters.AddWithValue("email",$"activity-diagnostic-{activityActor:N}@example.test");
+        await seed.ExecuteNonQueryAsync(ct);
+    }
+    var activityServices = new ServiceCollection(); activityServices.AddLogging();
+    activityServices.AddSingleton(new PostgresConnectionFactory(apiConnection)); activityServices.AddSingleton<IClock,SystemClock>();
+    activityServices.AddSingleton<PostgresBackgroundJobStore>(); activityServices.AddSingleton<ICommandActorAuthorization,NoActorFixture>();
+    activityServices.AddStrataAiWorkManagement(new(RuntimeMode.Production,"contract","contract"));
+    await using var activityProvider = activityServices.BuildServiceProvider();
+    await ActivityEventSourceStoreContract.RunAsync(admin,activityProvider,activityActor,ct);
+    return;
+}
 await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
 if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
 if (args.Contains("--invitation-authority-only", StringComparer.Ordinal))
@@ -191,7 +208,7 @@ try
     await AttachmentWorkerContract.RunAsync(admin,workerConnection,provider,organization,foreignOrganization,value,
         fixtureBytes,fixtureDigest,ct);
     await AttachmentPublicationContract.RunAsync(admin,apiConnection,ct);
-    await ActivityEventSourceStoreContract.RunAsync(admin,provider,organization,user,ct);
+    await ActivityEventSourceStoreContract.RunAsync(admin,provider,user,ct);
     await ActivityPrivateTargetStoreContract.RunAsync(provider,organization,foreignOrganization,user,foreignUser,card,ct);
     await CardCommentStoreContract.RunAsync(admin,provider,organization,foreignOrganization,value.CardId,value.UploaderId,ct);
     await CardMentionMemberStoreContract.RunAsync(admin,provider,organization,foreignOrganization,board,foreignBoard,foreignUser,card,ct);

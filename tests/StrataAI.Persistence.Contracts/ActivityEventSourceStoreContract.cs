@@ -8,8 +8,11 @@ internal static class ActivityEventSourceStoreContract
 {
     private static void Require(bool condition, string invariant)
     { if (!condition) throw new InvalidOperationException(invariant); }
-    public static async Task RunAsync(NpgsqlConnection admin, IServiceProvider provider, Guid tenant, Guid actor, CancellationToken ct)
+    public static async Task RunAsync(NpgsqlConnection admin, IServiceProvider provider, Guid actor, CancellationToken ct)
     {
+        // Keep source/authority/history references until disposable database teardown.
+        // A dedicated Organization prevents these fixtures affecting later shared scopes.
+        var tenant = Guid.NewGuid();
         var board = Guid.NewGuid(); var otherBoard = Guid.NewGuid(); var personalOwner = Guid.NewGuid();
         var at = AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
         var sources = provider.GetRequiredService<IActivityEventSourceStore>(); var events = provider.GetRequiredService<IWorkEventStore>();
@@ -26,9 +29,10 @@ internal static class ActivityEventSourceStoreContract
                 async () => WorkOperation<T>.Success(await action()), ct);
             Require(result.Succeeded, "Activity owning operation failed."); return result.Value!;
         }
-        await using (var seed = new NpgsqlCommand("INSERT INTO boards(id,tenant_id,name,visibility,created_at,updated_at) VALUES(@board,@tenant,'Activity source contract','ORGANIZATION',@at,@at),(@other_board,@tenant,'Historical activity source contract','ORGANIZATION',@at,@at);", admin))
+        await using (var seed = new NpgsqlCommand("INSERT INTO organizations(id,name,created_at,updated_at) VALUES(@tenant,'Isolated activity source fixture',@at,@at); INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),@tenant,@actor,'MEMBER','ACTIVE'); INSERT INTO boards(id,tenant_id,name,visibility,created_at,updated_at) VALUES(@board,@tenant,'Activity source contract','ORGANIZATION',@at,@at),(@other_board,@tenant,'Historical activity source contract','ORGANIZATION',@at,@at);", admin))
         {
             seed.Parameters.AddWithValue("board", board); seed.Parameters.AddWithValue("tenant", tenant); seed.Parameters.AddWithValue("at", at);
+            seed.Parameters.AddWithValue("actor", actor);
             seed.Parameters.AddWithValue("other_board", otherBoard);
             await seed.ExecuteNonQueryAsync(ct);
         }
@@ -38,9 +42,8 @@ internal static class ActivityEventSourceStoreContract
             catch (InvalidOperationException exception) when (exception.Message == "Activity sources require the owning Work transaction.") { }
             var journalReader = new PostgresOrganizationBoardEventReader(provider.GetRequiredService<PostgresConnectionFactory>());
             var discoveryReader = new PostgresOrganizationBoardEventReader(provider.GetRequiredService<PostgresConnectionFactory>(), OrganizationBoardAudience.BoardDiscovery);
-            // Earlier mandatory fixtures retain real events on other Boards that
-            // this same actor administers. Fence this fixture's own source range
-            // instead of treating their legitimately visible history as a leak.
+            // Fence this fixture's own source range. Its private Organization
+            // retains source history independently of the shared fixture scope.
             var journalStart = await journalReader.GetHeadAsync(tenant, ct);
             var journalScopeStart = await journalReader.GetScopeAsync(tenant, actor, ct);
             Require(journalScopeStart is { ActorId: var scopedActor, OrganizationId: var scopedOrganization } && scopedActor == actor && scopedOrganization == tenant,
@@ -305,33 +308,28 @@ internal static class ActivityEventSourceStoreContract
             await using var cleanup = new NpgsqlCommand("""
                 UPDATE users SET display_name=@caption,status=@status WHERE id=@actor;
                 UPDATE organization_members SET role='MEMBER' WHERE tenant_id=@tenant AND user_id=@actor;
-                DELETE FROM background_jobs WHERE tenant_id=@tenant AND safe_metadata->>'boardId'=ANY(@board_texts);
-                -- Administrative cleanup of explicitly synthetic history, not a
-                -- runtime retention path. The DDL/data reset is one transaction.
-                ALTER TABLE organization_board_events DISABLE TRIGGER organization_board_event_history;
-                DELETE FROM organization_board_events j USING work_events e
-                  WHERE j.tenant_id=e.tenant_id AND j.event_id=e.event_id AND e.tenant_id=@tenant AND e.board_id=ANY(@boards);
-                ALTER TABLE organization_board_events ENABLE TRIGGER organization_board_event_history;
-                UPDATE organization_board_event_streams s SET last_sequence=COALESCE(
-                  (SELECT max(j.sequence) FROM organization_board_events j WHERE j.tenant_id=s.tenant_id),0) WHERE s.tenant_id=@tenant;
-                DELETE FROM work_events WHERE tenant_id=@tenant AND board_id=ANY(@boards);
-                DELETE FROM work_event_streams WHERE tenant_id=@tenant AND board_id=ANY(@boards);
-                DELETE FROM watch_subscriptions WHERE tenant_id=@tenant AND card_id=ANY(@boards);
-                DELETE FROM card_reminders WHERE tenant_id=@tenant AND card_id=ANY(@boards);
-                DELETE FROM cards WHERE tenant_id=@tenant AND board_id=ANY(@boards);
-                DELETE FROM board_lists WHERE tenant_id=@tenant AND board_id=ANY(@boards);
-                DELETE FROM board_members WHERE tenant_id=@tenant AND board_id=ANY(@boards);
-                DELETE FROM boards WHERE tenant_id=@tenant AND id=ANY(@boards);
-                DELETE FROM organization_members WHERE tenant_id=@tenant AND user_id=@personal_owner;
-                DELETE FROM users WHERE id=@personal_owner;
+                -- Retain all source/authority/queue references and their parents.
+                -- No production history trigger or FK is disabled for cleanup.
                 """, admin, cleanupTransaction);
             cleanup.Parameters.AddWithValue("caption", originalCaption); cleanup.Parameters.AddWithValue("status", originalStatus);
             cleanup.Parameters.AddWithValue("actor", actor); cleanup.Parameters.AddWithValue("tenant", tenant);
-            cleanup.Parameters.AddWithValue("personal_owner", personalOwner);
-            cleanup.Parameters.AddWithValue("boards", new[] { board, otherBoard });
-            cleanup.Parameters.AddWithValue("board_texts", new[] { board.ToString("D"), otherBoard.ToString("D") });
             await cleanup.ExecuteNonQueryAsync(ct);
             await cleanupTransaction.CommitAsync(ct);
         }
+        await using var retained = new NpgsqlCommand("""
+            SELECT
+             (SELECT count(*)=67 FROM invitation_recipient_authority_sources WHERE tenant_id=@tenant),
+             (SELECT count(*)=67 AND bool_and(completed_at IS NULL) FROM invitation_recipient_authority_pages WHERE tenant_id=@tenant),
+             (SELECT count(*)=67 AND bool_and(state='PENDING' AND attempt_count=0) FROM background_jobs
+               WHERE tenant_id=@tenant AND job_type='INVITATION_RECIPIENT_AUTHORITY_PAGE'),
+             (SELECT count(*)=4 AND bool_and(tgenabled='O') FROM pg_trigger WHERE NOT tgisinternal
+               AND tgname IN ('organization_board_event_history','invitation_authority_source_history',
+                 'invitation_authority_page_history','invitation_authority_effect_history'));
+            """, admin);
+        retained.Parameters.AddWithValue("tenant",tenant);
+        await using var retainedRows = await retained.ExecuteReaderAsync(ct);
+        Require(await retainedRows.ReadAsync(ct) && Enumerable.Range(0,4).All(index => !retainedRows.IsDBNull(index) && retainedRows.GetBoolean(index)),
+            "Isolated activity fixture did not retain authority references/jobs or enabled history protection.");
+        Console.WriteLine("Activity fixture isolation: all 67 synthetic Board source/authority/page references and pending jobs retained; history triggers remain enabled until disposable database teardown.");
     }
 }
