@@ -191,9 +191,40 @@ executed successfully, including the local browser scenarios above. Each earlier
 pending case still needs its own execution evidence, and complete current
 exact-image results must be inspected in CI.
 
+### Elapsed profile session expiry in restricted PostgreSQL
+
+`IdentityProfileExpiryContract` is now mandatory in the complete persistence
+executable, with `--identity-profile-expiry-only` for bounded diagnosis. Both
+local Production cases pass under the actual restricted API login: keyed and
+unkeyed profile updates. They use SystemClock and a canonical verified account
+and session, with the normal CommandActorAuthorization and transactional service.
+The context models an admitted request; this is not an HTTP authentication test.
+
+An actor-scoped temporary AFTER INSERT trigger verifies that the real updated
+profile, audit and USER_PROFILE_UPDATED source exist in the transaction before
+sleeping for twelve seconds. Keyed commands pause after actual receipt insertion;
+unkeyed commands pause after actual event insertion. The disposable session's
+eight-second expiry elapses during that pause. A bounded admin probe requires
+the exact restricted connection/application to be executing the publication SQL
+in PgSleep; an early refusal cannot satisfy the case. The temporary verification
+function uses its fixture administrator's read authority with a fixed search
+path, not additional runtime grants, and the trigger/function retire in finally.
+
+Final admission returns session_unavailable with no profile value. Exact complete
+user/session/profile-receipt/audit/event-stream/event snapshots match the state
+before the command. Restoring only the disposable session's lifetime permits the
+original intent to update all requested profile fields once, publishing exactly
+one audit/source with the canonical actor/entity/version, empty metadata and
+correlation, while preserving its session. Keyed replay returns the identical
+acknowledgment without writes; unkeyed stale-version resubmission is refused.
+Changed intent is refused with idempotency_key_reused or version_conflict and
+unchanged state. The final isolated Release build passes with zero warnings/errors;
+both strengthened real-PostgreSQL cases exit successfully. This adds elapsed
+storage proof for AUTH-FR-006/007, not full HTTP/provider or release acceptance.
+
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **25% work
+immutable images before closure. The current PRD estimate is **24% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.
