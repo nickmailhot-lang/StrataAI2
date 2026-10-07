@@ -17,6 +17,12 @@ original-key receipt replay without another provider write, and neutral unauthor
 refusal before claimed-header validation with zero provider reads/writes. The
 private provider is explicitly synthetic and metadata uses Demo adapters; this
 does not establish deployed storage/scanner or retained-image binary acceptance.
+The companion [controlled download matrix](prd-05-acceptance.md#executed-controlled-download-permission-matrix)
+passes all 18 visibility/access cases on Linux: Pending refusal, current scoped
+Clean delivery, public/former-member internal-file refusal, safe delivery headers,
+and Organization membership withdrawal after byte preparation without disclosure
+or another provider read on retry. Clean state and storage remain synthetic;
+private staging, integrity checks and final HTTP admission are actual code.
 
 `Attachment` is a framework/provider-free Organization-scoped Domain entity.
 It retains stable Card/uploader identity, display name, kind, timestamps/version,

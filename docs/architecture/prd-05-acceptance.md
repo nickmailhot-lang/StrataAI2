@@ -84,6 +84,12 @@ The same 18 cases now also execute raw binary upload with the existing explicitl
 
 These are required API-host tests with Demo in-memory metadata adapters and an explicitly injected synthetic binary provider; ordinary Demo binary uploads remain disabled. They are not restricted PostgreSQL, deployed S3/scanner or retained-image/native proof for the entire role/operation matrix. Real-provider/current-image binary workflows, remaining endpoint operations, account and parent lifecycle races, concurrent admission, accessibility and capacity/latency remain part of the open acceptance scope.
 
+## Executed controlled download permission matrix
+
+The [controlled download matrix](../../tests/StrataAI.Api.Tests/BoardPermissionDownloadMatrixTests.cs) crosses the same three visibilities and six access states in the actual API host on Linux. Pending files refuse options and delivery without a provider read. With explicitly synthetic Clean metadata, current Organization/Board administrators and Board members can obtain options and SHA-verified original PDF bytes. An ordinary Organization member without a Board grant can read the file only for ORGANIZATION/PUBLIC visibility. A former Organization member with a persisted active Board grant is refused for every visibility, including PUBLIC; an anonymous public Board viewer receives 401 on internal file routes. Refused requests make zero provider reads and disclose neither the filename nor file bytes.
+
+Successful responses retain forced-download, octet-stream and private/no-store headers. Each admitted role then loses Organization membership through a fixture callback after the actual provider stream closes but before delivery. Final admission refuses the response without a download header or PDF bytes; its retry makes no additional provider read. Storage and Clean scanner state are declared synthetic fixtures, while authentication, Linux private staging, integrity verification and HTTP delivery are actual implementations. This does not prove deployed S3/Worker publication or retained-image/browser acceptance. Non-Linux runs explicitly skip this matrix rather than reporting unexecuted assertions as passes. Local Linux execution passes all 18 cases with zero failures/skips.
+
 ## Remaining implementation order
 
 1. Verify mandatory restricted member-event CI and execute current release consumer delivery/reconnect; local API and restricted PostgreSQL audit/journal/outbox, replay, no-op, rollback and private authority compatibility checks are complete.
