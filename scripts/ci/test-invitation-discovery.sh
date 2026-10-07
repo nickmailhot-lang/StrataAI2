@@ -31,6 +31,9 @@ state() { admin "SELECT jsonb_build_object('invite',(SELECT to_jsonb(i) FROM inv
   'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org' AND event_type IN ('INVITATION_ACCEPTED','ORGANIZATION_MEMBER_ADDED')),
   'stream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$org'),
   'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$org'),
+  'recipientProofs',(SELECT jsonb_agg(to_jsonb(p) ORDER BY invitation_id,entity_version) FROM invitation_recipient_proofs p WHERE tenant_id='$org'),
+  'recipientEvents',(SELECT jsonb_agg(to_jsonb(e) ORDER BY email_normalized,sequence) FROM invitation_recipient_events e WHERE tenant_id='$org'),
+  'recipientStream',(SELECT to_jsonb(s) FROM invitation_recipient_streams s WHERE email_normalized=upper('$email')),
   'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$org' AND job_type='ORGANIZATION_METADATA_EVENT_READY'))::text;"; }
 for surface in INTERNAL PORTAL; do
   role=MEMBER; if test "$surface" = PORTAL; then role=OWNER; fi
@@ -72,6 +75,12 @@ for surface in INTERNAL PORTAL; do
   for n in 1 2 3; do test "$(cat "$scratch/status-$n")" = 200; cmp "$scratch/ack-1" "$scratch/ack-$n"; done
   test "$(admin "SELECT count(*) FROM audit_events WHERE event_type='INVITATION_ACCEPTED' AND entity_id='$id';")" = 1
   test "$(admin "SELECT accepted_by_user_id FROM invitations WHERE id='$id';")" = "$user"
+  test "$(admin "SELECT count(*)=1 AND bool_and(e.actor_id='$user' AND e.entity_version=i.version AND e.metadata='{}'::jsonb
+      AND e.created_at=i.updated_at AND e.email_normalized=i.email_normalized AND e.correlation_id=a.correlation_id)
+    FROM invitation_recipient_events e
+    JOIN invitations i ON i.id=e.entity_id AND i.tenant_id=e.tenant_id
+    JOIN audit_events a ON a.id=e.event_id AND a.actor_id=e.actor_id AND a.event_type='INVITATION_ACCEPTED'
+    WHERE e.tenant_id='$org' AND e.entity_id='$id' AND e.event_type='INVITATION_ACCEPTED';")" = t
   test "$(admin "SELECT count(*) FROM audit_events a JOIN organization_members m ON m.tenant_id=a.tenant_id AND m.id=a.entity_id
     WHERE a.tenant_id='$org' AND a.event_type='ORGANIZATION_MEMBER_ADDED' AND a.entity_type='OrganizationMembership' AND a.actor_id='$user'
     AND m.user_id='$user' AND a.safe_metadata='{}'::jsonb;")" = 1

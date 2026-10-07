@@ -37,6 +37,14 @@ BEGIN
         END IF;
         CONTINUE;
       END IF;
+      IF relation.relname='invitation_recipient_streams' THEN
+        IF NOT relation.relrowsecurity OR NOT relation.relforcerowsecurity OR NOT EXISTS(
+          SELECT 1 FROM pg_policy p WHERE p.polrelid=relation.oid AND p.polcmd='r'
+            AND pg_get_expr(p.polqual,p.polrelid) LIKE '%email_normalized%app.route_key%') THEN
+          RAISE EXCEPTION 'Recipient routing stream requires forced recipient RLS';
+        END IF;
+        CONTINUE;
+      END IF;
       IF relation.relname = ANY(global_tables) THEN CONTINUE; END IF;
       SELECT a.attnotnull, a.atttypid INTO isolation_key
       FROM pg_attribute a WHERE a.attrelid=relation.oid AND NOT a.attisdropped

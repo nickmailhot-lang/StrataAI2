@@ -32,6 +32,10 @@ publication_state() {
    'proofs',(SELECT jsonb_agg(to_jsonb(p) ORDER BY invitation_id) FROM organization_invitation_creations p WHERE tenant_id='$org'),
    'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM organization_metadata_events e WHERE tenant_id='$org'),
    'stream',(SELECT to_jsonb(s) FROM organization_metadata_event_streams s WHERE tenant_id='$org'),
+   'recipientProofs',(SELECT jsonb_agg(to_jsonb(p) ORDER BY invitation_id,entity_version) FROM invitation_recipient_proofs p WHERE tenant_id='$org'),
+   'recipientEvents',(SELECT jsonb_agg(to_jsonb(e) ORDER BY email_normalized,sequence) FROM invitation_recipient_events e WHERE tenant_id='$org'),
+   'recipientStreams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY email_normalized) FROM invitation_recipient_streams s
+     WHERE email_normalized IN (SELECT email_normalized FROM invitation_recipient_proofs WHERE tenant_id='$org')),
    'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='$org'))::text;"
 }
 # Any receipt or audit failure rolls back the invitation and routing projection.
@@ -77,6 +81,11 @@ test "$(admin "SELECT count(*)=1 AND bool_and(e.actor_id='$owner' AND e.entity_t
  JOIN audit_events a ON a.id=e.event_id AND a.entity_id=i.id AND a.event_type='ORGANIZATION_MEMBER_INVITED'
  WHERE e.tenant_id='$org' AND e.entity_id='$id';")" = t
 publication_after="$(publication_state)"
+test "$(admin "SELECT count(*)=1 AND bool_and(e.event_type='INVITATION_CREATED' AND e.source_event_type='ORGANIZATION_MEMBER_INVITED'
+ AND e.actor_id='$owner' AND e.entity_version=1 AND e.metadata='{}'::jsonb AND e.created_at=i.created_at AND e.email_normalized=i.email_normalized)
+ FROM invitation_recipient_events e JOIN invitations i ON i.id=e.entity_id AND i.tenant_id=e.tenant_id
+ JOIN audit_events a ON a.id=e.event_id AND a.entity_id=i.id AND a.event_type=e.source_event_type
+ WHERE e.tenant_id='$org' AND e.entity_id='$id';")" = t
 test "$(create "$key" replay)" = 201; cmp "$scratch/first.json" "$scratch/replay.json"
 test "$(publication_state)" = "$publication_after"
 after="$(state)"; test "$(jq -c 'map(.+1)' <<< "$before")" = "$(jq -c '.' <<< "$after")"

@@ -222,6 +222,9 @@ jobs:
       - name: Verify real restricted runtime logins and elevation rejection
         run: scripts/ci/test-runtime-roles.sh
 
+      - name: Verify private invitation recipient source, atomic rollback and restricted capabilities
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-events.sql
+
       - name: Verify concurrent Board journal commit order with restricted runtime role
         run: bash scripts/ci/test-organization-board-journal-order.sh
 
