@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider, useParams } from 'react-router-dom';
 import { SurfaceAdmission } from './SurfaceAdmission';
+import { useState } from 'react';
+import { Dialog } from '@mui/material';
 
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 function Content() { const { organizationId } = useParams(); return <div>Admitted {organizationId}</div>; }
@@ -12,6 +14,45 @@ function mount(surface: 'INTERNAL' | 'PORTAL' = 'INTERNAL', fallback = false) {
 const response = (organizationId: string, surface = 'INTERNAL') => new Response(JSON.stringify({ organizationId, surface }));
 
 describe('ARCH-02 current surface admission', () => {
+  it('hides a retained MUI dialog and keeps its draft through explicit transport recovery', async () => {
+    vi.useFakeTimers();
+    function Draft() {
+      const [value, setValue] = useState('');
+      return <Dialog open slotProps={{ paper: { 'aria-label': 'Protected draft' } }}><input aria-label="Original draft" value={value} onChange={event => setValue(event.target.value)} /></Dialog>;
+    }
+    let checks = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => ++checks === 2 ? new Response('{}', { status: 503 }) : response('first')));
+    const router = createMemoryRouter([{ path: '/:organizationId', element:
+      <SurfaceAdmission surface="INTERNAL"><Draft /></SurfaceAdmission> }], { initialEntries: ['/first'] });
+    await act(async () => { render(<RouterProvider router={router} />); await vi.advanceTimersByTimeAsync(0); });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Original draft' }), { target: { value: 'Unsent original' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+    expect(screen.queryByRole('dialog', { name: 'Protected draft' })).not.toBeInTheDocument();
+    const check = screen.getByRole('button', { name: 'Check access again' });
+    expect(check).toBeVisible(); check.focus(); expect(check).toHaveFocus();
+    await act(async () => { fireEvent.click(check); await vi.advanceTimersByTimeAsync(0); });
+    expect(screen.getByRole('dialog', { name: 'Protected draft' })).toBeVisible();
+    expect(screen.getByRole('textbox', { name: 'Original draft' })).toHaveValue('Unsent original');
+  });
+  it.each([503, 403])('withdraws surface content during failed checks and preserves recovery only for transient failure (%s)', async status => {
+    vi.useFakeTimers();
+    function Recovery() {
+      const [count, setCount] = useState(0);
+      return <button onClick={() => setCount(value => value + 1)}>Original recovery {count}</button>;
+    }
+    let checks = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => ++checks === 2 ? new Response('{}', { status }) : response('first')));
+    const router = createMemoryRouter([{ path: '/:organizationId', element:
+      <SurfaceAdmission surface="INTERNAL"><Recovery /></SurfaceAdmission> }], { initialEntries: ['/first'] });
+    await act(async () => { render(<RouterProvider router={router} />); await vi.advanceTimersByTimeAsync(0); });
+    fireEvent.click(screen.getByRole('button', { name: 'Original recovery 0' }));
+    expect(screen.getByRole('button', { name: 'Original recovery 1' })).toBeVisible();
+    await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+    expect(screen.queryByRole('button', { name: 'Original recovery 1' })).not.toBeInTheDocument();
+    if (status === 403) expect(screen.queryByText('Original recovery 1')).not.toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+    expect(screen.getByRole('button', { name: `Original recovery ${status === 503 ? 1 : 0}` })).toBeVisible();
+  });
   it('withholds protected content before admission and after denial', async () => {
     let finish!: (value: Response) => void;
     vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(resolve => { finish = resolve; })));

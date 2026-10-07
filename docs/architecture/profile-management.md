@@ -328,6 +328,50 @@ web typechecking/lint pass. Scenario timings are not performance benchmarks.
 Current full release CI and the remaining preference consumers still require
 acceptance; no issue closure follows from these six local scenarios.
 
+### Executed local notification preference recovery
+
+The complete [notification inbox scenario](notification-inbox.md#current-local-preference-and-reconnect-evidence)
+now passes against local Production/restricted PostgreSQL/Vite with a disposable
+fixture-scoped Worker. An independent recipient session changes locale/timezone
+to en-US/Asia/Tokyo and then UTC; both desktop and phone automatically display
+the new preferences while exact UTC datetime attributes and canonical stored
+notification/read history stay unchanged. The original live delivery, lost read
+acknowledgment with identical retry, bulk read, offline retained-cursor replay,
+keyboard focus, access filtering and accessibility assertions all pass.
+
+The first native run exposed surface remounting after transient admission failure;
+hidden retained recovery now resumes the original live cursor after fresh access
+admission. Actual denial destroys the feature tree. Inbox access denial separately
+retires queued and background refresh until explicit fresh admission. All 166
+focused notification/identity/surface/comment cases, web/browser typechecking and lint
+pass. Current retained images, full CI and remaining date consumers still require
+acceptance; this local scenario does not close AUTH-FR-010 or PRD-17.
+
+The final shell also contains MUI portals within its mounted visibility boundary;
+hidden dialogs relinquish focus enforcement and explicit access retry preserves
+the unsent draft. The real installed-Dialog regression fails before the repair.
+Final native notification execution passes in 36.4 seconds. Both complete native
+comment cases pass again in 58.8 seconds after repairing a desktop retry race:
+when a background Card read begins during a requested original receipt's account
+preflight, the original key/body proceeds to the command endpoint's current
+authorization checks. New changes still require local admission. A server failure
+preserves the original intent; current server refusal still retires it. Both
+focused gap regressions fail before the fix and pass afterward. The original
+native lost-reply, private history, offline edit, redaction, former-body refusal,
+exact source event, preference and accessibility assertions remain unchanged.
+
+The complete web suite passed 1,881 tests across 134 files using two workers before
+the final portal and comment-gap refinements. Its unrestricted-worker invocation
+had 1,879 passes and two five-second filter-test timeouts; both affected files then
+passed all 49 cases with two workers and unchanged timeouts/assertions. Final
+focused checks and native runs above cover the refinements; the complete current
+revision and exact-image gates still require CI. These observations do not claim
+a final current-release green gate or performance benchmark.
+
+The final isolated production web build also passes, with output outside the
+checkout. This local build is not a retained release artifact; CI must build and
+test its exact three images and pass the required gate for the committed revision.
+
 ### Open comment preference recovery
 
 Clean Card comment views now recover account preferences through identity delivery

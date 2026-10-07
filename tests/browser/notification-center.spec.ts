@@ -7,11 +7,11 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
   await page.setViewportSize({ width: 1280, height: 844 });
   const headers = { 'X-StrataAI-Request': '1' };
   const owner = await browser.newContext({ baseURL });
-  let phone: typeof owner | undefined; let restoreWorker = () => {};
+  let phone: typeof owner | undefined; let preferences: typeof owner | undefined; let restoreWorker = () => {};
   try {
     const email = `notification-recipient-${Date.now()}@example.test`;
     for (const [index, client] of [owner, context].entries()) {
-      const account = { email: index ? email : `notification-owner-${Date.now()}@example.test`,
+      const account = { email: index ? email : `notification-owner-1280-${Date.now()}@example.test`,
         password: 'notification-center-correct-horse', displayName: index ? 'Notification recipient' : 'Assignment issuer' };
       expect((await client.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
       expect((await client.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
@@ -30,6 +30,8 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     restoreWorker = scopedBoardWorker(org);
     await waitForBoardDelivery(owner.request, board);
     phone = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
+    preferences = await browser.newContext({ baseURL });
+    expect((await preferences.request.post('/auth/login', { headers, data: { email, password: 'notification-center-correct-horse' } })).status()).toBe(200);
     let notificationSocket: WebSocketRoute | undefined; let liveOffline = false;
     await phone.routeWebSocket('**/notifications/live*', route => {
       if (liveOffline) { route.close({ code: 1013 }); return; }
@@ -87,6 +89,27 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     await expect(other.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     const link = page.getByRole('link', { name: 'Open Card', exact: true });
     await expect(link).toHaveAttribute('href', `/app/${org}/boards/${board}/cards/${card}`);
+    // AUTH-FR-010 / AC-AUTH-02-03: another authenticated session changes the
+    // viewing preferences. Both open views must recover without a manual read,
+    // while persisted notification timestamps and read state remain unchanged.
+    async function recoverPreferences(timezone: string) {
+      const before = await context.request.get(`/organizations/${org}/notifications`);
+      expect(before.status()).toBe(200); const source = await before.json();
+      const me = await preferences!.request.get('/me'); expect(me.status()).toBe(200);
+      const profile = await me.json();
+      expect((await preferences!.request.patch('/me', { headers, data: { version: profile.version, locale: 'en-US', timezone } })).status()).toBe(200);
+      const createdAt = source.items.find((n: { entityId: string }) => n.entityId === card).createdAt;
+      const caption = new Intl.DateTimeFormat('en-US', { timeZone: timezone, year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short' }).format(new Date(createdAt));
+      for (const client of [page, other]) {
+        const stamp = client.locator('time').filter({ hasText: caption });
+        await expect(stamp).toBeVisible({ timeout: 25_000 });
+        await expect(stamp).toHaveAttribute('datetime', createdAt);
+      }
+      const after = await context.request.get(`/organizations/${org}/notifications`);
+      expect(after.status()).toBe(200); expect(await after.json()).toEqual(source);
+    }
+    await recoverPreferences('Asia/Tokyo');
     let originalKey: string | undefined; let originalBody: string | null = null; let writes = 0;
     await other.route(`**/organizations/${org}/notifications/read`, async route => {
       if (route.request().method() !== 'POST') { await route.continue(); return; }
@@ -108,6 +131,8 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible(); expect(writes).toBe(2);
     await expect(other.getByRole('button', { name: 'Refresh notifications' })).toBeFocused();
     await other.unroute(`**/organizations/${org}/notifications/read`);
+    await recoverPreferences('UTC');
+    await expect(other.getByRole('button', { name: 'Refresh notifications' })).toBeFocused();
     await assign('Second inbox Card'); await assign('Third inbox Card');
     await expect(other.getByText('2 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     const select = other.getByRole('button', { name: 'Select unread on this page' }); await expect(select).toBeEnabled(); await select.press('Enter');
@@ -142,5 +167,5 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     await expect(other.getByText('No notifications on this page. Card assignments from other people will appear here.', { exact: true })).toBeVisible();
     await expect(page.getByText('No notifications on this page. Card assignments from other people will appear here.', { exact: true })).toBeVisible();
     const hidden = await context.request.get(`/organizations/${org}/notifications`); expect(hidden.status()).toBe(200); expect((await hidden.json()).items).toEqual([]);
-  } finally { restoreWorker(); await phone?.close(); await owner.close(); }
+  } finally { restoreWorker(); await preferences?.close(); await phone?.close(); await owner.close(); }
 });

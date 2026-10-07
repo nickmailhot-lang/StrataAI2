@@ -26,6 +26,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
   const currentCursor = useRef<string | undefined>(undefined); const refresh = useRef<HTMLButtonElement>(null);
   const retry = useRef<HTMLButtonElement>(null);
   const invalidated = useRef(false);
+  const backgroundRetired = useRef(false);
   const list = useRef<HTMLDivElement>(null); const focusTarget = useRef<string | undefined>(undefined);
   const path = `/organizations/${encodeURIComponent(organizationId)}/notifications`;
   const rememberFocus = () => {
@@ -35,6 +36,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     if (active instanceof HTMLElement && list.current?.contains(active)) focusTarget.current = active.closest<HTMLElement>('[data-notification-focus]')?.dataset.notificationFocus ?? 'refresh';
   };
   const retire = useCallback((message: string) => {
+    backgroundRetired.current = true; invalidated.current = false;
     intent.current = undefined; currentProfile.current = undefined; setProfile(undefined); setPage(undefined); setSelected([]);
     setRecovery(false); setDenied(true); setNotice(message);
   }, []);
@@ -65,6 +67,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
         intent.current = undefined; setRecovery(false); setSelected([]);
       }
       currentProfile.current = result.user; setProfile(result.user); setPage(result.page); setDenied(false);
+      backgroundRetired.current = false;
       setSelected(previous => previous.filter(id => result.page.items.some(n => n.id === id && n.readAt === null)));
     } catch (reason) {
       if (!mounted.current || ticket !== epoch.current) return;
@@ -79,8 +82,8 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
   }, [path, organizationId, retire]);
   useEffect(() => {
     mounted.current = true; activityEvent('notification_disclosure', 'open'); void load();
-    const check = () => { if (document.visibilityState !== 'hidden') void load(currentCursor.current); };
-    const reconnect = () => { if (document.visibilityState !== 'hidden') void load(currentCursor.current, 'reconnect'); };
+    const check = () => { if (!backgroundRetired.current && document.visibilityState !== 'hidden') void load(currentCursor.current); };
+    const reconnect = () => { if (!backgroundRetired.current && document.visibilityState !== 'hidden') void load(currentCursor.current, 'reconnect'); };
     const interval = setInterval(check, 10_000); window.addEventListener('focus', check); window.addEventListener('online', reconnect); document.addEventListener('visibilitychange', check);
     return () => {
       mounted.current = false; ++epoch.current; pending.current?.abort(); pending.current = undefined; intent.current = undefined;
@@ -90,12 +93,12 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
   }, [load]);
   const subject = profile?.id;
   const invalidate = useCallback(() => {
-    if (!mounted.current) return;
+    if (!mounted.current || backgroundRetired.current) return;
     if (pending.current) { invalidated.current = true; return; }
     void load(currentCursor.current);
   }, [load]);
   useEffect(() => {
-    if (!busy && invalidated.current && !pending.current) {
+    if (!busy && !backgroundRetired.current && invalidated.current && !pending.current) {
       invalidated.current = false;
       void load(currentCursor.current);
     }

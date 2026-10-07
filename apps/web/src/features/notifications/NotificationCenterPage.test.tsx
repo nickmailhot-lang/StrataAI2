@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { NotificationCenterPage } from './NotificationCenterPage';
 import { watchNotifications } from './notificationLive';
+import { watchIdentity } from '../auth/identityLive';
 import { configureActivityTelemetry, flushActivityTelemetry } from '../kanban/activityTelemetry';
 vi.mock('../auth/identityLive', () => ({ watchIdentity: vi.fn(() => vi.fn()) }));
 vi.mock('./notificationLive', () => ({ watchNotifications: vi.fn(() => vi.fn()) }));
@@ -18,6 +19,44 @@ function mount() { return render(<MemoryRouter initialEntries={[`/app/${org}/not
   <Route path="/app/:organizationId/notifications" element={<NotificationCenterPage />} />
 </Routes></MemoryRouter>); }
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.useRealTimers(); });
+
+it.each([401, 403, 404])('retires queued and periodic background admission after denial until an explicit check succeeds (%s)', async status => {
+  vi.useFakeTimers();
+  let reads = 0, release!: (value: Response) => void;
+  const fetch = vi.fn(async (path: string) => {
+    if (path === '/me') return response(profile);
+    if (++reads === 2) return new Promise<Response>(resolve => { release = resolve; });
+    return response(data());
+  });
+  vi.stubGlobal('fetch', fetch);
+  await act(async () => { mount(); await vi.advanceTimersByTimeAsync(0); });
+  const invalidate = vi.mocked(watchNotifications).mock.calls.at(-1)![0].invalidate;
+  const profileInvalidation = vi.mocked(watchIdentity).mock.calls.at(-1)![0].invalidate;
+  await act(async () => { invalidate(); await vi.advanceTimersByTimeAsync(0); });
+  act(() => { invalidate(); profileInvalidation(); });
+  await act(async () => { release(response({ detail: 'private denial diagnostic' }, status)); await vi.advanceTimersByTimeAsync(0); });
+  expect(screen.getByRole('button', { name: 'Check notifications again' })).toBeEnabled();
+  expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(screen.queryByText('private denial diagnostic')).not.toBeInTheDocument();
+  const retiredCalls = fetch.mock.calls.length;
+  await act(async () => {
+    invalidate(); profileInvalidation();
+    fireEvent(window, new Event('focus')); fireEvent(window, new Event('online'));
+    fireEvent(document, new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(30_000);
+  });
+  expect(fetch).toHaveBeenCalledTimes(retiredCalls);
+  expect(reads).toBe(2);
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Check notifications again' }));
+    await vi.advanceTimersByTimeAsync(0);
+  });
+  expect(screen.getByText('1 unread on this page.')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Mark selected read' })).toBeDisabled();
+  expect(reads).toBe(3);
+  await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+  expect(reads).toBe(4);
+});
 
 it('retains live invalidation received during a pending canonical inbox read', async () => {
   let reads = 0; let release: (value: Response) => void = () => {};

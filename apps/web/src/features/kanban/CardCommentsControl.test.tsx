@@ -160,9 +160,9 @@ it('PRD-02 AUTH-FR-010 uses admitted timezone for review and fresh preferences f
   expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
   expect(ack.comment.createdAt).toBe('2026-10-03T08:00:00.123456Z');
 });
-it('retains the original comment intent when admission becomes unavailable during retry preflight', async () => {
+it('retains the original comment intent when server recovery fails during a local admission gap', async () => {
   let attempts = 0;
-  mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
+  mock(() => { if (++attempts <= 2) throw new WorkRequestError(503, null); return ack; });
   const p = props(); const view = render(<CardCommentsControl {...p} />); await create();
   fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
   const retry = await screen.findByRole('button', { name: 'Retry original comment change' });
@@ -174,16 +174,39 @@ it('retains the original comment intent when admission becomes unavailable durin
   view.rerender(<CardCommentsControl {...p} unavailable />);
   await act(async () => resolve(profile));
   await waitFor(() => expect(p.onBusyChange).toHaveBeenLastCalledWith(false));
-  expect(writes()).toHaveLength(1);
+  expect(writes()).toHaveLength(2);
   expect(screen.getByText('The comment change is unconfirmed. Retry the original request to recover its acknowledgment.')).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Retry original comment change' })).toBeNull();
   expect(screen.queryByText('This comment change is unavailable. Load the latest Card before starting another change.')).toBeNull();
   view.rerender(<CardCommentsControl {...p} version={5} />);
   const recoveredRetry = await screen.findByRole('button', { name: 'Retry original comment change' });
   await waitFor(() => expect(recoveredRetry).toBeEnabled()); fireEvent.click(recoveredRetry);
-  await screen.findByText('Comment added.'); expect(writes()).toHaveLength(2);
+  await screen.findByText('Comment added.'); expect(writes()).toHaveLength(3);
   expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
   expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+  expect(writes()[2][1]!.body).toBe(writes()[0][1]!.body);
+  expect(writes()[2][1]!.headers).toEqual(writes()[0][1]!.headers);
+});
+it('recovers an already requested original receipt when a background Card read starts during account preflight', async () => {
+  let attempts = 0;
+  mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
+  const p = props(); const view = render(<CardCommentsControl {...p} />); await create();
+  fireEvent.click(screen.getByRole('button', { name: 'Save comment' }));
+  const retry = await screen.findByRole('button', { name: 'Retry original comment change' });
+  await waitFor(() => expect(retry).toBeEnabled());
+  let admit!: (value: unknown) => void;
+  vi.mocked(workRequest).mockImplementationOnce(() => new Promise(resolve => { admit = resolve; }));
+  fireEvent.click(retry); await waitFor(() => expect(admit).toBeTypeOf('function'));
+  view.rerender(<CardCommentsControl {...p} unavailable />);
+  await act(async () => admit(profile));
+  await screen.findByText('Comment added.');
+  expect(writes()).toHaveLength(2);
+  expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
+  expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+  expect(screen.queryByText(row.content)).not.toBeInTheDocument();
+  view.rerender(<CardCommentsControl {...p} version={5} />);
+  await screen.findByText(row.content);
+  expect(screen.queryByRole('button', { name: 'Retry original comment change' })).not.toBeInTheDocument();
 });
 it('requires explicit group confirmations and preserves both scopes on original lost-reply recovery', async () => {
   const reports = telemetry();

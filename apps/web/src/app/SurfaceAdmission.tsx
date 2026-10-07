@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { Alert, Button, CircularProgress, Stack } from '@mui/material';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Alert, Box, Button, CircularProgress, Stack } from '@mui/material';
+import { ThemeProvider, useTheme } from '@mui/material/styles';
 import { Link, useParams } from 'react-router-dom';
 import { workRequest, WorkRequestError } from '../api/workManagement';
 
-type Result = { scope: string; status: 'admitted' | 'denied' | 'error' };
+type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previouslyAdmitted?: boolean };
 
 // ARCH-02-AC-003: this is a current navigation admission check. Each child API
 // still independently authorizes its data and commands.
@@ -14,6 +15,20 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
   const scope = `${surface}:${organizationId ?? ''}`;
   const [result, setResult] = useState<Result>();
   const [retry, setRetry] = useState(0);
+  // Mount the boundary before its children so a Portal's first layout effect
+  // can resolve this container instead of falling back to document.body.
+  const [content, setContent] = useState<HTMLDivElement | null>(null);
+  const container = useCallback(() => content, [content]);
+  const admitted = result?.scope === scope && result.status === 'admitted';
+  const theme = useTheme();
+  const surfaceTheme = useMemo(() => ({ ...theme, components: {
+    ...theme.components,
+    MuiModal: { ...theme.components?.MuiModal, defaultProps: { ...theme.components?.MuiModal?.defaultProps, container,
+      disableAutoFocus: admitted ? theme.components?.MuiModal?.defaultProps?.disableAutoFocus : true,
+      disableEnforceFocus: admitted ? theme.components?.MuiModal?.defaultProps?.disableEnforceFocus : true } },
+    MuiPopover: { ...theme.components?.MuiPopover, defaultProps: { ...theme.components?.MuiPopover?.defaultProps, container } },
+    MuiPopper: { ...theme.components?.MuiPopper, defaultProps: { ...theme.components?.MuiPopper?.defaultProps, container } },
+  } }), [theme, admitted, container]);
   useEffect(() => {
     let retired = false;
     let pending: AbortController | undefined;
@@ -37,7 +52,11 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
           throw new Error('Invalid admission');
         if (!retired) setResult({ scope, status: 'admitted' });
       } catch (reason) {
-        if (!retired) setResult({ scope, status: reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status) ? 'denied' : 'error' });
+        if (!retired) {
+          const status = reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status) ? 'denied' : 'error';
+          setResult(previous => ({ scope, status, previouslyAdmitted: status === 'error' && previous?.scope === scope
+            && (previous.status === 'admitted' || previous.previouslyAdmitted === true) }));
+        }
       } finally {
         clearTimeout(deadline);
         if (abort) controller.signal.removeEventListener('abort', abort);
@@ -51,14 +70,25 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
     return () => { retired = true; clearInterval(interval); window.removeEventListener('focus', refresh); pending?.abort(); };
   }, [organizationId, surface, scope, retry]);
   if (!result || result.scope !== scope) return <CircularProgress aria-label="Checking Organization access" />;
-  if (result.status === 'admitted') return children;
   if (result.status === 'denied' && deniedContent) return deniedContent;
-  return <Stack spacing={2} sx={{ p: 3 }}>
+  // A failed transport check withdraws the surface without destroying the
+  // child's original retry intent and live cursor. Fresh denial still unmounts
+  // all protected content; another scope never inherits this recovery state.
+  return <>
+    {(admitted || result.status === 'error' && result.previouslyAdmitted) &&
+      <Box ref={setContent} hidden={!admitted} sx={{ display: admitted ? 'contents' : 'none' }}>
+        {content && <ThemeProvider theme={surfaceTheme}>{children}</ThemeProvider>}
+      </Box>}
+    {!admitted && <Stack spacing={2} sx={{ p: 3 }}>
     <Alert severity={result.status === 'denied' ? 'info' : 'error'}>
       {result.status === 'denied' ? 'Access to this Organization surface is unavailable.' : 'Access could not be checked. Try again.'}
     </Alert>
-    <Button onClick={() => { setResult(undefined); setRetry(value => value + 1); }}>Check access again</Button>
+    <Button onClick={() => {
+      setResult(previous => previous?.status === 'error' && previous.previouslyAdmitted ? previous : undefined);
+      setRetry(value => value + 1);
+    }}>Check access again</Button>
     <Button component={Link} to="/app">Open organizations</Button>
     <Button component={Link} to="/login">Sign in</Button>
-  </Stack>;
+    </Stack>}
+  </>;
 }

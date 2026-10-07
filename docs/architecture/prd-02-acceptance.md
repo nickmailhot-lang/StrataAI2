@@ -407,9 +407,34 @@ web typechecking/lint pass. See [executed local evidence](profile-management.md#
 for scope and timings. Current retained release images, full CI and remaining
 consumer acceptance are still required. Estimated PRD-02 work remaining: **20%**.
 
+### Executed local notification preference recovery
+
+The complete desktop/phone notification scenario passes local Production API,
+restricted schema-110 PostgreSQL and current Vite source with a disposable Worker
+scoped only to its new Organization. An independent recipient session changes
+locale/timezone to en-US/Asia/Tokyo and then UTC; both inboxes recover automatically
+without changing stored notification datetime/read history. Original live delivery,
+same-key/body uncertain read recovery, bulk read, offline retained-cursor replay,
+keyboard focus, access filtering and automated accessibility assertions pass.
+The initial reconnect failure exposed a transient shell remount that discarded
+the feature's cursor; the repair retains a hidden tree only through failed
+transport admission, with actual denial still unmounting protected content.
+Inbox denial also retires queued/background reads until explicit fresh admission.
+Both defects have regressions that fail before the fix. All 166 focused source
+cases, web/browser typechecking and lint pass. Installed MUI dialogs are included
+in the hidden surface boundary, explicit retry preserves their draft and hidden
+focus enforcement stops. Both complete comment native cases also pass after
+repairing the original-receipt preflight race without weakening server admission
+or the existing native assertions. See [notification evidence](notification-inbox.md#current-local-preference-and-reconnect-evidence)
+and [final scoped source/native evidence](profile-management.md#executed-local-notification-preference-recovery).
+
+This is scoped local runtime evidence, not current retained-image release
+acceptance. Full CI and remaining consumers remain outstanding. Estimated PRD-02
+work remaining is now **19%**.
+
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **20% work
+immutable images before closure. The current PRD estimate is **19% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.

@@ -19,6 +19,25 @@ change. This local proxy result does not certify all current release routing.
 
 ## Query and cache decision
 
+Surface admission retains an already admitted feature tree while a transient
+access read is unavailable, but hides its entire surface from display and the
+accessibility tree. Fresh successful admission reveals that same tree, preserving
+original uncertain-command state and validated live cursors. Current denial
+unmounts protected content; a different Organization/surface cannot inherit the
+retained state. Initial admission withholds content; explicit transport retry
+preserves the hidden recovery tree until successful fresh admission. MUI
+Modal/Popover/Popper portals use the mounted surface container, and hidden dialogs
+do not enforce focus, keeping access retry reachable. Children mount only after
+the container exists so their first portal effect cannot fall back to the body.
+Every feature API independently authorizes reads and commands. The regression
+proves transient recovery retains component state while denial destroys it; the
+complete local desktop/phone [notification scenario](notification-inbox.md#current-local-preference-and-reconnect-evidence)
+proves actual retained-cursor replay after offline recovery. An installed-Dialog
+regression verifies hidden content, reachable retry and unchanged unsent draft.
+Both complete desktop/phone comment scenarios also pass the final shell boundary.
+This repairs a native
+failure rather than substituting HTTP recovery for the required live replay.
+
 Current features use typed API services, the shared `apiFetch` transport and
 feature-owned React state. There is no global query-cache library. This records
 the implemented choice; it does not waive any architecture requirement.

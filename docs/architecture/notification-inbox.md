@@ -1,5 +1,47 @@
 # Authorized notification inbox (PRD-17)
 
+## Current local preference and reconnect evidence
+
+On 2026-10-07 the complete `notification-center.spec.ts` scenario passed against
+the local Production API, restricted schema-110 PostgreSQL and current Vite
+source. One scenario exercises both 1280px desktop and 390px phone views. A
+disposable Worker processes only its newly created fixture Organization, with
+global discovery disabled, and is removed after the invocation.
+
+An independent authenticated recipient session changes locale/timezone first to
+en-US/Asia/Tokyo and later to UTC. Both open inboxes automatically recover their
+captions without navigation or manual refresh. Their exact stored datetime
+attributes and complete canonical notification responses remain unchanged.
+The original scenario also passes genuine assignment/read WebSocket delivery,
+committed read acknowledgment loss, identical retry key/body, bulk read,
+offline assignment recovery with a retained decimal subscription cursor,
+keyboard focus, both accessibility scans, and Board membership removal filtering.
+The final run exits 0 with one scenario in 36.4 seconds; its runtime is not a
+performance benchmark. These local builds are not current retained release images.
+
+The first invocation failed retained-cursor recovery: a transient surface-access
+read unmounted the entire inbox. The shell now hides an already admitted surface
+during transport failure while retaining feature recovery state, and reveals it
+only after fresh admission. Actual access denial still unmounts protected content.
+Separately, inbox denial now retires queued identity/notification invalidations
+and periodic/focus/online/visibility reads. Only a successful explicit check
+resumes automatic reads. A queued event previously erased the denied state by
+immediately admitting another page. All three 401/403/404 regressions fail before
+the repair and pass afterward; the shell transient-state regression also fails
+before its fix while the denial-retirement case passes in both versions.
+
+MUI Modal/Popover/Popper portals share the mounted surface container; hidden
+dialogs stop enforcing focus, so access retry stays reachable. Explicit retry
+preserves the hidden original draft. The installed-Dialog regression fails before
+this repair and passes afterward. Both complete comment desktop/phone scenarios
+also pass with this final shell boundary (58.8 seconds), including a repaired
+original-retry preflight race described in [profile evidence](profile-management.md#executed-local-notification-preference-recovery).
+
+All 166 focused notification/identity/surface/comment cases, web and browser typechecking,
+and lint pass. Current immutable-image CI, broader watch/reminder/mention,
+performance and full PRD acceptance still require verification. PRD-17 remains
+open, with an estimated **24% work remaining**.
+
 Assignment and configured watch activity share this inbox. See
 [watch activity notifications](watch-activity-notifications.md) for the event-time
 producer, stored type values, dedupe and forward migration 035.
