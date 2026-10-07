@@ -169,8 +169,18 @@ The canonical work hierarchy is `Organization → Board → List → Card`. User
 
 ## Demo sign-in
 
-Run the API with `STRATAAI_RUNTIME_MODE=demo` and open the web application's
-`/login` page. Demo mode seeds a verified test account automatically:
+From the repository root, start the Demo stack:
+
+```sh
+docker compose -f compose.demo.yml up --build
+```
+
+Open [Demo sign-in](http://localhost:8088/login). The Compose file selects Demo
+mode automatically; no registration or email verification is needed.
+
+For a custom local setup, run the API with `STRATAAI_RUNTIME_MODE=demo` and open
+the web application's `/login` page. Demo mode seeds a verified test account
+automatically:
 
 | Email | Password |
 | --- | --- |
