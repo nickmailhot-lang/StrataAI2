@@ -1,5 +1,25 @@
 # Board member administration
 
+## Executed desktop and phone member recovery
+
+Both unchanged `board-members.spec.ts` cases pass locally against Production
+API, restricted schema-110 PostgreSQL, scoped separate Workers and the fresh
+production web bundle behind current Nginx/CSP. Normal registered participants
+join through an actual Organization invitation, then receive an explicit
+private Board grant. The cases verify keyboard person-bound consent and
+cancellation focus, a real competing promotion with reviewed-version conflict,
+read-only recovery after lost demotion/removal responses, disappearance of the
+removed profile, immediate recipient Board/edit denial and unchanged canonical
+Organization membership. Overflow checks pass at 1280px and 390px.
+
+Frozen read-only API/Worker assemblies in cached runtime images and the
+ordinary unverified-account browser policy do not prove retained-current-image
+release acceptance, full accessibility, concurrency/continuity matrices or
+capacity. Public administrative role-change event naming also needs correction;
+see the complete [PRD-05 acceptance audit](architecture/prd-05-acceptance.md).
+
+## Member administration contract
+
 The MUI screen at `/app/{organizationId}/boards/{boardId}/members` links from active
 Boards with administration capability. It checks exact Organization/Board binding
 and current Board administration before loading a bounded directory page. Every

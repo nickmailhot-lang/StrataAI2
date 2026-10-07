@@ -1,5 +1,32 @@
 # Board visibility administration
 
+## Executed desktop and phone visibility recovery
+
+Both `board-visibility.spec.ts` cases now pass locally against Production API,
+restricted schema-110 PostgreSQL, scoped separate Workers and the fresh
+production web bundle behind current Nginx/CSP. Keyboard selection, initial
+Cancel focus, cancellation return focus, stale-version conflict, explicit
+renewed consent and canonical read-only recovery after a lost Public response
+pass. A separate anonymous browser changes from private denial to public
+read-only admission with no edit/admin controls, and its visibility write is
+rejected. No horizontal overflow is observed at 1280px or 390px.
+
+The initial phone run reopened review after an HTTP refresh but before the
+competing original Worker event reached its live connection. That invalidation
+correctly retired consent. The fixture now matches the canonical visibility
+event ID/revision to the genuine upstream frame and waits for the subsequent
+successful Board read before opening fresh review. Publication readiness alone
+does not establish client consumption. Product consent rules, assertions,
+timeouts, zero retries and production limiters remain unchanged.
+
+This is scoped local Production evidence with frozen API/Worker assemblies in
+cached runtime images and the ordinary unverified-account browser policy.
+Retained-current-image acceptance, full accessibility, role/operation/parent
+matrices and capacity remain required. See the complete
+[PRD-05 acceptance audit](architecture/prd-05-acceptance.md).
+
+## Visibility contract
+
 `/app/{organizationId}/boards/{boardId}/visibility` is linked from active Boards
 for administrators. It requires an authorized current Board snapshot with exact
 Organization/Board binding, supported visibility and a positive safe version

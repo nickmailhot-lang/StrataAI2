@@ -22,8 +22,21 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await anonymous.request.get(`/boards/${board}`)).status()).toBe(404);
       restoreWorker = scopedBoardWorker(org);
       await waitForBoardDelivery(context.request, board);
-      await page.goto(`/app/${org}/boards/${board}`);
       const visibilityReads = trackBoardReads(page, board, `/app/${org}/boards/${board}/visibility`);
+      const delivered = new Map<string, number>();
+      page.on('websocket', connection => {
+        if (new URL(connection.url()).pathname !== '/boards/live') return;
+        connection.on('framereceived', frame => {
+          for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
+            const message = JSON.parse(raw); if (message.type !== 2) continue;
+            for (const event of message.item.events) {
+              expect(event.organizationId).toBe(org); expect(event.boardId).toBe(board);
+              if (!delivered.has(event.eventId)) delivered.set(event.eventId, visibilityReads() + 1);
+            }
+          }
+        });
+      });
+      await page.goto(`/app/${org}/boards/${board}`);
       await page.getByRole('link', { name: 'Board visibility', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Live visibility updates connected.')).toBeVisible();
       await expect.poll(visibilityReads).toBeGreaterThanOrEqual(2);
@@ -62,6 +75,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await page.getByRole('button', { name: 'Check current visibility' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('combobox', { name: 'Board visibility' })).toHaveText('Organization');
       await waitForBoardDelivery(context.request, board);
+      const canonicalReply = await context.request.get(`/boards/${board}/sync`);
+      expect(canonicalReply.status()).toBe(200);
+      const canonical = (await canonicalReply.json()).events.find((event: { eventType: string; version: number }) =>
+        event.eventType === 'BOARD_VISIBILITY_CHANGED' && event.version === nextVersion);
+      expect(canonical).toBeDefined();
+      // Durable publication does not mean the browser has consumed it. Wait
+      // for the original upstream event and its canonical read before opening
+      // a new review that the still-pending invalidation would correctly retire.
+      await expect.poll(() => delivered.has(canonical.eventId)).toBe(true);
+      await expect.poll(visibilityReads).toBeGreaterThanOrEqual(delivered.get(canonical.eventId)!);
       await expect(page.getByRole('progressbar', { name: 'Checking Board visibility' })).toHaveCount(0);
       await choosePublic();
       await page.getByRole('button', { name: 'Confirm visibility change' }).focus(); await page.keyboard.press('Enter');

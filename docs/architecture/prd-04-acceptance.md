@@ -50,6 +50,17 @@ and Vite source do not establish current retained-image or complete Board accept
 
 ## Functional traceability
 
+Both existing persisted-workflow cases in `tests/browser/board.spec.ts` now pass
+locally at desktop and phone widths in the six-case PRD-05 invocation. Normal UI
+creation persists the Organization, private Board, List and Card; lost successful
+Card creation recovers exactly once with the same key. Card conflicts preserve
+the draft until explicit discard, reload retains edits, wrong Organization scope
+withholds Board content, and a separate anonymous browser views the public Board/
+Card read-only. See the [sharing execution audit](prd-05-acceptance.md#current-local-execution).
+This is scoped local Production evidence with the same frozen-assembly and
+unverified-account policy limits; current-image, denied-creation and complete
+Board acceptance remain required. The estimate remains 16%.
+
 Four additional existing archived-Board account recovery native cases now pass
 locally at desktop and phone widths against Production API, restricted
 PostgreSQL and the production web bundle behind current Nginx/CSP. Restore and
