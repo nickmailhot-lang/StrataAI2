@@ -238,6 +238,20 @@ by `*invitation*` pass, including those two new regressions. The Release build
 and browser typecheck pass with no errors. Candidate pagination and final
 account/session reauthorization remain in place.
 
+`tests/browser/recipient-invitation-issuer-authority.spec.ts` also passes in
+local Demo at 1280px and 390px. An Owner establishes an administrator through
+actual Internal invitation acceptance; that administrator issues the Portal
+invitation. The Owner then removes the administrator through the actual member
+command. The nonmember recipient's old parent name and acceptance control clear
+before the held protected recovery read returns. Focus moves from the withdrawn
+acceptance control to Refresh. The authoritative recovery page is empty, and
+a stale direct acceptance returns `invalid_or_expired_invitation` without granting
+Internal or Portal access. Actual socket envelopes contain only empty authority
+resets, no invented invitation transitions, and no parent/issuer/invitation IDs,
+email or parent name. Both widths pass Axe WCAG 2.2 AA and require only the
+original document navigation. This uses ordinary HTTP and the real Demo socket;
+Production retained-image execution is still pending CI.
+
 ## Runtime work required next
 
 The implemented first producer attaches to future actual Organization metadata
