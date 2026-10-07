@@ -251,3 +251,71 @@ describe('Organization member administration and renewed removal consent', () =>
     expect(screen.queryByText(row.email)).not.toBeInTheDocument();
   });
 });
+
+describe('PRD-03 complete member-operation deadlines', () => {
+  it.each(['load', 'review'] as const)('bounds the complete %s and suppresses late private JSON', async operation => {
+    let timed = operation === 'load'; let delayed = false; let finishBody!: (value: unknown) => void; let signal!: AbortSignal;
+    const mock = vi.fn((path: string, options: RequestInit = {}) => {
+      if (path === '/me') {
+        if (timed && !delayed) { delayed = true; return new Promise<Response>(resolve => setTimeout(() => resolve(reply({ id: actor })), 8000)); }
+        return Promise.resolve(reply({ id: actor }));
+      }
+      if (timed) {
+        signal = options.signal!; const result = reply(operation === 'load' ? page : review);
+        result.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(result);
+      }
+      return Promise.resolve(reply(path.endsWith(target) ? review : page));
+    }); vi.stubGlobal('fetch', mock);
+    if (operation === 'review') { mount(); await screen.findByRole('button', { name: 'Review removal of Council member' }); timed = true; vi.useFakeTimers();
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Review removal of Council member' })));
+    } else { vi.useFakeTimers(); await act(async () => mount()); }
+    await act(async () => vi.advanceTimersByTimeAsync(8000)); expect(finishBody).toBeDefined();
+    await act(async () => vi.advanceTimersByTimeAsync(7001)); expect(signal.aborted).toBe(true);
+    expect(screen.getByText(operation === 'load' ? 'Unable to load current members. Please retry.'
+      : 'Unable to review this membership. No further removal will be sent until the current membership is reviewed.')).toBeInTheDocument();
+    expect(screen.queryByText(row.email)).not.toBeInTheDocument(); expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await act(async () => finishBody(operation === 'load' ? page : review));
+    expect(screen.queryByText(row.email)).not.toBeInTheDocument(); expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    timed = false; vi.useRealTimers();
+    fireEvent.click(screen.getByRole('button', { name: operation === 'load' ? 'Load current members' : 'Review current membership' }));
+    if (operation === 'load') await screen.findByRole('button', { name: 'Review removal of Council member' }); else await screen.findByRole('dialog');
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+  });
+  it('bounds removal through final account JSON and recovers its identical original command', async () => {
+    let timed = false; let checks = 0; let finishBody!: (value: unknown) => void; let signal!: AbortSignal;
+    const mock = vi.fn((path: string, options: RequestInit = {}) => {
+      if (path === '/me') {
+        if (timed && ++checks === 1) return new Promise<Response>(resolve => setTimeout(() => resolve(reply({ id: actor })), 8000));
+        if (timed && checks === 2) { signal = options.signal!; const final = reply({ id: actor });
+          final.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(final); }
+        return Promise.resolve(reply({ id: actor }));
+      }
+      return Promise.resolve(options.method === 'DELETE' ? reply(undefined, 204) : reply(path.endsWith(target) ? review : page));
+    }); vi.stubGlobal('fetch', mock); mount(); await open(); timed = true; vi.useFakeTimers();
+    await act(async () => fireEvent.click(confirm())); await act(async () => vi.advanceTimersByTimeAsync(8000)); expect(finishBody).toBeDefined();
+    await act(async () => vi.advanceTimersByTimeAsync(7001)); expect(signal.aborted).toBe(true);
+    await act(async () => vi.advanceTimersByTimeAsync(500)); // Finish the ordinary MUI dialog exit.
+    expect(screen.getByRole('button', { name: 'Retry original removal' })).toBeEnabled();
+    expect(screen.queryByText(row.email)).not.toBeInTheDocument(); expect(screen.queryByText('Member removed.')).not.toBeInTheDocument();
+    await act(async () => finishBody({ id: actor })); expect(screen.queryByText('Member removed.')).not.toBeInTheDocument();
+    timed = false; vi.useRealTimers(); fireEvent.click(screen.getByRole('button', { name: 'Retry original removal' }));
+    await screen.findByText('Original removal acknowledged. Review current membership to check later access.');
+    const writes = mock.mock.calls.filter(call => call[1]?.method === 'DELETE'); expect(writes).toHaveLength(2);
+    expect(writes[1][0]).toBe(writes[0][0]);
+    expect(new Headers(writes[1][1]?.headers).get('Idempotency-Key')).toBe(new Headers(writes[0][1]?.headers).get('Idempotency-Key'));
+  });
+  it('reserves an unsent removal through preflight timeout and sends it only on explicit recovery', async () => {
+    let timed = false; let finishBody!: (value: unknown) => void;
+    const mock = vi.fn((path: string, options: RequestInit = {}) => {
+      if (path === '/me') { const me = reply({ id: actor }); if (timed) me.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(me); }
+      return Promise.resolve(options.method === 'DELETE' ? reply(undefined, 204) : reply(path.endsWith(target) ? review : page));
+    }); vi.stubGlobal('fetch', mock); mount(); await open(); timed = true; vi.useFakeTimers();
+    await act(async () => fireEvent.click(confirm())); await act(async () => vi.advanceTimersByTimeAsync(15001));
+    await act(async () => vi.advanceTimersByTimeAsync(500)); // Finish the ordinary MUI dialog exit.
+    expect(screen.getByRole('button', { name: 'Retry original removal' })).toBeEnabled();
+    await act(async () => finishBody({ id: actor })); expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+    timed = false; vi.useRealTimers(); fireEvent.click(screen.getByRole('button', { name: 'Retry original removal' }));
+    await screen.findByText('Original removal acknowledged. Review current membership to check later access.');
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+  });
+});

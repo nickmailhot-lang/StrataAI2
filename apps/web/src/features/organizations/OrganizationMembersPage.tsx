@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { boundedWorkRead } from '../../api/workManagement';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
 
 type Member = { membershipId: string; userId: string; displayName: string; email: string; role: number;
@@ -21,19 +22,12 @@ function member(value: unknown): value is Member {
     && typeof row.updatedAt === 'string' && Number.isFinite(Date.parse(row.updatedAt))
     && Number.isSafeInteger(row.version) && row.version > 0;
 }
-async function request(path: string, options: RequestInit, controller: AbortController) {
-  let timeout: ReturnType<typeof setTimeout> | undefined; let abort: (() => void) | undefined;
-  try {
-    return await Promise.race([
-      apiFetch(path, { ...options, signal: controller.signal }).then(async response => ({ status: response.status,
-        body: [204, 401].includes(response.status) ? undefined : await response.json().catch(() => undefined) as unknown })),
-      new Promise<never>((_, reject) => {
-        abort = () => reject(new Error('Member request interrupted'));
-        controller.signal.addEventListener('abort', abort, { once: true });
-        timeout = setTimeout(() => controller.abort(), 15_000);
-      }),
-    ]);
-  } finally { clearTimeout(timeout); if (abort) controller.signal.removeEventListener('abort', abort); }
+async function request(path: string, options: RequestInit, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const response = await apiFetch(path, { ...options, signal });
+  const body = [204, 401].includes(response.status) ? undefined : await response.json().catch(() => undefined) as unknown;
+  signal.throwIfAborted();
+  return { status: response.status, body };
 }
 export function OrganizationMembersPage() {
   const { organizationId } = useParams();
@@ -96,8 +90,8 @@ function Members({ organizationId }: { organizationId: string }) {
   function finish(controller: AbortController) {
     if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); }
   }
-  async function account(controller: AbortController, expected = actor.current) {
-    const me = await request('/me', {}, controller); if (!allowed(controller)) return;
+  async function account(controller: AbortController, signal: AbortSignal, expected = actor.current) {
+    const me = await request('/me', {}, signal); if (!allowed(controller)) return;
     if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
     const id = (me.body as { id?: unknown } | undefined)?.id;
     if (me.status !== 200 || !uuid(id)) throw new Error('Invalid account');
@@ -111,25 +105,27 @@ function Members({ organizationId }: { organizationId: string }) {
     setPage(undefined); setSelected(undefined);
     if (!live) { setNotice(undefined); setRecovered(false); }
     try {
-      const before = await account(controller); if (!before) return;
-      const result = await request(`${root}${after ? `?after=${encodeURIComponent(after)}` : ''}`, {}, controller);
-      if (!allowed(controller)) return;
-      if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-      const data = result.body as Page | undefined;
-      if (result.status !== 200 || !data || data.organizationId !== organizationId || ![0, 1].includes(data.actorRole)
-        || !Array.isArray(data.items) || data.items.length > 50 || !data.items.every(member)
-        || new Set(data.items.map(row => row.userId)).size !== data.items.length
-        || data.items.some((row, index) => (index > 0 && row.userId.toLowerCase() <= data.items[index - 1].userId.toLowerCase())
-          || after !== null && row.userId.toLowerCase() <= after.toLowerCase())
-        || !(data.nextCursor === null || data.items.length === 50 && uuid(data.nextCursor) && data.nextCursor === data.items[49].userId))
-        throw new Error('Invalid member page');
-      const afterActor = await account(controller, before); if (!afterActor || started !== epoch.current) return;
-      actor.current = afterActor; setActorId(afterActor);
-      if (live && currentIntent.current) {
-        setLiveNotice('Current access checked. Retry the original removal before reviewing later membership.'); return;
-      }
-      setPage(data); setCursor(after); setHistory(previous); setReviewId(undefined); setDenied(false);
-      if (live) setLiveNotice('Current members checked. Review a membership again before confirming removal.');
+      await boundedWorkRead(async signal => {
+        const before = await account(controller, signal); if (!before) return;
+        const result = await request(`${root}${after ? `?after=${encodeURIComponent(after)}` : ''}`, {}, signal);
+        if (!allowed(controller)) return;
+        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+        const data = result.body as Page | undefined;
+        if (result.status !== 200 || !data || data.organizationId !== organizationId || ![0, 1].includes(data.actorRole)
+          || !Array.isArray(data.items) || data.items.length > 50 || !data.items.every(member)
+          || new Set(data.items.map(row => row.userId)).size !== data.items.length
+          || data.items.some((row, index) => (index > 0 && row.userId.toLowerCase() <= data.items[index - 1].userId.toLowerCase())
+            || after !== null && row.userId.toLowerCase() <= after.toLowerCase())
+          || !(data.nextCursor === null || data.items.length === 50 && uuid(data.nextCursor) && data.nextCursor === data.items[49].userId))
+          throw new Error('Invalid member page');
+        const afterActor = await account(controller, signal, before); if (!afterActor || started !== epoch.current) return;
+        actor.current = afterActor; setActorId(afterActor);
+        if (live && currentIntent.current) {
+          setLiveNotice('Current access checked. Retry the original removal before reviewing later membership.'); return;
+        }
+        setPage(data); setCursor(after); setHistory(previous); setReviewId(undefined); setDenied(false);
+        if (live) setLiveNotice('Current members checked. Review a membership again before confirming removal.');
+      }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) setError('Unable to load current members. Please retry.'); }
     finally { finish(controller); }
   }
@@ -140,20 +136,22 @@ function Members({ organizationId }: { organizationId: string }) {
     const started = epoch.current;
     setSelected(undefined); setReviewId(userId); setNotice(undefined); setPage(undefined);
     try {
-      const before = await account(controller); if (!before) return;
-      const result = await request(`${root}/${encodeURIComponent(userId)}`, {}, controller); if (!allowed(controller)) return;
-      if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-      const data = result.body as Review | undefined;
-      if (result.status !== 200 || !data || data.organizationId !== organizationId || ![0, 1].includes(data.actorRole)
-        || !(data.member === null || member(data.member) && data.member.userId === userId)) throw new Error('Invalid member review');
-      if (!await account(controller, before) || started !== epoch.current) return;
-      if (!data.member) {
-        setReviewId(undefined); setNotice(uncertain
-          ? 'This person is currently no longer an internal member. The earlier removal acknowledgment was unavailable.'
-          : 'This person is currently no longer an internal member.');
-      } else if (data.actorRole === 1 && data.member.role === 0) {
-        setReviewId(undefined); setError('Only an Owner can remove an Owner. Load current members to continue.');
-      } else { setSelected(data.member); if (uncertain) setError('Review this current membership and confirm again before making another removal request.'); }
+      await boundedWorkRead(async signal => {
+        const before = await account(controller, signal); if (!before) return;
+        const result = await request(`${root}/${encodeURIComponent(userId)}`, {}, signal); if (!allowed(controller)) return;
+        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+        const data = result.body as Review | undefined;
+        if (result.status !== 200 || !data || data.organizationId !== organizationId || ![0, 1].includes(data.actorRole)
+          || !(data.member === null || member(data.member) && data.member.userId === userId)) throw new Error('Invalid member review');
+        if (!await account(controller, signal, before) || started !== epoch.current) return;
+        if (!data.member) {
+          setReviewId(undefined); setNotice(uncertain
+            ? 'This person is currently no longer an internal member. The earlier removal acknowledgment was unavailable.'
+            : 'This person is currently no longer an internal member.');
+        } else if (data.actorRole === 1 && data.member.role === 0) {
+          setReviewId(undefined); setError('Only an Owner can remove an Owner. Load current members to continue.');
+        } else { setSelected(data.member); if (uncertain) setError('Review this current membership and confirm again before making another removal request.'); }
+      }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) setError('Unable to review this membership. No further removal will be sent until the current membership is reviewed.'); }
     finally { finish(controller); }
   }
@@ -163,29 +161,31 @@ function Members({ organizationId }: { organizationId: string }) {
     const controller = begin(); if (!controller) return;
     setNotice(undefined);
     try {
-      if (!await account(controller, intent.actor)) return;
-      const path = `${root}/${encodeURIComponent(intent.target)}?expectedVersion=${intent.version}&expectedActorId=${encodeURIComponent(intent.actor)}`;
-      const result = await request(path, { method: 'DELETE', headers: { 'Idempotency-Key': intent.key } }, controller);
-      if (!allowed(controller)) return;
-      const code = (result.body as { code?: unknown } | undefined)?.code;
-      if ([401, 403].includes(result.status) || result.status === 404 && code !== 'member_not_found') { deny(result.status); return; }
-      if (!await account(controller, intent.actor)) return;
-      setSelected(undefined); setPage(undefined);
-      if (result.status === 204) {
-        setRetryIntent(undefined); setRecovered(recover); setReviewId(recover ? intent.target : undefined);
-        setNotice(recover ? 'Original removal acknowledged. Review current membership to check later access.' : 'Member removed.');
-        if (!recover && intent.target === intent.actor) navigate('/app', { replace: true });
-        return;
-      }
-      setReviewId(intent.target);
-      const definitive = [400, 404, 409, 429].includes(result.status);
-      setRetryIntent(definitive ? undefined : intent);
-      setError(result.status === 409 && code === 'sole_owner'
-        ? 'The Organization needs another usable Owner before this person can be removed.'
-        : result.status === 409 && code === 'member_version_conflict'
-          ? 'The membership changed elsewhere. Review it before confirming removal again.'
-          : definitive ? 'The removal was refused. Review current membership before considering another removal.'
-            : 'The removal could not be confirmed. Retry the original removal to recover its acknowledgment.');
+      await boundedWorkRead(async signal => {
+        if (!await account(controller, signal, intent.actor)) return;
+        const path = `${root}/${encodeURIComponent(intent.target)}?expectedVersion=${intent.version}&expectedActorId=${encodeURIComponent(intent.actor)}`;
+        const result = await request(path, { method: 'DELETE', headers: { 'Idempotency-Key': intent.key } }, signal);
+        if (!allowed(controller)) return;
+        const code = (result.body as { code?: unknown } | undefined)?.code;
+        if ([401, 403].includes(result.status) || result.status === 404 && code !== 'member_not_found') { deny(result.status); return; }
+        if (!await account(controller, signal, intent.actor)) return;
+        setSelected(undefined); setPage(undefined);
+        if (result.status === 204) {
+          setRetryIntent(undefined); setRecovered(recover); setReviewId(recover ? intent.target : undefined);
+          setNotice(recover ? 'Original removal acknowledged. Review current membership to check later access.' : 'Member removed.');
+          if (!recover && intent.target === intent.actor) navigate('/app', { replace: true });
+          return;
+        }
+        setReviewId(intent.target);
+        const definitive = [400, 404, 409, 429].includes(result.status);
+        setRetryIntent(definitive ? undefined : intent);
+        setError(result.status === 409 && code === 'sole_owner'
+          ? 'The Organization needs another usable Owner before this person can be removed.'
+          : result.status === 409 && code === 'member_version_conflict'
+            ? 'The membership changed elsewhere. Review it before confirming removal again.'
+            : definitive ? 'The removal was refused. Review current membership before considering another removal.'
+              : 'The removal could not be confirmed. Retry the original removal to recover its acknowledgment.');
+      }, controller.signal);
     } catch {
       if (mounted.current && pending.current === controller) {
         setSelected(undefined); setPage(undefined); setReviewId(intent.target); setRetryIntent(intent);

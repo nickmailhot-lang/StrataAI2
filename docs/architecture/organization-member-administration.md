@@ -24,7 +24,13 @@ acknowledgment unless the user chose another focus target. Current state is read
 separately after the original receipt is acknowledged. Route changes retire local
 pending recovery; no automatic DELETE or background retry is sent.
 
-Each request is bounded to 15 seconds even when the transport ignores abort. Pending requests reject duplicate activation; keyed routes and unmount fences reject late results. Closed-dialog recovery returns keyboard focus to review/reload. Member cards wrap long text on narrow screens.
+Each complete directory load, exact-member review and removal/original recovery
+has one 15-second deadline across initial account verification, its member
+request and final account verification, including JSON decoding. Child-signal
+checks before transport and after decoding fence abort-ignoring late results.
+Pending requests reject duplicate activation; keyed routes and unmount fences
+reject late results. Closed-dialog recovery returns keyboard focus to
+review/reload. Member cards wrap long text on narrow screens.
 
 Local validation: web typecheck and zero-warning lint, the full component suite, warnings-as-errors solution build, and desktop/mobile keyboard browser scenarios. Browser scenarios use actual accepted invitations, cancel safely, commit removal while dropping its acknowledgment, verify no second write, and confirm revoked access/current exact absence. Required exact-image CI extends one-connection PostgreSQL coverage to exact lookup, Portal/tenant denial, stale removal consent, and post-wait role/session revocation. These database/release execution results are pending until their CI logs pass.
 
@@ -72,3 +78,30 @@ membership restoration. They also check attribution, accessibility and narrow
 viewport layout. Their runtime execution remains pending CI. Member removal,
 departure and invitation source integration and Demo event parity remain
 unfinished; this consumer does not complete PRD-03.
+
+## Complete-operation deadline evidence
+
+Aggregate deadline cases cover initial account verification consuming eight
+seconds before a stalled directory or review body, and a real removal
+acknowledgment followed by stalled final account JSON. At the complete deadline,
+private rows and consent remain withdrawn and explicit recovery becomes usable.
+Late bodies cannot restore private data, consent or an acknowledgment. Original
+removal recovery preserves account, target, reviewed version and key. A stalled
+preflight makes no DELETE, including after its late body arrives; only explicit
+original recovery sends that reserved command.
+
+Desktop/phone native cases hold the real preflight response for eight
+browser-clock seconds, commit the actual DELETE and hold its 204 through the
+remaining complete deadline. They require private-data withdrawal, no late
+acknowledgment, identical original path/key/body recovery, actual member absence
+and lost access, keyboard acknowledgment focus, no document reload and WCAG
+2.2 AA. Browser-clock advancement is client deadline evidence, not server
+latency or session-expiry evidence. Current-image native execution remains
+pending and broader PRD-03 acceptance remains incomplete.
+
+Local validation passed all 30 member-screen component cases, web/browser
+TypeScript, zero-warning lint and both native scenario collection checks. The
+initial two new removal tests queried accessibility during MUI's ordinary
+closing transition; the corrected cases advance that transition separately
+after asserting deadline abortion. No production deadline or assertion scope
+was relaxed. Native execution against current release images remains pending.
