@@ -68,6 +68,8 @@ if (runtime.Mode == RuntimeMode.Production)
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationLifecycleDeliveryHandler>();
     builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationMetadataDeliveryStore, StrataAI.Infrastructure.Organizations.PostgresOrganizationMetadataDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationMetadataDeliveryHandler>();
+    builder.Services.AddSingleton<IInvitationRecipientAuthorityDeliveryStore, PostgresInvitationRecipientAuthorityDeliveryStore>();
+    builder.Services.AddSingleton<IBackgroundJobHandler, InvitationRecipientAuthorityDeliveryHandler>();
     builder.Services.AddSingleton<IIdentityRetryCleanupStore, PostgresIdentityRetryCleanupStore>();
     builder.Services.AddHostedService<IdentityRetryCleanupWorker>();
     builder.Services.AddSingleton<StrataAI.Application.WorkManagement.IWorkEventDeliveryStore, StrataAI.Infrastructure.WorkManagement.PostgresWorkEventDeliveryStore>();

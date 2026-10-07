@@ -225,6 +225,9 @@ jobs:
       - name: Verify private invitation recipient source, atomic rollback and restricted capabilities
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-events.sql
 
+      - name: Verify bounded recipient authority source, lease and rollback capabilities
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-authority.sql
+
       - name: Verify concurrent Board journal commit order with restricted runtime role
         run: bash scripts/ci/test-organization-board-journal-order.sh
 
