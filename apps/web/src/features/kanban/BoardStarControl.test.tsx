@@ -38,7 +38,10 @@ it('ends private event delivery when the current account changes during refresh'
   await waitFor(() => expect(watchBoardStars).toHaveBeenCalledTimes(1));
   changed = true; act(() => vi.mocked(watchBoardStars).mock.calls[0][0].invalidate());
   await screen.findByText('Your account changed. Close and reopen Board starring.');
-  expect(stop).toHaveBeenCalledTimes(1);
+  // Rendering the notice does not itself flush the subscription effect cleanup.
+  await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
+  expect(watchBoardStars).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText('You have not starred this Board.')).not.toBeInTheDocument();
 });
 it('reads current personal state after acknowledgment rather than assuming an old replay is current', async () => {
   const fetch = vi.fn(async (path: string, options?: RequestInit) => path === '/me' ? response(profile)
