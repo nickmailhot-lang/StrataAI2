@@ -76,6 +76,12 @@ if (args.Contains("--invitation-organization-lifecycle-only", StringComparer.Ord
     await InvitationOrganizationLifecycleAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+if (args.Contains("--identity-revocation-expiry-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await IdentityRevocationExpiryContract.RunAsync(admin,apiConnection,ct);
+    return;
+}
 if (args.Contains("--identity-profile-expiry-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
@@ -154,6 +160,7 @@ try
     await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
     await IdentityRegistrationConcurrencyContract.RunAsync(admin,apiConnection,ct);
     await IdentityProfileExpiryContract.RunAsync(admin,apiConnection,ct);
+    await IdentityRevocationExpiryContract.RunAsync(admin,apiConnection,ct);
     await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataReplayContract.RunAsync(admin,apiConnection,workerConnection,ct);

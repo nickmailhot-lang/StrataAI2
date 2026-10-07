@@ -222,9 +222,40 @@ unchanged state. The final isolated Release build passes with zero warnings/erro
 both strengthened real-PostgreSQL cases exit successfully. This adds elapsed
 storage proof for AUTH-FR-006/007, not full HTTP/provider or release acceptance.
 
+### Elapsed logout and deactivation session expiry in restricted PostgreSQL
+
+`IdentityRevocationExpiryContract` runs in the mandatory persistence executable;
+`--identity-revocation-expiry-only` selects its two bounded diagnostic cases.
+Both local Production cases pass under the restricted API login with SystemClock,
+the normal CommandActorAuthorization and transactional identity service. Accounts,
+Organization/Board membership and a Card assignment are seeded fixtures; the
+context models an admitted request rather than proving HTTP authentication.
+
+An actor-scoped temporary AFTER INSERT receipt trigger first requires the actual
+account status/version, revoked session, canonical identity source and expected
+Card assignment state inside the transaction. It then sleeps twelve seconds
+while the original session's eight-second lifetime elapses. A bounded admin probe
+requires the restricted connection to reach that publication SQL in PgSleep.
+The fixture verifier uses SECURITY DEFINER with a fixed search path and retires
+in finally; runtime privileges are unchanged.
+
+Final admission refuses with session_unavailable and no success value. Complete
+snapshots of accounts, sessions, receipts, audit/source streams, issuer-authority
+proofs/routing/effects, Organization/Board membership, Card assignments and tenant
+jobs match the pre-command state. Restoring only the disposable session lifetime
+allows the original intent to recover: logout revokes its single session and
+preserves the assignment; deactivation revokes both sessions, removes the
+assignment with a Card version/event and publishes one issuer-authority source
+and routing job. Each produces one attributed identity source and receipt.
+Same-key replay changes no state, an opposite revocation kind returns
+idempotency_key_reused, and a fresh key cannot reuse withdrawn session authority.
+The isolated Release build passes with zero warnings/errors and both cases exit
+successfully. This strengthens AUTH-FR-003/006/008 storage acceptance; current
+exact-image, HTTP, two-client and full release acceptance remain required.
+
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source
 compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
-immutable images before closure. The current PRD estimate is **24% work
+immutable images before closure. The current PRD estimate is **23% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.
