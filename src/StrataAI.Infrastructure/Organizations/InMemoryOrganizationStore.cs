@@ -128,6 +128,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
                     new OrganizationSummary(
                         _organizations[member.OrganizationId],
                         member.Role))
+                .Where(summary => summary.Organization.Status is not (OrganizationStatus.Deleting or OrganizationStatus.Deleted))
                 .OrderBy(summary => summary.Organization.Name)
                 .ToArray();
 

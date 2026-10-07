@@ -352,3 +352,42 @@ focused lifecycle checks passing is not reported as full web acceptance.
 Estimated PRD-03 work remaining is **10%**, a planning estimate. Current complete
 release acceptance, remaining lifecycle/performance coverage and applicable
 retention treatment keep this ticket open.
+
+The exact `6bee3ce5` Linux CI source gate has since passed: all **739 domain**,
+**600 API-host** and **1,897 web** cases, plus restricted PostgreSQL integration.
+The separate native Windows web invocation finished with 1,894 passes and three
+activity/comment failures; the two unchanged affected files then passed all 46
+cases in a scoped repeat. This is not a clean full Windows invocation or a
+claimed root-cause repair. Retained-image container acceptance for that revision
+failed at the Demo authentication smoke step with exit 22; security and image
+build passed, required-ci failed and the release bundle was skipped. This is a
+failed release gate despite the complete source pass.
+
+## Demo legacy discovery withdrawal and isolated workflows
+
+The Demo smoke failure also reproduces locally with the API's network disabled:
+after successful collaboration and password reset, Owner-continuity setup tries
+to invite into a deleted Organization still returned by legacy discovery. The
+invitation endpoint correctly refuses it with 404. Demo's `GET /organizations`
+now excludes DELETING and DELETED parents just as PostgreSQL already does.
+Historical membership, audit data and protected independent completion recovery
+remain intact. A real API-host regression first fails on pending-parent exposure,
+then verifies both pending/completed Owner and member discovery withdrawal,
+unchanged active-Organization access and completed private recovery.
+
+The fresh full solution build has zero warnings/errors. All **55 selected
+PRD-03 API-host cases** pass. The unchanged complete Demo authentication/workflow
+smoke suite now passes against the fixed compiled API with Docker **network=none**,
+no published port, no PostgreSQL and no production provider credentials. The
+namespace-local client verifies actual seeded login, CSRF, profile concurrency,
+Organization lifecycle, Internal/Portal separation, Board/List/Card operations,
+password reset/session revocation and Owner-continuity-safe deactivation.
+This local runtime uses a readonly compiled output mounted in a cached API
+runtime image; it is not retained-current-image acceptance.
+
+CI now runs those same smoke assertions in the exact retained API's isolated
+network namespace and includes four passing prerequisite/refusal/cleanup source
+fixtures. The [runtime guide](runtime-modes.md#demo-isolation-verification) explains
+the Linux test-client requirements and verification limits. Current new-image
+results remain required. Estimated PRD-03 work remaining stays **10%**; the ticket
+remains open.

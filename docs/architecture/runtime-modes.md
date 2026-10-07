@@ -86,6 +86,54 @@ startup with binary attachment storage disabled. All three focused API-host
 checks passed again on 2026-10-07. The seeded account has no implicit Organization
 access; these checks do not establish complete authentication PRD acceptance.
 
+### Demo isolation verification
+
+[ARCH-05](https://github.com/nickmailhot-lang/StrataAI2/issues/86) requires the
+documented workflows to operate without an external network. Merely omitting a
+PostgreSQL connection string does not establish that boundary. The retained-image
+CI check now starts the exact API image with Docker `--network none`, no published
+port, no PostgreSQL and no production provider credentials. A namespace-local
+client reaches only the API's loopback interface. Readiness must identify Demo
+before sample-state/reset and the existing authentication/workflow checks run.
+
+The [isolation runner](../../scripts/ci/test-demo-network-isolation.sh) reuses
+[the complete Demo smoke suite](../../scripts/ci/test-demo-auth.sh): documented
+seeded login, wrong-password refusal, sample-reset session preservation, CSRF,
+profile concurrency/recovery, Organization lifecycle, Internal/Portal invitation
+separation, Board/List/Card workflows, password-reset session revocation and
+account-deactivation Owner continuity. It adds no package to the application
+image and does not rebuild it. All existing smoke assertions are retained.
+
+The runner uses the Linux CI host's `sudo nsenter` with a Docker daemon on that
+same host; it enters only the target API network namespace. This is test-client
+tooling, not a runtime requirement. Docker Desktop users can run a client inside
+the API namespace instead. Ordinary Demo startup still requires neither nsenter
+nor production providers. The runner stops its unique disposable API on success
+or failure. Four [refusal fixtures](../../scripts/ci/test-demo-network-isolation-fixture.sh)
+pass for success, an external-network namespace, an invalid process reference and
+non-Demo readiness; unconfirmed prerequisites never reach the smoke suite.
+
+This check complements the separate ten desktop/phone metadata and terminal
+lifecycle scenarios on retained Demo API/web images. It does not certify all
+provider integrations, physical object erasure or complete release acceptance.
+
+The isolation check exposed a Demo discovery mismatch: the legacy
+`GET /organizations` included DELETING/DELETED parents whose historical membership
+was still active. Production already excludes both states. Demo now applies the
+same filter without removing memberships, audit history or independently
+protected completion recovery. A real API-host regression first failed on the
+pending parent, then checks both pending and completed withdrawal for Owner and
+member while a separate active Organization remains available.
+
+All 55 selected PRD-03 API-host cases pass after the filter repair, with a fresh
+zero-warning full solution build. The unchanged complete Demo smoke suite also
+passes locally against the readonly fixed compiled API in `network=none`, using
+namespace-local curl with no published port or PostgreSQL/provider credentials.
+That local mounted runtime does not establish retained-current-image identity.
+The previous `6bee3ce5` CI source gate passed 739 domain, 600 API-host and 1,897 web
+cases plus PostgreSQL integration, but its Demo smoke gate failed on this discovery
+mismatch. Current retained-image confirmation remains required.
+
 ## Production
 
 `production` fails startup unless `ConnectionStrings__Postgres` is configured.

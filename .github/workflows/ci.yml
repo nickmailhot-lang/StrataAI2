@@ -104,6 +104,9 @@ jobs:
       - name: Verify attachment refusal fixtures replace environment defaults
         run: bash scripts/ci/test-attachment-runtime-fixture-arguments.sh
 
+      - name: Verify Demo network isolation refuses unconfirmed prerequisites
+        run: bash scripts/ci/test-demo-network-isolation-fixture.sh
+
       - name: Verify declared attachment scanner protocol fixture
         run: python3 tests/attachment-scanner-fixture.py
 
@@ -455,23 +458,11 @@ jobs:
           status="$(curl --silent --output /dev/null --write-out '%{http_code}'             -H 'X-StrataAI-Request: 1' -X POST http://127.0.0.1:8080/api/demo/reset)"
           test "$status" = "404"
 
-      - name: Demo API runs without PostgreSQL
+      - name: Demo documented workflows without PostgreSQL or external network
         shell: bash
         run: |
           set -euo pipefail
-          docker run -d --rm             --name strataai-demo-api             -e STRATAAI_RUNTIME_MODE=demo             -p 18080:8080             "strataai-api:${GITHUB_SHA}"
-
-          for i in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:18080/readyz >/dev/null 2>&1; then
-              break
-            fi
-            sleep 1
-          done
-
-          curl --fail --silent http://127.0.0.1:18080/api/demo/state >/dev/null
-          curl --fail --silent -H 'X-StrataAI-Request: 1' -X POST http://127.0.0.1:18080/api/demo/reset >/dev/null
-          scripts/ci/test-demo-auth.sh http://127.0.0.1:18080
-          docker stop strataai-demo-api
+          bash scripts/ci/test-demo-network-isolation.sh "strataai-api:${GITHUB_SHA}"
 
       - name: Production fails closed without database configuration
         shell: bash

@@ -13,6 +13,34 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Fact]
+    public async Task PRD_03_Demo_terminal_discovery_withdraws_pending_and_deleted_graphs_but_preserves_private_recovery()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); using var peer = app.CreateClient();
+        var f = await NotificationFixture(app, owner, peer, ct);
+        using var controlResponse = await Mutate(owner, HttpMethod.Post, "/organizations", new { name = "Still active control" });
+        Assert.Equal(HttpStatusCode.Created, controlResponse.StatusCode);
+        var control = (await controlResponse.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("organization").GetProperty("id").GetGuid();
+        async Task<Guid[]> Directory(HttpClient client) => (await client.GetFromJsonAsync<JsonElement>("/organizations", ct))
+            .EnumerateArray().Select(row => row.GetProperty("organization").GetProperty("id").GetGuid()).ToArray();
+        Assert.Contains(f.Organization, await Directory(owner)); Assert.Contains(f.Organization, await Directory(peer));
+        var request = Guid.NewGuid();
+        using var accepted = await Mutate(owner, HttpMethod.Delete, $"/organizations/{f.Organization}?version=1", new { }, request.ToString());
+        Assert.Equal(HttpStatusCode.Accepted, accepted.StatusCode);
+        Assert.Equal(new[] { control }, await Directory(owner)); Assert.Empty(await Directory(peer));
+        Assert.True(await app.Services.GetRequiredService<IDemoOrganizationDeletionSimulation>().AdvanceAsync(ct));
+        Assert.Equal(new[] { control }, await Directory(owner)); Assert.Empty(await Directory(peer));
+        var organizations = app.Services.GetRequiredService<IOrganizationStore>();
+        Assert.True((await organizations.FindMembershipAsync(f.Organization, f.Recipient, ct))!.Active);
+        Assert.Equal(OrganizationStatus.Deleted, (await organizations.FindOrganizationAsync(f.Organization, ct))!.Status);
+        using var active = await owner.GetAsync($"/organizations/{control}", ct); Assert.Equal(HttpStatusCode.OK, active.StatusCode);
+        using var observation = await owner.GetAsync($"/organizations/{f.Organization}/deletion-requests/{request}", ct);
+        Assert.Equal("COMPLETED", (await observation.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("state").GetString());
+        using var lifecycle = await peer.GetAsync($"/organizations/{f.Organization}/lifecycle-events", ct);
+        Assert.Equal("COMPLETED", (await lifecycle.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("state").GetString());
+    }
+
+    [Fact]
     public async Task PRD_03_Demo_terminal_completes_actual_archived_graph_and_recovers_one_original_source_and_receipt()
     {
         var ct = TestContext.Current.CancellationToken;
