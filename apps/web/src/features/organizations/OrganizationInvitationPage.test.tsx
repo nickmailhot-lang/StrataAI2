@@ -42,6 +42,56 @@ async function submit() { fireEvent.change(await screen.findByLabelText(/^Invita
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); sessionStorage.clear(); });
 beforeEach(() => { live.watch.mockClear(); boardLive.watch.mockClear(); });
 describe('Administrator invitation intent and creation acknowledgment', () => {
+  it.each([false, true])('bounds complete permission admission and rejects late private scope JSON (Board=%s)', async boardSurface => {
+    let profiles = 0; let signal!: AbortSignal; let finishBody!: (value: unknown) => void;
+    vi.stubGlobal('fetch', vi.fn((path: string, options: RequestInit = {}) => {
+      if (path === '/me') {
+        profiles++; return profiles === 1 ? new Promise<Response>(resolve => setTimeout(() => resolve(reply(profile)), 8_000)) : Promise.resolve(reply(profile));
+      }
+      signal = options.signal!; const response = reply(boardSurface ? boardAdmission : admission);
+      response.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(response);
+    }));
+    vi.useFakeTimers(); if (boardSurface) boardMount(); else mount();
+    await act(async () => vi.advanceTimersByTimeAsync(8_000)); expect(finishBody).toBeDefined();
+    await act(async () => vi.advanceTimersByTimeAsync(7_001)); expect(signal.aborted).toBe(true);
+    expect(screen.getByRole('button', { name: 'Retry permission check' })).toBeEnabled();
+    await act(async () => finishBody(boardSurface ? boardAdmission : admission));
+    expect(screen.queryByLabelText(/^Invitation email/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Private maintenance')).not.toBeInTheDocument();
+  });
+  it.each([false, true])('bounds creation including both account checks and retains the exact submitted intent after late JSON (Board=%s)', async boardSurface => {
+    let profiles = 0; let signal!: AbortSignal; let finishBody!: (value: unknown) => void;
+    const posts: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn((path: string, options: RequestInit = {}) => {
+      if (path === '/me') {
+        profiles++;
+        if (profiles === 3) return new Promise<Response>(resolve => setTimeout(() => resolve(reply(profile)), 8_000));
+        if (profiles === 4) {
+          signal = options.signal!; const response = reply(profile);
+          response.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(response);
+        }
+        return Promise.resolve(reply(profile));
+      }
+      if (options.method === 'POST') { posts.push(options); return Promise.resolve(reply(boardSurface ? boardAck : ack, 201)); }
+      return Promise.resolve(reply(boardSurface ? boardAdmission : admission));
+    }));
+    if (boardSurface) boardMount(); else mount(); const emailField = await screen.findByLabelText(/^Invitation email/);
+    vi.useFakeTimers(); await act(async () => {
+      fireEvent.change(emailField, { target: { value: input.email } });
+      fireEvent.click(screen.getByRole('button', { name: 'Create invitation' }));
+    });
+    await act(async () => vi.advanceTimersByTimeAsync(8_000)); expect(posts).toHaveLength(1); expect(finishBody).toBeDefined();
+    const scope = storedKey + (boardSurface ? `:board:${board}` : ''); const saved = sessionStorage.getItem(scope); expect(saved).not.toBeNull();
+    await act(async () => vi.advanceTimersByTimeAsync(7_001)); expect(signal.aborted).toBe(true);
+    expect(screen.getByRole('button', { name: 'Retry permission check' })).toBeEnabled();
+    await act(async () => finishBody(profile)); expect(screen.queryByText('Invitation creation acknowledged.')).not.toBeInTheDocument();
+    vi.useRealTimers(); fireEvent.click(screen.getByRole('button', { name: 'Retry permission check' }));
+    await screen.findByText(/prior invitation request is awaiting acknowledgment/);
+    expect(sessionStorage.getItem(scope)).toBe(saved);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry same invitation' })); await screen.findByText('Invitation creation acknowledged.');
+    expect(posts).toHaveLength(2); expect(posts[1].body).toBe(posts[0].body);
+    expect(new Headers(posts[1].headers).get('Idempotency-Key')).toBe(new Headers(posts[0].headers).get('Idempotency-Key'));
+  });
   it('withdraws Board invitation drafting when a live heartbeat finds lost administration', async () => {
     let withdrawn = false;
     vi.stubGlobal('fetch', vi.fn(async (path: string) => reply(path === '/me' ? profile

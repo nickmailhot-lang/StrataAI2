@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Container, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { boundedWorkRead } from '../../api/workManagement';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { invitationIntentKey, invitationRoles, readInvitationIntent, saveInvitationIntent, validInvitationKey } from './invitationIntent';
 import type { InvitationInput, InvitationIntent } from './invitationIntent';
@@ -11,18 +12,12 @@ import { watchBoard } from '../../api/boardLive';
 type Ack = { id: string; organizationId: string; email: string; surface: string; targetRole: string; expiresAt: string; invitationToken: null; boardTarget?: { boardId: string; role: string } | null };
 const empty: InvitationInput = { email: '', surface: 'INTERNAL', targetRole: 'MEMBER' };
 const roleLabel = (role: string) => ({ MEMBER: 'Member', ADMIN: 'Admin', OWNER: 'Owner', CO_OWNER: 'Co-owner', TENANT: 'Tenant', OCCUPANT: 'Occupant', AUTHORIZED_REPRESENTATIVE: 'Authorized representative', OTHER: 'Other' }[role] ?? role);
-async function request(path: string, options: RequestInit, controller: AbortController) {
-  let timeout: ReturnType<typeof setTimeout> | undefined; let abort: (() => void) | undefined;
-  try {
-    return await Promise.race([
-      apiFetch(path, { ...options, signal: controller.signal }).then(async response => ({ status: response.status,
-        body: response.status === 401 ? undefined : await response.json().catch(() => undefined) as unknown })),
-      new Promise<never>((_, reject) => {
-        abort = () => reject(new Error('Invitation request interrupted')); controller.signal.addEventListener('abort', abort, { once: true });
-        timeout = setTimeout(() => controller.abort(), 15_000);
-      }),
-    ]);
-  } finally { clearTimeout(timeout); if (abort) controller.signal.removeEventListener('abort', abort); }
+async function request(path: string, options: RequestInit, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const response = await apiFetch(path, { ...options, signal });
+  const body = response.status === 401 ? undefined : await response.json().catch(() => undefined) as unknown;
+  signal.throwIfAborted();
+  return { status: response.status, body };
 }
 export function OrganizationInvitationPage() {
   const { organizationId } = useParams(); return <Invitation key={organizationId} organizationId={organizationId ?? ''} />;
@@ -86,9 +81,9 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
   }
   function begin() { if (pending.current) return; const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); return controller; }
   function finish(controller: AbortController) { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
-  async function verifyAccount(controller: AbortController, expected: string) {
+  async function verifyAccount(controller: AbortController, expected: string, signal: AbortSignal) {
     try {
-      const me = await request('/me', {}, controller); if (!valid(controller)) return false;
+      const me = await request('/me', {}, signal); if (!valid(controller)) return false;
       if ([401, 403, 404].includes(me.status)) { deny(me.status); return false; }
       const id = (me.body as { id?: unknown } | undefined)?.id;
       if (me.status !== 200 || !validInvitationKey(id)) throw new Error('Invalid actor');
@@ -109,62 +104,64 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       setBoardName(undefined); setActorRole(undefined); setAck(undefined); setInput(empty); setIntent(undefined); currentIntent.current = undefined;
     }
     try {
-      const me = await request('/me', {}, controller); if (!valid(controller)) return;
-      if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
-      const actor = (me.body as { id?: unknown } | undefined)?.id;
-      const profile = me.body as { locale?: unknown; timezone?: unknown } | undefined;
-      if (me.status !== 200 || !validInvitationKey(actor) || typeof profile?.locale !== 'string' || typeof profile.timezone !== 'string') throw new Error('Invalid actor');
-      if (liveActor && actor !== liveActor) { deny(401); return; }
-      const display = { locale: profile.locale, timezone: profile.timezone };
-      if (!formatUserDateTime('2026-01-01T00:00:00Z', display)) throw new Error('Invalid preferences');
-      let admittedRole: number; let admittedBoardName: string | undefined;
-      if (boardId !== undefined) {
-        if (!validInvitationKey(boardId)) throw new Error('Invalid Board route');
-        const result = await request(`/boards/${encodeURIComponent(boardId)}`, {}, controller); if (!valid(controller)) return;
-        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-        const data = result.body as { board?: { id: string; organizationId: string; name: string; lifecycleState: string }; access?: { canAdminister: boolean } } | undefined;
-        if (result.status !== 200 || data?.board?.id !== boardId || data.board.organizationId !== organizationId
-          || data.board.lifecycleState !== 'active' || typeof data.board.name !== 'string' || !data.board.name.trim()
-          || data.access?.canAdminister !== true) { deny(404); return; }
-        admittedBoardName = data.board.name; admittedRole = 1;
-      } else {
-        const result = await request(`/organizations/${encodeURIComponent(organizationId)}/members/${actor}`, {}, controller); if (!valid(controller)) return;
-        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-        const data = result.body as { organizationId: string; actorRole: number; member: { userId: string; role: number } } | undefined;
-        if (result.status !== 200 || !data || data.organizationId !== organizationId || ![0, 1].includes(data.actorRole)
-          || !data.member || data.member.userId !== actor || data.member.role !== data.actorRole) throw new Error('Invalid actor admission');
-        admittedRole = data.actorRole;
-      }
-      if (!await verifyAccount(controller, actor)) return;
-      if (started !== epoch.current) return;
-      const key = invitationIntentKey(actor, organizationId) + (boardId !== undefined ? `:board:${boardId}` : '');
-      reviewedActor.current = actor;
-      setLiveActor(actor); setLiveNotice(value => value ? 'Current invitation permissions checked. Review the request before submitting.' : undefined);
-      setBoardName(admittedBoardName);
-      setStorageKey(key); setActorRole(admittedRole); setDenied(false); setBlocked(false);
-      setPreferences(display);
-      try {
-        const saved = readInvitationIntent(key);
-        if (saved && boardId !== undefined && (saved.input.surface !== 'INTERNAL' || !['ADMIN', 'MEMBER'].includes(saved.input.targetRole))) throw new Error('Invalid Board intent');
-        if (saved) {
-          setIntent(saved); currentIntent.current = saved; setInput(saved.input);
-          const known = confirmed.current;
-          if (known?.actor === actor && known.command.key === saved.key
-            && known.command.input.email === saved.input.email && known.command.input.surface === saved.input.surface
-            && known.command.input.targetRole === saved.input.targetRole) {
-            setAck(known.acknowledgment); setError(undefined);
-          } else {
-            confirmed.current = undefined;
-            setAck(undefined);
-            setError('A prior invitation request is awaiting acknowledgment. Retry that same request before starting another.');
-          }
+      await boundedWorkRead(async signal => {
+        const me = await request('/me', {}, signal); if (!valid(controller)) return;
+        if ([401, 403, 404].includes(me.status)) { deny(me.status); return; }
+        const actor = (me.body as { id?: unknown } | undefined)?.id;
+        const profile = me.body as { locale?: unknown; timezone?: unknown } | undefined;
+        if (me.status !== 200 || !validInvitationKey(actor) || typeof profile?.locale !== 'string' || typeof profile.timezone !== 'string') throw new Error('Invalid actor');
+        if (liveActor && actor !== liveActor) { deny(401); return; }
+        const display = { locale: profile.locale, timezone: profile.timezone };
+        if (!formatUserDateTime('2026-01-01T00:00:00Z', display)) throw new Error('Invalid preferences');
+        let admittedRole: number; let admittedBoardName: string | undefined;
+        if (boardId !== undefined) {
+          if (!validInvitationKey(boardId)) throw new Error('Invalid Board route');
+          const result = await request(`/boards/${encodeURIComponent(boardId)}`, {}, signal); if (!valid(controller)) return;
+          if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+          const data = result.body as { board?: { id: string; organizationId: string; name: string; lifecycleState: string }; access?: { canAdminister: boolean } } | undefined;
+          if (result.status !== 200 || data?.board?.id !== boardId || data.board.organizationId !== organizationId
+            || data.board.lifecycleState !== 'active' || typeof data.board.name !== 'string' || !data.board.name.trim()
+            || data.access?.canAdminister !== true) { deny(404); return; }
+          admittedBoardName = data.board.name; admittedRole = 1;
         } else {
-          confirmed.current = undefined; setAck(undefined); setIntent(undefined); currentIntent.current = undefined;
-          if (hadIntent) setInput(empty);
+          const result = await request(`/organizations/${encodeURIComponent(organizationId)}/members/${actor}`, {}, signal); if (!valid(controller)) return;
+          if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+          const data = result.body as { organizationId: string; actorRole: number; member: { userId: string; role: number } } | undefined;
+          if (result.status !== 200 || !data || data.organizationId !== organizationId || ![0, 1].includes(data.actorRole)
+            || !data.member || data.member.userId !== actor || data.member.role !== data.actorRole) throw new Error('Invalid actor admission');
+          admittedRole = data.actorRole;
         }
-      } catch { setBlocked(true); setError('The saved invitation request cannot be read. Review existing invitations before creating another request.'); }
+        if (!await verifyAccount(controller, actor, signal)) return;
+        if (started !== epoch.current) return;
+        const key = invitationIntentKey(actor, organizationId) + (boardId !== undefined ? `:board:${boardId}` : '');
+        reviewedActor.current = actor;
+        setLiveActor(actor); setLiveNotice(value => value ? 'Current invitation permissions checked. Review the request before submitting.' : undefined);
+        setBoardName(admittedBoardName);
+        setStorageKey(key); setActorRole(admittedRole); setDenied(false); setBlocked(false);
+        setPreferences(display);
+        try {
+          const saved = readInvitationIntent(key);
+          if (saved && boardId !== undefined && (saved.input.surface !== 'INTERNAL' || !['ADMIN', 'MEMBER'].includes(saved.input.targetRole))) throw new Error('Invalid Board intent');
+          if (saved) {
+            setIntent(saved); currentIntent.current = saved; setInput(saved.input);
+            const known = confirmed.current;
+            if (known?.actor === actor && known.command.key === saved.key
+              && known.command.input.email === saved.input.email && known.command.input.surface === saved.input.surface
+              && known.command.input.targetRole === saved.input.targetRole) {
+              setAck(known.acknowledgment); setError(undefined);
+            } else {
+              confirmed.current = undefined;
+              setAck(undefined);
+              setError('A prior invitation request is awaiting acknowledgment. Retry that same request before starting another.');
+            }
+          } else {
+            confirmed.current = undefined; setAck(undefined); setIntent(undefined); currentIntent.current = undefined;
+            if (hadIntent) setInput(empty);
+          }
+        } catch { setBlocked(true); setError('The saved invitation request cannot be read. Review existing invitations before creating another request.'); }
+      }, controller.signal);
     } catch { if (mounted.current && pending.current === controller && started === epoch.current) {
-      if (preserveDisplay) { withdrawAccount(); setLiveActor(undefined); }
+      withdrawAccount(); setLiveActor(undefined);
       setError('Unable to verify current invitation permissions. Please retry.');
     } }
     finally { finish(controller); }
@@ -179,43 +176,51 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       catch { setError('This browser could not retain the invitation request. Allow temporary site data before trying again.'); return; }
       currentIntent.current = command; setIntent(command); setInput(command.input);
     }
+    const original = command;
+    const expected = reviewedActor.current;
     const controller = begin(); if (!controller) return;
     const started = epoch.current;
+    let operationSignal: AbortSignal | undefined;
     try {
-      const expected = reviewedActor.current;
-      if (!await verifyAccount(controller, expected)) return;
-      if (started !== epoch.current) return;
-      const root = boardId !== undefined ? `/boards/${encodeURIComponent(boardId)}/invitations` : `/organizations/${encodeURIComponent(organizationId)}/invitations`;
-      const result = await request(`${root}?expectedActorId=${encodeURIComponent(expected)}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(boardId !== undefined ? { email: command.input.email, role: command.input.targetRole } : command.input),
-      }, controller); if (!valid(controller)) return;
-      if (started !== epoch.current) return;
-      if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-      if (!await verifyAccount(controller, expected)) return;
-      if (started !== epoch.current) return;
-      const data = result.body as Ack | undefined;
-      if (result.status === 201 && data && validInvitationKey(data.id) && data.organizationId === organizationId
-        && typeof data.email === 'string' && data.email.trim().toUpperCase() === command.input.email.toUpperCase()
-        && data.surface === command.input.surface && data.invitationToken === null
-        && (boardId !== undefined ? data.targetRole === 'MEMBER' && data.boardTarget?.boardId === boardId && data.boardTarget.role === command.input.targetRole
-          : data.targetRole === command.input.targetRole && data.boardTarget == null)
-        && typeof data.expiresAt === 'string' && preferences && !!formatUserDateTime(data.expiresAt, preferences)) {
-        setAck(data); setError(undefined);
-        confirmed.current = { actor: expected, command, acknowledgment: data };
-        // Keep the confirmed intent reserved until the person explicitly starts
-        // another invitation. Reload can safely recover this acknowledgment.
-        return;
-      }
-      const code = (result.body as { code?: unknown } | undefined)?.code;
-      if (result.status === 400 && ['invalid_email', 'invalid_invitation_role', 'invalid_invitation_surface'].includes(code as string)) {
-        try { sessionStorage.removeItem(storageKey); } catch { setBlocked(true); setError('Unable to clear the rejected request. Please retry with the same details.'); return; }
-        currentIntent.current = undefined; setIntent(undefined); setError('Check the invitation email and access role, then try again.'); return;
-      }
-      if (result.status === 409 && ['idempotency_key_reused', 'idempotency_key_expired'].includes(code as string)) {
-        setBlocked(true); setError('This request cannot be retried. Review existing invitations before creating another.'); return;
-      }
-      setError(result.status === 429 ? 'Too many requests. Please wait before retrying this same invitation.' : 'The invitation could not be confirmed. Retry the same request to recover its acknowledgment.');
-    } catch { if (mounted.current && pending.current === controller && started === epoch.current) setError('The invitation could not be confirmed. Retry the same request to recover its acknowledgment.'); }
+      await boundedWorkRead(async signal => {
+        operationSignal = signal;
+        if (!await verifyAccount(controller, expected, signal)) return;
+        if (started !== epoch.current) return;
+        const root = boardId !== undefined ? `/boards/${encodeURIComponent(boardId)}/invitations` : `/organizations/${encodeURIComponent(organizationId)}/invitations`;
+        const result = await request(`${root}?expectedActorId=${encodeURIComponent(expected)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': original.key }, body: JSON.stringify(boardId !== undefined ? { email: original.input.email, role: original.input.targetRole } : original.input),
+        }, signal); if (!valid(controller)) return;
+        if (started !== epoch.current) return;
+        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+        if (!await verifyAccount(controller, expected, signal)) return;
+        if (started !== epoch.current) return;
+        const data = result.body as Ack | undefined;
+        if (result.status === 201 && data && validInvitationKey(data.id) && data.organizationId === organizationId
+          && typeof data.email === 'string' && data.email.trim().toUpperCase() === original.input.email.toUpperCase()
+          && data.surface === original.input.surface && data.invitationToken === null
+          && (boardId !== undefined ? data.targetRole === 'MEMBER' && data.boardTarget?.boardId === boardId && data.boardTarget.role === original.input.targetRole
+            : data.targetRole === original.input.targetRole && data.boardTarget == null)
+          && typeof data.expiresAt === 'string' && preferences && !!formatUserDateTime(data.expiresAt, preferences)) {
+          setAck(data); setError(undefined);
+          confirmed.current = { actor: expected, command: original, acknowledgment: data };
+          // Keep the confirmed intent reserved until the person explicitly starts
+          // another invitation. Reload can safely recover this acknowledgment.
+          return;
+        }
+        const code = (result.body as { code?: unknown } | undefined)?.code;
+        if (result.status === 400 && ['invalid_email', 'invalid_invitation_role', 'invalid_invitation_surface'].includes(code as string)) {
+          try { sessionStorage.removeItem(storageKey); } catch { setBlocked(true); setError('Unable to clear the rejected request. Please retry with the same details.'); return; }
+          currentIntent.current = undefined; setIntent(undefined); setError('Check the invitation email and access role, then try again.'); return;
+        }
+        if (result.status === 409 && ['idempotency_key_reused', 'idempotency_key_expired'].includes(code as string)) {
+          setBlocked(true); setError('This request cannot be retried. Review existing invitations before creating another.'); return;
+        }
+        setError(result.status === 429 ? 'Too many requests. Please wait before retrying this same invitation.' : 'The invitation could not be confirmed. Retry the same request to recover its acknowledgment.');
+      }, controller.signal);
+    } catch { if (mounted.current && pending.current === controller && started === epoch.current) {
+      if (operationSignal?.aborted) { withdrawAccount(); setLiveActor(undefined); }
+      setError('The invitation could not be confirmed. Retry the same request to recover its acknowledgment.');
+    } }
     finally { finish(controller); }
   }
   function next() {
