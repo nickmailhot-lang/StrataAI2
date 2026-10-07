@@ -36,7 +36,8 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
       const actor = (await (await issuer.request.get('/me')).json()).id as string;
       expect((await context.request.post('/auth/register', { headers, data: recipient })).status()).toBe(201);
       expect((await context.request.post('/auth/login', { headers, data: recipient })).status()).toBe(200);
-      expect((await (await context.request.get('/api/runtime')).json()).mode).toBe(process.env.STRATAAI_E2E_RUNTIME_MODE ?? 'production');
+      const mode = (await (await context.request.get('/api/runtime')).json()).mode as string;
+      expect(mode).toBe(process.env.STRATAAI_E2E_RUNTIME_MODE ?? 'production');
       const created = await issuer.request.post('/organizations', { headers, data: { name: 'Invitation lifecycle parent' } });
       expect(created.status()).toBe(201);
       const org = (await created.json()).organization.id as string;
@@ -77,6 +78,24 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
       expect(denied.status()).toBe(400); expect((await denied.json()).code).toBe('invalid_or_expired_invitation');
       expect((await context.request.get(`/organizations/${org}`)).status()).toBe(404);
       expect((await context.request.get('/me')).status()).toBe(200);
+      const observationPath = `/organizations/${org}/deletion-requests/${key}`;
+      if (mode === 'production') {
+        await expect.poll(async () => {
+          const observed = await issuer.request.get(observationPath);
+          expect(observed.status()).toBe(200);
+          return (await observed.json()).state;
+        }, { timeout: 45_000 }).toBe('COMPLETED');
+        const completed = await issuer.request.get(observationPath);
+        expect(await completed.json()).toEqual({ requestId: key, state: 'COMPLETED', version: 3,
+          eventId: expect.stringMatching(/^[0-9a-f-]{36}$/), completedAt: expect.any(String) });
+        expect((await issuer.request.delete(path, { headers: requestHeaders, data: {} })).status()).toBe(202);
+      } else {
+        // Demo request acceptance does not claim background terminal processing.
+        const pending = await issuer.request.get(observationPath);
+        expect(pending.status()).toBe(200); expect((await pending.json()).state).toBe('PENDING');
+      }
+      expect((await context.request.get(observationPath)).status()).toBe(404);
+      await expect(accept).toHaveCount(0);
       expect(documents).toBe(1); expect(envelopes.flatMap(e => e.events)).toEqual([]);
       for (const envelope of envelopes)
         expect(Object.keys(envelope).sort()).toEqual(['cursor', 'events', 'hasMore', 'resetRequired']);

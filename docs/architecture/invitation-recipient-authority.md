@@ -494,3 +494,40 @@ three recipient revisions, original attribution and ready terminal completion.
 A second restart must preserve these results. Shell syntax and browser fixture
 typechecks pass; this new complete exact-image gate remains unexecuted until CI
 reaches container integration. Existing architecture and release gates remain.
+
+## Separate local Production completion evidence
+
+The strengthened lifecycle browser fixture passes all four Production and four
+Demo scenarios. Production additionally waits for the original Owner's protected
+request observation to become COMPLETED at version 3 with the canonical event ID
+and timestamp, then recovers the same DELETE receipt again. The nonmember
+recipient is denied that observation; acceptance remains withdrawn. Demo
+explicitly verifies PENDING and does not claim terminal processing.
+
+Local Production uses a fresh schema-108 database, documented restricted API and
+Worker roles, a separate ASP.NET API and separate actual Workers. A real HTTP
+Owner request and duplicate retry start a 205-invitation/one-Board fixture.
+Authority-only automatic delivery drains 100/100/5 request candidates, increments
+two recipients once and leaves all three unrelated jobs pending at attempt zero:
+Organization creation metadata, Board creation Work event and deletion root.
+The initial local assertion mistakenly expected two unrelated jobs; catalog
+inspection identified the legitimate Organization creation metadata job, and
+the corrected assertion requires all three exact job types rather than ignoring
+it. No publication or Worker behavior was changed for that assertion.
+
+Automatic deletion discovery without configured Organization IDs then completes
+the real graph. The exact terminal SQL extracted from the release gate passes:
+request/Board/terminal canonical sources, nine first-attempt authority pages,
+100/100/5 for each source, six source/email effects, two recipients at revision 3,
+original actor/correlation and ready canonical completion. Restarting both actual
+Workers preserves every assertion. All eight Production browser Organizations
+from the initial and strengthened runs reach DELETED with ready terminal events.
+
+These are compiled-source framework containers and Vite browser evidence,
+not retained release images. In particular, the copied local API build identity
+predates the schema-108 source changes, so its metadata cannot certify an exact
+main revision. Retained-image CI remains authoritative for release identity.
+CI 37586724672 for dda2057a now passes web, full PostgreSQL (including schema 108,
+lifecycle and scale contracts), .NET/API and the source gate; image builds are
+confirmed live. Exact-image security/container/browser/release gates remain
+unverified until those jobs complete. No full PRD or architecture ticket is closed.
