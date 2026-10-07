@@ -27,6 +27,11 @@ export default defineConfig(({ mode }) => {
         changeOrigin: true,
         ws: true,
       },
+      '/invitations/live': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        ws: true,
+      },
       '/me/live': {
         target: 'http://localhost:8080',
         changeOrigin: true,

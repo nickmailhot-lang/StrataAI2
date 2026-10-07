@@ -32,7 +32,7 @@ function fetcher(...responses: (Response | Error)[]) {
 async function review() { fireEvent.click(await screen.findByRole('button', { name: `Revoke invitation for ${row.email}` })); await screen.findByRole('dialog'); }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 beforeEach(() => { currentProfile = profile; live.watch.mockReset(); live.watch.mockReturnValue(() => {});
-  boardLive.watch.mockReset(); boardLive.watch.mockReturnValue(() => {}); });
+  boardLive.watch.mockReset(); boardLive.watch.mockImplementation(options => { options.status('live'); return () => {}; }); });
 async function invalidate() { await act(async () => { live.watch.mock.calls.at(-1)![0].invalidate(); }); }
 
 it('retires reviewed revocation consent and reloads newly issued invitations after a live source', async () => {
@@ -195,6 +195,49 @@ it('withdraws Board invitation history and revocation consent when heartbeat adm
   expect(screen.queryByText(row.email)).not.toBeInTheDocument();
   expect(screen.queryByText('Private maintenance')).not.toBeInTheDocument();
   expect(live.watch).not.toHaveBeenCalled();
+});
+
+it('withholds Board history until its first head and reads administration after bootstrap', async () => {
+  boardLive.watch.mockImplementation(() => () => {});
+  const mock = vi.fn(async (path: string) => reply(path === '/me' ? profile : path === `/boards/${board}`
+    ? boardScope : { items: [boardRow], nextCursor: null }));
+  vi.stubGlobal('fetch', mock); boardMount();
+  await waitFor(() => expect(boardLive.watch).toHaveBeenCalledTimes(1));
+  expect(mock.mock.calls.map(call => call[0])).toEqual(['/me']);
+  expect(screen.queryByRole('button', { name: `Revoke invitation for ${row.email}` })).not.toBeInTheDocument();
+  await act(async () => boardLive.watch.mock.calls[0][0].status('recovering'));
+  expect(mock.mock.calls.map(call => call[0])).toEqual(['/me']);
+  await act(async () => boardLive.watch.mock.calls[0][0].status('live'));
+  await review();
+  expect(mock.mock.calls.map(call => call[0])).toEqual(['/me', `/boards/${board}`, `/boards/${board}/invitations`, '/me']);
+});
+
+it('preserves keyboard review during a quiet heartbeat and fences its late response after explicit revocation', async () => {
+  let hold = false, revoked = false, finishQuiet!: (response: Response) => void; let quietSignal!: AbortSignal;
+  const mock = vi.fn(async (path: string, options: RequestInit = {}) => {
+    if (path === '/me') return reply(profile);
+    if (options.method === 'DELETE') { revoked = true; return reply(null, 204); }
+    if (path === `/boards/${board}`) {
+      if (hold) {
+        hold = false; quietSignal = options.signal!;
+        return new Promise<Response>(resolve => { finishQuiet = resolve; });
+      }
+      return reply(boardScope);
+    }
+    return reply({ items: [{ ...boardRow, revokedAt: revoked ? '2034-01-02T00:00:00Z' : null }], nextCursor: null });
+  });
+  vi.stubGlobal('fetch', mock); boardMount(); await review();
+  hold = true; await act(async () => boardLive.watch.mock.calls[0][0].status('live'));
+  await waitFor(() => expect(finishQuiet).toBeDefined());
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Confirm revocation' })).toBeEnabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+  await screen.findByText('Invitation revocation confirmed.');
+  expect(quietSignal.aborted).toBe(true);
+  await act(async () => finishQuiet(reply({ ...boardScope, access: { canAdminister: false } })));
+  expect(screen.queryByText('Board invitation administration is unavailable.')).not.toBeInTheDocument();
+  expect(screen.getByText('Revoked')).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
 });
 it.each(['Organization', 'Board'])('withdraws %s history after temporary account failure without inventing a submitted revocation', async surface => {
   let unavailable = false;

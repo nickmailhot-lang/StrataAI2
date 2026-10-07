@@ -234,7 +234,7 @@ export function InvitationsPage() {
     }
   }
   const available = page?.items.filter(invitation => invitation.id !== uncertain?.id && Date.parse(invitation.expiresAt) > Date.now());
-  return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
+  return <Container component="main" maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to="/app">Organizations</Button>
     <Typography variant="h4" component="h1">Your invitations</Typography>
     <Typography>Invitations matching your verified email appear here.</Typography>

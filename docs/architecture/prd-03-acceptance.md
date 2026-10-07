@@ -146,5 +146,9 @@ PostgreSQL job at `4f427d0` in
 source, 739,039 ms elapsed and 113 ms maximum leased mutation page. This proves
 the restricted persistence workload; HTTP p95, deployed Worker/browser behavior
 and provider/backup purge have separate acceptance requirements. Full exact-image
-CI remains in progress. Estimated remaining work stays **16%** pending the
+CI finished with a failed browser gate: 184 passed and 43 failed scenarios.
+Source/persistence success does not establish a tested release. Subsequent
+repairs address fresh terminal recovery, navigation landmarks, invitation expiry
+scan deadlocks and Board history bootstrap; current exact-image verification
+remains pending. Estimated remaining work stays **16%** pending the
 remaining functional and full release/native acceptance evidence.

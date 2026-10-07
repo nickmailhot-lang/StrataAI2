@@ -135,3 +135,20 @@ then check keyboard same-ID recovery, unchanged issuer history, separate Portal
 admission and accessibility. They are collected/typechecked; their exact-image
 runtime results remain pending. See also the separate
 [recipient journal and protected transport](invitation-recipient-events.md).
+
+The standalone `/app/invitations` route owns a semantic main landmark. It can
+serve recipients without Internal Organization membership and therefore owns
+its content structure outside the protected Internal application shell. Native
+expiry checks keep all consent, original-ID recovery and mutation assertions
+before resuming the browser clock for the full Axe accessibility scan.
+
+All six recipient expiry/recovery scenarios pass against the real local
+Development Demo API and Vite app across Internal, Portal and Board surfaces at
+desktop/phone widths. Each verifies unchanged history before withdrawal, one
+actual committed acceptance with a lost response, exactly one explicit recovery
+using the same ID, unchanged history afterward, no document reload and the full
+Axe scan. The fixture observes the actual committed acceptance on the protected
+recipient stream and drains its browser invalidation before reviewing recovery;
+otherwise that source can legitimately cancel a retry in flight. No server clock,
+membership, audit, source or lease is modified to force the result. This local
+Demo evidence does not replace exact-image release verification.

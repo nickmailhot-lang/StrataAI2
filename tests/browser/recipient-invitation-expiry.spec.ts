@@ -31,7 +31,18 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
       // Only the browser clock advances. The real API owns grant/expiry checks;
       // no SQL changes timestamps, membership, audits or event readiness.
       await page.clock.install({ time: new Date(expires - 2000) }); await page.clock.pauseAt(new Date(expires - 1000));
-      let reads = 0, documents = 0; const writes: string[] = []; let acknowledgment: unknown;
+      let reads = 0, documents = 0, acceptedSource = false; const writes: string[] = []; let acknowledgment: unknown;
+      page.on('websocket', socket => {
+        if (!new URL(socket.url()).pathname.startsWith('/invitations/live')) return;
+        socket.on('framereceived', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const part of frame.payload.split('\u001e').filter(Boolean)) {
+            const message = JSON.parse(part);
+            if (message.type === 2 && message.item?.events?.some((event: { eventType: string }) => event.eventType === 'INVITATION_ACCEPTED'))
+              acceptedSource = true;
+          }
+        });
+      });
       page.on('request', request => {
         if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++;
         if (request.method() === 'GET' && new URL(request.url()).pathname === '/me/invitations') reads++;
@@ -57,10 +68,18 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
       await expect(page.getByRole('link', { name: /^Open / })).toHaveCount(0);
       const committed = await issuer.request.get(root); expect(committed.status()).toBe(200); const after = await committed.json();
       expect(after.items.find((row: { id: string; acceptedAt: string | null }) => row.id === id).acceptedAt).not.toBeNull();
+      // Delivery uses real server time. Drain the actual committed acceptance
+      // invalidation before reviewing its original-ID recovery; otherwise that
+      // source can correctly cancel the retry's acknowledgment mid-request.
+      await expect.poll(() => acceptedSource, { timeout: 15_000 }).toBe(true);
+      await page.clock.runFor(250); await expect(retry).toBeEnabled();
       await retry.focus(); await retry.press('Enter');
       await expect(page.getByRole('link', { name: surface === 'PORTAL' ? 'Open Owner Portal' : board ? 'Open Board' : 'Open organization', exact: true })).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[0]).toBe(writes[1]); expect(documents).toBe(1);
       const recovered = await issuer.request.get(root); expect(recovered.status()).toBe(200); expect(await recovered.json()).toEqual(after);
+      // Axe schedules browser timers. Resume only after every expiry, privacy
+      // and original-command assertion so the accessibility scan can complete.
+      await page.clock.resume();
       expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     } finally { await issuer.close(); }

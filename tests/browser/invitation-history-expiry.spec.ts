@@ -49,6 +49,9 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect(reads).toBeGreaterThan(initialReads); expect(writes).toBe(0); expect(documents).toBe(1);
       const after = await context.request.get(root); expect(after.status()).toBe(200);
       expect((await after.json()).items.find((item: { id: string }) => item.id === id)).toEqual(before);
+      // Axe schedules browser timers. Resume only after every expiry, privacy
+      // and original-command assertion so the accessibility scan can complete.
+      await page.clock.resume();
       expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     });

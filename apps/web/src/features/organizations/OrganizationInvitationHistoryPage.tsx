@@ -59,24 +59,53 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
   const refresh = useRef<HTMLButtonElement>(null);
   const actor = useRef<string | undefined>(undefined); const [actorId, setActorId] = useState<string>();
   const epoch = useRef(0); const refreshQueued = useRef(false); const [reloadVersion, setReloadVersion] = useState(0);
+  const quietQueued = useRef(false); const quietPending = useRef(false);
   const [liveNotice, setLiveNotice] = useState<string>();
+  const boardAdmission = useRef(boardId === undefined);
+  const [boardReady, setBoardReady] = useState(boardId === undefined);
+  const [boardHead] = useState(() => {
+    let resolve!: () => void;
+    const promise = new Promise<void>(done => { resolve = done; });
+    return { promise, resolve };
+  });
   useEffect(() => { mounted.current = true; void load(null, []); return () => {
     mounted.current = false; pending.current?.abort(); pending.current = undefined; recoveryId.current = undefined;
   }; }, []); // The keyed component isolates every Organization navigation.
   useEffect(() => {
     if (!actorId) return;
     const invalidate = () => {
-      epoch.current++; refreshQueued.current = true; setRows(undefined); setSelected(undefined);
+      epoch.current++; refreshQueued.current = true; quietQueued.current = false; setRows(undefined); setSelected(undefined);
       setLiveNotice('Checking current invitations and access. Any revocation recovery is preserved.');
       setReloadVersion(value => value + 1);
     };
-    if (boardId !== undefined) return watchBoard({ organizationId, boardId, invalidate,
-      status: status => { if (status !== 'connecting') invalidate(); } });
+    if (boardId !== undefined) {
+      let previousStatus: string | undefined;
+      return watchBoard({ organizationId, boardId, invalidate,
+        status: status => {
+          if (status === 'connecting') return;
+          if (!boardAdmission.current) {
+            // Withhold review controls until the initial head or explicit
+            // degraded transport result, then perform a fresh protected read.
+            if (status === 'live' || status === 'polling') {
+              boardAdmission.current = true; setBoardReady(true); boardHead.resolve();
+            }
+          } else if (status === 'live' && status === previousStatus) {
+            // Read access does not prove administration. Check it quietly;
+            // unchanged authority/history must preserve keyboard review.
+            if (!pending.current) {
+              refreshQueued.current = true; quietQueued.current = true;
+              setReloadVersion(value => value + 1);
+            }
+          } else if (status !== previousStatus) invalidate();
+          previousStatus = status;
+        } });
+    }
     return watchOrganizationMetadata({ organizationId, userId: actorId, invalidate, reset: invalidate, unavailable: invalidate });
   }, [organizationId, boardId, actorId]);
   useEffect(() => {
     if (!refreshQueued.current || busy) return;
-    refreshQueued.current = false; void load(null, [], true);
+    const quiet = quietQueued.current; quietQueued.current = false;
+    refreshQueued.current = false; void load(quiet ? cursor : null, quiet ? previous : [], true, quiet);
   }, [reloadVersion, busy]);
   useEffect(() => {
     if (!rows) return;
@@ -90,7 +119,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     function check() {
       const remaining = expires - Date.now();
       if (remaining > 0) { timer = setTimeout(check, Math.min(remaining, 2_147_483_647)); return; }
-      epoch.current++; refreshQueued.current = true;
+      epoch.current++; refreshQueued.current = true; quietQueued.current = false;
       setBoardName(undefined); setRows(undefined); setSelected(undefined);
       setLiveNotice('An invitation reached its expiry time. Checking current invitations and access.');
       setReloadVersion(value => value + 1);
@@ -98,9 +127,18 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     check();
     return () => clearTimeout(timer);
   }, [rows]);
-  function begin() { if (pending.current) return; const controller = new AbortController(); pending.current = controller; setBusy(true); return controller; }
+  function begin(quiet = false) {
+    if (pending.current) {
+      if (!quietPending.current || quiet) return;
+      // An explicit action replaces a background check and performs its own
+      // fresh admission. Late background responses cannot change that action.
+      pending.current.abort();
+    }
+    const controller = new AbortController(); pending.current = controller;
+    quietPending.current = quiet; if (!quiet) setBusy(true); return controller;
+  }
   const valid = (controller: AbortController) => mounted.current && pending.current === controller && !controller.signal.aborted;
-  function finish(controller: AbortController) { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
+  function finish(controller: AbortController) { if (mounted.current && pending.current === controller) { pending.current = undefined; quietPending.current = false; setBusy(false); } }
   function deny(status: number) {
     actor.current = undefined; setActorId(undefined); refreshQueued.current = false; setLiveNotice(undefined);
     setBoardName(undefined); setRows(undefined); setSelected(undefined); setPreferences(undefined); setNotice(undefined); setDenied(true);
@@ -116,14 +154,21 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     if (expected && prefs.id !== expected) { deny(401); return; }
     return prefs;
   }
-  async function load(next: string | null, history: (string | null)[], live = false) {
-    const controller = begin(); if (!controller) return;
+  async function load(next: string | null, history: (string | null)[], live = false, quiet = false) {
+    const controller = begin(quiet); if (!controller) return;
     const started = epoch.current;
-    setBoardName(undefined); setError(undefined); setRows(undefined); setSelected(undefined);
+    if (!quiet) { setBoardName(undefined); setError(undefined); setRows(undefined); setSelected(undefined); }
     try {
       await boundedWorkRead(async signal => {
         if (!validInvitationKey(organizationId)) { deny(404); return; }
         const prefs = await account(controller, signal); if (!prefs) return;
+        if (boardId !== undefined && !boardAdmission.current) {
+          actor.current = prefs.id; setActorId(prefs.id);
+          // The same whole-operation deadline bounds this bootstrap wait.
+          // A late head cannot revive an aborted or superseded protected read.
+          await boardHead.promise;
+          signal.throwIfAborted(); if (!valid(controller)) return;
+        }
         let currentBoardName: string | undefined;
         if (boardId !== undefined) {
           if (!validInvitationKey(boardId)) { deny(404); return; }
@@ -140,8 +185,11 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
         if (result.status !== 200 || !page(result.body, boardId) || result.body.items.some((row, index, items) =>
           row.id.toLowerCase() <= (index ? items[index - 1].id.toLowerCase() : next?.toLowerCase() ?? '')))
           throw new Error('Invalid history');
+        const currentPage = result.body;
         const current = await account(controller, signal, prefs.id); if (!current || started !== epoch.current) return;
         actor.current = current.id; setActorId(current.id);
+        if (quiet) setSelected(review => review && currentBoardName === boardName
+          && JSON.stringify(currentPage.items.find(row => row.id === review.id)) === JSON.stringify(review) ? review : undefined);
         setBoardName(currentBoardName); setRows(result.body); setPreferences(current); setCursor(next); setPrevious(history); setDenied(false);
         if (live) setLiveNotice('Current invitations checked. Review an invitation again before confirming revocation.');
         if (recoveryId.current) {
@@ -195,14 +243,14 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}` : `/app/${organizationId}/members`}>{boardId !== undefined ? 'Back to Board' : 'Organization members'}</Button>
     <Typography component="h1" variant="h4">{boardId !== undefined ? 'Issued Board invitations' : 'Issued invitations'}</Typography>
-    {boardName && <Typography component="h2" variant="h6">{boardName}</Typography>}
+    {boardReady && boardName && <Typography component="h2" variant="h6">{boardName}</Typography>}
     {error && <Alert severity="error">{error}</Alert>}{notice && <Alert severity={notice === 'Invitation revocation confirmed.' ? 'success' : 'info'}>{notice}</Alert>}
     {liveNotice && <Alert severity="info">{liveNotice}</Alert>}
     {busy && <CircularProgress aria-label="Loading issued invitations" />}
     {denied ? <Button component={Link} to="/login">Sign in</Button> : <>
       <Stack direction="row" spacing={1}><Button ref={refresh} disabled={busy} onClick={() => void load(cursor, previous)}>{unconfirmed ? 'Check revocation' : 'Refresh invitations'}</Button>
-        {rows && !unconfirmed && <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}/invite` : `/app/${organizationId}/invite`}>Create invitation</Button>}</Stack>
-      {rows && preferences && <><Typography>Email acknowledgment does not prove inbox delivery or grant access. Revocation prevents acceptance; existing membership is managed separately.</Typography>
+        {boardReady && rows && !unconfirmed && <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}/invite` : `/app/${organizationId}/invite`}>Create invitation</Button>}</Stack>
+      {boardReady && rows && preferences && <><Typography>Email acknowledgment does not prove inbox delivery or grant access. Revocation prevents acceptance; existing membership is managed separately.</Typography>
         {rows.items.length === 0 && <Typography>No issued invitations on this page.</Typography>}
         {rows.items.map(row => <Paper component="article" variant="outlined" key={row.id} sx={{ p: 2 }}><Stack spacing={1}>
           <Typography component={boardId !== undefined ? "h3" : "h2"} variant="h6">{row.email}</Typography><Typography>{boardId !== undefined ? `Board access: ${row.boardTarget!.role.toLowerCase()}` : <>{row.surface === 'PORTAL' ? 'Owner Portal' : 'Internal Organization'} · {row.targetRole.replaceAll('_', ' ').toLowerCase()}</>}</Typography>

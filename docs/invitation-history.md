@@ -174,3 +174,33 @@ actual stored revoked row and requires exactly one DELETE without a document
 reload; keyboard and WCAG 2.2 AA checks remain. These clock-driven client deadline
 checks do not prove server latency or actual cookie expiry. Native runtime
 execution against the exact release images remains pending.
+
+## Board bootstrap and unchanged heartbeats
+
+Board history captures the first admitted live head (or an explicit degraded
+transport result) before reading Board administration and invitation history.
+The bootstrap wait belongs to the same 15-second operation deadline. Review
+controls cannot appear before that boundary, and a late head cannot revive a
+timed-out read.
+
+Unchanged live heartbeats still recheck administrative permission, which is
+stronger than Board read access. These background checks preserve a reviewed
+dialog only while the admitted Board name and exact invitation remain unchanged.
+Permission loss, changed history, actual sources, transport recovery and expiry
+withdraw consent. Explicit refresh or revocation cancels an in-flight background
+check and performs its own fresh admission; late background responses are fenced.
+
+All 38 history component cases pass, including initial-head withholding,
+administration withdrawal on an unchanged heartbeat and an explicit revocation
+that supersedes a held background response. Web/browser type checks and lint
+pass. The native expiry fixtures resume the browser clock only after expiry,
+privacy and mutation assertions, so Axe's timers can complete without weakening
+those assertions. Demo native verification and exact-image release verification
+are separate evidence scopes.
+
+All six history expiry scenarios executed successfully against the real local
+Development Demo API and Vite app at desktop/phone widths, including normal
+Internal, Portal and Board issuance, keyboard review, unchanged stored history,
+no revocation, expiry consent withdrawal and the full Axe scan. The companion
+six recipient expiry/recovery cases also pass. These are actual Demo browser
+results; the corresponding exact-image release scenarios remain pending CI.
