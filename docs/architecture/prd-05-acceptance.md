@@ -131,6 +131,17 @@ estimate stays 15%; full performance acceptance remains outstanding.
 
 ## Remaining implementation order
 
+Current-commit [CI 37691987814](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37691987814)
+passed 1,901 component tests but failed the 404 comment-review refusal's immediate
+subscription cleanup assertion. Refusal content can commit before passive-effect
+cleanup finishes. That fixture now awaits the actual single cleanup call, retaining
+all three 401/403/404 cases, disabled/private-content checks, unchanged subsequent
+background read count and zero writes. All 30 comment-control cases pass locally,
+as does targeted lint; a new complete CI run must verify the repair. Production
+cleanup/admission policy and test deadlines are unchanged. The separate cached
+editor observation diagnostic above does not establish timing acceptance. Estimated
+work remaining stays 15%.
+
 1. Verify mandatory restricted member-event CI and execute current release consumer delivery/reconnect; local API and restricted PostgreSQL audit/journal/outbox, replay, no-op, rollback and private authority compatibility checks are complete.
 2. Complete current-image invitation/member/visibility administration, actor and parent authority withdrawal, continuity and reconnect acceptance, including the full operation matrix.
 3. Finish WCAG 2.2 AA, documented large-data and latency execution, then audit every definition-of-done requirement against the retained build-once release before closing the ticket.

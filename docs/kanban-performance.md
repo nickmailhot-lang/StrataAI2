@@ -103,6 +103,26 @@ improvement or retained-image acceptance. Both disposable containers are removed
 and existing services and volumes are preserved. Feedback, cached detail and
 full release/capacity acceptance remain outstanding.
 
+## Cached editor observation diagnostic, 2026-10-07
+
+The previous desktop/phone traces split detail opening into approximately
+69.4/95.4 ms for the click and 172.7/199.0 ms waiting for the enabled title field.
+The Card dialog already has zero transition duration. A separate desktop-only
+diagnostic observes the actual enabled title input through a DOM MutationObserver,
+without changing the standard benchmark, its assertions or the product bundle.
+In its completed corrected invocation, the first enabled input appears at 221.2 ms
+on the browser clock, the click returns at 61.1 ms on the test clock, and the
+original enabled assertion returns at 241.8 ms. The browser observation starts
+before the test sends the click, so these clocks are not identical baselines and
+their difference is not a precise rendering cost or subtractable timing credit.
+
+This evidence does not justify replacing or relaxing the existing detail budget.
+The diagnostic also fails movement feedback at 132.8 ms. It is one instrumented
+Windows-hosted desktop/cached-runtime run, not standard two-viewport acceptance
+or a current-image release claim. The temporary diagnostic fixture and both
+containers are removed; numeric evidence and the diagnostic source are retained
+outside the repository. Actual editor readiness and movement feedback remain work.
+
 ## Current large-Board runtime correction
 
 Exact-image run [37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119)

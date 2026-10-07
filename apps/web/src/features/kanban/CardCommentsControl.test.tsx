@@ -127,7 +127,9 @@ it.each([401, 403, 404])('clears a clean review and retires background recovery 
   act(() => { window.dispatchEvent(new Event('online')); });
   await screen.findByText('Unable to read current comments. Refresh the Card and try again.');
   expect(screen.queryByText(row.content)).toBeNull(); expect(screen.getByRole('button', { name: 'Review Card comments' })).toBeDisabled();
-  expect(vi.mocked(watchIdentity).mock.results[0].value).toHaveBeenCalledTimes(1);
+  // The refusal renders before passive-effect subscription cleanup completes.
+  // Observe actual retirement before testing subsequent background events.
+  await waitFor(() => expect(vi.mocked(watchIdentity).mock.results[0].value).toHaveBeenCalledTimes(1));
   const count = vi.mocked(workRequest).mock.calls.length;
   act(() => { window.dispatchEvent(new Event('online')); window.dispatchEvent(new Event('focus')); });
   expect(workRequest).toHaveBeenCalledTimes(count); expect(writes()).toHaveLength(0);
