@@ -29,6 +29,18 @@ Current changes must pass the complete pipeline against their exact revision.
 
 ## Evidence boundaries
 
+Four existing native account scenarios now pass locally against an actual
+schema-110 Production API and restricted database role: desktop/phone keyboard
+deactivation with lost acknowledgment, original-session logout retry and
+two-browser persisted profile conflict recovery. The profile case includes
+canonical event recovery, saved UTC timestamp display, preservation of stale
+drafts, explicit latest-state adoption, merged save and logout propagation.
+See [executed profile recovery](profile-recovery.md#executed-local-production-recovery).
+This compiled-source/Vite evidence strengthens the corresponding AUTH-FR-003,
+006, 007, 008 and 010 paths; it does not establish all preference consumers,
+current retained-image identity, complete provider/expiry/privacy acceptance or
+full performance budgets.
+
 Valid unknown-address sign-in attempts now perform adaptive verification against
 a process-local dummy hash created once with the configured password provider.
 The result never authorizes an account/session and the credential is never stored
@@ -78,8 +90,11 @@ rollback/upgrade coverage, not complete password-policy or release acceptance.
 The complete web suite at unchanged browser revision `28f9355` passed with exit
 0: 1,494 tests in 122 files (491.71 seconds). Strict API-test project compilation
 also passed for the recent profile/sync admission and date-projection increments.
-Windows Application Control prevents local .NET test execution; native API-host,
-restricted PostgreSQL and exact-image results must be inspected in CI.
+Windows Application Control blocked local .NET execution during those earlier
+increments. Subsequent focused API-host and restricted PostgreSQL checks have
+executed successfully, including the local browser scenarios above. Each earlier
+pending case still needs its own execution evidence, and complete current
+exact-image results must be inspected in CI.
 
 Older green CI runs linked from feature documents establish their recorded
 revision only. Queued or live runs, successful image builds/security jobs, source

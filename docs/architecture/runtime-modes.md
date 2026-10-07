@@ -56,6 +56,12 @@ the Demo API to restore the original credentials; `/api/demo/reset` and
 Return to the [project README](../../README.md#demo-sign-in) or the
 [documentation index](../README.md).
 
+`DemoAccountTests.cs` covers sign-in with these documented credentials without
+registration, rejection of a wrong password without a session, and Development
+startup with binary attachment storage disabled. All three focused API-host
+checks passed again on 2026-10-07. The seeded account has no implicit Organization
+access; these checks do not establish complete authentication PRD acceptance.
+
 ## Production
 
 `production` fails startup unless `ConnectionStrings__Postgres` is configured.

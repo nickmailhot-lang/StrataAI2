@@ -1,5 +1,33 @@
 # Profile recovery
 
+## Executed local Production recovery
+
+The existing native account fixtures pass against the separate schema-110
+Production API and restricted PostgreSQL role at compiled source revision
+`6044227e`, using Vite and ordinary registration/sign-in. Desktop and phone
+keyboard deactivation lose the first actual 204 acknowledgment, preserve the
+original issued session cookie, and recover the same command key exactly once.
+The account is denied afterward. A PostgreSQL catalog check confirms that both
+test accounts are `DEACTIVATED` at version 2, each with exactly one canonical
+`USER_DEACTIVATED` event, one audit record and one issuer-authority source carrying
+the original actor and version. Original-session logout acknowledgment recovery
+also passes with the same key and final cookie withdrawal.
+
+The desktop/phone two-page profile scenario passes actual persisted saves,
+canonical `USER_PROFILE_UPDATED` event recovery, UTC timestamp presentation,
+dirty-draft preservation, disabled stale saving, explicit discard/load-latest,
+merged save recovery in the other page and automatic logout propagation without
+manual document reload. Both local invocations completed successfully: two
+deactivation cases in 11.3 seconds and logout/profile cases in 15.3 seconds.
+These are scenario durations, not mutation latency or performance benchmarks.
+The persisted merged-profile account is active at version 3 with timezone `UTC`
+and exactly two canonical `USER_PROFILE_UPDATED` events.
+
+The framework API build and local browser server do not certify retained
+release-image identity. Complete current CI, every date-display consumer,
+production policy/mail/expiry/privacy cases and remaining PRD acceptance still
+need their own evidence. PRD-02 and PRD-60 remain open.
+
 The MUI profile form reads the authoritative profile and identity-event cursor through `/me/sync` every ten seconds while visible and also on focus, reconnection and visibility recovery. Continuation pages follow immediately with at most 100 events per response. One read is active at a time. A fifteen-second deadline covers both transport and response-body parsing; timeout aborts the request, releases the read slot and fences an ignored-abort response. Unmount/reload removes listeners and timers and aborts the owned request. The event envelope is validated before its cursor advances; see [identity-events.md](identity-events.md).
 
 Recovery reads require the profile fields and a positive safe-integer version. Older/equal versions cannot replace a newer profile or draft. Starting a save or sign-out changes the read epoch, so an earlier read cannot overwrite its acknowledgment. Session denial clears the view and redirects to sign-in; a changed subject also requires sign-in rather than retaining the previous draft.
