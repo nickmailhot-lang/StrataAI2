@@ -41,6 +41,12 @@ without Organization memberships; create an Organization after signing in to
 explore the collaboration workflows. The `/api/demo/state` sample catalog is
 separate from authenticated Organization membership and work data.
 
+The Demo API also starts with ASP.NET's Development service validation enabled
+when binary attachment storage is disabled. Its attachment services compose
+without resolving an object-storage provider: protected reads return no bytes,
+and binary uploads remain unavailable. URL attachments retain their existing
+workflow.
+
 These are public test credentials, seeded only in Demo's in-memory identity
 store. Production uses its PostgreSQL identity store and does not seed this
 account. Account changes and sessions last for the current API process. Restart

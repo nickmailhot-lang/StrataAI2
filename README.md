@@ -6,6 +6,10 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 ## Start here
 
+**Demo login:** `demo@strataai.test` / `StrataAI-Demo-2026!`.
+Set `STRATAAI_RUNTIME_MODE=demo`, open `/login`, and sign in without registering.
+See [Demo sign-in](#demo-sign-in) for account access and reset behavior.
+
 Jump to [documentation navigation](#navigating-the-documentation), [reading paths](#choose-a-reading-path), [workflow guides](#find-a-workflow-quickly), [adopted architecture](#adopted-architecture), [repository layout](#repository-layout), or [local source checks](#local-source-checks).
 
 | What you need | Where to start |

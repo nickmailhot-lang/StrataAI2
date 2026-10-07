@@ -28,13 +28,25 @@ public static class AttachmentRuntimeRegistration
         }
     }
 
+    private static bool WithoutAttachmentStorage(IServiceCollection services)
+    {
+        // Read services still compose when binary storage is disabled. They
+        // retain ordinary admission and return no bytes; no provider is resolved.
+        services.TryAddSingleton<IAttachmentDownloadPreparer, UnavailableAttachmentDownloadPreparer>();
+        services.TryAddSingleton<IAttachmentObjectStorage, UnavailableAttachmentObjectStorage>();
+        services.TryAddSingleton(new AttachmentUploadPolicy(20971520,
+            ["image/png", "image/jpeg", "image/webp", "application/pdf"]));
+        services.TryAddSingleton<IAttachmentFileTypeInspector, AttachmentFileTypeInspector>();
+        return false;
+    }
+
     public static bool AddAttachmentRuntime(this IServiceCollection services, IConfiguration configuration,
         RuntimeDescriptor runtime, bool worker, string? environmentName = null)
     {
         var flag = configuration["STRATAAI_ATTACHMENT_STORAGE_ENABLED"];
-        if (flag is null) return false;
+        if (flag is null) return WithoutAttachmentStorage(services);
         if (!bool.TryParse(flag, out var enabled)) throw new InvalidOperationException("Attachment storage enablement is invalid.");
-        if (!enabled) return false;
+        if (!enabled) return WithoutAttachmentStorage(services);
         if (runtime.Mode != RuntimeMode.Production)
             throw new InvalidOperationException("Managed attachment storage requires Production mode.");
         var localRoot = configuration["STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT"];

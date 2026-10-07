@@ -37,4 +37,18 @@ public sealed partial class ApiHostTests
         using var me = await client.GetAsync("/me", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Unauthorized, me.StatusCode);
     }
+    // ARCH-06 / PRD-02: Development enables full service validation. The
+    // ordinary Testing host does not prove standalone Demo composition.
+    [Fact]
+    public async Task Demo_documented_account_starts_in_Development_with_binary_storage_disabled()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(environment: "Development");
+        using var client = app.CreateClient();
+        using var login = await Mutate(client, HttpMethod.Post, "/auth/login",
+            new { email = "demo@strataai.test", password = "StrataAI-Demo-2026!" });
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        using var cover = await client.GetAsync($"/cards/{Guid.NewGuid()}/cover", ct);
+        Assert.Equal(HttpStatusCode.NotFound, cover.StatusCode);
+    }
 }

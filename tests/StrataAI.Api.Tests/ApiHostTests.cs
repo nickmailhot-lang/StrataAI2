@@ -313,11 +313,11 @@ public sealed partial class ApiHostTests
     }
 }
 
-internal sealed class ApiFactory(string mode = "demo", Action<IServiceCollection>? configureServices = null) : WebApplicationFactory<Program>
+internal sealed class ApiFactory(string mode = "demo", Action<IServiceCollection>? configureServices = null, string environment = "Testing") : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
+        builder.UseEnvironment(environment);
         if (configureServices is not null) builder.ConfigureServices(configureServices);
     }
 
