@@ -398,3 +398,19 @@ Honolulu calendar-only display, and Board/account timezone precedence. Subsequen
 backend and native-fixture increments did not change `apps/web` during that run.
 Native API-host and exact-release-image verification remains pending; this source
 result does not establish full PRD-02 or PRD-16 acceptance.
+
+### Executed local date preference recovery
+
+Card date captions and Board canvas due badges now recover admitted account
+preferences from identity delivery and visible periodic, focus, online and
+visibility checks. Board policy retains precedence; stored UTC dates and Reminder
+scheduling remain unchanged. Denied access retires background reads, and an
+account change requires fresh Card/Board admission.
+
+Both complete desktop/phone Card-date cases and both Board-policy cases passed
+locally on 2026-10-07. A separate signed-in session changed the timezone, open
+views recovered automatically and canonical Board responses remained unchanged.
+All 101 focused date/Board source cases passed. The native policy run also exposed
+and verified repair of an initial StrictMode admission retirement defect. See
+[date recovery evidence](card-dates.md#open-date-preference-recovery) for scope.
+Current retained release images and complete PRD acceptance remain outstanding.

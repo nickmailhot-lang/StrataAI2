@@ -438,3 +438,20 @@ compilation and narrow tests cannot establish full current-release acceptance.
 Inspect final required CI, native assertions, browser evidence and retained
 immutable images before closure. The current PRD estimate is **19% work
 remaining**; it is a planning estimate, not a count of unchecked functional rows.
+
+### Executed local date preference recovery
+
+Card captions and Board due badges now recover account preferences through
+identity events and visible periodic/focus/online/visibility reads. Signals
+coalesce during admission, denial retires background checks, and account changes
+require fresh parent admission. Board policy and canonical UTC values are preserved.
+
+All 101 focused date/Board source cases passed, alongside four complete local
+desktop/phone native cases. Independent-session timezone changes reached open
+views automatically with canonical Board responses unchanged. A fail-first
+StrictMode regression and the full policy native rerun verify the initial
+admission cleanup repair. See [date recovery evidence](card-dates.md#open-date-preference-recovery).
+
+This is local Production-runtime evidence, not retained-image acceptance. Full
+current CI and PRD-wide acceptance remain required. Estimated PRD-02 work
+remaining is now **18%**; the ticket remains open.

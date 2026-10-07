@@ -38,7 +38,14 @@ function Policy({ org, id }: { org: string; id: string }) {
     if (pending.current) { queued.current = true; if (!pending.current.write) pending.current.controller.abort(); }
     else void load();
   });
-  useEffect(() => { mounted.current = true; loadCurrent(); return () => { mounted.current = false; pending.current?.controller.abort(); }; }, []);
+  useEffect(() => {
+    mounted.current = true; loadCurrent();
+    return () => {
+      mounted.current = false;
+      const retired = pending.current; pending.current = undefined;
+      retired?.controller.abort();
+    };
+  }, []);
   useEffect(() => subscribed ? watchBoard({ organizationId: org, boardId: id, invalidate: () => invalidate(), status: setLive }) : undefined, [org, id, subscribed]);
   useEffect(() => { if (!busy && !intent && queued.current) { queued.current = false; loadCurrent(); } }, [busy, intent]);
   useEffect(() => { if (!busy && !queued.current && !pending.current && focusRequested.current) {

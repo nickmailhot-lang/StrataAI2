@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Chip, Stack, Typography } from '@mui/material';
 import { CalendarToday, CheckCircle, Schedule, Warning } from '@mui/icons-material';
-import { boundedWorkRead, workRequest, type WorkCard } from '../../api/workManagement';
+import { boundedWorkRead, workRequest, WorkRequestError, type WorkCard } from '../../api/workManagement';
+import { watchIdentity } from '../auth/identityLive';
 import { isNotificationProfile, type NotificationProfile } from '../notifications/notificationInbox';
 import { cardDates, cardDueState, dateTimezone, formatCardDate, nextCardDateWake, type DueState } from './cardDates';
 
@@ -14,28 +15,43 @@ export function CardDateDisplay(props: Props) {
 function CurrentDates({ card, boardTimezone, onRefresh }: Props) {
   const [profile, setProfile] = useState<NotificationProfile>(); const [error, setError] = useState(false);
   const [now, setNow] = useState(Date.now); const [attempt, setAttempt] = useState(0);
+  const subject = useRef<string | undefined>(undefined);
   const refresh = useRef(onRefresh); refresh.current = onRefresh;
   useEffect(() => {
-    let active = true, reading = false, subject: string | undefined;
+    let active = true, reading = false, admissionRequired = false, queued = false;
+    let stopIdentity: (() => void) | undefined;
     let controller: AbortController | undefined;
     const load = async () => {
-      if (reading || !active || document.visibilityState === 'hidden') return;
+      if (reading || !active || admissionRequired || document.visibilityState === 'hidden') return;
       reading = true; controller = new AbortController();
       try {
         const value = await boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal);
         if (!active) return;
-        if (!isNotificationProfile(value)) throw new Error('Invalid date viewer');
+        if (!isNotificationProfile(value)) throw new WorkRequestError(401, null);
         dateTimezone(value.timezone);
-        if (subject && subject !== value.id) { setProfile(undefined); setError(true); refresh.current(); return; }
-        subject = value.id; setProfile(value); setError(false); setNow(Date.now());
-      } catch {
+        if (subject.current && subject.current !== value.id) {
+          admissionRequired = true; queued = false; stopIdentity?.(); stopIdentity = undefined;
+          setProfile(undefined); setError(true); refresh.current(); return;
+        }
+        subject.current = value.id; setProfile(value); setError(false); setNow(Date.now());
+        stopIdentity ??= watchIdentity({ subject: value.id, isProfile: isNotificationProfile, invalidate: check });
+      } catch (reason) {
         if (active) { setProfile(undefined); setError(true); }
-      } finally { reading = false; }
+        if (active && reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) {
+          admissionRequired = true; queued = false; stopIdentity?.(); stopIdentity = undefined;
+        }
+      } finally {
+        reading = false;
+        if (active && queued && !admissionRequired) { queued = false; void load(); }
+      }
     };
+    function check() {
+      if (!active || admissionRequired || document.visibilityState === 'hidden') return;
+      if (reading) queued = true; else void load();
+    }
     void load();
-    const check = () => { void load(); };
-    const timer = setInterval(check, 30_000); window.addEventListener('focus', check); document.addEventListener('visibilitychange', check);
-    return () => { active = false; controller?.abort(); clearInterval(timer); window.removeEventListener('focus', check); document.removeEventListener('visibilitychange', check); };
+    const timer = setInterval(check, 30_000); window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
+    return () => { active = false; queued = false; controller?.abort(); stopIdentity?.(); clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('online', check); document.removeEventListener('visibilitychange', check); };
   }, [attempt]);
   useEffect(() => {
     if (!profile) return;

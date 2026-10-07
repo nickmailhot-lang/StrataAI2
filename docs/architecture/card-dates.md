@@ -521,3 +521,41 @@ update the face; date-context changes reach badge consumers; focus restoration
 and current admission rules remain enforced. Existing Board/date regression,
 strict web checks and exact-image performance will verify the repair. This is
 not a performance acceptance claim; the mandatory budgets remain unchanged.
+
+### Open date preference recovery
+
+Card date captions and Board canvas due badges now subscribe to the admitted
+account's identity events. Bounded profile reads recover the viewing timezone
+and locale without changing stored Card dates. Visible 30-second, focus, online
+and visibility checks remain as fallback. Signals arriving during a read coalesce
+into one follow-up; subscriptions retire on unmount, scope change, account change
+or denied access. Denial stops background checks until explicit renewed admission.
+Account changes require fresh parent Card/Board admission.
+
+Board timezone policy retains precedence over the viewer's preference. Clearing
+it uses the latest admitted preference. Existing due/midnight clocks, canonical
+UTC dates, completion flags and Reminder scheduling remain unchanged.
+
+On 2026-10-07, all 101 focused date/display/policy/Board source cases passed.
+The earlier 40-case display/badge/identity run also passed. Both complete Card-date
+browser cases passed in 1.2 minutes and both Board-policy cases in 1.5 minutes,
+at 1280 and 390 pixels. Independent signed-in sessions changed the timezone;
+already-open views recovered without manual reads, while whole canonical Board
+responses remained identical. Existing lost-response, policy, completion, keyboard
+and tagged accessibility assertions remain enforced.
+
+The first Board-policy native run exposed a development StrictMode cleanup defect:
+an aborted initial read remained pending and blocked replacement admission.
+A regression failed before the fix; cleanup now retires the operation before
+aborting it, and late results cannot replace the new read.
+
+These native checks used the local Production API, restricted PostgreSQL and
+Workers scoped only to newly created fixture Organizations. Both disposable
+Workers were retired afterward. This is scoped local evidence, not retained
+release-image acceptance or a dated-Board performance result. Full current CI,
+capacity/lifecycle evidence and remaining PRD-12 acceptance still require review.
+
+The additional date editor/draft suites passed all 15 cases (116 total across
+seven focused date/Board files). Web typechecking, lint, browser typechecking
+and an isolated production web build also passed. The local build is outside
+the checkout and is not a retained release artifact.

@@ -65,13 +65,18 @@ for (const width of [1280, 390]) {
       // not stand in for separate recipient-private realtime acceptance.
       await page.reload(); await peer.reload();
       await expect(region).toContainText('Complete'); await expect(peerDates).toContainText('Complete');
+      const beforePreference = await context.request.get(`/boards/${board}`); expect(beforePreference.status()).toBe(200);
+      const originalDates = await beforePreference.json();
       const me = await other.request.get('/me'); expect(me.status()).toBe(200); const profile = await me.json();
       expect((await other.request.patch('/me', { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
         data: { version: profile.version, timezone: 'Pacific/Honolulu' } })).status()).toBe(200);
-      await page.reload(); await peer.reload();
-      await expect(region).toContainText('Due Jan 2, 2040'); await expect(peerDates).toContainText('Due Jan 2, 2040');
+      // AUTH-FR-010 / AC-AUTH-02-03: these already-open views recover the
+      // second session's actual preference update without reload or refresh.
+      await expect(region).toContainText('Due Jan 2, 2040', { timeout: 25_000 }); await expect(peerDates).toContainText('Due Jan 2, 2040', { timeout: 25_000 });
       await expect(region).toContainText('Viewing timezone: Pacific/Honolulu.'); await expect(region).toContainText('Complete');
       await expect(region).not.toContainText('1:59');
+      const afterPreference = await context.request.get(`/boards/${board}`); expect(afterPreference.status()).toBe(200);
+      expect(await afterPreference.json()).toEqual(originalDates);
       const clear = await other.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
         data: { version: 3, dueHasTime: false, dueComplete: false } });
       expect(clear.status()).toBe(200); await page.reload(); await peer.reload();

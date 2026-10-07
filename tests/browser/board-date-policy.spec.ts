@@ -3,7 +3,7 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) {
-  test(`PRD-12: keyboard timezone policy recovery, live display and accessibility at ${width}px`, async ({ page, context }) => {
+  test(`PRD-12: keyboard timezone policy recovery, live display and accessibility at ${width}px`, async ({ page, context, browser, baseURL }) => {
     test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `date-policy-${width}-${Date.now()}@example.test`, password: 'policy-browser-correct-horse',
@@ -21,7 +21,10 @@ for (const width of [1280, 390]) {
     expect((await context.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
       data: { dueAt: '2040-01-03T08:00:00Z', dueTimezone: 'UTC', dueHasTime: true, dueComplete: false, version: 1 } })).status()).toBe(200);
     const restoreWorker = scopedBoardWorker(org);
+    let preferences: Awaited<ReturnType<typeof browser.newContext>> | undefined;
     try {
+      preferences = await browser.newContext({ baseURL });
+      expect((await preferences.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
       await waitForBoardDelivery(context.request, board);
       const boardPath = `/app/${org}/boards/${board}`, policyPath = `${boardPath}/date-policy`;
       const canvasPeer = await context.newPage(); await canvasPeer.setViewportSize({ width, height: 844 });
@@ -81,6 +84,15 @@ for (const width of [1280, 390]) {
       expect(current.lists[0].cards[0]).toMatchObject({ id: card, version: 2 });
       expect(Date.parse(current.lists[0].cards[0].dueAt)).toBe(Date.parse('2040-01-03T08:00:00Z'));
       expect((await (await context.request.get('/me')).json()).timezone).toBe('UTC');
+      // Once Board policy is cleared, a different signed-in session's viewing
+      // preference reaches both the open Card and canvas without manual reads.
+      const currentProfile = await preferences.request.get('/me'); expect(currentProfile.status()).toBe(200);
+      expect((await preferences.request.patch('/me', { headers, data: { version: (await currentProfile.json()).version, timezone: 'Pacific/Honolulu' } })).status()).toBe(200);
+      await expect(dates).toContainText('Viewing timezone: Pacific/Honolulu.', { timeout: 25_000 });
+      await expect(dates).toContainText('Due Jan 2, 2040'); await expect(dates).not.toContainText('Board timezone policy.');
+      await expect(canvasCard).toHaveAccessibleDescription('Due today', { timeout: 25_000 });
+      const recovered = await context.request.get(`/boards/${board}`); expect(recovered.status()).toBe(200);
+      expect(await recovered.json()).toEqual(current);
       expect((await context.request.patch(`/cards/${card}/dates`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
         data: { version: 2, dueAt: '2040-01-03T08:00:00Z', dueTimezone: 'UTC', dueHasTime: true, dueComplete: true } })).status()).toBe(200);
       await expect(canvasCard).toHaveAccessibleDescription('Complete');
@@ -92,6 +104,6 @@ for (const width of [1280, 390]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await canvasPeer.close(); await policyPeer.close(); await datesPeer.close();
-    } finally { restoreWorker(); }
+    } finally { restoreWorker(); await preferences?.close(); }
   });
 }

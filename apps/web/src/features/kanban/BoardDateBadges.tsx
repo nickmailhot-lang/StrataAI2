@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Alert, Box, Button, Chip, Typography } from '@mui/material';
 import { CalendarToday, CheckCircle, Schedule, Warning } from '@mui/icons-material';
-import { boundedWorkRead, workRequest, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
+import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
+import { watchIdentity } from '../auth/identityLive';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { cardDates, cardDueState, dateTimezone, nextCardDateWake, type DueState } from './cardDates';
 
@@ -19,8 +20,10 @@ export function BoardDateProvider({ snapshot, unavailable, onRevalidate, childre
   const subject = useRef<string | undefined>(undefined), refresh = useRef(onRevalidate); refresh.current = onRevalidate;
   useEffect(() => {
     setViewerZone(undefined); setFailed(false);
-    if (!enabled || unavailable) return;
-    let active = true, reading = false, admissionRequired = false;
+    if (unavailable) { subject.current = undefined; return; }
+    if (!enabled) return;
+    let active = true, reading = false, admissionRequired = false, queued = false;
+    let stopIdentity: (() => void) | undefined;
     let controller: AbortController | undefined;
     const load = async () => {
       if (!active || reading || admissionRequired || document.visibilityState === 'hidden') return;
@@ -28,22 +31,32 @@ export function BoardDateProvider({ snapshot, unavailable, onRevalidate, childre
       try {
         const value = await boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal);
         if (!active || controller.signal.aborted) return;
-        if (!isNotificationProfile(value)) throw new Error('Invalid date viewer');
+        if (!isNotificationProfile(value)) throw new WorkRequestError(401, null);
         dateTimezone(value.timezone);
         if (subject.current && subject.current !== value.id) {
-          subject.current = value.id; admissionRequired = true;
+          admissionRequired = true; queued = false; stopIdentity?.(); stopIdentity = undefined;
           setViewerZone(undefined); setFailed(true); refresh.current(); return;
         }
         subject.current = value.id; setViewerZone(value.timezone); setFailed(false); setNow(Date.now());
-      } catch {
+        stopIdentity ??= watchIdentity({ subject: value.id, isProfile: isNotificationProfile, invalidate: check });
+      } catch (reason) {
         if (active) { setViewerZone(undefined); setFailed(true); }
-      } finally { reading = false; }
+        if (active && reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) {
+          admissionRequired = true; queued = false; stopIdentity?.(); stopIdentity = undefined;
+        }
+      } finally {
+        reading = false;
+        if (active && queued && !admissionRequired) { queued = false; void load(); }
+      }
     };
+    function check() {
+      if (!active || admissionRequired || document.visibilityState === 'hidden') return;
+      if (reading) queued = true; else void load();
+    }
     void load();
-    const check = () => { void load(); };
     const timer = setInterval(check, 30_000);
-    window.addEventListener('focus', check); document.addEventListener('visibilitychange', check);
-    return () => { active = false; controller?.abort(); clearInterval(timer); window.removeEventListener('focus', check); document.removeEventListener('visibilitychange', check); };
+    window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
+    return () => { active = false; queued = false; controller?.abort(); stopIdentity?.(); clearInterval(timer); window.removeEventListener('focus', check); window.removeEventListener('online', check); document.removeEventListener('visibilitychange', check); };
   }, [enabled, unavailable, attempt, snapshot.board.organizationId, snapshot.board.id]);
   let timezone: string | undefined, policyInvalid = false;
   if (viewerZone && !unavailable) {

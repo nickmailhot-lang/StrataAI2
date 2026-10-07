@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { BoardDatePolicyPage } from './BoardDatePolicyPage';
@@ -117,4 +118,18 @@ it('retiring the page aborts a late profile chain before Board discovery starts'
   const view = mount(); await waitFor(() => expect(mock).toHaveBeenCalledTimes(1));
   const signal = mock.mock.calls[0][1]!.signal!; view.unmount(); expect(signal.aborted).toBe(true);
   await act(async () => resolve(profile)); expect(mock).toHaveBeenCalledTimes(1);
+});
+it('admits the policy after StrictMode retires its first pending profile read', async () => {
+  let resolve!: (value: unknown) => void;
+  mock.mockImplementationOnce(() => new Promise(done => { resolve = done; }))
+    .mockResolvedValueOnce(profile).mockResolvedValueOnce(scope());
+  render(<StrictMode><RouterProvider router={createMemoryRouter([
+    { path: '/app/:organizationId/boards/:boardId/date-policy', element: <BoardDatePolicyPage /> },
+  ], { initialEntries: [`/app/${org}/boards/${id}/date-policy`] })} /></StrictMode>);
+  await screen.findByRole('textbox', { name: 'Board timezone override' });
+  expect(mock.mock.calls[0][1]!.signal!.aborted).toBe(true);
+  expect(mock).toHaveBeenCalledTimes(3);
+  await act(async () => resolve({ ...profile, id: org }));
+  expect(mock).toHaveBeenCalledTimes(3);
+  expect(screen.getByRole('textbox')).toHaveValue('');
 });
