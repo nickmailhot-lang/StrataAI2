@@ -52,3 +52,32 @@ require zero commands/unchanged state before uncertain account admission and
 exact-key recovery after a real committed command, keyboard use, focus return,
 no document reload and Axe checks. These native cases remain pending exact-image
 CI; local collection/typechecking alone does not prove runtime acceptance.
+
+## Executed account uncertainty recovery
+
+All four existing `board-archive-account.spec.ts` cases passed in one local
+invocation against the Production API, restricted schema-110 PostgreSQL and
+the production web bundle served through the current Nginx/CSP configuration.
+Both restore and permanent deletion ran at 1280px and 390px. The tests verify
+zero commands and unchanged archived state when the pre-command profile fails;
+after a real committed command and failed profile confirmation, they verify
+withheld success, fresh account admission and byte-identical command-key/body
+recovery. Reviewed actor headers, explicit deletion consent, keyboard operation,
+focus return, no document reload, Axe and horizontal overflow checks passed.
+
+The invocation completed with four passes in 2.2 minutes, including intentional
+rate-limit pacing; this duration is not a performance measurement. The fixture
+uses the browser CI policy permitting unverified registered accounts. It does
+not prove the strict verified-email policy, complete lifecycle matrix or
+retained-image acceptance. API assemblies were mounted read-only from
+the frozen `identity-policy-after-20261007` build; images were not rebuilt.
+
+The three archive-specific scenarios in `organization-board-live.spec.ts` also
+passed locally, together with its two ordinary-directory cases. Desktop/phone
+archive clients received original Worker archive/restore events and recovered
+an interrupted mirror. The phone Admin case proved private Board filtering,
+role demotion/regrant resets, unchanged archived state after denied restore,
+retired consent and membership withdrawal with a valid login. See
+[executed live delivery](organization-board-realtime.md#executed-native-directory-delivery-and-withdrawal)
+for the complete runtime scope. These passes supersede the earlier local native
+execution gap, but retained-image CI and broader lifecycle acceptance remain.

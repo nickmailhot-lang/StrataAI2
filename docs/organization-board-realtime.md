@@ -8,6 +8,40 @@ snapshot recovery. Full native release acceptance remains pending. See the
 requirements and revision-specific evidence, or return to the
 [documentation index](README.md).
 
+## Executed native directory delivery and withdrawal
+
+All five unchanged `tests/browser/organization-board-live.spec.ts` scenarios
+passed in one local invocation (4.0 minutes, including intentional rate pacing).
+The fixture uses Production API and separate Production Workers, restricted
+schema-110 PostgreSQL, and the production web bundle behind current Nginx/CSP.
+Each Worker has only its newly created test Organization in
+`STRATAAI_WORKER_ORGANIZATION_IDS`; all four Organization discovery loops and
+identity mail delivery are disabled. No existing Worker was replaced. Frozen
+API/Worker assemblies from `identity-policy-after-20261007` are mounted read-only
+in cached runtime images; this is not current retained-image release proof.
+
+- Desktop and phone ordinary directories receive original Worker source IDs,
+  exclude inaccessible private Boards, withdraw names and open creation reviews
+  after grant loss, recover fresh content after regrant without restoring the
+  old review, and withdraw Organization content after membership removal while
+  the account remains signed in.
+- Desktop and phone archive directories observe genuine upstream SignalR
+  frames, match archive/restore IDs and revisions to canonical Board sync, and
+  recover an interrupted mirror without a reload. Interruption and sign-out
+  retire destructive reviews and private directory names.
+- The phone Board Admin case filters an ineligible source before an eligible
+  source, excludes the other private Board, receives real permission resets,
+  refuses restoration after demotion without changing the archived revision,
+  regrants fresh discovery without restoring consent, and removes private
+  review after Organization membership loss with the login still valid.
+
+The test's socket route observes and forwards real upstream messages; it does
+not insert synthetic events. The browser policy allows unverified registered
+accounts, matching the ordinary CI browser phase. Strict verified-email,
+complete lifecycle/permission matrices, accessibility audit, capacity and
+retained-image acceptance remain separate requirements. Later historical notes
+about pending native execution are superseded by this scoped local result.
+
 ## Current implementation
 
 The server selects two separate replay audiences:

@@ -20,6 +20,26 @@ and Vite source do not establish current retained-image or complete Board accept
 
 ## Functional traceability
 
+Four additional existing archived-Board account recovery native cases now pass
+locally at desktop and phone widths against Production API, restricted
+PostgreSQL and the production web bundle behind current Nginx/CSP. Restore and
+permanent deletion preserve unchanged state before uncertain account admission
+and recover the identical original command after a committed change whose
+post-command account confirmation fails. Keyboard, focus, Axe, consent and
+no-reload checks passed. See [executed archive recovery](../board-archive-discovery.md#executed-account-uncertainty-recovery).
+This closes that local execution gap, while retained-image lifecycle, complete
+Board acceptance and performance remain required. The estimate remains 17%.
+
+All five existing Organization Board directory live scenarios now pass locally
+in one 4.0-minute invocation. Two ordinary-directory and two archive-directory
+cases cover desktop/phone genuine Worker delivery; the phone administrative case
+also covers source filtering, demotion/regrant and Organization membership loss.
+Canonical event IDs, reconnect recovery, private content withdrawal, retired
+review/consent and unchanged state after refusal are verified. See
+[live native evidence](../organization-board-realtime.md#executed-native-directory-delivery-and-withdrawal).
+Historical pending-execution notes below retain their revision context; these
+scoped local passes do not establish current retained-image or full acceptance.
+
 | Requirement | Current implementation and relevant coverage | Evidence still required for closure |
 | --- | --- | --- |
 | BOARD-FR-001: authorized creation | OrganizationHome submits a private Board through the keyed work mutation transport; `tests/browser/board.spec.ts` exercises persisted creation and isolation at desktop and phone widths. | Execute the corrected built-in background submission against current release images, including denied creation and empty states. |

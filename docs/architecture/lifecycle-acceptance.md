@@ -14,6 +14,24 @@ Current source audit after deletion attribution and archive observation integrat
 
 ## Record attribution
 
+The four existing archived-Board account uncertainty native cases passed in one
+local Production invocation at desktop and phone widths. Both restore and
+permanent deletion prove no submission before uncertain admission and original
+key/body recovery after actual commitment with withheld account confirmation.
+Keyboard, consent, focus, Axe and no-reload checks passed. See
+[executed archive recovery](../board-archive-discovery.md#executed-account-uncertainty-recovery)
+for runtime and policy limits. These results do not complete Card/List/Board/
+Organization transitions, retention/purge, capacity or retained-image acceptance.
+
+The three archive-directory live cases also passed alongside two ordinary
+directory cases in one five-case invocation. Desktop and phone clients matched
+genuine Worker archive/restore events to canonical sync and recovered an
+interrupted connection. The phone case withheld an inaccessible Board, retired
+destructive consent on role and membership withdrawal, and proved unchanged
+archived state after denied restoration. See [live directory evidence](../organization-board-realtime.md#executed-native-directory-delivery-and-withdrawal).
+PRD-18 remains open at 22% estimated work remaining; this is local scoped
+acceptance, not the complete lifecycle or retained-image release gate.
+
 BoardRecord, BoardListRecord and CardRecord expose nullable ArchivedAt, DeletedAt and DeletedBy, omitting null JSON fields. Demo and PostgreSQL archives record the archive clock, restores clear it, and deletion preserves that clock while recording its own clock. All PostgreSQL canonical reads and mutation projections carry these fields, including parent List attribution in archived Card discovery.
 
 Authorized lifecycle service commands pass the deleting actor into both stores. New store deletions require a nonempty actor. Migration 069 adds retained account references and prevents non-null deletion attribution on non-deleted records; readiness requires this migration. Historical unknown actors remain null. Copying a List resets an archived Card's clock to its new creation time and clears deletion attribution.
