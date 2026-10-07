@@ -421,3 +421,52 @@ or recipient-delivery evidence. `--activity-source-only` is an optional diagnost
 the mandatory full persistence executable still runs this contract and later
 shared-scope contracts. Release build has zero warnings/errors; full current CI
 must confirm the combined sequence before any release acceptance claim.
+
+## Organization request and terminal authority sources
+
+Migration 108 projects the actual `ORGANIZATION_DELETION_REQUESTED` audit and
+canonical `ORGANIZATION_DELETED` lifecycle event into private, immutable,
+forced-RLS source history. Each source references exactly one original record.
+It publishes the existing typed authority root in the owning transaction;
+the production Worker retains the existing 100-candidate leased page capability.
+No HTTP recipient scan or historical backfill is introduced.
+
+A private transition proof binds status, version, timestamp and transaction ID
+to the actual ACTIVE → DELETING or DELETING → DELETED update. Unproven audits,
+sources appended in a later transaction, invalid correlations and late failures
+are refused or rolled back. Request attribution requires a current active Owner.
+Terminal attribution retains the accepted actor even if their account has since
+retired; the existing leased finalizer still proves request and descendant
+completion. Restricted API and Worker logins cannot read either private table.
+
+The mandatory `InvitationOrganizationLifecycleAuthorityContract` passes locally
+against real PostgreSQL with restricted runtime logins. Actual production
+adapters publish the request and process terminal completion. Each source drains
+100/100/5 candidates, excluding a future invitation; duplicate delivery retains
+exactly four source/email effects and two recipient revisions. Original actors,
+correlations, canonical sources and lifecycle readiness remain intact. Initial
+accounts/invitations and transaction admission are disposable fixtures, so this
+is adapter evidence rather than HTTP session or retained-image acceptance.
+`--invitation-organization-lifecycle-only` runs the same diagnostic separately.
+
+Demo captures the real deletion-request mutation in its existing owning command
+proof and journal. Both API-host cases pass: publication failure and final actor
+refusal restore parent and recipient cursors; retry and duplicate acceptance
+invalidate each eligible recipient once, exclude future invitations and recover
+an empty reset without granting membership. Demo terminal processing remains
+unfinished. Release-image lifecycle browser acceptance is still required.
+
+Existing terminal delivery and deletion graph diagnostics pass with schema 108;
+the tenant catalog audit and clean/repeat/forward/serialized/failure-rollback
+migration checks also pass. Full CI for revision 89ba069a passed PostgreSQL,
+including scale and retained activity history, but failed four Demo API cases.
+The repair captures date-policy mutation proofs, admits ordinary Board editors
+for `BOARD_UPDATED`, and checks a deletion administrator's retained membership
+only after proving that the same actor deleted the Board. These checks preserve
+the existing operation-specific access rules. Fresh complete CI is required.
+
+All four formerly failing scenarios now pass in targeted checks: two date-policy
+cases, both deletion-receipt variants, and the actual Linux Board image workflow.
+The nine existing Demo Board authority cases also pass; builds have zero warnings
+and errors. The documented Demo account's three startup/login checks pass.
+These local repairs do not establish a complete green release pipeline.

@@ -1,5 +1,7 @@
 using Npgsql;
 using StrataAI.Application.BackgroundJobs;
+using StrataAI.Application.Onboarding;
+using StrataAI.Infrastructure.Onboarding;
 using StrataAI.Application.Organizations;
 using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.Organizations;
@@ -13,6 +15,16 @@ internal static class OrganizationLifecycleDeliveryContract
         await using var api = new PostgresConnectionFactory(apiConnection);
         await using var worker = new PostgresConnectionFactory(workerConnection);
         var jobs = new PostgresBackgroundJobStore(worker);
+        // Drain the genuine terminal authority source through its typed leased
+        // handler before this fixture isolates lifecycle readiness/reclaim behavior.
+        var authorityJobs = new PostgresBackgroundJobStore(worker, authorityJobsOnly:true);
+        var authorityClaim = await authorityJobs.ClaimAsync(tenant,Guid.NewGuid(),ct)
+            ?? throw new InvalidOperationException("Terminal authority source claim missing.");
+        await new InvitationRecipientAuthorityDeliveryHandler(new PostgresInvitationRecipientAuthorityDeliveryStore(worker)).ExecuteAsync(authorityClaim,ct);
+        Require(await authorityJobs.CompleteAsync(tenant,authorityClaim.Id,authorityClaim.LeaseId,authorityClaim.WorkerId,ct),
+            "Terminal authority source acknowledgment failed.");
+        Require(await authorityJobs.ClaimAsync(tenant,Guid.NewGuid(),ct) is null,
+            "Empty terminal fixture published additional authority pages.");
         var claim = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct) ?? throw new InvalidOperationException("Lifecycle event claim missing.");
         Require(claim.JobType == OrganizationLifecycleDeliveryHandler.Type, "Lifecycle fixture claimed the wrong job.");
         var eventId = OrganizationLifecycleDeliveryHandler.ParseEventId(claim.SafeMetadataJson);

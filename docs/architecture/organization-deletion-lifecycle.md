@@ -710,3 +710,20 @@ the mandatory full CI still includes it and the 105,000-Card scale contract.
 This local result uses compiled source in the framework image; scale and retained
 release-image confirmation still require a fresh CI run. No acceptance issue
 is closed by this repair.
+
+## Recipient invalidation on request and completion
+
+Migration 108 adds private recipient authority sources for the actual deletion
+request audit and canonical terminal lifecycle event. Both publish bounded typed
+Worker jobs atomically with their original transition, using transaction-bound
+proofs and original actor/correlation attribution. Terminal attribution survives
+accepted actor retirement. See the [recipient authority contract](invitation-recipient-authority.md#organization-request-and-terminal-authority-sources)
+for restricted adapter, rollback, cutoff and Demo request evidence.
+
+The scale fixture now expects two authority completions: its Board deletion and
+its terminal Organization event. Its initial request is an explicit unaudited
+fixture, so it does not invent a request source. All original graph, ready-event
+and terminal counts remain required. The terminal delivery fixture drains its
+real authority job through the typed leased handler before isolating lifecycle
+readiness/reclaim assertions. The `--organization-deletion-terminal-only`
+diagnostic preserves the mandatory full executable's terminal contract.

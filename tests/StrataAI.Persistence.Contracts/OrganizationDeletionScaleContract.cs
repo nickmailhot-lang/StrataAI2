@@ -145,7 +145,7 @@ internal static class OrganizationDeletionScaleContract
             "Scale completion recovery changed the original event, time or revision.");
         await OrganizationLifecycleReplayContract.RunAsync(admin, apiConnection, tenant, actor, terminal.Value!.EventId!.Value, true, ct);
         Require(diagnostics.Pages > 800 && diagnostics.Deliveries == activeCards + archivedCards + lists + 1
-            && diagnostics.Terminals == 1 && diagnostics.Authorities == 1, "Scale Worker did not execute all bounded mutations and actual event delivery jobs.");
+            && diagnostics.Terminals == 1 && diagnostics.Authorities == 2, "Scale Worker did not execute all bounded mutations and actual event delivery jobs.");
         Console.WriteLine($"Deletion mutation scale: {activeCards} active + {archivedCards} archived Cards, {lists} Lists, {diagnostics.Pages} bounded mutation jobs, {diagnostics.Deliveries} ready work events, one ready terminal; elapsed {watch.ElapsedMilliseconds}ms, maximum leased page {diagnostics.MaximumPageMilliseconds}ms.");
         await using var cleanup = new NpgsqlCommand("DROP TABLE deletion_scale_card_history,deletion_scale_list_history", admin);
         await cleanup.ExecuteNonQueryAsync(ct);

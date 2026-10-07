@@ -41,6 +41,12 @@ if (args.Contains("--organization-deletion-pages-only", StringComparer.Ordinal))
     await OrganizationDeletionPagesContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+if (args.Contains("--organization-deletion-terminal-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    return;
+}
 if (args.Contains("--invitation-board-authority-concurrency-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
@@ -62,6 +68,12 @@ if (args.Contains("--activity-source-only", StringComparer.Ordinal))
     activityServices.AddStrataAiWorkManagement(new(RuntimeMode.Production,"contract","contract"));
     await using var activityProvider = activityServices.BuildServiceProvider();
     await ActivityEventSourceStoreContract.RunAsync(admin,activityProvider,activityActor,ct);
+    return;
+}
+if (args.Contains("--invitation-organization-lifecycle-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await InvitationOrganizationLifecycleAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
 await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
@@ -124,6 +136,7 @@ try
     await OrganizationMetadataReplayContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await InvitationRecipientAuthorityDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await InvitationBoardAuthorityConcurrencyContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await InvitationOrganizationLifecycleAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionPublicationContract.RunAsync(admin,apiConnection,ct);
     await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);

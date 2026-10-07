@@ -274,6 +274,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
                 UpdatedAt = updatedAt,
                 Version = organization.Version + 1,
             };
+            CaptureAuthorityProof(organizationId, "Organization", organizationId, "ORGANIZATION_DELETION_REQUESTED", organization.Version + 1, updatedAt);
             return Task.FromResult(true);
         }
     }
@@ -289,7 +290,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (eventType is not ("ORGANIZATION_MEMBER_INVITED" or "BOARD_MEMBER_INVITED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED"
-            or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT")) return;
+            or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT" or "ORGANIZATION_DELETION_REQUESTED")) return;
         var audit = new DemoInvitationAudit(Guid.NewGuid(), organizationId, actorUserId, eventType, entityType, entityId, correlationId, clock.UtcNow);
         foreach (var projection in invitationProjections) await projection().AppendAsync(audit, cancellationToken);
     }

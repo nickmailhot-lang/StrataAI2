@@ -32,6 +32,8 @@ internal sealed partial class InMemoryWorkManagementStore
                 || source.CreatedAt < proof.ChangedAt
                 || !_boards.TryGetValue(source.BoardId, out var board) || board.Version != proof.BoardVersion)
                 throw new InvalidOperationException("Board authority transition is unproven.");
+            if (source.EventType == "BOARD_DELETED" && (board.LifecycleState != BoardLifecycleState.Deleted || board.DeletedBy != source.ActorId))
+                throw new InvalidOperationException("Board deletion authority actor is unproven.");
             if (proof.SubjectId != proof.BoardId && (!_members.TryGetValue((proof.BoardId, proof.SubjectId), out var member)
                 || member.Version != proof.SubjectVersion || member.UpdatedAt != proof.ChangedAt
                 || member.Active != (source.EventType == "BOARD_MEMBER_UPDATED")))

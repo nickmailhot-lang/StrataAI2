@@ -13,7 +13,7 @@ internal sealed class InMemoryInvitationAuditProjection(InMemoryInvitationRecipi
 {
     public async Task AppendAsync(DemoInvitationAudit audit, CancellationToken cancellationToken)
     {
-        if (audit.EventType is "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT")
+        if (audit.EventType is "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT" or "ORGANIZATION_DELETION_REQUESTED")
         {
             if (audit.Id == Guid.Empty || audit.ActorId == Guid.Empty || audit.CorrelationId.Length is < 1 or > 64
                 || await identities.FindUserByIdAsync(audit.ActorId, cancellationToken) is not { Status: AccountStatus.Active })
@@ -27,6 +27,14 @@ internal sealed class InMemoryInvitationAuditProjection(InMemoryInvitationRecipi
             if (audit.EventType == "ORGANIZATION_MEMBER_LEFT" ? !selfDeparture
                 : actor is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin } && !selfDeparture)
                 throw new InvalidOperationException("Organization authority source actor is unavailable.");
+            if (audit.EventType == "ORGANIZATION_DELETION_REQUESTED")
+            {
+                var parent = await organizations.FindOrganizationAsync(audit.OrganizationId, cancellationToken);
+                if (actor is not { Active: true, Role: OrganizationRole.Owner } || authorityProof.EntityType != "Organization"
+                    || authorityProof.EntityId != audit.OrganizationId || parent is not { Status: OrganizationStatus.Deleting }
+                    || parent.Version != authorityProof.Version || parent.UpdatedAt != authorityProof.CreatedAt)
+                    throw new InvalidOperationException("Organization deletion request source is unproven.");
+            }
             journal.PublishAuthoritySource(audit, authorityProof, cancellationToken);
             journal.SimulateAuthorityDelivery(audit, invitations, cancellationToken);
             return;

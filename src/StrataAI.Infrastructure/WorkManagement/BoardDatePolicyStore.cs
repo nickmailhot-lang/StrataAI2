@@ -16,6 +16,7 @@ internal sealed partial class InMemoryWorkManagementStore : IBoardDatePolicyStor
             var updated = board with { DateTimezoneOverride = timezone, Version = version + 1,
                 UpdatedAt = now > board.UpdatedAt ? now : board.UpdatedAt };
             _boards[boardId] = updated;
+            CaptureBoardAuthorityProof(updated, "BOARD_UPDATED", updated.UpdatedAt);
             return Task.FromResult<BoardRecord?>(updated);
         }
     }
