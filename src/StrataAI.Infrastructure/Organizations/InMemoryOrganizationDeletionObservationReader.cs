@@ -26,8 +26,17 @@ internal sealed class InMemoryOrganizationDeletionObservationReader(InMemoryOrga
                 if(!await actors.VerifyAsync(actorId,cancellationToken))return SessionUnavailable();
                 var parent=await organizations.FindOrganizationAsync(organizationId,cancellationToken);
                 var request=journal.ReadAccepted(organizationId,actorId,requestId);
-                if(request is null || parent is not {Status:OrganizationStatus.Deleting} || parent.Version!=request.AcceptedVersion)return Missing();
-                var observed=new OrganizationDeletionObservation(requestId,"PENDING",parent.Version,null,null);
+                if(request is null || parent is null)return Missing();
+                OrganizationDeletionObservation? observed = null;
+                var terminal = journal.ReadCompletion(organizationId);
+                if(parent.Status == OrganizationStatus.Deleting && parent.Version == request.AcceptedVersion && terminal is null)
+                    observed = new(requestId,"PENDING",parent.Version,null,null);
+                if(parent.Status == OrganizationStatus.Deleted && parent.Version == checked(request.AcceptedVersion + 1)
+                    && terminal is not null && terminal.ActorId == actorId && terminal.Version == parent.Version
+                    && terminal.CreatedAt == parent.UpdatedAt
+                    && ((InMemoryOrganizationStore)organizations).MatchesDeletionAttribution(organizationId, actorId, terminal.CreatedAt))
+                    observed = new(requestId,"COMPLETED",parent.Version,terminal.EventId,terminal.CreatedAt);
+                if(observed is null)return Missing();
                 if(!await actors.VerifyAsync(actorId,cancellationToken))return SessionUnavailable();
                 return OrganizationOperation<OrganizationDeletionObservation>.Success(observed);
             }

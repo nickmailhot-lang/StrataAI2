@@ -5,6 +5,7 @@ import { expect, test } from './releaseTest';
 // Uses the exact release Worker already loaded by CI. No privileged SQL creates
 // terminal state, advances progress, marks jobs ready or fabricates snapshots.
 function deletionWorker(enabled: boolean) {
+  if (process.env.STRATAAI_E2E_RUNTIME_MODE === 'demo') return;
   const env: NodeJS.ProcessEnv = { ...process.env, STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED: String(enabled) };
   if (enabled) env.STRATAAI_WORKER_ORGANIZATION_IDS = '';
   execFileSync('docker', ['compose', '-f', 'compose.release.yml', '-f', 'scripts/ci/compose.auth-test.yml',
@@ -15,9 +16,11 @@ function deletionWorker(enabled: boolean) {
 }
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
-  test(`PRD-03-WS-FR-010/TC-01/06/07/10/11/12: Worker finishes before lost acknowledgment recovery at ${viewport.width}px`, async ({ page, context, browser }) => {
+  test(`PRD-03-WS-FR-010/TC-01/06/07/10/11/12: ${process.env.STRATAAI_E2E_RUNTIME_MODE === 'demo' ? 'Demo simulation' : 'Worker'} finishes before lost acknowledgment recovery at ${viewport.width}px`, async ({ page, context, browser }) => {
     test.setTimeout(150_000);
     expect(process.env.CI).toBe('true');
+    const demo = process.env.STRATAAI_E2E_RUNTIME_MODE === 'demo';
+    expect((await (await context.request.get('/api/runtime')).json()).mode).toBe(demo ? 'demo' : 'production');
     await page.setViewportSize(viewport);
     const headers = { 'X-StrataAI-Request': '1' };
     const credentials = { email: `terminal-deletion-${viewport.width}-${Date.now()}@example.test`,
@@ -85,8 +88,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const retry = page.getByRole('button', { name: 'Retry original deletion request', exact: true });
     await expect(retry).toBeFocused(); expect(writes).toHaveLength(1);
     const pendingLifecycle = await member.request.get(lifecyclePath); expect(pendingLifecycle.status()).toBe(200);
-    expect(await pendingLifecycle.json()).toEqual({ state: 'PENDING', events: [] });
-    await expect(observer.getByRole('status')).toHaveText('Organization deletion is being confirmed.');
+    const pendingPage = await pendingLifecycle.json();
+    if (!demo) {
+      // Production delivery is explicitly paused until the Worker below starts.
+      expect(pendingPage).toEqual({ state: 'PENDING', events: [] });
+      await expect(observer.getByRole('status')).toHaveText('Organization deletion is being confirmed.');
+    } else {
+      // Demo dispatch is automatic: it may commit before this observation.
+      expect(['PENDING', 'COMPLETED']).toContain(pendingPage.state);
+      expect(pendingPage.events).toHaveLength(pendingPage.state === 'COMPLETED' ? 1 : 0);
+    }
     await expect(observer.getByText('Terminal deletion council', { exact: true })).toHaveCount(0);
     await member.setOffline(true);
     const key = writes[0]; const statusPath = `/organizations/${org}/deletion-requests/${key}?expectedActorId=${actor}`;

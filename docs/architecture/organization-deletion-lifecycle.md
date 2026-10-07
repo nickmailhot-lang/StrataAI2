@@ -6,8 +6,9 @@
 completion beyond the [deletion request acknowledgment](organization-deletion-retries.md).
 This defines the completion implementation. Publication, graph stages and the terminal storage gate have infrastructure/Worker
 implementations. Product deletion now publishes the accepted request and first
-job atomically. Browser completion, Demo terminal processing and full release
-acceptance remain unfinished.
+job atomically. Production Worker processing and Demo API-hosted simulation
+connect actual graph transitions to protected completion recovery. Full current
+release acceptance and remaining lifecycle/performance requirements are unproven.
 A 202 remains an acknowledgment of the accepted request.
 
 ## State and graph treatment
@@ -299,9 +300,9 @@ including cover/background cleanup and unchanged prior history/provider evidence
 and live browser completion require further evidence before PRD acceptance.
 
 The product API now publishes deletion work. Its 202 still confirms the request;
-only an authoritative observation confirms completion. Demo terminal parity,
-browser observation, two-client invalidation/reconnect and exact-image acceptance
-remain unfinished.
+only an authoritative observation confirms completion. Demo terminal processing
+and browser observation/two-client recovery are connected as described below;
+exact-image acceptance remains required.
 
 ## Demo publication transaction foundation
 
@@ -320,8 +321,8 @@ publication/replay and rollback on refusal, final actor loss, exception or
 cancellation, followed by recovery that proves the failed journal was removed.
 Compilation passed with zero warnings/errors; runtime execution is pending CI.
 The production publisher is registered alongside the Demo implementation. The
-product service now invokes them atomically with the request. Demo page execution,
-completion observation and browser integration remain required; an in-memory
+product service invokes them atomically with the request. Demo page execution,
+completion observation and browser integration are now connected; an in-memory
 journal is not durable across process restarts and does not replace production
 PostgreSQL jobs or the separate Worker.
 
@@ -332,6 +333,10 @@ service dependency for completing the accepted deletion graph. It is not an HTTP
 endpoint or a replacement for the Production Worker. Each call borrows an owning
 Organization command, requires the exact accepted request/version and its
 original current Owner/active account, and processes at most 128 candidates.
+The automatic executor instead holds an internal capability derived exclusively
+from that immutable committed request under both Demo gates. This lets already
+accepted work finish after the original actor logs out or retires; HTTP and
+ordinary Work transactions cannot create this capability.
 Work-only or unowned calls, foreign requests, mismatched versions, demoted actors
 and limits outside 1–128 are rejected before effects.
 
@@ -354,14 +359,38 @@ refusal, final actor loss, cancellation or event-publication failure. This is
 bounded-page correctness evidence, not the full 100,000-archived-Card acceptance
 case or native release-image execution.
 
-Automatic Demo dispatch, canonical terminal source/readiness, original-Owner
-completion observation and protected lifecycle/browser recovery still need
-integration. No product command invokes this simulation yet. A zero-candidate
-page establishes graph exhaustion only: the parent remains DELETING and its
-request observation remains PENDING. API restart loses this process-local graph
-and history; sample-catalog reset does not operate on them. Production's durable
-request, restricted PostgreSQL graph pages, lease checks and separate Worker are
-unchanged.
+`DemoOrganizationDeletionSimulationHost` automatically discovers committed
+pending requests in UUID order, wrapping between attempts so a failed request
+does not starve other Organizations. The Demo API processes each request under
+both owning gates, traversing actual 128-candidate pages until exhaustion. It
+then commits DELETED at accepted version plus one, original deleting actor/time,
+the actual terminal audit with original correlation, recipient authority effects
+and one canonical content-free completion source. A final cancellation fence
+precedes commit. Late failure restores all participating graph, audit, authority,
+parent and completion-source stores; pending work retries after 500 ms.
+
+A zero-candidate graph page alone still establishes exhaustion only. The
+completion publisher verifies the real terminal parent, attribution and audit
+before recording readiness. Matching accepted-request recovery preserves the
+original 202 receipt and does not republish work or replace the terminal source.
+Protected member HTTP and SignalR readers recover that exact source with
+current account/session/membership fences. Normal Organization and descendant
+reads remain unavailable after deletion.
+
+Five API-host checks pass for actual 130-archived-Card terminal traversal,
+stable content-free source/Owner observation, duplicate processing, source
+withdrawal, automatic execution after logout and accepted-actor retirement.
+Two of those cases fail or cancel after actual completion-source publication
+and prove full rollback followed by recovery. All 54 selected PRD-03 API-host
+checks pass. This is Demo correctness evidence, not supported-scale or retained
+release-image acceptance.
+
+Demo executes the whole accepted request atomically in memory; it does not
+simulate durable page checkpoints or crash recovery. API restart loses this
+process-local graph and history; sample-catalog reset does not operate on them.
+Production's durable request, restricted PostgreSQL graph pages, lease checks
+and separate Worker are unchanged. Retained binary metadata is not proof of
+physical provider erasure or backup expiration.
 
 ## Independent original-Owner observation
 
@@ -385,11 +414,12 @@ its read. Missing/foreign requests and former/nonoriginal Owners return the same
 unconfirmed storage returns `organization_storage_unavailable`. A missing normal
 GET or an unavailable status must never be interpreted as completed deletion.
 
-Demo reads use both owning gates and the accepted journal. They can report a
-proven pending request; Demo terminal graph/event execution remains unfinished,
-so no completed snapshot is invented. Product deletion commands now publish
-canonical roots. Browser status consumption and full HTTP/Worker acceptance
-still need completion.
+Demo reads use both owning gates and the accepted journal. They report PENDING
+only for the exact accepted DELETING parent, and COMPLETED only for the matching
+actual DELETED parent, original attribution and canonical source/version/time.
+Product deletion commands publish canonical roots; automatic processing and
+browser status consumption are connected. Full retained-image HTTP/Worker
+acceptance remains required.
 Legacy DELETING rows without a canonical accepted request are unavailable here.
 
 API-host cases exercise pending status after ordinary access withdrawal, exact
@@ -636,7 +666,8 @@ finishes, reconnects without a document reload, compares the streamed original
 event with the Owner's status snapshot, checks accessible neutral UI at both widths,
 recovers completion in a new document with no prior graph admission, and withdraws
 completion in both Member pages after actual logout. Execution against exact release images
-is still required. Demo terminal parity remains unfinished; local tests alone do not
+is still required. Demo now runs the same native scenarios using its automatic
+API-hosted simulation; local tests alone do not
 satisfy the complete two-client acceptance criterion.
 
 The native fixture additionally signs in the Member in another real browser

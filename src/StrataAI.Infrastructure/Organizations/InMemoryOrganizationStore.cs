@@ -13,6 +13,8 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
     private readonly object _sync = new();
     private readonly Dictionary<Guid, OrganizationRecord> _organizations = [];
     private readonly Dictionary<(Guid OrganizationId, Guid UserId), OrganizationMembership> _members = [];
+    private readonly Dictionary<Guid, (Guid Actor, DateTimeOffset At)> _deletionAttribution = [];
+    private readonly Dictionary<Guid, DemoInvitationAudit> _deletionAudits = [];
 
     public async Task<IReadOnlyList<OrganizationMemberSummary>> ListActiveMembersAsync(Guid organizationId,
         Guid? after, CancellationToken cancellationToken = default, Guid? userId = null,
@@ -295,16 +297,40 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (eventType is not ("ORGANIZATION_CREATED" or "ORGANIZATION_MEMBER_ADDED" or "ORGANIZATION_MEMBER_INVITED" or "BOARD_MEMBER_INVITED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED"
-            or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT" or "ORGANIZATION_DELETION_REQUESTED")) return;
-        var audit = new DemoInvitationAudit(Guid.NewGuid(), organizationId, actorUserId, eventType, entityType, entityId, correlationId, clock.UtcNow);
+            or "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT" or "ORGANIZATION_DELETION_REQUESTED" or "ORGANIZATION_DELETED")) return;
+        var auditTime = eventType == "ORGANIZATION_DELETED"
+            ? RequireTransitionProof(organizationId, entityType, entityId, eventType).CreatedAt : clock.UtcNow;
+        var audit = new DemoInvitationAudit(Guid.NewGuid(), organizationId, actorUserId, eventType, entityType, entityId, correlationId, auditTime);
         if (eventType is not ("ORGANIZATION_CREATED" or "ORGANIZATION_MEMBER_ADDED"))
             foreach (var projection in invitationProjections) await projection().AppendAsync(audit, cancellationToken);
         await metadataJournal().AppendAsync(audit, cancellationToken);
+        if (eventType == "ORGANIZATION_DELETED") _deletionAudits.Add(organizationId, audit);
     }
 
     internal OrganizationMembership? FindMetadataMembership(Guid organizationId, Guid membershipId)
     {
         lock (_sync) return _members.Values.SingleOrDefault(member => member.OrganizationId == organizationId && member.Id == membershipId);
+    }
+    internal void CompleteAcceptedDeletion(Guid organization, Guid actor, Guid request, long version, DateTimeOffset at)
+    {
+        if (!workScope.OwnsAcceptedDeletion(organization, actor, request)) throw new OrganizationDeletionPublicationUnavailableException();
+        lock (_sync)
+        {
+            if (!_organizations.TryGetValue(organization, out var parent) || parent.Status != OrganizationStatus.Deleting
+                || parent.Version != version || at < parent.UpdatedAt || _deletionAttribution.ContainsKey(organization))
+                throw new OrganizationDeletionPublicationUnavailableException();
+            var terminalVersion = checked(version + 1);
+            _organizations[organization] = parent with { Status = OrganizationStatus.Deleted, UpdatedAt = at, Version = terminalVersion };
+            _deletionAttribution.Add(organization, (actor, at));
+            CaptureAuthorityProof(organization, "Organization", organization, "ORGANIZATION_DELETED", terminalVersion, at);
+        }
+    }
+    internal bool MatchesDeletionAttribution(Guid organization, Guid actor, DateTimeOffset at)
+    { lock (_sync) return _deletionAttribution.GetValueOrDefault(organization) == (actor, at); }
+    internal DemoInvitationAudit? ReadDeletionAudit(Guid organization, Guid actor, Guid request)
+    {
+        if (!workScope.OwnsAcceptedDeletion(organization, actor, request)) throw new OrganizationDeletionPublicationUnavailableException();
+        return _deletionAudits.GetValueOrDefault(organization);
     }
 }
 
@@ -317,7 +343,9 @@ internal sealed partial class InMemoryOrganizationStore : IDemoOrganizationTrans
             var organizations = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_organizations);
             var members = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_members);
             var authority = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_authorityProofs);
-            return () => { lock (_sync) { organizations(); members(); authority(); } };
+            var attribution = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_deletionAttribution);
+            var audits = StrataAI.Infrastructure.WorkManagement.DemoRollback.Dictionary(_deletionAudits);
+            return () => { lock (_sync) { organizations(); members(); authority(); attribution(); audits(); } };
         }
     }
 }

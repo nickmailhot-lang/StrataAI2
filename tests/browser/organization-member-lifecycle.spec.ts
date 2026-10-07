@@ -37,7 +37,8 @@ for (const width of [1280, 390]) for (const offline of [false, true]) {
       const member = await context.request.post('/auth/register', { headers, data: memberCredentials });
       expect(member.status()).toBe(201); const memberId = (await member.json()).user.id;
       expect((await context.request.post('/auth/login', { headers, data: memberCredentials })).status()).toBe(200);
-      expect((await (await context.request.get('/api/runtime')).json()).mode).toBe('production');
+      expect((await (await context.request.get('/api/runtime')).json()).mode)
+        .toBe(process.env.STRATAAI_E2E_RUNTIME_MODE === 'demo' ? 'demo' : 'production');
       const created = await owner.request.post('/organizations', { headers, data: { name: 'Member lifecycle council' } });
       expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
       const invitation = await owner.request.post(`/organizations/${org}/invitations`, { headers,

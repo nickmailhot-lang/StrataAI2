@@ -41,3 +41,20 @@ Board deletion now requires explicit confirmation at HTTP and Application bounda
 Board tombstone receipt recovery now has a dedicated fresh-admission path for current Organization/Board administrators with active Organization membership. Normal Board/member lookup excludes deleted Boards in both stores. Source API and PostgreSQL container cases cover identical replay, changed consent, new keys, normal-read non-disclosure, membership revocation and atomic audit rollback. Their runtime execution remains pending. The archive directory retains an unresolved original deletion for recovery after its Board disappears from discovery.
 
 Board archive discovery now has a bounded, current-admin-filtered Organization API with minimal item fields and private/no-store responses. Current grants filter before 50-item pagination, and the read transaction preserves Organization/account admission and Board gates. Its MUI directory validates scope, paging and current identity and offers reviewed restore/delete commands. See board-archive-discovery.md for coverage and remaining lifecycle acceptance. Compilation/script syntax and focused web checks pass; API/PostgreSQL/native runtime execution remains pending.
+
+## Automatic Demo Organization deletion
+
+Demo now processes immutable accepted requests automatically inside the API,
+traversing actual attachments, archived/active Cards, Lists and Boards before
+committing original attribution, terminal audit and canonical completion source.
+Late failure or cancellation restores the graph and source together. Accepted
+work can finish after the requesting actor retires; protected reads retain
+current account/session/membership fences. Five API-host cases and six actual
+desktop/phone browser cases pass, including lost acknowledgment, connected and
+disconnected member recovery, content withdrawal and logout. See the
+[implementation and verification scope](organization-deletion-lifecycle.md#demo-bounded-graph-simulation).
+
+This removes a Demo lifecycle integration gap. It does not establish supported
+scale, retained release-image acceptance, physical object erasure, backup expiry
+or the entire restoration/search/notification matrix. Estimated PRD-18 work
+remaining is **22%**, a planning estimate; the ticket stays open.

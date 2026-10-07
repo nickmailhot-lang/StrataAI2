@@ -93,7 +93,6 @@ export function watchOrganizationLifecycle(options: {
         if (disposed) return;
         if (!runtime || typeof runtime !== 'object' || !('service' in runtime) || runtime.service !== 'strataai-api'
           || !('mode' in runtime) || runtime.mode !== 'production' && runtime.mode !== 'demo') throw new Error('Runtime unavailable');
-        if (runtime.mode === 'demo') return;
         runtimeConfirmed = true;
       }
       await account(); if (disposed) return;

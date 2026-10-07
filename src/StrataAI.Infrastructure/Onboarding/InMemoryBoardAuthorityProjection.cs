@@ -11,12 +11,13 @@ internal interface IDemoBoardAuthorityProjection
 }
 internal sealed class InMemoryBoardAuthorityProjection(InMemoryInvitationRecipientJournal journal,
     InMemoryInvitationStore invitations, IWorkManagementStore work, IOrganizationStore organizations,
-    IIdentityStore identities) : IDemoBoardAuthorityProjection
+    IIdentityStore identities, DemoWorkTransactionScope scope) : IDemoBoardAuthorityProjection
 {
     public async Task AppendAsync(WorkEvent source, CancellationToken ct)
     {
         if (source.EventId == Guid.Empty || source.ActorId == Guid.Empty || source.CorrelationId.Length is < 1 or > 64
-            || await identities.FindUserByIdAsync(source.ActorId, ct) is not { Status: AccountStatus.Active })
+            || !scope.OwnsAcceptedDeletion(source.OrganizationId, source.ActorId)
+                && await identities.FindUserByIdAsync(source.ActorId, ct) is not { Status: AccountStatus.Active })
             throw new InvalidOperationException("Board authority source is invalid.");
         var proof = ((InMemoryWorkManagementStore)work).RequireBoardAuthorityProof(source);
         var member = await organizations.FindMembershipAsync(source.OrganizationId, source.ActorId, ct);
@@ -27,8 +28,9 @@ internal sealed class InMemoryBoardAuthorityProjection(InMemoryInvitationRecipie
         var editorChange = source.EventType == "BOARD_UPDATED" && boardMember is { Active: true, Role: BoardRole.Member };
         var selfChange = proof.SubjectId == source.ActorId && proof.PreviousRole == BoardRole.Admin
             && source.EventType is "BOARD_MEMBER_UPDATED" or "BOARD_MEMBER_REMOVED";
-        if (member is not { Active: true } || member.Role is not (OrganizationRole.Owner or OrganizationRole.Admin)
-            && boardMember is not { Active: true, Role: BoardRole.Admin } && !selfChange && !editorChange)
+        if (!scope.OwnsAcceptedDeletion(source.OrganizationId, source.ActorId)
+            && (member is not { Active: true } || member.Role is not (OrganizationRole.Owner or OrganizationRole.Admin)
+                && boardMember is not { Active: true, Role: BoardRole.Admin } && !selfChange && !editorChange))
             throw new InvalidOperationException("Board authority actor is unavailable.");
         journal.PublishBoardAuthoritySource(source, proof, invitations, ct);
     }

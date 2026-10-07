@@ -303,13 +303,10 @@ page boundary, file-integrity retention, unchanged other-tenant records and
 current original-Owner/request/version/limit admission. The API host builds with
 zero warnings/errors.
 
-This supplies a prerequisite for WS-FR-010. Automatic Demo dispatch, terminal
-Organization state/event readiness and protected HTTP/SignalR/browser lifecycle
-recovery remain unfinished. The existing parent/request stays DELETING/PENDING;
-the simulation has no product command or HTTP entry point yet. The bounded
-fixture does not prove supported-scale performance or full release acceptance.
-Estimated PRD-03 work remaining remains **11%** until that integration and the
-remaining acceptance checks have current evidence.
+This supplied the graph prerequisite for WS-FR-010. Automatic dispatch and
+protected completion recovery are now connected as recorded below. The bounded
+fixture alone does not prove supported-scale performance or full release
+acceptance; the estimate at that prerequisite revision was **11%** remaining.
 
 The fresh full solution builds with zero warnings/errors. All 739 domain checks
 pass against the same compiled output in a disposable Linux SDK container with
@@ -320,3 +317,38 @@ dependency check initially failed to find source from the external artifact
 directory. Its lookup now considers the actual compile-time source and working
 directory as well as output ancestors, and the unchanged project-reference rules
 pass in the fresh external build. Missing source still fails the check.
+
+## Automatic Demo terminal lifecycle and native recovery
+
+The Demo API now automatically discovers immutable accepted requests and executes
+the actual bounded graph pages. It commits terminal parent/version/attribution,
+actual audit, recipient authority effects and one canonical completion source
+together, with full rollback on late failure or cancellation. The committed
+request supplies execution authority independently of the browser session.
+Protected original-Owner observation and current-member HTTP/SignalR lifecycle
+recovery enforce current account/session/membership admission. Production retains
+the separate durable Worker and restricted PostgreSQL jobs; Demo processing is
+process-local and has no restart durability or provider-erasure claim.
+
+All five new API-host cases and all 54 selected PRD-03 cases pass. The latest
+fresh solution build has zero warnings/errors; all three known Demo-account
+checks also pass against that build. A fresh readonly compiled Demo API in
+Development and production web bundle pass six actual browser cases: desktop
+and phone original-key recovery after deliberately lost acknowledgment, exact
+terminal event/version/time, connected and genuinely disconnected member
+recovery without document reload, cached-content withdrawal, private Owner
+request refusal, fresh terminal deep links, account replacement/logout,
+keyboard focus and accessibility. No SQL or test code fabricates terminal state.
+
+All four Demo metadata/settings browser cases also pass against the updated
+runtime and bundle, for ten passing Demo native scenarios in total. Browser
+TypeScript, zero-warning lint, production web build, workflow YAML, all 141 Bash
+step blocks and retained-image Demo Compose configuration checks pass.
+CI now requires those ten scenarios using only the retained API/web images. Local framework
+containers and production bundles do not prove the retained-image gate. The
+current full web source run has reported failures and remains under review;
+focused lifecycle checks passing is not reported as full web acceptance.
+
+Estimated PRD-03 work remaining is **10%**, a planning estimate. Current complete
+release acceptance, remaining lifecycle/performance coverage and applicable
+retention treatment keep this ticket open.

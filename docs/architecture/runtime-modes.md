@@ -31,11 +31,22 @@ including browser draft preservation and reconnect recovery. Demo publication is
 synchronous in-memory simulation; Production retains its separate durable Worker.
 API restart resets the journal, while sample-catalog reset leaves it intact.
 
-Demo also has a [bounded deletion graph simulation dependency](organization-deletion-lifecycle.md#demo-bounded-graph-simulation)
-for the accepted request. Its protected page processing has source tests, but
-automatic dispatch and terminal lifecycle publication are not yet connected.
-Demo deletion still reports an accepted, pending request; it does not report
-completed deletion from an empty graph or unavailable ordinary read.
+Demo automatically processes committed deletion requests through a
+[bounded graph simulation](organization-deletion-lifecycle.md#demo-bounded-graph-simulation)
+hosted inside the Demo API. It traverses actual attachments, Cards, Lists and
+Boards, retains history, then commits the terminal Organization audit and
+canonical completion source together. Protected Owner observations and member
+HTTP/SignalR lifecycle recovery consume that source. A 202 acknowledges the
+request; an empty graph or unavailable ordinary read never establishes completion.
+
+This simulation is process-local and does not use external providers. Failed
+processing restores the graph, history, parent and source before retrying. The
+accepted request supplies the original actor authority independently of a
+browser session; current account/membership/session checks still protect reads.
+API restart loses this Demo state, while sample-catalog reset leaves it intact.
+Production retains its separate Worker, restricted PostgreSQL durable jobs,
+leases and transactional outbox. Demo completion does not prove physical object
+erasure or backup expiration.
 
 ### Demo sign-in
 

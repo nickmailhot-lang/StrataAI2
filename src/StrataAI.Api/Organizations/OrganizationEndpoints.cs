@@ -8,9 +8,7 @@ public static class OrganizationEndpoints
     public static void MapOrganizationEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/organizations").RequireAuthorization().AddEndpointFilter<OrganizationTelemetryResultFilter>();
-        if (app.Services.GetRequiredService<StrataAI.Application.Runtime.RuntimeDescriptor>().Mode == StrataAI.Application.Runtime.RuntimeMode.Production)
-        {
-            group.MapGet("/{organizationId:guid}/lifecycle-events", async (Guid organizationId, Guid? expectedActorId,
+        group.MapGet("/{organizationId:guid}/lifecycle-events", async (Guid organizationId, Guid? expectedActorId,
                 HttpContext context, IOrganizationLifecycleEventReader reader, CancellationToken cancellationToken) =>
             {
                 context.Response.Headers.CacheControl = "private, no-store";
@@ -19,7 +17,6 @@ public static class OrganizationEndpoints
                 var result = await reader.ReadAsync(organizationId, actor.Value, cancellationToken);
                 return result.Succeeded ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
             });
-        }
         group.MapGet("/{organizationId:guid}/metadata-events", async (Guid organizationId, Guid? expectedActorId,
             string? cursor, int? limit, HttpContext context, TransactionalOrganizationMetadataSynchronization replay,
             CancellationToken cancellationToken) =>

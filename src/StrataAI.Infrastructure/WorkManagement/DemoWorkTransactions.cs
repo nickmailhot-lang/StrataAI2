@@ -6,13 +6,18 @@ internal interface IDemoWorkTransactionParticipant
 }
 internal sealed class DemoWorkTransactionScope
 {
-    private readonly AsyncLocal<(Guid Organization, bool OrganizationCommand, Guid CommandId)?> _organization = new();
+    private readonly AsyncLocal<(Guid Organization, bool OrganizationCommand, Guid CommandId, Guid? DeletionRequest, Guid? DeletionActor)?> _organization = new();
     public Guid CommandId => _organization.Value?.CommandId ?? Guid.Empty;
     public bool Owns(Guid organization) => _organization.Value?.Organization == organization;
     public bool OwnsOrganizationCommand(Guid organization) => Owns(organization) && _organization.Value?.OrganizationCommand == true;
-    public IDisposable Enter(Guid organization, bool organizationCommand = false)
+    internal bool OwnsAcceptedDeletion(Guid organization, Guid actor, Guid? request = null) =>
+        OwnsOrganizationCommand(organization) && _organization.Value?.DeletionActor == actor
+        && _organization.Value?.DeletionRequest is { } accepted && (request is null || request == accepted);
+    public IDisposable Enter(Guid organization, bool organizationCommand = false, Guid? deletionRequest = null, Guid? deletionActor = null)
     {
-        var previous = _organization.Value; _organization.Value = (organization, organizationCommand, Guid.NewGuid());
+        if (deletionRequest.HasValue != deletionActor.HasValue || deletionRequest == Guid.Empty || deletionActor == Guid.Empty
+            || deletionRequest.HasValue && !organizationCommand) throw new InvalidOperationException("Accepted deletion scope is invalid.");
+        var previous = _organization.Value; _organization.Value = (organization, organizationCommand, Guid.NewGuid(), deletionRequest, deletionActor);
         return new Lease(() => _organization.Value = previous);
     }
     private sealed class Lease(Action release) : IDisposable

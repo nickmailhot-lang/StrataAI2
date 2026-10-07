@@ -87,8 +87,11 @@ it('fences a frame whose profile read finishes after reconnect has replaced its 
   expect(f.update).toHaveBeenCalledWith('COMPLETED', event);
   expect(f.accountUnavailable).not.toHaveBeenCalled(); f.cleanup();
 });
-it('skips Demo without a socket or simulated terminal result', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => reply({ service: 'strataai-api', mode: 'demo' }))); const f = fixture(false);
-  await new Promise(resolve => setTimeout(resolve, 0)); expect(f.connection.start).not.toHaveBeenCalled();
-  expect(f.update).not.toHaveBeenCalled(); expect(f.unavailable).not.toHaveBeenCalled(); f.cleanup();
+it('connects Demo after actual account admission and consumes its canonical terminal frame', async () => {
+  vi.stubGlobal('fetch', vi.fn(async input => reply(String(input).includes('/api/runtime')
+    ? { service: 'strataai-api', mode: 'demo' } : profile))); const f = fixture(false);
+  await vi.waitFor(() => expect(f.connection.stream).toHaveBeenCalledWith('Watch', org));
+  expect(f.update).not.toHaveBeenCalled(); f.next(completed);
+  await vi.waitFor(() => expect(f.update).toHaveBeenCalledWith('COMPLETED', event));
+  expect(f.unavailable).not.toHaveBeenCalled(); f.cleanup();
 });

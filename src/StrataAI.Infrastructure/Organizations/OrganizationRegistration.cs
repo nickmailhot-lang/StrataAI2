@@ -28,6 +28,11 @@ public static class OrganizationRegistration
             services.AddSingleton<InMemoryOrganizationDeletionGraphSimulation>();
             services.AddSingleton<IOrganizationDeletionGraphSimulation>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionGraphSimulation>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionGraphSimulation>());
+            services.AddSingleton<IOrganizationLifecycleEventReader, InMemoryOrganizationLifecycleEventReader>();
+            services.AddSingleton<IDemoOrganizationDeletionSimulation, InMemoryOrganizationDeletionSimulation>();
+            services.AddSingleton<IDemoOrganizationDeletionCompletionPublisher, InMemoryOrganizationDeletionCompletionPublisher>();
+            services.AddSingleton(new DemoOrganizationDeletionSimulationOptions());
+            services.AddHostedService<DemoOrganizationDeletionSimulationHost>();
             services.AddSingleton<IOrganizationDeletionObservationReader, InMemoryOrganizationDeletionObservationReader>();
             services.AddSingleton<IOrganizationDeletionJobPublisher>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionJobPublisher>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionJobPublisher>());

@@ -4,19 +4,21 @@ using StrataAI.Application.Onboarding;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Infrastructure.Organizations;
+using StrataAI.Infrastructure.WorkManagement;
 
 namespace StrataAI.Infrastructure.Onboarding;
 
 internal sealed class InMemoryInvitationAuditProjection(InMemoryInvitationRecipientJournal journal,
     InMemoryInvitationStore invitations, IOrganizationStore organizations, IWorkManagementStore work,
-    IIdentityStore identities, IClock clock) : IDemoInvitationAuditProjection
+    IIdentityStore identities, IClock clock, DemoWorkTransactionScope scope) : IDemoInvitationAuditProjection
 {
     public async Task AppendAsync(DemoInvitationAudit audit, CancellationToken cancellationToken)
     {
-        if (audit.EventType is "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT" or "ORGANIZATION_DELETION_REQUESTED")
+        if (audit.EventType is "ORGANIZATION_UPDATED" or "ORGANIZATION_MEMBER_REMOVED" or "ORGANIZATION_MEMBER_LEFT" or "ORGANIZATION_DELETION_REQUESTED" or "ORGANIZATION_DELETED")
         {
+            var acceptedCompletion = audit.EventType == "ORGANIZATION_DELETED" && scope.OwnsAcceptedDeletion(audit.OrganizationId, audit.ActorId);
             if (audit.Id == Guid.Empty || audit.ActorId == Guid.Empty || audit.CorrelationId.Length is < 1 or > 64
-                || await identities.FindUserByIdAsync(audit.ActorId, cancellationToken) is not { Status: AccountStatus.Active })
+                || !acceptedCompletion && await identities.FindUserByIdAsync(audit.ActorId, cancellationToken) is not { Status: AccountStatus.Active })
                 throw new InvalidOperationException("Organization authority source is invalid.");
             var authorityProof = ((InMemoryOrganizationStore)organizations).RequireAuthorityProof(audit.OrganizationId, audit.EntityType, audit.EntityId, audit.EventType);
             var actor = await organizations.FindMembershipAsync(audit.OrganizationId, audit.ActorId, cancellationToken);
@@ -24,8 +26,8 @@ internal sealed class InMemoryInvitationAuditProjection(InMemoryInvitationRecipi
                 && actor.Version == authorityProof.Version && actor.UpdatedAt == authorityProof.CreatedAt
                 && (audit.EventType == "ORGANIZATION_MEMBER_LEFT"
                     || audit.EventType == "ORGANIZATION_MEMBER_REMOVED" && authorityProof.PreviousRole is OrganizationRole.Owner or OrganizationRole.Admin);
-            if (audit.EventType == "ORGANIZATION_MEMBER_LEFT" ? !selfDeparture
-                : actor is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin } && !selfDeparture)
+            if (!acceptedCompletion && (audit.EventType == "ORGANIZATION_MEMBER_LEFT" ? !selfDeparture
+                : actor is not { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin } && !selfDeparture))
                 throw new InvalidOperationException("Organization authority source actor is unavailable.");
             if (audit.EventType == "ORGANIZATION_DELETION_REQUESTED")
             {
@@ -34,6 +36,15 @@ internal sealed class InMemoryInvitationAuditProjection(InMemoryInvitationRecipi
                     || authorityProof.EntityId != audit.OrganizationId || parent is not { Status: OrganizationStatus.Deleting }
                     || parent.Version != authorityProof.Version || parent.UpdatedAt != authorityProof.CreatedAt)
                     throw new InvalidOperationException("Organization deletion request source is unproven.");
+            }
+            if (audit.EventType == "ORGANIZATION_DELETED")
+            {
+                var parent = await organizations.FindOrganizationAsync(audit.OrganizationId, cancellationToken);
+                if (!acceptedCompletion || authorityProof.EntityType != "Organization" || authorityProof.EntityId != audit.OrganizationId
+                    || parent is not { Status: OrganizationStatus.Deleted } || parent.Version != authorityProof.Version
+                    || parent.UpdatedAt != authorityProof.CreatedAt
+                    || !((InMemoryOrganizationStore)organizations).MatchesDeletionAttribution(audit.OrganizationId, audit.ActorId, parent.UpdatedAt))
+                    throw new InvalidOperationException("Organization deletion completion source is unproven.");
             }
             journal.PublishAuthoritySource(audit, authorityProof, cancellationToken);
             journal.SimulateAuthorityDelivery(audit, invitations, cancellationToken);

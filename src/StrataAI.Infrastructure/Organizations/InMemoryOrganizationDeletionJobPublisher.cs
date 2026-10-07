@@ -12,7 +12,7 @@ internal sealed class InMemoryOrganizationDeletionJobPublisher(IOrganizationStor
     : IOrganizationDeletionJobPublisher, IDemoOrganizationTransactionParticipant
 {
     private sealed record Publication(OrganizationDeletionAttempt Root, Guid Actor,
-        OrganizationDeletionAttempt Checkpoint, NewBackgroundJob FirstJob);
+        OrganizationDeletionAttempt Checkpoint, NewBackgroundJob FirstJob, OrganizationMetadataEvent? Completion = null);
     private readonly Dictionary<Guid, Publication> _publications = [];
 
     public async Task<bool> PublishAsync(Guid organizationId, Guid actorId, Guid requestId,
@@ -55,6 +55,36 @@ internal sealed class InMemoryOrganizationDeletionJobPublisher(IOrganizationStor
     {
         if (ReadAccepted(organizationId, actorId, requestId) is null) throw Unavailable();
         return _publications[organizationId].FirstJob.CorrelationId;
+    }
+    // Caller owns both Demo gates; discovery exposes references internally only.
+    internal (Guid Organization, Guid Actor, OrganizationDeletionAttempt Root)? NextPending(Guid? after)
+    {
+        var rows = _publications.Where(row => row.Value.Completion is null).OrderBy(row => row.Key);
+        var next = rows.FirstOrDefault(row => after is null || row.Key.CompareTo(after.Value) > 0);
+        if (next.Value is null) next = rows.FirstOrDefault();
+        return next.Value is null ? null : (next.Key, next.Value.Actor, next.Value.Root);
+    }
+    internal OrganizationMetadataEvent? ReadCompletion(Guid organizationId)
+    {
+        if (!scope.OwnsOrganizationCommand(organizationId)) throw Unavailable();
+        return _publications.GetValueOrDefault(organizationId)?.Completion;
+    }
+    internal OrganizationDeletionAttempt? ReadRoot(Guid organizationId)
+    {
+        if (!scope.OwnsOrganizationCommand(organizationId)) throw Unavailable();
+        return _publications.GetValueOrDefault(organizationId)?.Root;
+    }
+    internal void Complete(Guid organizationId, Guid actor, Guid request, OrganizationMetadataEvent source)
+    {
+        if (!scope.OwnsAcceptedDeletion(organizationId, actor, request)
+            || ReadAccepted(organizationId, actor, request) is not { } root
+            || source.EventId == Guid.Empty || source.EventType != "ORGANIZATION_DELETED" || source.ActorId != actor
+            || source.OrganizationId != organizationId || source.EntityId != organizationId || source.EntityType != "Organization"
+            || source.Version != checked(root.AcceptedVersion + 1) || source.CreatedAt == default)
+            throw Unavailable();
+        var publication = _publications[organizationId];
+        if (publication.Completion is not null) throw Unavailable();
+        _publications[organizationId] = publication with { Completion = source };
     }
     private static OrganizationDeletionPublicationUnavailableException Unavailable() => new();
 }
