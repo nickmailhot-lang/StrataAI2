@@ -29,6 +29,22 @@ Current changes must pass the complete pipeline against their exact revision.
 
 ## Evidence boundaries
 
+### Current preference and profile retry checks
+
+The current-source isolated Release API-test build passes with zero warnings or
+errors. Six focused HTTP cases pass: one search date-policy projection/privacy
+case and five profile retry/concurrency/invalid-key cases. They exercise the
+composed framework host with Demo persistence; they do not certify PostgreSQL or
+the complete release images. The [profile guide](profile-management.md#activity-and-personal-star-history-date-display)
+records their scope and the executed 21-case history/formatter web check.
+
+Activity and personal star history now share the account date formatter, with
+an explicit zone label and unchanged original UTC timestamp. Their regression
+cases check final confirmed preferences and Honolulu-to-Tokyo history refresh.
+Desktop and phone release fixtures include corresponding actual-source date
+assertions; new native execution remains pending. Full two-client preference
+recovery for every consumer and complete current release CI are still required.
+
 ### Executed security and final-admission checks
 
 On 2026-10-07, an isolated Release build of source revision `be7b1616` passed

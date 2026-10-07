@@ -11,6 +11,26 @@ const page = { organizationId: org, boardId: board, userId: user, items: [item],
 const props = { organizationId: org, boardId: board, userId: user, version: 1, unavailable: false, onDenied: vi.fn() };
 const response = (value: unknown) => new Response(JSON.stringify(value));
 afterEach(() => { vi.unstubAllGlobals(); });
+
+// AUTH-FR-010 / PRD-02-TC-08: final account admission owns date display.
+it('formats immutable personal history time using final confirmed preferences and an explicit zone label', async () => {
+  let reads = 0; let finalZone = 'Pacific/Honolulu';
+  const source = { ...item, createdAt: '2026-10-04T07:00:00.123456Z' };
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me'
+    ? { ...profile, locale: 'en-US', timezone: ++reads === 1 ? 'Asia/Tokyo' : finalZone }
+    : { ...page, items: [source] })));
+  render(<BoardStarHistory {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Review your star history' }));
+  await screen.findByText('You changed your Board star (revision 1).');
+  const timestamp = document.querySelector('time')!;
+  expect(timestamp).toHaveAttribute('datetime', source.createdAt);
+  expect(timestamp).toHaveTextContent('Oct 3, 2026, 21:00 HST');
+  expect(reads).toBe(2);
+  finalZone = 'Asia/Tokyo'; fireEvent.click(screen.getByRole('button', { name: 'Review your star history' }));
+  await screen.findByText('Oct 4, 2026, 16:00 GMT+9');
+  expect(document.querySelector('time')).toHaveAttribute('datetime', source.createdAt);
+  expect(reads).toBe(4);
+});
 it('validates increasing private pages, continuation and stable preference identity', () => {
   expect(parseStarHistory(page, org, board, user).items).toHaveLength(1);
   const items = Array.from({ length: 50 }, (_, index) => ({ ...item, version: index + 1,

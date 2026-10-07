@@ -15,6 +15,23 @@ const props = () => ({ ...scope, refreshSequence: '1', unavailable: false, onDen
 const wrap = (p: ReturnType<typeof props>) => <MemoryRouter><ActivityHistoryControl {...p} /></MemoryRouter>;
 const reads = () => vi.mocked(workRequest).mock.calls.filter(([path]) => path !== '/me');
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+
+// AUTH-FR-010 / PRD-02-TC-08: preferences may change during the protected read.
+it('formats immutable activity time in the final confirmed account zone with an explicit zone label', async () => {
+  let profileReads = 0; let finalZone = 'Pacific/Honolulu';
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me'
+    ? { ...profile, timezone: ++profileReads === 1 ? 'Asia/Tokyo' : finalZone } : page());
+  const p = props(); const view = render(wrap(p)); fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
+  await screen.findByRole('listitem');
+  const timestamp = document.querySelector('time')!;
+  expect(timestamp).toHaveAttribute('datetime', item(100).createdAt);
+  expect(timestamp).toHaveTextContent('Oct 3, 2026, 21:00 HST');
+  expect(reads()).toHaveLength(1);
+  finalZone = 'Asia/Tokyo'; view.rerender(wrap({ ...p, refreshSequence: '2' }));
+  await screen.findByText('Oct 4, 2026, 16:00 GMT+9');
+  expect(document.querySelector('time')).toHaveAttribute('datetime', item(100).createdAt);
+  expect(reads()).toHaveLength(2);
+});
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 it('reports fixed opening, failed read and user retry observations without protected page data', async () => {
   configureActivityTelemetry(true); const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetch);

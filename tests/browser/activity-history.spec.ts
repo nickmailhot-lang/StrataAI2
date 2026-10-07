@@ -15,7 +15,8 @@ for (const width of [1280, 390]) {
       const peerEmail = `activity-peer-${width}-${Date.now()}@example.test`;
       for (const [index, client] of [context, peer].entries()) {
         const credentials = { email: index ? peerEmail : `activity-owner-${width}-${Date.now()}@example.test`,
-          password: 'activity-browser-correct-horse', displayName: index ? 'Activity reader' : caption };
+          password: 'activity-browser-correct-horse', displayName: index ? 'Activity reader' : caption,
+          locale: 'en-US', timezone: index ? 'Asia/Tokyo' : 'Pacific/Honolulu' };
         expect((await client.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
         expect((await client.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
       }
@@ -60,6 +61,13 @@ for (const width of [1280, 390]) {
       await expect(cardHistory.getByRole('listitem')).toHaveCount(50);
       expect(await cardHistory.locator('script').count()).toBe(0);
       await expect(cardHistory.getByText(`${caption} updated a Card.`, { exact: true })).toHaveCount(50);
+      const firstInstant = firstPage.items[0].createdAt;
+      const firstTime = cardHistory.locator('time').first();
+      await expect(firstTime).toHaveAttribute('datetime', firstInstant);
+      await expect(firstTime).toHaveText(await page.evaluate(instant => new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Pacific/Honolulu', year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+      }).format(new Date(instant)), firstInstant));
       const older = cardHistory.getByRole('button', { name: 'Older activity', exact: true }); await expect(older).toBeFocused();
       await older.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(17);
       await expect(cardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1);

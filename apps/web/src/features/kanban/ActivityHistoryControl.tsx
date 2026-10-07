@@ -6,6 +6,7 @@ import { isNotificationProfile } from '../notifications/notificationInbox';
 import { activityCardLink, activityLabel, parseActivityPage, type ActivityItem, type ActivityPage, type ActivityScope } from './activityHistory';
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import { activityEvent, activityResult } from './activityTelemetry';
+import { formatUserDateTime } from '../auth/userDateTime';
 
 type Props = ActivityScope & { unavailable: boolean; refreshSequence: string; onDenied: (error: Error) => void };
 type View = { epoch: string; page: ActivityPage; profile: { locale: string; timezone: string } };
@@ -95,7 +96,7 @@ function History(props: Props) {
           {admitted.page.items.map(item => <Box component="li" key={item.eventId} sx={{ my: 1.5, overflowWrap: 'anywhere' }}>
             <Typography component="span">{item.actorLabel} {activityLabel(item)}.</Typography>{' '}
             <Typography component="time" dateTime={item.createdAt} variant="body2" sx={{ display: 'block' }}>
-              {new Intl.DateTimeFormat(admitted.profile.locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: admitted.profile.timezone }).format(new Date(item.createdAt))}
+              {formatUserDateTime(item.createdAt, admitted.profile) ?? 'Date unavailable'}
             </Typography>
             {activityCardLink(item) && <Link component={RouterLink} to={activityCardLink(item)!}>Open Card</Link>}
           </Box>)}

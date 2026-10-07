@@ -4,6 +4,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workMa
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { parseStarHistory, type StarHistoryPage } from './boardStarHistory';
 import { activityEvent, activityResult } from './activityTelemetry';
+import { formatUserDateTime } from '../auth/userDateTime';
 type Props = { organizationId: string; boardId: string; userId: string; version: number; unavailable: boolean; onDenied: () => void };
 type Position = { after: number; entityId?: string };
 export function BoardStarHistory(props: Props) {
@@ -60,8 +61,7 @@ function History(props: Props) {
         {visible.page.items.length === 0 && <Typography>No recorded star changes on this page. Earlier changes may predate recorded history.</Typography>}
         <Box component="ol" sx={{ pl: 3, overflowWrap: 'anywhere' }}>{visible.page.items.map(item => <Box component="li" key={item.eventId}>
           <Typography>You changed your Board star (revision {item.version}).</Typography>
-          <Typography component="time" dateTime={item.createdAt} variant="body2">{new Intl.DateTimeFormat(visible.locale,
-            { dateStyle: 'medium', timeStyle: 'short', timeZone: visible.timezone }).format(new Date(item.createdAt))}</Typography>
+          <Typography component="time" dateTime={item.createdAt} variant="body2">{formatUserDateTime(item.createdAt, visible) ?? 'Date unavailable'}</Typography>
         </Box>)}</Box>
       </>}
       <Button ref={next} disabled={busy || props.unavailable || !visible?.page.nextAfter} onClick={() => {

@@ -62,6 +62,32 @@ PRD-02 remains open. Verify current account lifecycle, preference consumers,
 accessibility and all remaining acceptance requirements against the current
 release images before closure.
 
+### Activity and personal star history date display
+
+Board/Card activity and personal star history now use the shared
+`formatUserDateTime` formatter. Both use the locale/timezone from the final
+confirmed account read, include an explicit timezone label, and retain the
+original UTC instant in their semantic time elements. Display formatting does
+not alter stored events, history revisions or paging cursors.
+
+Two regressions failed before this change because the rendered timestamps lacked
+the zone label. They now check Honolulu's previous calendar day, a later Tokyo
+preference on history refresh, and the same original microsecond timestamp.
+All 21 focused history/formatter cases pass, as do web/browser TypeScript and
+lint. Desktop/phone activity and star release fixtures now compare each relevant
+caption and datetime attribute with the actual stored source and known account
+preferences; their new assertions still require exact-image CI execution.
+
+On 2026-10-07, a current-source isolated Release API-test build completed with
+zero warnings/errors. The search date-policy HTTP case passed, retaining timed
+and date-only UTC deadlines across Board policy changes/clearing and excluding
+private date/policy details from outsider results. Five profile retry cases also
+passed: both /me route forms serialize same-key concurrent saves, preserve one
+canonical event, reject collisions/stale edits, isolate actors and refuse replay
+after logout; three invalid keys leave profile version/events unchanged.
+These framework-host checks use Demo persistence. They strengthen their named
+HTTP contracts and do not prove all Production/native/release acceptance.
+
 ### Comment timezone display and remaining acceptance
 
 AUTH-FR-010 applies to timestamp displays as well as Card date controls.
