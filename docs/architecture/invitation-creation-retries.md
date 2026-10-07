@@ -121,9 +121,25 @@ The native fixture enrolls an actual Organization Member, grants Board Admin,
 opens both invitation views, then demotes to Board Member. It requires ordinary
 Board reads to remain successful with `canAdminister=false`, both administration
 views to withdraw without reload/mutation, and accessible neutral UI at both widths.
-Exact-image execution remains pending. These scoped Work/heartbeat checks do not
-claim canonical Board invitation creation/revocation event publication or complete
-recipient/history lifecycle coverage; those are separate remaining requirements.
+Exact-image execution remains pending. Board creation already publishes
+`BOARD_MEMBER_INVITED`; revocation publishes `INVITATION_REVOKED`, and acceptance
+publishes `INVITATION_ACCEPTED` plus the applicable membership event. These are
+content-free Board invalidations within the owning command transaction. Recipient
+emails, tokens, invitation IDs and target roles are not broadcast to Board readers.
+They remain separate from Internal Organization metadata and Portal admission.
+
+The new `board-invitation-history-live.spec.ts` adds desktop/phone release cases
+with a normal Owner and recipient. An already open history must discover a new
+invitation, withdraw reviewed revocation consent when the recipient accepts, and
+recover a different revocation after going offline. It compares the actual
+protected history, verifies the revoked upgrade cannot confer Admin access or be
+accepted, requires no observer mutation/document reload, and checks WCAG 2.2 AA.
+It uses the exact separate Worker through the existing scoped release fixture;
+no SQL fabricates events, readiness or acceptance. Native execution remains
+pending. Browser TypeScript checking and collection of both native cases passed;
+four focused API cases for Board creation/revocation and acceptance/retry passed.
+Complete recipient live delivery and Portal lifecycle coverage remain
+separate unfinished requirements.
 
 `POST /organizations/{organizationId}/invitations` accepts an optional nonempty UUID `Idempotency-Key`. A keyed request acknowledges the original invitation ID, email, surface, role and expiry; its `invitationToken` is null in every runtime mode. Unkeyed Demo requests retain the existing bearer-token fixture behavior. Production never returns the bearer token.
 
