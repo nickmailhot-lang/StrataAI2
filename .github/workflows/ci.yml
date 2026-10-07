@@ -506,6 +506,9 @@ jobs:
       - name: Credential-checked sign-in retries against exact release API
         run: bash scripts/ci/test-identity-login-retries.sh
 
+      - name: Authentication lifecycle privacy against exact release API
+        run: bash scripts/ci/test-identity-login-privacy.sh
+
       - name: Atomic registration retries against exact release API
         run: bash scripts/ci/test-identity-registration-retries.sh
 

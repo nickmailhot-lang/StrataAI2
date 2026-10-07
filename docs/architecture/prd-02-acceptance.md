@@ -16,6 +16,16 @@ evidence does not establish timing equivalence, restricted PostgreSQL or current
 immutable release acceptance. Estimated PRD-02 work remaining stays **17%**,
 a planning estimate; the issue remains open.
 
+The required release privacy fixture also passes all ten real HTTP refusals
+locally against the compiled Production API and restricted schema-110 PostgreSQL.
+All five conditions retain identical public Problem fields, no cookie/private
+disclosure and exact user/session/audit/stream/event/receipt snapshots after each
+request. Cleanup restores the fixture's original lifecycle and the disposable
+API is removed. This closes a local Production persistence evidence gap under
+optional verification; exact-image CI and broader PRD acceptance remain pending.
+See the [fixture execution and limits](../identity-login-retries.md#incorrect-password-lifecycle-privacy).
+Estimated remaining work stays **17%**, a planning estimate.
+
 ## Strict supplied authentication policy
 
 API startup now rejects supplied malformed/empty Boolean policies and malformed,

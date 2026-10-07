@@ -38,6 +38,24 @@ hasher. This is correctness evidence, not a statistical timing comparison or
 restricted PostgreSQL/release-image acceptance. The locked Release build passed
 with zero warnings and errors; the required CI API-host suite includes these cases.
 
+The required `test-identity-login-privacy.sh` release fixture additionally sends
+ten actual HTTP refusals against the Production API: two identical-key attempts
+for Active, PendingVerification, Suspended, Deactivated and unknown accounts.
+It compares the public Problem fields exactly (excluding per-request correlation),
+refuses cookies/private fields and compares complete persisted user, session,
+audit, stream, event and login-receipt snapshots after every request. Lifecycle
+setup affects only its disposable account; cleanup restores its original status
+and verification flag even after failure. No runtime grants or policy are changed.
+
+The complete fixture passed locally on 2026-10-07 against the frozen compiled API
+at `79753c03`, Production with optional email verification, and real schema-110
+PostgreSQL. The restricted API role has neither superuser nor RLS-bypass privileges.
+After cleanup, the one fixture account is Active, verified and still version 1,
+with no session or login receipt. The disposable API container was removed,
+preserving the original three services. Bash syntax and diff checks passed.
+Required-verification policy coverage remains the ten API-host cases above;
+this local execution does not replace current retained-image or full PRD evidence.
+
 ## Final session admission after publication
 
 Fresh sign-in now reads its actual active session after session/audit/receipt
