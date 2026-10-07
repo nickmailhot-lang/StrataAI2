@@ -1,5 +1,20 @@
 # Large-Board viewport rendering
 
+List keyboard dragging now retains the previous selected destination for the
+current drag. Each Left/Right key advances from that destination through enabled
+measured targets, while the rendered source still supplies the exact translation
+delta. A temporary smooth-scroll lag therefore cannot repeat an already selected
+destination. Start, cancellation and drop clear this per-Board navigation state.
+The existing source retention, canonical move/receipt handling and strict native
+alignment assertions remain intact. See the current
+[keyboard recovery and capacity evidence](kanban-release-evidence.md#keyboard-destination-recovery-and-current-capacity-evidence).
+
+The capacity fixture retains content-free source/target geometry if Card or List
+keyboard alignment fails. `STRATAAI_E2E_CPU_THROTTLE` optionally runs Chromium at
+a rate from 1 to 8; default 1 preserves the mandatory normal-speed scenario.
+The retained capacity measurement includes that rate. Throttled observations do
+not replace normal-condition performance budgets or current release acceptance.
+
 List-move focus recovery now waits for the canonical List revision to reach the
 acknowledged revision and for the control to be admitted and enabled. A stale
 pre-move snapshot cannot consume that request before the following Board refresh

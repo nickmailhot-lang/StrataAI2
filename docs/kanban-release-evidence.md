@@ -1,5 +1,58 @@
 # Kanban release evidence
 
+## Keyboard destination recovery and current capacity evidence
+
+Two earlier runs ended in the large-Board rank/browser gate. At `19cb9916`,
+[run 37628314025](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37628314025)
+failed desktop Card keyboard alignment and phone pointer destination visibility.
+At `23c2ab5d`,
+[run 37631514951](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37631514951)
+passed the phone case but failed desktop List alignment. All preceding database
+rank/allocation assertions passed. These are different browser failures, not
+proof of a persistence allocation defect.
+
+The latter run's retained artifact `11490618322` was downloaded and its SHA-256
+verified as `d3e878704bf9bb74d6b9092e86a815966f7fc907f3acd24746623e3a4b6435f2`.
+Its DOM snapshots show the third Right key leaving the List transform at 672px,
+the second destination. This suggests physical-nearest targeting can repeat an
+already selected destination during a scroll-frame lag; the trace does not
+establish the exact transient source/target center difference.
+
+A new deterministic regression models a rendered source three pixels behind its
+selected target. The old targeting behavior returned that same destination;
+the new per-drag keyboard navigation advances to the next enabled target. It also
+checks the end boundary, reverse direction and reset on a new drag. All seven
+List coordinate cases and 27 selected navigation/windowing/measurement/column
+cases passed. Browser TypeScript, zero-warning lint and production web build pass.
+The complete two-worker web suite also passed all 134 files and 1,897 cases.
+
+Actual local acceptance used a fresh readonly compiled Production API, restricted
+PostgreSQL schema 110, a separate Worker scoped to each disposable Organization,
+and the compiled production web bundle through Vite preview. Both normal-speed
+desktop/phone cases passed on 200 Lists, 5,017 initial active Cards and 100,000
+archived Cards. Assertions still require every Card/List keyboard target, pointer
+cancellation without writes, persisted vertical and horizontal moves, canonical
+versions and unchanged siblings, bounded mounted rows, focus recovery and Axe.
+The earlier development-source varied-geometry cases also passed at both widths.
+
+At fourfold CPU throttling, the repaired desktop scenario passed; phone failed
+earlier during horizontal Card auto-scroll, before reaching List keyboard drag.
+Its retained samples show no later empty destination in the required middle half
+of the viewport. That failure remains unresolved and is not counted as passing
+List acceptance. An earlier compiled baseline passed both throttled cases, so
+one positive execution does not establish timing-independent recovery. The
+initial local helper also lacked the production rank fixture's extra active Cards;
+desktop transfer left only 4,999 and failed the phone precondition. The helper was
+corrected before the subsequent complete runs; no application assertion changed.
+
+All 100,000 complete archived rows retain their original count/fingerprint in
+the inspected fixtures. The original scenario budgets, retries and strict
+alignment tolerance are unchanged. Geometry failure attachments disclose fixture
+IDs and positions only. Local compiled-source results do not prove acceptance
+against retained release images or the independent normal-condition latency
+budgets. Current CI and remaining phone/stress recovery are still required;
+PRD-06 remains open with **32%** estimated work remaining.
+
 ## Retained-source pointer fixture at f62785a6
 
 [Run 37593384106](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37593384106)

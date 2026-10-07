@@ -71,7 +71,7 @@ import { CardReminderControl } from './CardReminderControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
 import { DndContext, PointerSensor, KeyboardSensor, TraversalOrder, closestCenter, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
-import { listKeyboardCoordinates } from './listKeyboardCoordinates';
+import { ListKeyboardNavigation } from './listKeyboardCoordinates';
 import { cardKeyboardCoordinates } from './cardKeyboardCoordinates';
 import { KanbanDragMeasurement } from './kanbanDragMeasurement';
 import { listDragAnnouncements, listDragInstructions } from './listDragAccessibility';
@@ -173,8 +173,9 @@ function BoardContent() {
   const [dragMeasurement] = useState(() => new KanbanDragMeasurement());
   const [dragScroll] = useState(() => new KanbanAutoScroll());
   const [pointerScrollFrame] = useState(() => new KanbanPointerScrollFrame());
+  const [listKeyboard] = useState(() => new ListKeyboardNavigation());
   useEffect(() => () => dragScroll.finish(), [dragScroll]);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: (event, args) => String(args.active).startsWith('card:') ? cardKeyboardCoordinates(event, args) : listKeyboardCoordinates(event, args) }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor, { coordinateGetter: (event, args) => String(args.active).startsWith('card:') ? cardKeyboardCoordinates(event, args) : listKeyboard.coordinates(event, args) }));
   const mutation = useRef(new WorkMutationIntent());
   const activeRead = useRef<AbortController | undefined>(undefined);
   const reading = useRef(false);
@@ -584,6 +585,7 @@ function BoardContent() {
       }}
         accessibility={{ announcements: listDragAnnouncements(snapshot), screenReaderInstructions: listDragInstructions }} onDragStart={event => {
         pointerScrollFrame.start(event.activatorEvent);
+        listKeyboard.start();
         dragMeasurement.start(String(event.active.id));
         dragScroll.start(String(event.active.id).startsWith('card:'), event.activatorEvent);
         dragCard.current = undefined; dragList.current = undefined;
@@ -594,7 +596,8 @@ function BoardContent() {
         }
         const column = snapshot.lists.find(value => value.list.id === event.active.id);
         if (column && Number.isSafeInteger(column.list.version)) dragList.current = { listId: column.list.id, name: column.list.name, version: column.list.version! };
-      }} onDragMove={event => dragScroll.move(event.delta)} onDragCancel={() => { pointerScrollFrame.finish(); dragScroll.finish(); dragMeasurement.finish(); dragList.current = undefined; dragCard.current = undefined; }} onDragEnd={event => {
+      }} onDragMove={event => dragScroll.move(event.delta)} onDragCancel={() => { listKeyboard.finish(); pointerScrollFrame.finish(); dragScroll.finish(); dragMeasurement.finish(); dragList.current = undefined; dragCard.current = undefined; }} onDragEnd={event => {
+        listKeyboard.finish();
         pointerScrollFrame.finish(); dragScroll.finish(); dragMeasurement.finish();
         const sourceCard = dragCard.current; dragCard.current = undefined;
         if (sourceCard) {

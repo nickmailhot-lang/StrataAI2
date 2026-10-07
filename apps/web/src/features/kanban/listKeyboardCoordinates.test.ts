@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listKeyboardCoordinates } from './listKeyboardCoordinates';
+import { ListKeyboardNavigation, listKeyboardCoordinates } from './listKeyboardCoordinates';
 
 type Args = Parameters<typeof listKeyboardCoordinates>[1];
 function fixture() {
@@ -17,6 +17,26 @@ function fixture() {
   } as unknown as Args;
 }
 describe('keyboard list targets', () => {
+  it('advances from the previous keyboard target when the rendered source temporarily lags smooth scrolling', () => {
+    const navigation = new ListKeyboardNavigation(); navigation.start();
+    const args = fixture();
+    let sourceLeft = 336, sourceTop = 10;
+    args.context.droppableContainers.getEnabled = () => [
+      { id: 'middle', node: { current: { getBoundingClientRect: () => ({ left: sourceLeft, top: sourceTop, width: 320, height: 240 }) } } },
+      { id: 'last', node: { current: { getBoundingClientRect: () => ({ left: 672, top: 10, width: 320, height: 240 }) } } },
+      { id: 'list-end' },
+    ] as unknown as ReturnType<typeof args.context.droppableContainers.getEnabled>;
+    expect(navigation.coordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 436, y: 20 });
+    sourceLeft = 669; args.currentCoordinates = { x: 436, y: 20 };
+    // The source is three pixels behind the last target at this key boundary.
+    // A physical-nearest query would repeat that same destination instead.
+    expect(navigation.coordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 665, y: 40 });
+    sourceLeft = 895; sourceTop = 30; args.currentCoordinates = { x: 665, y: 40 };
+    expect(navigation.coordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toBeUndefined();
+    expect(navigation.coordinates(new KeyboardEvent('keydown', { code: 'ArrowLeft' }), args)).toEqual({ x: 442, y: 20 });
+    navigation.finish(); navigation.start(); sourceLeft = 336; sourceTop = 10; args.currentCoordinates = { x: 100, y: 20 };
+    expect(navigation.coordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), args)).toEqual({ x: 436, y: 20 });
+  });
   it('moves to the next enabled measured column instead of a fixed pixel increment', () => {
     expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowRight' }), fixture())).toEqual({ x: 436, y: 20 });
     expect(listKeyboardCoordinates(new KeyboardEvent('keydown', { code: 'ArrowLeft' }), fixture())).toEqual({ x: -236, y: 20 });

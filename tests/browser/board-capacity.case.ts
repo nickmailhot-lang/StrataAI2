@@ -13,6 +13,12 @@ for (const width of [1280, 390]) {
     const fixturePath = process.env.STRATAAI_BOARD_CAPACITY_FIXTURE; expect(fixturePath).toBeTruthy();
     const fixture = JSON.parse(readFileSync(fixturePath!, 'utf8')) as { email: string; password: string; organizationId: string; boardId: string; listId: string };
     for (const id of [fixture.organizationId, fixture.boardId, fixture.listId]) expect(id).toMatch(/^[0-9a-f-]{36}$/);
+    const cpuRate = Number(process.env.STRATAAI_E2E_CPU_THROTTLE ?? 1);
+    expect(Number.isFinite(cpuRate) && cpuRate >= 1 && cpuRate <= 8).toBe(true);
+    if (cpuRate !== 1) {
+      const diagnostics = await context.newCDPSession(page);
+      await diagnostics.send('Emulation.setCPUThrottlingRate', { rate: cpuRate });
+    }
     await page.setViewportSize({ width, height: 844 });
     expect((await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' }, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
     const result = await context.request.get(`/boards/${fixture.boardId}`); expect(result.status()).toBe(200);
@@ -89,11 +95,21 @@ for (const width of [1280, 390]) {
       const target = cards.locator(`a[href$="/cards/${column.cards[cardIndex + step + 1].id}"]`).locator('..');
       // The adopted KeyboardSensor scrolls smoothly. Require its real dragged
       // rectangle to reach each adjacent canonical target before the next key.
-      await expect.poll(async () => {
-        const [sourceBox, targetBox] = await Promise.all([handle.locator('..').boundingBox(), target.boundingBox()]);
-        return !!sourceBox && !!targetBox
-          && Math.abs(sourceBox.y + sourceBox.height / 2 - targetBox.y - targetBox.height / 2) < 2;
-      }).toBe(true);
+      try {
+        await expect.poll(async () => {
+          const [sourceBox, targetBox] = await Promise.all([handle.locator('..').boundingBox(), target.boundingBox()]);
+          return !!sourceBox && !!targetBox
+            && Math.abs(sourceBox.y + sourceBox.height / 2 - targetBox.y - targetBox.height / 2) < 2;
+        }).toBe(true);
+      } catch (error) {
+        await test.info().attach('card-keyboard-geometry.json', { contentType: 'application/json',
+          body: JSON.stringify({ width, cpuRate, step, sourceId: moving.id, targetId: column.cards[cardIndex + step + 1].id,
+            source: await handle.locator('..').boundingBox(), target: await target.boundingBox(),
+            scroll: await cards.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight,
+              viewport: node.clientHeight, windowX: window.scrollX, windowY: window.scrollY })),
+          }) });
+        throw error;
+      }
     }
     await expect(handle).toHaveAttribute('aria-pressed', 'true');
     await expect.poll(async () => {
@@ -343,14 +359,32 @@ for (const width of [1280, 390]) {
       await page.keyboard.press('ArrowRight');
       const neighbor = settledSnapshot.lists[listSourceIndex + step + 1].list;
       const target = canvas.locator(`[data-board-window-id="${neighbor.id}"]`).getByRole('region', { name: neighbor.name, exact: true });
-      await expect.poll(async () => {
-        const [sourceBox, targetBox] = await Promise.all([
-          listRow.getByRole('region', { name: sourceList.list.name, exact: true }).boundingBox(), target.boundingBox(),
-        ]);
-        return !!sourceBox && !!targetBox
-          && Math.abs(sourceBox.x + sourceBox.width / 2 - targetBox.x - targetBox.width / 2) < 2
-          && Math.abs(sourceBox.y + sourceBox.height / 2 - targetBox.y - targetBox.height / 2) < 2;
-      }).toBe(true);
+      try {
+        await expect.poll(async () => {
+          const [sourceBox, targetBox] = await Promise.all([
+            listRow.getByRole('region', { name: sourceList.list.name, exact: true }).boundingBox(), target.boundingBox(),
+          ]);
+          return !!sourceBox && !!targetBox
+            && Math.abs(sourceBox.x + sourceBox.width / 2 - targetBox.x - targetBox.width / 2) < 2
+            && Math.abs(sourceBox.y + sourceBox.height / 2 - targetBox.y - targetBox.height / 2) < 2;
+        }).toBe(true);
+      } catch (error) {
+        // Preserve the strict alignment failure, retaining only geometry and
+        // fixture identities so native scroll/measurement races are diagnosable.
+        const geometry = await canvas.evaluate((node, sourceId) => ({
+          scrollLeft: node.scrollLeft, scrollTop: node.scrollTop, sourceId,
+          columns: Array.from(node.querySelectorAll<HTMLElement>('[data-board-window-axis="lists"]')).map(row => {
+            const section = row.querySelector<HTMLElement>('section[aria-labelledby]');
+            const rect = section?.getBoundingClientRect();
+            return { id: row.dataset.boardWindowId, rect: rect?.toJSON(),
+              transform: section ? getComputedStyle(section).transform : undefined,
+              pressed: section?.querySelector('[aria-pressed]')?.getAttribute('aria-pressed') };
+          }),
+        }), sourceList.list.id);
+        await test.info().attach('list-keyboard-geometry.json', { contentType: 'application/json',
+          body: JSON.stringify({ width, cpuRate, step, targetId: neighbor.id, geometry }) });
+        throw error;
+      }
     }
     const mountedListIds = await canvas.locator('[data-board-window-axis="lists"]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.boardWindowId));
     expect(mountedListIds.some(id => !initialListIds.includes(id)
@@ -374,7 +408,7 @@ for (const width of [1280, 390]) {
     expect(await cards.locator('[data-board-window-axis="cards"]').count()).toBeLessThan(40);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
-    await test.info().attach('board-capacity.json', { contentType: 'application/json', body: JSON.stringify({ fixture: 'restricted-postgres', width, lists: 200, activeCards: column.cards.length, usableMs }) });
+    await test.info().attach('board-capacity.json', { contentType: 'application/json', body: JSON.stringify({ fixture: 'restricted-postgres', width, cpuRate, lists: 200, activeCards: column.cards.length, usableMs }) });
     // Capacity timings are retained observations, not a replacement for the
     // separate unchanged normal-condition <1500/<100/<500/<200 budgets.
     expect(Number.isFinite(usableMs) && usableMs > 0).toBe(true);
