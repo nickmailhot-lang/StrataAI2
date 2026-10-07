@@ -72,6 +72,7 @@ describe('PRD-02/03/18 account deactivation', () => {
     expect(key).toMatch(/^[0-9a-f-]{36}$/i);
     expect(new Headers(fetchMock.mock.calls[2][1].headers).get('Idempotency-Key')).toBe(key);
     expect(fetchMock.mock.calls[2][0]).toBe('/me/deactivate');
+    for (const index of [1, 2]) expect(new Headers(fetchMock.mock.calls[index][1].headers).get('X-StrataAI-Expected-User')).toBe(profile.id);
   });
 
   it('does not treat an unexpected successful response as a deactivation acknowledgment', async () => {

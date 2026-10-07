@@ -44,6 +44,7 @@ describe('guarded account handle dialog', () => {
     const attempts = fetchMock.mock.calls.filter(([, options]) => options?.method === 'PATCH'); expect(attempts).toHaveLength(2);
     expect(attempts[0][1]!.body).toBe(attempts[1][1]!.body); expect(attempts[0][1]!.signal!.aborted).toBe(true);
     expect(new Headers(attempts[0][1]!.headers).get('Idempotency-Key')).toBe(new Headers(attempts[1][1]!.headers).get('Idempotency-Key'));
+    for (const [, options] of attempts) expect(new Headers(options!.headers).get('X-StrataAI-Expected-User')).toBe(initial.userId);
     const calls = fetchMock.mock.calls.length;
     await act(async () => { finish(phase === 'transport' ? json(acknowledgment) : acknowledgment); });
     expect(fetchMock).toHaveBeenCalledTimes(calls); expect(screen.getByLabelText('Mention handle')).toHaveValue('bob');

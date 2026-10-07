@@ -157,6 +157,7 @@ public static class IdentityEndpoints
                     CancellationToken cancellationToken) =>
                 {
                     var userId = GetUserId(context);
+                    if (!ExpectedAccountMatches(context, userId)) return ErrorFor("session_unavailable");
                     if (userId is null && commandContext.IdempotencyKey is null)
                     {
                         return Results.Unauthorized();
@@ -197,6 +198,7 @@ public static class IdentityEndpoints
             context.Response.Headers.CacheControl = "private, no-store";
             var user = GetUserId(context);
             if (user is null) return Results.Unauthorized();
+            if (!ExpectedAccountMatches(context, user)) return ErrorFor("session_unavailable");
             if (commands.IdempotencyKey is not { } key) return ErrorFor("invalid_idempotency_key");
             var result = await handles.ClaimAsync(user.Value, key, request, context.TraceIdentifier, ct);
             return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
@@ -237,6 +239,8 @@ public static class IdentityEndpoints
                     return Results.Unauthorized();
                 }
 
+                if (!ExpectedAccountMatches(context, userId)) return ErrorFor("session_unavailable");
+
                 var result = await identityService.UpdateProfileAsync(
                     userId.Value,
                     request.DisplayName,
@@ -261,6 +265,7 @@ public static class IdentityEndpoints
                 CancellationToken cancellationToken) =>
             {
                 var userId = GetUserId(context);
+                if (!ExpectedAccountMatches(context, userId)) return ErrorFor("session_unavailable");
                 if (userId is null && commandContext.IdempotencyKey is null)
                 {
                     return Results.Unauthorized();
@@ -290,6 +295,15 @@ public static class IdentityEndpoints
                 requireVerifiedEmail = policy.RequireVerifiedEmail,
                 minimumPasswordLength = policy.MinimumPasswordLength,
             }));
+    }
+
+    private static bool ExpectedAccountMatches(HttpContext context, Guid? actor)
+    {
+        if (!context.Request.Headers.TryGetValue("X-StrataAI-Expected-User", out var values)) return true;
+        if (values.Count != 1 || !Guid.TryParse(values[0], out var expected) || expected == Guid.Empty) return false;
+        // This is an intent fence, not authentication. Revoked-session retries
+        // still require the original opaque session and existing receipt proof.
+        return actor is null || actor == expected;
     }
 
     private static Guid? GetUserId(HttpContext context)

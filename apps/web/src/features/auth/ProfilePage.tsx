@@ -80,7 +80,7 @@ export function ProfilePage() {
   const [deactivateDialog, setDeactivateDialog] = useState(false);
   const [deactivateUncertain, setDeactivateUncertain] = useState(false);
   const [deactivateError, setDeactivateError] = useState<string>();
-  const deactivateRetry = useRef<string | undefined>(undefined);
+  const deactivateRetry = useRef<{ key: string; userId: string } | undefined>(undefined);
   const deactivateCancel = useRef<HTMLButtonElement | null>(null);
   const mutationEpoch = useRef(0);
   const mutation = useRef<AbortController | undefined>(undefined);
@@ -203,7 +203,7 @@ export function ProfilePage() {
       if (profileRetry.current?.body !== body) profileRetry.current = { body, key: crypto.randomUUID() };
       const response = await profileCommand('/me', {
         method: 'PATCH', credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': profileRetry.current.key },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': profileRetry.current.key, 'X-StrataAI-Expected-User': submitted.id },
         body,
       }, controller, true);
       if (!current()) return;
@@ -241,7 +241,7 @@ export function ProfilePage() {
   }
 
   async function logout() {
-    if (busy || handleDialog || deactivateUncertain || mutation.current) return;
+    if (!profile || busy || handleDialog || deactivateUncertain || mutation.current) return;
     const epoch = ++mutationEpoch.current;
     const controller = new AbortController();
     mutation.current = controller;
@@ -251,7 +251,7 @@ export function ProfilePage() {
     try {
       logoutRetry.current ??= crypto.randomUUID();
       const response = await profileCommand('/auth/logout', {
-        method: 'POST', credentials: 'include', headers: { 'Idempotency-Key': logoutRetry.current },
+        method: 'POST', credentials: 'include', headers: { 'Idempotency-Key': logoutRetry.current, 'X-StrataAI-Expected-User': profile.id },
       }, controller, false);
       if (!current()) return;
       if (response.status !== 204 && response.status !== 401) throw new Error('Sign out failed');
@@ -267,16 +267,16 @@ export function ProfilePage() {
   }
 
   async function deactivate() {
-    if (busy || handleDialog || mutation.current || (!deactivateDialog && !deactivateUncertain)) return;
+    if (busy || handleDialog || mutation.current || (!deactivateDialog && !deactivateUncertain) || (!deactivateRetry.current && !profile)) return;
     const epoch = ++mutationEpoch.current;
     const controller = new AbortController();
     mutation.current = controller;
     const current = () => mounted.current && epoch === mutationEpoch.current;
     setBusy(true); setDeactivateError(undefined); setSaved(false);
     try {
-      deactivateRetry.current ??= crypto.randomUUID();
+      deactivateRetry.current ??= { key: crypto.randomUUID(), userId: profile!.id };
       const response = await profileCommand('/me/deactivate', {
-        method: 'POST', credentials: 'include', headers: { 'Idempotency-Key': deactivateRetry.current },
+        method: 'POST', credentials: 'include', headers: { 'Idempotency-Key': deactivateRetry.current.key, 'X-StrataAI-Expected-User': deactivateRetry.current.userId },
       }, controller, true);
       if (!current()) return;
       if (response.status === 204) {

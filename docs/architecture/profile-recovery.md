@@ -1,5 +1,50 @@
 # Profile recovery
 
+## Expected account during commands
+
+The profile form now sends `X-StrataAI-Expected-User` with the account ID whose
+draft or confirmation is being submitted. Profile saves, sign-out, deactivation
+and mention-handle claims retain that original ID on retries. In particular,
+deactivation stores it beside the immutable retry key before protected profile
+details are cleared after an uncertain response.
+
+The corresponding API endpoints compare a supplied ID with the authenticated
+principal before invoking the identity command service. A changed active cookie
+subject or malformed supplied header receives neutral HTTP 401
+`session_unavailable`, without deleting the replacement account's cookie or
+executing the command. The header is an intent fence, not authentication or a
+permission grant. Existing callers may omit it and continue to address their
+current authenticated account. Anonymous logout/deactivation receipt recovery
+still requires the original opaque session and existing receipt capability;
+the header cannot authorize that recovery by itself.
+
+This closes a stale-tab defect: previously the form checked the response subject
+only after a profile write. Another tab could replace the shared cookie, causing
+the old draft to update the newly signed-in account, or stale deactivation/sign-out
+to affect it. Three API regressions reproduce the original successful operations
+where refusal is required. After the correction, eight expected-account API cases
+pass (four changed-subject endpoints and four malformed-header cases), together
+with two existing profile replay/actor/session cases. The locked Release build
+has zero warnings/errors. All 37 selected profile/deactivation/handle component
+cases, web/browser typechecks, scoped lint and production build pass.
+
+Seven native browser scenarios pass in one 3.3-minute invocation against the frozen
+compiled Production API, restricted schema-110 PostgreSQL and production bundle
+behind current Nginx: desktop/phone stale-profile cookie switching, desktop/phone
+lost deactivation acknowledgments, original-session logout receipt recovery, lost
+profile-save acknowledgment and two-browser persisted conflict recovery. Cookie
+switching preserves both accounts' exact profile/event snapshots, sends the original
+expected ID, returns 401 without cookie deletion and clears the stale draft from
+the page. All four cookie-switch accounts remain at version 1 in PostgreSQL.
+Original receipt keys and once-only effects remain intact in the existing scenarios.
+
+The new browser scenarios simulate recovery-network loss only; authentication,
+account writes and refusals are real. These local compiled hosts/bundles in cached
+runtime images do not establish current retained-image, separate Worker/mail or
+complete PRD acceptance, and scenario durations are not performance measurements.
+Temporary API/web containers are retired after execution. The mandatory API suite
+and full build-once browser suite include the new regressions.
+
 ## Executed local Production recovery
 
 The existing native account fixtures pass against the separate schema-110

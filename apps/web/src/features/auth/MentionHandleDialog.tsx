@@ -99,7 +99,7 @@ export function MentionHandleDialog({ open, subject, onClose, onDenied }: {
         if (!pending.current && admitted.version !== intent.original.userVersion) return { refused: 'version_conflict' };
         pending.current = intent;
         const response = await apiFetch('/me/mention-handle', { method: 'PATCH', signal: controller.signal,
-          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': intent.key }, body: intent.body });
+          headers: { 'Content-Type': 'application/json', 'Idempotency-Key': intent.key, 'X-StrataAI-Expected-User': intent.original.userId }, body: intent.body });
         if (controller.signal.aborted) throw new Error('Handle request interrupted');
         if (response.status === 401) throw new SessionDenied();
         if ([400, 403, 404, 409, 429].includes(response.status)) {

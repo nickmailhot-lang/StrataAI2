@@ -87,6 +87,18 @@ a planning estimate.
 
 ## Functional requirements
 
+The [expected-account command correction](profile-recovery.md#expected-account-during-commands)
+prevents a stale profile draft, sign-out/deactivation confirmation or handle intent
+from addressing a different account after a shared cookie is replaced. Server
+admission occurs before the identity command service. Three baseline regressions
+fail with successful operations; the final eight expected-account cases and two
+existing replay cases pass with zero build warnings/errors. All 37 selected web
+cases and seven actual PostgreSQL/browser scenarios pass, retaining original-session
+deactivation/logout and profile-save receipt recovery. The account-switch cases
+preserve both profiles/events and all four accounts remain at version 1. This
+does not establish full current retained-image or PRD acceptance. Estimated work
+remaining stays **17%**, a planning estimate; the issue remains open.
+
 | Requirement | Implementation and verification path | Outstanding acceptance evidence |
 | --- | --- | --- |
 | AUTH-FR-001 registration | [Invitation registration](../invitation-registration.md), [registration retries](../identity-registration-retries.md), API registration replay/rollback cases, native registration fixtures | Current production-policy, invitation-backed and browser release checks |

@@ -37,6 +37,7 @@ describe('PRD-02 profile management', () => {
     expect(firstKey).toMatch(/^[0-9a-f-]{36}$/i);
     expect(secondKey).toMatch(/^[0-9a-f-]{36}$/i);
     expect(secondKey).not.toBe(firstKey);
+    for (const index of [1, 2]) expect(new Headers(fetchMock.mock.calls[index][1].headers).get('X-StrataAI-Expected-User')).toBe(profile.id);
     expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ displayName: 'Initial edit', version: 1 });
     expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({ displayName: 'Revised edit', version: 1 });
   });
