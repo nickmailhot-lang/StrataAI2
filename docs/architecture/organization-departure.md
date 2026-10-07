@@ -124,3 +124,32 @@ assignment and advance the Card version once. After rejoin, an actual API
 assignment is restored; original receipt replay must preserve it unchanged.
 Cleanup drops the temporary trigger and restores session expiry on failure.
 Bash syntax passes; actual container execution remains pending CI.
+
+## Reviewed account and bounded acknowledgment
+
+The departure screen checks the complete active account profile before and after
+its protected membership read. It exposes the Organization name and departure
+consent only when both profiles match. A confirmed account replacement withdraws
+the review and navigates to sign-in, even when both accounts could otherwise see
+the Organization.
+
+Departure and original-key recovery check the reviewed actor before sending the
+existing `expectedActorId` command body and again after reading the response. A
+204 becomes an acknowledgment only after that final check. Confirmed account or
+access withdrawal clears the original recovery key and any notice. Temporary
+account uncertainty before a fresh submission sends zero departure requests,
+withdraws the private review and explicitly says no departure was sent. It does
+not invent a pending command. Uncertainty after an actual submission preserves
+the same actor, key and immutable body for explicit acknowledgment recovery;
+normal receipt policy still decides whether a later rejoin remains intact.
+
+Each read or departure attempt has one 15-second bound across all profiles,
+protected requests and response bodies. Abort and route ownership checks fence
+late replies. Local component checks cover account replacement across discovery,
+before/after departure, transient profile failure, same-key recovery,
+noncooperative fetches and a shared deadline consumed by an earlier slow profile
+plus a later stalled JSON body. Current native coverage adds four desktop/mobile
+real-cookie replacement cases and extends the two existing departure scenarios
+with zero-command/unchanged-membership refusal and actual 204 withheld during
+profile uncertainty, followed by rejoin and same-key recovery. These browser
+cases require exact-image execution; source collection is not runtime proof.

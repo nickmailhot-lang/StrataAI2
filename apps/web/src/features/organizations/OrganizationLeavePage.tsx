@@ -3,7 +3,9 @@ import { Alert, Button, Container, Dialog, DialogActions, DialogContent, DialogT
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { boundedWorkRead } from '../../api/workManagement';
+import { isNotificationProfile } from '../notifications/notificationInbox';
 
+class DepartureUnavailable extends Error { constructor(readonly status: number) { super('Departure unavailable'); } }
 type Review = { organization: { id: string; name: string; status: number }; role: number };
 export function OrganizationLeavePage() {
   const { organizationId } = useParams();
@@ -35,15 +37,22 @@ function Departure({ organizationId }: { organizationId: string }) {
   }
   function current(controller: AbortController) { return mounted.current && pending.current === controller; }
   function finish(controller: AbortController) { if (current(controller)) { pending.current = undefined; setBusy(false); } }
-  async function request(path: string, options: RequestInit, controller: AbortController) {
-    return boundedWorkRead(async signal => {
-      const response = await apiFetch(path, { ...options, signal });
-      return { status: response.status, body: response.status === 204 || response.status === 401
-        ? undefined : await response.json().catch(() => undefined) as unknown };
-    }, controller.signal);
+  async function request(path: string, options: RequestInit, signal: AbortSignal) {
+    signal.throwIfAborted();
+    const response = await apiFetch(path, { ...options, signal });
+    const body = response.status === 204 || response.status === 401 ? undefined : await response.json().catch(() => undefined) as unknown;
+    signal.throwIfAborted();
+    return { status: response.status, body };
+  }
+  async function profile(signal: AbortSignal) {
+    const me = await request('/me', {}, signal);
+    if ([401, 403, 404].includes(me.status)) throw new DepartureUnavailable(me.status);
+    if (me.status !== 200 || !isNotificationProfile(me.body)) throw new Error('Invalid account');
+    return me.body;
   }
   function unavailable(status: number) {
-    setReview(undefined); setActorId(undefined); setOpen(false); setRetryKey(undefined); setError('This Organization is unavailable to your account.');
+    setReview(undefined); setActorId(undefined); setOpen(false); setRetryKey(undefined); setNotice(undefined); setRecovered(false);
+    setError('This Organization is unavailable to your account.');
     if (status === 401) navigate('/login', { replace: true });
   }
   async function load() {
@@ -51,41 +60,60 @@ function Departure({ organizationId }: { organizationId: string }) {
     const controller = begin(); if (!controller) return;
     setReview(undefined); setActorId(undefined); setOpen(false); setNotice(undefined); setRecovered(false);
     try {
-      const me = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(me.status)) { unavailable(me.status); return; }
-      const actor = (me.body as { id?: unknown } | undefined)?.id;
-      if (me.status !== 200 || typeof actor !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(actor)
-        || actor === '00000000-0000-0000-0000-000000000000') throw new Error('Invalid account');
-      const result = await request(root, {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
-      const value = result.body as Review | undefined;
-      if (result.status !== 200 || value?.organization?.id !== organizationId || typeof value.organization.name !== 'string'
-        || !value.organization.name.trim() || value.organization.status !== 0 || ![0, 1, 2].includes(value.role)) throw new Error('Invalid review');
-      setActorId(actor); setReview(value);
-    } catch { if (current(controller)) setError('Unable to review current membership. Try loading it again.'); }
-    finally { finish(controller); }
+      const admitted = await boundedWorkRead(async signal => {
+        const before = await profile(signal);
+        const result = await request(root, {}, signal);
+        if ([401, 403, 404].includes(result.status)) throw new DepartureUnavailable(result.status);
+        const value = result.body as Review | undefined;
+        if (result.status !== 200 || value?.organization?.id !== organizationId || typeof value.organization.name !== 'string'
+          || !value.organization.name.trim() || value.organization.status !== 0 || ![0, 1, 2].includes(value.role)) throw new Error('Invalid review');
+        const after = await profile(signal);
+        if (after.id !== before.id) throw new DepartureUnavailable(401);
+        return { actor: after.id, value };
+      }, controller.signal);
+      if (!current(controller)) return;
+      setActorId(admitted.actor); setReview(admitted.value);
+    } catch (error) { if (current(controller)) {
+      if (error instanceof DepartureUnavailable) unavailable(error.status);
+      else setError('Unable to review current membership. Try loading it again.');
+    } } finally { finish(controller); }
   }
   async function leave(recover = false) {
     if (!actorId || (recover ? !retryKey : !review || !open || !!retryKey)) return;
     const controller = begin(); if (!controller) return;
-    const key = retryKey ?? crypto.randomUUID();
+    const key = retryKey ?? crypto.randomUUID(); let submitted = false;
+    setNotice(undefined); setRecovered(false);
     try {
-      const result = await request(`${root}/leave`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify({ expectedActorId: actorId }) }, controller);
+      const result = await boundedWorkRead(async signal => {
+        const before = await profile(signal);
+        if (before.id !== actorId) throw new DepartureUnavailable(401);
+        if (!current(controller)) throw new Error('Departure retired');
+        submitted = true;
+        const response = await request(`${root}/leave`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify({ expectedActorId: actorId }) }, signal);
+        if ([401, 403, 404].includes(response.status)) throw new DepartureUnavailable(response.status);
+        const after = await profile(signal);
+        if (after.id !== actorId) throw new DepartureUnavailable(401);
+        return response;
+      }, controller.signal);
       if (!current(controller)) return;
       setOpen(false); setReview(undefined);
       if (result.status === 204) {
         setRetryKey(undefined); setRecovered(recover);
         setNotice(recover ? 'Original departure acknowledged. Review current membership to check later access.' : 'You left the Organization.'); return;
       }
-      if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
       const code = (result.body as { code?: unknown } | undefined)?.code;
       setRetryKey([400, 409, 429].includes(result.status) ? undefined : key);
       setError(result.status === 409 && code === 'sole_owner'
         ? 'The last usable owner cannot leave. Another usable owner must remain.'
         : [400, 409, 429].includes(result.status) ? 'The departure was refused. Review current membership before considering another departure.'
           : 'Your departure could not be confirmed. Retry the original departure to recover its acknowledgment.');
-    } catch {
-      if (current(controller)) { setRetryKey(key); setOpen(false); setReview(undefined); setError('Your departure could not be confirmed. Retry the original departure to recover its acknowledgment.'); }
+    } catch (error) {
+      if (current(controller)) {
+        if (error instanceof DepartureUnavailable) { unavailable(error.status); return; }
+        setOpen(false); setReview(undefined);
+        if (submitted || retryKey) { setRetryKey(key); setError('Your departure could not be confirmed. Retry the original departure to recover its acknowledgment.'); }
+        else { setActorId(undefined); setError('Your account could not be confirmed. No departure was sent. Review current membership before trying again.'); }
+      }
     } finally { finish(controller); }
   }
   return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>

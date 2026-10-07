@@ -3,7 +3,7 @@ import { expect, test } from './releaseTest';
 
 for (const width of [1280, 390]) {
   test(`PRD-03-TC-01/03/11/12: confirmed departure preserves sole-owner continuity at ${width}px`, async ({ page, context, browser }) => {
-    await page.setViewportSize({ width, height: 844 });
+    test.setTimeout(90_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `departure-owner-${width}-${Date.now()}@example.test`, password: 'departure-correct-horse-battery', displayName: 'Departure owner' };
     expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
@@ -49,10 +49,16 @@ for (const width of [1280, 390]) {
       }
       await rejoin(); await departure.goto(`/app/${org}/leave`);
       const keys: string[] = []; const bodies: string[] = [];
+      let failProfile = false, failAfterProfile = false;
+      await departure.route(url => url.pathname === '/me', async route => {
+        if (!failProfile) { await route.continue(); return; }
+        failProfile = false; await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+      });
       await departure.route(`**/organizations/${org}/leave`, async route => {
         if (route.request().method() !== 'POST') { await route.continue(); return; }
         keys.push(route.request().headers()['idempotency-key']); bodies.push(route.request().postData()!);
         const response = await route.fetch(); expect(response.status()).toBe(204);
+        if (failAfterProfile) { failAfterProfile = false; failProfile = true; }
         if (keys.length === 1) await route.abort('timedout'); else await route.fulfill({ response });
       });
       await departure.getByRole('button', { name: 'Review departure' }).focus(); await departure.keyboard.press('Enter');
@@ -73,6 +79,33 @@ for (const width of [1280, 390]) {
       await departure.getByRole('button', { name: 'Review current membership' }).focus(); await departure.keyboard.press('Enter');
       await expect(departure.getByRole('button', { name: 'Review departure' })).toBeEnabled();
       expect(keys).toHaveLength(2);
+      // A failed account check before submission must leave no invented intent
+      // and preserve the actual restored membership without another POST.
+      await departure.getByRole('button', { name: 'Review departure' }).click();
+      failProfile = true; await departure.getByRole('button', { name: 'Confirm departure' }).click();
+      await expect(departure.getByText('Your account could not be confirmed. No departure was sent. Review current membership before trying again.')).toBeVisible();
+      await expect(departure.getByRole('dialog')).toHaveCount(0);
+      await expect(departure.getByText('Departure Organization', { exact: true })).toHaveCount(0);
+      await expect(departure.getByRole('button', { name: 'Retry original departure' })).toHaveCount(0); expect(keys).toHaveLength(2);
+      const unchanged = await context.request.get(`/organizations/${org}/members`); expect(unchanged.status()).toBe(200);
+      expect((await unchanged.json()).items.find((item: { userId: string }) => item.userId === user)).toEqual(restored);
+      await departure.getByRole('button', { name: 'Review current membership' }).click();
+      await departure.getByRole('button', { name: 'Review departure' }).click(); failAfterProfile = true;
+      await departure.getByRole('button', { name: 'Confirm departure' }).click();
+      await expect(departure.getByText(/Your departure could not be confirmed/)).toBeVisible();
+      await expect(departure.getByRole('dialog')).toHaveCount(0); expect(keys).toHaveLength(3);
+      await expect(departure.getByText('You left the Organization.')).toHaveCount(0);
+      expect((await member.request.get(`/organizations/${org}`)).status()).toBe(404);
+      await rejoin();
+      const laterDirectory = await context.request.get(`/organizations/${org}/members`); expect(laterDirectory.status()).toBe(200);
+      const laterMembership = (await laterDirectory.json()).items.find((item: { userId: string }) => item.userId === user);
+      expect(laterMembership).toBeDefined();
+      await departure.getByRole('button', { name: 'Retry original departure' }).focus(); await departure.keyboard.press('Enter');
+      await expect(departure.getByText('Original departure acknowledged. Review current membership to check later access.')).toBeVisible();
+      expect(keys).toHaveLength(4); expect(keys[3]).toBe(keys[2]); expect(keys[2]).not.toBe(keys[0]); expect(bodies[3]).toBe(bodies[2]);
+      const retained = await context.request.get(`/organizations/${org}/members`); expect(retained.status()).toBe(200);
+      expect((await retained.json()).items.find((item: { userId: string }) => item.userId === user)).toEqual(laterMembership);
+      await expect(departure.getByRole('status')).toBeFocused();
     } finally { await member.close(); }
   });
 }

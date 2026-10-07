@@ -1,13 +1,14 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationLeavePage } from './OrganizationLeavePage';
 
 const summary = { organization: { id: 'org', name: 'Private Organization', status: 0 }, role: 2 };
 const reply = (value: unknown, status = 200) => status === 204 ? new Response(null, { status }) : new Response(JSON.stringify(value), { status });
 const actorId = '00000000-0000-4000-8000-000000000008';
+const profile = { id: actorId, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
 function useFetch(fetcher: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>) {
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => input === '/me'
-    ? Promise.resolve(reply({ id: actorId })) : fetcher(input, init));
+    ? Promise.resolve(reply(profile)) : fetcher(input, init));
 }
 function mount() {
   render(<RouterProvider router={createMemoryRouter([
@@ -20,7 +21,7 @@ async function confirm() {
   await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel departure' })).toHaveFocus());
   fireEvent.click(screen.getByRole('button', { name: 'Confirm departure' }));
 }
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 it('PRD-03-TC-01/11 requires confirmation and leaves only on an authoritative 204', async () => {
   const fetcher = vi.fn().mockResolvedValueOnce(reply(summary)).mockResolvedValueOnce(reply(null, 204));
   useFetch(fetcher); mount();
@@ -84,4 +85,95 @@ it.each([401, 403, 404])('PRD-03-TC-05 clears private membership after departure
   useFetch(vi.fn().mockResolvedValueOnce(reply(summary)).mockResolvedValueOnce(reply({}, status)));
   mount(); await confirm(); await screen.findByText(status === 401 ? 'Sign in destination' : 'This Organization is unavailable to your account.');
   expect(screen.queryByText('Private Organization')).not.toBeInTheDocument();
+});
+
+it('withholds membership when the account changes across the protected review', async () => {
+  let checks = 0;
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => reply(path === '/me' ? ++checks === 2 ? { ...profile, id: '00000000-0000-4000-8000-000000000009' } : profile : summary)));
+  mount(); await screen.findByText('Sign in destination');
+  expect(screen.queryByText('Private Organization')).not.toBeInTheDocument();
+});
+it.each([false, true])('retires departure consent and receipt when the account switches %s after submission', async after => {
+  let checks = 0; let writes = 0;
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit) => {
+    if (path === '/me') return reply(++checks === (after ? 4 : 3) ? { ...profile, id: '00000000-0000-4000-8000-000000000009' } : profile);
+    if (init.method === 'POST') { writes++; return reply(null, 204); }
+    return reply(summary);
+  }));
+  mount(); await confirm(); await screen.findByText('Sign in destination');
+  expect(writes).toBe(after ? 1 : 0); expect(screen.queryByText('You left the Organization.')).not.toBeInTheDocument();
+  expect(screen.queryByText('Private Organization')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry original departure' })).not.toBeInTheDocument();
+});
+it.each([false, true])('distinguishes account uncertainty %s after submission and recovers only the original submitted key', async after => {
+  let checks = 0; const commands: RequestInit[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit) => {
+    if (path === '/me') return ++checks === (after ? 4 : 3) ? reply({}, 503) : reply(profile);
+    if (init.method === 'POST') { commands.push(init); return reply(null, 204); }
+    return reply(summary);
+  }));
+  mount(); await confirm();
+  await screen.findByText(after ? 'Your departure could not be confirmed. Retry the original departure to recover its acknowledgment.'
+    : 'Your account could not be confirmed. No departure was sent. Review current membership before trying again.');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(commands).toHaveLength(after ? 1 : 0); expect(screen.queryByText('You left the Organization.')).not.toBeInTheDocument();
+  expect(screen.queryByText('Private Organization')).not.toBeInTheDocument();
+  if (after) {
+    fireEvent.click(screen.getByRole('button', { name: 'Retry original departure' }));
+    await screen.findByText('Original departure acknowledged. Review current membership to check later access.');
+    expect(commands).toHaveLength(2);
+    expect(new Headers(commands[1].headers).get('Idempotency-Key')).toBe(new Headers(commands[0].headers).get('Idempotency-Key'));
+    expect(commands[1].body).toBe(commands[0].body);
+  } else {
+    expect(screen.queryByRole('button', { name: 'Retry original departure' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Review current membership' }));
+    await screen.findByRole('button', { name: 'Review departure' }); expect(commands).toHaveLength(0);
+  }
+});
+it.each([false, true])('bounds noncooperative account checks %s after submission and ignores late replies', async after => {
+  let checks = 0; let finish!: (response: Response) => void; let signal!: AbortSignal; let writes = 0;
+  vi.stubGlobal('fetch', vi.fn((path: string, init: RequestInit) => {
+    if (path === '/me') {
+      if (++checks === (after ? 4 : 3)) { signal = init.signal!; return new Promise<Response>(resolve => { finish = resolve; }); }
+      return Promise.resolve(reply(profile));
+    }
+    if (init.method === 'POST') { writes++; return Promise.resolve(reply(null, 204)); }
+    return Promise.resolve(reply(summary));
+  }));
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Review departure' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel departure' })).toHaveFocus());
+  vi.useFakeTimers(); await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Confirm departure' })));
+  expect(finish).toBeDefined(); await act(async () => vi.advanceTimersByTimeAsync(15_001));
+  expect(signal.aborted).toBe(true); expect(writes).toBe(after ? 1 : 0);
+  await act(async () => vi.advanceTimersByTimeAsync(500));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); expect(screen.queryByText('Private Organization')).not.toBeInTheDocument();
+  await act(async () => finish(reply(profile)));
+  expect(writes).toBe(after ? 1 : 0); expect(screen.queryByText('You left the Organization.')).not.toBeInTheDocument();
+});
+
+it('uses one departure deadline across an earlier slow profile and a stalled later profile body', async () => {
+  let checks = 0; let writes = 0; let signal!: AbortSignal; let finishBody!: (value: unknown) => void;
+  vi.stubGlobal('fetch', vi.fn((path: string, init: RequestInit) => {
+    if (path === '/me') {
+      checks++;
+      if (checks === 3) return new Promise<Response>(resolve => setTimeout(() => resolve(reply(profile)), 8_000));
+      if (checks === 4) {
+        signal = init.signal!; const stalled = reply(profile);
+        stalled.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(stalled);
+      }
+      return Promise.resolve(reply(profile));
+    }
+    if (init.method === 'POST') { writes++; return Promise.resolve(reply(null, 204)); }
+    return Promise.resolve(reply(summary));
+  }));
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Review departure' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel departure' })).toHaveFocus());
+  vi.useFakeTimers(); await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Confirm departure' })));
+  await act(async () => vi.advanceTimersByTimeAsync(8_000)); expect(writes).toBe(1); expect(finishBody).toBeDefined();
+  await act(async () => vi.advanceTimersByTimeAsync(7_001)); expect(signal.aborted).toBe(true);
+  await act(async () => vi.advanceTimersByTimeAsync(500)); expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Retry original departure' })).toBeEnabled();
+  expect(screen.queryByText('You left the Organization.')).not.toBeInTheDocument();
+  await act(async () => finishBody(profile));
+  expect(writes).toBe(1); expect(screen.queryByText('You left the Organization.')).not.toBeInTheDocument();
 });
