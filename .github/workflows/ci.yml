@@ -228,6 +228,9 @@ jobs:
       - name: Verify bounded recipient authority source, lease and rollback capabilities
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-authority.sql
 
+      - name: Verify authority discovery limits and restricted claim capabilities
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-authority-discovery.sql
+
       - name: Verify concurrent Board journal commit order with restricted runtime role
         run: bash scripts/ci/test-organization-board-journal-order.sh
 

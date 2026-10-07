@@ -38,6 +38,15 @@ New Organizations need no manual scope update for metadata readiness. Set it to
 Demo metadata discovery reject startup. See
 [metadata routing and delivery](organization-metadata-events.md).
 
+Production Workers default `STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED`
+to `true`. This independent loop discovers at most 100 Organization IDs per
+page and claims only invitation recipient authority jobs under tenant RLS.
+No `STRATAAI_WORKER_ORGANIZATION_IDS` update is needed for newly published
+authority work. Set the flag to `false` to suspend this loop independently;
+invalid values and enabled Demo authority discovery reject startup. Apply
+migration 106 and provision the Worker capability grants before startup.
+See [recipient authority delivery](invitation-recipient-authority.md#automatic-production-authority-discovery).
+
 Additional provider credentials are introduced only with the corresponding PRD and must be
 provided by deployment secret management/environment variables. Real secrets are never
 committed to `.env.example`, image layers, or CI artifacts.

@@ -3,6 +3,11 @@ using StrataAI.Application.Organizations;
 
 namespace StrataAI.Application.Onboarding;
 
+public interface IInvitationRecipientAuthorityScopeReader
+{
+    Task<IReadOnlyList<Guid>> ReadAsync(Guid? after, int limit, CancellationToken cancellationToken);
+}
+
 public interface IInvitationRecipientAuthorityDeliveryStore
 {
     // One leased transaction must verify the original canonical source and

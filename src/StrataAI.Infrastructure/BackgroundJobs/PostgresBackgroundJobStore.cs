@@ -5,8 +5,13 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.BackgroundJobs;
 
-public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connections, bool previewJobs = false, bool metadataJobsOnly = false) : IBackgroundJobStore
+public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connections, bool previewJobs = false, bool metadataJobsOnly = false,
+    bool authorityJobsOnly = false) : IBackgroundJobStore
 {
+    private readonly string _claimFunction = metadataJobsOnly && authorityJobsOnly
+        ? throw new ArgumentException("Only one typed job claim scope is permitted.")
+        : authorityJobsOnly ? "claim_invitation_recipient_authority_job"
+        : metadataJobsOnly ? "claim_organization_metadata_job" : "claim_background_job";
     // Infrastructure producers pass their EXISTING domain transaction. This
     // method never opens/commits its own connection and cannot lose publication
     // independently of the domain write. Duplicate keys retain the first job.
@@ -41,10 +46,9 @@ public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connect
             await capability.ExecuteNonQueryAsync(cancellationToken);
         }
         ClaimedBackgroundJob? job;
-        var claimFunction = metadataJobsOnly ? "claim_organization_metadata_job" : "claim_background_job";
         await using (var command = new NpgsqlCommand($"""
             SELECT id,tenant_id,job_type,actor_id,service_identity,correlation_id,safe_metadata::text,
-                   attempt_count,lease_id,worker_id,lease_expires_at FROM {claimFunction}(@worker);
+                   attempt_count,lease_id,worker_id,lease_expires_at FROM {_claimFunction}(@worker);
             """, session.Connection, session.Transaction))
         {
             command.Parameters.AddWithValue("worker", workerId);

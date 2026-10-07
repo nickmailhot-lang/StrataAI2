@@ -46,6 +46,8 @@ GRANT SELECT(email_normalized,last_sequence) ON invitation_recipient_streams TO 
 GRANT SELECT(email_normalized,sequence,event_id,event_type,created_at) ON invitation_recipient_events TO strataai_api_runtime;
 GRANT SELECT(email_normalized,revision) ON invitation_recipient_authority_revisions TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION public.deliver_invitation_recipient_authority(uuid,uuid,uuid,uuid,uuid,uuid,integer) TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.discover_invitation_recipient_authority_scopes(uuid,integer) TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.claim_invitation_recipient_authority_job(uuid) TO strataai_worker_runtime;
 GRANT SELECT ON organization_board_directory_epochs TO strataai_api_runtime;
 GRANT UPDATE(read_at) ON card_assignment_notifications TO strataai_api_runtime;
 GRANT SELECT,INSERT ON watch_subscriptions TO strataai_api_runtime;

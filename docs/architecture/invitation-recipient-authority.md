@@ -37,8 +37,8 @@ they do not prove database provenance, atomicity, deduplication or persistence.
 
 The production separate Worker registers the handler and storage adapter. Its
 existing explicitly configured Organization scope can deliver these jobs.
-Automatic authority scope discovery and protected reader integration are still
-required. The API does not run this handler.
+Automatic authority scope discovery is implemented below. Protected reader
+integration is still required. The API does not run this handler.
 
 ## PostgreSQL source and bounded delivery implemented
 
@@ -65,8 +65,8 @@ Worker can execute delivery but cannot read private checkpoints, effects or
 revision rows directly. All three tables use forced RLS; runtime roles receive
 no direct writes. A PostgreSQL adapter wraps delivery in one tenant transaction.
 The production Worker registers the adapter and handler for its existing
-explicit Organization job scope. Automatic delivery without that configuration
-still needs typed authority claim/discovery; revisions do not yet affect
+explicit Organization job scope and the independent automatic discovery loop.
+Private revisions do not yet affect
 protected cursors. This increment does not claim live authority invalidation.
 
 The mandatory SQL fixture exercises 205 candidates in pages of 100/100/5,
@@ -76,17 +76,52 @@ failure, post-effect lease expiry, and restricted role capabilities. This is
 storage evidence; actual Worker restart, concurrent delivery and native browser
 withdrawal evidence remain required.
 
+## Automatic production authority discovery
+
+Forward migration `106_invitation_recipient_authority_discovery` exposes a
+Worker-only routing capability returning at most 100 ordered Organization IDs.
+It joins each private checkpoint to its original canonical metadata source and
+exact job, actor, correlation, event reference and checkpoint idempotency key.
+Delayed jobs, live leases and malformed source bindings are excluded. Discovery
+does not mutate the queue, scan recipients or expose private recipient fields.
+The independent Worker seeks through UUID pages and wraps to revisit newly
+published lower IDs and recovered leases. Each Organization pass runs at most
+32 jobs or 250 ms before yielding; each delivery retains its fixed 100-candidate
+limit. The routing loop waits one second between passes.
+
+The typed claim capability remains a tenant-scoped invoker under forced RLS.
+Concurrent claimers use `SKIP LOCKED`; expired leases can be recovered and expired
+final attempts are retired. Metadata, deletion, mail and provider queues are
+outside this claim path. A committed checkpoint remains routable until its job
+is acknowledged, so process death after delivery does not strand its replay.
+
+The actual restricted C# contract passes 110-Organization seek/wrap coverage,
+delay/live-lease exclusions, immutable routing, API/private-table refusal,
+concurrent claims, committed replay and expired-lease recovery. Mandatory direct
+SQL checks reject null/out-of-range limits and missing Worker identities, and
+deny both capabilities to the API role. Migration clean/repeat/upgrade,
+serialization and failure rollback checks pass through migration 106. The
+isolated Linux Release builds pass with zero warnings/errors; all 738 Domain
+tests pass.
+
+A separate production Worker using the restricted Worker login, all discovery
+defaults and no configured Organization IDs processed a future canonical
+Organization update with 205 invitation candidates. Its persisted checkpoints
+were 100/100/5; all three jobs reached `SUCCEEDED` on attempt one and the two
+recipient revisions each incremented once. This was a local build snapshot,
+not retained release-image or browser acceptance evidence. Startup refusal was
+also verified for enabled Demo discovery and an invalid boolean setting.
+
 ## Runtime work required next
 
-The first producer should attach to future actual Organization metadata sources
-for current parent names/state and issuer membership changes. Existing metadata
+The implemented first producer attaches to future actual Organization metadata
+sources for current parent names and issuer membership changes. Existing metadata
 events retain original audit identity, actor, correlation, subject and subject
 revision. Their current delivery capability already validates the revision
 against the correct Organization, membership or invitation subject; these
 different revision sequences must not be compared with one another.
 
-The typed separate-Worker claim/discovery path for automatic scope delivery must
-be implemented next. API observation must read the private revision inside its
+API observation must read the private revision inside its
 existing owning identity boundary and include it in protected cursor binding.
 A revision change should cause an empty reset followed by fresh protected
 discovery, without inventing invitation transitions or pending-list hashes.
@@ -102,7 +137,7 @@ later actor departure; current recipient discovery still owns present grant
 admission. Legacy changes without a proven source must not acquire fabricated
 actors or history.
 
-Automatic scope discovery, cursor/reader integration, Demo behavior and actual
+Cursor/reader integration, Demo behavior and actual
 concurrent delivery/restart/large-population evidence remain unfinished. Native nonmember/Portal two-client authority withdrawal,
 disconnect recovery, disclosure clearing, keyboard/mobile and latency results
 must also be verified against the retained exact release images before closure.

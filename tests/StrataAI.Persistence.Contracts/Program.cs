@@ -32,6 +32,12 @@ var card = Guid.NewGuid(); var foreignCard = Guid.NewGuid();
 await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenAsync(ct);
 await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, ct);
 if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
+if (args.Contains("--invitation-authority-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await InvitationRecipientAuthorityDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    return;
+}
 async Task Seed(Guid tenant, Guid actor, Guid boardId, Guid listId, Guid cardId)
 {
     await using var tx = await admin.BeginTransactionAsync(ct);
@@ -82,6 +88,7 @@ try
     await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataReplayContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await InvitationRecipientAuthorityDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationDeletionPublicationContract.RunAsync(admin,apiConnection,ct);
     await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);
