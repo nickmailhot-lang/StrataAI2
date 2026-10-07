@@ -58,6 +58,11 @@ for (const width of [1280, 390]) for (const after of [false, true]) {
       await page.getByRole('button', { name: 'Keep draft after review' }).focus(); await page.keyboard.press('Enter');
     }
     await expect(page.getByRole('button', { name: 'Save Organization settings' })).toBeEnabled();
+    const final = await context.request.get(`/organizations/${original.id}`); expect(final.status()).toBe(200);
+    expect((await final.json()).organization).toMatchObject({
+      name: after ? 'Preserved reviewed edit' : original.name,
+      version: original.version + (after ? 1 : 0),
+    });
     expect(profileRefusals).toBe(1); expect(documents).toBe(1);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
   });
