@@ -162,6 +162,16 @@ The previous `6bee3ce5` CI source gate passed 739 domain, 600 API-host and 1,897
 cases plus PostgreSQL integration, but its Demo smoke gate failed on this discovery
 mismatch. Current retained-image confirmation remains required.
 
+CI run [37660730995](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37660730995)
+at `19f77ea1` subsequently passed the exact retained API's complete no-network
+Demo workflow step, embedded build identity checks and Production missing-database
+startup refusal. Its source gate, image builds and image security scans passed.
+This confirms the repaired API isolation gate at that revision; the container job
+and full release were still running when inspected. Later Worker isolation,
+catalog clear/reset, policy validation and composition increments still need
+their own exact-commit pipeline outcomes. No whole-ticket closure follows from
+this older scoped gate pass.
+
 ## Production
 
 `production` fails startup unless `ConnectionStrings__Postgres` is configured.
