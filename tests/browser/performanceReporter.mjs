@@ -4,6 +4,13 @@ import { resolve } from 'node:path';
 const statuses = new Set(['passed', 'failed', 'timedOut', 'skipped', 'interrupted']);
 const duration = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
 
+// Local diagnostic runs use the same scenarios, but cannot certify release images.
+export function performanceProvenance(environment = {}) {
+  const revision = /^[0-9a-f]{40,64}$/.test(environment.GITHUB_SHA ?? '') ? environment.GITHUB_SHA : null;
+  return { revision, topology: environment.CI === 'true' && revision
+    ? 'exact release images through Nginx' : 'unverified runtime' };
+}
+
 // Never serialize test titles, errors, request data or arbitrary fields.
 export function performanceEntry(name, value, status) {
   if (!statuses.has(status) || !value || typeof value !== 'object') return undefined;
@@ -72,8 +79,7 @@ export default class PerformanceReporter {
     await Promise.all(this.pending);
     const directory = resolve('artifacts/browser-performance');
     await mkdir(directory, { recursive: true });
-    const revision = /^[0-9a-f]{40,64}$/.test(process.env.GITHUB_SHA ?? '') ? process.env.GITHUB_SHA : null;
-    await writeFile(resolve(directory, 'kanban.json'), JSON.stringify({ schemaVersion: 1, revision,
-      topology: 'exact release images through Nginx', measurements: this.entries }, null, 2));
+    await writeFile(resolve(directory, 'kanban.json'), JSON.stringify({ schemaVersion: 1,
+      ...performanceProvenance(process.env), measurements: this.entries }, null, 2));
   }
 }

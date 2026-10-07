@@ -1,5 +1,45 @@
 # Kanban performance acceptance
 
+## Local desktop and phone diagnostic, 2026-10-07
+
+The unchanged two-scenario benchmark was executed locally against a frozen compiled
+Production API, restricted PostgreSQL and the current Nginx configuration. The web
+source initially matched the existing frozen bundle. An initial `127.0.0.1` fixture
+failed before measurement because the request client did not return the Production
+Secure cookie; the subsequent fixture uses the same `localhost` origin as CI.
+Cookie policy, rate limiters, retries and all timing budgets remain unchanged.
+
+That baseline failed desktop readiness at 2164.4 ms and phone movement feedback
+at 129.4 ms. Automatic drop commands now defer the destination/position review
+controls while the first write is saving. The saving status and provisional
+placement remain visible; a lost response restores the original immutable review
+and its original-key recovery. The new component regression fails before this
+change and passes afterward. All 23 selected move/drag tests pass, as do web
+TypeScript, targeted lint and production build checks.
+
+The fresh frozen web bundle's complete follow-up invocation still fails both
+scenarios. It retains all twenty mutation samples per viewport and reports:
+
+| Viewport | Usable Board (<1500 ms) | Drop feedback (<100 ms) | Cached detail (<200 ms) | Mutation p95 (<500 ms) | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| 1280x844, mouse | 1069.5 | **131.1** | 182.7 | 279.5 | Failed feedback |
+| 390x844, Chromium touch | 1072.6 | 84.7 | **255.0** | 164.7 | Failed cached detail |
+
+These are scoped Windows-hosted Chromium/cached-runtime observations, not the
+documented GitHub Ubuntu retained-image deployment or a green release claim.
+The changed readiness numbers alone do not establish a causal improvement from
+the move-control change. Desktop feedback and phone cached detail remain explicit
+performance work; no threshold, failure outcome or percentile sample was relaxed.
+The two disposable API/web containers are removed after execution, preserving
+the existing runtime and volumes.
+
+The reporter now labels runs without both CI context and a valid source revision
+as `unverified runtime`, retaining a valid source revision when supplied without
+certifying its images. Invalid revisions are withheld rather than reflected.
+The trusted release workflow retains its exact-image label and build-once/image
+verification gates. All eleven reporter privacy/validation regressions pass.
+Local reports and even a passed individual timing do not close PRD-04/05/06.
+
 ## Current large-Board runtime correction
 
 Exact-image run [37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119)

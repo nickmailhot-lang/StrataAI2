@@ -18,6 +18,23 @@ async function choose() {
   fireEvent.click(await screen.findByRole('option', { name: 'Complete' }));
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it('defers automatic drop review controls while saving and restores the original review after a lost response', async () => {
+  let fail: ((reason: Error) => void) | undefined;
+  const fetcher = vi.fn(() => new Promise<Response>((_resolve, reject) => { fail = reject; }));
+  vi.stubGlobal('fetch', fetcher);
+  render(<CardMoveControls card={card} snapshot={snapshot} disabled={false}
+    onAcknowledged={vi.fn()} onRefresh={vi.fn()}
+    dropRequest={{ cardId: card.id, version: 3, destination: 'dest', before: '', nonce: 'pending-drop' }} />);
+  await screen.findByText('Saving move. Placement is provisional until confirmed.');
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(screen.queryByRole('combobox', { name: 'Destination list' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('combobox', { name: 'Card position' })).not.toBeInTheDocument();
+  await act(async () => fail?.(new Error('Lost response')));
+  await screen.findByRole('button', { name: 'Retry this move' });
+  expect(screen.getByRole('combobox', { name: 'Destination list' })).toHaveTextContent('Complete');
+  expect(screen.getByRole('combobox', { name: 'Destination list' })).toHaveAttribute('aria-disabled', 'true');
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
 it('starts one admitted drop after Strict Mode mount replay without aborting its acknowledgment', async () => {
   let complete: ((response: Response) => void) | undefined;
   const fetcher = vi.fn((_path: string, options: RequestInit) => new Promise<Response>((resolve, reject) => {

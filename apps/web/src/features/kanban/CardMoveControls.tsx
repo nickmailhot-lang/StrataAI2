@@ -14,6 +14,7 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
   const [review, setReview] = useState<{ version: number; destination: string; before: string }>();
   const [intent, setIntent] = useState<Intent>();
   const [busy, setBusy] = useState(false);
+  const [automaticSaving, setAutomaticSaving] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [notice, setNotice] = useState<string>();
   const [acknowledged, setAcknowledged] = useState(false);
@@ -65,7 +66,7 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
       return;
     }
     const command = intent ?? { ...proposed, key: crypto.randomUUID() };
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); setAcknowledged(false);
+    const controller = new AbortController(); pending.current = controller; setAutomaticSaving(!!selected && !intent); setBusy(true); setNotice(undefined); setAcknowledged(false);
     onBusyChange?.(true);
     if (!intent) onPreview?.({ cardId: card.id, destination: command.destination, before: command.before });
     let abort: (() => void) | undefined;
@@ -100,7 +101,7 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
       }
     } finally {
       clearTimeout(timer); if (abort) controller.signal.removeEventListener('abort', abort);
-      if (pending.current === controller) { pending.current = undefined; if (mounted.current) { setBusy(false); onBusyChange?.(false); onPreview?.(); } }
+      if (pending.current === controller) { pending.current = undefined; if (mounted.current) { setAutomaticSaving(false); setBusy(false); onBusyChange?.(false); onPreview?.(); } }
     }
   }
   function closeReview() { focusRequested.current = true; setReview(undefined); setBlocked(false); setNotice(undefined); }
@@ -110,7 +111,9 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
     {notice && <Alert severity={acknowledged ? 'success' : 'info'}>{notice}</Alert>}
     {changed && <Alert severity="info">The card changed while reviewing this move. Check the current Board and review again.</Alert>}
     {review && !intent && destinationActive && !positionActive && <Alert severity="info">The selected card is no longer in this list. Choose a current position.</Alert>}
-    {!review ? <Button ref={action} disabled={disabled} onClick={() => { setAcknowledged(false); setNotice(undefined); setReview({ version: card.version, destination: '', before: '' }); }}>Move card</Button>
+    {/* The drop already selected its target. Keep the first paint for provisional
+        placement; mount the full review only when recovery needs user input. */}
+    {!automaticSaving && (!review ? <Button ref={action} disabled={disabled} onClick={() => { setAcknowledged(false); setNotice(undefined); setReview({ version: card.version, destination: '', before: '' }); }}>Move card</Button>
       : <><Typography>Choose an active list and a position for this card on this Board.</Typography>
         <TextField select autoFocus label="Destination list" value={review.destination} disabled={disabled || busy || !!intent || blocked || changed}
           onChange={event => setReview({ ...review, destination: event.target.value, before: '' })}>
@@ -126,6 +129,6 @@ export function CardMoveControls({ card, snapshot, disabled, onAcknowledged, onR
         {!intent && <Button disabled={busy} onClick={closeReview}>Cancel move</Button>}
         {(blocked || changed) && <Button disabled={busy} onClick={() => { closeReview(); onRefresh(); }}>Check current Board</Button>}
         {intent && <Typography>Keep this destination and position unchanged until the move is confirmed. Acknowledgment does not guarantee current placement after later edits.</Typography>}
-      </>}
+      </>)}
   </Stack>;
 }

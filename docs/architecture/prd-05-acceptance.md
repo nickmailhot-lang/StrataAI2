@@ -106,6 +106,20 @@ The owner then commits a different title at version 3. Recovery returns the orig
 
 CI now requires the same transitions against its immutable API and restricted database. Local execution uses the frozen compiled API in a cached Linux runtime, not retained-current-image, separate Worker or native browser evidence. No production authorization policy changes are needed. The disposable API is removed and existing services/volumes are preserved. Estimated remaining work stays 15%; full operation/lifecycle/concurrency, release/native, accessibility and capacity/latency acceptance still govern closure.
 
+## Current local shared performance gaps
+
+The [2026-10-07 desktop/phone diagnostic](../kanban-performance.md#local-desktop-and-phone-diagnostic-2026-10-07)
+executes the existing three-List/fifty-Card benchmark through the compiled
+Production API, real restricted PostgreSQL and Nginx. Deferring automatic drop
+review controls preserves first-save status and original uncertain-response
+recovery; 23 selected move/drag tests, TypeScript, lint and web build checks pass.
+The final native invocation remains failed: desktop feedback is 131.1 ms against
+100 ms and phone cached detail is 255.0 ms against 200 ms. Readiness and all
+twenty-sample mutation p95 checks pass in that invocation. This is local cached
+runtime evidence, not current retained-image release acceptance. The reporter
+now explicitly distinguishes unverified runtime provenance. The planning estimate
+stays 15%; full performance acceptance remains outstanding.
+
 ## Remaining implementation order
 
 1. Verify mandatory restricted member-event CI and execute current release consumer delivery/reconnect; local API and restricted PostgreSQL audit/journal/outbox, replay, no-op, rollback and private authority compatibility checks are complete.

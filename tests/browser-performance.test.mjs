@@ -1,9 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import PerformanceReporter, { performanceEntry } from './browser/performanceReporter.mjs';
+import PerformanceReporter, { performanceEntry, performanceProvenance } from './browser/performanceReporter.mjs';
 
 const fixture = { lists: 2, cards: 0, viewport: '1280x844', topology: 'exact release images through Nginx' };
 const sample = { fixture, feedbackObserved: true, feedbackMs: 43.5 };
+
+test('local measurements cannot claim release image provenance', () => {
+  assert.deepEqual(performanceProvenance({}), { revision: null, topology: 'unverified runtime' });
+  const revision = 'a'.repeat(40);
+  assert.deepEqual(performanceProvenance({ GITHUB_SHA: revision }), { revision, topology: 'unverified runtime' });
+});
+test('CI performance provenance requires a valid source revision and never reflects invalid input', () => {
+  assert.deepEqual(performanceProvenance({ CI: 'true', GITHUB_SHA: 'private-invalid-value' }),
+    { revision: null, topology: 'unverified runtime' });
+  const revision = 'b'.repeat(40);
+  assert.deepEqual(performanceProvenance({ CI: 'true', GITHUB_SHA: revision }),
+    { revision, topology: 'exact release images through Nginx' });
+});
 
 test('retained performance evidence strips private and arbitrary fields', () => {
   const entry = performanceEntry('list-feedback-performance.json', { ...sample,
