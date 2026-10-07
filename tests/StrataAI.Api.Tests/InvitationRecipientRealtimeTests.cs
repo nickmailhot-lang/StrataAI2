@@ -99,7 +99,7 @@ public sealed partial class ApiHostTests
         var changed = await StreamItem(socket);
         var creation = Assert.Single(changed.GetProperty("events").EnumerateArray());
         Assert.Equal("INVITATION_CREATED", creation.GetProperty("eventType").GetString());
-        Assert.Equal(2, creation.GetProperty("sequence").GetInt64());
+        Assert.Equal("2", creation.GetProperty("sequence").GetString());
         Assert.Equal(new[] { "createdAt", "eventId", "eventType", "sequence" }, creation.EnumerateObject().Select(p => p.Name).Order());
         Assert.DoesNotContain(email, changed.GetRawText()); Assert.DoesNotContain(f.Organization.ToString(), changed.GetRawText());
         Assert.DoesNotContain(created.Value!.Invitation.Id.ToString(), changed.GetRawText());
@@ -109,7 +109,7 @@ public sealed partial class ApiHostTests
         var acceptedPage = await StreamItem(socket);
         var transition = Assert.Single(acceptedPage.GetProperty("events").EnumerateArray());
         Assert.Equal("INVITATION_ACCEPTED", transition.GetProperty("eventType").GetString());
-        Assert.Equal(3, transition.GetProperty("sequence").GetInt64());
+        Assert.Equal("3", transition.GetProperty("sequence").GetString());
         var stored = await app.Services.GetRequiredService<IInvitationStore>().FindByIdAsync(f.Organization, created.Value.Invitation.Id, ct);
         Assert.Equal(stored!.AcceptedAt, transition.GetProperty("createdAt").GetDateTimeOffset());
         if (surface == "PORTAL")
@@ -160,7 +160,7 @@ public sealed partial class ApiHostTests
         var actual = Assert.Single(replay.GetProperty("events").EnumerateArray());
         Assert.Equal(original.EventId, actual.GetProperty("eventId").GetGuid());
         Assert.Equal(original.CreatedAt, actual.GetProperty("createdAt").GetDateTimeOffset());
-        Assert.Equal("INVITATION_REVOKED", actual.GetProperty("eventType").GetString()); Assert.Equal(2, actual.GetProperty("sequence").GetInt64());
+        Assert.Equal("INVITATION_REVOKED", actual.GetProperty("eventType").GetString()); Assert.Equal("2", actual.GetProperty("sequence").GetString());
         await SendFrame(reconnected, new { type = 4, invocationId = "duplicate", target = "Watch", arguments = new[] { cursor } });
         var rejected = await Frame(reconnected, ct); Assert.Contains("subscription_limit", rejected!.Value.GetProperty("error").GetString());
         await SendFrame(reconnected, new { type = 5, invocationId = "watch" });

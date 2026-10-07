@@ -95,7 +95,9 @@ discovery on reset. Bounded replay reads at most 101 rows for a requested page
 of 1–100 events, without stepping beyond the captured committed head.
 
 The outbound event has only `eventId`, normalized `eventType`, `sequence` and
-`createdAt`. Organization/Invitation IDs, issuer, recipient email, roles and
+`createdAt`. The sequence is a canonical decimal string on the JSON wire, so
+JavaScript preserves every signed 64-bit position rather than rounding it.
+Organization/Invitation IDs, issuer, recipient email, roles and
 correlation remain private source data. Final account/email/revision or session
 withdrawal discards the whole page. A separate current-cursor check lets the
 transport reauthorize after session I/O. Recipient events invalidate discovery;
@@ -121,6 +123,36 @@ empty reset and current protected discovery.
 
 This transport does not implement the browser's discovery, acceptance recovery,
 accessible announcement or parent/issuer authority invalidation workflow.
+
+## Browser transport boundary
+
+`invitationRecipientLive.ts` provides the cookie-authenticated WebSocket adapter;
+the invitations page does not consume it yet. It resumes the exact last admitted
+opaque cursor, fences late callbacks from a prior connection generation and
+backs off failed connection attempts. Initial/expired-cursor reset and actual
+transitions synchronously invalidate the consumer's consent. Reconnecting or
+unavailable delivery also invalidates immediately. Empty heartbeats can rotate a
+protected token without manufacturing a change notification. Cleanup cancels
+pending retries and subscriptions, including a late successful connection.
+
+`invitationRecipientSync.ts` accepts only the four public page fields and four
+public event fields. It refuses extra private fields, malformed dates/tokens,
+noncanonical/out-of-range sequence strings, duplicate source identities and
+noncontiguous pages. It uses `bigint` for sequence checks. An opaque bootstrap
+head has no client-readable sequence; continuity starts at the first actual
+event after reset. Full pages remain bounded to 50 events, and resets must be
+empty. This validation cannot independently decode the account binding; the hub
+owns that binding and the future page consumer must freshly verify its reviewed
+account around protected discovery and acceptance.
+
+Thirty-five browser unit cases passed for this contract and adapter, including
+positions above JavaScript's safe integer range through `long.MaxValue`, private
+payload refusal before cursor advancement, stale callbacks, exact resume,
+heartbeat rotation, reset, retry backoff and cleanup. Two domain serialization
+cases additionally verify the actual server JSON at those large positions; all
+nine actual Demo socket cases pass with decimal-string sequences. These checks
+do not establish native browser consumption, accessible announcements or current
+exact-image end-to-end acceptance.
 
 ## Demo source parity
 

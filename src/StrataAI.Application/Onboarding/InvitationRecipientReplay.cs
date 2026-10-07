@@ -1,4 +1,5 @@
 using StrataAI.Application.Identity;
+using System.Text.Json.Serialization;
 
 namespace StrataAI.Application.Onboarding;
 
@@ -9,7 +10,8 @@ public interface IInvitationRecipientCursorCodec
     string Encode(InvitationRecipientCursorBinding binding, long position);
     bool TryDecode(InvitationRecipientCursorBinding binding, string token, out long position);
 }
-public sealed record InvitationRecipientEvent(Guid EventId, string EventType, long Sequence, DateTimeOffset CreatedAt);
+public sealed record InvitationRecipientEvent(Guid EventId, string EventType,
+    [property: JsonNumberHandling(JsonNumberHandling.WriteAsString)] long Sequence, DateTimeOffset CreatedAt);
 public sealed record InvitationRecipientEventWindow(long Position, bool HasMore, bool ResetRequired,
     IReadOnlyList<InvitationRecipientEvent> Events)
 {

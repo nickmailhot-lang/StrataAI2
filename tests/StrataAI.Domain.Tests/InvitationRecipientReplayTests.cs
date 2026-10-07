@@ -119,6 +119,15 @@ public sealed class InvitationRecipientReplayTests
         foreach (var privateField in new[] { "Organization", "InvitationId", "Actor", "Email", "Role", "Correlation", "Metadata", "Token" })
             Assert.DoesNotContain(privateField, json);
     }
+    [Theory]
+    [InlineData(9007199254740993L)]
+    [InlineData(long.MaxValue)]
+    public void PRD_60_Recipient_wire_sequence_is_an_exact_decimal_string(long sequence)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(Row(sequence), new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        using var document = System.Text.Json.JsonDocument.Parse(json);
+        Assert.Equal(sequence.ToString(System.Globalization.CultureInfo.InvariantCulture), document.RootElement.GetProperty("sequence").GetString());
+    }
     private static ServiceProvider CodecProvider(Clock clock)
     {
         var services = new ServiceCollection(); services.AddSingleton<IClock>(clock);
