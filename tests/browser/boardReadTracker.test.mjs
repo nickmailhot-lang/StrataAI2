@@ -1,7 +1,31 @@
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { trackBoardReads, trackCardVersion } from './boardReadTracker.ts';
+import { trackBoardReads, trackCardVersion, waitForBoardReads } from './boardReadTracker.ts';
+
+test('event-driven readiness observes the qualified second response immediately and cleans up its listeners', async () => {
+  const page = new EventEmitter(); let location = 'https://example.test/app'; page.url = () => location;
+  const reads = trackBoardReads(page, 'board', '/app/org/boards/board');
+  const request = () => ({ method: () => 'GET', url: () => 'https://example.test/boards/board' });
+  const respond = item => page.emit('response', { request: () => item, status: () => 200 });
+  const previous = request(); page.emit('request', previous);
+  let ready = false; const waiting = waitForBoardReads(page, reads, 2).then(() => { ready = true; });
+  location = 'https://example.test/app/org/boards/board'; respond(previous);
+  const first = request(); page.emit('request', first); respond(first);
+  await Promise.resolve(); assert.equal(ready, false);
+  const second = request(); page.emit('request', second); respond(second);
+  assert.equal(await Promise.race([waiting.then(() => 'ready'), new Promise(resolve => setImmediate(() => resolve('late')))]), 'ready');
+  assert.equal(reads(), 2); assert.equal(page.listenerCount('response'), 1); assert.equal(page.listenerCount('close'), 0);
+  await waitForBoardReads(page, reads, 2); assert.equal(page.listenerCount('response'), 1);
+});
+test('read observation still fails on timeout or page closure without leaving listeners', async () => {
+  const page = new EventEmitter();
+  await assert.rejects(waitForBoardReads(page, () => 0, 2, 10), /Required Board reads/);
+  assert.equal(page.listenerCount('response'), 0); assert.equal(page.listenerCount('close'), 0);
+  const closed = waitForBoardReads(page, () => 0, 2); page.emit('close');
+  await assert.rejects(closed, /interrupted/);
+  assert.equal(page.listenerCount('response'), 0); assert.equal(page.listenerCount('close'), 0);
+});
 
 test('late previous-screen responses cannot satisfy visibility bootstrap readiness', () => {
   const page = new EventEmitter();

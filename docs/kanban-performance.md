@@ -40,6 +40,41 @@ The trusted release workflow retains its exact-image label and build-once/image
 verification gates. All eleven reporter privacy/validation regressions pass.
 Local reports and even a passed individual timing do not close PRD-04/05/06.
 
+## Drag registration and readiness observation follow-up, 2026-10-07
+
+Card and List drag/drop node callbacks now retain their identity across ordinary
+renders, avoiding a detach/re-register cycle when admission becomes disabled.
+Two regressions fail before this correction and pass afterward, while still
+checking changed disabled inputs and cleanup on unmount. All 43 selected drag,
+move, independent-scroll and virtual-window tests pass; web TypeScript, targeted
+lint and the production build also pass.
+
+The first follow-up benchmark failed readiness at 2079.5 ms on desktop and
+2094.7 ms on phone. Trace timing showed the qualified second Board response
+arriving between default polling checks, followed by nearly a second of observer
+delay. The benchmark now observes that response directly through the existing
+qualified counter, preserving both required current-screen successful reads,
+the enabled drag-handle check and the five-second observation deadline. Four
+tracker tests pass, including previous-screen exclusion and timeout/close cleanup.
+No timing target is changed or subtracted from the measured duration.
+
+The final complete invocation against the frozen web/compiled Production API,
+restricted PostgreSQL and Nginx still fails both scenarios:
+
+| Viewport | Usable Board (<1500 ms) | Drop feedback (<100 ms) | Cached detail (<200 ms) | Mutation p95 (<500 ms) | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| 1280x844, mouse | 1189.3 | **115.5** | **261.9** | 181.3 | Failed feedback and detail budgets |
+| 390x844, Chromium touch | 927.0 | **126.4** | **339.8** | 180.3 | Failed feedback and detail budgets |
+
+Assertions stop at feedback, but the retained report includes cached-detail
+measurements and all twenty mutation samples per viewport; those detail values
+also exceed their budget. Report provenance remains `unverified runtime` with
+no asserted source revision. This Windows-hosted cached-runtime diagnostic does
+not prove current retained-image acceptance or a causal timing improvement from
+stable registration. Both disposable containers were removed; saved volumes and
+the existing three services remain available. Feedback, cached detail and full
+release/capacity acceptance remain outstanding.
+
 ## Current large-Board runtime correction
 
 Exact-image run [37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119)

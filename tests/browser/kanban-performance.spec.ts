@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
-import { trackBoardReads } from './boardReadTracker';
+import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
 
 for (const width of [1280, 390]) {
 test(`PRD-06: normal Board readiness, cached detail and mutation latency meet budgets at ${width}px`, async ({ page, context }) => {
@@ -32,7 +32,8 @@ test(`PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   await page.goto('/app'); await expect(page.getByRole('heading', { name: 'Your organizations', exact: true })).toBeVisible();
   const reads = trackBoardReads(page, board, `/app/${org}/boards/${board}`);
   const started = performance.now();
-  await page.goto(`/app/${org}/boards/${board}`); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+  await page.goto(`/app/${org}/boards/${board}`); await waitForBoardReads(page, reads, 2);
+  expect(reads()).toBeGreaterThanOrEqual(2);
   const handle = page.getByRole('button', { name: 'Drag Performance card 1 card', exact: true }); await expect(handle).toBeEnabled();
   const usableMs = performance.now() - started;
   const baselineResponse = await context.request.get(`/boards/${board}`);

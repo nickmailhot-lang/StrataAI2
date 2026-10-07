@@ -113,12 +113,17 @@ executes the existing three-List/fifty-Card benchmark through the compiled
 Production API, real restricted PostgreSQL and Nginx. Deferring automatic drop
 review controls preserves first-save status and original uncertain-response
 recovery; 23 selected move/drag tests, TypeScript, lint and web build checks pass.
-The final native invocation remains failed: desktop feedback is 131.1 ms against
-100 ms and phone cached detail is 255.0 ms against 200 ms. Readiness and all
-twenty-sample mutation p95 checks pass in that invocation. This is local cached
-runtime evidence, not current retained-image release acceptance. The reporter
-now explicitly distinguishes unverified runtime provenance. The planning estimate
-stays 15%; full performance acceptance remains outstanding.
+The latest [registration/observation follow-up](../kanban-performance.md#drag-registration-and-readiness-observation-follow-up-2026-10-07)
+keeps drag/drop nodes registered across renders and observes the qualified second
+Board response without polling delay. All 43 selected component tests and four
+read-tracker tests pass, with unchanged admission checks and timing budgets.
+The final native invocation remains failed: desktop/phone feedback is 115.5/126.4 ms
+against 100 ms, and cached detail is 261.9/339.8 ms against 200 ms. Readiness is
+1189.3/927.0 ms and twenty-sample mutation p95 is 181.3/180.3 ms. Assertions stop
+at feedback; the report also retains the failing detail measurements. This is
+local cached-runtime evidence, not current retained-image release acceptance.
+The reporter explicitly distinguishes unverified runtime provenance. The planning
+estimate stays 15%; full performance acceptance remains outstanding.
 
 ## Remaining implementation order
 
