@@ -18,6 +18,26 @@ The first release run exposed a first-response/replay timestamp precision mismat
 
 [Commit 6464e69 CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/36824621457) passed all nine jobs with three non-expired exact-SHA artifacts. The release fixture passed the original-session, rotation, one-connection, restart, rollback, Worker cleanup and post-wait expiry checks. Eleven release browser tests and the separate mobile verification/recovery test passed. This verifies the sign-in increment; the broader authentication and onboarding acceptance criteria remain outstanding.
 
+## Incorrect-password lifecycle privacy
+
+Unknown addresses and Active, PendingVerification, Suspended and Deactivated
+accounts return the same `401 invalid_credentials` response for an incorrect
+password. Adaptive password verification precedes account lifecycle disclosure;
+an unknown address uses a process-local dummy hash without persisting a dummy
+identity. The registered identity service is a singleton, so creating this hash
+does not add hashing work to each ordinary authenticated request.
+
+Ten API-host cases passed locally on 2026-10-07, covering those five account
+conditions under both required and optional email-verification policies. Each
+case sends two actual HTTP login requests with the same UUID and checks adaptive
+verification on both attempts, no additional hash creation, no session cookie,
+no retry receipt, no protected fields or lifecycle-specific error in the refusal,
+and unchanged account/event state. Fixture accounts are seeded through the real
+Demo identity store; the probe delegates verification to ASP.NET's password
+hasher. This is correctness evidence, not a statistical timing comparison or
+restricted PostgreSQL/release-image acceptance. The locked Release build passed
+with zero warnings and errors; the required CI API-host suite includes these cases.
+
 ## Final session admission after publication
 
 Fresh sign-in now reads its actual active session after session/audit/receipt

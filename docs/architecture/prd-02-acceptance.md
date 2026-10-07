@@ -4,6 +4,18 @@
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Incorrect-password lifecycle privacy evidence
+
+Ten API-host cases pass for unknown, Active, PendingVerification, Suspended and
+Deactivated accounts under both email-verification policies. Repeated real HTTP
+requests retain the same key and generic credential refusal, perform adaptive
+verification, issue no cookie or receipt, disclose no private account fields,
+and preserve account/event state. See [execution and limits](../identity-login-retries.md#incorrect-password-lifecycle-privacy).
+The locked Release build passes with zero warnings/errors. This local Demo-store
+evidence does not establish timing equivalence, restricted PostgreSQL or current
+immutable release acceptance. Estimated PRD-02 work remaining stays **17%**,
+a planning estimate; the issue remains open.
+
 ## Strict supplied authentication policy
 
 API startup now rejects supplied malformed/empty Boolean policies and malformed,
