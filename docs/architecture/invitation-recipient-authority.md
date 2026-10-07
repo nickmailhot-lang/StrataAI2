@@ -179,9 +179,9 @@ CI now requires the direct Board SQL case and a second exact-image authority
 delivery/restart gate using a real HTTP Board rename. The existing image/cover
 persistence fixture drains the new genuine authority jobs through their handler
 and acknowledgment, retaining its exact Work-event counts. That full fixture
-and retained-image gates require fresh CI execution. Demo Board source parity,
-native Board-target authority withdrawal/recovery, concurrency and latency remain
-unfinished; these local results do not close PRD-03/04/60 or ARCH-11.
+and retained-image gates require fresh CI execution. Demo Board source parity
+and native local Board-target recovery are verified below. Production native
+Board-target recovery, concurrency and latency remain unfinished; these local results do not close PRD-03/04/60 or ARCH-11.
 
 ## Production protected cursor binding
 
@@ -317,7 +317,7 @@ Actual adapter/Worker restart and concurrent-page execution evidence must be
 added alongside the existing SQL capability tests.
 
 Production Board source publication and bounded delivery are implemented above.
-Remaining dependencies include Demo Board parity and native Board-target
+Remaining dependencies include native Production Board-target
 name/archive/member authority acceptance, Organization deletion/lifecycle and
 issuer account withdrawal. Each remaining producer needs its actual canonical
 source and appropriate bounded scope discovery. Historical committed sources remain deliverable after
@@ -329,3 +329,48 @@ Actual concurrent delivery/restart/large-population evidence remains unfinished.
 Native Demo and Production nonmember/Portal two-client authority withdrawal,
 disconnect recovery, disclosure clearing, keyboard/mobile and latency results
 must also be verified against the retained exact release images before closure.
+
+## Demo Board source and native recipient recovery
+
+Demo now captures the seven supported Board authority transitions from actual
+Board or Board-member mutations inside their owning command. Publication binds
+that private command identity, current Board revision, original transition time,
+subject revision and canonical Work event. Board and membership revisions are
+validated separately. Administrator self-removal retains the prior role proof
+while validating the resulting inactive membership. Raw legacy sources outside
+commands create no authority history; owning unproven sources are refused.
+
+The shared private journal participates in Work rollback as well as Organization
+rollback. Actual Work source references, consumed proofs, recipient effects and
+indexed 100-candidate page checkpoints all roll back with a late command failure.
+An identical Work source is idempotent; a different event cannot consume the same
+mutation proof, and another command cannot publish an earlier mutation.
+
+All nine Board API-host cases pass: seven event types, actual administrator
+self-removal, and rollback/proof refusal. Each HTTP case seeds 205 eligible
+invitation records plus a future record, verifies cross-page recipient
+invalidation and per-source recipient deduplication, excludes the future record,
+and recovers an empty authority-bound reset without invitation transitions.
+The rollback case additionally proves duplicate and earlier-command refusal.
+The 69 invitation-filtered API cases and both existing directory replay cases
+pass; Release builds have zero warnings/errors. Legacy replay fixtures explicitly
+stay outside commands, and the owning rollback fixture uses a real Board update.
+
+`tests/browser/recipient-invitation-board-authority.spec.ts` passes against the
+local Demo API at 1280px and 390px. Three ordinary accounts establish membership
+through real invitations and acceptance. A Board administrator issues an
+invitation to a current Organization member without private Board access;
+Board administrators cannot onboard outsiders. Actual rename, archive, restore
+and issuer demotion drive protected recipient recovery. A held real recovery
+read proves cached names and acceptance consent clear before the new response.
+Restoration recovers the current invitation; issuer demotion removes it and
+stale acceptance is rejected. Private Board access remains 404, Organization
+membership remains valid, focus returns to Refresh, no document reload occurs,
+wire envelopes contain no private fields or invented invitation transitions,
+and accessibility/overflow checks pass. The scenario defaults to Production
+in release CI; local evidence explicitly selects Demo.
+
+These are actual local Demo HTTP/browser results, not retained-image Production
+acceptance. The mandatory exact-image gates, concurrent authority delivery,
+Organization lifecycle sources and issuer account withdrawal remain required.
+PRD-04 and PRD-60 remain open.

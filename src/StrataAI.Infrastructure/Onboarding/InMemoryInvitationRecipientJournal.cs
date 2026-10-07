@@ -1,5 +1,6 @@
 using StrataAI.Application.Identity;
 using StrataAI.Application.Onboarding;
+using StrataAI.Application.WorkManagement;
 using StrataAI.Infrastructure.Identity;
 using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.WorkManagement;
@@ -23,11 +24,11 @@ internal sealed record DemoInvitationProof(Guid InvitationId, Guid OrganizationI
             : EventType == "INVITATION_REVOKED" ? row.RevokedAt : row.CreatedAt);
 }
 
-// Only Organization commands produce this journal. Account/Organization gate
+// Owning Organization and Work commands produce this journal. Shared gate
 // ownership excludes replay while tentative state is awaiting its final fence.
 internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScope workScope,
     DemoIdentityTransactionScope identityScope, IIdentityStore identities)
-    : IInvitationRecipientEventReader, IDemoOrganizationTransactionParticipant
+    : IInvitationRecipientEventReader, IDemoOrganizationTransactionParticipant, IDemoWorkTransactionParticipant
 {
     private readonly object _sync = new();
     private readonly Dictionary<(Guid Organization, Guid Invitation), DemoInvitationProof> _proofs = [];
@@ -40,6 +41,24 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
     private readonly Dictionary<string, long> _authorityRevisions = new(StringComparer.Ordinal);
     private readonly HashSet<(Guid Source, string Email)> _authorityEffects = [];
     private readonly Dictionary<(Guid Source, DateTimeOffset AfterAt, Guid AfterId), int> _authorityPages = [];
+    private readonly Dictionary<Guid, (WorkEvent Source, DemoBoardAuthorityProof Proof)> _boardAuthoritySources = [];
+    private readonly HashSet<(Guid Command, Guid Board, string Type, Guid Subject, long Version)> _boardAuthorityPublished = [];
+
+    internal void PublishBoardAuthoritySource(WorkEvent source, DemoBoardAuthorityProof proof,
+        InMemoryInvitationStore invitations, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!workScope.Owns(source.OrganizationId) || proof.CommandId != workScope.CommandId)
+            throw new InvalidOperationException("Board authority source requires its owning command.");
+        lock (_sync)
+        {
+            if (_boardAuthoritySources.ContainsKey(source.EventId) || _authoritySources.ContainsKey(source.EventId)
+                || !_boardAuthorityPublished.Add((proof.CommandId, proof.BoardId, proof.EventType, proof.SubjectId, proof.SubjectVersion)))
+                throw new InvalidOperationException("Board authority transition was already published.");
+            _boardAuthoritySources.Add(source.EventId, (source, proof));
+            SimulateAuthorityPages(source.OrganizationId, source.EventId, source.CreatedAt, invitations, ct);
+        }
+    }
 
     internal void SimulateAuthorityDelivery(DemoInvitationAudit audit, InMemoryInvitationStore invitations, CancellationToken ct)
     {
@@ -51,15 +70,22 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
         {
             if (!_authoritySources.TryGetValue(audit.Id, out var source) || source.Audit != audit)
                 throw new InvalidOperationException("Demo authority source is unavailable.");
+            SimulateAuthorityPages(audit.OrganizationId, audit.Id, source.Proof.CreatedAt, invitations, ct);
+        }
+    }
+    private void SimulateAuthorityPages(Guid organization, Guid source, DateTimeOffset cutoff, InMemoryInvitationStore invitations, CancellationToken ct)
+    {
+        lock (_sync)
+        {
             (DateTimeOffset At, Guid Id) after = (DateTimeOffset.MinValue, Guid.Empty);
             while (true)
             {
                 ct.ThrowIfCancellationRequested();
-                var key = (audit.Id, after.At, after.Id);
+                var key = (source, after.At, after.Id);
                 if (_authorityPages.ContainsKey(key)) return;
-                var page = invitations.ReadAuthorityPage(audit.OrganizationId, source.Proof.CreatedAt, after, ct);
+                var page = invitations.ReadAuthorityPage(organization, cutoff, after, ct);
                 foreach (var row in page)
-                    if (_authorityEffects.Add((audit.Id, row.EmailNormalized)))
+                    if (_authorityEffects.Add((source, row.EmailNormalized)))
                         _authorityRevisions[row.EmailNormalized] = checked(_authorityRevisions.GetValueOrDefault(row.EmailNormalized) + 1);
                 _authorityPages.Add(key, page.Length);
                 if (page.Length < 100) return;
@@ -150,6 +176,7 @@ internal sealed class InMemoryInvitationRecipientJournal(DemoWorkTransactionScop
             Action[] restore = [DemoRollback.Dictionary(_proofs), DemoRollback.Dictionary(_sources), DemoRollback.Set(_published),
                 DemoRollback.Dictionary(_heads), DemoRollback.Dictionary(_events),
                 DemoRollback.Dictionary(_authoritySources), DemoRollback.Set(_authorityPublished),
+                DemoRollback.Dictionary(_boardAuthoritySources), DemoRollback.Set(_boardAuthorityPublished),
                 DemoRollback.Dictionary(_authorityRevisions), DemoRollback.Set(_authorityEffects), DemoRollback.Dictionary(_authorityPages)];
             return () => { lock (_sync) foreach (var action in restore) action(); };
         }

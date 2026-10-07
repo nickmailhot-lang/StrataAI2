@@ -263,6 +263,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             };
 
             _boards[boardId] = updated;
+            CaptureBoardAuthorityProof(updated, "BOARD_UPDATED", updatedAt);
             return Task.FromResult<BoardRecord?>(updated);
         }
     }
@@ -292,6 +293,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             if (board.Visibility != visibility)
                 _directoryVisibilityRevisions[board.OrganizationId] = checked(_directoryVisibilityRevisions.GetValueOrDefault(board.OrganizationId) + 1);
             _boards[boardId] = updated;
+            CaptureBoardAuthorityProof(updated, "BOARD_VISIBILITY_CHANGED", updatedAt);
             return Task.FromResult<BoardRecord?>(updated);
         }
     }
@@ -326,6 +328,8 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             };
 
             _boards[boardId] = updated;
+            CaptureBoardAuthorityProof(updated, nextState switch { BoardLifecycleState.Archived => "BOARD_ARCHIVED",
+                BoardLifecycleState.Active => "BOARD_RESTORED", _ => "BOARD_DELETED" }, updatedAt);
             return Task.FromResult<BoardRecord?>(updated);
         }
     }
@@ -389,6 +393,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                     Version = existing.Version + 1,
                 };
                 _members[(boardId, userId)] = updated;
+                CaptureBoardAuthorityProof(_boards[boardId], "BOARD_MEMBER_UPDATED", updatedAt, userId, updated.Version, existing.Role);
                 if (!existing.Active) ReviseDirectoryReader(boardId, userId);
                 if ((existing.Active && existing.Role == BoardRole.Admin) != (role == BoardRole.Admin))
                     ReviseDirectoryPermission(boardId, userId);
@@ -404,6 +409,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 updatedAt,
                 1);
             _members[(boardId, userId)] = created;
+            CaptureBoardAuthorityProof(_boards[boardId], "BOARD_MEMBER_UPDATED", updatedAt, userId, created.Version);
             ReviseDirectoryReader(boardId, userId);
             if (role == BoardRole.Admin) ReviseDirectoryPermission(boardId, userId);
             return Task.FromResult(created);
@@ -431,6 +437,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 Version = existing.Version + 1,
             };
             if (existing.Role == BoardRole.Admin) ReviseDirectoryPermission(boardId, userId);
+            CaptureBoardAuthorityProof(_boards[boardId], "BOARD_MEMBER_REMOVED", updatedAt, userId, existing.Version + 1, existing.Role);
             ReviseDirectoryReader(boardId, userId);
 
             return Task.FromResult(true);

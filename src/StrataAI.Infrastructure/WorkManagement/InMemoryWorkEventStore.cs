@@ -1,12 +1,13 @@
 using StrataAI.Application.WorkManagement;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
+using StrataAI.Infrastructure.Onboarding;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
 internal sealed partial class InMemoryWorkEventStore(IWorkManagementStore work, IIdentityStore identities,
     IOrganizationStore organizations, DemoWorkTransactionScope scope, InMemoryWatchSubscriptionStore watches,
-    InMemoryCardReminderStore reminders) : IWorkEventStore, IWorkEventReader, IOrganizationBoardEventReader, IActivityEventSourceStore, IActivityPrivateTargetStore, IDemoWorkTransactionParticipant
+    InMemoryCardReminderStore reminders, Func<IDemoBoardAuthorityProjection>? authority = null) : IWorkEventStore, IWorkEventReader, IOrganizationBoardEventReader, IActivityEventSourceStore, IActivityPrivateTargetStore, IDemoWorkTransactionParticipant
 {
     internal IReadOnlyList<ActivityEventSource> ActivitySources(Guid organizationId)
     {
@@ -80,6 +81,9 @@ internal sealed partial class InMemoryWorkEventStore(IWorkManagementStore work, 
                     change.EventType, change.Version, change.CreatedAt, true);
             }
         }
+        // Raw legacy fixtures outside commands acquire no authority history.
+        if (scope.Owns(change.OrganizationId) && DemoBoardAuthorityProof.Supports(change) && authority is not null)
+            await authority().AppendAsync(change, cancellationToken);
     }
 
     public Task<IReadOnlyList<ActivityEventSource>> ReadBoardWindowAsync(Guid organizationId, Guid boardId,

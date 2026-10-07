@@ -22,16 +22,15 @@ public sealed partial class ApiHostTests
         await store.UpsertBoardMemberAsync(f.Board, f.Recipient, BoardRole.Member, at, ct);
         var initial = await replay.ReadAsync(f.Organization, f.Recipient, null, cancellationToken: ct);
         Assert.True(initial.Succeeded);
-        var seeded = await unit.ExecuteReadAsync(f.Organization, null, "fixture_denied", () => Task.FromResult(true), async () =>
+        // Legacy source fixtures exercise replay filtering only. They run outside
+        // an owning command and do not fabricate recipient authority history.
         {
             for (var index = 0; index < 64; index++)
                 await source.AppendAsync(new(Guid.NewGuid(), f.Organization, hidden, f.Owner, "BOARD_UPDATED", "Board", hidden,
                     index + 2, "discovery-fixture", at), ct);
             await source.AppendAsync(new(visibleId, f.Organization, f.Board, f.Owner, "BOARD_UPDATED", "Board", f.Board, 2,
                 "discovery-fixture", at), ct);
-            return WorkOperation<bool>.Success(true);
-        }, ct);
-        Assert.True(seeded.Succeeded);
+        }
         var page = await replay.ReadAsync(f.Organization, f.Recipient, initial.Value!.Cursor, cancellationToken: ct);
         Assert.True(page.Succeeded); Assert.False(page.Value!.ResetRequired); Assert.False(page.Value.HasMore);
         Assert.Equal(visibleId, Assert.Single(page.Value.Events).EventId);
@@ -81,16 +80,15 @@ public sealed partial class ApiHostTests
         var visibleId = Guid.NewGuid();
         // Declared synthetic canonical sources prove adapter/query behavior;
         // this does not claim actual Board lifecycle or Worker delivery.
-        var seeded = await unit.ExecuteReadAsync(f.Organization, null, "fixture_denied", () => Task.FromResult(true), async () =>
+        // Legacy source fixtures exercise replay filtering only. They run outside
+        // an owning command and do not fabricate recipient authority history.
         {
             for (var index = 0; index < 64; index++)
                 await source.AppendAsync(new(Guid.NewGuid(), f.Organization, hidden, f.Owner, "BOARD_UPDATED", "Board", hidden,
                     index + 2, "organization-replay-fixture", at), ct);
             await source.AppendAsync(new(visibleId, f.Organization, f.Board, f.Owner, "BOARD_ARCHIVED", "Board", f.Board, 2,
                 "organization-replay-fixture", at), ct);
-            return WorkOperation<bool>.Success(true);
-        }, ct);
-        Assert.True(seeded.Succeeded);
+        }
         var page = await replay.ReadAsync(f.Organization, f.Recipient, initial.Value.Cursor, cancellationToken: ct);
         Assert.True(page.Succeeded); Assert.False(page.Value!.ResetRequired); Assert.False(page.Value.HasMore);
         var actual = Assert.Single(page.Value.Events); Assert.Equal(visibleId, actual.EventId); Assert.Equal(f.Board, actual.BoardId);
@@ -104,7 +102,9 @@ public sealed partial class ApiHostTests
         var refused = await unit.ExecuteReadAsync(f.Organization, null, "fixture_denied", () => Task.FromResult(true), async () =>
         {
             await store.UpsertBoardMemberAsync(f.Board, f.Recipient, BoardRole.Member, at, ct);
-            await source.AppendAsync(new(Guid.NewGuid(), f.Organization, f.Board, f.Owner, "BOARD_RESTORED", "Board", f.Board, 3,
+            var changed = await store.UpdateBoardAsync(f.Board, "Tentative replay Board", null, "COLOR", null, 1, at, ct);
+            Assert.NotNull(changed);
+            await source.AppendAsync(new(Guid.NewGuid(), f.Organization, f.Board, f.Owner, "BOARD_UPDATED", "Board", f.Board, changed.Version,
                 "organization-replay-rollback", at), ct);
             return WorkOperation<bool>.Failure("declared_late_refusal");
         }, ct);
