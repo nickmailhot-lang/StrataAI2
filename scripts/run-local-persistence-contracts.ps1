@@ -72,6 +72,7 @@ dotnet restore tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contrac
 dotnet build tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj -c Release --no-restore -warnaserror
 dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj -c Release --no-build
 '@
+        $linuxRun = $linuxRun.Replace("`r`n", "`n")
         Invoke-CheckedDocker -Arguments @('run', '--rm', '--network', "container:$containerId",
             '--label', "codex.strataai.contract=$identity", '--mount', "type=bind,source=$repository,target=/workspace,readonly",
             '-e', 'STRATAAI_CONTRACT_ADMIN_CONNECTION=Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=postgres;Password=postgres',
