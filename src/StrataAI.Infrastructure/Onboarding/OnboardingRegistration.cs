@@ -12,6 +12,7 @@ public static class OnboardingRegistration
         this IServiceCollection services,
         RuntimeDescriptor runtime, IConfiguration configuration)
     {
+        services.AddSingleton<IInvitationRecipientCursorCodec, DataProtectedInvitationRecipientCursorCodec>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.AddSingleton<InMemoryInvitationStore>();
@@ -21,6 +22,9 @@ public static class OnboardingRegistration
         else
         {
             services.AddSingleton<IInvitationStore, PostgresInvitationStore>();
+            services.AddSingleton<IInvitationRecipientEventReader, PostgresInvitationRecipientEventReader>();
+            services.AddSingleton<InvitationRecipientSynchronizationService>();
+            services.AddSingleton<TransactionalInvitationRecipientSynchronization>();
         }
 
         services.AddSingleton<IInvitationService, InvitationService>();

@@ -7,8 +7,9 @@ Migration `102_invitation_recipient_events` creates a durable recipient source
 for the remaining PRD-03 / PRD-60 live invitation workflow. This source is an
 explicit cross-Organization routing relationship, like existing verified-email
 invitation discovery. It does not grant Organization, Board or Portal access and
-does not widen the Internal Organization or Board streams. The recipient
-transport and browser consumer are not yet implemented.
+does not widen the Internal Organization or Board streams. The Production
+recipient replay reader is implemented; recipient transport, Demo source
+parity and browser consumer are not yet implemented.
 
 ## Source and atomicity
 
@@ -51,7 +52,7 @@ normalized email. Invitation-ID routing and foreign recipient lookup return no
 rows. API column grants exclude Organization/Invitation/actor IDs, target grants,
 correlation and other domain references. Direct proof access, counter writes and
 projection-function calls are denied. The existing recipient service must bind
-future reads to the current verified account before selecting this lookup; the
+reads to the current verified account before selecting this lookup; the
 database routing capability alone is not proof of an authenticated session.
 
 Metadata is exactly `{}`. The journal stores no names, descriptions, bodies,
@@ -68,6 +69,33 @@ This synchronous source projection creates no external work or new deployable
 service. Existing separate Worker mail and Organization/Board delivery remain
 unchanged. Global recipient notifications will consume these durable source
 identities rather than expose the tenant journals to nonmembers.
+
+## Account-bound replay
+
+Production registers `TransactionalInvitationRecipientSynchronization` around
+the existing owning identity observation transaction. It holds shared account
+admission and verifies the original request actor and persisted session before
+and after replay. The PostgreSQL reader refuses calls outside the owning account
+scope, requires an active verified account and derives the normalized recipient
+email from that account. Callers cannot supply a recipient email.
+
+Protected cursors bind the actor, normalized email, account revision and sequence
+with a distinct Data Protection purpose and a 15-minute expiry. The private
+binding is not an event payload. Bootstrap, invalid/expired bindings, a cursor
+ahead of the committed head, or missing/noncontiguous source history return an
+empty reset page at the current head. Consumers must reload protected invitation
+discovery on reset. Bounded replay reads at most 101 rows for a requested page
+of 1–100 events, without stepping beyond the captured committed head.
+
+The outbound event has only `eventId`, normalized `eventType`, `sequence` and
+`createdAt`. Organization/Invitation IDs, issuer, recipient email, roles and
+correlation remain private source data. Final account/email/revision or session
+withdrawal discards the whole page. A separate current-cursor check lets future
+transport reauthorize after session I/O. Recipient events invalidate discovery;
+they do not confer continuing Organization, Board or Portal admission.
+
+No endpoint or hub currently exposes this reader. Demo registration waits for
+transactional source parity rather than returning a fabricated empty journal.
 
 ## Verification and remaining delivery
 
@@ -86,9 +114,9 @@ acceptance fixtures now compare recipient proof/journal/counter state during
 refusal and rollback, require canonical publication and no duplicate on receipt
 replay. Those exact-image assertions still require runtime execution.
 
-Remaining implementation includes the owning verified-account replay reader,
-actor/email-bound cursor, protected SignalR recipient transport, bounded bootstrap
-and missed-event recovery, client invalidation/accessible announcements and
+Remaining implementation includes protected SignalR recipient transport, Demo
+transactional source parity, browser bootstrap and missed-event recovery,
+client invalidation/accessible announcements and
 explicit original acceptance recovery. Parent/issuer authority changes and
 account/email changes require current protected discovery rather than assuming a
 creation event confers continuing access. Native two-client, disconnect, cookie
@@ -106,3 +134,15 @@ failed/unrecorded migration rollback. The full .NET Release solution build passe
 with zero warnings/errors; affected release scripts pass Bash syntax checks.
 These source/persistence results do not certify real sessions, Demo source
 parity, recipient SignalR/browser delivery or current exact-image CI acceptance.
+
+Reader validation adds domain checks for contiguous bounded replay, missing or
+duplicate identities, fixed event types, cursor tampering/expiry and actor/email/
+revision binding, final account withdrawal and content-free payloads. A mandatory
+C# persistence contract uses the real restricted API login and persisted session
+checks for cross-Organization Internal/Portal source order, original audit IDs,
+later actual revocation recovery, no duplicate replay, no conferred membership,
+unowned read refusal, switched request actor, changed email/revision, unverified
+account and session revocation. Its request context is synthetic: it is not a
+cookie, SignalR or browser acceptance test. `--invitation-recipient-only` runs
+this contract in isolation for diagnosis; the normal CI persistence executable
+always runs it before the remaining contracts.

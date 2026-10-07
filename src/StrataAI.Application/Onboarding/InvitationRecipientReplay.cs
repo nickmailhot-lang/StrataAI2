@@ -1,0 +1,112 @@
+using StrataAI.Application.Identity;
+
+namespace StrataAI.Application.Onboarding;
+
+// Private routing bindings belong inside protected cursors, never event payloads.
+public sealed record InvitationRecipientCursorBinding(Guid ActorId, string EmailNormalized, long AccountVersion);
+public interface IInvitationRecipientCursorCodec
+{
+    string Encode(InvitationRecipientCursorBinding binding, long position);
+    bool TryDecode(InvitationRecipientCursorBinding binding, string token, out long position);
+}
+public sealed record InvitationRecipientEvent(Guid EventId, string EventType, long Sequence, DateTimeOffset CreatedAt);
+public sealed record InvitationRecipientEventWindow(long Position, bool HasMore, bool ResetRequired,
+    IReadOnlyList<InvitationRecipientEvent> Events)
+{
+    public static InvitationRecipientEventWindow Build(long since, long head, int limit, IReadOnlyList<InvitationRecipientEvent> rows)
+    {
+        if (since < 0 || head < 0 || limit is < 1 or > 100 || rows.Count > limit + 1)
+            throw new ArgumentOutOfRangeException(nameof(since));
+        if (since > head) return new(0, false, true, []);
+        long position = since;
+        List<InvitationRecipientEvent> events = [];
+        HashSet<Guid> identities = [];
+        foreach (var row in rows)
+        {
+            if (position == long.MaxValue || row.Sequence != position + 1 || row.Sequence > head
+                || row.EventId == Guid.Empty || !identities.Add(row.EventId)
+                || row.EventType is not ("INVITATION_CREATED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED")
+                || row.CreatedAt == default)
+                return new(0, false, true, []);
+            if (events.Count == limit) return new(position, true, false, events);
+            events.Add(row); position = row.Sequence;
+        }
+        return position < head ? new(0, false, true, []) : new(position, false, false, events);
+    }
+}
+public interface IInvitationRecipientEventReader
+{
+    Task<InvitationRecipientCursorBinding?> GetScopeAsync(Guid actorId, CancellationToken cancellationToken);
+    Task<long> GetHeadAsync(InvitationRecipientCursorBinding binding, CancellationToken cancellationToken);
+    Task<InvitationRecipientEventWindow> ReadAsync(InvitationRecipientCursorBinding binding, long since, int limit,
+        CancellationToken cancellationToken);
+}
+public sealed record InvitationRecipientSyncPage(string Cursor, bool HasMore, bool ResetRequired,
+    IReadOnlyList<InvitationRecipientEvent> Events);
+
+// Transport must use the owning identity transaction wrapper below.
+public sealed class InvitationRecipientSynchronizationService(IInvitationRecipientEventReader reader,
+    IInvitationRecipientCursorCodec cursors)
+{
+    public async Task<IdentityOperation<bool>> IsCursorCurrentAsync(Guid actorId, string cursor,
+        CancellationToken cancellationToken = default)
+    {
+        if (actorId == Guid.Empty) return IdentityOperation<bool>.Failure("account_unavailable");
+        var scope = await reader.GetScopeAsync(actorId, cancellationToken);
+        if (scope is null || scope.ActorId != actorId) return IdentityOperation<bool>.Failure("account_unavailable");
+        return IdentityOperation<bool>.Success(cursors.TryDecode(scope, cursor, out _));
+    }
+    public async Task<IdentityOperation<InvitationRecipientSyncPage>> ReadAsync(Guid actorId, string? cursor,
+        int limit = 50, CancellationToken cancellationToken = default)
+    {
+        if (actorId == Guid.Empty) return IdentityOperation<InvitationRecipientSyncPage>.Failure("account_unavailable");
+        if (limit is < 1 or > 100) return IdentityOperation<InvitationRecipientSyncPage>.Failure("invalid_sync_limit");
+        var scope = await reader.GetScopeAsync(actorId, cancellationToken);
+        if (scope is null || scope.ActorId != actorId || scope.AccountVersion < 1 || string.IsNullOrWhiteSpace(scope.EmailNormalized))
+            return IdentityOperation<InvitationRecipientSyncPage>.Failure("account_unavailable");
+        InvitationRecipientEventWindow page;
+        if (cursor is null || !cursors.TryDecode(scope, cursor, out var position))
+            page = new(await reader.GetHeadAsync(scope, cancellationToken), false, true, []);
+        else
+        {
+            page = await reader.ReadAsync(scope, position, limit, cancellationToken);
+            if (page.ResetRequired) page = new(await reader.GetHeadAsync(scope, cancellationToken), false, true, []);
+        }
+        var current = await reader.GetScopeAsync(actorId, cancellationToken);
+        if (current != scope) return IdentityOperation<InvitationRecipientSyncPage>.Failure("account_unavailable");
+        if (page.Position < 0 || page.Events.Count > limit
+            || page.ResetRequired && (page.HasMore || page.Events.Count != 0)
+            || page.Events.Select(e => e.EventId).Distinct().Count() != page.Events.Count
+            || page.Events.Any(e => e.EventId == Guid.Empty || e.Sequence < 1 || e.CreatedAt == default
+                || e.EventType is not ("INVITATION_CREATED" or "INVITATION_ACCEPTED" or "INVITATION_REVOKED"))
+            || page.Events.Count > 0 && (page.Events[^1].Sequence != page.Position
+                || page.Events.Zip(page.Events.Skip(1)).Any(pair => pair.First.Sequence == long.MaxValue
+                    || pair.Second.Sequence != pair.First.Sequence + 1)))
+            return IdentityOperation<InvitationRecipientSyncPage>.Failure("invitation_sync_unavailable");
+        return IdentityOperation<InvitationRecipientSyncPage>.Success(new(cursors.Encode(current, page.Position),
+            page.HasMore, page.ResetRequired, page.Events));
+    }
+}
+
+public sealed class TransactionalInvitationRecipientSynchronization(InvitationRecipientSynchronizationService replay,
+    IIdentityUnitOfWork transactions, ICommandActorAuthorization actors)
+{
+    public Task<IdentityOperation<bool>> IsCursorCurrentAsync(Guid actorId, string cursor, CancellationToken cancellationToken = default)
+        => transactions.ExecuteObservationAsync(actorId, null, async () =>
+        {
+            if (!await actors.VerifyAsync(actorId, cancellationToken)) return IdentityOperation<bool>.Failure("session_unavailable");
+            var result = await replay.IsCursorCurrentAsync(actorId, cursor, cancellationToken);
+            return await actors.VerifyAsync(actorId, cancellationToken) ? result : IdentityOperation<bool>.Failure("session_unavailable");
+        }, cancellationToken);
+    public Task<IdentityOperation<InvitationRecipientSyncPage>> ReadAsync(Guid actorId, string? cursor,
+        int limit = 50, CancellationToken cancellationToken = default)
+        => transactions.ExecuteObservationAsync(actorId, null, async () =>
+        {
+            if (!await actors.VerifyAsync(actorId, cancellationToken))
+                return IdentityOperation<InvitationRecipientSyncPage>.Failure("session_unavailable");
+            var result = await replay.ReadAsync(actorId, cursor, limit, cancellationToken);
+            if (!await actors.VerifyAsync(actorId, cancellationToken))
+                return IdentityOperation<InvitationRecipientSyncPage>.Failure("session_unavailable");
+            return result;
+        }, cancellationToken);
+}

@@ -30,6 +30,8 @@ var organization = Guid.NewGuid(); var foreignOrganization = Guid.NewGuid(); var
 var board = Guid.NewGuid(); var foreignBoard = Guid.NewGuid(); var list = Guid.NewGuid(); var foreignList = Guid.NewGuid();
 var card = Guid.NewGuid(); var foreignCard = Guid.NewGuid();
 await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenAsync(ct);
+await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, ct);
+if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
 async Task Seed(Guid tenant, Guid actor, Guid boardId, Guid listId, Guid cardId)
 {
     await using var tx = await admin.BeginTransactionAsync(ct);
