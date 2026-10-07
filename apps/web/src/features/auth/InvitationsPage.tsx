@@ -60,6 +60,8 @@ export function InvitationsPage() {
   const epoch = useRef(0); const refreshQueued = useRef(false);
   const [reloadVersion, setReloadVersion] = useState(0);
   const [connecting, setConnecting] = useState(true);
+  const [admissionFailed, setAdmissionFailed] = useState(false);
+  const [admissionAttempt, setAdmissionAttempt] = useState(0);
   const [announcement, setAnnouncement] = useState('Connecting invitation updates.');
   const refreshButton = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
@@ -117,12 +119,14 @@ export function InvitationsPage() {
   }
   useEffect(() => {
     mounted.current = true;
+    setConnecting(true); setError(undefined); setAnnouncement('Connecting invitation updates.');
+    let disposed = false;
     const admission = new AbortController(); current.current = admission;
     const until = performance.now() + 15_000;
     let stop: (() => void) | undefined;
     let transport: InvitationRecipientInvalidation | undefined;
     function invalidate(reason: InvitationRecipientInvalidation) {
-      if (!mounted.current) return;
+      if (!mounted.current || disposed) return;
       if (reason === 'unavailable') firstAdmission.current = undefined;
       clearTimeout(bootstrap); setConnecting(false);
       // Repeated connection failures must not continually interrupt the same
@@ -140,7 +144,7 @@ export function InvitationsPage() {
     }, 15_000);
     async function begin() {
       try {
-        const actor = await verifyAccount(admission);
+        const actor = await verifyAccount(admission, reviewedActor.current);
         if (!valid(admission)) return;
         reviewedActor.current = actor; firstAdmission.current = { actor, until };
         current.current = undefined;
@@ -148,6 +152,7 @@ export function InvitationsPage() {
       } catch (reason) {
         if (mounted.current && current.current === admission) {
           clearTimeout(bootstrap); setConnecting(false);
+          setAdmissionFailed(true);
           setAnnouncement('Invitation updates unavailable. Refresh invitations before continuing.');
           withdrawAccount(reason instanceof AccountUnavailable ? reason.status : 503);
         }
@@ -157,11 +162,11 @@ export function InvitationsPage() {
     }
     void begin();
     return () => {
-      mounted.current = false; clearTimeout(bootstrap); stop?.(); current.current?.abort(); current.current = undefined;
+      disposed = true; mounted.current = false; clearTimeout(bootstrap); stop?.(); current.current?.abort(); current.current = undefined;
     };
     // A captured stream head precedes protected discovery. Connection failure
     // keeps explicit, bounded HTTP recovery available.
-  }, []);
+  }, [admissionAttempt]);
   function expire() {
     if (document.activeElement?.closest('[data-invitation-disclosure]')) refreshButton.current?.focus();
     epoch.current++; refreshQueued.current = true;
@@ -249,6 +254,10 @@ export function InvitationsPage() {
       <Button disabled={busy || Boolean(uncertain)} variant="contained" onClick={() => void accept(invitation)} aria-label={`Accept invitation to ${invitation.organizationName}${invitation.boardTarget ? `, Board ${invitation.boardName}, ${invitation.boardTarget.role.toLowerCase()}` : ''}`}>Accept invitation</Button>
     </Stack></Paper>)}
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(page.nextCursor!)}>More invitations</Button>}
-    <Button ref={refreshButton} aria-disabled={busy || connecting} onClick={() => { if (!connecting) void load(); }}>Refresh invitations</Button>
+    <Button ref={refreshButton} aria-disabled={busy || connecting} onClick={() => {
+      if (busy || connecting || current.current) return;
+      if (admissionFailed) { setAdmissionFailed(false); setAdmissionAttempt(value => value + 1); }
+      else void load();
+    }}>Refresh invitations</Button>
   </Stack></Container>;
 }

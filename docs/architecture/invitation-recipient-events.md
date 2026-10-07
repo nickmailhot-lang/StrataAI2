@@ -222,10 +222,20 @@ desktop/mobile native cases replace the actual cookie after capturing the real
 original profile response and require no source delivery or invitation read.
 They are collected, with exact-image runtime still pending.
 
-If initial account admission itself fails, explicit protected HTTP Refresh is
-available; restarting live subscription after that early admission failure
-remains to be completed. This differs from an established stream's automatic
-connection retry and current discovery recovery.
+If initial account admission itself fails, explicit Refresh starts another bounded
+account-admission attempt, using any already captured reviewer as a precondition.
+Success opens one account-bound subscription and waits for its protected head
+before discovery. A late profile from the failed attempt cannot open a stream.
+This retry does not recreate an established stream or discard its replay cursor;
+established connection retries remain owned by the adapter.
+
+The recovery follow-up passes all 92 affected browser cases, including successful
+initial-admission retry and a second timeout with late profile refusal. Typecheck,
+lint and browser typecheck pass. Two additional desktop/mobile native cases inject
+one initial account-read failure, use keyboard Refresh, observe one real socket
+bound to the recovered account, then require a future actual Portal invitation
+to arrive without manual discovery reload or Internal membership. These cases
+are collected; exact-image runtime remains pending.
 
 ## Demo source parity
 

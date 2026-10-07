@@ -137,3 +137,33 @@ it('bounds initial account JSON and never opens a socket or invitation read afte
   await act(async () => complete({ id: actor }));
   expect(watchInvitationRecipient).not.toHaveBeenCalled(); expect(screen.queryByText(item.organizationName)).not.toBeInTheDocument();
 });
+it('restarts account admission and captured-head discovery after an initial failure without any mutation', async () => {
+  let profiles = 0; let discover = false; const reads: string[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (input: string, init: RequestInit) => {
+    expect(init.method).toBe('GET'); reads.push(input);
+    if (input === '/me') return ++profiles === 1 ? reply({}, 503) : reply({ id: actor });
+    return reply({ items: discover ? [item] : [], nextCursor: null });
+  }));
+  mount(); await screen.findByText('Unable to confirm the reviewed account. Refresh invitations before continuing.');
+  expect(watchInvitationRecipient).not.toHaveBeenCalled();
+  const refresh = screen.getByRole('button', { name: 'Refresh invitations' }); refresh.focus(); fireEvent.click(refresh);
+  await waitFor(() => expect(watchInvitationRecipient).toHaveBeenCalledTimes(1));
+  expect(reads).toEqual(['/me', '/me']); expect(refresh).toHaveFocus();
+  await act(async () => invalidate('reset')); await screen.findByText('No pending invitations on this page.');
+  discover = true; await act(async () => invalidate('change')); await screen.findByRole('heading', { name: item.organizationName });
+  expect(watchInvitationRecipient).toHaveBeenCalledTimes(1); expect(refresh).toHaveFocus();
+});
+it('fresh admission retry stays bounded and ignores its late profile after another failure', async () => {
+  vi.useFakeTimers(); let profiles = 0; let late!: (value: unknown) => void;
+  vi.stubGlobal('fetch', vi.fn(async (input: string) => {
+    expect(input).toBe('/me');
+    if (++profiles === 1) return reply({}, 503);
+    return { ok: true, status: 200, json: () => new Promise<unknown>(resolve => { late = resolve; }) } as Response;
+  }));
+  await act(async () => { mount(); });
+  expect(screen.getByText('Unable to confirm the reviewed account. Refresh invitations before continuing.')).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+  await act(async () => vi.advanceTimersByTimeAsync(15_000));
+  expect(screen.getByText('Unable to confirm the reviewed account. Refresh invitations before continuing.')).toBeVisible();
+  await act(async () => late({ id: actor })); expect(watchInvitationRecipient).not.toHaveBeenCalled(); expect(profiles).toBe(2);
+});
