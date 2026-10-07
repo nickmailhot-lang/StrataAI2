@@ -147,13 +147,23 @@ DO $$ BEGIN
  EXCEPTION WHEN unique_violation THEN NULL; END;
 END $$;
 RESET ROLE;
--- Runtime has no account DELETE. Privileged disposable-fixture cleanup can
--- cascade both sides of the deferred current/reservation foreign key.
-DELETE FROM users WHERE id IN ('05600000-0000-0000-0000-000000000001','05600000-0000-0000-0000-000000000002','05600000-0000-0000-0000-000000000003');
+-- Even privileged cleanup cannot delete retained account transition history.
+-- This synthetic transition has no canonical identity event or routing job.
+DO $$ BEGIN
+ BEGIN
+  DELETE FROM users WHERE id='05600000-0000-0000-0000-000000000001';
+  RAISE EXCEPTION 'Account transition history was deleted';
+ EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+ IF (SELECT count(*) FROM invitation_issuer_authority_proofs WHERE actor_id='05600000-0000-0000-0000-000000000001')<>1
+  OR EXISTS(SELECT 1 FROM invitation_issuer_authority_sources WHERE actor_id='05600000-0000-0000-0000-000000000001') THEN
+  RAISE EXCEPTION 'Synthetic transition lost its proof or invented a canonical source'; END IF;
+END $$;
+-- Unreferenced fixtures still exercise both deferred alias cascade edges.
+DELETE FROM users WHERE id IN ('05600000-0000-0000-0000-000000000002','05600000-0000-0000-0000-000000000003');
 SET CONSTRAINTS ALL IMMEDIATE;
 DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM mention_handle_reservations WHERE user_id IN
-  ('05600000-0000-0000-0000-000000000001','05600000-0000-0000-0000-000000000002','05600000-0000-0000-0000-000000000003')) THEN
+  ('05600000-0000-0000-0000-000000000002','05600000-0000-0000-0000-000000000003')) THEN
   RAISE EXCEPTION 'Privileged fixture cleanup left orphan aliases'; END IF;
 END $$;
 ROLLBACK;
