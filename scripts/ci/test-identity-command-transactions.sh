@@ -229,12 +229,14 @@ for sync_route in /me/sync '/me/sync?after=0'; do
   jq -e --arg user "$user" '.profile.id==$user and .profile.version==2 and .latestSequence==103' "$scratch/response.json" >/dev/null
 done
 
-for operation in profile deactivate replay profile_retry; do
+for operation in profile profile_read profile_read_expiry deactivate replay profile_retry; do
   before="$(profile_state)"
   hash="$(awk '$6=="strataai_session" {print $7}' "$scratch/primary.cookies" | tr -d '\n' | sha256sum | cut -d ' ' -f 1)"
   hold "SELECT id FROM users WHERE id='$user' FOR UPDATE;"
   if test "$operation" = profile; then
     request PATCH /me '{"displayName":"Logged out profile","version":2}' > "$scratch/status" &
+  elif test "$operation" = profile_read || test "$operation" = profile_read_expiry; then
+    request GET /me '{}' > "$scratch/status" &
   elif test "$operation" = profile_retry; then
     request PATCH /me "$saved_body" "$retry_key" > "$scratch/status" &
   elif test "$operation" = deactivate; then
@@ -244,11 +246,17 @@ for operation in profile deactivate replay profile_retry; do
   fi
   request_pid=$!
   blocked '%SELECT id FROM users%FOR UPDATE%'
-  release "UPDATE sessions SET revoked_at=clock_timestamp() WHERE token_hash='$hash';"
+  if test "$operation" = profile_read_expiry; then
+    release "UPDATE sessions SET expires_at=clock_timestamp() WHERE token_hash='$hash';"
+  else
+    release "UPDATE sessions SET revoked_at=clock_timestamp() WHERE token_hash='$hash';"
+  fi
   wait "$request_pid"
   request_pid=''
   test "$(cat "$scratch/status")" = 401
   jq -e '.code=="session_unavailable"' "$scratch/response.json" >/dev/null
+  scripts/ci/assert-file-excludes.sh "$user|Atomic account|Atomic profile saved" "$scratch/response.json"
+  scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
   test "$before" = "$(profile_state)"
   test "$(curl --silent --show-error -b "$scratch/primary.cookies" -o /dev/null -w '%{http_code}' "$BASE_URL/me")" = 401
   curl --fail --silent --show-error -b "$scratch/other.cookies" "$BASE_URL/me" | jq -e '.version==2' >/dev/null

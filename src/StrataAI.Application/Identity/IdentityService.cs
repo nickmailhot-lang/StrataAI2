@@ -21,6 +21,15 @@ public sealed class IdentityService(
     // Unknown addresses still perform adaptive verification. This process-local
     // dummy credential is never persisted or used to admit an account/session.
     private readonly string _unknownAccountHash = passwordHashes.Hash(Guid.Empty, tokens.Generate());
+    public async Task<IdentityOperation<UserProfile>> ReadProfileAsync(Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await store.FindUserByIdAsync(userId, cancellationToken);
+        return user is null || user.Status != AccountStatus.Active
+            ? IdentityOperation<UserProfile>.Failure("session_unavailable")
+            : IdentityOperation<UserProfile>.Success(ToProfile(user));
+    }
+
     public async Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default)
     {

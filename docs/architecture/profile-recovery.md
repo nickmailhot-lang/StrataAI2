@@ -1,5 +1,38 @@
 # Profile recovery
 
+## Authoritative profile reads
+
+`GET /me` now uses the Application identity service and existing identity
+transaction, with account locking and initial/final actor admission. Cookie
+authentication still supplies identity claims, but no longer caches a profile
+for this endpoint to disclose without those checks. The dedicated profile read
+fetches current account fields without reading or exposing the event journal.
+Its public response shape and expected-account command protocol are unchanged.
+
+The new `/me` case fails against the original endpoint because it performs zero
+transactional actor checks; the two existing sync cases pass. After repair, all
+23 selected profile-related API-host cases pass, including the three protected
+read cases, replay and concurrency checks. Denial returns 401 without private
+account fields or a cookie, and preserves account/event state. The locked Release
+API/test build completes with zero warnings/errors.
+
+Two complete local Production/PostgreSQL probes also pass against the repaired
+compiled API on 2026-10-07. Each holds its fixture account row, observes the actual
+restricted API query waiting for that lock, then revokes or expires the original
+session before release. The read returns neutral `session_unavailable`, discloses
+no protected fields/cookie, and leaves exact user/session/audit/stream/event/profile
+receipt snapshots unchanged after the controlled session change. Restoring the
+fixture session recovers the exact prior profile. The disposable API is removed;
+the original services are preserved. This is controlled expiry before initial
+transaction admission, not elapsed expiry during final serialization.
+
+The mandatory exact-image identity command fixture now includes both profile-read
+withdrawal cases alongside its existing command/sync checks, and verifies safe
+refusals, unchanged protected state and independent-session access. Bash syntax
+and diff checks pass. Full native fixture/current retained-image execution and
+complete PRD acceptance remain required; these scoped local results do not close
+PRD-02.
+
 ## Expected account during commands
 
 The profile form now sends `X-StrataAI-Expected-User` with the account ID whose

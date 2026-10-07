@@ -2,6 +2,8 @@ namespace StrataAI.Application.Identity;
 
 public interface IIdentityService
 {
+    Task<IdentityOperation<UserProfile>> ReadProfileAsync(Guid userId,
+        CancellationToken cancellationToken = default);
     Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default);
     Task<IdentityOperation<RegistrationOutcome>> RegisterAsync(

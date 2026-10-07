@@ -11,6 +11,7 @@ public sealed partial class ApiHostTests
 {
     // PRD-02-TC-05/09: simulate withdrawal at final admission of real protected state.
     [Theory]
+    [InlineData("/me")]
     [InlineData("/me/sync")]
     [InlineData("/me/sync?after=0")]
     public async Task Identity_sync_withholds_profile_events_and_cursor_after_final_actor_denial(string route)
@@ -31,6 +32,9 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
         var body = await denied.Content.ReadAsStringAsync(ct);
         Assert.DoesNotContain(actor.ToString(), body);
+        Assert.DoesNotContain(user!.Email, body);
+        Assert.DoesNotContain(user.DisplayName, body);
+        Assert.False(denied.Headers.Contains("Set-Cookie"));
         Assert.DoesNotContain("cursor", body); Assert.DoesNotContain("profile", body);
         Assert.DoesNotContain("USER_REGISTERED", body);
         Assert.Equal(user, await store.FindUserByIdAsync(actor, ct));

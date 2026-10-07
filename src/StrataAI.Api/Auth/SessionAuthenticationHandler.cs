@@ -10,7 +10,6 @@ public static class SessionAuthenticationDefaults
 {
     public const string Scheme = "StrataAI.Session";
     public const string CookieName = "strataai_session";
-    public const string ProfileItemKey = "StrataAI.UserProfile";
 }
 
 public sealed class SessionAuthenticationHandler(
@@ -54,20 +53,6 @@ public sealed class SessionAuthenticationHandler(
 
         var identity = new ClaimsIdentity(claims, Scheme.Name);
         var principal = new ClaimsPrincipal(identity);
-
-        Context.Items[SessionAuthenticationDefaults.ProfileItemKey] =
-            new UserProfile(
-                user.Id,
-                user.Email,
-                user.DisplayName,
-                user.AvatarUrl,
-                user.Locale,
-                user.Timezone,
-                user.Status,
-                user.EmailVerified,
-                user.CreatedAt,
-                user.UpdatedAt,
-                user.Version);
 
         return AuthenticateResult.Success(
             new AuthenticationTicket(principal, Scheme.Name));

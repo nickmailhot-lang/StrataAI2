@@ -4,6 +4,19 @@
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Authoritative profile-read admission
+
+`GET /me` no longer discloses the profile cached during cookie authentication.
+It reads current fields inside the existing identity transaction with initial
+and final actor checks. The added API regression fails before repair; all 23
+selected profile-related cases pass afterward, with a zero-warning/error locked
+Release build. Two actual Production/restricted PostgreSQL lock-wait probes also
+pass for revoked and expired sessions, preserving full stored state and recovering
+the original profile after fixture restoration. Required exact-image fixtures
+include both cases. See [scope and execution limits](profile-recovery.md#authoritative-profile-reads).
+Current retained-image/full PRD acceptance remains outstanding. Estimated work
+remaining stays **17%**, a planning estimate; the ticket stays open.
+
 ## Incorrect-password lifecycle privacy evidence
 
 Ten API-host cases pass for unknown, Active, PendingVerification, Suspended and

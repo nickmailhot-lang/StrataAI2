@@ -7,6 +7,13 @@ preserves edits on failed saves, supports retry/discard, and redirects to sign-i
 when the session expires. Failed sign-out leaves the user on their profile with
 a retry message.
 
+`GET /me` reads the current profile through the identity Application service,
+inside the existing identity transaction. The account lock and initial session
+check precede that read, and a final actor check precedes disclosure. It no longer
+returns a snapshot cached during cookie authentication. Its profile response
+shape is unchanged; this read does not query the event journal or publish events.
+See [executed profile-read evidence](profile-recovery.md#authoritative-profile-reads).
+
 Profile updates require a nonempty display name of at most 120 characters, a
 regional locale, and a timezone recognized by the runtime. Avatar URLs must use
 HTTPS without embedded credentials and be at most 2,048 characters. An empty

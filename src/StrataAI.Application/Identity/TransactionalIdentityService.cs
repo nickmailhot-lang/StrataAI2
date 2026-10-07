@@ -7,6 +7,15 @@ public sealed class TransactionalIdentityService(IIdentityService inner, IIdenti
     IIdentityCommandContext context, IIdentityProfileReplayStore profileReplays, ISecureTokenService tokens,
     ICommandActorAuthorization actors) : IIdentityService
 {
+    public Task<IdentityOperation<UserProfile>> ReadProfileAsync(Guid userId,
+        CancellationToken cancellationToken = default) =>
+        commands.ExecuteAsync(userId, async () =>
+        {
+            var result = await inner.ReadProfileAsync(userId, cancellationToken);
+            return result.Succeeded && !await actors.VerifyAsync(userId, cancellationToken)
+                ? IdentityOperation<UserProfile>.Failure("session_unavailable") : result;
+        }, cancellationToken);
+
     public Task<IdentityOperation<IdentitySyncSnapshot>> ReadEventsAsync(Guid userId, long? after,
         CancellationToken cancellationToken = default) =>
         commands.ExecuteAsync(userId, async () =>

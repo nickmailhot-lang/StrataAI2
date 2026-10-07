@@ -215,14 +215,12 @@ public static class IdentityEndpoints
 
         me.MapGet(
             "",
-            (HttpContext context) =>
+            async (HttpContext context, IIdentityService identityService, CancellationToken cancellationToken) =>
             {
-                return context.Items.TryGetValue(
-                        SessionAuthenticationDefaults.ProfileItemKey,
-                        out var profile) &&
-                    profile is UserProfile user
-                        ? Results.Ok(user)
-                        : Results.Unauthorized();
+                var userId = GetUserId(context);
+                if (userId is null) return Results.Unauthorized();
+                var result = await identityService.ReadProfileAsync(userId.Value, cancellationToken);
+                return result.Succeeded && result.Value is not null ? Results.Ok(result.Value) : ErrorFor(result.ErrorCode);
             });
 
         me.MapPatch(
