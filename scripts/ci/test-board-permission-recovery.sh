@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# PERM-FR-002/010; PRD-05-TC-05/06/07: current authority gates original receipts.
+test "${CI:-}" = true || { echo 'Disposable permission recovery fixtures may run only in CI.' >&2; exit 1; }
+base=${1:-http://localhost:8080}
+scratch=$(mktemp -d)
+trap 'rm -rf "$scratch"' EXIT
+trap 'echo "Board permission recovery failed at line $LINENO" >&2' ERR
+admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
+key() { python3 -c 'import uuid; print(uuid.uuid4(), end="")'; }
+request() {
+  curl --max-time 30 --silent --show-error -b "$scratch/$1.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+    -H "Idempotency-Key: ${5:-$(key)}" -X "$2" -d "$4" -o "$scratch/response" -w '%{http_code}' "$base$3"
+}
+for actor in owner member; do
+  data=$(jq -nc --arg email "permission-recovery-$actor-$(key)@example.test" '{email:$email,password:"permission-recovery-correct-horse",displayName:"Recovery fixture"}')
+  curl --max-time 30 --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$data" "$base/auth/register" > "$scratch/$actor.user"
+  curl --max-time 30 --fail --silent --show-error -c "$scratch/$actor.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$data" "$base/auth/login" >/dev/null
+done
+member=$(jq -r '.user.id' "$scratch/member.user")
+test "$(request owner POST /organizations '{"name":"Permission receipt recovery"}')" = 201
+org=$(jq -r '.organization.id' "$scratch/response")
+for id in "$member" "$org"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
+admin "INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),'$org','$member','MEMBER','ACTIVE');" >/dev/null
+effects() {
+  admin "SELECT jsonb_build_object(
+   'card',(SELECT to_jsonb(c) FROM cards c WHERE id='$card'),
+   'member',(SELECT to_jsonb(m) FROM board_members m WHERE board_id='$board' AND user_id='$member'),
+   'audit',(SELECT count(*) FROM audit_events WHERE tenant_id='$org'),
+   'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
+   'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY board_id) FROM work_event_streams s WHERE tenant_id='$org'),
+   'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'),
+   'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text;"
+}
+for visibility in PRIVATE ORGANIZATION PUBLIC; do
+  test "$(request owner POST /boards "$(jq -nc --arg org "$org" --arg visibility "$visibility" '{organizationId:$org,name:("Receipt "+$visibility),visibility:$visibility}')")" = 201
+  board=$(jq -r '.id' "$scratch/response")
+  test "$(request owner POST "/boards/$board/lists" '{"name":"Receipt list"}')" = 201
+  list=$(jq -r '.id' "$scratch/response")
+  test "$(request owner POST "/lists/$list/cards" '{"title":"Original receipt Card"}')" = 201
+  card=$(jq -r '.id' "$scratch/response")
+  original=$(key); body='{"title":"Private recovered receipt title","version":1}'
+  before=$(effects)
+  for attempt in 1 2; do
+    test "$(request member PATCH "/cards/$card" "$body" "$original")" = 404
+    jq -e '.code=="card_not_found"' "$scratch/response" >/dev/null
+    test "$before" = "$(effects)"
+  done
+  test "$(request owner PATCH "/boards/$board/members/$member" '{"role":"MEMBER"}')" = 200
+  before=$(effects)
+  test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
+  jq -e '.title=="Private recovered receipt title" and .version==2' "$scratch/response" >/dev/null
+  cp "$scratch/response" "$scratch/original.receipt"
+  committed=$(effects); test "$before" != "$committed"
+  test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
+  cmp "$scratch/original.receipt" "$scratch/response"; test "$committed" = "$(effects)"
+  # A later committed revision must survive recovery of an earlier acknowledgment.
+  test "$(request owner PATCH "/cards/$card" '{"title":"Later authoritative title","version":2}')" = 200
+  jq -e '.version==3' "$scratch/response" >/dev/null
+  later=$(effects)
+  test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
+  cmp "$scratch/original.receipt" "$scratch/response"; test "$later" = "$(effects)"
+  test "$(request owner DELETE "/boards/$board/members/$member" '{}')" = 204
+  withdrawn=$(effects)
+  test "$(request member PATCH "/cards/$card" "$body" "$original")" = 404
+  jq -e '.code=="card_not_found"' "$scratch/response" >/dev/null
+  scripts/ci/assert-file-excludes.sh 'Private recovered receipt title' "$scratch/response"
+  test "$withdrawn" = "$(effects)"
+  test "$(request owner PATCH "/boards/$board/members/$member" '{"role":"MEMBER"}')" = 200
+  regranted=$(effects)
+  test "$(request member PATCH "/cards/$card" "$body" "$original")" = 200
+  cmp "$scratch/original.receipt" "$scratch/response"; test "$regranted" = "$(effects)"
+  test "$(admin "SELECT title||':'||version FROM cards WHERE id='$card';")" = 'Later authoritative title:3'
+done
+echo 'Board permission recovery: all three visibilities preserve refused-key recovery, original receipts, later state, immediate revoked receipt admission and read-only recovery after re-grant.'

@@ -98,6 +98,14 @@ All 18 visibility/access cases verify actual Board access flags, the administrat
 
 CI executes this same script against its immutable release API and restricted PostgreSQL, after member event delivery checks. Local execution uses readonly compiled assemblies in a cached Linux runtime, not the current retained release image. Binary storage/scanner, the remaining endpoint inventory, concurrent/lifecycle admission, native delivery/accessibility and capacity/latency remain open. The planning estimate stays 15% until the wider acceptance and exact-commit release checks provide stronger evidence.
 
+## Executed restricted permission receipt recovery
+
+The [permission recovery script](../../scripts/ci/test-board-permission-recovery.sh) passes locally through the compiled Production API and real restricted PostgreSQL for PRIVATE, ORGANIZATION and PUBLIC Boards. An ordinary active Organization member without a Board grant receives `card_not_found` twice with the same original key; Card/member/stream snapshots and audit/event/job/receipt counts remain unchanged. After an actual HTTP Board grant, that original key commits once at Card version 2 and identical retries return its original receipt without further effects.
+
+The owner then commits a different title at version 3. Recovery returns the original version-2 acknowledgment while preserving the newer title/revision and complete protected snapshot. Actual HTTP Board membership removal immediately refuses that saved receipt with neutral `card_not_found`, without returning its title or changing protected state. Reinstating the Board grant permits recovery of the same acknowledgment, preserving version 3 and all post-grant state rather than applying the original command again. All three visibility workflows pass; the unchanged final script exits 0 and shell/diff checks pass.
+
+CI now requires the same transitions against its immutable API and restricted database. Local execution uses the frozen compiled API in a cached Linux runtime, not retained-current-image, separate Worker or native browser evidence. No production authorization policy changes are needed. The disposable API is removed and existing services/volumes are preserved. Estimated remaining work stays 15%; full operation/lifecycle/concurrency, release/native, accessibility and capacity/latency acceptance still govern closure.
+
 ## Remaining implementation order
 
 1. Verify mandatory restricted member-event CI and execute current release consumer delivery/reconnect; local API and restricted PostgreSQL audit/journal/outbox, replay, no-op, rollback and private authority compatibility checks are complete.
