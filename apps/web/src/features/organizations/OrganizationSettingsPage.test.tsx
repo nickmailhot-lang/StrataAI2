@@ -25,6 +25,80 @@ const save = () => screen.getByRole('button', { name: 'Save Organization setting
 beforeEach(() => { currentProfile = profile; vi.clearAllMocks(); });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 describe('PRD-03-TC-01/05/06/08 Organization metadata administration', () => {
+  it.each([403, 404])('clears private draft on a definite pre-save profile refusal (%s)', async status => {
+    let checks = 0; let writes = 0;
+    vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit = {}) => {
+      if (path === '/me') return ++checks === 3 ? reply({}, status) : reply(profile);
+      if (init.method === 'PATCH') writes++;
+      return reply(summary);
+    }));
+    mount(); await screen.findByLabelText(/^Organization name/); fireEvent.click(save());
+    await screen.findByText('Organization settings are unavailable to your account.');
+    expect(writes).toBe(0); expect(screen.queryByLabelText(/^Organization name/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry original save' })).not.toBeInTheDocument();
+  });
+  it('does not invent an original save when the pre-save account check fails', async () => {
+    let checks = 0; let writes = 0;
+    vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit = {}) => {
+      if (path === '/me') return ++checks === 3 ? reply({}, 503) : reply(profile);
+      if (init.method === 'PATCH') { writes++; return reply({ ...org, version: 2 }); }
+      return reply(summary);
+    }));
+    mount(); fireEvent.change(await screen.findByLabelText(/^Organization name/), { target: { value: 'Preserved draft' } });
+    fireEvent.click(save()); await screen.findByText(/No save was sent/);
+    expect(writes).toBe(0); expect(save()).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Retry original save' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/^Organization name/)).toHaveValue('Preserved draft');
+    fireEvent.click(screen.getByRole('button', { name: 'Load current settings' }));
+    await screen.findByText('Name: Council');
+    fireEvent.click(screen.getByRole('button', { name: 'Keep draft after review' })); expect(save()).toBeEnabled();
+  });
+  it('preserves a submitted edit and exact retry key when its final account check is unavailable', async () => {
+    let checks = 0; const writes: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit = {}) => {
+      if (path === '/me') return ++checks === 4 ? reply({}, 503) : reply(profile);
+      if (init.method === 'PATCH') { writes.push(init); return reply({ ...org, version: 2 }); }
+      return reply(summary);
+    }));
+    mount(); await screen.findByLabelText(/^Organization name/); fireEvent.click(save());
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry original save' }));
+    await screen.findByText(/Original save acknowledgment recovered/);
+    expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
+    expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
+  });
+  it('bounds the entire save including both profile checks and fences late JSON', async () => {
+    let checks = 0; let writes = 0; let signal!: AbortSignal; let finishBody!: (value: unknown) => void;
+    vi.stubGlobal('fetch', vi.fn((path: string, init: RequestInit = {}) => {
+      if (path === '/me') {
+        checks++;
+        if (checks === 3) return new Promise<Response>(resolve => setTimeout(() => resolve(reply(profile)), 8_000));
+        if (checks === 4) {
+          signal = init.signal!; const stalled = reply(profile);
+          stalled.json = () => new Promise<unknown>(resolve => { finishBody = resolve; }); return Promise.resolve(stalled);
+        }
+        return Promise.resolve(reply(profile));
+      }
+      if (init.method === 'PATCH') { writes++; return Promise.resolve(reply({ ...org, version: 2 })); }
+      return Promise.resolve(reply(summary));
+    }));
+    mount(); await screen.findByLabelText(/^Organization name/); vi.useFakeTimers();
+    await act(async () => fireEvent.click(save()));
+    await act(async () => vi.advanceTimersByTimeAsync(8_000)); expect(writes).toBe(1); expect(finishBody).toBeDefined();
+    await act(async () => vi.advanceTimersByTimeAsync(7_001)); expect(signal.aborted).toBe(true);
+    expect(screen.getByRole('button', { name: 'Retry original save' })).toBeEnabled();
+    await act(async () => finishBody(profile));
+    expect(screen.queryByText('Organization settings saved.')).not.toBeInTheDocument(); expect(writes).toBe(1);
+  });
+  it('withdraws stale review controls and requires a fresh read after a failed refresh', async () => {
+    stubFetch(vi.fn().mockResolvedValueOnce(reply(summary))
+      .mockResolvedValueOnce(reply({ ...summary, organization: { ...org, name: 'Other admin', version: 2 } }))
+      .mockResolvedValueOnce(reply({}, 503)));
+    mount(); fireEvent.change(await screen.findByLabelText(/^Organization name/), { target: { value: 'Draft' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Load current settings' })); await screen.findByText('Name: Other admin');
+    fireEvent.click(screen.getByRole('button', { name: 'Load current settings' })); await screen.findByText(/Unable to load current settings/);
+    expect(screen.queryByRole('button', { name: 'Keep draft after review' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/^Organization name/)).toHaveValue('Draft'); expect(save()).toBeDisabled();
+  });
   it('reads only the scoped Organization and refuses a directory-shaped response', async () => {
     const fetcher = vi.fn().mockResolvedValue(reply([summary])); stubFetch(fetcher); mount();
     await screen.findByText(/Unable to load current settings/);

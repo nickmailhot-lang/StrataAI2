@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { boundedWorkRead } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
 
@@ -23,20 +24,12 @@ function matches(org: Organization, draft: Draft) {
   const normalize = (value: string | null) => value?.trim() || null;
   return org.name === draft.name.trim() && normalize(org.description) === normalize(draft.description) && normalize(org.logoUrl) === normalize(draft.logoUrl);
 }
-async function command(path: string, options: RequestInit, controller: AbortController) {
-  let deadline: ReturnType<typeof setTimeout> | undefined; let abort: (() => void) | undefined;
-  try {
-    return await Promise.race([
-      apiFetch(path, { ...options, signal: controller.signal }).then(async response => ({
-        status: response.status, body: response.status === 401 ? undefined : await response.json().catch(() => undefined) as unknown,
-      })),
-      new Promise<never>((_, reject) => {
-        abort = () => reject(new Error('Organization request interrupted'));
-        controller.signal.addEventListener('abort', abort, { once: true });
-        deadline = setTimeout(() => controller.abort(), 15_000);
-      }),
-    ]);
-  } finally { clearTimeout(deadline); if (abort) controller.signal.removeEventListener('abort', abort); }
+async function command(path: string, options: RequestInit, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const response = await apiFetch(path, { ...options, signal });
+  const body = response.status === 401 ? undefined : await response.json().catch(() => undefined) as unknown;
+  signal.throwIfAborted();
+  return { status: response.status, body };
 }
 export function OrganizationSettingsPage() {
   const { organizationId } = useParams();
@@ -87,35 +80,40 @@ function Settings({ organizationId }: { organizationId: string }) {
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined);
     setBackgroundReading(live);
     try {
-      const before = await command('/me', {}, controller);
-      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-      if (before.status === 401) { deny(401); return; }
-      if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
-      if (actor.current && actor.current !== before.body.id) { deny(401); return; }
-      const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {}, controller);
-      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-      if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-      if (result.status !== 200 || !valid(result.body)) throw new Error('Invalid settings response');
-      const found = result.body;
-      if (found.organization.id !== organizationId || found.role > 1 || found.organization.status !== 0) { deny(404); return; }
-      const after = await command('/me', {}, controller);
-      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-      if (after.status === 401) { deny(401); return; }
-      if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
-      if (after.body.id !== before.body.id) { deny(401); return; }
-      actor.current = after.body.id; setLiveActor(after.body.id);
-      setUnavailable(false);
-      const retained = current.current;
-      if (retained.intent) { setLatest(found); setReview(true); }
-      else if (!preserve || !retained.draft) {
-        setRecord(found); setDraft(fields(found.organization)); setLatest(undefined); setReview(false);
-      } else if (matches(found.organization, retained.draft)) {
-        setRecord(found); setDraft(fields(found.organization)); setLatest(undefined); setReview(false);
-        if (!live) setNotice('Current Organization settings match your draft.');
-      } else { setLatest(found); setReview(true); }
-      if (live) setLiveNotice('Current settings checked. Review any saved changes before replacing them with your draft.');
+      await boundedWorkRead(async signal => {
+        const before = await command('/me', {}, signal);
+        if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+        if ([401, 403, 404].includes(before.status)) { deny(before.status); return; }
+        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
+        if (actor.current && actor.current !== before.body.id) { deny(401); return; }
+        const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {}, signal);
+        if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+        if (result.status !== 200 || !valid(result.body)) throw new Error('Invalid settings response');
+        const found = result.body;
+        if (found.organization.id !== organizationId || found.role > 1 || found.organization.status !== 0) { deny(404); return; }
+        const after = await command('/me', {}, signal);
+        if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+        if ([401, 403, 404].includes(after.status)) { deny(after.status); return; }
+        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
+        if (after.body.id !== before.body.id) { deny(401); return; }
+        actor.current = after.body.id; setLiveActor(after.body.id);
+        setUnavailable(false);
+        const retained = current.current;
+        if (retained.intent) { setLatest(found); setReview(true); }
+        else if (!preserve || !retained.draft) {
+          setRecord(found); setDraft(fields(found.organization)); setLatest(undefined); setReview(false);
+        } else if (matches(found.organization, retained.draft)) {
+          setRecord(found); setDraft(fields(found.organization)); setLatest(undefined); setReview(false);
+          if (!live) setNotice('Current Organization settings match your draft.');
+        } else { setLatest(found); setReview(true); }
+        if (live) setLiveNotice('Current settings checked. Review any saved changes before replacing them with your draft.');
+      }, controller.signal);
     } catch {
-      if (mounted.current && pending.current === controller) setError('Unable to load current settings. Your draft is preserved. Please retry.');
+      if (mounted.current && pending.current === controller) {
+        setReview(true); setLatest(undefined); setNotice(undefined);
+        setError('Unable to load current settings. Your draft is preserved. Please retry.');
+      }
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); setBackgroundReading(false); } }
   }
   async function save(event?: React.FormEvent, retry = false) {
@@ -123,42 +121,51 @@ function Settings({ organizationId }: { organizationId: string }) {
     if (pending.current || (!retry && (review || intent)) || !record || !draft) return;
     if (!draft.name.trim() || draft.name.trim().length > 160) { setError('Enter an Organization name of at most 160 characters.'); return; }
     const proposed = intent ?? { draft: { ...draft }, version: record.organization.version, key: crypto.randomUUID() };
+    let submitted = false;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); setNotice(undefined);
     setBackgroundReading(false);
     try {
-      const before = await command('/me', {}, controller);
-      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-      if (before.status === 401) { deny(401); return; }
-      if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
-      if (!actor.current || actor.current !== before.body.id) { deny(401); return; }
-      const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': proposed.key }, body: JSON.stringify({ ...proposed.draft, version: proposed.version }),
-      }, controller);
-      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-      if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-      const after = await command('/me', {}, controller);
-      if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-      if (after.status === 401) { deny(401); return; }
-      if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
-      if (after.body.id !== before.body.id) { deny(401); return; }
-      const updated = { organization: result.body, role: record.role };
-      if (result.status === 200 && valid(updated) && updated.organization.id === organizationId
-        && updated.organization.status === 0 && updated.organization.version === proposed.version + 1 && matches(updated.organization, proposed.draft)) {
-        setIntent(undefined);
-        if (retry) { setReview(true); setNotice('Original save acknowledgment recovered. Load current settings before editing again.'); return; }
-        setRecord(updated); setDraft(fields(updated.organization)); setNotice('Organization settings saved.'); return;
-      }
-      const code = result.body && typeof result.body === 'object' && 'code' in result.body ? result.body.code : undefined;
-      if (result.status === 400) {
-        setIntent(undefined);
-        setError(code === 'invalid_organization_logo_url' ? 'Use a secure HTTPS logo URL without embedded credentials, or leave it empty.' : 'Check the Organization fields and try again.'); return;
-      }
-      setReview(true);
-      if ([409, 429].includes(result.status)) setIntent(undefined);
-      else setIntent(proposed);
-      setError([409, 429].includes(result.status) ? 'The Organization changed elsewhere or the save was refused. Load current settings to review your draft.' : 'Your save could not be confirmed. Retry the original save to recover its acknowledgment.');
+      await boundedWorkRead(async signal => {
+        const before = await command('/me', {}, signal);
+        if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+        if ([401, 403, 404].includes(before.status)) { deny(before.status); return; }
+        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
+        if (!actor.current || actor.current !== before.body.id) { deny(401); return; }
+        submitted = true;
+        const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': proposed.key }, body: JSON.stringify({ ...proposed.draft, version: proposed.version }),
+        }, signal);
+        if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+        const after = await command('/me', {}, signal);
+        if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
+        if ([401, 403, 404].includes(after.status)) { deny(after.status); return; }
+        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
+        if (after.body.id !== before.body.id) { deny(401); return; }
+        const updated = { organization: result.body, role: record.role };
+        if (result.status === 200 && valid(updated) && updated.organization.id === organizationId
+          && updated.organization.status === 0 && updated.organization.version === proposed.version + 1 && matches(updated.organization, proposed.draft)) {
+          setIntent(undefined);
+          if (retry) { setReview(true); setNotice('Original save acknowledgment recovered. Load current settings before editing again.'); return; }
+          setRecord(updated); setDraft(fields(updated.organization)); setNotice('Organization settings saved.'); return;
+        }
+        const code = result.body && typeof result.body === 'object' && 'code' in result.body ? result.body.code : undefined;
+        if (result.status === 400) {
+          setIntent(undefined);
+          setError(code === 'invalid_organization_logo_url' ? 'Use a secure HTTPS logo URL without embedded credentials, or leave it empty.' : 'Check the Organization fields and try again.'); return;
+        }
+        setReview(true);
+        if ([409, 429].includes(result.status)) setIntent(undefined);
+        else setIntent(proposed);
+        setError([409, 429].includes(result.status) ? 'The Organization changed elsewhere or the save was refused. Load current settings to review your draft.' : 'Your save could not be confirmed. Retry the original save to recover its acknowledgment.');
+      }, controller.signal);
     } catch {
-      if (mounted.current && pending.current === controller) { setIntent(proposed); setReview(true); setError('Your save could not be confirmed. Retry the original save to recover its acknowledgment.'); }
+      if (mounted.current && pending.current === controller) {
+        setReview(true); setLatest(undefined);
+        if (submitted || intent) {
+          setIntent(proposed); setError('Your save could not be confirmed. Retry the original save to recover its acknowledgment.');
+        } else setError('No save was sent. Your draft is preserved. Load current settings before saving again.');
+      }
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); } }
   }
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>

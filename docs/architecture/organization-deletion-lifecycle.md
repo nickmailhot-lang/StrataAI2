@@ -636,7 +636,11 @@ actual source and test admission withdrawal.
 Progress and elapsed/max leased-page measurements are content-free counts and
 durations. They describe this persistence workload, not the separate p95 HTTP
 acknowledgment target. Provider binaries, browser consumption and object/backup
-purge are outside this seeded graph. Full Release compilation passes; actual
-105,000-Card mutation execution remains pending PostgreSQL CI. The earlier
+purge are outside this seeded graph. The mandatory PostgreSQL job in
+[CI run 37549390677](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37549390677)
+passed at `4f427d0`. Its executed contract reports 826 bounded mutation jobs,
+105,201 ready work events and one ready terminal source for the full graph,
+elapsed 739,039 ms and maximum leased mutation page 113 ms. The separate local
+Windows run is still live and has no final result. The earlier
 100,000-archived-Card reference traversal remains valid as traversal evidence
 only. Neither fixture nor compilation closes PRD-03/18 on its own.

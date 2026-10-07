@@ -139,6 +139,12 @@ all durable event delivery for 5,000 active plus 100,000 archived Cards and 200
 Lists. It uses the owning accepted publisher and normal Worker claim/handlers,
 without admin checkpoint or lease staging, and checks retained attribution,
 exact effects and restricted original-source recovery. This closes a missing
-verification path, not a passed capacity claim: execution remains pending CI.
-Estimated remaining work stays **16%** until the scale and full release/native
-acceptance evidence are actually available.
+verification path. Its full 105,000-Card execution passed the mandatory
+PostgreSQL job at `4f427d0` in
+[run 37549390677](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37549390677):
+826 bounded mutation jobs, 105,201 ready work events, one ready original terminal
+source, 739,039 ms elapsed and 113 ms maximum leased mutation page. This proves
+the restricted persistence workload; HTTP p95, deployed Worker/browser behavior
+and provider/backup purge have separate acceptance requirements. Full exact-image
+CI remains in progress. Estimated remaining work stays **16%** pending the
+remaining functional and full release/native acceptance evidence.
