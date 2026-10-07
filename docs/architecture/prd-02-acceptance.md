@@ -45,6 +45,15 @@ Desktop and phone release fixtures include corresponding actual-source date
 assertions; new native execution remains pending. Full two-client preference
 recovery for every consumer and complete current release CI are still required.
 
+Open Board/Card activity additionally recovers account changes via the identity
+stream, ten-second visible-page checks and focus/online/visibility recovery,
+preserving its selected history cursor. Its completed 19-case activity/identity
+suite passes queued-signal handling, periodic fallback, close/denial retirement
+and keyboard focus ownership. Web/browser TypeScript and lint pass. The native
+peer-preference update assertion is registered but not yet executed against
+release images. This proves the scoped component recovery, not every consumer's
+complete two-client acceptance. Estimated PRD-02 work remaining stays 23%.
+
 ### Executed security and final-admission checks
 
 On 2026-10-07, an isolated Release build of source revision `be7b1616` passed

@@ -82,6 +82,18 @@ for (const width of [1280, 390]) {
       const peerReads = trackBoardReads(peerPage, board, cardPath); await peerPage.goto(cardPath); await expect.poll(peerReads).toBeGreaterThanOrEqual(2);
       const peerOpen = peerPage.getByRole('button', { name: 'Review Card activity', exact: true }); await expect(peerOpen).toBeEnabled(); await peerOpen.press('Enter');
       const peerHistory = peerPage.getByRole('region', { name: 'Card activity', exact: true }); await expect(peerHistory.getByRole('listitem')).toHaveCount(50);
+      // A command from this account's other client changes its viewing policy;
+      // the open history must recover without reloading the document.
+      const viewingProfile = await (await peer.request.get('/me')).json();
+      const updatedPreferences = await peer.request.patch('/me', { headers, data: { version: viewingProfile.version, timezone: 'UTC' } });
+      expect(updatedPreferences.status()).toBe(200);
+      const peerTime = peerHistory.locator('time').first();
+      await expect(peerTime).toHaveText(await peerPage.evaluate(instant => new Intl.DateTimeFormat('en-US', {
+        timeZone: 'UTC', year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
+      }).format(new Date(instant)), firstInstant), { timeout: 20_000 });
+      await expect(peerTime).toHaveAttribute('datetime', firstInstant);
+      await expect(peerHistory.getByRole('listitem')).toHaveCount(50);
       const added = await context.request.post(`/cards/${card}/comments`, { headers, data: { content: 'Private body excluded from activity', cardVersion: version } });
       expect(added.status()).toBe(200); expect((await added.json()).cardVersion).toBe(version + 1); version++;
       for (const history of [cardHistory, peerHistory]) {

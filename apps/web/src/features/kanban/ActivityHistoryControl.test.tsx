@@ -1,10 +1,12 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { flushSync } from 'react-dom';
 import { ActivityHistoryControl } from './ActivityHistoryControl';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
 import { configureActivityTelemetry, flushActivityTelemetry } from './activityTelemetry';
+import { watchIdentity } from '../auth/identityLive';
 vi.mock('../../api/workManagement', async importOriginal => ({ ...await importOriginal<typeof import('../../api/workManagement')>(), workRequest: vi.fn() }));
+vi.mock('../auth/identityLive', () => ({ watchIdentity: vi.fn(() => vi.fn()) }));
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const scope = { organizationId: id(1), boardId: id(2), kind: 'CARD' as const, targetId: id(3) };
 const profile = { id: id(8), version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
@@ -14,7 +16,7 @@ const page = (items = [item(100)], nextCursor: string | null = null) => ({ organ
 const props = () => ({ ...scope, refreshSequence: '1', unavailable: false, onDenied: vi.fn() });
 const wrap = (p: ReturnType<typeof props>) => <MemoryRouter><ActivityHistoryControl {...p} /></MemoryRouter>;
 const reads = () => vi.mocked(workRequest).mock.calls.filter(([path]) => path !== '/me');
-beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+beforeEach(() => { vi.mocked(workRequest).mockReset(); vi.mocked(watchIdentity).mockClear(); });
 
 // AUTH-FR-010 / PRD-02-TC-08: preferences may change during the protected read.
 it('formats immutable activity time in the final confirmed account zone with an explicit zone label', async () => {
@@ -31,6 +33,76 @@ it('formats immutable activity time in the final confirmed account zone with an 
   await screen.findByText('Oct 4, 2026, 16:00 GMT+9');
   expect(document.querySelector('time')).toHaveAttribute('datetime', item(100).createdAt);
   expect(reads()).toHaveLength(2);
+});
+
+it('recovers changed preferences in an open older page from identity delivery without resetting its cursor', async () => {
+  let timezone = 'Pacific/Honolulu';
+  const first = page(Array.from({ length: 50 }, (_, index) => item(100 - index)), 'opaque');
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? { ...profile, timezone }
+    : path.includes('?after=') ? page([item(50)]) : first);
+  render(wrap(props())); fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
+  await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(50));
+  fireEvent.click(screen.getByRole('button', { name: 'Older activity' }));
+  await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1));
+  expect(document.querySelector('time')).toHaveTextContent('Oct 3, 2026, 21:00 HST');
+  await waitFor(() => expect(watchIdentity).toHaveBeenCalledTimes(1));
+  timezone = 'Asia/Tokyo'; vi.mocked(watchIdentity).mock.calls[0][0].invalidate();
+  await screen.findByText('Oct 4, 2026, 16:00 GMT+9');
+  expect(reads()).toHaveLength(3); expect(reads().at(-1)?.[0]).toContain('?after=opaque');
+  expect(document.querySelector('time')).toHaveAttribute('datetime', item(50).createdAt);
+  expect(screen.getByRole('button', { name: 'Newer activity' })).toBeEnabled();
+});
+
+it('queues one follow-up when identity and reconnect recovery arrive during a protected read', async () => {
+  let count = 0; let finish!: (value: unknown) => void; let signal: AbortSignal | undefined;
+  vi.mocked(workRequest).mockImplementation(async (path, options) => {
+    if (path === '/me') return profile;
+    if (++count === 2) { signal = options?.signal ?? undefined; return new Promise(resolve => { finish = resolve; }); }
+    return page();
+  });
+  render(wrap(props())); fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
+  await screen.findByRole('listitem'); await waitFor(() => expect(watchIdentity).toHaveBeenCalledTimes(1));
+  const delivered = vi.mocked(watchIdentity).mock.calls[0][0].invalidate;
+  act(delivered); await waitFor(() => expect(finish).toBeDefined());
+  act(() => { delivered(); delivered(); window.dispatchEvent(new Event('online')); });
+  expect(reads()).toHaveLength(2); expect(signal?.aborted).toBe(false);
+  await act(async () => { finish(page()); });
+  await waitFor(() => expect(reads()).toHaveLength(3)); await screen.findByRole('listitem');
+  expect(watchIdentity).toHaveBeenCalledTimes(1);
+});
+
+it('uses periodic recovery without identity delivery and retires recovery on close', async () => {
+  vi.useFakeTimers();
+  try {
+    let timezone = 'Pacific/Honolulu';
+    vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? { ...profile, timezone } : page());
+    render(wrap(props()));
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' })); });
+    expect(screen.getByRole('listitem')).toBeVisible();
+    timezone = 'Asia/Tokyo';
+    await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+    expect(document.querySelector('time')).toHaveTextContent('Oct 4, 2026, 16:00 GMT+9');
+    expect(reads()).toHaveLength(2);
+    const dispose = vi.mocked(watchIdentity).mock.results[0].value;
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Close activity' })); });
+    expect(dispose).toHaveBeenCalledTimes(1);
+    await act(async () => { window.dispatchEvent(new Event('online')); await vi.advanceTimersByTimeAsync(20_000); });
+    expect(reads()).toHaveLength(2); expect(screen.queryByRole('listitem')).toBeNull();
+  } finally { vi.useRealTimers(); }
+});
+
+it('retains the focused history action during background recovery without stealing another control', async () => {
+  const first = page(Array.from({ length: 50 }, (_, index) => item(100 - index)), 'opaque');
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : first);
+  render(<MemoryRouter><ActivityHistoryControl {...props()} /><Button>Another control</Button></MemoryRouter>);
+  fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Older activity' })).toHaveFocus());
+  const newest = screen.getByRole('button', { name: 'Newest activity' }); newest.focus();
+  act(() => { window.dispatchEvent(new Event('online')); });
+  await waitFor(() => expect(reads()).toHaveLength(2)); await waitFor(() => expect(newest).toHaveFocus());
+  const other = screen.getByRole('button', { name: 'Another control' }); other.focus();
+  act(() => { window.dispatchEvent(new Event('online')); });
+  await waitFor(() => expect(reads()).toHaveLength(3)); await screen.findAllByRole('listitem'); expect(other).toHaveFocus();
 });
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 it('reports fixed opening, failed read and user retry observations without protected page data', async () => {
@@ -115,6 +187,8 @@ it.each([401, 403, 404])('stops protected reads after a %s denial and resumes on
   expect(screen.getByRole('button', { name: 'Refresh Card activity' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Newest activity' })).toBeDisabled();
   expect(p.onDenied).toHaveBeenCalledTimes(1); expect(reads()).toHaveLength(2);
+  expect(vi.mocked(watchIdentity).mock.results.at(-1)!.value).toHaveBeenCalledTimes(1);
+  act(() => { window.dispatchEvent(new Event('online')); }); expect(reads()).toHaveLength(2);
   view.rerender(wrap({ ...p, refreshSequence: '2' }));
   await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(50));
   expect(reads()).toHaveLength(3); expect(reads().at(-1)?.[0]).toBe(`/cards/${id(3)}/activity`);

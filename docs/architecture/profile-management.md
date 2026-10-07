@@ -88,6 +88,28 @@ after logout; three invalid keys leave profile version/events unchanged.
 These framework-host checks use Demo persistence. They strengthen their named
 HTTP contracts and do not prove all Production/native/release acceptance.
 
+Open Board/Card activity now also subscribes to the admitted account's identity
+stream and recovers through the existing protected history read. Visible pages
+check every ten seconds and on focus, online and visibility recovery. The current
+history cursor remains selected. Signals received during a bounded read queue
+one follow-up instead of aborting that read repeatedly. Each recovery still
+validates the profile before and after the protected page. Denial clears history
+and stops recovery until the parent supplies fresh admission; closing or
+unmounting retires the subscription, timers/listeners and owned read.
+
+An identity-delivery regression first failed on the absent subscription and now
+passes a Honolulu-to-Tokyo update on an older page without resetting its cursor
+or changing the source instant. The completed 19-case activity/identity-stream
+suite also passes periodic fallback, queued signals, close/denial retirement,
+original keyboard paging focus and background focus retention without stealing
+an unrelated control. Web TypeScript/lint and browser TypeScript pass. The
+desktop/phone activity fixture now changes the peer account's timezone through
+the normal versioned profile endpoint and requires its already-open history to
+recover the new caption without document reload or source changes. That new
+native assertion remains pending exact-image execution. Personal star history
+and the remaining consumers still require their own automatic preference
+recovery audit; this does not close AUTH-FR-010 or AC-AUTH-02-03.
+
 ### Comment timezone display and remaining acceptance
 
 AUTH-FR-010 applies to timestamp displays as well as Card date controls.

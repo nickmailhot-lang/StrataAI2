@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Link, Stack, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
@@ -7,6 +7,7 @@ import { activityCardLink, activityLabel, parseActivityPage, type ActivityItem, 
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import { activityEvent, activityResult } from './activityTelemetry';
 import { formatUserDateTime } from '../auth/userDateTime';
+import { watchIdentity } from '../auth/identityLive';
 
 type Props = ActivityScope & { unavailable: boolean; refreshSequence: string; onDenied: (error: Error) => void };
 type View = { epoch: string; page: ActivityPage; profile: { locale: string; timezone: string } };
@@ -19,6 +20,8 @@ function History(props: Props) {
   const [notice, setNotice] = useState<{ epoch: string; message: string }>(); const [busy, setBusy] = useState(false);
   const [navigation, setNavigation] = useState({ refresh: props.refreshSequence, unavailable: props.unavailable, generation: 0, denied: false, positions: [{}] as Position[] });
   const [attempt, setAttempt] = useState(0);
+  const [subject, setSubject] = useState<string>();
+  const refreshQueued = useRef(false);
   const positions = navigation.positions;
   const setPositions = (update: Position[] | ((previous: Position[]) => Position[])) => setNavigation(previous => ({
     ...previous, positions: typeof update === 'function' ? update(previous.positions) : update,
@@ -28,7 +31,12 @@ function History(props: Props) {
   const newer = useRef<HTMLButtonElement>(null); const newest = useRef<HTMLButtonElement>(null); const retry = useRef<HTMLButtonElement>(null);
   const close = useRef<HTMLButtonElement>(null);
   const focusOwner = useRef<HTMLElement | null>(null); const restoreFocus = useRef(false);
-  function ownFocus(owner: HTMLElement) { focusOwner.current = owner; restoreFocus.current = true; parkRecoveryFocus(owner); }
+  const retainedFocus = useRef<HTMLButtonElement | undefined>(undefined);
+  function ownFocus(owner: HTMLElement) { retainedFocus.current = undefined; focusOwner.current = owner; restoreFocus.current = true; parkRecoveryFocus(owner); }
+  const invalidate = useCallback(() => {
+    if (pending.current) { refreshQueued.current = true; return; }
+    setAttempt(value => value + 1);
+  }, []);
   const epoch = `${props.refreshSequence}/${navigation.generation}`;
   // A changed parent read/realtime generation discards both the previous page
   // and its continuation. Rendering hides it immediately, before effects run.
@@ -39,6 +47,12 @@ function History(props: Props) {
   useEffect(() => {
     if (!opened || props.unavailable || navigation.denied) return;
     const controller = new AbortController(); pending.current?.abort(); pending.current = controller;
+    refreshQueued.current = false;
+    // A background recovery may disable the focused paging action. Retain its
+    // existing keyboard ownership; unrelated dialog controls keep their focus.
+    const focused = document.activeElement;
+    if (!restoreFocus.current && [primary.current, older.current, newer.current, newest.current, retry.current].some(button => button === focused)
+      && focused instanceof HTMLButtonElement) { ownFocus(focused); retainedFocus.current = focused; }
     setBusy(true); setView(undefined); setNotice(undefined);
     const captured = `${props.refreshSequence}/${navigation.generation}`;
     const action = props.kind === 'BOARD' ? 'board_read' : 'card_read';
@@ -51,9 +65,9 @@ function History(props: Props) {
         { organizationId: props.organizationId, boardId: props.boardId, kind: props.kind, targetId: props.targetId }, position.before);
       const current = await workRequest<unknown>('/me', { signal });
       if (!isNotificationProfile(current) || current.id.toLowerCase() !== profile.id.toLowerCase()) throw new WorkRequestError(401, null);
-      return { epoch: captured, page, profile: { locale: current.locale, timezone: current.timezone } };
+      return { epoch: captured, page, subject: current.id, profile: { locale: current.locale, timezone: current.timezone } };
     }, controller.signal).then(result => {
-      if (!controller.signal.aborted && pending.current === controller) { activityResult(action, true, started); setView(result); }
+      if (!controller.signal.aborted && pending.current === controller) { activityResult(action, true, started); setSubject(result.subject); setView(result); }
     }).catch((error: unknown) => {
       if (controller.signal.aborted || pending.current !== controller) return;
       activityResult(action, false, started);
@@ -71,14 +85,31 @@ function History(props: Props) {
         setNotice({ epoch: captured, message: 'Activity is unavailable. Refresh the Board to check access.' });
       } else setNotice({ epoch: captured, message: error instanceof WorkRequestError && error.status === 400
         ? 'This history page expired. Return to newest activity.' : 'Activity could not be loaded. Retry this page or return to newest activity.' });
-    }).finally(() => { if (pending.current === controller) { pending.current = undefined; setBusy(false); } });
+    }).finally(() => {
+      if (pending.current !== controller) return;
+      pending.current = undefined; setBusy(false);
+      if (refreshQueued.current) { refreshQueued.current = false; setAttempt(value => value + 1); }
+    });
     return () => { controller.abort(); if (pending.current === controller) pending.current = undefined; };
   }, [opened, props.organizationId, props.boardId, props.kind, props.targetId, props.refreshSequence, props.unavailable, navigation.generation, navigation.denied, positions, attempt]);
+  useEffect(() => {
+    if (!opened || props.unavailable || navigation.denied || !subject) return;
+    const check = () => { if (document.visibilityState !== 'hidden') invalidate(); };
+    const stop = watchIdentity({ subject, isProfile: isNotificationProfile, invalidate: check });
+    const timer = setInterval(check, 10_000);
+    window.addEventListener('focus', check); window.addEventListener('online', check);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      stop(); clearInterval(timer); window.removeEventListener('focus', check);
+      window.removeEventListener('online', check); document.removeEventListener('visibilitychange', check);
+    };
+  }, [opened, props.unavailable, navigation.denied, subject, invalidate]);
   const admitted = !props.unavailable && view?.epoch === epoch ? view : undefined;
   const message = !props.unavailable && notice?.epoch === epoch ? notice.message : undefined;
   useEffect(() => {
     if (busy || pending.current || props.unavailable || !restoreFocus.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current)) return;
-    const target = navigation.denied ? close.current : !opened ? primary.current : message ? retry.current : admitted?.page.nextCursor ? older.current : positions.length > 1 ? newer.current : newest.current;
+    const retained = retainedFocus.current;
+    const target = navigation.denied ? close.current : retained?.isConnected && !retained.disabled ? retained : !opened ? primary.current : message ? retry.current : admitted?.page.nextCursor ? older.current : positions.length > 1 ? newer.current : newest.current;
     if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = false; }
   }, [busy, props.unavailable, opened, message, admitted, positions.length, navigation.denied]);
   const name = props.kind === 'BOARD' ? 'Board' : 'Card';
