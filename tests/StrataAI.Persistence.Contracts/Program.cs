@@ -118,7 +118,8 @@ if (args.Contains("--identity-recovery-rollback-only", StringComparer.Ordinal))
     await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
     return;
 }
-if (!args.Contains("--notification-batches-only", StringComparer.Ordinal))
+var previewLifecycleOnly = args.Contains("--attachment-preview-lifecycle-only", StringComparer.Ordinal);
+if (!args.Contains("--notification-batches-only", StringComparer.Ordinal) && !previewLifecycleOnly)
 {
     await InvitationIssuerAccountAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
     if (args.Contains("--invitation-issuer-authority-only", StringComparer.Ordinal)) return;
@@ -185,28 +186,34 @@ try
         return;
     }
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
-    await IdentityRegistrationConcurrencyContract.RunAsync(admin,apiConnection,ct);
-    await IdentityProfileExpiryContract.RunAsync(admin,apiConnection,ct);
-    await IdentityRevocationExpiryContract.RunAsync(admin,apiConnection,ct);
-    await OrganizationCreationTimestampContract.RunAsync(admin,apiConnection,ct);
-    await WorkArchiveHistoryContract.RunAsync(admin,apiConnection,ct);
-    await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationMetadataDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationMetadataReplayContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await InvitationRecipientAuthorityDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await InvitationBoardAuthorityConcurrencyContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await InvitationOrganizationLifecycleAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationDeletionPublicationContract.RunAsync(admin,apiConnection,ct);
-    await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationDeletionCandidatesContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationDeletionPagesContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationDeletionScaleContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationDeletionDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    if (!previewLifecycleOnly)
+    {
+        await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
+        await IdentityRegistrationConcurrencyContract.RunAsync(admin,apiConnection,ct);
+        await IdentityProfileExpiryContract.RunAsync(admin,apiConnection,ct);
+        await IdentityRevocationExpiryContract.RunAsync(admin,apiConnection,ct);
+        await OrganizationCreationTimestampContract.RunAsync(admin,apiConnection,ct);
+        await WorkArchiveHistoryContract.RunAsync(admin,apiConnection,ct);
+        await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationMetadataDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationMetadataReplayContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await InvitationRecipientAuthorityDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await InvitationBoardAuthorityConcurrencyContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await InvitationOrganizationLifecycleAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationDeletionPublicationContract.RunAsync(admin,apiConnection,ct);
+        await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationDeletionCandidatesContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationDeletionPagesContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationDeletionScaleContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationDeletionDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    }
     await Seed(organization,user,board,list,card); await Seed(foreignOrganization,foreignUser,foreignBoard,foreignList,foreignCard);
-    await SearchTraversalStoreContract.RunAsync(admin,apiConnection,organization,user,ct);
-    await SearchContentStoreContract.RunAsync(admin,provider,organization,board,user,ct);
+    if (!previewLifecycleOnly)
+    {
+        await SearchTraversalStoreContract.RunAsync(admin,apiConnection,organization,user,ct);
+        await SearchContentStoreContract.RunAsync(admin,provider,organization,board,user,ct);
+    }
     var value = Intent(); var prepared = await InScope(organization,() => store.PrepareUploadAsync(value,ct));
     Require(prepared is { Version:1, State:AttachmentUploadState.Prepared },"Prepared upload persistence shape failed.");
     Require(await InScope(organization,() => store.PrepareUploadAsync(Intent(value.RetryKey),ct)) is null,"Upload retry was duplicated.");
@@ -280,6 +287,7 @@ try
     Require(await Change(reconciled,5,new(AttachmentUploadAction.ConfirmMissing,now.AddSeconds(4))) is null,"Stored tombstone was resurrected.");
     await AttachmentWorkerContract.RunAsync(admin,workerConnection,provider,organization,foreignOrganization,value,
         fixtureBytes,fixtureDigest,ct);
+    if (previewLifecycleOnly) return;
     await AttachmentPublicationContract.RunAsync(admin,apiConnection,ct);
     await ActivityEventSourceStoreContract.RunAsync(admin,provider,user,ct);
     await ActivityPrivateTargetStoreContract.RunAsync(provider,organization,foreignOrganization,user,foreignUser,card,ct);

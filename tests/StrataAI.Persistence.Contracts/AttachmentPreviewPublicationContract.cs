@@ -80,7 +80,7 @@ internal static class AttachmentPreviewPublicationContract
             try { await denied.ExecuteNonQueryAsync(ct); throw new InvalidOperationException("Worker bypassed publication replay through private source helper."); }
             catch (PostgresException error) when (error.SqlState == PostgresErrorCodes.InsufficientPrivilege) { }
         }
-        await using (var archive = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ARCHIVED',archived_at=clock_timestamp() WHERE id=@card AND tenant_id=@tenant;", admin))
+        await using (var archive = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,archived_at,statement_timestamp()),updated_at=GREATEST(updated_at,archived_at,statement_timestamp()) WHERE id=@card AND tenant_id=@tenant;", admin))
         {
             archive.Parameters.AddWithValue("card", attempt.CardId); archive.Parameters.AddWithValue("tenant", job.OrganizationId);
             await archive.ExecuteNonQueryAsync(ct);
@@ -93,7 +93,7 @@ internal static class AttachmentPreviewPublicationContract
         }
         finally
         {
-            await using var restore = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ACTIVE',archived_at=NULL WHERE id=@card AND tenant_id=@tenant;", admin);
+            await using var restore = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ACTIVE',updated_at=GREATEST(updated_at,statement_timestamp()) WHERE id=@card AND tenant_id=@tenant;", admin);
             restore.Parameters.AddWithValue("card", attempt.CardId); restore.Parameters.AddWithValue("tenant", job.OrganizationId);
             await restore.ExecuteNonQueryAsync(ct);
         }

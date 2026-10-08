@@ -191,7 +191,9 @@ internal static class CardCoverCommandContract
         // Both original and destination permission must be refreshed after wait.
         foreach (var withdrawnBoard in new[] { route.BoardId, movedBoard })
         {
-            await using var gate = new NpgsqlConnection(admin.ConnectionString);
+            // Clone retains authentication settings without exposing a password
+            // through the opened connection's redacted ConnectionString.
+            await using var gate = (NpgsqlConnection)((ICloneable)admin).Clone();
             await gate.OpenAsync(ct);
             await using var gateTransaction = await gate.BeginTransactionAsync(ct);
             await using (var rowLock = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@tenant AND id=@board FOR UPDATE;", gate, gateTransaction))

@@ -151,7 +151,7 @@ internal static class AttachmentPreviewIntentContract
             catch (PostgresException error) when (error.SqlState == PostgresErrorCodes.CheckViolation) { }
         }
         // Current parent lifecycle gates private source and recovery disclosure.
-        await using (var archive = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ARCHIVED',archived_at=clock_timestamp() WHERE id=@card AND tenant_id=@tenant;", admin))
+        await using (var archive = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ARCHIVED',archived_at=GREATEST(updated_at,archived_at,statement_timestamp()),updated_at=GREATEST(updated_at,archived_at,statement_timestamp()) WHERE id=@card AND tenant_id=@tenant;", admin))
         {
             archive.Parameters.AddWithValue("card", original.CardId); archive.Parameters.AddWithValue("tenant", organization);
             await archive.ExecuteNonQueryAsync(ct);
@@ -163,7 +163,7 @@ internal static class AttachmentPreviewIntentContract
         }
         finally
         {
-            await using var restore = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ACTIVE',archived_at=NULL WHERE id=@card AND tenant_id=@tenant;", admin);
+            await using var restore = new NpgsqlCommand("UPDATE public.cards SET lifecycle_state='ACTIVE',updated_at=GREATEST(updated_at,statement_timestamp()) WHERE id=@card AND tenant_id=@tenant;", admin);
             restore.Parameters.AddWithValue("card", original.CardId); restore.Parameters.AddWithValue("tenant", organization); await restore.ExecuteNonQueryAsync(ct);
         }
         await AttachmentPreviewPublicationContract.RunAsync(admin,api,worker,job,attempt,output,store,bytes,encoded,foreignOrganization,ct);

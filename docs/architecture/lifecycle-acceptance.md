@@ -93,6 +93,12 @@ Executed local evidence: strict full-solution Release compilation passed with ze
 
 These checks used isolated local test databases and compiled contract output, rather than the current immutable release images. Full CI, lifecycle capacity measurements and the remaining PRD-18 acceptance/Definition of Done requirements still govern issue closure.
 
+### Attachment-preview fixture repair after archive-history enforcement
+
+The full PostgreSQL contract job on `af754166` and `be9b6eb2` rejected an older attachment-preview fixture restoring a Card with `archived_at=NULL` (`23514`). The production invariant remains enforced. Preview intent/publication/backfill fixtures now retain history on restoration; repeated archive setup uses a consistent statement clock for archive/update fields. The Card-cover row-lock fixture now clones its authenticated administrator connection through Npgsql's `ICloneable` implementation instead of rebuilding a connection from its redacted opened connection string. No database authentication requirement was relaxed.
+
+Strict solution compilation passed with zero warnings/errors. An isolated PostgreSQL 17/pgvector invocation of `--attachment-preview-lifecycle-only` passed real restricted API/Worker readiness and the complete existing attachment Worker contract chain: preview intent/publication/backfill/activation, Card covers/commands, Board background images, preview reads, scan recovery and attachment lifecycle. The selector skips unrelated contract groups only when explicitly requested; ordinary CI continues to run the complete suite. Storage/scanner/provider fixture behavior in this contract is not proof of live provider integration. Full corrected current CI remains required.
+
 Authorized lifecycle service commands pass the deleting actor into both stores. New store deletions require a nonempty actor. Migration 069 adds retained account references and prevents non-null deletion attribution on non-deleted records; readiness requires this migration. Historical unknown actors remain null. Copying a List resets an archived Card's clock to its new creation time and clears deletion attribution.
 
 Source fixtures cover missing-actor rejection, unconfirmed and confirmed deletion, archive/restore/rearchive, rollback/unchanged command replay and copied Cards without deletion attribution. Full solution compilation passes; database/API runtime evidence remains pending Linux CI.

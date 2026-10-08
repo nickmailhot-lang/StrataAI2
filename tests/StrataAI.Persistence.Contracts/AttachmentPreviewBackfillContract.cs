@@ -85,7 +85,7 @@ internal static class AttachmentPreviewBackfillContract
             && await Scalar<long>("SELECT version FROM public.attachments WHERE tenant_id=@tenant AND id=@file;")==fileVersion,
             "Metadata maintenance altered Card/File/event publication.");
         // Restored sources behind the cursor are recovered on wrap.
-        await Scalar<long>("UPDATE public.cards SET lifecycle_state='ACTIVE',archived_at=NULL,updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE tenant_id=@tenant AND id=(SELECT card_id FROM public.attachments WHERE id=@file); SELECT 1::bigint;");
+        await Scalar<long>("UPDATE public.cards SET lifecycle_state='ACTIVE',updated_at=GREATEST(updated_at,statement_timestamp()),version=version+1 WHERE tenant_id=@tenant AND id=(SELECT card_id FROM public.attachments WHERE id=@file); SELECT 1::bigint;");
         for(var pass=0;pass<8;pass++)await store.EnqueuePageAsync(tenant,32,ct);
         foreach(var file in files)
         {
