@@ -27,9 +27,39 @@ env:
   STRATAAI_IMAGE_TAG: ${{ github.sha }}
 
 jobs:
+  metadata:
+    name: metadata
+    runs-on: ubuntu-24.04
+    outputs:
+      revision: ${{ steps.identity.outputs.revision }}
+      short_sha: ${{ steps.identity.outputs.short_sha }}
+      version: ${{ steps.identity.outputs.version }}
+      image_tag: ${{ steps.identity.outputs.image_tag }}
+      workflow_run_id: ${{ steps.identity.outputs.workflow_run_id }}
+      repository: ${{ steps.identity.outputs.repository }}
+      created_at: ${{ steps.identity.outputs.created_at }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Verify metadata refusal and version contracts
+        run: node --test tests/build-metadata.test.mjs
+      - name: Calculate verified exact-commit metadata
+        id: identity
+        run: node scripts/ci/build-metadata.mjs
+      - name: Retain canonical build metadata
+        uses: actions/upload-artifact@v7
+        with:
+          name: strataai-build-metadata-${{ github.sha }}
+          path: build-metadata.json
+          if-no-files-found: error
+          retention-days: ${{ github.event_name == 'pull_request' && 14 || 90 }}
+
   web-quality:
     name: web-quality
     runs-on: ubuntu-24.04
+    needs: [metadata]
     steps:
       - uses: actions/checkout@v7
 
@@ -79,16 +109,19 @@ jobs:
 
       - name: Production web build
         env:
-          VITE_STRATAAI_BUILD_REVISION: ${{ github.sha }}
-          VITE_STRATAAI_BUILD_VERSION: 0.1.0-${{ github.run_number }}
+          VITE_STRATAAI_BUILD_REVISION: ${{ needs.metadata.outputs.revision }}
+          VITE_STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
         run: npm run build
 
       - name: Verify generated web build identity
-        run: jq -e --arg revision "$GITHUB_SHA" --arg version "0.1.0-$GITHUB_RUN_NUMBER" '.revision == $revision and .version == $version' apps/web/dist/build-metadata.json
+        env:
+          STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
+        run: jq -e --arg revision "$GITHUB_SHA" --arg version "$STRATAAI_BUILD_VERSION" '.revision == $revision and .version == $version' apps/web/dist/build-metadata.json
 
   dotnet-quality:
     name: dotnet-quality
     runs-on: ubuntu-24.04
+    needs: [metadata]
     steps:
       - uses: actions/checkout@v7
 
@@ -138,6 +171,7 @@ jobs:
   postgres-integration:
     name: postgres-integration
     runs-on: ubuntu-24.04
+    needs: [metadata]
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -291,19 +325,21 @@ jobs:
     if: always()
     runs-on: ubuntu-24.04
     needs:
+      - metadata
       - web-quality
       - dotnet-quality
       - postgres-integration
     steps:
       - name: Require all source quality jobs
         env:
+          METADATA_RESULT: ${{ needs.metadata.result }}
           WEB_RESULT: ${{ needs.web-quality.result }}
           DOTNET_RESULT: ${{ needs.dotnet-quality.result }}
           POSTGRES_RESULT: ${{ needs.postgres-integration.result }}
         shell: bash
         run: |
           set -euo pipefail
-          for result in "$WEB_RESULT" "$DOTNET_RESULT" "$POSTGRES_RESULT"; do
+          for result in "$METADATA_RESULT" "$WEB_RESULT" "$DOTNET_RESULT" "$POSTGRES_RESULT"; do
             if [ "$result" != "success" ]; then
               echo "Mandatory source quality job did not succeed: $result" >&2
               exit 1
@@ -314,21 +350,35 @@ jobs:
     name: build-images-once
     runs-on: ubuntu-24.04
     needs:
+      - metadata
       - source-quality-gate
+    env:
+      STRATAAI_BUILD_REVISION: ${{ needs.metadata.outputs.revision }}
+      STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
+      - name: Download canonical build metadata
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-build-metadata-${{ github.sha }}
+          path: build-inputs
+
+      - name: Verify canonical build identity before building
+        run: |
+          jq -e --arg revision "$STRATAAI_BUILD_REVISION" --arg version "$STRATAAI_BUILD_VERSION" --arg run "$GITHUB_RUN_ID" '.commitSha == $revision and .imageTag == $revision and .version == $version and .workflowRunId == $run' build-inputs/build-metadata.json >/dev/null
+
       - name: Build web image
         run: |
-          docker build             --file Dockerfile.web             --build-arg STRATAAI_BUILD_REVISION="${GITHUB_SHA}"             --build-arg STRATAAI_BUILD_VERSION="0.1.0-${GITHUB_RUN_NUMBER}"             --tag "strataai-web:${GITHUB_SHA}"             .
+          docker build             --file Dockerfile.web             --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION"             --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION"             --tag "strataai-web:${GITHUB_SHA}"             .
 
       - name: Build API image
         run: |
-          docker build             --file Dockerfile.api             --build-arg STRATAAI_BUILD_REVISION="${GITHUB_SHA}"             --build-arg STRATAAI_BUILD_VERSION="0.1.0-${GITHUB_RUN_NUMBER}"             --tag "strataai-api:${GITHUB_SHA}"             .
+          docker build             --file Dockerfile.api             --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION"             --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION"             --tag "strataai-api:${GITHUB_SHA}"             .
 
       - name: Build Worker image
         run: |
-          docker build             --file Dockerfile.worker             --build-arg STRATAAI_BUILD_REVISION="${GITHUB_SHA}"             --build-arg STRATAAI_BUILD_VERSION="0.1.0-${GITHUB_RUN_NUMBER}"             --tag "strataai-worker:${GITHUB_SHA}"             .
+          docker build             --file Dockerfile.worker             --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION"             --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION"             --tag "strataai-worker:${GITHUB_SHA}"             .
 
       - name: Validate exact web image edge configuration
         run: docker run --rm --network none --entrypoint nginx "strataai-web:${GITHUB_SHA}" -t
@@ -383,12 +433,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p image-artifacts
+          cp build-inputs/build-metadata.json image-artifacts/build-metadata.json
           docker save "strataai-web:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-web.tar.gz
           docker save "strataai-api:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-api.tar.gz
           docker save "strataai-worker:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-worker.tar.gz
           (
             cd image-artifacts
-            sha256sum strataai-web.tar.gz strataai-api.tar.gz strataai-worker.tar.gz > SHA256SUMS
+            sha256sum strataai-web.tar.gz strataai-api.tar.gz strataai-worker.tar.gz build-metadata.json > SHA256SUMS
           )
 
       - name: Upload immutable image artifacts
@@ -402,6 +453,7 @@ jobs:
     name: container-integration (${{ matrix.suite }})
     runs-on: ubuntu-24.04
     needs:
+      - metadata
       - build-images-once
     strategy:
       fail-fast: false
@@ -414,8 +466,8 @@ jobs:
       POSTGRES_PASSWORD: strataai-ci-password
       STRATAAI_API_DB_PASSWORD: ci-api-runtime-password
       STRATAAI_WORKER_DB_PASSWORD: ci-worker-runtime-password
-      STRATAAI_BUILD_REVISION: ${{ github.sha }}
-      STRATAAI_BUILD_VERSION: 0.1.0-${{ github.run_number }}
+      STRATAAI_BUILD_REVISION: ${{ needs.metadata.outputs.revision }}
+      STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
       STRATAAI_WEB_IMAGE: strataai-web:${{ github.sha }}
       STRATAAI_API_IMAGE: strataai-api:${{ github.sha }}
       STRATAAI_WORKER_IMAGE: strataai-worker:${{ github.sha }}
@@ -1079,6 +1131,7 @@ jobs:
     if: always()
     runs-on: ubuntu-24.04
     needs:
+      - metadata
       - source-quality-gate
       - build-images-once
       - container-integration
@@ -1086,6 +1139,7 @@ jobs:
     steps:
       - name: Require every mandatory CI stage
         env:
+          METADATA_RESULT: ${{ needs.metadata.result }}
           SOURCE_RESULT: ${{ needs.source-quality-gate.result }}
           BUILD_RESULT: ${{ needs.build-images-once.result }}
           CONTAINER_RESULT: ${{ needs.container-integration.result }}
@@ -1093,7 +1147,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for result in "$SOURCE_RESULT" "$BUILD_RESULT" "$CONTAINER_RESULT" "$SECURITY_RESULT"; do
+          for result in "$METADATA_RESULT" "$SOURCE_RESULT" "$BUILD_RESULT" "$CONTAINER_RESULT" "$SECURITY_RESULT"; do
             if [ "$result" != "success" ]; then
               echo "Mandatory CI stage did not succeed: $result" >&2
               exit 1
@@ -1134,20 +1188,7 @@ jobs:
           cp -R db bundle/db
           cp docs/release/README.md bundle/README.md
 
-          cat > bundle/build-metadata.json <<EOF
-          {
-            "repository": "${GITHUB_REPOSITORY}",
-            "commitSha": "${GITHUB_SHA}",
-            "workflowRunId": "${GITHUB_RUN_ID}",
-            "workflowRunNumber": "${GITHUB_RUN_NUMBER}",
-            "version": "0.1.0-${GITHUB_RUN_NUMBER}",
-            "images": {
-              "web": "strataai-web:${GITHUB_SHA}",
-              "api": "strataai-api:${GITHUB_SHA}",
-              "worker": "strataai-worker:${GITHUB_SHA}"
-            }
-          }
-          EOF
+          cp image-artifacts/build-metadata.json bundle/build-metadata.json
 
           (
             cd bundle

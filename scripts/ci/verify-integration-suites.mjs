@@ -32,7 +32,31 @@ export function verifyIntegrationSuites(workflow, registry) {
   assert.equal(job.strategy['fail-fast'], false, 'One failing group must not cancel diagnostic work in another');
   assert.equal(job.strategy['max-parallel'], 4);
   assert.equal(job['continue-on-error'] ?? false, false, 'Integration failures must block release');
-  assert.deepEqual(job.needs, ['build-images-once']);
+  assert.deepEqual(job.needs, ['metadata', 'build-images-once']);
+  assert.equal(job.env.STRATAAI_BUILD_REVISION, '${{ needs.metadata.outputs.revision }}');
+  assert.equal(job.env.STRATAAI_BUILD_VERSION, '${{ needs.metadata.outputs.version }}');
+  for (const name of ['web-quality', 'dotnet-quality', 'postgres-integration']) {
+    assert.ok(jobs[name].needs.includes('metadata'), 'Source checks require verified initial metadata');
+  }
+  assert.ok(jobs['source-quality-gate'].needs.includes('metadata'));
+  const sourceGate = jobs['source-quality-gate'].steps[0];
+  assert.equal(sourceGate.env.METADATA_RESULT, '${{ needs.metadata.result }}');
+  assert.match(sourceGate.run, /for result in .*"\$METADATA_RESULT"/);
+  const build = jobs['build-images-once'];
+  assert.deepEqual(build.needs, ['metadata', 'source-quality-gate']);
+  assert.equal(build.env.STRATAAI_BUILD_REVISION, '${{ needs.metadata.outputs.revision }}');
+  assert.equal(build.env.STRATAAI_BUILD_VERSION, '${{ needs.metadata.outputs.version }}');
+  for (const host of ['web', 'api', 'worker']) {
+    const step = build.steps.find(value => value.name === `Build ${host === 'api' ? 'API' : host === 'web' ? 'web' : 'Worker'} image`);
+    assert.ok(step.run.includes('--build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION"'));
+    assert.ok(step.run.includes('--build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION"'));
+  }
+  const archive = build.steps.find(step => step.name === 'Export exact built images');
+  assert.match(archive.run, /cp build-inputs\/build-metadata.json image-artifacts\/build-metadata.json/);
+  assert.match(archive.run, /sha256sum .*build-metadata.json > SHA256SUMS/);
+  const bundle = jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle');
+  assert.match(bundle.run, /cp image-artifacts\/build-metadata.json bundle\/build-metadata.json/);
+  assert.ok(!bundle.run.includes('cat > bundle/build-metadata.json'), 'Release must preserve the original metadata document');
   const named = job.steps.filter(step => step.name);
   const download = named.find(step => step.name === 'Download exact built images');
   assert.equal(download?.with?.name, 'strataai-images-${{ github.sha }}', 'Use the current exact-SHA image artifact');
@@ -84,9 +108,11 @@ export function verifyIntegrationSuites(workflow, registry) {
   }
   assert.equal(jobs['required-ci'].name, 'required-ci');
   assert.equal(jobs['required-ci'].if, 'always()');
-  assert.deepEqual(jobs['required-ci'].needs, ['source-quality-gate', 'build-images-once', 'container-integration', 'security']);
+  assert.deepEqual(jobs['required-ci'].needs, ['metadata', 'source-quality-gate', 'build-images-once', 'container-integration', 'security']);
   const gate = jobs['required-ci'].steps.find(step => step.name === 'Require every mandatory CI stage');
   assert.equal(gate.env.CONTAINER_RESULT, '${{ needs.container-integration.result }}');
+  assert.equal(gate.env.METADATA_RESULT, '${{ needs.metadata.result }}');
+  assert.match(gate.run, /for result in .*"\$METADATA_RESULT"/);
   assert.match(gate.run, /for result in .*"\$CONTAINER_RESULT"/);
   assert.match(gate.run, /if \[ "\$result" != "success" \]; then[\s\S]*exit 1/);
   assert.ok(jobs['release-bundle'].needs.includes('required-ci'));

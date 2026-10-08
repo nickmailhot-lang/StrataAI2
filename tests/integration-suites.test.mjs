@@ -35,6 +35,12 @@ const mutations = [
   ['aggregate ignores matrix result', value => { value.jobs['required-ci'].steps[0].env.CONTAINER_RESULT = 'success'; }],
   ['aggregate accepts non-success result', value => { value.jobs['required-ci'].steps[0].run = 'echo success'; }],
   ['conditional cleanup', value => { step(value, 'Stop release topology').if = 'failure()'; }],
+  ['metadata failure ignored by source gate', value => { value.jobs['source-quality-gate'].steps[0].env.METADATA_RESULT = 'success'; }],
+  ['source checks omit metadata', value => { value.jobs['web-quality'].needs = []; }],
+  ['build version differs from initial metadata', value => { value.jobs['build-images-once'].env.STRATAAI_BUILD_VERSION = '0.1.0-other'; }],
+  ['image arguments recalculate build version', value => { value.jobs['build-images-once'].steps.find(entry => entry.name === 'Build web image').run = 'docker build --build-arg STRATAAI_BUILD_VERSION=other .'; }],
+  ['image archive metadata lacks checksums', value => { value.jobs['build-images-once'].steps.find(entry => entry.name === 'Export exact built images').run = 'echo unchecked'; }],
+  ['release metadata reconstructed downstream', value => { value.jobs['release-bundle'].steps.find(entry => entry.name === 'Assemble release bundle').run = 'cat > bundle/build-metadata.json'; }],
 ];
 for (const [name, mutate] of mutations) {
   test(`rejects ${name}`, () => {

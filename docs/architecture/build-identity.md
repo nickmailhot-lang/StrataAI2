@@ -1,5 +1,7 @@
 # Embedded build identity (ARCH-01-AC-002 / ARCH-11)
 
+The [initial metadata job](initial-build-metadata.md) now verifies the actual triggering checkout and supplies the shared build identity. Its original document travels with the checksummed image artifacts into the gated release bundle. Current exact-image acceptance remains separate from local metadata/workflow proofs.
+
 Release builds pass one Git commit and build version to all three Dockerfiles.
 API and Worker publication sets `SourceRevisionId` and `Version`; the shared
 `Directory.Build.targets` writes these into each host's assembly metadata.

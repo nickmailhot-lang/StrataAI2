@@ -53,6 +53,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Configuration and secrets](architecture/configuration.md)
 - [Dependency locking (ARCH-01 / ARCH-11)](architecture/dependency-locking.md)
 - [Mandatory integration CI groups and coverage guard (ARCH-11)](architecture/integration-ci-groups.md)
+- [Initial exact-commit build metadata and release versions (ARCH-11)](architecture/initial-build-metadata.md)
 - [API operator metrics export (ARCH-08, partial)](architecture/operator-metrics.md)
 - [Runtime database roles](architecture/runtime-database-roles.md)
 - [Runtime modes and seeded Demo sign-in credentials](architecture/runtime-modes.md)
