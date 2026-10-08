@@ -375,3 +375,16 @@ Read-only Check/focus admission repairs the initial fixture activation failures
 without repeating mutations. Current immutable-image, strict-policy, capacity
 and complete acceptance still govern closure. PRD-17 stays open at **19%
 estimated work remaining** (planning estimate).
+
+## Executed ordinary-member moved-Card eligibility
+
+Both [Owner and ordinary-Member cross-Board cases](prd-17-acceptance.md#executed-ordinary-member-cross-board-withdrawal)
+pass in one invocation. Real invitations and explicit private-Board grants
+establish the Member boundary. After four exact native/private deliveries, actual
+destination grant withdrawal hides both inboxes and denies direct Card watch
+reads. A later admitted peer edit produces no recipient notification/event;
+complete persisted notification/journal fingerprints and four/four counts remain
+unchanged. The read-only SQL comparison verifies history without seeding behavior.
+This supersedes the earlier Owner-only local execution limit. Complete role and
+visibility, strict policy, concurrency/capacity, current retained-image and full
+acceptance remain. PRD-17 stays open at **18% estimated work remaining**.

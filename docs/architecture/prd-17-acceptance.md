@@ -1,7 +1,7 @@
 # Notification and watching acceptance map — PRD-17
 
 [PRD-17](https://github.com/nickmailhot-lang/StrataAI2/issues/18) remains open at
-**19% estimated work remaining** (planning estimate). Earlier estimates below
+**18% estimated work remaining** (planning estimate). Earlier estimates below
 record their evidence scope. This maps all twelve
 functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
@@ -383,3 +383,39 @@ strengthens NOTIFY-FR-005/007/008/012 and AC-NOTIFY-17-03. Current immutable-ima
 strict-policy, complete role/visibility and concurrent/capacity/producer/Definition
 of Done acceptance remain. Estimated PRD-17 work remaining is now **19%**
 (planning estimate); the issue remains open.
+
+## Executed ordinary-member cross-Board withdrawal
+
+Both complete cross-Board watch cases pass together on 2026-10-08 (2 passed,
+exit 0). The existing Organization-owner case is retained. A second case uses
+an independently registered Organization administrator, real recipient/issuer
+invitations and explicit MEMBER grants on both private Boards. The ordinary
+recipient performs the same native keyboard watch changes; peer HTTP edits and
+moves produce the same exact four desktop/phone notifications/private creation
+frames and persisted journal identities. Direct Card subscription ID/version
+survive movement, overlapping Board/List/Card relationships deduplicate, actor
+self-delivery stays suppressed, and final Card links recover the destination.
+Both views pass tagged Axe and overflow checks.
+
+Afterward the administrator actually removes the Member's destination Board
+grant. The recipient's direct Card watch read returns 404, HTTP inbox is empty,
+and both open native inboxes withdraw all four articles. A still-admitted peer
+then performs another real edit and the separate Worker completes readiness;
+no recipient article/event is added. A read-only administrative fixture query
+compares the complete persisted recipient notification and private journal rows
+before withdrawal and after the later edit. Their fingerprints and exact counts
+of four notifications/four events remain unchanged. This verifies retained
+history and producer eligibility separately from hidden inbox disclosure.
+No accounts, grants, watches, moves or notifications are injected in SQL.
+
+The complete two-case invocation uses the current MUI production bundle,
+read-only compiled Production API/separate scoped Worker, restricted PostgreSQL
+17/pgvector schema 112 and Nginx with optional fixture email verification.
+All owned containers/database are removed and original services/data preserved.
+Browser typechecking and documentation links/staged diff checks pass. The normal
+full CI browser suite includes both cases. This extends the earlier Owner-only
+native boundary and strengthens NOTIFY-FR-004/008/012 and mid-session withdrawal.
+It does not prove every role/visibility, strict-policy or concurrent transition,
+capacity, current immutable-image or complete Definition of Done acceptance.
+Estimated PRD-17 work remaining is now **18%** (planning estimate); the issue
+remains open.

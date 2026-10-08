@@ -3,6 +3,7 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { focusAdmittedControl } from './keyboardAdmission';
 import type { Locator } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
 
 async function activate(button: Locator) {
   await button.page().bringToFront();
@@ -10,34 +11,46 @@ async function activate(button: Locator) {
   await button.press('Enter', { timeout: 5_000 });
 }
 
-test('PRD-17-TC-01/07/08/11/12: cross-Board watch relationships and direct Card identity reach desktop and phone inboxes', async ({ page, context, browser, baseURL }) => {
+for (const recipientRole of ['OWNER', 'MEMBER'] as const) {
+test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships and direct Card identity reach desktop and phone inboxes`, async ({ page, context, browser, baseURL }) => {
   test.setTimeout(180_000);
   const headers = { 'X-StrataAI-Request': '1' };
   const peer = await browser.newContext({ baseURL });
+  const administrator = recipientRole === 'OWNER' ? context : await browser.newContext({ baseURL });
   let phone: typeof peer | undefined; let restoreWorker = () => {};
   try {
     const suffix = crypto.randomUUID(); const email = `watch-issuer-${suffix}@example.test`;
-    for (const [index, client] of [context, peer].entries()) {
-      const account = { email: index ? email : `watch-recipient-${suffix}@example.test`, password: 'watched-notifications-correct-horse', displayName: index ? 'Watch activity issuer' : 'Watch activity recipient' };
+    const recipientEmail = `watch-recipient-${suffix}@example.test`;
+    const clients = recipientRole === 'OWNER' ? [context, peer] : [context, peer, administrator];
+    for (const [index, client] of clients.entries()) {
+      const account = { email: index === 0 ? recipientEmail : index === 1 ? email : `watch-administrator-${suffix}@example.test`, password: 'watched-notifications-correct-horse', displayName: index ? 'Watch activity issuer' : 'Watch activity recipient' };
       expect((await client.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
       expect((await client.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
     }
-    const orgReply = await context.request.post('/organizations', { headers, data: { name: 'Watched notifications' } });
+    const orgReply = await administrator.request.post('/organizations', { headers, data: { name: 'Watched notifications' } });
     expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
-    const invitation = await context.request.post(`/organizations/${org}/invitations`, { headers, data: { email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
+    const invitation = await administrator.request.post(`/organizations/${org}/invitations`, { headers, data: { email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
     expect(invitation.status()).toBe(201);
     expect((await peer.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
     const issuer = (await (await peer.request.get('/me')).json()).id;
     const recipient = (await (await context.request.get('/me')).json()).id;
+    if (recipientRole === 'MEMBER') {
+      const invited = await administrator.request.post(`/organizations/${org}/invitations`, { headers,
+        data: { email: recipientEmail, surface: 'INTERNAL', targetRole: 'MEMBER' } });
+      expect(invited.status()).toBe(201);
+      expect((await context.request.post(`/me/invitations/${(await invited.json()).id}/accept`, { headers })).status()).toBe(200);
+    }
+
     const boards: string[] = []; const lists: string[] = [];
     for (const name of ['Source watch Board', 'Destination watch Board']) {
-      const b = await context.request.post('/boards', { headers, data: { organizationId: org, name, visibility: 'PRIVATE' } });
+      const b = await administrator.request.post('/boards', { headers, data: { organizationId: org, name, visibility: 'PRIVATE' } });
       expect(b.status()).toBe(201); const board = (await b.json()).id; boards.push(board);
-      expect((await context.request.patch(`/boards/${board}/members/${issuer}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
-      const l = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: name + ' List' } });
+      expect((await administrator.request.patch(`/boards/${board}/members/${issuer}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
+      if (recipientRole === 'MEMBER') expect((await administrator.request.patch(`/boards/${board}/members/${recipient}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
+      const l = await administrator.request.post(`/boards/${board}/lists`, { headers, data: { name: name + ' List' } });
       expect(l.status()).toBe(201); lists.push((await l.json()).id);
     }
-    const c = await context.request.post(`/lists/${lists[0]}/cards`, { headers, data: { title: 'Cross-Board watched Card' } });
+    const c = await administrator.request.post(`/lists/${lists[0]}/cards`, { headers, data: { title: 'Cross-Board watched Card' } });
     expect(c.status()).toBe(201); const card = (await c.json()).id;
     restoreWorker = scopedBoardWorker(org);
     for (const board of boards) await waitForBoardDelivery(context.request, board);
@@ -139,5 +152,29 @@ test('PRD-17-TC-01/07/08/11/12: cross-Board watch relationships and direct Card 
       expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect(await client.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
-  } finally { restoreWorker(); await phone?.close(); await peer.close(); }
+    if (recipientRole === 'MEMBER') {
+      expect(process.env.CI).toBe('true');
+      for (const id of [org, recipient]) expect(id).toMatch(/^[0-9a-f-]{36}$/);
+      function privateHistory() {
+        return execFileSync('docker', ['compose', '-f', 'compose.release.yml', 'exec', '-T', 'postgres', 'sh', '-c',
+          'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'], {
+          input: `SELECT md5(jsonb_build_object(
+            'notifications',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='${org}' AND recipient_id='${recipient}'),
+            'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM notification_events e WHERE tenant_id='${org}' AND recipient_id='${recipient}'))::text);
+            SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}';
+            SELECT count(*) FROM notification_events WHERE tenant_id='${org}' AND recipient_id='${recipient}';`, encoding: 'utf8', stdio: 'pipe',
+        }).trim();
+      }
+      const history = privateHistory(); expect(history).toMatch(/^[0-9a-f]{32}\r?\n4\r?\n4$/);
+      expect((await administrator.request.delete(`/boards/${boards[1]}/members/${recipient}`, { headers })).status()).toBe(204);
+      expect((await context.request.get(`/watch/CARD/${card}`)).status()).toBe(404);
+      expect(await inboxRows()).toEqual([]);
+      for (const client of [desktop, mobile]) await expect(client.getByRole('article')).toHaveCount(0, { timeout: 25_000 });
+      expect((await peer.request.patch(`/cards/${card}`, { headers, data: { title: 'Edit after recipient departure', description: '', version: 6 } })).status()).toBe(200);
+      await waitForBoardDelivery(peer.request, boards[1]); expect(await inboxRows()).toEqual([]);
+      expect(privateHistory()).toBe(history);
+      for (const observed of live) expect(observed.events.map(event => event.eventId)).toEqual(journal.map((event: { eventId: string }) => event.eventId));
+    }
+  } finally { try { restoreWorker(); } finally { await phone?.close(); await peer.close(); if (administrator !== context) await administrator.close(); } }
 });
+}
