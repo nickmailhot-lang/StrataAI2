@@ -172,3 +172,18 @@ The required capacity fixture now additionally checks 100,000 atomic creation jo
 The [executed cross-surface deletion matrix](lifecycle-acceptance.md#deleted-content-across-search-and-notification-surfaces) passes nine actual HTTP Card/List/Board deletion workflows across all three Board visibilities. Deleted targets and retained child notifications disappear from current inbox and historical sync disclosure; old/new single and bulk read commands are refused without changing protected work/notification records or the listed aggregate effects. The retained journal remains intact and its cursor advances without exposing hidden entries. Current immutable-image and native delivery/recovery acceptance remain required. Estimated PRD-17 work remaining stays **22%**, a planning estimate; the ticket remains open.
 
 The [expanded moved-Card matrix](lifecycle-acceptance.md#moved-card-deletion-surfaces) passes all 21 direct/moved deletion workflows in one complete local invocation. Original notifications and read receipts remain admitted after deletion of an empty old List, through the surviving original Board and current destination. Deleting that original Board hides its historical notification while preserving authorized search of the destination Card. Destination List/Board deletion hides the current child and historical notification. Current tested-image, producer/watch/reminder and native recovery requirements remain independently open; estimated PRD-17 work remaining stays **22%**.
+
+## Executed complete activity bulk-read recovery
+
+The [strict thirteen-producer native case](prd-17-acceptance.md#executed-complete-activity-bulk-read-recovery)
+passes keyboard bulk selection and a committed read whose acknowledgment is lost.
+The phone retries the exact original selection/body/key; the desktop already
+reflects the committed result. Both native clients show thirteen read articles,
+zero unread and exactly thirteen complete private read transitions. All first
+read timestamps match the persisted journal and HTTP envelopes at full significant
+precision, with one shared bulk-read clock. A fresh-key repeat returns the same
+acknowledgment without changing full stored fingerprints or adding journal events.
+Tagged Axe/overflow and browser typechecking pass. The full case passes in
+1.2 minutes using current compiled Production services; current retained-image
+and complete PRD acceptance remain required. PRD-17 stays open at **15% estimated
+work remaining**.

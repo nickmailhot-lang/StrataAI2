@@ -10,7 +10,7 @@ type PrivateEnvelope = {
   version: number; sequence: string; createdAt: string; metadata: Record<string, unknown>;
 };
 
-test('PRD-17-TC-01/07/08/10/11/12: all configured watch producers reach private native inboxes', async ({ page, context, browser, baseURL }) => {
+test('PRD-17-TC-01/06/07/08/10/11/12: all configured watch producers reach private native inboxes', async ({ page, context, browser, baseURL }) => {
   test.setTimeout(180_000);
   const headers = { 'X-StrataAI-Request': '1' }; const peer = await browser.newContext({ baseURL });
   let phone: typeof peer | undefined; let restoreWorker = () => {};
@@ -78,8 +78,10 @@ test('PRD-17-TC-01/07/08/10/11/12: all configured watch producers reach private 
             for (const event of message.item.events) {
               expect(Object.keys(event).sort()).toEqual(['eventId', 'eventType', 'actorId', 'recipientId', 'organizationId', 'boardId',
                 'entityType', 'entityId', 'version', 'sequence', 'createdAt', 'metadata'].sort());
-              expect(event).toMatchObject({ organizationId: org, recipientId: recipient, actorId: issuer, boardId: board,
-                entityType: 'Notification', eventType: 'NOTIFICATION_CREATED', version: 1, metadata: {} });
+              expect(['NOTIFICATION_CREATED', 'NOTIFICATION_READ']).toContain(event.eventType);
+              expect(event).toMatchObject({ organizationId: org, recipientId: recipient,
+                actorId: event.eventType === 'NOTIFICATION_CREATED' ? issuer : recipient, boardId: board,
+                entityType: 'Notification', version: event.eventType === 'NOTIFICATION_CREATED' ? 1 : 2, metadata: {} });
               expect(event.sequence).toMatch(/^[1-9][0-9]*$/); utc(event.createdAt);
               observed.events.push(event);
             }
@@ -184,5 +186,64 @@ test('PRD-17-TC-01/07/08/10/11/12: all configured watch producers reach private 
     expect(history()).toBe(baseline); expect((await (await context.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual(rows);
     expect((await (await peer.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
     expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${issuer}';`)).toBe('0');
+    // Recover one real committed bulk read with the original selection/key,
+    // while the other native client observes its thirteen private transitions.
+    const attempts: { key: string; body: string }[] = []; let readAcknowledgment = '';
+    const readPath = `/organizations/${org}/notifications/read`;
+    await mobile.route(`**${readPath}`, async route => {
+      if (route.request().method() !== 'POST') return route.continue();
+      attempts.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData()! });
+      if (attempts.length > 1) expect(attempts[attempts.length - 1]).toEqual(attempts[0]);
+      const committed = await route.fetch(); expect(committed.status()).toBe(200);
+      if (attempts.length === 1) {
+        readAcknowledgment = await committed.text();
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ code: 'service_unavailable' }) });
+      } else { expect(await committed.text()).toBe(readAcknowledgment); await route.fulfill({ response: committed }); }
+    });
+    await activate(mobile.getByRole('button', { name: 'Select unread on this page', exact: true }));
+    await expect(mobile.getByRole('checkbox', { checked: true })).toHaveCount(13);
+    await activate(mobile.getByRole('button', { name: 'Mark selected read', exact: true }));
+    const retryRead = mobile.getByRole('button', { name: 'Retry mark read', exact: true }); await expect(retryRead).toBeEnabled();
+    await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    await activate(retryRead); await expect(retryRead).toHaveCount(0);
+    await expect(mobile.getByRole('button', { name: 'Refresh notifications', exact: true })).toBeFocused();
+    expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
+    expect([...JSON.parse(attempts[0].body).ids].sort()).toEqual(rows.map((row: { id: string }) => row.id).sort());
+    await mobile.unroute(`**${readPath}`);
+    const readReply = await context.request.get(`/organizations/${org}/notifications`); expect(readReply.status()).toBe(200);
+    const readRows = (await readReply.json()).items; expect(readRows).toHaveLength(13);
+    expect(readRows.map((row: { readAt: string | null }) => ({ ...row, readAt: null }))).toEqual(rows);
+    expect(new Set(readRows.map((row: { readAt: string }) => utc(row.readAt))).size).toBe(1);
+    const readSync = await context.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(readSync.status()).toBe(200);
+    const readJournal = (await readSync.json()).events as PrivateEnvelope[]; expect(readJournal).toHaveLength(26);
+    expect(readJournal.slice(0, 13)).toEqual(journal);
+    const transitions = readJournal.slice(13); expect(transitions.map(event => event.entityId).sort()).toEqual(rows.map((row: { id: string }) => row.id).sort());
+    const storedReadJournal = JSON.parse(query(`SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM notification_events e WHERE tenant_id='${org}' AND recipient_id='${recipient}' AND event_type='NOTIFICATION_READ';`));
+    const storedReadRows = JSON.parse(query(`SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='${org}' AND recipient_id='${recipient}';`));
+    expect(storedReadJournal).toHaveLength(13); expect(storedReadRows).toHaveLength(13);
+    for (const [index, event] of transitions.entries()) {
+      const persisted = storedReadJournal[index]; const notification = storedReadRows.find((item: { id: string }) => item.id === event.entityId);
+      const visible = readRows.find((item: { id: string }) => item.id === event.entityId);
+      expect(event).toEqual({ eventId: persisted.event_id, eventType: 'NOTIFICATION_READ', actorId: recipient,
+        recipientId: recipient, organizationId: org, boardId: board, entityType: 'Notification', entityId: persisted.notification_id,
+        version: 2, sequence: String(index + 14), createdAt: event.createdAt, metadata: {} });
+      expect(persisted).toMatchObject({ actor_id: recipient, recipient_id: recipient, tenant_id: org, board_id: board, version: 2, event_type: 'NOTIFICATION_READ', metadata: {} });
+      expect(utc(event.createdAt)).toBe(utc(persisted.created_at)); expect(utc(event.createdAt)).toBe(utc(notification.read_at));
+      expect(utc(visible.readAt)).toBe(utc(notification.read_at));
+    }
+    for (const [index, client] of clients.entries()) {
+      await expect(client.getByText('0 unread on this page.', { exact: true })).toBeVisible(); await expect(client.getByRole('article')).toHaveCount(13);
+      await expect(client.getByRole('button', { name: 'Mark read', exact: true })).toHaveCount(0);
+      await expect.poll(() => live[index].events.length).toBe(25);
+      const canonical = (event: PrivateEnvelope) => ({ ...event, createdAt: utc(event.createdAt) });
+      expect(live[index].events.slice(12).map(canonical)).toEqual(transitions.map(canonical));
+      expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      expect(await client.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+    const afterRead = history();
+    const noOpRead = await context.request.post(readPath, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: JSON.parse(attempts[0].body) });
+    expect(noOpRead.status()).toBe(200); expect(await noOpRead.text()).toBe(readAcknowledgment); expect(history()).toBe(afterRead);
+    const finalSync = await context.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(finalSync.status()).toBe(200);
+    expect((await finalSync.json()).events).toEqual(readJournal);
   } finally { try { restoreWorker(); } finally { await phone?.close(); await peer.close(); } }
 });

@@ -600,3 +600,34 @@ activity. Current retained-image/full CI, exact attribution/clock proof for the
 other producer families, complete role/visibility/interaction/concurrent rollback
 and capacity acceptance remain required. PRD-17 stays open at **15% estimated
 work remaining** (planning estimate).
+
+## Executed complete activity bulk-read recovery
+
+The thirteen-producer native case additionally passes a real bulk read in
+**1.2 minutes** under strict verified-account policy. Keyboard selection on the
+390px phone selects all thirteen actual unread notifications. The server commits
+the read before the fixture replaces its successful response with a 503. The
+desktop observes zero unread while the phone retains a recoverable command.
+Native retry submits the exact original IDs, body and idempotency key and returns
+the identical successful acknowledgment; focus returns to Refresh notifications.
+
+Both clients retain thirteen articles, show zero unread and have no remaining
+individual read buttons. All thirteen notifications share one persisted first
+read clock. Read-only queries compare every complete HTTP read envelope against
+its stored private journal row and notification read timestamp at full significant
+UTC precision. Read actors are the recipient, versions are two, sequences are
+14–26 and metadata is empty. The original thirteen creation envelopes remain
+identical. Each actual private stream contains exactly thirteen matching complete
+read transitions after its twelve admitted creation envelopes; the archived
+creation event remains withheld during the earlier denial.
+
+A further fresh-key read of the already-read selection returns the identical
+acknowledgment and leaves full Card/notification/journal fingerprints and the
+26-event canonical journal unchanged. Tagged Axe and overflow checks pass on
+desktop and phone, and browser typechecking passes. Owned containers/database
+are removed; original running services and stored data remain intact. This
+strengthens NOTIFY-FR-002/003/012, AC-NOTIFY-17-03 and PRD-17-TC-06/07/08/11/12.
+Current retained-image/full CI, other producer attribution, complete role and
+interaction matrices, concurrent publication/rollback and capacity acceptance
+remain required. PRD-17 remains open at **15% estimated work remaining** (planning
+estimate).
