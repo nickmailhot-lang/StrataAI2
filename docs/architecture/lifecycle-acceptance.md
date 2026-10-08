@@ -81,7 +81,17 @@ archived state after denied restoration. See [live directory evidence](../organi
 PRD-18 remains open at 22% estimated work remaining; this is local scoped
 acceptance, not the complete lifecycle or retained-image release gate.
 
-BoardRecord, BoardListRecord and CardRecord expose nullable ArchivedAt, DeletedAt and DeletedBy, omitting null JSON fields. Demo and PostgreSQL archives record the archive clock, restores clear it, and deletion preserves that clock while recording its own clock. All PostgreSQL canonical reads and mutation projections carry these fields, including parent List attribution in archived Card discovery.
+BoardRecord, BoardListRecord and CardRecord expose nullable ArchivedAt, DeletedAt and DeletedBy, omitting null JSON fields. Demo and PostgreSQL archives record the latest archive clock, restores retain it, and deletion preserves that clock while recording its own clock. Lifecycle state determines active visibility; an active restored record can carry archive history. All PostgreSQL canonical reads and mutation projections carry these fields, including parent List attribution in archived Card discovery.
+
+### Archive history retained through restoration (2026-10-08)
+
+PRD-18 requires retained archive timestamps. A regression against the previous Demo implementation failed because restoration cleared the known timestamp. Board, List and Card restoration now preserve it in both stores; another archive records the new archive clock, and deletion retains that latest clock with deletion time and actor.
+
+Migration `112_work_archive_history` guards known timestamps against clearing, ordinary rewrites and backward re-archiving. Its invoker triggers preserve the existing restricted-role and RLS boundaries. Historical null timestamps remain unknown; the migration invents no historical evidence. Copies continue to establish their own lifecycle history. Both API and Worker refuse an incomplete required migration ledger.
+
+Executed local evidence: strict full-solution Release compilation passed with zero warnings/errors; five selected API-host/store cases passed, including real authenticated HTTP archive/restore responses and fresh active Board reads for Boards, Lists and Cards. The full PostgreSQL 17/pgvector migration runner passed clean/repeated/forward upgrades, serialized runners, failed-migration rollback and unrecorded-migration rejection. Its restricted SQL fixture proved history rejection, complete-statement rollback and cross-tenant non-disclosure. The production PostgreSQL store contract passed all three archive/restore/re-archive/delete cycles and original archive receipt replay without changing canonical records or aggregate audit/event/job/receipt counts. Required-ledger refusal/recovery passed for both runtime roles.
+
+These checks used isolated local test databases and compiled contract output, rather than the current immutable release images. Full CI, lifecycle capacity measurements and the remaining PRD-18 acceptance/Definition of Done requirements still govern issue closure.
 
 Authorized lifecycle service commands pass the deleting actor into both stores. New store deletions require a nonempty actor. Migration 069 adds retained account references and prevents non-null deletion attribution on non-deleted records; readiness requires this migration. Historical unknown actors remain null. Copying a List resets an archived Card's clock to its new creation time and clears deletion attribution.
 

@@ -625,7 +625,6 @@ internal sealed partial class PostgresWorkManagementStore(
             SET lifecycle_state = @next_state,
                 archived_at = CASE
                     WHEN @next_state = 'ARCHIVED' THEN @updated_at
-                    WHEN @next_state = 'ACTIVE' THEN NULL
                     ELSE archived_at
                 END,
                 deleted_at = CASE
@@ -1105,7 +1104,6 @@ internal sealed partial class PostgresWorkManagementStore(
             SET lifecycle_state = @next_state,
                 archived_at = CASE
                     WHEN @next_state = 'ARCHIVED' THEN @updated_at
-                    WHEN @next_state = 'ACTIVE' THEN NULL
                     ELSE archived_at
                 END,
                 deleted_at = CASE
@@ -1415,7 +1413,6 @@ internal sealed partial class PostgresWorkManagementStore(
             SET lifecycle_state = @next_state,
                 archived_at = CASE
                     WHEN @next_state = 'ARCHIVED' THEN @updated_at
-                    WHEN @next_state = 'ACTIVE' THEN NULL
                     ELSE archived_at
                 END,
                 deleted_at = CASE

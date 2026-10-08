@@ -41,6 +41,12 @@ if (args.Contains("--schema-readiness-only", StringComparer.Ordinal))
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+if (args.Contains("--work-archive-history-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await WorkArchiveHistoryContract.RunAsync(admin,apiConnection,ct);
+    return;
+}
 if (args.Contains("--organization-creation-timestamps-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
@@ -184,6 +190,7 @@ try
     await IdentityProfileExpiryContract.RunAsync(admin,apiConnection,ct);
     await IdentityRevocationExpiryContract.RunAsync(admin,apiConnection,ct);
     await OrganizationCreationTimestampContract.RunAsync(admin,apiConnection,ct);
+    await WorkArchiveHistoryContract.RunAsync(admin,apiConnection,ct);
     await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationMetadataReplayContract.RunAsync(admin,apiConnection,workerConnection,ct);

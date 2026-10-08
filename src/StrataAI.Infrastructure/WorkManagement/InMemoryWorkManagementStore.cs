@@ -320,7 +320,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             var updated = board with
             {
                 LifecycleState = nextState,
-                ArchivedAt = nextState == BoardLifecycleState.Archived ? updatedAt : nextState == BoardLifecycleState.Active ? null : board.ArchivedAt,
+                ArchivedAt = nextState == BoardLifecycleState.Archived ? updatedAt : board.ArchivedAt,
                 DeletedAt = nextState == BoardLifecycleState.Deleted ? updatedAt : board.DeletedAt,
                 DeletedBy = nextState == BoardLifecycleState.Deleted ? actorUserId : board.DeletedBy,
                 UpdatedAt = updatedAt,
@@ -616,7 +616,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             var updated = list with
             {
                 LifecycleState = nextState,
-                ArchivedAt = nextState == WorkItemLifecycleState.Archived ? updatedAt : nextState == WorkItemLifecycleState.Active ? null : list.ArchivedAt,
+                ArchivedAt = nextState == WorkItemLifecycleState.Archived ? updatedAt : list.ArchivedAt,
                 DeletedAt = nextState == WorkItemLifecycleState.Deleted ? updatedAt : list.DeletedAt,
                 DeletedBy = nextState == WorkItemLifecycleState.Deleted ? actorUserId : list.DeletedBy,
                 UpdatedAt = updatedAt,
@@ -798,7 +798,7 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
             var updated = card with
             {
                 LifecycleState = nextState,
-                ArchivedAt = nextState == WorkItemLifecycleState.Archived ? updatedAt : nextState == WorkItemLifecycleState.Active ? null : card.ArchivedAt,
+                ArchivedAt = nextState == WorkItemLifecycleState.Archived ? updatedAt : card.ArchivedAt,
                 DeletedAt = nextState == WorkItemLifecycleState.Deleted ? updatedAt : card.DeletedAt,
                 DeletedBy = nextState == WorkItemLifecycleState.Deleted ? actorUserId : card.DeletedBy,
                 UpdatedAt = updatedAt,
