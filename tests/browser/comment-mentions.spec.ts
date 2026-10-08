@@ -36,6 +36,29 @@ for (const width of [1280, 390]) {
       expect(cardResult.status()).toBe(201); const card = (await cardResult.json()).id;
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`; const reads = trackBoardReads(page, board, cardPath);
+      const nativeInbox = await recipientContext.newPage(); await nativeInbox.setViewportSize({ width, height: 844 });
+      const liveEvents: string[] = []; let liveSnapshots = 0;
+      nativeInbox.on('websocket', socket => {
+        if (new URL(socket.url()).pathname !== '/notifications/live') return;
+        socket.on('framereceived', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const text of frame.payload.split('\u001e').filter(Boolean)) {
+            const message = JSON.parse(text);
+            if (message.type !== 2 || !message.item) continue;
+            const item = message.item;
+            expect(item.organizationId).toBe(org); expect(item.recipientId).toBe(recipient); liveSnapshots++;
+            for (const event of item.events) {
+              expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(recipient);
+              expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
+              liveEvents.push(event.eventType);
+            }
+          }
+        });
+      });
+      await nativeInbox.goto(`/app/${org}/notifications`);
+      await expect(nativeInbox.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+      await expect.poll(() => liveSnapshots).toBeGreaterThan(0);
+
       await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       const review = page.getByRole('button', { name: 'Review Card comments', exact: true });
       async function select() {
@@ -63,6 +86,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByText('This comment change is unavailable. Load the latest Card before starting another change.', { exact: true })).toBeVisible();
       expect((await (await context.request.get(`/cards/${card}/comments`)).json()).items).toEqual([]);
       expect((await (await recipientContext.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
+      expect(liveEvents).toEqual([]); await expect(nativeInbox.getByRole('article')).toHaveCount(0);
       await page.getByRole('button', { name: 'Discard comment review and load latest', exact: true }).press('Enter');
       await select();
       const writes: { key: string | undefined; body: string | null }[] = [];
@@ -81,13 +105,27 @@ for (const width of [1280, 390]) {
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
       expect(JSON.parse(writes[0].body!)).toEqual({ content: `@${original.handle}`, cardVersion: 1,
         mentionSelections: [{ userId: recipient, handle: original.handle, handleVersion: reclaimed.handleVersion }] });
+      await expect.poll(() => liveEvents.filter(type => type === 'NOTIFICATION_CREATED').length).toBe(1);
+      await expect(nativeInbox.getByText('Mentioned you in a comment · Unread', { exact: true })).toBeVisible({ timeout: 25_000 });
+      await expect(nativeInbox.getByRole('article')).toHaveCount(1);
+      await expect(nativeInbox.getByRole('link', { name: 'Open Card', exact: true })).toHaveAttribute('href', cardPath);
+      expect((await new AxeBuilder({ page: nativeInbox }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      expect(await nativeInbox.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await pressAdmittedAction(nativeInbox.getByRole('button', { name: 'Mark read', exact: true }));
+      await expect(nativeInbox.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+      await expect.poll(() => liveEvents.filter(type => type === 'NOTIFICATION_READ').length).toBe(1);
       const inbox = await recipientContext.request.get(`/organizations/${org}/notifications`); expect(inbox.status()).toBe(200);
       expect(inbox.headers()['cache-control']).toContain('no-store');
-      expect((await inbox.json()).items).toHaveLength(1);
+      const notifications = (await inbox.json()).items; expect(notifications).toHaveLength(1);
+      expect(notifications[0]).toMatchObject({ type: 'MENTION_CREATED', recipientId: recipient, entityId: card, entityLink: cardPath });
+      expect(notifications[0].readAt).not.toBeNull();
       expect((await (await context.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect((await context.request.delete(`/boards/${board}/members/${recipient}`, { headers })).status()).toBe(204);
       expect((await (await recipientContext.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
+      await expect(nativeInbox.getByRole('article')).toHaveCount(0, { timeout: 25_000 });
+      expect(liveEvents.filter(type => type === 'NOTIFICATION_CREATED')).toHaveLength(1);
+      expect(liveEvents.filter(type => type === 'NOTIFICATION_READ')).toHaveLength(1);
     } finally { try { restoreWorker(); } finally { await recipientContext.close(); } }
   });
 }

@@ -168,3 +168,18 @@ It strengthens NOTIFY-FR-009/011/012 producer evidence. These cases do not
 independently execute a recipient MUI mention center or inspect mention
 WebSocket frames; full current-image and remaining integrated acceptance remain.
 Estimated PRD-17 work remaining stays **21%** (planning estimate).
+
+## Executed native selected-mention consumer
+
+The [recipient inbox and private live cases](prd-15-acceptance.md#executed-recipient-mention-inbox-and-private-live-delivery)
+pass at desktop and phone widths. They extend the previous mention-producer
+record with actual recipient MUI delivery, canonical Card navigation, keyboard
+read acknowledgment, exactly one private creation/read event, and native
+withdrawal after Board membership removal. Stale selected handles disclose
+nothing; original command retry keeps one notification and the author sees no
+self notification. These strengthen NOTIFY-FR-009/011/012.
+
+This is compiled-runtime evidence with unverified fixture accounts, not current
+retained-image identity or strict verification proof. Group-recipient native
+coverage, remaining producer/concurrency/capacity and complete Definition of
+Done requirements remain. Estimated PRD-17 work remaining stays **21%**.

@@ -64,7 +64,7 @@ BoardScreen now retains its admission-checking state across queued refreshes ins
 | FR-003/004 own edit/delete | Current participation/author checks, dual Card/comment revisions, confirmed redaction, body-free receipts, protected original acknowledgment hydration | Full current native conflict/retry/redaction and parent lifecycle matrix |
 | FR-005 username mentions | Canonical reserved handles, explicit selected identity/revision, bounded current teammate lookup, immutable revision snapshots, MUI picker | Current immutable-image selected-handle/identity recovery and cross-feature account lifecycle; local execution is recorded below |
 | FR-006 groups | Explicit @card/@board consent, current assignment/Board recipients, elevated Board administration, rolling three-delivery/ten-minute quota, atomic rollback | Current immutable-image group consent/quota/role gate and large recipient behavior; local execution is recorded below |
-| FR-007 notifications | Immutable source identities, distinct non-self deltas, current recipient admission, atomic source/inbox/jobs/receipts; managed and exact command/Worker fixtures | Current native private inbox and full PRD-17 consumer/lifecycle requirements |
+| FR-007 notifications | Immutable source identities, distinct non-self deltas, current recipient admission, atomic source/inbox/jobs/receipts; managed and exact command/Worker fixtures | Selected-mention native private inbox/live delivery now executed below; current-image, group-recipient UI and full PRD-17 consumer/lifecycle requirements remain |
 | FR-008/009 immutable activity/envelope | Append-only Work journal, stable IDs/typed targets/versions, captured actor label, body-free metadata, historical Board coordinates, migrations 062–065; restricted SQL contracts | Complete producer/event coverage as remaining domain features are implemented; full release gate |
 | FR-010 historical actor | SQL caption immutability through rename/deactivation/reused identity, exact API rename fixture, plaintext safe rendering | Current immutable-image historical caption/deactivation and complete actor-lifecycle acceptance; executed local caption cases are linked above |
 | FR-011 paginated Board/Card views | Visibility-before-limit 51-source window, 50-row pages, complete eligible historical Board lookup, opaque viewer/target-bound expiring cursor, persistent API keys, MUI bounded pages | Current native paging/reconnect/access and remaining move/archive detail dependencies |
@@ -210,3 +210,35 @@ services/volumes. Browser typechecking and diff checks pass. The full CI browser
 suite includes the corrected fixtures. Complete current-image, producer,
 concurrency/capacity and Definition of Done acceptance still govern closure.
 Estimated PRD-15 work remaining is **36%**; PRD-17 remains **21%**.
+
+## Executed recipient mention inbox and private live delivery
+
+Both selected-mention cases in `comment-mentions.spec.ts` passed together on
+2026-10-08 at 1280px and 390px (2 passed, exit 0). This extends the selected
+mention evidence above to the actual recipient MUI inbox and SignalR frames.
+The group cases above still inspect recipient HTTP inboxes only.
+
+Each recipient opens the native inbox before the author command and receives
+its initial private live snapshot. Rejection of a reclaimed but stale selected
+handle leaves comments, native inbox and notification events empty. After a
+fresh selection, real commitment followed by a substituted failed response and
+identical original-key/body retry produces exactly one `NOTIFICATION_CREATED`.
+Every observed snapshot/event matches the Organization and recipient; events
+identify Notification entities and expose empty metadata. The native inbox
+shows one unread mention with the canonical Card link. Keyboard mark-read
+produces exactly one `NOTIFICATION_READ` and a persisted read timestamp.
+The author inbox remains empty. Actual Board membership removal clears the
+recipient's HTTP inbox and native article without another creation/read event.
+Tagged Axe and horizontal overflow checks pass on both recipient views.
+
+The invocation uses the current MUI production bundle, read-only compiled
+Production API and separate scoped Worker with PostgreSQL 17/pgvector schema
+112 and Nginx. Its fixture-account policy permits unverified accounts, matching
+CI's browser phase. This does not prove strict email verification or current
+immutable release-image acceptance. All invocation-owned containers and the
+cloned database were removed; existing services and data were preserved.
+Browser typechecking and diff checks pass. The two cases remain mandatory in
+the full CI browser suite. Current-image execution, group-recipient native
+coverage, remaining producer/concurrency/capacity and full Definition of Done
+requirements still govern closure. PRD-15 remains open with **36% estimated
+work remaining**; PRD-17 remains open with **21% estimated work remaining**.
