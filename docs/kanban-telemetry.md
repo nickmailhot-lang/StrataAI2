@@ -1,5 +1,63 @@
 # Kanban command telemetry
 
+## Runtime exception coverage
+
+Production startup installs window observers for script/event-handler errors and
+unhandled promises. They report `application_event_exception` and
+`application_promise_exception`, respectively. Resource load events are excluded;
+handled promise rejections do not fire this browser observation. The listeners
+never read error messages, Error objects, promise reasons, filenames, stacks or
+route values. They suppress the browser's default private diagnostic, without
+stopping other listeners, retrying commands, reloading or changing feature state.
+Development retains normal browser diagnostics. Listener disposal removes both
+registrations; startup installs them once outside React's StrictMode tree.
+
+React's production root callbacks separately count uncaught root failures as
+`application_root_exception` and recovered failures as
+`application_recovery_exception`, printing only the existing fixed message.
+Caught renders remain owned by the router callback to avoid double counting.
+These four categories join the three routed-render categories in the existing
+bounded activity queue and authenticated collector. All seven accept exception
+counts only, never timings, success/failure or other interaction kinds. Whole-batch
+validation, abuse limits, CSRF, transport deadlines and failure dropping remain
+unchanged. There is no new meter, service, schema or storage of diagnostics.
+
+The two new root regressions first fail against the prior implementation. The
+uncaught case exercises an actual React root outside React's test-only act queue,
+which deliberately rethrows instead of invoking its root callback. The recovered
+case directly exercises the registered callback; it is not a native recovery
+scenario. The final combined 31 web cases pass, covering callback counts,
+private-field getter traps, listener disposal, development behavior, telemetry
+bounds/kind restrictions, router fallback and existing surface admission. All
+seven API host cases pass with exact fixed tags, anonymous/CSRF denial and atomic
+rejection of private/unknown fields and timing or success payloads. Locked API
+build reports zero warnings/errors; web/browser TypeScript, targeted lint and
+production web build pass.
+
+Both native desktop/phone runtime cases pass against the frozen production web
+bundle, compiled Production API, restricted PostgreSQL and Nginx. A real DOM
+listener throws and a real promise remains unhandled; another rejection is
+handled and does not increment the count. Actual reports return 204 with exactly
+one count per category, excluding the private sentinel, draft and scope/account
+identities. Production browser diagnostics exclude the sentinel. The dirty Card
+title remains intact, no canonical work mutation is sent and the complete
+persisted Lists/Cards snapshot is unchanged. These are compiled-source local
+observations, not current immutable-image release acceptance.
+
+The same final invocation also passes all four existing routed Board/Card
+desktop/phone failure and explicit-reload scenarios: **six native cases pass in
+3.2 minutes**. Both disposable API/web containers are removed after the terminal
+run, preserving the original three services, images and volumes.
+
+Observation does not prove recovery from a fatal root failure or restore state
+already destroyed by a routed failure. It also does not attribute an exception
+to a particular work command or establish that command's outcome. Cross-origin
+rejections that the browser does not expose, startup failures before observer
+installation and anonymous collection remain outside this proof. Correlation-safe
+operator diagnostics and collector/dashboard ingestion, full timing/capacity/
+accessibility and current immutable-release acceptance remain required. PRD-06
+remains open; its current remaining-work estimate is **30%**, a planning estimate.
+
 ## Caught routed render failures
 
 App now supplies a fixed MUI route error view instead of React Router's default
@@ -46,15 +104,16 @@ Disposable API/web containers are removed after the terminal run, preserving
 the original three services and saved volumes. This is compiled-source local
 evidence, not current immutable-image acceptance.
 
-This closes a scoped render-observation gap, not full PRD-06 telemetry. Uncaught
-root failures, event-handler failures and unhandled promises still require
-coverage; this route fallback does not recover an original in-memory command
-intent or dirty draft after its feature tree is destroyed.
+This closed a scoped routed-render observation gap. The later runtime exception
+coverage above adds root, event-handler and unhandled-promise counts; this route
+fallback still does not recover an original in-memory command intent or dirty
+draft after its feature tree is destroyed.
 Anonymous failures use the same fallback but are not collected by the
 authenticated endpoint. Operator collector
 ingestion/dashboard evidence, complete timing/capacity/accessibility acceptance
 and current immutable-release execution also remain required. PRD-06 remains
-open; its remaining-work estimate is **31%**, a planning estimate.
+open; its estimate at this routed-render increment was **31%**. The runtime
+section above records the current planning estimate.
 
 The existing operator meter `StrataAI.BoardSharing` now covers PATCH list
 commands as `list_update` (rename/rank/move) and POST card movement as

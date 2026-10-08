@@ -12,6 +12,10 @@ namespace StrataAI.Api.Tests;
 public sealed partial class ApiHostTests
 {
     [Theory]
+    [InlineData("application_root_exception")]
+    [InlineData("application_recovery_exception")]
+    [InlineData("application_event_exception")]
+    [InlineData("application_promise_exception")]
     [InlineData("application_render")]
     [InlineData("board_render")]
     [InlineData("card_render")]

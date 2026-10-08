@@ -14,9 +14,20 @@ export const observeViewFailure: ClientOnErrorFunction = (_error, info) => {
 // React otherwise logs the caught Error before the router's callback runs.
 // Keep development diagnostics; production never prints the private Error object.
 export function viewFailureRootOptions(production = import.meta.env.PROD): RootOptions {
-  return production ? { onCaughtError: () => {
+  const diagnostic = () => {
     try { console.error('A view could not be rendered.'); } catch { /* Best-effort diagnostic only. */ }
-  } } : {};
+  };
+  return production ? {
+    onCaughtError: diagnostic, // Router observes caught renders; avoid double counting.
+    onUncaughtError: () => {
+      diagnostic();
+      try { activityEvent('application_root_exception', 'exception'); } catch { /* Best effort only. */ }
+    },
+    onRecoverableError: () => {
+      diagnostic();
+      try { activityEvent('application_recovery_exception', 'exception'); } catch { /* Best effort only. */ }
+    },
+  } : {};
 }
 
 export function ViewFailure() {

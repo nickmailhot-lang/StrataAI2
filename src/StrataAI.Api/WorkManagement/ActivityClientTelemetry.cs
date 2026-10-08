@@ -7,7 +7,7 @@ namespace StrataAI.Api.WorkManagement;
 public sealed class ActivityClientTelemetry
 {
     public const string MeterName = "StrataAI.ActivityClient";
-    private static readonly HashSet<string> Actions = ["application_render", "board_render", "card_render", "board_read", "card_read", "board_disclosure", "card_disclosure",
+    private static readonly HashSet<string> Actions = ["application_root_exception", "application_recovery_exception", "application_event_exception", "application_promise_exception", "application_render", "board_render", "card_render", "board_read", "card_read", "board_disclosure", "card_disclosure",
         "comment_disclosure", "comment_read", "comment_create", "comment_edit", "comment_delete",
         "mention_read", "mention_selection", "card_group_confirmation", "board_group_confirmation", "search_disclosure", "search_read",
         "notification_disclosure", "notification_read", "notification_mark_read", "watch_disclosure", "watch_read", "watch_change", "archive_list_disclosure", "archive_list_read", "archive_list_restore", "archive_list_delete",
@@ -26,7 +26,7 @@ public sealed class ActivityClientTelemetry
     public static IReadOnlyList<ChecklistClientTelemetry.Observation>? Parse(JsonElement root)
     {
         var observations = ChecklistClientTelemetry.Parse(root, Actions);
-        if (observations is null || observations.Any(observation => observation.Action.EndsWith("_render", StringComparison.Ordinal)
+        if (observations is null || observations.Any(observation => (observation.Action.EndsWith("_render", StringComparison.Ordinal) || observation.Action.EndsWith("_exception", StringComparison.Ordinal))
             && (observation.Kind != "exception" || observation.DurationMs is not null))) return null;
         return observations;
     }

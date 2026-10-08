@@ -43,3 +43,12 @@ it('restricts render observations to exception counts without timing or success 
     { action: 'board_render', kind: 'exception', count: 1 }, { action: 'card_render', kind: 'exception', count: 1 },
   ] });
 });
+
+it.each(['application_root_exception', 'application_recovery_exception', 'application_event_exception', 'application_promise_exception'] as const)(
+  'restricts %s to exception counts', async action => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetcher);
+    activityEvent(action, 'open'); activityEvent(action, 'retry'); activityResult(action, true, performance.now());
+    await flushActivityTelemetry(); expect(fetcher).not.toHaveBeenCalled();
+    activityEvent(action, 'exception'); await flushActivityTelemetry();
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ events: [{ action, kind: 'exception', count: 1 }] });
+  });

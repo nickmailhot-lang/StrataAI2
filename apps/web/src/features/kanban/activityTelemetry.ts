@@ -1,6 +1,6 @@
 import { apiFetch } from '../../api/apiFetch';
 
-export type ActivityAction = 'application_render' | 'board_render' | 'card_render' | 'board_read' | 'card_read' | 'board_disclosure' | 'card_disclosure'
+export type ActivityAction = 'application_root_exception' | 'application_recovery_exception' | 'application_event_exception' | 'application_promise_exception' | 'application_render' | 'board_render' | 'card_render' | 'board_read' | 'card_read' | 'board_disclosure' | 'card_disclosure'
   | 'comment_disclosure' | 'comment_read' | 'comment_create' | 'comment_edit' | 'comment_delete'
   | 'mention_read' | 'mention_selection' | 'card_group_confirmation' | 'board_group_confirmation'
   | 'search_disclosure' | 'search_read' | 'notification_disclosure' | 'notification_read' | 'notification_mark_read' | 'watch_disclosure' | 'watch_read' | 'watch_change' | 'archive_list_disclosure' | 'archive_list_read' | 'archive_list_restore' | 'archive_list_delete' | 'archive_card_disclosure' | 'archive_card_read' | 'archive_card_restore' | 'archive_card_delete' | 'list_archive' | 'card_archive' | 'archive_board_disclosure' | 'archive_board_read' | 'archive_board_restore' | 'archive_board_delete' | 'board_archive' | 'board_metadata_update' | 'board_star_disclosure' | 'board_star_read' | 'board_star_change' | 'board_copy_disclosure' | 'board_copy_read' | 'board_copy_change' | 'navigation_context' | 'navigation_board' | 'navigation_card'
@@ -8,7 +8,7 @@ export type ActivityAction = 'application_render' | 'board_render' | 'card_rende
   | 'organization_creation_disclosure' | 'organization_creation';
 type Kind = 'open' | 'use' | 'retry' | 'exception' | 'conflict' | 'reconnect' | 'success' | 'failure';
 type Observation = { action: ActivityAction; kind: Kind; count: number; durationMs?: number };
-const actions = new Set<string>(['application_render', 'board_render', 'card_render', 'board_read', 'card_read', 'board_disclosure', 'card_disclosure',
+const actions = new Set<string>(['application_root_exception', 'application_recovery_exception', 'application_event_exception', 'application_promise_exception', 'application_render', 'board_render', 'card_render', 'board_read', 'card_read', 'board_disclosure', 'card_disclosure',
   'comment_disclosure', 'comment_read', 'comment_create', 'comment_edit', 'comment_delete',
   'mention_read', 'mention_selection', 'card_group_confirmation', 'board_group_confirmation', 'search_disclosure', 'search_read',
   'notification_disclosure', 'notification_read', 'notification_mark_read', 'watch_disclosure', 'watch_read', 'watch_change', 'archive_list_disclosure', 'archive_list_read', 'archive_list_restore', 'archive_list_delete', 'archive_card_disclosure', 'archive_card_read', 'archive_card_restore', 'archive_card_delete', 'list_archive', 'card_archive', 'archive_board_disclosure', 'archive_board_read', 'archive_board_restore', 'archive_board_delete', 'board_archive', 'board_metadata_update', 'board_star_disclosure', 'board_star_read', 'board_star_change', 'board_copy_disclosure', 'board_copy_read', 'board_copy_change', 'navigation_context', 'navigation_board', 'navigation_card', 'organization_settings_disclosure', 'organization_settings_read', 'organization_settings_update', 'organization_creation_disclosure', 'organization_creation']);
@@ -26,12 +26,12 @@ function schedule() {
 }
 export function activityEvent(action: ActivityAction, kind: Kind) {
   if (!enabled || !actions.has(action) || !kinds.has(kind) || kind === 'success' || kind === 'failure') return;
-  if (action.endsWith('_render') && kind !== 'exception') return;
+  if ((action.endsWith('_render') || action.endsWith('_exception')) && kind !== 'exception') return;
   enqueue({ action, kind, count: 1 });
 }
 export function activityResult(action: ActivityAction, success: boolean, started: number) {
   if (!enabled || !actions.has(action) || !Number.isFinite(started)) return;
-  if (action.endsWith('_render')) return;
+  if ((action.endsWith('_render') || action.endsWith('_exception'))) return;
   const durationMs = performance.now() - started;
   if (!Number.isFinite(durationMs) || durationMs < 0 || durationMs > 60000) return;
   enqueue({ action, kind: success ? 'success' : 'failure', count: 1, durationMs });

@@ -100,6 +100,18 @@ for scope, privacy, evidence and outstanding crash-recovery requirements.
 This boundary does not recover state destroyed with a failed feature tree and
 does not complete the architecture's error/recovery or release audit.
 
+Production startup also installs private-free browser exception counters outside
+StrictMode. Root uncaught/recoverable callbacks use fixed diagnostics and separate
+aggregate categories; routed caught errors retain their existing owner. Global
+script/event and unhandled-promise observers suppress default private diagnostics
+while preserving feature state and other listeners. The same bounded collector
+requires exception-only categories with no Error, reason, URL, identity or timing
+fields. Development keeps default diagnostics. See
+[runtime exception coverage](../kanban-telemetry.md#runtime-exception-coverage)
+for executed source/runtime evidence and remaining recovery/observability limits.
+Fatal root recovery, destroyed drafts, anonymous collection and the full current
+immutable-release audit are still outstanding.
+
 ## Requirement evidence and remaining scope
 
 | ARCH-02 boundary | Executable evidence |
