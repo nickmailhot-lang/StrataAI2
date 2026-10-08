@@ -1,5 +1,60 @@
 # Kanban command telemetry
 
+## Fatal root recovery view
+
+The production React root's uncaught-error callback now receives its host and
+replaces the removed React tree with a fixed recovery view. This last-resort
+view uses document primitives and a small stylesheet because the failed React
+renderer, router and MUI theme provider cannot safely render it. MUI remains the
+primary application UI and the existing routed-error fallback. The emergency
+view uses the application's font, primary color and button shape; it is not a
+second component framework or feature UI.
+
+A focused heading explains that the application is unavailable. An alert states
+that a submitted change may have completed; a separate warning explains that
+reload may discard unsaved changes. The only action is explicit reload. Focus
+lands on information, avoiding an accidental Enter activation of a destructive
+recovery action. The native button has a visible keyboard outline and a minimum
+44 px height. The view includes no Error, stack, message, path, identity or
+content. It never replays a command or automatically reloads. Root telemetry
+retains the fixed aggregate count and private-safe diagnostic established below.
+Recoverable root errors retain their existing live view; caught router failures
+retain the MUI route fallback.
+
+The actual uncaught React-root regression first fails on the prior blank view,
+then passes with focused recovery content and the same single exception count.
+The recovered-root callback regression verifies that it does not replace the
+live view. The standalone emergency view case verifies dead-tree removal, one
+fallback after repeated installation, and reload only on explicit activation.
+Web/browser TypeScript, targeted lint and production build pass.
+
+The final combined source invocation passes **32 web cases**. Both repaired
+native desktop/phone root cases pass in one **1.1-minute invocation** against the
+frozen production bundle, compiled Production API, restricted PostgreSQL and
+Nginx. A one-document History getter fault forces a real App/root render failure
+before router construction completes. The fixed recovery view gets safe focus;
+its single root exception count receives HTTP 204, with no private diagnostic,
+identity or content fields. Tab reaches the outlined 44 px reload button and
+Enter loads the canonical Card. Exactly two document requests prove initial
+load plus explicit reload; no canonical command is sent and the full persisted
+Lists/Cards snapshot stays unchanged. The initial two cases reached successful
+recovery but failed because `framenavigated` also counts router history updates.
+The corrected fixture counts actual main-frame document requests; no product
+assertion, rate limit or timing target was weakened.
+
+All six existing browser-exception/routed-failure desktop/phone cases pass in the
+initial 4.4-minute invocation against the same frozen build. Only the two new
+fixture failures are rerun after the request-count correction. Disposable API/web
+containers are removed after both runs terminate. This is compiled-source local
+evidence; current immutable-image release acceptance remains unproven.
+
+This is a recovery path to a fresh document, not recovery of destroyed in-memory
+drafts or proof of a submitted command's outcome. Startup failures before the
+root is created, anonymous telemetry, correlation-safe operator diagnostics,
+collector/dashboard proof, full timing/capacity/accessibility and current
+immutable-image acceptance remain outstanding. PRD-06 stays open; the estimate
+after this increment is **29%** remaining, a planning estimate.
+
 ## Runtime exception coverage
 
 Production startup installs window observers for script/event-handler errors and
@@ -49,14 +104,16 @@ desktop/phone failure and explicit-reload scenarios: **six native cases pass in
 3.2 minutes**. Both disposable API/web containers are removed after the terminal
 run, preserving the original three services, images and volumes.
 
-Observation does not prove recovery from a fatal root failure or restore state
+The observation increment below did not prove fatal-root recovery; the later
+emergency view above adds an explicit recovery path. Neither restores state
 already destroyed by a routed failure. It also does not attribute an exception
 to a particular work command or establish that command's outcome. Cross-origin
 rejections that the browser does not expose, startup failures before observer
 installation and anonymous collection remain outside this proof. Correlation-safe
 operator diagnostics and collector/dashboard ingestion, full timing/capacity/
 accessibility and current immutable-release acceptance remain required. PRD-06
-remains open; its current remaining-work estimate is **30%**, a planning estimate.
+remains open; its estimate at this observation increment was **30%**. The fatal
+root section above records the current planning estimate.
 
 ## Caught routed render failures
 

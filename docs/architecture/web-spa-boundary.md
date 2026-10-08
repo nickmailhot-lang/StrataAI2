@@ -109,8 +109,16 @@ requires exception-only categories with no Error, reason, URL, identity or timin
 fields. Development keeps default diagnostics. See
 [runtime exception coverage](../kanban-telemetry.md#runtime-exception-coverage)
 for executed source/runtime evidence and remaining recovery/observability limits.
-Fatal root recovery, destroyed drafts, anonymous collection and the full current
-immutable-release audit are still outstanding.
+The production root now supplies a document-primitive emergency view after an
+uncaught failure removes the React tree. This fallback must work without the
+failed React/router/theme renderer; MUI remains the primary UI and routed-error
+fallback. Fixed recovery text warns about possibly completed commands and draft
+loss, focuses a heading and offers one explicit keyboard-accessible reload.
+Recoverable root errors leave the live view intact. See
+[fatal root recovery](../kanban-telemetry.md#fatal-root-recovery-view) for the
+implementation, regression evidence and limits. Destroyed drafts, pre-root
+startup failures, anonymous collection and the current immutable-release audit
+remain outstanding.
 
 ## Requirement evidence and remaining scope
 

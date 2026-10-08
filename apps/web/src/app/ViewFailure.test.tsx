@@ -24,7 +24,7 @@ it.each([
   function BrokenView(): never { throw new Error('private-render-body-and-stack'); }
   const router = createMemoryRouter([{ path: '*', element: <BrokenView />, errorElement: <ViewFailure /> }], { initialEntries: [path] });
   host = document.createElement('div'); document.body.append(host);
-  root = createRoot(host, viewFailureRootOptions(true));
+  root = createRoot(host, viewFailureRootOptions(true, host));
   await act(async () => root!.render(<StrictMode><RouterProvider router={router} onError={observeViewFailure} /></StrictMode>));
   expect(screen.getByRole('alert')).toHaveTextContent('This view is unavailable.');
   expect(screen.getByText('Reloading may discard unsaved changes.')).toBeVisible();
@@ -54,7 +54,7 @@ it('observes a real uncaught root failure without printing its Error or componen
   const diagnostic = vi.spyOn(console, 'error').mockImplementation(() => {});
   function BrokenRoot(): never { throw new Error('private-root-material'); }
   host = document.createElement('div'); document.body.append(host);
-  root = createRoot(host, viewFailureRootOptions(true));
+  root = createRoot(host, viewFailureRootOptions(true, host));
   // React's act queue deliberately rethrows uncaught errors instead of calling
   // onUncaughtError. Exercise the actual root callback outside that test queue.
   const testEnvironment = globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean };
@@ -65,15 +65,23 @@ it('observes a real uncaught root failure without printing its Error or componen
   await flushActivityTelemetry();
   expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ events: [{ action: 'application_root_exception', kind: 'exception', count: 1 }] });
   expect(diagnostic.mock.calls.flat()).toEqual(['A view could not be rendered.']);
+  expect(screen.getByRole('heading', { name: 'This application is unavailable.' })).toHaveFocus();
+  expect(screen.getByRole('alert')).toHaveTextContent('A submitted change may still have completed.');
+  expect(screen.getByText('Reloading may discard unsaved changes.')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Reload this page' })).toBeEnabled();
+  expect(document.body.textContent).not.toContain('private-root-material');
 });
 
 it('reports recoverable root errors using a fixed count without retaining their details', async () => {
   const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetcher);
   const diagnostic = vi.spyOn(console, 'error').mockImplementation(() => {});
-  const options = viewFailureRootOptions(true);
+  host = document.createElement('div'); document.body.append(host); host.textContent = 'Recovered view stays available';
+  const options = viewFailureRootOptions(true, host);
   expect(options.onRecoverableError).toBeTypeOf('function');
   options.onRecoverableError?.(new Error('private-recovery-material'), { componentStack: 'private-component-stack' });
   await flushActivityTelemetry();
   expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ events: [{ action: 'application_recovery_exception', kind: 'exception', count: 1 }] });
   expect(diagnostic.mock.calls.flat()).toEqual(['A view could not be rendered.']);
+  expect(host).toHaveTextContent('Recovered view stays available');
+  expect(screen.queryByRole('heading', { name: 'This application is unavailable.' })).not.toBeInTheDocument();
 });

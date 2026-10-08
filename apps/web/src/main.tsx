@@ -12,7 +12,7 @@ if (!rootElement) {
 }
 
 installRuntimeExceptionObservers();
-createRoot(rootElement, viewFailureRootOptions()).render(
+createRoot(rootElement, viewFailureRootOptions(import.meta.env.PROD, rootElement)).render(
   <StrictMode>
     <App />
   </StrictMode>,

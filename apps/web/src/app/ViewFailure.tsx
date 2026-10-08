@@ -2,6 +2,7 @@ import { Alert, AlertTitle, Button, Container, Stack, Typography } from '@mui/ma
 import type { ClientOnErrorFunction } from 'react-router-dom';
 import type { RootOptions } from 'react-dom/client';
 import { activityEvent } from '../features/kanban/activityTelemetry';
+import { renderRootFailure } from './rootFailure';
 
 export const observeViewFailure: ClientOnErrorFunction = (_error, info) => {
   if (!info.errorInfo) return; // HTTP/loader errors already have their own observations.
@@ -13,7 +14,7 @@ export const observeViewFailure: ClientOnErrorFunction = (_error, info) => {
 
 // React otherwise logs the caught Error before the router's callback runs.
 // Keep development diagnostics; production never prints the private Error object.
-export function viewFailureRootOptions(production = import.meta.env.PROD): RootOptions {
+export function viewFailureRootOptions(production = import.meta.env.PROD, rootElement?: HTMLElement): RootOptions {
   const diagnostic = () => {
     try { console.error('A view could not be rendered.'); } catch { /* Best-effort diagnostic only. */ }
   };
@@ -22,6 +23,9 @@ export function viewFailureRootOptions(production = import.meta.env.PROD): RootO
     onUncaughtError: () => {
       diagnostic();
       try { activityEvent('application_root_exception', 'exception'); } catch { /* Best effort only. */ }
+      if (rootElement) {
+        try { renderRootFailure(rootElement); } catch { /* A failed recovery must not leak the original diagnostic. */ }
+      }
     },
     onRecoverableError: () => {
       diagnostic();
