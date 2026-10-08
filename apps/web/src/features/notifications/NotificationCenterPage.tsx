@@ -181,7 +181,7 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
       onClick={() => { void markRead(); }}>Retry mark read</Button>}
     {page && profile && <Box ref={list} component="section" aria-label="Notification inbox" aria-busy={busy}>
       <Typography role="status">{unread.length} unread on this page.</Typography>
-      {!page.items.length && <Typography>No notifications on this page. Card assignments from other people will appear here.</Typography>}
+      {!page.items.length && <Typography>No notifications on this page. Assignments, mentions, watched activity, and due reminders will appear here when available.</Typography>}
       {!!unread.length && <Stack direction="row" useFlexGap sx={{ gap: 1, flexWrap: 'wrap', mb: 2 }}>
         <Button disabled={busy || recovery} onClick={() => setSelected(unread.map(n => n.id))}>Select unread on this page</Button>
         <Button disabled={busy || recovery || !selected.length} onClick={() => { void markRead(selected); }}>Mark selected read</Button>

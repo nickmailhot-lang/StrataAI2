@@ -6,7 +6,7 @@ The `container-integration` job runs four logical groups on separate GitHub-host
 | --- | --- |
 | `commands` | Runtime refusal cases, identity/Organization/Board/Work command contracts, restricted persistence and Worker delivery, supported-capacity measurements, and operator metrics |
 | `browser-foundation` | Demo lifecycle, attachment transport/publication, contiguous replay, actual large-Board native capacity, and database-wait authorization |
-| `browser-notifications` | Identity mail integration, accessible keyboard verification/recovery, strictly verified watch/assignment/mention/reminder producers, and watch/permission ordering |
+| `browser-notifications` | Identity mail integration, accessible keyboard verification/recovery, strictly verified watch/assignment/mention/reminder producers, desktop/phone inbox recovery, and watch/permission ordering |
 | `browser-full` | The complete browser suite, automatic metadata and invitation authority routing, and API/edge abuse-limit contracts |
 
 Every group first verifies the real Production authentication defaults, then explicitly applies the isolated self-registration/unverified-account fixture. Strict notification tests subsequently require verified accounts in both actual hosts. Both mail-dependent browser groups generate their own ephemeral signing keys and start their own private test mail provider. The full suite sets up its mail overlay and automatic Worker routing explicitly rather than inheriting state from another group's tests. Production rate budgets, browser timeouts, native gestures, expected versions, and whole-snapshot assertions are unchanged.
@@ -40,3 +40,21 @@ Independently downloaded capacity artifact `11580895631` has ZIP SHA-256 `aa7ce7
 The same `cef54e18` run's `commands` group also succeeds in [job 113546668048](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37843466326/job/113546668048), completing its mandatory identity, Organization/Board/Work, Worker authority, capacity and operator checks. [Organization command evidence](prd-03-acceptance.md#hosted-exact-image-organization-command-execution) records the exact scope and limits. This does not override the run's known notification-group failure or establish the still-running full browser group.
 
 Related: [main-run evidence retention](ci-run-retention.md), [embedded build identity](build-identity.md), [documentation index](../README.md).
+
+## Strict notification consumer coverage
+
+The assignment/mention/reminder phase now also selects the complete recipient
+inbox recovery scenario. Its five explicit files and five grep alternatives
+preserve the original eight producer cases and add one consumer case. The
+existing API and Worker verified-email checks, rate pacing, sequential execution,
+original scenario deadlines and all 110 registered steps remain. The complete
+four-shard browser phase remains unfiltered.
+
+The workflow verifier requires this exact producer/consumer command and both
+host-policy checks. Four new negative mutations remove the inbox file, filter
+out its case, disable strict account verification or omit the Worker policy
+check. The previous verifier accepts these omissions (52 pass, four fail in the
+expanded guard suite); the strengthened verifier rejects all four (56/56 pass).
+Workflow syntax validation also passes. See the
+[PRD-17 acceptance map](prd-17-acceptance.md#strict-notification-center-and-durable-read-recovery)
+for executed native scope and remaining release requirements.

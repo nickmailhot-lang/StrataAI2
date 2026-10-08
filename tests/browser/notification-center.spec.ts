@@ -1,3 +1,5 @@
+import { registerNotificationAccount } from './notificationAccountFixture';
+import { expectPersistedNotificationDelivery } from './persistedNotificationDelivery';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -13,8 +15,7 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     for (const [index, client] of [owner, context].entries()) {
       const account = { email: index ? email : `notification-owner-1280-${Date.now()}@example.test`,
         password: 'notification-center-correct-horse', displayName: index ? 'Notification recipient' : 'Assignment issuer' };
-      expect((await client.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-      expect((await client.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+      await registerNotificationAccount(client.request, account);
     }
     const organization = await owner.request.post('/organizations', { headers, data: { name: 'Recipient inbox' } });
     expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
@@ -161,11 +162,14 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     expect(notifications.every((n: { recipientId: string; readAt: string | null }) => n.recipientId === recipient && n.readAt !== null)).toBe(true);
     expect((await (await owner.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
     expect(await other.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    // Compare authorized HTTP rows and sync envelopes with independently stored
+    // source events, first-read clocks and private journal before access withdrawal.
+    await expectPersistedNotificationDelivery(context.request, org, recipient, []);
     expect((await owner.request.delete(`/boards/${board}/members/${recipient}`, { headers })).status()).toBe(204);
     await expect(other.getByRole('article')).toHaveCount(0, { timeout: 25_000 });
     await expect(page.getByRole('article')).toHaveCount(0, { timeout: 25_000 });
-    await expect(other.getByText('No notifications on this page. Card assignments from other people will appear here.', { exact: true })).toBeVisible();
-    await expect(page.getByText('No notifications on this page. Card assignments from other people will appear here.', { exact: true })).toBeVisible();
+    await expect(other.getByText('No notifications on this page. Assignments, mentions, watched activity, and due reminders will appear here when available.', { exact: true })).toBeVisible();
+    await expect(page.getByText('No notifications on this page. Assignments, mentions, watched activity, and due reminders will appear here when available.', { exact: true })).toBeVisible();
     const hidden = await context.request.get(`/organizations/${org}/notifications`); expect(hidden.status()).toBe(200); expect((await hidden.json()).items).toEqual([]);
   } finally { restoreWorker(); await preferences?.close(); await phone?.close(); await owner.close(); }
 });

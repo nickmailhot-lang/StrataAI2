@@ -39,6 +39,15 @@ export function verifyIntegrationSuites(workflow, registry) {
   const fullBrowser = job.steps.find(step => step.name === 'Authenticated browser E2E against exact release images');
   assert.equal(fullBrowser.run, 'npx playwright test --shard=${{ matrix.shard }}/${{ matrix.totalShards }}');
   assert.deepEqual(fullBrowser.env, { STRATAAI_E2E_RELEASE_HEADERS: '1', STRATAAI_E2E_RATE_PACING: '1' });
+  const strictNotifications = job.steps.find(step => step.name === 'Strict verified-account assignment mention and reminder native delivery');
+  assert.deepEqual(owners(strictNotifications), ['browser-notifications']);
+  assert.deepEqual(strictNotifications.env, { STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1', STRATAAI_E2E_RATE_PACING: '1' });
+  const strictCommand = "npx playwright test tests/browser/card-assignment-notifications.spec.ts tests/browser/comment-mentions.spec.ts tests/browser/comment-mass-mentions.spec.ts tests/browser/card-reminders.spec.ts tests/browser/notification-center.spec.ts --grep 'native assignment|native selected teammate|native confirmed groups|actual Worker due reminder|recipient inbox recovers'";
+  assert.equal(strictNotifications.run, [
+    'set -euo pipefail',
+    ...['api', 'worker'].map(host => `test "$(docker compose -f compose.release.yml exec -T ${host} printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true`),
+    strictCommand, '',
+  ].join('\n'), 'Strict producer and consumer coverage requires verified accounts in both hosts');
   const browserCoverage = jobs['web-quality'].steps.find(step => step.name === 'Verify complete browser shard coverage');
   assert.equal(browserCoverage?.run, 'node --test tests/browser-shards.test.mjs\nnode scripts/ci/verify-browser-shards.mjs\n');
   assert.equal(browserCoverage.if, undefined);

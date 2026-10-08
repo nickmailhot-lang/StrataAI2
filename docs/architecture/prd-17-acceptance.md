@@ -893,3 +893,34 @@ is relaxed and no notifications/read clocks are fabricated. These are strict
 session/HTTP/originating-transaction proofs, not additional native input,
 Worker/private transport, provider, capacity or current immutable/full CI proof.
 Owned fixtures are removed. PRD-17 remains at **15% estimated work remaining**.
+
+## Strict notification center and durable read recovery
+
+The original inbox fixture assumed immediate login after registration. Running
+it under verified-email enforcement fails with expected 200 / actual 403 before
+any inbox operation. It now uses the shared strict account fixture: fresh
+registration, explicit pending-account refusal, fixture verification, then actual
+authenticated admission. Optional-verification execution retains its previous
+registration/login behavior. Both hosts keep their strict Production policy.
+
+The complete desktop/phone scenario passes locally on restricted PostgreSQL
+17/pgvector schema 114, current compiled Production API/separate Worker, and a
+fresh current MUI web build. Its existing live delivery, original-key lost-read
+retry, selected bulk read, disconnect/cursor recovery, cross-session timezone
+preferences, keyboard focus, permission withdrawal, accessibility and overflow
+assertions remain. Four actual assignment rows and all eight creation/read
+envelopes are additionally compared with independently stored source events,
+first-read/creation clocks and journal attribution before access withdrawal.
+Live observations in this case assert event types and scope; the independent
+full-envelope comparison is authorized HTTP sync against storage, rather than
+new complete live-stream envelope evidence.
+
+The empty inbox now explains assignments, mentions, watched activity and due
+reminders consistently with the supported producers. All 125 notification source
+cases (including 25 inbox component cases), web/browser TypeScript, targeted
+lint and current web build pass. The
+[mandatory strict CI phase](integration-ci-groups.md#strict-notification-consumer-coverage)
+includes this consumer and retains all eight producer cases. Scenario timeout,
+rate budgets, native gestures and retry policy are unchanged. Owned fixtures are
+removed; provider delivery and current immutable/full CI acceptance remain
+separate. PRD-17 stays open at **15% estimated work remaining**.

@@ -14,6 +14,10 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['strict inbox consumer omitted', value => { const entry = step(value, 'Strict verified-account assignment mention and reminder native delivery'); entry.run = entry.run.replace(' tests/browser/notification-center.spec.ts', ''); }],
+  ['strict inbox consumer filtered out', value => { const entry = step(value, 'Strict verified-account assignment mention and reminder native delivery'); entry.run = entry.run.replace('|recipient inbox recovers', ''); }],
+  ['strict account fixture disabled', value => { delete step(value, 'Strict verified-account assignment mention and reminder native delivery').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],
+  ['strict Worker policy check omitted', value => { const entry = step(value, 'Strict verified-account assignment mention and reminder native delivery'); entry.run = entry.run.split('\n').filter(line => !line.includes('exec -T worker printenv')).join('\n'); }],
   ['omitted native capacity test', value => { integration(value).steps = integration(value).steps.filter(entry => entry.name !== 'Check concurrent and large-board rank allocation'); }],
   ['removed full browser shard', value => { integration(value).strategy.matrix.include.pop(); }],
   ['fail-fast cancellation', value => { integration(value).strategy['fail-fast'] = true; }],
