@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-05/60: keyboard Board issuance and lost revocation recovery at ${viewport.width}px`, async ({ page, context }) => {
@@ -15,9 +16,14 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const email = `board-invitation-recipient-${viewport.width}-${Date.now()}@example.test`;
     const role = viewport.width === 1280 ? 'ADMIN' : 'MEMBER';
     await page.goto(`/app/${org}/boards/${board}`);
+    const admittedReads = trackBoardReads(page, board, `/app/${org}/boards/${board}/invite`);
     await page.getByRole('link', { name: 'Invite to Board', exact: true }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'Create Board invitation' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Keyboard private Board' })).toBeVisible();
+    // Complete the initial live-head permission refresh before composing. A
+    // background read may temporarily disable the keyboard submit control.
+    await waitForBoardReads(page, admittedReads, 2);
+    await expect(page.getByRole('button', { name: 'Create invitation', exact: true })).toBeEnabled();
     await page.getByLabel(/^Invitation email/).fill(email);
     if (role === 'ADMIN') {
       await page.getByRole('combobox', { name: 'Invitation role' }).focus(); await page.keyboard.press('ArrowDown');
@@ -40,7 +46,10 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     });
     await page.getByRole('button', { name: 'Create invitation', exact: true }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByText(/invitation could not be confirmed/)).toBeVisible();
-    await page.reload(); await expect(page.getByLabel(/^Invitation email/)).toHaveValue(email);
+    const beforeReload = admittedReads();
+    await page.reload(); await waitForBoardReads(page, admittedReads, beforeReload + 2);
+    await expect(page.getByLabel(/^Invitation email/)).toHaveValue(email);
+    await expect(page.getByRole('button', { name: 'Retry same invitation' })).toBeEnabled();
     await page.getByRole('button', { name: 'Retry same invitation' }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('Invitation creation acknowledged.')).toBeVisible();
     expect(writes).toHaveLength(2); expect(writes[0]).toEqual(writes[1]);

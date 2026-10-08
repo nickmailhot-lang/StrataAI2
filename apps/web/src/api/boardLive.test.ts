@@ -148,6 +148,27 @@ describe("PRD-22 browser stream recovery", () => {
     failed.mockRestore();
   });
   afterEach(() => vi.useRealTimers());
+  it.each(['pending', 'reset'])('signals only a validated first %s head without changing recovery status', async kind => {
+    const fake = fakeConnection(); const initialHead = vi.fn(), status = vi.fn();
+    const stop = watchBoard({ organizationId: org, boardId: board, invalidate: vi.fn(), status, initialHead,
+      connection: fake.connection as unknown as ReturnType<typeof createBoardConnection> });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(initialHead).not.toHaveBeenCalled();
+    fake.next({ ...page('0', []), pending: kind === 'pending', resetRequired: kind === 'reset' });
+    expect(initialHead).toHaveBeenCalledOnce();
+    expect(status).toHaveBeenLastCalledWith('recovering');
+    fake.next({ ...page('0', []), pending: true });
+    fake.next(page('0', []));
+    expect(initialHead).toHaveBeenCalledOnce(); expect(status).toHaveBeenLastCalledWith('live');
+    stop(); fake.next(page('0', [])); expect(initialHead).toHaveBeenCalledOnce();
+  });
+  it('does not signal admission from a malformed first head', async () => {
+    const fake = fakeConnection(); const initialHead = vi.fn();
+    const stop = watchBoard({ organizationId: org, boardId: board, invalidate: vi.fn(), status: vi.fn(), initialHead,
+      connection: fake.connection as unknown as ReturnType<typeof createBoardConnection> });
+    await vi.advanceTimersByTimeAsync(0); fake.next({ ...page('0', []), events: [{ ...event('1'), boardId: org }] });
+    expect(initialHead).not.toHaveBeenCalled(); stop();
+  });
   function mount(fake = fakeConnection()) {
     const invalidate = vi.fn(),
       status = vi.fn(), reconnected = vi.fn();

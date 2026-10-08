@@ -1,5 +1,61 @@
 # Administrator invitation history
 
+## Validated pending Board head
+
+Board history now begins its protected read after the first validated stream
+head, even when the head has pending delivery or requests a reset. A bare
+connecting/recovering status is insufficient: `watchBoard` invokes the new
+payload-free `initialHead` callback only after `BoardLiveCursor.accept` validates
+the complete page. It emits that callback once per watcher, excludes malformed
+and foreign-scope heads, and keeps pending/reset/reconnect cursor behavior.
+Observer failure cannot break transport recovery.
+
+Pending delivery does not imply lost read authority. After the head, history
+still performs fresh account, current Board administration, history and final
+same-account checks before disclosing rows or consent controls. The callback
+carries no content or permission claim and grants no command authority. Existing
+explicit degraded transport admission remains; invalidations, deadline fences,
+permission loss and quiet-heartbeat checks are unchanged.
+
+The two component regressions initially fail on missing pending-head admission.
+After the change, authorized history appears only after its protected reads;
+failed administration performs no history read and reveals no private row.
+Transport regressions prove pending-head notification, once-only behavior,
+continued recovering status and exclusion of malformed/foreign heads. The final
+combined 121 stream/history/creation component cases pass. Web/browser TypeScript,
+targeted lint and production build pass.
+
+Both native desktop/phone Board invitation-administration scenarios pass in one
+1.2-minute invocation against frozen production web, compiled Production API,
+restricted PostgreSQL and Nginx. They recover actual committed creation with the
+same key/body after lost acknowledgment and reload, then recover actual
+revocation without duplicate mutation. The controlled fixture intentionally has
+no scoped event Worker, so the Board journal remains pending: the fixed history
+view performs an authorized read instead of waiting indefinitely for delivery.
+Creation readiness waits for the actual initial live permission refresh before
+keyboard activation; it uses the existing qualified Board-read tracker and
+unchanged five-second deadline, not an arbitrary delay or a weaker assertion.
+
+The initial local email-enabled fixture required verified login and returned 403
+before these scenarios. It was corrected to match CI's explicit unverified-email
+browser phase. The matched old bundle then failed on history admission at desktop
+and a keyboard/background-refresh race at phone width. No production policy,
+server authorization, limiter, command body or receipt semantics changed.
+
+This is compiled-source local evidence. Historical exact-image run 37683742977
+has 43 failed browser cases, 242 passed and two skipped. This slice repairs one
+reproduced admission gap; it does not establish that the other failures are fixed
+or that current immutable-image CI is green. Automatic event delivery, full
+PRD-05/PRD-22 acceptance and current release verification remain required.
+
+Both desktop/phone Board account-uncertainty scenarios also pass in one separate
+1.0-minute invocation against this same frozen runtime. Unconfirmed account reads
+before revocation send no mutation and withdraw private review; uncertainty after
+a real committed revocation preserves explicit state-check recovery instead of
+inventing completion or submitting a second revocation. All four native cases
+are terminal before the two disposable API/web containers are removed. Original
+services, images and volumes remain intact.
+
 ## Account preference recovery
 
 Open Organization/Portal and Board invitation history follows account preference
@@ -210,8 +266,8 @@ execution against the exact release images remains pending.
 
 ## Board bootstrap and unchanged heartbeats
 
-Board history captures the first admitted live head (or an explicit degraded
-transport result) before reading Board administration and invitation history.
+Board history captures the first validated head, including pending/reset, or an
+explicit degraded transport result before reading administration and history.
 The bootstrap wait belongs to the same 15-second operation deadline. Review
 controls cannot appear before that boundary, and a late head cannot revive a
 timed-out read.

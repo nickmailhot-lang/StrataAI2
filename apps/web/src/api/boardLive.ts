@@ -126,6 +126,7 @@ export function watchBoard(options: {
   invalidate: () => void;
   status: (value: LiveStatus) => void;
   reconnected?: () => void;
+  initialHead?: () => void;
   connection?: ReturnType<typeof createBoardConnection>;
 }) {
   let connection: ReturnType<typeof createBoardConnection>;
@@ -151,7 +152,7 @@ export function watchBoard(options: {
   let subscription: { dispose(): void } | undefined;
   let retry: ReturnType<typeof setTimeout> | undefined;
   let refresh: ReturnType<typeof setTimeout> | undefined;
-  let established = false, transportRecovery = false;
+  let established = false, transportRecovery = false, headObserved = false;
   const invalidate = () => {
     if (disposed || refresh !== undefined) return;
     refresh = setTimeout(() => {
@@ -191,6 +192,12 @@ export function watchBoard(options: {
           if (disposed || active !== generation) return;
           try {
             const accepted = cursor.accept(page);
+            // A validated head can contain pending delivery or request a reset.
+            // Consumers still authorize/fetch their own current protected data.
+            if (!headObserved) {
+              headObserved = true;
+              try { options.initialHead?.(); } catch { /* Observers cannot break stream recovery. */ }
+            }
             attempt = 0;
             if (
               accepted.changed ||

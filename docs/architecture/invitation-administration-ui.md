@@ -1,5 +1,15 @@
 # Administrator invitation creation
 
+Board issuance browser acceptance now waits for the initial live permission
+refresh before composing or retrying its retained request. The qualified
+Board-read tracker excludes reads from the previous canvas and retains its
+five-second deadline. This fixes keyboard activation while background admission
+temporarily disables the control; it does not retry a failed test action.
+The companion history view admits a protected read after a validated pending
+stream head, with independent fresh administration and account checks. See
+[validated pending Board head](../invitation-history.md#validated-pending-board-head)
+for scoped evidence and remaining exact-image verification.
+
 Current internal Owners and Admins can open `/app/{organizationId}/invite` from the member administration screen. Admission reads the current account and authorized exact-member review; no saved grant details or email are restored before current actor/Organization administration is confirmed. Direct Member, Portal-only, inactive Organization and revoked-session access is denied by the server.
 
 The MUI form selects canonical internal or Portal roles. Internal Member is the default; only current Owners can select an internal Owner grant. Portal choices match the canonical service contract and do not create or downgrade internal membership. The server independently verifies every grant.

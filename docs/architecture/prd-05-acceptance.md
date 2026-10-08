@@ -238,3 +238,30 @@ behavior and the standard timing benchmark remain unchanged; remaining work stay
 3. Finish WCAG 2.2 AA, documented large-data and latency execution, then audit every definition-of-done requirement against the retained build-once release before closing the ticket.
 
 Local Workers have only their newly created fixture Organization scopes, with all four global discovery loops and identity mail disabled. Frozen API/Worker assemblies mounted read-only in cached runtime images and the ordinary unverified-account browser policy do not establish retained-current-image release proof or strict verified-account acceptance.
+
+
+## Validated pending head and native invitation recovery
+
+The history bootstrap now accepts the first validated Board stream head, including
+pending/reset, before its independently protected account/administration/history/
+account read. A bare recovering status still admits no data. This removes a
+loading deadlock when event delivery is pending; it changes no server authority,
+receipt or command semantics. The payload-free stream callback fires once and
+excludes malformed/foreign pages. Creation's native keyboard fixture waits for
+the actual initial permission refresh before activating its single command.
+
+All 121 stream/history/creation component cases pass, plus web/browser TypeScript,
+targeted lint and production build. Both desktop/phone issuance/lost-revocation
+cases pass in one 1.2-minute invocation; both Board account-uncertainty cases pass
+in a separate 1.0-minute invocation against the same frozen Production web/API,
+restricted PostgreSQL and Nginx fixture. Scoped event delivery is intentionally
+absent in this pending-head probe. Account uncertainty before a command sends no
+revocation; uncertainty after commitment retains explicit recovery. See
+[validated pending head](../invitation-history.md#validated-pending-board-head)
+for details, corrected local fixture assumptions and evidence scope.
+
+PRD-05 remains open. Its estimated remaining work is **14%**, a planning estimate.
+The historical exact-image browser run 37683742977 has 43 failed scenarios; current
+source attribution/repair, automatic event delivery and complete current release
+and PRD-wide acceptance are still required. This local slice does not establish
+a green immutable release or satisfaction of all acceptance criteria.

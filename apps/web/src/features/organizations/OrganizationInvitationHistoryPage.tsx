@@ -82,14 +82,19 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     };
     if (boardId !== undefined) {
       let previousStatus: string | undefined;
-      return watchBoard({ organizationId, boardId, invalidate,
+      const admitHead = () => {
+        if (!boardAdmission.current) {
+          boardAdmission.current = true; setBoardReady(true); boardHead.resolve();
+        }
+      };
+      return watchBoard({ organizationId, boardId, invalidate, initialHead: admitHead,
         status: status => {
           if (status === 'connecting') return;
           if (!boardAdmission.current) {
-            // Withhold review controls until the initial head or explicit
-            // degraded transport result, then perform a fresh protected read.
+            // A validated head (including pending/reset) or explicit degraded
+            // transport result admits a fresh, independently authorized read.
             if (status === 'live' || status === 'polling') {
-              boardAdmission.current = true; setBoardReady(true); boardHead.resolve();
+              admitHead();
             }
           } else if (status === 'live' && status === previousStatus) {
             // Read access does not prove administration. Check it quietly;

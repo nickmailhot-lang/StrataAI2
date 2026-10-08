@@ -302,6 +302,27 @@ it('withholds Board history until its first head and reads administration after 
   expect(mock.mock.calls.map(call => call[0])).toEqual(['/me', `/boards/${board}`, `/boards/${board}/invitations`, '/me']);
 });
 
+it.each([true, false])('rechecks administration after a validated pending Board head (authorized=%s)', async authorized => {
+  boardLive.watch.mockImplementation(() => () => {});
+  const mock = vi.fn(async (path: string) => reply(path === '/me' ? profile : path === `/boards/${board}`
+    ? { ...boardScope, access: { canAdminister: authorized } } : { items: [boardRow], nextCursor: null }));
+  vi.stubGlobal('fetch', mock); boardMount();
+  await waitFor(() => expect(boardLive.watch).toHaveBeenCalledTimes(1));
+  expect(mock.mock.calls.map(call => call[0])).toEqual(['/me']);
+  await act(async () => boardLive.watch.mock.calls[0][0].status('recovering'));
+  expect(mock.mock.calls.map(call => call[0])).toEqual(['/me']);
+  expect(boardLive.watch.mock.calls[0][0].initialHead).toBeTypeOf('function');
+  await act(async () => boardLive.watch.mock.calls[0][0].initialHead());
+  if (authorized) {
+    await review();
+    expect(mock.mock.calls.map(call => call[0])).toEqual(['/me', `/boards/${board}`, `/boards/${board}/invitations`, '/me']);
+  } else {
+    await screen.findByText('Board invitation administration is unavailable.');
+    expect(mock.mock.calls.map(call => call[0])).toEqual(['/me', `/boards/${board}`]);
+    expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+  }
+});
+
 it('preserves keyboard review during a quiet heartbeat and fences its late response after explicit revocation', async () => {
   let hold = false, revoked = false, finishQuiet!: (response: Response) => void; let quietSignal!: AbortSignal;
   const mock = vi.fn(async (path: string, options: RequestInit = {}) => {
