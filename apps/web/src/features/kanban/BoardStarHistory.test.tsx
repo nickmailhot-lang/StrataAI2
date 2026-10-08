@@ -118,7 +118,9 @@ it.each([401, 403, 404])('retires recovery after %s denial and resumes only with
   expect(denied).toHaveBeenCalledTimes(1); expect(screen.queryByRole('listitem')).toBeNull();
   expect(screen.queryByRole('button', { name: 'Retry star history' })).toBeNull();
   expect(screen.getByRole('button', { name: 'Review your star history' })).toBeDisabled();
-  expect(vi.mocked(watchIdentity).mock.results[0].value).toHaveBeenCalledTimes(1);
+  // The denial message commits before passive subscription cleanup. Observe
+  // disposal before proving subsequent foreground events cannot recover.
+  await waitFor(() => expect(vi.mocked(watchIdentity).mock.results[0].value).toHaveBeenCalledTimes(1));
   act(() => { window.dispatchEvent(new Event('online')); window.dispatchEvent(new Event('focus')); }); expect(reads).toBe(2);
   fail = false; view.rerender(<BoardStarHistory {...props} onDenied={denied} unavailable />);
   view.rerender(<BoardStarHistory {...props} onDenied={denied} />);

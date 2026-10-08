@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-16 deadline filters recover real completion and missed updates at ${width}px`, async ({ page, context }) => {
@@ -30,19 +31,22 @@ for (const width of [1280, 390]) {
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
       const path = `/app/${org}/boards/${board}`; const reads = trackBoardReads(page, board, path);
       await page.goto(path); await expect.poll(reads).toBeGreaterThanOrEqual(2);
-      await page.getByRole('button', { name: 'Filter Board Cards', exact: true }).press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Filter Board Cards', exact: true }));
       const dialog = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
       async function select(label: string, option: string) {
-        const field = page.getByLabel(label, { exact: true });
+        const field = dialog.getByRole('combobox', { name: label, exact: true });
+        const menu = page.getByRole('listbox', { name: label, exact: true });
         // Live recovery can disable the field between admission and keydown.
         // Retry only opening the menu, never selection or an applied write.
         await expect(async () => {
-          await expect(field).toBeEnabled({ timeout: 500 });
-          if (await field.getAttribute('aria-expanded') !== 'true') await field.press('Enter', { timeout: 500 });
-          await expect(field).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
+          if (!await menu.isVisible()) {
+            await expect(field).toBeEnabled({ timeout: 500 });
+            await field.press('Enter', { timeout: 500 });
+          }
+          await expect(menu).toBeVisible({ timeout: 500 });
         }).toPass({ timeout: 5_000 });
-        await page.getByRole('option', { name: option, exact: true }).press('Enter');
-        await dialog.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
+        await menu.getByRole('option', { name: option, exact: true }).press('Enter');
+        await pressAdmittedAction(dialog.getByRole('button', { name: 'Apply filters', exact: true }));
       }
       await select('Deadline state', 'Upcoming');
       const match = dialog.getByRole('link', { name: 'Live deadline Card — Planning', exact: true });
@@ -61,7 +65,7 @@ for (const width of [1280, 390]) {
       await select('Deadline state', 'Overdue'); await expect(match).toBeVisible();
       await select('Recent Card updates', 'Last 24 hours'); await expect(match).toBeVisible();
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-      await dialog.getByRole('button', { name: 'Show this page on Board', exact: true }).press('Enter');
+      await pressAdmittedAction(dialog.getByRole('button', { name: 'Show this page on Board', exact: true }));
       await expect(page.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true })).toBeVisible();
       await page.reload(); await expect(page.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true })).toBeVisible();
       await dates(null); await expect(page.getByText('Filtered Board: 0 matching Cards on this page.', { exact: true })).toBeVisible({ timeout: 20_000 });

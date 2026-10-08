@@ -89,3 +89,22 @@ same-key recovery after a later unstar, history/timezone recovery, immutable
 timestamps/shared state and focus/reload checks remain intact. This changes
 fixture readiness only. Current immutable CI and full Board acceptance remain
 pending; estimated PRD-04 work remaining stays **16%** (planning estimate).
+
+## Observe denied-history subscription disposal
+
+CI run 37725407195 at `2ed01d6c` passed 1,935 web tests and failed the 403
+star-history denial case because it asserted subscription disposal immediately
+after observing the rendered denial notice. Disposal occurs in passive effect
+cleanup after that commit. The test now waits for exactly one disposal before
+dispatching foreground events and proving that no further protected reads occur.
+The 401/403/404 denial cases still require hidden private history, a disabled
+opener, no retry control, and fresh parent admission before recovery resumes.
+Production behavior is unchanged.
+
+All 15 focused star-history tests pass after the repair; web typechecking and
+targeted lint pass. Two broad local suite attempts were deliberately stopped:
+the default concurrency run reported failures in nine completed suites, and the
+two-worker run reported two failures in BoardScreen before termination. Neither
+is a passing full-suite result. A new exact-commit CI run must verify the complete
+web suite and remaining release gates. PRD-04 stays open at **16% estimated work
+remaining** (planning estimate).

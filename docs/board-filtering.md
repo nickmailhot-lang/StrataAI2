@@ -773,3 +773,27 @@ mutation keypress occurs inside focus-preparation retries. The original Worker,
 socket-refusal HTTP recovery, Card/canvas/filter/assignee/archive assertions all
 pass. This separate invocation remains local Production evidence; current full
 immutable/search acceptance is still required.
+
+### Deadline menu and complete native recovery evidence
+
+The current desktop/phone baseline failed both cases: desktop stopped at its
+initial two-protected-read assertion; phone reached the deadline chooser, where
+the label locator matched both the combobox and open MUI listbox. The fixture now
+observes the visible named listbox, addresses the named combobox only before that
+menu opens, and selects its option within the listbox. Filter disclosure, Apply
+and canvas activation establish enabled focus before one keypress. Only read-only
+menu opening and focus preparation repeat; an applied command is never retried.
+
+Both complete deadline-filter cases then pass together (two passes, 2.2 minutes)
+against the frozen compiled Production web/API, restricted PostgreSQL and scoped
+separate Worker. The original future/completed/reopened transitions, real missed
+update while offline, upcoming exclusion and overdue/recent matching all pass.
+Both viewports report zero WCAG 2.2 AA-tagged Axe violations. Filtered canvas state
+survives reload, clearing the deadline removes the match, and the canonical Card
+retains the actual acknowledged version and null deadline. No policy, assertion,
+scenario timeout or production source changed for this repair.
+
+This is local Production evidence, not proof of current immutable release CI or
+all search requirements. PRD-16 remains open at **18% estimated work remaining**
+(planning estimate); full release, performance/capacity and remaining acceptance
+evidence are still required.
