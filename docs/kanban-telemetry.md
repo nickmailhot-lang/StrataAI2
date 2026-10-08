@@ -1,5 +1,61 @@
 # Kanban command telemetry
 
+## Caught routed render failures
+
+App now supplies a fixed MUI route error view instead of React Router's default
+diagnostic page. It explains that a submitted change may have completed, warns
+that reloading can discard an unsaved draft, and offers an explicit reload.
+The fallback does not automatically retry, reload or issue a work command.
+Production React caught-error diagnostics print only a fixed message; the router
+callback never reports the Error object, message, component stack or route IDs.
+Development React diagnostics retain their normal behavior.
+
+The router's once-per-error callback counts render failures as `board_render`,
+`card_render` or `application_render`. Only the pathname's structural shape is
+used to select a fixed category; no path, query, scope or identity enters the
+queue. Non-render loader/action errors are excluded from this observation.
+The existing bounded activity queue and `POST /me/activity-client-events`
+transport apply, including session/CSRF checks, shared per-user abuse limits,
+five-second batching, failure dropping and the three-second transport deadline.
+These three categories accept only `kind: exception` and bounded counts, without
+duration fields. The server validates the complete batch before recording into
+`StrataAI.ActivityClient`; private/unknown fields reject the whole batch.
+
+The actual React/router regressions initially fail on all three missing report
+categories, then pass. The final combined 22 web cases include fixed fallback
+content, private-diagnostic suppression, exact aggregate reports, render-kind
+restrictions and the existing surface-admission boundary. Three API host cases
+pass, proving accepted counter values and fixed tags, anonymous/CSRF denial,
+and atomic rejection of messages, stacks, paths, IDs, keys and durations.
+The locked API build has zero warnings/errors. Web/browser TypeScript, targeted
+lint and production build pass.
+
+All four native desktop/phone Board/Card cases pass in one 2.2-minute invocation
+against the frozen production bundle, compiled Production API, restricted
+PostgreSQL and Nginx. A controlled malformed read forces a genuine React failure;
+the plain fallback contains no private sentinel, production console diagnostics
+do not expose it, and the actual telemetry POST receives 204 with a fixed
+exception count and no identities/content. Explicit keyboard reload recovers
+the real canonical screen; the complete persisted Lists/Cards remain unchanged.
+The request assertion excludes navigation observations and SignalR negotiation
+from canonical work mutations. Initial fixture failures came from matching the
+SPA document in the read interceptor and counting those observation/transport
+requests as work commands; both assumptions were corrected before the final
+complete run. No product assertion, limiter or timing budget was weakened.
+Disposable API/web containers are removed after the terminal run, preserving
+the original three services and saved volumes. This is compiled-source local
+evidence, not current immutable-image acceptance.
+
+This closes a scoped render-observation gap, not full PRD-06 telemetry. Uncaught
+root failures, event-handler failures and unhandled promises still require
+coverage; this route fallback does not recover an original in-memory command
+intent or dirty draft after its feature tree is destroyed.
+Anonymous failures use the same fallback but are not collected by the
+authenticated endpoint. Operator collector
+ingestion/dashboard evidence, complete timing/capacity/accessibility acceptance
+and current immutable-release execution also remain required. PRD-06 remains
+open; its remaining-work estimate is **31%**, a planning estimate.
+
 The existing operator meter `StrataAI.BoardSharing` now covers PATCH list
 commands as `list_update` (rename/rank/move) and POST card movement as
 `card_move`. It records native `strataai.board_sharing.requests` counters and

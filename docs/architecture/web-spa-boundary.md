@@ -87,6 +87,19 @@ pass. Current immutable-image execution and complete ARCH-02 acceptance remain
 required. See [Kanban timing evidence](../kanban-performance.md) for the unchanged
 timing requirements and their measured outcomes.
 
+## Routed render-error boundary
+
+Top-level routes inherit a fixed MUI error view. It displays no diagnostic Error
+data and offers explicit reload with an unsaved-draft warning; it does not
+automatically retry a command. Production React caught-error logging is reduced
+to a fixed message, while development keeps normal diagnostics. The router's
+render-error callback emits only a fixed aggregate category through the existing
+bounded activity telemetry path. Loader/action errors do not become render
+counts. See [caught render telemetry](../kanban-telemetry.md#caught-routed-render-failures)
+for scope, privacy, evidence and outstanding crash-recovery requirements.
+This boundary does not recover state destroyed with a failed feature tree and
+does not complete the architecture's error/recovery or release audit.
+
 ## Requirement evidence and remaining scope
 
 | ARCH-02 boundary | Executable evidence |

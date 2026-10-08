@@ -33,6 +33,7 @@ import { appTheme } from "../theme/appTheme";
 import { BuildIdentityFooter } from './BuildIdentityFooter';
 import { NotificationCenterPage } from '../features/notifications/NotificationCenterPage';
 import { GlobalSearchPage } from '../features/search/GlobalSearchPage';
+import { ViewFailure, observeViewFailure } from './ViewFailure';
 
 const routes = [
   { path: "/app", element: <OrganizationHome /> },
@@ -94,12 +95,12 @@ const routes = [
 ];
 
 export function App() {
-  const router = useMemo(() => createBrowserRouter(routes), []);
+  const router = useMemo(() => createBrowserRouter(routes.map(route => ({ ...route, errorElement: <ViewFailure /> }))), []);
 
   return (
     <ThemeProvider theme={appTheme}>
       <CssBaseline />
-      <RouterProvider router={router} />
+      <RouterProvider router={router} onError={observeViewFailure} />
       <BuildIdentityFooter />
     </ThemeProvider>
   );

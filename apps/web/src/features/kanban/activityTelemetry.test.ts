@@ -33,3 +33,13 @@ it('does no network work when disabled', async () => {
   const fetch = vi.fn(); vi.stubGlobal('fetch', fetch); configureActivityTelemetry(false);
   activityEvent('card_disclosure', 'open'); activityResult('board_read', true, performance.now()); await flushActivityTelemetry(); expect(fetch).not.toHaveBeenCalled();
 });
+it('restricts render observations to exception counts without timing or success fields', async () => {
+  const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetcher);
+  activityEvent('board_render', 'open'); activityEvent('card_render', 'retry'); activityResult('application_render', true, performance.now());
+  await flushActivityTelemetry(); expect(fetcher).not.toHaveBeenCalled();
+  activityEvent('board_render', 'exception'); activityEvent('card_render', 'exception');
+  await flushActivityTelemetry();
+  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ events: [
+    { action: 'board_render', kind: 'exception', count: 1 }, { action: 'card_render', kind: 'exception', count: 1 },
+  ] });
+});
