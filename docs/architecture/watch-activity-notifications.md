@@ -135,3 +135,57 @@ last inspection, exact-commit `5e7e1f5a` web-quality and PostgreSQL CI jobs pass
 and API host tests were still live in run 37730364654.
 Estimated PRD-17 work remaining stays **24%** (planning estimate); the issue stays
 open pending complete acceptance.
+
+
+## Batched recipient eligibility and authority retention
+
+`ICardWatchRecipientStore` now owns internal recipient selection. The producer
+still validates the exact triggering Card revision and its current Card/List/Board/
+Organization lifecycle under the originating Board gate, then suppresses the
+actor and direct assignment target before publishing the notification batch.
+
+PostgreSQL selects the complete eligible watched roster in one query. An EXISTS
+predicate unions matching Card, current List and Board watches without duplicate
+rows. Tenant and canonical Card/List/Board joins prevent scope widening. Accounts
+must be active, email verified when configured, and active Organization members.
+Private Boards additionally require a current Board grant or an Organization
+Owner/Admin role; Organization/Public visibility still requires Organization
+membership. Archived Cards remain eligible only through the producer's existing
+CARD_ARCHIVED capture rule. Deleted Cards, archived/deleted Lists and inactive
+Boards/Organizations cannot supply recipient scope.
+
+The query locks eligible account and Organization membership rows FOR SHARE in
+UUID order until the originating transaction ends. The existing Board gate
+serializes Board-grant and watch changes. A concurrent status/email/role update
+cannot invalidate selected recipient authority while publication commits. Demo
+retains the same policy through its existing transaction gate and adapters;
+Production resolves the new PostgreSQL implementation, checked by runtime
+composition tests. Recipient IDs remain internal; there is no discovery endpoint,
+new grant, schema migration, datastore, framework or deployable service.
+
+Executed local validation on 2026-10-07: the strict full solution build passes
+with zero warnings/errors; 53 selected domain, 11 watch API host and six runtime
+composition cases pass. Actual Linux/restricted PostgreSQL storage checks pass for
+complete overlap union, active/inactive grants and accounts, both email policies,
+Organization/Public visibility, private Owner/Admin bypass of missing/removed
+Board grants, canonical parent and shared-account tenant refusal, cancellation,
+unwatch, and transaction rollback. Independent account and Organization-grant
+updates actually hit lock timeout while selected authority is retained. These
+storage transitions use synthetic admission rather than authenticated HTTP.
+
+The complete watch producer-to-browser case also passes in 48.4 seconds against
+the newly compiled readonly Production API, current production web code, actual
+restricted PostgreSQL 17/pgvector/schema 110, Nginx/CSP and the existing separate
+compiled Worker scoped to the fixture Organization. Optional email verification
+matches the CI functional browser phase. Three canonical watch acknowledgments,
+a peer MUI Card change, one typed notification in desktop/390px inboxes, shared
+read state, both accessibility checks, self-suppression, actual unwatch and no
+later notification remain enforced. Temporary test services are removed afterward;
+original containers and data are preserved.
+
+This supersedes the earlier per-candidate database eligibility reads described
+above. SQL selection and batch write query counts no longer grow per recipient,
+but result size, row locking and notification/journal inserts still do. No
+large-scale producer p95 or current immutable-image acceptance is established by
+these checks. Estimated PRD-17 work remaining stays **24%** (planning estimate);
+full capacity/latency and release/PRD-wide acceptance are still required.

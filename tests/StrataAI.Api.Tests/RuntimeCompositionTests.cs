@@ -52,6 +52,7 @@ public sealed class RuntimeCompositionTests
             (typeof(INotificationInboxStore), "PostgresWorkNotificationStore"),
             (typeof(INotificationRealtimeStore), "PostgresWorkNotificationStore"),
             (typeof(IWatchSubscriptionStore), "PostgresWatchSubscriptionStore"),
+            (typeof(ICardWatchRecipientStore), "PostgresCardWatchRecipientStore"),
             (typeof(ICardReminderStore), "PostgresCardReminderStore"),
             (typeof(IBackgroundJobStore), "PostgresBackgroundJobStore"),
         };

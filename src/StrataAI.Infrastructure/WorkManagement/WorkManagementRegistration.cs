@@ -55,6 +55,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<INotificationRealtimeStore>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
             services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryWorkNotificationStore>());
             services.AddSingleton<INotificationInboxStore, InMemoryNotificationInboxStore>();
+            services.AddSingleton<ICardWatchRecipientStore, InMemoryCardWatchRecipientStore>();
             services.AddSingleton<InMemoryWatchSubscriptionStore>();
             services.AddSingleton<IWatchSubscriptionStore>(provider => provider.GetRequiredService<InMemoryWatchSubscriptionStore>());
             services.AddSingleton<InMemoryCardReminderStore>();
@@ -97,6 +98,7 @@ public static class WorkManagementRegistration
             services.AddSingleton<INotificationInboxStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
             services.AddSingleton<INotificationRealtimeStore>(provider => provider.GetRequiredService<PostgresWorkNotificationStore>());
             services.AddSingleton<IWatchSubscriptionStore, PostgresWatchSubscriptionStore>();
+            services.AddSingleton<ICardWatchRecipientStore, PostgresCardWatchRecipientStore>();
             services.AddSingleton<ICardReminderStore, PostgresCardReminderStore>();
             services.AddSingleton<ICardReminderJobPublisher, PostgresCardReminderJobPublisher>();
             services.AddSingleton<IAttachmentScanJobPublisher, PostgresAttachmentScanJobPublisher>();

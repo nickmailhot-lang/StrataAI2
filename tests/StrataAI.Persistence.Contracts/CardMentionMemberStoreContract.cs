@@ -136,6 +136,85 @@ internal static class CardMentionMemberStoreContract
                 "Refused full group history retained comment/snapshot effects.");
             // Reuse the synthetic eligible roster to exercise the real restricted
             // activity batch and journal, without claiming HTTP watch admission.
+            var watchRecipients = provider.GetRequiredService<ICardWatchRecipientStore>();
+            var watchStore = provider.GetRequiredService<IWatchSubscriptionStore>();
+            var canonical = (await provider.GetRequiredService<IWorkManagementStore>().FindCardAsync(card, ct))!;
+            var watchScope = new CardWatchActivity(tenant, board, canonical.ListId, card);
+            try
+            {
+                await watchRecipients.LockRecipientsAsync(watchScope, true, ct);
+                throw new InvalidOperationException("Unowned watch recipient selection was accepted.");
+            }
+            catch (InvalidOperationException e) when (e.Message == "Watch recipients require the originating Work transaction.") { }
+            var refusedWatches = await unit.ExecuteReadAsync(tenant, null, "fixture_denied", () => Task.FromResult(true), async () =>
+            {
+                foreach (var recipient in users)
+                    await watchStore.SetAsync(tenant, recipient, "BOARD", board, true, 0, DateTimeOffset.UtcNow, ct);
+                await watchStore.SetAsync(tenant, users[0], "CARD", card, true, 0, DateTimeOffset.UtcNow, ct);
+                await watchStore.SetAsync(tenant, users[0], "LIST", canonical.ListId, true, 0, DateTimeOffset.UtcNow, ct);
+                var eligible = await watchRecipients.LockRecipientsAsync(watchScope, true, ct);
+                Require(eligible.Order().SequenceEqual(users.Take(25).Order()),
+                    "Watch recipient selection truncated, duplicated or admitted a stale/ineligible account.");
+                await using (var session = await provider.GetRequiredService<StrataAI.Infrastructure.Persistence.PostgresConnectionFactory>().OpenTenantSessionAsync(tenant, ct))
+                {
+                    // Synthetic authority transitions within the fixture transaction;
+                    // actual HTTP Board admission is covered by the command fixtures.
+                    foreach (var visibility in new[] { "ORGANIZATION", "PUBLIC" })
+                    {
+                        await using var changeVisibility = new NpgsqlCommand("UPDATE boards SET visibility=@visibility WHERE tenant_id=@tenant AND id=@board;", session.Connection, session.Transaction);
+                        changeVisibility.Parameters.AddWithValue("tenant", tenant); changeVisibility.Parameters.AddWithValue("board", board); changeVisibility.Parameters.AddWithValue("visibility", visibility);
+                        await changeVisibility.ExecuteNonQueryAsync(ct);
+                        Require((await watchRecipients.LockRecipientsAsync(watchScope, true, ct)).Order().SequenceEqual(users.Take(27).Order()),
+                            "Visible Board watches required a private grant or admitted inactive Organization/account state.");
+                    }
+                    await using var restore = new NpgsqlCommand("UPDATE boards SET visibility='PRIVATE' WHERE tenant_id=@tenant AND id=@board; UPDATE organization_members SET role=CASE WHEN user_id=@admin THEN 'ADMIN' ELSE 'OWNER' END WHERE tenant_id=@tenant AND user_id IN (@admin,@owner);", session.Connection, session.Transaction);
+                    restore.Parameters.AddWithValue("tenant", tenant); restore.Parameters.AddWithValue("board", board); restore.Parameters.AddWithValue("admin", users[25]); restore.Parameters.AddWithValue("owner", users[26]);
+                    await restore.ExecuteNonQueryAsync(ct);
+                    Require((await watchRecipients.LockRecipientsAsync(watchScope, true, ct)).Order().SequenceEqual(users.Take(27).Order()),
+                        "Private Board watch omitted a current Organization Owner/Admin without an active Board grant.");
+                    await using var resetRoles = new NpgsqlCommand("UPDATE organization_members SET role='MEMBER' WHERE tenant_id=@tenant AND user_id IN (@admin,@owner);", session.Connection, session.Transaction);
+                    resetRoles.Parameters.AddWithValue("tenant", tenant); resetRoles.Parameters.AddWithValue("admin", users[25]); resetRoles.Parameters.AddWithValue("owner", users[26]); await resetRoles.ExecuteNonQueryAsync(ct);
+                }
+                using (var cancelled = new CancellationTokenSource())
+                {
+                    cancelled.Cancel();
+                    try { await watchRecipients.LockRecipientsAsync(watchScope, true, cancelled.Token); throw new InvalidOperationException("Cancelled watch selection was accepted."); }
+                    catch (OperationCanceledException) { }
+                }
+                var optional = await watchRecipients.LockRecipientsAsync(watchScope, false, ct);
+                Require(optional.Order().SequenceEqual(users.Take(25).Append(users[28]).Order()),
+                    "Watch recipient selection ignored the verified-email policy.");
+                foreach (var invalid in new[] { watchScope with { OrganizationId = foreignTenant }, watchScope with { BoardId = foreignBoard },
+                    watchScope with { ListId = Guid.NewGuid() }, watchScope with { CardId = Guid.NewGuid() } })
+                {
+                    // The foreign tenant needs its own owning scope, checked below.
+                    if (invalid.OrganizationId != tenant) continue;
+                    Require((await watchRecipients.LockRecipientsAsync(invalid, true, ct)).Count == 0,
+                        "Watch recipient selection widened a canonical parent scope.");
+                }
+                await watchStore.SetAsync(tenant, users[1], "BOARD", board, false, 1, DateTimeOffset.UtcNow, ct);
+                Require((await watchRecipients.LockRecipientsAsync(watchScope, true, ct)).Order().SequenceEqual(users.Take(25).Where(id => id != users[1]).Order()),
+                    "Unwatched account retained activity eligibility.");
+                // Selection locks account and Organization grant through publication.
+                foreach (var sql in new[] { "UPDATE users SET display_name=display_name WHERE id=@user;",
+                    "UPDATE organization_members SET role=role WHERE tenant_id=@tenant AND user_id=@user;" })
+                {
+                    var connection = Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_ADMIN_CONNECTION")!;
+                    await using var competitor = new NpgsqlConnection(connection); await competitor.OpenAsync(ct);
+                    await using var tx = await competitor.BeginTransactionAsync(ct);
+                    await using var configure = new NpgsqlCommand("SET LOCAL lock_timeout='250ms';", competitor, tx); await configure.ExecuteNonQueryAsync(ct);
+                    await using var update = new NpgsqlCommand(sql, competitor, tx);
+                    update.Parameters.AddWithValue("tenant", tenant); update.Parameters.AddWithValue("user", users[0]);
+                    try { await update.ExecuteNonQueryAsync(ct); throw new InvalidOperationException("Watch recipient authority lock was absent."); }
+                    catch (PostgresException error) when (error.SqlState == "55P03") { }
+                }
+                return WorkOperation<bool>.Failure("fixture_refused");
+            }, ct);
+            Require(refusedWatches.ErrorCode == "fixture_refused" &&
+                await Scope(tenant, () => watchStore.FindAsync(tenant, users[0], "BOARD", board, ct)) is null,
+                "Refused watch recipient fixture retained a subscription.");
+            Require((await Scope(foreignTenant, () => watchRecipients.LockRecipientsAsync(watchScope with { OrganizationId = foreignTenant }, true, ct))).Count == 0,
+                "Shared account widened watch recipient tenant admission.");
             var activityId = Guid.NewGuid();
             var journal = provider.GetRequiredService<INotificationRealtimeStore>();
             var beforeActivity = new Dictionary<Guid, long>();
@@ -284,6 +363,7 @@ internal static class CardMentionMemberStoreContract
             await cleanupTransaction.CommitAsync(ct);
         }
         Console.WriteLine("Restricted mention member metadata: owning tenant, literal prefix/seek bounds, exact current handles, active Board/Organization/account/email policy, former alias exclusion and shared-user isolation passed.");
+        Console.WriteLine("Restricted watch recipient selection: owning scope, complete overlap union, account/email/membership policy, canonical parent and tenant boundaries, unwatch, authority row locks and rollback passed.");
         Console.WriteLine("Restricted activity batch: exact source, whole roster, original notification identity, actor suppression, one recipient journal effect and notification/journal rollback passed.");
         Console.WriteLine("Restricted mass recipient history: complete Board roster beyond username window, current Card assignments with explicit email policy, union without duplicates, Card/Board/tenant affinity, durable full recipient snapshot and refused comment/history rollback passed.");
     }

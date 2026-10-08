@@ -5,8 +5,8 @@ namespace StrataAI.Application.WorkManagement;
 
 // Runs under the originating mutation's Board gate and owning transaction. Do
 // not depend on IWorkBoardAuthorization: its implementation owns this producer.
-public sealed class CardWatchNotificationProducer(IWorkManagementStore work, IWatchSubscriptionStore watches,
-    IOrganizationStore organizations, IIdentityStore identities, IdentityPolicy policy, IWorkNotificationStore notifications)
+public sealed class CardWatchNotificationProducer(IWorkManagementStore work, ICardWatchRecipientStore eligible,
+    IOrganizationStore organizations, IdentityPolicy policy, IWorkNotificationStore notifications)
 {
     public async Task AppendAsync(WorkEvent change, Guid? assignmentRecipient, CancellationToken ct)
     {
@@ -23,18 +23,10 @@ public sealed class CardWatchNotificationProducer(IWorkManagementStore work, IWa
             list.BoardId != scope.BoardId || await organizations.FindOrganizationAsync(scope.OrganizationId, ct)
                 is not { Status: OrganizationStatus.Active }) return;
         var recipients = new List<Guid>();
-        foreach (var recipient in await watches.ListActivityCandidatesAsync(scope, ct))
+        foreach (var recipient in await eligible.LockRecipientsAsync(scope, policy.RequireVerifiedEmail, ct))
         {
-            // Assignment wins the same event-recipient tuple; neither multiple
-            // watches nor replay may create a second notification for that event.
-            if (recipient == change.ActorId || recipient == assignmentRecipient) continue;
-            var account = await identities.FindUserByIdAsync(recipient, ct);
-            if (account is not { Status: AccountStatus.Active } || policy.RequireVerifiedEmail && !account.EmailVerified) continue;
-            var member = await organizations.FindMembershipAsync(scope.OrganizationId, recipient, ct);
-            if (member is not { Active: true }) continue;
-            if (board.Visibility == BoardVisibility.Private && member.Role is not (OrganizationRole.Owner or OrganizationRole.Admin) &&
-                await work.FindBoardMemberAsync(scope.BoardId, recipient, ct) is not { Active: true }) continue;
-            recipients.Add(recipient);
+            // Assignment wins overlapping watch intent for the same event.
+            if (recipient != change.ActorId && recipient != assignmentRecipient) recipients.Add(recipient);
         }
         await notifications.AppendCardActivitiesAsync(change, recipients, ct);
     }
