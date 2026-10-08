@@ -218,3 +218,16 @@ linked record for exact assertions and runtime/policy limits. Local compiled
 evidence supersedes the earlier local-execution gap; strict email policy, due
 reminder fire, full capacity/concurrency and current immutable-image acceptance
 remain separate. PRD-17 stays open at **22% estimated work remaining**.
+
+## Actual watch and activity lock ordering
+
+The [six actual command-order scenarios](prd-17-acceptance.md#executed-actual-watch-and-activity-command-ordering)
+pass CARD/LIST/BOARD watch eligibility in both orders under strict account policy.
+Two independent API clients are observed waiting on the real Board gate, with the
+queued blocker checked before release. Unwatch-first suppresses the source's
+notification; activity-first retains exactly one. Watch identity/creation clocks
+survive re-enablement, and exact original-key replays preserve all recorded effects.
+Final inbox/source/journal attribution matches independently stored records.
+The complete case passes in 1.1 minutes; this is HTTP/PostgreSQL correctness,
+not a new native, transport, rollback or capacity claim. Current retained-image
+and full acceptance remain required. PRD-17 stays open at **15% estimated remaining**.

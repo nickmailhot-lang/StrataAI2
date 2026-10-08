@@ -18,7 +18,7 @@ The adopted MUI/API/separate Worker/PostgreSQL architecture is unchanged.
 | NOTIFY-FR-005 watched Card changes | [Configured activity matrix](watch-activity-notifications.md), originating command transaction and post-mutation revision | All configured producers, current eligibility, source/journal/job atomicity and native producer-to-inbox delivery |
 | NOTIFY-FR-006 current List and newly created Cards | Same producer selects current List watchers and includes Card creation | Native current-List creation/movement boundaries executed below; current-image, concurrent watch/access transitions and exact historical attribution remain |
 | NOTIFY-FR-007 Board-wide Card activity | Same producer selects current Board watchers and deduplicates overlapping scopes | Full activity matrix and current-image 500-recipient correctness/latency fixture; scale Worker delivery remains distinct |
-| NOTIFY-FR-008 relationship at triggering event | Post-mutation current List/Board attribution; direct Card watch follows identity | Local native List and cross-Board watch matrices executed below; current-image, complete role/visibility matrix and real concurrent admission remain |
+| NOTIFY-FR-008 relationship at triggering event | Post-mutation current List/Board attribution; direct Card watch follows identity | Local native List/cross-Board and actual Card/List/Board unwatch/activity lock-order matrices executed below; current-image, complete role/visibility and concurrent permission/movement admission remain |
 | NOTIFY-FR-009 mentions and assignments | [Assignment precedence](watch-activity-notifications.md), [assignment persistence](assignment-notifications.md), [mentions](comments-mentions-activity.md) | Both producer pipelines, actor suppression, deduplication, visibility withdrawal and current-image native delivery |
 | NOTIFY-FR-010 due reminders | [Personal due reminders and typed Worker delivery](card-dates.md) | Real scheduled fire, narrow Worker capability, exactly-once notification/journal effect, cancellation/reclaim/access withdrawal and native recovery; saving a future reminder alone does not prove fire |
 | NOTIFY-FR-011 actor self-suppression | Originating activity excludes actor; assignment/watch precedence and due-reminder policy are documented separately | Full configured producer matrix, including intentional personal reminder semantics, without applying suppression indiscriminately |
@@ -706,3 +706,42 @@ removed and original services/data preserved. Current retained-image/full CI,
 complete role/interaction/concurrent rollback and capacity matrices, provider
 acceptance and the full Definition of Done remain independently required. PRD-17
 stays open at **15% estimated work remaining** (planning estimate).
+
+## Executed actual watch and activity command ordering
+
+`watch-trigger-order.spec.ts` passes all six ordering scenarios in one
+**1.1-minute** strict verified-account invocation: CARD, LIST and BOARD personal
+watches, each with unwatch first and activity first. Fresh Owner/Member accounts
+use actual registration, refused pre-verification login, post-verification login,
+Organization invitation/acceptance and explicit private Board membership. Actual
+HTTP commands create the List/Card and each watch; no subscriptions, notification
+rows or source events are fabricated.
+
+A separate PostgreSQL transaction holds only the real Board row lock. The first
+actual API command is observed waiting, then the second is observed waiting;
+`pg_blocking_pids` independently confirms the queued peer blocker before release.
+This establishes command order without timing assumptions. When unwatch precedes
+the Card edit, the actual source version creates zero recipient notifications.
+When activity precedes unwatch, that exact source version creates one retained
+notification. Across all three scopes, six real edits advance the Card to version
+seven and produce exactly three notifications. Watch identity/creation clock
+survive re-enablement, and final watch versions are four with watching false.
+
+Every original edit and unwatch key/body is replayed after its pair. Replies
+match original full response texts, and full recorded Card/watch/notification/
+private journal/counter/Work-event/audit/job/receipt fingerprints remain unchanged.
+Final authorized inbox and canonical journal match complete stored notifications,
+real Card source actor/revision/type/clocks and exact private creation envelopes.
+This is HTTP/PostgreSQL concurrency proof; it adds no native keyboard/mobile,
+private transport, rollback, permission-loss or scale acceptance claim.
+
+The required build-once CI adds a dedicated strict observed-wait phase before
+optional profile fixtures; the full browser suite also collects the case. Browser
+TypeScript and script syntax checks pass. Local execution uses current compiled
+Production API, current MUI/Nginx and restricted PostgreSQL 17/pgvector schema 112;
+no Worker is needed for this originating-transaction proof. Owned runtime/database
+are removed and original services/data retained. This strengthens
+NOTIFY-FR-004/005/006/007/008/012 and PRD-17-TC-07/08. Current retained-image/full CI,
+complete role/visibility/concurrent permission and movement matrices, rollback,
+capacity and the entire Definition of Done remain required. PRD-17 stays open at
+**15% estimated work remaining** (planning estimate).
