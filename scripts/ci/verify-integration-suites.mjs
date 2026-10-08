@@ -81,6 +81,35 @@ export function verifyIntegrationSuites(workflow, registry) {
   const bundle = jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle');
   assert.match(bundle.run, /cp image-artifacts\/build-metadata.json bundle\/build-metadata.json/);
   assert.ok(!bundle.run.includes('cat > bundle/build-metadata.json'), 'Release must preserve the original metadata document');
+  const releaseJob = jobs['release-bundle'];
+  assert.deepEqual(releaseJob.needs, ['metadata', 'required-ci']);
+  assert.equal(releaseJob.env.STRATAAI_BUILD_VERSION, '${{ needs.metadata.outputs.version }}');
+  const releaseSteps = releaseJob.steps;
+  const releaseSecurity = releaseSteps.find(step => step.name === 'Download exact tested security evidence');
+  assert.equal(releaseSecurity?.with.name, 'security-evidence-${{ github.sha }}');
+  assert.equal(releaseSecurity.with.path, 'security-artifacts');
+  const inputVerify = releaseSteps.find(step => step.name === 'Verify tested release inputs');
+  assert.equal(inputVerify?.run, 'python3 scripts/ci/verify-release-artifacts.py inputs --images image-artifacts --security security-artifacts');
+  const bundleVerify = releaseSteps.find(step => step.name === 'Verify release bundle completeness and checksums');
+  assert.equal(bundleVerify?.run, 'python3 scripts/ci/verify-release-artifacts.py bundle --path bundle');
+  assert.ok(bundle.run.includes('cp -R security-artifacts bundle/security'));
+  assert.ok(bundle.run.includes('for component in strataai-web strataai-api strataai-worker metrics-collector; do'));
+  assert.ok(bundle.run.includes('cp "security-artifacts/${component}.cdx.json" "bundle/sbom/${component}.cdx.json"'));
+  assert.ok(bundle.run.includes('find . -type f ! -path ./SHA256SUMS'), 'Root checksums must cover nested security manifest');
+  const releaseUpload = releaseSteps.find(step => step.name === 'Upload runnable release bundle');
+  assert.equal(releaseUpload.with.path, 'bundle/');
+  assert.equal(releaseUpload.with['include-hidden-files'], true, 'Retain the required environment example');
+  assert.equal(releaseUpload.with['if-no-files-found'], 'error');
+  for (const step of [inputVerify, bundle, bundleVerify, releaseUpload]) {
+    assert.equal(step.if, undefined, 'Release checks may not be conditional');
+    assert.equal(step['continue-on-error'] ?? false, false);
+  }
+  assert.ok(releaseSteps.indexOf(releaseSecurity) < releaseSteps.indexOf(inputVerify));
+  assert.ok(releaseSteps.indexOf(inputVerify) < releaseSteps.indexOf(bundle));
+  assert.ok(releaseSteps.indexOf(bundle) < releaseSteps.indexOf(bundleVerify));
+  assert.ok(releaseSteps.indexOf(bundleVerify) < releaseSteps.indexOf(releaseUpload));
+  assert.ok(releaseSteps.every(step => !/docker (?:build|buildx build)/.test(step.run ?? '')), 'Bundle cannot rebuild application images');
+
   const security = jobs.security;
   assert.deepEqual(security.needs, ['metadata', 'build-images-once']);
   const securitySteps = security.steps;
@@ -103,6 +132,12 @@ export function verifyIntegrationSuites(workflow, registry) {
   const securityUpload = securitySteps.find(step => step.name === 'Upload SBOMs and security evidence');
   assert.equal(securityUpload.if, 'always()');
   assert.equal(securityUpload.with.path, 'security-artifacts/');
+  const securityChecksums = securitySteps.find(step => step.name === 'Bind retained security evidence checksums');
+  assert.equal(securityChecksums?.if, 'always()');
+  assert.equal(securityChecksums['continue-on-error'] ?? false, false);
+  assert.ok(securityChecksums.run.includes('sha256sum > SHA256SUMS'));
+  assert.ok(securitySteps.indexOf(securityChecksums) < securitySteps.indexOf(securityUpload));
+
   for (const step of securitySteps) {
     assert.ok(!/docker (?:build|buildx build)|compose[^\n]*\bbuild\b/.test(step.run ?? ''), 'Security may not rebuild release images');
   }

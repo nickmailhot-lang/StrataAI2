@@ -176,6 +176,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Source test result artifacts and private-content exclusion (ARCH-11)](architecture/source-test-results.md)
 - [Security archive integrity and evidence identity (ARCH-11)](architecture/security-evidence-identity.md)
 - [Capacity and diagnostic artifact provenance and layouts (ARCH-11)](architecture/artifact-evidence-provenance.md)
+- [Release bundle integrity and tested SBOM preservation (ARCH-11)](architecture/release-artifact-integrity.md)
 - [Activity history observations (PRD-15, partial)](architecture/activity-history-telemetry.md)
 - [PRD-14 Attachments and Card Covers acceptance audit](architecture/attachment-acceptance.md)
 - [Release browser rate budget](architecture/browser-rate-budget.md)

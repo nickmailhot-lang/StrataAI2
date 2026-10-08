@@ -6,8 +6,25 @@ The release bundle contains the exact web, API, and Worker images tested by CI.
 
 - Docker Engine or Docker Desktop
 - Docker Compose v2
+- Bash with `curl` and `sha256sum` (for the supplied runtime scripts and checksum verification)
 
 No Node.js, .NET SDK, or source checkout is required.
+
+## Verify the downloaded bundle
+
+After extracting the artifact ZIP, verify it before loading images:
+
+```bash
+sha256sum --check SHA256SUMS
+chmod +x health-check.sh apply-migrations.sh migration-stream.sh provision-runtime-roles.sh
+```
+
+The ZIP uploader does not preserve executable permissions. The environment example
+`.env.release.example` is included explicitly; it contains placeholders only.
+The `sbom/` directory contains the tested web/API/Worker and metrics receiver
+CycloneDX inventories. `security/` preserves the original security evidence,
+its canonical build metadata, and its checksum manifest. Compare its build identity
+with the root `build-metadata.json`; this does not replace successful CI gates.
 
 ## Load images
 
@@ -23,11 +40,15 @@ the three image variables point at the image tags recorded in `build-metadata.js
 ## Start and migrate
 
 ```bash
-docker compose --env-file .env -f compose.release.yml up -d --wait
+docker compose --env-file .env -f compose.release.yml up -d --wait postgres
 COMPOSE_FILE=compose.release.yml ./apply-migrations.sh
 COMPOSE_FILE=compose.release.yml ./provision-runtime-roles.sh
+docker compose --env-file .env -f compose.release.yml up -d --wait
 ./health-check.sh
 ```
+
+Start PostgreSQL first, then migrate and provision restricted roles before starting
+the application hosts. Their readiness requires the current schema and those roles.
 
 Migrations are applied from the versioned `db/migrations` directory included in the same
 release bundle. Review migration/rollback notes before production promotion.

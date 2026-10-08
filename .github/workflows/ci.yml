@@ -114,6 +114,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
           python3 -m unittest discover -s tests -p 'evidence_artifacts_test.py'
+          python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
 
       - name: Unit and component tests
         run: |
@@ -1231,6 +1232,15 @@ jobs:
           docker run --rm -v "${PWD}/security-artifacts:/output" aquasec/trivy:0.74.0 image --format cyclonedx --output /output/metrics-collector.cdx.json "$collector"
           docker run --rm aquasec/trivy:0.74.0 image --exit-code 1 --ignore-unfixed --severity CRITICAL "$collector"
 
+      - name: Bind retained security evidence checksums
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -d security-artifacts ]; then
+            (cd security-artifacts && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
+          fi
+
       - name: Upload SBOMs and security evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -1272,7 +1282,10 @@ jobs:
     name: release-bundle
     runs-on: ubuntu-24.04
     needs:
+      - metadata
       - required-ci
+    env:
+      STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
@@ -1281,6 +1294,15 @@ jobs:
         with:
           name: strataai-images-${{ github.sha }}
           path: image-artifacts
+
+      - name: Download exact tested security evidence
+        uses: actions/download-artifact@v8
+        with:
+          name: security-evidence-${{ github.sha }}
+          path: security-artifacts
+
+      - name: Verify tested release inputs
+        run: python3 scripts/ci/verify-release-artifacts.py inputs --images image-artifacts --security security-artifacts
 
       - name: Assemble release bundle
         shell: bash
@@ -1301,17 +1323,34 @@ jobs:
           cp scripts/provision-compose-runtime-roles.sh bundle/provision-runtime-roles.sh
           cp -R db bundle/db
           cp docs/release/README.md bundle/README.md
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          build = json.loads(Path('image-artifacts/build-metadata.json').read_text())
+          readme = Path('bundle/README.md')
+          prefix = f"https://github.com/{build['repository']}/blob/{build['commitSha']}/docs/architecture/"
+          readme.write_text(readme.read_text().replace('](../architecture/', '](' + prefix))
+          PY
 
           cp image-artifacts/build-metadata.json bundle/build-metadata.json
+          cp -R security-artifacts bundle/security
+          for component in strataai-web strataai-api strataai-worker metrics-collector; do
+            cp "security-artifacts/${component}.cdx.json" "bundle/sbom/${component}.cdx.json"
+          done
 
           (
             cd bundle
-            find . -type f ! -name SHA256SUMS -print0               | sort -z               | xargs -0 sha256sum > SHA256SUMS
+            find . -type f ! -path ./SHA256SUMS -print0               | sort -z               | xargs -0 sha256sum > SHA256SUMS
           )
+
+      - name: Verify release bundle completeness and checksums
+        run: python3 scripts/ci/verify-release-artifacts.py bundle --path bundle
 
       - name: Upload runnable release bundle
         uses: actions/upload-artifact@v7
         with:
           name: strataai2-docker-bundle-${{ github.sha }}
           path: bundle/
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: ${{ github.event_name == 'pull_request' && 14 || 90 }}
