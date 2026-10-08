@@ -311,3 +311,35 @@ the token is private is not email-provider proof. Local strict admission now
 supersedes the optional-policy limit for these cases; current immutable/full CI,
 remaining producer/concurrency/capacity and Definition of Done still govern closure.
 PRD-15 remains open at **36% estimated work remaining**; PRD-17 **15%**.
+
+## Command confirmation through automatic recovery
+
+A fresh current-source native group-mention invocation received successful
+comment responses but failed to observe `Comment added.` on a later submission.
+Automatic Card invalidation/reconnect used the explicit-review load path, which
+cleared the accepted command's announcement. The new PRD-15-TC-08/09 component
+regression fails before repair on that missing confirmation.
+
+Automatic rereads now use the existing recovery path. The confirmation survives
+Card-version invalidation and reconnect; an explicit review clears it. The
+regression independently requires the authoritative rereads and exactly one
+write. Current actor/read admission, dirty drafts and uncertain originals retain
+their existing guards. All 34 selected comment/focus cases, web/browser types,
+targeted lint and the Production web build pass.
+
+The final strict native producer invocation passes all eight assignment,
+selected-mention, confirmed-group and actual due-reminder cases in 8.2 minutes,
+at desktop and phone widths, with no skips or retries. It uses rebuilt current
+MUI assets, current compiled Production API/separate Worker and restricted
+PostgreSQL 17/pgvector schema 114. Both account policies require verified email;
+the existing CI fixture activates only newly registered disposable accounts
+when tokens are private, which does not prove provider delivery. Full stored
+notification attribution, audit clocks, private transport, receipt/focus recovery,
+group quota/consent, withdrawal and accessibility assertions remain.
+
+Earlier invocations reported retry-focus failures; their diagnostics are retained
+and the final run keeps those assertions. Their intermittent cause is not
+established by the confirmation regression. Temporary diagnostic edits and owned
+containers/database are removed. Current immutable/full CI and remaining complete
+acceptance/DoD still govern closure. PRD-15 remains at **36% estimated work
+remaining** and PRD-17 at **15%** (planning estimates).

@@ -65,6 +65,25 @@ including accessibility checks and recovery after a committed bulk-read response
 is deliberately lost. The invocation's containers and cloned database are removed.
 This is a scoped native proof, not current immutable-image/full-release success.
 
+## Shared producer persistence oracle
+
+The [independent browser persistence oracle](../../tests/browser/persistedNotificationDelivery.ts)
+now also requires each authorized inbox `updatedAt` to equal the actual stored
+first `read_at`, or original `created_at` while unread, preserving PostgreSQL's
+timestamp precision. Its existing source/journal/recipient comparisons remain.
+This extends FOUND-FR-009 verification across assignment, selected and group
+mentions, and actual Worker due reminders rather than relying on one producer.
+
+All eight strict native producer cases pass in one 8.2-minute invocation with no
+skips or retries, using rebuilt current MUI assets, current compiled Production
+API/separate Worker and restricted schema-114 PostgreSQL 17/pgvector. Both desktop
+and phone views retain actual delivery, keyboard, accessibility, original receipt,
+withdrawal and stored envelope checks. The
+[comment confirmation repair and retained earlier failures](prd-15-acceptance.md#command-confirmation-through-automatic-recovery)
+record the investigation and its limits. This local runtime proof does not certify
+current immutable release images or mail-provider delivery. Owned fixtures are
+removed and original services/data preserved.
+
 Current immutable-image/full release gates and complete PRD requirements remain
 outstanding. Estimated work remaining stays **34% for PRD-01** and **15% for
 PRD-17** (planning estimates); neither issue is ready for closure.

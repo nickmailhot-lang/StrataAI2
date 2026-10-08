@@ -362,6 +362,22 @@ it('explains read-only empty state and blocks new commands when the Card changes
   view.unmount(); mock(); const next = render(<CardCommentsControl {...p} />); await create(); next.rerender(<CardCommentsControl {...p} version={5} />);
   expect(screen.getByRole('button', { name: 'Save comment' })).toBeDisabled(); expect(screen.getByRole('textbox')).toBeDisabled(); expect(writes()).toHaveLength(0);
 });
+it('PRD-15-TC-08/09: preserves successful command confirmation during automatic recovery until an explicit review', async () => {
+  mock(); const p = props(); const view = render(<CardCommentsControl {...p} reconnectSequence={0} />); await create();
+  fireEvent.click(screen.getByRole('button', { name: 'Save comment' })); await screen.findByText('Comment added.');
+  mock(() => ack, { ...page, cardVersion: 6 });
+  view.rerender(<CardCommentsControl {...p} version={6} reconnectSequence={0} />);
+  await screen.findByRole('button', { name: 'Add comment' });
+  expect(screen.getByText('Comment added.')).toBeVisible(); expect(writes()).toHaveLength(1);
+  const reads = () => vi.mocked(workRequest).mock.calls.filter(([path, init]) => path.includes('/comments') && !init?.method).length;
+  expect(reads()).toBe(2);
+  view.rerender(<CardCommentsControl {...p} version={6} reconnectSequence={1} />);
+  await waitFor(() => expect(reads()).toBe(3)); await screen.findByRole('button', { name: 'Add comment' });
+  expect(screen.getByText('Comment added.')).toBeVisible(); expect(writes()).toHaveLength(1);
+  fireEvent.click(screen.getByRole('button', { name: 'Review Card comments' }));
+  await waitFor(() => expect(reads()).toBe(4)); await screen.findByRole('button', { name: 'Add comment' });
+  expect(screen.queryByText('Comment added.')).not.toBeInTheDocument(); expect(writes()).toHaveLength(1);
+});
 it('automatically rereads an opened clean view after Card invalidation and reconnect without stealing focus', async () => {
   const reports = telemetry();
   let current: unknown = page; const p = props();

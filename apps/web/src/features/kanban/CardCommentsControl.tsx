@@ -83,7 +83,8 @@ function CommentsControl(props: CardCommentsProps) {
     if (version === undefined || props.version < version || pending.current || disabled || draft || intent || blocked) return;
     if (props.version !== version || observedReconnect.current !== props.reconnectSequence) {
       if (observedReconnect.current !== props.reconnectSequence) activityEvent('comment_read', 'reconnect');
-      void load();
+      // Keep accepted command announcements through background rereads.
+      void load(undefined, undefined, true);
     }
   }, [props.version, props.reconnectSequence, disabled, draft, intent, blocked, review, acknowledged]);
   async function load(owner?: HTMLElement, cursor?: string, recovering = false) {

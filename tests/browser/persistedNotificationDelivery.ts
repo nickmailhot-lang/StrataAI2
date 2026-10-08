@@ -43,6 +43,7 @@ export async function expectPersistedNotificationDelivery(request: APIRequestCon
     expect(row.entityType).toBe('Card');
     expect(row.entityLink).toBe(`/app/${organizationId}/boards/${row.boardId}/cards/${row.entityId}`);
     expect(utc(row.createdAt)).toBe(utc(persisted.created_at));
+    expect(utc(row.updatedAt)).toBe(utc(persisted.read_at ?? persisted.created_at));
     if (persisted.read_at === null) expect(row.readAt).toBeNull();
     else expect(utc(row.readAt)).toBe(utc(persisted.read_at));
   }
