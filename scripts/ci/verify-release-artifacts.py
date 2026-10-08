@@ -84,9 +84,22 @@ def verify_inputs(images, security):
     return build
 
 
-def verify_bundle(bundle):
+def verify_bundle(bundle, images=None, security_input=None):
     files = verify_checksums(bundle)
     build = metadata(bundle)
+    image_copy = bundle / "images"
+    verify_checksums(image_copy)
+    metadata(image_copy)
+    if (image_copy / "build-metadata.json").read_bytes() != (bundle / "build-metadata.json").read_bytes():
+        raise ValueError("different_image_identity")
+    if images is not None or security_input is not None:
+        if images is None or security_input is None:
+            raise ValueError("missing_original_inputs")
+        verify_inputs(images, security_input)
+        for original, copied in ((images, image_copy), (security_input, bundle / "security")):
+            for name in ("build-metadata.json", "SHA256SUMS"):
+                if (original / name).read_bytes() != (copied / name).read_bytes():
+                    raise ValueError("changed_original_evidence")
     required = {"compose.release.yml", "compose.metrics.yml", "compose.attachments.yml", ".env.release.example", "README.md",
                 "health-check.sh", "apply-migrations.sh", "migration-stream.sh", "provision-runtime-roles.sh", "deploy/metrics/collector.yml", "db/provision-runtime-roles.sql"}
     required.update(f"images/strataai-{host}.tar.gz" for host in HOSTS)
@@ -123,10 +136,12 @@ def main():
     inputs.add_argument("--security", required=True, type=Path)
     bundle = mode.add_parser("bundle")
     bundle.add_argument("--path", required=True, type=Path)
+    bundle.add_argument("--images", required=True, type=Path)
+    bundle.add_argument("--security", required=True, type=Path)
     args = parser.parse_args()
     try:
         if args.mode == "inputs": verify_inputs(args.images, args.security)
-        else: verify_bundle(args.path)
+        else: verify_bundle(args.path, args.images, args.security)
         print("Release evidence identity, completeness and checksums verified.")
         return 0
     except (ValueError, OSError, TypeError, KeyError, AttributeError):

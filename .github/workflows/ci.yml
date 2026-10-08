@@ -1313,6 +1313,7 @@ jobs:
           cp image-artifacts/strataai-web.tar.gz bundle/images/
           cp image-artifacts/strataai-api.tar.gz bundle/images/
           cp image-artifacts/strataai-worker.tar.gz bundle/images/
+          cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json bundle/images/
           cp compose.release.yml compose.metrics.yml compose.attachments.yml bundle/
           mkdir -p bundle/deploy/metrics
           cp deploy/metrics/collector.yml bundle/deploy/metrics/
@@ -1344,7 +1345,7 @@ jobs:
           )
 
       - name: Verify release bundle completeness and checksums
-        run: python3 scripts/ci/verify-release-artifacts.py bundle --path bundle
+        run: python3 scripts/ci/verify-release-artifacts.py bundle --path bundle --images image-artifacts --security security-artifacts
 
       - name: Upload runnable release bundle
         uses: actions/upload-artifact@v7

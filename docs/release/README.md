@@ -16,6 +16,8 @@ After extracting the artifact ZIP, verify it before loading images:
 
 ```bash
 sha256sum --check SHA256SUMS
+(cd images && sha256sum --check SHA256SUMS)
+(cd security && sha256sum --check SHA256SUMS)
 chmod +x health-check.sh apply-migrations.sh migration-stream.sh provision-runtime-roles.sh
 ```
 
@@ -24,7 +26,10 @@ The ZIP uploader does not preserve executable permissions. The environment examp
 The `sbom/` directory contains the tested web/API/Worker and metrics receiver
 CycloneDX inventories. `security/` preserves the original security evidence,
 its canonical build metadata, and its checksum manifest. Compare its build identity
-with the root `build-metadata.json`; this does not replace successful CI gates.
+with the root `build-metadata.json`. The `images/` directory also retains the
+original image metadata and checksum manifest; CI compares both image/security
+manifests with the verified original inputs before upload. This does not replace
+successful CI gates.
 
 ## Load images
 

@@ -36,7 +36,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         (root/'SHA256SUMS').write_text(''.join(release.digest(p)+'  '+p.relative_to(root).as_posix()+'\n' for p in paths),newline='\n')
 
     def make_bundle(self):
-        self.bundle.mkdir(); shutil.copytree(self.images,self.bundle/'images'); (self.bundle/'images/SHA256SUMS').unlink(); (self.bundle/'images/build-metadata.json').unlink()
+        self.bundle.mkdir(); shutil.copytree(self.images,self.bundle/'images')
         shutil.copyfile(self.images/'build-metadata.json',self.bundle/'build-metadata.json'); shutil.copytree(self.security,self.bundle/'security')
         (self.bundle/'sbom').mkdir()
         for p in self.security.glob('*.cdx.json'): shutil.copyfile(p,self.bundle/'sbom'/p.name)
@@ -97,3 +97,34 @@ class ReleaseArtifactTests(unittest.TestCase):
         environment=os.environ.copy(); environment['GITHUB_RUN_ID']='PRIVATE_WRONG_RUN'
         result=subprocess.run([sys.executable,str(Path(release.__file__)),'inputs','--images',str(self.images),'--security',str(self.security)],env=environment,capture_output=True)
         self.assertNotEqual(result.returncode,0); self.assertNotIn(b'PRIVATE_WRONG_RUN',result.stdout+result.stderr)
+
+    def test_changed_image_copy_rejected_when_outer_bundle_hashes_are_recalculated(self):
+        self.make_bundle()
+        # Preserve the original image evidence independently from the newly
+        # generated bundle hashes, then simulate corruption before bundling.
+        shutil.copyfile(self.images/'SHA256SUMS',self.bundle/'images/SHA256SUMS')
+        shutil.copyfile(self.images/'build-metadata.json',self.bundle/'images/build-metadata.json')
+        (self.bundle/'images/strataai-api.tar.gz').write_bytes(b'changed copied image')
+        self.checksums(self.bundle)
+        with self.assertRaises(ValueError): release.verify_bundle(self.bundle)
+
+    def test_replaced_image_manifest_is_rejected_against_original_inputs(self):
+        self.make_bundle()
+        (self.bundle/'images/strataai-api.tar.gz').write_bytes(b'replaced image')
+        self.checksums(self.bundle/'images'); self.checksums(self.bundle)
+        with self.assertRaises(ValueError): release.verify_bundle(self.bundle,self.images,self.security)
+
+    def test_final_bundle_matches_original_inputs(self):
+        self.make_bundle()
+        self.assertEqual(release.verify_bundle(self.bundle,self.images,self.security),META)
+
+    def test_changed_security_manifest_is_rejected_against_original_inputs(self):
+        self.make_bundle()
+        (self.bundle/'security/extra-scan.json').write_bytes(b'{"synthetic":true}')
+        self.checksums(self.bundle/'security'); self.checksums(self.bundle)
+        with self.assertRaises(ValueError): release.verify_bundle(self.bundle,self.images,self.security)
+
+    def test_copied_image_identity_cannot_diverge_from_bundle(self):
+        self.make_bundle(); p=self.bundle/'images/build-metadata.json'; value=json.loads(p.read_text()); value['workflowRunId']='456'; p.write_text(json.dumps(value))
+        self.checksums(self.bundle/'images'); self.checksums(self.bundle)
+        with self.assertRaises(ValueError): release.verify_bundle(self.bundle)

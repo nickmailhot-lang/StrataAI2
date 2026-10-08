@@ -91,8 +91,9 @@ export function verifyIntegrationSuites(workflow, registry) {
   const inputVerify = releaseSteps.find(step => step.name === 'Verify tested release inputs');
   assert.equal(inputVerify?.run, 'python3 scripts/ci/verify-release-artifacts.py inputs --images image-artifacts --security security-artifacts');
   const bundleVerify = releaseSteps.find(step => step.name === 'Verify release bundle completeness and checksums');
-  assert.equal(bundleVerify?.run, 'python3 scripts/ci/verify-release-artifacts.py bundle --path bundle');
+  assert.equal(bundleVerify?.run, 'python3 scripts/ci/verify-release-artifacts.py bundle --path bundle --images image-artifacts --security security-artifacts');
   assert.ok(bundle.run.includes('cp -R security-artifacts bundle/security'));
+  assert.ok(bundle.run.includes('cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json bundle/images/'));
   assert.ok(bundle.run.includes('for component in strataai-web strataai-api strataai-worker metrics-collector; do'));
   assert.ok(bundle.run.includes('cp "security-artifacts/${component}.cdx.json" "bundle/sbom/${component}.cdx.json"'));
   assert.ok(bundle.run.includes('find . -type f ! -path ./SHA256SUMS'), 'Root checksums must cover nested security manifest');
