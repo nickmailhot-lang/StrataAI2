@@ -228,3 +228,37 @@ This removes a Demo lifecycle integration gap. It does not establish supported
 scale, retained release-image acceptance, physical object erasure, backup expiry
 or the entire restoration/search/notification matrix. Estimated PRD-18 work
 remaining is **22%**, a planning estimate; the ticket stays open.
+
+## Organization terminal deletion surfaces
+
+The mandatory `scripts/ci/test-organization-deletion-surfaces.sh` exercises three
+real accepted Organization deletion requests, one per Board visibility. Each
+fixture creates actual membership, Board/List/Card content, an assignment
+notification, single/bulk read receipts and an archived search continuation.
+It keeps both an archived Card and an active sibling before deletion.
+
+After acceptance, the original Owner session logs out and `/me` rejects that
+session. A separate Worker explicitly scoped to the accepted Organization runs
+the real deletion stages. SQL observes terminal version 3, original attribution,
+matching completion/event clocks, a ready canonical terminal event and successful
+related jobs; fixture SQL does not fabricate graph progress or completion.
+The archived Card retains its archive clock and the active sibling acquires no
+invented archive history. Both become irreversible tombstones.
+
+Active/archived search and the original archived continuation disclose no content.
+Inbox, historical sync and original/new single/bulk read receipts refuse admission.
+Board/List/Card restoration is refused. A fresh Owner login recovers the identical
+original request acknowledgment and a completion response containing exactly
+`requestId`, `state`, `version`, `eventId` and `completedAt`. The member cannot read
+that Owner response and retains account access. Full retained graph, notification
+and journal fingerprints plus aggregate audit/event/job/receipt counts remain
+unchanged throughout these recovery/refusal checks.
+
+All three cases passed through an isolated local compiled Production API, separate
+compiled Worker, PostgreSQL 17/pgvector and Nginx. The invocation-owned containers
+and cloned database were removed; existing services and data were preserved.
+This proves explicitly scoped Worker execution after session revocation. Automatic
+Organization discovery, email-provider delivery, browser interaction, physical
+object/backup erasure and current immutable-image acceptance require their own
+evidence. The mandatory CI step uses the exact build-once API and Worker images;
+its current execution remains pending. PRD-03, PRD-17 and PRD-18 stay open.

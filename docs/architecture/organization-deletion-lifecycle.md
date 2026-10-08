@@ -839,3 +839,15 @@ and terminal counts remain required. The terminal delivery fixture drains its
 real authority job through the typed leased handler before isolating lifecycle
 readiness/reclaim assertions. The `--organization-deletion-terminal-only`
 diagnostic preserves the mandatory full executable's terminal contract.
+
+## Terminal surface withdrawal after session logout
+
+The [three-visibility terminal surface contract](lifecycle-acceptance.md#organization-terminal-deletion-surfaces)
+now passes locally through real accepted requests and a separate explicitly scoped
+Worker after the issuing browser session is revoked. It proves retained mixed
+active/archived descendant clocks, irreversible restoration refusal, search and
+notification withdrawal, fresh Owner-only minimal completion recovery and member
+account preservation without additional protected effects. The mandatory build-once
+CI runs this same contract through its exact API and Worker images. Current release
+acceptance remains pending; local compiled execution does not prove automatic
+global discovery, provider/backup purge or the full PRD acceptance matrix.

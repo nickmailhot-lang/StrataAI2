@@ -574,6 +574,9 @@ jobs:
       - name: Deleted and moved Card content admission across search inbox and notification history through exact release images
         run: bash scripts/ci/test-deleted-content-surfaces.sh
 
+      - name: Organization terminal search and notification withdrawal after issuing-session logout through exact API and Worker images
+        run: bash scripts/ci/test-organization-deletion-surfaces.sh
+
       - name: Account-bound navigation observations through exact release proxy and API
         run: bash scripts/ci/test-navigation-observations.sh
 
