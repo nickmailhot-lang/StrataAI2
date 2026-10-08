@@ -503,3 +503,26 @@ remain separate; this does not prove every acceptance criterion.
 
 Estimated remaining work stays **8%** (planning estimate). The issue stays
 open pending full current immutable CI and outstanding PRD-wide requirements.
+
+
+## Current metadata warning, pending deletion and paging evidence
+
+A protected live read now preserves the unknown-save warning until the original
+acknowledgment is explicitly recovered. Three new invalidate/reset/unavailable
+regressions fail before the fix; all 36 settings/telemetry cases pass afterward.
+Web/browser types, targeted lint and production build pass. Final desktop/phone
+settings native invocation passes both cases with real source-version/read
+readiness, committed lost response, exact-key/body recovery and later edits intact.
+See [warning recovery](organization-settings.md#unknown-save-warning-during-protected-recovery).
+
+Both pending deletion cases pass after requiring the real actor-bound PENDING
+frame and independently protected lifecycle UI, with private content withdrawn
+without reload and the original Owner request recovered. Two unchanged directory
+cases separately pass bounded Organization/Board pages and keyboard deep links on
+both widths. See [pending deletion evidence](organization-deletion-retries.md#pending-lifecycle-and-native-request-recovery)
+and [paging evidence](organization-discovery.md#current-production-native-paging-execution)
+for complete invocation scopes, earlier failures and limitations.
+
+Estimated remaining PRD-03 work stays **8%** (planning estimate). Current immutable
+CI, complete lifecycle purge/retention and remaining full-PRD acceptance still
+prevent closure; scoped local evidence does not establish completion.

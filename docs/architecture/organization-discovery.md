@@ -242,3 +242,15 @@ name regression and the updated accessible link name. Web source, configuration
 and tests were unchanged while this run executed; later README and Identity
 transaction changes do not broaden this result into native browser, PostgreSQL
 or exact-image evidence. Those acceptance checks remain pending.
+
+
+## Current Production native paging execution
+
+Both unchanged directory scenarios pass in the current six-case baseline
+(three pass/three unrelated deletion/settings failures). One scenario creates 51
+Organizations, proves the 50-row cursor page and one-row tail, keyboard first/next
+navigation and direct deep links at desktop and phone widths. The other creates
+51 Boards, proves the same bounded pages, multiline accessible name, keyboard
+paging/focus and canonical Board links at both widths. This is actual Production
+API/Nginx/restricted PostgreSQL browser execution; it does not substitute for the
+required 200-List/5,000-Card/100,000-archive capacity or current immutable release.

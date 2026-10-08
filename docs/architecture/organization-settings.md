@@ -157,3 +157,38 @@ and private configuration were removed. See [creation acknowledgment evidence](o
 
 These are scoped local results. They do not establish current retained images,
 all Organization lifecycle/Demo parity/performance or complete ticket acceptance.
+
+
+## Unknown save warning during protected recovery
+
+A current native desktop scenario exposed a real warning defect: the PATCH
+committed and its reply was lost, but a queued live settings read cleared the
+unknown-save error while the original retry intent remained. A current protected
+read can reveal later settings; it cannot recover that command's acknowledgment.
+Background load now retains the original uncertainty warning while an intent is
+reserved. Explicit original-key retry still performs its own account/command/
+account checks; definite refusal still withdraws private state and retry authority.
+No command, receipt, API policy or automatic retry behavior changes.
+
+The three strengthened invalidate/reset/unavailable regressions fail on the
+missing warning before the fix. All 36 settings/telemetry component cases pass
+after it, including exact original key/body recovery and permission/account
+withdrawal. Web/browser TypeScript, targeted zero-warning lint and production
+build pass (the existing bundle-size advisory remains).
+
+The native fixture also waits for real actor/scope-bound ORGANIZATION_UPDATED
+versions two and four and protected settings reads started after those sources.
+Earlier/failed reads cannot satisfy readiness. Review choices must be enabled
+and keyboard-focused before activation. A final desktop/phone invocation passes
+both cases in 1.1 minutes against the new frozen web bundle, Production API,
+restricted schema-110 PostgreSQL, Nginx and separate metadata discovery Worker.
+Actual committed lost response, identical original key/body/version, later saved
+version preservation, explicit draft discard, reload and WCAG checks remain.
+
+Earlier native runs are not reported as passing: the original six-case baseline
+had three passes/three failures; a deletion/settings-only attempt had three
+passes/one settings failure; the first warning-fix browser invocation had one
+pass/one late-review failure. The final two-case run verifies both settings cases
+with the warning fix and event/read readiness together. The local runtime uses
+explicitly unverified-account browser policy and disabled provider sending.
+Current retained-image/full-PRD acceptance is still required.

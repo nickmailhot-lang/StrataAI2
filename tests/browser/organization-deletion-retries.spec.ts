@@ -25,7 +25,33 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const before = await context.request.get(`/organizations/${org}`); expect(before.status()).toBe(200); const original = await before.json();
       const denied = await admin.request.delete(`/organizations/${org}?version=${original.organization.version}&expectedActorId=${users[1]}`,
         { headers: { ...headers, 'Idempotency-Key': '11111111-1111-4111-8111-111111111111' } }); expect(denied.status()).toBe(404);
-      const adminPage = await admin.newPage(); await adminPage.goto(`/app/${org}/delete`);
+      const adminPage = await admin.newPage(); let pendingObserved = false;
+      adminPage.on('websocket', socket => {
+        if (new URL(socket.url()).pathname !== '/organizations/live/lifecycle') return;
+        const watches = new Set<string>();
+        socket.on('framesent', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const part of frame.payload.split('\u001e').filter(Boolean)) {
+            try {
+              const value = JSON.parse(part);
+              if (value.type === 4 && value.target === 'Watch' && value.arguments?.[0] === org && typeof value.invocationId === 'string')
+                watches.add(value.invocationId);
+            } catch { /* Passive observation only; leave transport unchanged. */ }
+          }
+        });
+        socket.on('framereceived', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const part of frame.payload.split('\u001e').filter(Boolean)) {
+            try {
+              const value = JSON.parse(part); const item = value.item;
+              if (value.type === 2 && watches.has(value.invocationId) && item?.organizationId === org && item.userId === users[1]
+                && item.page?.state === 'PENDING' && Array.isArray(item.page.events) && item.page.events.length === 0)
+                pendingObserved = true;
+            } catch { /* No request, stream or application state is injected. */ }
+          }
+        });
+      });
+      await adminPage.goto(`/app/${org}/delete`);
       await expect(adminPage.getByText('Only a current Organization Owner can request deletion.')).toBeVisible();
       await expect(adminPage.getByRole('button', { name: 'Review deletion request', exact: true })).toHaveCount(0);
       await expect(adminPage.getByText('Owner deletion council', { exact: true })).toHaveCount(0);
@@ -65,7 +91,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await admin.request.get(`/organizations/${org}`)).status()).toBe(404);
       expect((await context.request.get(`/boards/${boardId}`)).status()).toBe(404);
       expect((await admin.request.get(`/boards/${boardId}`)).status()).toBe(404);
-      await expect(adminPage.getByText('Access to this Organization surface is unavailable.', { exact: true })).toBeVisible({ timeout: 15_000 });
+      // Organization Home retains its independently admitted lifecycle view after
+      // ordinary graph access ends; require the real pending head and its UI.
+      await expect.poll(() => pendingObserved, { timeout: 15_000 }).toBe(true);
+      await expect(adminPage.getByRole('status').filter({ hasText: /^Organization deletion is being confirmed\.$/ })).toBeVisible();
+      await expect(adminPage.getByText('Organization content is unavailable.', { exact: true })).toBeVisible();
+      await expect(adminPage.getByText('Organization deletion confirmed complete.', { exact: true })).toHaveCount(0);
       await expect(adminPage.getByText('Owner deletion council', { exact: true })).toHaveCount(0);
       await expect(adminPage.getByText('Deletion access Board', { exact: true })).toHaveCount(0);
       expect(administratorReloads).toBe(0);

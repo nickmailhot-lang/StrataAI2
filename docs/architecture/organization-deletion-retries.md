@@ -148,3 +148,25 @@ preserves the original request key after a lost acknowledgment. Temporary
 account-verification refusal retains the reference and retries verification
 without ordinary Organization reads or a new DELETE. Native
 keyboard/phone and exact-image completion acceptance remain required.
+
+
+## Pending lifecycle and native request recovery
+
+Both original desktop/phone native cases failed while expecting the generic
+surface-denied message. Organization Home intentionally keeps its independently
+protected lifecycle route after normal graph admission ends. The fixture now
+requires an actual Watch invocation and PENDING frame bound to the administrator
+and Organization, its accessible pending notice and unavailable-content message.
+It refuses a completion notice. Original private-name/Board withdrawal, no
+administrator reload, Owner-only operation access, same-key/request replay,
+keyboard focus, pending status, zero private reads after intent and WCAG checks
+remain. This matches the adopted lifecycle behavior rather than weakening privacy.
+
+Both corrected cases pass in one complete four-case deletion/settings invocation
+(three pass/one unrelated settings failure). A real committed DELETE returns 202
+before its reply is dropped; replay preserves its original reference and body.
+The separate discovery Worker has deletion discovery disabled deliberately so
+pending-status assertions cannot be satisfied by a completed purge. Production
+API/Nginx and restricted schema-110 PostgreSQL are real. This is pending-request
+and other-client withdrawal proof, not graph purge, final deletion, strict
+verified-account or retained-current-image acceptance. Those remain required.

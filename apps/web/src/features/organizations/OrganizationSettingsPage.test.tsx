@@ -118,13 +118,14 @@ describe('PRD-03-TC-01/05/06/08 Organization metadata administration', () => {
     expect(save()).toBeDisabled(); fireEvent.click(screen.getByRole('button', { name: 'Keep draft after review' }));
     expect(input).toHaveValue('Typed during refresh'); expect(save()).toBeEnabled();
   });
-  it('retains the original save key/body while live reads expose a later saved version', async () => {
+  it.each(['invalidate', 'reset', 'unavailable'] as const)('retains the original save key/body and warning while %s reads expose a later saved version', async recovery => {
     const fetcher = vi.fn().mockResolvedValueOnce(reply(summary)).mockRejectedValueOnce(new Error('Lost acknowledgment'))
       .mockResolvedValueOnce(reply({ ...summary, organization: { ...org, name: 'Later saved name', version: 3 } }))
       .mockResolvedValueOnce(reply({ ...org, name: 'Original edit', version: 2 }));
     stubFetch(fetcher); mount(); fireEvent.change(await screen.findByLabelText(/^Organization name/), { target: { value: 'Original edit' } });
     fireEvent.click(save()); await screen.findByText(/Your save could not be confirmed/);
-    act(() => live.watch.mock.calls[0][0].invalidate()); await screen.findByText('Name: Later saved name');
+    act(() => live.watch.mock.calls[0][0][recovery]()); await screen.findByText('Name: Later saved name');
+    expect(screen.getByText(/Your save could not be confirmed/)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Organization name/)).toHaveValue('Original edit');
     expect(screen.getByRole('button', { name: 'Keep draft after review' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Discard draft and use current settings' })).toBeDisabled();

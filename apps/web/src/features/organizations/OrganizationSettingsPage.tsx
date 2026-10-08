@@ -79,7 +79,10 @@ function Settings({ organizationId }: { organizationId: string }) {
   }
   async function load(preserve: boolean, live = false) {
     if (pending.current || intent && !live) return;
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined);
+    const controller = new AbortController(); pending.current = controller; setBusy(true);
+    // A protected background read can show current settings, but cannot recover
+    // a submitted command's acknowledgment or clear its uncertainty warning.
+    setError(current.current.intent ? 'Your save could not be confirmed. Retry the original save to recover its acknowledgment.' : undefined);
     setBackgroundReading(live);
     const telemetryStarted = performance.now(); let succeeded = false;
     activityEvent('organization_settings_read', preserve && !live ? 'retry' : 'use');
