@@ -117,6 +117,17 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
 
 test('PRD-60-TC-07/11/15: verified email discovers an invitation and retries lost acceptance', async ({ page, context, browser }) => {
   const issuer = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  const envelopes: { resetRequired: boolean; events: { eventType: string }[] }[] = [];
+  page.on('websocket', socket => {
+    if (!new URL(socket.url()).pathname.startsWith('/invitations/live')) return;
+    socket.on('framereceived', frame => {
+      if (typeof frame.payload !== 'string') return;
+      for (const part of frame.payload.split('\u001e').filter(Boolean)) {
+        const value = JSON.parse(part);
+        if (value.type === 2) envelopes.push(value.item);
+      }
+    });
+  });
   try {
     const headers = { 'X-StrataAI-Request': '1' };
     const owner = { email: `invite-owner-${Date.now()}@example.test`, password: 'browser-invite-correct-horse', displayName: 'Issuer' };
@@ -137,8 +148,15 @@ test('PRD-60-TC-07/11/15: verified email discovers an invitation and retries los
     await page.goto('/app');
     await page.getByRole('link', { name: 'Invitations', exact: true }).click();
     const accept = page.getByRole('button', { name: 'Accept invitation to Browser invitation council' });
+    await expect.poll(() => envelopes.some(value => value.resetRequired && !value.events.length)).toBe(true);
     await expect(accept).toBeVisible(); await accept.press('Enter');
     await expect(page.getByText('Unable to confirm acceptance. You can retry this invitation safely.')).toBeVisible();
+    // The committed acceptance withdraws the original row through the actual
+    // private feed. Observe that transition before pressing a recovery control;
+    // its asynchronous admission must not race the fixture's keyboard action.
+    await expect.poll(() => envelopes.some(value => value.events.some(event => event.eventType === 'INVITATION_ACCEPTED'))).toBe(true);
+    await expect(page.getByLabel('Loading invitation request', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Refresh invitations' })).toHaveAttribute('aria-disabled', 'false');
     const refresh = page.waitForResponse(response => new URL(response.url()).pathname === '/me/invitations' && response.request().method() === 'GET');
     await page.getByRole('button', { name: 'Refresh invitations' }).press('Enter');
     expect((await (await refresh).json()).items).toHaveLength(0);

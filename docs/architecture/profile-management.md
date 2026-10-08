@@ -424,6 +424,33 @@ Current retained release images and complete PRD acceptance remain outstanding.
 
 ### Current account keyboard and accessibility evidence
 
+The final 2026-10-07 combined native invocation passes all **22** scenarios from
+`account.spec.ts`, `account-mention-handle.spec.ts` and
+`identity-expected-account.spec.ts` in one 10-minute run. It uses the repaired
+compiled API source at `58918eb7`, Production with email recovery enabled and
+optional verification, restricted schema-110 PostgreSQL, a frozen production
+web bundle and current Nginx/CSP. Normal API/edge limits and 25-second release
+pacing remain enabled. This closes the prior split-invocation account evidence
+gap for this local runtime; it is not current retained-image release acceptance.
+
+The first complete invocation passes 21 cases and fails invitation original-ID
+retry: its trace contains no second command, while background recipient recovery
+runs during the keyboard action. The fixture now observes the real initial feed
+reset and `INVITATION_ACCEPTED` frame, then waits for that recovery read before
+explicit refresh/retry. The focused scenario passes, followed by all 22 cases
+in the final combined invocation. The exact two original-ID commands, lost
+acknowledgment, empty discovery, private-label withdrawal and canonical membership
+assertions remain. No server admission, UI command guard or timeout is weakened.
+
+The final run covers handle retries/conflicts/revocation, desktop/phone deactivation
+and sign-in retries, sole-owner refusal, registration, logout/profile receipt
+recovery, generic recovery/invalid reset links, persisted two-browser conflicts,
+tagged WCAG checks and all eight stale-cookie command cases. The sixteen final
+account-switch fixture users remain at version 1. Browser types, Nginx validation
+and diff checks pass. Disposable API/web containers are removed; the original
+three services remain. Actual Worker delivery, all other preference consumers,
+performance and current complete release/PRD acceptance remain separate evidence.
+
 On 2026-10-07, the full current web suite passed all 1,896 cases across 134 files
 locally and in exact-commit `8c6d2b9a` CI. The strengthened two-browser profile
 scenario passed real persisted preferences, canonical event/timestamp assertions,

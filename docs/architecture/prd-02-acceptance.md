@@ -4,6 +4,19 @@
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Combined account browser evidence
+
+All 22 account, handle and expected-account native cases now pass together in
+one final 10-minute invocation against the repaired compiled Production API at
+`58918eb7`, real restricted PostgreSQL and a production bundle behind current
+Nginx/CSP. Email recovery is enabled; verification is optional as in the CI browser
+phase, with normal limits and pacing preserved. The first run has 21 passes and
+an invitation keyboard race; observing its actual acceptance frame and completed
+recovery fixes the fixture without weakening original-ID or canonical assertions.
+See [complete account execution and limits](profile-management.md#current-account-keyboard-and-accessibility-evidence).
+This is one combined local pass, not current retained-image or full PRD evidence.
+Estimated work remaining stays **17%**, a planning estimate; the issue stays open.
+
 ## Authoritative profile-read admission
 
 `GET /me` no longer discloses the profile cached during cookie authentication.
