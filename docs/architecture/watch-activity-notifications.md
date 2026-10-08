@@ -104,3 +104,34 @@ reads still do. Large-scale producer latency, complete immutable-image browser a
 accessibility acceptance, and the full PRD definition of done remain unproven.
 Estimated remaining work for PRD-17: **24% (planning estimate)**. This storage
 improvement does not establish a new completion percentage or justify issue closure.
+
+
+## Executed browser delivery after recipient batching
+
+The local 21-case Checklist/watch invocation initially failed watch setup before
+subscribed Board state appeared, so it did not prove notification delivery. The
+fixture now establishes enabled keyboard focus before each one-time activation
+and requires the actual HTTP 200 subscription acknowledgment, watching=true and
+version 1 for all three scopes. The Card title lookup is scoped to the named Card
+details dialog. Existing notification count/type/link, read recovery, self-action,
+unwatch, canonical revision, keyboard/focus and accessibility assertions remain.
+
+The complete three-case targeted invocation then passed in 2.3 minutes, including
+both Checklist collaboration widths and the watch producer-to-inbox scenario.
+The latter uses real authenticated issuer/recipient contexts, overlapping Board,
+List and Card watches, a peer MUI Card edit, actual durable Worker delivery,
+desktop and 390px recipient inboxes containing exactly one CARD_UPDATED
+notification, the canonical link and shared read change. It also verifies actor
+self-suppression, all three actual unwatch commands, no later notification and an
+empty issuer inbox. Both recipient accessibility checks pass.
+
+This uses the readonly locally compiled Production API from `5e7e1f5a`, current
+production web code, restricted schema-110 PostgreSQL, Nginx/CSP and a separate
+existing compiled Worker restricted to the test Organization, with optional email
+verification matching the CI browser phase. It does not establish retained-current-
+image acceptance, fan-out latency or every PRD scenario. All temporary owned
+services were removed after terminal checks. Browser TypeScript passes; at the
+last inspection, exact-commit `5e7e1f5a` web-quality and PostgreSQL CI jobs passed
+and API host tests were still live in run 37730364654.
+Estimated PRD-17 work remaining stays **24%** (planning estimate); the issue stays
+open pending complete acceptance.

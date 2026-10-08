@@ -174,3 +174,49 @@ admission, revision, active-parent and recovery flags remain. See the
 Local execution is not current exact-image acceptance; the reporter marks the
 runtime unverified. PRD-13 remains open at **35% estimated work remaining**
 (planning estimate), including detail latency and remaining full-ticket evidence.
+
+
+## Current desktop and phone functional execution
+
+The complete 21-case local invocation on 2026-10-07 ran all 20 Checklist functional
+cases and the overlapping watch-notification case. It finished with **19 passes
+and two failures** in 15 minutes: desktop Checklist collaboration failed while
+reopening an item after conflict discard, and watch setup failed before the Board
+subscription's subscribed state appeared. The phone collaboration case and the
+other 18 Checklist cases passed. These failures are retained; the invocation is
+not claimed green.
+
+The desktop trace showed that the expected canonical item editor never appeared
+and the review control remained. The collaboration fixture now requires the
+actual admitted Card revision 4 and a settled protected Board after discard, then
+uses the shared keyboard admission helper for each independent review control.
+It retries enabled focus only and sends one activation key. The watch fixture
+uses the same helper and additionally verifies each real subscription's HTTP 200,
+watching state and revision 1 before proceeding. Production admission, command
+policy, timeouts, retries and existing scenario assertions are unchanged.
+
+A complete targeted three-case rerun passes in **2.3 minutes**: desktop and 390px
+Checklist collaboration plus overlapping watch delivery. Together, the two
+invocations provide scoped local passes for every one of the **20 distinct
+Checklist functional cases**: reads, root/item ordering, item creation/edit/
+completion/deletion, root deletion, concurrent dirty choices, actual HTTP 409,
+missed updates during a proxied socket outage, restored live updates, lost committed
+acknowledgments, revoked access and original-receipt refusal, and Card/List archive/
+restore/delete at both widths. Existing keyboard, focus, accessibility, canonical
+version, exact request and no-disclosure assertions remain. This is not a single
+green full invocation or performance-suite execution.
+
+Runtime: readonly compiled Production API from `5e7e1f5a`, the production web
+bundle containing the current canonical Card lookup, actual PostgreSQL 17/pgvector
+schema 110 and restricted roles, Nginx/CSP, and the separate existing compiled
+Worker scoped to each fixture Organization. Optional email verification matches
+the CI functional browser phase. Current immutable release verification is still
+required. The temporary API/web/Worker containers were removed after terminal
+checks, preserving the original three containers and their data.
+
+Browser TypeScript and diff checks pass after the fixture repairs. The previous
+unchanged Checklist benchmark's **201.74 ms** cached-detail result still fails its
+original <200 ms budget; it is not replaced by functional passes. Large client
+capacity, current release-wide acceptance and shared lifecycle/telemetry gaps
+still govern closure. Estimated PRD-13 work remaining stays **35%** (planning
+estimate); the ticket remains open.

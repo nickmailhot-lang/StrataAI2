@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackCardVersion } from './boardReadTracker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-13-TC-05/08/09: concurrent item drafts, socket recovery and revoked scope at ${width}px`, async ({ page, context, browser }) => {
@@ -36,12 +37,12 @@ for (const width of [1280, 390]) {
       await page.goto(route); await peer.goto(route);
       for (const target of [page, peer]) await expect(target.getByText('Live updates connected.', { exact: true })).toBeVisible();
       async function edit(target: Page, text = 'Initial preparation') {
-        const manage = target.getByRole('button', { name: 'Manage checklists', exact: true }); await expect(manage).toBeEnabled(); await manage.press('Enter');
+        const manage = target.getByRole('button', { name: 'Manage checklists', exact: true }); await pressAdmittedAction(manage);
         const items = target.getByRole('button', { name: 'Manage items in Preparations', exact: true });
-        await expect(items).toBeEnabled(); await items.press('Enter');
-        const review = target.getByRole('button', { name: 'Review checklist items', exact: true }); await expect(review).toBeEnabled(); await review.press('Enter');
+        await pressAdmittedAction(items);
+        const review = target.getByRole('button', { name: 'Review checklist items', exact: true }); await pressAdmittedAction(review);
         const item = target.getByRole('button', { name: `Edit item: ${text}`, exact: true });
-        await expect(item).toBeEnabled(); await item.press('Enter');
+        await pressAdmittedAction(item);
       }
       const show = peer.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
       await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible();
@@ -62,7 +63,11 @@ for (const width of [1280, 390]) {
       await expect(peer.getByText('This Card changed elsewhere. Your item text and completion choice are preserved.', { exact: true })).toBeVisible({ timeout: 20_000 });
       await expect(dirty).toHaveValue('Contributor dirty draft'); await expect(peer.getByRole('checkbox', { name: 'Item complete', exact: true })).toBeChecked(); await expect(peer.getByRole('button', { name: 'Save checklist item', exact: true })).toBeDisabled();
       const canonical = await context.request.get(path); expect(canonical.status()).toBe(200); const state = await canonical.json(); expect(state.cardVersion).toBe(4); expect(state.items[0].text).toBe('Owner canonical change'); expect(state.items[0].completed).toBe(false);
-      await peer.getByRole('button', { name: 'Discard item review and load latest', exact: true }).press('Enter');
+      await pressAdmittedAction(peer.getByRole('button', { name: 'Discard item review and load latest', exact: true }));
+      // The owner committed revision 4. Reopening is an independent review and
+      // must wait for its actual protected parent admission after discard.
+      await expect.poll(admittedPeerVersion).toBe(4);
+      await expect(peer.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
       await edit(peer, 'Owner canonical change'); await expect(dirty).toHaveValue('Owner canonical change');
       await dirty.fill('Draft during socket outage'); await peer.getByRole('checkbox', { name: 'Item complete', exact: true }).press('Space');
       expect(socket).toBeDefined(); unavailable = true; await socket!.close({ code: 1012 });

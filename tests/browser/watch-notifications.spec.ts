@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 test('PRD-17-TC-01/07/08/11/12: overlapping native watches deliver one recipient notification and stop after unwatch', async ({ page, context, browser, baseURL }) => {
   test.setTimeout(180_000);
@@ -35,12 +36,16 @@ test('PRD-17-TC-01/07/08/11/12: overlapping native watches deliver one recipient
     for (const kind of ['Board', 'List', 'Card']) {
       if (kind === 'Card') await page.goto(`${path}/cards/${card}`);
       const open = page.getByRole('button', { name: `${kind} watching`, exact: true });
-      await expect(open).toBeEnabled(); await open.press('Enter');
+      await pressAdmittedAction(open);
       const dialog = page.getByRole('dialog', { name: `${kind} watching`, exact: true });
       await expect(dialog.getByText(`You are not watching this ${kind}.`, { exact: true })).toBeVisible();
-      await dialog.getByRole('button', { name: `Watch ${kind}`, exact: true }).press('Enter');
+      const watchedId = kind === 'Board' ? board : kind === 'List' ? list : card;
+      const subscribed = page.waitForResponse(reply => new URL(reply.url()).pathname === `/watch/${kind.toUpperCase()}/${watchedId}` && reply.request().method() === 'PUT');
+      await pressAdmittedAction(dialog.getByRole('button', { name: `Watch ${kind}`, exact: true }));
+      const subscription = await subscribed; expect(subscription.status()).toBe(200);
+      const watch = await subscription.json(); expect(watch.watching).toBe(true); expect(watch.version).toBe(1);
       await expect(dialog.getByText(`You are watching this ${kind}.`, { exact: true })).toBeVisible();
-      await dialog.getByRole('button', { name: 'Done watching', exact: true }).press('Enter');
+      await pressAdmittedAction(dialog.getByRole('button', { name: 'Done watching', exact: true }));
       await expect(dialog).toHaveCount(0); await expect(open).toBeFocused();
     }
     await waitForBoardDelivery(context.request, board);
@@ -52,10 +57,10 @@ test('PRD-17-TC-01/07/08/11/12: overlapping native watches deliver one recipient
     await editor.goto(`${path}/cards/${card}`);
     await expect.poll(() => reads(), { timeout: 20_000 }).toBeGreaterThanOrEqual(2);
     await expect.poll(() => revision(), { timeout: 20_000 }).toBe(1);
-    const title = editor.getByRole('textbox', { name: 'Card title', exact: true });
+    const title = editor.getByRole('dialog', { name: 'Card details', exact: true }).getByRole('textbox', { name: 'Card title', exact: true });
     await expect(title).toBeEnabled(); await title.fill('Changed by another authorized user');
     const changed = editor.waitForResponse(reply => new URL(reply.url()).pathname === `/cards/${card}` && reply.request().method() === 'PATCH');
-    await editor.getByRole('button', { name: 'Save card', exact: true }).press('Enter');
+    await pressAdmittedAction(editor.getByRole('button', { name: 'Save card', exact: true }));
     const acknowledgment = await changed; expect(acknowledgment.status()).toBe(200); expect((await acknowledgment.json()).version).toBe(2);
     await waitForBoardDelivery(peer.request, board);
     for (const client of [page, mobile]) {
@@ -64,7 +69,7 @@ test('PRD-17-TC-01/07/08/11/12: overlapping native watches deliver one recipient
       await expect(client.getByRole('link', { name: 'Open Card', exact: true })).toHaveAttribute('href', `${path}/cards/${card}`);
       expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     }
-    await mobile.getByRole('button', { name: 'Mark read', exact: true }).press('Enter');
+    await pressAdmittedAction(mobile.getByRole('button', { name: 'Mark read', exact: true }));
     for (const client of [page, mobile]) await expect(client.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     expect((await context.request.patch(`/cards/${card}`, { headers, data: { title: 'Recipient own action', description: '', version: 2 } })).status()).toBe(200);
     for (const [kind, id] of [['BOARD', board], ['LIST', list], ['CARD', card]]) {
