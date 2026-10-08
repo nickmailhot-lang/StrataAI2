@@ -505,3 +505,28 @@ stays **29% for PRD-06** and **35% for PRD-13** (planning estimates).
 The two-empty-List feedback fixture now also runs at 390x844 with Chromium touch input. It reveals the moving List, activates its actual handle, and uses the left canvas boundary to auto-scroll until the anchor center is reachable. Touch release starts the same browser-clock sample used by the desktop pointer case. The first painted optimistic order must intersect the viewport and meet the unchanged <100ms budget while the keyed PATCH is held before dispatch. The fixture requires exactly one write, unchanged canonical ordering while held, the intended acknowledgment at revision two, an unchanged neighboring List, and persisted order after reload. Touch cancellation and session cleanup run on failure.
 
 The reporter retains this result as `phone-list-feedback`, with fixed touch input and viewport, original outcome and the 100ms budget. It rejects phone records without touch input, preserves missing feedback as null, and strips private or arbitrary fields. All nine reporter regressions and browser typechecking pass locally. Native execution against the exact release images remains pending; fixture coverage does not prove the mobile latency target or physical-device behavior.
+
+
+## Current Card backdrop and desktop Checklist result
+
+The Card Dialog now applies its existing zero-duration immediate transition to
+its MUI Backdrop as well as its content. MUI Fade's unconditional scroll-position
+layout read was still present on the backdrop; a new regression failed with one
+read before repair and passes with zero afterward. Native MUI containment/closure
+and the existing return-focus lifecycle are preserved.
+
+The complete unchanged desktop Checklist benchmark failed at 206.08 ms cached
+detail before this repair and passed at 149.41 ms afterward. Both runs completed
+all original functional steps and twenty mutation samples. The passing run also
+measured readiness 957.96 ms, feedback 44.70 ms, mutation p95 98.13 ms and 50/13 item
+pages at 127.44/120.35 ms. Two transition cases, two selected Board draft/focus/Card
+switching cases, types, lint and the production build pass. These independent
+local measurements do not estimate a controlled speedup or establish phone,
+large-Board or current immutable-release acceptance.
+
+The privacy-safe reporter explicitly marks the runtime unverified. The readonly
+compiled API, current Nginx/CSP, restricted schema-111 PostgreSQL copy and separate
+fixture-scoped compiled Worker were real; owned test containers/database were
+removed afterward. See the [full acceptance evidence](architecture/checklist-acceptance.md#cached-detail-backdrop-layout-repair).
+Estimated work remaining is 29% for PRD-06 (unchanged) and 33% for PRD-13 (planning
+estimates). Release-wide acceptance still prevents closure.

@@ -220,3 +220,39 @@ original <200 ms budget; it is not replaced by functional passes. Large client
 capacity, current release-wide acceptance and shared lifecycle/telemetry gaps
 still govern closure. Estimated PRD-13 work remaining stays **35%** (planning
 estimate); the ticket remains open.
+
+## Cached-detail backdrop layout repair
+
+The unchanged complete desktop Checklist benchmark reproduced the cached-detail
+failure against the current compiled API/schema 111: **206.08 ms**, with all 63
+items, 50/13 pages and twenty mutation commands completed. Board readiness was
+1,034.90 ms, feedback 40.70 ms and mutation p95 100.60 ms. This failed report is
+retained alongside the earlier 201.74 ms measurement.
+
+Source inspection confirmed that the Card Dialog's content used the existing
+immediate transition, but its zero-duration MUI Backdrop still used Fade. Fade
+unconditionally reads `scrollTop` to force layout even with a zero timeout. The
+new regression failed with one backdrop scroll-position read before the repair.
+The Card Dialog now uses the same immediate transition for its backdrop. MUI
+Modal, backdrop styling, focus containment, close handling and the existing
+manual return-focus lifecycle remain in place; no benchmark timing point, limit,
+fixture size, request policy or production authorization was changed.
+
+After the repair, both immediate-transition cases and two selected Board
+dirty-draft/focus/Card-switching cases passed. Types, focused lint and production
+web build passed. The entire unchanged Checklist benchmark then passed: cached
+detail **149.41 ms**, Board readiness **957.96 ms**, feedback **44.70 ms**, mutation
+p95 **98.13 ms**, item pages **127.44/120.35 ms**. All 20 mutation samples, full
+progress, actual held creation feedback and version assertions completed. The
+privacy-safe report's sample/p95 calculation, original budgets, fixed fixture and
+unverified-runtime provenance were independently checked. These are independent
+local runs, not a controlled estimate of the transition's speedup.
+
+Runtime: readonly API published from `a9d107f7`, repaired production web bundle,
+separate existing compiled Worker scoped to the fixture Organization, current
+Nginx/CSP and restricted schema-111 PostgreSQL. A disposable database copy hosted
+the fixture. It and all owned test containers were removed after terminal
+execution; the three original containers/database were preserved. Local normal
+desktop acceptance now passes, but current immutable-image release acceptance,
+large client capacity and the other full-ticket gaps still prevent closure.
+Estimated PRD-13 work remaining is **33%** (planning estimate).

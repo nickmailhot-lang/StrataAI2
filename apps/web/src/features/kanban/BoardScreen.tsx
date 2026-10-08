@@ -735,7 +735,7 @@ function BoardContent() {
         transitionDuration={0}
         slots={{ transition: ImmediateDialogTransition }}
         disableRestoreFocus
-        slotProps={{ transition: { onExited: () => {
+        slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, transition: { onExited: () => {
           (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });
           closeFocusCard.current = undefined;
         } } }}
