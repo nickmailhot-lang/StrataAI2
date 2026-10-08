@@ -1,7 +1,7 @@
 # Notification and watching acceptance map — PRD-17
 
 [PRD-17](https://github.com/nickmailhot-lang/StrataAI2/issues/18) remains open at
-**20% estimated work remaining** (planning estimate). Earlier estimates below
+**19% estimated work remaining** (planning estimate). Earlier estimates below
 record their evidence scope. This maps all twelve
 functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
@@ -18,7 +18,7 @@ The adopted MUI/API/separate Worker/PostgreSQL architecture is unchanged.
 | NOTIFY-FR-005 watched Card changes | [Configured activity matrix](watch-activity-notifications.md), originating command transaction and post-mutation revision | All configured producers, current eligibility, source/journal/job atomicity and native producer-to-inbox delivery |
 | NOTIFY-FR-006 current List and newly created Cards | Same producer selects current List watchers and includes Card creation | Native current-List creation/movement boundaries executed below; current-image, concurrent watch/access transitions and exact historical attribution remain |
 | NOTIFY-FR-007 Board-wide Card activity | Same producer selects current Board watchers and deduplicates overlapping scopes | Full activity matrix and current-image 500-recipient correctness/latency fixture; scale Worker delivery remains distinct |
-| NOTIFY-FR-008 relationship at triggering event | Post-mutation current List/Board attribution; direct Card watch follows identity | Local native watched/unwatched List movement and reconciliation executed below; current-image cross-Board matrix and real concurrent admission remain |
+| NOTIFY-FR-008 relationship at triggering event | Post-mutation current List/Board attribution; direct Card watch follows identity | Local native List and cross-Board watch matrices executed below; current-image, complete role/visibility matrix and real concurrent admission remain |
 | NOTIFY-FR-009 mentions and assignments | [Assignment precedence](watch-activity-notifications.md), [assignment persistence](assignment-notifications.md), [mentions](comments-mentions-activity.md) | Both producer pipelines, actor suppression, deduplication, visibility withdrawal and current-image native delivery |
 | NOTIFY-FR-010 due reminders | [Personal due reminders and typed Worker delivery](card-dates.md) | Real scheduled fire, narrow Worker capability, exactly-once notification/journal effect, cancellation/reclaim/access withdrawal and native recovery; saving a future reminder alone does not prove fire |
 | NOTIFY-FR-011 actor self-suppression | Originating activity excludes actor; assignment/watch precedence and due-reminder policy are documented separately | Full configured producer matrix, including intentional personal reminder semantics, without applying suppression indiscriminately |
@@ -335,3 +335,51 @@ NOTIFY-FR-006/008/012 and AC-NOTIFY-17-03. Current immutable images, strict poli
 cross-Board/concurrent transitions, capacity, remaining producers and full
 Definition of Done still govern closure. Estimated PRD-17 work remaining stays
 **20%** (planning estimate); the issue remains open.
+
+## Executed native cross-Board watch relationships
+
+The new mandatory `watch-cross-board-notifications.spec.ts` passes on
+2026-10-08 (1 passed, 58.3 seconds, exit 0). Actual account registration,
+invitation acceptance and explicit peer grants establish two private Boards.
+The Organization-owner recipient changes watches through keyboard MUI controls;
+a different admitted member issues real HTTP Card edits/cross-Board moves.
+Desktop and 390px phone inboxes stay open with actual private live subscriptions.
+
+Source Board and List watches produce no notification when the Card moves into
+an unwatched destination Board. Subscribing to the destination Board produces
+one notification for the next peer edit. Moving back into overlapping watched
+source Board/List scopes yields one move notification. A direct Card watch is
+then created, source Board/List watches removed, and the Card moved to the
+watched destination Board: direct Card/destination Board overlap yields one
+notification. The direct subscription retains its original ID, watching state
+and version 1 after crossing Boards. Removing the destination Board watch leaves
+the direct Card watch active; the next edit delivers one notification.
+
+Both native inboxes receive exactly four creation frames with Organization and
+recipient admission, Notification entity type and empty metadata. Their event
+IDs equal all four persisted private journal identities. Stored notifications
+contain two move and two edit types, the peer actor and intended recipient;
+all four returned/native Card links use the final destination Board. The peer
+inbox remains empty. Tagged Axe and horizontal overflow checks pass on both
+recipient views. These finite scenarios establish current triggering-Board
+relationships, direct Card identity and overlap deduplication, not scale or
+concurrent/complete role/visibility admission.
+
+The first invocation failed the source List watch activation without sending a
+List write. A second fixture incorrectly required initial automatic dialog focus
+on Check; that initial read does not promise this focus. The final fixture
+explicitly issues a read-only Check, waits for owned focus/current workspace
+admission, sends one mutation and requires its real successful response and
+post-command focus. Both failed invocations remain retained as diagnostics.
+The full third invocation passes without retrying commands, relaxing recipient
+counts/permissions or extending the three-minute case deadline.
+
+Topology: current MUI production bundle, read-only compiled Production API and
+separate scoped Worker, restricted PostgreSQL 17/pgvector schema 112 and Nginx.
+Fixture verification policy is optional, matching the CI browser phase. All
+owned containers/database were removed and original services/data preserved.
+Browser typechecking and documentation links/staged diff checks pass. This
+strengthens NOTIFY-FR-005/007/008/012 and AC-NOTIFY-17-03. Current immutable-image,
+strict-policy, complete role/visibility and concurrent/capacity/producer/Definition
+of Done acceptance remain. Estimated PRD-17 work remaining is now **19%**
+(planning estimate); the issue remains open.

@@ -359,3 +359,19 @@ Waiting for real private-feed readmission before the next command repairs an
 initial observation race without changing producer behavior or effect counts.
 Current immutable-image, strict-policy, cross-Board/concurrent/capacity and full
 PRD acceptance remain. PRD-17 stays open at **20% estimated work remaining**.
+
+## Executed cross-Board native watch matrix
+
+The [cross-Board recipient case](prd-17-acceptance.md#executed-native-cross-board-watch-relationships)
+passes source/destination watch relationships, source Board/List overlap,
+direct Card/destination Board overlap and direct-only activity after unwatch.
+Actual keyboard watch controls and real peer HTTP edits/moves yield exactly
+four desktop/phone inbox notifications and matching private journal identities.
+Direct Card subscription ID/version survive movement; all links recover the
+final Board. Actor suppression, body-free private envelopes, Axe/overflow and
+invocation cleanup pass. The recipient is an Organization owner; complete
+ordinary-member/role/visibility and concurrent transitions remain separate.
+Read-only Check/focus admission repairs the initial fixture activation failures
+without repeating mutations. Current immutable-image, strict-policy, capacity
+and complete acceptance still govern closure. PRD-17 stays open at **19%
+estimated work remaining** (planning estimate).
