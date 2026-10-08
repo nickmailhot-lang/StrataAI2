@@ -236,3 +236,29 @@ producer timing fixture measures HTTP command acknowledgment and persisted priva
 journal creation, without claiming delivery to 500 browser sessions. Estimated
 PRD-17 work remaining stays **24%** (planning estimate). Full release-wide evidence
 and the measured capacity failure still prevent closure.
+
+### Restricted database component profiling
+
+Five `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` samples of the actual recipient
+query, executed as `strataai_api_runtime` with transaction-local tenant context,
+returned exactly 501 eligible accounts (including the subsequently suppressed
+issuer) in 3.755–5.720 ms execution time. Planning took 7.251–9.490 ms. This
+isolated query does not explain the whole HTTP acknowledgment failure.
+
+Five separate rollback-only inserts used the real Card's existing creation event
+and the same 500 eligible synthetic recipient memberships. They exercised the
+actual notification constraints, source guard and private journal triggers under
+the restricted API role. Each inserted exactly 500 rows before rollback and took
+201.749–219.414 ms execution time. The source guard accounted for 79.897–88.608 ms
+and the journal trigger for 73.916–83.054 ms. Notification and journal counts were
+verified unchanged after every profiling transaction had rolled back. No runtime
+role, trigger, constraint, authorization policy or production logging setting was
+changed to obtain these measurements.
+
+These are local database component measurements of historical source publication,
+not twenty HTTP edits or immutable-release acceptance. They identify repeated
+source validation and journal work as concrete optimization candidates; reducing
+those costs must retain historical Card attribution, tenant isolation, exact
+recipient sequences, transaction rollback and concurrent deadlock prevention.
+The failed HTTP benchmark and the 24% remaining-work planning estimate remain
+unchanged.
