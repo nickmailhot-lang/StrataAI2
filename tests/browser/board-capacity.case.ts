@@ -1,11 +1,17 @@
+import { installCapacityScrollDiagnostics, readCapacityScrollDiagnostics } from './capacityScrollDiagnostics';
 import AxeBuilder from '@axe-core/playwright';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
 import { focusAdmittedControl } from './keyboardAdmission';
 
+test.afterEach(async ({ page }, info) => {
+  const path = info.outputPath('capacity-scroll-diagnostics.json');
+  writeFileSync(path, JSON.stringify(await page.evaluate(readCapacityScrollDiagnostics)));
+  await info.attach('capacity-scroll-diagnostics', { path, contentType: 'application/json' });
+});
 // The existing restricted PostgreSQL rank fixture supplies actual persisted
 // 200-List/5000-active-Card data. No Board responses or live events are mocked.
 for (const width of [1280, 390]) {
@@ -20,6 +26,7 @@ for (const width of [1280, 390]) {
       const diagnostics = await context.newCDPSession(page);
       await diagnostics.send('Emulation.setCPUThrottlingRate', { rate: cpuRate });
     }
+    await page.addInitScript(installCapacityScrollDiagnostics);
     await page.setViewportSize({ width, height: 844 });
     expect((await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' }, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
     const result = await context.request.get(`/boards/${fixture.boardId}`); expect(result.status()).toBe(200);

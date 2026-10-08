@@ -52,6 +52,7 @@ jobs:
           node --experimental-strip-types --test tests/browser/boardReadTracker.test.mjs
           node --experimental-strip-types --test tests/browser/invitationAdmissionTracker.test.mjs
           node --experimental-strip-types --test tests/browser/scopedBoardWorker.test.mjs
+          node --experimental-strip-types --test tests/browser/capacityScrollDiagnostics.test.mjs
 
       - name: Verify security assertion failure paths
         run: scripts/ci/test-security-assertions.sh

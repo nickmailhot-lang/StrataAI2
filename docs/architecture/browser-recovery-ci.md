@@ -776,3 +776,56 @@ source or current exact retained-image release. Owned fixture services/database
 are removed and the original three services/data remain. The immutable phone
 failure is still unresolved. A reproduction capturing the large jump or stronger
 retained geometry evidence is required before choosing a product repair.
+
+## Bounded numerical capacity scroll evidence
+
+The capacity cases now attach `capacity-scroll-diagnostics` JSON to their existing
+Playwright artifact on success or failure. The browser installer records owned
+Kanban `scrollBy`, direct horizontal assignments and `scrollIntoView` calls with
+numeric arguments, prior offsets, pointer coordinates and browser-clock times.
+It retains at most 2,048 samples and reports discarded sample count. No entity
+identities, content, route, cookie, credential or native option text is retained.
+It does not poll geometry, force scrolling, fabricate input or decide admission.
+The original test gestures, target identity, timeouts, viewport/windowing and
+persistence assertions remain required. The diagnostic can distinguish a large
+auto-scroll argument from a direct assignment or focus-scrolling operation in
+the next immutable failure; it is not itself a product repair or a performance
+benchmark. Instrumentation overhead remains a limit of diagnostic evidence.
+
+Five mandatory Node regressions verify both native overloads, receiver/argument
+and return/exception preservation, direct assignment/focus forwarding, privacy,
+bounded retention, idempotent installation, diagnostic-read failure isolation and
+single native evaluation of option accessors. Browser TypeScript also passes.
+These are helper/source checks, separate from real browser and release gates.
+
+A separate CPU-eight diagnostic invocation fails the desktop protected-read
+admission (one observed read rather than two within five seconds) and the phone
+destination observer (no admitted original empty target within five seconds).
+The latter records 111 horizontal scroll calls, all at most 8.246 pixels, with
+late calls spaced roughly 47–64 milliseconds apart; the final observation is
+`scrollLeft=65997`, nearest eligible center x=3.695 outside the middle half.
+It does not reproduce the retained large-step hypothesis. Both failures remain
+retained and neither timeout nor assertion is widened. Its owned fixture services
+and database are removed. This diagnostic stress is distinct from the original
+retained viewport failure and does not certify normal-condition performance.
+
+Earlier exact-image run [37820639326](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37820639326)
+at `f05db23f` passes both capacity cases (1.8 minutes), then fails the strict
+producer phase (7 passed, 1 failed in 7.7 minutes). The reminder's due-time option
+is not enabled at the old `card-reminders.spec.ts:133` admission boundary; this
+revision predates `4c436df7` source-admission repair. Its required gate fails and
+release bundle is skipped. Its capacity pass does not erase the later retained
+phone failure or establish the current complete release gate.
+
+The bounded installer passes both unchanged desktop/phone capacity cases at
+CPU-four in a fresh invocation (2 passed in 2.9 minutes), with the same frozen
+Production API/Worker, schema-113 restricted PostgreSQL and complete rank/replay
+and archived-row checks. An independent native Chromium artifact proof passes
+(1 case in 1.2 seconds): actual DOM scroll assignment, `scrollBy(-211, 0)` and
+focus scrolling generate the three expected numerical samples and JSON persists
+in Playwright's output folder. The case writes the attachment using
+`info.outputPath`, so the existing `test-results/board-capacity` upload retains it
+independently of HTML-report body attachment storage. This focused proof does
+not exercise authentication, Worker transport or current immutable release.
+Owned capacity services/database are removed and original services/data remain.
+Current exact-image validation and the original phone defect are still pending.
