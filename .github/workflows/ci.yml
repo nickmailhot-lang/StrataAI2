@@ -655,6 +655,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 90
 
+      - name: Retain fixed-scope watch producer fan-out measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: watch-fanout-capacity-${{ github.sha }}
+          path: artifacts/capacity/watch-fanout.json
+          if-no-files-found: ignore
+          retention-days: 90
+
       - name: Retain fixed-scope global search capacity measurements
         if: always()
         uses: actions/upload-artifact@v7

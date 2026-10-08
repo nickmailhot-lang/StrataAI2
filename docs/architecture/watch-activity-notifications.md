@@ -189,3 +189,50 @@ but result size, row locking and notification/journal inserts still do. No
 large-scale producer p95 or current immutable-image acceptance is established by
 these checks. Estimated PRD-17 work remaining stays **24%** (planning estimate);
 full capacity/latency and release/PRD-wide acceptance are still required.
+
+
+## Required large-Board producer fan-out benchmark
+
+`test-watch-fanout-capacity.sh` is now called at the end of the existing shared
+capacity fixture, after earlier consumers/copy/move/attachment checks. It retains
+its own fixed-scope `artifacts/capacity/watch-fanout.json` through an always-run CI
+upload step. All commands use the already authenticated issuer through the actual
+API and Nginx; the 510 recipient accounts, grants and three overlapping watches
+per candidate are explicitly synthetic scale setup. This does not represent 500
+authenticated recipient browser sessions.
+
+Prerequisites are the actual 200 Lists, 5,000 active Cards and 100,000 archived
+Cards. Twenty serial, separately keyed HTTP Card edits must each advance the
+canonical revision and produce 500 distinct eligible notifications; five
+suspended and five deactivated candidates and the issuer's own watch are excluded.
+Every original key/body is replayed after commit, with identical acknowledgment
+and unchanged Card/notification/journal fingerprints and source/audit/job/receipt
+counts. Final assertions require 20 source events/audits/jobs/receipts, 10,000
+notifications, 10,000 distinct creation events and one event per notification,
+plus sequence 20 for all 500 eligible recipient streams. Source type, actor,
+Card/Board, version and timestamps must match the immutable triggering event.
+
+The report contains only immutable revision, fixed topology/conditions/sizes,
+verified booleans/counts and the 20 curl total-time samples plus nearest-rank p95.
+It excludes account/entity IDs, bodies, cookies, keys, email and raw URLs. Exact
+release images are the CI topology; a fixed local-compiled-runtime option keeps
+native execution distinct. The original strict mutation p95 <500 ms budget is
+preserved. A failed timing report is written before that mandatory assertion, and
+stale reports are removed before a new fixture begins.
+
+Local execution against the readonly compiled `5342630e` API, current Nginx/CSP and
+actual restricted PostgreSQL 17/pgvector/schema 110 completed every correctness
+assertion and all twenty samples, but **failed** the timing gate: p95 **555.548 ms**
+against <500 ms. Samples range from 470.657 to 634.755 ms. The retained JSON has
+status failed and topology local-compiled-runtime; sample count, p95 calculation,
+complete verified effects and absence of private identifiers were checked. The
+new test is not considered passing from shell syntax or authored workflow wiring.
+CI's actual immutable-image execution remains required.
+
+This exposes an unresolved producer performance gap. No budget, sample count,
+recipient count, request policy or production authorization was relaxed. The
+separate Worker/browser evidence above remains functional delivery evidence; this
+producer timing fixture measures HTTP command acknowledgment and persisted private
+journal creation, without claiming delivery to 500 browser sessions. Estimated
+PRD-17 work remaining stays **24%** (planning estimate). Full release-wide evidence
+and the measured capacity failure still prevent closure.
