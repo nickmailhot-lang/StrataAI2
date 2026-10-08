@@ -12,7 +12,7 @@ The adopted MUI/API/separate Worker/PostgreSQL architecture is unchanged.
 | Requirement | Implementation and evidence source | Required completion evidence |
 | --- | --- | --- |
 | NOTIFY-FR-001 notification center | [Bounded MUI inbox](notification-inbox.md), account admission, paging, empty/error states and read recovery | Current immutable-image native desktop/phone execution, keyboard/accessibility and account/membership withdrawal |
-| NOTIFY-FR-002 recipient, actor, type, link and clocks | Persisted notifications and current authorized links; [assignment source](assignment-notifications.md) and strict browser parsing | Exact stored attribution/clock comparison across assignment, mention, watched activity and due-reminder producers; moved/deleted parent admission |
+| NOTIFY-FR-002 recipient, actor, type, link and clocks | Persisted notifications and current authorized links; [assignment source](assignment-notifications.md) and strict browser parsing | Local exact stored attribution/clocks and complete private envelopes across all producer families are executed below; current immutable images, complete role/interaction and moved/deleted parent admission remain required |
 | NOTIFY-FR-003 single and bulk read | Recipient-bound read commands, original-key recovery and immutable first-read timestamp; [inbox contract](notification-inbox.md) | Full restricted API/current-image read, rollback, overlapping command, paging and lost-response/browser cases |
 | NOTIFY-FR-004 CARD/LIST/BOARD watch/unwatch | [Personal watch contracts](watch-subscriptions.md), retained subscription identity, version and original receipt | Current-image native watch lifecycle, permission/account withdrawal, retry, movement and parent transitions |
 | NOTIFY-FR-005 watched Card changes | [Configured activity matrix](watch-activity-notifications.md), originating command transaction and post-mutation revision | All configured producers, current eligibility, source/journal/job atomicity and native producer-to-inbox delivery |
@@ -631,3 +631,46 @@ Current retained-image/full CI, other producer attribution, complete role and
 interaction matrices, concurrent publication/rollback and capacity acceptance
 remain required. PRD-17 remains open at **15% estimated work remaining** (planning
 estimate).
+
+## Executed complete attribution across notification producer families
+
+The final assignment, selected-mention and actual due-fire cases pass at both
+1280px and 390px (six passes). The repaired group-mention cases then pass together
+in **1.8 minutes**. Together these eight cases use the final read-only persistence
+oracle in `persistedNotificationDelivery.ts`. An initial full eight-case invocation
+passed in 8.1 minutes; after explicit stored-sequence comparison was added, the
+next invocation passed six but failed two group cases before their persistence
+checks (retry focus and later draft entry). The group fixture now foregrounds the
+author and establishes current workspace admission and enabled keyboard focus
+before its single Review/Add keypresses. Automatic retry focus, original request
+keys/bodies, deadlines, counts, permissions and quotas remain asserted unchanged.
+
+Each admitted inbox row matches complete persisted recipient/actor, historical
+Board, stable Card, notification type, canonical link and creation/first-read
+clocks at full significant UTC precision. Every notification joins its actual
+Work source by tenant/event, actor, Board, source type and creation clock. Card
+sources additionally match Card identity/revision; fired reminders instead match
+the actual typed Reminder identity, Card and fired revision. No notification,
+source event, timestamp or journal record is fabricated by the oracle.
+
+Complete canonical creation/read envelopes match all persisted journal fields,
+including event identity/type, actor/recipient, tenant/Board, Notification entity,
+version, decimal sequence, timestamp and empty metadata. Exact twelve-key guards
+reject extra private payload fields. Actual private streams equal the complete
+canonical envelopes, normalizing only equivalent UTC spelling/trailing zeros.
+Group streams compare the three newly delivered mentions; the assignment created
+before subscription is independently verified in the inbox/source/journal. Both
+reminder clients compare the same creation/read pair. Existing native recovery,
+self-suppression, canonical links, withdrawal, tagged Axe and overflow checks pass.
+
+Execution uses current compiled Production API, separate Worker, current MUI,
+restricted PostgreSQL 17/pgvector schema 112 and Nginx. API fixture verification
+is optional; the reminder Worker requires verification and its fresh reminder
+accounts are verified. This does not establish strict policy for the other
+families or email-provider delivery. Owned fixtures are removed and original
+services/data preserved. Browser typechecking passes. Alongside the thirteen
+configured-watch-producer proof, this supersedes the local exact-attribution gap
+for NOTIFY-FR-002/009/010/012. Current retained-image/full CI, complete role and
+interaction matrices, concurrent publication/rollback, capacity and the entire
+Definition of Done remain required. PRD-17 stays open at **15% estimated work
+remaining** (planning estimate).

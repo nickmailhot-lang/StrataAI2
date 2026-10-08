@@ -280,3 +280,19 @@ group mentions, superseding their earlier HTTP-only limits. Current immutable
 build-once images, remaining producer/concurrency/capacity, strict-policy and
 full Definition of Done acceptance still govern closure. Estimated PRD-15 work
 remaining stays **36%**; PRD-17 stays **21%** (planning estimates).
+
+## Complete persisted native mention attribution
+
+The [final producer-family checks](prd-17-acceptance.md#executed-complete-attribution-across-notification-producer-families)
+pass selected mentions at both widths and the two repaired group cases together
+in 1.8 minutes. Every actual mention matches its persisted Card source actor,
+identity/revision, Board, source type and creation clock. Complete private creation
+and selected-mention read envelopes match all stored journal fields and full
+significant creation/first-read precision. Group consent, overlap deduplication,
+unconfirmed-text suppression, quota refusal, member/self scope, original receipt,
+automatic retry focus, current withdrawal and tagged Axe/overflow stay asserted.
+The failed final group invocation is retained; its read-only draft opener now
+foregrounds the author and establishes enabled/admitted focus before one keypress.
+API fixture verification remains optional. Current immutable images, strict policy,
+remaining producer/concurrency/capacity and full Definition of Done still govern
+closure. PRD-15 remains open at **36% estimated work remaining**; PRD-17 **15%**.

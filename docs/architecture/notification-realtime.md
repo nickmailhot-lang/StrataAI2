@@ -1,10 +1,13 @@
-# Recipient-private notification events (implementation in progress)
+# Recipient-private notification events
 
-PRD-17 requires NOTIFICATION_CREATED and NOTIFICATION_READ separately from the
-content-free Board replay stream. The Application envelope factory is implemented;
-durable journal storage, authorized stream delivery and native recovery are not
-implemented by this contract. Existing inbox HTTP polling remains its recovery
-behavior until those integrations are verified.
+The current implementation provides `NOTIFICATION_CREATED` and
+`NOTIFICATION_READ` separately from Board replay: atomic PostgreSQL recipient
+journals, authorized bounded HTTP sync, recipient-private SignalR delivery and
+MUI invalidation/recovery. HTTP polling and foreground/online refresh complement
+the private transport. The [PRD-17 acceptance map](prd-17-acceptance.md) records
+executed native scenarios and remaining release, concurrency and capacity gates;
+implementation does not by itself establish complete acceptance. The historical
+integration notes below preserve earlier evidence limits.
 
 The envelope identifies the stable notification, recipient, historical source
 Organization/Board and actor. Creation uses the source actor, notification revision
@@ -21,17 +24,19 @@ re-admit the inbox and obtain current authorized content/links from that service
 The envelope factory validates identities and timestamp ordering; it grants no
 authorization and provides no durability by itself.
 
-Next required integration: append creation with the originating notification
-transaction and append the first read transition with its read transaction; retain
-event identity on retry and suppress duplicate transitions. PostgreSQL storage
-must preserve tenant isolation and recipient ownership without granting the Worker
-general notification-table access. Reminder delivery through its narrow database
-capability must produce the same atomic creation envelope. Delivery must check the
-current session and Organization/source/current-entity visibility before and after
-awaited reads, use bounded recipient pages and recover gaps without exposing other
-recipients or trusting an old handshake principal. The demo adapter must implement
-the same behavior while remaining explicitly non-durable. SignalR and the existing
-API/Worker deployables remain the adopted transport/runtime architecture.
+Storage and admission invariants: creation appends with the originating
+notification transaction and first read appends with its read transaction.
+Original event identity survives retries, and duplicate transitions are
+suppressed. PostgreSQL enforces tenant isolation and recipient ownership without
+granting the Worker general notification-table access. Reminder delivery uses its
+narrow database capability to append the same atomic creation envelope. Delivery
+checks the current session and Organization/source/current-entity visibility
+before and after awaited reads, uses bounded recipient pages and recovers gaps
+without exposing other recipients or trusting an old handshake principal. The
+demo adapter implements the same contract while remaining explicitly non-durable.
+SignalR and the existing API/Worker deployables remain the adopted architecture.
+
+## Historical integration evidence
 
 Three source tests cover identity/historical scope and absent projected Card data,
 read actor/timestamp semantics and precise rejection of invalid scope/order.

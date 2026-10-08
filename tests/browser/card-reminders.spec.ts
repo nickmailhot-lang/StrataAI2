@@ -1,3 +1,4 @@
+import { expectPersistedNotificationDelivery, retainPrivateNotification, type PrivateNotificationEnvelope } from './persistedNotificationDelivery';
 import { expect, test } from './releaseTest';
 import AxeBuilder from '@axe-core/playwright';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -106,7 +107,7 @@ for (const width of [1280, 390]) {
       await waitForBoardDelivery(context.request, board);
       const inbox = await context.newPage(); const mirror = await context.newPage();
       const live = [inbox, mirror].map(client => {
-        const observed = { snapshots: 0, events: [] as { eventId: string; eventType: string }[] };
+        const observed = { snapshots: 0, events: [] as PrivateNotificationEnvelope[] };
         client.on('websocket', socket => {
           if (new URL(socket.url()).pathname !== '/notifications/live') return;
           socket.on('framereceived', frame => {
@@ -120,7 +121,7 @@ for (const width of [1280, 390]) {
               for (const event of item.events) {
                 expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(account.user.id);
                 expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
-                observed.events.push({ eventId: event.eventId, eventType: event.eventType });
+                observed.events.push(retainPrivateNotification(event, org, account.user.id));
               }
             }
           });
@@ -178,6 +179,7 @@ for (const width of [1280, 390]) {
       for (const observed of live) {
         expect(observed.events.map(event => event.eventId)).toEqual(journal.map((event: { eventId: string }) => event.eventId));
       }
+      await expectPersistedNotificationDelivery(context.request, org, account.user.id, live.map(observed => observed.events));
       for (const client of [page, inbox, mirror]) {
         expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
         expect(await client.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

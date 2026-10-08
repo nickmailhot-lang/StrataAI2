@@ -75,3 +75,14 @@ the historical producer slice above into an actual native consumer workflow.
 It is local compiled evidence with optional verification, not current retained
 release images or full producer/role/concurrency/capacity acceptance. PRD-11
 remains open at **35% estimated work remaining**, and PRD-17 at **21%**.
+
+## Complete persisted native attribution
+
+The [final desktop/phone producer-family checks](prd-17-acceptance.md#executed-complete-attribution-across-notification-producer-families)
+compare both actual assignment notifications with their Card source revisions,
+actors, scope, type and clocks. Complete private creation envelopes match stored
+journal identities, versions, decimal sequences and timestamps. Original receipt,
+reassignment, self-suppression, accessibility and membership-withdrawal assertions
+pass unchanged. This is local compiled evidence with optional API verification;
+current retained-image and full acceptance remain required. PRD-11 remains open
+at **35% estimated work remaining**; PRD-17 remains **15%**.

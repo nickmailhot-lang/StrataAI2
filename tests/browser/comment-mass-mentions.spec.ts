@@ -1,3 +1,4 @@
+import { expectPersistedNotificationDelivery, retainPrivateNotification, type PrivateNotificationEnvelope } from './persistedNotificationDelivery';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -45,7 +46,7 @@ for (const width of [1280, 390]) {
       expect(initialItems).toHaveLength(1); expect(initialItems[0].type).toBe('CARD_ASSIGNED');
       const assignmentId = initialItems[0].id;
       const nativeInbox = await teammate.newPage();
-      const mentionEvents: string[] = []; let liveSnapshots = 0;
+      const mentionEvents: PrivateNotificationEnvelope[] = []; let liveSnapshots = 0;
       nativeInbox.on('websocket', socket => {
         if (new URL(socket.url()).pathname !== '/notifications/live') return;
         socket.on('framereceived', frame => {
@@ -58,7 +59,8 @@ for (const width of [1280, 390]) {
             for (const event of item.events) {
               expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(recipient);
               expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
-              if (event.entityId !== assignmentId) mentionEvents.push(event.eventType);
+              retainPrivateNotification(event, org, recipient);
+              if (event.entityId !== assignmentId) mentionEvents.push(event);
             }
           }
         });
@@ -71,14 +73,16 @@ for (const width of [1280, 390]) {
       const reads = trackBoardReads(page, board, cardPath); await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       const commentsPath = `/cards/${card}/comments`;
       async function draft(text: string) {
+        await page.bringToFront();
         await waitForBoardDelivery(context.request, board);
         const snapshot = await (await context.request.get(`/boards/${board}`)).json();
         const current = snapshot.lists.flatMap((column: { cards: { id: string; version: number }[] }) => column.cards)
           .find((row: { id: string }) => row.id === card);
         expect(current).toBeDefined(); await expect.poll(cardVersion).toBe(current.version);
+        await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
         const review = page.getByRole('button', { name: 'Review Card comments', exact: true });
-        await expect(review).toBeEnabled(); await review.press('Enter');
-        await page.getByRole('button', { name: 'Add comment', exact: true }).press('Enter');
+        await pressAdmittedAction(review);
+        await pressAdmittedAction(page.getByRole('button', { name: 'Add comment', exact: true }));
         await page.getByRole('textbox', { name: 'New comment', exact: true }).fill(text);
       }
       async function save(client = page) {
@@ -119,7 +123,7 @@ for (const width of [1280, 390]) {
         return (await response.json()).items.filter((item: { type: string }) => item.type === 'MENTION_CREATED');
       }
       expect(await mentions()).toHaveLength(1);
-      await expect.poll(() => mentionEvents.filter(type => type === 'NOTIFICATION_CREATED').length).toBe(1);
+      await expect.poll(() => mentionEvents.filter(event => event.eventType === 'NOTIFICATION_CREATED').length).toBe(1);
       await expect(nativeInbox.getByText('Mentioned you in a comment · Unread', { exact: true })).toHaveCount(1);
       await expect(nativeInbox.getByRole('article')).toHaveCount(2);
       expect((await (await context.request.get(inboxPath)).json()).items).toEqual([]);
@@ -139,7 +143,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Retry original comment change', exact: true })).toHaveCount(0);
       const current = await (await context.request.get(commentsPath)).json(); expect(current.cardVersion).toBe(6); expect(current.items).toHaveLength(4);
       expect(await mentions()).toHaveLength(3);
-      await expect.poll(() => mentionEvents.filter(type => type === 'NOTIFICATION_CREATED').length).toBe(3);
+      await expect.poll(() => mentionEvents.filter(event => event.eventType === 'NOTIFICATION_CREATED').length).toBe(3);
       await expect(nativeInbox.getByText('Mentioned you in a comment · Unread', { exact: true })).toHaveCount(3);
       await expect(nativeInbox.getByRole('article')).toHaveCount(4);
       for (const link of await nativeInbox.getByRole('link', { name: 'Open Card', exact: true }).all()) {
@@ -158,10 +162,11 @@ for (const width of [1280, 390]) {
       await save(memberPage);
       await expect(memberPage.getByText('Comment added.', { exact: true })).toBeVisible(); expect(await mentions()).toHaveLength(3);
       expect((await (await context.request.get(inboxPath)).json()).items).toEqual([]);
+      await expectPersistedNotificationDelivery(teammate.request, org, recipient, [mentionEvents], [assignmentId]);
       expect((await context.request.delete(`/boards/${board}/members/${recipient}`, { headers })).status()).toBe(204);
       expect((await (await teammate.request.get(inboxPath)).json()).items).toEqual([]);
       await expect(nativeInbox.getByRole('article')).toHaveCount(0, { timeout: 25_000 });
-      expect(mentionEvents).toEqual(['NOTIFICATION_CREATED', 'NOTIFICATION_CREATED', 'NOTIFICATION_CREATED']);
+      expect(mentionEvents.map(event => event.eventType)).toEqual(['NOTIFICATION_CREATED', 'NOTIFICATION_CREATED', 'NOTIFICATION_CREATED']);
     } finally { try { restoreWorker(); } finally { await teammate.close(); } }
   });
 }

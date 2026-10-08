@@ -1,3 +1,4 @@
+import { expectPersistedNotificationDelivery, retainPrivateNotification, type PrivateNotificationEnvelope } from './persistedNotificationDelivery';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -37,7 +38,7 @@ for (const width of [1280, 390]) {
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`; const reads = trackBoardReads(page, board, cardPath);
       const nativeInbox = await recipientContext.newPage(); await nativeInbox.setViewportSize({ width, height: 844 });
-      const liveEvents: string[] = []; let liveSnapshots = 0;
+      const liveEvents: PrivateNotificationEnvelope[] = []; let liveSnapshots = 0;
       nativeInbox.on('websocket', socket => {
         if (new URL(socket.url()).pathname !== '/notifications/live') return;
         socket.on('framereceived', frame => {
@@ -50,7 +51,7 @@ for (const width of [1280, 390]) {
             for (const event of item.events) {
               expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(recipient);
               expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
-              liveEvents.push(event.eventType);
+              liveEvents.push(retainPrivateNotification(event, org, recipient));
             }
           }
         });
@@ -105,7 +106,7 @@ for (const width of [1280, 390]) {
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
       expect(JSON.parse(writes[0].body!)).toEqual({ content: `@${original.handle}`, cardVersion: 1,
         mentionSelections: [{ userId: recipient, handle: original.handle, handleVersion: reclaimed.handleVersion }] });
-      await expect.poll(() => liveEvents.filter(type => type === 'NOTIFICATION_CREATED').length).toBe(1);
+      await expect.poll(() => liveEvents.filter(event => event.eventType === 'NOTIFICATION_CREATED').length).toBe(1);
       await expect(nativeInbox.getByText('Mentioned you in a comment · Unread', { exact: true })).toBeVisible({ timeout: 25_000 });
       await expect(nativeInbox.getByRole('article')).toHaveCount(1);
       await expect(nativeInbox.getByRole('link', { name: 'Open Card', exact: true })).toHaveAttribute('href', cardPath);
@@ -113,19 +114,20 @@ for (const width of [1280, 390]) {
       expect(await nativeInbox.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await pressAdmittedAction(nativeInbox.getByRole('button', { name: 'Mark read', exact: true }));
       await expect(nativeInbox.getByText('0 unread on this page.', { exact: true })).toBeVisible();
-      await expect.poll(() => liveEvents.filter(type => type === 'NOTIFICATION_READ').length).toBe(1);
+      await expect.poll(() => liveEvents.filter(event => event.eventType === 'NOTIFICATION_READ').length).toBe(1);
       const inbox = await recipientContext.request.get(`/organizations/${org}/notifications`); expect(inbox.status()).toBe(200);
       expect(inbox.headers()['cache-control']).toContain('no-store');
       const notifications = (await inbox.json()).items; expect(notifications).toHaveLength(1);
       expect(notifications[0]).toMatchObject({ type: 'MENTION_CREATED', recipientId: recipient, entityId: card, entityLink: cardPath });
       expect(notifications[0].readAt).not.toBeNull();
+      await expectPersistedNotificationDelivery(recipientContext.request, org, recipient, [liveEvents]);
       expect((await (await context.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect((await context.request.delete(`/boards/${board}/members/${recipient}`, { headers })).status()).toBe(204);
       expect((await (await recipientContext.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
       await expect(nativeInbox.getByRole('article')).toHaveCount(0, { timeout: 25_000 });
-      expect(liveEvents.filter(type => type === 'NOTIFICATION_CREATED')).toHaveLength(1);
-      expect(liveEvents.filter(type => type === 'NOTIFICATION_READ')).toHaveLength(1);
+      expect(liveEvents.filter(event => event.eventType === 'NOTIFICATION_CREATED')).toHaveLength(1);
+      expect(liveEvents.filter(event => event.eventType === 'NOTIFICATION_READ')).toHaveLength(1);
     } finally { try { restoreWorker(); } finally { await recipientContext.close(); } }
   });
 }

@@ -627,3 +627,14 @@ tagged Axe/overflow and browser typechecking pass in the complete 1.0-minute cas
 Personal due reminders retain their separate actual Worker due-fire acceptance.
 Current retained-image/full CI and complete PRD-12 requirements remain required;
 PRD-12 stays open at **24% estimated work remaining**.
+
+## Complete persisted native reminder attribution
+
+The [final desktop/phone producer-family checks](prd-17-acceptance.md#executed-complete-attribution-across-notification-producer-families)
+compare actual fired notifications with their typed Reminder source, Card, fired
+revision, actor and full significant creation clock. Both private clients receive
+complete canonical creation/read envelopes with matching stored first-read clocks,
+identities, versions and sequences. Actual due firing, scheduling receipt replay,
+verified Worker account, keyboard reads and tagged Axe/overflow still pass. API
+fixture verification is optional; current retained-image and complete acceptance
+remain required. PRD-12 remains open at **24% estimated work remaining**.

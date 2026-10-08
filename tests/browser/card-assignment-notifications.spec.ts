@@ -1,3 +1,4 @@
+import { expectPersistedNotificationDelivery, retainPrivateNotification, type PrivateNotificationEnvelope } from './persistedNotificationDelivery';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -37,7 +38,7 @@ for (const width of [1280, 390]) {
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`;
       const inbox = await recipientContext.newPage(); await inbox.setViewportSize({ width, height: 844 });
-      const liveEvents: { eventId: string; eventType: string }[] = []; let liveSnapshots = 0;
+      const liveEvents: PrivateNotificationEnvelope[] = []; let liveSnapshots = 0;
       inbox.on('websocket', socket => {
         if (new URL(socket.url()).pathname !== '/notifications/live') return;
         socket.on('framereceived', frame => {
@@ -49,7 +50,7 @@ for (const width of [1280, 390]) {
             for (const event of item.events) {
               expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(recipient);
               expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
-              liveEvents.push({ eventId: event.eventId, eventType: event.eventType });
+              liveEvents.push(retainPrivateNotification(event, org, recipient));
             }
           }
         });
@@ -105,6 +106,7 @@ for (const width of [1280, 390]) {
       expect(await recipientRows()).toEqual(second);
       const sync = await recipientContext.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(sync.status()).toBe(200);
       expect(liveEvents.map(event => event.eventId)).toEqual((await sync.json()).events.map((event: { eventId: string }) => event.eventId));
+      await expectPersistedNotificationDelivery(recipientContext.request, org, recipient, [liveEvents]);
       for (const client of [page, inbox]) {
         expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
         expect(await client.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
