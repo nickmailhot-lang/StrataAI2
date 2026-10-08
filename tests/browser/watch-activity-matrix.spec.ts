@@ -4,6 +4,12 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { focusAdmittedControl } from './keyboardAdmission';
 
+type PrivateEnvelope = {
+  eventId: string; eventType: string; actorId: string; recipientId: string;
+  organizationId: string; boardId: string; entityType: string; entityId: string;
+  version: number; sequence: string; createdAt: string; metadata: Record<string, unknown>;
+};
+
 test('PRD-17-TC-01/07/08/10/11/12: all configured watch producers reach private native inboxes', async ({ page, context, browser, baseURL }) => {
   test.setTimeout(180_000);
   const headers = { 'X-StrataAI-Request': '1' }; const peer = await browser.newContext({ baseURL });
@@ -61,7 +67,7 @@ test('PRD-17-TC-01/07/08/10/11/12: all configured watch producers reach private 
     phone = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
     const mobile = await phone.newPage(); const clients = [page, mobile];
     const live = clients.map(client => {
-      const observed = { snapshots: 0, cursor: '', events: [] as { eventId: string; entityId: string }[] };
+      const observed = { snapshots: 0, cursor: '', events: [] as PrivateEnvelope[] };
       client.on('websocket', socket => {
         if (new URL(socket.url()).pathname !== '/notifications/live') return;
         socket.on('framereceived', frame => {
@@ -70,8 +76,12 @@ test('PRD-17-TC-01/07/08/10/11/12: all configured watch producers reach private 
             const message = JSON.parse(text); if (message.type !== 2 || !message.item) continue;
             expect(message.item.organizationId).toBe(org); expect(message.item.recipientId).toBe(recipient); observed.snapshots++; observed.cursor = message.item.cursor;
             for (const event of message.item.events) {
-              expect(event).toMatchObject({ organizationId: org, recipientId: recipient, entityType: 'Notification', eventType: 'NOTIFICATION_CREATED', metadata: {} });
-              observed.events.push({ eventId: event.eventId, entityId: event.entityId });
+              expect(Object.keys(event).sort()).toEqual(['eventId', 'eventType', 'actorId', 'recipientId', 'organizationId', 'boardId',
+                'entityType', 'entityId', 'version', 'sequence', 'createdAt', 'metadata'].sort());
+              expect(event).toMatchObject({ organizationId: org, recipientId: recipient, actorId: issuer, boardId: board,
+                entityType: 'Notification', eventType: 'NOTIFICATION_CREATED', version: 1, metadata: {} });
+              expect(event.sequence).toMatch(/^[1-9][0-9]*$/); utc(event.createdAt);
+              observed.events.push(event);
             }
           }
         });
@@ -138,11 +148,24 @@ test('PRD-17-TC-01/07/08/10/11/12: all configured watch producers reach private 
     }
     expect(query(`SELECT count(*) FROM card_assignment_notifications n JOIN work_events e ON e.tenant_id=n.tenant_id AND e.event_id=n.event_id WHERE n.tenant_id='${org}' AND n.recipient_id='${recipient}' AND e.actor_id=n.actor_id AND e.board_id=n.board_id AND e.entity_id=n.card_id AND e.entity_version=n.card_version AND e.event_type=n.notification_type AND e.created_at=n.created_at;`)).toBe('13');
     const sync = await context.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(sync.status()).toBe(200); const journal = (await sync.json()).events; expect(journal).toHaveLength(13);
+    const persistedJournal = JSON.parse(query(`SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM notification_events e WHERE tenant_id='${org}' AND recipient_id='${recipient}';`));
+    expect(persistedJournal).toHaveLength(13);
+    for (const [index, event] of (journal as PrivateEnvelope[]).entries()) {
+      const persisted = persistedJournal[index]; const notification = stored.find((item: { id: string }) => item.id === event.entityId);
+      expect(event).toEqual({ eventId: persisted.event_id, eventType: persisted.event_type, actorId: persisted.actor_id,
+        recipientId: persisted.recipient_id, organizationId: persisted.tenant_id, boardId: persisted.board_id,
+        entityType: 'Notification', entityId: persisted.notification_id, version: persisted.version,
+        sequence: String(persisted.sequence), createdAt: event.createdAt, metadata: persisted.metadata });
+      expect(event).toMatchObject({ actorId: issuer, recipientId: recipient, organizationId: org, boardId: board,
+        eventType: 'NOTIFICATION_CREATED', version: 1, sequence: String(index + 1), metadata: {} });
+      expect(utc(event.createdAt)).toBe(utc(persisted.created_at)); expect(utc(event.createdAt)).toBe(utc(notification.created_at));
+    }
     const archiveId = rows.find((row: { type: string }) => row.type === 'CARD_ARCHIVED').id;
     const visibleEvents = journal.filter((event: { entityId: string }) => event.entityId !== archiveId);
     for (const [index, client] of clients.entries()) {
       await expect.poll(() => live[index].events.length).toBe(12);
-      expect(live[index].events).toEqual(visibleEvents.map((event: { eventId: string; entityId: string }) => ({ eventId: event.eventId, entityId: event.entityId })));
+      const canonical = (event: PrivateEnvelope) => ({ ...event, createdAt: utc(event.createdAt) });
+      expect(live[index].events.map(canonical)).toEqual(visibleEvents.map(canonical));
       for (const caption of ['Card created', 'Card copied', 'Card updated', 'Card moved', 'Card member added', 'Card member removed',
         'Label added', 'Label removed', 'Card dates changed', 'Due date completed', 'Due date reopened', 'Card archived', 'Card restored'])
         await expect(client.getByText(`${caption} · Unread`, { exact: true })).toBeVisible();

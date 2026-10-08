@@ -570,3 +570,33 @@ also includes it. Current retained-image/full CI, complete role/visibility and
 producer interaction matrices, concurrent publication/rollback, capacity and the
 complete Definition of Done remain required. PRD-17 stays open at **15% estimated
 work remaining** (planning estimate).
+
+## Executed complete private activity envelopes
+
+The complete thirteen-producer case passes again in **1.0 minute**, now retaining
+the entire actual desktop/phone private event envelopes. Each creation payload
+has exactly the twelve approved keys: event/type, actor/recipient, Organization/
+Board, Notification entity/type, version, decimal sequence, creation clock and
+empty metadata. Extra payload fields are rejected by the test. Actual actor and
+Board match the admitted issuer/scope, version is one and sequence is a decimal
+string. UTC comparison preserves every significant fractional digit.
+
+A read-only query retrieves all thirteen complete persisted private journal rows.
+Every canonical HTTP envelope matches stored event/type, actor/recipient,
+tenant/Board, notification ID, version, sequence and metadata. Sequences are
+exactly 1–13; each envelope's creation clock equals both its persisted journal
+clock and the corresponding notification clock. The twelve envelopes actually
+disclosed to each connected client match the complete authorized HTTP envelopes,
+normalizing only equivalent UTC spelling/trailing fractional zeros. The retained
+archive event remains withheld at cursor 12 until fresh authorized recovery after
+restore, preserving the earlier current-parent admission behavior.
+
+All existing producer counts, captions, links, matching actor-watch suppression,
+original-key replies, unchanged Card/notification/journal fingerprints and tagged
+Axe/overflow checks pass unchanged under strict verification. Browser typechecking
+passes. Owned runtime/database are removed and original services/data preserved.
+This strengthens NOTIFY-FR-002/012 and AC-NOTIFY-17-03 for configured watched
+activity. Current retained-image/full CI, exact attribution/clock proof for the
+other producer families, complete role/visibility/interaction/concurrent rollback
+and capacity acceptance remain required. PRD-17 stays open at **15% estimated
+work remaining** (planning estimate).

@@ -447,3 +447,19 @@ typechecking. The mandatory strict CI phase and optional full browser suite both
 include it. Current compiled Production evidence does not establish retained-image,
 complete role/visibility, concurrent publication/rollback or capacity acceptance.
 PRD-17 remains open at **15% estimated work remaining**.
+
+## Executed complete private envelope comparison
+
+The [expanded full activity case](prd-17-acceptance.md#executed-complete-private-activity-envelopes)
+passes with all actual desktop/phone private envelope fields retained and
+compared. Its exact twelve-key payload guard rejects extra fields. All thirteen
+HTTP creation envelopes match complete stored journal scope, event/type,
+notification identity, actor/recipient, version, decimal sequence, creation clock
+and empty metadata. Journal clocks also equal corresponding notification clocks
+at full persisted precision. Each client receives exactly the twelve complete
+canonical envelopes permitted at delivery time; archive remains withheld during
+current-parent denial. All producer, native caption/link, self-suppression,
+original-key replay and history assertions pass unchanged in the 1.0-minute strict
+Production case. Browser typecheck and tagged Axe/overflow pass; owned fixtures
+are removed. Current retained-image/full CI and complete PRD acceptance remain
+required. PRD-17 remains open at **15% estimated work remaining**.
