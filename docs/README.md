@@ -60,6 +60,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 ## Identity, profiles, and invitations
 
 - [Authentication requirements and acceptance map (PRD-02)](architecture/prd-02-acceptance.md)
+- [Session and security-token lifecycle audit clocks (PRD-01 / PRD-02)](architecture/identity-lifecycle-clocks.md)
 
 - [Account deactivation and active Organization owners](architecture/account-owner-continuity.md)
 - [Identity command retries](architecture/identity-command-retries.md)

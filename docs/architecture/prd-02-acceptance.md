@@ -6,6 +6,18 @@ below record their historical evidence scope.
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Session and security-token lifecycle audit clocks
+
+The [lifecycle clock repair](identity-lifecycle-clocks.md) adds missing non-null
+update clocks to sessions and reset/verification tokens. Actual creation,
+consumption, revocation and deactivation persist their accepted lifecycle time;
+refused repeats and owning rollback preserve complete state. The real forward
+upgrade preserves all nine historical rows and their known clocks. The restricted
+store/transaction contract and required-ledger refusal/recovery pass, as do all
+17 selected API recovery cases and the strict locked Release build. Current
+retained-image/full CI and audit coverage for other mutable records remain
+required. PRD-02 stays open at **16% estimated work remaining** (planning estimate).
+
 ## Combined account browser evidence
 
 All 22 account, handle and expected-account native cases now pass together in

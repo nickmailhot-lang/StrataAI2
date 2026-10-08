@@ -159,14 +159,15 @@ internal sealed class PostgresIdentityStore(
             await connectionFactory.OpenGlobalSessionAsync(cancellationToken);
         await using var command = new NpgsqlCommand(
             """
-            INSERT INTO sessions(id, user_id, token_hash, created_at, expires_at)
-            VALUES (@id, @user_id, @token_hash, @created_at, @expires_at);
+            INSERT INTO sessions(id, user_id, token_hash, created_at, updated_at, expires_at)
+            VALUES (@id, @user_id, @token_hash, @created_at, @updated_at, @expires_at);
             """,
             routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("id", session.Id);
         command.Parameters.AddWithValue("user_id", session.UserId);
         command.Parameters.AddWithValue("token_hash", session.TokenHash);
         command.Parameters.AddWithValue("created_at", session.CreatedAt);
+        command.Parameters.AddWithValue("updated_at", session.UpdatedAt);
         command.Parameters.AddWithValue("expires_at", session.ExpiresAt);
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
@@ -219,8 +220,8 @@ internal sealed class PostgresIdentityStore(
         await using var command = new NpgsqlCommand(
             """
             UPDATE sessions
-            SET revoked_at = COALESCE(revoked_at, @revoked_at)
-            WHERE token_hash = @token_hash;
+            SET revoked_at = @revoked_at, updated_at = @revoked_at
+            WHERE token_hash = @token_hash AND revoked_at IS NULL;
             """,
             routing.Connection, routing.Transaction);
         command.Parameters.AddWithValue("token_hash", tokenHash);
@@ -306,7 +307,7 @@ internal sealed class PostgresIdentityStore(
         await using var consume = new NpgsqlCommand(
             """
             UPDATE password_reset_tokens
-            SET used_at = @used_at
+            SET used_at = @used_at, updated_at = @used_at
             WHERE token_hash = @token_hash AND used_at IS NULL AND revoked_at IS NULL
               AND expires_at > clock_timestamp();
             """,
@@ -319,7 +320,7 @@ internal sealed class PostgresIdentityStore(
         await using var revokeSessions = new NpgsqlCommand(
             """
             UPDATE sessions
-            SET revoked_at = COALESCE(revoked_at, @revoked_at)
+            SET revoked_at = @revoked_at, updated_at = @revoked_at
             WHERE user_id = @user_id AND revoked_at IS NULL;
             """,
             connection,
@@ -413,7 +414,7 @@ internal sealed class PostgresIdentityStore(
         await using var consume = new NpgsqlCommand(
             """
             UPDATE email_verification_tokens
-            SET used_at = @used_at
+            SET used_at = @used_at, updated_at = @used_at
             WHERE token_hash = @token_hash AND used_at IS NULL AND revoked_at IS NULL
               AND expires_at > clock_timestamp();
             """,
@@ -502,7 +503,7 @@ internal sealed class PostgresIdentityStore(
             await using var revokeSessions = new NpgsqlCommand(
                 """
                 UPDATE sessions
-                SET revoked_at = COALESCE(revoked_at, @revoked_at)
+                SET revoked_at = @revoked_at, updated_at = @revoked_at
                 WHERE user_id = @user_id AND revoked_at IS NULL;
                 """,
                 routing.Connection,
@@ -665,15 +666,16 @@ internal sealed class PostgresIdentityStore(
         await using var command = new NpgsqlCommand(
             $"""
             INSERT INTO {tableName}(
-                id, user_id, token_hash, created_at, expires_at)
+                id, user_id, token_hash, created_at, updated_at, expires_at)
             VALUES (
-                @id, @user_id, @token_hash, @created_at, @expires_at);
+                @id, @user_id, @token_hash, @created_at, @updated_at, @expires_at);
             """,
             connection, transaction);
         command.Parameters.AddWithValue("id", token.Id);
         command.Parameters.AddWithValue("user_id", token.UserId);
         command.Parameters.AddWithValue("token_hash", token.TokenHash);
         command.Parameters.AddWithValue("created_at", token.CreatedAt);
+        command.Parameters.AddWithValue("updated_at", token.UpdatedAt);
         command.Parameters.AddWithValue("expires_at", token.ExpiresAt);
         await command.ExecuteNonQueryAsync(cancellationToken);
     }

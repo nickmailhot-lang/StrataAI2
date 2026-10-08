@@ -41,7 +41,10 @@ public sealed record SessionRecord(
     Guid UserId,
     string TokenHash,
     DateTimeOffset CreatedAt,
-    DateTimeOffset ExpiresAt);
+    DateTimeOffset ExpiresAt)
+{
+    public DateTimeOffset UpdatedAt { get; init; } = CreatedAt;
+}
 
 public sealed record AuthenticatedSession(
     Guid SessionId,
@@ -53,7 +56,10 @@ public sealed record SecurityTokenRecord(
     Guid UserId,
     string TokenHash,
     DateTimeOffset CreatedAt,
-    DateTimeOffset ExpiresAt);
+    DateTimeOffset ExpiresAt)
+{
+    public DateTimeOffset UpdatedAt { get; init; } = CreatedAt;
+}
 
 public sealed record IdentityPolicy(
     bool AllowSelfRegistration,

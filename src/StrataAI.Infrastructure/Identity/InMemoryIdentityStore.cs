@@ -165,7 +165,7 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
     {
         lock (_sync)
         {
-            if (_sessions.Remove(tokenHash, out var session)) _revokedSessions[tokenHash] = session;
+            if (_sessions.Remove(tokenHash, out var session)) _revokedSessions[tokenHash] = session with { UpdatedAt = revokedAt };
         }
 
         return Task.CompletedTask;
@@ -219,7 +219,7 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
                 return Task.FromResult(false);
             }
 
-            _passwordResetTokens[tokenHash] = state with { UsedAt = usedAt };
+            _passwordResetTokens[tokenHash] = state with { UsedAt = usedAt, Token = state.Token with { UpdatedAt = usedAt } };
             _users[user.Id] = user with
             {
                 PasswordHash = newPasswordHash,
@@ -227,7 +227,7 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
                 Version = user.Version + 1,
             };
 
-            RemoveSessionsForUser(user.Id);
+            RemoveSessionsForUser(user.Id, usedAt);
             return Task.FromResult(true);
         }
     }
@@ -279,7 +279,7 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
                 return Task.FromResult(false);
             }
 
-            _emailVerificationTokens[tokenHash] = state with { UsedAt = usedAt };
+            _emailVerificationTokens[tokenHash] = state with { UsedAt = usedAt, Token = state.Token with { UpdatedAt = usedAt } };
             _users[user.Id] = user with
             {
                 EmailVerified = true,
@@ -346,7 +346,7 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
             };
             if (scope.Active && user.Status != AccountStatus.Deactivated)
                 _issuerAuthorityProofs[(userId, user.Version + 1)] = new(userId, user.Version + 1, deactivatedAt, scope.CommandId);
-            RemoveSessionsForUser(userId);
+            RemoveSessionsForUser(userId, deactivatedAt);
             return Task.FromResult(true);
         }
     }
@@ -401,7 +401,7 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
         CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
-    private void RemoveSessionsForUser(Guid userId)
+    private void RemoveSessionsForUser(Guid userId, DateTimeOffset revokedAt)
     {
         var hashes = _sessions
             .Where(pair => pair.Value.UserId == userId)
@@ -410,7 +410,7 @@ internal sealed partial class InMemoryIdentityStore(IClock clock, DemoMentionHan
 
         foreach (var hash in hashes)
         {
-            if (_sessions.Remove(hash, out var session)) _revokedSessions[hash] = session;
+            if (_sessions.Remove(hash, out var session)) _revokedSessions[hash] = session with { UpdatedAt = revokedAt };
         }
     }
 }
