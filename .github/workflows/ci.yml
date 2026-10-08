@@ -571,7 +571,7 @@ jobs:
       - name: Authorized global search, literal matching, cursor binding and archived scope through exact release images
         run: bash scripts/ci/test-global-search.sh
 
-      - name: Deleted Card List and Board content withheld from search inbox and notification history through exact release images
+      - name: Deleted and moved Card content admission across search inbox and notification history through exact release images
         run: bash scripts/ci/test-deleted-content-surfaces.sh
 
       - name: Account-bound navigation observations through exact release proxy and API

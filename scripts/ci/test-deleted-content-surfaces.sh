@@ -17,10 +17,25 @@ request() {
 }
 get() { curl --max-time 60 --silent --show-error -b "$scratch/recipient.cookies" -D "$scratch/headers" -o "$scratch/page.json" -w '%{http_code}' "$base$1"; }
 search() {
- local scope=$1 after=${2:-}; local args=(--get --data-urlencode "q=$keyword" --data-urlencode "scope=$scope")
- if test -n "$after"; then args+=(--data-urlencode "after=$after"); fi
- curl --max-time 60 --silent --show-error -b "$scratch/recipient.cookies" "${args[@]}" \
-  -D "$scratch/headers" -o "$scratch/page.json" -w '%{http_code}' "$base/search"
+ local scope=$1 after=${2:-} code next page
+ : > "$scratch/search-seen"
+ if test -n "$after"; then printf '%s\n' "$after" >> "$scratch/search-seen"; fi
+ # Empty bounded traversal pages can carry a continuation even when there is
+ # no matching content. Follow them without relaxing the server's read budget.
+ for ((page=0;page<64;page++)); do
+  local args=(--get --data-urlencode "q=$keyword" --data-urlencode "scope=$scope")
+  if test -n "$after"; then args+=(--data-urlencode "after=$after"); fi
+  code=$(curl --max-time 60 --silent --show-error -b "$scratch/recipient.cookies" "${args[@]}" \
+   -D "$scratch/headers" -o "$scratch/page.json" -w '%{http_code}' "$base/search")
+  if test "$code" != 200; then printf '%s' "$code"; return; fi
+  jq -e '(.items|type)=="array"' "$scratch/page.json" >/dev/null
+  grep -iq '^cache-control: private, no-store' "$scratch/headers"
+  next=$(jq -r '.nextCursor // empty' "$scratch/page.json")
+  if jq -e '(.items|length)>0' "$scratch/page.json" >/dev/null || test -z "$next"; then printf '%s' "$code"; return; fi
+  if grep -Fqx -- "$next" "$scratch/search-seen"; then echo 'Search traversal repeated a cursor.' >&2; return 1; fi
+  printf '%s\n' "$next" >> "$scratch/search-seen"; after=$next
+ done
+ echo 'Search traversal exceeded the fixture page bound.' >&2; return 1
 }
 empty_search() {
  test "$(search "$1" "${2:-}")" = 200
@@ -38,6 +53,12 @@ effects() {
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='WORK_EVENT_READY'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"
+}
+surviving_search() {
+ test "$(search active)" = 200
+ jq -e --arg card "$card" --arg board "$destination" --arg list "$destination_list" \
+  '(.items|length)==1 and .items[0].card.id==$card and .items[0].card.boardId==$board
+   and .items[0].card.listId==$list and .items[0].card.lifecycleState=="active" and .items[0].card.version==3' "$scratch/page.json" >/dev/null
 }
 for actor in owner recipient; do
  email="deleted-content-$actor-$(uuid)@example.test"
@@ -60,7 +81,8 @@ done
 owner=$(cat "$scratch/owner.id"); recipient=$(cat "$scratch/recipient.id")
 completed=0
 for visibility in PRIVATE ORGANIZATION PUBLIC; do
- for kind in card list board; do
+ for kind in card list board source_list source_board destination_list destination_board; do
+  moved=false; survivor=false; notification_visible=false; archived_cursor=''
   keyword="deleted-surface-$visibility-$kind-$(uuid)"
   test "$(request owner POST /organizations '{"name":"Deletion surface scope"}')" = 201
   org=$(jq -r '.organization.id' "$scratch/response.json"); [[ "$org" =~ ^[0-9a-fA-F-]{36}$ ]]
@@ -89,36 +111,90 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
   jq -se '.[0]==.[1]' "$scratch/read-receipt.json" "$scratch/response.json" >/dev/null
   test "$(get "$path/sync?after=0")" = 200
   jq -e --arg id "$notification" '(.events|length)==2 and .cursor=="2" and (.hasMore|not) and all(.events[];.entityId==$id)' "$scratch/page.json" >/dev/null
+  if [[ "$kind" == source_* || "$kind" == destination_* ]]; then
+   moved=true
+   test "$(request owner POST /boards "$(jq -nc --arg org "$org" --arg v "$visibility" '{organizationId:$org,name:"Destination surface Board",visibility:$v}')")" = 201
+   destination=$(jq -r '.id' "$scratch/response.json")
+   test "$(request owner PATCH "/boards/$destination/members/$recipient" '{"role":"MEMBER"}')" = 200
+   test "$(request owner POST "/boards/$destination/lists" '{"name":"Destination surface List"}')" = 201
+   destination_list=$(jq -r '.id' "$scratch/response.json")
+   for id in "$destination" "$destination_list"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
+   move_key=$(uuid)
+   move_body=$(jq -nc --arg board "$board" --arg list "$destination_list" '{sourceBoardId:$board,destinationListId:$list,expectedVersion:2}')
+   test "$(request owner POST "/cards/$card/move" "$move_body" "$move_key")" = 200
+   cp "$scratch/response.json" "$scratch/move-receipt.json"
+   jq -e --arg board "$destination" --arg list "$destination_list" '.boardId==$board and .listId==$list and .version==3' "$scratch/response.json" >/dev/null
+   surviving_search
+   test "$(get "$path")" = 200
+   jq -e --arg source "$board" --arg destination "$destination" --arg card "$card" --arg org "$org" \
+    '(.items|length)==1 and .items[0].boardId==$source and .items[0].currentBoardId==$destination
+     and .items[0].entityLink==("/app/"+$org+"/boards/"+$destination+"/cards/"+$card)' "$scratch/page.json" >/dev/null
+  fi
   case "$kind" in
    card) entity=$card; resource="/cards/$card"; version=2; table=cards; extra='';;
    list) entity=$list; resource="/lists/$list"; version=1; table=board_lists; extra='&containedCardCount=1';;
    board) entity=$board; resource="/boards/$board"; version=1; table=boards; extra='';;
+   source_list) entity=$list; resource="/lists/$list"; version=1; table=board_lists; extra='&containedCardCount=0'; survivor=true; notification_visible=true;;
+   source_board) entity=$board; resource="/boards/$board"; version=1; table=boards; extra=''; survivor=true;;
+   destination_list) entity=$destination_list; resource="/lists/$destination_list"; version=1; table=board_lists; extra='&containedCardCount=1';;
+   destination_board) entity=$destination; resource="/boards/$destination"; version=1; table=boards; extra='';;
   esac
   test "$(request owner POST "$resource/archive" "$(jq -nc --argjson v "$version" '{version:$v}')")" = 200
   archive_at=$(jq -r '.archivedAt' "$scratch/response.json"); version=$((version+1))
-  empty_search active
-  test "$(search archived)" = 200
-  jq -e --arg card "$card" '(.items|length)==1 and .items[0].card.id==$card and (.nextCursor|type)=="string"' "$scratch/page.json" >/dev/null
-  archived_cursor=$(jq -r '.nextCursor' "$scratch/page.json")
+  if $survivor; then
+   surviving_search; empty_search archived
+   surviving_card=$(admin "SELECT md5(to_jsonb(r)::text) FROM cards r WHERE tenant_id='$org' AND id='$card';")
+  else
+   empty_search active
+   test "$(search archived)" = 200
+   jq -e --arg card "$card" '(.items|length)==1 and .items[0].card.id==$card and (.nextCursor|type)=="string"' "$scratch/page.json" >/dev/null
+   archived_cursor=$(jq -r '.nextCursor' "$scratch/page.json")
+  fi
   delete_key=$(uuid)
   test "$(request owner DELETE "$resource?version=$version&confirmed=true$extra" '{}' "$delete_key")" = 200
   cp "$scratch/response.json" "$scratch/delete-receipt.json"
   jq -e --arg id "$entity" --arg actor "$owner" --arg at "$archive_at" '.id==$id and .lifecycleState=="deleted" and .deletedBy==$actor and .archivedAt==$at and (.deletedAt|type)=="string"' "$scratch/response.json" >/dev/null
   test "$(admin "SELECT lifecycle_state='DELETED' AND archived_at='$archive_at'::timestamptz AND deleted_by='$owner' FROM $table WHERE tenant_id='$org' AND id='$entity';")" = t
   before=$(effects)
-  empty_search active; empty_search archived; empty_search archived "$archived_cursor"
+  if $survivor; then
+   surviving_search; empty_search archived
+   test "$(admin "SELECT md5(to_jsonb(r)::text) FROM cards r WHERE tenant_id='$org' AND id='$card';")" = "$surviving_card"
+  else
+   empty_search active; empty_search archived; empty_search archived "$archived_cursor"
+  fi
   test "$(get "$path")" = 200
-  jq -e '.items==[] and .nextCursor==null' "$scratch/page.json" >/dev/null
+  if $notification_visible; then
+   jq -e --arg id "$notification" --arg destination "$destination" '(.items|length)==1 and .items[0].id==$id and .items[0].currentBoardId==$destination and .items[0].readAt!=null' "$scratch/page.json" >/dev/null
+  else
+   jq -e '.items==[] and .nextCursor==null' "$scratch/page.json" >/dev/null
+  fi
   grep -iq '^cache-control: private, no-store' "$scratch/headers"
-  # Historical sources survive; current admission suppresses both created/read events.
+  # Retained history requires current source/destination admission.
   test "$(get "$path/sync?after=0")" = 200
-  jq -e '.events==[] and .cursor=="2" and (.hasMore|not) and (.resetRequired|not)' "$scratch/page.json" >/dev/null
-  test "$(request recipient POST "$path/$notification/read" '{}' "$read_key")" = 404
-  jq -e '.code=="notification_not_found" and (has("items")|not)' "$scratch/response.json" >/dev/null
-  test "$(request recipient POST "$path/$notification/read" '{}')" = 404
-  test "$(request recipient POST "$path/read" "$selection" "$bulk_key")" = 404
-  jq -e '.code=="notification_not_found" and (has("items")|not)' "$scratch/response.json" >/dev/null
-  test "$(request recipient POST "$path/read" "$selection")" = 404
+  if $notification_visible; then
+   jq -e --arg id "$notification" '(.events|length)==2 and .cursor=="2" and all(.events[];.entityId==$id)' "$scratch/page.json" >/dev/null
+   test "$(request recipient POST "$path/$notification/read" '{}' "$read_key")" = 200
+   jq -se '.[0]==.[1]' "$scratch/read-receipt.json" "$scratch/response.json" >/dev/null
+   test "$(request recipient POST "$path/read" "$selection" "$bulk_key")" = 200
+   jq -se '.[0]==.[1]' "$scratch/read-receipt.json" "$scratch/response.json" >/dev/null
+  else
+   jq -e '.events==[] and .cursor=="2" and (.hasMore|not) and (.resetRequired|not)' "$scratch/page.json" >/dev/null
+   test "$(request recipient POST "$path/$notification/read" '{}' "$read_key")" = 404
+   jq -e '.code=="notification_not_found" and (has("items")|not)' "$scratch/response.json" >/dev/null
+   test "$(request recipient POST "$path/$notification/read" '{}')" = 404
+   test "$(request recipient POST "$path/read" "$selection" "$bulk_key")" = 404
+   jq -e '.code=="notification_not_found" and (has("items")|not)' "$scratch/response.json" >/dev/null
+   test "$(request recipient POST "$path/read" "$selection")" = 404
+  fi
+  if $moved; then
+   if $notification_visible; then
+    test "$(request owner POST "/cards/$card/move" "$move_body" "$move_key")" = 200
+    jq -se '.[0]==.[1]' "$scratch/move-receipt.json" "$scratch/response.json" >/dev/null
+   else
+    test "$(request owner POST "/cards/$card/move" "$move_body" "$move_key")" = 404
+    jq -e '.code=="card_not_found"' "$scratch/response.json" >/dev/null
+   fi
+  fi
   test "$(request owner POST "$resource/restore" "$(jq -nc --argjson v "$((version+1))" '{version:$v}')")" = 404
   test "$(request owner DELETE "$resource?version=$version&confirmed=true$extra" '{}' "$delete_key")" = 200
   jq -se '.[0]==.[1]' "$scratch/delete-receipt.json" "$scratch/response.json" >/dev/null
@@ -126,5 +202,5 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
   completed=$((completed+1))
  done
 done
-test "$completed" = 9
-echo 'Deleted content: nine real Card/List/Board deletion workflows across all Board visibilities suppress fresh/continued search, inbox, historical sync and old/new single/bulk read commands; irreversible restoration is refused and original deletion recovery preserves protected records/effects.'
+test "$completed" = 21
+echo 'Deleted content: 21 real deletion workflows across all Board visibilities suppress deleted search/notification content and receipts, preserve moved survivors and permitted historical recovery, refuse irreversible restoration, and preserve protected records/effects on original deletion recovery.'
