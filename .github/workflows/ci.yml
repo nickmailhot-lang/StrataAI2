@@ -111,7 +111,9 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
 
       - name: Verify source test report completeness and privacy
-        run: python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
+        run: |
+          python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
+          python3 -m unittest discover -s tests -p 'evidence_artifacts_test.py'
 
       - name: Unit and component tests
         run: |
@@ -785,102 +787,146 @@ jobs:
         if: (matrix.suite == 'commands')
         run: scripts/ci/test-operator-metrics.sh
 
+      - name: Prepare Retain fixed operator collection evidence
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/operator-metrics --entry "artifacts/metrics/operator.json" "operator.json"
+
       - name: Retain fixed operator collection evidence
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: operator-metrics-${{ github.sha }}
-          path: artifacts/metrics/operator.json
+          path: artifacts/retained/operator-metrics
           retention-days: 90
           if-no-files-found: ignore
+
+      - name: Prepare Retain fixed-scope Checklist capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/checklist-capacity --entry "artifacts/capacity/checklists.json" "checklists.json"
 
       - name: Retain fixed-scope Checklist capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: checklist-capacity-${{ github.sha }}
-          path: artifacts/capacity/checklists.json
+          path: artifacts/retained/checklist-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope activity capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/activity-capacity --entry "artifacts/capacity/activity.json" "activity.json"
 
       - name: Retain fixed-scope activity capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: activity-capacity-${{ github.sha }}
-          path: artifacts/capacity/activity.json
+          path: artifacts/retained/activity-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope notification inbox capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/notification-capacity --entry "artifacts/capacity/notifications.json" "notifications.json"
 
       - name: Retain fixed-scope notification inbox capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: notification-capacity-${{ github.sha }}
-          path: artifacts/capacity/notifications.json
+          path: artifacts/retained/notification-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope watch producer fan-out measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/watch-fanout-capacity --entry "artifacts/capacity/watch-fanout.json" "watch-fanout.json"
 
       - name: Retain fixed-scope watch producer fan-out measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: watch-fanout-capacity-${{ github.sha }}
-          path: artifacts/capacity/watch-fanout.json
+          path: artifacts/retained/watch-fanout-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope global search capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/search-capacity --entry "artifacts/capacity/search.json" "search.json"
 
       - name: Retain fixed-scope global search capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: search-capacity-${{ github.sha }}
-          path: artifacts/capacity/search.json
+          path: artifacts/retained/search-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope comment capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/comment-capacity --entry "artifacts/capacity/comments.json" "comments.json"
 
       - name: Retain fixed-scope comment capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: comment-capacity-${{ github.sha }}
-          path: artifacts/capacity/comments.json
+          path: artifacts/retained/comment-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope cross-Board movement capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/card-move-capacity --entry "artifacts/capacity/card-moves.json" "card-moves.json"
 
       - name: Retain fixed-scope cross-Board movement capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: card-move-capacity-${{ github.sha }}
-          path: artifacts/capacity/card-moves.json
+          path: artifacts/retained/card-move-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope work lifecycle capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/work-lifecycle-capacity --entry "artifacts/capacity/work-lifecycle.json" "work-lifecycle.json"
 
       - name: Retain fixed-scope work lifecycle capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: work-lifecycle-capacity-${{ github.sha }}
-          path: artifacts/capacity/work-lifecycle.json
+          path: artifacts/retained/work-lifecycle-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope permanent-deletion capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/work-deletion-capacity --entry "artifacts/capacity/work-deletion.json" "work-deletion.json"
 
       - name: Retain fixed-scope permanent-deletion capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: work-deletion-capacity-${{ github.sha }}
-          path: artifacts/capacity/work-deletion.json
+          path: artifacts/retained/work-deletion-capacity
           if-no-files-found: ignore
           retention-days: 90
+
+      - name: Prepare Retain fixed-scope Card copy capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/card-copy-capacity --entry "artifacts/capacity/card-copies.json" "card-copies.json"
 
       - name: Retain fixed-scope Card copy capacity measurements
         if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: card-copy-capacity-${{ github.sha }}
-          path: artifacts/capacity/card-copies.json
+          path: artifacts/retained/card-copy-capacity
           if-no-files-found: ignore
           retention-days: 90
 
@@ -919,12 +965,16 @@ jobs:
         if: (matrix.suite == 'browser-foundation')
         run: bash scripts/ci/test-attachment-image-pipeline.sh
 
+      - name: Prepare Retain fixed-scope attachment capacity measurements
+        if: always() && (matrix.suite == 'browser-foundation')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/attachment-capacity --entry "artifacts/capacity/attachments.json" "attachments.json"
+
       - name: Retain fixed-scope attachment capacity measurements
         if: always() && (matrix.suite == 'browser-foundation')
         uses: actions/upload-artifact@v7
         with:
           name: attachment-capacity-${{ github.sha }}
-          path: artifacts/capacity/attachments.json
+          path: artifacts/retained/attachment-capacity
           if-no-files-found: ignore
           retention-days: 90
 
@@ -935,12 +985,16 @@ jobs:
         if: (matrix.suite == 'browser-foundation')
         run: scripts/ci/test-work-ranks.sh
 
+      - name: Prepare Retain actual large-Board native capacity diagnostics
+        if: always() && (matrix.suite == 'browser-foundation')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/board-capacity-browser --entry "test-results/board-capacity" "."
+
       - name: Retain actual large-Board native capacity diagnostics
         if: always() && (matrix.suite == 'browser-foundation')
         uses: actions/upload-artifact@v7
         with:
           name: board-capacity-browser-${{ github.sha }}
-          path: test-results/board-capacity
+          path: artifacts/retained/board-capacity-browser
           if-no-files-found: ignore
           retention-days: 90
 
@@ -1044,23 +1098,29 @@ jobs:
           scripts/ci/test-rate-limits.sh http://localhost:8080
           scripts/ci/test-rate-limits.sh http://localhost:8088 security-headers
 
+      - name: Prepare Retain browser failure evidence
+        if: failure() && (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/browser-diagnostics --entry "test-results/" "test-results" --entry "playwright-report/" "playwright-report"
+
       - name: Retain browser failure evidence
         if: failure() && (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         uses: actions/upload-artifact@v7
         with:
           name: browser-diagnostics-${{ github.sha }}-${{ matrix.suite }}
-          path: |
-            test-results/
-            playwright-report/
+          path: artifacts/retained/browser-diagnostics
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Prepare Retain scoped browser performance measurements
+        if: always() && (matrix.suite == 'browser-full')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/browser-performance --entry "artifacts/browser-performance/kanban.json" "kanban.json"
 
       - name: Retain scoped browser performance measurements
         if: always() && (matrix.suite == 'browser-full')
         uses: actions/upload-artifact@v7
         with:
           name: browser-performance-${{ github.sha }}
-          path: artifacts/browser-performance/kanban.json
+          path: artifacts/retained/browser-performance
           if-no-files-found: ignore
           retention-days: 90
 
@@ -1071,16 +1131,16 @@ jobs:
           docker compose -f compose.release.yml ps > compose-ps.txt || true
           docker compose -f compose.release.yml logs --no-color > compose.log || true
 
+      - name: Prepare Upload integration diagnostics
+        if: failure()
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/container-integration-diagnostics --entry "compose-ps.txt" "compose-ps.txt" --entry "compose.log" "compose.log" --entry "demo-metadata-compose.log" "demo-metadata-compose.log" --entry "$RUNNER_TEMP/identity-mail-failure.json" "identity-mail-failure.json"
+
       - name: Upload integration diagnostics
         if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: container-integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}
-          path: |
-            compose-ps.txt
-            compose.log
-              demo-metadata-compose.log
-            ${{ runner.temp }}/identity-mail-failure.json
+          path: artifacts/retained/container-integration-diagnostics
           if-no-files-found: ignore
           retention-days: 14
 

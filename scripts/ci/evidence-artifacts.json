@@ -1,0 +1,178 @@
+{
+  "Retain fixed operator collection evidence": {
+    "artifact": "operator-metrics-${{ github.sha }}",
+    "output": "artifacts/retained/operator-metrics",
+    "entries": [
+      [
+        "artifacts/metrics/operator.json",
+        "operator.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope Checklist capacity measurements": {
+    "artifact": "checklist-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/checklist-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/checklists.json",
+        "checklists.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope activity capacity measurements": {
+    "artifact": "activity-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/activity-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/activity.json",
+        "activity.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope notification inbox capacity measurements": {
+    "artifact": "notification-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/notification-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/notifications.json",
+        "notifications.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope watch producer fan-out measurements": {
+    "artifact": "watch-fanout-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/watch-fanout-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/watch-fanout.json",
+        "watch-fanout.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope global search capacity measurements": {
+    "artifact": "search-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/search-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/search.json",
+        "search.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope comment capacity measurements": {
+    "artifact": "comment-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/comment-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/comments.json",
+        "comments.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope cross-Board movement capacity measurements": {
+    "artifact": "card-move-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/card-move-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/card-moves.json",
+        "card-moves.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope work lifecycle capacity measurements": {
+    "artifact": "work-lifecycle-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/work-lifecycle-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/work-lifecycle.json",
+        "work-lifecycle.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope permanent-deletion capacity measurements": {
+    "artifact": "work-deletion-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/work-deletion-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/work-deletion.json",
+        "work-deletion.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope Card copy capacity measurements": {
+    "artifact": "card-copy-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/card-copy-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/card-copies.json",
+        "card-copies.json"
+      ]
+    ]
+  },
+  "Retain fixed-scope attachment capacity measurements": {
+    "artifact": "attachment-capacity-${{ github.sha }}",
+    "output": "artifacts/retained/attachment-capacity",
+    "entries": [
+      [
+        "artifacts/capacity/attachments.json",
+        "attachments.json"
+      ]
+    ]
+  },
+  "Retain actual large-Board native capacity diagnostics": {
+    "artifact": "board-capacity-browser-${{ github.sha }}",
+    "output": "artifacts/retained/board-capacity-browser",
+    "entries": [
+      [
+        "test-results/board-capacity",
+        "."
+      ]
+    ]
+  },
+  "Retain browser failure evidence": {
+    "artifact": "browser-diagnostics-${{ github.sha }}-${{ matrix.suite }}",
+    "output": "artifacts/retained/browser-diagnostics",
+    "entries": [
+      [
+        "test-results/",
+        "test-results"
+      ],
+      [
+        "playwright-report/",
+        "playwright-report"
+      ]
+    ]
+  },
+  "Retain scoped browser performance measurements": {
+    "artifact": "browser-performance-${{ github.sha }}",
+    "output": "artifacts/retained/browser-performance",
+    "entries": [
+      [
+        "artifacts/browser-performance/kanban.json",
+        "kanban.json"
+      ]
+    ]
+  },
+  "Upload integration diagnostics": {
+    "artifact": "container-integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}",
+    "output": "artifacts/retained/container-integration-diagnostics",
+    "entries": [
+      [
+        "compose-ps.txt",
+        "compose-ps.txt"
+      ],
+      [
+        "compose.log",
+        "compose.log"
+      ],
+      [
+        "demo-metadata-compose.log",
+        "demo-metadata-compose.log"
+      ],
+      [
+        "$RUNNER_TEMP/identity-mail-failure.json",
+        "identity-mail-failure.json"
+      ]
+    ]
+  }
+}

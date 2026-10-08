@@ -327,5 +327,58 @@
     "browser-foundation",
     "browser-notifications",
     "browser-full"
+  ],
+  "Prepare Retain fixed operator collection evidence": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope Checklist capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope activity capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope notification inbox capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope watch producer fan-out measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope global search capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope comment capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope cross-Board movement capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope work lifecycle capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope permanent-deletion capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope Card copy capacity measurements": [
+    "commands"
+  ],
+  "Prepare Retain fixed-scope attachment capacity measurements": [
+    "browser-foundation"
+  ],
+  "Prepare Retain actual large-Board native capacity diagnostics": [
+    "browser-foundation"
+  ],
+  "Prepare Retain browser failure evidence": [
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Prepare Retain scoped browser performance measurements": [
+    "browser-full"
+  ],
+  "Prepare Upload integration diagnostics": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
   ]
 }

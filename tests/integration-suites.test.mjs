@@ -10,7 +10,7 @@ const integration = value => value.jobs['container-integration'];
 const step = (value, name) => integration(value).steps.find(entry => entry.name === name);
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, registeredSteps: 94 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, registeredSteps: 110 });
 });
 
 const mutations = [
@@ -46,6 +46,10 @@ const mutations = [
   ['security identity silently omitted', value => { const entry = value.jobs.security.steps.find(entry => entry.name === 'Verify security input integrity and retain build identity'); entry.run = entry.run.replace('cp image-artifacts/build-metadata.json security-artifacts/build-metadata.json', 'echo omitted'); }],
   ['security verification failure ignored', value => { value.jobs.security.steps.find(entry => entry.name === 'Verify security input integrity and retain build identity')['continue-on-error'] = true; }],
   ['security version diverges from metadata', value => { value.jobs.security.steps.find(entry => entry.name === 'Verify security input integrity and retain build identity').env.STRATAAI_BUILD_VERSION = 'other'; }],
+  ['capacity evidence uploads unstaged payload', value => { step(value, 'Retain fixed-scope Checklist capacity measurements').with.path = 'artifacts/capacity/checklists.json'; }],
+  ['evidence staging broadens to private files', value => { step(value, 'Prepare Retain fixed operator collection evidence').run += ' --entry "private.env" "private.env"'; }],
+  ['evidence identity comes from another source', value => { const entry = step(value, 'Prepare Retain actual large-Board native capacity diagnostics'); entry.run = entry.run.replace('image-artifacts/build-metadata.json', 'other/build-metadata.json'); }],
+  ['failure evidence staging skipped', value => { step(value, 'Prepare Retain browser failure evidence').if = "(matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')"; }],
   ['raw assertion reports published', value => { value.jobs['dotnet-quality'].steps.find(entry => entry.name === 'Retain .NET source test results').with.path = '${{ runner.temp }}/source-tests-raw'; }],
   ['source test failure summary skipped', value => { value.jobs['web-quality'].steps.find(entry => entry.name === 'Summarize web source test results').if = 'success()'; }],
   ['source report publication failure ignored', value => { value.jobs['web-quality'].steps.find(entry => entry.name === 'Summarize web source test results')['continue-on-error'] = true; }],

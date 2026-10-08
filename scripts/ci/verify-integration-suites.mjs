@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { parseDocument } from 'yaml';
 
 export const suites = ['commands', 'browser-foundation', 'browser-notifications', 'browser-full'];
+const evidenceScopes = JSON.parse(readFileSync(new URL('./evidence-artifacts.json', import.meta.url), 'utf8'));
 
 export function readWorkflow(source) {
   const document = parseDocument(source, { uniqueKeys: true });
@@ -120,6 +121,19 @@ export function verifyIntegrationSuites(workflow, registry) {
   for (const step of named) {
     assert.deepEqual([...owners(step)].sort(), [...registry[step.name]].sort(), `Wrong ownership: ${step.name}`);
     assert.equal(step['continue-on-error'] ?? false, false, `Mandatory step cannot ignore failures: ${step.name}`);
+  }
+  const evidenceUploads = named.filter(step => step.uses?.startsWith('actions/upload-artifact@'));
+  assert.deepEqual(evidenceUploads.map(step => step.name).sort(), Object.keys(evidenceScopes).sort(), 'Every integration artifact must have an explicit payload scope');
+  for (const upload of evidenceUploads) {
+    const scope = evidenceScopes[upload.name];
+    const prepare = named.find(step => step.name === `Prepare ${upload.name}`);
+    assert.ok(prepare, 'Every artifact needs provenance staging');
+    assert.equal(prepare.if, upload.if, 'Failure/always evidence must use matching staging conditions');
+    assert.equal(named.indexOf(prepare) + 1, named.indexOf(upload), 'Stage immediately before upload');
+    const entries = scope.entries.map(([source, destination]) => ` --entry "${source}" "${destination}"`).join('');
+    assert.equal(prepare.run, `python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output ${scope.output}${entries}`);
+    assert.equal(upload.with.path, scope.output, 'Upload only staged evidence with canonical metadata');
+    assert.equal(upload.with.name, scope.artifact, 'Preserve artifact identity');
   }
   const artifactNames = new Set();
   for (const suite of suites) {
