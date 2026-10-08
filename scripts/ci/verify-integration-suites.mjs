@@ -80,6 +80,31 @@ export function verifyIntegrationSuites(workflow, registry) {
   const bundle = jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle');
   assert.match(bundle.run, /cp image-artifacts\/build-metadata.json bundle\/build-metadata.json/);
   assert.ok(!bundle.run.includes('cat > bundle/build-metadata.json'), 'Release must preserve the original metadata document');
+  const security = jobs.security;
+  assert.deepEqual(security.needs, ['metadata', 'build-images-once']);
+  const securitySteps = security.steps;
+  const securityDownload = securitySteps.findIndex(step => step.name === 'Download exact built images');
+  const securityVerify = securitySteps.findIndex(step => step.name === 'Verify security input integrity and retain build identity');
+  assert.ok(securityDownload >= 0 && securityVerify > securityDownload);
+  assert.equal(securitySteps[securityDownload].with.name, 'strataai-images-${{ github.sha }}');
+  assert.equal(securitySteps[securityDownload].with.path, 'image-artifacts');
+  const securityInput = securitySteps[securityVerify];
+  assert.equal(securityInput['continue-on-error'] ?? false, false);
+  assert.equal(securityInput.if, undefined, 'Security input verification is mandatory');
+  assert.equal(securityInput.env.STRATAAI_BUILD_VERSION, '${{ needs.metadata.outputs.version }}');
+  assert.ok(securityInput.run.includes('set -euo pipefail'));
+  assert.ok(securityInput.run.includes('(cd image-artifacts && sha256sum --check SHA256SUMS)'));
+  assert.ok(securityInput.run.includes('.repository == $repository and .commitSha == $revision and .imageTag == $revision and .workflowRunId == $run and .version == $version'));
+  assert.ok(securityInput.run.includes('cp image-artifacts/build-metadata.json security-artifacts/build-metadata.json'));
+  for (const name of ['Install locked web dependencies', 'Load exact built images', 'Generate SBOMs', 'Secret scan', 'Block fixed Critical container vulnerabilities']) {
+    assert.ok(securitySteps.findIndex(step => step.name === name) > securityVerify, 'Verify security inputs before audits or image loading');
+  }
+  const securityUpload = securitySteps.find(step => step.name === 'Upload SBOMs and security evidence');
+  assert.equal(securityUpload.if, 'always()');
+  assert.equal(securityUpload.with.path, 'security-artifacts/');
+  for (const step of securitySteps) {
+    assert.ok(!/docker (?:build|buildx build)|compose[^\n]*\bbuild\b/.test(step.run ?? ''), 'Security may not rebuild release images');
+  }
   const named = job.steps.filter(step => step.name);
   const download = named.find(step => step.name === 'Download exact built images');
   assert.equal(download?.with?.name, 'strataai-images-${{ github.sha }}', 'Use the current exact-SHA image artifact');
