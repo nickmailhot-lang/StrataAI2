@@ -27,8 +27,9 @@ departure or account deactivation leaves prior notifications intact.
 No recipient data is added to the public/Board Work replay envelope, whose
 metadata remains empty. Notifications store IDs, type, revision and timestamps;
 Card titles, descriptions, emails, delivery secrets and message bodies are absent.
-The internal store's bounded 51-row window is **not an authorized inbox**. No HTTP
-endpoint currently exposes it. Inbox service work must freshly authorize the
+The internal store's bounded 51-row window is **not an authorized inbox**. The
+subsequently implemented [authorized inbox](notification-inbox.md) separately
+enforces its HTTP/browser admission. Inbox service work must freshly authorize the
 current recipient, Organization membership, Board/entity visibility and session,
 including after lock waits, before disclosure or marking read.
 
@@ -62,3 +63,15 @@ and account/membership state passed. Its event-count assertion counted an earlie
 Organization leave event from the same actor. The fixture now requires an increase
 of exactly three events plus exactly one event per resulting Card version. Its
 remaining replay assertions must still execute successfully in a subsequent run.
+
+## Current native producer-to-recipient evidence
+
+The [desktop/phone assignment recovery cases](../card-assignment.md#executed-native-assignment-producer-and-private-inbox)
+pass actual MUI assignment, original-key acknowledgment recovery, unassignment
+history retention, genuine reassignment, actor self-suppression, private live
+identity/journal matching and membership withdrawal. Both native recipient
+inboxes show canonical Card links and typed persisted attribution. This extends
+the historical producer slice above into an actual native consumer workflow.
+It is local compiled evidence with optional verification, not current retained
+release images or full producer/role/concurrency/capacity acceptance. PRD-11
+remains open at **35% estimated work remaining**, and PRD-17 at **21%**.

@@ -284,3 +284,45 @@ failed the read-only member-filter chooser activation. That chooser now uses
 enabled focus before its single activation; selected consent and the existing
 four filter-change command count are explicitly retained. Separate local
 invocations do not prove a green current immutable release or full PRD-11.
+
+## Executed native assignment producer and private inbox
+
+Both new `card-assignment-notifications.spec.ts` cases pass together on
+2026-10-08 at 1280px and 390px (2 passed, exit 0). Real account registration,
+Organization invitation acceptance and explicit Board membership establish the
+recipient. The recipient MUI inbox receives its empty private SignalR snapshot
+before the author uses keyboard Card assignment controls.
+
+The fixture replaces only an actually committed first assignment response with
+a failure. Native retry sends the identical URL, method, body and original key
+at Card version 1; successful recovery returns focus to Edit Card assignees.
+The recipient sees exactly one assignment article/private creation event,
+canonical Card link and persisted actor/recipient/Card/type attribution.
+Unassignment preserves the complete first notification without another event.
+A genuine reassignment produces a second distinct notification and creation
+event. Assigning the author to the same Card creates no self notification and
+leaves the recipient's two existing notifications unchanged. Both observed live
+event IDs match the persisted private journal. Every snapshot/event matches the
+Organization and recipient, identifies Notification entities and has empty
+metadata. Actual Board membership removal clears HTTP and native inbox disclosure
+without extra creation/read events. Both author/recipient pages pass tagged Axe
+and horizontal overflow checks.
+
+The initial invocation failed both cases at a fixture caption assertion: the
+product says Assigned to you, while the fixture expected Assigned to this Card.
+Correcting that assertion to the existing product caption yields the subsequent
+complete two-case pass. The failed evidence remains retained. Authorization,
+request identity, canonical revisions and exact notification/event counts are
+unchanged. No assignment or notification is seeded directly in SQL.
+
+The current MUI production bundle, read-only compiled Production API and separate
+scoped Worker, restricted PostgreSQL 17/pgvector schema 112 and Nginx provide
+local compiled evidence. Fixture accounts use the optional-verification CI
+browser policy; strict verified-email and provider delivery are separate.
+All owned containers/database are removed, preserving original services/data.
+Browser typechecking and documentation-link/diff checks pass. The normal full CI
+browser suite discovers both cases. This strengthens MEMBER-FR-003/007 and
+NOTIFY-FR-009/011/012; it does not replace current immutable-image, full role,
+concurrency/capacity, filters/history/lifecycle or Definition of Done acceptance.
+Estimated PRD-11 work remaining stays **35%**; PRD-17 stays **21%** (planning
+estimates); both issues remain open.

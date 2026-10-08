@@ -241,3 +241,20 @@ and strengthen NOTIFY-FR-010/012 and AC-NOTIFY-17-03. Current immutable-image,
 concurrent/capacity, remaining producer and complete Definition of Done acceptance
 still govern closure. Estimated PRD-17 work remaining stays **21%**; PRD-12 stays
 **24%** (planning estimates); both remain open.
+
+## Executed native assignment consumer and receipt recovery
+
+Both [native assignment desktop/phone cases](../card-assignment.md#executed-native-assignment-producer-and-private-inbox)
+pass actual keyboard author commands and original-key/body receipt recovery,
+recipient MUI/private live delivery, typed actor/recipient/Card attribution and
+canonical links. Unassignment retains the first notification; reassignment
+produces a distinct second identity; assigning the actor adds no notification.
+Observed private creation identities equal the persisted journal, and Board
+membership removal withdraws native/HTTP inbox disclosure without extra events.
+Author and recipient tagged Axe/overflow checks pass.
+
+This strengthens NOTIFY-FR-009/011/012. Compiled Production runtime with optional
+fixture verification does not establish current retained-image identity, strict
+verification or complete role/concurrency/capacity/producer/Definition of Done
+acceptance. Estimated PRD-17 work remaining stays **21%**; PRD-11 stays **35%**
+(planning estimates); neither issue is closed.
