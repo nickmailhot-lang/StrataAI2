@@ -691,3 +691,49 @@ database copy using the same frozen MUI-corrected product bundle. Full native
 verification and exact immutable-release acceptance remain pending.
 PRD-06 remains at **27% estimated work remaining**;
 this is a planning estimate, not completion evidence.
+
+## Complete local capacity and normal matrix after focus repair
+
+The full unchanged rank/capacity chain with the corrected Card key-admission
+step completed with **exit 0**. Both desktop (1280x844) and phone (390x844)
+large-Board browser cases passed in one invocation. Concurrent creation and
+relative rank allocation, 5,001 active Cards after the real append, exhausted
+rank rollback/retry, non-reapplying durable List replay, keyboard and pointer
+movement, strict drag geometry, scroll/detail focus recovery and accessibility
+assertions all completed. The final database assertions verified **100,000
+archived Cards and the unchanged complete-record fingerprint after both browser
+cases**, rather than stopping at a pre-browser archive check.
+
+The same owned-runtime invocation then passed all five unchanged normal
+performance cases and ended with **exit 0**:
+
+| Scenario | Usable Board (<1500 ms) | Cached detail (<200 ms) | Feedback (<100 ms) | Mutation p95 (<500 ms) |
+| --- | ---: | ---: | ---: | ---: |
+| Desktop, 50 dated Cards | 991.30 | 157.83 | — | 82.02 |
+| Desktop Kanban, mouse | 652.41 | 170.31 | 64.50 | 114.83 |
+| Phone Kanban, Chromium touch | 675.32 | 137.64 | 69.20 | 120.68 |
+| Desktop List feedback | — | — | 55.10 | — |
+| Phone List feedback, Chromium touch | — | — | 40.90 | — |
+
+All three Board mutation reports retain twenty samples; nearest-rank p95 was
+independently verified. Full failed invocations, including the 208.36 ms desktop
+cached-detail failure, remain retained and documented above. One intervening
+local attempt could not launch its aggregate rank check because its long Windows
+evidence pathname exceeded the command-line limit; its five normal cases passed
+but its capacity browser never started. The successful complete invocation used
+a shorter evidence directory with the same source fixtures, product bundle,
+assertions, data sizes and timeouts.
+
+Runtime used the frozen MUI-corrected web, readonly compiled API from `a9d107f7`,
+current Nginx/CSP, restricted PostgreSQL 17/pgvector/schema 111 on a fresh database
+copy, and the separate compiled Worker scoped to the fixture Organization.
+The privacy-safe report explicitly records **unverified runtime**, with no
+release revision. Every owned test container and database copy was removed
+after terminal checks; the original three containers/database were preserved.
+These are local Chromium observations, including touch emulation.
+
+The large-Board focus/capacity gap now has complete current local passing
+evidence. Exact immutable-image CI, performance repeatability and the remaining
+full-ticket acceptance/Definition of Done still prevent closure. Estimated
+PRD-06 work remaining is **25%** (planning estimate); the objective and all
+other PRD requirements remain unchanged.
