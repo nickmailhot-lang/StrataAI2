@@ -14,15 +14,17 @@ using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.WorkManagement;
 
 // PRD-18 archive-clock retention: real restricted commands and receipt replay.
-// Initial records and actor admission are fixtures; this is not HTTP evidence.
+// Initial records and request context are fixtures; actor verification is real.
+// This is not cookie authentication or browser evidence.
 internal static class WorkArchiveHistoryContract
 {
     private sealed class Clock : IClock { public DateTimeOffset UtcNow { get; set; } }
     private sealed class Context : IWorkCommandContext { public Guid? IdempotencyKey { get; set; } }
-    private sealed class Actor : ICommandActorAuthorization
+    private sealed class ActorContext : ICommandActorContext
     {
-        public Task<bool> VerifyAsync(Guid actor, CancellationToken ct = default)
-        { ct.ThrowIfCancellationRequested(); return Task.FromResult(true); }
+        public bool HasHttpRequest { get; set; }
+        public Guid? AuthenticatedUserId { get; set; }
+        public string? SessionTokenHash { get; set; }
     }
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
     {
@@ -48,9 +50,10 @@ internal static class WorkArchiveHistoryContract
             seed.Parameters.AddWithValue("list", list); seed.Parameters.AddWithValue("card", card); seed.Parameters.AddWithValue("at", clock.UtcNow);
             await seed.ExecuteNonQueryAsync(ct);
         }
-        var context = new Context(); var services = new ServiceCollection(); services.AddLogging();
+        var context = new Context(); var actorContext = new ActorContext(); var services = new ServiceCollection(); services.AddLogging();
         services.AddSingleton(new PostgresConnectionFactory(apiConnection)); services.AddSingleton<IClock>(clock);
-        services.AddSingleton<IWorkCommandContext>(context); services.AddSingleton<ICommandActorAuthorization, Actor>();
+        services.AddSingleton<IWorkCommandContext>(context); services.AddSingleton<ICommandActorContext>(actorContext);
+        services.AddSingleton<ICommandActorAuthorization, CommandActorAuthorization>();
         services.AddSingleton<PostgresBackgroundJobStore>();
         var settings = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> {
             ["STRATAAI_AUTH_RETRY_CURRENT_KEY"] = "contract", ["STRATAAI_AUTH_RETRY_KEYS"] = JsonSerializer.Serialize(
@@ -106,6 +109,7 @@ internal static class WorkArchiveHistoryContract
             : work.DeleteBoardAsync(board, owner, version, "archive-history-board-delete", ct, deletionConfirmed: true),
             row => (row.ArchivedAt, row.DeletedAt, row.DeletedBy, row.Version));
         await VerifyParentRestoreWaits(admin, work, tenant, owner, clock, context, ct);
+        await VerifyAuthorityRestoreWaits(admin, work, clock, context, actorContext, ct);
         Console.WriteLine("Restricted work archive history: Card/List/Board restore retains clocks, rearchive advances them, deletion retains actor/history and original archive replay changes no records or effects.");
     }
     private static async Task VerifyParentRestoreWaits(NpgsqlConnection admin, IWorkManagementService work,
@@ -215,6 +219,139 @@ internal static class WorkArchiveHistoryContract
             }
         }
         Console.WriteLine("Restricted parent restore waits: 12 observed database lock waits across all Board visibilities refuse fresh Card/List restores and original restore receipts after parent deletion, without changing child records or aggregate effects.");
+    }
+    private static async Task VerifyAuthorityRestoreWaits(NpgsqlConnection admin, IWorkManagementService work,
+        Clock clock, Context context, ActorContext actorContext, CancellationToken ct)
+    {
+        foreach (var visibility in new[] { "PRIVATE", "ORGANIZATION", "PUBLIC" })
+        foreach (var withdrawal in new[] { "ARCHIVED", "DELETING", "DEACTIVATED", "SESSION_REVOKED", "SESSION_EXPIRED" })
+        foreach (var kind in new[] { "Card", "List", "Board" })
+        foreach (var replay in new[] { false, true })
+        {
+            var tenant = Guid.NewGuid(); var actor = Guid.NewGuid(); var board = Guid.NewGuid();
+            var list = Guid.NewGuid(); var card = Guid.NewGuid();
+            var target = kind == "Card" ? card : kind == "List" ? list : board;
+            var session = Guid.NewGuid(); var sessionHash = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
+            clock.UtcNow = AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
+            await using (var seed = new NpgsqlCommand("""
+                INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+                 VALUES(@actor,@email,upper(@email),'Authority wait actor','ACTIVE',true,'unused-fixture-hash',@at,@at);
+                INSERT INTO sessions(id,user_id,token_hash,created_at,expires_at) VALUES(@session,@actor,@hash,@at,@at+interval '1 hour');
+                INSERT INTO organizations(id,name,owner_user_id,created_at,updated_at) VALUES(@tenant,'Authority wait scope',@actor,@at,@at);
+                INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),@tenant,@actor,'OWNER','ACTIVE');
+                INSERT INTO boards(id,tenant_id,name,visibility,lifecycle_state,archived_at,created_at,updated_at)
+                 VALUES(@board,@tenant,'Authority wait Board',@visibility,CASE WHEN @kind='Board' THEN 'ARCHIVED' ELSE 'ACTIVE' END,
+                  CASE WHEN @kind='Board' THEN @at ELSE NULL END,@at,@at);
+                INSERT INTO board_members(id,tenant_id,board_id,user_id,role,status,created_at,updated_at)
+                 VALUES(gen_random_uuid(),@tenant,@board,@actor,'ADMIN','ACTIVE',@at,@at);
+                INSERT INTO board_lists(id,tenant_id,board_id,name,rank,lifecycle_state,archived_at,created_at,updated_at)
+                 VALUES(@list,@tenant,@board,'Authority wait List',lpad('1000',30,'0'),CASE WHEN @kind='List' THEN 'ARCHIVED' ELSE 'ACTIVE' END,
+                  CASE WHEN @kind='List' THEN @at ELSE NULL END,@at,@at);
+                INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,lifecycle_state,archived_at,created_at,updated_at)
+                 VALUES(@card,@tenant,@board,@list,'Authority wait Card',lpad('1000',30,'0'),CASE WHEN @kind='Card' THEN 'ARCHIVED' ELSE 'ACTIVE' END,
+                  CASE WHEN @kind='Card' THEN @at ELSE NULL END,@at,@at);
+                """, admin))
+            {
+                seed.Parameters.AddWithValue("actor", actor); seed.Parameters.AddWithValue("email", $"authority-wait-{actor:N}@example.test");
+                seed.Parameters.AddWithValue("session", session); seed.Parameters.AddWithValue("hash", sessionHash);
+                seed.Parameters.AddWithValue("visibility", visibility);
+                seed.Parameters.AddWithValue("tenant", tenant); seed.Parameters.AddWithValue("board", board);
+                seed.Parameters.AddWithValue("list", list); seed.Parameters.AddWithValue("card", card);
+                seed.Parameters.AddWithValue("kind", kind); seed.Parameters.AddWithValue("at", clock.UtcNow);
+                await seed.ExecuteNonQueryAsync(ct);
+            }
+            actorContext.HasHttpRequest = true; actorContext.AuthenticatedUserId = actor; actorContext.SessionTokenHash = sessionHash;
+            async Task<(bool Success, string? Error, bool HasValue)> Change(bool restoring, long version)
+            {
+                clock.UtcNow = clock.UtcNow.AddSeconds(1);
+                if (kind == "Card")
+                {
+                    var result = await work.SetCardLifecycleAsync(target, actor, restoring ? WorkItemLifecycleState.Active : WorkItemLifecycleState.Archived,
+                        version, "authority-wait", ct); return (result.Succeeded, result.ErrorCode, result.Value is not null);
+                }
+                if (kind == "List")
+                {
+                    var result = await work.SetListLifecycleAsync(target, actor, restoring ? WorkItemLifecycleState.Active : WorkItemLifecycleState.Archived,
+                        version, "authority-wait", ct); return (result.Succeeded, result.ErrorCode, result.Value is not null);
+                }
+                var changed = restoring ? await work.RestoreBoardAsync(target, actor, version, "authority-wait", ct)
+                    : await work.ArchiveBoardAsync(target, actor, version, "authority-wait", ct);
+                return (changed.Succeeded, changed.ErrorCode, changed.Value is not null);
+            }
+            var key = Guid.NewGuid();
+            if (replay)
+            {
+                context.IdempotencyKey = key; Require((await Change(true, 1)).Success);
+                context.IdempotencyKey = Guid.NewGuid(); Require((await Change(false, 2)).Success);
+            }
+            async Task<string> ProtectedState()
+            {
+                await using var snapshot = new NpgsqlCommand("""
+                    SELECT jsonb_build_object(
+                     'boards',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM boards r WHERE tenant_id=@tenant),
+                     'lists',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM board_lists r WHERE tenant_id=@tenant),
+                     'cards',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM cards r WHERE tenant_id=@tenant),
+                     'audit',(SELECT count(*) FROM audit_events WHERE tenant_id=@tenant),
+                     'events',(SELECT count(*) FROM work_events WHERE tenant_id=@tenant),
+                     'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id=@tenant),
+                     'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id=@tenant))::text;
+                    """, admin);
+                snapshot.Parameters.AddWithValue("tenant", tenant);
+                return (string)(await snapshot.ExecuteScalarAsync(ct) ?? throw new InvalidOperationException("Authority wait snapshot unavailable."));
+            }
+            var before = await ProtectedState();
+            await using var gate = (NpgsqlConnection)((ICloneable)admin).Clone(); await gate.OpenAsync(ct);
+            await using var transaction = await gate.BeginTransactionAsync(ct);
+            var organizationWithdrawal = withdrawal is "ARCHIVED" or "DELETING";
+            var gateTable = organizationWithdrawal ? "organizations" : "boards";
+            await using (var locked = new NpgsqlCommand($"SELECT id FROM {gateTable} WHERE id=@id FOR UPDATE;", gate, transaction))
+            {
+                locked.Parameters.AddWithValue("id", organizationWithdrawal ? tenant : board);
+                Require(await locked.ExecuteScalarAsync(ct) is Guid);
+            }
+            context.IdempotencyKey = key; var pending = Change(true, 1); var released = false;
+            try
+            {
+                var observed = false; var deadline = DateTimeOffset.UtcNow.AddSeconds(15);
+                while (!pending.IsCompleted && DateTimeOffset.UtcNow < deadline)
+                {
+                    await using var waiting = new NpgsqlCommand("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE @blocker=ANY(pg_blocking_pids(pid)) AND wait_event_type='Lock');", admin);
+                    waiting.Parameters.AddWithValue("blocker", gate.ProcessID);
+                    if ((bool)(await waiting.ExecuteScalarAsync(ct))!) { observed = true; break; }
+                    await Task.Delay(50, ct);
+                }
+                Require(observed && !pending.IsCompleted);
+                // Controlled authority transition; admission itself is exercised
+                // through the actual restricted runtime, not this administrator.
+                var withdrawalSql = withdrawal switch
+                {
+                    "DEACTIVATED" => "UPDATE users SET status='DEACTIVATED',updated_at=@at WHERE id=@actor;",
+                    "SESSION_REVOKED" => "UPDATE sessions SET revoked_at=@at WHERE id=@session AND user_id=@actor;",
+                    "SESSION_EXPIRED" => "UPDATE sessions SET expires_at=@expired WHERE id=@session AND user_id=@actor;",
+                    _ => "UPDATE organizations SET status=@status,updated_at=@at,version=version+1 WHERE id=@tenant;",
+                };
+                await using (var withdraw = new NpgsqlCommand(withdrawalSql, gate, transaction))
+                {
+                    withdraw.Parameters.AddWithValue("at", clock.UtcNow.AddSeconds(1)); withdraw.Parameters.AddWithValue("actor", actor);
+                    withdraw.Parameters.AddWithValue("tenant", tenant); withdraw.Parameters.AddWithValue("status", withdrawal);
+                    withdraw.Parameters.AddWithValue("session", session); withdraw.Parameters.AddWithValue("expired", clock.UtcNow.AddTicks(-10));
+                    Require(await withdraw.ExecuteNonQueryAsync(ct) == 1);
+                }
+                await transaction.CommitAsync(ct); released = true;
+                var refused = await pending.WaitAsync(TimeSpan.FromSeconds(30), ct);
+                var expectedError = organizationWithdrawal ? kind.ToLowerInvariant() + "_not_found" : "session_unavailable";
+                if (refused.Success || refused.HasValue || refused.Error != expectedError)
+                    throw new InvalidOperationException($"Authority restore wait refused incorrectly: {visibility}/{withdrawal}/{kind}/replay={replay}.");
+                Require(await ProtectedState() == before);
+            }
+            finally
+            {
+                if (!released) await transaction.RollbackAsync(CancellationToken.None);
+                await pending.WaitAsync(TimeSpan.FromSeconds(30), CancellationToken.None);
+                actorContext.HasHttpRequest = false; actorContext.AuthenticatedUserId = null; actorContext.SessionTokenHash = null;
+            }
+        }
+        Console.WriteLine("Restricted authority restore waits: 90 observed waits across all Board visibilities reject fresh Card/List/Board restores and original receipts after Organization archive/deletion acceptance, actor deactivation, or original session revocation/expiry, using production actor verification and preserving canonical/effect state.");
     }
     private static void Require(bool value)
     { if (!value) throw new InvalidOperationException("Work archive history contract failed."); }

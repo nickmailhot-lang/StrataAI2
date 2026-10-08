@@ -1,6 +1,6 @@
 # PRD-18 acceptance audit
 
-Current status (2026-10-08): open, **18% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
+Current status (2026-10-08): open, **17% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
 
 ## Deleted List child-receipt admission
 
@@ -57,7 +57,7 @@ stays 22%; the ticket remains open.
 | --- | --- | --- |
 | LIFE-FR-001–003 explicit lifecycle, reversible archive, hidden canvas | Canonical enums; archive/deletion timestamps persisted and projected; reviewed Board/Card/List archive controls and discovery pages; active Board discovery excludes archives | Fresh complete server, PostgreSQL and native lifecycle execution |
 | LIFE-FR-004 archive browser | ArchivedCardsPage, ArchivedListsPage and ArchivedBoardsPage; current scope/account denial and coalesced recovery reads | Native desktop/mobile archive cases on the immutable images; Board archive directory SignalR invalidation |
-| LIFE-FR-005 parent-safe restoration | ListArchivedListsAsync rejects non-active Boards; transactional reads verify the actor; reviewed restore commands; 12 local restricted PostgreSQL lock-wait cases deny fresh Card/List restores and original receipts after parent deletion | Remaining Card/List/Board/Organization transitions and concurrent account/session/Organization changes; current immutable-image/native acceptance |
+| LIFE-FR-005 parent-safe restoration | ListArchivedListsAsync rejects non-active Boards; transactional actor verification; 12 parent-deletion and 90 Organization/account/session lock-wait cases refuse fresh restores and old receipts using the production verifier | Remaining integrated transitions, HTTP cookie/middleware and native recovery scenarios; current immutable-image acceptance |
 | LIFE-FR-006–009 archived-only elevated deletion, confirmation, irreversibility and List impact | Card/List/Board command and receipt contracts; MUI reviews with explicit consent, including Board archive directory reviews | Executed native consent, lost-response/retry and cascading-impact cases |
 | LIFE-FR-010 audit integrity | Immutable audit storage fixture; lifecycle events, canonical receipts and retained deleting actor | Exact execution after archive, deletion and account removal; retained actor interpretation |
 | LIFE-FR-011 deleted content absent from search/notifications | Separate search and notification admission implementations and fixtures | Cross-surface deletion matrix, including historical notification and moved-entity scope |
@@ -101,7 +101,15 @@ The mandatory `WorkArchiveHistoryContract` now covers 12 restricted PostgreSQL c
 
 All 12 local cases passed with stable `card_not_found`/`list_not_found` outcomes, no returned canonical acknowledgment, unchanged target/child records and unchanged aggregate audit/event/job/receipt counts. Required-ledger refusal/recovery and the existing complete archive-history contract passed in the same invocation; strict solution compilation had zero warnings/errors. The isolated test database and containers were removed.
 
-Parent lifecycle commits, initial rows and actor admission are controlled fixtures; the pending restore/replay goes through the actual restricted production services and stores. This verifies post-wait parent admission, rather than HTTP session expiry, parent deletion consent, live Worker delivery, Organization lifecycle or native browser behavior. Ordinary full CI includes these cases; `--work-archive-history-only` selects them explicitly for diagnosis. Complete current immutable-image and integrated acceptance remain required.
+Parent lifecycle commits, initial rows and request context are controlled fixtures; the pending restore/replay goes through the actual restricted production services, stores and actor verifier. The initial version used an always-admit actor fixture; the expanded authority matrix replaced it with production verification and reran these 12 cases successfully. HTTP cookie/middleware behavior, parent deletion consent, live Worker delivery and native browser recovery remain independent requirements. Ordinary full CI includes these cases; `--work-archive-history-only` selects them explicitly for diagnosis. Complete current immutable-image and integrated acceptance remain required.
+
+### Organization, account and original-session authority after waits
+
+The expanded mandatory contract passed 90 additional observed database waits: private/Organization/public Board visibility; Card/List/Board restore; fresh command/original restore receipt; and Organization archival, Organization deletion acceptance (`DELETING`), account deactivation, original-session revocation or original-session expiry. Each case uses independent verified-active accounts, persisted session hashes and lifecycle records. Real restore/re-archive commands establish original receipt cases. Organization changes hold the Organization row gate; account/session changes hold the Board row gate. Every pending command must be observed blocked by the exact controlled connection before the competing state change commits.
+
+The contract now uses `CommandActorAuthorization` with actual restricted identity/session stores and the production verified-account policy. It validates the current persisted account and original session after the wait. Organization withdrawals return the entity's stable not-found code; deactivation and session revocation/expiry return `session_unavailable`. No canonical value is returned, and complete Board/List/Card rows plus aggregate audit/event/job/receipt state remain unchanged.
+
+Strict complete-solution compilation passed with zero warnings/errors. The full expanded invocation passed all 90 authority cases, the earlier 12 parent-deletion cases, existing archive-history cycles/replays and both roles' migration readiness checks in isolated PostgreSQL 17/pgvector. Temporary databases and containers were removed. Initial records, authenticated request-context binding and competing state transitions are fixtures; this proves the production verifier/store admission boundary, while actual login/cookie middleware, user-facing deactivation/Organization deletion consent, terminal deletion jobs, realtime recovery and current immutable-image/browser release acceptance still require their respective evidence.
 
 ### Attachment-preview fixture repair after archive-history enforcement
 
