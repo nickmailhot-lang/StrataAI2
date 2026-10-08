@@ -262,3 +262,33 @@ those costs must retain historical Card attribution, tenant isolation, exact
 recipient sequences, transaction rollback and concurrent deadlock prevention.
 The failed HTTP benchmark and the 24% remaining-work planning estimate remain
 unchanged.
+
+### Batch source guard optimization (schema 111)
+
+Migration `111_notification_batch_source_guard` replaces insertion-time per-row
+source validation with an invoker statement trigger over PostgreSQL's inserted
+transition table. One set query rejects any notification whose immutable source
+does not identify its historical Card, or whose Reminder source does not identify
+that Card. The existing typed source/tenant/Board foreign keys, row update guard,
+private journal trigger and tenant journal serialization remain enforced.
+Statement rejection rolls back the complete insert and every already-generated
+recipient journal/sequence effect. API and Worker readiness now require schema
+111; older schemas cannot silently retain the previous insertion behavior.
+
+The migration-runner regression includes restricted valid batches, exact conflict
+replay with an empty transition table, a late invalid same-Board Card in a mixed
+batch with unchanged notification/journal/stream effects, forbidden API source
+updates, privileged invalid historical updates, and valid Reminder attribution.
+Clean/repeat/forward migrations, concurrent runner serialization and deliberate
+failed/unrecorded migration rollback passed locally on PostgreSQL 17/pgvector.
+The strict full solution build passed with zero warnings or errors.
+
+A separate disposable database copied the existing local fixture without changing
+the running database. After applying schema 111, five rollback-only 500-recipient
+inserts took 132.491, 133.498, 209.200, 167.125 and 188.261 ms. The statement source
+guard took 2.840–3.944 ms, compared with the earlier row guard's 79.897–88.608 ms.
+All inserts produced 500 rows before rollback; retained notification/journal
+counts stayed unchanged. The disposable database was removed after profiling.
+These component measurements identify a reduced source-validation cost, but the
+unchanged twenty-command HTTP benchmark and current release CI still must verify
+end-to-end acceptance. PRD-17 remains open with 24% estimated work remaining.
