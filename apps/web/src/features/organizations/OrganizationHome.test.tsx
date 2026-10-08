@@ -442,3 +442,12 @@ it.each([0, 1, 2])('offers the deletion operation link only to a current Owner, 
   const link = screen.queryByRole('link', { name: 'Request Organization deletion' });
   if (role === 0) expect(link).toHaveAttribute('href', '/app/org-1/delete'); else expect(link).not.toBeInTheDocument();
 });
+
+
+it.each([403, 404])('uses neutral Organization denial on an independently admitted home (%s)', async status => {
+  stubFetch(async () => response({}, status)); mount('/app/org-1');
+  expect(await screen.findByRole('alert')).toHaveTextContent('Access to this Organization surface is unavailable.');
+  expect(screen.queryByRole('heading', { name: 'Council' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Create board' })).not.toBeInTheDocument();
+  expect(screen.queryByText('This board or action is unavailable.')).not.toBeInTheDocument();
+});

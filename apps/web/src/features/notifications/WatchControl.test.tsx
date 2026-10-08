@@ -214,3 +214,18 @@ it('accepts canonical microsecond watch timestamps without rounding their revisi
   await screen.findByText('You are watching this Card.');
   expect(screen.getByRole('button', { name: 'Unwatch Card' })).toBeEnabled();
 });
+
+
+it('does not steal Done focus when a read started on Check finishes after keyboard navigation', async () => {
+  let hold = false; let finish!: (value: Response) => void;
+  const fetch = vi.fn(async (path: string) => path === '/me' ? response(profile)
+    : hold ? new Promise<Response>(resolve => { finish = resolve; }) : response(empty));
+  vi.stubGlobal('fetch', fetch); mount(); await open();
+  const check = screen.getByRole('button', { name: 'Check current watching' }); check.focus();
+  hold = true; fireEvent(window, new Event('focus'));
+  await waitFor(() => expect(finish).toBeDefined());
+  const done = screen.getByRole('button', { name: 'Done watching' }); done.focus(); expect(done).toHaveFocus();
+  await act(async () => finish(response(empty))); await waitFor(() => expect(check).toBeEnabled());
+  expect(done).toHaveFocus(); expect(fetch.mock.calls.every(([path]) => path === '/me' || path === `/watch/CARD/${entity}`)).toBe(true);
+  fireEvent.click(done); await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});

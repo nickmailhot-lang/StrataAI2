@@ -165,3 +165,25 @@ Watch timestamp admission now uses the inbox's strict canonical UTC parser and p
 Personal watch-state disclosure also rechecks the active account after the bounded watch read. Until that check succeeds, neither personal state nor mutation controls are published. A changed account retires previous state and uncertain intent; malformed or unavailable post-read admission withholds state and private diagnostics. Held-response tests exercise all three outcomes, while updated command/retry/focus/reopen fixtures preserve their original assertions. All 31 watch component tests, SPA typechecking and lint pass locally. Server admission remains authoritative; actual native/immutable-image acceptance remains pending.
 
 An open admitted watch dialog now also refreshes on the browser online event. Offline failure withdraws personal state and mutation controls; recovery follows the same pre/post account checks and authoritative watch read. The listener is removed with the dialog effect, and a component regression verifies fresh recovery plus no reads after unmount. All 32 watch component tests, SPA typechecking and lint pass locally. Actual native recovery remains pending immutable-image CI.
+
+## Preserve dismissal focus during a protected read
+
+If a protected read starts while Check has focus and the user then moves to an
+enabled Done button, read completion preserves Done focus. Unknown commands still
+disable dismissal and retain the original Retry focus recovery. Personal-state
+admission, server authorization, watch revision and same-key retry are unchanged.
+The held-read keyboard regression fails before the fix and passes afterward.
+All 86 Organization Home, watch-control and surface-admission component cases pass;
+web/browser typechecking, targeted lint and production build also pass. The build
+retains its existing large-bundle advisory. Current immutable release and full
+notification delivery acceptance remain required; PRD-17 stays open with **24%**
+estimated work remaining (planning estimate).
+
+The unchanged watch browser scenario passes in the final three-case native run
+(all three pass, 2.7 minutes), using the compiled web, actual Production API,
+restricted PostgreSQL and scoped Worker. It verifies Board/List cross-client
+watch/unwatch, keyboard dismissal/focus, Card lost-response same-key/body recovery,
+direct-watch continuity after movement, and archived-parent withdrawal/404. The
+baseline watch scenario also passed; the deterministic held-read component case
+is the failing-before evidence for the focus repair. See
+[full invocation scope](web-spa-boundary.md#current-surface-admission-and-watch-keyboard-execution).

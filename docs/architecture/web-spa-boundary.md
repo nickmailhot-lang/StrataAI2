@@ -156,3 +156,28 @@ cases pass together, including twenty Axe/overflow checks. See
 for the terminal immutable failure, measured contrast, real local mail evidence
 and limits. Current immutable release/full architecture acceptance remains
 required; estimated ARCH-02 work remaining stays **39%** (planning estimate).
+
+## Current surface admission and watch keyboard execution
+
+The initial three-case native invocation passed the unchanged watch scenario but
+failed both surface scenarios because the fixture expected one named navigation
+element where the admitted layout intentionally has two (nav and nested list).
+The fixture now requires both; all absence assertions and protected API checks
+are retained. Organization Home separately uses neutral Organization denial on
+403/404, covered by two failing-before/passing-after component regressions.
+
+The held-read watch regression also fails before the fix: completion moves focus
+away from an enabled Done button that the user deliberately focused. The fix
+preserves that dismissal choice while retaining unknown-command Retry recovery.
+All 86 related component cases, web/browser typechecks, targeted lint and the
+production build pass; the existing bundle-size advisory remains.
+
+The final Production native invocation passes all three cases together in
+2.7 minutes: desktop/phone Portal isolation, membership removal, independent API
+denial, and the unchanged desktop/phone Board/List/Card watch workflow with a real
+scoped Worker, cross-client recovery, committed lost-response same-key/body retry,
+Card movement and archived-parent denial. No watch browser assertions changed.
+This is compiled Nginx/API/restricted PostgreSQL execution, not proof of a green
+current immutable release. Full ARCH-02 acceptance remains pending (**39%** work
+remaining, planning estimate). See [Organization denial](organization-discovery.md#organization-home-denial-after-independent-admission)
+and [watch dismissal focus](watch-subscriptions.md#preserve-dismissal-focus-during-a-protected-read).

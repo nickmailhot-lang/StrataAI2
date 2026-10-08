@@ -254,3 +254,14 @@ navigation and direct deep links at desktop and phone widths. The other creates
 paging/focus and canonical Board links at both widths. This is actual Production
 API/Nginx/restricted PostgreSQL browser execution; it does not substitute for the
 required 200-List/5,000-Card/100,000-archive capacity or current immutable release.
+
+## Organization Home denial after independent admission
+
+An Organization Home read rejected with 403 or 404 displays the neutral
+"Access to this Organization surface is unavailable." message. It retains the
+safe correlation reference and withholds protected headings and creation
+controls. Board-specific denial wording remains on Board routes. Two new denial
+regressions fail before the fix; the related 86 component cases pass afterward.
+The surface fixture also requires both existing, identically named navigation
+elements after admission: the nav landmark and its nested list. All zero-element
+denial assertions and independent API rejection checks remain intact.

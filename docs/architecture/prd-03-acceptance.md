@@ -526,3 +526,18 @@ for complete invocation scopes, earlier failures and limitations.
 Estimated remaining PRD-03 work stays **8%** (planning estimate). Current immutable
 CI, complete lifecycle purge/retention and remaining full-PRD acceptance still
 prevent closure; scoped local evidence does not establish completion.
+
+## Organization denial and surface-boundary execution
+
+Organization Home uses neutral Organization denial for protected 403/404 reads,
+with private headings and creation controls withheld. Both denial regressions
+fail before the fix; all 86 related component cases and the web/browser types,
+targeted lint and production build pass afterward. The final three-case native
+invocation passes in 2.7 minutes, including desktop/phone Portal isolation,
+membership removal and independent API rejection. The unchanged watch scenario
+also passes. The initial invocation had two navigation-count fixture failures
+and one watch pass; the corrected count requires both existing navigation nodes
+without weakening denial assertions. See
+[surface evidence](web-spa-boundary.md#current-surface-admission-and-watch-keyboard-execution).
+Estimated PRD-03 work remaining stays **8%** (planning estimate). Current immutable
+CI, complete lifecycle purge/retention and full-PRD acceptance still prevent closure.

@@ -268,7 +268,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   function failure(reason: Error) {
     return (
       <Alert severity="error">
-        {reason instanceof WorkRequestError || reason instanceof WorkInputError
+        {organizationId && reason instanceof WorkRequestError && [403, 404].includes(reason.status)
+          ? "Access to this Organization surface is unavailable."
+          : reason instanceof WorkRequestError || reason instanceof WorkInputError
           ? reason.message
           : "Unable to contact StrataAI2. Please try again."}
         {reason instanceof WorkRequestError &&

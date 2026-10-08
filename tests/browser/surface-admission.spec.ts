@@ -43,7 +43,9 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('heading', { name: 'PUBLIC admission board', exact: true })).toBeVisible(); await expect(navigation).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Add list', exact: true })).toHaveCount(0);
       await grant('INTERNAL', 'MEMBER');
-      await page.goto(`/app/${org}`); await expect(navigation).toHaveCount(1);
+      // Both the nav landmark and its nested list share this accessible name.
+      // Require both after admission and retain zero-element denial assertions.
+      await page.goto(`/app/${org}`); await expect(navigation).toHaveCount(2);
       const review = await context.request.get(`/organizations/${org}/members/${portalUser}`); expect(review.status()).toBe(200);
       const version = (await review.json()).member.version;
       expect((await context.request.delete(`/organizations/${org}/members/${portalUser}?expectedVersion=${version}`, { headers })).status()).toBe(204);

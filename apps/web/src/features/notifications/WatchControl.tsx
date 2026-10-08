@@ -79,6 +79,11 @@ function WatchDialog(props: Props) {
     // Async result state may commit separately from busy=false. The original
     // intent is authoritative: defer until its recovery button is attached,
     // rather than consuming the focus request on the old Check button.
+    // A user may navigate to Done while a read is pending. Completion must
+    // preserve that explicit dismissal choice rather than move focus to Check.
+    if (doneButton.current && !doneButton.current.disabled && document.activeElement === doneButton.current) {
+      returnFocus.current = false; return;
+    }
     const target = intent.current ? retryButton.current : checkButton.current;
     if (!target) return;
     returnFocus.current = false;
