@@ -50,3 +50,12 @@ source/store evidence. Current retained-image HTTP/browser/Worker, full source a
 release gates, complete role/lifecycle matrices and other PRD acceptance remain
 required. PRD-01 remains open at **34%**, PRD-03 at **8%**, and PRD-60 at **18%**
 estimated work remaining (planning estimates).
+
+The current exact-source run [37834908422](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37834908422)
+at `9e6843c7` now completes its PostgreSQL integration job successfully. Its
+retained log records the actual restricted invitation metadata contract passing
+at 2026-10-08 19:52:07 UTC, including creation, routing reads, original replay,
+accepted stored-row return, revocation, refused repeats and rollback. Clean/repeat,
+forward upgrade, serialized migration runners and failure rollback also pass.
+This establishes the mandatory current-source database gate; the separate
+immutable-image HTTP/browser/Worker and required release gates still govern closure.

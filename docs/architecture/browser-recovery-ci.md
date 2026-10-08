@@ -749,3 +749,30 @@ Its trace records the edge input followed by destination observation, then the
 center stop input and failing viewport assertion. Root-cause/repair verification
 is still required; earlier normal/CPU-four local capacity passes do not establish
 this immutable gate. Required CI fails and the release bundle is skipped.
+
+The retained phone trace narrows the failure further. At destination observation
+its canvas bounds are x=24..366, the admitted empty drop center is x=145.695,
+and `scrollLeft` is 65855. The center input is x=195. Subsequent recorded snapshots
+show offsets 65733, 65367, 65156 and finally 64945: 910 pixels of additional
+leftward movement from the original observation before the stop settles. The
+original viewport assertion is retained. This is evidence of overshoot, not yet
+a verified explanation of whether auto-scroll, browser focus or layout caused it.
+
+A fresh numeric-only local diagnostic invocation passes both original desktop
+and phone cases under CPU-four throttling (2 passed in 2.9 minutes). Wrapped
+scroll calls record 143 horizontal calls on desktop, maximum step 9.380 pixels,
+and 123 on phone, maximum step 8.246 pixels; neither invocation records a step
+over 20 pixels. Concurrent rank allocation, durable replay and the full
+100,000 archived-row preservation checks also pass. The preceding diagnostic
+invocation fails both cases because instrumentation incorrectly references a
+test-runner clock inside the browser; its measurements are invalid and retained
+separately. The corrected instrumentation uses the browser clock and is removed
+from the repository after diagnosis. No timeout, destination identity, input
+gesture, viewport assertion or persistence check is relaxed.
+
+This uses the frozen compiled Production API/separate Worker and MUI/Nginx on
+restricted PostgreSQL schema 113; it does not establish the newest schema-114
+source or current exact retained-image release. Owned fixture services/database
+are removed and the original three services/data remain. The immutable phone
+failure is still unresolved. A reproduction capturing the large jump or stronger
+retained geometry evidence is required before choosing a product repair.
