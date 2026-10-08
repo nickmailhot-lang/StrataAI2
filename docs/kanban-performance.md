@@ -530,3 +530,69 @@ fixture-scoped compiled Worker were real; owned test containers/database were
 removed afterward. See the [full acceptance evidence](architecture/checklist-acceptance.md#cached-detail-backdrop-layout-repair).
 Estimated work remaining is 29% for PRD-06 (unchanged) and 33% for PRD-13 (planning
 estimates). Release-wide acceptance still prevents closure.
+
+
+## Complete current normal desktop and phone matrix
+
+One complete five-case local invocation after `d780f7bb` passed all unchanged
+normal-condition scenarios. The report retains each original outcome and fixed
+input/viewport, with no private identifiers or URLs:
+
+| Scenario | Usable Board (<1500 ms) | Cached detail (<200 ms) | Feedback (<100 ms) | Mutation p95 (<500 ms) |
+| --- | ---: | ---: | ---: | ---: |
+| Desktop, 50 dated Cards | 975.06 | 196.32 | — | 100.22 |
+| Desktop Kanban, mouse | 714.71 | 153.26 | 78.20 | 124.93 |
+| Phone Kanban, Chromium touch | 728.57 | 146.84 | 69.90 | 122.56 |
+| Desktop List feedback | — | — | 45.10 | — |
+| Phone List feedback, Chromium touch | — | — | 42.90 | — |
+
+The three Board scenarios each completed twenty real versioned mutation samples;
+all sample sets and nearest-rank p95 calculations were independently checked.
+Both List scenarios required real pointer/touch feedback before persistence,
+exact command effects and canonical reload. Fixture sizes, clocks, assertions,
+request policy and all original limits remained unchanged. These are local
+Chromium observations, including touch emulation, not physical-device results.
+
+The reporter explicitly identifies unverified runtime and no release revision.
+Runtime used the readonly API published from `a9d107f7`, the frozen web bundle
+containing `d780f7bb` product changes, current Nginx/CSP, restricted PostgreSQL 17/
+pgvector/schema 111 on a separate database copy, and actual separate compiled
+Workers scoped to each fixture Organization. Every owned test container/database
+was removed after terminal success; the original three containers and database
+were preserved. The passing report was retained privately before the next suite.
+
+The normal desktop and phone timing gaps now have current local passing evidence;
+large-Board functional capacity and current immutable-image release acceptance
+remain separate requirements. Estimated PRD-06 work remaining is **27%** and
+PRD-12 remains **25%** (planning estimates). These cases do not establish full
+PRD completion or justify closure.
+
+
+## Current large-Board execution exposes a focus failure
+
+The full existing rank/browser chain was also executed on a fresh disposable
+schema-111 database copy with the same readonly compiled API, repaired frozen web,
+restricted credentials and actual scoped Worker. Concurrent creation, active-tail
+append on the 5,000-Card group, move/position allocation, rank exhaustion/replay and
+relative List position checks passed before browser execution. The synthetic
+scale setup includes 200 Lists, 5,001 active Cards after the real append, and
+100,000 archived Cards; it is not evidence of 5,000 HTTP creations.
+
+The two-viewport browser invocation finished with **one pass and one failure** in
+1.4 minutes. Phone completed the full scenario. Desktop failed at its first
+forward Tab traversal: the next canonical Card's drag button did not receive
+focus (`board-capacity.case.ts:63`). A diagnostic attempt waited for the focused
+source's enabled drag permission before the one Tab key, retrying focus only;
+the full chain again ended with one phone pass and the same desktop destination
+focus failure. That wait was removed because it did not resolve the failure.
+The product cause is not established by the disabled-control assertion log.
+
+The suite is not green. Browser failure also prevented the shell's final archived
+fingerprint assertion, so it is not claimed as completed after both viewports.
+No destination focus, mutation, accessibility or archive assertions were removed
+or relaxed. Both failed runs, the successful phone coverage and their private
+trace/console evidence are retained. All owned test containers/databases were
+removed after terminal checks, preserving the original three containers/data.
+PRD-06 remains at **27% estimated work remaining** (planning estimate); this
+unresolved large-Board focus failure and current release acceptance prevent
+closure despite the separate five-case normal performance pass.
