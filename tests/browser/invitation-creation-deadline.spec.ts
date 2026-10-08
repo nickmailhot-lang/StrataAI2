@@ -1,12 +1,14 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
   test(`PRD-03/05/60: aggregate invitation deadline preserves original committed request (Board=${boardSurface}, ${width}px)`, async ({ page, context }) => {
     test.setTimeout(90_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' }; const suffix = `${boardSurface}-${width}-${Date.now()}`;
     const account = { email: `create-deadline-owner-${suffix}@example.test`, password: 'create-deadline-correct-horse', displayName: 'Creation reviewer' };
-    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
+    const registration = await context.request.post('/auth/register', { headers, data: account });
+    expect(registration.status()).toBe(201); const actor = (await registration.json()).user.id;
     expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
     const created = await context.request.post('/organizations', { headers, data: { name: 'Creation deadline scope' } });
     expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
@@ -16,6 +18,8 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
       expect(result.status()).toBe(201); board = (await result.json()).id;
     }
     const root = board ? `/boards/${board}/invitations` : `/organizations/${org}/invitations`;
+    const path = board ? `/app/${org}/boards/${board}/invite` : `/app/${org}/invite`;
+    const admission = trackInvitationAdmission(page, org, actor, board, path);
     const email = `create-deadline-recipient-${suffix}@example.test`;
     let holdProfile = false, profileHeld = false, commandHeld = false, documents = 0;
     let releaseProfile!: () => void, releaseCommand!: () => void;
@@ -35,10 +39,12 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
     });
     page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
     try {
-      await page.goto(board ? `/app/${org}/boards/${board}/invite` : `/app/${org}/invite`);
+      await page.goto(path);
       const runtime = await context.request.get('/api/runtime'); expect(runtime.status()).toBe(200);
       if ((await runtime.json()).mode === 'production')
         await expect(page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
+      await expect.poll(admission.ready).toBe(true);
+      const initialHead = admission.heads(), initialReads = admission.reads();
       await expect(page.getByRole('button', { name: 'Create invitation', exact: true })).toBeEnabled();
       await page.getByLabel(/^Invitation email/).fill(email); await page.clock.install(); holdProfile = true;
       await page.getByRole('button', { name: 'Create invitation', exact: true }).focus(); await page.keyboard.press('Enter');
@@ -55,7 +61,9 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
         || (await retry.count() > 0 && await retry.isEnabled())).toBe(true);
       if (await permission.count() > 0) {
         await page.getByRole('button', { name: 'Retry permission check' }).focus(); await page.keyboard.press('Enter');
+        await expect.poll(() => admission.heads() > initialHead).toBe(true);
       }
+      await expect.poll(() => admission.ready() && admission.reads() > initialReads).toBe(true);
       await expect(page.getByRole('button', { name: 'Retry same invitation' })).toBeEnabled();
       await expect(page.getByLabel(/^Invitation email/)).toHaveValue(email);
       await expect(page.getByText('Invitation creation acknowledged.')).toHaveCount(0);

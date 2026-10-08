@@ -447,3 +447,22 @@ fixtures. The [runtime guide](runtime-modes.md#demo-isolation-verification) expl
 the Linux test-client requirements and verification limits. Current new-image
 results remain required. Estimated PRD-03 work remaining stays **10%**; the ticket
 remains open.
+
+
+## Creation account/deadline bootstrap verification
+
+The native creation fixtures passively observe the scoped Watch invocation and
+first head, including the Organization/actor envelope, then require a protected
+scope read started after that head before keyboard action. Account replacement
+and temporary account failure require the actual new watcher after recovery;
+aggregate-deadline recovery also requires a fresh admitted read. Older head/read
+responses cannot satisfy the boundary. All original privacy, command-count,
+exact-key/body, canonical invitation, deadline and accessibility assertions stay
+in place. See [native recovery admission](invitation-administration-ui.md#native-account-and-deadline-recovery-admission)
+for the reproduced race, observer validation and executed runtime evidence.
+
+This validates recovery of existing production contracts rather than introducing
+new authority or automatic command replay. PRD-03's remaining-work estimate stays
+**8%**, a planning estimate. Full current immutable release, remaining lifecycle/
+retention/performance requirements and the other historical browser failures
+still prevent closure.

@@ -24,6 +24,58 @@ Local validation includes the full web suite, typecheck/zero-warning lint, and a
 
 This implements the creation controls; Worker invitation email delivery, invitation-driven registration with self-registration disabled, administrator history/revocation, invitation events and remaining PRD-03/60 acceptance are still outstanding. No broader issue completion is claimed.
 
+## Native account and deadline recovery admission
+
+The creation account/deadline browser fixtures now observe the actual scoped
+SignalR Watch invocation, its first head and a fresh protected scope read started
+after that head. Board heads use the Board stream page; Organization heads retain
+the Organization-and-actor envelope. Handshake, foreign scope/actor, malformed
+head, previous-screen requests and late reads from an older head cannot establish
+readiness. The observer is passive: it changes no stream, request or application
+state and retains only fixture counters/known scope IDs in memory.
+
+Account substitution/unavailable-account recovery starts a new watcher. The
+fixture waits for its actual head and protected read before keyboard retry.
+Aggregate-deadline recovery likewise waits for the freshly admitted read; a
+withdrawn account also requires a new head. The existing five-second readiness
+observation, 15-second whole-operation deadline, original command key/body,
+private-display withdrawal, one canonical invitation and accessibility assertions
+remain intact. The fixture does not automatically retry a failed mutation or
+accept an unconfirmed result.
+
+The baseline current-main run reproduces eight failures and four passes across
+the twelve native creation account/deadline cases. Saved original intent and
+fresh permission recovery are intact, but a retry activated before bootstrap
+settles can have its displayed acknowledgment fenced by that real invalidation.
+The fixed observer tests include previous-screen exclusion, stale-head reads,
+foreign Organization/actor envelopes and failed reads. All ten combined
+Board-read/admission observer cases pass; browser TypeScript passes. CI's mandatory
+source readiness gate now runs both observer suites before the build-once image
+pipeline. Workflow changes are inspected statically; no YAML-parser result is
+claimed.
+
+An intermediate observer run used the unwrapped Board page shape for Organization
+heads, so it stopped at readiness instead of exercising those workflows. That
+known-invalid runner was stopped after verifying its process identity; the
+Organization wrapper was corrected and given a negative scope/actor regression.
+It is not reported as a passing complete invocation or a product failure.
+
+The final complete invocation passes all **12 native desktop/phone creation
+account/deadline cases in 5.9 minutes**, against the same frozen Production web,
+compiled Production API and separate Worker, restricted schema-110 PostgreSQL
+and Nginx. Organization metadata and recipient/issuer authority routing are
+enabled on the Worker; provider email sending and scoped work-event delivery are
+outside this fixture. Actual commits, cookie substitutions/unavailable account
+reads, full-operation expiry, private-display withdrawal, original-key/body
+recovery and one canonical invitation are verified. The four deadline cases also
+retain unchanged no-reload and WCAG checks. All three disposable containers are
+removed after the terminal run, preserving the original services/images/volumes.
+This compiled-source evidence does not prove current immutable-image acceptance.
+
+This remains browser-fixture verification, not a change to production authority,
+command receipts or automatic retry behavior. Current full exact-image CI and
+the other historical browser/performance failures remain required before closure.
+
 ## Complete-operation deadlines and original-request recovery
 
 ### Open acknowledgment preference recovery

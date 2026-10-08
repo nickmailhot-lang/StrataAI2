@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const width of [1280, 390]) for (const boardSurface of [false, true]) for (const fault of ['replacement', 'unavailable']) {
   test(`PRD-03/60-TC-05/06/07: committed invitation is withheld after account ${fault} (Board=${boardSurface}, ${width}px)`, async ({ page, context }) => {
@@ -20,6 +21,7 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) for (
     }
     const root = board ? `/boards/${board}/invitations` : `/organizations/${org}/invitations`;
     const path = board ? `/app/${org}/boards/${board}/invite` : `/app/${org}/invite`;
+    const admission = trackInvitationAdmission(page, org, actor, board, path);
     const storage = `strataai:invitation-create:v1:${actor}:${org}${board ? `:board:${board}` : ''}`;
     const email = `creation-recipient-${suffix}@example.test`;
     const writes: { key: string | undefined; body: unknown }[] = [];
@@ -48,6 +50,9 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) for (
     });
     await page.goto(path);
     if (!boardSurface) await expect(page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
+    await expect.poll(admission.ready).toBe(true);
+    await expect(page.getByRole('button', { name: 'Create invitation', exact: true })).toBeEnabled();
+    const originalHead = admission.heads();
     await page.getByLabel(/^Invitation email/).fill(email);
     await page.getByRole('button', { name: 'Create invitation', exact: true }).focus(); await page.keyboard.press('Enter');
     if (fault === 'replacement') await expect(page).toHaveURL(/\/login(?:\?|$)/);
@@ -70,8 +75,12 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) for (
       expect((await persisted.json()).items).toHaveLength(1);
       await page.getByRole('button', { name: 'Retry permission check' }).focus(); await page.keyboard.press('Enter');
     }
+    // Recovery starts a new account-bound watcher. Wait for its actual head and
+    // the fresh permission read, rather than racing the first restored form.
+    await expect.poll(() => admission.heads() > originalHead && admission.ready()).toBe(true);
     await expect(page.getByText(/prior invitation request is awaiting acknowledgment/)).toBeVisible();
     expect(writes).toHaveLength(1);
+    await expect(page.getByRole('button', { name: 'Retry same invitation' })).toBeEnabled();
     await page.getByRole('button', { name: 'Retry same invitation' }).focus(); await page.keyboard.press('Enter');
     await expect(page.getByText('Invitation creation acknowledged.', { exact: true })).toBeVisible();
     expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
