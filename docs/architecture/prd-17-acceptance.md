@@ -1,7 +1,8 @@
 # Notification and watching acceptance map — PRD-17
 
 [PRD-17](https://github.com/nickmailhot-lang/StrataAI2/issues/18) remains open at
-**22% estimated work remaining** (planning estimate). This maps all twelve
+**21% estimated work remaining** (planning estimate). Earlier estimates below
+record their evidence scope. This maps all twelve
 functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
 The adopted MUI/API/separate Worker/PostgreSQL architecture is unchanged.
@@ -110,3 +111,50 @@ Production evidence rather than current immutable release-image acceptance.
 The five scenarios remain in the mandatory full CI browser suite. Full producer,
 reminder-fire, concurrent/large-data and retained-image gates still prevent
 closure; estimated PRD-17 work remaining stays **22%**.
+
+## Actual Worker due firing and native inbox recovery
+
+The complete unchanged `scripts/ci/test-card-dates.sh` passed against the current
+compiled Production API, separate compiled Worker, restricted PostgreSQL
+17/pgvector schema 112 and Nginx on 2026-10-08. This includes canonical UTC/DST
+dates; unauthorized/invalid commands; full publication rollback; original-key
+recovery/no-op; completion/reopen/clear; Card/List/Board reminder suspension and
+renewal; all 76 synthetic personal choices; cancelled-choice preservation;
+Board date-policy rollback/replay without rewritten dates/generations; and
+Organization deletion-request rollback/suspension. Synthetic choices establish
+bounded-page independence, not actual user enrollment at scale.
+
+A real personal `AT_DUE` request persists a future job; no fixture advances its
+clock, lease or firing state. The separate Worker fires it within the existing
+60-second deadline, persists FIRED version 2/generation 1, one intentional
+self-recipient `REMINDER_FIRED` notification and one ready canonical source.
+Original scheduling acknowledgment recovery creates no additional job or
+notification and does not rewind canonical Card/reminder state. The requesting
+recipient is fixture-verified; the Worker retains verified-email enforcement.
+Existing role/capability and lease failure contracts remain separate requirements.
+
+Two new mandatory native cases in `card-reminders.spec.ts` pass at 1280px and
+390px. Each sets a real due time sixty seconds ahead, chooses `At the due time`
+through keyboard MUI controls and observes automatic delivery in the open Card
+reminder panel and a second native inbox. Exactly one canonical Card link and
+intentional self notification appear. The original schedule key/body returns its
+identical original acknowledgment after firing. Mark-read yields exactly one
+creation and one read journal event with distinct identities. Tagged Axe and
+horizontal overflow checks pass on both views. These cases establish native
+recovery without manual reload; they do not independently inspect reminder
+WebSocket frames or prove concurrent/sustained load.
+
+The complete HTTP script matches staged source apart from local URL/UUID/scratch
+adapters. Both native cases passed unchanged in one invocation with a fresh
+current MUI bundle and read-only compiled API/Worker assemblies. Their fixtures
+verify through the real endpoint when a test token is available; otherwise only
+the disposable account is activated by controlled SQL. Email-provider delivery
+is not claimed. API fixture policy permits unverified accounts, while the actual
+Worker and reminder recipient in these firing cases enforce verification.
+
+All invocation-owned containers and cloned databases were removed and original
+services/volumes preserved. Browser typechecking and shell/diff checks pass.
+These compiled-runtime results strengthen NOTIFY-FR-010/012 and PRD-12 lifecycle
+acceptance. Full current build-once image, producer/concurrency/large-data and
+complete Definition of Done gates still govern closure. Estimated PRD-17 work
+remaining is **21%**, and PRD-12 **24%** (planning estimates); both stay open.

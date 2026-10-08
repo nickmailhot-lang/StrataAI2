@@ -581,3 +581,18 @@ The additional date editor/draft suites passed all 15 cases (116 total across
 seven focused date/Board files). Web typechecking, lint, browser typechecking
 and an isolated production web build also passed. The local build is outside
 the checkout and is not a retained release artifact.
+
+## Executed complete reminder firing and native delivery
+
+The [complete HTTP and desktop/phone firing evidence](prd-17-acceptance.md#actual-worker-due-firing-and-native-inbox-recovery)
+now passes locally. The unchanged full date fixture includes actual separate
+Worker firing/readiness, original receipt recovery, UTC/DST and policy rollback,
+all 76 chosen Cards, cancelled-choice preservation and Organization request
+suspension/rollback. Two new mandatory native cases choose an actual near-future
+reminder through MUI, recover its FIRED panel/inbox state without reload, preserve
+the original scheduling acknowledgment and require one creation/read journal pair.
+Keyboard, Axe and overflow checks pass at desktop and phone widths. The Worker
+retains verified-email enforcement; fixture verification and local compiled
+containers do not establish provider delivery or current immutable-image identity.
+Complete release/capacity/concurrency acceptance remains required; estimated
+PRD-12 work remaining is **24%** (planning estimate), and the ticket stays open.
