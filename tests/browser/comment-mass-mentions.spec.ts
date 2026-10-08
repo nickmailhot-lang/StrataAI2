@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 // Real account invitations, explicit Board membership and Card assignment.
 // Only an actual committed first response is replaced to exercise recovery.
@@ -52,6 +53,13 @@ for (const width of [1280, 390]) {
         await page.getByRole('button', { name: 'Add comment', exact: true }).press('Enter');
         await page.getByRole('textbox', { name: 'New comment', exact: true }).fill(text);
       }
+      async function save(client = page) {
+        // A keyboard focus transition can start a protected foreground read.
+        // Wait for the actual workspace admission, then activate once; never
+        // retry a rejected mutation or bypass the current-access boundary.
+        await expect(client.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
+        await pressAdmittedAction(client.getByRole('button', { name: 'Save comment', exact: true }));
+      }
       await draft('@card @board');
       const cardConsent = page.getByRole('checkbox', { name: 'Notify current teammates assigned to this Card (@card)', exact: true });
       const boardConsent = page.getByRole('checkbox', { name: 'Notify all current board participants (@board)', exact: true });
@@ -67,9 +75,9 @@ for (const width of [1280, 390]) {
         if (writes.length === 1) return route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ code: 'work_storage_unavailable' }) });
         return route.fulfill({ response: actual });
       });
-      await page.getByRole('button', { name: 'Save comment', exact: true }).press('Enter');
+      await save();
       const retry = page.getByRole('button', { name: 'Retry original comment change', exact: true });
-      await expect(retry).toBeEnabled(); await expect(retry).toBeFocused(); await retry.press('Enter');
+      await expect(retry).toBeEnabled(); await expect(retry).toBeFocused(); await pressAdmittedAction(retry);
       await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
       expect(JSON.parse(writes[0].body!)).toEqual({ content: '@card @board', cardVersion: 2, massMentionConfirmation: { card: true, board: true } });
@@ -82,15 +90,16 @@ for (const width of [1280, 390]) {
       expect(await mentions()).toHaveLength(1);
       expect((await (await context.request.get(inboxPath)).json()).items).toEqual([]);
       await draft('Unconfirmed @board'); await expect(boardConsent).not.toBeChecked();
-      await page.getByRole('button', { name: 'Save comment', exact: true }).press('Enter');
+      await save();
       await expect(page.getByText('Comment added.', { exact: true })).toBeVisible(); expect(await mentions()).toHaveLength(1);
       for (const label of ['Second', 'Third']) {
         await draft(`${label} @board`); await boardConsent.press('Space');
-        await page.getByRole('button', { name: 'Save comment', exact: true }).press('Enter');
+        await expect(boardConsent).toBeChecked();
+        await save();
         await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
       }
       await draft('Fourth @board'); await boardConsent.press('Space');
-      await page.getByRole('button', { name: 'Save comment', exact: true }).press('Enter');
+      await save();
       await expect(page.getByText('Group mentions are limited to three deliveries per board in ten minutes. Wait, then review the latest Card.', { exact: true })).toBeVisible();
       await expect(page.getByRole('textbox', { name: 'New comment', exact: true })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Retry original comment change', exact: true })).toHaveCount(0);
@@ -104,7 +113,7 @@ for (const width of [1280, 390]) {
       await memberPage.getByRole('textbox', { name: 'New comment', exact: true }).fill('Member self @card @board');
       await expect(memberPage.getByRole('checkbox', { name: 'Notify all current board participants (@board)', exact: true })).toBeDisabled();
       await memberPage.getByRole('checkbox', { name: 'Notify current teammates assigned to this Card (@card)', exact: true }).press('Space');
-      await memberPage.getByRole('button', { name: 'Save comment', exact: true }).press('Enter');
+      await save(memberPage);
       await expect(memberPage.getByText('Comment added.', { exact: true })).toBeVisible(); expect(await mentions()).toHaveLength(3);
       expect((await (await context.request.get(inboxPath)).json()).items).toEqual([]);
       expect((await context.request.delete(`/boards/${board}/members/${recipient}`, { headers })).status()).toBe(204);

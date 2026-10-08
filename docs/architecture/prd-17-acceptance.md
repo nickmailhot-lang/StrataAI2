@@ -158,3 +158,13 @@ These compiled-runtime results strengthen NOTIFY-FR-010/012 and PRD-12 lifecycle
 acceptance. Full current build-once image, producer/concurrency/large-data and
 complete Definition of Done gates still govern closure. Estimated PRD-17 work
 remaining is **21%**, and PRD-12 **24%** (planning estimates); both stay open.
+
+## Mention producer recovery
+
+The [six-case selected/group mention invocation](prd-15-acceptance.md#executed-selected-and-group-mention-recovery)
+passes actual MUI author commands, consent/quota/role and original-key recovery,
+with real private HTTP recipient inboxes, deduplication and grant withdrawal.
+It strengthens NOTIFY-FR-009/011/012 producer evidence. These cases do not
+independently execute a recipient MUI mention center or inspect mention
+WebSocket frames; full current-image and remaining integrated acceptance remain.
+Estimated PRD-17 work remaining stays **21%** (planning estimate).

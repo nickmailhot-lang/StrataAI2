@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 // Real cookies, lookup, identity revision changes, comment/inbox writes and
 // original receipts. Only a successfully committed first reply is replaced.
@@ -58,7 +59,7 @@ for (const width of [1280, 390]) {
       }
       const reclaimed = await (await recipientContext.request.get('/me/mention-handle')).json();
       expect(reclaimed.handleVersion).toBe(original.handleVersion + 2);
-      await page.getByRole('button', { name: 'Save comment', exact: true }).press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Save comment', exact: true }));
       await expect(page.getByText('This comment change is unavailable. Load the latest Card before starting another change.', { exact: true })).toBeVisible();
       expect((await (await context.request.get(`/cards/${card}/comments`)).json()).items).toEqual([]);
       expect((await (await recipientContext.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
@@ -73,10 +74,10 @@ for (const width of [1280, 390]) {
         if (writes.length === 1) return route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ code: 'work_storage_unavailable' }) });
         return route.fulfill({ response: actual });
       });
-      await page.getByRole('button', { name: 'Save comment', exact: true }).press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Save comment', exact: true }));
       const retry = page.getByRole('button', { name: 'Retry original comment change', exact: true });
       await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
-      await retry.press('Enter'); await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
+      await pressAdmittedAction(retry); await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
       expect(JSON.parse(writes[0].body!)).toEqual({ content: `@${original.handle}`, cardVersion: 1,
         mentionSelections: [{ userId: recipient, handle: original.handle, handleVersion: reclaimed.handleVersion }] });

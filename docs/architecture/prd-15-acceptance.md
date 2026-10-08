@@ -1,5 +1,7 @@
 # PRD-15 acceptance map — open
 
+Current status (2026-10-08): open, **36% estimated work remaining** (planning estimate). Earlier estimates below record their evidence scope.
+
 Scope is the complete issue #16 specification. This map does not close the
 issue or replace its dependencies (PRD-08, PRD-17 and PRD-24). Source tests,
 restricted database contracts, exact-image HTTP/Worker checks and native UI
@@ -60,11 +62,11 @@ BoardScreen now retains its admission-checking state across queued refreshes ins
 | FR-001 comment participation | `CardCommentService`, POST endpoint, guarded PostgreSQL/Demo stores, MUI author commands; managed HTTP and exact comment command fixture | Current immutable-image native author workflow and complete release gate |
 | FR-002 author/content/timestamps/edited state | Stable author identity, created/updated/edited timestamps, revisioned content; SQL ownership/revision guard and MUI plaintext/edited state | Current native rendering and lifecycle gate |
 | FR-003/004 own edit/delete | Current participation/author checks, dual Card/comment revisions, confirmed redaction, body-free receipts, protected original acknowledgment hydration | Full current native conflict/retry/redaction and parent lifecycle matrix |
-| FR-005 username mentions | Canonical reserved handles, explicit selected identity/revision, bounded current teammate lookup, immutable revision snapshots, MUI picker | Current native selected-handle/identity recovery and cross-feature account lifecycle |
-| FR-006 groups | Explicit @card/@board consent, current assignment/Board recipients, elevated Board administration, rolling three-delivery/ten-minute quota, atomic rollback | Current native group consent/quota/role gate and large recipient behavior |
+| FR-005 username mentions | Canonical reserved handles, explicit selected identity/revision, bounded current teammate lookup, immutable revision snapshots, MUI picker | Current immutable-image selected-handle/identity recovery and cross-feature account lifecycle; local execution is recorded below |
+| FR-006 groups | Explicit @card/@board consent, current assignment/Board recipients, elevated Board administration, rolling three-delivery/ten-minute quota, atomic rollback | Current immutable-image group consent/quota/role gate and large recipient behavior; local execution is recorded below |
 | FR-007 notifications | Immutable source identities, distinct non-self deltas, current recipient admission, atomic source/inbox/jobs/receipts; managed and exact command/Worker fixtures | Current native private inbox and full PRD-17 consumer/lifecycle requirements |
 | FR-008/009 immutable activity/envelope | Append-only Work journal, stable IDs/typed targets/versions, captured actor label, body-free metadata, historical Board coordinates, migrations 062–065; restricted SQL contracts | Complete producer/event coverage as remaining domain features are implemented; full release gate |
-| FR-010 historical actor | SQL caption immutability through rename/deactivation/reused identity, exact API rename fixture, plaintext safe rendering | New actual HTTP legal teammate deactivation and native historical caption case must execute |
+| FR-010 historical actor | SQL caption immutability through rename/deactivation/reused identity, exact API rename fixture, plaintext safe rendering | Current immutable-image historical caption/deactivation and complete actor-lifecycle acceptance; executed local caption cases are linked above |
 | FR-011 paginated Board/Card views | Visibility-before-limit 51-source window, 50-row pages, complete eligible historical Board lookup, opaque viewer/target-bound expiring cursor, persistent API keys, MUI bounded pages | Current native paging/reconnect/access and remaining move/archive detail dependencies |
 
 ## Acceptance criteria and linked scenarios
@@ -158,3 +160,53 @@ initial Older activity focus before testing denial. All denial, no-extra-read,
 private-content clearing and Close activity focus assertions remain mandatory.
 All 11 focused activity-history tests pass locally. Production behavior is
 unchanged; full Linux web execution remains pending.
+
+## Executed selected and group mention recovery
+
+All six cases in `account-mention-handle.spec.ts`, `comment-mentions.spec.ts` and
+`comment-mass-mentions.spec.ts` passed in one complete local invocation on
+2026-10-08, covering 1280px desktop and 390px phone. The topology uses the current
+MUI production bundle, compiled Production API, separate explicitly scoped
+compiled Worker, restricted PostgreSQL 17/pgvector schema 112 and Nginx.
+
+The first invocation had five passes and a phone group failure: an asynchronous
+foreground Board read began during account preflight, so the client refused the
+next new mutation before sending a comment POST. Waiting for actual workspace
+admission repaired that activation. A second invocation passed both group cases
+but the phone selected-mention retry keypress landed during a focus/read
+transition; its trace contained the stale-handle rejection and committed original
+response, but no second retry POST. Both fixtures now use the existing focused
+admission helper for save/original retry. It retries focus checks, activates once
+and never repeats a rejected mutation. Authorization, preflight guards, consent,
+quotas and exact original key/body/effect assertions remain unchanged. Both failed
+invocations are retained as diagnostics; neither counts as full acceptance.
+
+The final complete invocation exits 0 with all six passes. Selected mentions
+reject a reviewed handle revision even after the teammate reclaims the same
+handle, leaving comments and recipient inbox empty. Fresh selection creates one
+recipient notification; a deliberately substituted failure after real commitment
+recovers the identical original key/body and selection revision. The author inbox
+stays empty, and Board membership removal hides the recipient notification.
+
+Confirmed overlapping `@card`/`@board` groups deduplicate one recipient. Plain
+unconfirmed `@board` text creates a comment without another delivery. Two later
+confirmed groups produce three deliveries total; the fourth is refused by the
+rolling three-per-ten-minute quota, with four persisted comments at Card version
+6 and no unresolved retry. Ordinary members cannot confirm `@board`; their own
+confirmed `@card` action creates no self notification. Grant removal withdraws
+inbox disclosure. Native account-handle cases additionally prove original
+acknowledgment recovery, retained unsaved profile edits, concurrent account CAS,
+new-key review after conflict, old-handle receipt refusal and logout withdrawal.
+Keyboard, focus, scoped Axe and phone overflow assertions pass unchanged.
+
+These mention cases inspect recipient notifications through real authorized HTTP
+inboxes; they do not independently prove recipient MUI or mention WebSocket-frame
+delivery. Account policy permits unverified fixture accounts, matching CI's
+browser phase. Email-provider verification and strict policy remain separate.
+Assemblies are mounted read-only in cached framework containers; this is local
+compiled evidence, not current retained-image identity or a capacity benchmark.
+All owned containers and cloned databases are removed, preserving existing
+services/volumes. Browser typechecking and diff checks pass. The full CI browser
+suite includes the corrected fixtures. Complete current-image, producer,
+concurrency/capacity and Definition of Done acceptance still govern closure.
+Estimated PRD-15 work remaining is **36%**; PRD-17 remains **21%**.

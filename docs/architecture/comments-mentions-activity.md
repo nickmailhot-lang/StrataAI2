@@ -1533,3 +1533,13 @@ Card history still requires all eligible historical Board sources. Authorized
 APIs, protected cursor paging, MUI/interpreter/realtime, Production race tests,
 retention and full performance acceptance remain unfinished. PRD-15 remaining
 work is still estimated at **50%**.
+
+## Executed native selected and group mentions
+
+The [six-case desktop/phone mention and handle invocation](prd-15-acceptance.md#executed-selected-and-group-mention-recovery)
+now passes locally after repairing fixture focus/admission synchronization. It
+retains actual stale-handle rejection, original-key recovery, group consent,
+recipient deduplication, rolling quota, member role restrictions, self-suppression
+and membership withdrawal assertions. Current immutable-image and broader
+producer/concurrency/capacity acceptance remain required; PRD-15 stays open at
+**36% estimated work remaining** (planning estimate).
