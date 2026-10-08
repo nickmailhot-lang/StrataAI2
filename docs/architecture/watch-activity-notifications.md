@@ -401,3 +401,17 @@ is a separate identity-mail contract. Build-once CI runs this matrix before the
 optional-account full suite, reusing the loaded images. Local compiled execution
 does not establish current retained-image acceptance, full role/visibility,
 concurrency or capacity. PRD-17 remains open at **17% estimated work remaining**.
+
+## Executed Board roles and visibility readers
+
+The [five-case strict-policy native matrix](prd-17-acceptance.md#executed-role-and-visibility-reader-watch-matrix)
+passes Owner, explicit Board ADMIN/MEMBER and Organization/Public visibility
+readers without Board grants together. Actual read-only access and rejected Card
+edits precede personal watch changes. Four canonical desktop/phone deliveries,
+overlap deduplication, moved direct subscription continuity and actor suppression
+pass for each. Grant removal or destination visibility becoming Private hides
+both open inboxes; later peer activity leaves full stored history unchanged.
+These readers retain active Organization membership; this does not grant
+anonymous visitors personal watches or introduce a Viewer role. Current-image,
+complete role/visibility combinations, producers, concurrency and capacity remain
+required. PRD-17 stays open at **16% estimated work remaining**.

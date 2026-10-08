@@ -4,6 +4,18 @@ This audit covers the complete [PRD-05 issue](https://github.com/nickmailhot-lan
 
 ## Functional traceability
 
+The [five-case strict-policy native watch matrix](prd-17-acceptance.md#executed-role-and-visibility-reader-watch-matrix)
+adds executed consumer proof for PERM-FR-002/003/008/010: actual ADMIN/MEMBER
+grants on Private Boards and Organization/Public read-only visibility without
+Board grants. Readers can manage their personal watches while real Card edits
+return neutral 404 and canonical title/version remain unchanged. Destination
+grant removal or transition to Private withdraws desktop/phone inbox content;
+later admitted activity preserves full stored recipient history. All five cases
+pass together in 5.2 minutes under strict verification, with tagged Axe/overflow.
+This uses current compiled Production services and restricted PostgreSQL schema
+112; it does not establish current retained-image or complete permission-matrix
+acceptance. PRD-05 remains open at **15% estimated work remaining**.
+
 | Requirement | Current implementation or source evidence | Evidence or work still required |
 | --- | --- | --- |
 | PERM-FR-001 three visibility values | WorkManagementService validates canonical visibility; BoardVisibilityPage reviews the current Board revision and explains public exposure. | Complete current-image native consent/conflict/recovery and rejected-write persistence assertions. |

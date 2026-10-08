@@ -1,7 +1,7 @@
 # Notification and watching acceptance map — PRD-17
 
 [PRD-17](https://github.com/nickmailhot-lang/StrataAI2/issues/18) remains open at
-**17% estimated work remaining** (planning estimate). Earlier estimates below
+**16% estimated work remaining** (planning estimate). Earlier estimates below
 record their evidence scope. This maps all twelve
 functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
@@ -38,8 +38,9 @@ The complete thirteen linked scenarios remain required: happy path, empty state,
 invalid input, unauthorized access, mid-session withdrawal, timeout/retry,
 idempotency, concurrent update, reconnect, parent lifecycle, keyboard, mobile and
 documented large-data performance. Source/API/PostgreSQL/native evidence must be
-matched to the current revision and policy; local browser policy permits
-unverified fixture accounts and does not certify strict verified-email admission.
+matched to the current revision and policy. Earlier local scenarios permitted
+unverified fixture accounts; the strict-policy executions below separately
+prove verified-email admission for their declared watch matrices.
 
 Closure also requires the full unit/integration/end-to-end gates, migration/role
 review, event consumption, documented private telemetry, useful error/empty/loading
@@ -448,3 +449,41 @@ production defaults and architecture are unchanged. Browser typechecking passes.
 Current retained-image execution/full CI, remaining role/visibility and producer
 matrices, concurrent transitions, capacity and complete Definition of Done
 remain unproven. PRD-17 stays open at **17% estimated work remaining**.
+
+## Executed role and visibility reader watch matrix
+
+The corrected complete cross-Board invocation passes **five cases in 5.2 minutes**:
+Organization Owner, explicit Board ADMIN and MEMBER on Private Boards, and
+Organization members without Board grants viewing Organization or Public Boards.
+All use strict verified-email admission and the separate scoped Production
+Worker. ADMIN/MEMBER grants are made through real HTTP commands and their
+returned roles asserted. Read-only viewing follows visibility rules; no new
+Viewer role is introduced. Anonymous public visitors are outside this personal
+watch fixture because watching requires active Organization membership.
+
+Each visibility reader's actual Board access allows viewing and denies editing
+and administration. A real Card edit returns neutral 404 `card_not_found`, and
+the canonical Board snapshot proves its title/version unchanged. Those readers
+then perform the same native keyboard Board/List/Card watch and unwatch matrix.
+Peer actions produce four exact notifications and private creation identities
+on desktop and phone, with overlap deduplication, actor suppression, direct Card
+subscription continuity and current destination links. Tagged Axe/overflow pass.
+
+For ADMIN/MEMBER the Owner removes the destination Board grant. For visibility
+readers the Owner changes the destination to Private at its current version.
+Direct Card watch reads return 404, authorized HTTP inboxes become empty and
+both already-open native inboxes withdraw every article. A subsequent admitted
+peer edit adds no recipient notification/event. Full stored recipient
+notification/journal fingerprints and four/four counts remain unchanged.
+
+An initial fixture attempted an unsupported Viewer grant; a subsequent reader
+fixture attempted an unsupported direct Card read. These failed invocations
+are not acceptance evidence. The final fixture follows canonical ADMIN/MEMBER
+roles and reads the Board snapshot, and passes all five cases together without
+relaxed deadlines, authorization rules, counts or historical comparisons.
+Browser typechecking passes. Owned containers/database are removed and original
+services/data preserved. Current compiled Production execution does not prove
+current retained-image/full CI, every role/visibility combination, concurrent
+transitions, full configured producer matrix or capacity. Both strict CI and
+optional full-suite phases include these five cases. PRD-17 remains open at
+**16% estimated work remaining**.

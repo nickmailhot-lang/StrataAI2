@@ -11,10 +11,11 @@ async function activate(button: Locator) {
   await button.press('Enter', { timeout: 5_000 });
 }
 
-for (const recipientRole of ['OWNER', 'MEMBER'] as const) {
+for (const recipientRole of ['OWNER', 'ADMIN', 'MEMBER', 'ORGANIZATION_READER', 'PUBLIC_READER'] as const) {
 test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships and direct Card identity reach desktop and phone inboxes`, async ({ page, context, browser, baseURL }) => {
   test.setTimeout(180_000);
   const headers = { 'X-StrataAI-Request': '1' };
+  const reader = recipientRole === 'ORGANIZATION_READER' || recipientRole === 'PUBLIC_READER';
   const peer = await browser.newContext({ baseURL });
   const administrator = recipientRole === 'OWNER' ? context : await browser.newContext({ baseURL });
   let phone: typeof peer | undefined; let restoreWorker = () => {};
@@ -54,7 +55,7 @@ test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships
     expect((await peer.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
     const issuer = (await (await peer.request.get('/me')).json()).id;
     const recipient = (await (await context.request.get('/me')).json()).id;
-    if (recipientRole === 'MEMBER') {
+    if (recipientRole !== 'OWNER') {
       const invited = await administrator.request.post(`/organizations/${org}/invitations`, { headers,
         data: { email: recipientEmail, surface: 'INTERNAL', targetRole: 'MEMBER' } });
       expect(invited.status()).toBe(201);
@@ -63,15 +64,31 @@ test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships
 
     const boards: string[] = []; const lists: string[] = [];
     for (const name of ['Source watch Board', 'Destination watch Board']) {
-      const b = await administrator.request.post('/boards', { headers, data: { organizationId: org, name, visibility: 'PRIVATE' } });
+      const b = await administrator.request.post('/boards', { headers, data: { organizationId: org, name,
+        visibility: recipientRole === 'ORGANIZATION_READER' ? 'ORGANIZATION' : recipientRole === 'PUBLIC_READER' ? 'PUBLIC' : 'PRIVATE' } });
       expect(b.status()).toBe(201); const board = (await b.json()).id; boards.push(board);
       expect((await administrator.request.patch(`/boards/${board}/members/${issuer}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
-      if (recipientRole === 'MEMBER') expect((await administrator.request.patch(`/boards/${board}/members/${recipient}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
+      if (recipientRole !== 'OWNER' && !reader) {
+        const grant = await administrator.request.patch(`/boards/${board}/members/${recipient}`, { headers, data: { role: recipientRole } });
+        expect(grant.status()).toBe(200); expect((await grant.json()).role).toBe(recipientRole);
+      }
       const l = await administrator.request.post(`/boards/${board}/lists`, { headers, data: { name: name + ' List' } });
       expect(l.status()).toBe(201); lists.push((await l.json()).id);
     }
     const c = await administrator.request.post(`/lists/${lists[0]}/cards`, { headers, data: { title: 'Cross-Board watched Card' } });
     expect(c.status()).toBe(201); const card = (await c.json()).id;
+    if (reader) {
+      for (const board of boards) {
+        const view = await context.request.get(`/boards/${board}`); expect(view.status()).toBe(200);
+        expect((await view.json()).access).toMatchObject({ canView: true, canEdit: false, canAdminister: false });
+      }
+      const denied = await context.request.patch(`/cards/${card}`, { headers,
+        data: { title: 'Reader cannot edit', description: '', version: 1 } });
+      expect(denied.status()).toBe(404); expect((await denied.json()).code).toBe('card_not_found');
+      const unchanged = await administrator.request.get(`/boards/${boards[0]}`); expect(unchanged.status()).toBe(200);
+      const cards = (await unchanged.json()).lists.flatMap((list: { cards: { id: string; title: string; version: number }[] }) => list.cards);
+      expect(cards.find((item: { id: string }) => item.id === card)).toMatchObject({ title: 'Cross-Board watched Card', version: 1 });
+    }
     restoreWorker = scopedBoardWorker(org);
     for (const board of boards) await waitForBoardDelivery(context.request, board);
     async function watch(kind: 'Board' | 'List' | 'Card', board: string, watching: boolean) {
@@ -172,7 +189,7 @@ test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships
       expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect(await client.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
-    if (recipientRole === 'MEMBER') {
+    if (recipientRole !== 'OWNER') {
       expect(process.env.CI).toBe('true');
       for (const id of [org, recipient]) expect(id).toMatch(/^[0-9a-f-]{36}$/);
       function privateHistory() {
@@ -186,7 +203,11 @@ test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships
         }).trim();
       }
       const history = privateHistory(); expect(history).toMatch(/^[0-9a-f]{32}\r?\n4\r?\n4$/);
-      expect((await administrator.request.delete(`/boards/${boards[1]}/members/${recipient}`, { headers })).status()).toBe(204);
+      if (reader) {
+        const current = await administrator.request.get(`/boards/${boards[1]}`); expect(current.status()).toBe(200);
+        expect((await administrator.request.patch(`/boards/${boards[1]}/visibility`, { headers,
+          data: { visibility: 'PRIVATE', version: (await current.json()).board.version } })).status()).toBe(200);
+      } else expect((await administrator.request.delete(`/boards/${boards[1]}/members/${recipient}`, { headers })).status()).toBe(204);
       expect((await context.request.get(`/watch/CARD/${card}`)).status()).toBe(404);
       expect(await inboxRows()).toEqual([]);
       for (const client of [desktop, mobile]) await expect(client.getByRole('article')).toHaveCount(0, { timeout: 25_000 });

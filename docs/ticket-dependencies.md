@@ -1,8 +1,8 @@
 # Canonical ticket dependency audit
 
-Snapshot: 2026-10-07. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
+Snapshot: 2026-10-08. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
 
-The complete paginated issue snapshot was refreshed on 2026-10-07 and processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
+The complete paginated issue snapshot was refreshed on 2026-10-08 and processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
 
 ## Dependency groups
 
@@ -18,7 +18,7 @@ A dependency-first traversal of strongly connected components produces the group
 
 The architecture foundation is already adopted and is being implemented alongside its dependent product contracts. Group order describes the issue graph, not an instruction to discard or rebuild that foundation.
 
-In particular, PRD-11 depends on PRD-16 and PRD-17; PRD-17 depends on PRD-11, PRD-12, PRD-15 and PRD-22; PRD-12 depends on PRD-17. Assignment persistence, editing, previews and member filtering are producer slices. Atomic assignment recipient intent, authorized inbox/read commands, watches, personal due Reminders and their MUI controls now have implementations and scoped tests. Exact-image Reminder delivery passed its notification/receipt checks before the fixture's readiness assertion failed; the corrected complete runtime gate remains pending. Mentions, remaining notification requirements and PRD-wide lifecycle/performance acceptance are still unfinished. Existing content-free Work invalidation events do not prove notification delivery. A fresh issue inventory still records 91 open canonical tickets; this progress does not close them.
+In particular, PRD-11 depends on PRD-16 and PRD-17; PRD-17 depends on PRD-11, PRD-12, PRD-15 and PRD-22; PRD-12 depends on PRD-17. Assignment persistence, editing, previews and member filtering are producer slices. Atomic assignment and mention recipient intent, authorized inbox/read commands, watches, personal due Reminders and their MUI controls have implementations and scoped tests. The [notification acceptance map](architecture/prd-17-acceptance.md) records executed local native assignment, selected/group mention, watched activity and actual Worker due-fire delivery, including canonical recipient-private transport identities. Strict verified-account cross-Board watch admission also has executed local proof and a required build-once CI phase. Current immutable-image/full CI, remaining producer/role/visibility matrices and PRD-wide lifecycle/concurrency/performance acceptance still govern closure. Existing content-free Work invalidation events do not prove notification delivery. A fresh issue inventory still records 91 open canonical tickets; this progress does not close them.
 
 ## Complete canonical inventory
 
