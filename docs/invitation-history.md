@@ -293,3 +293,26 @@ Internal, Portal and Board issuance, keyboard review, unchanged stored history,
 no revocation, expiry consent withdrawal and the full Axe scan. The companion
 six recipient expiry/recovery cases also pass. These are actual Demo browser
 results; the corresponding exact-image release scenarios remain pending CI.
+
+
+## Production expiry consent admission
+
+The native history expiry fixture now observes the actual scope/actor-bound
+stream head and a protected history read started after it before keyboard review.
+The first displayed row can precede watcher bootstrap, whose genuine reset must
+withdraw any consent. Baseline current-source Production execution completed with
+five passes and one phone Portal case failing before its review dialog appeared;
+a protected history refresh started after keyboard focus. The fixture waits for
+that admission boundary instead of treating transient first display as readiness.
+
+All six corrected Internal/Portal/Board desktop/phone expiry cases pass against
+the frozen Production API/web, Nginx and real restricted schema-110 PostgreSQL,
+with a separate discovery Worker and provider sending disabled. They retain the
+original persisted expiry, paused browser clock, keyboard dialog review, expiry
+withdrawal, fresh protected read, zero revocations, exactly one document request,
+unchanged canonical invitation, complete Axe scan and viewport overflow checks.
+The existing five-second readiness deadline and all production policies remain.
+No product code or command semantics changed. Browser TypeScript and diff checks
+pass. This is browser-clock withdrawal proof, not server-clock expiry, provider
+sending or current retained-image release proof. Full immutable CI remains
+required before issue closure.

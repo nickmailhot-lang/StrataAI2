@@ -483,3 +483,23 @@ for runtime scope and limitations.
 
 Estimated work remaining stays **8%** (planning estimate). The issue stays
 open: current immutable-image CI and full PRD-wide acceptance remain required.
+
+
+## Production history expiry and Organization administration execution
+
+The complete native eight-case invocation passes in four minutes: six corrected
+Internal/Portal/Board desktop/phone expiry cases and two unchanged Organization
+administration cases. Expiry consent waits for the actual scoped live head and
+subsequent protected history read; the baseline completed five passes/one phone
+Portal failure before dialog review. Original expiry, withdrawal, zero-write,
+canonical-history, no-reload and accessibility assertions remain. Administration
+proves actual lost-response commitment, identical-key/body retry across reload,
+one invitation, preference recovery/focus, actual member-added source/refresh and
+Portal grant separation. Browser TypeScript and documentation checks pass.
+See [expiry evidence](../invitation-history.md#production-expiry-consent-admission)
+and [administration evidence](invitation-administration-ui.md#production-organization-administration-verification)
+for full runtime scope. Provider sending and retained-current-image verification
+remain separate; this does not prove every acceptance criterion.
+
+Estimated remaining work stays **8%** (planning estimate). The issue stays
+open pending full current immutable CI and outstanding PRD-wide requirements.

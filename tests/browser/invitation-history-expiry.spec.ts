@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   for (const surface of ['INTERNAL', 'PORTAL', 'BOARD']) {
@@ -9,7 +10,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const headers = { 'X-StrataAI-Request': '1' };
       const credentials = { email: `history-expiry-${surface}-${viewport.width}-${Date.now()}@example.test`,
         password: 'browser-history-expiry-correct-horse', displayName: 'Invitation expiry Owner' };
-      expect((await context.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
+      const registered = await context.request.post('/auth/register', { headers, data: credentials });
+      expect(registered.status()).toBe(201); const actor = (await registered.json()).user.id;
       expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
       const created = await context.request.post('/organizations', { headers, data: { name: 'Invitation expiry review' } });
       expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
@@ -19,6 +21,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         expect(result.status()).toBe(201); board = (await result.json()).id;
       }
       const root = board ? `/boards/${board}/invitations` : `/organizations/${org}/invitations`;
+      const path = board ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`;
+      const admission = trackInvitationAdmission(page, org, actor, board, path, root);
       const email = `expiry-recipient-${surface}-${viewport.width}-${Date.now()}@example.test`;
       const issued = await context.request.post(root, { headers, data: board ? { email, role: 'MEMBER' }
         : { email, surface, targetRole: surface === 'PORTAL' ? 'OWNER' : 'MEMBER' } });
@@ -36,9 +40,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
           if (request.method() === 'GET') reads++; else writes++;
         }
       });
-      await page.goto(board ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);
+      await page.goto(path);
+      // Opening consent before the first scoped reset can race its withdrawal.
+      // Observe the real head and subsequent protected history read first.
+      await expect.poll(admission.ready).toBe(true);
       const action = page.getByRole('button', { name: `Revoke invitation for ${email}` });
-      await expect(action).toBeVisible(); await action.focus(); await page.keyboard.press('Enter');
+      await expect(action).toBeEnabled(); await action.focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('dialog')).toBeVisible(); const initialReads = reads;
       await page.clock.runFor(1500);
       await expect(page.getByText('Expired', { exact: true })).toBeVisible();

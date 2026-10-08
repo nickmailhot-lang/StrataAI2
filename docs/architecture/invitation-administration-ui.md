@@ -192,3 +192,26 @@ restricted schema-110 PostgreSQL and a separate discovery Worker with email
 sending disabled. It does not prove current retained images, provider delivery or
 full two-client event delivery. Temporary API/web/Worker containers were removed
 after the terminal run, preserving the original services, images and volumes.
+
+
+## Production Organization administration verification
+
+Both unchanged desktop/phone Organization administration cases pass in the same
+complete eight-case invocation as the six corrected history expiry cases (four
+minutes total). Actual first creation commits while its reply is dropped; reload
+and explicit retry use the identical key/body and preserve one pending invitation.
+A separate owner session changes Honolulu to Tokyo before retry and then UTC;
+the displayed real expiry recovers without replacing the acknowledgment, issuing
+another command or stealing focus from Create another invitation.
+
+Actual recipient acceptance is observed as an Organization-member-added stream
+source, followed by a protected scope refresh. The historical acknowledgment
+remains and Retry stays disabled. A new Portal invitation uses a different key
+and the OWNER role, and actual Portal acceptance leaves the existing internal
+membership unchanged. This is native Production-mode proof with a separate
+metadata discovery Worker and real restricted PostgreSQL; provider sending is
+disabled and strict verified-account policy/current immutable images are separate
+requirements. No administration test or product source changed for these cases.
+See [Production expiry admission](../invitation-history.md#production-expiry-consent-admission)
+for the reproduced expiry fixture race and correction. Full PRD-wide release
+acceptance still prevents closure.
