@@ -140,3 +140,19 @@ exact-image CI remains pending. This document does not close ARCH-02: its full
 dependency, functional, accessibility, observability and definition-of-done audit
 still must be satisfied. Unimplemented product domains are not represented as
 completed merely because their module convention is defined here.
+
+
+## Contrast during disabled-to-enabled control transitions
+
+The shared MUI theme preserves floating-label movement and shadow/border motion
+while applying interactive label and button colors immediately. This prevents
+brief unreadable colors when an acknowledged registration re-enables its form.
+The palette, disabled styling, focus/ripple and command guards are unchanged.
+A rendered transition regression fails before the fix; all thirteen theme/auth
+source cases, typechecking, targeted lint and production build pass afterward.
+Both unchanged strict-policy desktop/phone Worker-backed verification/recovery
+cases pass together, including twenty Axe/overflow checks. See
+[executed contrast repair](identity-email.md#enabled-control-contrast-after-registration)
+for the terminal immutable failure, measured contrast, real local mail evidence
+and limits. Current immutable release/full architecture acceptance remains
+required; estimated ARCH-02 work remaining stays **39%** (planning estimate).

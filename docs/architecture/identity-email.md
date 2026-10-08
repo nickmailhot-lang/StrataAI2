@@ -152,3 +152,37 @@ bundle and never select a Production provider. This local source-runtime result
 does not establish current retained image identity, actual external inbox
 deliverability or complete PRD/architecture acceptance. Estimated PRD-02 work
 remaining is **17%**, a planning estimate; the issue stays open.
+
+
+## Enabled-control contrast after registration
+
+Immutable run 37705897306 completed with failure in the Worker-backed accessible
+identity browser step: one case failed and one passed. The registration-confirmed
+scan observed interpolated enabled label colors at 4.47:1 and enabled white button
+text on a transitional background at 2.31:1, below the scanner's 4.5:1 requirement.
+The first enabled frames still inherited colors from the exempt disabled state.
+This was a rendered accessibility defect, not a reason to delay or omit Axe.
+
+The MUI theme now applies label/button text and background colors immediately.
+Floating label transform/max-width and button shadow/border transitions remain;
+actual disabled styling, submission guards, focus/ripple and palette remain.
+A rendered disabled-to-enabled theme regression fails before the fix and passes
+afterward. All thirteen theme/authentication cases pass, along with web types,
+targeted lint and production build; the existing bundle-size advisory remains.
+
+Both unchanged desktop/phone identity-mail scenarios pass together in 3.3 minutes
+with the new frozen web bundle, Production API, restricted schema-110 PostgreSQL,
+strict verified-email policy and a separate real mail Worker. An isolated local
+provider records four fixture delivery effects, all with at least two attempts
+following accepted-effect/lost-reply simulation. The actual Worker-delivered
+verification/reset proofs are consumed through keyboard workflows; first real
+successful command replies are dropped and identical original keys/bodies recover
+them. Twenty WCAG/overflow scans remain, including registration confirmation and
+both unknown-acknowledgment states. No scenario, scanner rule, rate limit, wait or
+command assertion was weakened. No external email was sent.
+
+Temporary API/web/Worker and the owned provider were retired after terminal tests.
+Original services, images and volumes are preserved. Mounted compiled local
+outputs do not establish current retained-image identity or complete ticket
+acceptance; the new immutable CI remains required. PRD-02 stays open with **17%**
+estimated work remaining (planning estimate).

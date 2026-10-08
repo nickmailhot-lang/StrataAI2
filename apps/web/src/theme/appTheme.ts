@@ -48,6 +48,22 @@ export const appTheme = createTheme({
         },
       },
     },
+    MuiInputLabel: {
+      styleOverrides: {
+        // Interpolating disabled color after admission briefly leaves an active
+        // field label below readable contrast. Keep the floating-label motion.
+        root: ({ theme }) => ({ transition: theme.transitions.create(['transform', 'max-width'], {
+          duration: theme.transitions.duration.shorter, easing: theme.transitions.easing.easeOut,
+        }) }),
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        // Enabled text/background colors must become readable together. Preserve
+        // shadow/border animation without tweening exempt disabled-state colors.
+        root: ({ theme }) => ({ transition: theme.transitions.create(['box-shadow', 'border-color']) }),
+      },
+    },
     MuiAvatar: {
       styleOverrides: {
         colorDefault: ({ theme }) => ({

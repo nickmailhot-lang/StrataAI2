@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import { CssBaseline, TextField, ThemeProvider } from '@mui/material';
+import { Button, CssBaseline, TextField, ThemeProvider } from '@mui/material';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { appTheme } from './appTheme';
 
@@ -33,4 +33,22 @@ it('keeps shared autofill rules across field mount/unmount and preserves filled-
   expect(autofillRules()).toEqual(shared);
   rerender(fields(2));
   expect(autofillRules()).toEqual(shared);
+});
+
+
+it('applies interactive label and button colors without interpolating disabled colors', () => {
+  const controls = (disabled: boolean) => <ThemeProvider theme={appTheme}><CssBaseline />
+    <TextField label="Account email" disabled={disabled} />
+    <Button variant="contained" disabled={disabled}>Submit account</Button>
+  </ThemeProvider>;
+  const { rerender } = render(controls(true));
+  rerender(controls(false));
+  const input = screen.getByRole('textbox', { name: 'Account email' });
+  const label = document.querySelector(`label[for="${input.id}"]`)!;
+  const button = screen.getByRole('button', { name: 'Submit account' });
+  expect(input).toBeEnabled(); expect(button).toBeEnabled();
+  expect(getComputedStyle(label).transition).toContain('transform');
+  expect(getComputedStyle(label).transition).not.toMatch(/(?:^|[, ])(?:color|all) /);
+  expect(getComputedStyle(button).transition).toContain('box-shadow');
+  expect(getComputedStyle(button).transition).not.toMatch(/(?:^|[, ])(?:background-color|color|all) /);
 });

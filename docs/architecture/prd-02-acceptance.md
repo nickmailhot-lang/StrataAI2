@@ -660,3 +660,23 @@ persistence and do not replace restricted PostgreSQL or release-image evidence.
 
 Estimated PRD-02 work remaining stays **18%**. Current full release acceptance,
 mail delivery and PRD-wide audit remain outstanding; the ticket stays open.
+
+
+## Strict verified-email accessibility transition verification
+
+Confirmed immutable run 37705897306 failed its native mail/recovery accessibility
+step on enabled control colors during the registration state transition. MUI now
+applies label/button colors without interpolating disabled colors, retaining label
+movement and shadow/border animation. The rendered regression fails before the
+fix; thirteen theme/auth cases, web types, targeted lint and production build pass.
+Both unchanged desktop/phone native cases pass in one 3.3-minute invocation with
+strict verified-email policy, actual restricted PostgreSQL, separate real mail
+Worker and isolated provider. Four delivery effects all receive receipt retries;
+actual proof consumption, lost successful replies, exact original key/body
+recovery and twenty WCAG/overflow scans remain. See
+[contrast and mail evidence](identity-email.md#enabled-control-contrast-after-registration)
+for the specific measured failure, runtime scope and limitations.
+
+Estimated PRD-02 work remaining stays **17%** (planning estimate). Local compiled
+runtime verification is distinct from current retained images, actual external
+inbox delivery and full PRD-wide acceptance; the ticket remains open.
