@@ -1,5 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { pressAdmittedAction } from './keyboardAdmission';
+import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const width of [1280, 390]) {
   test(`PRD-03-TC-01/03/11/12: confirmed departure preserves sole-owner continuity at ${width}px`, async ({ page, context, browser }) => {
@@ -10,11 +12,14 @@ for (const width of [1280, 390]) {
     expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
     const created = await context.request.post('/organizations', { headers, data: { name: 'Departure Organization' } });
     expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+    const actor = (await (await context.request.get('/me')).json()).id;
+    const home = trackInvitationAdmission(page, org, actor, undefined, `/app/${org}`, `/organizations/${org}`);
     await page.goto(`/app/${org}`);
-    await page.getByRole('link', { name: 'Leave Organization', exact: true }).focus(); await page.keyboard.press('Enter');
-    await page.getByRole('button', { name: 'Review departure' }).focus(); await page.keyboard.press('Enter');
+    await expect.poll(home.ready, { timeout: 30_000 }).toBe(true);
+    await pressAdmittedAction(page.getByRole('link', { name: 'Leave Organization', exact: true }));
+    await pressAdmittedAction(page.getByRole('button', { name: 'Review departure' }));
     await expect(page.getByRole('button', { name: 'Cancel departure' })).toBeFocused();
-    await page.getByRole('button', { name: 'Confirm departure' }).focus(); await page.keyboard.press('Enter');
+    await pressAdmittedAction(page.getByRole('button', { name: 'Confirm departure' }));
     await expect(page.getByText('The last usable owner cannot leave. Another usable owner must remain.')).toBeVisible();
     expect((await context.request.get(`/organizations/${org}`)).status()).toBe(200);
     const member = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
@@ -30,12 +35,12 @@ for (const width of [1280, 390]) {
       const departure = await member.newPage(); await departure.goto(`/app/${org}/leave`);
       let writes = 0;
       departure.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === `/organizations/${org}/leave`) writes++; });
-      await departure.getByRole('button', { name: 'Review departure' }).focus(); await departure.keyboard.press('Enter');
+      await pressAdmittedAction(departure.getByRole('button', { name: 'Review departure' }));
       await expect(departure.getByRole('button', { name: 'Cancel departure' })).toBeFocused();
       expect((await new AxeBuilder({ page: departure }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await departure.keyboard.press('Enter'); await expect(departure.getByRole('dialog')).toHaveCount(0); expect(writes).toBe(0);
-      await departure.getByRole('button', { name: 'Review departure' }).focus(); await departure.keyboard.press('Enter');
-      await departure.getByRole('button', { name: 'Confirm departure' }).focus(); await departure.keyboard.press('Enter');
+      await pressAdmittedAction(departure.getByRole('button', { name: 'Review departure' }));
+      await pressAdmittedAction(departure.getByRole('button', { name: 'Confirm departure' }));
       await expect(departure.getByText('You left the Organization.')).toBeVisible(); expect(writes).toBe(1);
       expect((await member.request.get(`/organizations/${org}`)).status()).toBe(404);
       const directory = await context.request.get(`/organizations/${org}/members`); expect(directory.status()).toBe(200);
@@ -61,22 +66,22 @@ for (const width of [1280, 390]) {
         if (failAfterProfile) { failAfterProfile = false; failProfile = true; }
         if (keys.length === 1) await route.abort('timedout'); else await route.fulfill({ response });
       });
-      await departure.getByRole('button', { name: 'Review departure' }).focus(); await departure.keyboard.press('Enter');
-      await departure.getByRole('button', { name: 'Confirm departure' }).focus(); await departure.keyboard.press('Enter');
+      await pressAdmittedAction(departure.getByRole('button', { name: 'Review departure' }));
+      await pressAdmittedAction(departure.getByRole('button', { name: 'Confirm departure' }));
       await expect(departure.getByText(/Your departure could not be confirmed/)).toBeVisible();
       await expect(departure.getByRole('button', { name: 'Review current membership' })).toBeDisabled();
       await rejoin();
       const beforeReplay = await context.request.get(`/organizations/${org}/members`); expect(beforeReplay.status()).toBe(200);
       const restored = (await beforeReplay.json()).items.find((item: { userId: string }) => item.userId === user);
       expect(restored).toBeDefined();
-      await departure.getByRole('button', { name: 'Retry original departure' }).focus(); await departure.keyboard.press('Enter');
+      await pressAdmittedAction(departure.getByRole('button', { name: 'Retry original departure' }));
       await expect(departure.getByText('Original departure acknowledged. Review current membership to check later access.')).toBeVisible();
       expect(keys).toHaveLength(2); expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
       expect(keys[1]).toBe(keys[0]); expect(bodies[1]).toBe(bodies[0]);
       const afterReplay = await context.request.get(`/organizations/${org}/members`); expect(afterReplay.status()).toBe(200);
       expect((await afterReplay.json()).items.find((item: { userId: string }) => item.userId === user)).toEqual(restored);
       expect((await member.request.get(`/organizations/${org}`)).status()).toBe(200);
-      await departure.getByRole('button', { name: 'Review current membership' }).focus(); await departure.keyboard.press('Enter');
+      await pressAdmittedAction(departure.getByRole('button', { name: 'Review current membership' }));
       await expect(departure.getByRole('button', { name: 'Review departure' })).toBeEnabled();
       expect(keys).toHaveLength(2);
       // A failed account check before submission must leave no invented intent
@@ -100,7 +105,7 @@ for (const width of [1280, 390]) {
       const laterDirectory = await context.request.get(`/organizations/${org}/members`); expect(laterDirectory.status()).toBe(200);
       const laterMembership = (await laterDirectory.json()).items.find((item: { userId: string }) => item.userId === user);
       expect(laterMembership).toBeDefined();
-      await departure.getByRole('button', { name: 'Retry original departure' }).focus(); await departure.keyboard.press('Enter');
+      await pressAdmittedAction(departure.getByRole('button', { name: 'Retry original departure' }));
       await expect(departure.getByText('Original departure acknowledged. Review current membership to check later access.')).toBeVisible();
       expect(keys).toHaveLength(4); expect(keys[3]).toBe(keys[2]); expect(keys[2]).not.toBe(keys[0]); expect(bodies[3]).toBe(bodies[2]);
       const retained = await context.request.get(`/organizations/${org}/members`); expect(retained.status()).toBe(200);

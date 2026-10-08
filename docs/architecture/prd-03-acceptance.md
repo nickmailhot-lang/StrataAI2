@@ -541,3 +541,18 @@ without weakening denial assertions. See
 [surface evidence](web-spa-boundary.md#current-surface-admission-and-watch-keyboard-execution).
 Estimated PRD-03 work remaining stays **8%** (planning estimate). Current immutable
 CI, complete lifecycle purge/retention and full-PRD acceptance still prevent closure.
+
+## Automatic metadata delivery and admitted Organization keyboard execution
+
+The full native browser phase now enables and verifies real automatic Organization
+metadata delivery after the earlier isolated transaction fixtures. Final native
+execution passes all six desktop/phone settings, invitation administration and
+departure scenarios together. Settings retain real versions two/four and protected
+reads after their source frames. Invitation and departure controls require current
+stream/read and keyboard admission while preserving original retry, later-access,
+Portal separation, focus and accessibility assertions. The disabled-routing baseline
+and partial phone-focus failure are retained in the
+[CI evidence](browser-recovery-ci.md#automatic-organization-metadata-routing-in-native-browser-acceptance).
+
+Estimated PRD-03 work remaining stays **8%** (planning estimate). Current immutable
+CI, complete lifecycle purge/retention and full-PRD acceptance still prevent closure.

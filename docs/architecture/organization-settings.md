@@ -192,3 +192,15 @@ pass/one late-review failure. The final two-case run verifies both settings case
 with the warning fix and event/read readiness together. The local runtime uses
 explicitly unverified-account browser policy and disabled provider sending.
 Current retained-image/full-PRD acceptance is still required.
+
+## Native browser phase automatic metadata routing
+
+Both existing desktop/phone settings cases fail at actual source/read settlement
+when the release fixture leaves metadata discovery disabled. Both pass unchanged
+with automatic discovery enabled, including versions two/four, committed lost
+response, exact original key/body/version retry, later saved state, draft discard,
+reload and WCAG checks. The final six-case Organization invocation also passes.
+The phase now enables, persists and verifies the real Worker flag; product settings
+behavior and interaction deadlines are unchanged. See the
+[routing and invocation evidence](browser-recovery-ci.md#automatic-organization-metadata-routing-in-native-browser-acceptance)
+for baseline/partial failures and local-versus-immutable verification limits.

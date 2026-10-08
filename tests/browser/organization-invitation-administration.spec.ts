@@ -1,4 +1,6 @@
 import { expect, test } from './releaseTest';
+import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
+import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-03/60: keyboard invitation creation survives reload and separates Portal grants at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -33,14 +35,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
           }
         });
       });
-      await page.goto(`/app/${org}/members`);
-      await page.getByRole('link', { name: 'Create Organization invitation' }).focus(); await page.keyboard.press('Enter');
-      await expect(page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
-      await page.getByLabel(/^Invitation email/).fill(email);
-      await page.getByRole('combobox', { name: 'Invitation role' }).focus(); await page.keyboard.press('ArrowDown');
-      await page.getByRole('option', { name: 'Admin', exact: true }).focus(); await page.keyboard.press('Enter');
-      const writes: { key: string | undefined; input: unknown }[] = [];
       const reviewedActor = (await (await context.request.get('/me')).json()).id;
+      const creation = trackInvitationAdmission(page, org, reviewedActor, undefined, `/app/${org}/invite`);
+      await page.goto(`/app/${org}/members`);
+      await pressAdmittedAction(page.getByRole('link', { name: 'Create Organization invitation' }));
+      await expect(page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
+      await expect.poll(creation.ready, { timeout: 30_000 }).toBe(true);
+      await page.getByLabel(/^Invitation email/).fill(email);
+      const roleChoice = page.getByRole('combobox', { name: 'Invitation role' }); await focusAdmittedControl(roleChoice); await roleChoice.press('ArrowDown');
+      await pressAdmittedAction(page.getByRole('option', { name: 'Admin', exact: true }));
+      const writes: { key: string | undefined; input: unknown }[] = [];
       await page.route(url => url.pathname === `/organizations/${org}/invitations`, async route => {
         if (route.request().method() !== 'POST') { await route.continue(); return; }
         expect(new URL(route.request().url()).searchParams.get('expectedActorId')).toBe(reviewedActor);
@@ -53,13 +57,15 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         }
         else await route.continue();
       });
-      await page.getByRole('button', { name: 'Create invitation', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Create invitation', exact: true }));
       await expect(page.getByText(/invitation could not be confirmed|prior invitation request is awaiting acknowledgment/)).toBeVisible();
       expect(writes).toHaveLength(1); await expect(page.getByLabel(/^Invitation email/)).toBeDisabled();
+      const beforeReload = creation.heads();
       await page.reload(); await expect(page.getByText(/prior invitation request is awaiting acknowledgment/)).toBeVisible();
       await expect(page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
+      await expect.poll(() => creation.heads() > beforeReload && creation.ready(), { timeout: 30_000 }).toBe(true);
       await expect(page.getByLabel(/^Invitation email/)).toHaveValue(email);
-      await page.getByRole('button', { name: 'Retry same invitation' }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Retry same invitation' }));
       await expect(page.getByText('Invitation creation acknowledged.')).toBeVisible(); await expect(page.getByText(/Email delivery is not confirmed here/)).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[0]).toEqual(writes[1]); expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
       expect(writes[0].input).toEqual({ email, surface: 'INTERNAL', targetRole: 'ADMIN' });
@@ -69,7 +75,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         timeZone: 'Asia/Tokyo', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
       }).format(new Date(instant))}`, createdHistory[0].expiresAt);
       await expect(page.getByText(expiryCaption, { exact: true })).toBeVisible();
-      await page.getByRole('button', { name: 'Create another invitation', exact: true }).focus();
+      await focusAdmittedControl(page.getByRole('button', { name: 'Create another invitation', exact: true }));
       const afterRetryProfile = await (await preferences.request.get('/me')).json();
       expect((await preferences.request.patch('/me', { headers, data: { timezone: 'UTC', version: afterRetryProfile.version } })).status()).toBe(200);
       const recoveredCaption = await page.evaluate(instant => `Expires: ${new Intl.DateTimeFormat('en-US', {
@@ -91,12 +97,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByText('Invitation creation acknowledged.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Retry same invitation' })).toBeDisabled();
       expect(writes).toHaveLength(2);
-      await page.getByRole('button', { name: 'Create another invitation' }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Create another invitation' }));
       await page.getByLabel(/^Invitation email/).fill(email);
-      await page.getByRole('combobox', { name: 'Access surface' }).focus(); await page.keyboard.press('ArrowDown');
-      await page.getByRole('option', { name: 'Owner Portal', exact: true }).focus(); await page.keyboard.press('Enter');
+      const choice = page.getByRole('combobox', { name: 'Access surface' }); await focusAdmittedControl(choice); await choice.press('ArrowDown');
+      await pressAdmittedAction(page.getByRole('option', { name: 'Owner Portal', exact: true }));
       await expect(page.getByRole('combobox', { name: 'Invitation role' })).toHaveText('Owner');
-      await page.getByRole('button', { name: 'Create invitation', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Create invitation', exact: true }));
       await expect(page.getByText('Invitation creation acknowledged.')).toBeVisible(); expect(writes).toHaveLength(3);
       expect(writes[2].key).not.toBe(writes[0].key); expect(writes[2].input).toEqual({ email, surface: 'PORTAL', targetRole: 'OWNER' });
       const portalPending = await recipient.request.get('/me/invitations'); expect(portalPending.status()).toBe(200);

@@ -182,3 +182,17 @@ This closes a local execution gap, not retained-current-image or complete PRD
 acceptance. Current release CI, strict-policy ownership, server transaction and
 remaining lifecycle requirements still need their own evidence. Estimated PRD-03
 work remaining is **9%**, a planning estimate; the ticket stays open.
+
+## Departure navigation after real Home admission
+
+The retained phone trace stays on Organization Home after its link keypress;
+the subsequent departure control never appears. The fixture now observes the real
+actor/Organization metadata head and a successful Home read started after it,
+then admits enabled focused controls before one keypress. Both widths pass in the
+final six-case native invocation. Sole-owner refusal, cancellation/no-write,
+actual membership removal, lost-response original-key recovery after rejoin,
+pre/post-command profile uncertainty, preserved later membership and focus/WCAG
+assertions remain. See the
+[complete execution scope](browser-recovery-ci.md#automatic-organization-metadata-routing-in-native-browser-acceptance).
+Estimated PRD-03 work remaining stays **8%** (planning estimate); full release and
+lifecycle acceptance remain required before closure.

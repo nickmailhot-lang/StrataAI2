@@ -838,17 +838,20 @@ jobs:
         # production abuse limits enabled and preserve the PostgreSQL data.
         run: STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL=false docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 api web
 
-      - name: Enable automatic invitation authority routing for native browser acceptance
+      - name: Enable automatic Organization metadata and invitation authority routing for native browser acceptance
         env:
+          STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED: 'true'
           STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED: 'true'
           STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED: 'true'
         run: |
           set -euo pipefail
-          # Native nonmember/Portal scenarios require the actual automatic
-          # recipient/issuer loops. Persist this phase's flags so scoped browser
-          # Workers restore the same routing after each isolated scenario.
-          printf '%s\n' 'STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=true' 'STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED=true' >> "$GITHUB_ENV"
+          # Organization settings/membership and nonmember/Portal scenarios
+          # require actual metadata and recipient/issuer loops. Persist this
+          # phase's flags so scoped browser Workers restore the same routing
+          # after each isolated scenario.
+          printf '%s\n' 'STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true' 'STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=true' 'STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED=true' >> "$GITHUB_ENV"
           docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED)" = true
           test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED)" = true
           test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED)" = true
 

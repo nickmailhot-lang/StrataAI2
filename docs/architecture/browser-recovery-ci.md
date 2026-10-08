@@ -437,3 +437,41 @@ preserved. This is local optional-verification Production/restricted PostgreSQL
 proof. Twelve other retained failure cases remain without a local repair in this
 audit; the original seventeen-failure release run remains failed. Full current
 immutable-image execution still governs acceptance and issue closure.
+
+## Automatic Organization metadata routing in native browser acceptance
+
+The retained release phase enabled recipient/issuer invitation discovery while
+leaving Organization metadata discovery disabled from the earlier transaction
+fixtures. The metadata delivery script correctly restores that earlier isolation;
+the full browser phase must enable its own automatic metadata routing. It now
+sets and persists `STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=true`, recreates
+the same retained Worker image and asserts its effective flag. Scoped browser
+Workers inherit the phase through `GITHUB_ENV`; earlier isolation stays intact.
+
+An isolated native baseline with metadata disabled and invitation authority
+discovery enabled had two passes/four failures in 4.6 minutes. Both settings
+cases failed at version/read settlement; invitation administration failed once
+at member-added delivery and once at preference focus. Enabling actual automatic
+metadata delivery, with no explicit Organization scopes, produced five passes
+and one phone preference-focus failure in 3.4 minutes. Both settings tests were
+unchanged. The phone trace shows the acknowledgment action disabled when focus
+was attempted. The retained departure trace separately shows the link keypress
+staying on Organization Home before waiting for a missing departure control.
+
+Invitation composition/reload and departure navigation now require the real
+actor/scope-bound stream head and a successful protected read started after it.
+Enabled focus admits one keyboard action; the preference test establishes that
+focus before changing the profile and still requires its preservation afterward.
+The final invocation passes all six desktop/phone settings, invitation and
+departure cases together in 3.3 minutes. Settings assertions and all original
+mutation counts, version/key/body retries, later membership preservation, Portal
+separation, actual source delivery, focus, reload and accessibility checks remain.
+Browser TypeScript, eleven observer regressions and routing shell syntax pass.
+
+This is current compiled Production API/MUI, separate real Worker, Nginx and
+restricted PostgreSQL schema-112 evidence, with the optional-verification browser
+policy and disabled mail providers. Owned containers/database are removed and the
+three original services/data preserved. Five more retained failures are addressed
+locally; seven other retained failures still need repair/verification. The original
+release run remains failed. Full current immutable CI and release-bundle acceptance
+remain mandatory; this local invocation does not close PRD-03, PRD-60 or ARCH-11.

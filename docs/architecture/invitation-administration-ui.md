@@ -233,3 +233,21 @@ Production API/MUI, restricted PostgreSQL and scoped Worker evidence uses the
 full-browser phase's optional verification policy; strict/provider and full current
 immutable acceptance remain separate. PRD-05 stays open at **15%**, and PRD-60 at
 **18% estimated work remaining** (planning estimates).
+
+## Organization invitation admission with automatic metadata delivery
+
+The browser release phase now enables actual automatic Organization metadata
+routing. Composition and reload require a matching actor/Organization Watch head
+and protected membership read after it. Enabled focus precedes each keyboard
+activation and the deliberate preference change. The intermediate phone trace
+shows focus attempted on a disabled acknowledgment action; the final test still
+requires focus preservation after the actual preference update.
+
+Both widths pass in the final six-case native invocation, retaining committed
+lost-response creation, identical original key/body across reload, canonical
+single invitation, actual member-added frame/protected refresh, exact expiry
+formatting, no extra writes and separately accepted Portal access with internal
+membership unchanged. See the
+[baseline, final execution and release limits](browser-recovery-ci.md#automatic-organization-metadata-routing-in-native-browser-acceptance).
+PRD-03 stays open at **8%**, and PRD-60 at **18% estimated work remaining**
+(planning estimates). Current immutable CI and full acceptance remain required.
