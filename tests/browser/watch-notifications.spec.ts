@@ -29,6 +29,7 @@ test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List m
     expect(invitation.status()).toBe(201);
     expect((await peer.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
     const issuer = (await (await peer.request.get('/me')).json()).id;
+    const recipient = (await (await context.request.get('/me')).json()).id;
     const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Overlapping watches', visibility: 'PRIVATE' } });
     expect(boardReply.status()).toBe(201); const board = (await boardReply.json()).id;
     expect((await context.request.patch(`/boards/${board}/members/${issuer}`, { headers, data: { role: 'MEMBER' } })).status()).toBe(200);
@@ -58,8 +59,34 @@ test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List m
     await waitForBoardDelivery(context.request, board);
     phone = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, storageState: await context.storageState() });
     const mobile = await phone.newPage();
+    const privateLive = [page, mobile].map(client => {
+      const observed = { snapshots: 0, frames: [] as string[], events: new Map<string, { eventId: string; eventType: string }>() };
+      client.on('websocket', socket => {
+        if (new URL(socket.url()).pathname !== '/notifications/live') return;
+        socket.on('framereceived', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const text of frame.payload.split('\u001e').filter(Boolean)) {
+            const message = JSON.parse(text); if (message.type !== 2 || !message.item) continue;
+            const item = message.item;
+            expect(item.organizationId).toBe(org); expect(item.recipientId).toBe(recipient); observed.snapshots++;
+            for (const event of item.events) {
+              expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(recipient);
+              expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
+              const canonical = { eventId: event.eventId, eventType: event.eventType };
+              if (observed.events.has(event.eventId)) expect(observed.events.get(event.eventId)).toEqual(canonical);
+              observed.events.set(event.eventId, canonical); observed.frames.push(event.eventType);
+            }
+          }
+        });
+      });
+      return observed;
+    });
     await page.goto(`/app/${org}/notifications`); await mobile.goto(`/app/${org}/notifications`);
-    for (const client of [page, mobile]) await expect(client.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+    for (const [index, client] of [page, mobile].entries()) {
+      await expect(client.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+      await expect.poll(() => privateLive[index].snapshots).toBeGreaterThan(0);
+      expect(privateLive[index].events.size).toBe(0);
+    }
     const editor = await peer.newPage(); const reads = trackBoardReads(editor, board, `${path}/cards/${card}`); const revision = trackCardVersion(editor, board, card, `${path}/cards/${card}`);
     await editor.goto(`${path}/cards/${card}`);
     await expect.poll(() => reads(), { timeout: 20_000 }).toBeGreaterThanOrEqual(2);
@@ -78,6 +105,9 @@ test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List m
     }
     await activate(mobile.getByRole('button', { name: 'Mark read', exact: true }));
     for (const client of [page, mobile]) await expect(client.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    for (const observed of privateLive) {
+      await expect.poll(() => [...observed.events.values()].map(event => event.eventType)).toEqual(['NOTIFICATION_CREATED', 'NOTIFICATION_READ']);
+    }
     expect((await context.request.patch(`/cards/${card}`, { headers, data: { title: 'Recipient own action', description: '', version: 2 } })).status()).toBe(200);
     for (const [kind, id] of [['BOARD', board], ['LIST', list], ['CARD', card]]) {
       expect((await context.request.delete(`/watch/${kind}/${id}?version=1`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: {} })).status()).toBe(200);
@@ -99,7 +129,9 @@ test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List m
     await activate(listWatch.getByRole('button', { name: 'Watch List', exact: true }));
     await expect(listWatch.getByText('You are watching this List.', { exact: true })).toBeVisible();
     await activate(listWatch.getByRole('button', { name: 'Done watching', exact: true }));
+    const priorSnapshots = privateLive[0].snapshots;
     await page.goto(`/app/${org}/notifications`);
+    await expect.poll(() => privateLive[0].snapshots).toBeGreaterThan(priorSnapshots);
     const watchedCreation = await peer.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Created within watched List' } });
     expect(watchedCreation.status()).toBe(201); const newlyWatched = (await watchedCreation.json()).id;
     const unwatchedCreation = await peer.request.post(`/lists/${destination}/cards`, { headers, data: { title: 'Created outside watched List' } });
@@ -125,6 +157,15 @@ test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List m
       await expect(client.getByText('Card moved · Unread', { exact: true })).toBeVisible();
       expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     }
+    const journalReply = await context.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(journalReply.status()).toBe(200);
+    const journal = (await journalReply.json()).events;
+    expect(journal.map((event: { eventType: string }) => event.eventType)).toEqual(['NOTIFICATION_CREATED', 'NOTIFICATION_READ', 'NOTIFICATION_CREATED', 'NOTIFICATION_CREATED']);
+    for (const observed of privateLive) {
+      await expect.poll(() => [...observed.events.keys()]).toEqual(journal.map((event: { eventId: string }) => event.eventId));
+    }
+    // The phone stays subscribed while desktop navigates to the Board and
+    // recovers its canonical history on returning to the inbox.
+    expect(privateLive[1].frames).toEqual(['NOTIFICATION_CREATED', 'NOTIFICATION_READ', 'NOTIFICATION_CREATED', 'NOTIFICATION_CREATED']);
     expect((await (await peer.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
   } finally { restoreWorker(); await phone?.close(); await peer.close(); }
 });

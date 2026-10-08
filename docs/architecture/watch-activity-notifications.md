@@ -347,3 +347,15 @@ the earlier fixture timeout without repeating mutations or extending deadlines.
 These are local compiled results with optional verification. Current immutable
 images, cross-Board/concurrent transitions, capacity and complete PRD acceptance
 remain. PRD-17 stays open at **20% estimated work remaining** (planning estimate).
+
+## Executed private transport for current-List boundaries
+
+The [private watched-List frame invocation](prd-17-acceptance.md#executed-private-live-watched-list-identities)
+passes the complete existing native case with actual recipient-private snapshots
+and events on desktop and phone. Canonical creation/read/watched-creation/move-in
+identities match the persisted journal. The continuously subscribed phone sees
+exactly four frames; desktop recovery keeps canonical identity across navigation.
+Waiting for real private-feed readmission before the next command repairs an
+initial observation race without changing producer behavior or effect counts.
+Current immutable-image, strict-policy, cross-Board/concurrent/capacity and full
+PRD acceptance remain. PRD-17 stays open at **20% estimated work remaining**.

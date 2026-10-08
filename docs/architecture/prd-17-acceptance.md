@@ -299,3 +299,39 @@ inspect these movement notification WebSocket frames, prove cross-Board or
 concurrent transitions, strict policy, capacity or current retained-image/full
 Definition of Done acceptance. Estimated PRD-17 work remaining is now **20%**
 (planning estimate); the issue remains open.
+
+## Executed private live watched-List identities
+
+The complete native watch case passes again on 2026-10-08 (1 passed,
+54.6 seconds, exit 0), now with actual desktop and phone SignalR frame
+observation. Both inboxes receive an empty private snapshot before the first
+peer edit. Creation/read delivery is observed before self-suppression/unwatch
+checks. Desktop later navigates to the Board to resubscribe only the List and
+returns; the fixture waits for its newly admitted private snapshot before
+triggering the watched creation/movement commands. Phone stays subscribed.
+
+Every observed snapshot/event matches the Organization and recipient;
+Notification event metadata is empty. Both consumers' canonical event IDs match
+the complete persisted journal in order: creation, read, watched creation,
+move-in creation. The continuously subscribed phone receives exactly those
+four frames. Desktop history is deduplicated by event identity across its
+explicit navigation/recovery; repeated observed IDs must retain their type.
+The original exact inbox totals, actor/type/link attribution, unwatched creation,
+move-out/outside-edit suppression, self-suppression and Axe checks still pass.
+
+The first added-frame invocation passed native inbox/journal assertions but
+missed one desktop creation frame after returning to the inbox. HTTP recovery
+can establish current rows before its private feed is admitted. Waiting for the
+new actual snapshot before the triggering command yields the subsequent full
+pass without relaxing event identities/counts or repeating mutations. Failed
+trace evidence remains retained and is not acceptance.
+
+The compiled-runtime topology, optional fixture verification and current-image
+limitations match the preceding List-boundary record. All owned containers and
+cloned database were removed; original services/data remain. Browser typechecking,
+documentation links and staged diff checks pass. This supersedes the prior lack
+of independent watched-List notification frame proof and strengthens
+NOTIFY-FR-006/008/012 and AC-NOTIFY-17-03. Current immutable images, strict policy,
+cross-Board/concurrent transitions, capacity, remaining producers and full
+Definition of Done still govern closure. Estimated PRD-17 work remaining stays
+**20%** (planning estimate); the issue remains open.
