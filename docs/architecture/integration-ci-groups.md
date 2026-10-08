@@ -58,3 +58,10 @@ expanded guard suite); the strengthened verifier rejects all four (56/56 pass).
 Workflow syntax validation also passes. See the
 [PRD-17 acceptance map](prd-17-acceptance.md#strict-notification-center-and-durable-read-recovery)
 for executed native scope and remaining release requirements.
+
+The strict watch phase also includes the full Board/List/Card personal-control
+scenario alongside both existing producer files. Both strict account fixture
+flags and API/Worker policy checks are required by the workflow verifier. Three
+new omission mutations establish fail-before/pass-after guard coverage (59/59
+checks pass after repair). See the
+[native watch-control scope](prd-17-acceptance.md#strict-personal-watch-controls-and-native-stored-clocks).

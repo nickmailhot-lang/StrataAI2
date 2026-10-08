@@ -924,3 +924,35 @@ includes this consumer and retains all eight producer cases. Scenario timeout,
 rate budgets, native gestures and retry policy are unchanged. Owned fixtures are
 removed; provider delivery and current immutable/full CI acceptance remain
 separate. PRD-17 stays open at **15% estimated work remaining**.
+
+## Strict personal-watch controls and native stored clocks
+
+The desktop/phone Board/List/Card watch-control scenario now uses the same
+strict notification account fixture. Its untouched baseline fails at immediate
+login (expected 200 / actual 403); the repaired complete scenario passes with
+verified-email enforcement in the actual compiled Production API and separate
+Worker, rebuilt current MUI assets and restricted schema-114 PostgreSQL
+17/pgvector. Only the freshly registered disposable account is activated by the
+fixture; this does not add mail-provider delivery evidence.
+
+Six independent stored-state comparisons cover Board and List watch/unwatch,
+and the direct Card watch after original-key lost-response recovery and after
+actual movement. Scope, owner, subscription identity, watching state, version,
+creation and update clocks match storage at full UTC precision. Unwatch retains
+creation identity/time. The complete authorized Card-watch response stays
+unchanged through List movement. Both views pass Axe with the personal-watch
+dialog open; existing keyboard/focus, phone overflow and current-List archive
+withdrawal assertions remain. No scenario timeout, rate budget, retry or native
+gesture is relaxed. Owned containers and the cloned database are removed.
+
+The existing strict watch producer phase retains both producer files and adds
+this unfiltered personal-control file. It requires both fixture verification
+flags plus API/Worker verified-email policy checks. Three new guard mutations
+expose missing controls, missing account verification and missing Worker checks:
+the previous guard accepts them (56 pass / three fail in the expanded suite),
+while the strengthened guard rejects all three (59/59 pass). Browser TypeScript,
+workflow syntax and the complete four-shard browser coverage pass.
+
+This is scoped native source-runtime evidence. Current immutable/full CI and
+the complete requirement map still govern closure. Estimated PRD-17 work
+remaining stays **15%**.

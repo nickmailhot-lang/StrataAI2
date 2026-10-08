@@ -1,3 +1,6 @@
+import AxeBuilder from '@axe-core/playwright';
+import { registerNotificationAccount } from './notificationAccountFixture';
+import { commandOrderQuery } from './observedBoardCommandOrder';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
@@ -5,8 +8,8 @@ test('PRD-17: desktop and phone recover personal watches for Board, List and mov
   test.setTimeout(180_000); await page.setViewportSize({ width: 1280, height: 844 });
   const headers = { 'X-StrataAI-Request': '1' };
   const account = { email: `watch-browser-${Date.now()}@example.test`, password: 'watch-browser-correct-horse', displayName: 'Watch browser fixture' };
-  expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-  expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+  const registered = await registerNotificationAccount(context.request, account);
+  const user = registered.user.id;
   const organization = await context.request.post('/organizations', { headers, data: { name: 'Keyboard watching' } });
   expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
   const created = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Watched Board', visibility: 'PRIVATE' } });
@@ -21,6 +24,23 @@ test('PRD-17: desktop and phone recover personal watches for Board, List and mov
   const other = await phone.newPage(); let restoreWorker = () => {};
   try {
     restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
+    async function storedWatch(type: string, entity: string, watching: boolean, version: number) {
+      expect(process.env.CI).toBe('true');
+      for (const id of [org, board, user, entity]) expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      const reply = await context.request.get(`/watch/${type}/${entity}`); expect(reply.status()).toBe(200);
+      const state = await reply.json();
+      expect(state).toMatchObject({ organizationId: org, boardId: board, userId: user, entityType: type, entityId: entity, watching, version });
+      expect(state.subscriptionId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      const stored = JSON.parse(commandOrderQuery(`SELECT to_jsonb(w) FROM watch_subscriptions w WHERE tenant_id='${org}' AND id='${state.subscriptionId}';`));
+      expect(stored).toMatchObject({ id: state.subscriptionId, tenant_id: org, user_id: user, entity_type: type, entity_id: entity, watching, version });
+      function utc(value: string) {
+        expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|\+00:00)$/);
+        return value.replace(/\+00:00$/, 'Z').replace(/(\.\d*?)0+Z$/, '$1Z').replace(/\.Z$/, 'Z');
+      }
+      expect(utc(state.createdAt)).toBe(utc(stored.created_at));
+      expect(utc(state.updatedAt)).toBe(utc(stored.updated_at));
+      return state;
+    }
     const path = `/app/${org}/boards/${board}`;
     await page.goto(path); await other.goto(path);
     for (const kind of ['Board', 'List']) {
@@ -36,9 +56,12 @@ test('PRD-17: desktop and phone recover personal watches for Board, List and mov
       await expect(desktop.getByText(`You are watching this ${kind}.`, { exact: true })).toBeVisible();
       await expect(mobile.getByText(`You are watching this ${kind}.`, { exact: true })).toBeVisible({ timeout: 25_000 });
       await expect(desktop.getByRole('button', { name: 'Check current watching' })).toBeFocused();
+      const enabled = await storedWatch(kind.toUpperCase(), kind === 'List' ? list : board, true, 1);
       await mobile.getByRole('button', { name: `Unwatch ${kind}`, exact: true }).focus(); await other.keyboard.press('Enter');
       await expect(mobile.getByText(`You are not watching this ${kind}.`, { exact: true })).toBeVisible();
       await expect(desktop.getByText(`You are not watching this ${kind}.`, { exact: true })).toBeVisible({ timeout: 25_000 });
+      const disabled = await storedWatch(kind.toUpperCase(), kind === 'List' ? list : board, false, 2);
+      expect(disabled.subscriptionId).toBe(enabled.subscriptionId); expect(disabled.createdAt).toBe(enabled.createdAt);
       expect(await other.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await desktop.getByRole('button', { name: 'Done watching' }).focus(); await page.keyboard.press('Enter');
       await mobile.getByRole('button', { name: 'Done watching' }).focus(); await other.keyboard.press('Enter');
@@ -65,9 +88,12 @@ test('PRD-17: desktop and phone recover personal watches for Board, List and mov
     await mobile.getByRole('button', { name: 'Retry same watch change' }).focus(); await other.keyboard.press('Enter');
     await expect(mobile.getByRole('button', { name: 'Retry same watch change' })).toHaveCount(0); expect(writes).toBe(2);
     await expect(page.getByText('You are watching this Card.', { exact: true })).toBeVisible({ timeout: 25_000 });
-    const before = await (await context.request.get(`/watch/CARD/${card}`)).json(); expect(before.version).toBe(1);
+    const before = await storedWatch('CARD', card, true, 1);
     expect((await context.request.post(`/cards/${card}/move`, { headers, data: { destinationListId: destination, expectedVersion: 1 } })).status()).toBe(200);
-    const after = await (await context.request.get(`/watch/CARD/${card}`)).json(); expect(after.subscriptionId).toBe(before.subscriptionId); expect(after.version).toBe(1); expect(after.watching).toBe(true);
+    const after = await storedWatch('CARD', card, true, 1); expect(after).toEqual(before);
+    for (const client of [page, other]) {
+      expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    }
     expect((await context.request.post(`/lists/${destination}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
     await expect(mobile.getByText('Watching is unavailable for this entity.', { exact: true })).toBeVisible({ timeout: 25_000 });
     await expect(page.getByRole('dialog', { name: 'Card watching', exact: true }).getByText('Watching is unavailable for this entity.', { exact: true })).toBeVisible({ timeout: 25_000 });

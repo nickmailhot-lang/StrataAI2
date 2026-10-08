@@ -48,6 +48,14 @@ export function verifyIntegrationSuites(workflow, registry) {
     ...['api', 'worker'].map(host => `test "$(docker compose -f compose.release.yml exec -T ${host} printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true`),
     strictCommand, '',
   ].join('\n'), 'Strict producer and consumer coverage requires verified accounts in both hosts');
+  const strictWatches = job.steps.find(step => step.name === 'Strict verified-account watch producers through native private inboxes');
+  assert.deepEqual(owners(strictWatches), ['browser-notifications']);
+  assert.deepEqual(strictWatches.env, { STRATAAI_E2E_VERIFY_WATCH_ACCOUNTS: '1', STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1', STRATAAI_E2E_RATE_PACING: '1' });
+  assert.equal(strictWatches.run, [
+    'set -euo pipefail',
+    ...['api', 'worker'].map(host => `test "$(docker compose -f compose.release.yml exec -T ${host} printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true`),
+    'npx playwright test tests/browser/watch-cross-board-notifications.spec.ts tests/browser/watch-activity-matrix.spec.ts tests/browser/watch-subscriptions.spec.ts', '',
+  ].join('\n'), 'Strict watch producers and personal controls must retain verified admission in both hosts');
   const browserCoverage = jobs['web-quality'].steps.find(step => step.name === 'Verify complete browser shard coverage');
   assert.equal(browserCoverage?.run, 'node --test tests/browser-shards.test.mjs\nnode scripts/ci/verify-browser-shards.mjs\n');
   assert.equal(browserCoverage.if, undefined);

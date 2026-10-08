@@ -14,6 +14,9 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['strict personal-watch controls omitted', value => { const entry = step(value, 'Strict verified-account watch producers through native private inboxes'); entry.run = entry.run.replace(' tests/browser/watch-subscriptions.spec.ts', ''); }],
+  ['strict personal-watch account fixture disabled', value => { delete step(value, 'Strict verified-account watch producers through native private inboxes').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],
+  ['strict watch Worker policy check omitted', value => { const entry = step(value, 'Strict verified-account watch producers through native private inboxes'); entry.run = entry.run.split('\n').filter(line => !line.includes('exec -T worker printenv')).join('\n'); }],
   ['strict inbox consumer omitted', value => { const entry = step(value, 'Strict verified-account assignment mention and reminder native delivery'); entry.run = entry.run.replace(' tests/browser/notification-center.spec.ts', ''); }],
   ['strict inbox consumer filtered out', value => { const entry = step(value, 'Strict verified-account assignment mention and reminder native delivery'); entry.run = entry.run.replace('|recipient inbox recovers', ''); }],
   ['strict account fixture disabled', value => { delete step(value, 'Strict verified-account assignment mention and reminder native delivery').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],

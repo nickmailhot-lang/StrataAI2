@@ -250,3 +250,17 @@ watch identity/version/clocks and retained private history. Original Card comman
 retry returns its exact original reply without altering the protected graph.
 See [permission ordering acceptance](prd-17-acceptance.md#executed-permission-withdrawal-and-activity-ordering)
 for executed evidence and limitations.
+
+## Strict personal-control acceptance
+
+The complete desktop/phone personal-control scenario now passes with strict
+verified-email admission, current compiled Production API/separate Worker and
+restricted PostgreSQL 17/pgvector schema 114. It compares six authorized watch
+states with independently stored identity, owner, target, version and precise
+creation/update clocks, retains the original lost-response retry and proves
+whole-response stability after actual Card movement. Board/List unwatch retain
+their creation identity/time; List archive withdraws open Card controls. Both
+open dialogs pass WCAG-tagged Axe checks. See the
+[executed scope and remaining gates](prd-17-acceptance.md#strict-personal-watch-controls-and-native-stored-clocks).
+The strict watch CI phase now includes this file alongside both existing
+producer files. Current immutable/full release acceptance remains required.

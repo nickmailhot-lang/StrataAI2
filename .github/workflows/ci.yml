@@ -1045,12 +1045,13 @@ jobs:
         if: (matrix.suite == 'browser-notifications')
         env:
           STRATAAI_E2E_VERIFY_WATCH_ACCOUNTS: '1'
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
           STRATAAI_E2E_RATE_PACING: '1'
         run: |
           set -euo pipefail
           test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
           test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
-          npx playwright test tests/browser/watch-cross-board-notifications.spec.ts tests/browser/watch-activity-matrix.spec.ts
+          npx playwright test tests/browser/watch-cross-board-notifications.spec.ts tests/browser/watch-activity-matrix.spec.ts tests/browser/watch-subscriptions.spec.ts
 
       - name: Strict verified-account assignment mention and reminder native delivery
         if: (matrix.suite == 'browser-notifications')
