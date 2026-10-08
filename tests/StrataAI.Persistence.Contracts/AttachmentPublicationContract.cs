@@ -267,9 +267,14 @@ internal static class AttachmentPublicationContract
         }
         async Task ReceiptBoardState(Guid id, bool archived)
         {
-            await using var change = new NpgsqlCommand("UPDATE boards SET lifecycle_state=@state,archived_at=@archived WHERE tenant_id=@tenant AND id=@id;", admin);
+            await using var change = new NpgsqlCommand("""
+                UPDATE boards SET lifecycle_state=@state,
+                 archived_at=CASE WHEN @state='ARCHIVED' THEN GREATEST(updated_at,archived_at,@at) ELSE archived_at END,
+                 updated_at=GREATEST(updated_at,archived_at,@at)
+                WHERE tenant_id=@tenant AND id=@id;
+                """, admin);
             change.Parameters.AddWithValue("state", archived ? "ARCHIVED" : "ACTIVE");
-            change.Parameters.AddWithValue("archived", NpgsqlTypes.NpgsqlDbType.TimestampTz, archived ? clock.UtcNow : DBNull.Value);
+            change.Parameters.AddWithValue("at", clock.UtcNow);
             change.Parameters.AddWithValue("tenant", tenant); change.Parameters.AddWithValue("id", id); await change.ExecuteNonQueryAsync(ct);
         }
         replay = await publication.PublishAsync(card, user, upload.Id, upload.RetryKey, "publication-moved-replay", ct);

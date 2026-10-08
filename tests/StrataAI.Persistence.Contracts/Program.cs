@@ -47,6 +47,12 @@ if (args.Contains("--work-archive-history-only", StringComparer.Ordinal))
     await WorkArchiveHistoryContract.RunAsync(admin,apiConnection,ct);
     return;
 }
+if (args.Contains("--attachment-publication-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await AttachmentPublicationContract.RunAsync(admin,apiConnection,ct);
+    return;
+}
 if (args.Contains("--organization-creation-timestamps-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
