@@ -1,5 +1,7 @@
 # PRD-18 acceptance audit
 
+Current status (2026-10-08): open, **18% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
+
 ## Deleted List child-receipt admission
 
 The [executed parent receipt correction](prd-05-acceptance.md#deleted-list-child-receipt-admission-correction)
@@ -55,7 +57,7 @@ stays 22%; the ticket remains open.
 | --- | --- | --- |
 | LIFE-FR-001–003 explicit lifecycle, reversible archive, hidden canvas | Canonical enums; archive/deletion timestamps persisted and projected; reviewed Board/Card/List archive controls and discovery pages; active Board discovery excludes archives | Fresh complete server, PostgreSQL and native lifecycle execution |
 | LIFE-FR-004 archive browser | ArchivedCardsPage, ArchivedListsPage and ArchivedBoardsPage; current scope/account denial and coalesced recovery reads | Native desktop/mobile archive cases on the immutable images; Board archive directory SignalR invalidation |
-| LIFE-FR-005 parent-safe restoration | ListArchivedListsAsync rejects non-active Boards; transactional reads verify the actor; reviewed restore commands and parent-lifecycle fixtures exist | Full Card/List/Board/Organization transition matrix and concurrent parent changes |
+| LIFE-FR-005 parent-safe restoration | ListArchivedListsAsync rejects non-active Boards; transactional reads verify the actor; reviewed restore commands; 12 local restricted PostgreSQL lock-wait cases deny fresh Card/List restores and original receipts after parent deletion | Remaining Card/List/Board/Organization transitions and concurrent account/session/Organization changes; current immutable-image/native acceptance |
 | LIFE-FR-006–009 archived-only elevated deletion, confirmation, irreversibility and List impact | Card/List/Board command and receipt contracts; MUI reviews with explicit consent, including Board archive directory reviews | Executed native consent, lost-response/retry and cascading-impact cases |
 | LIFE-FR-010 audit integrity | Immutable audit storage fixture; lifecycle events, canonical receipts and retained deleting actor | Exact execution after archive, deletion and account removal; retained actor interpretation |
 | LIFE-FR-011 deleted content absent from search/notifications | Separate search and notification admission implementations and fixtures | Cross-surface deletion matrix, including historical notification and moved-entity scope |
@@ -92,6 +94,14 @@ Migration `112_work_archive_history` guards known timestamps against clearing, o
 Executed local evidence: strict full-solution Release compilation passed with zero warnings/errors; five selected API-host/store cases passed, including real authenticated HTTP archive/restore responses and fresh active Board reads for Boards, Lists and Cards. The full PostgreSQL 17/pgvector migration runner passed clean/repeated/forward upgrades, serialized runners, failed-migration rollback and unrecorded-migration rejection. Its restricted SQL fixture proved history rejection, complete-statement rollback and cross-tenant non-disclosure. The production PostgreSQL store contract passed all three archive/restore/re-archive/delete cycles and original archive receipt replay without changing canonical records or aggregate audit/event/job/receipt counts. Required-ledger refusal/recovery passed for both runtime roles.
 
 These checks used isolated local test databases and compiled contract output, rather than the current immutable release images. Full CI, lifecycle capacity measurements and the remaining PRD-18 acceptance/Definition of Done requirements still govern issue closure.
+
+### Restore/receipt admission after an observed parent-deletion wait
+
+The mandatory `WorkArchiveHistoryContract` now covers 12 restricted PostgreSQL cases: private/Organization/public Board visibility, Card restoration under a deleted List or List restoration under a deleted Board, and a fresh command or an original restore receipt. Receipt cases first execute real restore and re-archive commands with distinct keys. Each attempted restore is then held behind an administrator Board row lock. The test observes the actual pending command blocked by that exact connection through `pg_blocking_pids`; it fails if no database wait occurs. A controlled competing transaction archives/deletes the parent, preserves its archive history, and commits before releasing the pending command.
+
+All 12 local cases passed with stable `card_not_found`/`list_not_found` outcomes, no returned canonical acknowledgment, unchanged target/child records and unchanged aggregate audit/event/job/receipt counts. Required-ledger refusal/recovery and the existing complete archive-history contract passed in the same invocation; strict solution compilation had zero warnings/errors. The isolated test database and containers were removed.
+
+Parent lifecycle commits, initial rows and actor admission are controlled fixtures; the pending restore/replay goes through the actual restricted production services and stores. This verifies post-wait parent admission, rather than HTTP session expiry, parent deletion consent, live Worker delivery, Organization lifecycle or native browser behavior. Ordinary full CI includes these cases; `--work-archive-history-only` selects them explicitly for diagnosis. Complete current immutable-image and integrated acceptance remain required.
 
 ### Attachment-preview fixture repair after archive-history enforcement
 
