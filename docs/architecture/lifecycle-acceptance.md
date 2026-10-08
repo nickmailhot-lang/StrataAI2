@@ -113,6 +113,22 @@ The active-Board archive control now reviews scope/version/impact, fences other 
 
 Lifecycle capacity must measure the actual lifecycle operations and documented large-data fixture, rather than infer capacity from the notification consumer benchmark. Full API/PostgreSQL/native execution and immutable-image acceptance remain pending rigorous StrataAI2 CI.
 
+### Archive/restore capacity measurements (2026-10-08)
+
+`scripts/ci/test-work-lifecycle-capacity.sh` now runs in the mandatory supported-capacity chain through the release API/Nginx. It checks the fixture has 200 Lists, 5,000 active Cards and 100,000 archived Cards before and after 120 real commands: 20 archive/restore cycles each for a Card, its List and its Board. Each of the six entity/action groups retains all 20 curl-total timings and independently gates nearest-rank p95 below 500 ms. A failed timing gate retains the failed report before rejecting CI.
+
+Canonical SQL checks validate every acknowledged version, lifecycle state and retained timestamp. Fresh HTTP Board reads prove active recovery. Original archive receipt replay after restoration must return the original acknowledgment without changing canonical records or aggregate effect counts. All neighboring List/Card records, including the 100,000 archived Cards, must retain their complete-record fingerprints. Audit, Work event, corresponding Work job and command-receipt deltas must each match the 120 commands. The retained report contains fixed scope/conditions, counts, six timing series and revision/topology; it excludes identities, content, keys and cookies.
+
+The isolated local compiled Production API on PostgreSQL 17/pgvector passed the complete invocation through Nginx. One serial client, no intentional network delay, source runtime `af754166`:
+
+| Entity | Archive p95 (ms) | Restore p95 (ms) |
+| --- | ---: | ---: |
+| Card | 303.099 | 293.805 |
+| List | 282.872 | 279.816 |
+| Board | 277.188 | 282.191 |
+
+All six p95 values were independently recomputed from the retained samples. The test database and invocation-owned containers were removed afterward. This is local compiled-runtime evidence, not current immutable-image or browser interaction evidence. The CI artifact is `work-lifecycle-capacity-<revision>` / `work-lifecycle.json`. Permanent-deletion capacity/performance, concurrent lifecycle admission and full integrated release acceptance remain separate requirements; this archive/restore measurement does not prove them.
+
 Board deletion now requires explicit confirmation at HTTP and Application boundaries after current archived-state/administration admission. Its transactional fingerprint includes consent. See board-deletion-consent.md for the source regression and remaining Board tombstone-receipt recovery/UI requirements. Full solution compilation passes; runtime consent execution remains pending CI.
 
 Board tombstone receipt recovery now has a dedicated fresh-admission path for current Organization/Board administrators with active Organization membership. Normal Board/member lookup excludes deleted Boards in both stores. Source API and PostgreSQL container cases cover identical replay, changed consent, new keys, normal-read non-disclosure, membership revocation and atomic audit rollback. Their runtime execution remains pending. The archive directory retains an unresolved original deletion for recovery after its Board disappears from discovery.

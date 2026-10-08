@@ -610,7 +610,7 @@ jobs:
       - name: Authorized checklist creation, ordered progress and atomic rollback against exact release images
         run: scripts/ci/test-checklists.sh
 
-      - name: Checklist, comment, activity and cross-Board movement at supported capacity
+      - name: Checklist, comment, activity, movement and lifecycle at supported capacity
         run: scripts/ci/test-checklist-capacity.sh
 
       - name: Validate pinned operator Collector configuration
@@ -688,6 +688,15 @@ jobs:
         with:
           name: card-move-capacity-${{ github.sha }}
           path: artifacts/capacity/card-moves.json
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Retain fixed-scope work lifecycle capacity measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: work-lifecycle-capacity-${{ github.sha }}
+          path: artifacts/capacity/work-lifecycle.json
           if-no-files-found: ignore
           retention-days: 90
 
