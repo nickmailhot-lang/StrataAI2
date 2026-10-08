@@ -265,3 +265,20 @@ The historical exact-image browser run 37683742977 has 43 failed scenarios; curr
 source attribution/repair, automatic event delivery and complete current release
 and PRD-wide acceptance are still required. This local slice does not establish
 a green immutable release or satisfaction of all acceptance criteria.
+
+
+## History account/deadline bootstrap verification
+
+All eight Organization/Board desktop/phone account-uncertainty and aggregate
+revocation-deadline cases pass in one 4.1-minute native invocation after requiring
+the actual stream head and subsequent protected history read before starting the
+fault scenario. Baseline: seven pass, one Organization account case fails after
+initial live bootstrap restores freshly authorized history during uncertainty.
+The passive fixture correction retains every private-withdrawal, no-command,
+one-revocation, canonical-history, no-reload and accessibility assertion. Eleven
+observer tests and browser TypeScript pass. See
+[executed history admission](invitation-administration-ui.md#native-history-account-and-deadline-admission)
+for runtime scope and limitations.
+
+Estimated work remaining stays **14%** (planning estimate). The issue stays
+open: current immutable-image CI and full PRD-wide acceptance remain required.

@@ -1,8 +1,8 @@
 # Canonical ticket dependency audit
 
-Snapshot: 2026-10-06. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
+Snapshot: 2026-10-07. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
 
-The refreshed complete issue snapshot was processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
+The complete paginated issue snapshot was refreshed on 2026-10-07 and processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
 
 ## Dependency groups
 

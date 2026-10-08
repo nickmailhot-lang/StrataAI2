@@ -160,3 +160,35 @@ advance server cookie expiry. Exact-image native execution remains pending.
 The focused invitation creation component suite passed all 48 cases after this
 change, including the existing transport-loss, account replacement, live
 invalidation, storage, permission, validation and exact-Board recovery cases.
+
+
+## Native history account and deadline admission
+
+The history account/deadline fixtures now require the actual scope/actor-bound
+stream head and a protected invitation-history read started after that head
+before beginning keyboard or account-failure actions. The passive observer accepts
+an explicit protected collection path; unrelated successful membership/Board
+reads cannot admit history. The existing five-second readiness assertion remains.
+No production code, authority, mutation, timeout, rate limit or receipt changes.
+
+The current-source baseline completed with seven passes and one Organization
+desktop account case failing its private-heading withdrawal assertion. Its trace
+shows the injected account-read 503 followed by a successful protected history
+refresh: the initial watcher invalidation raced the uncertainty scenario. Waiting
+for the actual bootstrap history read fixes that fixture race without weakening
+withdrawal or permitting an unconfirmed result.
+
+The complete corrected eight-case native invocation passes in 4.1 minutes:
+Organization/Board desktop/phone account uncertainty before and after actual
+revocation, plus both account checks inside one fifteen-second deadline. Existing
+no-command-before-confirmation, one actual committed revocation, private-display
+withdrawal, explicit current-state recovery, exact canonical history, no full
+reload, keyboard and accessibility assertions remain. Eleven combined passive
+observer tests and browser TypeScript pass, including rejection of unrelated or
+failed collection reads. CI already requires both observer suites.
+
+Runtime evidence uses the frozen Production web/API assemblies, Nginx, real
+restricted schema-110 PostgreSQL and a separate discovery Worker with email
+sending disabled. It does not prove current retained images, provider delivery or
+full two-client event delivery. Temporary API/web/Worker containers were removed
+after the terminal run, preserving the original services, images and volumes.

@@ -466,3 +466,20 @@ new authority or automatic command replay. PRD-03's remaining-work estimate stay
 **8%**, a planning estimate. Full current immutable release, remaining lifecycle/
 retention/performance requirements and the other historical browser failures
 still prevent closure.
+
+
+## History account/deadline bootstrap verification
+
+All eight Organization/Board desktop/phone account-uncertainty and aggregate
+revocation-deadline cases pass in one 4.1-minute native invocation after requiring
+the actual stream head and subsequent protected history read before starting the
+fault scenario. Baseline: seven pass, one Organization account case fails after
+initial live bootstrap restores freshly authorized history during uncertainty.
+The passive fixture correction retains every private-withdrawal, no-command,
+one-revocation, canonical-history, no-reload and accessibility assertion. Eleven
+observer tests and browser TypeScript pass. See
+[executed history admission](invitation-administration-ui.md#native-history-account-and-deadline-admission)
+for runtime scope and limitations.
+
+Estimated work remaining stays **8%** (planning estimate). The issue stays
+open: current immutable-image CI and full PRD-wide acceptance remain required.

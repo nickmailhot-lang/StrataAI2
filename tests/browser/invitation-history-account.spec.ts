@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
   test(`PRD-03/05/60: account uncertainty before and after revocation (Board=${boardSurface}, ${width}px)`, async ({ page, context }) => {
@@ -18,6 +19,8 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
       expect(result.status()).toBe(201); board = (await result.json()).id;
     }
     const root = board ? `/boards/${board}/invitations` : `/organizations/${org}/invitations`;
+    const path = board ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`;
+    const admission = trackInvitationAdmission(page, org, actor, board, path, root);
     const email = `history-account-recipient-${suffix}@example.test`;
     const invitation = await context.request.post(root, { headers, data: board ? { email, role: 'MEMBER' }
       : { email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
@@ -35,7 +38,10 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
       failProfile = true; await route.fulfill({ response });
     });
     page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
-    await page.goto(board ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);
+    await page.goto(path);
+    // First displayed history can precede the watcher bootstrap invalidation.
+    // Wait for the actual scoped head and a protected history read after it.
+    await expect.poll(admission.ready).toBe(true);
     const review = page.getByRole('button', { name: `Revoke invitation for ${email}` });
     await review.click(); await expect(page.getByRole('dialog')).toBeVisible();
     failProfile = true; await page.getByRole('button', { name: 'Confirm revocation' }).click();

@@ -2,10 +2,10 @@ import type { Page, Request } from '@playwright/test';
 
 // Passive readiness: observe a real scoped stream head and the protected read
 // started after it. A previous screen/read cannot admit a keyboard action.
-export function trackInvitationAdmission(page: Page, organization: string, actor: string, board: string | undefined, pagePath: string) {
+export function trackInvitationAdmission(page: Page, organization: string, actor: string, board: string | undefined, pagePath: string, protectedReadPath?: string) {
   const socketPath = board ? '/boards/live' : '/organizations/live/metadata';
   const scope = board ?? organization;
-  const readPath = board ? `/boards/${board}` : `/organizations/${organization}/members/${actor}`;
+  const readPath = protectedReadPath ?? (board ? `/boards/${board}` : `/organizations/${organization}/members/${actor}`);
   let heads = 0, readHead = 0, reads = 0;
   const pending = new Map<Request, number>();
   page.on('websocket', socket => {

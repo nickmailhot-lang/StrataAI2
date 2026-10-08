@@ -3,11 +3,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { trackInvitationAdmission } from './invitationAdmissionTracker.ts';
 
-function fixture(board) {
+function fixture(board, protectedReadPath) {
   const page = new EventEmitter(); let path = '/previous'; page.url = () => `https://example.test${path}`;
   const target = board ? '/app/org/boards/board/invite' : '/app/org/invite';
   const read = board ? '/boards/board' : '/organizations/org/members/actor';
-  const tracker = trackInvitationAdmission(page, 'org', 'actor', board, target);
+  const tracker = trackInvitationAdmission(page, 'org', 'actor', board, target, protectedReadPath);
   const socket = new EventEmitter(); socket.url = () => `https://example.test${board ? '/boards/live' : '/organizations/live/metadata'}`;
   page.emit('websocket', socket);
   const send = (invocationId, scope = board ?? 'org') => socket.emit('framesent', { payload: JSON.stringify({ type: 4, target: 'Watch', arguments: [scope], invocationId }) + '\u001e' });
@@ -46,4 +46,14 @@ test('Organization heads retain actor and Organization envelope admission', () =
     { organizationId: 'other-org', userId: 'actor', page: { cursor: 'opaque', resetRequired: false, events: [] } }])
     f.socket.emit('framereceived', { payload: JSON.stringify({ type: 2, invocationId: 'valid', item }) + '\u001e' });
   assert.equal(f.tracker.heads(), 0); f.head('valid'); f.response(f.request()); assert.equal(f.tracker.ready(), true);
+});
+
+test('history admission requires its protected collection after the head', () => {
+  const f = fixture(undefined, '/organizations/org/invitations');
+  f.navigate(); f.send('history'); f.head('history');
+  f.response(f.request()); assert.equal(f.tracker.ready(), false);
+  const history = { method: () => 'GET', url: () => 'https://example.test/organizations/org/invitations' };
+  f.page.emit('request', history); f.response(history, 503); assert.equal(f.tracker.ready(), false);
+  const current = { method: () => 'GET', url: () => 'https://example.test/organizations/org/invitations' };
+  f.page.emit('request', current); f.response(current); assert.equal(f.tracker.ready(), true);
 });
