@@ -157,6 +157,8 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Notifications and activity
 
+- [PRD-17 notification and watching acceptance map — open](architecture/prd-17-acceptance.md)
+
 - [Assignment notification persistence (PRD-11 / PRD-17)](architecture/assignment-notifications.md)
 - [PRD-15 comments, mentions and activity acceptance](architecture/comments-mentions-activity.md)
 - [Authorized notification inbox (PRD-17)](architecture/notification-inbox.md)

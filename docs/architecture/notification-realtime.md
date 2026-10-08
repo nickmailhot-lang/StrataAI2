@@ -50,3 +50,16 @@ Current integration supersedes the unfinished transport statements above: `/noti
 The MUI inbox now subscribes with its current organization/recipient. It validates bounded replay, scope, IDs, revisions, empty metadata, exact UTC timestamps and decimal sequences using bigint before acknowledging a cursor. Events trigger fresh HTTP admission/content reads and are never directly rendered. Initial handoff, reconnect, reset, hidden-window advancement and transport failure invalidate content; reconnect retains the exact decimal cursor, and disposal fences stale callbacks. Invalidation during an active HTTP read or mutation is retained and processed afterwards. Existing bounded HTTP polling/focus/online recovery remains available. Focused parser, connection and inbox tests pass locally; actual browser transport, cross-peer recovery, revocation and capacity evidence still require the immutable-image CI run. This progress does not satisfy all PRD-17 acceptance criteria.
 
 Replay admission also rejects unexpected properties at both page and event level. The accepted fields match the current server SyncPage and NotificationRealtimeEvent contract exactly; projected Card content, links, account details, diagnostics and read-state extras cannot be silently accepted while advancing a cursor. Seven paired page/event cases cover this boundary. All 32 focused replay/connection tests, SPA typechecking and lint pass; actual native/server delivery remains pending CI.
+
+## Executed native integration
+
+The [five-case watch/inbox/reminder invocation](prd-17-acceptance.md#executed-native-watch-inbox-and-reminder-recovery)
+passes unchanged against local compiled Production API, separate Worker, current
+MUI bundle, restricted PostgreSQL 17/pgvector and Nginx. It includes actual private
+notification events and reconnect, shared reads, original-key response-loss
+recovery, overlapping watch deduplication/self-suppression, unwatch, direct Card
+watch movement/parent withdrawal and desktop/phone reminder recovery. See the
+linked record for exact assertions and runtime/policy limits. Local compiled
+evidence supersedes the earlier local-execution gap; strict email policy, due
+reminder fire, full capacity/concurrency and current immutable-image acceptance
+remain separate. PRD-17 stays open at **22% estimated work remaining**.

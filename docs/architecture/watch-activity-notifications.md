@@ -320,3 +320,16 @@ immutable-image release acceptance. The exact `a9d107f7` CI run remains live in
 .NET/API and PostgreSQL checks after web quality passed. Estimated PRD-17 work
 remaining is now **22%** (planning estimate); full PRD/release acceptance still
 prevents issue closure.
+
+## Executed native integration
+
+The [five-case watch/inbox/reminder invocation](prd-17-acceptance.md#executed-native-watch-inbox-and-reminder-recovery)
+passes unchanged against local compiled Production API, separate Worker, current
+MUI bundle, restricted PostgreSQL 17/pgvector and Nginx. It includes actual private
+notification events and reconnect, shared reads, original-key response-loss
+recovery, overlapping watch deduplication/self-suppression, unwatch, direct Card
+watch movement/parent withdrawal and desktop/phone reminder recovery. See the
+linked record for exact assertions and runtime/policy limits. Local compiled
+evidence supersedes the earlier local-execution gap; strict email policy, due
+reminder fire, full capacity/concurrency and current immutable-image acceptance
+remain separate. PRD-17 stays open at **22% estimated work remaining**.
