@@ -4,8 +4,9 @@ Configured Card changes now create recipient notifications from the originating
 mutation transaction. The producer captures the exact post-mutation Card revision
 and current List/Board. Direct Card watches follow movement; List watches use the
 destination List at event time; Board watches apply across the current Board.
-Creation includes current List and Board watchers. The activity matrix is Card
-create/update/move/archive/restore, member add/remove, and label add/remove.
+Creation and copying include current destination List and Board watchers. The
+current thirteen-type matrix is Card create/copy/update/move/archive/restore,
+member add/remove, label add/remove, date changes and due completion/reopening.
 Watch/unwatch and other entities never recursively fan out.
 
 The existing Board command gate serializes activity with watch changes and Board
@@ -26,14 +27,15 @@ another intent. Card state, audit, event, Worker readiness job, notifications an
 command receipt use the same PostgreSQL transaction; any insertion failure rolls
 all of them back. Demo remains an explicitly non-durable adapter.
 
-`CardNotification` generalizes the internal record. Migration 035 expands the
+`CardNotification` generalizes the internal record. Migration 035 initially expanded the
 existing `card_assignment_notifications` table's allowed type values; its legacy
 name, forced RLS, tenant references, event-recipient uniqueness and runtime grants
-are preserved. A generated source type maps assignment to `CARD_MEMBER_ADDED` and
+are preserved; subsequent copy/date migrations extend the allowed activity types.
+A generated source type maps assignment to `CARD_MEMBER_ADDED` and
 other types to their originating event name. A tenant/Board/event/type foreign key
 rejects an activity notification attached to the wrong event type. API can insert
 intents and update only `read_at`; Worker still cannot access notification rows.
-Runtime readiness requires all 35 migrations, and the migration runner exercises
+Current runtime readiness uses schema 112, and the migration runner exercises
 clean/repeated/upgraded application and failure rollback.
 
 The inbox applies the existing fresh recipient/content admission before paging
@@ -43,6 +45,11 @@ keyboard read/selection controls, mobile layout, retry keys and recovery polling
 Unknown types and watch transition names are rejected by the browser parser.
 No recipient, content, email or private payload is added to telemetry; existing
 bounded mutation/inbox operation metrics remain the observation surface.
+
+## Initial producer-slice validation
+
+The following records the original nine-type producer slice; subsequent source,
+native and capacity evidence appears in the later sections.
 
 Validation added: activity store identity/replay/self-suppression cases for all
 nine activity types; host movement/creation/overlap/assignment precedence and
@@ -415,3 +422,28 @@ These readers retain active Organization membership; this does not grant
 anonymous visitors personal watches or introduce a Viewer role. Current-image,
 complete role/visibility combinations, producers, concurrency and capacity remain
 required. PRD-17 stays open at **16% estimated work remaining**.
+
+## Executed complete configured native activity matrix
+
+The [thirteen-type producer-to-inbox case](prd-17-acceptance.md#executed-all-thirteen-configured-watch-producers)
+passes under strict verification with a native keyboard Board watcher and a real
+Member issuer who also watches the Board. Actual HTTP create/copy/update/move,
+member and label addition/removal, date change, due completion/reopening and
+archive/restore commands produce exactly one recipient notification per configured
+type. No source or notification rows are fabricated. Both desktop and phone show
+all thirteen distinct captions and twelve original-Card links plus one copied-Card
+link. Stored source event actor/entity/revision/type/clocks match notifications;
+inbox UTC creation clocks compare at full persisted precision. The watching actor
+has zero persisted self-notifications and an empty authorized inbox.
+
+Archive hides original-Card content while the copy remains visible. Both actual
+private streams advance to cursor 12 without disclosing the hidden archive event.
+Restore recovers all thirteen inbox records and the full canonical journal; each
+stream has exactly the twelve event identities visible at its delivery time.
+Replaying every one of the thirteen original command keys/bodies returns its
+original response and preserves full Card/notification/private-journal fingerprints.
+The final full case passes in 1.0 minute, with tagged Axe/overflow and browser
+typechecking. The mandatory strict CI phase and optional full browser suite both
+include it. Current compiled Production evidence does not establish retained-image,
+complete role/visibility, concurrent publication/rollback or capacity acceptance.
+PRD-17 remains open at **15% estimated work remaining**.

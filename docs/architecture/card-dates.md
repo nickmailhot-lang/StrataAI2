@@ -611,3 +611,19 @@ wait without repeating mutations. This is local compiled evidence, not current
 retained-image or provider delivery proof. Full release/concurrency/capacity
 and Definition of Done acceptance remain; estimated PRD-12 work remaining stays
 **24%** (planning estimate); the ticket remains open.
+
+## Executed watched date activity integration
+
+The [complete configured watch matrix](prd-17-acceptance.md#executed-all-thirteen-configured-watch-producers)
+includes actual UTC due-date creation, completion and reopening by an admitted
+Member. Each creates exactly one `CARD_DATE_CHANGED`, `CARD_DUE_COMPLETED` or
+`CARD_DUE_REOPENED` notification for the other Board watcher, with matched stored
+source actor/entity/revision/clock and exact inbox creation precision. Both native
+desktop/phone inboxes show the distinct date captions and canonical Card links.
+The issuer also watches the Board and has zero stored self-notifications. All
+three original date keys/bodies replay unchanged as part of the thirteen-command
+history comparison. Strict verified-email policy, separate Worker readiness,
+tagged Axe/overflow and browser typechecking pass in the complete 1.0-minute case.
+Personal due reminders retain their separate actual Worker due-fire acceptance.
+Current retained-image/full CI and complete PRD-12 requirements remain required;
+PRD-12 stays open at **24% estimated work remaining**.

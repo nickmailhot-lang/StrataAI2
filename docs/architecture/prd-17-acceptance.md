@@ -1,7 +1,7 @@
 # Notification and watching acceptance map — PRD-17
 
 [PRD-17](https://github.com/nickmailhot-lang/StrataAI2/issues/18) remains open at
-**16% estimated work remaining** (planning estimate). Earlier estimates below
+**15% estimated work remaining** (planning estimate). Earlier estimates below
 record their evidence scope. This maps all twelve
 functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
@@ -522,4 +522,51 @@ original services and data remain. Both mandatory strict CI and optional full
 browser phases run the extended cases. Current retained-image/full CI, complete
 role/visibility and producer matrices, concurrent transitions, capacity and full
 Definition of Done still govern closure. PRD-17 remains open at **16% estimated
+work remaining** (planning estimate).
+
+## Executed all thirteen configured watch producers
+
+`watch-activity-matrix.spec.ts` passes its complete final case in **1.0 minute**
+under strict verified-email admission. A real Organization Owner enables Board
+watching through keyboard MUI controls. A real invited Member with a current
+Private Board grant also watches that Board and issues thirteen actual HTTP
+commands. No event, watch, Card or notification is inserted as test data in SQL.
+Disposable account activation follows the separately documented strict-admission
+fixture and is not provider-delivery evidence.
+
+The exact configured set is `CARD_CREATED`, `CARD_COPIED`, `CARD_UPDATED`,
+`CARD_MOVED`, `CARD_MEMBER_ADDED`, `CARD_MEMBER_REMOVED`, `LABEL_ADDED`,
+`LABEL_REMOVED`, `CARD_DATE_CHANGED`, `CARD_DUE_COMPLETED`, `CARD_DUE_REOPENED`,
+`CARD_ARCHIVED` and `CARD_RESTORED`. Thirteen stored recipient rows include each
+type once. Actor/recipient/Card/Board and unread state match the authorized inbox.
+Creation clocks compare against complete stored rows at their full precision,
+normalizing only equivalent UTC notation and trailing fractional zeros. A read-only
+source-event join verifies all thirteen exact source actors, entities, Boards,
+revisions, types and clocks. The Member assigns/unassigns themselves, so the other
+watcher receives member activity while the actor remains excluded; zero persisted
+actor notifications and an empty actor inbox prove actual matching-watch suppression.
+
+Both native desktop and 390px inboxes show thirteen distinct fixed captions,
+twelve canonical links to the original Card and one to the copied Card. During
+original Card archive, only the copy remains visible in HTTP/native inboxes and
+the current-admission journal. Each actual private stream reaches cursor 12 while
+withholding the archive event. Restore reveals all retained notifications and
+the thirteen-event canonical journal, while each stream has exactly the twelve
+identities visible when delivered. This distinguishes retained publication from
+permitted disclosure. Tagged Axe and overflow checks pass on both clients.
+
+All thirteen original commands are replayed after restoration with their exact
+keys and bodies. Each returns its original response text; complete stored Card,
+notification and private-journal fingerprints and the authorized inbox remain
+unchanged. Initial setup failed because its modal workspace locator omitted hidden
+regions; the final fixture follows existing admission checks without relaxed
+deadlines, roles, counts or retries. Browser typechecking passes.
+
+Execution uses current compiled Production API, a separate scoped Worker, current
+MUI bundle and restricted PostgreSQL 17/pgvector schema 112. Owned containers and
+database are removed; original services/data preserved. The build-once strict CI
+phase runs this case alongside cross-Board watches, and the optional full suite
+also includes it. Current retained-image/full CI, complete role/visibility and
+producer interaction matrices, concurrent publication/rollback, capacity and the
+complete Definition of Done remain required. PRD-17 stays open at **15% estimated
 work remaining** (planning estimate).
