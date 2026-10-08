@@ -92,6 +92,11 @@ for (const width of [1280, 390]) {
     // Twelve adjacent keyboard targets exceed the initial mounted buffer.
     // Real keyboard scrolling must mount later targets while retaining source.
     for (let step = 0; step < 12; step++) {
+      // Match the List keyboard path: a protected read temporarily withdraws
+      // movement targets. Send each one key only after current admission.
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+      await expect(handle).toBeEnabled();
+      await expect(handle).toBeFocused();
       await page.keyboard.press('ArrowDown');
       const target = cards.locator(`a[href$="/cards/${column.cards[cardIndex + step + 1].id}"]`).locator('..');
       // The adopted KeyboardSensor scrolls smoothly. Require its real dragged

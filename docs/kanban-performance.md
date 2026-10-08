@@ -667,8 +667,27 @@ as do types, lint and the production build. All five normal performance cases
 also passed on the preceding bundle; this does not establish the final repair's
 capacity acceptance. Failed traces and privacy-safe normal reports are retained.
 
-The complete chain is being re-executed on another fresh restricted schema-111
-database copy and the MUI-corrected frozen web bundle. Full native verification
-and exact immutable-release acceptance remain pending.
+The complete chain on the MUI-corrected bundle passed initial desktop Tab
+traversal and proceeded to Card keyboard movement; phone again completed its
+full capacity scenario. Desktop failed alignment on the second ArrowDown.
+Decoded snapshots show the first key was admitted and the second was sent while
+the Board was busy and the source handle disabled. The Card loop now follows
+the existing List loop's current-admission check before each one key, additionally
+requiring the source's restored focus. Strict geometry, viewport, mutation,
+accessibility and archived-record assertions, fixture sizes and the 150-second
+case timeout remain unchanged. Browser types pass.
+
+The same MUI-bundle invocation completed its normal five-case matrix with **four
+passes and one failure**: desktop Kanban cached detail was **208.36 ms**, above
+the unchanged 200 ms budget. Its readiness was 659.64 ms, feedback 67.60 ms and
+mutation p95 125.30 ms. Dates desktop, phone Kanban and both List-feedback cases
+passed. This failed result is retained alongside earlier passing reports; it is
+not discarded or described as release acceptance. All owned containers/database
+were removed after terminal checks.
+
+The complete chain with the corrected Card key admission and all five normal
+performance cases is being re-executed on another fresh restricted schema-111
+database copy using the same frozen MUI-corrected product bundle. Full native
+verification and exact immutable-release acceptance remain pending.
 PRD-06 remains at **27% estimated work remaining**;
 this is a planning estimate, not completion evidence.
