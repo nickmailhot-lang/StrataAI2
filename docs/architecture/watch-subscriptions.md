@@ -231,3 +231,22 @@ Final inbox/source/journal attribution matches independently stored records.
 The complete case passes in 1.1 minutes; this is HTTP/PostgreSQL correctness,
 not a new native, transport, rollback or capacity claim. Current retained-image
 and full acceptance remain required. PRD-17 stays open at **15% estimated remaining**.
+
+
+## Actual permission withdrawal and activity lock ordering
+
+`watch-permission-order.spec.ts` uses the same
+`observedBoardCommandOrder.ts` gate as the watch/unwatch ordering cases. It
+observes both actual API commands waiting and verifies the second command's
+peer blocker before releasing the Board row lock. Private Board Member/Admin
+removal and Organization/Public reader visibility withdrawal each run in both
+orders. All three personal watch scopes overlap; one eligible source produces
+one deduplicated notification.
+
+Withdrawal first excludes the recipient at source commitment. Activity first
+retains one notification while current permission checks withhold inbox, sync,
+watch reads and single/bulk read actions. Actual re-admission recovers unchanged
+watch identity/version/clocks and retained private history. Original Card command
+retry returns its exact original reply without altering the protected graph.
+See [permission ordering acceptance](prd-17-acceptance.md#executed-permission-withdrawal-and-activity-ordering)
+for executed evidence and limitations.

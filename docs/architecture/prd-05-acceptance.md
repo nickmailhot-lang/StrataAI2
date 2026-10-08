@@ -323,3 +323,24 @@ remain separate; this does not prove every acceptance criterion.
 
 Estimated remaining work stays **14%** (planning estimate). The issue stays
 open pending full current immutable CI and outstanding PRD-wide requirements.
+
+
+## Observed notification permission withdrawal ordering
+
+The [executed permission-order matrix](prd-17-acceptance.md#executed-permission-withdrawal-and-activity-ordering)
+adds eight actual races for private Board Member/Admin removal and Organization/
+Public reader visibility becoming private. Actual queued database blockers prove
+which HTTP command commits first. Withdrawal first excludes future notification
+creation; activity first retains one deduplicated notification while current
+permission checks withhold inbox/sync/watch reads and individual/bulk read actions.
+Real re-admission recovers the exact retained watch and private history. Denied
+read actions and original Card-command retries leave the complete protected graph
+unchanged. Readers have view permission without edit permission; the Board Admin
+fixture has administration permission. This strengthens PERM-FR-002/005/008/010,
+NOTIFY-FR-008/012 and PRD-05/17-TC-04/05/07/08.
+
+These are strict verified-account HTTP/PostgreSQL originating-transaction checks,
+not additional native transport, keyboard/mobile or capacity acceptance. The
+required immutable-image CI phase includes them; local evidence does not establish
+a green retained release. Full current CI and remaining PRD-wide acceptance remain
+required. PRD-05 stays open at **15% estimated work remaining** (planning estimate).

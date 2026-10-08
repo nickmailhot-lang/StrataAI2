@@ -823,14 +823,14 @@ jobs:
           test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
           npx playwright test tests/browser/card-assignment-notifications.spec.ts tests/browser/comment-mentions.spec.ts tests/browser/comment-mass-mentions.spec.ts tests/browser/card-reminders.spec.ts --grep 'native assignment|native selected teammate|native confirmed groups|actual Worker due reminder'
 
-      - name: Strict verified-account watch trigger ordering through observed database waits
+      - name: Strict verified-account watch and permission ordering through observed database waits
         env:
           STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
           STRATAAI_E2E_RATE_PACING: '1'
         run: |
           set -euo pipefail
           test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
-          npx playwright test tests/browser/watch-trigger-order.spec.ts
+          npx playwright test tests/browser/watch-trigger-order.spec.ts tests/browser/watch-permission-order.spec.ts
 
       - name: Restore isolated unverified-email account fixture for profile browser tests
         # Earlier fixtures share the same socket peer and Nginx rate-limit zone.

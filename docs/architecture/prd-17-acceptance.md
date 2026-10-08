@@ -745,3 +745,51 @@ NOTIFY-FR-004/005/006/007/008/012 and PRD-17-TC-07/08. Current retained-image/fu
 complete role/visibility/concurrent permission and movement matrices, rollback,
 capacity and the entire Definition of Done remain required. PRD-17 stays open at
 **15% estimated work remaining** (planning estimate).
+
+
+## Executed permission withdrawal and activity ordering
+
+All **five cases pass in one 4.2-minute invocation**: the four permission cases
+(eight races) and the unchanged six watch/unwatch races through the extracted
+shared gate. The initial run passed the watch case but failed all four permission
+cases on comparing PUT `changed: true` with GET `changed: false`; correcting that
+request-specific flag preserves every persisted identity/version/clock assertion.
+Browser TypeScript, changed CI shell syntax and 48 documentation links pass. Owned
+test containers/database are removed; the original three services/data remain.
+
+`watch-permission-order.spec.ts` executes eight actual command races: private
+Board MEMBER and ADMIN removal, ORGANIZATION reader visibility becoming private,
+and PUBLIC reader visibility becoming private, each with withdrawal first and
+activity first. Readers are active Organization members without an explicit Board
+grant; visibility supplies view permission and does not supply edit permission.
+Fresh Owner/recipient accounts prove refused pre-verification login followed by
+verified admission, actual invitations and actual Board/List/Card/watch commands.
+
+The shared observed-wait helper holds the real Board row gate, observes the first
+and second actual requests waiting, and confirms the queued peer blocker through
+`pg_blocking_pids` before release. Withdrawal first produces exactly one real Card
+source revision and zero recipient notifications. Activity first produces exactly
+one source revision and one notification despite overlapping CARD/LIST/BOARD
+watches. Each role finishes at Card version three with one retained notification.
+
+Current permission withdrawal withholds inbox and canonical sync content and
+returns 404 for all three watch reads. Single and bulk read attempts against the
+retained notification return `notification_not_found`. Full Card/watch/private
+notification/journal/counter/Work-event/audit/job/receipt fingerprints remain
+unchanged across denied read attempts and original-key/body Card retries, which
+return the exact original source response. Re-admission uses the actual membership
+or visibility command and recovers unchanged watch identity, version and clocks;
+GET correctly reports `changed: false` while the original PUT reports true.
+Retained notification/journal/counter fingerprints remain exact across admission.
+The authorized inbox and canonical journal independently match complete stored
+rows, exact source actor/revision/type/clocks and creation envelopes.
+
+The required strict build-once ordering phase now includes these four cases and
+the existing six watch/unwatch ordering scenarios, before optional profile account
+fixtures. This is actual HTTP/PostgreSQL concurrency evidence. It adds no private
+transport, native keyboard/mobile, movement/rollback or capacity claim. Local
+execution uses current compiled Production API/MUI and restricted PostgreSQL
+17/pgvector schema 112 with verified-email enforcement; no Worker is required for
+originating-transaction fan-out. Current immutable release CI and the complete
+role/visibility/lifecycle/interaction matrices remain independently required.
+PRD-17 stays open at **15% estimated work remaining** (planning estimate).

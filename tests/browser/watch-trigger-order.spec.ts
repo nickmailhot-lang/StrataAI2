@@ -1,11 +1,7 @@
-import { execFileSync, spawn } from 'node:child_process';
+import { commandOrderQuery as query, inObservedBoardOrder } from './observedBoardCommandOrder';
 import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { expectPersistedNotificationDelivery } from './persistedNotificationDelivery';
-
-const sqlArgs = ['compose', '-f', 'compose.release.yml', 'exec', '-T', 'postgres', 'sh', '-c',
-  'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'];
-const query = (sql: string) => execFileSync('docker', sqlArgs, { input: sql, encoding: 'utf8', stdio: 'pipe' }).trim();
 
 test('PRD-17-TC-07/08: actual unwatch and activity commands select Card List Board eligibility in observed lock order', async ({ context, browser, baseURL }) => {
   test.setTimeout(180_000); expect(process.env.CI).toBe('true');
@@ -29,7 +25,6 @@ test('PRD-17-TC-07/08: actual unwatch and activity commands select Card List Boa
     const cardReply = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Trigger Card' } });
     expect(cardReply.status()).toBe(201); const card = (await cardReply.json()).id;
     for (const id of [org, board, list, card, recipient, owner]) expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
-    const waiters = () => JSON.parse(query(`SELECT COALESCE(jsonb_agg(pid ORDER BY pid),'[]') FROM pg_stat_activity WHERE datname=current_database() AND usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%SELECT id FROM boards%FOR UPDATE%';`)) as number[];
     const history = () => query(`SELECT md5(jsonb_build_object(
       'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id='${org}'),
       'watches',(SELECT jsonb_agg(to_jsonb(w) ORDER BY id) FROM watch_subscriptions w WHERE tenant_id='${org}'),
@@ -55,38 +50,21 @@ test('PRD-17-TC-07/08: actual unwatch and activity commands select Card List Boa
         const sourceBody = { title: `Trigger ${type} ${unwatchFirst ? 'unwatch' : 'activity'} first`, description: null, version };
         const source = () => context.request.patch(`/cards/${card}`, { headers: { ...headers, 'Idempotency-Key': sourceKey }, data: sourceBody });
         const unwatch = () => member.request.delete(`${path}?version=${watchVersion}`, { headers: { ...headers, 'Idempotency-Key': watchKey }, data: {} });
-        const gate = spawn('docker', sqlArgs, { stdio: 'pipe' }); let output = '', closed = false, exitCode: number | null = null;
-        gate.stdout.on('data', chunk => { output += chunk.toString(); }); gate.stderr.on('data', () => {});
-        gate.on('close', code => { closed = true; exitCode = code; }); gate.on('error', () => { closed = true; });
-        const pending: ReturnType<typeof source>[] = [];
-        try {
-          gate.stdin.write(`BEGIN; SELECT id FROM boards WHERE tenant_id='${org}' AND id='${board}' FOR UPDATE;\n\\echo trigger_gate_locked\n`);
-          await expect.poll(() => output.includes('trigger_gate_locked')).toBe(true);
-          pending.push(unwatchFirst ? unwatch() : source());
-          await expect.poll(() => waiters().length).toBe(1); const firstPid = waiters()[0];
-          pending.push(unwatchFirst ? source() : unwatch());
-          await expect.poll(() => waiters().length).toBe(2); const secondPid = waiters().find(pid => pid !== firstPid)!;
-          expect(Number.isInteger(firstPid) && firstPid > 0 && Number.isInteger(secondPid) && secondPid > 0).toBe(true);
-          await expect.poll(() => query(`SELECT ${firstPid}=ANY(pg_blocking_pids(${secondPid}));`)).toBe('t');
-          gate.stdin.end('COMMIT;\n\\q\n'); await expect.poll(() => closed).toBe(true); expect(exitCode).toBe(0);
-          const replies = await Promise.all(pending); for (const reply of replies) expect(reply.status()).toBe(200);
-          const sourceReply = replies[unwatchFirst ? 1 : 0], watchReply = replies[unwatchFirst ? 0 : 1];
-          const sourceText = await sourceReply.text(), watchText = await watchReply.text();
-          version++; expect(JSON.parse(sourceText)).toMatchObject({ id: card, version, title: sourceBody.title });
-          expect(query(`SELECT count(*) FROM work_events WHERE tenant_id='${org}' AND board_id='${board}' AND actor_id='${owner}' AND entity_type='Card' AND entity_id='${card}' AND entity_version=${version} AND event_type='CARD_UPDATED';`)).toBe('1');
-          expect(JSON.parse(watchText)).toMatchObject({ watching: false, version: watchVersion + 1, subscriptionId: originalWatch.subscriptionId, createdAt: originalWatch.createdAt });
-          if (!unwatchFirst) notifications++;
-          expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}';`)).toBe(String(notifications));
-          const counts = query(`SELECT count(*) FROM card_assignment_notifications n JOIN work_events e ON e.tenant_id=n.tenant_id AND e.event_id=n.event_id WHERE e.tenant_id='${org}' AND e.entity_id='${card}' AND e.entity_version=${version} AND e.event_type='CARD_UPDATED' AND e.actor_id='${owner}' AND n.actor_id='${owner}' AND n.notification_type='CARD_UPDATED' AND n.recipient_id='${recipient}';`);
-          expect(counts).toBe(unwatchFirst ? '0' : '1');
-          const committed = history();
-          const replayedSource = await source(); expect(replayedSource.status()).toBe(200); expect(await replayedSource.text()).toBe(sourceText);
-          const replayedWatch = await unwatch(); expect(replayedWatch.status()).toBe(200); expect(await replayedWatch.text()).toBe(watchText);
-          expect(history()).toBe(committed);
-        } finally {
-          if (!closed) { gate.stdin.end('ROLLBACK;\n\\q\n'); await expect.poll(() => closed, { timeout: 10_000 }).toBe(true); }
-          await Promise.allSettled(pending);
-        }
+        const replies = await inObservedBoardOrder(org, board, unwatchFirst ? unwatch : source, unwatchFirst ? source : unwatch);
+        for (const reply of replies) expect(reply.status()).toBe(200);
+        const sourceReply = replies[unwatchFirst ? 1 : 0], watchReply = replies[unwatchFirst ? 0 : 1];
+        const sourceText = await sourceReply.text(), watchText = await watchReply.text();
+        version++; expect(JSON.parse(sourceText)).toMatchObject({ id: card, version, title: sourceBody.title });
+        expect(query(`SELECT count(*) FROM work_events WHERE tenant_id='${org}' AND board_id='${board}' AND actor_id='${owner}' AND entity_type='Card' AND entity_id='${card}' AND entity_version=${version} AND event_type='CARD_UPDATED';`)).toBe('1');
+        expect(JSON.parse(watchText)).toMatchObject({ watching: false, version: watchVersion + 1, subscriptionId: originalWatch.subscriptionId, createdAt: originalWatch.createdAt });
+        if (!unwatchFirst) notifications++;
+        expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}';`)).toBe(String(notifications));
+        const counts = query(`SELECT count(*) FROM card_assignment_notifications n JOIN work_events e ON e.tenant_id=n.tenant_id AND e.event_id=n.event_id WHERE e.tenant_id='${org}' AND e.entity_id='${card}' AND e.entity_version=${version} AND e.event_type='CARD_UPDATED' AND e.actor_id='${owner}' AND n.actor_id='${owner}' AND n.notification_type='CARD_UPDATED' AND n.recipient_id='${recipient}';`);
+        expect(counts).toBe(unwatchFirst ? '0' : '1');
+        const committed = history();
+        const replayedSource = await source(); expect(replayedSource.status()).toBe(200); expect(await replayedSource.text()).toBe(sourceText);
+        const replayedWatch = await unwatch(); expect(replayedWatch.status()).toBe(200); expect(await replayedWatch.text()).toBe(watchText);
+        expect(history()).toBe(committed);
       }
     }
     expect(notifications).toBe(3);
