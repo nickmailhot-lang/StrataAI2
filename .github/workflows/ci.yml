@@ -82,6 +82,11 @@ jobs:
           node scripts/ci/verify-integration-suites.mjs
           node --test tests/integration-suites.test.mjs
 
+      - name: Verify complete browser shard coverage
+        run: |
+          node --test tests/browser-shards.test.mjs
+          node scripts/ci/verify-browser-shards.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -495,7 +500,7 @@ jobs:
           retention-days: 14
 
   container-integration:
-    name: container-integration (${{ matrix.suite }})
+    name: container-integration (${{ matrix.suite }}, ${{ matrix.shard }}/${{ matrix.totalShards }})
     runs-on: ubuntu-24.04
     needs:
       - metadata
@@ -504,7 +509,14 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        suite: [commands, browser-foundation, browser-notifications, browser-full]
+        include:
+          - { suite: commands, shard: 1, totalShards: 1 }
+          - { suite: browser-foundation, shard: 1, totalShards: 1 }
+          - { suite: browser-notifications, shard: 1, totalShards: 1 }
+          - { suite: browser-full, shard: 1, totalShards: 4 }
+          - { suite: browser-full, shard: 2, totalShards: 4 }
+          - { suite: browser-full, shard: 3, totalShards: 4 }
+          - { suite: browser-full, shard: 4, totalShards: 4 }
     env:
       POSTGRES_DB: strataai
       POSTGRES_USER: strataai
@@ -1091,7 +1103,7 @@ jobs:
         env:
           STRATAAI_E2E_RELEASE_HEADERS: '1'
           STRATAAI_E2E_RATE_PACING: '1'
-        run: npx playwright test
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ matrix.totalShards }}
 
       - name: Authentication and invitation abuse limits on API and edge
         if: (matrix.suite == 'browser-full')
@@ -1107,7 +1119,7 @@ jobs:
         if: failure() && (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         uses: actions/upload-artifact@v7
         with:
-          name: browser-diagnostics-${{ github.sha }}-${{ matrix.suite }}
+          name: browser-diagnostics-${{ github.sha }}-${{ matrix.suite }}-${{ matrix.shard }}
           path: artifacts/retained/browser-diagnostics
           if-no-files-found: ignore
           retention-days: 14
@@ -1120,7 +1132,7 @@ jobs:
         if: always() && (matrix.suite == 'browser-full')
         uses: actions/upload-artifact@v7
         with:
-          name: browser-performance-${{ github.sha }}
+          name: browser-performance-${{ github.sha }}-${{ matrix.shard }}
           path: artifacts/retained/browser-performance
           if-no-files-found: ignore
           retention-days: 90
@@ -1140,7 +1152,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: container-integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}
+          name: container-integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}-${{ matrix.shard }}
           path: artifacts/retained/container-integration-diagnostics
           if-no-files-found: ignore
           retention-days: 14

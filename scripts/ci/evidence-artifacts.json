@@ -130,7 +130,7 @@
     ]
   },
   "Retain browser failure evidence": {
-    "artifact": "browser-diagnostics-${{ github.sha }}-${{ matrix.suite }}",
+    "artifact": "browser-diagnostics-${{ github.sha }}-${{ matrix.suite }}-${{ matrix.shard }}",
     "output": "artifacts/retained/browser-diagnostics",
     "entries": [
       [
@@ -144,7 +144,7 @@
     ]
   },
   "Retain scoped browser performance measurements": {
-    "artifact": "browser-performance-${{ github.sha }}",
+    "artifact": "browser-performance-${{ github.sha }}-${{ matrix.shard }}",
     "output": "artifacts/retained/browser-performance",
     "entries": [
       [
@@ -154,7 +154,7 @@
     ]
   },
   "Upload integration diagnostics": {
-    "artifact": "container-integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}",
+    "artifact": "container-integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}-${{ matrix.shard }}",
     "output": "artifacts/retained/container-integration-diagnostics",
     "entries": [
       [

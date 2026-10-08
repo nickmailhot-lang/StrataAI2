@@ -10,12 +10,12 @@ const integration = value => value.jobs['container-integration'];
 const step = (value, name) => integration(value).steps.find(entry => entry.name === name);
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, registeredSteps: 110 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 110 });
 });
 
 const mutations = [
   ['omitted native capacity test', value => { integration(value).steps = integration(value).steps.filter(entry => entry.name !== 'Check concurrent and large-board rank allocation'); }],
-  ['removed full browser group', value => { integration(value).strategy.matrix.suite.pop(); }],
+  ['removed full browser shard', value => { integration(value).strategy.matrix.include.pop(); }],
   ['fail-fast cancellation', value => { integration(value).strategy['fail-fast'] = true; }],
   ['ignored integration failure', value => { integration(value)['continue-on-error'] = true; }],
   ['ignored mandatory test failure', value => { step(value, 'Authenticated browser E2E against exact release images')['continue-on-error'] = true; }],
@@ -58,6 +58,11 @@ const mutations = [
   ['security checksum generation bypassed', value => { value.jobs.security.steps.find(entry => entry.name === 'Bind retained security evidence checksums').run = 'echo unchecked'; }],
   ['original image evidence lost during release copying', value => { const entry = value.jobs['release-bundle'].steps.find(entry => entry.name === 'Assemble release bundle'); entry.run = entry.run.replace('cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json bundle/images/', 'echo omitted'); }],
   ['final bundle no longer checked against original inputs', value => { value.jobs['release-bundle'].steps.find(entry => entry.name === 'Verify release bundle completeness and checksums').run = 'python3 scripts/ci/verify-release-artifacts.py bundle --path bundle'; }],
+  ['browser shard repeated', value => { integration(value).strategy.matrix.include.at(-1).shard = 1; }],
+  ['browser total inconsistent', value => { integration(value).strategy.matrix.include.at(-1).totalShards = 5; }],
+  ['browser coverage check omitted', value => { value.jobs['web-quality'].steps = value.jobs['web-quality'].steps.filter(entry => entry.name !== 'Verify complete browser shard coverage'); }],
+  ['full browser command adds filtering', value => { step(value, 'Authenticated browser E2E against exact release images').run += ' --grep fast'; }],
+  ['browser diagnostics collide between shards', value => { step(value, 'Retain browser failure evidence').with.name = 'shared-browser-diagnostics'; }],
   ['raw assertion reports published', value => { value.jobs['dotnet-quality'].steps.find(entry => entry.name === 'Retain .NET source test results').with.path = '${{ runner.temp }}/source-tests-raw'; }],
   ['source test failure summary skipped', value => { value.jobs['web-quality'].steps.find(entry => entry.name === 'Summarize web source test results').if = 'success()'; }],
   ['source report publication failure ignored', value => { value.jobs['web-quality'].steps.find(entry => entry.name === 'Summarize web source test results')['continue-on-error'] = true; }],

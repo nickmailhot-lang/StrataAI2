@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { parseDocument } from 'yaml';
+import { shardCount } from './verify-browser-shards.mjs';
 
 export const suites = ['commands', 'browser-foundation', 'browser-notifications', 'browser-full'];
 const evidenceScopes = JSON.parse(readFileSync(new URL('./evidence-artifacts.json', import.meta.url), 'utf8'));
@@ -29,7 +30,20 @@ function owners(step) {
 export function verifyIntegrationSuites(workflow, registry) {
   const jobs = workflow.jobs;
   const job = jobs['container-integration'];
-  assert.deepEqual(job.strategy.matrix, { suite: suites }, 'All four mandatory integration groups must run');
+  const executions = [
+    ...suites.filter(suite => suite !== 'browser-full').map(suite => ({ suite, shard: 1, totalShards: 1 })),
+    ...Array.from({ length: shardCount }, (_, index) => ({ suite: 'browser-full', shard: index + 1, totalShards: shardCount })),
+  ];
+  assert.deepEqual(job.strategy.matrix, { include: executions }, 'All integration groups and complete browser shards must run');
+  assert.equal(job.name, 'container-integration (${{ matrix.suite }}, ${{ matrix.shard }}/${{ matrix.totalShards }})');
+  const fullBrowser = job.steps.find(step => step.name === 'Authenticated browser E2E against exact release images');
+  assert.equal(fullBrowser.run, 'npx playwright test --shard=${{ matrix.shard }}/${{ matrix.totalShards }}');
+  assert.deepEqual(fullBrowser.env, { STRATAAI_E2E_RELEASE_HEADERS: '1', STRATAAI_E2E_RATE_PACING: '1' });
+  const browserCoverage = jobs['web-quality'].steps.find(step => step.name === 'Verify complete browser shard coverage');
+  assert.equal(browserCoverage?.run, 'node --test tests/browser-shards.test.mjs\nnode scripts/ci/verify-browser-shards.mjs\n');
+  assert.equal(browserCoverage.if, undefined);
+  assert.equal(browserCoverage['continue-on-error'] ?? false, false);
+
   assert.equal(job.strategy['fail-fast'], false, 'One failing group must not cancel diagnostic work in another');
   assert.equal(job.strategy['max-parallel'], 4);
   assert.equal(job['continue-on-error'] ?? false, false, 'Integration failures must block release');
@@ -172,7 +186,7 @@ export function verifyIntegrationSuites(workflow, registry) {
     assert.equal(upload.with.name, scope.artifact, 'Preserve artifact identity');
   }
   const artifactNames = new Set();
-  for (const suite of suites) {
+  for (const { suite, shard } of executions) {
     const steps = job.steps.filter(step => owners(step).includes(suite));
     const index = name => steps.findIndex(step => step.name === name);
     const precedes = (first, second) => assert.ok(index(first) >= 0 && index(second) > index(first),
@@ -198,7 +212,7 @@ export function verifyIntegrationSuites(workflow, registry) {
     for (const step of steps) {
       assert.ok(!/docker (?:build|buildx build)|compose[^\n]*\bbuild\b/.test(step.run ?? ''), 'Integration may not rebuild release images');
       if (step.uses?.startsWith('actions/upload-artifact@')) {
-        const name = step.with.name.replace('${{ matrix.suite }}', suite);
+        const name = step.with.name.replace('${{ matrix.suite }}', suite).replace('${{ matrix.shard }}', String(shard));
         assert.ok(!artifactNames.has(name), `Artifact collision across independent jobs: ${name}`);
         artifactNames.add(name);
       }
@@ -214,7 +228,7 @@ export function verifyIntegrationSuites(workflow, registry) {
   assert.match(gate.run, /for result in .*"\$CONTAINER_RESULT"/);
   assert.match(gate.run, /if \[ "\$result" != "success" \]; then[\s\S]*exit 1/);
   assert.ok(jobs['release-bundle'].needs.includes('required-ci'));
-  return { groups: suites.length, registeredSteps: named.length };
+  return { groups: suites.length, executions: executions.length, registeredSteps: named.length };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -222,5 +236,5 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     readWorkflow(readFileSync('.github/workflows/ci.yml', 'utf8')),
     JSON.parse(readFileSync('scripts/ci/integration-suites.json', 'utf8')),
   );
-  console.log(`Mandatory integration coverage: ${result.groups} groups, ${result.registeredSteps} registered steps`);
+  console.log(`Mandatory integration coverage: ${result.groups} groups/${result.executions} isolated executions, ${result.registeredSteps} registered steps`);
 }
