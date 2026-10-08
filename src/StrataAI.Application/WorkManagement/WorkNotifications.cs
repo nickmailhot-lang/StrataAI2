@@ -6,6 +6,9 @@ public sealed record CardNotification(Guid Id, Guid OrganizationId, Guid BoardId
     Guid CardId, Guid EventId, Guid RecipientId, Guid ActorId, long CardVersion,
     DateTimeOffset CreatedAt, DateTimeOffset? ReadAt)
 {
+    // The historical envelope is immutable; its sole mutable state is the
+    // first read time. Keep the audit clock bound to those persisted facts.
+    public DateTimeOffset UpdatedAt => ReadAt ?? CreatedAt;
     // Read projection only; never persisted into the historical envelope.
     [System.Text.Json.Serialization.JsonIgnore]
     public Guid? CurrentBoardId { get; init; }

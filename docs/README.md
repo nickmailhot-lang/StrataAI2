@@ -164,6 +164,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Assignment notification persistence (PRD-11 / PRD-17)](architecture/assignment-notifications.md)
 - [PRD-15 comments, mentions and activity acceptance](architecture/comments-mentions-activity.md)
 - [Authorized notification inbox (PRD-17)](architecture/notification-inbox.md)
+- [Notification audit clocks](architecture/notification-audit-clocks.md) — persisted creation/first-read clock projection and verification limits.
 - [Recipient-private notification events and acceptance evidence](architecture/notification-realtime.md)
 - [Watch activity notifications (PRD-17)](architecture/watch-activity-notifications.md)
 - [Personal watch subscriptions (PRD-17)](architecture/watch-subscriptions.md)

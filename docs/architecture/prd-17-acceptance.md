@@ -854,3 +854,14 @@ transport or capacity claim. Current complete retained-image CI, remaining
 role/lifecycle/movement/rollback/interaction/capacity requirements and full DoD
 remain required. PRD-17 stays open at **15% estimated work remaining** (planning
 estimate).
+
+## Canonical notification audit clocks
+
+The [notification clock projection](notification-audit-clocks.md) exposes the
+creation/immutable-first-read audit time through the canonical record and
+authorized inbox response. The original HTTP regression fails on the missing
+clock; all 17 selected notification API cases and the strict Release build pass
+after repair. The restricted schema-114 contract verifies stored precision,
+repeat/source replay and complete owning rollback. These are scoped API-host and
+synthetic-admission storage proofs, separate from current immutable browser/Worker
+release acceptance. Estimated PRD-17 work remaining stays **15%**.

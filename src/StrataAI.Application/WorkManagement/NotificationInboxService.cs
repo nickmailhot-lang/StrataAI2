@@ -21,7 +21,10 @@ public sealed record NotificationCursor(DateTimeOffset CreatedAt, Guid Id)
 public sealed record NotificationInboxItem(Guid Id, Guid RecipientId, Guid ActorId, string Type,
     string EntityType, Guid EntityId, Guid BoardId, string EntityLink, DateTimeOffset CreatedAt, DateTimeOffset? ReadAt,
     [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-    Guid? CurrentBoardId = null);
+    Guid? CurrentBoardId = null)
+{
+    public DateTimeOffset UpdatedAt => ReadAt ?? CreatedAt;
+}
 public sealed record NotificationInboxPage(Guid OrganizationId, IReadOnlyList<NotificationInboxItem> Items, string? NextCursor);
 public sealed record NotificationReadAcknowledgment(Guid Id, DateTimeOffset ReadAt);
 public sealed record NotificationReadResult(Guid OrganizationId, IReadOnlyList<NotificationReadAcknowledgment> Items);

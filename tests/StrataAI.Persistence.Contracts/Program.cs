@@ -196,6 +196,13 @@ AttachmentUploadIntent Intent(Guid? retry = null) => AttachmentUploadIntent.Prep
     "Contract image",128,fixtureDigest,now.AddHours(1),now);
 try
 {
+    if (args.Contains("--comment-mention-notifications-only", StringComparer.Ordinal))
+    {
+        await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await Seed(organization,user,board,list,card); await Seed(foreignOrganization,foreignUser,foreignBoard,foreignList,foreignCard);
+        await CommentMentionNotificationContract.RunAsync(admin,provider,organization,card,user,foreignUser,ct);
+        return;
+    }
     if (args.Contains("--notification-batches-only", StringComparer.Ordinal))
     {
         await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);

@@ -64,6 +64,17 @@ internal static class CommentMentionNotificationContract
                     throw new InvalidOperationException("Mismatched batch source time was accepted.");
                 }
                 catch (InvalidOperationException e) when (e.Message == "Assignment notification event was unavailable or reused.") { }
+                Require(item.UpdatedAt == item.CreatedAt && item.ReadAt is null, "Unread notification audit clock changed.");
+                var inbox = provider.GetRequiredService<INotificationInboxStore>();
+                var accepted = (await inbox.MarkReadAsync(tenant, recipient, [item.Id], now.AddDays(1).AddTicks(7), ct)).Single();
+                var read = (await notifications.ListCardNotificationsAsync(tenant, recipient, cancellationToken: ct))
+                    .Single(row => row.Id == item.Id);
+                Require(read.ReadAt == accepted.ReadAt && read.UpdatedAt == accepted.ReadAt,
+                    "Notification audit clock did not retain the authoritative stored read time.");
+                await inbox.MarkReadAsync(tenant, recipient, [item.Id], now.AddDays(2), ct);
+                await notifications.AppendCardMentionAsync(change, recipient, ct);
+                Require(read == (await notifications.ListCardNotificationsAsync(tenant, recipient, cancellationToken: ct))
+                    .Single(row => row.Id == item.Id), "Read or source replay advanced notification audit metadata.");
                 return WorkOperation<bool>.Failure("fixture_refused");
             }, ct);
             Require(result.ErrorCode == "fixture_refused", "Mention storage fixture did not reach deliberate rollback.");
@@ -86,6 +97,6 @@ internal static class CommentMentionNotificationContract
             remove.Parameters.AddWithValue("tenant", tenant); remove.Parameters.AddWithValue("recipient", recipient);
             await remove.ExecuteNonQueryAsync(ct);
         }
-        Console.WriteLine("Restricted mention publication: exact source event, duplicate identity, self suppression, mismatched revision refusal and atomic Card/comment/snapshot/event/notification/delivery rollback passed.");
+        Console.WriteLine("Restricted mention publication: exact source event, duplicate identity, self suppression, mismatched revision refusal, authoritative notification audit clocks and atomic Card/comment/snapshot/event/notification/delivery rollback passed.");
     }
 }

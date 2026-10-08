@@ -126,7 +126,8 @@ jq -e --arg org "$org" --arg member "$member" --arg owner "$owner" --arg card "$
  .organizationId==$org and (.items|length)==1 and .nextCursor==null and .items[0].recipientId==$member and .items[0].actorId==$owner
  and .items[0].type=="CARD_ASSIGNED" and .items[0].entityType=="Card" and .items[0].entityId==$card and .items[0].boardId==$board
  and .items[0].entityLink==("/app/"+$org+"/boards/"+$board+"/cards/"+$card) and .items[0].readAt==null
- and (.items[0]|keys|sort)==["actorId","boardId","createdAt","entityId","entityLink","entityType","id","readAt","recipientId","type"]' "$scratch/notification-first.json" >/dev/null
+ and .items[0].updatedAt==.items[0].createdAt
+ and (.items[0]|keys|sort)==["actorId","boardId","createdAt","entityId","entityLink","entityType","id","readAt","recipientId","type","updatedAt"]' "$scratch/notification-first.json" >/dev/null
 notification_id=$(jq -r '.items[0].id' "$scratch/notification-first.json")
 notification_key=11111111-1111-1111-1111-111111111155
 notification_before=$(state)
@@ -145,6 +146,11 @@ cp "$scratch/response.json" "$scratch/notification-receipt.json"
 notification_after=$(state)
 test "$(request member POST "$notification_path/$notification_id/read" "$notification_key" '{}')" = 200
 cmp "$scratch/response.json" "$scratch/notification-receipt.json"; test "$notification_after" = "$(state)"
+test "$(get member "$notification_path" notification-read-clock)" = 200
+jq -e --arg id "$notification_id" --slurpfile receipt "$scratch/notification-receipt.json" '
+ (.items|length)==1 and .items[0].id==$id and .items[0].updatedAt==$receipt[0].items[0].readAt
+ and .items[0].updatedAt==.items[0].readAt' "$scratch/notification-read-clock.json" >/dev/null
+
 test "$(get owner "$notification_path" owner-notifications)" = 200
 jq -e '(.items|length)==0 and .nextCursor==null' "$scratch/owner-notifications.json" >/dev/null
 after=$(state)

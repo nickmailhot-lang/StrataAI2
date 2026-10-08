@@ -130,7 +130,8 @@ public sealed partial class ApiHostTests
             Assert.Equal(f.Board, item.GetProperty("boardId").GetGuid());
             Assert.Equal($"/app/{f.Organization}/boards/{f.Board}/cards/{item.GetProperty("entityId").GetGuid()}", item.GetProperty("entityLink").GetString());
             Assert.Equal(JsonValueKind.Null, item.GetProperty("readAt").ValueKind);
-            Assert.Equal(new[] { "actorId", "boardId", "createdAt", "entityId", "entityLink", "entityType", "id", "readAt", "recipientId", "type" },
+            Assert.Equal(item.GetProperty("createdAt").GetDateTimeOffset(), item.GetProperty("updatedAt").GetDateTimeOffset());
+            Assert.Equal(new[] { "actorId", "boardId", "createdAt", "entityId", "entityLink", "entityType", "id", "readAt", "recipientId", "type", "updatedAt" },
                 item.EnumerateObject().Select(p => p.Name).Order().ToArray());
         });
         Assert.Empty((await owner.GetFromJsonAsync<JsonElement>(path + $"?recipientId={f.Recipient}", ct)).GetProperty("items").EnumerateArray());
@@ -152,6 +153,9 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.NotFound, deniedBulk.StatusCode);
         var unchanged = (await recipient.GetFromJsonAsync<JsonElement>(path, ct)).GetProperty("items").EnumerateArray().ToArray();
         Assert.Equal(JsonValueKind.Null, unchanged.Single(n => n.GetProperty("id").GetGuid() == second).GetProperty("readAt").ValueKind);
+        Assert.Equal(readAt, unchanged.Single(n => n.GetProperty("id").GetGuid() == first).GetProperty("updatedAt").GetDateTimeOffset());
+        Assert.Equal(items.Single(n => n.GetProperty("id").GetGuid() == second).GetProperty("createdAt").GetDateTimeOffset(),
+            unchanged.Single(n => n.GetProperty("id").GetGuid() == second).GetProperty("updatedAt").GetDateTimeOffset());
         var bulkKey = Guid.NewGuid().ToString();
         using var bulk = await Mutate(recipient, HttpMethod.Post, path + "/read", new { ids = new[] { first, second } }, bulkKey);
         Assert.Equal(HttpStatusCode.OK, bulk.StatusCode); var bulkReceipt = await bulk.Content.ReadAsStringAsync(ct);
@@ -161,6 +165,9 @@ public sealed partial class ApiHostTests
         Assert.Equal(bulkReceipt, await bulkReplay.Content.ReadAsStringAsync(ct));
         using var reused = await Mutate(recipient, HttpMethod.Post, path + "/read", new { ids = new[] { second } }, bulkKey);
         Assert.Equal(HttpStatusCode.Conflict, reused.StatusCode);
+        var afterBulk = (await recipient.GetFromJsonAsync<JsonElement>(path, ct)).GetProperty("items").EnumerateArray().ToArray();
+        Assert.Equal(readAt, afterBulk.Single(n => n.GetProperty("id").GetGuid() == first).GetProperty("updatedAt").GetDateTimeOffset());
+        Assert.All(afterBulk, item => Assert.Equal(item.GetProperty("readAt").GetDateTimeOffset(), item.GetProperty("updatedAt").GetDateTimeOffset()));
         foreach (var selection in new[] { Array.Empty<Guid>(), new[] { first, first }, new[] { Guid.Empty }, Enumerable.Range(0, 51).Select(_ => Guid.NewGuid()).ToArray() })
         {
             using var invalid = await Mutate(recipient, HttpMethod.Post, path + "/read", new { ids = selection });
