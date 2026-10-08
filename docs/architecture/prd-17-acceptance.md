@@ -199,3 +199,45 @@ These are compiled-runtime results with unverified fixture accounts. Current
 retained-image, strict-policy, remaining producer/concurrency/capacity and full
 Definition of Done requirements remain. Estimated PRD-17 work remaining stays
 **21%** (planning estimate); the issue remains open.
+
+## Executed two-inbox reminder private transport
+
+Both actual Worker due-firing cases in `card-reminders.spec.ts` pass together
+at 1280px and 390px on 2026-10-08 (2 passed, exit 0). Two native inbox pages
+receive their empty recipient-private SignalR snapshots before scheduling.
+A real near-future AT_DUE request is then saved through keyboard MUI controls;
+no fixture advances its due clock, lease or firing state. The separate Worker
+retains verified-email enforcement and the disposable recipient is verified.
+The Card panel recovers FIRED version 2/generation 1 and both inboxes show one
+intentional self-recipient reminder with its canonical Card link.
+
+Both actual live streams contain exactly one NOTIFICATION_CREATED followed by
+one NOTIFICATION_READ. Every observed snapshot/event matches the Organization
+and recipient; Notification event metadata is empty. The two streams' event
+IDs exactly match the persisted private journal's two distinct identities.
+Keyboard mark-read in one inbox updates both to zero unread without manual
+reload. Original scheduling key/body recovers its unchanged acknowledgment
+after firing without extra notification/events. Tagged Axe and overflow checks
+pass on the Card page and both inboxes at each viewport.
+
+The first invocation was stopped after its retained live trace showed a wait
+for the missing AT_DUE menu option: scheduling never started and no reminder
+notification appeared. Its invocation-owned browser processes were stopped;
+the outer fixture removed its containers/database. It is failed diagnostic
+evidence, not acceptance. The fixture now activates the author foreground,
+uses existing admitted-focus single keyboard activation, checks option visibility
+with a bounded assertion and applies the same admission to save/read controls.
+It does not repeat commands or change the due clock, delivery deadline or
+product authorization. The subsequent complete invocation passes both cases.
+
+The current MUI production bundle, read-only compiled Production API/separate
+Worker, restricted PostgreSQL 17/pgvector schema 112 and Nginx establish local
+compiled evidence. API fixture policy permits unverified accounts while these
+recipients and the Worker enforce verification; provider delivery is not claimed.
+All owned containers/database are removed and original services/data preserved.
+Browser typechecking, relative-link and diff checks pass. These mandatory full-CI
+cases supersede the earlier lack of independent reminder WebSocket-frame proof
+and strengthen NOTIFY-FR-010/012 and AC-NOTIFY-17-03. Current immutable-image,
+concurrent/capacity, remaining producer and complete Definition of Done acceptance
+still govern closure. Estimated PRD-17 work remaining stays **21%**; PRD-12 stays
+**24%** (planning estimates); both remain open.

@@ -2,6 +2,7 @@ import { expect, test } from './releaseTest';
 import AxeBuilder from '@axe-core/playwright';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { execFileSync } from 'node:child_process';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-12: keyboard personal Reminder recovery and live cancellation across clients at ${width}px`, async ({ page, context }) => {
@@ -103,17 +104,47 @@ for (const width of [1280, 390]) {
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request, board);
-      const inbox = await context.newPage(); await inbox.setViewportSize({ width, height: 844 });
-      await inbox.goto(`/app/${org}/notifications`);
-      await expect(inbox.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+      const inbox = await context.newPage(); const mirror = await context.newPage();
+      const live = [inbox, mirror].map(client => {
+        const observed = { snapshots: 0, events: [] as { eventId: string; eventType: string }[] };
+        client.on('websocket', socket => {
+          if (new URL(socket.url()).pathname !== '/notifications/live') return;
+          socket.on('framereceived', frame => {
+            if (typeof frame.payload !== 'string') return;
+            for (const text of frame.payload.split('\u001e').filter(Boolean)) {
+              const message = JSON.parse(text);
+              if (message.type !== 2 || !message.item) continue;
+              const item = message.item;
+              expect(item.organizationId).toBe(org); expect(item.recipientId).toBe(account.user.id);
+              observed.snapshots++;
+              for (const event of item.events) {
+                expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(account.user.id);
+                expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
+                observed.events.push({ eventId: event.eventId, eventType: event.eventType });
+              }
+            }
+          });
+        });
+        return observed;
+      });
+      for (const [index, client] of [inbox, mirror].entries()) {
+        await client.setViewportSize({ width, height: 844 });
+        await client.goto(`/app/${org}/notifications`);
+        await expect(client.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+        await expect.poll(() => live[index].snapshots).toBeGreaterThan(0);
+        expect(live[index].events).toEqual([]);
+      }
+      await page.bringToFront();
       await page.goto(`/app/${org}/boards/${board}/cards/${card}`);
       await page.getByRole('button', { name: 'Due reminder', exact: true }).press('Enter');
       const region = page.getByRole('region', { name: 'Personal due reminder' });
       await expect(region.getByText('You have no active due reminder.', { exact: true })).toBeVisible();
-      await region.getByRole('combobox', { name: 'Reminder interval' }).press('Enter');
-      await page.getByRole('option', { name: 'At the due time', exact: true }).press('Enter');
+      await page.bringToFront();
+      await pressAdmittedAction(region.getByRole('combobox', { name: 'Reminder interval' }));
+      const atDue = page.getByRole('option', { name: 'At the due time', exact: true });
+      await expect(atDue).toBeVisible(); await pressAdmittedAction(atDue);
       const saving = page.waitForResponse(reply => new URL(reply.url()).pathname === `/cards/${card}/reminders` && reply.request().method() === 'POST');
-      await region.getByRole('button', { name: 'Save due reminder' }).press('Enter');
+      await pressAdmittedAction(region.getByRole('button', { name: 'Save due reminder' }));
       const saved = await saving; expect(saved.status()).toBe(200); const original = await saved.json();
       const key = saved.request().headers()['idempotency-key']; expect(key).toMatch(/^[0-9a-f-]{36}$/);
       const body = saved.request().postDataJSON();
@@ -121,9 +152,12 @@ for (const width of [1280, 390]) {
       await region.getByRole('button', { name: 'Due reminder', exact: true }).press('Enter');
       await expect(region.getByText('Your due reminder is scheduled.', { exact: true })).toBeVisible();
       await expect(region.getByText('Your due reminder was delivered.', { exact: true })).toBeVisible({ timeout: 90_000 });
-      await expect(inbox.getByText('Due date reminder · Unread', { exact: true })).toBeVisible({ timeout: 30_000 });
-      await expect(inbox.getByRole('article')).toHaveCount(1);
-      await expect(inbox.getByRole('link', { name: 'Open Card', exact: true })).toHaveAttribute('href', `/app/${org}/boards/${board}/cards/${card}`);
+      for (const [index, client] of [inbox, mirror].entries()) {
+        await expect(client.getByText('Due date reminder · Unread', { exact: true })).toBeVisible({ timeout: 30_000 });
+        await expect(client.getByRole('article')).toHaveCount(1);
+        await expect(client.getByRole('link', { name: 'Open Card', exact: true })).toHaveAttribute('href', `/app/${org}/boards/${board}/cards/${card}`);
+        await expect.poll(() => live[index].events.map(event => event.eventType)).toEqual(['NOTIFICATION_CREATED']);
+      }
       const fired = await context.request.get(`/cards/${card}/reminders`); expect(fired.status()).toBe(200);
       expect((await fired.json()).reminder).toMatchObject({ id: original.reminder.id, status: 'FIRED', version: 2, generation: 1 });
       const replay = await context.request.post(`/cards/${card}/reminders`, { headers: { ...headers, 'Idempotency-Key': key }, data: body });
@@ -131,17 +165,24 @@ for (const width of [1280, 390]) {
       const beforeRead = await context.request.get(`/organizations/${org}/notifications`); expect(beforeRead.status()).toBe(200);
       const rows = (await beforeRead.json()).items; expect(rows).toHaveLength(1);
       expect(rows[0]).toMatchObject({ actorId: account.user.id, recipientId: account.user.id, entityId: card, type: 'REMINDER_FIRED', readAt: null });
-      await inbox.getByRole('button', { name: 'Mark read', exact: true }).press('Enter');
-      await expect(inbox.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+      await inbox.bringToFront();
+      await pressAdmittedAction(inbox.getByRole('button', { name: 'Mark read', exact: true }));
+      for (const [index, client] of [inbox, mirror].entries()) {
+        await expect(client.getByText('0 unread on this page.', { exact: true })).toBeVisible();
+        await expect.poll(() => live[index].events.map(event => event.eventType)).toEqual(['NOTIFICATION_CREATED', 'NOTIFICATION_READ']);
+      }
       const sync = await context.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(sync.status()).toBe(200);
       const journal = (await sync.json()).events;
       expect(journal.map((event: { eventType: string }) => event.eventType)).toEqual(['NOTIFICATION_CREATED', 'NOTIFICATION_READ']);
       expect(new Set(journal.map((event: { eventId: string }) => event.eventId)).size).toBe(2);
-      for (const client of [page, inbox]) {
+      for (const observed of live) {
+        expect(observed.events.map(event => event.eventId)).toEqual(journal.map((event: { eventId: string }) => event.eventId));
+      }
+      for (const client of [page, inbox, mirror]) {
         expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
         expect(await client.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       }
-      await inbox.close();
+      await inbox.close(); await mirror.close();
     } finally { restoreWorker(); }
   });
 }

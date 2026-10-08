@@ -596,3 +596,18 @@ retains verified-email enforcement; fixture verification and local compiled
 containers do not establish provider delivery or current immutable-image identity.
 Complete release/capacity/concurrency acceptance remains required; estimated
 PRD-12 work remaining is **24%** (planning estimate), and the ticket stays open.
+
+## Executed two-inbox reminder live identities
+
+The [two-inbox actual due-firing cases](prd-17-acceptance.md#executed-two-inbox-reminder-private-transport)
+now independently inspect private SignalR frames at desktop and phone widths.
+Both native consumers receive the same canonical creation/read identities as
+the persisted journal, one real reminder and its Card link; keyboard read in
+one updates both without reload. The real due clock, verified-email Worker,
+FIRED revision/generation and unchanged original scheduling receipt remain
+asserted. Card and both inboxes pass tagged Axe/overflow checks. A bounded
+foreground menu/save activation repairs the initial missing-option fixture
+wait without repeating mutations. This is local compiled evidence, not current
+retained-image or provider delivery proof. Full release/concurrency/capacity
+and Definition of Done acceptance remain; estimated PRD-12 work remaining stays
+**24%** (planning estimate); the ticket remains open.
