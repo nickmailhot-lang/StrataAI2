@@ -1,7 +1,7 @@
 # Notification and watching acceptance map — PRD-17
 
 [PRD-17](https://github.com/nickmailhot-lang/StrataAI2/issues/18) remains open at
-**21% estimated work remaining** (planning estimate). Earlier estimates below
+**20% estimated work remaining** (planning estimate). Earlier estimates below
 record their evidence scope. This maps all twelve
 functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
@@ -16,9 +16,9 @@ The adopted MUI/API/separate Worker/PostgreSQL architecture is unchanged.
 | NOTIFY-FR-003 single and bulk read | Recipient-bound read commands, original-key recovery and immutable first-read timestamp; [inbox contract](notification-inbox.md) | Full restricted API/current-image read, rollback, overlapping command, paging and lost-response/browser cases |
 | NOTIFY-FR-004 CARD/LIST/BOARD watch/unwatch | [Personal watch contracts](watch-subscriptions.md), retained subscription identity, version and original receipt | Current-image native watch lifecycle, permission/account withdrawal, retry, movement and parent transitions |
 | NOTIFY-FR-005 watched Card changes | [Configured activity matrix](watch-activity-notifications.md), originating command transaction and post-mutation revision | All configured producers, current eligibility, source/journal/job atomicity and native producer-to-inbox delivery |
-| NOTIFY-FR-006 current List and newly created Cards | Same producer selects current List watchers and includes Card creation | Actual creation/movement boundary cases, concurrent watch/access transitions and exact historical attribution |
+| NOTIFY-FR-006 current List and newly created Cards | Same producer selects current List watchers and includes Card creation | Native current-List creation/movement boundaries executed below; current-image, concurrent watch/access transitions and exact historical attribution remain |
 | NOTIFY-FR-007 Board-wide Card activity | Same producer selects current Board watchers and deduplicates overlapping scopes | Full activity matrix and current-image 500-recipient correctness/latency fixture; scale Worker delivery remains distinct |
-| NOTIFY-FR-008 relationship at triggering event | Post-mutation current List/Board attribution; direct Card watch follows identity | Watched/unwatched source/destination movement matrix, real concurrent admission and native reconciliation |
+| NOTIFY-FR-008 relationship at triggering event | Post-mutation current List/Board attribution; direct Card watch follows identity | Local native watched/unwatched List movement and reconciliation executed below; current-image cross-Board matrix and real concurrent admission remain |
 | NOTIFY-FR-009 mentions and assignments | [Assignment precedence](watch-activity-notifications.md), [assignment persistence](assignment-notifications.md), [mentions](comments-mentions-activity.md) | Both producer pipelines, actor suppression, deduplication, visibility withdrawal and current-image native delivery |
 | NOTIFY-FR-010 due reminders | [Personal due reminders and typed Worker delivery](card-dates.md) | Real scheduled fire, narrow Worker capability, exactly-once notification/journal effect, cancellation/reclaim/access withdrawal and native recovery; saving a future reminder alone does not prove fire |
 | NOTIFY-FR-011 actor self-suppression | Originating activity excludes actor; assignment/watch precedence and due-reminder policy are documented separately | Full configured producer matrix, including intentional personal reminder semantics, without applying suppression indiscriminately |
@@ -258,3 +258,44 @@ fixture verification does not establish current retained-image identity, strict
 verification or complete role/concurrency/capacity/producer/Definition of Done
 acceptance. Estimated PRD-17 work remaining stays **21%**; PRD-11 stays **35%**
 (planning estimates); neither issue is closed.
+
+## Executed native current-List notification boundaries
+
+The complete `watch-notifications.spec.ts` case passes on 2026-10-08
+(1 passed, 53.5 seconds, exit 0), with both 1280px desktop and 390px phone
+recipient inboxes. All existing overlapping Board/List/Card deduplication,
+author suppression, keyboard watch/unwatch, peer MUI edit and notification/read
+assertions remain. After all original subscriptions are removed, the recipient
+uses actual MUI Board-canvas controls to subscribe only to the original List.
+
+A peer creates a Card in that watched List and another in an unwatched List.
+The original Card moves out of the watched List and receives a further edit
+outside it. Exactly one new CARD_CREATED notification identifies the watched
+creation and issuer; unwatched creation, move-out and outside edit create none.
+Moving the original Card back into the watched List adds exactly one CARD_MOVED
+notification with its canonical Card link and issuer. Both open native inboxes
+recover the exact two-then-three total articles and creation/move captions
+without manual reload. The issuer inbox stays empty. Tagged Axe checks pass on
+both native views. These assertions establish the List relationship at each
+actual triggering event rather than retaining its former List relationship.
+
+The first invocation timed out in its existing three-minute budget before the
+new movement assertions completed. Its retained live trace showed a wait during
+earlier watching activation; it is not acceptance. The fixture now brings each
+keyboard target's page to the foreground, uses the existing enabled-focus
+admission helper and bounds its single Enter action to five seconds. The new
+List controls open from the Board canvas rather than underneath Card detail.
+There is no command retry, longer overall deadline or authorization/effect-count
+relaxation. The subsequent complete invocation passes the existing and new
+assertions together.
+
+The current MUI production bundle, read-only compiled Production API/separate
+scoped Worker, restricted PostgreSQL 17/pgvector schema 112 and Nginx establish
+local compiled evidence. Fixture accounts use the optional-verification browser
+policy. All owned containers/database were removed, preserving original services
+and data. Browser typechecking and documentation-link/diff checks pass. This
+strengthens NOTIFY-FR-006/008 and native reconciliation; it does not independently
+inspect these movement notification WebSocket frames, prove cross-Board or
+concurrent transitions, strict policy, capacity or current retained-image/full
+Definition of Done acceptance. Estimated PRD-17 work remaining is now **20%**
+(planning estimate); the issue remains open.

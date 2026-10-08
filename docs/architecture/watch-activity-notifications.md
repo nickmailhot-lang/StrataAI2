@@ -333,3 +333,17 @@ linked record for exact assertions and runtime/policy limits. Local compiled
 evidence supersedes the earlier local-execution gap; strict email policy, due
 reminder fire, full capacity/concurrency and current immutable-image acceptance
 remain separate. PRD-17 stays open at **22% estimated work remaining**.
+
+## Executed native watched-List creation and movement
+
+The [complete native List-boundary case](prd-17-acceptance.md#executed-native-current-list-notification-boundaries)
+passes its existing overlap/unwatch behavior and new current-List matrix in one
+invocation. Desktop and phone inboxes receive exactly the watched creation and
+move into the watched List. Unwatched creation, move out and outside edit add no
+notification. The issuer inbox stays empty; recipient typed attribution,
+canonical move link, automatic UI recovery and tagged Axe checks pass.
+Foreground admitted-focus single activation and bounded keyboard calls repair
+the earlier fixture timeout without repeating mutations or extending deadlines.
+These are local compiled results with optional verification. Current immutable
+images, cross-Board/concurrent transitions, capacity and complete PRD acceptance
+remain. PRD-17 stays open at **20% estimated work remaining** (planning estimate).
