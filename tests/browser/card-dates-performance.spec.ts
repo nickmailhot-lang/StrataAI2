@@ -1,6 +1,9 @@
+import { performanceTrace, performanceTraceCondition } from './performanceTracing';
 import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
+
+test.use({ trace: performanceTrace });
 
 test('PRD-12: normal dated Board readiness, cached detail and date commands meet budgets', async ({ page, context }) => {
   test.setTimeout(120_000); await page.setViewportSize({ width: 1280, height: 844 });
@@ -38,9 +41,10 @@ test('PRD-12: normal dated Board readiness, cached detail and date commands meet
   await expect(link).toHaveAccessibleDescription('Upcoming');
   const usableMs = performance.now() - began;
   const detailBegan = performance.now(); await link.click();
-  await expect(page.getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
+  const detail = page.getByRole('dialog', { name: 'Card details', exact: true });
+  await expect(detail.getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
   const detailMs = performance.now() - detailBegan;
-  await expect(page.getByRole('region', { name: 'Card dates', exact: true })).toContainText('Upcoming');
+  await expect(detail.getByRole('region', { name: 'Card dates', exact: true })).toContainText('Upcoming');
   const samples: number[] = [];
   for (let index = 0; index < 20; index++) {
     const mutationBegan = performance.now();
@@ -51,7 +55,7 @@ test('PRD-12: normal dated Board readiness, cached detail and date commands meet
   }
   const p95 = [...samples].sort((a, b) => a - b)[18];
   await test.info().attach('card-dates-performance.json', { contentType: 'application/json', body: JSON.stringify({
-    fixture: { lists: 3, cards: 50, datedCards: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
+    fixture: { tracing: performanceTraceCondition, lists: 3, cards: 50, datedCards: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
     usableMs, detailMs, mutationP95Ms: p95, mutationSamplesMs: samples,
   }) });
   expect(usableMs).toBeLessThan(1500); expect(detailMs).toBeLessThan(200); expect(p95).toBeLessThan(500);

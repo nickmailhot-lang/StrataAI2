@@ -1,5 +1,8 @@
+import { performanceTrace, performanceTraceCondition } from './performanceTracing';
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
+
+test.use({ trace: performanceTrace });
 
 for (const width of [1280, 390]) {
 test(`PRD-06: list drop feedback precedes persistence and meets its budget at ${width}px`, async ({ page, context }) => {
@@ -122,7 +125,7 @@ test(`PRD-06: list drop feedback precedes persistence and meets its budget at ${
     finally { await touch?.detach(); await page.unroute(routePath); }
   }
   await test.info().attach('list-feedback-performance.json', { contentType: 'application/json', body: JSON.stringify({
-    fixture: { lists: 2, cards: 0, viewport: `${width}x844`, input: width === 390 ? 'chromium-touch' : 'chromium-mouse', topology: 'exact release images through Nginx' },
+    fixture: { tracing: performanceTraceCondition, lists: 2, cards: 0, viewport: `${width}x844`, input: width === 390 ? 'chromium-touch' : 'chromium-mouse', topology: 'exact release images through Nginx' },
     feedbackObserved: Number.isFinite(feedbackMs), feedbackMs: Number.isFinite(feedbackMs) ? feedbackMs : null,
   }) });
   expect(feedbackMs).toBeLessThan(100);

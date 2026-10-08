@@ -1,6 +1,9 @@
+import { performanceTrace, performanceTraceCondition } from './performanceTracing';
 import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
 import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
+
+test.use({ trace: performanceTrace });
 
 for (const width of [1280, 390]) {
 test(`PRD-06: normal Board readiness, cached detail and mutation latency meet budgets at ${width}px`, async ({ page, context }) => {
@@ -141,7 +144,7 @@ test(`PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   }
   const detailStarted = performance.now();
   await page.getByRole('link', { name: 'Performance card 1', exact: true }).click();
-  await expect(page.getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
+  await expect(page.getByRole('dialog', { name: 'Card details', exact: true }).getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
   const detailMs = performance.now() - detailStarted;
   const mutations: number[] = [];
   for (let index = 0; index < 20; index++) {
@@ -153,7 +156,7 @@ test(`PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   }
   const p95Ms = [...mutations].sort((a, b) => a - b)[Math.ceil(mutations.length * .95) - 1];
   await test.info().attach('kanban-performance.json', { contentType: 'application/json', body: JSON.stringify({
-    fixture: { lists: 3, cards: 50, samples: 20, viewport: `${width}x844`, input: width === 390 ? 'chromium-touch' : 'chromium-mouse', assets: 'warm', topology: 'exact release images through Nginx' },
+    fixture: { tracing: performanceTraceCondition, lists: 3, cards: 50, samples: 20, viewport: `${width}x844`, input: width === 390 ? 'chromium-touch' : 'chromium-mouse', assets: 'warm', topology: 'exact release images through Nginx' },
     usableMs, feedbackMs: Number.isFinite(feedbackMs) ? feedbackMs : null, feedbackObserved: Number.isFinite(feedbackMs),
     detailMs, mutationP95Ms: p95Ms, mutationSamplesMs: mutations,
   }) });

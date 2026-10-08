@@ -1,7 +1,10 @@
+import { performanceTrace, performanceTraceCondition } from './performanceTracing';
 import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+
+test.use({ trace: performanceTrace });
 
 test('PRD-13: normal checklist feedback, seek pages and mutation latency meet budgets', async ({ page, context }) => {
   test.setTimeout(180_000); await page.setViewportSize({ width: 1280, height: 844 });
@@ -48,7 +51,7 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
     await expect(page.getByRole('button', { name: 'Drag Checklist performance Card 1 card', exact: true })).toBeEnabled();
     const usableMs = performance.now() - began;
     const detailBegan = performance.now(); await page.getByRole('link', { name: 'Checklist performance Card 1', exact: true }).click();
-    await expect(page.getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
+    await expect(page.getByRole('dialog', { name: 'Card details', exact: true }).getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
     const detailMs = performance.now() - detailBegan;
     await page.getByRole('button', { name: 'Show checklists', exact: true }).press('Enter');
     await expect(page.getByText('0 of 63 items complete (0%)', { exact: true })).toBeVisible();
@@ -125,7 +128,7 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
     }
     const p95Ms = [...mutations].sort((a, b) => a - b)[18];
     await test.info().attach('checklist-performance.json', { contentType: 'application/json', body: JSON.stringify({
-      fixture: { lists: 3, cards: 50, checklists: 2, items: 63, pageSize: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
+      fixture: { tracing: performanceTraceCondition, lists: 3, cards: 50, checklists: 2, items: 63, pageSize: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
       usableMs, detailMs, itemPageMs, nextItemPageMs, feedbackObserved: Number.isFinite(feedbackMs), feedbackMs: Number.isFinite(feedbackMs) ? feedbackMs : null,
       mutationP95Ms: p95Ms, mutationSamplesMs: mutations,
     }) });

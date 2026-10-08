@@ -406,6 +406,59 @@ readiness nor detail opening meets its budget. Performance, large-data rendering
 and current immutable CI acceptance remain open; PRD-06 stays at **29% estimated
 work remaining** and PRD-12 at **25%** (planning estimates).
 
+## Timing instrumentation and retained trace conditions
+
+A local dated-Board rendering diagnostic on the unchanged compiled app found
+about 214 ms in JavaScript callbacks, 9 ms in layout and 22 ms in style updates.
+These overlapping trace categories are not additive latency measurements. A
+separate sampled CPU profile identified Playwright accessibility snapshot
+traversal alongside React/MUI work. A source-map diagnostic build had identical
+minified application code after removing its map comment; it was not deployed.
+Neither instrumented diagnostic proves a normal-condition latency budget.
+
+The four timing fixture files now retain command/network traces on failure
+without per-action DOM/accessibility snapshot serialization or trace screenshots.
+The independently configured failure screenshot remains enabled. Ordinary
+functional/accessibility scenarios keep their existing full traces. All setup,
+commands, current admission, source-version, receipt, placement, paging and
+canonical-state assertions remain; no threshold, retry count or timeout changed.
+Cached Card-title checks identify the named Card-details dialog before its enabled
+textbox. The same timing begins before the actual link click and ends only after
+that authoritative editable control is enabled.
+
+Each performance attachment declares `commands-and-network` tracing. The
+privacy-safe reporter retains that fixed condition, accepts explicit historical
+`dom-snapshots`, rejects unknown or malformed conditions, and reports absent
+historical instrumentation as null. It preserves failed outcomes, every mutation
+sample and all original budgets. Two new failing-before reporter cases now pass
+with all 13 reporter regressions; browser typechecking passes.
+
+The first dated-Board execution without trace snapshots measured 962.21 ms usable
+Board, 218.52 ms detail and 82.50 ms mutation p95. Scoping the editable title to its
+actual Card dialog then measured 945.64/201.16/75.25 ms. Both executions still
+failed the unchanged <200 ms detail budget. These are separate local measurements,
+not current immutable release evidence or proof of full performance acceptance.
+
+The final three-case native invocation ended with two passes and one setup
+failure. Both complete desktop workflows pass with the declared trace condition:
+
+| Final local native fixture | Usable Board | Cached detail | Painted move feedback | Mutation p95 |
+| --- | ---: | ---: | ---: | ---: |
+| 50 dated Cards, desktop | 969.30 ms | 171.30 ms | Not part of this fixture | 89.46 ms |
+| 50 Cards, desktop Kanban | 699.08 ms | 171.73 ms | 98.90 ms | 158.11 ms |
+
+The phone Kanban case failed during its untimed `/app` asset-warming navigation
+with Chromium `net::ERR_NO_BUFFER_SPACE`; it produced no latency samples and no
+retained performance entry. This is missing mobile evidence, not a passing or
+failed timing sample. Existing held-write/canonical-position/revision/reload and
+twenty real changing mutation assertions remain enforced in the passing desktop
+case. The reporter labels this execution `unverified runtime`; local compiled
+Production API/restricted PostgreSQL execution does not prove retained release
+images. Checklist and List-feedback fixtures have source/typechecking coverage
+for the new trace condition but were not rerun in this increment. Full mobile,
+large-data and current immutable CI acceptance remain open. PRD-06 remains at
+**29%** and PRD-12 at **25% estimated work remaining** (planning estimates).
+
 ## Phone List feedback coverage
 
 The two-empty-List feedback fixture now also runs at 390x844 with Chromium touch input. It reveals the moving List, activates its actual handle, and uses the left canvas boundary to auto-scroll until the anchor center is reachable. Touch release starts the same browser-clock sample used by the desktop pointer case. The first painted optimistic order must intersect the viewport and meet the unchanged <100ms budget while the keyed PATCH is held before dispatch. The fixture requires exactly one write, unchanged canonical ordering while held, the intended acknowledgment at revision two, an unchanged neighboring List, and persisted order after reload. Touch cancellation and session cleanup run on failure.

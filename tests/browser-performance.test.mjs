@@ -5,6 +5,20 @@ import PerformanceReporter, { performanceEntry, performanceProvenance } from './
 const fixture = { lists: 2, cards: 0, viewport: '1280x844', topology: 'exact release images through Nginx' };
 const sample = { fixture, feedbackObserved: true, feedbackMs: 43.5 };
 
+test('performance evidence records its trace condition without inventing historical instrumentation', () => {
+  for (const tracing of ['commands-and-network', 'dom-snapshots']) {
+    const entry = performanceEntry('list-feedback-performance.json', { ...sample, fixture: { ...fixture, tracing } }, 'failed');
+    assert.equal(entry.fixture.tracing, tracing); assert.equal(entry.status, 'failed');
+    assert.equal(entry.budgetsMs.feedback, 100);
+  }
+  assert.equal(performanceEntry('list-feedback-performance.json', sample, 'passed').fixture.tracing, null);
+});
+
+test('invalid trace conditions cannot be retained as trustworthy performance evidence', () => {
+  for (const tracing of ['private-value', false, { snapshots: false }])
+    assert.equal(performanceEntry('list-feedback-performance.json', { ...sample, fixture: { ...fixture, tracing } }, 'passed'), undefined);
+});
+
 test('local measurements cannot claim release image provenance', () => {
   assert.deepEqual(performanceProvenance({}), { revision: null, topology: 'unverified runtime' });
   const revision = 'a'.repeat(40);
