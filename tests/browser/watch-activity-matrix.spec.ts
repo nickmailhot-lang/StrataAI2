@@ -144,6 +144,7 @@ test('PRD-17-TC-01/06/07/08/10/11/12: all configured watch producers reach priva
     }
     expect(stored).toHaveLength(13);
     for (const row of rows) {
+      expect(row.updatedAt).toBe(row.createdAt);
       const persisted = stored.find((item: { id: string }) => item.id === row.id);
       expect(persisted).toMatchObject({ actor_id: issuer, recipient_id: recipient, board_id: board, card_id: row.entityId, notification_type: row.type, read_at: null });
       expect(utc(persisted.created_at)).toBe(utc(row.createdAt));
@@ -212,7 +213,9 @@ test('PRD-17-TC-01/06/07/08/10/11/12: all configured watch producers reach priva
     await mobile.unroute(`**${readPath}`);
     const readReply = await context.request.get(`/organizations/${org}/notifications`); expect(readReply.status()).toBe(200);
     const readRows = (await readReply.json()).items; expect(readRows).toHaveLength(13);
-    expect(readRows.map((row: { readAt: string | null }) => ({ ...row, readAt: null }))).toEqual(rows);
+    const firstReadAt = readRows[0].readAt;
+    expect(typeof firstReadAt).toBe('string');
+    expect(readRows).toEqual(rows.map((row: { readAt: string | null; updatedAt: string }) => ({ ...row, readAt: firstReadAt, updatedAt: firstReadAt })));
     expect(new Set(readRows.map((row: { readAt: string }) => utc(row.readAt))).size).toBe(1);
     const readSync = await context.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(readSync.status()).toBe(200);
     const readJournal = (await readSync.json()).events as PrivateEnvelope[]; expect(readJournal).toHaveLength(26);
@@ -230,6 +233,8 @@ test('PRD-17-TC-01/06/07/08/10/11/12: all configured watch producers reach priva
       expect(persisted).toMatchObject({ actor_id: recipient, recipient_id: recipient, tenant_id: org, board_id: board, version: 2, event_type: 'NOTIFICATION_READ', metadata: {} });
       expect(utc(event.createdAt)).toBe(utc(persisted.created_at)); expect(utc(event.createdAt)).toBe(utc(notification.read_at));
       expect(utc(visible.readAt)).toBe(utc(notification.read_at));
+      expect(utc(visible.updatedAt)).toBe(utc(notification.read_at));
+      expect(utc(visible.createdAt)).toBe(utc(notification.created_at));
     }
     for (const [index, client] of clients.entries()) {
       await expect(client.getByText('0 unread on this page.', { exact: true })).toBeVisible(); await expect(client.getByRole('article')).toHaveCount(13);

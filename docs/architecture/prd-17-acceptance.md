@@ -865,3 +865,13 @@ after repair. The restricted schema-114 contract verifies stored precision,
 repeat/source replay and complete owning rollback. These are scoped API-host and
 synthetic-admission storage proofs, separate from current immutable browser/Worker
 release acceptance. Estimated PRD-17 work remaining stays **15%**.
+
+The complete native watch activity scenario also passes after repairing its stale
+post-read expectation: all thirteen full inbox rows preserve their creation and
+source fields while `readAt` and `updatedAt` match the authoritative first-read
+clock. Actual schema-114 PostgreSQL, a separate current compiled Production
+Worker/API, strict verified accounts, desktop/phone private transport, keyboard
+controls, accessibility and lost-response retries are exercised. See the
+[clock acceptance evidence and its scope](notification-audit-clocks.md#native-watch-activity-and-first-read-acceptance).
+The fixture does not prove mail-provider delivery or current immutable-image/full
+CI success. PRD-17 remains open at **15% estimated work remaining**.

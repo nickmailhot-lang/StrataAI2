@@ -39,6 +39,32 @@ accounts/source setup and in-process transaction admission are synthetic; this
 does not prove HTTP session authorization, mail or deployed Worker transport.
 The owned proof container is removed and original services/data remain intact.
 
+## Native watch activity and first-read acceptance
+
+The notification group in [run 37848406366](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37848406366)
+passed identity-mail bootstrap and both native recovery/verification viewports,
+then failed the watch activity matrix's old full-row read comparison. All 26
+changed diff lines were `updatedAt`: the assertion reset `readAt` alone while
+expecting the unread creation clock to survive the first read.
+
+The [watch activity scenario](../../tests/browser/watch-activity-matrix.spec.ts)
+now requires unread `updatedAt === createdAt` and compares all thirteen complete
+read rows against their original rows with exactly `readAt` and `updatedAt`
+changed to the shared first-read timestamp. It independently checks each read
+clock against persisted PostgreSQL `read_at` and preserves the original stored
+creation time. Original-key and natural retries still preserve the entire
+notification, Card and journal history; no fields are discarded from comparison.
+
+Browser TypeScript and the complete scenario pass locally with the current
+compiled Production API and separate Worker, frozen MUI assets, and restricted
+PostgreSQL 17/pgvector schema 114. Verified-email enforcement stays enabled.
+Only the newly registered disposable accounts are activated by the existing
+fixture when mail tokens are private; provider delivery is separate acceptance.
+Both desktop and phone clients use native controls and real private delivery,
+including accessibility checks and recovery after a committed bulk-read response
+is deliberately lost. The invocation's containers and cloned database are removed.
+This is a scoped native proof, not current immutable-image/full-release success.
+
 Current immutable-image/full release gates and complete PRD requirements remain
 outstanding. Estimated work remaining stays **34% for PRD-01** and **15% for
 PRD-17** (planning estimates); neither issue is ready for closure.
