@@ -74,6 +74,7 @@ import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragC
 import { ListKeyboardNavigation } from './listKeyboardCoordinates';
 import { cardKeyboardCoordinates } from './cardKeyboardCoordinates';
 import { KanbanDragMeasurement } from './kanbanDragMeasurement';
+import { ImmediateDialogTransition } from './ImmediateDialogTransition';
 import { listDragAnnouncements, listDragInstructions } from './listDragAccessibility';
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
@@ -731,6 +732,7 @@ function BoardContent() {
       <Dialog
         open={Boolean(cardId)}
         transitionDuration={0}
+        slots={{ transition: ImmediateDialogTransition }}
         disableRestoreFocus
         slotProps={{ transition: { onExited: () => {
           (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });

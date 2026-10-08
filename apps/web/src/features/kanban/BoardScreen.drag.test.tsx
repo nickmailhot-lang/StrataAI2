@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import { StrictMode, type ComponentProps } from 'react';
 import type { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
@@ -34,21 +34,34 @@ const snapshot: BoardSnapshot = {
   ],
 };
 const reply = (body: unknown) => new Response(JSON.stringify(body), { status: 200 });
-afterEach(() => { vi.unstubAllGlobals(); drag.current = undefined; canvas.items = undefined; });
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); drag.current = undefined; canvas.items = undefined; });
 
 it('opens cached Card detail and retires the modal with focus restored to its canvas link', async () => {
+    const layoutReads: HTMLElement[] = [];
+    const scrollTop = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop')!;
+    vi.spyOn(Element.prototype, 'scrollTop', 'get').mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains('MuiDialog-container')) layoutReads.push(this);
+      return scrollTop.get!.call(this);
+    });
     vi.stubGlobal('fetch', vi.fn(async () => reply(snapshot)));
     const router = createMemoryRouter([
       { path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> },
       { path: '/app/:organizationId/boards/:boardId/cards/:cardId', element: <BoardScreen /> },
     ], { initialEntries: ['/app/org/boards/board'] });
-    render(<RouterProvider router={router} />);
+    render(<StrictMode><RouterProvider router={router} /></StrictMode>);
     await waitFor(() => expect(screen.getByRole('button', { name: `Drag ${card.title} card` })).toBeEnabled());
     act(() => screen.getByRole('link', { name: card.title }).click());
     await screen.findByRole('textbox', { name: 'Card title' });
     expect(screen.getByRole('textbox', { name: 'Card title' })).toBeEnabled();
     act(() => screen.getByRole('button', { name: 'Close' }).click());
     await waitFor(() => expect(screen.getByRole('link', { name: card.title })).toHaveFocus());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    act(() => screen.getByRole('link', { name: card.title }).click());
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Card title' })).toBeEnabled());
+    act(() => screen.getByRole('button', { name: 'Close' }).click());
+    await waitFor(() => expect(screen.getByRole('link', { name: card.title })).toHaveFocus());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(layoutReads).toHaveLength(0);
 });
 
 it('preserves canvas columns during dialog state changes and replaces them after an authoritative refresh', async () => {

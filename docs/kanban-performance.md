@@ -149,6 +149,55 @@ the source map and numeric source-timing evidence remain outside the repository.
 The standard benchmark and all production dialog/admission behavior are unchanged;
 feedback, editor readiness and current-image acceptance remain outstanding.
 
+## Immediate cached-detail transition follow-up, 2026-10-07
+
+Card details now use the same transition state machine underlying MUI Fade,
+with zero duration and no animation-related synchronous layout read. MUI Dialog,
+its backdrop, modal manager, focus trap and all Card controls remain in place.
+The transition forwards the child ref and focus/HTML attributes and normalizes
+enter/exit callbacks to their actual DOM node. Appearance still runs the enter
+callback; exit still retires the modal before restoring Board focus. The already
+locked `react-transition-group` and its types are now explicit web dependencies,
+with their existing versions unchanged.
+
+The Board regression fails on the original Fade with two container layout reads.
+It now checks opening, closing and reopening in StrictMode, an enabled cached
+editor, zero such reads, modal retirement and restored accessible canvas focus.
+A separate real-MUI regression checks focus containment, Escape closure and
+default opener restoration across two disclosures, preserving MUI's injected
+focus handler and tabindex. The final single component-suite invocation passes
+all 79 selected transition, Board screen, drag, move and virtual-window tests.
+TypeScript, targeted lint and the fresh production build also pass.
+
+The initial unchanged desktop/phone benchmark against the first frozen bundle
+still failed. All twenty mutation samples per viewport were retained:
+
+| Viewport | Usable Board (<1500 ms) | Drop feedback (<100 ms) | Cached detail (<200 ms) | Mutation p95 (<500 ms) | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| 1280x844, mouse | **1614.6** | **108.7** | **244.4** | 230.4 | Failed readiness, feedback and detail budgets |
+| 390x844, Chromium touch | 1117.2 | 97.5 | **328.1** | 242.2 | Failed detail budget |
+
+The final frozen bundle's single combined invocation finishes with three scroll
+cases passed and both performance cases failed. The desktop/phone mouse and
+phone touch scroll cases prove real boundary scrolling, cancellation without a
+move write, unchanged canonical persisted Lists/Cards, and keyboard-opened Card
+detail closure restoring its canvas link and both scroll offsets. The unchanged
+timing scenarios again retain all twenty actual mutation samples per viewport:
+
+| Viewport | Usable Board (<1500 ms) | Drop feedback (<100 ms) | Cached detail (<200 ms) | Mutation p95 (<500 ms) | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| 1280x844, mouse | 1009.5 | **114.2** | **261.2** | 161.9 | Failed feedback and detail budgets |
+| 390x844, Chromium touch | 1073.0 | 86.8 | **266.1** | 190.3 | Failed detail budget |
+
+These are Windows-hosted Chromium/compiled-source diagnostics through restricted
+PostgreSQL and Nginx, with revision null and topology `unverified runtime`.
+Removing a forced read does not establish a causal latency improvement or meet
+the outstanding performance requirements. No metric, threshold, feature control
+or admission boundary was relaxed. PRD-06 remains open with **32%** estimated work
+remaining, a planning estimate rather than an acceptance score.
+Both disposable API/web containers are removed after the terminal invocation,
+preserving the original three running services, images and saved volumes.
+
 ## Current large-Board runtime correction
 
 Exact-image run [37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119)
