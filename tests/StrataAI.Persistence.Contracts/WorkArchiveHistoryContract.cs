@@ -224,11 +224,18 @@ internal static class WorkArchiveHistoryContract
         Clock clock, Context context, ActorContext actorContext, CancellationToken ct)
     {
         foreach (var visibility in new[] { "PRIVATE", "ORGANIZATION", "PUBLIC" })
-        foreach (var withdrawal in new[] { "ARCHIVED", "DELETING", "DEACTIVATED", "SESSION_REVOKED", "SESSION_EXPIRED" })
+        foreach (var withdrawal in new[] { "ARCHIVED", "DELETING", "DEACTIVATED", "SESSION_REVOKED", "SESSION_EXPIRED",
+            "MEMBER_REMOVED", "MEMBER_SUSPENDED", "BOARD_MEMBER_REMOVED", "BOARD_ADMIN_DOWNGRADED" })
         foreach (var kind in new[] { "Card", "List", "Board" })
         foreach (var replay in new[] { false, true })
         {
+            // Board Members retain Card edit/restore rights. Downgrade withdraws
+            // administration only, so its denial cases apply to Lists/Boards.
+            if (withdrawal == "BOARD_ADMIN_DOWNGRADED" && kind == "Card") continue;
+            var membershipWithdrawal = withdrawal is "MEMBER_REMOVED" or "MEMBER_SUSPENDED";
+            var boardGrantWithdrawal = withdrawal is "BOARD_MEMBER_REMOVED" or "BOARD_ADMIN_DOWNGRADED";
             var tenant = Guid.NewGuid(); var actor = Guid.NewGuid(); var board = Guid.NewGuid();
+            var scopeOwner = membershipWithdrawal || boardGrantWithdrawal ? Guid.NewGuid() : actor;
             var list = Guid.NewGuid(); var card = Guid.NewGuid();
             var target = kind == "Card" ? card : kind == "List" ? list : board;
             var session = Guid.NewGuid(); var sessionHash = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
@@ -236,9 +243,13 @@ internal static class WorkArchiveHistoryContract
             await using (var seed = new NpgsqlCommand("""
                 INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
                  VALUES(@actor,@email,upper(@email),'Authority wait actor','ACTIVE',true,'unused-fixture-hash',@at,@at);
+                INSERT INTO users(id,email,email_normalized,display_name,status,email_verified,password_hash,created_at,updated_at)
+                 SELECT @owner,@owner_email,upper(@owner_email),'Authority scope owner','ACTIVE',true,'unused-fixture-hash',@at,@at WHERE @owner<>@actor;
                 INSERT INTO sessions(id,user_id,token_hash,created_at,expires_at) VALUES(@session,@actor,@hash,@at,@at+interval '1 hour');
-                INSERT INTO organizations(id,name,owner_user_id,created_at,updated_at) VALUES(@tenant,'Authority wait scope',@actor,@at,@at);
-                INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),@tenant,@actor,'OWNER','ACTIVE');
+                INSERT INTO organizations(id,name,owner_user_id,created_at,updated_at) VALUES(@tenant,'Authority wait scope',@owner,@at,@at);
+                INSERT INTO organization_members(id,tenant_id,user_id,role,status) VALUES(gen_random_uuid(),@tenant,@actor,@actor_role,'ACTIVE');
+                INSERT INTO organization_members(id,tenant_id,user_id,role,status)
+                 SELECT gen_random_uuid(),@tenant,@owner,'OWNER','ACTIVE' WHERE @owner<>@actor;
                 INSERT INTO boards(id,tenant_id,name,visibility,lifecycle_state,archived_at,created_at,updated_at)
                  VALUES(@board,@tenant,'Authority wait Board',@visibility,CASE WHEN @kind='Board' THEN 'ARCHIVED' ELSE 'ACTIVE' END,
                   CASE WHEN @kind='Board' THEN @at ELSE NULL END,@at,@at);
@@ -253,6 +264,8 @@ internal static class WorkArchiveHistoryContract
                 """, admin))
             {
                 seed.Parameters.AddWithValue("actor", actor); seed.Parameters.AddWithValue("email", $"authority-wait-{actor:N}@example.test");
+                seed.Parameters.AddWithValue("owner", scopeOwner); seed.Parameters.AddWithValue("owner_email", $"authority-owner-{scopeOwner:N}@example.test");
+                seed.Parameters.AddWithValue("actor_role", scopeOwner == actor ? "OWNER" : "MEMBER");
                 seed.Parameters.AddWithValue("session", session); seed.Parameters.AddWithValue("hash", sessionHash);
                 seed.Parameters.AddWithValue("visibility", visibility);
                 seed.Parameters.AddWithValue("tenant", tenant); seed.Parameters.AddWithValue("board", board);
@@ -303,10 +316,16 @@ internal static class WorkArchiveHistoryContract
             await using var gate = (NpgsqlConnection)((ICloneable)admin).Clone(); await gate.OpenAsync(ct);
             await using var transaction = await gate.BeginTransactionAsync(ct);
             var organizationWithdrawal = withdrawal is "ARCHIVED" or "DELETING";
-            var gateTable = organizationWithdrawal ? "organizations" : "boards";
-            await using (var locked = new NpgsqlCommand($"SELECT id FROM {gateTable} WHERE id=@id FOR UPDATE;", gate, transaction))
+            var gateSql = membershipWithdrawal
+                ? "SELECT id FROM organization_members WHERE tenant_id=@tenant AND user_id=@actor FOR UPDATE;"
+                : boardGrantWithdrawal
+                    ? "SELECT id FROM board_members WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor FOR UPDATE;"
+                    : organizationWithdrawal ? "SELECT id FROM organizations WHERE id=@tenant FOR UPDATE;"
+                        : "SELECT id FROM boards WHERE id=@board FOR UPDATE;";
+            await using (var locked = new NpgsqlCommand(gateSql, gate, transaction))
             {
-                locked.Parameters.AddWithValue("id", organizationWithdrawal ? tenant : board);
+                locked.Parameters.AddWithValue("tenant", tenant); locked.Parameters.AddWithValue("actor", actor);
+                locked.Parameters.AddWithValue("board", board);
                 Require(await locked.ExecuteScalarAsync(ct) is Guid);
             }
             context.IdempotencyKey = key; var pending = Change(true, 1); var released = false;
@@ -328,18 +347,24 @@ internal static class WorkArchiveHistoryContract
                     "DEACTIVATED" => "UPDATE users SET status='DEACTIVATED',updated_at=@at WHERE id=@actor;",
                     "SESSION_REVOKED" => "UPDATE sessions SET revoked_at=@at WHERE id=@session AND user_id=@actor;",
                     "SESSION_EXPIRED" => "UPDATE sessions SET expires_at=@expired WHERE id=@session AND user_id=@actor;",
+                    "MEMBER_REMOVED" => "UPDATE organization_members SET status='REMOVED' WHERE tenant_id=@tenant AND user_id=@actor;",
+                    "MEMBER_SUSPENDED" => "UPDATE organization_members SET status='SUSPENDED' WHERE tenant_id=@tenant AND user_id=@actor;",
+                    "BOARD_MEMBER_REMOVED" => "UPDATE board_members SET status='REMOVED',updated_at=@at,version=version+1 WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor;",
+                    "BOARD_ADMIN_DOWNGRADED" => "UPDATE board_members SET role='MEMBER',updated_at=@at,version=version+1 WHERE tenant_id=@tenant AND board_id=@board AND user_id=@actor;",
                     _ => "UPDATE organizations SET status=@status,updated_at=@at,version=version+1 WHERE id=@tenant;",
                 };
                 await using (var withdraw = new NpgsqlCommand(withdrawalSql, gate, transaction))
                 {
                     withdraw.Parameters.AddWithValue("at", clock.UtcNow.AddSeconds(1)); withdraw.Parameters.AddWithValue("actor", actor);
                     withdraw.Parameters.AddWithValue("tenant", tenant); withdraw.Parameters.AddWithValue("status", withdrawal);
+                    withdraw.Parameters.AddWithValue("board", board);
                     withdraw.Parameters.AddWithValue("session", session); withdraw.Parameters.AddWithValue("expired", clock.UtcNow.AddTicks(-10));
                     Require(await withdraw.ExecuteNonQueryAsync(ct) == 1);
                 }
                 await transaction.CommitAsync(ct); released = true;
                 var refused = await pending.WaitAsync(TimeSpan.FromSeconds(30), ct);
-                var expectedError = organizationWithdrawal ? kind.ToLowerInvariant() + "_not_found" : "session_unavailable";
+                var expectedError = organizationWithdrawal || membershipWithdrawal || boardGrantWithdrawal
+                    ? kind.ToLowerInvariant() + "_not_found" : "session_unavailable";
                 if (refused.Success || refused.HasValue || refused.Error != expectedError)
                     throw new InvalidOperationException($"Authority restore wait refused incorrectly: {visibility}/{withdrawal}/{kind}/replay={replay}.");
                 Require(await ProtectedState() == before);
@@ -351,7 +376,7 @@ internal static class WorkArchiveHistoryContract
                 actorContext.HasHttpRequest = false; actorContext.AuthenticatedUserId = null; actorContext.SessionTokenHash = null;
             }
         }
-        Console.WriteLine("Restricted authority restore waits: 90 observed waits across all Board visibilities reject fresh Card/List/Board restores and original receipts after Organization archive/deletion acceptance, actor deactivation, or original session revocation/expiry, using production actor verification and preserving canonical/effect state.");
+        Console.WriteLine("Restricted authority restore waits: 156 observed waits across all Board visibilities reject fresh restores and original receipts after Organization archive/deletion acceptance, actor deactivation, original session revocation/expiry, Organization membership removal/suspension, Board membership removal or loss of required Board administration, using production actor verification and preserving canonical/effect state.");
     }
     private static void Require(bool value)
     { if (!value) throw new InvalidOperationException("Work archive history contract failed."); }
