@@ -14,7 +14,11 @@ Actual reporter integration is checked separately: 43 focused web cases emit JUn
 
 The first hosted web execution at `2b940f29e3eef98ad3afc998a0a5e572a646ddf8` succeeds in [run 37848406366](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37848406366). Independently downloaded artifact `11581546149` contains only `web.json`: schema 1, JUnit runner, a complete report with 1,964 passed cases and zero failed/skipped/error cases, and the matching repository/full SHA/run ID/version `0.1.0-1310`. Its ZIP SHA-256 is `16927bdaafc564586d8ed57643af00c849bc441944eabe23c947fd03a8a7440e`. This proves complete hosted web result publication for that commit; the .NET report and remaining gates require their own evidence.
 
-The refreshed dependency locks restore in locked mode. The strict Release solution build has zero warnings/errors. Complete hosted .NET source/report artifact execution, exact-image integration/security/release gates, broad diagnostic provenance, full acceptance/DoD and the existing native capacity investigation remain required before ARCH-11 closure.
+The hosted .NET source job for the same `2b940f29` run also succeeds. Independently downloaded artifact `11582150040` contains only `dotnet.json`, schema 1/TRX, with matching repository/full SHA/run/version. Report 0 records all 758 Domain cases passed; report 1 records all 690 API-host cases passed. Both reports are complete with zero failures/skips/errors, actual case counts equal outcome totals, every case has only the four permitted fields, and every source identifier is classified. The ZIP SHA-256 is `ab32e2af9b6efd8c1789634f15ac78b1078e85e5ac2b33d97d125b912d811eb9`. This is complete hosted source-report execution, supplementing the earlier focused/local proofs rather than relabeling their scope.
+
+The run's PostgreSQL integration, source-quality gate, build-once and security jobs also succeed. All four exact-image integration groups remain independently required; a successful source report is not a complete image gate or release certificate.
+
+The refreshed dependency locks restore in locked mode. The strict Release solution build has zero warnings/errors. Current exact-image integration/security/release gates, broad diagnostic provenance, full acceptance/DoD and the existing native capacity investigation remain required before ARCH-11 closure.
 
 ```sh
 python3 -m unittest discover -s tests -p source_test_reports_test.py

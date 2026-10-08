@@ -4,6 +4,43 @@
 This source review maps the ten functional requirements to implemented behavior
 and remaining work. It does not certify current release acceptance.
 
+## Hosted exact-image Organization command execution
+
+The `cef54e18818bb78e98ec39342095e2bd7a13bf9b` command group succeeds in
+[job 113546668048](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37843466326/job/113546668048),
+from 21:19:18 to 22:00:02 UTC on 2026-10-08. The mandatory Organization
+transaction, automatic metadata, lifecycle recipient-authority, account
+continuity, bounded member-directory and terminal-surface steps all execute and
+succeed. The unrelated native-browser routing step is intentionally skipped in
+this command group; this is not browser acceptance.
+
+Retained logs establish ordinary HTTP creation/edit reaching the exact Worker
+without explicit metadata scopes, canonical sources and acknowledged jobs while
+unrelated work remains unchanged. Actual HTTP deletion requests reach automatic
+Worker graph completion and request/Board/terminal authority sources with
+100/100/5 bounded pages, original actor/correlation, ready completion and restart
+deduplication. The real deletion publication contract confirms completed
+Board/List/Card/attachment tombstones, original Owner completion and unchanged
+terminal request replay.
+
+The separate terminal surface script completes all six accepted requests across
+PRIVATE/ORGANIZATION/PUBLIC visibility after original-session logout or account
+deactivation. It verifies retained active/archived descendants, search
+continuations, inbox/history/read-receipt withdrawal, immutable audits, refusal of
+restoration and unchanged protected effects during permitted fresh Owner
+completion/request recovery. It preserves surviving Member accounts and refuses
+retired-account recovery. The script uses a separately scoped Worker for this
+surface contract; automatic discovery evidence belongs to the independent
+lifecycle/metadata checks above. Neither proves provider/backup purge.
+
+These are hosted immutable-image command results for the stated commit, replacing
+pending execution evidence for those scopes. Product `src/`, `apps/`, `db/` and
+`Directory.Build.targets` have no diff between that commit and `ad287380`; this
+supports relevance of the product behavior, but does not make the older artifact
+the current release candidate. Full current CI, native browser scenarios,
+applicable lifecycle/retention/performance requirements and complete acceptance
+still govern closure. Estimated PRD-03 work remaining stays **8%**.
+
 ## Canonical invitation clock and revision projection
 
 The [invitation metadata audit and repair](invitation-audit-metadata.md) preserves
