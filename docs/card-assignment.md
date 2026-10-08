@@ -326,3 +326,18 @@ NOTIFY-FR-009/011/012; it does not replace current immutable-image, full role,
 concurrency/capacity, filters/history/lifecycle or Definition of Done acceptance.
 Estimated PRD-11 work remaining stays **35%**; PRD-17 stays **21%** (planning
 estimates); both issues remain open.
+
+## Current-source admission for native assignment recovery
+
+The [current-source strict producer audit](architecture/browser-recovery-ci.md#admit-native-producer-editors-after-their-actual-board-source)
+retains both failed assignment baselines and the corrected desktop/phone cases.
+The fixture waits for actual `CARD_MEMBER_ADDED`/`CARD_MEMBER_REMOVED` frames and
+a successful canvas read started after the latest source before the original-key
+retry or next editor. The expected current Card revision and idle workspace are
+also required. Both widths pass in the complete **eight-case, 9.7-minute** strict
+verified-account invocation, preserving exact original receipts, reassignment,
+self-suppression, persisted private attribution, live identities, withdrawal and
+accessibility. Browser TypeScript and the configured-read observer regression
+pass. This is current compiled schema-113 runtime evidence; current immutable/full
+release CI and complete requirements remain outstanding. PRD-11 stays open at
+**35% estimated work remaining**; PRD-17 stays at **15%** (planning estimates).

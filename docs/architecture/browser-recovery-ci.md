@@ -675,3 +675,58 @@ archive fingerprint also pass. Both invocations remove only their owned fixtures
 the original three services/data remain. The earlier failures are retained above,
 not automatically retried or hidden. Current mandatory immutable-image CI and
 complete PRD acceptance still govern issue closure.
+
+## Admit native producer editors after their actual Board source
+
+Retained immutable run [37805991890](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37805991890)
+fails the strict verified-account producer phase at the phone reminder option.
+The original browser trace shows the option visible at 229319 ms, a protected
+Board GET starting at 229346 ms and the reminder panel showing `Checking current
+Card access…` at 229370 ms. A second real reminder GET follows. The initial
+editor/read and option visibility therefore precede the stream's protected
+canvas refresh; focusing the vanished option cannot complete selection. The
+fixture now observes the actual outgoing Board `Watch`, its scoped incoming head
+and a successful protected Board read started after that head. It also requires
+the workspace to be idle before the single admitted keyboard opening. The real
+60-second due clock, two native inboxes, Worker firing, original scheduling
+receipt, complete stored attribution, private creation/read envelopes and
+accessibility checks remain required.
+
+A fresh current-schema strict eight-case baseline passes both reminder widths,
+both selected-teammate widths and desktop confirmed groups, but fails both
+assignment widths and phone confirmed-group retry focus: **5 passed, 3 failed in
+9.1 minutes**. These failures remain retained separately from the release trace.
+Desktop assignment sends its deliberately replaced original PUT but no browser
+retry; phone assignment reaches reassignment and later loses the author option.
+No duplicate-notification conclusion follows from those failures. The phone group
+case loses automatic retry focus; that assertion remains required.
+
+Assignment editor admission now follows actual `CARD_MEMBER_ADDED` and
+`CARD_MEMBER_REMOVED` frames and a successful Board read started after the latest
+source, with the expected current Card revision and idle workspace. This includes
+the original-key retry boundary. The passive existing history observer accepts
+an explicit protected read path, preserving the invitation-history default.
+Its regression rejects invitation collection reads for canvas admission,
+pre-source reads, denied reads and duplicate source counting. Confirmed-group
+setup likewise waits for its actual head and protected canvas read before drafting.
+These are observation barriers, not replayed activation keys or synthetic delivery.
+Browser TypeScript and all **23** read/source/delivery observer regressions pass.
+The fresh corrected invocation passes **all eight cases in 9.7 minutes**, including
+both original-key assignment recovery widths, both actual due-fire widths, both
+automatic confirmed-group retry-focus checks and both unchanged selected-teammate
+cases. No activation key is retried by the fixture, no timeout is widened and no
+notification/source/delivery row is fabricated. The private scheduling and command
+receipts, stored notification attribution/clocks, live event identities, role
+withdrawal, consent/quota, tagged Axe and overflow assertions remain intact.
+
+Execution uses the frozen current compiled Production API, separate real Worker,
+MUI/Nginx and restricted PostgreSQL 17/pgvector schema 113. API and Worker both
+require verified email; each new fixture login is refused before verification and
+accepted afterward. Owned containers/database are removed and the original three
+services/data remain. This establishes current local runtime evidence, not current
+retained-image/full CI or email-provider delivery. Complete PRD acceptance and
+current required release gates still govern closure. The separate retained run
+[37808888458](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37808888458)
+fails at the large-Board horizontal transfer response wait, rather than this
+producer phase; the preceding continuous-Worker capacity repair has local normal
+and CPU-four evidence, while its current immutable verification remains pending.

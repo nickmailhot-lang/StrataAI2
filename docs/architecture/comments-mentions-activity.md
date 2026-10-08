@@ -1543,3 +1543,18 @@ recipient deduplication, rolling quota, member role restrictions, self-suppressi
 and membership withdrawal assertions. Current immutable-image and broader
 producer/concurrency/capacity acceptance remain required; PRD-15 stays open at
 **36% estimated work remaining** (planning estimate).
+
+## Current-source admission before native group drafting
+
+The [current-source strict producer audit](browser-recovery-ci.md#admit-native-producer-editors-after-their-actual-board-source)
+retains the failed phone automatic retry-focus baseline. Confirmed-group setup
+now waits for its actual Board stream head and a protected canvas read started
+after that head before drafting. Both group widths and both unchanged selected
+teammate cases pass in the complete **eight-case, 9.7-minute** strict invocation.
+The automatic retry-focus assertion, original receipts, consent, stale handle
+revision, rolling quota, role scope, recipient deduplication, stored attribution,
+private delivery, withdrawal and accessibility remain required. API and Worker
+both enforce verified email on current compiled schema-113 runtime fixtures.
+Owned fixtures are removed; current immutable/full CI and full PRD acceptance
+remain independently required. PRD-15 stays open at **36% estimated work
+remaining** (planning estimate).

@@ -47,9 +47,10 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
   return { heads: () => heads, reads: () => reads, ready: () => heads > 0 && readHead === heads };
 }
 
-// A displayed invitation can precede the event that invalidates its review.
-// Observe that actual Board event and a history read started after its frame.
-export function trackBoardHistoryChanges(page: Page, organization: string, board: string, pagePath: string) {
+// A displayed review can precede the Board event that invalidates it. Observe
+// that actual source and the configured protected read started after its frame.
+export function trackBoardHistoryChanges(page: Page, organization: string, board: string, pagePath: string,
+  protectedReadPath = `/boards/${board}/invitations`) {
   let epoch = 0, readEpoch = -1;
   const seen = new Set<string>(), counts = new Map<string, number>(), pending = new Map<Request, number>();
   page.on('websocket', socket => {
@@ -84,7 +85,7 @@ export function trackBoardHistoryChanges(page: Page, organization: string, board
   });
   page.on('request', request => {
     if (epoch > 0 && new URL(page.url()).pathname === pagePath && request.method() === 'GET'
-      && new URL(request.url()).pathname === `/boards/${board}/invitations`) pending.set(request, epoch);
+      && new URL(request.url()).pathname === protectedReadPath) pending.set(request, epoch);
   });
   page.on('response', response => {
     const started = pending.get(response.request()); pending.delete(response.request());

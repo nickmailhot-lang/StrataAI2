@@ -59,9 +59,9 @@ test('history admission requires its protected collection after the head', () =>
 });
 
 
-function historyFixture() {
+function historyFixture(protectedReadPath) {
   const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board/invitations';
-  const tracker = trackBoardHistoryChanges(page, 'org', 'board', '/app/org/boards/board/invitations');
+  const tracker = trackBoardHistoryChanges(page, 'org', 'board', '/app/org/boards/board/invitations', protectedReadPath);
   const socket = new EventEmitter(); socket.url = () => 'https://example.test/boards/live'; page.emit('websocket', socket);
   socket.emit('framesent', { payload: JSON.stringify({ type: 4, target: 'Watch', arguments: ['board'], invocationId: 'watch' }) });
   const event = { eventId: 'source', eventType: 'BOARD_MEMBER_INVITED', organizationId: 'org', boardId: 'board' };
@@ -74,6 +74,23 @@ function historyFixture() {
   const response = (value, status = 200) => page.emit('response', { request: () => value, status: () => status });
   return { tracker, frame, event, request, response };
 }
+
+test('Card assignment admission needs the configured Board read after each actual source', () => {
+  const f = historyFixture('/boards/board'); f.frame();
+  f.response(f.request()); assert.equal(f.tracker.ready(), false);
+  f.response(f.request('/boards/board')); assert.equal(f.tracker.ready(), true);
+  const beforeSource = f.request('/boards/board');
+  const added = { ...f.event, eventType: 'CARD_MEMBER_ADDED' };
+  f.frame([added]); f.response(beforeSource);
+  assert.equal(f.tracker.settled('CARD_MEMBER_ADDED', 1), false);
+  f.response(f.request()); assert.equal(f.tracker.ready(), false);
+  f.response(f.request('/boards/board')); assert.equal(f.tracker.settled('CARD_MEMBER_ADDED', 1), true);
+  f.frame([added]); assert.equal(f.tracker.count('CARD_MEMBER_ADDED'), 1);
+  const removed = { ...f.event, eventId: 'removed', eventType: 'CARD_MEMBER_REMOVED' };
+  f.frame([removed]); assert.equal(f.tracker.settled('CARD_MEMBER_REMOVED', 1), false);
+  f.response(f.request('/boards/board'), 403); assert.equal(f.tracker.ready(), false);
+  f.response(f.request('/boards/board')); assert.equal(f.tracker.settled('CARD_MEMBER_REMOVED', 1), true);
+});
 
 test('Board history cannot admit consent with a read started before the actual invitation event', () => {
   const f = historyFixture(); f.frame(); const old = f.request(); f.frame([f.event]); f.response(old);

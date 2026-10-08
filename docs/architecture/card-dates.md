@@ -649,3 +649,18 @@ creation/read pairs and native accessibility remain unchanged. The new required
 immutable-image strict phase runs these cases before optional profile fixtures.
 Email-provider and current retained-image/full acceptance remain separate. PRD-12
 stays open at **24% estimated work remaining**.
+
+## Admit the actual reminder canvas before interval selection
+
+The [current-source strict native audit](browser-recovery-ci.md#admit-native-producer-editors-after-their-actual-board-source)
+records a retained phone failure where a protected Board refresh replaces the
+visible interval picker. The fixture now waits for the actual scoped Board stream
+head and its subsequent successful protected canvas read, then an idle workspace
+before opening the reminder once by keyboard. Both actual due-fire widths pass in
+the complete **eight-case, 9.7-minute** strict invocation. The 60-second due clock,
+real Worker fire, two native private inboxes, scheduling receipt replay, persisted
+attribution/clocks, creation/read identities and accessibility remain required.
+API and Worker both enforce verified email; isolated schema-113 fixtures are
+removed. Current compiled local evidence does not establish current immutable/full
+release acceptance or provider delivery. PRD-12 stays open at **24% estimated work
+remaining** (planning estimate).

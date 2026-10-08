@@ -5,6 +5,7 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 import { pressAdmittedAction } from './keyboardAdmission';
+import { trackBoardHistoryChanges } from './invitationAdmissionTracker';
 
 // Real membership, native assignment commands and private recipient delivery.
 // Only a successfully committed first response is replaced.
@@ -59,11 +60,18 @@ for (const width of [1280, 390]) {
       await expect(inbox.getByText('0 unread on this page.', { exact: true })).toBeVisible();
       await expect.poll(() => liveSnapshots).toBeGreaterThan(0);
       const reads = trackBoardReads(page, board, cardPath); const revision = trackCardVersion(page, board, card, cardPath);
+      const admission = trackBoardHistoryChanges(page, org, board, cardPath, `/boards/${board}`);
       await page.bringToFront(); await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       const edit = page.getByRole('button', { name: 'Edit Card assignees', exact: true });
+      async function settled(version: number) {
+        await expect.poll(() => version === 1 ? admission.ready() : admission.settled(
+          version === 3 ? 'CARD_MEMBER_REMOVED' : 'CARD_MEMBER_ADDED', version === 4 ? 2 : 1)).toBe(true);
+        await expect.poll(revision).toBe(version);
+        await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
+      }
       async function options(version: number) {
         await waitForBoardDelivery(context.request, board); await expect.poll(revision).toBe(version);
-        await page.bringToFront(); await pressAdmittedAction(edit);
+        await page.bringToFront(); await settled(version); await pressAdmittedAction(edit);
         await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
       }
       await options(1);
@@ -78,7 +86,7 @@ for (const width of [1280, 390]) {
       });
       await pressAdmittedAction(page.getByRole('button', { name: 'Assign Assignment recipient', exact: true }));
       const retry = page.getByRole('button', { name: 'Retry assignee change', exact: true });
-      await expect(retry).toBeEnabled(); await pressAdmittedAction(retry);
+      await expect(retry).toBeEnabled(); await settled(2); await pressAdmittedAction(retry);
       await expect(page.getByRole('region', { name: 'Edit Card assignees', exact: true })).toHaveCount(0);
       await expect(edit).toBeFocused(); expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
       expect(attempts[0].key).toMatch(/^[0-9a-f-]{36}$/); expect(new URL(attempts[0].url).searchParams.get('version')).toBe('1');

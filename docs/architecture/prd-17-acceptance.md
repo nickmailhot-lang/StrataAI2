@@ -632,6 +632,27 @@ interaction matrices, concurrent publication/rollback and capacity acceptance
 remain required. PRD-17 remains open at **15% estimated work remaining** (planning
 estimate).
 
+## Executed current-source admission for strict native producers
+
+The [strict producer source-admission audit](browser-recovery-ci.md#admit-native-producer-editors-after-their-actual-board-source)
+records the retained phone reminder failure and a fresh **5-pass/3-failure** local
+baseline. The corrected complete invocation passes **all eight cases in 9.7
+minutes**. Actual Board heads and protected canvas reads admit reminder/group
+editors; actual assignment membership sources and subsequent canvas reads admit
+the original retry and later editors. Automatic phone group retry focus remains
+asserted and passes. No activation retry, delivery fabrication, timeout extension
+or notification assertion removal is introduced.
+
+Both assignment, scheduled reminder, selected mention and confirmed-group widths
+retain original receipts, persisted source/actor/revision/clocks, private event
+identity, access withdrawal and accessibility checks. This uses current compiled
+Production API/Worker/MUI and restricted schema 113 with verified email required
+on both API and Worker. Browser TypeScript and **23** read/source/delivery observer
+regressions pass; isolated fixtures are removed and original services/data remain.
+Current immutable/full release CI, email-provider evidence and all outstanding
+PRD-wide requirements remain independent. PRD-17 stays open at **15% estimated
+work remaining** (planning estimate).
+
 ## Executed complete attribution across notification producer families
 
 The final assignment, selected-mention and actual due-fire cases pass at both

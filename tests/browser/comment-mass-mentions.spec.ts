@@ -5,6 +5,7 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 import { pressAdmittedAction } from './keyboardAdmission';
+import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 // Real account invitations, explicit Board membership and Card assignment.
 // Only an actual committed first response is replaced to exercise recovery.
@@ -70,7 +71,10 @@ for (const width of [1280, 390]) {
       await expect.poll(() => liveSnapshots).toBeGreaterThan(0);
       expect(mentionEvents).toEqual([]);
       const cardVersion = trackCardVersion(page, board, card, cardPath);
+      const actor = (await (await context.request.get('/me')).json()).id;
+      const admission = trackInvitationAdmission(page, org, actor, board, cardPath);
       const reads = trackBoardReads(page, board, cardPath); await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      await expect.poll(admission.ready).toBe(true);
       const commentsPath = `/cards/${card}/comments`;
       async function draft(text: string) {
         await page.bringToFront();

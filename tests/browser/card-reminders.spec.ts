@@ -4,6 +4,7 @@ import { expect, test } from './releaseTest';
 import AxeBuilder from '@axe-core/playwright';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { pressAdmittedAction } from './keyboardAdmission';
+import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const width of [1280, 390]) {
   test(`PRD-12: keyboard personal Reminder recovery and live cancellation across clients at ${width}px`, async ({ page, context }) => {
@@ -123,8 +124,12 @@ for (const width of [1280, 390]) {
         expect(live[index].events).toEqual([]);
       }
       await page.bringToFront();
-      await page.goto(`/app/${org}/boards/${board}/cards/${card}`);
-      await page.getByRole('button', { name: 'Due reminder', exact: true }).press('Enter');
+      const cardPath = `/app/${org}/boards/${board}/cards/${card}`;
+      const admission = trackInvitationAdmission(page, org, account.user.id, board, cardPath);
+      await page.goto(cardPath);
+      await expect.poll(admission.ready).toBe(true);
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Due reminder', exact: true }));
       const region = page.getByRole('region', { name: 'Personal due reminder' });
       await expect(region.getByText('You have no active due reminder.', { exact: true })).toBeVisible();
       await page.bringToFront();
