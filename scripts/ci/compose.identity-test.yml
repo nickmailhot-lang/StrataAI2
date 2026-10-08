@@ -14,6 +14,7 @@ services:
       - host.docker.internal:host-gateway
     environment:
       ASPNETCORE_ENVIRONMENT: IntegrationTest
+      STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL: 'true'
       STRATAAI_IDENTITY_EMAIL_ENABLED: 'true'
       STRATAAI_IDENTITY_EMAIL_FROM: sender@example.test
       STRATAAI_PUBLIC_ORIGIN: https://app.example.test

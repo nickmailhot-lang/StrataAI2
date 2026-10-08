@@ -1,7 +1,7 @@
 # Notification and watching acceptance map — PRD-17
 
 [PRD-17](https://github.com/nickmailhot-lang/StrataAI2/issues/18) remains open at
-**18% estimated work remaining** (planning estimate). Earlier estimates below
+**17% estimated work remaining** (planning estimate). Earlier estimates below
 record their evidence scope. This maps all twelve
 functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
@@ -419,3 +419,32 @@ It does not prove every role/visibility, strict-policy or concurrent transition,
 capacity, current immutable-image or complete Definition of Done acceptance.
 Estimated PRD-17 work remaining is now **18%** (planning estimate); the issue
 remains open.
+
+## Executed strict verified-account cross-Board watches
+
+The same Owner and ordinary-Member cross-Board matrix passes together under
+strict email verification: **two cases, 2.0 minutes**, with no failed cases.
+Every fresh account first receives HTTP 403 `email_verification_required` on
+login, then succeeds after verification. Where the Production response keeps
+the token private, the isolated CI fixture activates only the newly registered,
+UUID-validated account. This is account admission setup, not email-provider
+delivery evidence; the separate identity-mail phase tests actual delivery.
+
+The actual API and separate scoped Worker both report verified-email policy
+`true`. All existing keyboard watch/unwatch, current source/destination
+relationships, direct Card subscription identity, overlapping watch deduplication,
+actor suppression, four canonical notification/private-event identities across
+desktop and phone, moved links, ordinary-Member grant withdrawal and retained
+history assertions pass unchanged. Tagged Axe and overflow checks pass.
+Execution uses the current compiled Production services and MUI bundle against
+restricted PostgreSQL 17/pgvector schema 112. Owned containers and the disposable
+database are removed; original running services and stored data are preserved.
+
+The build-once CI now runs this matrix before restoring optional verification
+for the full browser suite. It explicitly checks API and Worker policy `true`
+and reuses the loaded release images, including scoped Worker recreation.
+The identity-test overlay makes the Worker's existing strict default explicit;
+production defaults and architecture are unchanged. Browser typechecking passes.
+Current retained-image execution/full CI, remaining role/visibility and producer
+matrices, concurrent transitions, capacity and complete Definition of Done
+remain unproven. PRD-17 stays open at **17% estimated work remaining**.

@@ -388,3 +388,16 @@ unchanged. The read-only SQL comparison verifies history without seeding behavio
 This supersedes the earlier Owner-only local execution limit. Complete role and
 visibility, strict policy, concurrency/capacity, current retained-image and full
 acceptance remain. PRD-17 stays open at **18% estimated work remaining**.
+
+## Executed strict verified-account native watches
+
+The [strict-policy cross-Board matrix](prd-17-acceptance.md#executed-strict-verified-account-cross-board-watches)
+passes both Owner and ordinary-Member cases together. Actual pending-account
+login denial precedes disposable fixture verification; API and scoped Worker
+both use strict verification. Existing four-delivery identities, movement and
+overlap boundaries, direct subscription continuity, native desktop/phone
+withdrawal and retained-history comparisons pass unchanged. Provider delivery
+is a separate identity-mail contract. Build-once CI runs this matrix before the
+optional-account full suite, reusing the loaded images. Local compiled execution
+does not establish current retained-image acceptance, full role/visibility,
+concurrency or capacity. PRD-17 remains open at **17% estimated work remaining**.

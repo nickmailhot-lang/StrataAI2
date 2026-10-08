@@ -24,7 +24,27 @@ test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships
     const clients = recipientRole === 'OWNER' ? [context, peer] : [context, peer, administrator];
     for (const [index, client] of clients.entries()) {
       const account = { email: index === 0 ? recipientEmail : index === 1 ? email : `watch-administrator-${suffix}@example.test`, password: 'watched-notifications-correct-horse', displayName: index ? 'Watch activity issuer' : 'Watch activity recipient' };
-      expect((await client.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
+      const registered = await client.request.post('/auth/register', { headers, data: account });
+      expect(registered.status()).toBe(201);
+      if (process.env.STRATAAI_E2E_VERIFY_WATCH_ACCOUNTS === '1') {
+        const pending = await client.request.post('/auth/login', { headers, data: account });
+        expect(pending.status()).toBe(403);
+        expect((await pending.json()).code).toBe('email_verification_required');
+        const created = await registered.json();
+        // Provider delivery has its own acceptance phase. Activate only this
+        // disposable account when production deliberately withholds the token.
+        if (created.verificationToken) {
+          expect((await client.request.post('/auth/verify-email', { headers,
+            data: { token: created.verificationToken } })).status()).toBe(200);
+        } else {
+          expect(process.env.CI).toBe('true');
+          expect(created.user.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+          execFileSync('docker', ['compose', '-f', 'compose.release.yml', 'exec', '-T', 'postgres', 'sh', '-c',
+            'psql -X -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'], {
+            input: `UPDATE users SET status='ACTIVE',email_verified=true,updated_at=GREATEST(updated_at,now()) WHERE id='${created.user.id}';`, stdio: 'pipe',
+          });
+        }
+      }
       expect((await client.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
     }
     const orgReply = await administrator.request.post('/organizations', { headers, data: { name: 'Watched notifications' } });
