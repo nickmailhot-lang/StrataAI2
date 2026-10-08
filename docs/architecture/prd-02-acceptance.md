@@ -6,6 +6,16 @@ below record their historical evidence scope.
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Account display source-calendar validation
+
+The shared formatter rejects impossible calendar fields before offset conversion
+rather than displaying JavaScript's rolled-forward date. Four new regressions
+fail before repair; all 43 selected formatter, Card-date and profile cases pass
+afterward, preserving valid leap dates, midnight offsets and account timezone
+preferences. See [execution and limits](profile-management.md#account-date-source-calendar-validation).
+This is scoped source/component evidence, not complete date-consumer live or
+immutable release acceptance. Estimated work remaining stays **16%**.
+
 ## Session and security-token lifecycle audit clocks
 
 The [lifecycle clock repair](identity-lifecycle-clocks.md) adds missing non-null

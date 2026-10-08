@@ -17,4 +17,18 @@ describe('AUTH-FR-010 profile date display', () => {
     expect(formatUserDateTime('2026-03-08T00:30:00', { locale: 'en-CA', timezone: 'UTC' })).toBeUndefined();
     expect(formatUserDateTime('2026-03-08T00:30:00Z', { locale: 'en-CA', timezone: 'Not/AZone' })).toBeUndefined();
   });
+  it.each([
+    '2026-02-30T12:00:00Z', '2026-02-29T12:00:00+05:30',
+    '2026-04-31T12:00:00-07:00', '2026-03-08T24:00:00Z',
+  ])('does not normalize an impossible source calendar: %s', value => {
+    expect(formatUserDateTime(value, { locale: 'en-US', timezone: 'UTC' })).toBeUndefined();
+  });
+  it('validates the source calendar before converting its explicit offset', () => {
+    const preferences = { locale: 'en-US', timezone: 'UTC' };
+    expect(formatUserDateTime('2028-02-29T00:30:00.1234567+14:00', preferences))
+      .toBe(formatUserDateTime('2028-02-28T10:30:00.1234567Z', preferences));
+    expect(formatUserDateTime('2028-02-29T23:30:00-14:00', preferences))
+      .toBe(formatUserDateTime('2028-03-01T13:30:00Z', preferences));
+    expect(formatUserDateTime('2028-02-29T00:30:00Z', preferences)).toContain('Feb 29, 2028');
+  });
 });

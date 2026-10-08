@@ -467,3 +467,21 @@ passes across those invocations; this does not establish a single complete green
 release run or actual email transport. The disposable API/web fixture and its
 private ephemeral key configuration were removed. See [account acceptance evidence](prd-02-acceptance.md#executed-account-browser-and-current-source-checks)
 for exact scope and remaining acceptance.
+
+### Account date source-calendar validation
+
+The shared account formatter now rejects impossible calendar fields before
+converting an explicit offset into the admitted locale/timezone. Previously
+JavaScript normalized February 30, a non-leap February 29, April 31 and hour 24
+into plausible dates on a later day. Such input now returns the existing
+unavailable-date result instead of inventing a displayed date. The source
+calendar is checked independently of its offset, so a valid leap date at
+`+14:00` or `-14:00` still converts across UTC midnight correctly. Seven-digit
+fraction input and existing daylight-saving/account preference behavior remain.
+
+The original implementation fails all four new invalid-calendar regressions
+(4 failed, 4 passed). After repair, all 43 selected formatter, Card date and
+profile component cases pass. This is formatter/component evidence; it does not
+prove every date consumer's live account-switch recovery, current immutable
+browser release or complete PRD-02 acceptance. PRD-02 remains open at **16%**
+estimated work remaining (planning estimate).
