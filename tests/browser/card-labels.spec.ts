@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-10: Card labels have keyboard-readable names and reflect persisted deletion at ${width}px`, async ({ page, context }) => {
@@ -40,11 +41,10 @@ for (const width of [1280, 390]) {
       await page.getByRole('option', { name: 'Red', exact: true }).press('Enter');
       await expect(page.getByRole('listbox', { name: 'Label color', exact: true })).toHaveCount(0);
       const submitCreation = page.getByRole('button', { name: 'Create', exact: true });
-      await expect(submitCreation).toBeEnabled(); await submitCreation.focus(); await expect(submitCreation).toBeFocused();
-      await submitCreation.press('Enter');
+      await pressAdmittedAction(submitCreation);
       const retry = page.getByRole('button', { name: 'Retry label creation' }); await expect(retry).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeDisabled();
-      await retry.press('Enter');
+      await pressAdmittedAction(retry);
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       expect(attempts).toHaveLength(2); expect(attempts[0]).toEqual(attempts[1]); expect(attempts[0].key).toMatch(/^[0-9a-f-]{36}$/);
@@ -81,11 +81,10 @@ for (const width of [1280, 390]) {
       }
       await openPicker();
       const addPriority = page.getByRole('button', { name: 'Add label Priority', exact: true });
-      await expect(addPriority).toBeEnabled(); await addPriority.press('Enter');
+      await pressAdmittedAction(addPriority);
       const retryAssignment = page.getByRole('button', { name: 'Retry label change' }); await expect(retryAssignment).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
-      await retryAssignment.focus(); await expect(retryAssignment).toBeFocused(); await expect(retryAssignment).toBeEnabled();
-      await retryAssignment.press('Enter'); await expect(edit).toBeFocused();
+      await pressAdmittedAction(retryAssignment); await expect(edit).toBeFocused();
       expect(assignmentAttempts).toHaveLength(2); expect(assignmentAttempts[0]).toEqual(assignmentAttempts[1]);
       // Drain the recovered assignment before starting a different command.
       // A returned trigger alone does not prove the refreshed Card is admitted.
@@ -94,7 +93,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
       await openPicker();
       const addBlue = page.getByRole('button', { name: 'Add label blue', exact: true });
-      await expect(addBlue).toBeEnabled(); await addBlue.press('Enter'); await expect(edit).toBeFocused();
+      await pressAdmittedAction(addBlue); await expect(edit).toBeFocused();
       await waitForBoardDelivery(context.request, board);
       await navigate(`/app/${org}/boards/${board}`);
       const face = page.getByRole('link').filter({ hasText: 'Labeled work' });
@@ -112,7 +111,7 @@ for (const width of [1280, 390]) {
       await expect(details.getByLabel('Priority, red', { exact: true })).toHaveCount(0);
       await openPicker();
       const removeBlue = page.getByRole('button', { name: 'Remove label blue', exact: true });
-      await expect(removeBlue).toBeEnabled(); await removeBlue.press('Enter'); await expect(edit).toBeFocused();
+      await pressAdmittedAction(removeBlue); await expect(edit).toBeFocused();
       const remaining = await context.request.get(`/cards/${card}/labels`); expect(remaining.status()).toBe(200);
       const remainingItems = (await remaining.json()).items; expect(remainingItems).toHaveLength(1); expect(remainingItems[0].id).toBe(labels[0]);
       await navigate(`/app/${org}/boards/${board}`);
@@ -167,7 +166,7 @@ for (const width of [1280, 390]) {
       await expect(filters.getByRole('combobox', { name: 'Match filters' })).toHaveText('Match ANY');
       expect(filterChanges).toHaveLength(3);
       const clearFilters = filters.getByRole('button', { name: 'Clear filters', exact: true });
-      await expect(clearFilters).toBeEnabled(); await clearFilters.press('Enter');
+      await pressAdmittedAction(clearFilters);
       await expect(filters.getByLabel('Card keyword')).toHaveValue('');
       expect(filterChanges).toHaveLength(4); expect(new URL(filterChanges[3].url).searchParams.get('change')).toBe('clear');
       expect(filterChanges[3].key).not.toBe(filterChanges[2].key);
@@ -187,10 +186,10 @@ for (const width of [1280, 390]) {
       await management.getByRole('combobox', { name: 'Label color' }).press('Enter');
       await page.getByRole('option', { name: 'Purple', exact: true }).press('Enter');
       const saveLabel = management.getByRole('button', { name: 'Save label', exact: true });
-      await expect(saveLabel).toBeEnabled(); await saveLabel.press('Enter');
+      await pressAdmittedAction(saveLabel);
       await expect(management.getByRole('button', { name: 'Done', exact: true })).toBeDisabled();
       const retryLabel = management.getByRole('button', { name: 'Retry label change', exact: true });
-      await expect(retryLabel).toBeEnabled(); await retryLabel.press('Enter');
+      await pressAdmittedAction(retryLabel);
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
       expect(edits).toHaveLength(2); expect(edits[0]).toEqual(edits[1]);
       await expect(management.getByRole('button', { name: 'Reload labels', exact: true })).toBeEnabled();
@@ -207,7 +206,7 @@ for (const width of [1280, 390]) {
       }).toPass({ timeout: 5_000 });
       await moveMenu.getByRole('option', { name: 'Unnamed label (blue)', exact: true }).press('Enter');
       const moveLabel = management.getByRole('button', { name: 'Move label', exact: true });
-      await expect(moveLabel).toBeEnabled(); await moveLabel.press('Enter');
+      await pressAdmittedAction(moveLabel);
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
       const reordered = await context.request.get(`/boards/${board}/labels`); expect(reordered.status()).toBe(200);
       const ordered = (await reordered.json()).items;
@@ -218,9 +217,9 @@ for (const width of [1280, 390]) {
       await expect(editUrgent).toBeEnabled(); await editUrgent.press('Enter');
       await expect(management.getByRole('button', { name: 'Delete label', exact: true })).toBeDisabled();
       const consent = management.getByRole('checkbox', { name: 'Confirm removal from all Cards' });
-      await expect(consent).toBeEnabled(); await consent.press('Space'); await expect(consent).toBeChecked();
+      await pressAdmittedAction(consent, 'Space'); await expect(consent).toBeChecked();
       const deleteLabel = management.getByRole('button', { name: 'Delete label', exact: true });
-      await expect(deleteLabel).toBeEnabled(); await deleteLabel.press('Enter');
+      await pressAdmittedAction(deleteLabel);
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
       await management.getByRole('button', { name: 'Done', exact: true }).press('Enter'); await expect(management).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();

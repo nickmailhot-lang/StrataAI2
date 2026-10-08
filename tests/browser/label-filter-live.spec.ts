@@ -1,5 +1,6 @@
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 test('PRD-10/16: desktop label changes refresh phone filters through Worker delivery and socket recovery', async ({ page, context, browser }) => {
   test.setTimeout(180_000); await page.setViewportSize({ width: 1280, height: 844 });
@@ -61,7 +62,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
         await expect(edit).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
       }).toPass({ timeout: 5_000 });
       const change = page.getByRole('button', { name: action, exact: true });
-      await expect(change).toBeEnabled(); await change.press('Enter'); await expect(edit).toBeFocused();
+      await pressAdmittedAction(change); await expect(edit).toBeFocused();
     }
     await assignment('Add label Priority');
     const matching = filters.getByRole('link', { name: 'Collaborative labeled Card — Planning', exact: true });
@@ -126,9 +127,14 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect((await phoneAssignees()).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
     const editMembers = page.getByRole('button', { name: 'Edit Card assignees', exact: true });
     async function memberChange(action: string) {
-      await expect(editMembers).toBeEnabled(); await editMembers.press('Enter');
+      await expect(async () => {
+        if (await editMembers.getAttribute('aria-expanded') !== 'true') {
+          await expect(editMembers).toBeEnabled({ timeout: 500 }); await editMembers.press('Enter', { timeout: 500 });
+        }
+        await expect(editMembers).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
+      }).toPass({ timeout: 5_000 });
       const change = page.getByRole('button', { name: `${action} Label collaboration fixture`, exact: true });
-      await expect(change).toBeEnabled(); await change.press('Enter'); await expect(editMembers).toBeFocused();
+      await pressAdmittedAction(change); await expect(editMembers).toBeFocused();
     }
     await memberChange('Unassign');
     await expect((await phoneAssignees()).getByText('No assignees on this page.', { exact: true })).toBeVisible();
@@ -139,10 +145,10 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
     await expect(openFilters).toBeEnabled(); await openFilters.press('Enter');
     const chooseMembers = filters.getByRole('button', { name: 'Choose assignees', exact: true });
-    await expect(chooseMembers).toBeEnabled(); await chooseMembers.press('Enter');
+    await pressAdmittedAction(chooseMembers);
     const selectedMember = filters.getByRole('checkbox', { name: 'Label collaboration fixture', exact: true });
-    await expect(selectedMember).toBeEnabled(); await selectedMember.press('Space');
-    await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
+    await pressAdmittedAction(selectedMember, 'Space'); await expect(selectedMember).toBeChecked();
+    await pressAdmittedAction(filters.getByRole('button', { name: 'Apply filters', exact: true }));
     await expect(matching).toBeVisible();
     await memberChange('Unassign');
     await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible({ timeout: 20_000 });

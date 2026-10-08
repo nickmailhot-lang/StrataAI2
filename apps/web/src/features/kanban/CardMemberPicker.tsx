@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
+import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 
 type Option = { userId: string; displayName: string; assigned: boolean };
 type Page = { items: Option[]; nextCursor: string | null; cardVersion: number };
@@ -18,7 +19,8 @@ export function CardMemberPicker({ cardId, card, snapshot, disabled, onBusyChang
   const activeCard = !!card && snapshot.lists.some(column => column.list.lifecycleState === 'active' && column.cards.some(item => item.id === cardId));
   const current = page && page.cardVersion === card?.version;
   useEffect(() => {
-    if (restoreFocus.current && !busy && !disabled && activeCard) { restoreFocus.current = false; trigger.current?.focus({ preventScroll: true }); }
+    if (restoreFocus.current && !busy && !disabled && activeCard
+      && ownsRecoveryFocus(document.activeElement, trigger.current)) trigger.current?.focus({ preventScroll: true });
   }, [busy, disabled, activeCard]);
   useEffect(() => { onRecoveryChange(!!intent); return () => onRecoveryChange(false); }, [intent, onRecoveryChange]);
   useEffect(() => {
@@ -61,9 +63,10 @@ export function CardMemberPicker({ cardId, card, snapshot, disabled, onBusyChang
     } catch (error) { if (ticket === epoch.current) failure(error); }
     finally { if (ticket === epoch.current) { controller.current = undefined; setBusy(false); onBusyChange(false); } }
   }
-  async function change(option?: Option) {
+  async function change(option?: Option, source?: HTMLButtonElement) {
     if (!admitted || disabled || controller.current || denied || (!intent && (!option || !current || !activeCard))) return;
     const command = intent ?? { userId: option!.userId, displayName: option!.displayName.trim() || 'Unnamed member', assigned: !option!.assigned, version: page!.cardVersion, key: crypto.randomUUID() };
+    parkRecoveryFocus(source ?? null);
     const ticket = epoch.current; setBusy(true); onBusyChange(true); setNotice(undefined);
     try {
       const value = await request(`/cards/${encodeURIComponent(cardId)}/members/${encodeURIComponent(command.userId)}?version=${command.version}`, {
@@ -79,14 +82,17 @@ export function CardMemberPicker({ cardId, card, snapshot, disabled, onBusyChang
   }
   if (!admitted) return null;
   return <Box sx={{ mt: 2 }}>
-    <Button ref={trigger} disabled={busy || disabled || !!intent || denied || !activeCard} aria-expanded={open} onClick={() => void load()}>Edit Card assignees</Button>
+    <Button ref={trigger} disabled={busy || disabled || !!intent || denied || !activeCard} aria-expanded={open}
+      onFocus={() => { restoreFocus.current = true; }}
+      onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, trigger.current)) restoreFocus.current = false; }}
+      onClick={() => { restoreFocus.current = false; void load(); }}>Edit Card assignees</Button>
     {open && <Stack component="section" aria-label="Edit Card assignees" spacing={1}>
       {busy && <Typography role="status">Updating member options…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
-      {intent ? <><Typography>{intent.assigned ? 'Assign' : 'Unassign'} {intent.displayName}</Typography><Button disabled={busy || disabled} onClick={() => void change()}>Retry assignee change</Button></> : <>
+      {intent ? <><Typography>{intent.assigned ? 'Assign' : 'Unassign'} {intent.displayName}</Typography><Button disabled={busy || disabled} onClick={event => void change(undefined, event.currentTarget)}>Retry assignee change</Button></> : <>
         {current && !notice && !disabled && page.items.map(option => <Stack key={option.userId} direction="row" useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
           <Typography sx={{ overflowWrap: 'anywhere' }}>{option.displayName.trim() || 'Unnamed member'}</Typography>
-          <Button disabled={busy || disabled} onClick={() => void change(option)} aria-label={`${option.assigned ? 'Unassign' : 'Assign'} ${option.displayName.trim() || 'Unnamed member'}`}>{option.assigned ? 'Unassign' : 'Assign'}</Button>
+          <Button disabled={busy || disabled} onClick={event => void change(option, event.currentTarget)} aria-label={`${option.assigned ? 'Unassign' : 'Assign'} ${option.displayName.trim() || 'Unnamed member'}`}>{option.assigned ? 'Unassign' : 'Assign'}</Button>
         </Stack>)}
         {current && page.items.length === 0 && <Typography>No eligible Board members on this page.</Typography>}
         {!current && !busy && !notice && <Typography>Reload member options for the current Card.</Typography>}

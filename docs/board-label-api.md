@@ -249,3 +249,28 @@ The shared-helper source regression and 170 passing component cases establish
 only the repaired ownership contract, not resolution of every focus/activation
 failure. PRD-10 stays open at **35%** estimated remaining work (planning estimate),
 pending these browser repairs, current immutable CI and full-PRD acceptance.
+
+## Enabled focus before a single keyboard command
+
+The subsequent trace audit distinguishes activation from return focus: the last
+desktop case sent commands for only one distinct label, so Add blue never ran.
+Phone sent both label assignments but no Clear command. The failure frame alone
+did not prove a completed command had lost focus. The fixture now establishes
+enabled, actual keyboard focus before its single Enter keypress. Only focus
+preparation can repeat during protected foreground reads; mutation dispatch
+remains outside that preparation. Both full desktop/phone label workflows pass
+together in 2.3 minutes against the same frozen compiled Production web/API,
+restricted PostgreSQL and scoped Worker. This is a distinct invocation from the
+still-failing earlier cross-client assignee workflow; it does not prove a green
+current immutable release or full PRD-10 acceptance.
+
+On the repaired assignee build, the last three-case invocation passes both full
+desktop/phone label workflows (two pass, one unrelated chooser failure; 3.6
+minutes). Enabled focus precedes the one Enter/Space activation, including checked
+deletion consent. Original committed lost-response key/body recovery, filtering
+persistence and command counts, saved label order/version, Card removal and focus
+assertions pass. The chooser repair's dedicated full cross-client case then passes
+(one pass, 1.5 minutes). These are separate invocations against the same compiled
+web/API and real restricted PostgreSQL/scoped Worker. Earlier failures remain
+documented; current immutable CI and outstanding full-PRD requirements still
+prevent closure. PRD-10 remains open at **35%** estimated remaining (planning estimate).

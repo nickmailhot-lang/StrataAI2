@@ -743,3 +743,33 @@ The original scope, query and request key remain immutable. Ten focused transpor
 and recovery tests pass locally, including capacity recovery that preserves
 a live original and an expired original belonging to another account. Native
 release acceptance is still pending; PRD-16 remains open at 18% estimated remaining.
+
+### Current native cross-client label and assignee recovery
+
+The complete desktop/phone cross-client case passes in a three-case invocation
+that ended with one unrelated desktop consent failure and two passes (3.8 minutes).
+It uses the compiled Production web/API, restricted PostgreSQL and scoped Worker.
+Real assignment and label rename/removal recover phone filters; forced socket
+closure/reconnect refusal recovers through HTTP replay without manual refresh.
+Filtered canvas state survives reload, unmatched Cards remain withheld, and Clear
+restores the full canvas. Assignee removal/addition recovers the open phone Card
+and selected-member filters, retaining the expected four filter-change commands.
+Board archive withdraws filter UI and its protected read returns 404. Original
+viewport, source version, request-count and authoritative-state assertions remain.
+
+The assignee picker return-focus repair has two failing-before regressions and
+29 passing member/label/focus component cases; enabled-focus preparation sends
+each mutation keypress once. See [assignment keyboard recovery](card-assignment.md#retain-owned-return-focus-through-admission-refresh)
+and [label activation evidence](board-label-api.md#enabled-focus-before-a-single-keyboard-command).
+This is local Production execution, not current immutable release or full search
+acceptance. PRD-16 remains open at **18%** estimated remaining (planning estimate).
+
+The final dedicated full cross-client case also passes (one pass, 1.5 minutes)
+after an intermediate three-case invocation passed both label cases but missed
+member-filter chooser activation. The chooser, selected-member Space activation
+and Apply now establish enabled keyboard focus before their single keypress;
+selection is explicitly checked, and the four-command assertion remains. No
+mutation keypress occurs inside focus-preparation retries. The original Worker,
+socket-refusal HTTP recovery, Card/canvas/filter/assignee/archive assertions all
+pass. This separate invocation remains local Production evidence; current full
+immutable/search acceptance is still required.

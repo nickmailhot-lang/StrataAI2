@@ -256,3 +256,31 @@ removal, revision/event counts, retained users/members and no duplicate changes
 on receipt replay. Strict .NET compilation and fixture syntax passed locally;
 new Linux host and exact-image execution remain pending CI. Notifications and
 the full remaining ticket acceptance evidence remain outstanding.
+
+## Retain owned return focus through admission refresh
+
+The cross-client native trace recorded a successful unassignment before return
+focus failed. The picker previously consumed its return-focus flag immediately,
+so a subsequent access read could disable the returned trigger and lose focus.
+It now retains owned recovery, parks the activated control in its MUI dialog
+before disabling/removal, and respects deliberate movement to another control.
+This changes keyboard ownership, not assignment authority, revision, request key
+or acknowledgment validation.
+
+Two regressions fail before the fix: loss after a later admission check and
+focus stolen from another control during a held acknowledgment. All 29 selected
+member-picker, label-picker and shared-focus cases pass afterward; web/browser
+types, targeted lint and production build pass. The bundle-size advisory remains.
+Full PRD-11 acceptance and current immutable CI remain required; estimated work
+remaining is **35%** (planning estimate).
+
+The complete cross-client label/filter/assignee native case passes in a dedicated
+final invocation (one pass, 1.5 minutes), with actual Production API, restricted
+PostgreSQL and scoped Worker. Assignment/removal recover the phone Card, avatars
+and selected-member filter results without manual reload; return-focus assertions
+remain intact. An earlier three-case invocation passed that case and phone labels
+but failed desktop consent. The later invocation passed both label cases but
+failed the read-only member-filter chooser activation. That chooser now uses
+enabled focus before its single activation; selected consent and the existing
+four filter-change command count are explicitly retained. Separate local
+invocations do not prove a green current immutable release or full PRD-11.

@@ -11,6 +11,34 @@ const response = (value: unknown, status = 200) => new Response(JSON.stringify(v
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Edit Card assignees' })); return screen.findByRole('button', { name: 'Assign Taylor' }); }
 afterEach(() => vi.unstubAllGlobals());
 
+it('retains acknowledged return focus through later admission checks without stealing deliberate navigation', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response(options)).mockResolvedValueOnce(response(ack));
+  vi.stubGlobal('fetch', fetch); const p = props();
+  const ui = (disabled: boolean) => <><button>Other control</button><CardMemberPicker {...p} disabled={disabled} /></>;
+  const view = render(ui(false)); fireEvent.click(await open());
+  const trigger = screen.getByRole('button', { name: 'Edit Card assignees' });
+  await waitFor(() => expect(trigger).toHaveFocus());
+  view.rerender(ui(true)); expect(trigger).toBeDisabled(); trigger.blur();
+  view.rerender(ui(false)); await waitFor(() => expect(trigger).toHaveFocus());
+  screen.getByRole('button', { name: 'Other control' }).focus();
+  view.rerender(ui(true)); view.rerender(ui(false));
+  expect(screen.getByRole('button', { name: 'Other control' })).toHaveFocus();
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it('preserves deliberate navigation while an assignment acknowledgment is pending', async () => {
+  let finish!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(options))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; })));
+  const p = props(); render(<><button>Other control</button><CardMemberPicker {...p} /></>);
+  const action = await open(); action.focus(); fireEvent.click(action);
+  await waitFor(() => expect(finish).toBeDefined());
+  const other = screen.getByRole('button', { name: 'Other control' }); other.focus();
+  await act(async () => finish(response(ack)));
+  await waitFor(() => expect(p.onRefresh).toHaveBeenCalled());
+  expect(other).toHaveFocus();
+});
+
 it('assigns an eligible named member against the current revision and restores keyboard focus', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(response(options)).mockResolvedValueOnce(response(ack)); vi.stubGlobal('fetch', fetch);
   const p = props(); render(<CardMemberPicker {...p} />); fireEvent.click(await open()); await waitFor(() => expect(p.onRefresh).toHaveBeenCalled());

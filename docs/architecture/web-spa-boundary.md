@@ -200,3 +200,25 @@ gaps; none is represented as passing acceptance. See
 [label execution and remaining failures](../board-label-api.md#mui-trap-fallback-and-keyboard-menu-repair).
 Current immutable CI/full architecture acceptance remains required; ARCH-02 stays
 open at **39%** estimated remaining work (planning estimate).
+
+## Assignee focus and admitted keyboard activation
+
+The assignee picker retains owned return focus after acknowledgment through later
+admission checks and preserves a deliberate move to another control. Both
+regressions fail before the repair; all 29 selected member/label/shared-focus
+component cases, web/browser types, targeted lint and production build pass.
+The existing bundle-size advisory remains. Browser activation prepares enabled,
+actual focus before one Enter/Space keypress; only focus preparation can repeat.
+Observed picker/menu opening, original receipts, current versions, persisted
+state, command counts and selected deletion consent remain enforced.
+
+Both final full desktop/phone label workflows pass in a three-case invocation
+(two pass, one member-filter chooser failure; 3.6 minutes). After repairing that
+read-only chooser activation, its complete cross-client workflow passes in a
+dedicated invocation (one pass, 1.5 minutes). These are separate actual compiled
+Production web/API, restricted PostgreSQL and scoped Worker executions; they do
+not establish current immutable-release/full architecture acceptance. See
+[label activation](../board-label-api.md#enabled-focus-before-a-single-keyboard-command),
+[assignment recovery](../card-assignment.md#retain-owned-return-focus-through-admission-refresh)
+and [filter execution](../board-filtering.md#current-native-cross-client-label-and-assignee-recovery).
+ARCH-02 stays open at **39%** estimated remaining (planning estimate).
