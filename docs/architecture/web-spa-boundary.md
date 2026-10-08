@@ -64,6 +64,29 @@ lives under `src/portal`. Future domains must retain feature ownership rather
 than expanding a global domain store. Portal and internal route admission are
 independent, and API authorization independently enforces their boundaries.
 
+## Shared MUI input styles
+
+The root `App` retains one `CssBaseline` under the shared theme. Its theme
+overrides own MUI's non-empty `mui-auto-fill` and `mui-auto-fill-cancel`
+keyframes, including Emotion's standard/WebKit variants. InputBase disables
+per-field global-style injection; the theme input override preserves the normal
+10 ms cancellation animation and the WebKit autofill selector's 5000 s detection
+animation. This avoids adding/removing duplicate keyframe sheets as forms and
+Card details mount, without changing input values or feature admission.
+
+`appTheme.test.tsx` verifies stable shared rules across zero, five, zero and two
+fields in StrictMode, and filled-label handling for autofill/cancellation
+notifications. Both desktop/phone `input-autofill.spec.ts` cases pass locally
+against the frozen production web bundle through Nginx. They check actual CSS
+rules/computed cancellation styles, the autofill selector, synthetic animation
+notifications, label association and form navigation without duplicate rules.
+These synthetic notifications exercise MUI's listener, not an actual browser
+password manager. The 59 selected theme/shell/authentication/recovery/editor
+component tests, web/browser TypeScript, targeted lint and production build
+pass. Current immutable-image execution and complete ARCH-02 acceptance remain
+required. See [Kanban timing evidence](../kanban-performance.md) for the unchanged
+timing requirements and their measured outcomes.
+
 ## Requirement evidence and remaining scope
 
 | ARCH-02 boundary | Executable evidence |

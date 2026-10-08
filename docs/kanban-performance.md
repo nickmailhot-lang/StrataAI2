@@ -198,6 +198,43 @@ remaining, a planning estimate rather than an acceptance score.
 Both disposable API/web containers are removed after the terminal invocation,
 preserving the original three running services, images and saved volumes.
 
+## Shared input-style follow-up, 2026-10-07
+
+The application theme now gives the root CssBaseline ownership of MUI's
+non-empty autofill/cancellation keyframes, preserving standard/WebKit rules and
+the existing input animation selectors while disabling per-field global-style
+injection. All inputs and feature controls remain mounted as before; this does
+not defer part of the Card editor to produce a faster readiness measurement.
+The root shared-rule regression fails before this change. Its final version
+verifies stable rules across field mount/unmount in StrictMode and filled-label
+handling with synthetic animation notifications. All 59 selected theme, shell,
+authentication, recovery, editor and focus tests pass, as do web/browser
+TypeScript, targeted lint and the production build.
+
+Both new desktop/phone native input-style cases pass against the frozen
+production bundle through Nginx. They verify actual stylesheet/computed-style
+contracts, label association and autofill/cancellation notifications, with no
+additional keyframe rules when registration fields or recovery forms mount.
+These notifications exercise the MUI listener and do not simulate a browser
+password manager. Shared ownership is documented in the
+[web SPA boundary](architecture/web-spa-boundary.md#shared-mui-input-styles).
+
+The subsequent unchanged two-viewport Kanban benchmark still fails both cases,
+retaining all twenty actual mutation samples per viewport:
+
+| Viewport | Usable Board (<1500 ms) | Drop feedback (<100 ms) | Cached detail (<200 ms) | Mutation p95 (<500 ms) | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| 1280x844, mouse | **1559.2** | **109.2** | **287.6** | 181.2 | Failed readiness, feedback and detail budgets |
+| 390x844, Chromium touch | 1055.9 | **123.9** | **284.5** | 164.6 | Failed feedback and detail budgets |
+
+This is scoped Windows-hosted Chromium, a compiled Production API under the
+restricted PostgreSQL login, and Nginx, with revision null and `unverified runtime`
+provenance. Removing duplicate style injection does not prove a causal timing
+improvement or current retained-image acceptance. Budgets and sample accounting
+are unchanged. PRD-06 remains open with **32%** estimated work remaining, a
+planning estimate. Both disposable API/web containers are removed; the original
+three services, saved volumes, images and build caches are preserved.
+
 ## Current large-Board runtime correction
 
 Exact-image run [37253072119](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37253072119)

@@ -26,6 +26,28 @@ export const appTheme = createTheme({
     },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        // Non-empty keyframes retain MUI's autofill notification in production.
+        '@keyframes mui-auto-fill': { from: { animationName: 'mui-auto-fill' } },
+        '@keyframes mui-auto-fill-cancel': { from: { animationName: 'mui-auto-fill-cancel' } },
+      },
+    },
+    MuiInputBase: {
+      defaultProps: { disableInjectingGlobalStyles: true },
+      styleOverrides: {
+        // MUI also disables these selectors with per-input style injection.
+        // Keep the existing detection while CssBaseline owns the shared rules.
+        input: {
+          animationName: 'mui-auto-fill-cancel',
+          animationDuration: '10ms',
+          '&:-webkit-autofill': {
+            animationName: 'mui-auto-fill',
+            animationDuration: '5000s',
+          },
+        },
+      },
+    },
     MuiAvatar: {
       styleOverrides: {
         colorDefault: ({ theme }) => ({
