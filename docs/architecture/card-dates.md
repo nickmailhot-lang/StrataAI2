@@ -555,6 +555,28 @@ Workers were retired afterward. This is scoped local evidence, not retained
 release-image acceptance or a dated-Board performance result. Full current CI,
 capacity/lifecycle evidence and remaining PRD-12 acceptance still require review.
 
+## Bounded formatter reuse and current native evidence
+
+The normal 50-dated-Card workload previously constructed 300 timezone formatters.
+Date helpers now retain at most 64 locale/timezone/purpose configurations using
+LRU eviction. Classification still recomputes current time, precise instants,
+completion and viewing timezone; no Card value, profile or computed result is
+retained. A failing-before regression now passes along with all 82 focused date
+cases, web typechecking, targeted lint and the isolated production build.
+
+Both unchanged complete desktop/phone Card-date scenarios pass on the compiled
+new web build with the Production API and restricted PostgreSQL. Persisted dates,
+Board timezone policy, lost-response receipt recovery, completion, two-session
+automatic preference recovery, unchanged canonical Board state and clearing dates
+remain enforced. Temporary owned API/web containers were retired after execution.
+
+The unchanged dated-Board performance case was also run on frozen before/after
+builds. Both failed the original Board readiness and cached-detail budgets; date
+mutation p95 passed. See the [numeric measurements and limitations](../kanban-performance.md#bounded-date-formatter-reuse).
+Local functional proof and constructor reuse do not establish current immutable
+release, performance/capacity, lifecycle or full PRD acceptance. PRD-12 remains
+open at **25% estimated work remaining** (planning estimate).
+
 The additional date editor/draft suites passed all 15 cases (116 total across
 seven focused date/Board files). Web typechecking, lint, browser typechecking
 and an isolated production web build also passed. The local build is outside

@@ -379,6 +379,33 @@ Reporter tests and scenario parsing pass locally. Actual dated-Board timing is
 pending exact-image CI and does not establish 200-List/5000-Card rendering or
 virtualization acceptance.
 
+## Bounded date formatter reuse
+
+The normal 50-dated-Card regression constructed 300 `Intl.DateTimeFormat`
+instances before the repair. Date helpers now share an LRU cache capped at 64
+formatter configurations, keyed by locale, timezone and formatting purpose.
+The same 50-Card classification workload reuses two configurations. Card values,
+account profiles, formatted results and deadline states are never cached; current
+clock, precision, completion and timezone validation still drive each result.
+Eviction and independent locale/timezone/date-only/timed formatting are covered.
+
+All 82 focused date cases across six suites, web typechecking, targeted lint and
+the isolated production build pass. The unchanged dated-Board native benchmark
+was executed against frozen before/after web builds with the same Production
+API/restricted PostgreSQL topology. Both executions failed the original budgets:
+
+| Local native build | Usable Board (target <1500 ms) | Cached detail (target <200 ms) | Date mutation p95 (target <500 ms) |
+| --- | ---: | ---: | ---: |
+| Before formatter reuse | 3275.78 ms | 419.79 ms | 171.70 ms |
+| After formatter reuse | 2180.30 ms | 368.04 ms | 172.42 ms |
+
+These are single, separate local executions, not a controlled attribution of
+latency gains or exact-release evidence. Native commands retain all 20 changing
+dates, expected versions, receipts and response-decoding checks. Neither Board
+readiness nor detail opening meets its budget. Performance, large-data rendering
+and current immutable CI acceptance remain open; PRD-06 stays at **29% estimated
+work remaining** and PRD-12 at **25%** (planning estimates).
+
 ## Phone List feedback coverage
 
 The two-empty-List feedback fixture now also runs at 390x844 with Chromium touch input. It reveals the moving List, activates its actual handle, and uses the left canvas boundary to auto-scroll until the anchor center is reachable. Touch release starts the same browser-clock sample used by the desktop pointer case. The first painted optimistic order must intersect the viewport and meet the unchanged <100ms budget while the keyed PATCH is held before dispatch. The fixture requires exactly one write, unchanged canonical ordering while held, the intended acknowledgment at revision two, an unchanged neighboring List, and persisted order after reload. Touch cancellation and session cleanup run on failure.

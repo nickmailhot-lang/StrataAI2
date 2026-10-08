@@ -31,3 +31,38 @@ it('formats instants in configured timezone and suppresses time for date-only va
   expect(formatCardDate('2026-10-03T08:00:00Z', true, 'en-US', 'Pacific/Honolulu')).toContain('10:00');
   expect(() => cardDueState(dates(), 'Unknown/Place')).toThrow();
 });
+
+it('reuses timezone formatters across a normal dated Board while recomputing current deadline state', async () => {
+  vi.resetModules(); const datesModule = await import('./cardDates');
+  const constructors = vi.spyOn(Intl, 'DateTimeFormat');
+  try {
+    const now = Date.parse('2026-10-02T10:00:00Z');
+    for (let index = 0; index < 50; index++) {
+      const values = datesModule.cardDates({ ...card, id: `card-${index}` });
+      expect(datesModule.cardDueState(values, 'UTC', now)).toBe('DUE_SOON');
+    }
+    expect(constructors.mock.calls.length).toBeLessThanOrEqual(3);
+    constructors.mockClear();
+    expect(datesModule.cardDueState(dates(), 'UTC', now + 86400000)).toBe('OVERDUE');
+    expect(datesModule.cardDueState(dates(), 'UTC', now - 86400000)).toBe('UPCOMING');
+    expect(constructors).not.toHaveBeenCalled();
+    expect(datesModule.cardDueState(dates(), 'Pacific/Honolulu', now)).toBe('DUE_TODAY');
+    expect(() => datesModule.cardDueState(dates(), 'Unknown/Place', now)).toThrow();
+  } finally { constructors.mockRestore(); }
+});
+
+it('bounds formatter retention and keeps locale, timezone and time-display choices independent', async () => {
+  vi.resetModules(); const datesModule = await import('./cardDates');
+  const value = '2026-10-03T08:00:00Z';
+  const first = datesModule.formatCardDate(value, false, 'en-US-x-fixture-0', 'UTC');
+  const constructors = vi.spyOn(Intl, 'DateTimeFormat');
+  try {
+    for (let index = 1; index <= 80; index++) datesModule.formatCardDate(value, false, `en-US-x-fixture-${index}`, 'UTC');
+    constructors.mockClear();
+    expect(datesModule.formatCardDate(value, false, 'en-US-x-fixture-0', 'UTC')).toBe(first);
+    expect(constructors).toHaveBeenCalled();
+    expect(datesModule.formatCardDate(value, false, 'en-US', 'Pacific/Honolulu')).toBe('Oct 2, 2026');
+    expect(datesModule.formatCardDate(value, true, 'en-US', 'Pacific/Honolulu')).toContain('10:00');
+    expect(datesModule.formatCardDate(value, false, 'fr-CA', 'UTC')).toBe(new Intl.DateTimeFormat('fr-CA', { timeZone: 'UTC', dateStyle: 'medium' }).format(new Date(value)));
+  } finally { constructors.mockRestore(); }
+});
