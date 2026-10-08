@@ -64,7 +64,7 @@ BoardScreen now retains its admission-checking state across queued refreshes ins
 | FR-003/004 own edit/delete | Current participation/author checks, dual Card/comment revisions, confirmed redaction, body-free receipts, protected original acknowledgment hydration | Full current native conflict/retry/redaction and parent lifecycle matrix |
 | FR-005 username mentions | Canonical reserved handles, explicit selected identity/revision, bounded current teammate lookup, immutable revision snapshots, MUI picker | Current immutable-image selected-handle/identity recovery and cross-feature account lifecycle; local execution is recorded below |
 | FR-006 groups | Explicit @card/@board consent, current assignment/Board recipients, elevated Board administration, rolling three-delivery/ten-minute quota, atomic rollback | Current immutable-image group consent/quota/role gate and large recipient behavior; local execution is recorded below |
-| FR-007 notifications | Immutable source identities, distinct non-self deltas, current recipient admission, atomic source/inbox/jobs/receipts; managed and exact command/Worker fixtures | Selected-mention native private inbox/live delivery now executed below; current-image, group-recipient UI and full PRD-17 consumer/lifecycle requirements remain |
+| FR-007 notifications | Immutable source identities, distinct non-self deltas, current recipient admission, atomic source/inbox/jobs/receipts; managed and exact command/Worker fixtures | Selected-mention native private inbox/live delivery now executed below; current-image and full PRD-17 consumer/lifecycle requirements remain |
 | FR-008/009 immutable activity/envelope | Append-only Work journal, stable IDs/typed targets/versions, captured actor label, body-free metadata, historical Board coordinates, migrations 062–065; restricted SQL contracts | Complete producer/event coverage as remaining domain features are implemented; full release gate |
 | FR-010 historical actor | SQL caption immutability through rename/deactivation/reused identity, exact API rename fixture, plaintext safe rendering | Current immutable-image historical caption/deactivation and complete actor-lifecycle acceptance; executed local caption cases are linked above |
 | FR-011 paginated Board/Card views | Visibility-before-limit 51-source window, 50-row pages, complete eligible historical Board lookup, opaque viewer/target-bound expiring cursor, persistent API keys, MUI bounded pages | Current native paging/reconnect/access and remaining move/archive detail dependencies |
@@ -242,3 +242,41 @@ the full CI browser suite. Current-image execution, group-recipient native
 coverage, remaining producer/concurrency/capacity and full Definition of Done
 requirements still govern closure. PRD-15 remains open with **36% estimated
 work remaining**; PRD-17 remains open with **21% estimated work remaining**.
+
+## Executed confirmed-group recipient inbox and live delivery
+
+Both complete `comment-mass-mentions.spec.ts` cases passed together at 1280px
+and 390px on 2026-10-08 (2 passed, exit 0). The actual recipient MUI inbox and
+private SignalR subscription are open before the comment commands. The initial
+real Card assignment is identified independently, so its notification/live
+history cannot be mistaken for a mention delivery.
+
+Confirmed overlapping Card/Board groups plus original-key/body acknowledgment
+recovery yield one mention article and one private creation event. Unconfirmed
+group text causes no additional delivery. Two further confirmed groups produce
+three mention articles and exactly three `NOTIFICATION_CREATED` events, alongside
+one original assignment article. Every observed snapshot/event matches the
+Organization and recipient and contains Notification entities with empty
+metadata. All four native links target the canonical Card. The fourth group is
+rate-limited with four comments at Card version 6; ordinary member Board-group
+consent stays disabled and their own confirmed Card group adds no notification.
+Actual Board membership removal clears the HTTP inbox and all native articles,
+with no extra creation/read events. Recipient tagged Axe/overflow assertions pass.
+
+The first invocation passed desktop but failed phone acknowledgment of the
+unconfirmed comment. Its private trace contains only the overlapping-group
+original/retry POSTs, with no unconfirmed-comment POST; the draft/Save control
+remained present. The fixture now brings the author page to the foreground
+before waiting for actual workspace admission and activating one focused save
+keypress. It retries neither commands nor authorization failures. The subsequent
+complete invocation passes both cases without changing consent, permissions,
+quota, response-loss or exact-effect assertions. Failed evidence is retained.
+
+The topology matches the compiled-runtime selected-mention invocation above;
+fixture accounts permit unverified email. All owned containers/database were
+removed, preserving existing services/data. Browser typechecking and diff checks
+pass. This completes local native recipient UI/live checks for both selected and
+group mentions, superseding their earlier HTTP-only limits. Current immutable
+build-once images, remaining producer/concurrency/capacity, strict-policy and
+full Definition of Done acceptance still govern closure. Estimated PRD-15 work
+remaining stays **36%**; PRD-17 stays **21%** (planning estimates).

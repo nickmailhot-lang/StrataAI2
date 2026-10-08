@@ -39,9 +39,37 @@ for (const width of [1280, 390]) {
         { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: {} })).status()).toBe(200);
       restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`;
+      const inboxPath = `/organizations/${org}/notifications`;
+      const initialInbox = await teammate.request.get(inboxPath); expect(initialInbox.status()).toBe(200);
+      const initialItems = (await initialInbox.json()).items;
+      expect(initialItems).toHaveLength(1); expect(initialItems[0].type).toBe('CARD_ASSIGNED');
+      const assignmentId = initialItems[0].id;
+      const nativeInbox = await teammate.newPage();
+      const mentionEvents: string[] = []; let liveSnapshots = 0;
+      nativeInbox.on('websocket', socket => {
+        if (new URL(socket.url()).pathname !== '/notifications/live') return;
+        socket.on('framereceived', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const text of frame.payload.split('\u001e').filter(Boolean)) {
+            const message = JSON.parse(text);
+            if (message.type !== 2 || !message.item) continue;
+            const item = message.item;
+            expect(item.organizationId).toBe(org); expect(item.recipientId).toBe(recipient); liveSnapshots++;
+            for (const event of item.events) {
+              expect(event.organizationId).toBe(org); expect(event.recipientId).toBe(recipient);
+              expect(event.entityType).toBe('Notification'); expect(event.metadata).toEqual({});
+              if (event.entityId !== assignmentId) mentionEvents.push(event.eventType);
+            }
+          }
+        });
+      });
+      await nativeInbox.goto(`/app/${org}/notifications`);
+      await expect(nativeInbox.getByRole('article')).toHaveCount(1);
+      await expect.poll(() => liveSnapshots).toBeGreaterThan(0);
+      expect(mentionEvents).toEqual([]);
       const cardVersion = trackCardVersion(page, board, card, cardPath);
       const reads = trackBoardReads(page, board, cardPath); await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
-      const commentsPath = `/cards/${card}/comments`; const inboxPath = `/organizations/${org}/notifications`;
+      const commentsPath = `/cards/${card}/comments`;
       async function draft(text: string) {
         await waitForBoardDelivery(context.request, board);
         const snapshot = await (await context.request.get(`/boards/${board}`)).json();
@@ -54,6 +82,9 @@ for (const width of [1280, 390]) {
         await page.getByRole('textbox', { name: 'New comment', exact: true }).fill(text);
       }
       async function save(client = page) {
+        // Multiple native pages share the keyboard; activate the author page
+        // before checking foreground admission and issuing one keypress.
+        await client.bringToFront();
         // A keyboard focus transition can start a protected foreground read.
         // Wait for the actual workspace admission, then activate once; never
         // retry a rejected mutation or bypass the current-access boundary.
@@ -88,6 +119,9 @@ for (const width of [1280, 390]) {
         return (await response.json()).items.filter((item: { type: string }) => item.type === 'MENTION_CREATED');
       }
       expect(await mentions()).toHaveLength(1);
+      await expect.poll(() => mentionEvents.filter(type => type === 'NOTIFICATION_CREATED').length).toBe(1);
+      await expect(nativeInbox.getByText('Mentioned you in a comment · Unread', { exact: true })).toHaveCount(1);
+      await expect(nativeInbox.getByRole('article')).toHaveCount(2);
       expect((await (await context.request.get(inboxPath)).json()).items).toEqual([]);
       await draft('Unconfirmed @board'); await expect(boardConsent).not.toBeChecked();
       await save();
@@ -105,6 +139,14 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Retry original comment change', exact: true })).toHaveCount(0);
       const current = await (await context.request.get(commentsPath)).json(); expect(current.cardVersion).toBe(6); expect(current.items).toHaveLength(4);
       expect(await mentions()).toHaveLength(3);
+      await expect.poll(() => mentionEvents.filter(type => type === 'NOTIFICATION_CREATED').length).toBe(3);
+      await expect(nativeInbox.getByText('Mentioned you in a comment · Unread', { exact: true })).toHaveCount(3);
+      await expect(nativeInbox.getByRole('article')).toHaveCount(4);
+      for (const link of await nativeInbox.getByRole('link', { name: 'Open Card', exact: true }).all()) {
+        await expect(link).toHaveAttribute('href', cardPath);
+      }
+      expect((await new AxeBuilder({ page: nativeInbox }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      expect(await nativeInbox.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const memberPage = await teammate.newPage(); const memberReads = trackBoardReads(memberPage, board, cardPath);
       await memberPage.goto(cardPath); await expect.poll(memberReads).toBeGreaterThanOrEqual(2);
@@ -118,6 +160,8 @@ for (const width of [1280, 390]) {
       expect((await (await context.request.get(inboxPath)).json()).items).toEqual([]);
       expect((await context.request.delete(`/boards/${board}/members/${recipient}`, { headers })).status()).toBe(204);
       expect((await (await teammate.request.get(inboxPath)).json()).items).toEqual([]);
+      await expect(nativeInbox.getByRole('article')).toHaveCount(0, { timeout: 25_000 });
+      expect(mentionEvents).toEqual(['NOTIFICATION_CREATED', 'NOTIFICATION_CREATED', 'NOTIFICATION_CREATED']);
     } finally { try { restoreWorker(); } finally { await teammate.close(); } }
   });
 }

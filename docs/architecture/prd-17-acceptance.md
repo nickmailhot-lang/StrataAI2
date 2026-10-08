@@ -183,3 +183,19 @@ This is compiled-runtime evidence with unverified fixture accounts, not current
 retained-image identity or strict verification proof. Group-recipient native
 coverage, remaining producer/concurrency/capacity and complete Definition of
 Done requirements remain. Estimated PRD-17 work remaining stays **21%**.
+
+## Executed native confirmed-group consumer
+
+Both [confirmed-group recipient cases](prd-15-acceptance.md#executed-confirmed-group-recipient-inbox-and-live-delivery)
+pass at desktop and phone widths. They independently account for the initial
+real assignment, observe three deduplicated group mentions and private creation
+events, verify canonical native Card links and withdraw all inbox disclosure
+after Board membership removal. Unconfirmed text, the fourth rate-limited group
+and the actor's own Card group add no notification. Recipient tagged Axe and
+overflow checks pass. This supersedes the earlier group-recipient HTTP-only
+limitation and strengthens NOTIFY-FR-009/011/012 alongside selected mentions.
+
+These are compiled-runtime results with unverified fixture accounts. Current
+retained-image, strict-policy, remaining producer/concurrency/capacity and full
+Definition of Done requirements remain. Estimated PRD-17 work remaining stays
+**21%** (planning estimate); the issue remains open.
