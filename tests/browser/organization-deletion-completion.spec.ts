@@ -55,19 +55,33 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const observer = await member.newPage(); await observer.setViewportSize(viewport);
     let observerNavigations = 0;
     const terminalFrames: unknown[] = [];
+    const lifecycleStates = new Set<string>();
     observer.on('request', request => { if (request.isNavigationRequest()) observerNavigations++; });
     observer.on('websocket', socket => {
       if (!new URL(socket.url()).pathname.endsWith('/organizations/live/lifecycle')) return;
+      const watches = new Set<string>();
+      socket.on('framesent', frame => {
+        for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
+          const message = JSON.parse(raw);
+          if (message.type === 4 && message.target === 'Watch' && message.arguments?.[0] === org
+            && typeof message.invocationId === 'string') watches.add(message.invocationId);
+        }
+      });
       socket.on('framereceived', frame => {
         for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
           const message = JSON.parse(raw);
-          if (message.type === 2 && message.item?.organizationId === org && message.item?.userId === memberActor
-            && message.item?.page?.state === 'COMPLETED') terminalFrames.push(message.item.page);
+          if (message.type !== 2 || !watches.has(message.invocationId) || message.item?.organizationId !== org
+            || message.item?.userId !== memberActor || !Array.isArray(message.item?.page?.events)) continue;
+          const state = message.item.page.state;
+          if (!['ACTIVE', 'PENDING', 'COMPLETED'].includes(state)) continue;
+          lifecycleStates.add(state);
+          if (state === 'COMPLETED') terminalFrames.push(message.item.page);
         }
       });
     });
     await observer.goto(`/app/${org}`);
     await expect(observer.getByRole('heading', { name: 'Terminal deletion council', exact: true })).toBeVisible();
+    await expect.poll(() => lifecycleStates.has('ACTIVE')).toBe(true);
     const writes: string[] = []; let ordinaryReads = 0;
     await page.goto(`/app/${org}/delete`);
     const launcher = page.getByRole('button', { name: 'Review deletion request', exact: true });
@@ -92,6 +106,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     if (!demo) {
       // Production delivery is explicitly paused until the Worker below starts.
       expect(pendingPage).toEqual({ state: 'PENDING', events: [] });
+      await expect.poll(() => lifecycleStates.has('PENDING')).toBe(true);
       await expect(observer.getByRole('status')).toHaveText('Organization deletion is being confirmed.');
     } else {
       // Demo dispatch is automatic: it may commit before this observation.

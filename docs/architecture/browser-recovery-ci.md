@@ -519,3 +519,62 @@ are removed; original services/data remain. Four more retained failures are
 addressed locally, leaving three other retained failures to repair/verify. The
 original failed release gate remains failed. Current immutable CI, complete native
 suite and release-bundle verification still govern issue closure.
+
+## Archive source admission and navigation completion boundaries
+
+The remaining seven-case baseline passes both Organization deletion-completion
+cases and all three navigation widths, but fails desktop Board deletion before
+any DELETE is dispatched. The phone Board case passes. The older retained
+release trace separately has one browser DELETE with its deliberately lost
+response; the HTTP 200 belongs to that original intercepted request's
+`route.fetch()`. Its later retry keypress sends no second browser DELETE. Those
+are distinct observations, not proof of a malformed persisted deletion receipt.
+
+The Board fixture now passively observes the actual Organization Watch invocation,
+actor/scope envelope and target Board sources. A successful archive-directory read
+must start after the observed head/change before consent or receipt recovery is
+admitted. Re-archive and deletion each require their own canonical event and
+subsequent read. Failed, older, foreign and unrelated reads/sources cannot satisfy
+the boundary; replayed event IDs count once. Fourteen observer regressions pass.
+Keyboard actions establish enabled focus before one activation; only focus can
+be retried. Original mutation counts, keys/bodies/versions, privacy withdrawal,
+independent deleted-parent rejection, child lifecycle, focus and WCAG assertions
+remain required.
+
+Navigation waits for each acknowledged screen's current-account confirmation to
+remove its own retained original before leaving that scope. The deliberately lost
+Card original survives leaving and must return with its original key/query/event;
+the final zero-retained-original assertions remain. No storage entry is removed by
+the fixture. Lifecycle observation now qualifies frames with the actual outgoing
+Watch invocation and waits for ACTIVE before deletion and PENDING before taking
+the Member offline. Real Worker completion, exact terminal source, account
+replacement, reload recovery and logout withdrawal assertions remain.
+
+Browser TypeScript and the observer regressions pass. The final seven-case native
+invocation exits zero with all seven cases passing together. It uses the frozen
+current compiled Production API, separate real Worker, MUI bundle, Nginx and
+restricted PostgreSQL schema 113, with optional browser email verification and
+mail providers disabled. All owned containers and the cloned database are removed;
+the original three services and data remain. This addresses the final three
+failures from the retained 35aabef2 browser audit locally. It does not establish
+current immutable CI success; full PRD acceptance, the newly retained capacity
+failure below and release-bundle validation still govern closure.
+
+## Retained db4ff033 phone capacity failure
+
+[Run 37803017597](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37803017597)
+passes web/.NET/PostgreSQL source quality, build-once images and image security,
+but fails container integration's concurrent/large-board rank step. Its large
+Board browser pair has one desktop pass and one phone failure at
+`board-capacity.case.ts:314`: after horizontal edge scrolling and moving the
+pointer back to the middle, the selected empty-column drop target's center is
+465.0859375 pixels while the visible right boundary is 366 pixels. This is a
+visible-target assertion failure; it does not establish a rank-storage failure.
+The final gate fails and the release bundle is skipped, as required.
+
+Artifact `11566071486` retains the phone trace and was downloaded for the next
+investigation; its archive SHA-256 is
+`c060397d21c6cd3fd35748b21335049fc68884b764e8914c847fc7cb7ffaf3b9`.
+The drag assertion and mandatory capacity gate remain intact. Repair and native
+verification of this failure are still outstanding. It is separate from the
+three earlier retained failures addressed by the seven-case invocation above.

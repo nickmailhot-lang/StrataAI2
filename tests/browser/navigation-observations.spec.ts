@@ -47,14 +47,21 @@ for (const width of [1280, 768, 390]) {
     });
     await page.goto('/app'); await expect(page.getByRole('heading', { name: 'Your organizations', exact: true })).toBeVisible();
     await expect.poll(() => observed.has('APPLICATION_CONTEXT_CHANGED')).toBe(true);
+    // A server receipt is followed by current-account confirmation. Let that
+    // finish before leaving its scope; only the intentionally lost Card
+    // original below should survive navigation away.
+    const pendingOriginals = () => page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('strataai:navigation:v1:')).length);
+    await expect.poll(pendingOriginals).toBe(0);
     const boardPath = `/app/${org}/boards/${board.id}`, cardPath = `${boardPath}/cards/${card.id}`;
     await page.goto(boardPath); await expect.poll(() => observed.has('BOARD_OPENED')).toBe(true);
     await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+    await expect.poll(pendingOriginals).toBe(0);
     const link = page.getByRole('link', { name: 'Navigation browser Card', exact: true });
     await link.focus(); await link.press('Enter'); await expect(page).toHaveURL(new RegExp(`${cardPath}$`));
     await expect(page.getByRole('button', { name: 'Retry navigation confirmation', exact: true })).toBeVisible();
     expect(attempts).toHaveLength(1);
     await page.goto('/app'); await expect(page.getByRole('heading', { name: 'Your organizations', exact: true })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('strataai:navigation:v1:') && key.split(':')[4] !== 'card').length)).toBe(0);
     await page.goto(cardPath);
     await expect.poll(() => attempts.length).toBe(2);
     expect(attempts[1]).toEqual(attempts[0]);
@@ -63,6 +70,7 @@ for (const width of [1280, 768, 390]) {
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     const close = page.getByRole('button', { name: 'Close', exact: true }); await expect(close).toBeEnabled(); await close.focus(); await close.press('Enter');
     await expect(page).toHaveURL(new RegExp(`${boardPath}$`));
+    await expect.poll(pendingOriginals).toBe(0);
     await link.focus(); await link.press('Enter'); await expect(page).toHaveURL(new RegExp(`${cardPath}$`));
     await expect.poll(() => attempts.length).toBe(3);
     expect(attempts[2].key).not.toBe(attempts[0].key);

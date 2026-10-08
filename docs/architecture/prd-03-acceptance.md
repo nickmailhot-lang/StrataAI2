@@ -542,6 +542,19 @@ without weakening denial assertions. See
 Estimated PRD-03 work remaining stays **8%** (planning estimate). Current immutable
 CI, complete lifecycle purge/retention and full-PRD acceptance still prevent closure.
 
+## Subscription-qualified deletion completion
+
+The desktop/phone real Worker completion cases pass within the final seven-case
+native invocation. Member lifecycle frames must belong to the actual outgoing
+Watch invocation and current Organization/account; ACTIVE admission precedes the
+request, and PENDING admission precedes the offline interval. Exact terminal
+events, independent Member/Owner boundaries, replacement-account withdrawal,
+new-document and original-request recovery, reload privacy, focus, logout and
+WCAG assertions remain. See [execution evidence](browser-recovery-ci.md#archive-source-admission-and-navigation-completion-boundaries).
+
+Estimated PRD-03 work remaining stays **8%** (planning estimate). Current immutable
+CI, complete purge/retention and full-PRD acceptance remain required before closure.
+
 ## Automatic metadata delivery and admitted Organization keyboard execution
 
 The full native browser phase now enables and verifies real automatic Organization

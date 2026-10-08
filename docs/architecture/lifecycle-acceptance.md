@@ -293,3 +293,12 @@ and PRD-03 accepted-request treatment after actor retirement; it does not certif
 current immutable-image/browser acceptance, automatic global discovery or physical
 provider/backup erasure. PRD-18 remains open at **16% estimated work remaining**,
 a planning estimate; PRD-03 remains open at **8%**.
+
+The subsequent seven-case native browser invocation passes desktop/phone Board
+archive/restore/delete receipt recovery and Organization deletion completion,
+plus all three navigation widths. Actual scoped source/read admission precedes
+Board consent and retry; Organization completion frames belong to the real Watch
+invocation. Existing child-state, privacy, current-account, original-key, focus
+and WCAG checks remain. See [execution evidence](browser-recovery-ci.md#archive-source-admission-and-navigation-completion-boundaries).
+Estimated PRD-18 work remaining stays **16%** (planning estimate); current immutable
+CI and full lifecycle acceptance still prevent closure.

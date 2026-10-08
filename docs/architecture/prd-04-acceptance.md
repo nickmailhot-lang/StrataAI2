@@ -330,3 +330,17 @@ capability checks pass with migration/readiness checks. See
 [complete evidence](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption).
 Estimated PRD-04 work remaining stays **16%** (planning estimate). Current immutable
 CI, remaining release failures and full-PRD acceptance still prevent closure.
+
+## Archive directory source and keyboard admission
+
+Desktop/phone native lifecycle cases now pass original lost archive, restore and
+permanent-delete receipts together. Consent and retry wait for the actual scoped
+Board event and a protected directory read started afterward, then one enabled,
+focused keypress. Child lifecycle, unchanged original keys/bodies/versions,
+deleted-parent rejection, privacy withdrawal, focus and WCAG checks remain. The
+desktop baseline failed before DELETE dispatch; the retained older retry also
+sent no second DELETE. See [execution evidence](browser-recovery-ci.md#archive-source-admission-and-navigation-completion-boundaries).
+
+Estimated PRD-04 work remaining stays **16%** (planning estimate). The separate
+retained phone capacity failure, current immutable CI and full-PRD acceptance
+remain outstanding; this focused success does not justify closure.

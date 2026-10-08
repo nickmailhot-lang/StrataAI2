@@ -103,3 +103,17 @@ unresolved attempts keep their existing recovery. A new mounted visit creates a
 fresh original key. The component regression covers both paths. Native execution
 remains required to resolve the duplicate-key failure reported by the old
 `5a2433f` browser suite.
+
+## Native completion before leaving an acknowledged scope
+
+Desktop, tablet and phone navigation cases pass in the current seven-case compiled
+Production API/Worker/MUI/PostgreSQL invocation. A received server receipt still
+requires current-account confirmation before its local original is removed.
+The fixture waits for that completion before leaving an acknowledged screen;
+the deliberately lost Card original survives leaving and returns with the same
+key, query and event. Later visits require new keys, and final retained-original
+counts remain zero. The fixture never removes storage entries. Keyboard Back,
+Board context and WCAG assertions remain. See [execution evidence](architecture/browser-recovery-ci.md#archive-source-admission-and-navigation-completion-boundaries).
+
+Estimated PRD-01 work remaining stays **34%** (planning estimate). This focused
+execution does not establish complete foundation or current immutable CI acceptance.

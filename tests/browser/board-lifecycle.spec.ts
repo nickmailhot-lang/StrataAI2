@@ -2,6 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { trackArchivedBoardChanges } from './invitationAdmissionTracker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-04/18: Board lifecycle reviews recover original receipts and preserve child states at ${width}px`, async ({ page, context }) => {
@@ -10,6 +12,7 @@ for (const width of [1280, 390]) {
     const account = { email: `board-lifecycle-${width}-${Date.now()}@example.test`, password: 'lifecycle-correct-horse-battery', displayName: 'Lifecycle administrator' };
     expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
     expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    const actor = (await (await context.request.get('/me')).json()).id;
     const orgReply = await context.request.post('/organizations', { headers, data: { name: 'Board lifecycle fixture' } });
     expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
     const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Lifecycle Board', visibility: 'PRIVATE' } });
@@ -31,6 +34,7 @@ for (const width of [1280, 390]) {
     try {
       await waitForBoardDelivery(context.request, board.id);
       const boardPath = `/app/${org}/boards/${board.id}`; const archivePath = `/app/${org}/archived-boards`;
+      const archiveChanges = trackArchivedBoardChanges(page, org, actor, board.id, archivePath);
       const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
       const otherReads = trackBoardReads(other, board.id, boardPath);
       const initiatingReads = trackBoardReads(page, board.id, boardPath);
@@ -59,25 +63,26 @@ for (const width of [1280, 390]) {
       expect((await new AxeBuilder({ page: other }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const activeDirectory = await context.request.get(`/organizations/${org}/boards`); expect(activeDirectory.status()).toBe(200);
       expect(await activeDirectory.json()).toEqual([]);
-      await page.getByRole('button', { name: 'Retry this archive', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Retry this archive', exact: true }));
       await expect(page.getByText('Board archive acknowledged. Current Board state is being checked.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       expect(archives).toHaveLength(2); expect(archives[1]).toEqual(archives[0]);
       expect(archives[0].key).toMatch(/^[0-9a-f-]{36}$/); expect(JSON.parse(archives[0].body!)).toEqual({ version: before.board.version });
-      await page.getByRole('link', { name: 'Manage archived Boards', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('link', { name: 'Manage archived Boards', exact: true }));
       await expect(page).toHaveURL(new RegExp(`${archivePath}$`));
       await expect(page.getByRole('heading', { name: board.name, exact: true })).toBeVisible();
       await expect(page.getByText('Active retained card', { exact: true })).toHaveCount(0);
       // The initial live reset retires consent. Wait for its protected archive
       // read before opening a new review, rather than keying into a closing one.
       await expect(page.getByRole('status')).toHaveText('Current archived boards checked.');
+      await expect.poll(archiveChanges.ready).toBe(true);
       const restores: { key: string | undefined; body: string | null }[] = [];
       await page.route(`**/boards/${board.id}/restore`, async route => {
         restores.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
         const result = await route.fetch(); expect(result.status()).toBe(200);
         if (restores.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
       });
-      await page.getByRole('button', { name: `Restore ${board.name} board`, exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: `Restore ${board.name} board`, exact: true }));
       await expect(page.getByText('Restoration makes the Board active again. Its Lists and Cards retain their own lifecycle states.', { exact: true })).toBeVisible();
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const confirmRestore = page.getByRole('button', { name: 'Confirm restore', exact: true });
@@ -86,7 +91,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Retry this change', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel change', exact: true })).toHaveCount(0);
       await expect(other.getByRole('button', { name: 'Add list', exact: true })).toBeEnabled();
-      await page.getByRole('button', { name: 'Retry this change', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Retry this change', exact: true }));
       await expect(page.getByText('No administrable archived Boards on this page.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current archived boards', exact: true })).toBeFocused();
       expect(restores).toHaveLength(2); expect(restores[1]).toEqual(restores[0]);
@@ -99,9 +104,11 @@ for (const width of [1280, 390]) {
       await expect(other.getByText('Active retained card', { exact: true })).toBeVisible();
       await expect(other.getByText('Archived retained card', { exact: true })).toHaveCount(0);
       await expect(other.getByRole('heading', { name: 'Archived planning', exact: true })).toHaveCount(0);
+      const priorArchive = archiveChanges.count('BOARD_ARCHIVED');
       const rearchive = await context.request.post(`/boards/${board.id}/archive`, { headers, data: { version: after.board.version } });
       expect(rearchive.status()).toBe(200); const archived = await rearchive.json();
-      await page.getByRole('button', { name: 'Check current archived boards', exact: true }).focus(); await page.keyboard.press('Enter');
+      await expect.poll(() => archiveChanges.settled('BOARD_ARCHIVED', priorArchive + 1)).toBe(true);
+      await pressAdmittedAction(page.getByRole('button', { name: 'Check current archived boards', exact: true }));
       await expect(page.getByRole('button', { name: `Permanently delete ${board.name} board`, exact: true })).toBeEnabled();
       const deletes: { url: string; key: string | undefined; body: string | null }[] = [];
       await page.route(`**/boards/${board.id}?*`, async route => {
@@ -110,14 +117,16 @@ for (const width of [1280, 390]) {
         const result = await route.fetch(); expect(result.status()).toBe(200);
         if (deletes.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
       });
-      await page.getByRole('button', { name: `Permanently delete ${board.name} board`, exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: `Permanently delete ${board.name} board`, exact: true }));
       await expect(page.getByText('This cannot be undone. This Board cannot be restored, and its Lists and Cards become unavailable through it.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Confirm permanent deletion', exact: true })).toBeDisabled(); expect(deletes).toHaveLength(0);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-      await page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true }).focus(); await page.keyboard.press('Space');
+      await pressAdmittedAction(page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true }), 'Space');
+      const priorDelete = archiveChanges.count('BOARD_DELETED');
       const confirmDelete = page.getByRole('button', { name: 'Confirm permanent deletion', exact: true });
-      await expect(confirmDelete).toBeEnabled(); await confirmDelete.press('Enter');
+      await pressAdmittedAction(confirmDelete);
       await expect.poll(() => deletes.length).toBe(1);
+      await expect.poll(() => archiveChanges.settled('BOARD_DELETED', priorDelete + 1)).toBe(true);
       await expect(page.getByRole('button', { name: 'Retry this change', exact: true })).toBeEnabled();
       // The canonical deletion withdraws private review content even while the
       // original command acknowledgment remains unresolved. Its key survives
@@ -127,7 +136,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Cancel change', exact: true })).toHaveCount(0);
       await expect(other.getByRole('alert')).toContainText('This board or action is unavailable.');
       await expect(other.getByRole('heading', { name: board.name, exact: true })).toHaveCount(0);
-      await page.getByRole('button', { name: 'Retry this change', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Retry this change', exact: true }));
       await expect(page.getByText('Board deletion acknowledged.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current archived boards', exact: true })).toBeFocused();
       expect(deletes).toHaveLength(2); expect(deletes[1]).toEqual(deletes[0]); expect(deletes[0].key).toMatch(/^[0-9a-f-]{36}$/);
