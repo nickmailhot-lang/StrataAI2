@@ -414,3 +414,26 @@ are scoped evidence, not complete release acceptance. The strict
 [read/permission ordering matrix](prd-17-acceptance.md#executed-read-and-permission-withdrawal-ordering)
 adds sixteen actual races while preserving prior watch/activity ordering, but does
 not substitute for native release failures or the full required gate.
+
+
+## Board invitation admission follow-up for retained 35aabef2 failures
+
+The [Board admission correction](../board-invitation-release-evidence.md#board-creation-and-history-admission-after-real-source-frames)
+addresses three more retained failures locally: administration desktop issuance,
+phone cancellation and desktop live-history cancellation. All four desktop/phone
+cases pass together in 2.6 minutes; the initial local baseline passed all four,
+while partial strengthening reproduced phone issuance with a filled email later
+cleared and no POST. The final fixture requires actual scoped head/read admission
+before composition and after reload, and actual issuance frames followed by
+protected history reads before consent. Focus checks admit single activations.
+
+Four new observer regressions pass with seven existing checks; TypeScript passes.
+All original key/body/identity/revocation/history, focus, acceptance, preferences,
+reconnect, no-reload/no-observer-write and accessibility assertions remain. Overall
+administration setup allowance now includes its explicit scoped Worker, while
+interaction observation deadlines remain unchanged. No product invalidation or
+permission guard is weakened. Owned fixtures are removed, original services/data
+preserved. This is local optional-verification Production/restricted PostgreSQL
+proof. Twelve other retained failure cases remain without a local repair in this
+audit; the original seventeen-failure release run remains failed. Full current
+immutable-image execution still governs acceptance and issue closure.

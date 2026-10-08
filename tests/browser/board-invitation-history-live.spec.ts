@@ -1,6 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
-import { scopedBoardWorker } from './scopedBoardWorker';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardHistoryChanges } from './invitationAdmissionTracker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-05/60-TC-06/09/11/12: Board invitation history reconciles issuance, acceptance and revoked consent at ${width}px`, async ({ page, context, browser }) => {
@@ -21,7 +23,8 @@ for (const width of [1280, 390]) {
       expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
       const result = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Live invitation Board' } });
       expect(result.status()).toBe(201); const board = (await result.json()).id;
-      restoreWorker = scopedBoardWorker(org);
+      restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
+      const changes = trackBoardHistoryChanges(page, org, board, `/app/${org}/boards/${board}/invitations`);
       let documents = 0, observerWrites = 0;
       page.on('request', request => {
         if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++;
@@ -30,22 +33,26 @@ for (const width of [1280, 390]) {
       await page.goto(`/app/${org}/boards/${board}/invitations`);
       await expect(page.getByText('Current invitations checked. Review an invitation again before confirming revocation.', { exact: true })).toBeVisible();
       await expect(page.getByText('No issued invitations on this page.', { exact: true })).toBeVisible();
+      await expect.poll(changes.ready).toBe(true);
       const issue = async (role: string) => {
+        const before = changes.count('BOARD_MEMBER_INVITED');
         const response = await context.request.post(`/boards/${board}/invitations`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
           data: { email: accounts[1].email, role } });
-        expect(response.status()).toBe(201); return (await response.json()).id as string;
+        expect(response.status()).toBe(201); const id = (await response.json()).id as string;
+        await expect.poll(() => changes.settled('BOARD_MEMBER_INVITED', before + 1), { timeout: 30_000 }).toBe(true);
+        return id;
       };
       const acceptedId = await issue('MEMBER');
       const pendingAction = page.getByRole('button', { name: `Revoke invitation for ${accounts[1].email}`, exact: true });
       await expect(pendingAction).toBeEnabled({ timeout: 30_000 });
-      await pendingAction.focus(); await page.keyboard.press('Enter'); await expect(page.getByRole('dialog')).toBeVisible();
+      await pressAdmittedAction(pendingAction); await expect(page.getByRole('dialog')).toBeVisible();
       expect((await recipient.request.post(`/me/invitations/${acceptedId}/accept`, { headers })).status()).toBe(200);
       await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 30_000 });
       await expect(page.getByRole('article').filter({ hasText: 'Accepted' })).toHaveCount(1);
       await expect(pendingAction).toHaveCount(0);
       const revokedId = await issue('ADMIN');
       await expect(pendingAction).toBeEnabled({ timeout: 30_000 });
-      await pendingAction.focus(); await page.keyboard.press('Enter'); await expect(page.getByRole('dialog')).toBeVisible();
+      await pressAdmittedAction(pendingAction); await expect(page.getByRole('dialog')).toBeVisible();
       const originalHistory = (await (await context.request.get(`/boards/${board}/invitations`)).json()).items;
       const expiresAt = originalHistory.find((row: { id: string }) => row.id === revokedId).expiresAt;
       const preferences = await browser.newContext({ baseURL: new URL(page.url()).origin });

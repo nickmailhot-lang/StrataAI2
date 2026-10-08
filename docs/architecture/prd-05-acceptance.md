@@ -359,3 +359,16 @@ attribution checks pass. The expanded five-case strict local invocation passes i
 eight minutes. This strengthens PERM-FR-005/008/010 and TC-04/05/07/08; native
 transport/interaction/capacity and full current retained-image CI remain separate.
 PRD-05 remains open at **15% estimated work remaining** (planning estimate).
+
+
+## Board invitation creation and source-frame history admission
+
+The [Board invitation admission correction](../board-invitation-release-evidence.md#board-creation-and-history-admission-after-real-source-frames)
+replaces a weak two-read setup assumption with the actual scoped creation head and
+protected Board read after it. It also observes actual issuance frames and
+subsequent protected history reads before consent. Original request recovery,
+exact actor/body/key, cancellation/return focus, canonical rows, current access,
+live preference/acceptance and reconnect assertions remain. Four new passive
+observer regressions pass with the existing seven. No product guard is weakened;
+strict/provider and full current retained-image acceptance remain required.
+PRD-05 remains open at **15% estimated work remaining** (planning estimate).

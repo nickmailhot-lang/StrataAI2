@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { trackInvitationAdmission } from './invitationAdmissionTracker.ts';
+import { trackInvitationAdmission, trackBoardHistoryChanges } from './invitationAdmissionTracker.ts';
 
 function fixture(board, protectedReadPath) {
   const page = new EventEmitter(); let path = '/previous'; page.url = () => `https://example.test${path}`;
@@ -56,4 +56,40 @@ test('history admission requires its protected collection after the head', () =>
   f.page.emit('request', history); f.response(history, 503); assert.equal(f.tracker.ready(), false);
   const current = { method: () => 'GET', url: () => 'https://example.test/organizations/org/invitations' };
   f.page.emit('request', current); f.response(current); assert.equal(f.tracker.ready(), true);
+});
+
+
+function historyFixture() {
+  const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board/invitations';
+  const tracker = trackBoardHistoryChanges(page, 'org', 'board', '/app/org/boards/board/invitations');
+  const socket = new EventEmitter(); socket.url = () => 'https://example.test/boards/live'; page.emit('websocket', socket);
+  socket.emit('framesent', { payload: JSON.stringify({ type: 4, target: 'Watch', arguments: ['board'], invocationId: 'watch' }) });
+  const event = { eventId: 'source', eventType: 'BOARD_MEMBER_INVITED', organizationId: 'org', boardId: 'board' };
+  const frame = (events = [], invocationId = 'watch') => socket.emit('framereceived', { payload: JSON.stringify({
+    type: 2, invocationId, item: { cursor: 'opaque', pending: false, resetRequired: false, events },
+  }) });
+  const request = (path = '/boards/board/invitations') => {
+    const value = { method: () => 'GET', url: () => 'https://example.test' + path }; page.emit('request', value); return value;
+  };
+  const response = (value, status = 200) => page.emit('response', { request: () => value, status: () => status });
+  return { tracker, frame, event, request, response };
+}
+
+test('Board history cannot admit consent with a read started before the actual invitation event', () => {
+  const f = historyFixture(); f.frame(); const old = f.request(); f.frame([f.event]); f.response(old);
+  assert.equal(f.tracker.count('BOARD_MEMBER_INVITED'), 1); assert.equal(f.tracker.settled('BOARD_MEMBER_INVITED', 1), false);
+  f.response(f.request()); assert.equal(f.tracker.settled('BOARD_MEMBER_INVITED', 1), true);
+});
+test('Board history deduplicates replayed frames without requiring an invented new read', () => {
+  const f = historyFixture(); f.frame([f.event]); f.response(f.request()); f.frame([f.event]);
+  assert.equal(f.tracker.count('BOARD_MEMBER_INVITED'), 1); assert.equal(f.tracker.ready(), true);
+});
+test('Board history rejects foreign Board and unobserved Watch frames', () => {
+  const f = historyFixture(); f.frame([f.event], 'other'); f.frame([{ ...f.event, boardId: 'foreign' }]); f.response(f.request());
+  assert.equal(f.tracker.count('BOARD_MEMBER_INVITED'), 0); assert.equal(f.tracker.ready(), false);
+});
+test('Board history requires its own successful protected read after the latest change', () => {
+  const f = historyFixture(); f.frame([f.event]); f.response(f.request('/boards/board')); f.response(f.request(), 503);
+  assert.equal(f.tracker.ready(), false); f.response(f.request()); assert.equal(f.tracker.ready(), true);
+  f.frame([{ ...f.event, eventId: 'second', eventType: 'INVITATION_ACCEPTED' }]); assert.equal(f.tracker.ready(), false);
 });

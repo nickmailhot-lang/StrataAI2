@@ -215,3 +215,21 @@ requirements. No administration test or product source changed for these cases.
 See [Production expiry admission](../invitation-history.md#production-expiry-consent-admission)
 for the reproduced expiry fixture race and correction. Full PRD-wide release
 acceptance still prevents closure.
+
+
+## Board creation and consent admission verification
+
+The [four final Board administration/history cases](../board-invitation-release-evidence.md#board-creation-and-history-admission-after-real-source-frames)
+pass together in 2.6 minutes. A two-read bootstrap assumption allowed a later
+permission refresh to clear the entered email, sending no POST; the partial
+strengthening reproduced that failure at 390px. Creation now waits for its actual
+scoped head and subsequent protected Board read before composition and after
+reload. History reviews require actual issuance frames and protected history reads
+started after them. Enabled focus precedes one activation. Original identity,
+request/body/key, revocation count and canonical rows remain, alongside actual
+acceptance, preference changes, reconnect, cancellation focus and tagged Axe.
+Eleven passive observer tests and browser TypeScript pass. Local compiled
+Production API/MUI, restricted PostgreSQL and scoped Worker evidence uses the
+full-browser phase's optional verification policy; strict/provider and full current
+immutable acceptance remain separate. PRD-05 stays open at **15%**, and PRD-60 at
+**18% estimated work remaining** (planning estimates).

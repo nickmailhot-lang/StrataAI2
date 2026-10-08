@@ -112,3 +112,49 @@ Server APIs alone do not satisfy client acceptance. See `board-visibility-ui.md`
 and `board-members-ui.md` for the current UI increments and their evidence limits.
 Telemetry, performance and all other ticket-specific definition-of-done items
 also require scoped evidence. PRD-05 and PRD-60 remain open.
+
+
+## Board creation and history admission after real source frames
+
+All **four final desktop/390px cases pass together in 2.6 minutes**, with the
+final creation head/read, draft-value and source-frame history checks. Original
+services/data remain after removal of the owned API/web/Worker/database.
+
+Retained run [37766259462](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37766259462)
+failed desktop issuance and phone cancellation in the administration fixture,
+and desktop cancellation in the live-history fixture. The issuance trace sent no
+POST; the two cancellation failures had no Cancel element because consent was
+already retired. These are distinct from a button merely losing focus.
+
+A current-source four-case baseline passes locally in 2.3 minutes, so those
+retained failures are timing-dependent. The first strengthened invocation passes
+three cases and reproduces the phone issuance failure: the filled email is
+subsequently cleared by a late authority bootstrap and no POST is sent. Waiting
+for two Board reads did not establish a read after the actual scoped head.
+
+Administration now scopes the real Worker and waits for canonical delivery,
+observes the actual creation-page head and its subsequent protected Board read
+before composing, validates the reviewed email before activation, and observes a
+new head/read after reload. Enabled keyboard focus precedes each single activation.
+Before revocation review, a passive observer requires the actual
+`BOARD_MEMBER_INVITED` frame and a protected history read started after it,
+including canonical replay when entering the history page. Live-history issuance
+uses the same event/read ordering for each of its two actual source commands.
+No private frame is emitted or changed, and no source event or history is fabricated.
+
+Four new observer regressions reject pre-event reads, foreign Board/unobserved
+Watch frames and failed/wrong-route reads, and retain deduplication on replay.
+All eleven observer tests and browser TypeScript pass. Original creation key/body,
+expected actor, lost replies, reload, exactly one revocation, canonical invitation
+rows, return/cancellation focus, real acceptance, preference recovery, disconnect,
+no-reload/no-observer-write and tagged accessibility checks remain enforced.
+Administration's overall fixture budget is 90 seconds to include the newly explicit
+Worker setup; existing interaction observation deadlines remain unchanged.
+
+These checks use current compiled Production API/MUI/Nginx, restricted PostgreSQL
+17/pgvector schema 112 and a separate scoped Worker. The API's optional-verification
+account policy matches the full release browser phase. Strict verified-account/
+provider delivery and current immutable-image/full PRD-wide acceptance remain
+independent. No product admission guard or event invalidation was weakened.
+PRD-05 remains open at **15%**, and PRD-60 at **18% estimated work remaining**
+(planning estimates).
