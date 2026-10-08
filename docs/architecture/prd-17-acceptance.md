@@ -875,3 +875,21 @@ controls, accessibility and lost-response retries are exercised. See the
 [clock acceptance evidence and its scope](notification-audit-clocks.md#native-watch-activity-and-first-read-acceptance).
 The fixture does not prove mail-provider delivery or current immutable-image/full
 CI success. PRD-17 remains open at **15% estimated work remaining**.
+
+## Schema-114 audit clocks through actual request ordering
+
+The current shared persistence oracle also passes all thirty observed ordering
+pairs in a complete five-case, 7.9-minute strict Production HTTP/PostgreSQL
+invocation. Creation/first-read-derived notification update clocks are checked
+after actual permission re-admission and reads, across Member/Admin and
+Organization/Public readers. Denial, original receipt replay and complete graph
+preservation remain. The expanded watch scenario separately passes eighteen
+stored-subscription identity/state/version/creation/update-clock comparisons for
+Card, List and Board watches, including original source/watch retries.
+
+See [executed evidence and limits](notification-audit-clocks.md#watch-clocks-and-observed-permission-ordering).
+Browser TypeScript passes. No test is skipped or retried, no acceptance assertion
+is relaxed and no notifications/read clocks are fabricated. These are strict
+session/HTTP/originating-transaction proofs, not additional native input,
+Worker/private transport, provider, capacity or current immutable/full CI proof.
+Owned fixtures are removed. PRD-17 remains at **15% estimated work remaining**.

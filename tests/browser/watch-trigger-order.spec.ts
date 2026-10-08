@@ -36,14 +36,31 @@ test('PRD-17-TC-07/08: actual unwatch and activity commands select Card List Boa
       'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='${org}'),
       'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='${org}'))::text);`);
     let version = 1; let notifications = 0;
+    function utc(value: string) {
+      expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|\+00:00)$/);
+      return value.replace(/\+00:00$/, 'Z').replace(/(\.\d*?)0+Z$/, '$1Z').replace(/\.Z$/, 'Z');
+    }
+    function expectStoredWatch(state: { subscriptionId: string; createdAt: string; updatedAt: string; watching: boolean; version: number }, type: string, entity: string) {
+      // FOUND-FR-009: use stored facts rather than another HTTP projection.
+      expect(state.subscriptionId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      expect(state).toMatchObject({ organizationId: org, boardId: board, userId: recipient, entityType: type, entityId: entity });
+      const stored = JSON.parse(query(`SELECT to_jsonb(w) FROM watch_subscriptions w WHERE tenant_id='${org}' AND id='${state.subscriptionId}';`));
+      expect(stored).toMatchObject({ id: state.subscriptionId, tenant_id: org, user_id: recipient, entity_type: type,
+        entity_id: entity, watching: state.watching, version: state.version });
+      expect(utc(state.createdAt)).toBe(utc(stored.created_at));
+      expect(utc(state.updatedAt)).toBe(utc(stored.updated_at));
+    }
     for (const [type, entity] of [['CARD', card], ['LIST', list], ['BOARD', board]]) {
       const path = `/watch/${type}/${entity}`;
       const enabled = await member.request.put(`${path}?version=0`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: {} });
       expect(enabled.status()).toBe(200); const originalWatch = await enabled.json(); expect(originalWatch).toMatchObject({ watching: true, version: 1 });
+      expectStoredWatch(originalWatch, type, entity);
       for (const unwatchFirst of [true, false]) {
         if (!unwatchFirst) {
           const restored = await member.request.put(`${path}?version=2`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: {} });
-          expect(restored.status()).toBe(200); expect(await restored.json()).toMatchObject({ watching: true, version: 3, subscriptionId: originalWatch.subscriptionId, createdAt: originalWatch.createdAt });
+          expect(restored.status()).toBe(200); const restoredWatch = await restored.json();
+          expect(restoredWatch).toMatchObject({ watching: true, version: 3, subscriptionId: originalWatch.subscriptionId, createdAt: originalWatch.createdAt });
+          expectStoredWatch(restoredWatch, type, entity);
         }
         const watchVersion = unwatchFirst ? 1 : 3;
         const watchKey = crypto.randomUUID(), sourceKey = crypto.randomUUID();
@@ -57,6 +74,7 @@ test('PRD-17-TC-07/08: actual unwatch and activity commands select Card List Boa
         version++; expect(JSON.parse(sourceText)).toMatchObject({ id: card, version, title: sourceBody.title });
         expect(query(`SELECT count(*) FROM work_events WHERE tenant_id='${org}' AND board_id='${board}' AND actor_id='${owner}' AND entity_type='Card' AND entity_id='${card}' AND entity_version=${version} AND event_type='CARD_UPDATED';`)).toBe('1');
         expect(JSON.parse(watchText)).toMatchObject({ watching: false, version: watchVersion + 1, subscriptionId: originalWatch.subscriptionId, createdAt: originalWatch.createdAt });
+        expectStoredWatch(JSON.parse(watchText), type, entity);
         if (!unwatchFirst) notifications++;
         expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}';`)).toBe(String(notifications));
         const counts = query(`SELECT count(*) FROM card_assignment_notifications n JOIN work_events e ON e.tenant_id=n.tenant_id AND e.event_id=n.event_id WHERE e.tenant_id='${org}' AND e.entity_id='${card}' AND e.entity_version=${version} AND e.event_type='CARD_UPDATED' AND e.actor_id='${owner}' AND n.actor_id='${owner}' AND n.notification_type='CARD_UPDATED' AND n.recipient_id='${recipient}';`);
@@ -65,6 +83,7 @@ test('PRD-17-TC-07/08: actual unwatch and activity commands select Card List Boa
         const replayedSource = await source(); expect(replayedSource.status()).toBe(200); expect(await replayedSource.text()).toBe(sourceText);
         const replayedWatch = await unwatch(); expect(replayedWatch.status()).toBe(200); expect(await replayedWatch.text()).toBe(watchText);
         expect(history()).toBe(committed);
+        expectStoredWatch(JSON.parse(watchText), type, entity);
       }
     }
     expect(notifications).toBe(3);

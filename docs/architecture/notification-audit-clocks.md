@@ -1,4 +1,4 @@
-# Notification audit clocks — PRD-01/17
+# Watch and notification audit clocks — PRD-01/17
 
 FOUND-FR-009 and the notification data requirements require creation and update
 audit clocks on mutable notifications. The canonical `CardNotification` and
@@ -83,6 +83,36 @@ withdrawal and stored envelope checks. The
 record the investigation and its limits. This local runtime proof does not certify
 current immutable release images or mail-provider delivery. Owned fixtures are
 removed and original services/data preserved.
+
+## Watch clocks and observed permission ordering
+
+The existing [actual watch/unwatch ordering scenario](../../tests/browser/watch-trigger-order.spec.ts)
+now independently checks each persisted Card, List and Board subscription's
+identity, owner, target, state, version, `createdAt` and `updatedAt`. Eighteen
+read-only storage comparisons cover first watch, rewatch, both unwatch orders and
+original source/watch retries. Creation identity/time remain stable through the
+version-one-to-four sequence. Complete protected-history comparisons and all six
+observed watch/activity races remain. Browser TypeScript and the expanded scenario
+pass with strict verified-account Production HTTP and restricted schema-114
+PostgreSQL 17/pgvector.
+
+The complete five-case ordering phase also passes in one 7.9-minute invocation,
+with no skips or retries. It exercises thirty observed request pairs: six watch
+versus activity, eight permission withdrawal versus activity, and sixteen
+single/bulk read versus withdrawal. Member/Admin grant removal and
+Organization/Public visibility withdrawal are exercised in both orders. The
+shared notification oracle now checks authoritative update clocks after actual
+re-admission and successful reads. Denied reads and original retries preserve the
+full retained graph, original clocks and currently authorized disclosure rules.
+
+These checks use real Production sessions, HTTP commands and observed PostgreSQL
+waiters/peer blockers. Fixture verification activates only freshly registered
+disposable accounts when their mail tokens are private. No notification, read
+clock or journal event is fabricated. No Worker is required for these originating
+transaction checks; they do not add browser-input, private transport, mail-provider
+or capacity acceptance. The required strict immutable-image phase retains both
+ordering files. Owned containers/database are removed and original services/data
+preserved; current full release gates remain separate.
 
 Current immutable-image/full release gates and complete PRD requirements remain
 outstanding. Estimated work remaining stays **34% for PRD-01** and **15% for

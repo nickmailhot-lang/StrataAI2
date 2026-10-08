@@ -384,3 +384,13 @@ before repair and verifies deduplicated restricted delivery after migration 113.
 See [native recipient evidence](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption).
 Estimated PRD-05 work remaining stays **15%** (planning estimate); full current
 immutable CI and remaining acceptance still govern closure.
+
+The [schema-114 ordering invocation](notification-audit-clocks.md#watch-clocks-and-observed-permission-ordering)
+also passes all thirty observed request pairs in five cases, with strict verified
+sessions and no skips/retries. The notification oracle now checks persisted update
+clocks after grant/visibility re-admission and reads. Denial and original retries
+retain complete protected state and first-read history. Separate stored watch
+clock/identity/version checks pass for Card, List and Board watches. This is
+current compiled Production HTTP/restricted PostgreSQL evidence; browser input,
+private transport, provider, capacity and current immutable/full CI remain
+separate. Estimated PRD-05 work remaining stays **15%**; the issue stays open.
