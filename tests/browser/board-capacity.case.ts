@@ -4,6 +4,7 @@ import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { focusAdmittedControl } from './keyboardAdmission';
 
 // The existing restricted PostgreSQL rank fixture supplies actual persisted
 // 200-List/5000-active-Card data. No Board responses or live events are mocked.
@@ -73,7 +74,7 @@ for (const width of [1280, 390]) {
     }, target);
     await scrollToColumn(awayIndex);
     const awayList = canvas.locator(`[data-board-window-id="${snapshot.lists[awayIndex].list.id}"]`);
-    await expect(awayList).toBeVisible(); await awayList.getByRole('button', { name: /^Drag .* list$/ }).focus();
+    await expect(awayList).toBeVisible(); await focusAdmittedControl(awayList.getByRole('button', { name: /^Drag .* list$/ }));
     // Focus the destination to release the old List's focus retention, proving
     // an actual unmount rather than a still-mounted offscreen source.
     await expect(list).toHaveCount(0);

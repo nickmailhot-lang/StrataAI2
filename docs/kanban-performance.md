@@ -596,3 +596,37 @@ removed after terminal checks, preserving the original three containers/data.
 PRD-06 remains at **27% estimated work remaining** (planning estimate); this
 unresolved large-Board focus failure and current release acceptance prevent
 closure despite the separate five-case normal performance pass.
+
+## Drag focus recovery and active viewport retention
+
+Decoded native DOM snapshots establish the earlier forward-Tab failure's
+admission race: the destination drag handle was enabled when focus arrived,
+then a protected Board refresh disabled it, and native button focus was lost.
+Card and List handles now remember their own focused control during temporary
+disablement and restore it with `preventScroll` when admission returns. Focus
+or a pointer choice elsewhere retires the request; withdrawing movement
+permission or replacing the entity identity also prevents recovery. Current
+permission and disabled-state gates remain authoritative.
+
+The first native run with handle recovery passed that initial traversal at both
+viewports and all five normal performance scenarios. Its large-Board cases
+still failed later: desktop tried to focus a disabled away-List handle, leaving
+the previous List pinned; phone failed strict List keyboard alignment. The
+desktop trace confirms the disabled focus target. The capacity fixture now uses
+the existing five-second focus-only admission check before proving that the
+previous List actually unmounts. It sends no repeated activation or movement.
+
+Three component regressions also reproduced a source-focus scroll reset for an
+active Card, an active List and the List containing a dragged Card. The Board
+window now retains focus without revealing that active source again, preserving
+the sensor's scroll frame. Other focused rows still reveal normally, including
+when another Card is being dragged. The three cases fail before repair and
+pass afterward; all 31 focused checks pass, with an additional different-row
+focus regression passing in the 21-case Board-window suite. Types, lint, browser
+types and the production build pass.
+
+The complete rank/two-viewport capacity chain and five normal performance cases
+are being re-executed against a fresh restricted schema-111 database copy and
+the new frozen web bundle. Full native verification and exact immutable-release
+acceptance remain pending. PRD-06 remains at **27% estimated work remaining**;
+this is a planning estimate, not completion evidence.

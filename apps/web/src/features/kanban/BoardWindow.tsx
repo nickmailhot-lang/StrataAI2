@@ -191,6 +191,10 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
         ref={(node: HTMLDivElement | null) => { if (node) rows.current.set(row.item.id, node); else rows.current.delete(row.item.id); }}
         onFocus={event => {
           setFocused(row.item.id);
+          // Background admission can temporarily disable the focused handle.
+          // Restoring the active source must retain the sensor's scroll frame;
+          // revealing that pinned source would undo keyboard auto-scrolling.
+          if (activeId && (row.item.id === activeId || ownsDrag?.(row.item, activeId))) return;
           if (root.current && (row.start < viewport.offset || row.start + row.size > viewport.offset + viewport.size)) {
             const offset = row.start;
             if (horizontal) root.current.scrollLeft = offset; else root.current.scrollTop = offset;

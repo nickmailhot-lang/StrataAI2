@@ -1,9 +1,15 @@
 import { useCallback, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Box, Button } from '@mui/material';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { useDragHandleFocus } from './useDragHandleFocus';
 export type ListDropRequest = { listId: string; name: string; version: number; before: string; nonce: string };
 export function ListDragColumn({ id, name, disabled, available, children, scrollMemory }: { id: string; name: string; disabled: boolean; available: boolean; children: ReactNode; scrollMemory?: Map<string, number> }) {
   const drag = useDraggable({ id, disabled: disabled || !available }); const drop = useDroppable({ id, disabled: disabled || !available });
+  const focus = useDragHandleFocus(id, disabled, available);
+  const { setActivatorNodeRef } = drag;
+  const handleRef = useCallback((node: HTMLButtonElement | null) => {
+    focus.handle.current = node; setActivatorNodeRef(node);
+  }, [focus.handle, setActivatorNodeRef]);
   const element = useRef<HTMLElement | null>(null);
   const { setNodeRef: setDragNode } = drag, { setNodeRef: setDropNode } = drop;
   const registerNode = useCallback((node: HTMLElement | null) => {
@@ -15,7 +21,7 @@ export function ListDragColumn({ id, name, disabled, available, children, scroll
     sx={{ bgcolor: 'grey.100', borderRadius: 2, p: 2, minHeight: 240, maxHeight: '70vh', overflowY: 'auto', position: 'relative', zIndex: drag.isDragging ? 2 : 'auto',
       outline: drop.isOver && !drag.isDragging ? '2px solid' : undefined, outlineColor: 'primary.main',
       transform: drag.transform ? `translate3d(${drag.transform.x}px,${drag.transform.y}px,0)` : undefined }}>
-    {available && <Button ref={drag.setActivatorNodeRef} {...drag.attributes} {...drag.listeners} disabled={disabled} sx={{ touchAction: 'none' }}>Drag {name} list</Button>}
+    {available && <Button ref={handleRef} {...drag.attributes} {...drag.listeners} onFocus={focus.onFocus} disabled={disabled} sx={{ touchAction: 'none' }}>Drag {name} list</Button>}
     {children}
   </Box>;
 }

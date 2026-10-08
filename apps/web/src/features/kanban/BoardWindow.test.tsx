@@ -53,6 +53,41 @@ it('preserves active drag identities while their original row scrolls out of vie
   expect(screen.getByRole('button', { name: 'Drag card-0' })).toBeVisible();
   expect(screen.getAllByRole('link').length).toBeLessThan(30);
 });
+it.each(['cards', 'lists'] as const)('keeps the drag viewport when source focus is restored in %s', axis => {
+  active = { id: axis === 'cards' ? 'card:card-0' : 'list-0' };
+  const { memory } = mount(axis === 'cards' ? cards : lists, axis);
+  const viewport = screen.getByLabelText(axis === 'cards' ? 'Cards' : 'Kanban board');
+  const property = axis === 'cards' ? 'scrollTop' : 'scrollLeft';
+  fireEvent.scroll(viewport, { target: { [property]: 20000 } });
+  const reveal = vi.fn();
+  const source = screen.getByRole('button', { name: axis === 'cards' ? 'Drag card-0' : 'Drag list-0' });
+  source.scrollIntoView = reveal;
+  act(() => source.focus({ preventScroll: true }));
+  expect(viewport[property]).toBe(20000);
+  expect(memory.get(axis)).toBe(20000);
+  expect(reveal).not.toHaveBeenCalled();
+});
+it('keeps the horizontal drag viewport when focus returns inside its owning List', () => {
+  active = { id: 'card:source-card' };
+  const memory = new Map<string, number>();
+  render(<BoardWindow items={lists} axis="lists" memory={memory} memoryKey="lists"
+    ownsDrag={(item, id) => item.id === 'list-0' && id === 'source-card'} renderItem={renderItem} />);
+  const viewport = screen.getByLabelText('Kanban board');
+  fireEvent.scroll(viewport, { target: { scrollLeft: 20000 } });
+  act(() => screen.getByRole('button', { name: 'Drag list-0' }).focus({ preventScroll: true }));
+  expect(viewport.scrollLeft).toBe(20000);
+  expect(memory.get('lists')).toBe(20000);
+});
+it('still reveals a different focused row while another Card is being dragged', () => {
+  active = { id: 'card:card-0' };
+  const { memory } = mount(cards, 'cards', { pinned: ['card-4999'] });
+  const destination = screen.getByRole('link', { name: 'Open card-4999' });
+  const reveal = vi.fn(); destination.scrollIntoView = reveal;
+  act(() => destination.focus({ preventScroll: true }));
+  expect(destination).toHaveFocus();
+  expect(memory.get('cards')).toBeGreaterThan(600000);
+  expect(reveal).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest' });
+});
 it('keeps the sensor source anchored while earlier row estimates refine, then restores canonical layout', () => {
   const observers: { callback: ResizeObserverCallback; nodes: Set<Element> }[] = [];
   class Observer {
