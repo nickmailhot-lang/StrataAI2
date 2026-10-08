@@ -60,6 +60,9 @@ effects() {
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org' AND job_type='WORK_EVENT_READY'),
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"
 }
+completed=0
+for retirement in logout deactivate; do
+for visibility in PRIVATE ORGANIZATION PUBLIC; do
 for actor in owner recipient; do
  email="deleted-content-$actor-$(uuid)@example.test"
  credentials=$(jq -nc --arg email "$email" '{email:$email,password:"deleted-content-fixture-correct-horse",displayName:"Surface fixture"}')
@@ -79,8 +82,6 @@ for actor in owner recipient; do
  if test "$login_status" != 200; then echo "Deleted-content login status: $login_status" >&2; exit 1; fi
 done
 owner=$(cat "$scratch/owner.id"); recipient=$(cat "$scratch/recipient.id")
-completed=0
-for visibility in PRIVATE ORGANIZATION PUBLIC; do
  keyword="terminal-surface-$visibility-$(uuid)"
  test "$(request owner POST /organizations '{"name":"Terminal surface scope"}')" = 201
  org=$(jq -r '.organization.id' "$scratch/response.json"); [[ "$org" =~ ^[0-9a-fA-F-]{36}$ ]]
@@ -116,7 +117,14 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
  cp "$scratch/response.json" "$scratch/request-receipt.json"
  # The separate Worker must derive authority from the accepted request after
  # original browser-session revocation. No fixture advances graph/checkpoints.
- test "$(request owner POST /auth/logout '{}')" = 204
+ audit_ids=$(admin "SELECT array_agg(id)::text FROM audit_events WHERE tenant_id='$org';")
+ audit_before=$(admin "SELECT md5(jsonb_agg(to_jsonb(a) ORDER BY id)::text) FROM audit_events a WHERE id=ANY('$audit_ids'::uuid[]);")
+ if test "$retirement" = logout; then
+  test "$(request owner POST /auth/logout '{}')" = 204
+ else
+  test "$(request owner POST "/me/deactivate?expectedActorId=$owner" '{}')" = 204
+  test "$(admin "SELECT status='DEACTIVATED' FROM users WHERE id='$owner';")" = t
+ fi
  test "$(request owner GET /me '')" = 401
  worker_active=true
  STRATAAI_WORKER_ORGANIZATION_IDS="$org" STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=false \
@@ -136,9 +144,12 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
  $complete
  docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
  worker_active=false
+ if test "$retirement" = logout; then
  credentials=$(jq -nc --arg email "$(cat "$scratch/owner.email")" '{email:$email,password:"deleted-content-fixture-correct-horse"}')
  test "$(curl --max-time 60 --silent --show-error -c "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
   -d "$credentials" -o "$scratch/login.json" -w '%{http_code}' "$base/auth/login")" = 200
+ fi
+ test "$(admin "SELECT md5(jsonb_agg(to_jsonb(a) ORDER BY id)::text) FROM audit_events a WHERE id=ANY('$audit_ids'::uuid[]);")" = "$audit_before"
  test "$(admin "SELECT (SELECT count(*) FROM boards WHERE tenant_id='$org' AND lifecycle_state='DELETED')=1
   AND (SELECT count(*) FROM board_lists WHERE tenant_id='$org' AND lifecycle_state='DELETED')=1
   AND (SELECT count(*) FROM cards WHERE tenant_id='$org' AND lifecycle_state='DELETED' AND deleted_by='$owner')=2
@@ -156,17 +167,23 @@ for visibility in PRIVATE ORGANIZATION PUBLIC; do
  test "$(request recipient POST "$path/$notification/read" '{}')" = 404
  test "$(request recipient POST "$path/read" "$selection")" = 404
  for resource in "/boards/$board" "/lists/$list" "/cards/$card"; do
-  test "$(request owner POST "$resource/restore" '{"version":2}')" = 404
+  test "$(request owner POST "$resource/restore" '{"version":2}')" = "$(if test "$retirement" = logout; then echo 404; else echo 401; fi)"
  done
+ if test "$retirement" = logout; then
  test "$(request owner DELETE "/organizations/$org?version=1&expectedActorId=$owner" '{}' "$deletion_key")" = 202
  jq -se '.[0]==.[1]' "$scratch/request-receipt.json" "$scratch/response.json" >/dev/null
  test "$(request owner GET "/organizations/$org/deletion-requests/$deletion_key?expectedActorId=$owner" '')" = 200
  jq -e --arg key "$deletion_key" 'keys==["completedAt","eventId","requestId","state","version"] and .requestId==$key
   and .state=="COMPLETED" and .version==3 and (.eventId|type)=="string" and (.completedAt|type)=="string"' "$scratch/response.json" >/dev/null
+ else
+  test "$(request owner DELETE "/organizations/$org?version=1&expectedActorId=$owner" '{}' "$deletion_key")" = 401
+  test "$(request owner GET "/organizations/$org/deletion-requests/$deletion_key?expectedActorId=$owner" '')" = 401
+ fi
  test "$(request recipient GET "/organizations/$org/deletion-requests/$deletion_key" '')" = 404
  test "$(request recipient GET /me '')" = 200
  test "$(effects)" = "$before"
  completed=$((completed+1))
 done
-test "$completed" = 3
-echo 'Organization terminal surfaces: three real accepted requests complete through a separate scoped Worker after original-session logout; retained active/archived descendants, search continuations, inbox, historical sync and old/new read receipts remain inaccessible, and fresh Owner completion/request recovery changes no protected records/effects.'
+done
+test "$completed" = 6
+echo 'Organization terminal surfaces: six real accepted requests complete through a separate scoped Worker after original-session logout or account deactivation; retained active/archived descendants, search continuations, inbox, historical sync and old/new read receipts remain inaccessible, original audits stay immutable, and permitted fresh Owner completion/request recovery changes no protected records/effects.'

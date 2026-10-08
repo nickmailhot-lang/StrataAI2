@@ -851,3 +851,10 @@ account preservation without additional protected effects. The mandatory build-o
 CI runs this same contract through its exact API and Worker images. Current release
 acceptance remains pending; local compiled execution does not prove automatic
 global discovery, provider/backup purge or the full PRD acceptance matrix.
+
+The [expanded six-case retirement matrix](lifecycle-acceptance.md#accepted-deletion-after-account-deactivation)
+also passes after actual requesting-Owner account deactivation. Accepted Worker
+work retains original attribution and immutable existing audit rows; retired
+accounts cannot recover deletion receipts or completion details. Surviving member
+accounts stay usable. This strengthens accepted-request authority evidence without
+substituting local compiled tests for the required current immutable-image run.

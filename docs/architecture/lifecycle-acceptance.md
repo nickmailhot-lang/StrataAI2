@@ -56,11 +56,11 @@ stays 22%; the ticket remains open.
 | Requirement | Current evidence | Required completion evidence |
 | --- | --- | --- |
 | LIFE-FR-001–003 explicit lifecycle, reversible archive, hidden canvas | Canonical enums; archive/deletion timestamps persisted and projected; reviewed Board/Card/List archive controls and discovery pages; active Board discovery excludes archives | Fresh complete server, PostgreSQL and native lifecycle execution |
-| LIFE-FR-004 archive browser | ArchivedCardsPage, ArchivedListsPage and ArchivedBoardsPage; current scope/account denial and coalesced recovery reads | Native desktop/mobile archive cases on the immutable images; Board archive directory SignalR invalidation |
+| LIFE-FR-004 archive browser | ArchivedCardsPage, ArchivedListsPage and ArchivedBoardsPage; current scope/account denial and coalesced recovery reads | Current immutable-image desktop/mobile archive and live-directory cases; local SignalR delivery and interrupted recovery evidence is linked below |
 | LIFE-FR-005 parent-safe restoration | ListArchivedListsAsync rejects non-active Boards; transactional actor verification; 12 parent-deletion and 156 Organization/account/session/membership/administration lock-wait cases refuse fresh restores and old receipts using the production verifier | Remaining integrated transitions, HTTP cookie/middleware and native recovery scenarios; current immutable-image acceptance |
 | LIFE-FR-006–009 archived-only elevated deletion, confirmation, irreversibility and List impact | Card/List/Board command and receipt contracts; MUI reviews with explicit consent, including Board archive directory reviews | Executed native consent, lost-response/retry and cascading-impact cases |
-| LIFE-FR-010 audit integrity | Immutable audit storage fixture; lifecycle events, canonical receipts and retained deleting actor | Exact execution after archive, deletion and account removal; retained actor interpretation |
-| LIFE-FR-011 deleted content absent from search/notifications | Separate search and notification admission implementations; mandatory 21-case real deletion matrix across private/Organization/public visibility covers direct and moved-Card search, inbox, historical sync and original read/move receipts | Current immutable-image execution, Organization terminal deletion and integrated permission/native recovery scenarios |
+| LIFE-FR-010 audit integrity | Immutable audit storage fixture; lifecycle events, canonical receipts and retained deleting actor; six real terminal workflows compare complete original audit rows after issuing-session logout/account deactivation | Complete current-image archive/deletion/account-removal audit execution and retained actor interpretation |
+| LIFE-FR-011 deleted content absent from search/notifications | Separate search and notification admission implementations; mandatory 21-case real deletion matrix across private/Organization/public visibility covers direct and moved-Card search, inbox, historical sync and original read/move receipts | Current immutable-image execution of both deletion scripts and integrated permission/native recovery scenarios |
 | LIFE-FR-012 product deletion versus backup retention | Attachment and Organization lifecycle documentation distinguishes irreversible product tombstones from retained provider evidence and operational backups | Verify irreversible product behavior across lifecycle entities and document actual operational backup windows; provider removal requires its own explicit reconciliation/retention authority, rather than being inferred from this requirement |
 
 ## Record attribution
@@ -262,3 +262,34 @@ Organization discovery, email-provider delivery, browser interaction, physical
 object/backup erasure and current immutable-image acceptance require their own
 evidence. The mandatory CI step uses the exact build-once API and Worker images;
 its current execution remains pending. PRD-03, PRD-17 and PRD-18 stay open.
+
+### Accepted deletion after account deactivation
+
+The same mandatory contract now passes all six combinations of three Board
+visibilities and two requesting-Owner retirement modes: session logout or actual
+HTTP account deactivation after deletion acceptance. Each case uses independent
+real accounts, so a deactivated account cannot supply a later fixture's authority.
+The deactivation endpoint returns 204, the account is canonically DEACTIVATED,
+and its old cookie cannot access `/me`. The separately scoped Worker still
+completes the accepted graph with the original deleting actor and event clock.
+
+The contract snapshots complete existing Organization audit rows by their
+original identifiers before retirement and compares their fingerprint after
+completion. No existing row changes or disappears. New legitimate terminal
+history remains independently required. The archived Card retains its clock and
+the formerly active sibling receives no fabricated archive history. Deleted search,
+inbox, sync and old/new notification receipts remain inaccessible. The retired
+Owner's restore, original deletion-receipt and completion-observation requests
+return 401; a surviving member receives no Owner completion disclosure and keeps
+account access. Logged-out active Owners can still sign in again and recover their
+original request/minimal completion. Protected graph and notification history plus
+listed aggregate effects remain unchanged during these post-completion checks.
+
+The complete six-case local compiled Production API/separate Worker/PostgreSQL
+17/pgvector/Nginx invocation exited 0. The staged test matches repository source
+apart from declared local UUID/scratch/cleanup adapters. All invocation-owned
+containers and the cloned database were removed. This strengthens LIFE-FR-010/011
+and PRD-03 accepted-request treatment after actor retirement; it does not certify
+current immutable-image/browser acceptance, automatic global discovery or physical
+provider/backup erasure. PRD-18 remains open at **16% estimated work remaining**,
+a planning estimate; PRD-03 remains open at **8%**.
